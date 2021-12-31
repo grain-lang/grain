@@ -1,3 +1,22 @@
+---
+title: Map
+---
+
+A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+import Map from "map"
+```
+
+## Values
+
+Functions for working with the Map data type.
+
 ### Map.**Bucket**
 
 ```grain
