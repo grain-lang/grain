@@ -1829,14 +1829,16 @@ and print_arg_lambda =
                 ~remove_comments=after_brace_comments,
                 comments,
               );
+
+            let print_attribute = (expr: Parsetree.expression) =>
+              print_attributes(expr.pexp_attributes);
             let printed_expressions =
               block_item_iterator(
                 ~previous=Block(expression.pexp_loc),
                 ~get_loc,
                 ~print_item,
                 ~comments=cleaned_comments,
-                ~get_attribute_text=
-                  expr => print_attributes(expr.pexp_attributes),
+                ~get_attribute_text=print_attribute,
                 ~original_source,
                 block_expressions,
               );
@@ -3086,14 +3088,16 @@ and print_expression =
             comments,
           );
 
+        let print_attribute = (expr: Parsetree.expression) =>
+          print_attributes(expr.pexp_attributes);
+
         let printed_expressions =
           block_item_iterator(
             ~previous=Block(expr.pexp_loc),
             ~get_loc,
             ~print_item,
             ~comments=cleaned_comments,
-            ~get_attribute_text=
-              expr => print_attributes(expr.pexp_attributes),
+            ~get_attribute_text=print_attribute,
             ~original_source,
             expressions,
           );
@@ -4168,17 +4172,18 @@ let reformat_ast =
       parsed_program.comments,
     );
 
+  let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
+    let attributes = stmt.ptop_attributes;
+    print_attributes(attributes);
+  };
+
   let top_level_stmts =
     block_item_iterator(
       ~previous=TopOfFile,
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
-      ~get_attribute_text=
-        stmt => {
-          let attributes = stmt.ptop_attributes;
-          print_attributes(attributes);
-        },
+      ~get_attribute_text=get_attributes,
       ~original_source,
       parsed_program.statements,
     );
