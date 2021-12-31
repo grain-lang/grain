@@ -76,7 +76,7 @@ describe("linking", ({test}) => {
     expect.option(export_sections).toBeSome();
     expect.list(Option.get(export_sections)).toContainEqual(
       ~equals=tuple_equal,
-      (ExportedFunction, "_start"),
+      (WasmFunction, "_start"),
     );
   });
 
@@ -114,7 +114,7 @@ describe("linking", ({test}) => {
     expect.option(export_sections).toBeSome();
     expect.list(Option.get(export_sections)).not.toContainEqual(
       ~equals=tuple_equal,
-      (ExportedFunction, "_start"),
+      (WasmFunction, "_start"),
     );
   });
 });

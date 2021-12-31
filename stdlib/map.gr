@@ -11,21 +11,18 @@ import { allocateArray } from "runtime/dataStructures"
 record Bucket<k, v> {
   mut key: k,
   mut value: v,
-  mut next: Option<Bucket<k, v>>
+  mut next: Option<Bucket<k, v>>,
 }
 
 record Map<k, v> {
   mut size: Number,
-  mut buckets: Array<Option<Bucket<k, v>>>
+  mut buckets: Array<Option<Bucket<k, v>>>,
 }
 
 // TODO: This could take an `eq` function to custom comparisons
-export let makeSized = (size) => {
-  let buckets = Array.make(size, None);
-  {
-    size: 0,
-    buckets
-  }
+export let makeSized = size => {
+  let buckets = Array.make(size, None)
+  { size: 0, buckets }
 }
 
 export let make = () => {
@@ -33,8 +30,8 @@ export let make = () => {
 }
 
 let getBucketIndex = (key, buckets) => {
-  let bucketsLength = Array.length(buckets);
-  let hashedKey = hash(key);
+  let bucketsLength = Array.length(buckets)
+  let hashedKey = hash(key)
   hashedKey % bucketsLength
 }
 
@@ -42,45 +39,45 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
   match (oldNode) {
     None => void,
     Some(node) => {
-      let idx = getBucketIndex(node.key, next);
-      let newNode = Some(node);
+      let idx = getBucketIndex(node.key, next)
+      let newNode = Some(node)
       match (tail[idx]) {
         None => {
-          next[idx] = newNode;
+          next[idx] = newNode
         },
         Some(tailNode) => {
           // If there's already a tail node, we add this to the end
-          tailNode.next = newNode;
-        }
+          tailNode.next = newNode
+        },
       }
       // Always place this node as the new tail
-      tail[idx] = newNode;
+      tail[idx] = newNode
       // Recurse with the next node
-      copyNodeWithNewHash(node.next, next, tail);
-    }
+      copyNodeWithNewHash(node.next, next, tail)
+    },
   }
 }
 
-let resize = (map) => {
-  let currentBuckets = map.buckets;
-  let currentSize = Array.length(currentBuckets);
-  let nextSize = currentSize * 2;
+let resize = map => {
+  let currentBuckets = map.buckets
+  let currentSize = Array.length(currentBuckets)
+  let nextSize = currentSize * 2
   if (nextSize >= currentSize) {
-    let nextBuckets = Array.make(nextSize, None);
+    let nextBuckets = Array.make(nextSize, None)
     // This tracks the tail nodes so we can set their `next` to None
-    let tailNodes = Array.make(nextSize, None);
-    map.buckets = nextBuckets;
-    Array.forEach((old) => {
-      copyNodeWithNewHash(old, nextBuckets, tailNodes);
-    }, currentBuckets);
-    Array.forEach((tail) => {
+    let tailNodes = Array.make(nextSize, None)
+    map.buckets = nextBuckets
+    Array.forEach(old => {
+      copyNodeWithNewHash(old, nextBuckets, tailNodes)
+    }, currentBuckets)
+    Array.forEach(tail => {
       match (tail) {
         None => void,
         Some(node) => {
-          node.next = None;
-        }
+          node.next = None
+        },
       }
-    }, tailNodes);
+    }, tailNodes)
   } else {
     void
   }
@@ -88,35 +85,35 @@ let resize = (map) => {
 
 let rec replaceInBucket = (key, value, node) => {
   if (key == node.key) {
-    node.value = value;
+    node.value = value
     false
   } else {
     match (node.next) {
       None => true,
-      Some(next) => replaceInBucket(key, value, next)
+      Some(next) => replaceInBucket(key, value, next),
     }
   }
 }
 
 export let set = (key, value, map) => {
-  let buckets = map.buckets;
+  let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
-  let bucket = buckets[idx];
+  let bucket = buckets[idx]
   match (bucket) {
     None => {
-      buckets[idx] = Some({ key, value, next: None });
-      map.size = incr(map.size);
+      buckets[idx] = Some({ key, value, next: None })
+      map.size = incr(map.size)
     },
     Some(node) => {
       if (replaceInBucket(key, value, node)) {
-        buckets[idx] = Some({ key, value, next: bucket });
-        map.size = incr(map.size);
-      };
-    }
+        buckets[idx] = Some({ key, value, next: bucket })
+        map.size = incr(map.size)
+      }
+    },
   }
   // Resize if there are more than 2x the amount of nodes as buckets
-  if (map.size > (Array.length(buckets) * 2)) {
-    resize(map);
+  if (map.size > Array.length(buckets) * 2) {
+    resize(map)
   } else {
     void
   }
@@ -128,18 +125,18 @@ let rec valueFromBucket = (key, node) => {
   } else {
     match (node.next) {
       None => None,
-      Some(next) => valueFromBucket(key, next)
+      Some(next) => valueFromBucket(key, next),
     }
   }
 }
 
 export let get = (key, map) => {
-  let buckets = map.buckets;
-  let idx = getBucketIndex(key, buckets);
-  let bucket = buckets[idx];
+  let buckets = map.buckets
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx]
   match (bucket) {
     None => None,
-    Some(node) => valueFromBucket(key, node)
+    Some(node) => valueFromBucket(key, node),
   }
 }
 
@@ -149,18 +146,18 @@ let rec nodeInBucket = (key, node) => {
   } else {
     match (node.next) {
       None => false,
-      Some(next) => nodeInBucket(key, next)
+      Some(next) => nodeInBucket(key, next),
     }
   }
 }
 
 export let contains = (key, map) => {
-  let buckets = map.buckets;
-  let idx = getBucketIndex(key, buckets);
-  let bucket = buckets[idx];
+  let buckets = map.buckets
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx]
   match (bucket) {
     None => false,
-    Some(node) => nodeInBucket(key, node)
+    Some(node) => nodeInBucket(key, node),
   }
 }
 
@@ -169,115 +166,115 @@ let rec removeInBucket = (key, node) => {
     None => false,
     Some(next) => {
       if (key == next.key) {
-        node.next = next.next;
+        node.next = next.next
         true
       } else {
         removeInBucket(key, next)
       }
-    }
+    },
   }
 }
 
 export let remove = (key, map) => {
-  let buckets = map.buckets;
-  let idx = getBucketIndex(key, buckets);
-  let bucket = buckets[idx];
+  let buckets = map.buckets
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx]
   match (bucket) {
     None => void,
     Some(node) => {
       // If it is a top-level node, just replace with next node
       if (key == node.key) {
-        map.size = decr(map.size);
-        buckets[idx] = node.next;
+        map.size = decr(map.size)
+        buckets[idx] = node.next
       } else {
         if (removeInBucket(key, node)) {
-          map.size = decr(map.size);
+          map.size = decr(map.size)
         }
       }
-    }
+    },
   }
 }
 
 export let update = (key, fn, map) => {
-  let val = get(key, map);
+  let val = get(key, map)
   match (fn(val)) {
     Some(next) => set(key, next, map),
-    None => remove(key, map)
+    None => remove(key, map),
   }
 }
 
-export let size = (map) => {
+export let size = map => {
   map.size
 }
 
-export let isEmpty = (map) => {
+export let isEmpty = map => {
   size(map) == 0
 }
 
-export let clear = (map) => {
-  map.size = 0;
-  let buckets = map.buckets;
+export let clear = map => {
+  map.size = 0
+  let buckets = map.buckets
   Array.forEachi((bucket, idx) => {
-    buckets[idx] = None;
-  }, buckets);
+    buckets[idx] = None
+  }, buckets)
 }
 
 let rec forEachBucket = (fn, node) => {
   match (node) {
     None => void,
     Some({ key, value, next }) => {
-      fn(key, value);
-      forEachBucket(fn, next);
-    }
+      fn(key, value)
+      forEachBucket(fn, next)
+    },
   }
 }
 
 export let forEach = (fn, map) => {
-  let buckets = map.buckets;
-  Array.forEach((bucket) => {
+  let buckets = map.buckets
+  Array.forEach(bucket => {
     forEachBucket(fn, bucket)
-  }, buckets);
+  }, buckets)
 }
 
 let rec reduceEachBucket = (fn, node, acc) => {
   match (node) {
     None => acc,
     Some({ key, value, next }) =>
-      reduceEachBucket(fn, next, fn(acc, key, value))
+      reduceEachBucket(fn, next, fn(acc, key, value)),
   }
 }
 
 export let reduce = (fn, init, map) => {
-  let buckets = map.buckets;
-  let mut acc = init;
-  Array.forEach((bucket) => {
+  let buckets = map.buckets
+  let mut acc = init
+  Array.forEach(bucket => {
     acc = reduceEachBucket(fn, bucket, acc)
-  }, buckets);
+  }, buckets)
   acc
 }
 
-export let keys = (map) => {
+export let keys = map => {
   reduce((list, key, _value) => [key, ...list], [], map)
 }
 
-export let values = (map) => {
+export let values = map => {
   reduce((list, _key, value) => [value, ...list], [], map)
 }
 
-export let toList = (map) => {
+export let toList = map => {
   reduce((list, key, value) => [(key, value), ...list], [], map)
 }
 
-export let fromList = (list) => {
-  let map = make();
-  List.forEach((pair) => {
-    let (key, value) = pair;
-    set(key, value, map);
-  }, list);
+export let fromList = list => {
+  let map = make()
+  List.forEach(pair => {
+    let (key, value) = pair
+    set(key, value, map)
+  }, list)
   map
 }
 
-let setInArray = (array) => {
+let setInArray = array => {
   @disableGC
   let rec iter = (i, key, value) => {
     array[i] = (key, value)
@@ -289,7 +286,7 @@ let setInArray = (array) => {
 }
 
 @disableGC
-export let rec toArray = (map) => {
+export let rec toArray = map => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
   // TODO(#783): Removing parens around Array<a> causes a parse error
   let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
@@ -306,25 +303,24 @@ export let rec toArray = (map) => {
   array
 }
 
-export let fromArray = (array) => {
-  let map = make();
-  Array.forEach((pair) => {
-    let (key, value) = pair;
-    set(key, value, map);
-  }, array);
+export let fromArray = array => {
+  let map = make()
+  Array.forEach(pair => {
+    let (key, value) = pair
+    set(key, value, map)
+  }, array)
   map
 }
 
 export let filter = (predicate, map) => {
-  let keysToRemove = reduce((list, key, value) =>
-    if (!predicate(key, value)) {
-      [key, ...list]
-    } else {
-      list
-    }, [], map);
-  List.forEach((key) => {
-    remove(key, map);
-  }, keysToRemove);
+  let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
+    [key, ...list]
+  } else {
+    list
+  }, [], map)
+  List.forEach(key => {
+    remove(key, map)
+  }, keysToRemove)
 }
 
 export let reject = (predicate, map) => {
@@ -333,6 +329,6 @@ export let reject = (predicate, map) => {
 
 // TODO: Should return a Record type instead of a Tuple
 // Waiting on https://github.com/grain-lang/grain/issues/190
-export let getInternalStats = (map) => {
+export let getInternalStats = map => {
   (map.size, Array.length(map.buckets))
 }

@@ -3,5 +3,6 @@ export enum Shape< a, b, c, d, e, f, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v
 }
 
 export enum Test {
-  Test( Shape< String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String > ),
+  Test( Shape< 
+  String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String > ),
 }

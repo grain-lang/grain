@@ -1406,7 +1406,7 @@ let transl_prim = (env, desc) => {
     | Not_found => failwith("This primitive does not exist.")
     };
 
-  let diable_gc = [Location.mknoloc("disableGC")];
+  let diable_gc = [(Location.mknoloc("disableGC"), [])];
 
   let value =
     switch (prim) {

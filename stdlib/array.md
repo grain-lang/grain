@@ -371,7 +371,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The new array with mapped values|
+|`Array<b>`|The new array with mapped values|
 
 ### Array.**mapi**
 
@@ -398,7 +398,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The new array with mapped values|
+|`Array<b>`|The new array with mapped values|
 
 ### Array.**reduce**
 
@@ -425,7 +425,7 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<a>`|The array to iterate|
+|`array`|`Array<b>`|The array to iterate|
 
 Returns:
 
@@ -465,7 +465,7 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b, Number) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<a>`|The array to iterate|
+|`array`|`Array<b>`|The array to iterate|
 
 Returns:
 
@@ -500,7 +500,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The new array|
+|`Array<b>`|The new array|
 
 ### Array.**every**
 
@@ -1057,7 +1057,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotate : (Number, Array<Number>) -> Void
+rotate : (Number, Array<a>) -> Void
 ```
 
 Rotates an array by n elements to the right, in place.
@@ -1070,7 +1070,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`n`|`Number`|The number of elements to rotate by|
-|`arr`|`Array<Number>`|The array to be rotated|
+|`arr`|`Array<a>`|The array to be rotated|
 
 Examples:
 

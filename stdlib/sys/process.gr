@@ -15,11 +15,15 @@ import WasmI32, {
   and as (&),
   eq as (==),
   ne as (!=),
-  ltS as (<)
+  ltS as (<),
 } from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Wasi from "runtime/wasi"
-import { tagSimpleNumber, allocateArray, allocateString } from "runtime/dataStructures"
+import {
+  tagSimpleNumber,
+  allocateArray,
+  allocateString,
+} from "runtime/dataStructures"
 
 /**
  * @section Types: Type declarations included in the Sys/Process module.
@@ -91,13 +95,13 @@ export enum Signal {
  * @section Values: Functions and constants included in the Sys/Process module.
  */
 
-let wasmSafeOk = (val) => {
+let wasmSafeOk = val => {
   Memory.incRef(WasmI32.fromGrain(Ok))
   Memory.incRef(WasmI32.fromGrain(val))
   Ok(val)
 }
 
-let wasmSafeErr = (err) => {
+let wasmSafeErr = err => {
   Memory.incRef(WasmI32.fromGrain(Err))
   Memory.incRef(WasmI32.fromGrain(err))
   Err(err)
@@ -150,7 +154,7 @@ export let rec argv = () => {
       Memory.free(argvPtr)
       Memory.free(argvBufPtr)
 
-      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
+      wasmSafeOk(WasmI32.toGrain(arr): (Array<String>))
     }
   }
   Memory.decRef(WasmI32.fromGrain(argv))
@@ -204,7 +208,7 @@ export let rec env = () => {
       Memory.free(envvPtr)
       Memory.free(envvBufPtr)
 
-      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
+      wasmSafeOk(WasmI32.toGrain(arr): (Array<String>))
     }
   }
   Memory.decRef(WasmI32.fromGrain(env))

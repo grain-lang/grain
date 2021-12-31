@@ -563,7 +563,7 @@ and type_expect_ =
     (~in_function=?, ~recarg=Rejected, env, sexp, ty_expected_explained) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let loc = sexp.pexp_loc;
-  let attributes = sexp.pexp_attributes;
+  let attributes = Typetexp.type_attributes(sexp.pexp_attributes);
   /* Record the expression type before unifying it with the expected type */
   let with_explanation = with_explanation(explanation);
   let rue = exp => {

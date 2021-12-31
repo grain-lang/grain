@@ -182,6 +182,15 @@ let rec willBreak = doc =>
   | _ => false
   };
 
+let rec willIndent = doc =>
+  switch (doc) {
+  | Indent(doc) => true
+  | Group({doc}) => willIndent(doc)
+  | CustomLayout([doc, ..._]) => willIndent(doc)
+  | Concat(docs) => List.exists(willIndent, docs)
+  | _ => false
+  };
+
 let join = (~sep, docs) => {
   let rec loop = (acc, sep, docs) =>
     switch (docs) {

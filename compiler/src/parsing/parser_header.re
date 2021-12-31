@@ -184,7 +184,7 @@ let mkid_expr = (~loc=?, dyp, ns) => {
   Exp.ident(~loc, mkid(ns, loc));
 };
 
-let mkstr = (dyp, s) => mkloc(s, symbol_rloc(dyp));
+let mkstr = (loc, s) => mkloc(s, loc);
 
 let make_program = statements => {
   let prog_loc = {

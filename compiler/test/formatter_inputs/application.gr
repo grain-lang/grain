@@ -22,12 +22,11 @@ let findIndex =  (x,y) => None
  * @returns The new array with only unique values
  */
 export let unique = array => {
-  filteri(
-      (el, index
-      ) =>
-      (findIndex(value => value == el, array)) == (Some(index)),
-    array,
-  )
+  filteri((el, index) => findIndex(longvalue => longvalue == el, array) == Some(index), array)
+}
+
+export let unique2 = array => {
+  filteri((el, index) => findIndex(value => value == el, array) == Some(index), array)
 }
 
 export let batchActionCreateAccount = ({index}) => {

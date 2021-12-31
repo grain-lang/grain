@@ -121,13 +121,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Result<b, c>`|The function to call on the value of an `Ok` variant|
-|`result`|`Result<a, b>`|The result to map|
+|`result`|`Result<a, c>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|A new Result produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise|
+|`Result<b, c>`|A new Result produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise|
 
 ### Result.**flatMapErr**
 
@@ -147,13 +147,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> Result<b, c>`|The function to call on the value of an `Err` variant|
-|`result`|`Result<a, b>`|The result to map|
+|`result`|`Result<b, a>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|A new Result produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise|
+|`Result<b, c>`|A new Result produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise|
 
 ### Result.**map**
 
@@ -173,13 +173,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of an `Ok` variant|
-|`result`|`Result<a, b>`|The result to map|
+|`result`|`Result<a, c>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|A new `Ok` variant produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise|
+|`Result<b, c>`|A new `Ok` variant produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise|
 
 ### Result.**mapErr**
 
@@ -199,13 +199,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of an `Err` variant|
-|`result`|`Result<a, b>`|The result to map|
+|`result`|`Result<c, a>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<a, b>`|A new `Err` variant produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise|
+|`Result<c, b>`|A new `Err` variant produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise|
 
 ### Result.**mapWithDefault**
 
@@ -226,14 +226,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of an `Ok` variant|
-|`def`|`a`|A fallback value for an `Err` variant|
-|`result`|`Result<a, b>`|The result to map|
+|`def`|`b`|A fallback value for an `Err` variant|
+|`result`|`Result<a, c>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise|
+|`b`|The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise|
 
 ### Result.**mapWithDefaultFn**
 
@@ -255,14 +255,14 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fnOk`|`a -> b`|The function to call on the value of an `Ok` variant|
-|`fnErr`|`a -> b`|The function to call on the value of an `Err` variant|
-|`result`|`Result<a, b>`|The result to map|
+|`fnErr`|`c -> b`|The function to call on the value of an `Err` variant|
+|`result`|`Result<a, c>`|The result to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The value produced by one of the mapping functions|
+|`b`|The value produced by one of the mapping functions|
 
 ### Result.**or**
 
@@ -336,8 +336,8 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fnOk`|`a -> b`|The function to call on the value of an `Ok` variant|
-|`fnErr`|`a -> b`|The function to call on the value of an `Err` variant|
-|`result`|`Result<a, b>`|The result to inspect|
+|`fnErr`|`c -> d`|The function to call on the value of an `Err` variant|
+|`result`|`Result<a, c>`|The result to inspect|
 
 ### Result.**peekOk**
 
@@ -357,7 +357,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of an `Ok` variant|
-|`result`|`Result<a, b>`|The result to inspect|
+|`result`|`Result<a, c>`|The result to inspect|
 
 ### Result.**peekErr**
 
@@ -377,7 +377,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`a -> b`|The function to call on the value of an `Err` variant|
-|`result`|`Result<a, b>`|The result to inspect|
+|`result`|`Result<c, a>`|The result to inspect|
 
 ### Result.**expect**
 
