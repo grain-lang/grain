@@ -90,10 +90,10 @@ let format_code =
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let reformatted_code = Format.format_ast(~original_source, program);
+  let formatted_code = Format.format_ast(~original_source, program);
 
   let buf = Buffer.create(0);
-  Buffer.add_string(buf, reformatted_code);
+  Buffer.add_string(buf, formatted_code);
 
   let contents = Buffer.to_bytes(buf);
   switch (outfile) {
