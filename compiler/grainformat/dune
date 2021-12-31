@@ -14,14 +14,8 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries
-  cmdliner
-  grain
-  grain_utils
-  grain_parsing
-  grainformat.format
-  binaryen.native
-  dune-build-info))
+ (libraries cmdliner grain grain_utils grain_parsing grainformat.format
+   binaryen.native dune-build-info))
 
 (rule
  (target grainformat_js.re)
@@ -37,14 +31,7 @@
  (modules grainformat_js)
  ; exe is only here so dune-build-info works
  (modes exe js)
- (libraries
-  cmdliner
-  grain
-  grain_diagnostics
-  grain_utils
-  grain_parsing
-  grainformat.format
-  binaryen.js
-  dune-build-info)
+ (libraries cmdliner grain grain_diagnostics grain_utils grain_parsing
+   grainformat.format binaryen.js dune-build-info)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet)))
