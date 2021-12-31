@@ -25,6 +25,11 @@ makeSized : Number -> Map<a, b>
 
 ### Map.**make**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 make : () -> Map<a, b>
 ```
@@ -38,6 +43,11 @@ Returns:
 |`Map<a, b>`|An empty map|
 
 ### Map.**set**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 set : (a, b, Map<a, b>) -> Void
@@ -54,6 +64,11 @@ Parameters:
 |`map`|`Map<a, b>`|The map to modify|
 
 ### Map.**get**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 get : (a, Map<a, b>) -> Option<b>
@@ -76,6 +91,11 @@ Returns:
 
 ### Map.**contains**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 contains : (a, Map<a, b>) -> Bool
 ```
@@ -97,6 +117,11 @@ Returns:
 
 ### Map.**remove**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 remove : (a, Map<a, b>) -> Void
 ```
@@ -111,6 +136,11 @@ Parameters:
 |`map`|`Map<a, b>`|The map to update|
 
 ### Map.**update**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 update : (a, (Option<b> -> Option<b>), Map<a, b>) -> Void
@@ -127,6 +157,11 @@ Parameters:
 |`map`|`Map<a, b>`|The map to modify|
 
 ### Map.**size**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 size : Map<a, b> -> Number
@@ -148,6 +183,11 @@ Returns:
 
 ### Map.**isEmpty**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 isEmpty : Map<a, b> -> Bool
 ```
@@ -168,6 +208,11 @@ Returns:
 
 ### Map.**clear**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 clear : Map<a, b> -> Void
 ```
@@ -181,6 +226,11 @@ Parameters:
 |`map`|`Map<a, b>`|The map to reset|
 
 ### Map.**forEach**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 forEach : (((a, b) -> c), Map<a, b>) -> Void
@@ -196,6 +246,11 @@ Parameters:
 |`map`|`Map<a, b>`|The map to iterate|
 
 ### Map.**reduce**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 reduce : (((a, b, c) -> a), a, Map<b, c>) -> a
@@ -219,6 +274,11 @@ Returns:
 
 ### Map.**keys**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 keys : Map<a, b> -> List<a>
 ```
@@ -238,6 +298,11 @@ Returns:
 |`List<a>`|A list of all keys in the given map|
 
 ### Map.**values**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 values : Map<a, b> -> List<b>
@@ -259,6 +324,11 @@ Returns:
 
 ### Map.**toList**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 toList : Map<a, b> -> List<(a, b)>
 ```
@@ -278,6 +348,11 @@ Returns:
 |`List<(a, b)>`|A list of all key pairs in the given map|
 
 ### Map.**fromList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 fromList : List<(a, b)> -> Map<a, b>
@@ -299,6 +374,11 @@ Returns:
 
 ### Map.**toArray**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 toArray : Map<a, b> -> Array<(a, b)>
 ```
@@ -318,6 +398,11 @@ Returns:
 |`Array<(a, b)>`|A array of all key pairs in the given map|
 
 ### Map.**fromArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 fromArray : Array<(a, b)> -> Map<a, b>
@@ -339,6 +424,11 @@ Returns:
 
 ### Map.**filter**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 filter : (((a, b) -> Bool), Map<a, b>) -> Void
 ```
@@ -354,6 +444,11 @@ Parameters:
 
 ### Map.**reject**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 reject : (((a, b) -> Bool), Map<a, b>) -> Void
 ```
@@ -368,6 +463,11 @@ Parameters:
 |`map`|`Map<a, b>`|The map to iterate|
 
 ### Map.**getInternalStats**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 getInternalStats : Map<a, b> -> (Number, Number)

@@ -25,6 +25,7 @@ record Map<k, v> {
  * @param storageLength: The initial storage length of the map
  * @returns An empty map with the given initial storage length
  * 
+ * @since v0.2.0
  */
 // TODO: This could take an `eq` function to custom comparisons
 export let makeSized = storageLength => {
@@ -37,6 +38,7 @@ export let makeSized = storageLength => {
  *
  * @returns An empty map
  * 
+ * @since v0.2.0
  */
 export let make = () => {
   makeSized(16)
@@ -115,6 +117,7 @@ let rec replaceInBucket = (key, value, node) => {
  * @param value: The value to set
  * @param map: The map to modify
  * 
+ * @since v0.2.0
  */
 export let set = (key, value, map) => {
   let buckets = map.buckets
@@ -158,6 +161,8 @@ let rec valueFromBucket = (key, node) => {
  * @param map: The map to get the value from
  * 
  * @returns `Some(value)` if the given key pair is in the map, `None` otherwise
+ * 
+ * @since v0.2.0
  */
 export let get = (key, map) => {
   let buckets = map.buckets
@@ -187,6 +192,7 @@ let rec nodeInBucket = (key, node) => {
  * @param map: The map to search
  * @returns `true` if the map contains the given key, `false` otherwise
  * 
+ * @since v0.2.0
  */
 export let contains = (key, map) => {
   let buckets = map.buckets
@@ -218,6 +224,7 @@ let rec removeInBucket = (key, node) => {
  * @param key: The key to remove
  * @param map: The map to update
  * 
+ * @since v0.2.0
  */
 export let remove = (key, map) => {
   let buckets = map.buckets
@@ -246,6 +253,7 @@ export let remove = (key, map) => {
  * @param fn: The function to apply
  * @param map: The map to modify
  * 
+ * @since v0.3.0
  */
 export let update = (key, fn, map) => {
   let val = get(key, map)
@@ -261,6 +269,7 @@ export let update = (key, fn, map) => {
  * @param map: The map to inspect
  * @returns The number of key pairs in the map
  * 
+ * @since v0.2.0
  */
 export let size = map => {
   map.size
@@ -272,6 +281,7 @@ export let size = map => {
  * @param map: The map to inspect
  * @returns `true` if the given map is empty, `false` otherwise
  * 
+ * @since v0.2.0
  */
 export let isEmpty = map => {
   size(map) == 0
@@ -282,6 +292,7 @@ export let isEmpty = map => {
  *
  * @param map: The map to reset
  * 
+ * @since v0.2.0
  */
 export let clear = map => {
   map.size = 0
@@ -307,6 +318,7 @@ let rec forEachBucket = (fn, node) => {
  * @param fn: The iterator function to call with each key pair
  * @param map: The map to iterate
  * 
+ * @since v0.2.0
  */
 export let forEach = (fn, map) => {
   let buckets = map.buckets
@@ -331,6 +343,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
  * @param map: The map to iterate
  * @returns The final accumulator returned from `fn`
  * 
+ * @since v0.2.0
  */
 export let reduce = (fn, init, map) => {
   let buckets = map.buckets
@@ -347,6 +360,8 @@ export let reduce = (fn, init, map) => {
  * @param map: The map to inspect
  * 
  * @returns A list of all keys in the given map
+ * 
+ * @since v0.2.0
  */
 export let keys = map => {
   reduce((list, key, _value) => [key, ...list], [], map)
@@ -358,6 +373,8 @@ export let keys = map => {
  * @param map: The map to inspect
  * 
  * @returns A list of all values in the given map
+ * 
+ * @since v0.2.0
  */
 export let values = map => {
   reduce((list, _key, value) => [value, ...list], [], map)
@@ -369,6 +386,8 @@ export let values = map => {
  * @param map: The map to inspect
  * 
  * @returns A list of all key pairs in the given map
+ * 
+ * @since v0.2.0
  */
 export let toList = map => {
   reduce((list, key, value) => [(key, value), ...list], [], map)
@@ -380,6 +399,8 @@ export let toList = map => {
  * @param list: The list to inspect
  * 
  * @returns A map made from the list of key pairs
+ * 
+ * @since v0.2.0
  */
 export let fromList = list => {
   let map = make()
@@ -407,6 +428,8 @@ let setInArray = array => {
  * @param map: The map to inspect
  * 
  * @returns A array of all key pairs in the given map
+ * 
+ * @since v0.2.0
  */
 @disableGC
 export let rec toArray = map => {
@@ -432,6 +455,8 @@ export let rec toArray = map => {
  * @param array: The array to inspect
  * 
  * @returns A map made from the array of key pairs
+ * 
+ * @since v0.2.0
  */
 export let fromArray = array => {
   let map = make()
@@ -448,6 +473,7 @@ export let fromArray = array => {
  * @param fn: The predicate function to indicate which key pairs to remove from the map, where returning `false` indicates the key pair should be removed
  * @param map: The map to iterate
  * 
+ * @since v0.2.0
  */
 export let filter = (predicate, map) => {
   let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
@@ -466,6 +492,7 @@ export let filter = (predicate, map) => {
  * @param fn: The predicate function to indicate which key pairs to remove from the map, where returning `true` indicates the key pair should be removed
  * @param map: The map to iterate
  * 
+ * @since v0.2.0
  */
 export let reject = (predicate, map) => {
   filter((key, value) => !predicate(key, value), map)
@@ -479,6 +506,7 @@ export let reject = (predicate, map) => {
  * @param map: The map to inspect
  * @returns The internal state of the map
  * 
+ * @since v0.2.0
  */
 export let getInternalStats = map => {
   (map.size, Array.length(map.buckets))
