@@ -45,7 +45,11 @@ export let rec parseInt = (string: String, radix: Number) => {
   let strEnd = offset + strLen
 
   let radix = WasmI32.fromGrain(radix)
-  let result = if (WasmI32.eqz(radix & Tags._GRAIN_NUMBER_TAG_MASK) || radix < WasmI32.fromGrain(2) || radix > WasmI32.fromGrain(36)) {
+  let result = if (
+    WasmI32.eqz(radix & Tags._GRAIN_NUMBER_TAG_MASK) ||
+    radix < WasmI32.fromGrain(2) ||
+    radix > WasmI32.fromGrain(36)
+  ) {
     Memory.incRef(WasmI32.fromGrain(Err))
     Err("Radix must be an integer between 2 and 36")
   } else if (WasmI32.eqz(strLen)) {
@@ -158,7 +162,7 @@ export let rec parseInt = (string: String, radix: Number) => {
       },
       _ => {
         let value = if (negative) value else WasmI64.mul(value, -1N)
-        let number = WasmI32.toGrain(reducedInteger(value)): (Number)
+        let number = WasmI32.toGrain(reducedInteger(value)): Number
         Memory.incRef(WasmI32.fromGrain(Ok))
         Ok(number)
       },

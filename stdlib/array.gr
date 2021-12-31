@@ -759,10 +759,8 @@ export let filteri = (fn, array) => {
  * @since v0.3.0
  */
 export let unique = array => {
-  filteri(
-    (el, index) => findIndex(value => value == el, array) == Some(index),
-    array
-  )
+  filteri((el, index) =>
+    findIndex(value => value == el, array) == Some(index), array)
 }
 
 /**

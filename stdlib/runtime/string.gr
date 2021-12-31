@@ -14,7 +14,7 @@ import WasmI32, {
   geS as (>=),
   gtS as (>),
   leS as (<=),
-  ltS as (<)
+  ltS as (<),
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
@@ -25,13 +25,21 @@ import NumberUtils from "runtime/numberUtils"
 
 import { allocateString, allocateArray } from "runtime/dataStructures"
 
-import foreign wasm fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_write: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
+primitive (!): Bool -> Bool = "@not"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
 
-enum StringList { SLEmpty, SLCons(String, StringList) }
+enum StringList {
+  SLEmpty,
+  SLCons(String, StringList),
+}
 
 @disableGC
 let slConsDisableGc = (a, b) => {
@@ -42,14 +50,14 @@ let slConsDisableGc = (a, b) => {
 }
 
 @disableGC
-let mut _RUNTIME_TYPE_METADATA_PTR = 0x01n;
+let mut _RUNTIME_TYPE_METADATA_PTR = 0x01n
 
 @disableGC
 let initPtr = () => {
   // hack to avoid incRef on this pointer
   _RUNTIME_TYPE_METADATA_PTR = 0x408n
 }
-initPtr();
+initPtr()
 
 @disableGC
 let findTypeMetadata = (moduleId, typeId) => {
@@ -82,7 +90,7 @@ let findTypeMetadata = (moduleId, typeId) => {
 }
 
 @disableGC
-let getVariantName = (variant) => {
+let getVariantName = variant => {
   let moduleId = WasmI32.load(variant, 4n) >> 1n
   let typeId = WasmI32.load(variant, 8n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
@@ -113,7 +121,7 @@ let getVariantName = (variant) => {
 }
 
 @disableGC
-let getRecordFieldNames = (record_) => {
+let getRecordFieldNames = record_ => {
   let moduleId = WasmI32.load(record_, 4n) >> 1n
   let typeId = WasmI32.load(record_, 8n) >> 1n
   let arity = WasmI32.load(record_, 12n)
@@ -132,7 +140,7 @@ let getRecordFieldNames = (record_) => {
       let fieldLength = WasmI32.load(fields + fieldOffset, 4n)
       let fieldName = allocateString(fieldLength)
       Memory.copy(fieldName + 8n, fields + fieldOffset + 8n, fieldLength)
-      WasmI32.store(fieldArray + (i * 4n), fieldName, 8n)
+      WasmI32.store(fieldArray + i * 4n, fieldName, 8n)
 
       fieldOffset += WasmI32.load(fields + fieldOffset, 0n)
     }
@@ -144,8 +152,9 @@ let getRecordFieldNames = (record_) => {
 @disableGC
 let rec totalBytes = (acc, list) => {
   match (list) {
-    SLCons(hd, tl) => totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
-    SLEmpty => acc
+    SLCons(hd, tl) =>
+      totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
+    SLEmpty => acc,
   }
 }
 
@@ -158,12 +167,12 @@ let rec writeStrings = (buf, list) => {
       Memory.copy(buf, hd + 8n, hdSize)
       writeStrings(buf + hdSize, tl)
     },
-    SLEmpty => void
+    SLEmpty => void,
   }
 }
 
 @disableGC
-let join = (list) => {
+let join = list => {
   let len = totalBytes(0n, list)
   let str = allocateString(len)
   writeStrings(str + 8n, list)
@@ -171,12 +180,12 @@ let join = (list) => {
 }
 
 @disableGC
-let reverse = (list) => {
+let reverse = list => {
   @disableGC
   let rec iter = (list, acc) => {
     match (list) {
       SLEmpty => acc,
-      SLCons(first, rest) => iter(rest, slConsDisableGc(first, acc))
+      SLCons(first, rest) => iter(rest, slConsDisableGc(first, acc)),
     }
   }
   Memory.incRef(WasmI32.fromGrain(SLEmpty))
@@ -240,7 +249,12 @@ let escape = (ptr, isString) => {
   let mut newSize = 2n // extra space for quote characters
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
-    if (byte >= _SEQ_B && byte <= _SEQ_R /* b, f, n, r, t, v */ || byte == _SEQ_V || byte == _SEQ_SLASH || byte == _SEQ_QUOTE) {
+    if (
+      byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
+      byte == _SEQ_V ||
+      byte == _SEQ_SLASH ||
+      byte == _SEQ_QUOTE
+    ) {
       newSize += 2n
     } else {
       newSize += 1n
@@ -254,7 +268,12 @@ let escape = (ptr, isString) => {
 
   for (let mut i = 0n; i < size; i += 1n) {
     let byte = WasmI32.load8U(ptr + i, startOffset)
-    if (byte >= _SEQ_B && byte <= _SEQ_R /* b, f, n, r, t, v */ || byte == _SEQ_V || byte == _SEQ_SLASH || byte == _SEQ_QUOTE) {
+    if (
+      byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
+      byte == _SEQ_V ||
+      byte == _SEQ_SLASH ||
+      byte == _SEQ_QUOTE
+    ) {
       WasmI32.store8(escapedString + j, _SEQ_SLASH, stringOffset)
       j += 1n
       let seq = match (byte) {
@@ -264,7 +283,7 @@ let escape = (ptr, isString) => {
         r when r == _SEQ_R => 0x72n,
         t when t == _SEQ_T => 0x74n,
         v when v == _SEQ_V => 0x76n,
-        _ => byte
+        _ => byte,
       }
       WasmI32.store8(escapedString + j, seq, stringOffset)
       j += 1n
@@ -390,7 +409,11 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             Memory.incRef(WasmI32.fromGrain(SLEmpty))
             let mut strings = slConsDisableGc(rparen, SLEmpty)
             for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
-              let tmp = toStringHelp(WasmI32.load(ptr + i, 20n), extraIndents, false)
+              let tmp = toStringHelp(
+                WasmI32.load(ptr + i, 20n),
+                extraIndents,
+                false
+              )
               strings = slConsDisableGc(tmp, strings)
               Memory.decRef(WasmI32.fromGrain(tmp))
               if (i > 0n) {
@@ -399,7 +422,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
             }
             Memory.incRef(WasmI32.fromGrain(variantName))
             let lparen = "("
-            strings = slConsDisableGc(variantName, slConsDisableGc(lparen, strings))
+            strings = slConsDisableGc(
+              variantName,
+              slConsDisableGc(lparen, strings)
+            )
             let string = join(strings)
             Memory.decRef(WasmI32.fromGrain(variantName))
             Memory.decRef(WasmI32.fromGrain(lparen))
@@ -418,10 +444,16 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         "<record value>"
       } else {
         let prevPadAmount = extraIndents * 2n
-        let prevSpacePadding = if (prevPadAmount == 0n) "" else {
+        let prevSpacePadding = if (prevPadAmount == 0n) {
+          ""
+        } else {
           let v = allocateString(prevPadAmount)
-          Memory.fill(v + 8n, 0x20n, prevPadAmount) // create indentation for closing brace
-          WasmI32.toGrain(v) : String
+          Memory.fill(
+            v + 8n,
+            0x20n,
+            prevPadAmount
+          ) // create indentation for closing brace
+          WasmI32.toGrain(v): String
         }
         let padAmount = (extraIndents + 1n) * 2n
         let spacePadding = allocateString(padAmount)
@@ -430,13 +462,26 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         Memory.incRef(WasmI32.fromGrain(SLEmpty))
         let newline = "\n"
         let rbrace = "}"
-        let mut strings = slConsDisableGc(newline, slConsDisableGc(prevSpacePadding, slConsDisableGc(rbrace, SLEmpty)))
+        let mut strings = slConsDisableGc(
+          newline,
+          slConsDisableGc(prevSpacePadding, slConsDisableGc(rbrace, SLEmpty))
+        )
         let colspace = ": "
         let comlf = ",\n"
-        for (let mut i = recordArity * 4n - 4n; i >= 0n;  i -= 4n) {
+        for (let mut i = recordArity * 4n - 4n; i >= 0n; i -= 4n) {
           let fieldName = WasmI32.toGrain(WasmI32.load(fields + i, 8n)): String
-          let fieldValue = toStringHelp(WasmI32.load(ptr + i, 16n), extraIndents + 1n, false)
-          strings = slConsDisableGc(spacePadding, slConsDisableGc(fieldName, slConsDisableGc(colspace, slConsDisableGc(fieldValue, strings))))
+          let fieldValue = toStringHelp(
+            WasmI32.load(ptr + i, 16n),
+            extraIndents + 1n,
+            false
+          )
+          strings = slConsDisableGc(
+            spacePadding,
+            slConsDisableGc(
+              fieldName,
+              slConsDisableGc(colspace, slConsDisableGc(fieldValue, strings))
+            )
+          )
           Memory.decRef(WasmI32.fromGrain(fieldValue))
           if (i > 0n) {
             strings = slConsDisableGc(comlf, strings)
@@ -497,7 +542,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let denominator = NumberUtils.itoa32(WasmI32.load(ptr, 12n), 10n)
           Memory.incRef(WasmI32.fromGrain(SLEmpty))
           let slash = "/"
-          let strings = slConsDisableGc(numerator, slConsDisableGc(slash, slConsDisableGc(denominator, SLEmpty)))
+          let strings = slConsDisableGc(
+            numerator,
+            slConsDisableGc(slash, slConsDisableGc(denominator, SLEmpty))
+          )
           let string = join(strings)
           Memory.decRef(WasmI32.fromGrain(strings))
           Memory.decRef(WasmI32.fromGrain(numerator))
@@ -513,7 +561,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         },
         _ => {
           "<unknown boxed number>"
-        }
+        },
       }
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
@@ -534,7 +582,11 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           void
         }
         for (let mut i = tupleLength * 4n - 4n; i >= 0n; i -= 4n) {
-          let item = toStringHelp(WasmI32.load(ptr + i, 8n), extraIndents, false)
+          let item = toStringHelp(
+            WasmI32.load(ptr + i, 8n),
+            extraIndents,
+            false
+          )
           strings = slConsDisableGc(item, strings)
           Memory.decRef(WasmI32.fromGrain(item))
           if (i > 0n) {
@@ -563,14 +615,21 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       Memory.incRef(WasmI32.fromGrain(SLEmpty))
       let strings = slConsDisableGc(
         "<unknown heap tag type: 0x",
-        slConsDisableGc(NumberUtils.itoa32(tag, 16n),
-        slConsDisableGc(" | value: 0x",
-        slConsDisableGc(NumberUtils.itoa32(ptr, 16n),
-        slConsDisableGc(">", SLEmpty)))))
+        slConsDisableGc(
+          NumberUtils.itoa32(tag, 16n),
+          slConsDisableGc(
+            " | value: 0x",
+            slConsDisableGc(
+              NumberUtils.itoa32(ptr, 16n),
+              slConsDisableGc(">", SLEmpty)
+            )
+          )
+        )
+      )
       let string = join(strings)
       Memory.decRef(WasmI32.fromGrain(strings))
       string
-    }
+    },
   }
 }, toStringHelp = (grainValue, extraIndents, toplevel) => {
   if ((grainValue & 1n) != 0n) {
@@ -624,7 +683,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
 }
 
 @disableGC
-export let rec toString = (value) => {
+export let rec toString = value => {
   let value = WasmI32.fromGrain(value)
   let ret = toStringHelp(value, 0n, true)
   Memory.decRef(value)
@@ -633,7 +692,7 @@ export let rec toString = (value) => {
 }
 
 @disableGC
-export let rec print = (value) => {
+export let rec print = value => {
   // First convert the value to string, if it isn't one already. Calling
   // toString will either return value instance itself if it's already a
   // string, or a new string with the content of value object, which will need
