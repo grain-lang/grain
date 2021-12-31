@@ -116,8 +116,7 @@ let get_last_item_in_list = comments =>
 let is_disable_formatting_comment = (comment: Parsetree.comment) => {
   switch (comment) {
   | Line(cmt) =>
-    if (String.trim(Comments.get_comment_source(comment))
-        == "// formatter-ignore") {
+    if (String.trim(cmt.cmt_source) == "// formatter-ignore") {
       true;
     } else {
       false;
@@ -500,33 +499,18 @@ let rec block_item_iterator_line =
           comments_without_leading,
         );
 
-      switch (separator) {
-      | None =>
-        Doc.concat([
-          this_item,
-          block_item_iterator_line(
-            ~previous=PreviousItem(get_loc(item)),
-            ~get_loc,
-            ~print_item,
-            ~comments=comments_without_item_comments,
-            ~original_source,
-            remainder,
-          ),
-        ])
-      | Some(sep) =>
-        Doc.concat([
-          this_item,
-          block_item_iterator_line(
-            ~previous=PreviousItem(get_loc(item)),
-            ~get_loc,
-            ~print_item,
-            ~comments=comments_without_item_comments,
-            ~original_source,
-            ~separator=sep,
-            remainder,
-          ),
-        ])
-      };
+      Doc.concat([
+        this_item,
+        block_item_iterator_line(
+          ~previous=PreviousItem(get_loc(item)),
+          ~get_loc,
+          ~print_item,
+          ~comments=comments_without_item_comments,
+          ~original_source,
+          ~separator?,
+          remainder,
+        ),
+      ]);
     };
   };
 };
