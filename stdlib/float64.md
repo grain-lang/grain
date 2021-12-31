@@ -14,6 +14,18 @@ Functions for working with the Float64 data type.
 
 ### Float64.**fromNumber**
 
+<details>
+<summary>Added in <code>0.2.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Function name changed from coerceNumberToFloat64 to fromNumber</td></tr>
+</tbody>
+</table>
+</details>
+
 ```grain
 fromNumber : Number -> Float64
 ```
@@ -34,6 +46,18 @@ Returns:
 
 ### Float64.**toNumber**
 
+<details>
+<summary>Added in <code>0.2.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Function name changed from coerceFloat64ToNumber to toNumber</td></tr>
+</tbody>
+</table>
+</details>
+
 ```grain
 toNumber : Float64 -> Number
 ```
@@ -53,6 +77,11 @@ Returns:
 |`Number`|The Float64 represented as a Number|
 
 ### Float64.**add**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 add : (Float64, Float64) -> Float64
@@ -75,6 +104,11 @@ Returns:
 
 ### Float64.**sub**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 sub : (Float64, Float64) -> Float64
 ```
@@ -96,6 +130,11 @@ Returns:
 
 ### Float64.**mul**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 mul : (Float64, Float64) -> Float64
 ```
@@ -116,6 +155,11 @@ Returns:
 |`Float64`|The product of the two operands|
 
 ### Float64.**div**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 div : (Float64, Float64) -> Float64
@@ -142,6 +186,11 @@ Comparison functions for working with floating points.
 
 ### Float64.**lt**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 lt : (Float64, Float64) -> Bool
 ```
@@ -162,6 +211,11 @@ Returns:
 |`Bool`|`true` if the first argument is less then the second argument, `false` otherwise|
 
 ### Float64.**gt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 gt : (Float64, Float64) -> Bool
@@ -184,6 +238,11 @@ Returns:
 
 ### Float64.**lte**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 lte : (Float64, Float64) -> Bool
 ```
@@ -204,6 +263,11 @@ Returns:
 |`Bool`|`true` if the first argument is less than or equal to the second argument, `false` otherwise|
 
 ### Float64.**gte**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 gte : (Float64, Float64) -> Bool
@@ -230,6 +294,11 @@ Constants related to floating points.
 
 ### Float64.**infinity**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 infinity : Float64
 ```
@@ -237,6 +306,11 @@ infinity : Float64
 Infinity represented as a `Float64`.
 
 ### Float64.**nan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 nan : Float64
