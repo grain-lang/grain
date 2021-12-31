@@ -1669,7 +1669,8 @@ and print_infix_application =
     let line_comments =
       Comment_utils.get_comments_on_line(line, next_comments);
 
-    let after_comments = remove_used_comments(next_comments, line_comments);
+    let after_comments =
+      remove_used_comments(~remove_comments=line_comments, next_comments);
 
     let after_comments_docs =
       Comment_utils.block_trailing_comments_docs(after_comments);
