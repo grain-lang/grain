@@ -1785,6 +1785,7 @@ and print_arg_lambda =
         },
       );
 
+
     Doc.group(
       switch (expression.pexp_desc) {
       | PExpBlock(block_expressions) =>
@@ -1804,12 +1805,12 @@ and print_arg_lambda =
             let after_brace_comments =
               Comment_utils.get_after_brace_comments(
                 ~loc=expression.pexp_loc,
-                comments,
+                comments_in_expression,
               );
             let cleaned_comments =
               remove_used_comments(
                 ~remove_comments=after_brace_comments,
-                comments,
+                comments_in_expression,
               );
 
             let print_attribute = (expr: Parsetree.expression) =>

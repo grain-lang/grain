@@ -27,3 +27,8 @@ init3(index => {
   }),
   fn(z => {let _ = z}),
 ]
+
+let makePrettyPrintJSONWriter = String.forEachCodePoint(c => {
+  // a
+  void
+}, "")
