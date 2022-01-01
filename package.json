@@ -10,7 +10,7 @@
     "compiler"
   ],
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "scripts": {
     "prepare": "yarn js-runner build && yarn cli link",
