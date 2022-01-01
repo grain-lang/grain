@@ -1785,7 +1785,6 @@ and print_arg_lambda =
         },
       );
 
-
     Doc.group(
       switch (expression.pexp_desc) {
       | PExpBlock(block_expressions) =>
