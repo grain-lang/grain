@@ -401,6 +401,7 @@ let rec block_item_iterator_line =
           comments,
         )
       };
+
     let leading_comment_docs =
       Comment_utils.new_comments_to_docs(leading_comments);
 
@@ -663,6 +664,7 @@ let rec block_item_iterator =
           ~location=get_loc(item),
           comments,
         );
+
       let comments_without_leading =
         remove_used_comments(~remove_comments=leading_comments, comments);
 
@@ -1226,13 +1228,7 @@ and print_pattern =
       }
     | PPatTuple(patterns) => (
         Doc.group(
-          print_patterns(
-            ~wrapper=pat.ppat_loc,
-            ~next_loc,
-            ~comments,
-            ~original_source,
-            patterns,
-          ),
+          print_patterns(~next_loc, ~comments, ~original_source, patterns),
         ),
         true,
       )
@@ -1242,13 +1238,7 @@ and print_pattern =
             Doc.lbracket,
             Doc.text(">"),
             Doc.space,
-            print_patterns(
-              ~wrapper=pat.ppat_loc,
-              ~next_loc,
-              ~comments,
-              ~original_source,
-              patterns,
-            ),
+            print_patterns(~next_loc, ~comments, ~original_source, patterns),
             Doc.rbracket,
           ]),
         ),
@@ -1267,13 +1257,7 @@ and print_pattern =
       )
     | PPatConstraint(pattern, parsed_type) => (
         Doc.concat([
-          print_patterns(
-            ~wrapper=pat.ppat_loc,
-            ~next_loc,
-            ~comments,
-            ~original_source,
-            [pattern],
-          ),
+          print_patterns(~next_loc, ~comments, ~original_source, [pattern]),
           Doc.text(":"),
           Doc.space,
           print_type(~original_source, ~comments, parsed_type),
@@ -1309,7 +1293,6 @@ and print_pattern =
             | _patterns =>
               add_parens(
                 print_patterns(
-                  ~wrapper=pat.ppat_loc,
                   ~next_loc,
                   ~comments,
                   ~original_source,
@@ -1777,7 +1760,6 @@ and print_arg_lambda =
       );
     let raw_args =
       print_patterns(
-        ~wrapper=lambda.pexp_loc,
         ~next_loc=expression.pexp_loc,
         ~comments,
         ~original_source,
@@ -1906,6 +1888,7 @@ and print_arguments_with_callback_in_first_position =
   | [callback, expr] =>
     let printed_callback =
       print_arg_lambda(~comments, ~original_source, callback);
+
     let printed_arg = print_arg(~comments, ~original_source, expr);
 
     Doc.ifBreaks(
@@ -1926,6 +1909,7 @@ and print_arguments_with_callback_in_first_position =
   | [callback, ...remainder] =>
     let printed_callback =
       print_arg_lambda(~comments, ~original_source, callback);
+
     let printed_args =
       switch (remainder) {
       | [] => Doc.nil
@@ -2143,7 +2127,6 @@ and check_for_pun = (expr: Parsetree.expression) =>
 
 and print_patterns =
     (
-      ~wrapper: Location.t,
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
@@ -2154,6 +2137,9 @@ and print_patterns =
     print_pattern(~original_source, ~comments, ~next_loc, p);
   };
 
+  let comments_in_scope =
+    Comment_utils.get_comments_before_location(~location=next_loc, comments);
+
   switch (patterns) {
   | [] => Doc.nil
   | _ =>
@@ -2161,7 +2147,7 @@ and print_patterns =
       item_iterator(
         ~get_loc,
         ~print_item,
-        ~comments,
+        ~comments=comments_in_scope,
         ~separator=Doc.comma,
         patterns,
       );
@@ -2177,14 +2163,7 @@ and paren_wrap_patterns =
       ~original_source: array(string),
       patterns: list(Parsetree.pattern),
     ) => {
-  let args =
-    print_patterns(
-      ~wrapper,
-      ~next_loc,
-      ~comments,
-      ~original_source,
-      patterns,
-    );
+  let args = print_patterns(~next_loc, ~comments, ~original_source, patterns);
 
   switch (patterns) {
   | [] => Doc.concat([Doc.lparen, args, Doc.rparen])
