@@ -757,6 +757,7 @@ let rec item_iterator =
           ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
           ~comments: list(Parsetree.comment),
           ~separator,
+          ~followed_by_arrow: option(bool)=?,
           items: list('a),
         ) => {
   switch (items) {
@@ -862,6 +863,7 @@ let rec item_iterator =
              ~print_item,
              ~comments,
              ~separator,
+             ~followed_by_arrow?,
              remainder,
            ),
       ];
@@ -895,12 +897,29 @@ let rec item_iterator =
             Comment_utils.new_comments_to_docs(leading_comments),
             filler,
             print_item(~comments=item_comments, item),
-            Doc.lineSuffix(
-              Doc.concat([
-                bcb,
-                Comment_utils.block_trailing_comments_docs(trailing_comments),
-              ]),
-            ),
+            switch (followed_by_arrow) {
+            | Some(arrow) when arrow == true =>
+              switch (trailing) {
+              | Line(cmt)
+              | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
+              | _ =>
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ])
+              }
+            | _ =>
+              Doc.lineSuffix(
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ]),
+              )
+            },
           ]);
 
         | ([leading, ..._], []) =>
@@ -920,12 +939,29 @@ let rec item_iterator =
         | ([], [trailing, ..._]) =>
           Doc.concat([
             print_item(~comments=item_comments, item),
-            Doc.lineSuffix(
-              Doc.concat([
-                bcb,
-                Comment_utils.block_trailing_comments_docs(trailing_comments),
-              ]),
-            ),
+            switch (followed_by_arrow) {
+            | Some(arrow) when arrow == true =>
+              switch (trailing) {
+              | Line(cmt)
+              | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
+              | _ =>
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ])
+              }
+            | _ =>
+              Doc.lineSuffix(
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ]),
+              )
+            },
           ])
 
         | ([], []) => print_item(~comments=item_comments, item)
@@ -938,6 +974,7 @@ let rec item_iterator =
              ~print_item,
              ~comments=comments_without_item_comments,
              ~separator,
+             ~followed_by_arrow?,
              remainder,
            ),
       ];
@@ -1758,11 +1795,13 @@ and print_arg_lambda =
         ~location=expression.pexp_loc,
         comments,
       );
+
     let raw_args =
       print_patterns(
         ~next_loc=expression.pexp_loc,
         ~comments,
         ~original_source,
+        ~followed_by_arrow=true,
         patterns,
       );
 
@@ -2130,6 +2169,7 @@ and print_patterns =
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
+      ~followed_by_arrow: option(bool)=?,
       patterns: list(Parsetree.pattern),
     ) => {
   let get_loc = (p: Parsetree.pattern) => p.ppat_loc;
@@ -2149,6 +2189,7 @@ and print_patterns =
         ~print_item,
         ~comments=comments_in_scope,
         ~separator=Doc.comma,
+        ~followed_by_arrow?,
         patterns,
       );
     Doc.join(Doc.line, items);

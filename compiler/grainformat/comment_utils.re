@@ -272,6 +272,18 @@ let comment_to_doc = (comment: Parsetree.comment) => {
   Doc.concat([Doc.text(String.trim(comment_string)), newline]);
 };
 
+let xcomment_to_doc = (comment: Parsetree.comment) => {
+  let comment_string = Comments.get_comment_source(comment);
+ // let newline =
+    switch (comment) {
+    | Line(cmt)
+    | Shebang(cmt) => Doc.lineSuffix(Doc.text(cmt.cmt_source))
+    | Doc(_) =>  Doc.concat([Doc.text(String.trim(comment_string)), Doc.hardLine]);
+    | _ =>  Doc.text(String.trim(comment_string));
+    };
+//Doc.concat([Doc.text(String.trim(comment_string)), newline]);
+};
+
 let nobreak_comment_to_doc = (comment: Parsetree.comment) => {
   let comment_string = Comments.get_comment_source(comment);
 
@@ -476,6 +488,26 @@ let single_line_of_comments = (comments: list(Parsetree.comment)) =>
       Doc.join(
         Doc.space,
         List.map(c => {nobreak_comment_to_doc(c)}, comments),
+      ),
+    ])
+  };
+let arg_comments = (comments: list(Parsetree.comment)) =>
+  switch (comments) {
+  | [] => Doc.nil
+  | _ =>
+    Doc.concat([
+   //   Doc.space,
+      Doc.join(
+        Doc.space,
+        List.map(c => {
+          switch(c:Parsetree.comment) {
+            | Block(cmt) 
+            | Doc(cmt )=> Doc.text(cmt.cmt_source)
+            | Line(cmt)
+            | Shebang(cmt) => Doc.lineSuffix(Doc.concat([Doc.space,  Doc.text(String.trim(cmt.cmt_source))]))
+          }
+
+        }, comments),
       ),
     ])
   };
