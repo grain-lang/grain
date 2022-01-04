@@ -2202,9 +2202,10 @@ and paren_wrap_patterns =
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
+      ~followed_by_arrow:bool,
       patterns: list(Parsetree.pattern),
     ) => {
-  let args = print_patterns(~next_loc, ~comments, ~original_source, patterns);
+  let args = print_patterns(~next_loc, ~comments, ~original_source, ~followed_by_arrow, patterns);
 
   switch (patterns) {
   | [] => Doc.concat([Doc.lparen, args, Doc.rparen])
@@ -3023,6 +3024,7 @@ and print_expression =
           ~next_loc=expression.pexp_loc,
           ~comments=patterns_comments,
           ~original_source,
+          ~followed_by_arrow=true,
           patterns,
         );
 
