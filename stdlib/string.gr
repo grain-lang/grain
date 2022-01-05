@@ -1251,16 +1251,16 @@ let rec encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
   Memory.incRef(WasmI32.fromGrain((+)))
   let size = encodedLength(string, encoding) +
     (if (includeBom) {
-        match (encoding) {
-          UTF8 => 3,
-          UTF16_LE => 2,
-          UTF16_BE => 2,
-          UTF32_LE => 4,
-          UTF32_BE => 4,
-        }
-      } else {
-        0
-      })
+      match (encoding) {
+        UTF8 => 3,
+        UTF16_LE => 2,
+        UTF16_BE => 2,
+        UTF32_LE => 4,
+        UTF32_BE => 4,
+      }
+    } else {
+      0
+    })
   let (>>>) = WasmI32.shrU
   let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
   Memory.incRef(WasmI32.fromGrain(encodeAtHelp))
