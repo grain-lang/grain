@@ -898,7 +898,7 @@ let rec item_iterator =
             filler,
             print_item(~comments=item_comments, item),
             switch (followed_by_arrow) {
-            | Some(arrow) when arrow == true =>
+            | Some(true) =>
               switch (trailing) {
               | Line(cmt)
               | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
@@ -940,7 +940,7 @@ let rec item_iterator =
           Doc.concat([
             print_item(~comments=item_comments, item),
             switch (followed_by_arrow) {
-            | Some(arrow) when arrow == true =>
+            | Some(true)  =>
               switch (trailing) {
               | Line(cmt)
               | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
