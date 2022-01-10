@@ -41,6 +41,10 @@ export fromNumber
 export toNumber
 
 /**
+ * @section Operations: Operations for working with Float64 values.
+ */
+
+/**
  * Computes the sum of its operands.
  *
  * @param x: The first operand
@@ -149,11 +153,11 @@ export let rec lt = (x: Float64, y: Float64) => {
 }
 
 /**
- * Checks if the first argument is strictly greater than the second argument.
+ * Checks if the first value is greater than the second value.
  *
- * @param x: The first argument
- * @param y: The second argument
- * @returns `true` if the first argument is greater then the second argument, `false` otherwise
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater then the second value, `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -169,11 +173,11 @@ export let rec gt = (x: Float64, y: Float64) => {
 }
 
 /**
- * Checks if the first argument is less than or equal to the second argument.
+ * Checks if the first value is less than or equal to the second value.
  *
- * @param x: The first argument
- * @param y: The second argument
- * @returns `true` if the first argument is less than or equal to the second argument, `false` otherwise
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than or equal to the second value, `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -189,11 +193,11 @@ export let rec lte = (x: Float64, y: Float64) => {
 }
 
 /**
- * Checks if the first argument is greater than or equal to the second argument.
+ * Checks if the first value is greater than or equal to the second value.
  *
- * @param x: The first argument
- * @param y: The second argument
- * @returns `true` if the first argument is greater than or equal to the second argument, `false` otherwise
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than or equal to the second value, `false` otherwise
  * 
  * @since v0.2.0
  */

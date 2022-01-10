@@ -2,15 +2,15 @@
 title: Float64
 ---
 
-Utilities for working with the Float64 data type.
+Utilities for working with the Float64 type.
 
 ```grain
 import Float64 from "float64"
 ```
 
-## Values
+## Conversions
 
-Functions for working with the Float64 data type.
+Functions for converting between Numbers and the Float64 type.
 
 ### Float64.**fromNumber**
 
@@ -75,6 +75,10 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The Float64 represented as a Number|
+
+## Operations
+
+Operations for working with Float64 values.
 
 ### Float64.**add**
 
@@ -182,7 +186,7 @@ Returns:
 
 ## Comparisons
 
-Comparison functions for working with floating points.
+Comparison functions for working with Float64 values.
 
 ### Float64.**lt**
 
@@ -195,20 +199,20 @@ No other changes yet.
 lt : (Float64, Float64) -> Bool
 ```
 
-Checks if the first argument is strictly less than the second argument.
+Checks if the first value is less than the second value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float64`|The first argument|
-|`y`|`Float64`|The second argument|
+|`x`|`Float64`|The first value|
+|`y`|`Float64`|The second value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first argument is less then the second argument, `false` otherwise|
+|`Bool`|`true` if the first value is less then the second value or `false` otherwise|
 
 ### Float64.**gt**
 
@@ -221,20 +225,20 @@ No other changes yet.
 gt : (Float64, Float64) -> Bool
 ```
 
-Checks if the first argument is strictly greater than the second argument.
+Checks if the first value is greater than the second value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float64`|The first argument|
-|`y`|`Float64`|The second argument|
+|`x`|`Float64`|The first value|
+|`y`|`Float64`|The second value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first argument is greater then the second argument, `false` otherwise|
+|`Bool`|`true` if the first value is greater then the second value, `false` otherwise|
 
 ### Float64.**lte**
 
@@ -247,20 +251,20 @@ No other changes yet.
 lte : (Float64, Float64) -> Bool
 ```
 
-Checks if the first argument is less than or equal to the second argument.
+Checks if the first value is less than or equal to the second value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float64`|The first argument|
-|`y`|`Float64`|The second argument|
+|`x`|`Float64`|The first value|
+|`y`|`Float64`|The second value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first argument is less than or equal to the second argument, `false` otherwise|
+|`Bool`|`true` if the first value is less than or equal to the second value, `false` otherwise|
 
 ### Float64.**gte**
 
@@ -273,24 +277,24 @@ No other changes yet.
 gte : (Float64, Float64) -> Bool
 ```
 
-Checks if the first argument is greater than or equal to the second argument.
+Checks if the first value is greater than or equal to the second value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Float64`|The first argument|
-|`y`|`Float64`|The second argument|
+|`x`|`Float64`|The first value|
+|`y`|`Float64`|The second value|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first argument is greater than or equal to the second argument, `false` otherwise|
+|`Bool`|`true` if the first value is greater than or equal to the second value, `false` otherwise|
 
 ## Constants
 
-Constants related to floating points.
+Constants related to Float64 values.
 
 ### Float64.**infinity**
 
@@ -303,7 +307,7 @@ No other changes yet.
 infinity : Float64
 ```
 
-Infinity represented as a `Float64`.
+Infinity represented as a Float64.
 
 ### Float64.**nan**
 
@@ -316,5 +320,5 @@ No other changes yet.
 nan : Float64
 ```
 
-Nan represented as a `Float64`.
+NaN (Not a Number) represented as a Float64.
 
