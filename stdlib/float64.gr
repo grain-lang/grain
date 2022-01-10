@@ -1,5 +1,5 @@
 /**
- * @module Float64: Utilities for working with the Float64 data type.
+ * @module Float64: Utilities for working with the Float64 type.
  * @example import Float64 from "float64"
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
@@ -15,7 +15,7 @@ import {
 } from "runtime/numbers"
 
 /**
- * @section Values: Functions for working with the Float64 data type.
+ * @section Conversions: Functions for converting between Numbers and the Float64 type.
  */
 
 /**
@@ -125,15 +125,15 @@ export let rec div = (x: Float64, y: Float64) => {
 }
 
 /**
- * @section Comparisons: Comparison functions for working with floating points.
+ * @section Comparisons: Comparison functions for working with Float64 values.
  */
 
 /**
- * Checks if the first argument is strictly less than the second argument.
+ * Checks if the first value is less than the second value.
  *
- * @param x: The first argument
- * @param y: The second argument
- * @returns `true` if the first argument is less then the second argument, `false` otherwise
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less then the second value or `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -209,7 +209,7 @@ export let rec gte = (x: Float64, y: Float64) => {
 }
 
 /**
- * @section Constants: Constants related to floating points.
+ * @section Constants: Constants related to Float64 values.
  */
 
 @disableGC
@@ -221,7 +221,7 @@ let rec makeInfinity = () => {
 }
 
 /**
- * Infinity represented as a `Float64`.
+ * Infinity represented as a Float64.
  * 
  * @since v0.4.0
  */
@@ -236,7 +236,7 @@ let rec makeNaN = () => {
 }
 
 /**
- * Nan represented as a `Float64`.
+ * NaN (Not a Number) represented as a Float64.
  * 
  * @since v0.4.0
  */
