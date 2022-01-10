@@ -25,7 +25,6 @@ import {
  * @returns The Number represented as a Float64
  * 
  * @since v0.2.0
- * @history v0.3.0: Function name changed from coerceNumberToFloat64 to fromNumber
  */
 export fromNumber
 
@@ -36,7 +35,6 @@ export fromNumber
  * @returns The Float64 represented as a Number
  * 
  * @since v0.2.0
- * @history v0.3.0: Function name changed from coerceFloat64ToNumber to toNumber
  */
 export toNumber
 

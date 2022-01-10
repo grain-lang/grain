@@ -14,16 +14,9 @@ Functions for converting between Numbers and the Float64 type.
 
 ### Float64.**fromNumber**
 
-<details>
-<summary>Added in <code>0.2.0</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.0</code></td><td>Function name changed from coerceNumberToFloat64 to fromNumber</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -46,16 +39,9 @@ Returns:
 
 ### Float64.**toNumber**
 
-<details>
-<summary>Added in <code>0.2.0</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.0</code></td><td>Function name changed from coerceFloat64ToNumber to toNumber</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
 </details>
 
 ```grain
