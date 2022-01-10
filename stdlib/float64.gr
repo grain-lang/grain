@@ -21,7 +21,7 @@ import {
 /**
  * Converts a Number to a Float64.
  *
- * @param number: The Number to convert
+ * @param number: The value to convert
  * @returns The Number represented as a Float64
  * 
  * @since v0.2.0
@@ -32,7 +32,7 @@ export fromNumber
 /**
  * Converts a Float64 to a Number.
  *
- * @param float: The Float64 to convert
+ * @param float: The value to convert
  * @returns The Float64 represented as a Number
  * 
  * @since v0.2.0
@@ -41,7 +41,7 @@ export fromNumber
 export toNumber
 
 /**
- * @section Operations: Operations for working with Float64 values.
+ * @section Operations: Mathematical operations for Float64 values.
  */
 
 /**
@@ -137,7 +137,7 @@ export let rec div = (x: Float64, y: Float64) => {
  *
  * @param x: The first value
  * @param y: The second value
- * @returns `true` if the first value is less then the second value or `false` otherwise
+ * @returns `true` if the first value is less than the second value or `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -157,7 +157,7 @@ export let rec lt = (x: Float64, y: Float64) => {
  *
  * @param x: The first value
  * @param y: The second value
- * @returns `true` if the first value is greater then the second value, `false` otherwise
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -177,7 +177,7 @@ export let rec gt = (x: Float64, y: Float64) => {
  *
  * @param x: The first value
  * @param y: The second value
- * @returns `true` if the first value is less than or equal to the second value, `false` otherwise
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -197,7 +197,7 @@ export let rec lte = (x: Float64, y: Float64) => {
  *
  * @param x: The first value
  * @param y: The second value
- * @returns `true` if the first value is greater than or equal to the second value, `false` otherwise
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  * 
  * @since v0.2.0
  */
@@ -225,7 +225,7 @@ let rec makeInfinity = () => {
 }
 
 /**
- * Infinity represented as a Float64.
+ * Infinity represented as a Float64 value.
  * 
  * @since v0.4.0
  */
@@ -240,7 +240,7 @@ let rec makeNaN = () => {
 }
 
 /**
- * NaN (Not a Number) represented as a Float64.
+ * NaN (Not a Number) represented as a Float64 value.
  * 
  * @since v0.4.0
  */
