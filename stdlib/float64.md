@@ -36,7 +36,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`number`|`Number`|The Number to convert|
+|`number`|`Number`|The value to convert|
 
 Returns:
 
@@ -68,7 +68,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`float`|`Float64`|The Float64 to convert|
+|`float`|`Float64`|The value to convert|
 
 Returns:
 
@@ -78,7 +78,7 @@ Returns:
 
 ## Operations
 
-Operations for working with Float64 values.
+Mathematical operations for Float64 values.
 
 ### Float64.**add**
 
@@ -212,7 +212,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is less then the second value or `false` otherwise|
+|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
 ### Float64.**gt**
 
@@ -238,7 +238,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is greater then the second value, `false` otherwise|
+|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
 ### Float64.**lte**
 
@@ -264,7 +264,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value, `false` otherwise|
+|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
 ### Float64.**gte**
 
@@ -290,7 +290,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value, `false` otherwise|
+|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
 ## Constants
 
@@ -307,7 +307,7 @@ No other changes yet.
 infinity : Float64
 ```
 
-Infinity represented as a Float64.
+Infinity represented as a Float64 value.
 
 ### Float64.**nan**
 
@@ -320,5 +320,5 @@ No other changes yet.
 nan : Float64
 ```
 
-NaN (Not a Number) represented as a Float64.
+NaN (Not a Number) represented as a Float64 value.
 
