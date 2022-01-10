@@ -129,7 +129,7 @@ export let rec div = (x: Float64, y: Float64) => {
 }
 
 /**
- * @section Comparisons: Comparison functions for working with Float64 values.
+ * @section Comparisons: Functions for comparing Float64 values.
  */
 
 /**
@@ -213,7 +213,7 @@ export let rec gte = (x: Float64, y: Float64) => {
 }
 
 /**
- * @section Constants: Constants related to Float64 values.
+ * @section Constants: Float64 constant values.
  */
 
 @disableGC
