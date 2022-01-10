@@ -186,7 +186,7 @@ Returns:
 
 ## Comparisons
 
-Comparison functions for working with Float64 values.
+Functions for comparing Float64 values.
 
 ### Float64.**lt**
 
@@ -294,7 +294,7 @@ Returns:
 
 ## Constants
 
-Constants related to Float64 values.
+Float64 constant values.
 
 ### Float64.**infinity**
 
