@@ -1749,14 +1749,22 @@ and print_infix_application =
 
     let wrapped_left =
       if (left_needs_parens) {
-        Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
+        if (Doc.willBreak(right_expr)) {
+          Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
+        } else {
+          Doc.concat([Doc.lparen, Doc.indent(left_expr), Doc.rparen]);
+        };
       } else {
         left_expr;
       };
 
     let wrapped_right =
       if (right_needs_parens) {
-        Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
+        if (Doc.willBreak(right_expr)) {
+          Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
+        } else {
+          Doc.concat([Doc.lparen, Doc.indent(right_expr), Doc.rparen]);
+        };
       } else {
         right_expr;
       };

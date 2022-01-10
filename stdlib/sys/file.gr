@@ -904,7 +904,7 @@ export let rec fdStats = (fd: FileDescriptor) => {
     let flagsToWasmVal = (flag, i) => {
       let rightsInheriting = WasmI64.load(structPtr, 16n)
       (rightsInheriting &
-      1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
+        1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
       0N
     }
     Memory.incRef(WasmI32.fromGrain(List.filteri))

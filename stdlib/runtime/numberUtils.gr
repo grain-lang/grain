@@ -1104,11 +1104,13 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
   while (
     WasmI64.ltU(rest, wp_w) &&
     WasmI64.geU(WasmI64.sub(delta, rest), ten_kappa) &&
-    (WasmI64.ltU(WasmI64.add(rest, ten_kappa), wp_w) ||
-    WasmI64.gtU(
-      WasmI64.sub(wp_w, rest),
-      WasmI64.sub(WasmI64.add(rest, ten_kappa), wp_w)
-    ))
+    (
+      WasmI64.ltU(WasmI64.add(rest, ten_kappa), wp_w) ||
+      WasmI64.gtU(
+        WasmI64.sub(wp_w, rest),
+        WasmI64.sub(WasmI64.add(rest, ten_kappa), wp_w)
+      )
+    )
   ) {
     digit -= 1n
     rest = WasmI64.add(rest, ten_kappa)

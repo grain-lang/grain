@@ -1635,7 +1635,7 @@ let rec decodeRangeHelp =
             // high surrogate. next character is low srurrogate
             let w1 = (w1 & 0x03FFn) << 10n
             let w2 = (WasmI32.load8U(bytesPtr, 2n) << 8n |
-              WasmI32.load8U(bytesPtr, 3n)) &
+                WasmI32.load8U(bytesPtr, 3n)) &
               0x03FFn
             let codeWord = w1 + w2 + 0x10000n
             // no problems, so go past both code words
@@ -1658,7 +1658,7 @@ let rec decodeRangeHelp =
             // high surrogate. next character is low srurrogate
             let w1 = (w1 & 0x03FFn) << 10n
             let w2 = (WasmI32.load8U(bytesPtr, 3n) << 8n |
-              WasmI32.load8U(bytesPtr, 2n)) &
+                WasmI32.load8U(bytesPtr, 2n)) &
               0x03FFn
             //let uPrime = codePoint - 0x10000n
             //let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) + 0xD800n // High surrogate
