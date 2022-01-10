@@ -118,10 +118,6 @@ let source_map: ref(bool);
 
 let safe_string: ref(bool);
 
-/** Just output errors and warnings for LSP mode. */
-
-let lsp_mode: ref(bool);
-
 /** Internal option to disable printing of warnings. */
 
 let print_warnings: ref(bool);

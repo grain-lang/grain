@@ -138,8 +138,8 @@ let compile_file = (name, outfile_arg) => {
 
 /* add a wrapper so we can switch to LSP mode based on cli config */
 
-let compile_wrapper = (name, outfile_arg) =>
-  if (Grain_utils.Config.lsp_mode^) {
+let compile_wrapper = (lsp_mode, name, outfile_arg) =>
+  if (lsp_mode) {
     compile_string(name);
   } else {
     compile_file(name, outfile_arg);
@@ -189,6 +189,11 @@ let output_filename = {
   );
 };
 
+let lsp_mode = {
+  let doc = "Generate lsp errors and warnings only";
+  Arg.(value & flag(info(["lsp"], ~doc)));
+};
+
 let cmd = {
   let doc = sprintf("Compile Grain programs");
   let version =
@@ -200,6 +205,7 @@ let cmd = {
     Term.(
       ret(
         Grain_utils.Config.with_cli_options(compile_wrapper)
+        $ lsp_mode
         $ input_filename
         $ output_filename,
       )

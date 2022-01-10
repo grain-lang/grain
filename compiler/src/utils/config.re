@@ -547,13 +547,6 @@ let elide_type_info =
 let source_map =
   toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
 
-let lsp_mode =
-  toggle_flag(
-    ~names=["lsp"],
-    ~doc="Generate lsp errors and warnings only",
-    false,
-  );
-
 let print_warnings = internal_opt(true);
 
 /* To be filled in by grainc */
