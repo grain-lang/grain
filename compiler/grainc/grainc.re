@@ -43,6 +43,7 @@ let compile_string = name => {
       {
         let compile_state =
           Compile.compile_string(
+            ~is_root_file=true,
             ~hook=stop_after_typed_well_formed,
             ~name,
             program_str^,
