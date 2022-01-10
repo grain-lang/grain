@@ -1732,12 +1732,7 @@ and print_infix_application =
         if (Doc.willBreak(right_expr)) {
           Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
         } else {
-          Doc.concat([
-            Doc.lparen,
-            Doc.indent(Doc.concat([Doc.softLine, left_expr])),
-            Doc.softLine,
-            Doc.rparen,
-          ]);
+          Doc.concat([Doc.lparen, Doc.indent(left_expr), Doc.rparen]);
         };
       } else {
         left_expr;
@@ -1748,12 +1743,7 @@ and print_infix_application =
         if (Doc.willBreak(right_expr)) {
           Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
         } else {
-          Doc.concat([
-            Doc.lparen,
-            Doc.indent(Doc.concat([Doc.softLine, right_expr])),
-            Doc.softLine,
-            Doc.rparen,
-          ]);
+          Doc.concat([Doc.lparen, Doc.indent(right_expr), Doc.rparen]);
         };
       } else {
         right_expr;
