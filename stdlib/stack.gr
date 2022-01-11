@@ -13,7 +13,7 @@ import List from "list"
  * Stacks are immutable data structures that store their data in a List.
  */
 record Stack<a> {
-    data: List<a>
+  data: List<a>,
 }
 
 /**
@@ -26,7 +26,7 @@ record Stack<a> {
  * @returns An empty stack
  */
 export let make = () => {
-    { data: [] }
+  { data: [], }
 }
 
 /**
@@ -35,11 +35,11 @@ export let make = () => {
  * @param stack: The stack to check
  * @returns `true` if the stack has no items, and `false` otherwise
  */
-export let isEmpty = (stack) => {
-    match (stack) {
-        { data: [] } => true,
-        _ => false
-    }
+export let isEmpty = stack => {
+  match (stack) {
+    { data: [] } => true,
+    _ => false,
+  }
 }
 
 /**
@@ -48,11 +48,11 @@ export let isEmpty = (stack) => {
  * @param stack: The stack to inspect
  * @returns The value at the top of the stack, if it exists
  */
-export let peek = (stack) => {
-    match (stack) {
-        { data: [] } => None,
-        { data } => List.head(data)
-    }
+export let peek = stack => {
+  match (stack) {
+    { data: [] } => None,
+    { data } => List.head(data),
+  }
 }
 
 /**
@@ -63,10 +63,10 @@ export let peek = (stack) => {
  * @returns A new stack with the item added to the end
  */
 export let push = (value, stack) => {
-    match (stack) {
-        { data: [] } => { data: [value] },
-        { data } => { data: [value, ...data] }
-    }
+  match (stack) {
+    { data: [] } => { data: [value], },
+    { data } => { data: [value, ...data], },
+  }
 }
 
 /**
@@ -75,11 +75,11 @@ export let push = (value, stack) => {
  * @param stack: The stack being updated
  * @returns A new stack with the last item removed
  */
-export let pop = (stack) => {
-    match (stack) {
-        { data: [] } => stack,
-        { data: [head, ...tail] } => { data: tail, }
-    }
+export let pop = stack => {
+  match (stack) {
+    { data: [] } => stack,
+    { data: [head, ...tail] } => { data: tail, },
+  }
 }
 
 /**
@@ -88,9 +88,9 @@ export let pop = (stack) => {
  * @param stack: The stack to inspect
  * @returns The count of the items in the stack
  */
-export let size = (stack) => {
-    match (stack) {
-        { data: [] } => 0,
-        { data } => List.length(data)
-    }
+export let size = stack => {
+  match (stack) {
+    { data: [] } => 0,
+    { data } => List.length(data),
+  }
 }

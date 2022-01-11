@@ -110,5 +110,7 @@ let lookup_module:
 let find_modtype:
   (Env.t, Location.t, Identifier.t) => (Path.t, modtype_declaration);
 
+let type_attributes: Asttypes.attributes => Typedtree.attributes;
+
 let unbound_label_error: (Env.t, Location.loc(Identifier.t)) => 'a;
 let unbound_constructor_error: (Env.t, Location.loc(Identifier.t)) => 'a;

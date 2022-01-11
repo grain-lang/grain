@@ -3,11 +3,11 @@
  followed by a blank line
 */
 
-let myfun = (/* a */ x /*post*/, y) => 10
+let myfun = (/* a */ x, /*post*/ y) => 10
 
 let myfun1 = (/* a */ x, y) => 10
 
-let myfun2 = (x /*post*/, y) => 10
+let myfun2 = (x, /*post*/ y) => 10
 
 /**
  * Slices an array given zero-based start and end indexes. The value
@@ -73,7 +73,7 @@ if (a /*why*/) {
   // end block
 }
 
-let myfun /*special*/ = (/*lead*/ x /*follow*/, y) => x + 5
+let myfun /*special*/ = (/*lead*/ x, /*follow*/ y) => x + 5
 
 if (true) {
 

@@ -7,7 +7,7 @@ type t = {
   module_name: string,
   name: string,
   type_sig: string,
-  description: string,
+  description: option(string),
   attributes: list(Comments.Attribute.t),
 };
 
@@ -27,9 +27,16 @@ let title_for_api = (~module_name, ident: Ident.t) => {
   Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
 };
 
-let types_for_function = (vd: Types.value_description) => {
+let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
-  | TTyArrow(args, returns, _) => (Some(args), Some(returns))
+  | TTyArrow(_) =>
+    switch (Printtyp.tree_of_value_description(ident, vd)) {
+    | Osig_value({oval_type: Otyp_arrow(args, returns)}) => (
+        Some(args),
+        Some(returns),
+      )
+    | _ => failwith("types_for_function: impossible via implementation")
+    }
   | _ => (None, None)
   };
 };
@@ -38,11 +45,14 @@ let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
 };
 
-let string_of_type_expr = type_expr => {
-  let to_string = type_expr => {
-    Format.asprintf("%a", Printtyp.type_expr, type_expr);
+let string_of_type_expr = out_type => {
+  let printer = (ppf, out_type) => {
+    Oprint.out_type^(ppf, out_type);
   };
-  Option.map(to_string, type_expr);
+  let to_string = out_type => {
+    Format.asprintf("%a", printer, out_type);
+  };
+  Option.map(to_string, out_type);
 };
 
 let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
@@ -55,10 +65,10 @@ let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
   let (description, attributes) =
     switch (comment) {
     | Some((_, description, attributes)) => (description, attributes)
-    | None => ("", [])
+    | None => (None, [])
     };
 
-  let (args, returns) = types_for_function(vd);
+  let (args, returns) = types_for_function(~ident, vd);
   // This replaces the default `None` for `attr_type` on `Param` and `Returns` attributes
   let apply_types: (int, Comments.Attribute.t) => Comments.Attribute.t =
     (idx, attr) => {
@@ -87,7 +97,7 @@ let for_type_declaration = (~ident: Ident.t, td: Types.type_declaration) => {
   let (description, attributes) =
     switch (comment) {
     | Some((_, description, _)) => (description, [])
-    | None => ("", [])
+    | None => (None, [])
     };
 
   {module_name, name, type_sig, description, attributes};
@@ -190,8 +200,11 @@ let to_markdown = (~current_version, docblock) => {
     Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
   };
   Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
-  if (String.length(docblock.description) > 0) {
-    Buffer.add_string(buf, Markdown.paragraph(docblock.description));
+  switch (docblock.description) {
+  // Guard isn't be needed because we turn an empty string into None during extraction
+  | Some(description) =>
+    Buffer.add_string(buf, Markdown.paragraph(description))
+  | None => ()
   };
   let params =
     docblock.attributes

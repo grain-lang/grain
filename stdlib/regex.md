@@ -5,7 +5,7 @@ title: Regex
 Regular Expressions.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -20,7 +20,7 @@ Functions for working with regular expressions.
 ### Regex.**make**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -180,7 +180,7 @@ Returns the positions of all groups matched in this match object.
 ### Regex.**isMatch**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -212,7 +212,7 @@ assert Regex.isMatch(Result.unwrap(Regex.make("ca+[at]")), "caaat") == true
 ### Regex.**isMatchRange**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -250,7 +250,7 @@ assert Regex.isMatchRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 1, 5) =
 ### Regex.**find**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -282,7 +282,7 @@ Regex.find(Result.unwrap(Regex.make("ca+[at]")), "caaat")
 ### Regex.**findRange**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -339,7 +339,7 @@ Returns:
 ### Regex.**findAllRange**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -375,7 +375,7 @@ Regex.findAllRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
 ### Regex.**replace**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 
@@ -416,7 +416,7 @@ assert Regex.replace(Result.unwrap(Regex.make("o")), "foo", "a") == "fao"
 ### Regex.**replaceAll**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
 No other changes yet.
 </details>
 

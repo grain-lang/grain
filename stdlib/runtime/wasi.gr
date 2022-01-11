@@ -6,26 +6,66 @@ import WasmI32 from "runtime/unsafe/wasmi32"
 import Exception from "exception"
 
 // env
-import foreign wasm args_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm args_sizes_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm environ_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm environ_sizes_get: (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm args_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm args_sizes_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm environ_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm environ_sizes_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 
 // proc
-import foreign wasm proc_exit: (WasmI32) -> Void from "wasi_snapshot_preview1"
-import foreign wasm proc_raise: (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm proc_exit: WasmI32 -> Void from "wasi_snapshot_preview1"
+import foreign wasm proc_raise: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
 import foreign wasm sched_yield: () -> WasmI32 from "wasi_snapshot_preview1"
 
 // random
-import foreign wasm random_get : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm random_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 
 // time
-import foreign wasm clock_time_get: (WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm clock_time_get: (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 
 // file
-import foreign wasm path_open : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_open: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI64,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_read: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_pread: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 /**
  * Invokes the `fd_write` system call.
  *
@@ -35,31 +75,138 @@ import foreign wasm fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> 
  * @param nwritten: Where to store the number of bytes written
  * @return The number of bytes written
  */
-import foreign wasm fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_pwrite : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_allocate : (WasmI32, WasmI64, WasmI64) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_close : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_datasync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_fdstat_get : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_fdstat_set_flags : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_fdstat_set_rights : (WasmI32, WasmI64, WasmI64) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_filestat_get : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_filestat_set_size : (WasmI32, WasmI64) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_filestat_set_times : (WasmI32, WasmI64, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_readdir : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_renumber : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_seek : (WasmI32, WasmI64, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm fd_tell : (WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_create_directory : (WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_filestat_get : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_filestat_set_times : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_link : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_symlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_unlink_file : (WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_readlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_remove_directory : (WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
-import foreign wasm path_rename : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_write: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_pwrite: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_allocate: (
+  WasmI32,
+  WasmI64,
+  WasmI64,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_close: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_datasync: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_sync: WasmI32 -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_fdstat_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_fdstat_set_flags: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_fdstat_set_rights: (
+  WasmI32,
+  WasmI64,
+  WasmI64,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_filestat_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_filestat_set_size: (
+  WasmI32,
+  WasmI64,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_filestat_set_times: (
+  WasmI32,
+  WasmI64,
+  WasmI64,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_readdir: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_renumber: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_seek: (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm fd_tell: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_create_directory: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_filestat_get: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_filestat_set_times: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI64,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_link: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_symlink: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_unlink_file: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_readlink: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_remove_directory: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm path_rename: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 
 // clocks
 let _CLOCK_REALTIME = 0n
@@ -176,17 +323,19 @@ let _ENOTCAPABLE = 76n
 
 exception SystemError(Number)
 
-let stringOfSystemError = (code) => {
+let stringOfSystemError = code => {
   let n = WasmI32.shrS(WasmI32.fromGrain(code), 1n)
   let (==) = WasmI32.eq
   match (n) {
-    n when n == _ESUCCESS => "SystemError: No error occurred. System call completed successfully.",
+    n when n == _ESUCCESS =>
+      "SystemError: No error occurred. System call completed successfully.",
     n when n == _ETOOBIG => "SystemError: Argument list too long.",
     n when n == _EACCES => "SystemError: Permission denied.",
     n when n == _EADDRINUSE => "SystemError: Address in use.",
     n when n == _EADDRNOTAVAIL => "SystemError: Address not available.",
     n when n == _EAFNOSUPPORT => "SystemError: Address family not supported.",
-    n when n == _EAGAIN => "SystemError: Resource unavailable, or operation would block.",
+    n when n == _EAGAIN =>
+      "SystemError: Resource unavailable, or operation would block.",
     n when n == _EALREADY => "SystemError: Connection already in progress.",
     n when n == _EBADF => "SystemError: Bad file descriptor.",
     n when n == _EBADMSG => "SystemError: Bad message.",
@@ -198,7 +347,8 @@ let stringOfSystemError = (code) => {
     n when n == _ECONNRESET => "SystemError: Connection reset.",
     n when n == _EDEADLK => "SystemError: Resource deadlock would occur.",
     n when n == _EDESTADDRREQ => "SystemError: Destination address required.",
-    n when n == _EDOM => "SystemError: Mathematics argument out of domain of function.",
+    n when n == _EDOM =>
+      "SystemError: Mathematics argument out of domain of function.",
     n when n == _EDQUOT => "SystemError: Reserved.",
     n when n == _EEXIST => "SystemError: File exists.",
     n when n == _EFAULT => "SystemError: Bad address.",
@@ -234,14 +384,17 @@ let stringOfSystemError = (code) => {
     n when n == _ENOSPC => "SystemError: No space left on device.",
     n when n == _ENOSYS => "SystemError: Function not supported.",
     n when n == _ENOTCONN => "SystemError: The socket is not connected.",
-    n when n == _ENOTDIR => "SystemError: Not a directory or a symbolic link to a directory.",
+    n when n == _ENOTDIR =>
+      "SystemError: Not a directory or a symbolic link to a directory.",
     n when n == _ENOTEMPTY => "SystemError: Directory not empty.",
     n when n == _ENOTRECOVERABLE => "SystemError: State not recoverable.",
     n when n == _ENOTSOCK => "SystemError: Not a socket.",
-    n when n == _ENOTSUP => "SystemError: Not supported, or operation not supported on socket.",
+    n when n == _ENOTSUP =>
+      "SystemError: Not supported, or operation not supported on socket.",
     n when n == _ENOTTY => "SystemError: Inappropriate I/O control operation.",
     n when n == _ENXIO => "SystemError: No such device or address.",
-    n when n == _EOVERFLOW => "SystemError: Value too large to be stored in data type.",
+    n when n == _EOVERFLOW =>
+      "SystemError: Value too large to be stored in data type.",
     n when n == _EOWNERDEAD => "SystemError: Previous owner died.",
     n when n == _EPERM => "SystemError: Operation not permitted.",
     n when n == _EPIPE => "SystemError: Broken pipe.",
@@ -256,7 +409,8 @@ let stringOfSystemError = (code) => {
     n when n == _ETIMEDOUT => "SystemError: Connection timed out.",
     n when n == _ETXTBSY => "SystemError: Text file busy.",
     n when n == _EXDEV => "SystemError: Cross-device link.",
-    n when n == _ENOTCAPABLE => "SystemError: Extension: Capabilities insufficient.",
+    n when n == _ENOTCAPABLE =>
+      "SystemError: Extension: Capabilities insufficient.",
     _ => "SystemError: Unknown system error: " ++ toString(code),
   }
 }
@@ -264,6 +418,6 @@ let stringOfSystemError = (code) => {
 Exception.registerPrinter(e => {
   match (e) {
     SystemError(n) => Some(stringOfSystemError(n)),
-    _ => None
+    _ => None,
   }
 })

@@ -10,15 +10,15 @@ import WasmI32, {
   mul as (*),
   ltS as (<),
   remS as (%),
-  shl as (<<)
+  shl as (<<),
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Tags from "runtime/unsafe/tags"
 import Memory from "runtime/unsafe/memory"
 
-primitive (!) : Bool -> Bool = "@not"
-primitive (||) : (Bool, Bool) -> Bool = "@or"
-primitive (&&) : (Bool, Bool) -> Bool = "@and"
+primitive (!): Bool -> Bool = "@not"
+primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
 
 import { isNumber, numberEqual } from "runtime/numbers"
 
@@ -45,7 +45,12 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
           let bytes = xarity * 4n
           for (let mut i = 0n; i < bytes; i += 4n) {
-            if (!equalHelp(WasmI32.load(xptr + i, 20n), WasmI32.load(yptr + i, 20n))) {
+            if (
+              !equalHelp(
+                WasmI32.load(xptr + i, 20n),
+                WasmI32.load(yptr + i, 20n)
+              )
+            ) {
               result = false
               break
             }
@@ -72,7 +77,9 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 
         let bytes = xlength * 4n
         for (let mut i = 0n; i < bytes; i += 4n) {
-          if (!equalHelp(WasmI32.load(xptr + i, 16n), WasmI32.load(yptr + i, 16n))) {
+          if (
+            !equalHelp(WasmI32.load(xptr + i, 16n), WasmI32.load(yptr + i, 16n))
+          ) {
             result = false
             break
           }
@@ -91,7 +98,7 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
       if (xlength != ylength) {
         false
       } else if ((xlength & cycleMarker) == cycleMarker) {
-      // Cycle check
+        // Cycle check
         true
       } else {
         WasmI32.store(xptr, xlength ^ cycleMarker, 4n)
@@ -100,7 +107,9 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let mut result = true
         let bytes = xlength * 4n
         for (let mut i = 0n; i < bytes; i += 4n) {
-          if (!equalHelp(WasmI32.load(xptr + i, 8n), WasmI32.load(yptr + i, 8n))) {
+          if (
+            !equalHelp(WasmI32.load(xptr + i, 8n), WasmI32.load(yptr + i, 8n))
+          ) {
             result = false
             break
           }
@@ -112,7 +121,9 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
-    t when t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG => {
+    t when (
+      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+    ) => {
       let xlength = WasmI32.load(xptr, 4n)
       let ylength = WasmI32.load(yptr, 4n)
 
@@ -124,14 +135,19 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let first = xlength - extra
         let mut result = true
         for (let mut i = 0n; i < first; i += 8n) {
-          if (WasmI64.ne(WasmI64.load(xptr + i, 8n), WasmI64.load(yptr + i, 8n))) {
+          if (
+            WasmI64.ne(WasmI64.load(xptr + i, 8n), WasmI64.load(yptr + i, 8n))
+          ) {
             result = false
             break
           }
         }
         if (result) {
           for (let mut i = 0n; i < extra; i += 1n) {
-            if (WasmI32.load8U(xptr + first + i, 8n) != WasmI32.load8U(yptr + first + i, 8n)) {
+            if (
+              WasmI32.load8U(xptr + first + i, 8n) !=
+              WasmI32.load8U(yptr + first + i, 8n)
+            ) {
               result = false
               break
             }
@@ -153,8 +169,8 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         2n
       }
       // WebAssembly is little-endian, so bytes are in reverse order
-      let x = WasmI32.load(xptr, 4n) << ((4n - n) * 8n)
-      let y = WasmI32.load(yptr, 4n) << ((4n - n) * 8n)
+      let x = WasmI32.load(xptr, 4n) << (4n - n) * 8n
+      let y = WasmI32.load(yptr, 4n) << (4n - n) * 8n
       x == y
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
@@ -170,7 +186,9 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let mut result = true
         let bytes = xsize * 4n
         for (let mut i = 0n; i < bytes; i += 4n) {
-          if (!equalHelp(WasmI32.load(xptr + i, 8n), WasmI32.load(yptr + i, 8n))) {
+          if (
+            !equalHelp(WasmI32.load(xptr + i, 8n), WasmI32.load(yptr + i, 8n))
+          ) {
             result = false
             break
           }
@@ -185,10 +203,13 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
     _ => {
       // No other implementation
       xptr == yptr
-    }
+    },
   }
 }, equalHelp = (x, y) => {
-  if (((x & Tags._GRAIN_GENERIC_TAG_MASK) != 0n) && ((y & Tags._GRAIN_GENERIC_TAG_MASK) != 0n)) {
+  if (
+    (x & Tags._GRAIN_GENERIC_TAG_MASK) != 0n &&
+    (y & Tags._GRAIN_GENERIC_TAG_MASK) != 0n
+  ) {
     // Short circuit for non-pointer values
     x == y
   } else if (isNumber(x)) {

@@ -60,6 +60,12 @@ describe("let mut", ({test}) => {
     "record Rec {foo: Number, bar: Bool}; let {foo, bar} = {foo: 1, bar: false}; foo = 6",
     "The identifier foo was not declared mutable",
   );
+  // value restriction
+  assertCompileError(
+    "let-mut_err_value_restriction",
+    "enum Baz<a> { Foo(a), Bar }; let mut a = Bar; a = Foo(1); a = Foo(false)",
+    "an expression was expected of type Baz<Number>",
+  );
   /* Operations on mutable `Number`s */
   assertSnapshot("let-mut_addition1", "let mut b = 4; b = b + 19");
   assertSnapshot("let-mut_addition2", "let mut b = 4; b = b + 19; b");
@@ -76,8 +82,8 @@ describe("let mut", ({test}) => {
   /* Exported let mut */
   assertRun(
     "let-mut_export1",
-    "import { x } from \"letMutExport\"; x = 5; x = 6; print(x)",
-    "6\n",
+    "import { x } from \"letMutExport\"; print(x); x = 5; x = 6; print(x)",
+    "3\n6\n",
   );
   /* unsafe let mut in a loop */
   assertFileRun("let-mut_loop", "letMutForLoop", "0N\n1N\n2N\n3N\n4N\n");

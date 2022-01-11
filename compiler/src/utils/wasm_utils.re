@@ -2,22 +2,22 @@
 open Sexplib.Conv;
 
 [@deriving sexp]
-type wasm_bin_export_type =
-  | ExportedFunction
-  | ExportedTable
-  | ExportedMemory
-  | ExportedGlobal;
+type wasm_bin_type =
+  | WasmFunction
+  | WasmTable
+  | WasmMemory
+  | WasmGlobal;
 
 [@deriving sexp]
 type wasm_bin_section_type =
   | Custom(string)
   | Type
-  | Import
+  | Import(list((wasm_bin_type, string, string)))
   | Function
   | Table
   | Memory
   | Global
-  | Export(list((wasm_bin_export_type, string)))
+  | Export(list((wasm_bin_type, string)))
   | Start
   | Element
   | Code
@@ -210,7 +210,7 @@ let section_type_of_int = (~pos=?, ~name=?) =>
   fun
   | 0 => Custom(Option.value(~default="", name))
   | 1 => Type
-  | 2 => Import
+  | 2 => Import([])
   | 3 => Function
   | 4 => Table
   | 5 => Memory
@@ -226,7 +226,7 @@ let int_of_section_type =
   fun
   | Custom(_) => 0
   | Type => 1
-  | Import => 2
+  | Import(_) => 2
   | Function => 3
   | Table => 4
   | Memory => 5
@@ -286,6 +286,57 @@ let get_wasm_sections = (~reset=false, inchan) => {
             );
           let true_offset = pos_in(inchan);
           (Custom(name), true_offset, size - (true_offset - offset));
+        | Import(_) =>
+          let num_imports = Int32.to_int(read_leb128_u32_input(inchan));
+          let rec read_import = () => {
+            let mod_len = Int32.to_int(read_leb128_u32_input(inchan));
+            let mod_ = really_input_string(inchan, mod_len);
+            let name_len = Int32.to_int(read_leb128_u32_input(inchan));
+            let name = really_input_string(inchan, name_len);
+            let import_type =
+              switch (input_byte(inchan)) {
+              | 0 =>
+                let _import_id = read_leb128_u32_input(inchan);
+                WasmFunction;
+              | 1 =>
+                let _reftype = input_byte(inchan);
+                switch (input_byte(inchan)) {
+                | 0 =>
+                  let _min = read_leb128_u32_input(inchan);
+                  ();
+                | 1 =>
+                  let _min = read_leb128_u32_input(inchan);
+                  let _max = read_leb128_u32_input(inchan);
+                  ();
+                | _ => failwith("Unknown limit type")
+                };
+                WasmTable;
+              | 2 =>
+                switch (input_byte(inchan)) {
+                | 0 =>
+                  let _min = read_leb128_u32_input(inchan);
+                  ();
+                | 1 =>
+                  let _min = read_leb128_u32_input(inchan);
+                  let _max = read_leb128_u32_input(inchan);
+                  ();
+                | _ => failwith("Unknown limit type")
+                };
+                WasmMemory;
+              | 3 =>
+                let _valtype = input_byte(inchan);
+                let _mut = input_byte(inchan);
+                WasmGlobal;
+              | _ => failwith("Unknown import type")
+              };
+            (import_type, mod_, name);
+          };
+          let true_offset = pos_in(inchan);
+          (
+            Import(List.init(num_imports, _ => read_import())),
+            true_offset,
+            size - (true_offset - offset),
+          );
         | Export(_) =>
           let num_exports = Int32.to_int(read_leb128_u32_input(inchan));
           let rec read_export = () => {
@@ -293,13 +344,13 @@ let get_wasm_sections = (~reset=false, inchan) => {
             let name = really_input_string(inchan, name_len);
             let export_type =
               switch (input_byte(inchan)) {
-              | 0 => ExportedFunction
-              | 1 => ExportedTable
-              | 2 => ExportedMemory
-              | 3 => ExportedGlobal
+              | 0 => WasmFunction
+              | 1 => WasmTable
+              | 2 => WasmMemory
+              | 3 => WasmGlobal
               | _ => failwith("Unknown export type")
               };
-            let _export_id = read_leb128_u32_input(inchan);
+            let _export_idx = read_leb128_u32_input(inchan);
             (export_type, name);
           };
           let true_offset = pos_in(inchan);

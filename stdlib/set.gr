@@ -1,35 +1,50 @@
-// Standard library for Set functionality
-
+/**
+ * @module Set: A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
+ * @example import Set from "set"
+ * 
+ * @since 0.3.0
+ */
 import List from "list"
 import Array from "array"
 import { hash } from "hash"
 
 record Bucket<t> {
   mut key: t,
-  mut next: Option<Bucket<t>>
+  mut next: Option<Bucket<t>>,
 }
 
 record Set<k> {
   mut size: Number,
-  mut buckets: Array<Option<Bucket<k>>>
+  mut buckets: Array<Option<Bucket<k>>>,
 }
 
 // TODO: This could take an `eq` function to custom comparisons
-export let makeSized = (size) => {
-  let buckets = Array.make(size, None);
-  {
-    size: 0,
-    buckets
-  }
+/**
+ * Creates a new empty set with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
+ *
+ * @param storageLength: The initial storage length of the set
+ * @returns An empty set with the given initial storage length
+ * 
+ * @since 0.3.0
+ */
+export let makeSized = storageLength => {
+  let buckets = Array.make(storageLength, None)
+  { size: 0, buckets }
 }
-
+/**
+ * Creates a new, empty set.
+ *
+ * @returns An empty set
+ * 
+ * @since 0.3.0
+ */
 export let make = () => {
   makeSized(16)
 }
 
 let getBucketIndex = (key, buckets) => {
-  let bucketsLength = Array.length(buckets);
-  let hashedKey = hash(key);
+  let bucketsLength = Array.length(buckets)
+  let hashedKey = hash(key)
   hashedKey % bucketsLength
 }
 
@@ -37,45 +52,45 @@ let rec copyNodeWithNewHash = (oldNode, next, tail) => {
   match (oldNode) {
     None => void,
     Some(node) => {
-      let idx = getBucketIndex(node.key, next);
-      let newNode = Some(node);
+      let idx = getBucketIndex(node.key, next)
+      let newNode = Some(node)
       match (tail[idx]) {
         None => {
-          next[idx] = newNode;
+          next[idx] = newNode
         },
         Some(tailNode) => {
           // If there's already a tail node, we add this to the end
-          tailNode.next = newNode;
-        }
+          tailNode.next = newNode
+        },
       }
       // Always place this node as the new tail
-      tail[idx] = newNode;
+      tail[idx] = newNode
       // Recurse with the next node
-      copyNodeWithNewHash(node.next, next, tail);
-    }
+      copyNodeWithNewHash(node.next, next, tail)
+    },
   }
 }
 
-let resize = (set) => {
-  let currentBuckets = set.buckets;
-  let currentSize = Array.length(currentBuckets);
-  let nextSize = currentSize * 2;
+let resize = set => {
+  let currentBuckets = set.buckets
+  let currentSize = Array.length(currentBuckets)
+  let nextSize = currentSize * 2
   if (nextSize >= currentSize) {
-    let nextBuckets = Array.make(nextSize, None);
+    let nextBuckets = Array.make(nextSize, None)
     // This tracks the tail nodes so we can set their `next` to None
-    let tailNodes = Array.make(nextSize, None);
-    set.buckets = nextBuckets;
-    Array.forEach((old) => {
-      copyNodeWithNewHash(old, nextBuckets, tailNodes);
-    }, currentBuckets);
-    Array.forEach((tail) => {
+    let tailNodes = Array.make(nextSize, None)
+    set.buckets = nextBuckets
+    Array.forEach(old => {
+      copyNodeWithNewHash(old, nextBuckets, tailNodes)
+    }, currentBuckets)
+    Array.forEach(tail => {
       match (tail) {
         None => void,
         Some(node) => {
-          node.next = None;
-        }
+          node.next = None
+        },
       }
-    }, tailNodes);
+    }, tailNodes)
   } else {
     void
   }
@@ -87,42 +102,59 @@ let rec nodeInBucket = (key, node) => {
   } else {
     match (node.next) {
       None => false,
-      Some(next) => nodeInBucket(key, next)
+      Some(next) => nodeInBucket(key, next),
     }
   }
 }
 
+/**
+ * Adds a new value to the set. If the value already exists, nothing happens.
+ *
+ * @param key: The value to add
+ * @param set: The set to update
+ * 
+ * @since 0.3.0
+ */
 export let add = (key, set) => {
-  let buckets = set.buckets;
+  let buckets = set.buckets
   let idx = getBucketIndex(key, buckets)
-  let bucket = buckets[idx];
+  let bucket = buckets[idx]
   match (bucket) {
     None => {
-      buckets[idx] = Some({ key, next: None });
-      set.size = incr(set.size);
+      buckets[idx] = Some({ key, next: None })
+      set.size = incr(set.size)
     },
     Some(node) => {
       if (!nodeInBucket(key, node)) {
-        buckets[idx] = Some({ key, next: bucket });
-        set.size = incr(set.size);
-      };
-    }
+        buckets[idx] = Some({ key, next: bucket })
+        set.size = incr(set.size)
+      }
+    },
   }
   // Resize if there are more than 2x the amount of nodes as buckets
-  if (set.size > (Array.length(buckets) * 2)) {
-    resize(set);
+  if (set.size > Array.length(buckets) * 2) {
+    resize(set)
   } else {
     void
   }
 }
 
+/**
+ * Determines if the set contains the given value.
+ *
+ * @param key: The value to search for
+ * @param set: The set to search
+ * @returns `true` if the set contains the given value or `false` otherwise
+ * 
+ * @since 0.3.0
+ */
 export let contains = (key, set) => {
-  let buckets = set.buckets;
-  let idx = getBucketIndex(key, buckets);
-  let bucket = buckets[idx];
+  let buckets = set.buckets
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx]
   match (bucket) {
     None => false,
-    Some(node) => nodeInBucket(key, node)
+    Some(node) => nodeInBucket(key, node),
   }
 }
 
@@ -131,168 +163,298 @@ let rec removeInBucket = (key, node) => {
     None => false,
     Some(next) => {
       if (key == next.key) {
-        node.next = next.next;
+        node.next = next.next
         true
       } else {
         removeInBucket(key, next)
       }
-    }
+    },
   }
 }
 
+/**
+ * Removes the given value from the set. If the value doesn't exist, nothing happens.
+ *
+ * @param key: The value to remove
+ * @param set: The set to update
+ * 
+ * @since 0.3.0
+ */
 export let remove = (key, set) => {
-  let buckets = set.buckets;
-  let idx = getBucketIndex(key, buckets);
-  let bucket = buckets[idx];
+  let buckets = set.buckets
+  let idx = getBucketIndex(key, buckets)
+  let bucket = buckets[idx]
   match (bucket) {
     None => void,
     Some(node) => {
       // If it is a top-level node, just replace with next node
       if (key == node.key) {
-        set.size = decr(set.size);
-        buckets[idx] = node.next;
+        set.size = decr(set.size)
+        buckets[idx] = node.next
       } else {
         if (removeInBucket(key, node)) {
-          set.size = decr(set.size);
+          set.size = decr(set.size)
         }
       }
-    }
+    },
   }
 }
 
-export let size = (set) => {
+/**
+ * Returns the number of values within the set.
+ *
+ * @param set: The set to inspect
+ * @returns The number of elements in the set
+ * 
+ * @since 0.3.0
+ */
+export let size = set => {
   set.size
 }
 
-export let isEmpty = (set) => {
+/**
+ * Determines if the set contains no elements.
+ *
+ * @param set: The set to inspect
+ * @returns `true` if the given set is empty or `false` otherwise
+ * 
+ * @since 0.3.0
+ */
+export let isEmpty = set => {
   size(set) == 0
 }
 
-export let clear = (set) => {
-  set.size = 0;
-  let buckets = set.buckets;
+/**
+ * Resets the set by removing all values.
+ *
+ * @param set: The set to reset
+ * 
+ * @since 0.3.0
+ */
+export let clear = set => {
+  set.size = 0
+  let buckets = set.buckets
   Array.forEachi((bucket, idx) => {
-    buckets[idx] = None;
-  }, buckets);
+    buckets[idx] = None
+  }, buckets)
 }
 
 let rec forEachBucket = (fn, node) => {
   match (node) {
     None => void,
     Some({ key, next }) => {
-      fn(key);
-      forEachBucket(fn, next);
-    }
+      fn(key)
+      forEachBucket(fn, next)
+    },
   }
 }
 
+/**
+ * Iterates the set, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param set: The set to iterate
+ * 
+ * @since 0.3.0
+ */
 export let forEach = (fn, set) => {
-  let buckets = set.buckets;
-  Array.forEach((bucket) => {
+  let buckets = set.buckets
+  Array.forEach(bucket => {
     forEachBucket(fn, bucket)
-  }, buckets);
+  }, buckets)
 }
 
 let rec reduceEachBucket = (fn, node, acc) => {
   match (node) {
     None => acc,
-    Some({ key, next }) =>
-      reduceEachBucket(fn, next, fn(acc, key))
+    Some({ key, next }) => reduceEachBucket(fn, next, fn(acc, key)),
   }
 }
 
+/**
+ * Combines all elements of a set using a reducer function.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param init: The initial value to use for the accumulator on the first iteration
+ * @param set: The set to iterate
+ * @returns The final accumulator returned from `fn`
+ * 
+ * @since 0.3.0
+ */
 export let reduce = (fn, init, set) => {
-  let buckets = set.buckets;
-  let mut acc = init;
-  Array.forEach((bucket) => {
+  let buckets = set.buckets
+  let mut acc = init
+  Array.forEach(bucket => {
     acc = reduceEachBucket(fn, bucket, acc)
-  }, buckets);
+  }, buckets)
   acc
 }
 
+/**
+ * Removes elements from a set where a predicate function returns `false`.
+ *
+ * @param fn: The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed
+ * @param set: The set to iterate
+ * 
+ * @since 0.3.0
+ */
 export let filter = (predicate, set) => {
-  let keysToRemove = reduce((list, key) =>
-    if (!predicate(key)) {
-      [key, ...list]
-    } else {
-      list
-    }, [], set);
-  List.forEach((key) => {
-    remove(key, set);
-  }, keysToRemove);
+  let keysToRemove = reduce((list, key) => if (!predicate(key)) {
+    [key, ...list]
+  } else {
+    list
+  }, [], set)
+  List.forEach(key => {
+    remove(key, set)
+  }, keysToRemove)
 }
 
+/**
+ * Removes elements from a set where a predicate function returns `true`.
+ *
+ * @param fn: The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed
+ * @param set: The set to iterate
+ * 
+ * @since 0.3.0
+ */
 export let reject = (predicate, set) => {
-  filter((key) => !predicate(key), set)
+  filter(key => !predicate(key), set)
 }
 
-export let toList = (set) => {
+/**
+ * Converts a set into a list of its elements.
+ *
+ * @param set: The set to convert
+ * @returns A list containing all set values
+ * 
+ * @since 0.3.0
+ */
+export let toList = set => {
   reduce((list, key) => [key, ...list], [], set)
 }
 
-export let fromList = (list) => {
-  let set = make();
-  List.forEach((key) => {
-    add(key, set);
-  }, list);
+/**
+ * Creates a set from a list.
+ *
+ * @param list: The list to convert
+ * @returns A set containing all list values
+ * 
+ * @since 0.3.0
+ */
+export let fromList = list => {
+  let set = make()
+  List.forEach(key => {
+    add(key, set)
+  }, list)
   set
 }
 
-export let toArray = (set) => {
+/**
+ * Converts a set into an array of its elements.
+ *
+ * @param set: The set to convert
+ * @returns An array containing all set values
+ * 
+ * @since 0.3.0
+ */
+export let toArray = set => {
   Array.fromList(toList(set))
 }
 
-export let fromArray = (array) => {
-  let set = make();
-  Array.forEach((key) => {
-    add(key, set);
-  }, array);
+/**
+ * Creates a set from an array.
+ *
+ * @param array: The array to convert
+ * @returns A set containing all array values
+ * 
+ * @since 0.3.0
+ */
+export let fromArray = array => {
+  let set = make()
+  Array.forEach(key => {
+    add(key, set)
+  }, array)
   set
 }
 
+/**
+ * Combines two sets into a single set containing all elements from both sets.
+ *
+ * @param set1: The first set to combine
+ * @param set2: The second set to combine
+ * @returns A set containing all elements of both sets
+ * 
+ * @since 0.3.0
+ */
 export let union = (set1, set2) => {
-  let set = make();
-  forEach((key) => {
-    add(key, set);
+  let set = make()
+  forEach(key => {
+    add(key, set)
   }, set1)
-  forEach((key) => {
-    add(key, set);
-  }, set2);
+  forEach(key => {
+    add(key, set)
+  }, set2)
   set
 }
 
+/**
+ * Combines two sets into a single set containing only the elements not shared between both sets.
+ *
+ * @param set1: The first set to combine
+ * @param set2: The second set to combine
+ * @returns A set containing only unshared elements from both sets
+ * 
+ * @since 0.3.0
+ */
 export let diff = (set1, set2) => {
-  let set = make();
-  forEach((key) => {
+  let set = make()
+  forEach(key => {
     if (!contains(key, set2)) {
-      add(key, set);
+      add(key, set)
     }
   }, set1)
-  forEach((key) => {
+  forEach(key => {
     if (!contains(key, set1)) {
-      add(key, set);
+      add(key, set)
     }
-  }, set2);
+  }, set2)
   set
 }
 
+/**
+ * Combines two sets into a single set containing only the elements shared between both sets.
+ *
+ * @param set1: The first set to combine
+ * @param set2: The second set to combine
+ * @returns A set containing only shared elements from both sets
+ * 
+ * @since 0.3.0
+ */
 export let intersect = (set1, set2) => {
-  let set = make();
-  forEach((key) => {
+  let set = make()
+  forEach(key => {
     if (contains(key, set2)) {
-      add(key, set);
+      add(key, set)
     }
   }, set1)
-  forEach((key) => {
+  forEach(key => {
     if (contains(key, set1)) {
-      add(key, set);
+      add(key, set)
     }
-  }, set2);
+  }, set2)
   set
 }
 
 // TODO: Should return a Record type instead of a Tuple
 // Waiting on https://github.com/grain-lang/grain/issues/190
-export let getInternalStats = (set) => {
+/**
+ * Provides data representing the internal state state of the set.
+ *
+ * @param set: The set to inspect
+ * @returns The internal state of the set
+ * 
+ * @since 0.3.0
+ */
+export let getInternalStats = set => {
   (set.size, Array.length(set.buckets))
 }

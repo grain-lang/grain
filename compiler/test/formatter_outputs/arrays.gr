@@ -10,17 +10,14 @@ someNums[2] = 3
 
 Array.set(1, 3, someNums)
 
-let instructions = Array.map(
-  instruct => {
-    match (String.split(" ", instruct)) {
-      [> "acc", arg] => Acc(parseIntWithSign(arg)),
-      [> "jmp", arg] => Jmp(parseIntWithSign(arg)),
-      [> "nop", _] => Nop,
-      x => fail "Can't handle: " ++ toString(x),
-    }
-  },
-  String.split("\n", data),
-)
+let instructions = Array.map(instruct => {
+  match (String.split(" ", instruct)) {
+    [> "acc", arg] => Acc(parseIntWithSign(arg)),
+    [> "jmp", arg] => Jmp(parseIntWithSign(arg)),
+    [> "nop", _] => Nop,
+    x => fail "Can't handle: " ++ toString(x),
+  }
+}, String.split("\n", data))
 
 // code snippet to check assignment stays on the same line after =
 let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
