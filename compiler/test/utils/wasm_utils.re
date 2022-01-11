@@ -43,10 +43,14 @@ describe("aux/wasm_utils", ({describe}) => {
         expect.equal(
           [
             {sec_type: Type, offset: 10, size: 8},
-            {sec_type: Import, offset: 20, size: 25},
+            {
+              sec_type: Import([(WasmFunction, "imports", "imported_func")]),
+              offset: 21,
+              size: 24,
+            },
             {sec_type: Function, offset: 47, size: 2},
             {
-              sec_type: Export([(ExportedFunction, "exported_func")]),
+              sec_type: Export([(WasmFunction, "exported_func")]),
               offset: 52,
               size: 16,
             },
@@ -63,17 +67,25 @@ describe("aux/wasm_utils", ({describe}) => {
         expect.equal(
           [
             {sec_type: Type, offset: 10, size: 8},
-            {sec_type: Import, offset: 20, size: 40},
+            {
+              sec_type:
+                Import([
+                  (WasmFunction, "imports", "imported_func"),
+                  (WasmMemory, "imports", "mem"),
+                ]),
+              offset: 21,
+              size: 39,
+            },
             {sec_type: Function, offset: 62, size: 3},
             {sec_type: Global, offset: 67, size: 11},
             {
               sec_type:
                 Export([
-                  (ExportedFunction, "exported_func"),
-                  (ExportedFunction, "exported_func2"),
-                  (ExportedGlobal, "exported_glob"),
-                  (ExportedGlobal, "exported_glob2"),
-                  (ExportedMemory, "memory"),
+                  (WasmFunction, "exported_func"),
+                  (WasmFunction, "exported_func2"),
+                  (WasmGlobal, "exported_glob"),
+                  (WasmGlobal, "exported_glob2"),
+                  (WasmMemory, "memory"),
                 ]),
               offset: 81,
               size: 75,

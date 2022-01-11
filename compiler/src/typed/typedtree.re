@@ -21,6 +21,15 @@ open Types;
 let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 
 type loc('a) = Location.loc('a);
+
+[@deriving sexp]
+type attributes = list(attribute)
+
+[@deriving sexp]
+and attribute =
+  | Disable_gc
+  | External_name(string);
+
 [@deriving sexp]
 type partial =
   | Partial
@@ -335,6 +344,7 @@ type record_field = {
 
 [@deriving sexp]
 type data_kind =
+  | TDataAbstract
   | TDataVariant(list(constructor_declaration))
   | TDataRecord(list(record_field));
 
@@ -345,6 +355,7 @@ type data_declaration = {
   data_params: list(core_type),
   data_type: Types.type_declaration,
   data_kind,
+  data_manifest: option(core_type),
   [@sexp_drop_if sexp_locs_disabled]
   data_loc: Location.t,
 };

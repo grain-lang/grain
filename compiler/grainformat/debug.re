@@ -103,3 +103,7 @@ let debug_pattern = (pat: Parsetree.pattern) => {
   | PPatAlias(pattern, loc) => print_endline("PPatAlias")
   };
 };
+
+let print_comments = (comments: list(Grain_parsing.Parsetree.comment)) => {
+  List.map(Comments.print_comment, comments);
+};

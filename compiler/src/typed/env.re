@@ -968,11 +968,11 @@ let rec find_module_descr = (path, filename, env) => {
     try(IdTbl.find_same(id, env.components)) {
     | Not_found =>
       let (_, unit_source, _) = get_unit();
-      let filename = Option.value(~default=Ident.name(id), filename);
-      if (Ident.persistent(id) && !(filename == unit_source)) {
-        find_pers_struct(~loc=Location.dummy_loc, filename).ps_comps;
-      } else {
-        raise(Not_found);
+      switch (filename) {
+      | Some(filename)
+          when Ident.persistent(id) && !(filename == unit_source) =>
+        find_pers_struct(~loc=Location.dummy_loc, filename).ps_comps
+      | _ => raise(Not_found)
       };
     }
   | PExternal(m, s, pos) =>

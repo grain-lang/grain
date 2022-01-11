@@ -442,7 +442,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopForeign(e, desc),
       ttop_loc: loc,
       ttop_env: env,
-      ttop_attributes: attributes,
+      ttop_attributes: Typetexp.type_attributes(attributes),
     };
     (newenv, signature, foreign);
   };
@@ -465,7 +465,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopLet(e, Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
-      ttop_attributes: attributes,
+      ttop_attributes: Typetexp.type_attributes(attributes),
     };
     (newenv, signature, prim);
   };
@@ -476,7 +476,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       newenv,
       {
         ttop_desc: TTopImport(od),
-        ttop_attributes: attributes,
+        ttop_attributes: Typetexp.type_attributes(attributes),
         ttop_loc: loc,
         ttop_env: env,
       },
@@ -505,7 +505,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           | Nonexported =>
             TSigType(
               info.data_id,
-              {...info.data_type, type_kind: TDataAbstract},
+              {
+                ...info.data_type,
+                type_kind: TDataAbstract,
+                // Removing the manifest hides the type implementation
+                // of this alias from any consuming module
+                type_manifest: None,
+              },
               rs,
             )
           };
@@ -518,14 +524,14 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_desc: TTopData(decls),
       ttop_loc: loc,
       ttop_env: newenv,
-      ttop_attributes: attributes,
+      ttop_attributes: Typetexp.type_attributes(attributes),
     };
     let newenv = enrich_type_decls(anchor, decls, env, newenv);
     (newenv, ty_decl, statement);
   };
 
-  let process_let =
-      (env, export_flag, rec_flag, mut_flag, binds, attributes, loc) => {
+  let rec process_let =
+          (env, export_flag, rec_flag, mut_flag, binds, attributes, loc) => {
     Ctype.init_def(Ident.current_time());
     let scope = None;
     let (defs, newenv) =
@@ -534,6 +540,10 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       if (rec_flag == Recursive) {
         Typecore.check_recursive_bindings(env, defs);
       };
+
+    let attributes = Typetexp.type_attributes(attributes);
+
+    let idents = let_bound_idents(defs);
 
     let some_exported = ref(false);
     let signatures =
@@ -545,7 +555,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
           } else {
             sigs;
           },
-        let_bound_idents(defs),
+        idents,
         [],
       );
     let export_flag =
@@ -560,43 +570,29 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_env: env,
       ttop_attributes: attributes,
     };
-    (newenv, signatures, [stmt]);
-  };
 
-  let process_expr = (env, expr, attributes, loc) => {
-    let expr = Typecore.type_statement_expr(env, expr);
-    {
-      ttop_desc: TTopExpr(expr),
-      ttop_attributes: attributes,
-      ttop_loc: loc,
-      ttop_env: env,
-    };
-  };
-
-  let process_exception = (env, export_flag, ext, attributes, loc) => {
-    let (ext, newenv) = Typedecl.transl_exception(env, ext);
-    let stmt = {
-      ttop_desc: TTopException(export_flag, ext),
-      ttop_loc: loc,
-      ttop_env: newenv,
-      ttop_attributes: attributes,
-    };
-    let export_flag =
-      if (string_needs_export(ext.ext_name)) {
-        Exported;
-      } else {
-        export_flag;
+    switch (
+      List.find_opt(
+        fun
+        | External_name(_) => true
+        | _ => false,
+        attributes,
+      )
+    ) {
+    | Some(External_name(name)) =>
+      let export = {
+        pex_name: Location.mknoloc(Ident.name(List.hd(idents))),
+        pex_alias: Some(Location.mknoloc(name)),
+        pex_loc: Location.dummy_loc,
       };
-    let sign =
-      switch (export_flag) {
-      | Exported =>
-        Some(TSigTypeExt(ext.ext_id, ext.ext_type, TExtException))
-      | Nonexported => None
-      };
-    (newenv, sign, stmt);
-  };
+      let (newenv, newsignatures, stmts) =
+        process_export_value(newenv, [export], [], Location.dummy_loc);
+      (newenv, signatures @ newsignatures, stmts @ [stmt]);
+    | _ => (newenv, signatures, [stmt])
+    };
+  }
 
-  let process_export_value = (env, exports, loc) => {
+  and process_export_value = (env, exports, attributes) => {
     let bindings =
       List.map(
         ({pex_name: name, pex_alias: alias, pex_loc: loc}) => {
@@ -622,13 +618,46 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         },
         exports,
       );
-    process_let(env, Exported, Nonrecursive, Immutable, bindings, loc);
+    process_let(env, Exported, Nonrecursive, Immutable, bindings, attributes);
+  };
+
+  let process_expr = (env, expr, attributes, loc) => {
+    let expr = Typecore.type_statement_expr(env, expr);
+    {
+      ttop_desc: TTopExpr(expr),
+      ttop_attributes: Typetexp.type_attributes(attributes),
+      ttop_loc: loc,
+      ttop_env: env,
+    };
+  };
+
+  let process_exception = (env, export_flag, ext, attributes, loc) => {
+    let (ext, newenv) = Typedecl.transl_exception(env, ext);
+    let stmt = {
+      ttop_desc: TTopException(export_flag, ext),
+      ttop_loc: loc,
+      ttop_env: newenv,
+      ttop_attributes: Typetexp.type_attributes(attributes),
+    };
+    let export_flag =
+      if (string_needs_export(ext.ext_name)) {
+        Exported;
+      } else {
+        export_flag;
+      };
+    let sign =
+      switch (export_flag) {
+      | Exported =>
+        Some(TSigTypeExt(ext.ext_id, ext.ext_type, TExtException))
+      | Nonexported => None
+      };
+    (newenv, sign, stmt);
   };
 
   let type_export_aliases = ref([]);
   let process_export_data = (env, exports, loc) => {
     let process_one = (rs, {pex_name: name, pex_alias: alias, pex_loc: loc}) => {
-      let type_id = Env.lookup_type(IdentName(name.txt), env);
+      let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name.txt));
       switch (alias) {
       | Some(alias) =>
         type_export_aliases :=
