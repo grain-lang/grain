@@ -2,103 +2,137 @@
 title: Int64
 ---
 
-Operations on the Int64 type.
+Utilities for working with the Int64 type.
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 import Int64 from "int64"
 ```
 
-## Values
+## Conversions
 
-Functions for working with the `Int64` data type.
+Functions for converting between Numbers and the Int64 type.
 
 ### Int64.**fromNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 fromNumber : Number -> Int64
 ```
 
-Coverts the argument from a `Number` to a `Int64`.
+Converts a Number to a Int64.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The `Number` to convert|
+|`number`|`Number`|The value to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The converted `Number`|
+|`Int64`|The Number represented as a Int64|
 
 ### Int64.**toNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 toNumber : Int64 -> Number
 ```
 
-Coverts the argument from a `Int64` to a `Number`.
+Converts a Int64 to a Number.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The `Int64` to convert|
+|`float`|`Int64`|The value to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The converted `Int64`|
+|`Number`|The Int64 represented as a Number|
+
+## Operations
+
+Mathematical operations for Int64 values.
 
 ### Int64.**incr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 incr : Int64 -> Int64
 ```
 
-Increments the number by 1.
+Increments the value by 1.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The `Int64` to increment|
+|`value`|`Int64`|The value to increment|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The incremented `Int64`|
+|`Int64`|The value incremented by 1|
 
 ### Int64.**decr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 decr : Int64 -> Int64
 ```
 
-Decrements the number by 1.
+Decremented the value by 1.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The `Int64` to decrement|
+|`value`|`Int64`|The value to decrement|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The decremented `Int64`|
+|`Int64`|The value decremented by 1|
 
 ### Int64.**add**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 add : (Int64, Int64) -> Int64
 ```
 
-Integer addition.
+Computes the sum of its operands.
 
 Parameters:
 
@@ -115,11 +149,16 @@ Returns:
 
 ### Int64.**sub**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 sub : (Int64, Int64) -> Int64
 ```
 
-Integer subtraction.
+Computes the difference of its operands.
 
 Parameters:
 
@@ -136,11 +175,16 @@ Returns:
 
 ### Int64.**mul**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 mul : (Int64, Int64) -> Int64
 ```
 
-Integer multiplication.
+Computes the product of its operands.
 
 Parameters:
 
@@ -157,11 +201,16 @@ Returns:
 
 ### Int64.**div**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 div : (Int64, Int64) -> Int64
 ```
 
-Integer division.
+Computes the quotient (signed) of its operands.
 
 Parameters:
 
@@ -174,15 +223,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The quotient of the two operands|
+|`Int64`|The quotient (signed) of the two operands|
 
 ### Int64.**divU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 divU : (Int64, Int64) -> Int64
 ```
 
-Unsigned integer division.
+Computes the unsigned quotient of its operands.
 
 Parameters:
 
@@ -195,15 +249,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The quotient of the two operands|
+|`Int64`|The quotient (unsigned) of the two operands|
 
 ### Int64.**rem**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 rem : (Int64, Int64) -> Int64
 ```
 
-Integer remainder.
+Computer the remainder (signed) of a division of its operands.
 
 Parameters:
 
@@ -216,15 +275,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The signed remainder from a division of its two operands|
+|`Int64`|The remainder (signed) of a division of its operands|
 
 ### Int64.**remU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 remU : (Int64, Int64) -> Int64
 ```
 
-Unsigned integer remainder.
+Computer the remainder (unsigned) of a division of its operands.
 
 Parameters:
 
@@ -237,15 +301,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The unsigned remainder from a division of its two operands|
+|`Int64`|The remainder (unsigned) of a division of its operands|
 
 ### Int64.**mod**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 ( mod ) : (Int64, Int64) -> Int64
 ```
 
-Integer modulo.
+Computer the modulo of a division of its operands.
 
 Parameters:
 
@@ -258,96 +327,364 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The remainder from a division of its two operands|
-
-### Int64.**clz**
-
-```grain
-clz : Int64 -> Int64
-```
-
-Integer count leading zeros.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The number of leading zeros in its operand|
-
-### Int64.**ctz**
-
-```grain
-ctz : Int64 -> Int64
-```
-
-Integer count trailing zeros.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The number of trailing zeros in its operand|
-
-### Int64.**popcnt**
-
-```grain
-popcnt : Int64 -> Int64
-```
-
-Integer population count.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The number of `1-bits` in its operand|
+|`Int64`|The modulo of a division of its operands|
 
 ### Int64.**rotl**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 rotl : (Int64, Int64) -> Int64
 ```
 
-Integer rotate left.
+Rotates the value left by the given number of bits.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The first operand|
-|`y`|`Int64`|The second operand|
+|`value`|`Int64`|The value to rotate|
+|`shiftCount`|`Int64`|The shiftCount|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value of the first operand rotated to the left by the shift count|
+|`Int64`|The value rotated to the left by the shiftCount|
 
 ### Int64.**rotr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 rotr : (Int64, Int64) -> Int64
 ```
 
-Integer rotate right.
+Rotates the value right by the given number of bits.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to rotate|
+|`shiftCount`|`Int64`|The shiftCount|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The value rotated to the right by the shiftCount|
+
+### Int64.**shl**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+shl : (Int64, Int64) -> Int64
+```
+
+Shifts the value left by the given number of bits.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to shift|
+|`shiftCount`|`Int64`|The shiftCount|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The value shifted to the left by the shiftCount|
+
+### Int64.**shr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+shr : (Int64, Int64) -> Int64
+```
+
+Shifts the value (signed) right by the given number of bits.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to shift|
+|`shiftCount`|`Int64`|The shiftCount|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The value (signed) shifted to the right by the shiftCount|
+
+### Int64.**shrU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+shrU : (Int64, Int64) -> Int64
+```
+
+Shifts the value (unsigned) right by the given number of bits.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to shift|
+|`shiftCount`|`Int64`|The shiftCount|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The value (unsigned) shifted to the right by the shiftCount|
+
+## Comparisons
+
+Functions for comparing Int64 values.
+
+### Int64.**eq**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+eq : (Int64, Int64) -> Bool
+```
+
+Checks if the first value is equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+### Int64.**ne**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+ne : (Int64, Int64) -> Bool
+```
+
+Checks if the first value is not equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
+
+### Int64.**eqz**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+eqz : Int64 -> Bool
+```
+
+Checks if the given value equal to zero.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is equal to zero or `false` otherwise|
+
+### Int64.**lt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+lt : (Int64, Int64) -> Bool
+```
+
+Checks if the first value is less than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+### Int64.**gt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gt : (Int64, Int64) -> Bool
+```
+
+Checks if the first value is greater than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+### Int64.**lte**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+lte : (Int64, Int64) -> Bool
+```
+
+Checks if the first value is less than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+### Int64.**gte**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gte : (Int64, Int64) -> Bool
+```
+
+Checks if the first value is greater than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+## Logical
+
+Int64 Logical Functions.
+
+### Int64.**lnot**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+lnot : Int64 -> Int64
+```
+
+Computes the bitwise logical "not" of the given value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The given value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The bitwise logical "not" of the given value.|
+
+### Int64.**land**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+( land ) : (Int64, Int64) -> Int64
+```
+
+Computes the bitwise logical "and" on the given operands.
 
 Parameters:
 
@@ -360,303 +697,136 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value of the first operand rotated to the right by the shift count|
-
-## Comparisons
-
-Comparison functions for working with integers.
-
-### Int64.**eq**
-
-```grain
-eq : (Int64, Int64) -> Bool
-```
-
-Integer equal.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`y`|`Int64`|The second argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean representing if the arguments are equal|
-
-### Int64.**ne**
-
-```grain
-ne : (Int64, Int64) -> Bool
-```
-
-Integer inequality.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`y`|`Int64`|The second argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean representing if the arguments are not equal|
-
-### Int64.**eqz**
-
-```grain
-eqz : Int64 -> Bool
-```
-
-Integer equal to zero.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean indicating if the argument is equal to zero|
-
-### Int64.**lt**
-
-```grain
-lt : (Int64, Int64) -> Bool
-```
-
-Checks if the first argument is strictly less than the second argument.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`y`|`Int64`|The second argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean representing if the first argument is less then the second argument|
-
-### Int64.**gt**
-
-```grain
-gt : (Int64, Int64) -> Bool
-```
-
-Checks if the first argument is strictly greater than the second argument.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`y`|`Int64`|The second argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean representing if the first argument is greater then the second argument|
-
-### Int64.**lte**
-
-```grain
-lte : (Int64, Int64) -> Bool
-```
-
-Checks if the first argument is strictly less then or equal to the second argument.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`y`|`Int64`|The second argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean representing if the first argument is less then or equal to the second argument|
-
-### Int64.**gte**
-
-```grain
-gte : (Int64, Int64) -> Bool
-```
-
-Checks if the first argument is strictly greater then or equal to the second argument.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`y`|`Int64`|The second argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|A boolean representing if the first argument is greater then or equal to the second argument|
-
-## Logical operations
-
-logical operations for working with Integers.
-
-### Int64.**lnot**
-
-```grain
-lnot : Int64 -> Int64
-```
-
-Computes the bitwise logical "not" of the argument.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The bitwise logical "not" of the argument|
-
-### Int64.**land**
-
-```grain
-( land ) : (Int64, Int64) -> Int64
-```
-
-Computes the bitwise logical "and" of the argument.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first argument|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The bitwise logical "and" of the argument|
+|`Int64`|The bitwise logical "and" of the given operands.|
 
 ### Int64.**lor**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 ( lor ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical "or" of the argument.
+Computes the bitwise logical "or" on the given operands.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The first argument|
+|`x`|`Int64`|The first operand|
+|`y`|`Int64`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "or" of the argument|
+|`Int64`|The bitwise logical "or" of the given operands.|
+
+## Inspections
+
+Functions for inspecting Int64 values.
 
 ### Int64.**lxor**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 ( lxor ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical "xor" of the argument.
+Computes the bitwise logical "xor" on the given operands.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`x`|`Int64`|The second argument|
+|`x`|`Int64`|The first operand|
+|`y`|`Int64`|The second operand|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "xor" of the argument|
+|`Int64`|The bitwise logical "xor" of the given operands.|
 
-### Int64.**shl**
+### Int64.**clz**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-shl : (Int64, Int64) -> Int64
+clz : Int64 -> Int64
 ```
 
-Computes the bitwise arithmetic (signed) shift right of the first argument by the second argument.
+Counts the number of leading zeros in value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`x`|`Int64`|The second argument|
+|`value`|`Int64`|The value to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical shift left of the first argument by the second argument|
+|`Int64`|Values count of leading zeros|
 
-### Int64.**shr**
+### Int64.**ctz**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-shr : (Int64, Int64) -> Int64
+ctz : Int64 -> Int64
 ```
 
-Computes the bitwise logical shift right of the first argument by the second argument.
+Counts the number of trailing zeros in value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`x`|`Int64`|The second argument|
+|`value`|`Int64`|The value to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise arithmetic (signed) shift right of the first argument by the second argument|
+|`Int64`|Values count of trailing zeros|
 
-### Int64.**shrU**
+### Int64.**popcnt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-shrU : (Int64, Int64) -> Int64
+popcnt : Int64 -> Int64
 ```
 
-Computes the unsigned bitwise logical shift right of the first argument by the second argument.
+The number of 1-bits in value.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Int64`|The first argument|
-|`x`|`Int64`|The second argument|
+|`value`|`Int64`|The value to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise arithmetic (unsigned) shift right of the first argument by the second argument|
+|`Int64`|The number of 1-bits in its operand|
 
