@@ -28,3 +28,10 @@ match (A(1, 2)) {
         c
     ) => false
 }
+
+let testFormatting = charlist => {
+    match (charlist) {
+      ['f', 'o', 'r', 'm', 'a', 't', ...rest] => true,
+      _ => false
+    }
+}

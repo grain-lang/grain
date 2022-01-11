@@ -1,0 +1,42 @@
+opam-version: "2.0"
+synopsis: """POSIX time for OCaml"""
+maintainer: ["Daniel Bünzli <daniel.buenzl i@erratique.ch>"]
+authors: ["The ptime programmers"]
+homepage: "https://erratique.ch/software/ptime"
+doc: "https://erratique.ch/software/ptime/doc/"
+dev-repo: "git+https://erratique.ch/repos/ptime.git"
+bug-reports: "https://github.com/dbuenzli/ptime/issues"
+license: ["ISC"]
+tags: ["time" "posix" "system" "org:erratique"]
+depends: ["ocaml" {>= "4.03.0"}
+          "ocamlfind" {build}
+          "ocamlbuild" {build & != "0.9.0"}
+          "topkg" {build & >= "1.0.3"}]
+depopts: ["js_of_ocaml"]
+conflicts: ["js_of_ocaml" {<= "3.3.0"}]
+build: [["ocaml" "pkg/pkg.ml" "build" "--dev-pkg" "%{dev}%"
+          "--with-js_of_ocaml" "%{js_of_ocaml:installed}%"]]
+url {
+  src: "https://erratique.ch/software/ptime/releases/ptime-0.8.6.tbz"
+  checksum: "sha512=dbb5a1caae995381672ebe95b6824d62d6092e099d0f40099bab049f2f87516fd3657d59694739423e1c0948efd43e50fa06664975593deffe86ba16f6f9fbb9"}
+description: """
+Ptime has platform independent POSIX time support in pure OCaml. It
+provides a type to represent a well-defined range of POSIX timestamps
+with picosecond precision, conversion with date-time values,
+conversion with [RFC 3339 timestamps][rfc3339] and pretty printing to a
+human-readable, locale-independent representation.
+
+The additional Ptime_clock library provides access to a system POSIX
+clock and to the system's current time zone offset.
+
+Ptime is not a calendar library.
+
+Ptime has no dependency. Ptime_clock depends on your system
+library. Ptime_clock's optional JavaScript support depends on
+[js_of_ocaml][jsoo]. Ptime and its libraries are distributed under the
+ISC license.
+
+[rfc3339]: http://tools.ietf.org/html/rfc3339
+[jsoo]: http://ocsigen.org/js_of_ocaml/
+
+Home page: http://erratique.ch/software/ptime"""

@@ -426,21 +426,19 @@ let rec transl_imm =
     ) =>
     let (ans, ans_setup) = transl_comp_expression(e);
     (Imm.trap(~loc, ~env, ()), ans_setup @ [BSeq(ans)]);
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
-      [arg1, arg2],
-    ) =>
-    transl_imm({...e, exp_desc: TExpPrim2(And, arg1, arg2)})
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@or")})},
-      [arg1, arg2],
-    ) =>
-    transl_imm({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@not")})},
-      [arg],
-    ) =>
-    transl_imm({...e, exp_desc: TExpPrim1(Not, arg)})
+  | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
+    Translprim.(
+      switch (PrimMap.find_opt(prim_map, prim), args) {
+      | (Some(Primitive1(prim)), [arg]) =>
+        transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
+      | (Some(Primitive2(prim)), [arg1, arg2]) =>
+        transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+      | (Some(PrimitiveN(prim)), args) =>
+        transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
+      | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
+      | (None, _) => failwith("transl_imm: unknown primitive")
+      }
+    )
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
@@ -1072,26 +1070,20 @@ and transl_comp_expression =
       Comp.imm(~attributes, ~allocation_type, ~env, Imm.trap(~loc, ~env, ())),
       ans_setup @ [BSeq(ans)],
     );
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@assert")})},
-      [arg],
-    ) =>
-    transl_comp_expression({...e, exp_desc: TExpPrim1(Assert, arg)})
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@and")})},
-      [arg1, arg2],
-    ) =>
-    transl_comp_expression({...e, exp_desc: TExpPrim2(And, arg1, arg2)})
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@or")})},
-      [arg1, arg2],
-    ) =>
-    transl_comp_expression({...e, exp_desc: TExpPrim2(Or, arg1, arg2)})
-  | TExpApp(
-      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@not")})},
-      [arg],
-    ) =>
-    transl_comp_expression({...e, exp_desc: TExpPrim1(Not, arg)})
+  | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
+    Translprim.(
+      switch (PrimMap.find_opt(prim_map, prim), args) {
+      | (Some(Primitive1(prim)), [arg]) =>
+        transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
+      | (Some(Primitive2(prim)), [arg1, arg2]) =>
+        transl_comp_expression({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+      | (Some(PrimitiveN(prim)), args) =>
+        transl_comp_expression({...e, exp_desc: TExpPrimN(prim, args)})
+      | (Some(_), _) =>
+        failwith("transl_comp_expression: invalid primitive arity")
+      | (None, _) => failwith("transl_comp_expression: unknown primitive")
+      }
+    )
   | TExpApp(func, args) =>
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
@@ -1404,6 +1396,7 @@ let rec transl_anf_statement =
           | TDataVariant(_) =>
             let typath = Path.PIdent(decl.data_id);
             linearize_decl(env, loc, typath, decl.data_type);
+          | TDataAbstract
           | TDataRecord(_) => []
           },
         decls,
@@ -1420,6 +1413,15 @@ let rec transl_anf_statement =
       | Exported => Global
       | Nonexported => Nonglobal
       };
+    let external_name =
+      List.fold_left(
+        name =>
+          fun
+          | External_name(name) => name
+          | _ => name,
+        desc.tvd_name.txt,
+        attributes,
+      );
     switch (desc.tvd_desc.ctyp_type.desc) {
     | TTyArrow(_) =>
       let (argsty, retty) =
@@ -1437,7 +1439,7 @@ let rec transl_anf_statement =
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            desc.tvd_name.txt,
+            external_name,
             FunctionShape(argsty, retty),
           ),
         ],
@@ -1451,7 +1453,7 @@ let rec transl_anf_statement =
             ~global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            desc.tvd_name.txt,
+            external_name,
             GlobalShape(ty),
           ),
         ],
@@ -1481,7 +1483,7 @@ let gather_type_metadata = statements => {
       switch (ttop_desc) {
       | TTopData(decls) =>
         let info =
-          List.map(
+          List.filter_map(
             decl => {
               let typath = Path.PIdent(decl.data_id);
               let id = get_type_id(typath);
@@ -1498,12 +1500,15 @@ let gather_type_metadata = statements => {
                       ),
                     descrs,
                   );
-                ADTMetadata(id, meta);
+                Some(ADTMetadata(id, meta));
               | TDataRecord(fields) =>
-                RecordMetadata(
-                  id,
-                  List.map(field => Ident.name(field.rf_name), fields),
+                Some(
+                  RecordMetadata(
+                    id,
+                    List.map(field => Ident.name(field.rf_name), fields),
+                  ),
                 )
+              | TDataAbstract => None
               };
             },
             decls,

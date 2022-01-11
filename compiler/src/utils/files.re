@@ -13,14 +13,17 @@ let replace_extension = (baseName, newExt) => {
   Printf.sprintf("%s.%s", remove_extension(baseName), newExt);
 };
 
-// These utilities are needed until https://github.com/facebookexperimental/reason-native/pull/251
-// is merged into the reason-native/fp library to support Windows-style separators
-let normalize_separators = path => {
-  // We hardcode Windows separator because JSOO always acts as unix
-  let windows_sep = Str.regexp("\\");
-  let normal_sep = "/";
-  Str.global_replace(windows_sep, normal_sep, path);
-};
+let normalize_separators = path =>
+  if (Sys.unix) {
+    path;
+  } else {
+    // If we aren't on a Unix-style system, convert `\\` separators to `/`
+    // This is needed until https://github.com/reasonml/reason-native/issues/267
+    // is fixed and we can update the `Fp` library
+    let windows_sep = Str.regexp("\\");
+    let normal_sep = "/";
+    Str.global_replace(windows_sep, normal_sep, path);
+  };
 
 let to_fp = fname => {
   Fp.testForPath(normalize_separators(fname));

@@ -6,10 +6,10 @@ let rec filter = (fn, list) => {
 }
 
 let filteri = (fn, list) => {
-  let rec iter = (fn, list, index) => {
+  let rec iter = (fn, list, index22) => {
     match (list) {
       [] => [],
-      [first, ...rest] => if (fn(first, index)) [first, ...iter(fn, rest, index + 1)] else iter(fn, rest, index + 1)
+      [first, ...rest] => if (fn(first, index22)) [first, ...iter(fn, rest, index22 + 1)] else iter(fn, rest, index22 + 1)
     }
   }
   iter(fn, list, 0)
