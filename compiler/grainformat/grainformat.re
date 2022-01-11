@@ -26,7 +26,11 @@ let compile_parsed = (filename: option(string)) => {
 
       program_str := String.concat("\n", linesList^);
 
-      Compile.compile_string(~hook=stop_after_parse, ~name="", program_str^);
+      Compile.compile_string(
+        ~is_root_file=true,
+        ~hook=stop_after_parse,
+        program_str^,
+      );
     | Some(filenm) =>
       // need to read the source file in case we want to use the content
       // for formatter-ignore or decision making
@@ -52,6 +56,7 @@ let compile_parsed = (filename: option(string)) => {
 
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_string(
+        ~is_root_file=true,
         ~hook=stop_after_parse,
         ~name=filenm,
         program_str^,
