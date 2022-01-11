@@ -1,6 +1,8 @@
 /**
  * @module Float32: Utilities for working with the Float32 type.
  * @example import Float32 from "float32"
+ * 
+ * @since v0.2.0
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmF32 from "runtime/unsafe/wasmf32"
