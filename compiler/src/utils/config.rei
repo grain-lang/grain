@@ -126,10 +126,10 @@ let print_warnings: ref(bool);
 
 /** Type representing a saved set of configuration options */
 
-type saved_config_opt =
-  | SavedOpt((ref('a), 'a)): saved_config_opt;
+type config;
 
-type config = list(saved_config_opt);
+/** An empty config */
+let empty: config;
 
 /** The current configuration for all programs */
 
