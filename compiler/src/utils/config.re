@@ -1,13 +1,19 @@
+type digestable =
+  | Digestable
+  | NotDigestable;
+
 type config_opt =
-  | Opt((ref('a), 'a)): config_opt;
+  | Opt((ref('a), 'a, digestable)): config_opt;
 
 type saved_config_opt =
-  | SavedOpt((ref('a), 'a)): saved_config_opt;
+  | SavedOpt((ref('a), 'a, digestable)): saved_config_opt;
 
 type digestable_opt =
   | DigestableOpt('a): digestable_opt;
 
 type config = list(saved_config_opt);
+
+let empty: config = [];
 
 /* Here we model the API provided by cmdliner without introducing
    an explicit dependency on it (that's left to grainc). */
@@ -30,10 +36,10 @@ type config_spec =
 let opts: ref(list(config_opt)) = (ref([]): ref(list(config_opt)));
 let specs: ref(list(config_spec)) = (ref([]): ref(list(config_spec)));
 
-let internal_opt: 'a. 'a => ref('a) =
-  v => {
+let internal_opt: 'a. ('a, digestable) => ref('a) =
+  (v, digestable) => {
     let cur = ref(v);
-    opts := [Opt((cur, v)), ...opts^];
+    opts := [Opt((cur, v, digestable)), ...opts^];
     cur;
   };
 
@@ -97,7 +103,7 @@ let opt:
     ~conv as c,
     v,
   ) => {
-    let cur = internal_opt(v);
+    let cur = internal_opt(v, Digestable);
     specs :=
       [
         Spec(
@@ -137,7 +143,7 @@ let toggle_flag:
   ) =>
   ref(bool) = (
   (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, ~names, default) => {
-    let cur = internal_opt(default);
+    let cur = internal_opt(default, Digestable);
     specs :=
       [
         Spec(
@@ -183,21 +189,21 @@ let toggle_flag:
 let save_config = () => {
   let single_save =
     fun
-    | Opt((cur, _)) => SavedOpt((cur, cur^));
+    | Opt((cur, _, digestable)) => SavedOpt((cur, cur^, digestable));
   List.map(single_save, opts^);
 };
 
 let restore_config = {
   let single_restore =
     fun
-    | SavedOpt((ptr, value)) => ptr := value;
+    | SavedOpt((ptr, value, _)) => ptr := value;
   List.iter(single_restore);
 };
 
 let reset_config = () => {
   let single_reset =
     fun
-    | Opt((cur, default)) => cur := default;
+    | Opt((cur, default, _)) => cur := default;
   List.iter(single_reset, opts^);
 };
 
@@ -214,7 +220,14 @@ let get_root_config_digest = () => {
   | Some(dgst) => dgst
   | None =>
     let config_opts =
-      List.map((SavedOpt((_, opt))) => DigestableOpt(opt), root_config^);
+      root_config^
+      |> List.filter((SavedOpt((_, _, digestable))) =>
+           switch (digestable) {
+           | Digestable => true
+           | NotDigestable => false
+           }
+         )
+      |> List.map((SavedOpt((_, opt, _))) => DigestableOpt(opt));
     let config = Marshal.to_bytes(config_opts, []);
     let ret = Digest.to_hex(Digest.bytes(config));
     root_config_digest := Some(ret);
@@ -547,17 +560,10 @@ let elide_type_info =
 let source_map =
   toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
 
-let lsp_mode =
-  toggle_flag(
-    ~names=["lsp"],
-    ~doc="Generate lsp errors and warnings only",
-    false,
-  );
-
-let print_warnings = internal_opt(true);
+let print_warnings = internal_opt(true, NotDigestable);
 
 /* To be filled in by grainc */
-let base_path = internal_opt("");
+let base_path = internal_opt("", NotDigestable);
 
 let with_base_path = (path, func) => {
   let old_base_path = base_path^;
