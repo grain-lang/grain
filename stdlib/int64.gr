@@ -146,11 +146,11 @@ export let rec mul = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the quotient (signed) of its operands.
+ * Computes the quotient of its operands using signed division.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The quotient (signed) of the two operands
+ * @returns The quotient of its operands using signed division
  * 
  * @since v0.2.0
  */
@@ -167,11 +167,11 @@ export let rec div = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the unsigned quotient of its operands.
+ * Computes the quotient of its operands using unsigned division.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The quotient (unsigned) of the two operands
+ * @returns The quotient of its operands using unsigned division
  * 
  * @since v0.2.0
  */
@@ -188,11 +188,11 @@ export let rec divU = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computer the remainder (signed) of a division of its operands.
+ * Computes the remainder of the signed division of its operands.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The remainder (signed) of a division of its operands
+ * @returns The remainder of the signed division of its operands
  * 
  * @since v0.2.0
  */
@@ -209,11 +209,11 @@ export let rec rem = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computer the remainder (unsigned) of a division of its operands.
+ * Computes the remainder of the unsigned division of its operands.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The remainder (unsigned) of a division of its operands
+ * @returns The remainder of the unsigned division of its operands.
  * 
  * @since v0.2.0
  */
@@ -333,11 +333,11 @@ export let rec shl = (value: Int64, shiftCount: Int64) => {
 }
 
 /**
- * Shifts the value (signed) right by the given number of bits.
+ * Shifts the value right by the given signed number of bits.
  *
  * @param value: The value to shift
- * @param shiftCount: The shiftCount
- * @returns The value (signed) shifted to the right by the shiftCount
+ * @param shiftCount: The signed shiftCount
+ * @returns The value shifted to the right by the signed shiftCount
  * 
  * @since v0.2.0
  */
@@ -354,11 +354,11 @@ export let rec shr = (value: Int64, shiftCount: Int64) => {
 }
 
 /**
- * Shifts the value (unsigned) right by the given number of bits.
+ * Shifts the value right by the given unsigned number of bits.
  *
  * @param value: The value to shift
- * @param shiftCount: The shiftCount
- * @returns The value (unsigned) shifted to the right by the shiftCount
+ * @param shiftCount: The unsigned shiftCount
+ * @returns The value shifted to the right by the unsigned shiftCount
  * 
  * @since v0.2.0
  */

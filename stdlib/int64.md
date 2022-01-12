@@ -28,7 +28,7 @@ No other changes yet.
 fromNumber : Number -> Int64
 ```
 
-Converts a Number to a Int64.
+Converts a Number to an Int64.
 
 Parameters:
 
@@ -40,7 +40,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The Number represented as a Int64|
+|`Int64`|The Number represented as an Int64|
 
 ### Int64.**toNumber**
 
@@ -53,7 +53,7 @@ No other changes yet.
 toNumber : Int64 -> Number
 ```
 
-Converts a Int64 to a Number.
+Converts an Int64 to a Number.
 
 Parameters:
 
@@ -82,7 +82,7 @@ No other changes yet.
 incr : Int64 -> Int64
 ```
 
-Increments the value by 1.
+Increments the value by one.
 
 Parameters:
 
@@ -94,7 +94,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value incremented by 1|
+|`Int64`|The value incremented by one|
 
 ### Int64.**decr**
 
@@ -107,7 +107,7 @@ No other changes yet.
 decr : Int64 -> Int64
 ```
 
-Decremented the value by 1.
+Decremented the value by one.
 
 Parameters:
 
@@ -119,7 +119,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value decremented by 1|
+|`Int64`|The value decremented by one|
 
 ### Int64.**add**
 
@@ -210,7 +210,7 @@ No other changes yet.
 div : (Int64, Int64) -> Int64
 ```
 
-Computes the quotient (signed) of its operands.
+Computes the quotient of its operands using signed division.
 
 Parameters:
 
@@ -223,7 +223,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The quotient (signed) of the two operands|
+|`Int64`|The quotient of its operands using signed division|
 
 ### Int64.**divU**
 
@@ -236,7 +236,7 @@ No other changes yet.
 divU : (Int64, Int64) -> Int64
 ```
 
-Computes the unsigned quotient of its operands.
+Computes the quotient of its operands using unsigned division.
 
 Parameters:
 
@@ -249,7 +249,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The quotient (unsigned) of the two operands|
+|`Int64`|The quotient of its operands using unsigned division|
 
 ### Int64.**rem**
 
@@ -262,7 +262,7 @@ No other changes yet.
 rem : (Int64, Int64) -> Int64
 ```
 
-Computer the remainder (signed) of a division of its operands.
+Computes the remainder of the signed division of its operands.
 
 Parameters:
 
@@ -275,7 +275,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The remainder (signed) of a division of its operands|
+|`Int64`|The remainder of the signed division of its operands|
 
 ### Int64.**remU**
 
@@ -288,7 +288,7 @@ No other changes yet.
 remU : (Int64, Int64) -> Int64
 ```
 
-Computer the remainder (unsigned) of a division of its operands.
+Computes the remainder of the unsigned division of its operands.
 
 Parameters:
 
@@ -301,7 +301,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The remainder (unsigned) of a division of its operands|
+|`Int64`|The remainder of the unsigned division of its operands.|
 
 ### Int64.**mod**
 
@@ -418,20 +418,20 @@ No other changes yet.
 shr : (Int64, Int64) -> Int64
 ```
 
-Shifts the value (signed) right by the given number of bits.
+Shifts the value right by the given signed number of bits.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The shiftCount|
+|`shiftCount`|`Int64`|The signed shiftCount|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value (signed) shifted to the right by the shiftCount|
+|`Int64`|The value shifted to the right by the signed shiftCount|
 
 ### Int64.**shrU**
 
@@ -444,20 +444,20 @@ No other changes yet.
 shrU : (Int64, Int64) -> Int64
 ```
 
-Shifts the value (unsigned) right by the given number of bits.
+Shifts the value right by the given unsigned number of bits.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The shiftCount|
+|`shiftCount`|`Int64`|The unsigned shiftCount|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value (unsigned) shifted to the right by the shiftCount|
+|`Int64`|The value shifted to the right by the unsigned shiftCount|
 
 ## Comparisons
 
