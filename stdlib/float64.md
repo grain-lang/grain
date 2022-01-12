@@ -4,6 +4,11 @@ title: Float64
 
 Utilities for working with the Float64 type.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Float64 from "float64"
 ```

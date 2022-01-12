@@ -1,6 +1,8 @@
 /**
  * @module Float64: Utilities for working with the Float64 type.
  * @example import Float64 from "float64"
+ * 
+ * @since v0.2.0
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmF64 from "runtime/unsafe/wasmf64"
