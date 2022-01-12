@@ -236,11 +236,12 @@ let abs = (n) => {
 }
 
 /**
- * Computer the modulo of a division of its operands.
+ * Computes the remainder of the division of the first operand by the second. 
+ * The result will have the sign of the second operand.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The modulo of a division of its operands
+ * @returns The modulos of its operands
  * 
  * @since v0.2.0
  */
@@ -268,6 +269,10 @@ export let rec mod = (x: Int64, y: Int64) => {
   Memory.decRef(WasmI32.fromGrain(mod))
   ret
 }
+
+/**
+ * @section Bits: Functions for operating on the raw bits of Int64s.
+ */
 
 /**
  * Rotates the value left by the given number of bits.

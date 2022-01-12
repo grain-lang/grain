@@ -314,7 +314,8 @@ No other changes yet.
 ( mod ) : (Int64, Int64) -> Int64
 ```
 
-Computer the modulo of a division of its operands.
+Computes the remainder of the division of the first operand by the second.
+The result will have the sign of the second operand.
 
 Parameters:
 
@@ -327,7 +328,11 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The modulo of a division of its operands|
+|`Int64`|The modulos of its operands|
+
+## Bits
+
+Functions for operating on the raw bits of Int64s.
 
 ### Int64.**rotl**
 
