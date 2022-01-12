@@ -51,7 +51,9 @@ and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
 and ident_array = ident_create("Array")
-and ident_fd = ident_create("FileDescriptor");
+and ident_fd = ident_create("FileDescriptor")
+and ident_option = ident_create("Option")
+and ident_result = ident_create("Result");
 
 let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
@@ -71,7 +73,9 @@ and path_char = PIdent(ident_char)
 and path_void = PIdent(ident_void)
 and path_box = PIdent(ident_box)
 and path_array = PIdent(ident_array)
-and path_fd = PIdent(ident_fd);
+and path_fd = PIdent(ident_fd)
+and path_option = PIdent(ident_option)
+and path_result = PIdent(ident_result);
 
 let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
 and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
@@ -92,6 +96,10 @@ and type_void = newgenty(TTyConstr(path_void, [], ref(TMemNil)))
 and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
 and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
+and type_option = var =>
+  newgenty(TTyConstr(path_option, [var], ref(TMemNil)))
+and type_result = var =>
+  newgenty(TTyConstr(path_result, [var], ref(TMemNil)))
 and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
 and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
@@ -156,6 +164,22 @@ and decl_array = {
     type_params: [tvar],
     type_arity: 1,
   });
+}
+and decl_option = {
+  let tvar = newgenvar();
+  decl_create({
+    ...decl_abstr(path_option),
+    type_params: [tvar],
+    type_arity: 1,
+  });
+}
+and decl_result = {
+  let tvar = newgenvar();
+  decl_create({
+    ...decl_abstr(path_result),
+    type_params: [tvar],
+    type_arity: 1,
+  });
 };
 
 let initial_env = (add_type, empty_env) =>
@@ -177,6 +201,8 @@ let initial_env = (add_type, empty_env) =>
   |> add_type(ident_char, decl_abstr(path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
+  |> add_type(ident_option, decl_option)
+  |> add_type(ident_result, decl_result)
   |> add_type(ident_fd, decl_abstr(path_fd))
   |> add_type(ident_bytes, decl_abstr(path_bytes));
 
