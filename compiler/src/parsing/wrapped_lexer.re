@@ -110,8 +110,7 @@ let rec next_non_eol_token = (state, acc) => {
     next_non_eol_token(state, acc);
   | tok =>
     let lexbuf = state.lexbuf;
-    let acc = [save_triple(lexbuf, tok), ...acc];
-    (tok, acc);
+    (save_triple(lexbuf, tok), acc);
   };
 };
 
@@ -154,17 +153,14 @@ let rec check_lparen_fn = (state, closing, acc) => {
 }
 
 and check_id_fn = (state, closing, acc) => {
-  switch (token(state)) {
-  | exception exn => raise(Lex_balanced_failed(acc, Some(exn)))
-  | tok' =>
-    let acc =
-      if (is_triggering_token(tok')) {
-        inject_fun(acc);
-      } else {
-        acc;
-      };
-    lex_balanced_step(state, closing, acc, tok');
-  };
+  let ((tok, _, _), acc') = next_non_eol_token(state, []);
+  let acc =
+    if (is_triggering_token(tok)) {
+      acc' @ inject_fun(acc);
+    } else {
+      acc' @ acc;
+    };
+  lex_balanced_step(state, closing, acc, tok);
 }
 
 and lex_balanced_step = (state, closing, acc, tok) => {
@@ -201,14 +197,14 @@ and lex_balanced_step = (state, closing, acc, tok) => {
     // When in a context where we're not looking for toplevel functions,
     // the thing that appears immediately after an arrow could be a
     // function, so we need to check for that
-    let (tok', tokens) = next_non_eol_token(state, []);
+    let ((tok', _, _) as triple', tokens) = next_non_eol_token(state, []);
     switch (tok') {
-    | LPAREN => check_lparen_fn(state, closing, tokens @ acc)
+    | LPAREN => check_lparen_fn(state, closing, [triple', ...tokens @ acc])
     | ID(_)
-    | UNDERSCORE => check_id_fn(state, closing, tokens @ acc)
+    | UNDERSCORE => check_id_fn(state, closing, [triple', ...tokens @ acc])
     | _ =>
-      // "Unlex" this token and recurse normally
-      lex_balanced_step(state, closing, List.tl(tokens) @ acc, tok')
+      // Recurse normally
+      lex_balanced_step(state, closing, tokens @ acc, tok')
     };
   | (MATCH, _) =>
     lex_balanced(
@@ -352,6 +348,27 @@ let set_lexer_positions = (state, lex_start_p, lex_curr_p) => {
 let restore_lexer_positions = state => {
   let (lex_start_p, lex_curr_p) = state.lexbuf_p;
   set_lexer_positions(state, lex_start_p, lex_curr_p);
+};
+
+let token = state => {
+  // if-else hack
+  let (tok, _, _) as triple = token(state);
+  if (tok == EOL) {
+    let fst = ((a, _, _)) => a;
+    let next_triple = ref(triple);
+    while (fst(next_triple^) == EOL) {
+      next_triple := token(state);
+    };
+
+    switch (fst(next_triple^)) {
+    | ELSE => next_triple^
+    | _ =>
+      state.queued_tokens = [next_triple^, ...state.queued_tokens];
+      triple;
+    };
+  } else {
+    triple;
+  };
 };
 
 let token = state => {

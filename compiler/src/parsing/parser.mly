@@ -695,9 +695,9 @@ toplevel_stmt:
   | attributes LET REC MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Recursive Mutable $5 }
   | attributes LET MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
   | attributes data_declaration_stmts { Top.data ~loc:(to_loc $sloc) ~attributes:$1 $2 }
+  | attributes IMPORT foreign_stmt { Top.foreign ~loc:(to_loc $loc) ~attributes:$1 Nonexported $3 }
+  | attributes import_stmt { Top.import ~loc:(to_loc $loc) ~attributes:$1 $2 }
   | expr { Top.expr ~loc:(to_loc $loc) $1 }
-  | import_stmt { Top.import ~loc:(to_loc $loc) $1 }
-  | IMPORT foreign_stmt { Top.foreign ~loc:(to_loc $loc) Nonexported $2 }
   | export_stmt { $1 }
   | primitive_stmt { Top.primitive ~loc:(to_loc $loc) Nonexported $1 }
   | exception_stmt { Top.grain_exception ~loc:(to_loc $loc) Nonexported $1 }
