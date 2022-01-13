@@ -330,9 +330,9 @@ Returns:
 |----|-----------|
 |`Int64`|The modulos of its operands|
 
-## Bits
+## Bit Operations
 
-Functions for operating on the raw bits of Int64s.
+Functions for operating on bits of Int64 values.
 
 ### Int64.**rotl**
 
@@ -352,13 +352,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to rotate|
-|`shiftCount`|`Int64`|The shiftCount|
+|`amount`|`Int64`|The number of bits to rotate by|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value rotated to the left by the shiftCount|
+|`Int64`|The value rotated to the left by the amount|
 
 ### Int64.**rotr**
 
@@ -378,13 +378,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to rotate|
-|`shiftCount`|`Int64`|The shiftCount|
+|`amount`|`Int64`|The number of bits to rotate by|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value rotated to the right by the shiftCount|
+|`Int64`|The value rotated to the right by the amount|
 
 ### Int64.**shl**
 
@@ -410,7 +410,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value shifted to the left by the shiftCount|
+|`Int64`|The value shifted to the left by the shiftCount, preserving the sign bit|
 
 ### Int64.**shr**
 
@@ -423,20 +423,20 @@ No other changes yet.
 shr : (Int64, Int64) -> Int64
 ```
 
-Shifts the value right by the given signed number of bits.
+Shifts the value right by the given number of bits.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The signed shiftCount|
+|`shiftCount`|`Int64`|The shiftCount|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value shifted to the right by the signed shiftCount|
+|`Int64`|The value shifted to the right by the shiftCount, preserving the sign bit|
 
 ### Int64.**shrU**
 
@@ -449,20 +449,20 @@ No other changes yet.
 shrU : (Int64, Int64) -> Int64
 ```
 
-Shifts the value right by the given unsigned number of bits.
+Shifts the value right by the given number of bits.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The unsigned shiftCount|
+|`shiftCount`|`Int64`|The shiftCount|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value shifted to the right by the unsigned shiftCount|
+|`Int64`|The value shifted to the right by the shiftCount, preserving the sign bit|
 
 ## Comparisons
 
@@ -729,10 +729,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The bitwise logical "or" of the given operands.|
-
-## Inspections
-
-Functions for inspecting Int64 values.
 
 ### Int64.**lxor**
 

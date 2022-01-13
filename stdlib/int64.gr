@@ -271,26 +271,26 @@ export let rec mod = (x: Int64, y: Int64) => {
 }
 
 /**
- * @section Bits: Functions for operating on the raw bits of Int64s.
+ * @section Bit Operations: Functions for operating on bits of Int64 values.
  */
 
 /**
  * Rotates the value left by the given number of bits.
  *
  * @param value: The value to rotate
- * @param shiftCount: The shiftCount
- * @returns The value rotated to the left by the shiftCount
+ * @param amount: The number of bits to rotate by
+ * @returns The value rotated to the left by the amount
  * 
  * @since v0.4.0
  */
 @disableGC
-export let rec rotl = (value: Int64, shiftCount: Int64) => {
+export let rec rotl = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(shiftCount), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.rotl(xv, yv))
   let ret = WasmI32.toGrain(ptr): Int64
   Memory.decRef(WasmI32.fromGrain(value))
-  Memory.decRef(WasmI32.fromGrain(shiftCount))
+  Memory.decRef(WasmI32.fromGrain(amount))
   Memory.decRef(WasmI32.fromGrain(rotl))
   ret
 }
@@ -299,19 +299,19 @@ export let rec rotl = (value: Int64, shiftCount: Int64) => {
  * Rotates the value right by the given number of bits.
  *
  * @param value: The value to rotate
- * @param shiftCount: The shiftCount
- * @returns The value rotated to the right by the shiftCount
+ * @param amount: The number of bits to rotate by
+ * @returns The value rotated to the right by the amount
  * 
  * @since v0.4.0
  */
 @disableGC
-export let rec rotr = (value: Int64, shiftCount: Int64) => {
+export let rec rotr = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(shiftCount), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.rotr(xv, yv))
   let ret = WasmI32.toGrain(ptr): Int64
   Memory.decRef(WasmI32.fromGrain(value))
-  Memory.decRef(WasmI32.fromGrain(shiftCount))
+  Memory.decRef(WasmI32.fromGrain(amount))
   Memory.decRef(WasmI32.fromGrain(rotr))
   ret
 }
@@ -321,7 +321,7 @@ export let rec rotr = (value: Int64, shiftCount: Int64) => {
  *
  * @param value: The value to shift
  * @param shiftCount: The shiftCount
- * @returns The value shifted to the left by the shiftCount
+ * @returns The value shifted to the left by the shiftCount, preserving the sign bit
  * 
  * @since v0.2.0
  */
@@ -338,11 +338,11 @@ export let rec shl = (value: Int64, shiftCount: Int64) => {
 }
 
 /**
- * Shifts the value right by the given signed number of bits.
+ * Shifts the value right by the given number of bits.
  *
  * @param value: The value to shift
- * @param shiftCount: The signed shiftCount
- * @returns The value shifted to the right by the signed shiftCount
+ * @param shiftCount: The shiftCount
+ * @returns The value shifted to the right by the shiftCount, preserving the sign bit
  * 
  * @since v0.2.0
  */
@@ -359,11 +359,11 @@ export let rec shr = (value: Int64, shiftCount: Int64) => {
 }
 
 /**
- * Shifts the value right by the given unsigned number of bits.
+ * Shifts the value right by the given number of bits.
  *
  * @param value: The value to shift
- * @param shiftCount: The unsigned shiftCount
- * @returns The value shifted to the right by the unsigned shiftCount
+ * @param shiftCount: The shiftCount
+ * @returns The value shifted to the right by the shiftCount, preserving the sign bit
  * 
  * @since v0.2.0
  */
@@ -583,11 +583,6 @@ export let rec lor = (x: Int64, y: Int64) => {
   Memory.decRef(WasmI32.fromGrain(lor))
   ret
 }
-
-/**
- * @section Inspections: Functions for inspecting Int64 values.
- */
-
 
 /**
  * Computes the bitwise logical "xor" on the given operands.
