@@ -65,7 +65,7 @@ export let rec incr = (value: Int64) => {
 }
 
 /**
- * Decremented the value by one.
+ * Decrements the value by one.
  *
  * @param value: The value to decrement
  * @returns The value decremented by one
@@ -150,7 +150,7 @@ export let rec mul = (x: Int64, y: Int64) => {
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The quotient of its operands using signed division
+ * @returns The quotient of its operands
  * 
  * @since v0.2.0
  */
@@ -171,7 +171,7 @@ export let rec div = (x: Int64, y: Int64) => {
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The quotient of its operands using unsigned division
+ * @returns The quotient of its operands
  * 
  * @since v0.2.0
  */
@@ -188,11 +188,11 @@ export let rec divU = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the remainder of the signed division of its operands.
+ * Computes the remainder of the division of its operands using signed division.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The remainder of the signed division of its operands
+ * @returns The remainder of its operands
  * 
  * @since v0.2.0
  */
@@ -209,11 +209,11 @@ export let rec rem = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the remainder of the unsigned division of its operands.
+ * Computes the remainder of the division of its operands using unsigned division.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The remainder of the unsigned division of its operands.
+ * @returns The remainder of its operands
  * 
  * @since v0.2.0
  */
@@ -275,11 +275,11 @@ export let rec mod = (x: Int64, y: Int64) => {
  */
 
 /**
- * Rotates the value left by the given number of bits.
+ * Rotates the bits of the value left by the given number of bits.
  *
  * @param value: The value to rotate
  * @param amount: The number of bits to rotate by
- * @returns The value rotated to the left by the amount
+ * @returns The rotated value
  * 
  * @since v0.4.0
  */
@@ -296,11 +296,11 @@ export let rec rotl = (value: Int64, amount: Int64) => {
 }
 
 /**
- * Rotates the value right by the given number of bits.
+ * Rotates the bits of the value right by the given number of bits.
  *
  * @param value: The value to rotate
  * @param amount: The number of bits to rotate by
- * @returns The value rotated to the right by the amount
+ * @returns The rotated value
  * 
  * @since v0.4.0
  */
@@ -317,11 +317,11 @@ export let rec rotr = (value: Int64, amount: Int64) => {
 }
 
 /**
- * Shifts the value left by the given number of bits.
+ * Shifts the bits of the value left by the given number of bits, preserving the sign bit.
  *
  * @param value: The value to shift
  * @param shiftCount: The shiftCount
- * @returns The value shifted to the left by the shiftCount, preserving the sign bit
+ * @returns The shifted value
  * 
  * @since v0.2.0
  */
@@ -338,11 +338,11 @@ export let rec shl = (value: Int64, shiftCount: Int64) => {
 }
 
 /**
- * Shifts the value right by the given number of bits.
+ * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
  *
  * @param value: The value to shift
  * @param shiftCount: The shiftCount
- * @returns The value shifted to the right by the shiftCount, preserving the sign bit
+ * @returns The shifted value
  * 
  * @since v0.2.0
  */
@@ -359,11 +359,11 @@ export let rec shr = (value: Int64, shiftCount: Int64) => {
 }
 
 /**
- * Shifts the value right by the given number of bits.
+ * Shifts the bits of the value right by the given number of bits.
  *
  * @param value: The value to shift
  * @param shiftCount: The shiftCount
- * @returns The value shifted to the right by the shiftCount, preserving the sign bit
+ * @returns The shifted value
  * 
  * @since v0.2.0
  */
@@ -521,11 +521,11 @@ export let rec gte = (x: Int64, y: Int64) => {
 }
 
 /**
- * @section Logical: Int64 Logical Functions.
+ * @section Bitwise Logic: Boolean operations on the bits of Int64 values.
  */
 
 /**
- * Computes the bitwise logical "not" of the given value.
+ * Computes the bitwise logical NOT of the given value.
  *
  * @param value: The given value
  * @returns The bitwise logical "not" of the given value.
@@ -543,11 +543,11 @@ export let rec lnot = (value: Int64) => {
 }
 
 /**
- * Computes the bitwise logical "and" on the given operands.
+ * Computes the bitwise logical AND on the given operands.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The bitwise logical "and" of the given operands.
+ * @returns The bitwise logical "and" of the given operands
  * 
  * @since v0.2.0
  */
@@ -564,11 +564,11 @@ export let rec land = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the bitwise logical "or" on the given operands.
+ * Computes the bitwise logical OR on the given operands.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The bitwise logical "or" of the given operands.
+ * @returns The bitwise logical "or" of the given operands
  * 
  * @since v0.2.0
  */
@@ -585,11 +585,11 @@ export let rec lor = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the bitwise logical "xor" on the given operands.
+ * Computes the bitwise logical XOR on the given operands.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The bitwise logical "xor" of the given operands.
+ * @returns The bitwise logical "xor" of the given operands
  * 
  * @since v0.2.0
  */
@@ -606,10 +606,10 @@ export let rec lxor = (x: Int64, y: Int64) => {
 }
 
 /**
- * Counts the number of leading zeros in value.
+ * Counts the number of leading zero bits in the value.
  *
  * @param value: The value to inspect
- * @returns Values count of leading zeros
+ * @returns The amount of leading zeros
  * 
  * @since v0.4.0
  */
@@ -624,10 +624,10 @@ export let rec clz = (value: Int64) => {
 }
 
 /**
- * Counts the number of trailing zeros in value.
+ * Counts the number of trailing zero bits in the value.
  *
  * @param value: The value to inspect
- * @returns Values count of trailing zeros
+ * @returns The amount of trailing zeros
  * 
  * @since v0.4.0
  */
