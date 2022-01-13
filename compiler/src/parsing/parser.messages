@@ -47,8 +47,65 @@ program: AT WHILE
 ## The known suffix of the stack is as follows:
 ## AT
 ##
+program: AT ID LPAREN RPAREN WHILE
+##
+## Ends in an error in state: 195.
+##
+## attribute -> AT id_str loption(attribute_arguments) . [ TYPE RECORD LET IMPORT EXPORT ENUM AT ]
+## attribute -> AT id_str loption(attribute_arguments) . eols [ TYPE RECORD LET IMPORT EXPORT ENUM AT ]
+##
+## The known suffix of the stack is as follows:
+## AT id_str loption(attribute_arguments)
+##
 
-Attributes are only expected on let bindings and data declarations.
+Attributes are only expected on let bindings, data declarations, and foreign statements.
+
+program: AT ID LPAREN STRING COMMA WHILE
+##
+## Ends in an error in state: 192.
+##
+## lseparated_nonempty_list_inner(comma,attribute_argument) -> lseparated_nonempty_list_inner(comma,attribute_argument) comma . attribute_argument [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(comma,attribute_argument) comma
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 88, spurious reduction of production comma -> COMMA
+##
+program: AT ID LPAREN WHILE
+##
+## Ends in an error in state: 187.
+##
+## attribute_arguments -> lparen . rparen [ TYPE RECORD LET IMPORT EXPORT EOL ENUM AT ]
+## attribute_arguments -> lparen . lseparated_nonempty_list_inner(comma,attribute_argument) rparen [ TYPE RECORD LET IMPORT EXPORT EOL ENUM AT ]
+##
+## The known suffix of the stack is as follows:
+## lparen
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 2, spurious reduction of production lparen -> LPAREN
+##
+
+Expected a string.
+
+program: AT ID LPAREN STRING WHILE
+##
+## Ends in an error in state: 190.
+##
+## attribute_arguments -> lparen lseparated_nonempty_list_inner(comma,attribute_argument) . rparen [ TYPE RECORD LET IMPORT EXPORT EOL ENUM AT ]
+## lseparated_nonempty_list_inner(comma,attribute_argument) -> lseparated_nonempty_list_inner(comma,attribute_argument) . comma attribute_argument [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## lparen lseparated_nonempty_list_inner(comma,attribute_argument)
+##
+
+Expected a comma followed by more attribute parameters or a closing paren to complete the attribute.
 
 program: DASH WHILE
 ##
