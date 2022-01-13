@@ -107,7 +107,7 @@ No other changes yet.
 decr : Int64 -> Int64
 ```
 
-Decremented the value by one.
+Decrements the value by one.
 
 Parameters:
 
@@ -223,7 +223,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The quotient of its operands using signed division|
+|`Int64`|The quotient of its operands|
 
 ### Int64.**divU**
 
@@ -249,7 +249,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The quotient of its operands using unsigned division|
+|`Int64`|The quotient of its operands|
 
 ### Int64.**rem**
 
@@ -262,7 +262,7 @@ No other changes yet.
 rem : (Int64, Int64) -> Int64
 ```
 
-Computes the remainder of the signed division of its operands.
+Computes the remainder of the division of its operands using signed division.
 
 Parameters:
 
@@ -275,7 +275,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The remainder of the signed division of its operands|
+|`Int64`|The remainder of its operands|
 
 ### Int64.**remU**
 
@@ -288,7 +288,7 @@ No other changes yet.
 remU : (Int64, Int64) -> Int64
 ```
 
-Computes the remainder of the unsigned division of its operands.
+Computes the remainder of the division of its operands using unsigned division.
 
 Parameters:
 
@@ -301,7 +301,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The remainder of the unsigned division of its operands.|
+|`Int64`|The remainder of its operands|
 
 ### Int64.**mod**
 
@@ -345,7 +345,7 @@ No other changes yet.
 rotl : (Int64, Int64) -> Int64
 ```
 
-Rotates the value left by the given number of bits.
+Rotates the bits of the value left by the given number of bits.
 
 Parameters:
 
@@ -358,7 +358,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value rotated to the left by the amount|
+|`Int64`|The rotated value|
 
 ### Int64.**rotr**
 
@@ -371,7 +371,7 @@ No other changes yet.
 rotr : (Int64, Int64) -> Int64
 ```
 
-Rotates the value right by the given number of bits.
+Rotates the bits of the value right by the given number of bits.
 
 Parameters:
 
@@ -384,7 +384,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value rotated to the right by the amount|
+|`Int64`|The rotated value|
 
 ### Int64.**shl**
 
@@ -397,7 +397,7 @@ No other changes yet.
 shl : (Int64, Int64) -> Int64
 ```
 
-Shifts the value left by the given number of bits.
+Shifts the bits of the value left by the given number of bits, preserving the sign bit.
 
 Parameters:
 
@@ -410,7 +410,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value shifted to the left by the shiftCount, preserving the sign bit|
+|`Int64`|The shifted value|
 
 ### Int64.**shr**
 
@@ -423,7 +423,7 @@ No other changes yet.
 shr : (Int64, Int64) -> Int64
 ```
 
-Shifts the value right by the given number of bits.
+Shifts the bits of the value right by the given number of bits, preserving the sign bit.
 
 Parameters:
 
@@ -436,7 +436,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value shifted to the right by the shiftCount, preserving the sign bit|
+|`Int64`|The shifted value|
 
 ### Int64.**shrU**
 
@@ -449,7 +449,7 @@ No other changes yet.
 shrU : (Int64, Int64) -> Int64
 ```
 
-Shifts the value right by the given number of bits.
+Shifts the bits of the value right by the given number of bits.
 
 Parameters:
 
@@ -462,7 +462,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value shifted to the right by the shiftCount, preserving the sign bit|
+|`Int64`|The shifted value|
 
 ## Comparisons
 
@@ -649,9 +649,9 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
-## Logical
+## Bitwise Logic
 
-Int64 Logical Functions.
+Boolean operations on the bits of Int64 values.
 
 ### Int64.**lnot**
 
@@ -664,7 +664,7 @@ No other changes yet.
 lnot : Int64 -> Int64
 ```
 
-Computes the bitwise logical "not" of the given value.
+Computes the bitwise logical NOT of the given value.
 
 Parameters:
 
@@ -689,7 +689,7 @@ No other changes yet.
 ( land ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical "and" on the given operands.
+Computes the bitwise logical AND on the given operands.
 
 Parameters:
 
@@ -702,7 +702,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "and" of the given operands.|
+|`Int64`|The bitwise logical "and" of the given operands|
 
 ### Int64.**lor**
 
@@ -715,7 +715,7 @@ No other changes yet.
 ( lor ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical "or" on the given operands.
+Computes the bitwise logical OR on the given operands.
 
 Parameters:
 
@@ -728,7 +728,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "or" of the given operands.|
+|`Int64`|The bitwise logical "or" of the given operands|
 
 ### Int64.**lxor**
 
@@ -741,7 +741,7 @@ No other changes yet.
 ( lxor ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical "xor" on the given operands.
+Computes the bitwise logical XOR on the given operands.
 
 Parameters:
 
@@ -754,7 +754,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "xor" of the given operands.|
+|`Int64`|The bitwise logical "xor" of the given operands|
 
 ### Int64.**clz**
 
@@ -767,7 +767,7 @@ No other changes yet.
 clz : Int64 -> Int64
 ```
 
-Counts the number of leading zeros in value.
+Counts the number of leading zero bits in the value.
 
 Parameters:
 
@@ -779,7 +779,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|Values count of leading zeros|
+|`Int64`|The amount of leading zeros|
 
 ### Int64.**ctz**
 
@@ -792,7 +792,7 @@ No other changes yet.
 ctz : Int64 -> Int64
 ```
 
-Counts the number of trailing zeros in value.
+Counts the number of trailing zero bits in the value.
 
 Parameters:
 
@@ -804,7 +804,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|Values count of trailing zeros|
+|`Int64`|The amount of trailing zeros|
 
 ### Int64.**popcnt**
 
