@@ -320,19 +320,19 @@ export let rec rotr = (value: Int64, amount: Int64) => {
  * Shifts the bits of the value left by the given number of bits, preserving the sign bit.
  *
  * @param value: The value to shift
- * @param shiftCount: The shiftCount
+ * @param amount: The number of bits to shift by
  * @returns The shifted value
  * 
  * @since v0.2.0
  */
 @disableGC
-export let rec shl = (value: Int64, shiftCount: Int64) => {
+export let rec shl = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(shiftCount), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.shl(xv, yv))
   let ret = WasmI32.toGrain(ptr): Int64
   Memory.decRef(WasmI32.fromGrain(value))
-  Memory.decRef(WasmI32.fromGrain(shiftCount))
+  Memory.decRef(WasmI32.fromGrain(amount))
   Memory.decRef(WasmI32.fromGrain(shl))
   ret
 }
@@ -341,19 +341,19 @@ export let rec shl = (value: Int64, shiftCount: Int64) => {
  * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
  *
  * @param value: The value to shift
- * @param shiftCount: The shiftCount
+ * @param amount: The amount to shift by
  * @returns The shifted value
  * 
  * @since v0.2.0
  */
 @disableGC
-export let rec shr = (value: Int64, shiftCount: Int64) => {
+export let rec shr = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(shiftCount), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.shrS(xv, yv))
   let ret = WasmI32.toGrain(ptr): Int64
   Memory.decRef(WasmI32.fromGrain(value))
-  Memory.decRef(WasmI32.fromGrain(shiftCount))
+  Memory.decRef(WasmI32.fromGrain(amount))
   Memory.decRef(WasmI32.fromGrain(shr))
   ret
 }
@@ -362,19 +362,19 @@ export let rec shr = (value: Int64, shiftCount: Int64) => {
  * Shifts the bits of the value right by the given number of bits.
  *
  * @param value: The value to shift
- * @param shiftCount: The shiftCount
+ * @param amount: The amount to shift by
  * @returns The shifted value
  * 
  * @since v0.2.0
  */
 @disableGC
-export let rec shrU = (value: Int64, shiftCount: Int64) => {
+export let rec shrU = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(shiftCount), 8n)
+  let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.shrU(xv, yv))
   let ret = WasmI32.toGrain(ptr): Int64
   Memory.decRef(WasmI32.fromGrain(value))
-  Memory.decRef(WasmI32.fromGrain(shiftCount))
+  Memory.decRef(WasmI32.fromGrain(amount))
   Memory.decRef(WasmI32.fromGrain(shrU))
   ret
 }

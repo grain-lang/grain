@@ -404,7 +404,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The shiftCount|
+|`amount`|`Int64`|The number of bits to shift by|
 
 Returns:
 
@@ -430,7 +430,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The shiftCount|
+|`amount`|`Int64`|The amount to shift by|
 
 Returns:
 
@@ -456,7 +456,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to shift|
-|`shiftCount`|`Int64`|The shiftCount|
+|`amount`|`Int64`|The amount to shift by|
 
 Returns:
 
