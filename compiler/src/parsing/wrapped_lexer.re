@@ -356,14 +356,19 @@ let token = state => {
   if (tok == EOL) {
     let fst = ((a, _, _)) => a;
     let next_triple = ref(triple);
+    let acc = ref([]);
     while (fst(next_triple^) == EOL) {
+      acc := [next_triple^, ...acc^];
       next_triple := token(state);
     };
 
     switch (fst(next_triple^)) {
     | ELSE => next_triple^
     | _ =>
-      state.queued_tokens = [next_triple^, ...state.queued_tokens];
+      state.queued_tokens =
+        List.tl(
+          List.rev_append([next_triple^, ...acc^], state.queued_tokens),
+        );
       triple;
     };
   } else {
