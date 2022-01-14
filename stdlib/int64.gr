@@ -521,7 +521,7 @@ export let rec gte = (x: Int64, y: Int64) => {
 }
 
 /**
- * @section Bitwise Logic: Boolean operations on the bits of Int64 values.
+ * @section Bitwise logic: Boolean operations on the bits of Int64 values.
  */
 
 /**

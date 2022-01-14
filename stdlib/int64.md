@@ -94,7 +94,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value incremented by one|
+|`Int64`|The incremented value|
 
 ### Int64.**decr**
 
@@ -119,7 +119,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The value decremented by one|
+|`Int64`|The decremented value|
 
 ### Int64.**add**
 
@@ -649,7 +649,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
-## Bitwise Logic
+## Bitwise logic
 
 Boolean operations on the bits of Int64 values.
 
@@ -817,7 +817,7 @@ No other changes yet.
 popcnt : Int64 -> Int64
 ```
 
-The number of 1-bits in value.
+Counts the number of bits set to `1` in the value, also known as a population count.
 
 Parameters:
 
@@ -829,5 +829,5 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The number of 1-bits in its operand|
+|`Int64`|The amount of 1-bits in its operand|
 
