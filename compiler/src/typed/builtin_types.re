@@ -98,8 +98,8 @@ and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
 and type_option = var =>
   newgenty(TTyConstr(path_option, [var], ref(TMemNil)))
-and type_result = var =>
-  newgenty(TTyConstr(path_result, [var], ref(TMemNil)))
+and type_result = (var1, var2) =>
+  newgenty(TTyConstr(path_result, [var1, var2], ref(TMemNil)))
 and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
 and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
@@ -130,7 +130,10 @@ let cstr = (id, args) => {
 
 let ident_false = ident_create("false")
 and ident_true = ident_create("true")
-and ident_void_cstr = ident_create("()");
+and ident_some = ident_create("Some")
+and ident_none = ident_create("None")
+and ident_ok = ident_create("Ok")
+and ident_err = ident_create("Err");
 
 let decl_create = decl => {
   builtin_decls := [decl, ...builtin_decls^];
@@ -165,20 +168,25 @@ and decl_array = {
     type_arity: 1,
   });
 }
+
 and decl_option = {
   let tvar = newgenvar();
   decl_create({
     ...decl_abstr(path_option),
+    type_kind: TDataVariant([cstr(ident_some, [tvar]), cstr(ident_none, [])]),
     type_params: [tvar],
     type_arity: 1,
   });
 }
+
 and decl_result = {
-  let tvar = newgenvar();
+  let tvar_t = newgenvar();
+  let tvar_e = newgenvar();
   decl_create({
     ...decl_abstr(path_result),
-    type_params: [tvar],
-    type_arity: 1,
+    type_kind: TDataVariant([cstr(ident_ok, [tvar_t]), cstr(ident_err, [tvar_e])]),
+    type_params: [tvar_t, tvar_e],
+    type_arity: 2,
   });
 };
 
