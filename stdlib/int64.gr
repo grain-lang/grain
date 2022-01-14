@@ -50,7 +50,7 @@ export toNumber
  * Increments the value by one.
  *
  * @param value: The value to increment
- * @returns The value incremented by one
+ * @returns The incremented value
  * 
  * @since v0.2.0
  */
@@ -68,7 +68,7 @@ export let rec incr = (value: Int64) => {
  * Decrements the value by one.
  *
  * @param value: The value to decrement
- * @returns The value decremented by one
+ * @returns The decremented value
  * 
  * @since v0.2.0
  */
@@ -642,10 +642,10 @@ export let rec ctz = (value: Int64) => {
 }
 
 /**
- * The number of 1-bits in value.
+ * Counts the number of bits set to `1` in the value, also known as a population count.
  *
  * @param value: The value to inspect
- * @returns The number of 1-bits in its operand
+ * @returns The amount of 1-bits in its operand
  * 
  * @since v0.4.0
  */
