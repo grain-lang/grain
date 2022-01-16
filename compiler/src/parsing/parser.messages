@@ -8,7 +8,7 @@ program: ASSERT WHEN
 ## ASSERT
 ##
 
-Expected an expression after 'assert'.
+Expected an expression after `assert`.
 
 program: AT ID EOL WHILE
 ##
@@ -105,7 +105,7 @@ program: AT ID LPAREN STRING WHILE
 ## lparen lseparated_nonempty_list_inner(comma,attribute_argument)
 ##
 
-Expected a comma followed by more attribute parameters or a closing paren to complete the attribute.
+Expected a comma followed by more attribute parameters or a `)` to complete the attribute.
 
 program: DASH WHILE
 ##
@@ -230,7 +230,7 @@ program: ENUM TYPEID LBRACE TYPEID COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected a variant definition (or '}' to finish the enum declaration).
+Expected a variant definition (or `}` to finish the enum declaration).
 
 program: ENUM TYPEID LBRACE TYPEID LPAREN TYPEID RCARET
 ##
@@ -254,7 +254,7 @@ program: ENUM TYPEID LBRACE TYPEID LPAREN TYPEID RCARET
 ## In state 112, spurious reduction of production option(typs) -> typs
 ##
 
-Expected type parameters surrounded by carets, a comma followed by more types, a dot followed by an identifier, or a closing paren to finish the variant definition.
+Expected type parameters surrounded by angle brackets, a comma followed by more types, a dot followed by an identifier, or a `)` to finish the variant definition.
 
 program: ENUM TYPEID LBRACE TYPEID LPAREN WHILE
 ##
@@ -272,7 +272,7 @@ program: ENUM TYPEID LBRACE TYPEID LPAREN WHILE
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected a type (or a closing paren to finish the variant definition).
+Expected a type (or a `)` to finish the variant definition).
 
 program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EOL WHILE
 ##
@@ -314,7 +314,7 @@ program: ENUM TYPEID LBRACE TYPEID WHILE
 ## TYPEID
 ##
 
-Expected an open paren followed by comma-separated types, a comma followed by more variants, or a '}' to finish the enum declaration.
+Expected an open paren followed by comma-separated types, a comma followed by more variants, or a `}` to finish the enum declaration.
 
 program: ENUM TYPEID LBRACE WHILE
 ##
@@ -332,7 +332,7 @@ program: ENUM TYPEID LBRACE WHILE
 ## In state 20, spurious reduction of production lbrace -> LBRACE
 ##
 
-Expected a capitalized variant.
+Expected a capitalized variant name.
 
 program: ENUM TYPEID LBRACE TYPEID RBRACE WHILE
 ##
@@ -357,7 +357,7 @@ program: ENUM TYPEID LCARET ID RCARET ISNT
 ## ENUM TYPEID option(id_vec)
 ##
 
-Expected a '{' followed by comma-separated variants.
+Expected a `{` followed by comma-separated variants.
 
 program: ENUM TYPEID WHILE
 ##
@@ -369,7 +369,7 @@ program: ENUM TYPEID WHILE
 ## ENUM TYPEID
 ##
 
-Expected type parameters (surrounded by carets) or a '{' followed by comma-separated variants.
+Expected type parameters (surrounded by angle brackets) or a `{` followed by comma-separated variants.
 
 program: TYPE TYPEID WHILE
 ##
@@ -381,7 +381,7 @@ program: TYPE TYPEID WHILE
 ## TYPE TYPEID
 ##
 
-Expected type parameters (surrounded by carets) or an equals sign followed by a type expression.
+Expected type parameters (surrounded by angle brackets) or an equals sign followed by a type.
 
 program: ENUM WHILE
 ##
@@ -988,7 +988,7 @@ program: RECORD TYPEID LBRACE ID COLON WHILE
 ## simple_id COLON
 ##
 
-Expected a type expression.
+Expected a type.
 
 program: EXCEPTION TYPEID LPAREN TYPEID RCARET
 ##
@@ -1012,7 +1012,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID RCARET
 ## In state 112, spurious reduction of production option(typs) -> typs
 ##
 
-Expected a closing paren to complete the exception declaration.
+Expected a `)` to complete the exception declaration.
 
 program: EXCEPTION TYPEID LPAREN TYPEID WHEN
 ##
@@ -1034,7 +1034,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID WHEN
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
 ##
 
-Expected type parameters (surrounded by carets) or a comma followed by more types.
+Expected type parameters (surrounded by angle brackets) or a comma followed by more types.
 
 program: EXCEPTION TYPEID WHILE
 ##
@@ -1166,7 +1166,7 @@ program: LET WHILE
 ## attributes LET
 ##
 
-Expected the keyword 'rec', the keyword 'mut', or a binding pattern (like an identifier) here.
+Expected the keyword `rec`, the keyword `mut`, or a binding pattern (like an identifier) here.
 
 program: EXPORT STAR EXCEPT TYPEID COMMA EOL WHILE
 ##
@@ -1223,7 +1223,7 @@ program: EXPORT STAR WHILE
 ## attributes EXPORT STAR
 ##
 
-Expected the keyword 'except' followed by comma-separated identifiers to exclude or a newline character to complete the statement.
+Expected the keyword `except` followed by comma-separated identifiers to exclude or a newline character to complete the statement.
 
 program: EXPORT TYPEID AS TYPEID WHILE
 ##
@@ -1460,7 +1460,7 @@ program: FOR LPAREN WASMI64 EOL SEMI WASMI64 EOL SEMI RPAREN WHILE
 ## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI for_inner_expr rparen
 ##
 
-Expected a '{' to start a block.
+Expected a `{` to start a block.
 
 program: FOR LPAREN SEMI EOL SEMI EOL WASMI64 RBRACK
 ##
@@ -1799,7 +1799,7 @@ program: FOR LPAREN WASMI64 EOL SEMI WASMI64 EOL SEMI WASMI64 RBRACK
 ## In state 636, spurious reduction of production for_inner_expr -> expr
 ##
 
-Expected a closing paren followed by a '{' to start a block.
+Expected a `)` followed by a `{` to start a block.
 
 program: FOR LPAREN SEMI EOL SEMI WHEN
 ##
@@ -1994,7 +1994,7 @@ program: FOR LPAREN WASMI64 EOL SEMI WASMI64 EOL SEMI WHEN
 ## FOR lparen option(block_body_expr) eols SEMI for_inner_expr eols SEMI
 ##
 
-Expected an expression (or an immediate closing paren to skip the increment expression).
+Expected an expression (or an immediate `)` to skip the increment expression).
 
 program: FOR LPAREN SEMI EOL UNDERSCORE
 ##
@@ -2263,7 +2263,7 @@ program: FOR LPAREN WASMI64 EOL SEMI WHEN
 ## FOR lparen option(block_body_expr) eols SEMI
 ##
 
-Expected an expression (or an immediate semicolon to skip the loop initializer).
+Expected an expression (or an immediate semicolon to skip the loop initializer expression).
 
 program: FOR LPAREN WASMI64 EOL WHILE
 ##
@@ -2325,7 +2325,7 @@ program: FOR LPAREN WASMI64 RPAREN
 ## In state 708, spurious reduction of production option(block_body_expr) -> block_body_expr
 ##
 
-Expected a semicolon to complete the loop initializer.
+Expected a semicolon to complete the loop initializer expression.
 
 program: FOR WHILE
 ##
@@ -2352,7 +2352,7 @@ program: FOR WHILE
 ## FOR
 ##
 
-Expected an open paren to set the loop parameters.
+Expected an open paren to set the for loop parameters.
 
 program: FUN ID EOL THICKARROW WHEN
 ##
@@ -2379,7 +2379,7 @@ program: WHILE LPAREN WASMI64 RPAREN WHILE
 ## WHILE lparen expr rparen
 ##
 
-Expected an expression or a '{' to start a block.
+Expected an expression or a `{` to start a block.
 
 program: FUN ID EOL WHILE
 ##
@@ -2438,7 +2438,7 @@ program: FUN LPAREN RPAREN THICKARROW EOL UNDERSCORE
 ## In state 28, spurious reduction of production thickarrow -> THICKARROW eols
 ##
 
-Expected a function body (a block surrounded by {} or a single expression).
+Expected a function body (a block surrounded by `{}` or a single expression).
 
 program: FUN LPAREN WASMI64 COMMA EOL WASMI64 WHILE
 ##
@@ -2505,7 +2505,7 @@ program: FUN LPAREN WASMI64 RBRACK
 ## In state 714, spurious reduction of production option(patterns) -> patterns
 ##
 
-Expected a closing paren to complete the function arguments.
+Expected a `)` to complete the function arguments.
 
 program: FUN LPAREN WHILE
 ##
@@ -2523,7 +2523,7 @@ program: FUN LPAREN WHILE
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected a function argument (or a closing paren for a function with no arguments).
+Expected a function argument (or a `)` for a function with no arguments).
 
 program: FUN WHILE
 ##
@@ -2585,7 +2585,7 @@ program: IF LPAREN WASMI64 RPAREN EOL CONTINUE WHILE
 ## IF lparen expr rparen eols expr
 ##
 
-Expected a newline character to end the if statement (or 'else' to provide a "false" branch).
+Expected a newline character to end the if statement (or `else` to provide a "false" branch).
 
 program: IF LPAREN WASMI64 RPAREN EOL UNDERSCORE
 ##
@@ -2672,7 +2672,7 @@ program: IF LPAREN WASMI64 RPAREN WHEN
 ## IF lparen expr rparen
 ##
 
-Expected a block surrounded by {} or a single expression.
+Expected a block surrounded by `{}` or a single expression.
 
 program: IF LPAREN WASMI64 THICKARROW
 ##
@@ -2699,7 +2699,7 @@ program: IF LPAREN WASMI64 THICKARROW
 ## In state 60, spurious reduction of production expr -> non_stmt_expr
 ##
 
-Expected a closing paren to finish the if condition.
+Expected a `)` to finish the if condition.
 
 program: IF WHILE
 ##
@@ -2737,7 +2737,7 @@ program: IMPORT FOREIGN WASM ID COLON TYPEID AS ID WHILE
 ## FOREIGN WASM id_str COLON typ option(as_prefix(id_str))
 ##
 
-Expected the keyword 'from' followed by a file path.
+Expected the keyword `from` followed by a file path.
 
 program: IMPORT FOREIGN WASM ID COLON EOL TYPEID FROM WHILE
 ##
@@ -2804,7 +2804,7 @@ program: IMPORT FOREIGN WASM ID COLON TYPEID WHEN
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
 
-Expected an alias (e.g. 'as foo') for the foreign value's name or the keyword 'from' followed by a file path.
+Expected an alias (e.g. `as foo`) for the foreign value's name or the keyword `from` followed by a file path.
 
 program: IMPORT FOREIGN WASM ID COLON EOL WHILE
 ##
@@ -2884,7 +2884,7 @@ program: IMPORT FOREIGN WHILE
 ## FOREIGN
 ##
 
-Expected the keyword 'wasm'.
+Expected the keyword `wasm`.
 
 program: IMPORT LBRACE TYPEID AS ID WHILE
 ##
@@ -2897,7 +2897,7 @@ program: IMPORT LBRACE TYPEID AS ID WHILE
 ## lseparated_nonempty_list_inner(comma,aliasable(id))
 ##
 
-Expected a comma followed by more imports or a '}'.
+Expected a comma followed by more imports or a `}`.
 
 program: IMPORT LBRACE TYPEID AS WHILE
 ##
@@ -2930,7 +2930,7 @@ program: IMPORT LBRACE TYPEID COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected an identifier to import or a '}'.
+Expected an identifier to import or a `}`.
 
 program: IMPORT LBRACE TYPEID EOL WHILE
 ##
@@ -2949,7 +2949,7 @@ program: IMPORT LBRACE TYPEID EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
-Expected a '}'.
+Expected a `}`.
 
 program: IMPORT LBRACE TYPEID THICKARROW
 ##
@@ -2967,7 +2967,7 @@ program: IMPORT LBRACE TYPEID THICKARROW
 ## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
 ##
 
-Expected an alias (e.g. 'as foo'), a comma followed by another identifier, or a '}'.
+Expected an alias (e.g. `as foo`), a comma followed by another identifier, or a `}`.
 
 program: IMPORT LBRACE WHILE
 ##
@@ -3003,7 +3003,7 @@ program: IMPORT LPAREN WHILE
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected an infix (or prefix) operator, e.g. '+', '-', '!'.
+Expected an infix (or prefix) operator, e.g. `+`, `-`, `!`.
 
 program: IMPORT STAR EXCEPT LBRACE TYPEID COMMA EOL WHILE
 ##
@@ -3024,7 +3024,7 @@ program: IMPORT STAR EXCEPT LBRACE TYPEID COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected an identifier or '}'.
+Expected an identifier or a `}`.
 
 program: IMPORT STAR EXCEPT LBRACE TYPEID THICKARROW
 ##
@@ -3044,7 +3044,7 @@ program: IMPORT STAR EXCEPT LBRACE TYPEID THICKARROW
 ## In state 782, spurious reduction of production lseparated_nonempty_list_inner(comma,id) -> id
 ##
 
-Expected a comma followed by an identifier or a '}'.
+Expected a comma followed by an identifier or a `}`.
 
 program: IMPORT STAR EXCEPT LBRACE WHILE
 ##
@@ -3074,7 +3074,7 @@ program: IMPORT STAR EXCEPT WHILE
 ## EXCEPT
 ##
 
-Expected a '{' followed by a comma-separated list of identifiers to exclude from the import, followed by a '}'.
+Expected a `{` followed by a comma-separated list of identifiers to exclude from the import, followed by a `}`.
 
 program: IMPORT STAR WHILE
 ##
@@ -3086,7 +3086,7 @@ program: IMPORT STAR WHILE
 ## STAR
 ##
 
-Expected the keyword 'except' followed by comma-separated identifiers surrounded by {}, a comma followed by a module name, or the keyword 'from' followed by a file path.
+Expected the keyword `except` followed by comma-separated identifiers surrounded by `{}`, a comma followed by a module name, or the keyword `from` followed by a file path.
 
 program: IMPORT TYPEID COMMA EOL WHILE
 ##
@@ -3107,7 +3107,7 @@ program: IMPORT TYPEID COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected another import or the 'from' keyword followed by a file path.
+Expected another import or the `from` keyword followed by a file path.
 
 program: IMPORT TYPEID THICKARROW
 ##
@@ -3128,7 +3128,7 @@ program: IMPORT TYPEID THICKARROW
 ## In state 823, spurious reduction of production lseparated_nonempty_list_inner(comma,import_shape) -> import_shape
 ##
 
-Expected a comma followed by a module identifier, an asterisk, a list of comma-separated identifiers surrounded by {}, or the 'from' keyword followed by a file path.
+Expected a comma followed by a module identifier, an asterisk, a list of comma-separated identifiers surrounded by `{}`, or the `from` keyword followed by a file path.
 
 program: IMPORT WHILE
 ##
@@ -3141,7 +3141,7 @@ program: IMPORT WHILE
 ## IMPORT
 ##
 
-Expected a module identifier, an asterisk, a list of comma-separated identifiers surrounded by {}, or the 'foreign' keyword.
+Expected a module identifier, an asterisk, a list of comma-separated identifiers surrounded by `{}`, or the `foreign` keyword.
 
 program: LBRACE AT ID RECORD
 ##
@@ -3326,7 +3326,7 @@ program: LPAREN BREAK RPAREN LPAREN WASMI64 COMMA RBRACK
 ## In state 168, spurious reduction of production option(comma) -> comma
 ##
 
-Expected a closing paren to complete the function call.
+Expected a `)` to complete the function call.
 
 program: LBRACE BREAK RBRACE LPAREN UNDERSCORE
 ##
@@ -3382,7 +3382,7 @@ program: LPAREN BREAK RPAREN LPAREN UNDERSCORE
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected a comma-separated list of expressions (or an immediate closing paren to complete the function call).
+Expected a comma-separated list of expressions (or an immediate `)` to complete the function call).
 
 program: LBRACE LET REC WHILE
 ##
@@ -3405,7 +3405,7 @@ program: LET REC WHILE
 ## attributes LET REC
 ##
 
-Expected the keyword 'mut' or a binding pattern (like an identifier).
+Expected the keyword `mut` or a binding pattern (like an identifier).
 
 program: LBRACE TYPEID COLON BREAK COMMA EOL TYPEID COLON BREAK WHILE
 ##
@@ -3440,7 +3440,7 @@ program: LBRACE TYPEID COMMA EOL TYPEID COLON BREAK WHILE
 ## punned_record_field comma lseparated_nonempty_list_inner(comma,record_field)
 ##
 
-Expected a comma followed by more record fields (or an immediate '}' to complete the record expression).
+Expected a comma followed by more record fields (or an immediate `}` to complete the record expression).
 
 program: LBRACE TYPEID COLON BREAK COMMA EOL WHILE
 ##
@@ -3498,7 +3498,7 @@ program: LBRACE TYPEID COMMA TYPEID COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected more record fields (or an immediate '}' to complete the record expression).
+Expected more record fields (or an immediate `}` to complete the record expression).
 
 program: LBRACE TYPEID COMMA TYPEID THICKARROW
 ##
@@ -3518,7 +3518,7 @@ program: LBRACE TYPEID COMMA TYPEID THICKARROW
 ## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
 ##
 
-Expected a colon followed by an expression, a comma followed by more record fields, or an immediate '}' to complete the record.
+Expected a colon followed by an expression, a comma followed by more record fields, or an immediate `}` to complete the record.
 
 program: LBRACE TYPEID THICKARROW
 ##
@@ -3547,7 +3547,7 @@ program: LBRACE TYPEID THICKARROW
 ## In state 406, spurious reduction of production lseparated_nonempty_list_inner(eos,block_body_expr) -> block_body_expr
 ##
 
-Expected a newline character followed by more statements (or a '}' to complete the block).
+Expected a newline character followed by more statements (or a `}` to complete the block).
 
 program: LBRACE UNDERSCORE
 ##
@@ -3585,7 +3585,7 @@ program: LBRACE WASMI64 SEMI RECORD
 ## In state 311, spurious reduction of production eos -> SEMI
 ##
 
-Expected another statement (or a '}' to complete the block).
+Expected another statement (or a `}` to complete the block).
 
 program: LBRACK UNDERSCORE
 ##
@@ -3809,7 +3809,7 @@ program: LET LBRACE TYPEID COLON WASMI64 WHILE
 ## id COLON pattern
 ##
 
-Expected a type annotation, a comma followed by more record field patterns, or a '}' to complete the record pattern.
+Expected a type annotation, a comma followed by more record field patterns, or a `}` to complete the record pattern.
 
 program: LET LBRACE TYPEID COLON EOL WHILE
 ##
@@ -3901,7 +3901,7 @@ program: LET LBRACE TYPEID THICKARROW
 ## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
 ##
 
-Expected a colon followed by a pattern, a comma followed by another record field pattern, or a '}' to complete the record pattern.
+Expected a colon followed by a pattern, a comma followed by another record field pattern, or a `}` to complete the record pattern.
 
 program: LET LBRACE UNDERSCORE COMMA EOL WHILE
 ##
@@ -3922,7 +3922,7 @@ program: LET LBRACE UNDERSCORE COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected another record field pattern or a '}' to complete the record pattern.
+Expected another record field pattern or a `}` to complete the record pattern.
 
 program: LET LBRACE UNDERSCORE WHILE
 ##
@@ -3935,7 +3935,7 @@ program: LET LBRACE UNDERSCORE WHILE
 ## lseparated_nonempty_list_inner(comma,record_pattern)
 ##
 
-Expected a comma followed by more record field patterns or a '}' to complete the record pattern.
+Expected a comma followed by more record field patterns or a `}` to complete the record pattern.
 
 program: LET LBRACE WHILE
 ##
@@ -4072,7 +4072,7 @@ program: LET LPAREN STAR WHILE
 ## lparen special_op
 ##
 
-Expected a closing paren.
+Expected a `)`.
 
 program: LET LPAREN WASMI64 COMMA EOL WASMI64 COMMA EOL WHILE
 ##
@@ -4093,7 +4093,7 @@ program: LET LPAREN WASMI64 COMMA EOL WASMI64 COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected a pattern (or a closing paren to complete the tuple pattern).
+Expected a pattern (or a `)` to complete the tuple pattern).
 
 program: LET LPAREN WASMI64 COMMA EOL WASMI64 RBRACK
 ##
@@ -4113,7 +4113,7 @@ program: LET LPAREN WASMI64 COMMA EOL WASMI64 RBRACK
 ## In state 334, spurious reduction of production lseparated_nonempty_list_inner(comma,pattern) -> pattern
 ##
 
-Expected a comma followed by another pattern (or a closing paren to complete the tuple pattern).
+Expected a comma followed by another pattern (or a `)` to complete the tuple pattern).
 
 program: LET LPAREN WASMI64 COMMA WASMI64 COMMA EOL WHILE
 ##
@@ -4134,7 +4134,7 @@ program: LET LPAREN WASMI64 COMMA WASMI64 COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected another pattern (or a closing paren to complete the tuple pattern).
+Expected another pattern (or a `)` to complete the tuple pattern).
 
 program: LET LPAREN WASMI64 COMMA WASMI64 RBRACK
 ##
@@ -4154,7 +4154,7 @@ program: LET LPAREN WASMI64 COMMA WASMI64 RBRACK
 ## In state 334, spurious reduction of production lseparated_nonempty_list_inner(comma,pattern) -> pattern
 ##
 
-Expected a comma followed by another pattern (or a closing paren to complete the tuple pattern).
+Expected a comma followed by another pattern (or a `)` to complete the tuple pattern).
 
 program: LET LPAREN WASMI64 COMMA WHILE
 ##
@@ -4170,7 +4170,7 @@ program: LET LPAREN WASMI64 COMMA WHILE
 ## pattern COMMA
 ##
 
-Expected a pattern (or an immediate closing paren for a single-argument tuple pattern).
+Expected a pattern (or an immediate `)` for a single-argument tuple pattern).
 
 program: LET LPAREN WASMI64 WHILE
 ##
@@ -4189,7 +4189,7 @@ program: LET LPAREN WASMI64 WHILE
 ## lparen pattern
 ##
 
-Expected a type annotation, a closing paren (for a grouped pattern), or a comma (for a tuple pattern).
+Expected a type annotation, a `)` (for a grouped pattern), or a comma (for a tuple pattern).
 
 program: LET NUMBER_INT SLASH WHILE
 ##
@@ -4271,7 +4271,7 @@ program: LET TYPEID LPAREN WASMI64 RBRACK
 ## In state 345, spurious reduction of production patterns -> lseparated_nonempty_list_inner(comma,pattern) option(comma)
 ##
 
-Expected a closing paren to complete the variant pattern.
+Expected a `)` to complete the variant pattern.
 
 program: LET TYPEID LPAREN WHILE
 ##
@@ -4309,7 +4309,7 @@ program: LET WASMI64 EQUAL WASMI64 COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected a binding (e.g. 'foo = 5').
+Expected a binding (e.g. `foo = 5`).
 
 program: LPAREN BREAK RPAREN DOT EOL WHILE
 ##
@@ -4388,7 +4388,7 @@ program: LPAREN BREAK RPAREN LPAREN WASMI64 THICKARROW
 ## In state 253, spurious reduction of production lseparated_nonempty_list_inner(comma,expr) -> expr
 ##
 
-Expected a comma followed by an expression (or a closing paren to complete the function call).
+Expected a comma followed by an expression (or a `)` to complete the function call).
 
 program: LPAREN DASH WHILE
 ##
@@ -4401,7 +4401,7 @@ program: LPAREN DASH WHILE
 ## DASH
 ##
 
-Expected a number (to create a negative number) or a closing paren (to reference the minus function).
+Expected a number (to create a negative number) or a `)` (to reference the minus function).
 
 program: LPAREN NOT WHEN
 ##
@@ -4414,7 +4414,7 @@ program: LPAREN NOT WHEN
 ## NOT
 ##
 
-Expected an expression (or a closing paren to reference the not operator).
+Expected an expression (or a `)` to reference the not operator).
 
 program: LPAREN RCARET RCARET WHILE
 ##
@@ -4447,7 +4447,7 @@ program: LPAREN STAR WHILE
 ## lparen special_op
 ##
 
-Expected a closing paren.
+Expected a `)`.
 
 program: LPAREN WASMI64 COMMA BREAK COMMA RBRACK
 ##
@@ -4467,7 +4467,7 @@ program: LPAREN WASMI64 COMMA BREAK COMMA RBRACK
 ## In state 485, spurious reduction of production tuple_exprs -> expr COMMA lseparated_nonempty_list_inner(comma,expr) option(comma)
 ##
 
-Expected a closing paren to complete the tuple expression.
+Expected a `)` to complete the tuple expression.
 
 program: LPAREN WASMI64 COMMA EOL WASMI64 THICKARROW
 ##
@@ -4512,7 +4512,7 @@ program: LPAREN WASMI64 COMMA WASMI64 THICKARROW
 ## In state 253, spurious reduction of production lseparated_nonempty_list_inner(comma,expr) -> expr
 ##
 
-Expected a comma followed by an expression or a closing paren to complete the tuple expression.
+Expected a comma followed by an expression or a `)` to complete the tuple expression.
 
 program: LPAREN WASMI64 COMMA WHEN
 ##
@@ -4526,7 +4526,7 @@ program: LPAREN WASMI64 COMMA WHEN
 ## expr COMMA
 ##
 
-Expected an expression (or a closing paren for a single-argument tuple).
+Expected an expression (or a `)` for a single-argument tuple).
 
 program: LPAREN WASMI64 EOL WHILE
 ##
@@ -4545,7 +4545,7 @@ program: LPAREN WASMI64 EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
-Expected a closing paren.
+Expected a `)`.
 
 program: LPAREN WASMI64 THICKARROW
 ##
@@ -4570,7 +4570,7 @@ program: LPAREN WASMI64 THICKARROW
 ## In state 60, spurious reduction of production expr -> non_stmt_expr
 ##
 
-Expected a closing paren (for a grouped expression) or a comma (for a tuple expression).
+Expected a `)` (for a grouped expression) or a comma (for a tuple expression).
 
 program: MATCH LPAREN WASMI64 RPAREN LBRACE WASMI64 THICKARROW CONTINUE WHILE
 ##
@@ -4583,7 +4583,7 @@ program: MATCH LPAREN WASMI64 RPAREN LBRACE WASMI64 THICKARROW CONTINUE WHILE
 ## lseparated_nonempty_list_inner(comma,match_branch)
 ##
 
-Expected a comma followed by another match branch (or a '}' to complete the match expression).
+Expected a comma followed by another match branch (or a `}` to complete the match expression).
 
 program: MATCH LPAREN WASMI64 RPAREN LBRACE WASMI64 THICKARROW WASMI64 COMMA EOL WHILE
 ##
@@ -4604,7 +4604,7 @@ program: MATCH LPAREN WASMI64 RPAREN LBRACE WASMI64 THICKARROW WASMI64 COMMA EOL
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected another match branch (or a '}' to complete the match expression).
+Expected another match branch (or a `}` to complete the match expression).
 
 program: MATCH LPAREN WASMI64 RPAREN LBRACE WASMI64 WHEN VOID EOF
 ##
@@ -4642,7 +4642,7 @@ program: MATCH LPAREN WASMI64 RPAREN LBRACE WASMI64 WHILE
 ## pattern
 ##
 
-Expected a type annotation, the keyword 'when' followed by a guard expression, or an arrow (=>) followed by an expression.
+Expected a type annotation, the keyword `when` followed by a guard expression, or an arrow (=>) followed by an expression.
 
 program: MATCH LPAREN WASMI64 RPAREN LBRACE WHILE
 ##
@@ -4672,7 +4672,7 @@ program: MATCH LPAREN WASMI64 RPAREN WHILE
 ## MATCH lparen expr rparen
 ##
 
-Expected an '{' for the body of the match statement.
+Expected an `{` for the body of the match statement.
 
 program: MATCH LPAREN WASMI64 THICKARROW
 ##
@@ -4694,7 +4694,7 @@ program: MATCH LPAREN WASMI64 THICKARROW
 ## In state 60, spurious reduction of production expr -> non_stmt_expr
 ##
 
-Expected a closing paren after the match value.
+Expected a `)` after the match value.
 
 program: MATCH WHILE
 ##
@@ -4706,7 +4706,7 @@ program: MATCH WHILE
 ## MATCH
 ##
 
-Expected an open paren after the 'match' keyword.
+Expected an open paren after the `match` keyword.
 
 program: NOT LBRACE BREAK RBRACE DOT EOL WHILE
 ##
@@ -5476,7 +5476,7 @@ program: PRIMITIVE THROW WHILE
 ## PRIMITIVE prim
 ##
 
-Expected a type annotation (a colon followed by a type expression).
+Expected a type annotation (a colon followed by a type).
 
 program: PRIMITIVE LPAREN STAR WHILE
 ##
@@ -5488,7 +5488,7 @@ program: PRIMITIVE LPAREN STAR WHILE
 ## lparen special_op
 ##
 
-Expected a closing paren to complete the infix operator reference.
+Expected a `)` to complete the infix operator reference.
 
 program: PRIMITIVE LPAREN WHILE
 ##
@@ -5542,7 +5542,7 @@ program: RECORD TYPEID LBRACE ID COLON ID COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected another record field definition (or an immediate '}' to complete the record declaration).
+Expected another record field definition (or an immediate `}` to complete the record declaration).
 
 program: RECORD TYPEID LBRACE ID COLON ID WHILE
 ##
@@ -5555,7 +5555,7 @@ program: RECORD TYPEID LBRACE ID COLON ID WHILE
 ## lbrace lseparated_nonempty_list_inner(comma,data_label)
 ##
 
-Expected a comma followed by another record field definition (or an immediate '}' to complete the record declaration).
+Expected a comma followed by another record field definition (or an immediate `}` to complete the record declaration).
 
 program: RECORD TYPEID LBRACE ID WHILE
 ##
@@ -5578,7 +5578,7 @@ program: RECORD TYPEID LBRACE MUT ID WHILE
 ## MUT simple_id
 ##
 
-Expected a colon followed by a type expression.
+Expected a colon followed by a type.
 
 program: RECORD TYPEID LBRACE MUT ID COLON EOL WHILE
 ##
@@ -5638,7 +5638,7 @@ program: TYPE TYPEID EQUAL WHILE
 ## In state 211, spurious reduction of production equal -> EQUAL
 ##
 
-Expected a type expression.
+Expected a type.
 
 program: TYPE TYPEID LCARET ID RCARET EQEQ
 ##
@@ -5650,7 +5650,7 @@ program: TYPE TYPEID LCARET ID RCARET EQEQ
 ## TYPE TYPEID option(id_vec)
 ##
 
-Expected an equals sign followed by a type expression.
+Expected an equals sign followed by a type.
 
 program: RECORD TYPEID LBRACE MUT WHILE
 ##
@@ -5746,7 +5746,7 @@ program: RECORD TYPEID LCARET ID RCARET ISNT
 ## RECORD TYPEID option(id_vec)
 ##
 
-Expected a '{' to list record fields.
+Expected a `{` to list record fields.
 
 program: RECORD TYPEID LCARET TYPEID
 ##
@@ -5776,7 +5776,7 @@ program: RECORD TYPEID WHILE
 ## RECORD TYPEID
 ##
 
-Expected a comma-separated list of type variables surrounded by <>, or a '{' to list record fields.
+Expected a comma-separated list of type variables surrounded by <>, or a `{` to list record fields.
 
 program: RECORD WHILE
 ##
@@ -6762,7 +6762,7 @@ program: WASMI64 COLON WHILE
 ## non_binop_expr COLON
 ##
 
-Expected a type expression to complete the type annotation.
+Expected a type to complete the type annotation.
 
 program: WASMI64 COLON FUN ID ARROW EOL WHILE
 ##
@@ -6799,7 +6799,7 @@ program: WASMI64 COLON FUN LPAREN RPAREN ARROW EOL WHILE
 ## In state 70, spurious reduction of production arrow -> ARROW eols
 ##
 
-Expected a type expression for the result of the function type.
+Expected a type for the result of the function type.
 
 program: WASMI64 COLON FUN ID WHILE
 ##
@@ -6821,7 +6821,7 @@ program: WASMI64 COLON FUN LPAREN RPAREN WHILE
 ##
 
 # This error message could never appear, as we only inject the FUN token _because_ there's an arrow
-Expected an arrow (->) followed by a type expression.
+Expected an arrow (->) followed by a type.
 
 program: WASMI64 COLON FUN LPAREN TYPEID RCARET
 ##
@@ -6846,7 +6846,7 @@ program: WASMI64 COLON FUN LPAREN TYPEID RCARET
 ##
 
 # This message could never appear as the user will get an unbalanced paren error
-Expected a closing paren to complete the function type parameters.
+Expected a `)` to complete the function type parameters.
 
 program: WASMI64 COLON FUN LPAREN WHILE
 ##
@@ -6864,7 +6864,7 @@ program: WASMI64 COLON FUN LPAREN WHILE
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected a comma-separated list of type expressions (or an immediate closing paren for a function type with no arguments).
+Expected a comma-separated list of types (or an immediate `)` for a function type with no arguments).
 
 program: WASMI64 COLON FUN WHILE
 ##
@@ -6878,7 +6878,7 @@ program: WASMI64 COLON FUN WHILE
 ##
 
 # This error can't appear as the FUN token wouldn't have been injected.
-Expected an identifier for a single-argument function, or a comma-separated list of types surrounded by parens.
+Expected an identifier for a single-argument function, or a comma-separated list of types surrounded by `()`.
 
 program: WASMI64 COLON LPAREN TYPEID COMMA EOL TYPEID COMMA EOL WHILE
 ##
@@ -6930,7 +6930,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA WHILE
 ## typ COMMA
 ##
 
-Expected a type expression (or an immediate closing paren to complete the tuple type).
+Expected a type (or an immediate `)` to complete the tuple type).
 
 program: WASMI64 COLON LPAREN TYPEID COMMA EOL TYPEID WHEN
 ##
@@ -6973,7 +6973,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA TYPEID WHEN
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
 ##
 
-Expected a comma followed by another type expression or a closing paren to complete the tuple type.
+Expected a comma followed by another type or a `)` to complete the tuple type.
 
 program: WASMI64 COLON LPAREN TYPEID COMMA EOL WHILE
 ##
@@ -6993,7 +6993,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
-Expected a comma-separated list of type expressions.
+Expected a comma-separated list of types.
 
 program: WASMI64 COLON LPAREN TYPEID WHEN
 ##
@@ -7018,7 +7018,7 @@ program: WASMI64 COLON LPAREN TYPEID WHEN
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
 
-Expected a closing paren (for a grouped type) or a comma followed by more types (for a tuple type).
+Expected a `)` (for a grouped type) or a comma followed by more types (for a tuple type).
 
 program: WASMI64 COLON TYPEID ARROW EOL WHILE
 ##
@@ -7038,7 +7038,7 @@ program: WASMI64 COLON TYPEID ARROW EOL WHILE
 ## In state 70, spurious reduction of production arrow -> ARROW eols
 ##
 
-Expected a type expression for the result of the function type.
+Expected a type for the result of the function type.
 
 program: WASMI64 COLON TYPEID LCARET EOL WHILE
 ##
@@ -7058,7 +7058,7 @@ program: WASMI64 COLON TYPEID LCARET EOL WHILE
 ## In state 74, spurious reduction of production lcaret -> LCARET eols
 ##
 
-Expected a comma-separated list of type expressions.
+Expected a comma-separated list of types.
 
 program: WASMI64 COLON TYPEID LCARET TYPEID RPAREN
 ##
@@ -7081,7 +7081,7 @@ program: WASMI64 COLON TYPEID LCARET TYPEID RPAREN
 ## In state 90, spurious reduction of production typs -> lseparated_nonempty_list_inner(comma,typ) option(comma)
 ##
 
-Expected a closing caret to complete the type expression.
+Expected a closing caret to complete the type.
 
 program: WASMI64 DOT ID LPAREN COMMA EOL WHILE
 ##
@@ -7218,7 +7218,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LPAREN WASMI64 COMMA RBRACK
 ## In state 168, spurious reduction of production option(comma) -> comma
 ##
 
-Expected a closing paren to complete the function call.
+Expected a `)` to complete the function call.
 
 program: WASMI64 DOT ID LPAREN UNDERSCORE
 ##
@@ -7285,7 +7285,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LPAREN WHEN
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected a comma-separated list of expressions or a closing paren to complete the function call.
+Expected a comma-separated list of expressions or a `)` to complete the function call.
 
 program: WASMI64 DOT ID LPAREN WASMI64 THICKARROW
 ##
@@ -7372,7 +7372,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LPAREN WASMI64 WHILE
 ## In state 253, spurious reduction of production lseparated_nonempty_list_inner(comma,expr) -> expr
 ##
 
-Expected a comma followed by more expressions or a closing paren to complete the function call.
+Expected a comma followed by more expressions or a `)` to complete the function call.
 
 program: WHILE LPAREN UNDERSCORE
 ##
@@ -7412,7 +7412,7 @@ program: WHILE LPAREN WASMI64 THICKARROW
 ## In state 60, spurious reduction of production expr -> non_stmt_expr
 ##
 
-Expected a closing paren after the while loop condition.
+Expected a `)` after the while loop condition.
 
 program: WHILE WHILE
 ##
@@ -7445,4 +7445,4 @@ program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
-Expected an arrow (=>) followed by an expression (or a branch guard, i.e. the keyword 'when' followed by an expression).
+Expected an arrow (=>) followed by an expression (or a branch guard, i.e. the keyword `when` followed by an expression).
