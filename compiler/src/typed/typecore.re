@@ -100,7 +100,6 @@ let grain_type_of_wasm_prim_type =
 
 let prim0_type =
   fun
-  | AllocateChar
   | AllocateInt32
   | AllocateInt64
   | AllocateFloat32
@@ -125,6 +124,8 @@ let prim1_type =
       Builtin_types.type_number,
       Builtin_types.type_wasmi32,
     )
+  | TagChar => (Builtin_types.type_wasmi32, Builtin_types.type_char)
+  | UntagChar => (Builtin_types.type_char, Builtin_types.type_wasmi32)
   | Not => (Builtin_types.type_bool, Builtin_types.type_bool)
   | Box
   | BoxBind => {

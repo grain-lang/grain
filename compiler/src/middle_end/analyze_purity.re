@@ -44,8 +44,7 @@ let rec analyze_comp_expression =
     | CImmExpr({imm_desc: ImmTrap}) => false
     | CImmExpr(_) => true
     | CPrim0(
-        AllocateChar | AllocateInt32 | AllocateInt64 | AllocateFloat32 |
-        AllocateFloat64 |
+        AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
         AllocateRational,
       ) =>
       true
@@ -60,6 +59,8 @@ let rec analyze_comp_expression =
         BytesSize |
         TagSimpleNumber |
         UntagSimpleNumber |
+        TagChar |
+        UntagChar |
         Not |
         Box |
         Unbox |

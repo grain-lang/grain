@@ -118,7 +118,7 @@ pattern matching › record_match_deep
              )
             )
            )
-           (i32.const 4)
+           (i32.const 3)
           )
           (i32.store offset=4
            (local.get $0)
@@ -164,7 +164,7 @@ pattern matching › record_match_deep
              )
             )
            )
-           (i32.const 4)
+           (i32.const 3)
           )
           (i32.store offset=4
            (local.get $0)

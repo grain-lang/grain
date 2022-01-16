@@ -39,7 +39,7 @@ functions › curried_func
          )
         )
        )
-       (i32.const 7)
+       (i32.const 6)
       )
       (i32.store offset=4
        (local.get $2)
@@ -155,7 +155,7 @@ functions › curried_func
              )
             )
            )
-           (i32.const 7)
+           (i32.const 6)
           )
           (i32.store offset=4
            (local.get $0)

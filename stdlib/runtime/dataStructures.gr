@@ -36,14 +36,6 @@ export primitive allocateBytes: WasmI32 -> WasmI32 = "@allocate.bytes"
 @unsafe
 export primitive allocateString: WasmI32 -> WasmI32 = "@allocate.string"
 
-/**
- * Allocates a new Grain char.
- *
- * @returns The pointer to the char
- */
-@unsafe
-export primitive allocateChar: () -> WasmI32 = "@allocate.char"
-
 // INT32/INT64
 
 /**
@@ -175,3 +167,21 @@ export primitive tagSimpleNumber: WasmI32 -> Number = "@tag.simple_number"
  */
 @unsafe
 export primitive untagSimpleNumber: Number -> WasmI32 = "@untag.simple_number"
+
+/**
+ * Tag a char.
+ *
+ * @param num: The usv to tag
+ * @returns The tagged char
+ */
+@unsafe
+export primitive tagChar: WasmI32 -> Char = "@tag.char"
+
+/**
+ * Untag a char.
+ *
+ * @param num: The char to untag
+ * @returns The untagged usv
+ */
+@unsafe
+export primitive untagChar: Char -> WasmI32 = "@untag.char"

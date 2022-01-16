@@ -7,6 +7,7 @@ import WasmI32, {
   divS as (/),
   shl as (<<),
   shrS as (>>),
+  shrU as (>>>),
   and as (&),
   or as (|),
   eq as (==),
@@ -206,24 +207,9 @@ let escape = (ptr, isString) => {
 
   let _SEQ_QUOTE = if (isString) _SEQ_DQUOTE else _SEQ_SQUOTE
 
-  let size = if (isString) {
-    WasmI32.load(ptr, 4n)
-  } else {
-    let byte = WasmI32.load8U(ptr, 4n)
+  let size = WasmI32.load(ptr, 4n)
 
-    // Calculate number of bytes via utf-8 encoding
-    if ((byte & 0x80n) == 0x00n) {
-      1n
-    } else if ((byte & 0xF0n) == 0xF0n) {
-      4n
-    } else if ((byte & 0xE0n) == 0xE0n) {
-      3n
-    } else {
-      2n
-    }
-  }
-
-  let startOffset = if (isString) 8n else 4n
+  let startOffset = 8n
   let stringOffset = 8n
 
   let mut newSize = 2n // extra space for quote characters
@@ -285,8 +271,42 @@ let escapeString = (s: String) => {
 }
 
 @unsafe
-let escapeChar = (c: Char) => {
-  escape(WasmI32.fromGrain(c), false)
+let escapeChar = (s: String) => {
+  escape(WasmI32.fromGrain(s), false)
+}
+
+@unsafe
+let usvToString = usv => {
+  if (usv < 0x80n) {
+    let string = allocateString(1n)
+    WasmI32.store8(string, usv, 8n)
+    WasmI32.toGrain(string): String
+  } else {
+    let mut count = 0n
+    let mut offset = 0n
+    if (usv <= 0x07FFn) {
+      count = 1n
+      offset = 0xC0n
+    } else if (usv <= 0xFFFFn) {
+      count = 2n
+      offset = 0xE0n
+    } else {
+      count = 3n
+      offset = 0xF0n
+    }
+    let string = allocateString(count + 1n)
+    WasmI32.store8(string, (usv >>> 6n * count) + offset, 8n)
+
+    let mut n = 0n
+    while (count > 0n) {
+      n += 1n
+      let temp = usv >>> 6n * (count - 1n)
+      WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
+      count -= 1n
+    }
+
+    WasmI32.toGrain(string): String
+  }
 }
 
 @unsafe
@@ -346,27 +366,6 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       }
 
       WasmI32.toGrain(str): String
-    },
-    t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
-      if (toplevel) {
-        let byte = WasmI32.load8U(ptr, 4n)
-        let numBytes = if ((byte & 0x80n) == 0x00n) {
-          1n
-        } else if ((byte & 0xF0n) == 0xF0n) {
-          4n
-        } else if ((byte & 0xE0n) == 0xE0n) {
-          3n
-        } else {
-          2n
-        }
-        let str = allocateString(numBytes)
-        Memory.copy(str + 8n, ptr + 4n, numBytes)
-        WasmI32.toGrain(str): String
-      } else {
-        // We incRef ptr so we can reuse it via WasmI32.toGrain
-        Memory.incRef(ptr)
-        escapeChar(WasmI32.toGrain(ptr))
-      }
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
@@ -548,16 +547,26 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
   if ((grainValue & 1n) != 0n) {
     // Simple (unboxed) numbers
     NumberUtils.itoa32(grainValue >> 1n, 10n)
-  } else if ((grainValue & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
-    heapValueToString(grainValue, extraIndents, toplevel)
-  } else if (grainValue == WasmI32.fromGrain(true)) {
-    "true"
-  } else if (grainValue == WasmI32.fromGrain(false)) {
-    "false"
-  } else if (grainValue == WasmI32.fromGrain(void)) {
-    "void"
   } else {
-    "<unknown value>"
+    let tag = grainValue & 7n
+    if (tag == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+      heapValueToString(grainValue, extraIndents, toplevel)
+    } else if (tag == Tags._GRAIN_CHAR_TAG_TYPE) {
+      let string = usvToString(grainValue >> 3n)
+      if (toplevel) {
+        string
+      } else {
+        escapeChar(string)
+      }
+    } else if (grainValue == WasmI32.fromGrain(true)) {
+      "true"
+    } else if (grainValue == WasmI32.fromGrain(false)) {
+      "false"
+    } else if (grainValue == WasmI32.fromGrain(void)) {
+      "void"
+    } else {
+      "<unknown value>"
+    }
   }
 }, listToString = (ptr, extraIndents) => {
   let mut cur = ptr
