@@ -19,7 +19,10 @@ module I = UnitActionsParser.MenhirInterpreter;
 let env = checkpoint =>
   switch (checkpoint) {
   | I.HandlingError(env) => env
-  | _ => assert(false)
+  | _ =>
+    failwith(
+      "Impossible: Non- error handling state when handling parser error",
+    )
   };
 
 let state = checkpoint =>
