@@ -43,8 +43,9 @@ describe("aliased types", ({test}) => {
     "type_alias_5",
     {|
       type Foo<a> = (String, List<a>)
-      let foo = (x: Foo<Number>) =>
-        x: (String, List<Number>)
+      let foo = (x: Foo<Number>) => {
+        (x): (String, List<Number>)
+      }
       print(foo(("foo", [1, 2, 3])))
     |},
     "(\"foo\", [1, 2, 3])\n",
