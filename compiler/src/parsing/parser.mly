@@ -235,7 +235,7 @@ ellipsis_prefix(X):
 pattern:
   | pattern colon typ { Pat.constraint_ ~loc:(to_loc $loc) $1 $3 }
   | UNDERSCORE { Pat.any ~loc:(to_loc $loc) () }
-  | const { let (pat, loc) = $1 in Pat.constant ~loc:(to_loc loc) pat }
+  | const { Pat.constant ~loc:(to_loc (snd $1)) (fst $1) }
   // Allow rational numbers in patterns
   | dash_op? NUMBER_INT slash_op dash_op? NUMBER_INT { Pat.constant ~loc:(to_loc $sloc) @@ Const.number (PConstNumberRational ((if Option.is_some $1 then "-" ^ $2 else $2), (if Option.is_some $4 then "-" ^ $5 else $5))) }
   | ID { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
