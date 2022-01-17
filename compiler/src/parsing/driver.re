@@ -41,10 +41,13 @@ let show = (text, positions) =>
 let get = (text, checkpoint, i) =>
   switch (I.get(i, env(checkpoint))) {
   | Some(I.Element(_, _, pos1, pos2)) => show(text, (pos1, pos2))
-  | None => assert(false)
+  | None => failwith("Impossible: Syntax error outside of program")
   };
 
-let succeed = _v => assert(false);
+let succeed = _v =>
+  failwith(
+    "Impossible: Successful parse by slow parser after unsuccessful parse by fast parser",
+  );
 
 let fail = (text, buffer, checkpoint: I.checkpoint(_)) => {
   /* Indicate where in the input file the error occurred. */
