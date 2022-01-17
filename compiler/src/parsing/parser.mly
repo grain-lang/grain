@@ -496,7 +496,7 @@ id_expr:
   | id %prec COLON { Exp.ident ~loc:(to_loc $loc) $1 }
 
 simple_expr:
-  | const { let (exp, loc) = $1 in Exp.constant ~loc:(to_loc loc) exp }
+  | const { Exp.constant ~loc:(to_loc (snd $1)) (fst $1) }
   | lparen tuple_exprs rparen { Exp.tuple ~loc:(to_loc $loc) $2 }
   | id_expr { $1 }
 
