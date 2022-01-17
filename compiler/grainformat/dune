@@ -1,7 +1,7 @@
 (library
- (name reformat)
- (public_name grainformat.reformat)
- (modules reformat res_doc res_minibuffer walktree debug)
+ (name format)
+ (public_name grainformat.format)
+ (modules format res_doc res_minibuffer debug comment_utils)
  (libraries grain grain_diagnostics grain_parsing grain_utils))
 
 (executable
@@ -14,18 +14,13 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain grain_utils grain_parsing grainformat.reformat
+ (libraries cmdliner grain grain_utils grain_parsing grainformat.format
    binaryen.native dune-build-info))
 
 (rule
  (target grainformat_js.re)
  (action
-  ; This cats the jsoo_header.re to the top of grainformat.re to build grainformat_js.re
-  (with-stdout-to
-   %{target}
-   (progn
-    (cat %{dep:jsoo_header.re})
-    (cat %{dep:grainformat.re})))))
+  (copy %{dep:grainformat.re} %{target})))
 
 (executable
  (enabled_if
@@ -37,7 +32,6 @@
  ; exe is only here so dune-build-info works
  (modes exe js)
  (libraries cmdliner grain grain_diagnostics grain_utils grain_parsing
-   grainformat.reformat binaryen.js dune-build-info js_of_ocaml)
+   grainformat.format binaryen.js dune-build-info)
  (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)
-  (javascript_files runtime.js jsoo_hacks.js)))
+  (flags --no-sourcemap --no-extern-fs --quiet)))

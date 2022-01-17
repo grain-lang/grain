@@ -19,8 +19,8 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
           switch (v) {
           | {comp_desc: CNumber(Const_number_int(n) as c')}
               when
-                Int64.compare(n, Literals.simple_number_max) < 0
-                && Int64.compare(n, Literals.simple_number_min) > 0 =>
+                n <= Literals.simple_number_max
+                && n >= Literals.simple_number_min =>
             add_constant(id, ImmConst(Const_number(c')))
           | {comp_desc: CImmExpr({imm_desc})} =>
             switch (imm_desc) {

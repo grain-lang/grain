@@ -161,4 +161,13 @@ describe("records", ({test}) => {
       bar.foo = Some(foo)
     |},
   );
+  assertRun(
+    "export_import_record_issue_665",
+    {|
+      import { Foo } from "data"
+      export enum Bar { Baz(Foo<Number>) }
+      print(Baz({ bar: 1 }))
+    |},
+    "Baz(<record value>)\n",
+  );
 });

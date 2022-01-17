@@ -263,6 +263,27 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing the elements from the input|
 
+### Array.**cycle**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+cycle : ((a -> Void), Number, Array<a>) -> Void
+```
+
+Iterates an array a given number of times, calling an iterator function on each element.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`a -> Void`|The iterator function to call with each element|
+|`n`|`Number`|The number of times to iterate the given array|
+|`array`|`Array<a>`|The array to iterate|
+
 ### Array.**forEach**
 
 <details>
@@ -350,7 +371,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The new array with mapped values|
+|`Array<b>`|The new array with mapped values|
 
 ### Array.**mapi**
 
@@ -377,7 +398,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The new array with mapped values|
+|`Array<b>`|The new array with mapped values|
 
 ### Array.**reduce**
 
@@ -404,7 +425,7 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<a>`|The array to iterate|
+|`array`|`Array<b>`|The array to iterate|
 
 Returns:
 
@@ -444,7 +465,7 @@ Parameters:
 |-----|----|-----------|
 |`fn`|`(a, b, Number) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
-|`array`|`Array<a>`|The array to iterate|
+|`array`|`Array<b>`|The array to iterate|
 
 Returns:
 
@@ -479,7 +500,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Array<a>`|The new array|
+|`Array<b>`|The new array|
 
 ### Array.**every**
 
@@ -1005,4 +1026,59 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The subset of the array that was sliced|
+
+### Array.**sort**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sort : (((a, a) -> Number), Array<a>) -> Void
+```
+
+Sorts an array in-place.
+
+Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
+|`array`|`Array<a>`|The array to be sorted|
+
+### Array.**rotate**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+rotate : (Number, Array<a>) -> Void
+```
+
+Rotates an array by n elements to the right, in place.
+
+If n is negative, the array will be rotated by n elements
+to the left. See examples.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The number of elements to rotate by|
+|`arr`|`Array<a>`|The array to be rotated|
+
+Examples:
+
+```grain
+let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 4, 5, 1, 2, 3]
+```
+
+```grain
+let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 2, 3, 4, 5, 1]
+```
 

@@ -46,6 +46,10 @@ let compile_parsed = (filename: option(string)) => {
 
       program_str := String.concat("\n", linesList^);
 
+      // add a new line to the end for where it's in CRLF more
+      // TODO(#940): Handle CRLF properly
+      program_str := program_str^ ++ "\n";
+
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_string(
         ~hook=stop_after_parse,
@@ -61,7 +65,7 @@ let compile_parsed = (filename: option(string)) => {
       } else {
         None;
       };
-    Grain_parsing.Location.report_exception(Format.err_formatter, exn);
+    Grain_parsing.Location.report_exception(Stdlib.Format.err_formatter, exn);
     Option.iter(
       s =>
         if (Grain_utils.Config.debug^) {
@@ -86,10 +90,10 @@ let format_code =
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let reformatted_code = Reformat.reformat_ast(program, original_source);
+  let formatted_code = Format.format_ast(~original_source, program);
 
   let buf = Buffer.create(0);
-  Buffer.add_string(buf, reformatted_code);
+  Buffer.add_string(buf, formatted_code);
 
   let contents = Buffer.to_bytes(buf);
   switch (outfile) {
@@ -138,11 +142,11 @@ let output_file_conv = {
       ? if (Sys.is_directory(s_dir)) {
           `Ok(s);
         } else {
-          `Error(Format.sprintf("`%s' is not a directory", s_dir));
+          `Error(Stdlib.Format.sprintf("`%s' is not a directory", s_dir));
         }
-      : `Error(Format.sprintf("no `%s' directory", s_dir));
+      : `Error(Stdlib.Format.sprintf("no `%s' directory", s_dir));
   };
-  (parse, Format.pp_print_string);
+  (parse, Stdlib.Format.pp_print_string);
 };
 
 let output_filename = {
@@ -172,7 +176,7 @@ let input_filename = {
 let cmd = {
   open Term;
 
-  let doc = "Reformat Grain source";
+  let doc = "Format Grain source";
   let version =
     switch (Build_info.V1.version()) {
     | None => "unknown"

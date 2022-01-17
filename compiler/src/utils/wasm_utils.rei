@@ -1,22 +1,22 @@
 /** Utilities for interfacing with WebAssembly */;
 
 [@deriving sexp]
-type wasm_bin_export_type =
-  | ExportedFunction
-  | ExportedTable
-  | ExportedMemory
-  | ExportedGlobal;
+type wasm_bin_type =
+  | WasmFunction
+  | WasmTable
+  | WasmMemory
+  | WasmGlobal;
 
 [@deriving sexp]
 type wasm_bin_section_type =
   | Custom(string)
   | Type
-  | Import
+  | Import(list((wasm_bin_type, string, string)))
   | Function
   | Table
   | Memory
   | Global
-  | Export(list((wasm_bin_export_type, string)))
+  | Export(list((wasm_bin_type, string)))
   | Start
   | Element
   | Code

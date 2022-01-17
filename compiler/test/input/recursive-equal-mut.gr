@@ -3,20 +3,7 @@
 
 export enum Opt<a> { None, Some(a) }
 
-let mut z = None
-z = Some(z)
-
-let mut y = None
-
-assert !(z == y)
-
-y = Some(y)
-assert z == y
-
-export record Rec {
-  int: Number,
-  mut r: Opt<Rec>
-}
+export record Rec { int: Number, mut r: Opt<Rec> }
 
 let a = { int: 5, r: None }
 let b = { int: 5, r: None }

@@ -1,4 +1,5 @@
 import * from "list"
+import String from "string"
 
 let list = [1, 2, 3]
 
@@ -219,3 +220,25 @@ assert init(-10, idx => fail "Shouldn't be called") == []
 // List.join
 assert join(", ", ["a", "b", "c"]) == "a, b, c"
 assert join(", ", []) == ""
+
+
+// List.sort
+let comp = (left, right) => {
+    match((left, right)) {
+        (left, right) when left > right => 1,
+        (left, right) when left == right => 0,
+        _ => -1
+    }
+}
+assert sort(comp, [3,5,2,4,1]) == [1,2,3,4,5]
+assert sort(comp, []) == []
+let comp = (left, right) => {
+    match((String.length(left), String.length(right))) {
+        (left, right) when left > right => 1,
+        (left, right) when left == right => 0,
+        _ => -1
+    }
+}
+let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
+assert sort(comp, list) == ["a", "a", "ab", "abc", "abcd", "abcde"]
+assert sort(comp, ["a", "a", "a", "a"]) == ["a", "a", "a", "a"]

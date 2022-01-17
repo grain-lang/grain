@@ -25,3 +25,9 @@ let myFunction4 = () => {
   @attribute
   let myAttributeFunction = () => 5
 }
+
+let rotate = (count, list) => {
+  let (beginning, end) = if (count >= 0) part(count, list)
+  else part(length(list) + count, list)
+  append(end, beginning)
+}

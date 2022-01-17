@@ -1,7 +1,7 @@
 {
   "name": "@grain/compiler",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.5",
   "bin": {
     "grainc": "_esy/default/build/install/default/bin/grainc"
   },
@@ -9,7 +9,7 @@
     "node": ">=14"
   },
   "devDependencies": {
-    "esy": "0.6.11"
+    "esy": "0.6.12"
   },
   "scripts": {
     "link": "yarn link",

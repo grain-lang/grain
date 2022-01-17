@@ -38,7 +38,7 @@ export let inRange = (value, range) => {
     Inclusive(upper, lower) when value >= lower && value <= upper => true,
     Exclusive(lower, upper) when value >= lower && value < upper => true,
     Exclusive(upper, lower) when value >= lower && value < upper => true,
-    _ => false
+    _ => false,
   }
 }
 
@@ -52,34 +52,34 @@ export let inRange = (value, range) => {
  *
  * @since v0.3.0
  */
-export let forEach = (fn: (Number) -> Void, range) => {
+export let forEach = (fn: Number -> Void, range) => {
   match (range) {
     Inclusive(lower, upper) when lower <= upper => {
-      let mut idx = lower;
+      let mut idx = lower
       while (idx <= upper) {
-        fn(idx);
-        idx += 1;
+        fn(idx)
+        idx += 1
       }
     },
     Inclusive(upper, lower) => {
-      let mut idx = upper;
+      let mut idx = upper
       while (idx >= lower) {
-        fn(idx);
-        idx -= 1;
+        fn(idx)
+        idx -= 1
       }
     },
     Exclusive(lower, upper) when lower <= upper => {
-      let mut idx = lower;
+      let mut idx = lower
       while (idx < upper) {
-        fn(idx);
-        idx += 1;
+        fn(idx)
+        idx += 1
       }
     },
     Exclusive(upper, lower) => {
-      let mut idx = upper;
+      let mut idx = upper
       while (idx > lower) {
-        fn(idx);
-        idx -= 1;
+        fn(idx)
+        idx -= 1
       }
     },
   }
@@ -100,31 +100,31 @@ export let map = (fn, range) => {
   let mut result = []
   match (range) {
     Inclusive(lower, upper) when lower <= upper => {
-      let mut idx = upper;
+      let mut idx = upper
       while (idx >= lower) {
-        result = [fn(idx), ...result];
-        idx -= 1;
+        result = [fn(idx), ...result]
+        idx -= 1
       }
     },
     Inclusive(upper, lower) => {
-      let mut idx = lower;
+      let mut idx = lower
       while (idx <= upper) {
-        result = [fn(idx), ...result];
-        idx += 1;
+        result = [fn(idx), ...result]
+        idx += 1
       }
     },
     Exclusive(lower, upper) when lower <= upper => {
-      let mut idx = upper - 1;
+      let mut idx = upper - 1
       while (idx >= lower) {
-        result = [fn(idx), ...result];
-        idx -= 1;
+        result = [fn(idx), ...result]
+        idx -= 1
       }
     },
     Exclusive(upper, lower) => {
-      let mut idx = lower + 1;
+      let mut idx = lower + 1
       while (idx <= upper) {
-        result = [fn(idx), ...result];
-        idx += 1;
+        result = [fn(idx), ...result]
+        idx += 1
       }
     },
   }

@@ -208,4 +208,5 @@ describe("imports", ({test}) => {
     "annotation_across_import",
     "import TList, { Empty } from \"tlists\"; let foo : TList.TList<String> = Empty; foo",
   );
+  assertFileRun("relative_import_linking", "relativeImportLinking", "2\n2\n");
 });

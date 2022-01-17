@@ -666,17 +666,6 @@ let next_global = (~exported=false, id, ty) => {
   Printf.sprintf("global_%d", ret);
 };
 
-let transl_attributes = attrs => {
-  List.map(
-    ({txt}) =>
-      switch (txt) {
-      | "disableGC" => Disable_gc
-      | _ => failwith("impossible by well-formedness")
-      },
-    attrs,
-  );
-};
-
 let rec compile_comp = (~id=?, env, c) => {
   let desc =
     switch (c.comp_desc) {
@@ -775,14 +764,12 @@ let rec compile_comp = (~id=?, env, c) => {
     | CString(s) => MAllocate(MString(s))
     | CChar(c) => MAllocate(MChar(c))
     | CNumber(Const_number_int(n))
-        when
-          Int64.compare(n, Literals.simple_number_max) < 0
-          && Int64.compare(n, Literals.simple_number_min) > 0 =>
+        when n <= Literals.simple_number_max && n >= Literals.simple_number_min =>
       MImmediate(MImmConst(MConstI32(Int64.to_int32(n))))
     | CNumber(Const_number_int(n))
         when
-          Int64.compare(n, Int64.of_int32(Int32.max_int)) < 0
-          && Int64.compare(n, Int64.of_int32(Int32.min_int)) > 0 =>
+          n <= Int64.of_int32(Int32.max_int)
+          && n >= Int64.of_int32(Int32.min_int) =>
       MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
@@ -827,7 +814,7 @@ let rec compile_comp = (~id=?, env, c) => {
             env,
             args,
             body,
-            transl_attributes(c.comp_attributes),
+            c.comp_attributes,
             c.comp_loc,
           ),
         ),
@@ -1020,8 +1007,8 @@ let lift_imports = (env, imports) => {
       ) => {
     switch (imp_desc) {
     | GrainValue(mod_, name) =>
-      let mimp_mod = Ident.create(mod_);
-      let mimp_name = Ident.create(name);
+      let mimp_mod = Ident.create_persistent(mod_);
+      let mimp_name = Ident.create_persistent(name);
       let (asmtype, gc) =
         switch (imp_shape) {
         | GlobalShape(HeapAllocated as alloc) => (
@@ -1049,9 +1036,9 @@ let lift_imports = (env, imports) => {
               imp_use_id,
               MGlobalBind(
                 Printf.sprintf(
-                  "import_%s_%s",
-                  Ident.unique_name(mimp_mod),
-                  Ident.unique_name(mimp_name),
+                  "gimport_%s_%s",
+                  Ident.name(mimp_mod),
+                  Ident.name(mimp_name),
                 ),
                 asmtype,
                 gc,
@@ -1061,8 +1048,8 @@ let lift_imports = (env, imports) => {
         },
       );
     | WasmValue(mod_, name) =>
-      let mimp_mod = Ident.create(mod_);
-      let mimp_name = Ident.create(name);
+      let mimp_mod = Ident.create_persistent(mod_);
+      let mimp_name = Ident.create_persistent(name);
       let (asmtype, gc) =
         switch (imp_shape) {
         | GlobalShape(HeapAllocated as alloc) => (
@@ -1090,9 +1077,9 @@ let lift_imports = (env, imports) => {
               imp_use_id,
               MGlobalBind(
                 Printf.sprintf(
-                  "import_%s_%s",
-                  Ident.unique_name(mimp_mod),
-                  Ident.unique_name(mimp_name),
+                  "wimport_%s_%s",
+                  Ident.name(mimp_mod),
+                  Ident.name(mimp_name),
                 ),
                 asmtype,
                 gc,
@@ -1105,17 +1092,17 @@ let lift_imports = (env, imports) => {
       let glob =
         next_global(~exported=imp_exported == Global, imp_use_id, I32Type);
       let new_mod = {
-        mimp_mod: Ident.create(mod_),
-        mimp_name: Ident.create(name),
+        mimp_mod: Ident.create_persistent(mod_),
+        mimp_name: Ident.create_persistent(name),
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
       };
       let func_name =
         Printf.sprintf(
-          "import_%s_%s",
-          Ident.unique_name(new_mod.mimp_mod),
-          Ident.unique_name(new_mod.mimp_name),
+          "wimport_%s_%s",
+          Ident.name(new_mod.mimp_mod),
+          Ident.name(new_mod.mimp_name),
         );
       (
         [new_mod, ...imports],

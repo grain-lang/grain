@@ -1,0 +1,31 @@
+init(position, index => {
+  filtered[index]
+})
+
+forEach(el => if (fn(el)) {
+  filtered[position] = el
+  position += 1
+}, array)
+
+init2(position, index => {
+  filtered[index]
+  true
+})
+
+init3(index => {
+  filtered[index]
+  true
+}, positions)
+
+[
+  fn(x => {
+    let _ = x
+  }),
+  fn(y => {
+    let _ = y
+    void
+  }),
+  fn(z => {
+    let _ = z
+  }),
+]
