@@ -3,7 +3,7 @@ open Lexing;
 open Location;
 
 let apply_filename_to_lexbuf = (name, lexbuf) => {
-  lexbuf.lex_curr_p = {...lexbuf.lex_curr_p, pos_fname: name};
+  Lexing.set_filename(lexbuf, name);
   Location.input_name := name;
 };
 
