@@ -107,7 +107,7 @@
     (reason (>= 3.6.0))
     (ppx_sexp_conv (>= 0.14.0))
     (sexplib (>= 0.14.0))
-    (menhir (= 20211012))
+    (menhir (= 20211125))
     (cmdliner (>= 1.0.2))
     (utf8 (>= 0.0.0))
     (ppx_deriving_yojson (>= 3.5.2))
