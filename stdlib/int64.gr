@@ -9,13 +9,11 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import Exception from "runtime/exception"
 import Memory from "runtime/unsafe/memory"
 
-import {
-  newInt64
-} from "runtime/dataStructures"
+import { newInt64 } from "runtime/dataStructures"
 
 import {
   coerceNumberToInt64 as fromNumber,
-  coerceInt64ToNumber as toNumber
+  coerceInt64ToNumber as toNumber,
 } from "runtime/numbers"
 
 /**
@@ -230,7 +228,7 @@ export let rec remU = (x: Int64, y: Int64) => {
 }
 
 @disableGC
-let abs = (n) => {
+let abs = n => {
   let mask = WasmI64.shrS(n, 63N)
   WasmI64.sub(WasmI64.xor(n, mask), mask)
 }
@@ -259,7 +257,11 @@ export let rec mod = (x: Int64, y: Int64) => {
     let yabs = abs(yval)
     let mval = WasmI64.remS(xabs, yabs)
     let mres = WasmI64.sub(yabs, mval)
-    newInt64(if (WasmI64.ne(mval, 0N)) (if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres) else 0N)
+    newInt64(
+      if (WasmI64.ne(mval, 0N)) (
+        if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres
+      ) else 0N
+    )
   } else {
     newInt64(WasmI64.remS(xval, yval))
   }
@@ -271,7 +273,7 @@ export let rec mod = (x: Int64, y: Int64) => {
 }
 
 /**
- * @section Bit operations: Functions for operating on bits of Int64 values.
+ * @section Bitwise operations: Functions for operating on bits of Int64 values.
  */
 
 /**
@@ -317,7 +319,7 @@ export let rec rotr = (value: Int64, amount: Int64) => {
 }
 
 /**
- * Shifts the bits of the value left by the given number of bits, preserving the sign bit.
+ * Shifts the bits of the value left by the given number of bits.
  *
  * @param value: The value to shift
  * @param amount: The number of bits to shift by
