@@ -543,7 +543,7 @@ export let rec lnot = (value: Int64) => {
 }
 
 /**
- * Computes the bitwise logical AND on the given operands.
+ * Computes the bitwise AND (`&`) on the given operands.
  *
  * @param x: The first operand
  * @param y: The second operand
@@ -564,7 +564,7 @@ export let rec land = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the bitwise logical OR on the given operands.
+ * Computes the bitwise OR (`|`) on the given operands.
  *
  * @param x: The first operand
  * @param y: The second operand
@@ -585,7 +585,7 @@ export let rec lor = (x: Int64, y: Int64) => {
 }
 
 /**
- * Computes the bitwise logical XOR on the given operands.
+ * Computes the bitwise XOR (`^`) on the given operands.
  *
  * @param x: The first operand
  * @param y: The second operand

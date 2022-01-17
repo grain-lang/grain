@@ -664,7 +664,7 @@ No other changes yet.
 lnot : Int64 -> Int64
 ```
 
-Computes the bitwise logical NOT of the given value.
+Computes the bitwise NOT of the given value.
 
 Parameters:
 
@@ -676,7 +676,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "not" of the given value.|
+|`Int64`|Containing the inverted bits of the given value|
 
 ### Int64.**land**
 
@@ -689,7 +689,7 @@ No other changes yet.
 ( land ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical AND on the given operands.
+Computes the bitwise AND (`&`) on the given operands.
 
 Parameters:
 
@@ -702,7 +702,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "and" of the given operands|
+|`Int64`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
 ### Int64.**lor**
 
@@ -715,7 +715,7 @@ No other changes yet.
 ( lor ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical OR on the given operands.
+Computes the bitwise OR (`|`) on the given operands.
 
 Parameters:
 
@@ -728,7 +728,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "or" of the given operands|
+|`Int64`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
 ### Int64.**lxor**
 
@@ -741,7 +741,7 @@ No other changes yet.
 ( lxor ) : (Int64, Int64) -> Int64
 ```
 
-Computes the bitwise logical XOR on the given operands.
+Computes the bitwise XOR (`^`) on the given operands.
 
 Parameters:
 
@@ -754,7 +754,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The bitwise logical "xor" of the given operands|
+|`Int64`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
 ### Int64.**clz**
 
