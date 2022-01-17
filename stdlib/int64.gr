@@ -525,10 +525,10 @@ export let rec gte = (x: Int64, y: Int64) => {
  */
 
 /**
- * Computes the bitwise logical NOT of the given value.
+ * Computes the bitwise NOT of the given value.
  *
  * @param value: The given value
- * @returns The bitwise logical "not" of the given value.
+ * @returns Containing the inverted bits of the given value
  * 
  * @since v0.2.0
  */
@@ -547,7 +547,7 @@ export let rec lnot = (value: Int64) => {
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The bitwise logical "and" of the given operands
+ * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
  * 
  * @since v0.2.0
  */
@@ -568,7 +568,7 @@ export let rec land = (x: Int64, y: Int64) => {
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The bitwise logical "or" of the given operands
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
  * 
  * @since v0.2.0
  */
@@ -589,7 +589,7 @@ export let rec lor = (x: Int64, y: Int64) => {
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The bitwise logical "xor" of the given operands
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
  * 
  * @since v0.2.0
  */
