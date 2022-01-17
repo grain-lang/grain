@@ -328,9 +328,9 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The modulos of its operands|
+|`Int64`|The modulus of its operands|
 
-## Bit Operations
+## Bit operations
 
 Functions for operating on bits of Int64 values.
 
@@ -531,7 +531,7 @@ No other changes yet.
 eqz : Int64 -> Bool
 ```
 
-Checks if the given value equal to zero.
+Checks if the given value is equal to zero.
 
 Parameters:
 

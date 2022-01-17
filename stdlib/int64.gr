@@ -241,7 +241,7 @@ let abs = (n) => {
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The modulos of its operands
+ * @returns The modulus of its operands
  * 
  * @since v0.2.0
  */
@@ -271,7 +271,7 @@ export let rec mod = (x: Int64, y: Int64) => {
 }
 
 /**
- * @section Bit Operations: Functions for operating on bits of Int64 values.
+ * @section Bit operations: Functions for operating on bits of Int64 values.
  */
 
 /**
@@ -424,7 +424,7 @@ export let rec ne = (x: Int64, y: Int64) => {
 }
 
 /**
- * Checks if the given value equal to zero.
+ * Checks if the given value is equal to zero.
  *
  * @param value: The value to inspect
  * @returns `true` if the first value is equal to zero or `false` otherwise
