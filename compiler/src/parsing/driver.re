@@ -106,7 +106,8 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
       Lexing.from_string(source),
       source,
     );
-    assert(false);
+    // This should never be hit, but if it does someone will see and report
+    failwith("Impossible: Program with syntax error raised no error");
   };
 };
 
