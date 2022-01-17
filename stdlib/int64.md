@@ -59,7 +59,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`float`|`Int64`|The value to convert|
+|`value`|`Int64`|The value to convert|
 
 Returns:
 

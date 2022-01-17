@@ -35,7 +35,7 @@ export fromNumber
 /**
  * Converts an Int64 to a Number.
  *
- * @param float: The value to convert
+ * @param value: The value to convert
  * @returns The Int64 represented as a Number
  * 
  * @since v0.2.0
