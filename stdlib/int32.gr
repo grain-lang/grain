@@ -8,14 +8,11 @@ import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
 
-
-import {
-  newInt32
-} from "runtime/dataStructures"
+import { newInt32 } from "runtime/dataStructures"
 
 import {
   coerceNumberToInt32 as fromNumber,
-  coerceInt32ToNumber as toNumber
+  coerceInt32ToNumber as toNumber,
 } from "runtime/numbers"
 
 /**
@@ -230,7 +227,7 @@ export let rec remU = (x: Int32, y: Int32) => {
 }
 
 @disableGC
-let abs = (n) => {
+let abs = n => {
   let mask = WasmI32.shrS(n, 31n)
   WasmI32.sub(WasmI32.xor(n, mask), mask)
 }
@@ -259,7 +256,11 @@ export let rec mod = (x: Int32, y: Int32) => {
     let yabs = abs(yval)
     let mval = WasmI32.remS(xabs, yabs)
     let mres = WasmI32.sub(yabs, mval)
-    newInt32(if (WasmI32.ne(mval, 0n)) (if (WasmI32.ltS(yval, 0n)) WasmI32.sub(0n, mres) else mres) else 0n)
+    newInt32(
+      if (WasmI32.ne(mval, 0n)) (
+        if (WasmI32.ltS(yval, 0n)) WasmI32.sub(0n, mres) else mres
+      ) else 0n
+    )
   } else {
     newInt32(WasmI32.remS(xval, yval))
   }
@@ -271,7 +272,7 @@ export let rec mod = (x: Int32, y: Int32) => {
 }
 
 /**
- * @section Bit operations: Functions for operating on bits of Int32 values.
+ * @section Bitwise operations: Functions for operating on bits of Int32 values.
  */
 
 /**
@@ -317,7 +318,7 @@ export let rec rotr = (value: Int32, amount: Int32) => {
 }
 
 /**
- * Shifts the bits of the value left by the given number of bits, preserving the sign bit.
+ * Shifts the bits of the value left by the given number of bits.
  *
  * @param value: The value to shift
  * @param amount: The number of bits to shift by
