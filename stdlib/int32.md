@@ -311,7 +311,7 @@ No other changes yet.
 </details>
 
 ```grain
-( mod ) : (Int32, Int32) -> Int32
+mod : (Int32, Int32) -> Int32
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -330,7 +330,7 @@ Returns:
 |----|-----------|
 |`Int32`|The modulus of its operands|
 
-## Bit operations
+## Bitwise operations
 
 Functions for operating on bits of Int32 values.
 
@@ -397,7 +397,7 @@ No other changes yet.
 shl : (Int32, Int32) -> Int32
 ```
 
-Shifts the bits of the value left by the given number of bits, preserving the sign bit.
+Shifts the bits of the value left by the given number of bits.
 
 Parameters:
 
@@ -686,7 +686,7 @@ No other changes yet.
 </details>
 
 ```grain
-( land ) : (Int32, Int32) -> Int32
+land : (Int32, Int32) -> Int32
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -712,7 +712,7 @@ No other changes yet.
 </details>
 
 ```grain
-( lor ) : (Int32, Int32) -> Int32
+lor : (Int32, Int32) -> Int32
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -738,7 +738,7 @@ No other changes yet.
 </details>
 
 ```grain
-( lxor ) : (Int32, Int32) -> Int32
+lxor : (Int32, Int32) -> Int32
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
