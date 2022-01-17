@@ -72,7 +72,7 @@ let fail = (text, buffer, checkpoint: I.checkpoint(_)) => {
 // This parser is only meant to be invoked when you know a parse error
 // will occur
 let parse_program_for_syntax_error = (~name=?, lexbuf, source) => {
-  Option.iter(n => {apply_filename_to_lexbuf(n, lexbuf)}, name);
+  Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
   /* Allocate and initialize a lexing buffer. */
   /* Wrap the lexer and lexbuf together into a supplier, that is, a
      function of type [unit -> token * position * position]. */
@@ -92,7 +92,7 @@ let parse_program_for_syntax_error = (~name=?, lexbuf, source) => {
 };
 
 let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
-  Option.iter(n => {apply_filename_to_lexbuf(n, lexbuf)}, name);
+  Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
   let lexer = Wrapped_lexer.init(lexbuf);
   let token = _ => Wrapped_lexer.token(lexer);
   try({...parse_program(token, lexbuf), comments: Lexer.consume_comments()}) {
