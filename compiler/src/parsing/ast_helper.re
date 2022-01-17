@@ -229,6 +229,13 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpLambda(a, b));
   let apply = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpApp(a, b));
+  // It's difficult to parse rational numbers while division exists (in the
+  // parser state where you've read NUMBER_INT and you're looking ahead at /,
+  // you've got a shift/reduce conflict between reducing const -> NUMBER_INT
+  // and shifting /, and if you choose to reduce you can't parse a rational,
+  // and if you choose to shift then 1 / foo would always be a syntax error
+  // because the parser would expect a number). It's easier to just parse it
+  // as division and have this action decide that it's actually a rational.
   let binop = (~loc=?, ~attributes=?, a, b) => {
     switch (a, b) {
     | (
