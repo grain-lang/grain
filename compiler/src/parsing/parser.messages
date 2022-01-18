@@ -2463,7 +2463,7 @@ program: FUN LPAREN WASMI64 WHILE
 ## pattern
 ##
 
-Expected a type annotation, a comma followed by more patterns, or a closing character.
+Expected a type annotation, a comma followed by more patterns, `)`, or `]`.
 
 program: FUN LPAREN WASMI64 COMMA EOL WHILE
 ##
@@ -2484,7 +2484,7 @@ program: FUN LPAREN WASMI64 COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
 
-Expected another pattern or a closing character.
+Expected another pattern, `)`, or `]`.
 
 program: FUN LPAREN WASMI64 RBRACK
 ##
