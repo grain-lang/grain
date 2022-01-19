@@ -39,17 +39,14 @@ let rec print_ident = ppf =>
     };
 
 let parenthesized_ident = name =>
-  List.mem(name, ["or", "mod", "land", "lor", "lxor", "lsl", "lsr", "asr"])
-  || (
-    switch (name.[0]) {
-    | 'a' .. 'z'
-    | 'A' .. 'Z'
-    | '\223' .. '\246'
-    | '\248' .. '\255'
-    | '_' => false
-    | _ => true
-    }
-  );
+  switch (name.[0]) {
+  | 'a' .. 'z'
+  | 'A' .. 'Z'
+  | '\223' .. '\246'
+  | '\248' .. '\255'
+  | '_' => false
+  | _ => true
+  };
 
 let value_ident = (ppf, name) =>
   if (parenthesized_ident(name)) {

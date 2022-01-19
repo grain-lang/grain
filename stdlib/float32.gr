@@ -1,3 +1,9 @@
+/**
+ * @module Float32: Utilities for working with the Float32 type.
+ * @example import Float32 from "float32"
+ * 
+ * @since v0.2.0
+ */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import Memory from "runtime/unsafe/memory"
@@ -10,10 +16,43 @@ import {
   coerceFloat32ToNumber as toNumber
 } from "runtime/numbers"
 
+/**
+ * @section Conversions: Functions for converting between Numbers and the Float32 type.
+ */
+
+/**
+ * Converts a Number to a Float32.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Float32
+ * 
+ * @since v0.2.0
+ */
 export fromNumber
+
+/**
+ * Converts a Float32 to a Number.
+ *
+ * @param float: The value to convert
+ * @returns The Float32 represented as a Number
+ * 
+ * @since v0.2.0
+ */
 export toNumber
 
+/**
+ * @section Operations: Mathematical operations for Float32 values.
+ */
 
+/**
+ * Computes the sum of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The sum of the two operands
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec add = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -26,6 +65,15 @@ export let rec add = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Computes the difference of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The difference of the two operands
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec sub = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -38,6 +86,15 @@ export let rec sub = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Computes the product of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The product of the two operands
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec mul = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -50,6 +107,15 @@ export let rec mul = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Computes the quotient of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The quotient of the two operands
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec div = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -62,8 +128,19 @@ export let rec div = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * @section Comparisons: Functions for comparing Float32 values.
+ */
 
-// Float32 comparisons
+/**
+ * Checks if the first value is less than the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than the second value or `false` otherwise
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec lt = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -75,6 +152,15 @@ export let rec lt = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Checks if the first value is greater than the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec gt = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -86,6 +172,15 @@ export let rec gt = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Checks if the first value is less than or equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec lte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -97,6 +192,15 @@ export let rec lte = (x: Float32, y: Float32) => {
   ret
 }
 
+/**
+ * Checks if the first value is greater than or equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ * 
+ * @since v0.2.0
+ */
 @disableGC
 export let rec gte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
@@ -108,7 +212,9 @@ export let rec gte = (x: Float32, y: Float32) => {
   ret
 }
 
-// floating-point constants:
+/**
+ * @section Constants: Float32 constant values.
+ */
 
 @disableGC
 let rec makeInfinity = () => {
@@ -118,6 +224,11 @@ let rec makeInfinity = () => {
   ret
 }
 
+/**
+ * Infinity represented as a Float32 value.
+ * 
+ * @since v0.4.0
+ */
 export let infinity = makeInfinity()
 
 @disableGC
@@ -128,4 +239,9 @@ let rec makeNaN = () => {
   ret
 }
 
+/**
+ * NaN (Not a Number) represented as a Float32 value.
+ * 
+ * @since v0.4.0
+ */
 export let nan = makeNaN()

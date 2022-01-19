@@ -42,7 +42,7 @@ let read_stream = cstream => {
 let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
-      [],
+      Config.empty,
       () => {
         switch (config_fn) {
         | Some(fn) => fn()
@@ -65,7 +65,7 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
 let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
-      [],
+      Config.empty,
       () => {
         switch (config_fn) {
         | Some(fn) => fn()

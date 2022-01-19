@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.4.6](https://www.github.com/grain-lang/grain/compare/stdlib-v0.4.5...stdlib-v0.4.6) (2022-01-17)
+
+
+### Bug Fixes
+
+* **grainfmt:** Indent function application args when adding parens ([#1095](https://www.github.com/grain-lang/grain/issues/1095)) ([64af7d3](https://www.github.com/grain-lang/grain/commit/64af7d387dca2fddb9b3d190ccdf5790ec3d8e65))
+
 ### [0.4.5](https://www.github.com/grain-lang/grain/compare/stdlib-v0.4.4...stdlib-v0.4.5) (2021-12-31)
 
 

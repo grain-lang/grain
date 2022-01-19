@@ -24,7 +24,7 @@ describe("optimizations", ({test}) => {
     test(outfile, ({expect}) => {
       Grain_utils.Config.preserve_all_configs(() => {
         Config.with_config(
-          [],
+          Config.empty,
           () => {
             switch (config_fn) {
             | None => ()
