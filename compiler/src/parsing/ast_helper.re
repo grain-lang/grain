@@ -17,32 +17,20 @@
 
 open Parsetree;
 
+exception SyntaxError(Location.t, string);
+
+type listitem('a) =
+  | ListItem('a)
+  | ListSpread('a, Location.t);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
 
-let default_loc_src = ref(() => Location.dummy_loc);
-
-let with_default_loc_src = (ls, f) => {
-  let old = default_loc_src^;
-  default_loc_src := ls;
-  try({
-    let r = f();
-    default_loc_src := old;
-    r;
-  }) {
-  | exn =>
-    default_loc_src := old;
-    raise(exn);
-  };
-};
-
-let with_default_loc = l => with_default_loc_src(() => l);
-
-let ident_empty = {txt: Identifier.IdentName("[]"), loc: default_loc_src^()};
+let ident_empty = {txt: Identifier.IdentName("[]"), loc: Location.dummy_loc};
 let ident_cons = {
   txt: Identifier.IdentName("[...]"),
-  loc: default_loc_src^(),
+  loc: Location.dummy_loc,
 };
 
 module Const = {
@@ -64,7 +52,7 @@ module Const = {
 
 module Typ = {
   let mk = (~loc=?, d) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {ptyp_desc: d, ptyp_loc: loc};
   };
   let any = (~loc=?, ()) => mk(~loc?, PTyAny);
@@ -83,7 +71,7 @@ module Typ = {
 
 module CDecl = {
   let mk = (~loc=?, n, a) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {pcd_name: n, pcd_args: a, pcd_loc: loc};
   };
   let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
@@ -92,14 +80,14 @@ module CDecl = {
 
 module LDecl = {
   let mk = (~loc=?, n, t, m) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
   };
 };
 
 module Dat = {
   let mk = (~loc=?, n, t, k, m) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {
       pdata_name: n,
       pdata_params: t,
@@ -117,7 +105,7 @@ module Dat = {
 
 module Except = {
   let mk = (~loc=?, n, t) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
     {ptyexn_constructor: ext, ptyexn_loc: loc};
   };
@@ -127,7 +115,7 @@ module Except = {
 
 module Pat = {
   let mk = (~loc=?, d) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {ppat_desc: d, ppat_loc: loc};
   };
   let any = (~loc=?, ()) => mk(~loc?, PPatAny);
@@ -154,13 +142,34 @@ module Pat = {
   let constant = (~loc=?, a) => mk(~loc?, PPatConstant(a));
   let constraint_ = (~loc=?, a, b) => mk(~loc?, PPatConstraint(a, b));
   let construct = (~loc=?, a, b) => mk(~loc?, PPatConstruct(a, b));
-  let list = (~loc=?, a, r) => {
-    let base = Option.value(~default=construct(ident_empty, []), r);
-    List.fold_right(
-      (pat, acc) => construct(ident_cons, [pat, acc]),
-      a,
-      base,
-    );
+  let list = (~loc=?, a) => {
+    let empty = construct(ident_empty, []);
+    let a = List.rev(a);
+    switch (a) {
+    | [] => empty
+    | [base, ...rest] =>
+      let base =
+        switch (base) {
+        | ListItem(pat) => construct(ident_cons, [pat, empty])
+        | ListSpread(pat, _) => pat
+        };
+      List.fold_left(
+        (acc, pat) => {
+          switch (pat) {
+          | ListItem(pat) => construct(ident_cons, [pat, acc])
+          | ListSpread(_, loc) =>
+            raise(
+              SyntaxError(
+                loc,
+                "A list spread can only appear at the end of a list.",
+              ),
+            )
+          }
+        },
+        base,
+        rest,
+      );
+    };
   };
   let or_ = (~loc=?, a, b) => mk(~loc?, PPatOr(a, b));
   let alias = (~loc=?, a, b) => mk(~loc?, PPatAlias(a, b));
@@ -168,7 +177,7 @@ module Pat = {
 
 module Exp = {
   let mk = (~loc=?, ~attributes=?, d) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     let attributes = Option.value(~default=[], attributes);
     {pexp_desc: d, pexp_attributes: attributes, pexp_loc: loc};
   };
@@ -220,17 +229,61 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpLambda(a, b));
   let apply = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpApp(a, b));
+  // It's difficult to parse rational numbers while division exists (in the
+  // parser state where you've read NUMBER_INT and you're looking ahead at /,
+  // you've got a shift/reduce conflict between reducing const -> NUMBER_INT
+  // and shifting /, and if you choose to reduce you can't parse a rational,
+  // and if you choose to shift then 1 / foo would always be a syntax error
+  // because the parser would expect a number). It's easier to just parse it
+  // as division and have this action decide that it's actually a rational.
+  let binop = (~loc=?, ~attributes=?, a, b) => {
+    switch (a, b) {
+    | (
+        {pexp_desc: PExpId({txt: IdentName("/")})},
+        [
+          {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
+          {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
+        ],
+      ) =>
+      constant(
+        ~loc?,
+        ~attributes?,
+        PConstNumber(PConstNumberRational(x, y)),
+      )
+    | _ => mk(~loc?, ~attributes?, PExpApp(a, b))
+    };
+  };
   let block = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpBlock(a));
-  let list = (~loc=?, ~attributes=?, a, base) => {
+  let list = (~loc=?, ~attributes=?, a) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
-    let base = Option.value(~default=empty, base);
-    List.fold_right(
-      (expr, acc) => apply(~attributes?, cons, [expr, acc]),
-      a,
-      base,
-    );
+    let a = List.rev(a);
+    switch (a) {
+    | [] => empty
+    | [base, ...rest] =>
+      let base =
+        switch (base) {
+        | ListItem(expr) => apply(~attributes?, cons, [expr, empty])
+        | ListSpread(expr, _) => expr
+        };
+      List.fold_left(
+        (acc, expr) => {
+          switch (expr) {
+          | ListItem(expr) => apply(~attributes?, cons, [expr, acc])
+          | ListSpread(_, loc) =>
+            raise(
+              SyntaxError(
+                loc,
+                "A list spread can only appear at the end of a list.",
+              ),
+            )
+          }
+        },
+        base,
+        rest,
+      );
+    };
   };
   let null = (~loc=?, ~attributes=?, ()) =>
     mk(~loc?, ~attributes?, PExpNull);
@@ -244,7 +297,7 @@ module Exp = {
 
 module Top = {
   let mk = (~loc=?, ~attributes=?, d) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     let attributes = Option.value(~default=[], attributes);
     {ptop_desc: d, ptop_attributes: attributes, ptop_loc: loc};
   };
@@ -270,7 +323,7 @@ module Top = {
 
 module Val = {
   let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {
       pval_mod: mod_,
       pval_name: name,
@@ -284,28 +337,28 @@ module Val = {
 
 module Vb = {
   let mk = (~loc=?, p, e) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {pvb_pat: p, pvb_expr: e, pvb_loc: loc};
   };
 };
 
 module Mb = {
   let mk = (~loc=?, p, e, g) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {pmb_pat: p, pmb_body: e, pmb_guard: g, pmb_loc: loc};
   };
 };
 
 module Imp = {
   let mk = (~loc=?, shapes, path) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     {pimp_val: shapes, pimp_path: path, pimp_loc: loc};
   };
 };
 
 module Ex = {
   let mk = (~loc=?, exports) => {
-    let loc = Option.value(~default=default_loc_src^(), loc);
+    let loc = Option.value(~default=Location.dummy_loc, loc);
     List.map(
       ((name, alias)) => {
         let desc = {pex_name: name, pex_alias: alias, pex_loc: loc};

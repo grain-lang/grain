@@ -15,7 +15,7 @@ module PrimMap =
     let equal = (a, b) => String.compare(a, b) === 0;
   });
 
-let default_loc = default_loc_src^();
+let default_loc = Location.dummy_loc;
 
 let mkident = name =>
   Exp.ident(Location.mkloc(Identifier.IdentName(name), default_loc));

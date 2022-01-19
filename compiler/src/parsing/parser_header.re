@@ -1,30 +1,12 @@
 open Location;
 open Identifier;
-open Dyp;
 open Parsetree;
 open Ast_helper;
 open Grain_utils;
 
-/* Used for error messages and as a default, in case anything slips through
-   without an explicit loc. */
+/* Used for error messages. */
 let first_loc = ref(Location.dummy_loc);
 let last_loc = ref(Location.dummy_loc);
-let dyp_merge = keep_all;
-
-let last_state_printer = ref(() => ());
-
-let when_debug = (~n=?, thunk) =>
-  switch (n) {
-  | Some(n) =>
-    if (Grain_utils.Config.parser_debug_level^ >= n) {
-      thunk();
-    }
-  | None => ()
-  };
-
-let debug_print_state = () => when_debug(last_state_printer^);
-
-let prerr_string = s => when_debug(~n=1, () => Stdlib.prerr_string(s));
 
 let make_line_comment = (source, loc) => {
   let content = String_utils.slice(~first=2, source) |> String.trim;
@@ -52,38 +34,8 @@ let make_doc_comment = (source, loc) => {
   Doc({cmt_content: content, cmt_source: source, cmt_loc: loc});
 };
 
-let symbol_rloc = dyp => {
-  let ret = {
-    loc_start: dyp.symbol_start_pos(),
-    loc_end: dyp.symbol_end_pos(),
-    loc_ghost: false,
-  };
-  last_state_printer := (() => dyp.print_state(stderr));
-  when_debug(~n=1, last_state_printer^);
-  last_loc := ret;
-  ret;
-};
-
-let symbol_gloc = dyp => {
-  let ret = {
-    loc_start: dyp.symbol_start_pos(),
-    loc_end: dyp.symbol_end_pos(),
-    loc_ghost: true,
-  };
-  last_state_printer := (() => dyp.print_state(stderr));
-  when_debug(~n=1, last_state_printer^);
-  last_loc := ret;
-  ret;
-};
-
-let rhs_loc = (dyp, n) => {
-  let ret = {
-    loc_start: dyp.rhs_start_pos(n),
-    loc_end: dyp.rhs_end_pos(n),
-    loc_ghost: false,
-  };
-  last_state_printer := (() => dyp.print_state(stderr));
-  when_debug(~n=1, last_state_printer^);
+let to_loc = ((loc_start, loc_end)) => {
+  let ret = {loc_start, loc_end, loc_ghost: false};
   last_loc := ret;
   ret;
 };
@@ -119,44 +71,6 @@ let is_uppercase_ident = name => {
   Char_utils.is_uppercase_letter(name.[0]);
 };
 
-let no_record_block = exprs =>
-  switch (exprs) {
-  | [{pexp_desc: PExpId({txt: IdentName(name)})}]
-      when !is_uppercase_ident(name) =>
-    raise(Dyp.Giveup)
-  | _ => ()
-  };
-
-let no_brace_expr = expr =>
-  switch (expr.pexp_desc) {
-  | PExpBlock(_)
-  | PExpRecord(_) => raise(Dyp.Giveup)
-  | _ => ()
-  };
-
-let no_uppercase_ident = expr =>
-  switch (expr.pexp_desc) {
-  | PExpId({txt: id}) when is_uppercase_ident(Identifier.last(id)) =>
-    raise(Dyp.Giveup)
-  | _ => ()
-  };
-
-let no_array_access = expr =>
-  switch (expr.pexp_desc) {
-  | PExpArrayGet(_) => raise(Dyp.Giveup)
-  | _ => ()
-  };
-
-let no_rational_literal = (expr1, expr2) =>
-  switch (expr1.pexp_desc, expr2.pexp_desc) {
-  | (
-      PExpConstant(PConstNumber(PConstNumberInt(_))),
-      PExpConstant(PConstNumber(PConstNumberInt(_))),
-    ) =>
-    raise(Dyp.Giveup)
-  | _ => ()
-  };
-
 let mkid = ns => {
   let help = ns => {
     let rec help = (ns, (acc_ident, acc_str)) => {
@@ -179,12 +93,10 @@ let mkid = ns => {
   mkloc @@ help(ns);
 };
 
-let mkid_expr = (~loc=?, dyp, ns) => {
-  let loc = Option.value(~default=symbol_rloc(dyp), loc);
-  Exp.ident(~loc, mkid(ns, loc));
-};
+let mkid_expr = (loc, ns) =>
+  Exp.ident(~loc=to_loc(loc), mkid(ns, to_loc(loc)));
 
-let mkstr = (loc, s) => mkloc(s, loc);
+let mkstr = (loc, s) => mkloc(s, to_loc(loc));
 
 let make_program = statements => {
   let prog_loc = {
@@ -196,24 +108,6 @@ let make_program = statements => {
 };
 
 let parse_program = (program, t, lexbuf) => {
-  Dyp.dypgen_verbose := Grain_utils.Config.parser_debug_level^;
   first_loc := Location.curr(lexbuf);
-  with_default_loc_src(() => last_loc^, () => program(t, lexbuf));
-};
-
-let print_syntax_error =
-  Printf.(
-    Location.(
-      fun
-      | Syntax_error => {
-          debug_print_state();
-          Some(errorf(~loc=last_loc^, "Syntax error"));
-        }
-      | _ => None
-    )
-  );
-
-let () = {
-  Dyp.dypgen_verbose := Grain_utils.Config.parser_debug_level^;
-  Location.register_error_of_exn(print_syntax_error);
+  program(t, lexbuf);
 };

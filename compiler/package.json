@@ -23,6 +23,10 @@
     "test": "esy test",
     "format": "esy format",
     "check-format": "esy check-format",
+    "parser:interpret": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret",
+    "parser:interpret-error": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret-error",
+    "parser:list-errors": "esy b menhir src/parsing/parser.mly --unused-tokens --list-errors > src/parsing/parser.messages.generated",
+    "parser:check-errors": "yarn parser:list-errors && esy b menhir src/parsing/parser.mly --unused-tokens --compare-errors src/parsing/parser.messages.generated --compare-errors src/parsing/parser.messages",
     "import-dependencies": "esy import-dependencies _export",
     "export-dependencies": "esy export-dependencies",
     "build-dependencies": "esy build-dependencies"

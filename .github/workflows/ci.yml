@@ -64,6 +64,10 @@ jobs:
         run: |
           yarn compiler test
 
+      - name: Check parser error messages exhaustiveness
+        run: |
+          yarn compiler parser:check-errors
+
       # Formatting lint last because building is more important
       - name: Run formatting lint
         run: |
