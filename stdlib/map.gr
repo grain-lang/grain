@@ -288,7 +288,7 @@ let setInArray = array => {
 @disableGC
 export let rec toArray = map => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
-  let array = WasmI32.toGrain(allocateArray(length)): (Array<a>)
+  let array = WasmI32.toGrain(allocateArray(length)): Array<a>
   Memory.incRef(WasmI32.fromGrain(setInArray))
   Memory.incRef(WasmI32.fromGrain(array))
   let setInArray = setInArray(array)

@@ -154,7 +154,7 @@ export let rec argv = () => {
       Memory.free(argvPtr)
       Memory.free(argvBufPtr)
 
-      wasmSafeOk(WasmI32.toGrain(arr): (Array<String>))
+      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
     }
   }
   Memory.decRef(WasmI32.fromGrain(argv))
@@ -208,7 +208,7 @@ export let rec env = () => {
       Memory.free(envvPtr)
       Memory.free(envvBufPtr)
 
-      wasmSafeOk(WasmI32.toGrain(arr): (Array<String>))
+      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
     }
   }
   Memory.decRef(WasmI32.fromGrain(env))

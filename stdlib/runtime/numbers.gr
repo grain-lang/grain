@@ -1488,9 +1488,8 @@ let convertInexactToExactHelp = x => {
 }
 
 export let rec convertInexactToExact = (x: Number) => {
-  let ret = WasmI32.toGrain(
-    convertInexactToExactHelp(WasmI32.fromGrain(x))
-  ): Number
+  let ret = WasmI32.toGrain(convertInexactToExactHelp(WasmI32.fromGrain(x))):
+    Number
   if (WasmI32.fromGrain(ret) != WasmI32.fromGrain(x)) {
     Memory.decRef(WasmI32.fromGrain(x))
     void
