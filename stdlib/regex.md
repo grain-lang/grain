@@ -62,17 +62,17 @@ The special character sequences are as follows:
 - `(«re»)` - Matches `«re»`, storing the result in a group
 - `(?:«re»)` - Matches `«re»` without storing the result in a group
 - `(?«mode»:«re») - Matches `«re»` with the mode settings specified by `«mode»` using the following syntax:
-- `«mode»i` - The same as `«mode»`, but with case-insensitivity enabled (temporarily not supported until grain-lang/grain#661 is resolved)
-- `«mode»-i` - The same as `«mode»`, but with case-insensitivity disabled (the default)
-- `«mode»m` / `«mode»-s` - The same as `«mode»`, but with multi-line mode enabled
-- `«mode»-m` / `«mode»s` - The same as `«mode»`, but with multi-line mode disabled
-- An empty string, which will not change any mode settings
+  - `«mode»i` - The same as `«mode»`, but with case-insensitivity enabled (temporarily not supported until grain-lang/grain#661 is resolved)
+  - `«mode»-i` - The same as `«mode»`, but with case-insensitivity disabled (the default)
+  - `«mode»m` / `«mode»-s` - The same as `«mode»`, but with multi-line mode enabled
+  - `«mode»-m` / `«mode»s` - The same as `«mode»`, but with multi-line mode disabled
+  - An empty string, which will not change any mode settings
 - `(?«tst»«re1»|«re2»)` - Will match `«re1»` if `«tst»`, otherwise will match `«re2»`. The following options are available for `«tst»`
-- `(«n»)` - Will be true if group `«n»` has a match
-- `(?=«re»)` - Will be true if `«re»` matches the next sequence
-- `(?!«re»)` - Will be true if `«re»` does not match the next sequence
-- `(?<=«re»)` - Will be true if `«re»` matches the preceding sequence
-- `(?<!«re»)` - Will be true if `«re»` does not match the preceding sequence
+  - `(«n»)` - Will be true if group `«n»` has a match
+  - `(?=«re»)` - Will be true if `«re»` matches the next sequence
+  - `(?!«re»)` - Will be true if `«re»` does not match the next sequence
+  - `(?<=«re»)` - Will be true if `«re»` matches the preceding sequence
+  - `(?<!«re»)` - Will be true if `«re»` does not match the preceding sequence
 - `(?«tst»«re»)` - Equivalent to `(?«tst»«re»|)`
 - Finally, basic classes (defined below) can also appear outside of character ranges.
 
