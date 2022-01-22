@@ -319,7 +319,7 @@ let explodeHelp = (s: String, chars) => {
 export let rec explode = string => {
   // `explodeHelp` and `string` do not need to be incRef'd as they are not
   // decRef'd in `explodeHelp`
-  let ret = WasmI32.toGrain(explodeHelp(string, true)): (Array<Char>)
+  let ret = WasmI32.toGrain(explodeHelp(string, true)): Array<Char>
 
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(explode))
@@ -445,12 +445,12 @@ export let rec split = (separator: String, string: String) => {
   let psize = WasmI32.fromGrain(wasmSafeByteLength(separator)) >> 1n
 
   let ret = if (psize == 0n) {
-    WasmI32.toGrain(explodeHelp(string, false)): (Array<String>)
+    WasmI32.toGrain(explodeHelp(string, false)): Array<String>
   } else if (psize > size) {
     let string = WasmI32.fromGrain(string)
     let ptr = allocateArray(1n)
     WasmI32.store(ptr, Memory.incRef(string), 8n)
-    WasmI32.toGrain(ptr): (Array<String>)
+    WasmI32.toGrain(ptr): Array<String>
   } else {
     let string = WasmI32.fromGrain(string)
     let separator = WasmI32.fromGrain(separator)
@@ -511,7 +511,7 @@ export let rec split = (separator: String, string: String) => {
     Memory.copy(lastStr + 8n, last, strSize)
     WasmI32.store(arr + arrIdx, lastStr, 8n)
 
-    WasmI32.toGrain(arr): (Array<String>)
+    WasmI32.toGrain(arr): Array<String>
   }
   Memory.decRef(WasmI32.fromGrain(separator))
   Memory.decRef(WasmI32.fromGrain(string))

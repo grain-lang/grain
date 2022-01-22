@@ -1180,7 +1180,7 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
     if (used <= 0n) {
       Memory.free(buf)
       Memory.free(bufUsed)
-      wasmSafeOk(WasmI32.toGrain(allocateArray(0n)): (Array<DirectoryEntry>))
+      wasmSafeOk(WasmI32.toGrain(allocateArray(0n)): Array<DirectoryEntry>)
     } else {
       bufLen = WasmI32.load(buf, 16n) + structWidth * 2n
 
@@ -1256,7 +1256,7 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
             bufs = next
           }
 
-          wasmSafeOk(WasmI32.toGrain(arr): (Array<DirectoryEntry>))
+          wasmSafeOk(WasmI32.toGrain(arr): Array<DirectoryEntry>)
         },
       }
     }

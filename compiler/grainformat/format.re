@@ -2986,37 +2986,9 @@ and print_expression =
             ~comments=comments_in_expression,
             expression,
           ),
-          switch (parsed_type.ptyp_desc) {
-          | PTyConstr(locidentifier, parsedtypes) =>
-            switch (parsedtypes) {
-            | [] =>
-              Doc.concat([
-                Doc.text(":"),
-                Doc.space,
-                print_type(~original_source, ~comments, parsed_type),
-              ])
-
-            | _ =>
-              Doc.concat([
-                Doc.text(":"),
-                Doc.space,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.softLine,
-                    Doc.lparen, // TODO needed to fix compiler bug (trailing type annotation needs paren, #866)
-                    print_type(~original_source, ~comments, parsed_type),
-                    Doc.rparen,
-                  ]),
-                ),
-              ])
-            }
-          | _ =>
-            Doc.concat([
-              Doc.text(":"),
-              Doc.space,
-              print_type(~original_source, ~comments, parsed_type),
-            ])
-          },
+          Doc.text(":"),
+          Doc.space,
+          print_type(~original_source, ~comments, parsed_type),
         ]),
       );
     | PExpLambda(patterns, expression) =>
