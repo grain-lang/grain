@@ -39,11 +39,6 @@ let reset_labels = () => gensym_counter := 0;
 // Necessary to prevent a cirular dep for that module
 let needs_exceptions = ref(false);
 
-let reset = () => {
-  reset_labels();
-  needs_exceptions := false;
-};
-
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
@@ -351,11 +346,23 @@ let lookup_ext_func = (env, modname, itemname) =>
 
 // Static pointer to the runtime heap
 // Leaves low 1000 memory unused for Binaryen optimizations
-let runtime_heap_ptr = 0x400;
+let runtime_heap_ptr = ref(Grain_utils.Config.default_memory_base);
 // Start pointer for the runtime heap
-let runtime_heap_start = 0x410;
+let runtime_heap_start = () => runtime_heap_ptr^ + 0x10;
 // Static pointer to runtime type information
-let runtime_type_metadata_ptr = 0x408;
+let runtime_type_metadata_ptr = () => runtime_heap_ptr^ + 0x08;
+
+let reset = () => {
+  reset_labels();
+  needs_exceptions := false;
+  runtime_heap_ptr :=
+    (
+      switch (Grain_utils.Config.memory_base^) {
+      | Some(x) => x
+      | None => Grain_utils.Config.default_memory_base
+      }
+    );
+};
 
 let get_wasm_imported_name = (mod_, name) =>
   Printf.sprintf("wimport_%s_%s", Ident.name(mod_), Ident.name(name));
@@ -1495,7 +1502,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
         Op.add_int32,
         load(
           wasm_mod,
-          Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
+          Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
         ),
         Expression.Const.make(
           wasm_mod,
@@ -1517,7 +1524,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                   wasm_mod,
                   Expression.Const.make(
                     wasm_mod,
-                    const_int32(runtime_heap_ptr),
+                    const_int32(runtime_heap_ptr^),
                   ),
                 ),
                 Expression.Const.make(wasm_mod, const_int32(1)),
@@ -1529,7 +1536,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                   wasm_mod,
                   Expression.Const.make(
                     wasm_mod,
-                    const_int32(runtime_heap_ptr),
+                    const_int32(runtime_heap_ptr^),
                   ),
                 ),
                 Expression.Const.make(wasm_mod, const_int32(8)),
@@ -1544,7 +1551,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                 wasm_mod,
                 Expression.Const.make(
                   wasm_mod,
-                  const_int32(runtime_heap_ptr),
+                  const_int32(runtime_heap_ptr^),
                 ),
                 addition,
               ),
@@ -1575,7 +1582,7 @@ let heap_runtime_allocate_imm =
       Op.add_int32,
       load(
         wasm_mod,
-        Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
+        Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
       ),
       Expression.Binary.make(
         wasm_mod,
@@ -1613,7 +1620,7 @@ let heap_runtime_allocate_imm =
                 wasm_mod,
                 Expression.Const.make(
                   wasm_mod,
-                  const_int32(runtime_heap_ptr),
+                  const_int32(runtime_heap_ptr^),
                 ),
               ),
               Expression.Const.make(wasm_mod, const_int32(1)),
@@ -1625,7 +1632,7 @@ let heap_runtime_allocate_imm =
                 wasm_mod,
                 Expression.Const.make(
                   wasm_mod,
-                  const_int32(runtime_heap_ptr),
+                  const_int32(runtime_heap_ptr^),
                 ),
               ),
               Expression.Const.make(wasm_mod, const_int32(8)),
@@ -1638,7 +1645,10 @@ let heap_runtime_allocate_imm =
           [
             store(
               wasm_mod,
-              Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
+              Expression.Const.make(
+                wasm_mod,
+                const_int32(runtime_heap_ptr^),
+              ),
               addition,
             ),
             // Binaryen tuples must include a concrete value (and tuples are
@@ -3046,7 +3056,7 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
           wasm_mod,
           Expression.Const.make(
             wasm_mod,
-            const_int32(runtime_type_metadata_ptr),
+            const_int32(runtime_type_metadata_ptr()),
           ),
         ),
       ),
@@ -3064,7 +3074,7 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
         wasm_mod,
         Expression.Const.make(
           wasm_mod,
-          const_int32(runtime_type_metadata_ptr),
+          const_int32(runtime_type_metadata_ptr()),
         ),
         get_swap(wasm_mod, env, 0),
       ),
@@ -3354,13 +3364,19 @@ let compile_main = (wasm_mod, env, prog) => {
             Op.eq_z_int32,
             load(
               wasm_mod,
-              Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
+              Expression.Const.make(
+                wasm_mod,
+                const_int32(runtime_heap_ptr^),
+              ),
             ),
           ),
           store(
             wasm_mod,
-            Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr)),
-            Expression.Const.make(wasm_mod, const_int32(runtime_heap_start)),
+            Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
+            Expression.Const.make(
+              wasm_mod,
+              const_int32(runtime_heap_start()),
+            ),
           ),
           Expression.Null.make(),
         ),
@@ -3550,7 +3566,13 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       default_features;
     };
   let _ = Module.set_features(wasm_mod, features);
-  let _ = Settings.set_low_memory_unused(true);
+  // we set low_memory_unused := true if and only if the user has not specified a memory base.
+  // This is because in many use cases in which this is specified (e.g. wasm4), users
+  // will expect the static region of memory below the heap base to all be available.
+  let _ =
+    Settings.set_low_memory_unused(
+      Option.is_none(Grain_utils.Config.memory_base^),
+    );
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
 

@@ -44,6 +44,16 @@ let use_start_section: ref(bool);
 
 let optimization_level: ref(optimization_level);
 
+// [NOTE] This default is here because it is used in multiple locations,
+//        and it doesn't make sense for it to be "owned" by any of them.
+/** The default value for `memory_base` */
+
+let default_memory_base: int;
+
+/** Start address of Grain runtime heap */
+
+let memory_base: ref(option(int));
+
 /** The path to find modules on */
 
 let include_dirs: ref(list(string));

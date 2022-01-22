@@ -1,0 +1,15 @@
+/* grainc-flags --memory-base 0x110000 */
+import WasmI32 from "runtime/unsafe/wasmi32"
+
+primitive heapBase: WasmI32 = "@heap.base"
+primitive heapStart: WasmI32 = "@heap.start"
+primitive typeMetadata: WasmI32 = "@heap.type_metadata"
+
+@disableGC
+let doTest = () => {
+  assert WasmI32.eq(heapBase, 0x110000n)
+  assert WasmI32.eq(heapStart, 0x110010n)
+  assert WasmI32.eq(typeMetadata, 0x110008n)
+}
+
+doTest()

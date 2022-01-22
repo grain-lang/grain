@@ -165,6 +165,10 @@ program
     "--parser-debug-level <level>",
     "debugging level for parser output"
   )
+  .forwardOption(
+    "--memory-base <addr>",
+    "set the base address for the Grain heap"
+  )
   .forwardOption("--source-map", "generate source maps")
   .forwardOption("--strict-sequence", "enable strict sequencing")
   .forwardOption(

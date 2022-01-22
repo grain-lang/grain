@@ -49,15 +49,7 @@ let slConsDisableGc = (a, b) => {
   SLCons(a, b)
 }
 
-@disableGC
-let mut _RUNTIME_TYPE_METADATA_PTR = 0x01n
-
-@disableGC
-let initPtr = () => {
-  // hack to avoid incRef on this pointer
-  _RUNTIME_TYPE_METADATA_PTR = 0x408n
-}
-initPtr()
+primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata"
 
 @disableGC
 let findTypeMetadata = (moduleId, typeId) => {

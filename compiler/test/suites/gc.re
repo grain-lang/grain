@@ -7,12 +7,15 @@ let makeGcProgram = (program, heap_size) => {
     import WasmI32 from "runtime/unsafe/wasmi32"
     import Malloc from "runtime/malloc"
     import Memory from "runtime/unsafe/memory"
+
+    primitive heapBase: WasmI32 = "@heap.base"
+
     @disableGC
     let leak = () => {
       // find current memory pointer, subtract space for two malloc headers + 1 GC header
       let offset = WasmI32.sub(Memory.malloc(8n), 24n)
       // Calculate how much memory is left
-      let availableMemory = WasmI32.sub(offset, Malloc._RESERVED_RUNTIME_SPACE)
+      let availableMemory = WasmI32.sub(offset, WasmI32.add(Malloc._RESERVED_RUNTIME_SPACE, heapBase))
       // Calculate how much memory to leak
       let toLeak = WasmI32.sub(availableMemory, %dn)
       // Memory is not reclaimed due to no gc context
