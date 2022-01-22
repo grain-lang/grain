@@ -2986,18 +2986,9 @@ and print_expression =
             ~comments=comments_in_expression,
             expression,
           ),
-          Doc.concat([
-            Doc.text(":"),
-            Doc.space,
-            Doc.indent(
-              Doc.concat([
-                Doc.softLine,
-                Doc.indent(
-                  print_type(~original_source, ~comments, parsed_type),
-                ),
-              ]),
-            ),
-          ]),
+          Doc.text(":"),
+          Doc.space,
+          print_type(~original_source, ~comments, parsed_type),
         ]),
       );
     | PExpLambda(patterns, expression) =>
