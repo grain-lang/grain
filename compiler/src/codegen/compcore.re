@@ -90,9 +90,6 @@ let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
 let decref_ident = Ident.create_persistent("decRef");
 let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
-let decref_ignore_zeros_ident = Ident.create_persistent("decRefIgnoreZeros");
-let decref_ignore_zeros_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$decRefIgnoreZeros");
 let tracepoint_ident = Ident.create_persistent("tracepoint");
 
 let grain_main = "_gmain";
@@ -161,13 +158,6 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: gc_mod,
-    mimp_name: decref_ignore_zeros_closure_ident,
     mimp_type: MGlobalImport(I32Type, true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -247,13 +237,6 @@ let grain_function_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: decref_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-  },
-  {
-    mimp_mod: gc_mod,
-    mimp_name: decref_ignore_zeros_ident,
     mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -424,11 +407,11 @@ let call_incref = (wasm_mod, env, arg) => {
     );
   };
 };
-let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
+let call_decref = (wasm_mod, env, arg) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, decref_ignore_zeros_closure_ident),
+      get_wasm_imported_name(gc_mod, decref_closure_ident),
       Type.int32,
     ),
     arg,
@@ -438,35 +421,12 @@ let call_decref_ignore_zeros = (wasm_mod, env, arg) => {
   } else {
     Expression.Call.make(
       wasm_mod,
-      get_wasm_imported_name(gc_mod, decref_ignore_zeros_ident),
+      get_wasm_imported_name(gc_mod, decref_ident),
       args,
       Type.int32,
     );
   };
 };
-let call_decref = (wasm_mod, env, arg) =>
-  if (!memory_debugging_enabled) {
-    call_decref_ignore_zeros(wasm_mod, env, arg);
-  } else {
-    let args = [
-      Expression.Global_get.make(
-        wasm_mod,
-        get_wasm_imported_name(gc_mod, decref_closure_ident),
-        Type.int32,
-      ),
-      arg,
-    ];
-    if (Config.no_gc^) {
-      arg;
-    } else {
-      Expression.Call.make(
-        wasm_mod,
-        get_wasm_imported_name(gc_mod, decref_ident),
-        args,
-        Type.int32,
-      );
-    };
-  };
 let call_new_rational = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
@@ -640,10 +600,7 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
         let slot_no = i + offset;
         let arg = Expression.Local_get.make(wasm_mod, slot_no, Type.int32);
         singleton @@
-        Expression.Drop.make(
-          wasm_mod,
-          call_decref_ignore_zeros(wasm_mod, env, arg),
-        );
+        Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg));
       },
     );
   flatten(instrs);
@@ -919,10 +876,7 @@ let compile_bind =
 };
 
 let safe_drop = (wasm_mod, env, arg) =>
-  Expression.Drop.make(
-    wasm_mod,
-    call_decref_ignore_zeros(wasm_mod, env, arg),
-  );
+  Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg));
 
 let get_swap =
     (

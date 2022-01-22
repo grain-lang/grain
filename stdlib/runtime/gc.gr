@@ -242,7 +242,6 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
   }
 }
 
-export let decRefIgnoreZeros = userPtr => decRef(userPtr, true)
 export let decRef = userPtr => decRef(userPtr, false)
 
 // For debugging:

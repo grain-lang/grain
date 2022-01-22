@@ -8,12 +8,12 @@ pattern matching › adt_match_5
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $gimport_pervasives_+ (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $gimport_pervasives_[] (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $gimport_pervasives_[...] (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -64,8 +64,8 @@ pattern matching › adt_match_5
            (local.get $0)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -95,8 +95,8 @@ pattern matching › adt_match_5
            (local.get $0)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -126,8 +126,8 @@ pattern matching › adt_match_5
            (local.get $0)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -161,16 +161,16 @@ pattern matching › adt_match_5
                (local.get $0)
               )
              )
-             (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+             (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
               (i32.const 0)
              )
             )
            )
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -192,8 +192,8 @@ pattern matching › adt_match_5
           )
           (i32.const 2147483646)
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -224,16 +224,16 @@ pattern matching › adt_match_5
                     (local.get $4)
                    )
                   )
-                  (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                  (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                    (i32.const 0)
                   )
                  )
                 )
                )
               )
-              (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+              (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                (i32.const 0)
               )
              )
@@ -255,8 +255,8 @@ pattern matching › adt_match_5
                )
                (i32.const 2147483646)
               )
-              (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+              (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                (i32.const 0)
               )
              )
@@ -284,16 +284,16 @@ pattern matching › adt_match_5
                       (local.get $5)
                      )
                     )
-                    (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                      (i32.const 0)
                     )
                    )
                   )
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (i32.const 0)
                 )
                )
@@ -315,8 +315,8 @@ pattern matching › adt_match_5
                  )
                  (i32.const 2147483646)
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (i32.const 0)
                 )
                )
@@ -344,16 +344,16 @@ pattern matching › adt_match_5
                         (local.get $2)
                        )
                       )
-                      (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                        (i32.const 0)
                       )
                      )
                     )
                    )
                   )
-                  (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                  (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                    (i32.const 0)
                   )
                  )
@@ -375,8 +375,8 @@ pattern matching › adt_match_5
                    )
                    (i32.const 2147483646)
                   )
-                  (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                  (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                    (i32.const 0)
                   )
                  )
@@ -411,8 +411,8 @@ pattern matching › adt_match_5
                    )
                    (i32.const 2147483646)
                   )
-                  (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                  (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                    (i32.const 0)
                   )
                  )
@@ -449,8 +449,8 @@ pattern matching › adt_match_5
                  )
                  (i32.const 2147483646)
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (i32.const 0)
                 )
                )
@@ -487,8 +487,8 @@ pattern matching › adt_match_5
                )
                (i32.const 2147483646)
               )
-              (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+              (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                (i32.const 0)
               )
              )
@@ -507,8 +507,8 @@ pattern matching › adt_match_5
            )
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (local.get $5)
          )
         )
@@ -556,8 +556,8 @@ pattern matching › adt_match_5
                   (local.get $4)
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (local.get $1)
                 )
                )
@@ -572,8 +572,8 @@ pattern matching › adt_match_5
                   (local.get $1)
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (local.get $3)
                 )
                )
@@ -588,8 +588,8 @@ pattern matching › adt_match_5
                   (local.get $3)
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (local.get $2)
                 )
                )
@@ -604,8 +604,8 @@ pattern matching › adt_match_5
                   (local.get $1)
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (local.get $6)
                 )
                )
@@ -620,8 +620,8 @@ pattern matching › adt_match_5
                   (local.get $4)
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (local.get $8)
                 )
                )
@@ -654,8 +654,8 @@ pattern matching › adt_match_5
                   (local.get $0)
                  )
                 )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                  (local.get $7)
                 )
                )
@@ -698,8 +698,8 @@ pattern matching › adt_match_5
                 (local.get $4)
                )
               )
-              (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+              (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                (local.get $1)
               )
              )
@@ -714,8 +714,8 @@ pattern matching › adt_match_5
                 (local.get $1)
                )
               )
-              (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+              (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                (local.get $3)
               )
              )
@@ -730,8 +730,8 @@ pattern matching › adt_match_5
                 (local.get $4)
                )
               )
-              (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+              (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+               (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
                (local.get $2)
               )
              )
@@ -783,92 +783,92 @@ pattern matching › adt_match_5
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $10)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $11)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $12)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $4)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $9)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $13)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $5)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $1)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $3)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $2)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $6)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $8)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $7)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $14)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $15)
    )
   )
