@@ -346,7 +346,7 @@ let lookup_ext_func = (env, modname, itemname) =>
 
 // Static pointer to the runtime heap
 // Leaves low 1000 memory unused for Binaryen optimizations
-let runtime_heap_ptr = ref(0x400);
+let runtime_heap_ptr = ref(Grain_utils.Config.default_memory_base);
 // Start pointer for the runtime heap
 let runtime_heap_start = () => runtime_heap_ptr^ + 0x10;
 // Static pointer to runtime type information

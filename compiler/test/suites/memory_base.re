@@ -5,7 +5,11 @@ describe("memory_base", ({test}) => {
   let assertFileRun = makeFileRunner(test);
   // Non-snapshots since we want to track functional issues.
   assertFileRun("basecase", "memoryBase/basecase", "HelloWorld\n");
-  assertFileRun("no_op", "memoryBase/noop", "HelloWorld\n");
+  assertFileRun(
+    "same_as_default",
+    "memoryBase/sameAsDefault",
+    "HelloWorld\n",
+  );
   assertFileRun("zero", "memoryBase/zero", "HelloWorld\n");
   assertFileRun(
     "slightly_higher",
