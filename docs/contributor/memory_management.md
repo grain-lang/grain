@@ -83,14 +83,6 @@ export let free = (userPtr: WasmI32) -> Void
 export let incRef = (userPtr: WasmI32) -> WasmI32
 
 /**
- * Decrements the reference count of the given pointer if it is greater than zero
- *
- * @param userPtr: The pointer whose reference count should be decremented
- * @returns The given pointer
- */
-export let decRefIgnoreZeros = (userPtr: WasmI32) -> WasmI32
-
-/**
  * Decrements the reference count of the given pointer. An error is thrown if the
  * reference count is not greater than zero.
  *
@@ -100,7 +92,7 @@ export let decRefIgnoreZeros = (userPtr: WasmI32) -> WasmI32
 export let decRef = (userPtr: WasmI32) -> WasmI32
 ```
 
-When writing code in the runtime, `decRefIgnoreZeros` should never be used. It exists solely to support the cleanup step of compiled functions. The reference count-managing functions are safe to use with non-pointers; if a non-pointer is passed
+The reference count-managing functions are safe to use with non-pointers; if a non-pointer is passed
 to them, it will be returned without any side effects. **However**, it should be noted that these functions are not safe to use with arbitrary (untagged) `WasmXX` (`WasmI32`/`WasmI64`/etc) values, which is why the use of such types is only permitted in `@disableGC` blocks—so that the compiler does not insert `incRef`/`decRef` calls.
 
 ### Garbage Collection in Compiled Programs
