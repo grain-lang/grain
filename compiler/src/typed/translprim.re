@@ -1407,6 +1407,13 @@ let prim_map =
     ]),
   );
 
+let active_memory_base = () => {
+  switch (Grain_utils.Config.memory_base^) {
+  | Some(x) => x
+  | None => Grain_utils.Config.default_memory_base
+  };
+};
+
 let transl_prim = (env, desc) => {
   let loc = desc.tvd_loc;
 
@@ -1450,19 +1457,15 @@ let transl_prim = (env, desc) => {
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
         | HeapBase => (
-            Const.wasmi32(string_of_int(Grain_utils.Config.memory_base^)),
+            Const.wasmi32(string_of_int(active_memory_base())),
             true,
           )
         | HeapStart => (
-            Const.wasmi32(
-              string_of_int(Grain_utils.Config.memory_base^ + 0x10),
-            ),
+            Const.wasmi32(string_of_int(active_memory_base() + 0x10)),
             true,
           )
         | HeapTypeMetadata => (
-            Const.wasmi32(
-              string_of_int(Grain_utils.Config.memory_base^ + 0x8),
-            ),
+            Const.wasmi32(string_of_int(active_memory_base() + 0x8)),
             true,
           )
         };

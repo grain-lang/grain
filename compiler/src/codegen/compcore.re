@@ -355,7 +355,13 @@ let runtime_type_metadata_ptr = () => runtime_heap_ptr^ + 0x08;
 let reset = () => {
   reset_labels();
   needs_exceptions := false;
-  runtime_heap_ptr := Grain_utils.Config.memory_base^;
+  runtime_heap_ptr :=
+    (
+      switch (Grain_utils.Config.memory_base^) {
+      | Some(x) => x
+      | None => Grain_utils.Config.default_memory_base
+      }
+    );
 };
 
 let get_wasm_imported_name = (mod_, name) =>
@@ -3560,7 +3566,13 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       default_features;
     };
   let _ = Module.set_features(wasm_mod, features);
-  let _ = Settings.set_low_memory_unused(true);
+  // we set low_memory_unused := true iff the user has not specified a memory base.
+  // This is because in many use cases in which this is specified (e.g. wasm4), users
+  // will expect the static region of memory below the heap base to all be available.
+  let _ =
+    Settings.set_low_memory_unused(
+      Option.is_none(Grain_utils.Config.memory_base^),
+    );
   let _ =
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
 

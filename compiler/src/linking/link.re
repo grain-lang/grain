@@ -630,7 +630,13 @@ let link_modules = ({asm: wasm_mod, signature}) => {
 
   let features = Module.get_features(wasm_mod);
   let _ = Module.set_features(linked_mod, features);
-  let _ = Settings.set_low_memory_unused(true);
+  // we set low_memory_unused := true iff the user has not specified a memory base.
+  // This is because in many use cases in which this is specified (e.g. wasm4), users
+  // will expect the static region of memory below the heap base to all be available.
+  let _ =
+    Settings.set_low_memory_unused(
+      Option.is_none(Grain_utils.Config.memory_base^),
+    );
   if (Module.validate(linked_mod) != 1) {
     failwith("Generated invalid linked module");
   };
