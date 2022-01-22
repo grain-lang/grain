@@ -17,4 +17,5 @@ describe("memory_base", ({test}) => {
     "HelloWorld\n",
   );
   assertFileRun("very_large", "memoryBase/veryLarge", "HelloWorld\n");
+  assertFileRun("asserts", "memoryBase/asserts", "");
 });
