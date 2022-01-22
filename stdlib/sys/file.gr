@@ -1010,13 +1010,16 @@ export let rec fdFilestats = (fd: FileDescriptor) => {
     let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
     let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
     let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-    let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))):
-      Int64
+    let linkcount = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 24n))
+    ): Int64
     let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
-    let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))):
-      Int64
-    let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))):
-      Int64
+    let accessed = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 40n))
+    ): Int64
+    let modified = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 48n))
+    ): Int64
     let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
 
     Memory.free(filestats)
@@ -1421,13 +1424,16 @@ export let rec pathFilestats =
     let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
     let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
     let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-    let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))):
-      Int64
+    let linkcount = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 24n))
+    ): Int64
     let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
-    let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))):
-      Int64
-    let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))):
-      Int64
+    let accessed = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 40n))
+    ): Int64
+    let modified = WasmI32.toGrain(
+      newInt64(WasmI64.load(filestats, 48n))
+    ): Int64
     let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
 
     Memory.free(filestats)
