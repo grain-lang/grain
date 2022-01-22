@@ -3,13 +3,13 @@ open Ast_helper;
 open Typedtree;
 open Parsetree;
 
-type wi32_constant =
+type primitive_constant =
   | HeapBase
   | HeapStart
   | HeapTypeMetadata;
 
 type primitive =
-  | PrimitiveWasmI32(wi32_constant)
+  | PrimitiveConstant(primitive_constant)
   | Primitive1(prim1)
   | Primitive2(prim2)
   | PrimitiveN(primn);
@@ -40,9 +40,9 @@ let pat_c = mkpatvar("c");
 let prim_map =
   PrimMap.of_seq(
     List.to_seq([
-      ("@heap.base", PrimitiveWasmI32(HeapBase)),
-      ("@heap.start", PrimitiveWasmI32(HeapStart)),
-      ("@heap.type_metadata", PrimitiveWasmI32(HeapTypeMetadata)),
+      ("@heap.base", PrimitiveConstant(HeapBase)),
+      ("@heap.start", PrimitiveConstant(HeapStart)),
+      ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -1445,22 +1445,34 @@ let transl_prim = (env, desc) => {
   //
   let (value, attrs) =
     switch (prim) {
-    | PrimitiveWasmI32(const) =>
-      let value =
+    | PrimitiveConstant(const) =>
+      let (value, needs_disablegc) =
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
-        | HeapBase => Grain_utils.Config.memory_base^
-        | HeapStart => Grain_utils.Config.memory_base^ + 0x10
-        | HeapTypeMetadata => Grain_utils.Config.memory_base^ + 0x8
+        | HeapBase => (
+            Const.wasmi32(string_of_int(Grain_utils.Config.memory_base^)),
+            true,
+          )
+        | HeapStart => (
+            Const.wasmi32(
+              string_of_int(Grain_utils.Config.memory_base^ + 0x10),
+            ),
+            true,
+          )
+        | HeapTypeMetadata => (
+            Const.wasmi32(
+              string_of_int(Grain_utils.Config.memory_base^ + 0x8),
+            ),
+            true,
+          )
         };
-      (
-        Exp.constant(
-          ~loc,
-          ~attributes=diable_gc,
-          Const.wasmi32(string_of_int(value)),
-        ),
-        [Typedtree.Disable_gc],
-      );
+      let attrs =
+        if (needs_disablegc) {
+          [Typedtree.Disable_gc];
+        } else {
+          [];
+        };
+      (Exp.constant(~loc, ~attributes=diable_gc, value), attrs);
     | Primitive1(
         (
           WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
