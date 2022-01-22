@@ -24,10 +24,11 @@ export let dangerouslyRegisterBasePrinter = f => {
   let mut current = printers
   while (true) {
     // There will be at least one printer registered by the time this is called
-    let (_, next) = WasmI32.toGrain(current): (
-      Exception -> Option<String>,
-      WasmI32
-    )
+    let (_, next) = WasmI32.toGrain(current):
+      (
+        Exception -> Option<String>,
+        WasmI32
+      )
     if (next == 0n) {
       // Using a tuple in runtime mode is typically disallowed as there is no way
       // to reclaim the memory, but this function is only called once
@@ -58,10 +59,11 @@ let exceptionToString = (e: Exception) => {
     if (current == 0n) {
       break
     }
-    let (printer, next) = WasmI32.toGrain(current): (
-      Exception -> Option<String>,
-      WasmI32
-    )
+    let (printer, next) = WasmI32.toGrain(current):
+      (
+        Exception -> Option<String>,
+        WasmI32
+      )
     match (printer(e)) {
       Some(str) => {
         result = str
