@@ -6,21 +6,21 @@ basic functionality › func_shadow_and_indirect_call
  (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $wimport__grainEnv_relocBase) $foo_1155 $foo_1157 $foo_1159 $func_1172)
+ (elem $elem (global.get $wimport__grainEnv_relocBase) $foo_1153 $foo_1155 $foo_1157 $func_1170)
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRefIgnoreZeros\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $gimport_pervasives_print (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRefIgnoreZeros\" (func $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 4))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $foo_1155 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1153 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -55,14 +55,14 @@ basic functionality › func_shadow_and_indirect_call
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $0)
    )
   )
   (local.get $1)
  )
- (func $foo_1157 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1155 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -97,14 +97,14 @@ basic functionality › func_shadow_and_indirect_call
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $0)
    )
   )
   (local.get $1)
  )
- (func $foo_1159 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1157 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -146,14 +146,14 @@ basic functionality › func_shadow_and_indirect_call
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $0)
    )
   )
   (local.get $1)
  )
- (func $func_1172 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $func_1170 (; has Stack IR ;) (param $0 i32) (result i32)
   (local $1 i32)
   (local.set $1
    (tuple.extract 0
@@ -188,8 +188,8 @@ basic functionality › func_shadow_and_indirect_call
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $0)
    )
   )
@@ -240,8 +240,8 @@ basic functionality › func_shadow_and_indirect_call
           )
           (local.get $0)
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -250,22 +250,22 @@ basic functionality › func_shadow_and_indirect_call
       (local.set $4
        (tuple.extract 0
         (tuple.make
-         (call $foo_1155
+         (call $foo_1153
           (call $wimport_GRAIN$MODULE$runtime/gc_incRef
            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $1)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
        )
       )
       (drop
-       (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+       (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
         (call_indirect (type $i32_i32_=>_i32)
          (local.tee $0
           (tuple.extract 0
@@ -328,8 +328,8 @@ basic functionality › func_shadow_and_indirect_call
           )
           (local.get $0)
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -338,22 +338,22 @@ basic functionality › func_shadow_and_indirect_call
       (local.set $5
        (tuple.extract 0
         (tuple.make
-         (call $foo_1157
+         (call $foo_1155
           (call $wimport_GRAIN$MODULE$runtime/gc_incRef
            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $2)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
        )
       )
       (drop
-       (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+       (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
         (call_indirect (type $i32_i32_=>_i32)
          (local.tee $0
           (tuple.extract 0
@@ -416,8 +416,8 @@ basic functionality › func_shadow_and_indirect_call
           )
           (local.get $0)
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -426,14 +426,14 @@ basic functionality › func_shadow_and_indirect_call
       (local.set $6
        (tuple.extract 0
         (tuple.make
-         (call $foo_1159
+         (call $foo_1157
           (call $wimport_GRAIN$MODULE$runtime/gc_incRef
            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
            (local.get $3)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -463,8 +463,8 @@ basic functionality › func_shadow_and_indirect_call
            (local.get $0)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
           (i32.const 0)
          )
         )
@@ -496,44 +496,44 @@ basic functionality › func_shadow_and_indirect_call
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $1)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $4)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $2)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $5)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $3)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $6)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRefIgnoreZeros
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRefIgnoreZeros)
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $7)
    )
   )
