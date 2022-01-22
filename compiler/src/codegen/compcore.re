@@ -3566,7 +3566,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       default_features;
     };
   let _ = Module.set_features(wasm_mod, features);
-  // we set low_memory_unused := true iff the user has not specified a memory base.
+  // we set low_memory_unused := true if and only if the user has not specified a memory base.
   // This is because in many use cases in which this is specified (e.g. wasm4), users
   // will expect the static region of memory below the heap base to all be available.
   let _ =
