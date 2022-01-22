@@ -403,6 +403,14 @@ let optimization_level =
     Level_three,
   );
 
+let memory_base =
+  opt(
+    ~doc="Set the start address for the Grain runtime heap.",
+    ~names=["memory-base"],
+    ~conv=Cmdliner.Arg.int,
+    0x400,
+  );
+
 let include_dirs =
   opt(
     ~names=["I", "include-dirs"],

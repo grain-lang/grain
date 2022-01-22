@@ -44,6 +44,10 @@ let use_start_section: ref(bool);
 
 let optimization_level: ref(optimization_level);
 
+/** Start address of Grain runtime heap */
+
+let memory_base: ref(int);
+
 /** The path to find modules on */
 
 let include_dirs: ref(list(string));

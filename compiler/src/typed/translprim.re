@@ -3,7 +3,13 @@ open Ast_helper;
 open Typedtree;
 open Parsetree;
 
+type wi32_constant =
+  | HeapBase
+  | HeapStart
+  | HeapTypeMetadataPointer;
+
 type primitive =
+  | PrimitiveWasmI32(wi32_constant)
   | Primitive1(prim1)
   | Primitive2(prim2)
   | PrimitiveN(primn);
@@ -34,6 +40,12 @@ let pat_c = mkpatvar("c");
 let prim_map =
   PrimMap.of_seq(
     List.to_seq([
+      ("@heap.base", PrimitiveWasmI32(HeapBase)),
+      ("@heap.start", PrimitiveWasmI32(HeapStart)),
+      (
+        "@heap.type_metadata_pointer",
+        PrimitiveWasmI32(HeapTypeMetadataPointer),
+      ),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -1408,8 +1420,50 @@ let transl_prim = (env, desc) => {
 
   let diable_gc = [(Location.mknoloc("disableGC"), [])];
 
-  let value =
+  // `attrs` are attributes which should be applied to the `let` which gets implicitly generated.
+  //
+  // Specifically, consider:
+  //
+  // primitive equal: (a, a) -> Bool = "@equal"
+  //
+  // This will get pseudo-generated into something like (note: not syntactically correct):
+  //
+  // let equal = @disableGC (a, b) => <@equal>(a, b)
+  //
+  // For *constant* values, this is not good enough. Consider:
+  //
+  // primitive heapBase = "@heap.base"
+  //
+  // Since the RHS is just the constant value (inlined here), this binding effectively becomes
+  //
+  // let heapBase = 0x400n
+  //
+  // which means that we need to put the `@disableGC` on the *outside* of the `heapBase` binding.
+  // This is what the `attrs` list here controls; by returning `attrs == [Typedtree.Disable_gc]`,
+  // we will generate
+  //
+  // @disableGC let heapBase = 0x400n
+  //
+  // Which can pass through the rest of the compilation without issue.
+  //
+  let (value, attrs) =
     switch (prim) {
+    | PrimitiveWasmI32(const) =>
+      let value =
+        switch (const) {
+        // [NOTE] should be kept in symc with `runtime_heap_ptr` and friends in `compcore.re`
+        | HeapBase => Grain_utils.Config.memory_base^
+        | HeapStart => Grain_utils.Config.memory_base^ + 0x10
+        | HeapTypeMetadataPointer => Grain_utils.Config.memory_base^ + 0x8
+        };
+      (
+        Exp.constant(
+          ~loc,
+          ~attributes=diable_gc,
+          Const.wasmi32(string_of_int(value)),
+        ),
+        [Typedtree.Disable_gc],
+      );
     | Primitive1(
         (
           WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
@@ -1417,14 +1471,19 @@ let transl_prim = (env, desc) => {
           WasmFromGrain |
           WasmToGrain
         ) as p,
-      ) =>
-      Exp.lambda(
-        ~loc,
-        ~attributes=diable_gc,
-        [pat_a],
-        Exp.prim1(~loc, p, id_a),
+      ) => (
+        Exp.lambda(
+          ~loc,
+          ~attributes=diable_gc,
+          [pat_a],
+          Exp.prim1(~loc, p, id_a),
+        ),
+        [],
       )
-    | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
+    | Primitive1(p) => (
+        Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a)),
+        [],
+      )
     | Primitive2(
         (
           WasmBinaryI32(_) | WasmBinaryI64(_) | WasmBinaryF32(_) |
@@ -1434,17 +1493,23 @@ let transl_prim = (env, desc) => {
           WasmLoadF32 |
           WasmLoadF64
         ) as p,
-      ) =>
-      Exp.lambda(
-        ~loc,
-        ~attributes=diable_gc,
-        [pat_a, pat_b],
-        Exp.prim2(~loc, p, id_a, id_b),
+      ) => (
+        Exp.lambda(
+          ~loc,
+          ~attributes=diable_gc,
+          [pat_a, pat_b],
+          Exp.prim2(~loc, p, id_a, id_b),
+        ),
+        [],
       )
-    | Primitive2(p) =>
-      Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
-    | PrimitiveN(WasmMemorySize as p) =>
-      Exp.lambda(~loc, ~attributes=diable_gc, [], Exp.primn(~loc, p, []))
+    | Primitive2(p) => (
+        Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b)),
+        [],
+      )
+    | PrimitiveN(WasmMemorySize as p) => (
+        Exp.lambda(~loc, ~attributes=diable_gc, [], Exp.primn(~loc, p, [])),
+        [],
+      )
     | PrimitiveN(
         (
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
@@ -1452,12 +1517,14 @@ let transl_prim = (env, desc) => {
           WasmMemoryFill |
           WasmMemoryCompare
         ) as p,
-      ) =>
-      Exp.lambda(
-        ~loc,
-        ~attributes=diable_gc,
-        [pat_a, pat_b, pat_c],
-        Exp.primn(~loc, p, [id_a, id_b, id_c]),
+      ) => (
+        Exp.lambda(
+          ~loc,
+          ~attributes=diable_gc,
+          [pat_a, pat_b, pat_c],
+          Exp.primn(~loc, p, [id_a, id_b, id_c]),
+        ),
+        [],
       )
     };
 
@@ -1478,5 +1545,5 @@ let transl_prim = (env, desc) => {
     Env.lookup_value(Identifier.IdentName(desc.tvd_name.txt), env);
   // Ensure the binding has a proper value_description
   let new_env = Env.add_value(Path.head(path), desc.tvd_val, env);
-  (binds, new_env);
+  (binds, new_env, attrs);
 };

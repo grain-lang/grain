@@ -460,12 +460,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | Nonexported => None
       };
-    let (defs, newenv) = Translprim.transl_prim(newenv, desc);
+    let (defs, newenv, attrs) = Translprim.transl_prim(newenv, desc);
     let prim = {
       ttop_desc: TTopLet(e, Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
-      ttop_attributes: Typetexp.type_attributes(attributes),
+      ttop_attributes:
+        List.append(Typetexp.type_attributes(attributes), attrs),
     };
     (newenv, signature, prim);
   };
