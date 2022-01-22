@@ -1415,7 +1415,7 @@ let transl_prim = (env, desc) => {
     | Not_found => failwith("This primitive does not exist.")
     };
 
-  let diable_gc = [(Location.mknoloc("disableGC"), [])];
+  let disable_gc = [(Location.mknoloc("disableGC"), [])];
 
   // `attrs` are attributes which should be applied to the `let` which gets implicitly generated.
   //
@@ -1472,7 +1472,7 @@ let transl_prim = (env, desc) => {
         } else {
           [];
         };
-      (Exp.constant(~loc, ~attributes=diable_gc, value), attrs);
+      (Exp.constant(~loc, ~attributes=disable_gc, value), attrs);
     | Primitive1(
         (
           WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
@@ -1483,7 +1483,7 @@ let transl_prim = (env, desc) => {
       ) => (
         Exp.lambda(
           ~loc,
-          ~attributes=diable_gc,
+          ~attributes=disable_gc,
           [pat_a],
           Exp.prim1(~loc, p, id_a),
         ),
@@ -1505,7 +1505,7 @@ let transl_prim = (env, desc) => {
       ) => (
         Exp.lambda(
           ~loc,
-          ~attributes=diable_gc,
+          ~attributes=disable_gc,
           [pat_a, pat_b],
           Exp.prim2(~loc, p, id_a, id_b),
         ),
@@ -1516,7 +1516,7 @@ let transl_prim = (env, desc) => {
         [],
       )
     | PrimitiveN(WasmMemorySize as p) => (
-        Exp.lambda(~loc, ~attributes=diable_gc, [], Exp.primn(~loc, p, [])),
+        Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.primn(~loc, p, [])),
         [],
       )
     | PrimitiveN(
@@ -1529,7 +1529,7 @@ let transl_prim = (env, desc) => {
       ) => (
         Exp.lambda(
           ~loc,
-          ~attributes=diable_gc,
+          ~attributes=disable_gc,
           [pat_a, pat_b, pat_c],
           Exp.primn(~loc, p, [id_a, id_b, id_c]),
         ),
