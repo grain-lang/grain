@@ -3,7 +3,7 @@ open Typedtree;
 type wi32_constant =
   | HeapBase
   | HeapStart
-  | HeapTypeMetadataPointer;
+  | HeapTypeMetadata;
 
 type primitive =
   | PrimitiveWasmI32(wi32_constant)

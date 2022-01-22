@@ -49,7 +49,7 @@ let slConsDisableGc = (a, b) => {
   SLCons(a, b)
 }
 
-primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata_pointer"
+primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata"
 
 @disableGC
 let findTypeMetadata = (moduleId, typeId) => {

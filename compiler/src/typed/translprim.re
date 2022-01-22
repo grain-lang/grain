@@ -6,7 +6,7 @@ open Parsetree;
 type wi32_constant =
   | HeapBase
   | HeapStart
-  | HeapTypeMetadataPointer;
+  | HeapTypeMetadata;
 
 type primitive =
   | PrimitiveWasmI32(wi32_constant)
@@ -42,10 +42,7 @@ let prim_map =
     List.to_seq([
       ("@heap.base", PrimitiveWasmI32(HeapBase)),
       ("@heap.start", PrimitiveWasmI32(HeapStart)),
-      (
-        "@heap.type_metadata_pointer",
-        PrimitiveWasmI32(HeapTypeMetadataPointer),
-      ),
+      ("@heap.type_metadata", PrimitiveWasmI32(HeapTypeMetadata)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -1451,10 +1448,10 @@ let transl_prim = (env, desc) => {
     | PrimitiveWasmI32(const) =>
       let value =
         switch (const) {
-        // [NOTE] should be kept in symc with `runtime_heap_ptr` and friends in `compcore.re`
+        // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
         | HeapBase => Grain_utils.Config.memory_base^
         | HeapStart => Grain_utils.Config.memory_base^ + 0x10
-        | HeapTypeMetadataPointer => Grain_utils.Config.memory_base^ + 0x8
+        | HeapTypeMetadata => Grain_utils.Config.memory_base^ + 0x8
         };
       (
         Exp.constant(

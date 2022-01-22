@@ -1539,7 +1539,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
           ),
           Expression.Block.make(
             wasm_mod,
-            gensym_label("store_runtime_heap_ptr^"),
+            gensym_label("store_runtime_heap_ptr"),
             [
               store(
                 wasm_mod,
@@ -1635,7 +1635,7 @@ let heap_runtime_allocate_imm =
         ),
         Expression.Block.make(
           wasm_mod,
-          gensym_label("store_runtime_heap_ptr^"),
+          gensym_label("store_runtime_heap_ptr"),
           [
             store(
               wasm_mod,
