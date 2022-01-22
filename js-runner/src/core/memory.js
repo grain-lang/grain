@@ -64,16 +64,6 @@ export class ManagedMemory {
     );
   }
 
-  decRefIgnoreZeros(userPtr) {
-    let closure = this._runner.memoryManager.requiredExport(
-      "GRAIN$EXPORT$decRefIgnoreZeros"
-    ).value;
-    return this._runner.memoryManager.requiredExport("decRefIgnoreZeros")(
-      closure,
-      userPtr
-    );
-  }
-
   malloc(userPtr) {
     let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$malloc"
