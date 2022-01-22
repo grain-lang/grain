@@ -279,5 +279,5 @@ let cmd = {
 let () =
   switch (Term.eval(cmd)) {
   | `Error(_) => exit(1)
-  | _ => exit(0)
+  | _ => ()
   };
