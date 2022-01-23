@@ -54,7 +54,7 @@ export class ManagedMemory {
     );
   }
 
-  decRef(userPtr, src, ignoreZeros) {
+  decRef(userPtr) {
     let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$decRef"
     ).value;
