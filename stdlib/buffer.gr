@@ -56,6 +56,7 @@ let autogrow = (len, buf) => {
     let mut newSize = if (currentSize > 0) {
       currentSize
     } else {
+      // Make sure bytes of 0 length grow too
       4
     }
 
