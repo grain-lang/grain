@@ -12,11 +12,7 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
 import Conv from "runtime/unsafe/conv"
-import {
-  tagSimpleNumber,
-  allocateBytes,
-  allocateString,
-} from "runtime/dataStructures"
+import { allocateBytes, allocateString } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import Int32 from "int32"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
@@ -151,7 +147,7 @@ export let rec toString = (bytes: Bytes) => {
 @disableGC
 export let rec length = (bytes: Bytes) => {
   let b = WasmI32.fromGrain(bytes)
-  let ret = tagSimpleNumber(getSize(b))
+  let ret = Conv.wasmI32ToNumber(getSize(b))
   Memory.decRef(WasmI32.fromGrain(bytes))
   Memory.decRef(WasmI32.fromGrain(length))
   ret
