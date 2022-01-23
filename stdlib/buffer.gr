@@ -417,42 +417,16 @@ export let rec addString = (string, buffer) => {
  * Appends the bytes of a subset of a string to a buffer.
  *
  * @param start: The char offset into the string
- * @param length: The number of bytes to append
+ * @param end: The end offset into the string
  * @param string: The string to append
  * @param buffer: The buffer to mutate
  *
  * @since v0.4.0
  */
 @disableGC
-export let rec addStringSlice = (start: Number, length, string, buffer) => {
-  // Handle negative start index (needed before #1071 is fixed)
-  let start = {
-    // this is a block to avoid making all of these operators
-    // overriden in the whole function
-    let (<<) = WasmI32.shl
-    let (>>) = WasmI32.shrS
-    let (+) = WasmI32.add
-    let (!=) = WasmI32.ne
-    let (&) = WasmI32.and
-    Memory.incRef(WasmI32.fromGrain(String.length))
-    Memory.incRef(WasmI32.fromGrain(string))
-    let strlen = WasmI32.fromGrain(String.length(string)) >> 1n
-    let mut startW = WasmI32.fromGrain(start)
-    if ((startW & 1n) != 1n) {
-      throw InvalidArgument("Invalid start index")
-    }
-    startW = startW >> 1n
-    if (WasmI32.ltS(startW, 0n)) {
-      WasmI32.toGrain(WasmI32.shl(startW + strlen, 1n) + 1n)
-    } else {
-      start
-    }
-  }
-  Memory.incRef(WasmI32.fromGrain(length))
-  Memory.incRef(WasmI32.fromGrain((+)))
-  let end = start + length
+export let rec addStringSlice = (start: Number, end, string, buffer) => {
   Memory.incRef(WasmI32.fromGrain(String.slice))
-  // no incref for start since we know it's a simple num. Add back for good measure after #1071 is fixed!
+  Memory.incRef(WasmI32.fromGrain(start))
   Memory.incRef(WasmI32.fromGrain(end))
   Memory.incRef(WasmI32.fromGrain(string))
   let slice = String.slice(start, end, string)
@@ -480,7 +454,7 @@ export let rec addStringSlice = (start: Number, length, string, buffer) => {
   Memory.decRef(WasmI32.fromGrain(bytelen))
 
   Memory.decRef(WasmI32.fromGrain(start))
-  Memory.decRef(WasmI32.fromGrain(length))
+  Memory.decRef(WasmI32.fromGrain(end))
   Memory.decRef(WasmI32.fromGrain(string))
   Memory.decRef(WasmI32.fromGrain(buffer))
   Memory.decRef(WasmI32.fromGrain(addStringSlice))
@@ -488,7 +462,7 @@ export let rec addStringSlice = (start: Number, length, string, buffer) => {
 }
 
 /**
- * Appends the bytes of a subset of a byte seuqnece to a buffer.
+ * Appends the bytes of a subset of a byte sequence to a buffer.
  *
  * @param start: The byte offset into the byte sequence
  * @param length: The number of bytes to append

@@ -197,21 +197,28 @@ Buffer.addString(str, buf)
 assert Buffer.toString(buf) == str
 
 // addStringSlice
-let slices = [> ("Let's get this 🍞", 0, 16), ("0123456789", -10, 9), ("0123456789", -1, 1), ("0123456789", 2, 1), ("0123456789", 0, 10), ("0123456789", 6, 0) ]
+let slices = [>
+  ("Let's get this 🍞", 0, 16),
+  ("0123456789", -10, -1),
+  ("0123456789", -1, -1),
+  ("0123456789", 2, 3),
+  ("0123456789", 0, 10),
+  ("0123456789", 6, 6),
+]
 for (let mut i = 0; i < Array.length(slices); i += 1) {
-  let (str, off, len) = slices[i]
+  let (str, start, end) = slices[i]
   let buf = Buffer.make(0)
-  Buffer.addStringSlice(off, len, str, buf)
-  let off = if (off < 0) {
-    off + String.length(str)
-  } else {
-    off
-  }
-  assert Buffer.toString(buf) == String.slice(off, off + len, str)
+  Buffer.addStringSlice(start, end, str, buf)
+  assert Buffer.toString(buf) == String.slice(start, end, str)
 }
 
 // addBytesSlice
-let slices = [> ("Let's get this 🍞", 0, 17), ("0123456789", 2, 1), ("0123456789", 0, 10), ("0123456789", 6, 0) ]
+let slices = [>
+  ("Let's get this 🍞", 0, 17),
+  ("0123456789", 2, 1),
+  ("0123456789", 0, 10),
+  ("0123456789", 6, 0),
+]
 for (let mut i = 0; i < Array.length(slices); i += 1) {
   let (str, off, len) = slices[i]
   let bytes = Bytes.fromString(str)
