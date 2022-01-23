@@ -53,7 +53,7 @@ let get_common_indentation = lines => {
     List.fold_left(
       (min_whitespace_length, line) => {
         let non_empty_line =
-          Str.string_match(Str.regexp("^\\([ \t]+\\)[^ \t]"), line, 0);
+          Str.string_match(Str.regexp("^\\([ \t]*\\)[^ \t]"), line, 0);
         if (non_empty_line) {
           let whitespace = Str.matched_group(1, line);
           let whitespace_length = String.length(whitespace);
