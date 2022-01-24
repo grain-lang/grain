@@ -9,6 +9,7 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
+import Conv from "runtime/unsafe/conv"
 import {
   tagSimpleNumber,
   allocateArray,
@@ -76,7 +77,7 @@ export let rec length = (string: String) => {
     ptr = WasmI32.add(ptr, 1n)
   }
 
-  let ret = tagSimpleNumber(len)
+  let ret = Conv.wasmI32ToNumber(len)
   Memory.decRef(WasmI32.fromGrain(length))
   Memory.decRef(WasmI32.fromGrain(string))
   ret
@@ -103,7 +104,7 @@ let wasmSafeLength = (s: String) => {
 @disableGC
 export let rec byteLength = (string: String) => {
   let string = WasmI32.fromGrain(string)
-  let ret = tagSimpleNumber(WasmI32.load(string, 4n))
+  let ret = Conv.wasmI32ToNumber(WasmI32.load(string, 4n))
   Memory.decRef(WasmI32.fromGrain(byteLength))
   Memory.decRef(WasmI32.fromGrain(string))
   ret
