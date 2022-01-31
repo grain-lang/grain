@@ -435,6 +435,8 @@ export let rec addStringSlice = (start: Number, length, string, buffer) => {
       start
     }
   }
+  Memory.incRef(WasmI32.fromGrain(length))
+  Memory.incRef(WasmI32.fromGrain((+)))
   let end = start + length
   Memory.incRef(WasmI32.fromGrain(String.slice))
   // no incref for start since we know it's a simple num. Add back for good measure after #1071 is fixed!
