@@ -58,4 +58,6 @@ yarn run
 
 This will display an interactive session where you can select the project and command you want.
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/grain-lang/grain)
+
 Copyright ©️ 2017-2022 Philip Blair, Oscar Spencer, & contributors.
