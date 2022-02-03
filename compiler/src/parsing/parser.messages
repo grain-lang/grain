@@ -4222,7 +4222,7 @@ program: LET NUMBER_INT WHILE
 ## In state 379, spurious reduction of production pattern -> const
 ##
 
-Expected a type annotation or an equals sign.
+Expected a type annotation or `=`.
 
 program: LET TYPEID DOT EOL WHILE
 ##
@@ -5453,7 +5453,7 @@ program: PRIMITIVE THROW COLON TYPEID WHEN
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
 
-Expected an equals sign followed by a string declaring the primitive's internal name.
+Expected `=` followed by a string declaring the primitive's internal name.
 
 program: PRIMITIVE ID WHILE
 ##
@@ -5650,7 +5650,7 @@ program: TYPE TYPEID LCARET ID RCARET EQEQ
 ## TYPE TYPEID option(id_vec)
 ##
 
-Expected an equals sign followed by a type.
+Expected `=` followed by a type.
 
 program: RECORD TYPEID LBRACE MUT WHILE
 ##
