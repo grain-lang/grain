@@ -86,13 +86,28 @@ describe("comments", ({test}) => {
     },
   );
   assertParse(
-    "comment_parse_doc_multiline_trim",
-    "/** Test\n    Weird indent\n  Normal indent */\"foo\"",
+    "comment_parse_doc_multiline_trim_all_same_indent",
+    "/**\n  Test\n  Weird indent\n  Normal indent */\"foo\"",
     {
       statements: [str("foo")],
       comments: [
         Parsetree.Doc({
           cmt_content: "Test\nWeird indent\nNormal indent",
+          cmt_source: "/**\n  Test\n  Weird indent\n  Normal indent */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "comment_parse_doc_multiline_trim_keeps_differnt_indent",
+    "/** Test\n    Weird indent\n  Normal indent */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Doc({
+          cmt_content: "Test\n   Weird indent\n Normal indent",
           cmt_source: "/** Test\n    Weird indent\n  Normal indent */",
           cmt_loc: Location.dummy_loc,
         }),
@@ -101,14 +116,15 @@ describe("comments", ({test}) => {
     },
   );
   assertParse(
-    "comment_parse_doc_multiline_trim2",
-    "/** Test\r\n    Weird indent\r\n  Normal indent */\"foo\"",
+    "comment_parse_doc_multiline_trim_normalizes_tabs",
+    // Note: There are explicit tab characters in this string to test them
+    "/**\n		Test\r\n	 Weird indent\r\n  Normal indent */\"foo\"",
     {
       statements: [str("foo")],
       comments: [
         Parsetree.Doc({
           cmt_content: "Test\nWeird indent\nNormal indent",
-          cmt_source: "/** Test\r\n    Weird indent\r\n  Normal indent */",
+          cmt_source: "/**\n		Test\r\n	 Weird indent\r\n  Normal indent */",
           cmt_loc: Location.dummy_loc,
         }),
       ],
@@ -152,8 +168,23 @@ describe("comments", ({test}) => {
       statements: [str("foo")],
       comments: [
         Parsetree.Doc({
-          cmt_content: "Test\nno space before\nspace before\ntab before\nno space after",
+          cmt_content: " Test\n no space before\n space before\n tab before\nno space after",
           cmt_source: "/** Test\n* no space before\n * space before\n  * tab before\n *no space after */",
+          cmt_loc: Location.dummy_loc,
+        }),
+      ],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "comment_parse_doc_deasterisk2",
+    "/** Test\n* no space before\n * space before\n  * tab before\n * trailing space after */\"foo\"",
+    {
+      statements: [str("foo")],
+      comments: [
+        Parsetree.Doc({
+          cmt_content: "Test\nno space before\nspace before\ntab before\ntrailing space after",
+          cmt_source: "/** Test\n* no space before\n * space before\n  * tab before\n * trailing space after */",
           cmt_loc: Location.dummy_loc,
         }),
       ],
