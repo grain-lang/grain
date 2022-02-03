@@ -1,0 +1,278 @@
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Exception from "runtime/exception"
+import { coerceNumberToWasmI32 } from "runtime/numbers"
+import Conv from "runtime/unsafe/conv"
+import Int32 from "int32"
+import Buffer from "buffer"
+import String from "string"
+
+// Layout:
+// -------------------------
+// | tag | size | limbs... |
+// -------------------------
+// 
+// tag   | i32    | always _GRAIN_BIGINT_BOXED_NUM_TAG
+// size  | i32    | the number of limbs. If negative, the bigint is negative
+// limbs | i64... | 
+
+@disableGC
+let init = (sign, limbs) => {
+  let (+) = WasmI32.add
+  let (*) = WasmI32.mul
+  let (<) = WasmI32.lt
+  if (limbs < 1n) {
+    throw Exception.InvalidArgument("BigInt must have at least 1 limb")
+  }
+  let len = (limbs * 2n) + 8n
+  let ptr = Memory.malloc(len)
+  Memory.fill(ptr, 0n, len)
+  WasmI32.store(ptr, Tags._GRAIN_BIGINT_BOXED_NUM_TAG, 0n)
+  WasmI32.store(ptr, limbs * sign, 4n)
+  ptr
+}
+
+@disableGC
+export let rec fromInt32 = (n: Int32) => {
+  let (<) = WasmI32.lt
+  let (*) = WasmI32.mul
+  let v = Conv.fromInt32(n)
+  Memory.decRef(WasmI32.fromGrain(n))
+  let sign = if (v < 0n) { -1n } else { 1n }
+  let ptr = init(sign, 1n)
+  let abs = v * sign
+  WasmI32.store(ptr, abs, 8n)
+  Memory.decRef(WasmI32.fromGrain(fromInt32))
+  WasmI32.toGrain(ptr): BigInt
+}
+
+@disableGC
+export let rec fromInt64 = (n: Int64) => {
+  let (<) = WasmI64.lt
+  let (*) = WasmI64.mul
+  let v = Conv.fromInt64(n)
+  Memory.decRef(WasmI32.fromGrain(n))
+  let sign = if (v < 0N) { -1N } else { 1N }
+  let ptr = init(WasmI32.wrapI64(v), 1n)
+  let abs = v * sign
+  WasmI64.store(ptr, abs, 8n)
+  Memory.decRef(WasmI32.fromGrain(fromInt64))
+  WasmI32.toGrain(ptr): BigInt
+}
+
+@disableGC
+let absSize = (ptr) => {
+  let (<) = WasmI32.lt
+  let (*) = WasmI32.mul
+  let size = WasmI32.load(ptr, 4n)
+  if (size < 0n) {
+    size * -1n
+  } else {
+    size
+  }
+}
+
+@disableGC
+let getLimb = (ptr, n) => {
+  let (+) = WasmI32.add
+  let (*) = WasmI32.mul
+  WasmI64.load(ptr, 8n + (8n * n))
+}
+
+@disableGC
+let safeGetLimb = (ptr, n) => {
+  let (+) = WasmI32.add
+  let (<) = WasmI32.lt
+  let (*) = WasmI32.mul
+  if (WasmI32.load(ptr, 4n) < n) {
+    0N
+  } else {
+    WasmI64.load(ptr, 8n + (8n * n))
+  }
+}
+
+@disableGC
+let setLimb = (ptr, n, v) => {
+  let (+) = WasmI32.add
+  let (*) = WasmI32.mul
+  WasmI64.store(ptr, v, 8n + (8n * n))
+}
+
+@disableGC
+let addIntoBufferN = (rp: Buffer, a: WasmI32, b: WasmI32, n: WasmI32) => {
+  let (+) = WasmI64.add
+  let (<) = WasmI64.lt
+  let mut cy = 0N;
+  for (let mut i = 0n; WasmI32.lt(i, n); i = WasmI32.add(i, 1n)) {
+    let mut a = safeGetLimb(a, i)
+    let mut b = safeGetLimb(b, i)
+    let mut r = a + cy
+    cy = if (r < cy) { 1N } else { 0N }
+    r += b
+    cy += if (r < b) { 1N } else { 0N }
+    Buffer.addInt64(rp, r)
+  }
+  cy
+}
+
+@disableGC
+let subIntoBufferN = (rp: Buffer, a: WasmI32, b: WasmI32, n: WasmI32) => {
+  let (-) = WasmI64.sub
+  let (+) = WasmI64.add
+  let (<) = WasmI64.lt
+  let mut cy = 0N;
+  for (let mut i = 0n; WasmI32.lt(i, n); i = WasmI32.add(i, 1n)) {
+    let mut a = safeGetLimb(a, i)
+    let mut b = safeGetLimb(b, i)
+    b += cy
+    cy = if (b < cy) { 1N } else { 1N }
+    cy += if (a < b) { 1N } else { 0N }
+    Buffer.addInt64(rp, a - b)
+  }
+  cy
+}
+
+
+@disableGC
+let absAdd = (a: WasmI32, b: WasmI32) => {
+  let (<) = WasmI32.lt
+  let an = absSize(a)
+  let bn = absSize(b)
+  let mut rp = Buffer.make(8) // 1 int64
+  let len = if (an < bn) { bn } else { an }
+  
+  let size = addIntoBufferN(rp, a, b, len)
+  
+  // TODO: get sign
+  let sign = 0n;
+  
+  let ptr = init(sign, size)
+  WasmI32.toGrain(ptr): BigInt
+}
+
+@disableGC
+let cmpN = (a, b, n) => {
+  let mut res = 0n;
+  while (--n >= 0) {
+    let x = safeGetLimb(a, n)
+    let y = safeGetLimb(b, n)
+    if (x != y) {
+      res = if (x > y) { 1n } else { -1n }
+      break
+    }
+  }
+  res
+}
+
+@disableGC
+let absSub = (a: WasmI32, b: WasmI32) => {
+  let (<) = WasmI32.lt
+  let (*) = 
+  let an = absSize(a)
+  let bn = absSize(b)
+
+  let len = if (an < bn) { bn } else { an }
+  let cmp = cmpN(a, b, len)
+
+  let mut rp = Buffer.make(8) // 1 int64
+  let limbs = if (cmp > 0n) {
+    subIntoBufferN(rp, a, b, bn)
+  } else if (cmp < 0n) {
+    -1N * subIntoBufferN(rp, a, b, an)
+  } else {
+    0N
+  }
+  
+  // TODO: get sign
+  let sign = 0n;
+  
+  let ptr = init(sign, limbs)
+  WasmI32.toGrain(ptr): BigInt
+}
+
+@disableGC
+let rec add = (a: BigInt, b: BigInt) => {
+  let (^) = WasmI32.xor
+  let (>=) = WasmI32.gte
+  let aptr = WasmI32.fromGrain(a)
+  let bptr = WasmI32.fromGrain(b)
+  Memory.decRef(aptr)
+  Memory.decRef(bptr)
+  let an = WasmI32.load(aptr, 4n)
+  let bn = WasmI32.load(bptr, 4n)
+  let res = if ((an ^ bn) >= 0n) {
+    absAdd(aptr, bptr)
+  } else {
+    absSub(aptr, bptr)
+  }
+  Memory.decRef(WasmI32.fromGrain(add))
+  res
+}
+
+@disableGC
+let rec sub = (a: BigInt, b: BigInt) => {
+  let (^) = WasmI32.xor
+  let (>=) = WasmI32.gte
+  let aptr = WasmI32.fromGrain(a)
+  let bptr = WasmI32.fromGrain(b)
+  Memory.decRef(aptr)
+  Memory.decRef(bptr)
+  let an = WasmI32.load(aptr, 4n)
+  let bn = WasmI32.load(bptr, 4n)
+  let res = if ((an ^ bn) >= 0n) {
+    absSub(aptr, bptr)
+  } else {
+    absAdd(aptr, bptr)
+  }
+  Memory.decRef(WasmI32.fromGrain(add))
+  res
+}
+
+
+
+// @disableGC
+// export let rec getSign = (bigint: BigInt) => {
+//   let (<) = WasmI32.lt
+//   let src = WasmI32.fromGrain(bytes)
+//   let size = WasmI32.load(ptr, 4n)
+//   if (size < 0n) {
+//     -1
+//   } else {
+//     1
+//   }
+// }
+
+
+// @disableGC
+// export let rec fromString = (str: String) => {
+//   let s = String.trim(str)
+//   Memory.decRef(WasmI32.fromGrain(str))
+  
+//   let stringLen = String.length(s)
+  
+//   // empty string
+//   if (stringLen == 0) {
+//     throw Exception.InvalidArgument("The given string is not a valid number")
+//   }
+
+//   // get the sign
+//   let mut isNegative = String.charAt(0) == '-'
+  
+//   // bad negative number (only leading '-')
+//   if (isNegative && stringLen == 1) {
+//     throw Exception.InvalidArgument("The given string is not a valid number")
+//   }
+
+//   Memory.decRef(WasmI32.fromGrain(stringLen))
+
+//   // Parse the string!!!!!!
+//   throw Exception.AssertionError("fromString unimplemented")
+
+//   let size = 0n;
+//   Memory.decRef(WasmI32.fromGrain(s))
+//   let bigint = alloc(coerceNumberToWasmI32(size))
+//   let ret = WasmI32.toGrain(bigint): BigInt
+//   Memory.decRef(WasmI32.fromGrain(make))
+//   ret
+// }
