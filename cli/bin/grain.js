@@ -215,6 +215,10 @@ program
 program
   .command("doc <file>")
   .description("generate documentation for a grain file")
+  .forwardOption(
+    "--current-version <version>",
+    "provide a version to use as current when generating markdown for `@since` and `@history` attributes"
+  )
   .action(
     wrapAction(function (file, options, program) {
       doc(file, program);

@@ -67,6 +67,12 @@ type params = {
   /** Output filename */
   [@name "o"] [@docv "FILE"]
   output: option(Output.t),
+  /**
+    The version to use as current when generating markdown for `@since` and `@history` attributes.
+    Any future versions will be replace with `next` in the output.
+  */
+  [@name "current-version"] [@docv "VERSION"]
+  current_version: option(string),
 };
 
 let compile_typed = (opts: params) => {
@@ -97,11 +103,7 @@ let compile_typed = (opts: params) => {
 };
 
 let generate_docs =
-    (
-      ~version as current_version,
-      opts: params,
-      program: Typedtree.typed_program,
-    ) => {
+    ({current_version, output}: params, program: Typedtree.typed_program) => {
   Comments.setup_comments(program.comments);
 
   let env = program.env;
@@ -132,12 +134,7 @@ let generate_docs =
       |> Option.map((attr: Comments.Attribute.t) => {
            switch (attr) {
            | Since({attr_version}) =>
-             let (<) = Version.String.less_than;
-             if (current_version < attr_version) {
-               Format.sprintf("Added in %s", Html.code("next"));
-             } else {
-               Format.sprintf("Added in %s", Html.code(attr_version));
-             };
+             Docblock.output_for_since(~current_version, attr_version)
            | _ =>
              failwith("Unreachable: Non-`since` attribute can't exist here.")
            }
@@ -148,12 +145,11 @@ let generate_docs =
       |> List.map((attr: Comments.Attribute.t) => {
            switch (attr) {
            | History({attr_version, attr_desc}) =>
-             let (<) = Version.String.less_than;
-             if (current_version < attr_version) {
-               [Html.code("next"), attr_desc];
-             } else {
-               [Html.code(attr_version), attr_desc];
-             };
+             Docblock.output_for_history(
+               ~current_version,
+               attr_version,
+               attr_desc,
+             )
            | _ =>
              failwith("Unreachable: Non-`since` attribute can't exist here.")
            }
@@ -240,7 +236,7 @@ let generate_docs =
   };
 
   let contents = Buffer.to_bytes(buf);
-  switch (opts.output) {
+  switch (output) {
   | Some(outfile) =>
     let oc = Fs_access.open_file_for_writing(outfile);
     output_bytes(oc, contents);
@@ -251,13 +247,14 @@ let generate_docs =
   `Ok();
 };
 
-let graindoc = (~version, opts) =>
-  try({
-    let program = compile_typed(opts);
-    generate_docs(~version, opts, program);
-  }) {
-  | e => `Error((false, Printexc.to_string(e)))
+let graindoc = opts => {
+  let program = compile_typed(opts);
+  try(generate_docs(opts, program)) {
+  | exn =>
+    Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
+    exit(2);
   };
+};
 
 let cmd = {
   open Term;
@@ -270,8 +267,7 @@ let cmd = {
     };
 
   (
-    Grain_utils.Config.with_cli_options(graindoc(~version))
-    $ params_cmdliner_term(),
+    Grain_utils.Config.with_cli_options(graindoc) $ params_cmdliner_term(),
     Term.info(Sys.argv[0], ~version, ~doc),
   );
 };

@@ -11,6 +11,27 @@ type t = {
   attributes: list(Comments.Attribute.t),
 };
 
+exception
+  MissingFlag({
+    flag: string,
+    attr: string,
+  });
+
+let () =
+  Printexc.register_printer(exn => {
+    switch (exn) {
+    | MissingFlag({flag, attr}) =>
+      let msg =
+        Printf.sprintf(
+          "Must provide %s when generating docs with `%s` attribute.",
+          flag,
+          attr,
+        );
+      Some(msg);
+    | _ => None
+    }
+  });
+
 let module_name_of_location = (loc: Grain_parsing.Location.t) => {
   Grain_utils.Files.filename_to_module_name(loc.loc_start.pos_fname);
 };
@@ -25,6 +46,35 @@ let string_of_type_declaration = (~ident, td) => {
 
 let title_for_api = (~module_name, ident: Ident.t) => {
   Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
+};
+
+let output_for_since = (~current_version, attr_version) => {
+  let current_version =
+    switch (current_version) {
+    | Some(version) => version
+    | None => raise(MissingFlag({flag: "--current-version", attr: "@since"}))
+    };
+  let (<) = Version.String.less_than;
+  if (current_version < attr_version) {
+    Format.sprintf("Added in %s", Html.code("next"));
+  } else {
+    Format.sprintf("Added in %s", Html.code(attr_version));
+  };
+};
+
+let output_for_history = (~current_version, attr_version, attr_desc) => {
+  let current_version =
+    switch (current_version) {
+    | Some(version) => version
+    | None =>
+      raise(MissingFlag({flag: "--current-version", attr: "@history"}))
+    };
+  let (<) = Version.String.less_than;
+  if (current_version < attr_version) {
+    [Html.code("next"), attr_desc];
+  } else {
+    [Html.code(attr_version), attr_desc];
+  };
 };
 
 let types_for_function = (~ident, vd: Types.value_description) => {
@@ -162,12 +212,7 @@ let to_markdown = (~current_version, docblock) => {
     |> Option.map((attr: Comments.Attribute.t) => {
          switch (attr) {
          | Since({attr_version}) =>
-           let (<) = Version.String.less_than;
-           if (current_version < attr_version) {
-             Format.sprintf("Added in %s", Html.code("next"));
-           } else {
-             Format.sprintf("Added in %s", Html.code(attr_version));
-           };
+           output_for_since(~current_version, attr_version)
          | _ =>
            failwith("Unreachable: Non-`since` attribute can't exist here.")
          }
@@ -178,12 +223,7 @@ let to_markdown = (~current_version, docblock) => {
     |> List.map((attr: Comments.Attribute.t) => {
          switch (attr) {
          | History({attr_version, attr_desc}) =>
-           let (<) = Version.String.less_than;
-           if (current_version < attr_version) {
-             [Html.code("next"), attr_desc];
-           } else {
-             [Html.code(attr_version), attr_desc];
-           };
+           output_for_history(~current_version, attr_version, attr_desc)
          | _ =>
            failwith("Unreachable: Non-`since` attribute can't exist here.")
          }
