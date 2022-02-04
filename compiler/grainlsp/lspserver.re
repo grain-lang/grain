@@ -17,54 +17,50 @@ let run = () => {
   let rec loop = (~isShuttingDown, ~documents, ~compiledCode) =>
     // let state = tick(state);
     if (canRead(stdin_descr)) {
-      //   switch (Rpc.read_message(log, stdin)) {
-      //   | Message(id, action, json) =>
-      //     log("received message " ++ action);
-      //     switch (action) {
-      //     | "textDocument/hover" =>
-      //       Messages.get_hover(log, id, json, compiledCode)
-      //     | "textDocument/codeLens" =>
-      //       Messages.process_get_lenses(log, id, json, compiledCode)
-      //     | "textDocument/codeAction" =>
-      //       Codeaction.process_request(log, id, json, compiledCode, documents)
-      //     | "textDocument/definition" =>
-      //       Messages.goto_definition(log, id, json, compiledCode)
-      //     | "textDocument/completion" =>
-      //       Completion.process_completion(
-      //         log,
-      //         id,
-      //         json,
-      //         compiledCode,
-      //         documents,
-      //       )
-      //     | "textDocument/signatureHelp" =>
-      //       Messages.signature_help(log, id, json, compiledCode, documents)
-      //     | _ => ()
-      //     };
-      //     loop(~isShuttingDown, ~documents, ~compiledCode);
-      //   | Notification(method, json) =>
-      //     // log("received notification " ++ method);
-      //     switch (method) {
-      //     | "textDocument/didOpen"
-      //     | "textDocument/didChange" =>
-      //       Notifications.textDocument_didOpenOrChange(
-      //         log,
-      //         json,
-      //         documents,
-      //         compiledCode,
-      //       )
-      //     | _ => ()
-      //     };
-      //     loop(~isShuttingDown, ~documents, ~compiledCode);
-      //   | Error(_) =>
-      //     log("!!!Received Error");
-      //     loop(~isShuttingDown=true, ~documents, ~compiledCode);
-      //   };
-      loop(
-        ~isShuttingDown,
-        ~documents,
-        ~compiledCode,
-      );
+      switch (Rpc.read_message(log, stdin)) {
+      | Message(id, action, json) =>
+        log("received message " ++ action);
+        switch (action) {
+        //     | "textDocument/hover" =>
+        //       Messages.get_hover(log, id, json, compiledCode)
+        | "textDocument/codeLens" =>
+          Lenses.process_get_lenses(log, id, json, compiledCode)
+        //     | "textDocument/codeAction" =>
+        //       Codeaction.process_request(log, id, json, compiledCode, documents)
+        //     | "textDocument/definition" =>
+        //       Messages.goto_definition(log, id, json, compiledCode)
+        //     | "textDocument/completion" =>
+        //       Completion.process_completion(
+        //         log,
+        //         id,
+        //         json,
+        //         compiledCode,
+        //         documents,
+        //       )
+        //     | "textDocument/signatureHelp" =>
+        //       Messages.signature_help(log, id, json, compiledCode, documents)
+        | _ => ()
+        };
+        loop(~isShuttingDown, ~documents, ~compiledCode);
+
+      | Notification(method, json) =>
+        log("received notification " ++ method);
+        switch (method) {
+        | "textDocument/didOpen"
+        | "textDocument/didChange" =>
+          Processcode.textDocument_didOpenOrChange(
+            log,
+            json,
+            documents,
+            compiledCode,
+          )
+        | _ => ()
+        };
+        loop(~isShuttingDown, ~documents, ~compiledCode);
+      | Error(_) =>
+        log("!!!Received Error");
+        loop(~isShuttingDown=true, ~documents, ~compiledCode);
+      };
     } else {
       loop(~isShuttingDown, ~documents, ~compiledCode);
     };
@@ -73,7 +69,7 @@ let run = () => {
     switch (Rpc.read_message(log, stdin)) {
     | Message(id, "initialize", _) =>
       log("initialize");
-      ///////     Rpc.send_capabilities(log, stdout, id);
+      Rpc.send_capabilities(log, stdout, id);
       loop(~isShuttingDown=false, ~documents, ~compiledCode);
 
     | _ => failwith("Client must send 'initialize' as first event")
