@@ -202,13 +202,13 @@ program
   });
 
 program
-  .command("lsp <file>")
-  .description("check a grain file for LSP")
+  .command("lsp")
+  .description("start the Grain LSP server")
   .action(
-    wrapAction(function (file) {
+    wrapAction(function (options,program) {
       // The lsp subcommand inherits all options of the
       // top level grain command
-      lsp(file, program);
+      lsp(program);
     })
   );
 
