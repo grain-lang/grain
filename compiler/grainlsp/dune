@@ -2,13 +2,8 @@
  (name lspserver)
  (public_name grain.lspserver)
  (modules log utils rpc lspserver)
- (libraries
-  grain
-  grain_diagnostics
-  grain_parsing
-  grain_utils
-  ppx_deriving_yojson.runtime
-  yojson)
+ (libraries grain grain_diagnostics grain_parsing grain_utils
+   ppx_deriving_yojson.runtime yojson)
  (preprocess
   (pps ppx_deriving_yojson)))
 
@@ -20,10 +15,5 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries
-  cmdliner
-  grain
-  grain_utils
-  grain_parsing
-  grain.lspserver
-  dune-build-info))
+ (libraries cmdliner grain grain_utils grain_parsing grain.lspserver
+   dune-build-info))
