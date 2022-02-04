@@ -41,5 +41,11 @@ cli/bin/graindoc.exe
 cli/bin/graindoc_js.bc.js
 cli/bin/grainformat.exe
 cli/bin/grainformat_js.bc.js
+cli/bin/grainlsp.exe
+cli/bin/grainlsp_js.bc.js
+
+# LSP log file
+
+./lsp_debug.log
 
 .DS_Store
