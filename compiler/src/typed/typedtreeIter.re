@@ -200,6 +200,7 @@ module MakeIterator =
     | TExpApp(exp, args) =>
       iter_expression(exp);
       List.iter(iter_expression, args);
+    | TExpPrim0(_) => ()
     | TExpPrim1(_, e) => iter_expression(e)
     | TExpPrim2(_, e1, e2) =>
       iter_expression(e1);

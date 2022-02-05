@@ -68,6 +68,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg),
       branches,
     )
+  | CPrim0(_) => Ident.Set.empty
   | CPrim1(_, arg) => imm_free_vars_help(env, arg)
   | CPrim2(_, arg1, arg2) =>
     Ident.Set.union(

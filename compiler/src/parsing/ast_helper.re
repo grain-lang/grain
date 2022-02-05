@@ -203,6 +203,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpLet(a, b, c));
   let match = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpMatch(a, b));
+  let prim0 = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpPrim0(a));
   let prim1 = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpPrim1(a, b));
   let prim2 = (~loc=?, ~attributes=?, a, b, c) =>

@@ -178,6 +178,7 @@ module RegisterAllocation = {
       | MTagOp(top, tt, i) => MTagOp(top, tt, apply_allocation_to_imm(i))
       | MArityOp(aop, at, i) =>
         MArityOp(aop, at, apply_allocation_to_imm(i))
+      | MPrim0(pop) => MPrim0(pop)
       | MPrim1(pop, i) => MPrim1(pop, apply_allocation_to_imm(i))
       | MTupleOp(top, i) => MTupleOp(top, apply_allocation_to_imm(i))
       | MBoxOp(bop, i) => MBoxOp(bop, apply_allocation_to_imm(i))
@@ -316,6 +317,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       Option.fold(~none=[], ~some=block_live_locals, b1)
       @ Option.fold(~none=[], ~some=block_live_locals, b2)
       @ block_live_locals(b3)
+    | MPrim0(_)
     | MContinue
     | MBreak => []
     | MSwitch(v, bs, d, ty) =>
@@ -754,6 +756,7 @@ let rec compile_comp = (~id=?, env, c) => {
       )
     | CContinue => MContinue
     | CBreak => MBreak
+    | CPrim0(p0) => MPrim0(p0)
     | CPrim1(Box, arg)
     | CPrim1(BoxBind, arg) => MAllocate(MBox(compile_imm(env, arg)))
     | CPrim1(Unbox, arg)

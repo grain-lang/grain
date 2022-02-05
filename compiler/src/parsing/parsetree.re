@@ -300,9 +300,32 @@ type wasm_op =
   | Op_gt_float64
   | Op_ge_float64;
 
+/** Zero-argument operators */
+[@deriving (sexp, yojson)]
+type prim0 =
+  | AllocateChar
+  | AllocateInt32
+  | AllocateInt64
+  | AllocateFloat32
+  | AllocateFloat64
+  | AllocateRational;
+
 /** Single-argument operators */
 [@deriving (sexp, yojson)]
 type prim1 =
+  | AllocateArray
+  | AllocateTuple
+  | AllocateBytes
+  | AllocateString
+  | NewInt32
+  | NewInt64
+  | NewFloat32
+  | NewFloat64
+  | LoadAdtVariant
+  | StringSize
+  | BytesSize
+  | TagSimpleNumber
+  | UntagSimpleNumber
   | Not
   | Box
   | Unbox
@@ -340,6 +363,7 @@ type prim1 =
 
 [@deriving (sexp, yojson)]
 type prim2 =
+  | NewRational
   | Is
   | Eq
   | And
@@ -412,6 +436,7 @@ and expression_desc =
   | PExpRecordSet(expression, loc(Identifier.t), expression)
   | PExpLet(rec_flag, mut_flag, list(value_binding))
   | PExpMatch(expression, list(match_branch))
+  | PExpPrim0(prim0)
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
   | PExpPrimN(primn, list(expression))
