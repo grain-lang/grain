@@ -324,10 +324,10 @@ export let rec clear = (bytes: Bytes) => {
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
-  let ret = Memory.fill(src + _VALUE_OFFSET, 0n, size)
+  Memory.fill(src + _VALUE_OFFSET, 0n, size)
   Memory.decRef(WasmI32.fromGrain(bytes))
   Memory.decRef(WasmI32.fromGrain(clear))
-  ret
+  void
 }
 
 /**
