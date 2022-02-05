@@ -313,7 +313,7 @@ export let fill = (value: Int32, bytes: Bytes) => {
 }
 
 /**
- * Replaces all bytes in a byte sequnce with value zero.
+ * Replaces all bytes in a byte sequence with zeroes.
  *
  * @param bytes: The byte sequence to clear
  *
