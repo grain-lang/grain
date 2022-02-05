@@ -14,44 +14,37 @@ arrays › array1_trailing
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
-  (tuple.extract 0
-   (tuple.make
-    (block (result i32)
-     (i32.store
-      (local.tee $0
-       (tuple.extract 0
-        (tuple.make
-         (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-          (i32.const 20)
-         )
-         (i32.const 0)
-        )
-       )
+  (i32.store
+   (local.tee $0
+    (tuple.extract 0
+     (tuple.make
+      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+       (i32.const 20)
       )
-      (i32.const 5)
+      (i32.const 0)
      )
-     (i32.store offset=4
-      (local.get $0)
-      (i32.const 3)
-     )
-     (i32.store offset=8
-      (local.get $0)
-      (i32.const 3)
-     )
-     (i32.store offset=12
-      (local.get $0)
-      (i32.const 5)
-     )
-     (i32.store offset=16
-      (local.get $0)
-      (i32.const 7)
-     )
-     (local.get $0)
     )
-    (local.get $0)
    )
+   (i32.const 5)
   )
+  (i32.store offset=4
+   (local.get $0)
+   (i32.const 3)
+  )
+  (i32.store offset=8
+   (local.get $0)
+   (i32.const 3)
+  )
+  (i32.store offset=12
+   (local.get $0)
+   (i32.const 5)
+  )
+  (i32.store offset=16
+   (local.get $0)
+   (i32.const 7)
+  )
+  (local.get $0)
  )
  (func $_start (; has Stack IR ;)
   (drop
