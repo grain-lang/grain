@@ -147,6 +147,21 @@ let send = (output, content) => {
   flush(output);
 };
 
+let sendNullMessage = (log, output, id) => {
+  let res =
+    `Assoc([
+      ("jsonrpc", `String("2.0")),
+      ("id", `Int(id)),
+      ("result", `Null),
+    ]);
+
+  let strJson = Yojson.Safe.pretty_to_string(res);
+
+  log(strJson);
+
+  send(output, strJson);
+};
+
 let send_capabilities = (log, output, id: int) => {
   //   let sigHelpers: signatureHelpers = {
   //     triggerCharacters: ["("],

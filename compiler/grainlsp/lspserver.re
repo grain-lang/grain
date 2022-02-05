@@ -24,7 +24,8 @@ let run = () => {
         //     | "textDocument/hover" =>
         //       Messages.get_hover(log, id, json, compiledCode)
         | "textDocument/codeLens" =>
-          Lenses.process_get_lenses(log, id, json, compiledCode)
+          Lenses.process_get_lenses(log, id, json, compiledCode);
+          loop(~isShuttingDown, ~documents, ~compiledCode);
         //     | "textDocument/codeAction" =>
         //       Codeaction.process_request(log, id, json, compiledCode, documents)
         //     | "textDocument/definition" =>
@@ -39,10 +40,19 @@ let run = () => {
         //       )
         //     | "textDocument/signatureHelp" =>
         //       Messages.signature_help(log, id, json, compiledCode, documents)
-        | _ => ()
+        | "shutdown" =>
+          Rpc.sendNullMessage(log, stdout, id);
+          loop(~isShuttingDown=true, ~documents, ~compiledCode);
+        | _ => loop(~isShuttingDown, ~documents, ~compiledCode)
         };
-        loop(~isShuttingDown, ~documents, ~compiledCode);
 
+      | Notification("exit", _) =>
+        if (isShuttingDown) {
+          log("Got exit! Terminating loop");
+        } else {
+          log("Got exit without shutdown. Erroring out");
+          exit(1);
+        }
       | Notification(method, json) =>
         log("received notification " ++ method);
         switch (method) {

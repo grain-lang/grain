@@ -9,7 +9,7 @@ let compile_source = (log, uri, source) => {
 
   let filename = Filename.basename(uri);
 
-  // Grain_utils.Config.stdlib_dir := Some("/Users/marcus/Projects/grain/stdlib");
+  Grain_utils.Config.stdlib_dir := Some("/Users/marcus/Projects/grain/stdlib");
   switch (
     Compile.compile_string(
       ~hook=stop_after_typed_well_formed,
