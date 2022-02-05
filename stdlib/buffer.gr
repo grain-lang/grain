@@ -49,11 +49,24 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 
 /* Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
 let autogrow = (len, buf) => {
-  while (buf.len + len > Bytes.length(buf.data)) {
-    let mut n = Bytes.length(buf.data)
-    if (n == 0) n = 4
-    // Make sure bytes of 0 length grow too
-    buf.data = Bytes.resize(0, n, buf.data)
+  let requiredMinimumSize = buf.len + len
+  let currentSize = Bytes.length(buf.data)
+
+  if (requiredMinimumSize > currentSize) {
+    let mut newSize = if (currentSize > 0) {
+      currentSize
+    } else {
+      // Make sure bytes of 0 length grow too
+      4
+    }
+
+    while (newSize < requiredMinimumSize) {
+      newSize *= 2
+    }
+
+    let growBy = newSize - currentSize
+
+    buf.data = Bytes.resize(0, growBy, buf.data)
   }
 }
 
