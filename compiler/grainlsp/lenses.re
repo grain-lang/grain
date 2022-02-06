@@ -3,23 +3,50 @@ open Grain_typed;
 let get_signature_from_statement =
     (stmt: Grain_typed__Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
-  | TTopImport(import_declaration) => "import declaration"
-  | TTopForeign(export_flag, value_description) => "foreign"
-  | TTopData(data_declarations) => "data declaration"
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-    if (List.length(value_bindings) > 0) {
-      let vbs: Typedtree.value_binding = List.hd(value_bindings);
-      Utils.lens_sig(vbs.vb_expr.exp_type);
-    } else {
-      "";
-    }
+  | TTopImport(import_declaration) => None
+  | TTopForeign(export_flag, value_description) => None
+  | TTopData(data_declarations) =>
+    switch (data_declarations) {
+    | [] => None
+    | _ =>
+      let decls =
+        List.fold_left(
+          (acc, decl: Typedtree.data_declaration) =>
+            (acc == "" ? "" : acc ++ ", ")
+            ++ (
+              switch (decl.data_kind) {
+              | TDataVariant(_) => "enum " ++ decl.data_name.txt
+              | TDataRecord(_) => "record " ++ decl.data_name.txt
+              | TDataAbstract => "abstract" // not sure about this one
+              }
+            ),
+          "",
+          data_declarations,
+        );
 
+      Some(decls);
+    }
+  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
+    switch (value_bindings) {
+    | [] => None
+    | _ =>
+      let vbses =
+        List.fold_left(
+          (acc, vbs: Typedtree.value_binding) =>
+            (acc == "" ? "" : acc ++ ", ")
+            ++ Utils.lens_sig(vbs.vb_expr.exp_type),
+          "",
+          value_bindings,
+        );
+      Some(vbses);
+    }
   | TTopExpr(expression) =>
     let expr_type = expression.exp_type;
-    Utils.lens_sig(expr_type);
-  | TTopException(export_flag, type_exception) => "exception"
-  | TTopExport(export_declarations) => "export"
+    Some(Utils.lens_sig(expr_type));
+  | TTopException(export_flag, type_exception) => None
+  | TTopExport(export_declarations) => None
   };
+
 let get_lenses = (typed_program: Typedtree.typed_program) => {
   List.fold_left(
     (acc, stmt: Grain_typed__Typedtree.toplevel_stmt) => {
@@ -27,9 +54,12 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
         Utils.get_raw_pos_info(stmt.ttop_loc.loc_start);
 
       let signature = get_signature_from_statement(stmt);
-      let lens: Rpc.lens_t = {line: startline, signature};
-
-      [lens, ...acc];
+      switch (signature) {
+      | None => acc
+      | Some(sigval) =>
+        let lens: Rpc.lens_t = {line: startline, signature: sigval};
+        [lens, ...acc];
+      };
     },
     [],
     typed_program.statements,
@@ -37,7 +67,6 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
 };
 
 let process_get_lenses = (log, id, json, compiled_code) => {
-  log("process_get_lenses requested");
   let params = Yojson.Safe.Util.member("params", json);
   let text_document = Yojson.Safe.Util.member("textDocument", params);
 

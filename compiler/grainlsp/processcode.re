@@ -43,7 +43,6 @@ let compile_source = (log, uri, source) => {
       );
     (Some(typed_program), None, Some(warnings));
   | _ =>
-    log("Some other state from compilation");
     let lsp_error: Grain_diagnostics.Output.lsp_error = {
       file: uri,
       line: 0,
@@ -91,7 +90,8 @@ let getTextDocumentFromParams = json => {
   };
 };
 
-let textDocument_didOpenOrChange = (log, json, documents, compiledCode) => {
+let textDocument_didOpenOrChange =
+    (log, json, documents, compiledCode, cachedCode) => {
   switch (getTextDocumentFromParams(json)) {
   | Some((uri, text)) =>
     if (!Hashtbl.mem(documents, uri)) {
@@ -106,6 +106,11 @@ let textDocument_didOpenOrChange = (log, json, documents, compiledCode) => {
         Hashtbl.add(compiledCode, uri, typed_program);
       } else {
         Hashtbl.replace(compiledCode, uri, typed_program);
+      };
+      if (!Hashtbl.mem(cachedCode, uri)) {
+        Hashtbl.add(cachedCode, uri, typed_program);
+      } else {
+        Hashtbl.replace(cachedCode, uri, typed_program);
       };
       switch (warnings) {
       | None => Rpc.clear_diagnostics(log, stdout, uri)
