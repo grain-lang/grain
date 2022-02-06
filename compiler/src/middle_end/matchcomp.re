@@ -136,14 +136,16 @@ module MatchTreeCompiler = {
         [(id, expr), ...bindings_p];
       | TPatTuple(args) =>
         let tup_name = Ident.create("match_bind_tup");
-        let tup_id = Imm.id(~loc, ~env, tup_name);
+        let tup_id =
+          Imm.id(~loc, ~env, ~allocation_type=HeapAllocated, tup_name);
         let process_nested = (other_binds, idx, nested_pat) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
               let allocation_type =
                 get_allocation_type(env, nested_pat.pat_type);
               let tup_arg_name = Ident.create("match_bind_tup_arg");
-              let tup_arg_imm = Imm.id(~loc, ~env, tup_arg_name);
+              let tup_arg_imm =
+                Imm.id(~loc, ~env, ~allocation_type, tup_arg_name);
               let arg_binds =
                 extract_bindings(
                   nested_pat,
@@ -177,14 +179,16 @@ module MatchTreeCompiler = {
         };
       | TPatArray(args) =>
         let arr_name = Ident.create("match_bind_arr");
-        let arr_id = Imm.id(~loc, ~env, arr_name);
+        let arr_id =
+          Imm.id(~loc, ~env, ~allocation_type=HeapAllocated, arr_name);
         let process_nested = (other_binds, idx, nested_pat) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
               let allocation_type =
                 get_allocation_type(env, nested_pat.pat_type);
               let arr_arg_name = Ident.create("match_bind_arr_arg");
-              let arr_arg_imm = Imm.id(~loc, ~env, arr_arg_name);
+              let arr_arg_imm =
+                Imm.id(~loc, ~env, ~allocation_type, arr_arg_name);
               let arg_binds =
                 extract_bindings(
                   nested_pat,
@@ -202,6 +206,7 @@ module MatchTreeCompiler = {
                       Imm.const(
                         ~loc,
                         ~env,
+                        ~allocation_type=HeapAllocated,
                         Const_number(Const_number_int(Int64.of_int(idx))),
                       ),
                       arr_id,
@@ -222,7 +227,8 @@ module MatchTreeCompiler = {
         };
       | TPatRecord(fields, _) =>
         let rec_name = Ident.create("match_bind_rec");
-        let rec_id = Imm.id(~loc, ~env, rec_name);
+        let rec_id =
+          Imm.id(~loc, ~env, ~allocation_type=HeapAllocated, rec_name);
         let process_nested = (other_binds, (lid, ld, nested_pat)) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
@@ -232,7 +238,8 @@ module MatchTreeCompiler = {
                 Ident.create @@
                 "match_bind_rec_field_"
                 ++ Identifier.last(lid.txt);
-              let rec_field_imm = Imm.id(~loc, ~env, rec_field_name);
+              let rec_field_imm =
+                Imm.id(~loc, ~env, ~allocation_type, rec_field_name);
               let field_binds =
                 extract_bindings(
                   nested_pat,
@@ -266,14 +273,16 @@ module MatchTreeCompiler = {
         };
       | TPatConstruct(_, _, args) =>
         let data_name = Ident.create("match_bind_data");
-        let data_id = Imm.id(~loc, ~env, data_name);
+        let data_id =
+          Imm.id(~loc, ~env, ~allocation_type=HeapAllocated, data_name);
         let process_nested = (other_binds, idx, nested_pat) => {
           let this_binds =
             if (pattern_could_contain_binding(nested_pat)) {
               let allocation_type =
                 get_allocation_type(env, nested_pat.pat_type);
               let cstr_arg_name = Ident.create("match_bind_cstr_arg");
-              let cstr_arg_imm = Imm.id(~loc, ~env, cstr_arg_name);
+              let cstr_arg_imm =
+                Imm.id(~loc, ~env, ~allocation_type, cstr_arg_name);
               let arg_binds =
                 extract_bindings(
                   nested_pat,
@@ -335,7 +344,10 @@ module MatchTreeCompiler = {
     | Leaf(i) => (
         Comp.imm(
           ~allocation_type=StackAllocated(WasmI32),
-          Imm.const(Const_number(Const_number_int(Int64.of_int(i)))),
+          Imm.const(
+            ~allocation_type=StackAllocated(WasmI32),
+            Const_number(Const_number_int(Int64.of_int(i))),
+          ),
         ),
         [],
       )
@@ -429,6 +441,7 @@ module MatchTreeCompiler = {
                 Comp.array_get(
                   ~allocation_type=HeapAllocated,
                   Imm.const(
+                    ~allocation_type=HeapAllocated,
                     Const_number(Const_number_int(Int64.of_int(idx))),
                   ),
                   cur_value,
@@ -456,7 +469,8 @@ module MatchTreeCompiler = {
       let new_values =
         List.map(
           fun
-          | BLet(id, _) => Imm.id(id)
+          | BLet(id, c) =>
+            Imm.id(~allocation_type=c.comp_allocation_type, id)
           | _ =>
             failwith("matchcomp: compile_tree_help: binding was not BLet"),
           bindings,
@@ -472,7 +486,8 @@ module MatchTreeCompiler = {
       let base_tree = Option.value(~default=Fail, default_tree);
       let base = compile_tree_help(base_tree, values, expr, helpI);
       let value_constr_name = Ident.create("match_constructor");
-      let value_constr_id = Imm.id(value_constr_name);
+      let value_constr_id =
+        Imm.id(~allocation_type=StackAllocated(WasmI32), value_constr_name);
       let value_constr =
         switch (switch_type) {
         | ConstructorSwitch => Comp.adt_get_tag(cur_value)
@@ -489,7 +504,8 @@ module MatchTreeCompiler = {
         List.fold_left(
           ((body_ans, body_setup), (tag, tree)) => {
             let cmp_id_name = Ident.create("match_cmp_constructors");
-            let cmp_id = Imm.id(cmp_id_name);
+            let cmp_id =
+              Imm.id(~allocation_type=StackAllocated(WasmI32), cmp_id_name);
             /* If the constructor has the correct tag, execute this branch.
                Otherwise continue. */
             let setup = [
@@ -500,6 +516,7 @@ module MatchTreeCompiler = {
                   Is,
                   value_constr_id,
                   Imm.const(
+                    ~allocation_type=StackAllocated(WasmI32),
                     Const_number(Const_number_int(Int64.of_int(tag))),
                   ),
                 ),
@@ -555,7 +572,7 @@ module MatchTreeCompiler = {
     (
       Comp.switch_(
         ~allocation_type,
-        Imm.id(jmp_name),
+        Imm.id(~allocation_type=StackAllocated(WasmI32), jmp_name),
         switch_branches,
         partial,
       ),

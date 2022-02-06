@@ -545,15 +545,19 @@ let compile_lambda =
   let (body, return_type) = body;
   let used_var_set = Anf_utils.anf_free_vars(body);
   let free_var_set =
-    Ident.Set.diff(used_var_set) @@
-    Ident.Set.of_list(List.map(((arg, _)) => arg, args));
-  let free_vars = Ident.Set.elements(free_var_set);
+    Anf_utils.IdentAllocationSet.diff(used_var_set) @@
+    Anf_utils.IdentAllocationSet.of_list(args);
+  let free_vars = Anf_utils.IdentAllocationSet.elements(free_var_set);
   /* Bind all non-arguments in the function body to
      their respective closure slots */
   let free_binds =
     List_utils.fold_lefti(
-      (acc, closure_idx, var) =>
-        Ident.add(var, MClosureBind(Int32.of_int(closure_idx)), acc),
+      (acc, closure_idx, (var, alloc_type)) =>
+        Ident.add(
+          var,
+          MClosureBind(Int32.of_int(closure_idx), alloc_type),
+          acc,
+        ),
       Ident.empty,
       free_vars,
     );
@@ -611,7 +615,8 @@ let compile_lambda =
     func_idx: Int32.of_int(idx),
     arity: Int32.of_int(arity),
     /* These variables should be in scope when the lambda is constructed. */
-    variables: List.map(id => MImmBinding(find_id(id, env)), free_vars),
+    variables:
+      List.map(((id, _)) => MImmBinding(find_id(id, env)), free_vars),
   };
 };
 

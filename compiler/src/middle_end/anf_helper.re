@@ -21,15 +21,19 @@ let or_default_allocation_type =
   Option.value(~default=default_allocation_type);
 
 module Imm = {
-  let mk = (~loc=?, ~env=?, d) => {
+  let mk = (~loc=?, ~allocation_type=?, ~env=?, d) => {
     imm_desc: d,
     imm_loc: or_default_loc(loc),
     imm_env: or_default_env(env),
+    imm_allocation_type: or_default_allocation_type(allocation_type),
     imm_analyses: ref([]),
   };
-  let id = (~loc=?, ~env=?, id) => mk(~loc?, ~env?, ImmId(id));
-  let const = (~loc=?, ~env=?, const) => mk(~loc?, ~env?, ImmConst(const));
-  let trap = (~loc=?, ~env=?, ()) => mk(~loc?, ~env?, ImmTrap);
+  let id = (~loc=?, ~allocation_type=?, ~env=?, id) =>
+    mk(~loc?, ~allocation_type?, ~env?, ImmId(id));
+  let const = (~loc=?, ~allocation_type=?, ~env=?, const) =>
+    mk(~loc?, ~allocation_type?, ~env?, ImmConst(const));
+  let trap = (~loc=?, ~allocation_type=?, ~env=?, ()) =>
+    mk(~loc?, ~allocation_type?, ~env?, ImmTrap);
 };
 
 module Comp = {

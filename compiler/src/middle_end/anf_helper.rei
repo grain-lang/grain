@@ -10,10 +10,28 @@ type ident = Ident.t;
 type attributes = Typedtree.attributes;
 
 module Imm: {
-  let mk: (~loc: loc=?, ~env: env=?, imm_expression_desc) => imm_expression;
-  let id: (~loc: loc=?, ~env: env=?, ident) => imm_expression;
-  let const: (~loc: loc=?, ~env: env=?, constant) => imm_expression;
-  let trap: (~loc: loc=?, ~env: env=?, unit) => imm_expression;
+  let mk:
+    (
+      ~loc: loc=?,
+      ~allocation_type: allocation_type=?,
+      ~env: env=?,
+      imm_expression_desc
+    ) =>
+    imm_expression;
+  let id:
+    (~loc: loc=?, ~allocation_type: allocation_type=?, ~env: env=?, ident) =>
+    imm_expression;
+  let const:
+    (
+      ~loc: loc=?,
+      ~allocation_type: allocation_type=?,
+      ~env: env=?,
+      constant
+    ) =>
+    imm_expression;
+  let trap:
+    (~loc: loc=?, ~allocation_type: allocation_type=?, ~env: env=?, unit) =>
+    imm_expression;
 };
 
 module Comp: {

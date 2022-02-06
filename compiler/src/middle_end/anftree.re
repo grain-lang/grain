@@ -262,6 +262,7 @@ type imm_expression = {
   imm_loc: Location.t,
   imm_env: [@sexp.opaque] Env.t,
   imm_analyses: [@sexp.opaque] ref(list(analysis)),
+  imm_allocation_type: allocation_type,
 }
 
 [@deriving sexp]

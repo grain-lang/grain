@@ -248,6 +248,7 @@ type imm_expression = {
   imm_loc: Location.t,
   imm_env: Env.t,
   imm_analyses: ref(list(analysis)),
+  imm_allocation_type: allocation_type,
 }
 
 [@deriving sexp]

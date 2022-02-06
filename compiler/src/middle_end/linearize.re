@@ -78,7 +78,7 @@ let convert_binds = anf_binds => {
   let void_comp =
     Comp.imm(
       ~allocation_type=StackAllocated(WasmI32),
-      Imm.const(Const_void),
+      Imm.const(~allocation_type=StackAllocated(WasmI32), Const_void),
     );
   let void = AExp.comp(void_comp);
   let (last_bind, top_binds) =
@@ -136,7 +136,17 @@ let transl_const =
   | Const_bytes(b) => Right(("bytes", Comp.bytes(b)))
   | Const_string(s) => Right(("str", Comp.string(s)))
   | Const_char(c) => Right(("char", Comp.char(c)))
-  | _ => Left(Imm.const(c))
+  | Const_wasmi32(_) =>
+    Left(Imm.const(~allocation_type=StackAllocated(WasmI32), c))
+  | Const_wasmi64(_) =>
+    Left(Imm.const(~allocation_type=StackAllocated(WasmI64), c))
+  | Const_wasmf32(_) =>
+    Left(Imm.const(~allocation_type=StackAllocated(WasmF32), c))
+  | Const_wasmf64(_) =>
+    Left(Imm.const(~allocation_type=StackAllocated(WasmF64), c))
+  | Const_bool(_)
+  | Const_void =>
+    Left(Imm.const(~allocation_type=StackAllocated(WasmI32), c))
   };
 
 type item_get =
@@ -164,6 +174,7 @@ let rec transl_imm =
       Imm.id(
         ~loc,
         ~env,
+        ~allocation_type,
         lookup_symbol(~allocation_type, mod_, mod_decl, ident, original_name),
       );
     if (val_mutable && !boxed) {
@@ -171,7 +182,7 @@ let rec transl_imm =
       let setup = [
         BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
       ];
-      (Imm.id(~loc, ~env, tmp), setup);
+      (Imm.id(~loc, ~env, ~allocation_type, tmp), setup);
     } else {
       (id, []);
     };
@@ -185,6 +196,7 @@ let rec transl_imm =
       Imm.id(
         ~loc,
         ~env,
+        ~allocation_type,
         lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
       );
     if (val_mutable && !boxed) {
@@ -192,7 +204,7 @@ let rec transl_imm =
       let setup = [
         BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
       ];
-      (Imm.id(~loc, ~env, tmp), setup);
+      (Imm.id(~loc, ~env, ~allocation_type, tmp), setup);
     } else {
       (id, []);
     };
@@ -201,7 +213,7 @@ let rec transl_imm =
   | TExpIdent(Path.PIdent(ident) as path, _, _) =>
     switch (Env.find_value(path, env)) {
     | {val_fullpath: Path.PIdent(_), val_mutable} =>
-      let id = Imm.id(~loc, ~env, ident);
+      let id = Imm.id(~loc, ~env, ~allocation_type, ident);
       if (val_mutable && !boxed) {
         let tmp = gensym("unbox_mut");
         let setup = [
@@ -220,6 +232,7 @@ let rec transl_imm =
         Imm.id(
           ~loc,
           ~env,
+          ~allocation_type,
           lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
         );
       if (val_mutable && !boxed) {
@@ -227,7 +240,7 @@ let rec transl_imm =
         let setup = [
           BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
         ];
-        (Imm.id(~loc, ~env, tmp), setup);
+        (Imm.id(~loc, ~env, ~allocation_type, tmp), setup);
       } else {
         (id, []);
       };
@@ -239,14 +252,17 @@ let rec transl_imm =
     | Left(imm) => (imm, [])
     | Right((name, cexpr)) =>
       let tmp = gensym(name);
-      (Imm.id(~loc, ~env, tmp), [BLet(tmp, cexpr)]);
+      (Imm.id(~loc, ~env, ~allocation_type, tmp), [BLet(tmp, cexpr)]);
     }
-  | TExpNull => (Imm.const(~loc, ~env, Const_bool(false)), [])
+  | TExpNull => (
+      Imm.const(~loc, ~env, ~allocation_type, Const_bool(false)),
+      [],
+    )
   | TExpPrim1(op, arg) =>
     let tmp = gensym("unary");
     let (arg_imm, arg_setup) = transl_imm(arg);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       arg_setup
       @ [BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, op, arg_imm))],
     );
@@ -254,7 +270,7 @@ let rec transl_imm =
     let tmp = gensym("boolBinop");
     let (left_imm, left_setup) = transl_imm(left);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       left_setup
       @ [
         BLet(
@@ -278,7 +294,7 @@ let rec transl_imm =
     let tmp = gensym("boolBinop");
     let (left_imm, left_setup) = transl_imm(left);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       left_setup
       @ [
         BLet(
@@ -303,7 +319,7 @@ let rec transl_imm =
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       left_setup
       @ right_setup
       @ [
@@ -317,7 +333,7 @@ let rec transl_imm =
     let tmp = gensym("primn");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       List.concat(new_setup)
       @ [BLet(tmp, Comp.primn(~loc, ~env, ~allocation_type, op, new_args))],
     );
@@ -326,7 +342,7 @@ let rec transl_imm =
     let (left_imm, left_setup) = transl_imm(left);
     let (right_imm, right_setup) = transl_imm(right);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       left_setup
       @ right_setup
       @ [
@@ -341,7 +357,7 @@ let rec transl_imm =
     let (left_imm, left_setup) = transl_imm(~boxed=true, left);
     let (right_imm, right_setup) = transl_imm(right);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       left_setup
       @ right_setup
       @ [
@@ -355,7 +371,7 @@ let rec transl_imm =
     let tmp = gensym("if");
     let (cond_imm, cond_setup) = transl_imm(cond);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       cond_setup
       @ [
         BLet(
@@ -374,7 +390,7 @@ let rec transl_imm =
   | TExpWhile(cond, body) =>
     let tmp = gensym("while");
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       [
         BLet(
           tmp,
@@ -397,7 +413,7 @@ let rec transl_imm =
         init,
       );
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       init_setup
       @ [
         BLet(
@@ -413,11 +429,11 @@ let rec transl_imm =
       ],
     );
   | TExpContinue => (
-      Imm.const(Const_void),
+      Imm.const(~allocation_type, Const_void),
       [BSeq(Comp.continue(~loc, ~env, ()))],
     )
   | TExpBreak => (
-      Imm.const(Const_void),
+      Imm.const(~allocation_type, Const_void),
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
   | TExpApp(
@@ -425,7 +441,7 @@ let rec transl_imm =
       _,
     ) =>
     let (ans, ans_setup) = transl_comp_expression(e);
-    (Imm.trap(~loc, ~env, ()), ans_setup @ [BSeq(ans)]);
+    (Imm.trap(~loc, ~env, ~allocation_type, ()), ans_setup @ [BSeq(ans)]);
   | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
     Translprim.(
       switch (PrimMap.find_opt(prim_map, prim), args) {
@@ -444,7 +460,7 @@ let rec transl_imm =
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       (func_setup @ List.concat(new_setup))
       @ [
         BLet(
@@ -459,14 +475,17 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpBlock([]) => (Imm.const(Const_void), [])
+  | TExpBlock([]) => (Imm.const(~allocation_type, Const_void), [])
   | TExpBlock([stmt]) => transl_imm(stmt)
   | TExpBlock([fst, ...rest]) =>
     let (fst_ans, fst_setup) = transl_comp_expression(fst);
     let (rest_ans, rest_setup) =
       transl_imm({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
-  | TExpLet(Nonrecursive, _, []) => (Imm.const(Const_void), [])
+  | TExpLet(Nonrecursive, _, []) => (
+      Imm.const(~allocation_type, Const_void),
+      [],
+    )
   | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest]) =>
     /* TODO: Destructuring on letrec */
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
@@ -498,24 +517,30 @@ let rec transl_imm =
         binds,
       );
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       List.concat(new_setup)
       @ [
         BLetRec(List.combine(names, new_binds)),
-        BLet(tmp, Comp.imm(~allocation_type, Imm.const(Const_void))),
+        BLet(
+          tmp,
+          Comp.imm(
+            ~allocation_type,
+            Imm.const(~allocation_type, Const_void),
+          ),
+        ),
       ],
     );
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
     let tmp = gensym("lam_lambda");
     let (lam, _) = transl_comp_expression(e);
-    (Imm.id(~loc, ~env, tmp), [BLet(tmp, lam)]);
+    (Imm.id(~loc, ~env, ~allocation_type, tmp), [BLet(tmp, lam)]);
   | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")
   | TExpLambda(_, _) => failwith("NYI: transl_imm: Multi-branch lambda")
   | TExpTuple(args) =>
     let tmp = gensym("tup");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       List.concat(new_setup)
       @ [BLet(tmp, Comp.tuple(~loc, ~env, new_args))],
     );
@@ -523,7 +548,7 @@ let rec transl_imm =
     let tmp = gensym("tup");
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       List.concat(new_setup)
       @ [BLet(tmp, Comp.array(~loc, ~env, new_args))],
     );
@@ -532,7 +557,7 @@ let rec transl_imm =
     let (arr_var, arr_setup) = transl_imm(arr);
     let (idx_var, idx_setup) = transl_imm(idx);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       arr_setup
       @ idx_setup
       @ [
@@ -548,7 +573,7 @@ let rec transl_imm =
     let (idx_var, idx_setup) = transl_imm(idx);
     let (arg_var, arg_setup) = transl_imm(arg);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       arr_setup
       @ idx_setup
       @ arg_setup
@@ -593,7 +618,7 @@ let rec transl_imm =
     let (typath, _, _) = Typepat.extract_concrete_record(env, typ);
     let ty_id = get_type_id(typath);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       List.concat(new_setup)
       @ [
         BLet(
@@ -604,6 +629,7 @@ let rec transl_imm =
             Imm.const(
               ~loc,
               ~env,
+              ~allocation_type=HeapAllocated,
               Const_number(Const_number_int(Int64.of_int(ty_id))),
             ),
             new_args,
@@ -615,7 +641,7 @@ let rec transl_imm =
     let tmp = gensym("field");
     let (var, setup) = transl_imm(expr);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       setup
       @ [
         BLet(
@@ -635,7 +661,7 @@ let rec transl_imm =
     let (record, rec_setup) = transl_imm(expr);
     let (arg, arg_setup) = transl_imm(arg);
     (
-      Imm.id(~loc, ~env, tmp),
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
       rec_setup
       @ arg_setup
       @ [
@@ -664,7 +690,10 @@ let rec transl_imm =
         transl_imm,
         exp_ans,
       );
-    (Imm.id(~loc, ~env, tmp), (exp_setup @ setup) @ [BLet(tmp, ans)]);
+    (
+      Imm.id(~loc, ~env, ~allocation_type, tmp),
+      (exp_setup @ setup) @ [BLet(tmp, ans)],
+    );
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   };
 }
@@ -678,23 +707,29 @@ and bind_patts =
       let access =
         switch (idx) {
         | RecordPatGet(idx, ty) =>
+          let allocation_type = get_allocation_type(pat.pat_env, ty);
           Comp.record_get(
-            ~allocation_type=get_allocation_type(pat.pat_env, ty),
+            ~allocation_type,
             Int32.of_int(idx),
-            Imm.id(src),
-          )
+            Imm.id(~allocation_type, src),
+          );
         | TuplePatGet(idx, ty) =>
+          let allocation_type = get_allocation_type(pat.pat_env, ty);
           Comp.tuple_get(
-            ~allocation_type=get_allocation_type(pat.pat_env, ty),
+            ~allocation_type,
             Int32.of_int(idx),
-            Imm.id(src),
-          )
+            Imm.id(~allocation_type, src),
+          );
         | ArrayPatGet(idx, ty) =>
+          let allocation_type = get_allocation_type(pat.pat_env, ty);
           Comp.array_get(
-            ~allocation_type=get_allocation_type(pat.pat_env, ty),
-            Imm.const(Const_number(Const_number_int(Int64.of_int(idx)))),
-            Imm.id(src),
-          )
+            ~allocation_type,
+            Imm.const(
+              ~allocation_type=HeapAllocated,
+              Const_number(Const_number_int(Int64.of_int(idx))),
+            ),
+            Imm.id(~allocation_type, src),
+          );
         };
       let binds =
         switch (mut_flag) {
@@ -1012,7 +1047,13 @@ and transl_comp_expression =
                   ~env,
                   ~allocation_type=
                     get_allocation_type(arg.pat_env, arg.pat_type),
-                  Imm.id(~loc, ~env, tmp),
+                  Imm.id(
+                    ~loc,
+                    ~env,
+                    ~allocation_type=
+                      get_allocation_type(arg.pat_env, arg.pat_type),
+                    tmp,
+                  ),
                 ),
               );
             (
@@ -1150,11 +1191,13 @@ let bind_constructor =
       Imm.const(
         ~loc,
         ~env,
+        ~allocation_type=HeapAllocated,
         Const_number(Const_number_int(Int64.of_int(ty_id))),
       ),
       Imm.const(
         ~loc,
         ~env,
+        ~allocation_type=HeapAllocated,
         Const_number(Const_number_int(Int64.of_int(compiled_tag))),
       ),
       [],
@@ -1173,17 +1216,23 @@ let bind_constructor =
           ty => (gensym("constr_arg"), get_allocation_type(env, ty)),
           cstr_args,
         );
-      let arg_ids = List.map(((a, _)) => Imm.id(~loc, ~env, a), args);
+      let arg_ids =
+        List.map(
+          ((a, allocation_type)) => Imm.id(~loc, ~env, ~allocation_type, a),
+          args,
+        );
       let imm_tytag =
         Imm.const(
           ~loc,
           ~env,
+          ~allocation_type=HeapAllocated,
           Const_number(Const_number_int(Int64.of_int(ty_id))),
         );
       let imm_tag =
         Imm.const(
           ~loc,
           ~env,
+          ~allocation_type=HeapAllocated,
           Const_number(Const_number_int(Int64.of_int(compiled_tag))),
         );
       Comp.lambda(
@@ -1267,12 +1316,13 @@ let rec transl_anf_statement =
         switch (mut_flag) {
         | Mutable =>
           let tmp = gensym("mut_bind_destructure");
+          let allocation_type =
+            get_allocation_type(vb_expr.exp_env, vb_expr.exp_type);
           let boxed =
             Comp.prim1(
-              ~allocation_type=
-                get_allocation_type(vb_expr.exp_env, vb_expr.exp_type),
+              ~allocation_type,
               BoxBind,
-              Imm.id(tmp),
+              Imm.id(~allocation_type, tmp),
             );
           if (exported) {
             [
@@ -1298,12 +1348,13 @@ let rec transl_anf_statement =
           switch (mut_flag) {
           | Mutable =>
             let tmp = gensym("mut_bind_destructure");
+            let allocation_type =
+              get_allocation_type(patt.pat_env, patt.pat_type);
             let boxed =
               Comp.prim1(
-                ~allocation_type=
-                  get_allocation_type(patt.pat_env, patt.pat_type),
+                ~allocation_type,
                 BoxBind,
-                Imm.id(tmp),
+                Imm.id(~allocation_type, tmp),
               );
             if (exported) {
               [

@@ -2,131 +2,153 @@ open Grain_parsing;
 open Grain_typed;
 open Anftree;
 
+type ident_allocation_pair = (Ident.t, Types.allocation_type);
+
+module IdentAllocationSet =
+  Set.Make({
+    type t = ident_allocation_pair;
+    let compare = ((a, _), (b, _)) => Ident.compare(a, b);
+  });
+
 let rec anf_free_vars_help = (env, a: anf_expression) =>
   switch (a.anf_desc) {
   | AESeq(fst, rest) =>
-    Ident.Set.union(
+    IdentAllocationSet.union(
       comp_free_vars_help(env, fst),
       anf_free_vars_help(env, rest),
     )
   | AEComp(c) => comp_free_vars_help(env, c)
   | AELet(_, recflag, _, binds, body) =>
     let with_names =
-      List.fold_left((acc, (id, _)) => Ident.Set.add(id, acc), env, binds);
+      List.fold_left(
+        (acc, (id, c)) =>
+          IdentAllocationSet.add((id, c.comp_allocation_type), acc),
+        env,
+        binds,
+      );
     let free_binds =
       switch (recflag) {
       | Recursive =>
         List.fold_left(
           (acc, (_, body)) =>
-            Ident.Set.union(acc, comp_free_vars_help(with_names, body)),
-          Ident.Set.empty,
+            IdentAllocationSet.union(
+              acc,
+              comp_free_vars_help(with_names, body),
+            ),
+          IdentAllocationSet.empty,
           binds,
         )
       | Nonrecursive =>
         List.fold_left(
           (acc, (_, body)) =>
-            Ident.Set.union(acc, comp_free_vars_help(env, body)),
-          Ident.Set.empty,
+            IdentAllocationSet.union(acc, comp_free_vars_help(env, body)),
+          IdentAllocationSet.empty,
           binds,
         )
       };
-    Ident.Set.union(free_binds, anf_free_vars_help(with_names, body));
+    IdentAllocationSet.union(
+      free_binds,
+      anf_free_vars_help(with_names, body),
+    );
   }
 
 and comp_free_vars_help = (env, c: comp_expression) =>
   switch (c.comp_desc) {
   | CLambda(_, args, (body, _)) =>
     anf_free_vars_help(
-      Ident.Set.union(
-        env,
-        Ident.Set.of_list(List.map(((arg, _)) => arg, args)),
-      ),
+      IdentAllocationSet.union(env, IdentAllocationSet.of_list(args)),
       body,
     )
   | CIf(cond, thn, els) =>
-    Ident.Set.union(imm_free_vars_help(env, cond)) @@
-    Ident.Set.union(
+    IdentAllocationSet.union(imm_free_vars_help(env, cond)) @@
+    IdentAllocationSet.union(
       anf_free_vars_help(env, thn),
       anf_free_vars_help(env, els),
     )
   | CFor(cond, inc, body) =>
     let cond =
       Option.fold(
-        ~none=Ident.Set.empty,
+        ~none=IdentAllocationSet.empty,
         ~some=anf_free_vars_help(env),
         cond,
       );
     let inc =
-      Option.fold(~none=Ident.Set.empty, ~some=anf_free_vars_help(env), inc);
+      Option.fold(
+        ~none=IdentAllocationSet.empty,
+        ~some=anf_free_vars_help(env),
+        inc,
+      );
     let body = anf_free_vars_help(env, body);
-    Ident.Set.union(cond, Ident.Set.union(inc, body));
+    IdentAllocationSet.union(cond, IdentAllocationSet.union(inc, body));
   | CContinue
-  | CBreak => Ident.Set.empty
+  | CBreak => IdentAllocationSet.empty
   | CSwitch(arg, branches, _) =>
     List.fold_left(
-      (acc, (_, b)) => Ident.Set.union(anf_free_vars_help(env, b), acc),
+      (acc, (_, b)) =>
+        IdentAllocationSet.union(anf_free_vars_help(env, b), acc),
       imm_free_vars_help(env, arg),
       branches,
     )
   | CPrim1(_, arg) => imm_free_vars_help(env, arg)
   | CPrim2(_, arg1, arg2) =>
-    Ident.Set.union(
+    IdentAllocationSet.union(
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
   | CPrimN(_, args) =>
     List.fold_left(
-      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
-      Ident.Set.empty,
+      (acc, a) => IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
+      IdentAllocationSet.empty,
       args,
     )
   | CBoxAssign(arg1, arg2) =>
-    Ident.Set.union(
+    IdentAllocationSet.union(
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
   | CAssign(arg1, arg2) =>
-    Ident.Set.union(
+    IdentAllocationSet.union(
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
   | CLocalAssign(arg1, arg2) => imm_free_vars_help(env, arg2)
   | CApp((fn, _), args, _) =>
     List.fold_left(
-      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
+      (acc, a) => IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
       imm_free_vars_help(env, fn),
       args,
     )
   | CAppBuiltin(_, _, args) =>
     List.fold_left(
-      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
-      Ident.Set.empty,
+      (acc, a) => IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
+      IdentAllocationSet.empty,
       args,
     )
   | CTuple(args)
   | CArray(args)
   | CAdt(_, _, args) =>
     List.fold_left(
-      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
-      Ident.Set.empty,
+      (acc, a) => IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
+      IdentAllocationSet.empty,
       args,
     )
   | CArrayGet(arg1, arg2) =>
     List.fold_left(
-      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
-      Ident.Set.empty,
+      (acc, a) => IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
+      IdentAllocationSet.empty,
       [arg1, arg2],
     )
   | CArraySet(arg1, arg2, arg3) =>
     List.fold_left(
-      (acc, a) => Ident.Set.union(imm_free_vars_help(env, a), acc),
-      Ident.Set.empty,
+      (acc, a) => IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
+      IdentAllocationSet.empty,
       [arg1, arg2, arg3],
     )
   | CRecord(_, args) =>
     List.fold_left(
-      (acc, (_, a)) => Ident.Set.union(imm_free_vars_help(env, a), acc),
-      Ident.Set.empty,
+      (acc, (_, a)) =>
+        IdentAllocationSet.union(imm_free_vars_help(env, a), acc),
+      IdentAllocationSet.empty,
       args,
     )
   | CGetTupleItem(_, arg)
@@ -135,7 +157,7 @@ and comp_free_vars_help = (env, c: comp_expression) =>
   | CGetRecordItem(_, arg) => imm_free_vars_help(env, arg)
   | CSetRecordItem(_, arg1, arg2)
   | CSetTupleItem(_, arg1, arg2) =>
-    Ident.Set.union(
+    IdentAllocationSet.union(
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
@@ -146,19 +168,20 @@ and comp_free_vars_help = (env, c: comp_expression) =>
   | CFloat64(_)
   | CBytes(_)
   | CString(_)
-  | CChar(_) => Ident.Set.empty
+  | CChar(_) => IdentAllocationSet.empty
   | CImmExpr(i) => imm_free_vars_help(env, i)
   }
 
 and imm_free_vars_help = (env, i: imm_expression) =>
   switch (i.imm_desc) {
-  | ImmId(x) when !Ident.Set.mem(x, env) => Ident.Set.singleton(x)
-  | _ => Ident.Set.empty
+  | ImmId(x) when !IdentAllocationSet.mem((x, i.imm_allocation_type), env) =>
+    IdentAllocationSet.singleton((x, i.imm_allocation_type))
+  | _ => IdentAllocationSet.empty
   };
 
-let anf_free_vars = anf_free_vars_help(Ident.Set.empty);
-let comp_free_vars = comp_free_vars_help(Ident.Set.empty);
-let imm_free_vars = imm_free_vars_help(Ident.Set.empty);
+let anf_free_vars = anf_free_vars_help(IdentAllocationSet.empty);
+let comp_free_vars = comp_free_vars_help(IdentAllocationSet.empty);
+let imm_free_vars = imm_free_vars_help(IdentAllocationSet.empty);
 
 let tuple_max = ((a1, a2, a3, a4, a5), (b1, b2, b3, b4, b5)) => (
   max(a1, b1),

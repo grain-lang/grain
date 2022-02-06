@@ -686,12 +686,13 @@ let appropriate_incref = (wasm_mod, env, arg, b) =>
   | MArgBind(_, Types.HeapAllocated)
   | MLocalBind(_, Types.HeapAllocated)
   | MSwapBind(_, Types.HeapAllocated)
-  | MClosureBind(_)
+  | MClosureBind(_, Types.HeapAllocated)
   | MGlobalBind(_, Types.HeapAllocated, true) =>
     call_incref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
+  | MClosureBind(_)
   | MGlobalBind(_) => arg
   | _ => call_incref(wasm_mod, env, arg)
   };
@@ -701,12 +702,13 @@ let appropriate_decref = (wasm_mod, env, arg, b) =>
   | MArgBind(_, Types.HeapAllocated)
   | MLocalBind(_, Types.HeapAllocated)
   | MSwapBind(_, Types.HeapAllocated)
-  | MClosureBind(_)
+  | MClosureBind(_, Types.HeapAllocated)
   | MGlobalBind(_, Types.HeapAllocated, true) =>
     call_decref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
+  | MClosureBind(_)
   | MGlobalBind(_) => arg
   | _ => call_decref(wasm_mod, env, arg)
   };
@@ -921,7 +923,7 @@ let compile_bind =
         ],
       )
     };
-  | MClosureBind(i) =>
+  | MClosureBind(i, wasm_ty) =>
     /* Closure bindings need to be calculated */
     if (!(action == BindGet)) {
       failwith(
@@ -933,6 +935,8 @@ let compile_bind =
       load(
         ~offset=4 * (4 + Int32.to_int(i)),
         wasm_mod,
+        // Closure values can only be i32s, so we deliberately force the type
+        // here to cause an error if this is ever not the case
         Expression.Local_get.make(wasm_mod, 0, Type.int32),
       ),
     );
