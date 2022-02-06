@@ -5,34 +5,34 @@ type protocolMsg =
   | Error(string)
   | Notification(string, Yojson.Safe.t);
 
-[@deriving yojson]
-type completionValues = {
-  resolveProvider: bool,
-  triggerCharacters: list(string),
-};
+// [@deriving yojson]
+// type completion_values = {
+//   resolveProvider: bool,
+//   triggerCharacters: list(string),
+// };
+
+// [@deriving yojson]
+// type signature_helpers = {
+//   triggerCharacters: list(string),
+//   retriggerCharacters: list(string),
+// };
 
 [@deriving yojson]
-type signatureHelpers = {
-  triggerCharacters: list(string),
-  retriggerCharacters: list(string),
-};
+type code_values = {resolveProvider: bool};
 
 [@deriving yojson]
-type codeValues = {resolveProvider: bool};
-
-[@deriving yojson]
-type lspCapabilities = {
+type lsp_capabilities = {
   documentFormattingProvider: bool,
   textDocumentSync: int,
   hoverProvider: bool,
-  // completionProvider: completionValues,
-  // signatureHelpProvider: signatureHelpers,
+  // completionProvider: completion_values,
+  // signatureHelpProvider: signature_helpers,
   definitionProvider: bool,
   typeDefinitionProvider: bool,
   referencesProvider: bool,
   documentSymbolProvider: bool,
   codeActionProvider: bool,
-  codeLensProvider: codeValues,
+  codeLensProvider: code_values,
   documentHighlightProvider: bool,
   documentRangeFormattingProvider: bool,
   renameProvider: bool,
@@ -66,7 +66,7 @@ type range = {
 };
 
 [@deriving yojson]
-type capabilities_result = {capabilities: lspCapabilities};
+type capabilities_result = {capabilities: lsp_capabilities};
 [@deriving yojson]
 type capabilities_response = {
   jsonrpc: string,
@@ -139,6 +139,15 @@ type definition_response = {
   result: definition_result,
 };
 
+let convert_range = range => {
+  let r_start: position = {
+    line: range.start_line - 1,
+    character: range.start_char,
+  };
+  let r_end: position = {line: range.end_line - 1, character: range.end_char};
+  {start: r_start, range_end: r_end};
+};
+
 let read_message = (log, input): protocolMsg => {
   let clength = input_line(input);
   let cl = "Content-Length: ";
@@ -153,7 +162,6 @@ let read_message = (log, input): protocolMsg => {
     let buffer = Buffer.create(num);
     Buffer.add_channel(buffer, input, num);
     let raw = Buffer.contents(buffer);
-
     let json = Yojson.Safe.from_string(raw);
 
     let action =
@@ -194,24 +202,24 @@ let send_null_message = (log, output, id) => {
 };
 
 let send_capabilities = (log, output, id: int) => {
-  //   let sigHelpers: signatureHelpers = {
+  //   let sig_helpers: signature_helpers = {
   //     triggerCharacters: ["("],
   //     retriggerCharacters: [","],
   //   };
 
-  //   let completionVals: completionValues = {
+  //   let completion_vals: completion_values = {
   //     resolveProvider: true,
   //     triggerCharacters: ["."],
   //   };
 
-  let codeVals: codeValues = {resolveProvider: true};
+  let codeVals: code_values = {resolveProvider: true};
 
-  let capabilities: lspCapabilities = {
+  let capabilities: lsp_capabilities = {
     documentFormattingProvider: false,
     textDocumentSync: 1,
     hoverProvider: true,
-    //  completionProvider: completionVals,
-    //  signatureHelpProvider: sigHelpers,
+    //  completionProvider: completion_vals,
+    //  signatureHelpProvider: sig_helpers,
     definitionProvider: true,
     typeDefinitionProvider: false,
     referencesProvider: false,
@@ -243,7 +251,6 @@ let send_lenses = (log, output, id: int, lenses: list(lens_t)) => {
       (l: lens_t) => {
         let rstart: position = {line: l.line - 1, character: 1};
         let rend: position = {line: l.line - 1, character: 1};
-
         let range = {
           {start: rstart, range_end: rend};
         };
@@ -262,14 +269,8 @@ let send_lenses = (log, output, id: int, lenses: list(lens_t)) => {
 };
 
 let send_hover = (log, output, id: int, signature, range: range_t) => {
-  let rstart: position = {
-    line: range.start_line - 1,
-    character: range.start_char,
-  };
-  let rend: position = {line: range.end_line - 1, character: range.end_char};
-  let range = {start: rstart, range_end: rend};
-
-  let hover_info: hover_result = {contents: signature, range};
+  let range_ext = convert_range(range);
+  let hover_info: hover_result = {contents: signature, range: range_ext};
   let response: hover_response = {jsonrpc, id, result: hover_info};
   let res = hover_response_to_yojson(response);
   let strJson = Yojson.Safe.pretty_to_string(res);
@@ -345,15 +346,9 @@ let clear_diagnostics = (log, output, uri) => {
 
 let send_go_to_definition =
     (log, output, id: int, uri: string, range: range_t) => {
-  let rstart: position = {
-    line: range.start_line - 1,
-    character: range.start_char,
-  };
+  let range_ext = convert_range(range);
 
-  let rend: position = {line: range.end_line - 1, character: range.end_char};
-  let range = {start: rstart, range_end: rend};
-
-  let definition_info: definition_result = {uri, range};
+  let definition_info: definition_result = {uri, range: range_ext};
   let response: definition_response = {jsonrpc, id, result: definition_info};
   let res = definition_response_to_yojson(response);
   let strJson = Yojson.Safe.pretty_to_string(res);

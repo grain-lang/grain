@@ -11,15 +11,9 @@ type node_t =
   | NotInRange
   | Error(string);
 
-let get_raw_pos_info = (pos: Lexing.position) => (
-  pos.pos_fname,
-  pos.pos_lnum,
-  pos.pos_cnum - pos.pos_bol,
-  pos.pos_bol,
-);
-
 let loc_to_range = (pos: Location.t): Rpc.range_t => {
-  let (_, startline, startchar, _) = get_raw_pos_info(pos.loc_start);
+  let (_, startline, startchar, _) =
+    Locations.get_raw_pos_info(pos.loc_start);
   let (_, endline, endchar) =
     Grain_parsing.Location.get_pos_info(pos.loc_end);
 
@@ -33,9 +27,8 @@ let loc_to_range = (pos: Location.t): Rpc.range_t => {
 };
 
 let is_point_inside_stmt = (loc1: Grain_parsing.Location.t, line: int) => {
-  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
-  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
-
+  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
+  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
   if (line == raw1l || line == raw1le) {
     true;
   } else if (line > raw1l && line < raw1le) {
@@ -46,8 +39,8 @@ let is_point_inside_stmt = (loc1: Grain_parsing.Location.t, line: int) => {
 };
 let is_point_inside_location =
     (log, loc1: Grain_parsing.Location.t, line: int, char: int) => {
-  let (_, raw1l, raw1c, _) = get_raw_pos_info(loc1.loc_start);
-  let (_, raw1le, raw1ce, _) = get_raw_pos_info(loc1.loc_end);
+  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
+  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
 
   let res =
     if (line == raw1l) {
@@ -221,7 +214,7 @@ let rec get_node_from_expression =
           switch (exps) {
           | [] => Error("No function application matches")
           | [expr] => Expression(expr)
-          | _ => Error("Multiple functionn applications match")
+          | _ => Error("Multiple function applications match")
           };
         };
       }

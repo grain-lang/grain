@@ -1,4 +1,5 @@
 open Grain_typed;
+open Grain_diagnostics;
 
 let goto_definition = (log, id, json, compiled_code, cached_code) => {
   switch (Utils.getTextDocumenUriAndPosition(json)) {
@@ -24,7 +25,7 @@ let goto_definition = (log, id, json, compiled_code, cached_code) => {
             | lookup =>
               let loc = lookup.val_loc;
               let (filename, _, _, _) =
-                Utils.get_raw_pos_info(loc.loc_start);
+                Locations.get_raw_pos_info(loc.loc_start);
               let range = Utils.loc_to_range(loc);
 
               // if the file is the one we are looking up in, we get just the filename rather than the
