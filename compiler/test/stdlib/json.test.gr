@@ -1,0 +1,557 @@
+import * from "json"
+import Result from "result"
+import List from "list"
+
+// Parsing
+
+// Simple values of each type
+assert parse("null") == Ok(JSONNull)
+assert parse("true") == Ok(JSONBoolean(true))
+assert parse("false") == Ok(JSONBoolean(false))
+assert parse("\"\"") == Ok(JSONString(""))
+assert parse("0") == Ok(JSONNumber(0))
+assert parse("[]") == Ok(JSONArray([]))
+assert parse("{}") == Ok(JSONObject([]))
+
+// Various strings. Escapes, emojis etc.
+assert parse("\"ASCII Hello world!\"") == Ok(JSONString("ASCII Hello world!"))
+
+assert parse("\"Unicode こんにちは世界!\"") ==
+Ok(JSONString("Unicode こんにちは世界!"))
+assert parse("\"A \\\"quoted\\\" string\"") ==
+Ok(JSONString("A \"quoted\" string"))
+assert parse("\"\\uD801\\uDC37\"") == Ok(JSONString("𐐷"))
+assert parse("\"🤘🏻\"") == Ok(JSONString("🤘🏻"))
+assert parse("\"🤘🏻\"") == Ok(JSONString("🤘🏻"))
+assert parse("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"") ==
+Ok(JSONString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"))
+assert parse(
+  "\"\\u6000 \\ud800\\udc82 \\ud83e\\udd18\\ud83c\\udffb \\ud83c\\udff4\\udb40\\udc67\\udb40\\udc62\\udb40\\udc77\\udb40\\udc6c\\udb40\\udc73\\udb40\\udc7f\""
+) ==
+Ok(JSONString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿"))
+
+// Different number types and values
+assert parse("-10") == Ok(JSONNumber(-10))
+assert parse("-2") == Ok(JSONNumber(-2))
+assert parse("-1") == Ok(JSONNumber(-1))
+assert parse("1") == Ok(JSONNumber(1))
+assert parse("2") == Ok(JSONNumber(2))
+assert parse("10") == Ok(JSONNumber(10))
+assert parse("100") == Ok(JSONNumber(100))
+assert parse("1000") == Ok(JSONNumber(1000))
+assert parse("0.0") == Ok(JSONNumber(0.0))
+assert parse("0.1") == Ok(JSONNumber(0.1))
+assert parse("0.123") == Ok(JSONNumber(0.123))
+assert parse("0.9") == Ok(JSONNumber(0.9))
+assert parse("1.123") == Ok(JSONNumber(1.123))
+assert parse("0e0") == Ok(JSONNumber(0.0))
+assert parse("1e0") == Ok(JSONNumber(1.0))
+assert parse("1e1") == Ok(JSONNumber(10.0))
+assert parse("1E1") == Ok(JSONNumber(10.0))
+assert parse("1e2") == Ok(JSONNumber(100.0))
+assert parse("1e3") == Ok(JSONNumber(1000.0))
+assert parse("-1e2") == Ok(JSONNumber(-100.0))
+assert parse("1e-1") == Ok(JSONNumber(0.1))
+assert parse("1.23e-4") == Ok(JSONNumber(0.000123))
+
+// FIXME
+// "-0" currently parses to 0, but should it?
+// assert parse("-0") == Ok(JSONNumber(?))
+// Note that in Grain these are true:
+// assert 0 == 0
+// assert 0.0 == -0.0
+// assert 0 == -0.0
+// And printing constant "-0" results in "0"
+
+// Big numbers
+assert parse("1152921504606846976") == Ok(JSONNumber(1152921504606846976))
+
+// TODO Bigger numbers.
+// Numbers with large exponents not yet handled in parsing. Waiting for arbitrary precision number support in Grain.
+//assert parse("1E200") == Ok(JSONNumber(1E200))
+//assert parse("1E-200") == Ok(JSONNumber(1E-200))
+
+// Complex objects and arrays.
+
+assert parse("{ \"Hello\" : \"World!\" }") ==
+Ok(JSONObject([("Hello", JSONString("World!"))]))
+
+assert parse("{\"a\":\"A\",\"b\":\"B\"}") ==
+Ok(JSONObject([("a", JSONString("A")), ("b", JSONString("B"))]))
+
+assert parse(
+  "{ \"a\" : { \"0\": false, \"1\":true }, \"b\" : [\"A\",\"B\",\"C\"] }"
+) ==
+Ok(
+  JSONObject(
+    [
+      ("a", JSONObject([("0", JSONBoolean(false)), ("1", JSONBoolean(true))])),
+      ("b", JSONArray([JSONString("A"), JSONString("B"), JSONString("C")])),
+    ]
+  )
+)
+
+assert parse("[1,\"2\",true,false,null]") ==
+Ok(
+  JSONArray(
+    [
+      JSONNumber(1),
+      JSONString("2"),
+      JSONBoolean(true),
+      JSONBoolean(false),
+      JSONNull,
+    ]
+  )
+)
+
+assert parse("[[[[[[[[[[]]]]]]]]]]") ==
+Ok(
+  JSONArray(
+    [
+      JSONArray(
+        [
+          JSONArray(
+            [
+              JSONArray(
+                [
+                  JSONArray(
+                    [
+                      JSONArray(
+                        [JSONArray([JSONArray([JSONArray([JSONArray([])])])])]
+                      ),
+                    ]
+                  ),
+                ]
+              ),
+            ]
+          ),
+        ]
+      ),
+    ]
+  )
+)
+
+assert parse(
+  "{\"1\":{\"2\":{\"3\":{\"4\":{\"5\":{\"6\":{\"7\":{\"8\":{\"9\":{\"10\":{}}}}}}}}}}}"
+) ==
+Ok(
+  JSONObject(
+    [
+      (
+        "1",
+        JSONObject(
+          [
+            (
+              "2",
+              JSONObject(
+                [
+                  (
+                    "3",
+                    JSONObject(
+                      [
+                        (
+                          "4",
+                          JSONObject(
+                            [
+                              (
+                                "5",
+                                JSONObject(
+                                  [
+                                    (
+                                      "6",
+                                      JSONObject(
+                                        [
+                                          (
+                                            "7",
+                                            JSONObject(
+                                              [
+                                                (
+                                                  "8",
+                                                  JSONObject(
+                                                    [
+                                                      (
+                                                        "9",
+                                                        JSONObject(
+                                                          [
+                                                            (
+                                                              "10",
+                                                              JSONObject([]),
+                                                            ),
+                                                          ]
+                                                        ),
+                                                      ),
+                                                    ]
+                                                  ),
+                                                ),
+                                              ]
+                                            ),
+                                          ),
+                                        ]
+                                      ),
+                                    ),
+                                  ]
+                                ),
+                              ),
+                            ]
+                          ),
+                        ),
+                      ]
+                    ),
+                  ),
+                ]
+              ),
+            ),
+          ]
+        ),
+      ),
+    ]
+  )
+)
+
+assert parse("[1,2,3]") ==
+Ok(JSONArray([JSONNumber(1), JSONNumber(2), JSONNumber(3)]))
+assert parse("[\"a\",\"b\",\"c\"]") ==
+Ok(JSONArray([JSONString("a"), JSONString("b"), JSONString("c")]))
+
+// White spaces
+assert parse("\tnull \r\n") == Ok(JSONNull)
+assert parse("  {\r}") == Ok(JSONObject([]))
+assert parse("[1,\n2\n,3\n]\n") ==
+Ok(JSONArray([JSONNumber(1), JSONNumber(2), JSONNumber(3)]))
+assert parse("{ \"a\" :  \"A\" ,  \"b\" : \"B\" }") ==
+Ok(JSONObject([("a", JSONString("A")), ("b", JSONString("B"))]))
+
+// Invalid inputs
+
+// JSON numbers should start with a non zero digit or minus sign.
+assert match (parse("01")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse(".1")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{}error")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse("[]error")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse("]")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse("}")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+assert match (parse("\"k\":\"v\"")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+assert match (parse("[")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{\"k")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{\"k\"")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{\"k\":")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{\"k\":\"v")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+assert match (parse("{\"k\":\"v\"")) {
+  Err(UnexpectedEndOfInput(_)) => true,
+  _ => false,
+}
+
+// UTF-16 surrogate pairs should be the high half followed by the low half.
+
+// Two high surrogates.
+assert match (parse("\"\\uD801\\uD801\"")) {
+  Err(InvalidUTF16SurrogatePair(_)) => true,
+  _ => false,
+}
+
+// Inverted low and high surrogate order.
+assert match (parse("\"\\uDC37\\uD801\"")) {
+  Err(InvalidUTF16SurrogatePair(_)) => true,
+  _ => false,
+}
+
+// Single low surrogate
+assert match (parse("\"\\uDC37\"")) {
+  Err(InvalidUTF16SurrogatePair(_)) => true,
+  _ => false,
+}
+
+// Single high surrogate
+assert match (parse("\"\\uD801\"")) {
+  Err(UnexpectedToken(_)) => true,
+  _ => false,
+}
+
+// High surrogate + non surrogate code point
+assert match (parse("\"\\uD801\\u0524\"")) {
+  Err(InvalidUTF16SurrogatePair(_)) => true,
+  _ => false,
+}
+
+// Low surrogate + non surrogate code point
+assert match (parse("\"\\uDC37\\u0524\"")) {
+  Err(InvalidUTF16SurrogatePair(_)) => true,
+  _ => false,
+}
+
+// Emitting
+
+// Simple values of each type
+assert toStringCompact(JSONNull) == Ok("null")
+assert toStringCompact(JSONBoolean(true)) == Ok("true")
+assert toStringCompact(JSONBoolean(false)) == Ok("false")
+assert toStringCompact(JSONString("")) == Ok("\"\"")
+assert toStringCompact(JSONNumber(0)) == Ok("0")
+assert toStringCompact(JSONArray([])) == Ok("[]")
+assert toStringCompact(JSONObject([])) == Ok("{}")
+
+// Various strings. Escapes, emojis etc.
+assert toStringCompact(JSONString("ASCII Hello world!")) ==
+Ok("\"ASCII Hello world!\"")
+
+assert toStringCompact(JSONString("Unicode こんにちは世界!")) ==
+Ok("\"Unicode こんにちは世界!\"")
+assert toStringCompact(JSONString("A \"quoted\" string")) ==
+Ok("\"A \\\"quoted\\\" string\"")
+assert toStringCompact(JSONString("🤘🏻")) == Ok("\"🤘🏻\"")
+assert toStringCompact(JSONString("🤘🏻")) == Ok("\"🤘🏻\"")
+assert toStringCompact(JSONString("🏴󠁧󠁢󠁷󠁬󠁳󠁿")) ==
+Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+assert toStringCompact(
+  JSONString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿")
+) ==
+Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+
+// Note that number tests are sensitive both to compiler's interpretation of
+// the constants as different number tags (simple numbers, float32, float64)
+// and internal details of JSON formatting. We definetely want them to fail
+// when the latter changes. The former shouldn't be an issue assuming here
+// constants with decimal point or exponentials are float64.
+assert toStringCompact(JSONNumber(-10)) == Ok("-10")
+assert toStringCompact(JSONNumber(-2)) == Ok("-2")
+assert toStringCompact(JSONNumber(-1)) == Ok("-1")
+assert toStringCompact(JSONNumber(1)) == Ok("1")
+assert toStringCompact(JSONNumber(2)) == Ok("2")
+assert toStringCompact(JSONNumber(10)) == Ok("10")
+assert toStringCompact(JSONNumber(100)) == Ok("100")
+assert toStringCompact(JSONNumber(1000)) == Ok("1000")
+assert toStringCompact(JSONNumber(0.0)) == Ok("0.0")
+assert toStringCompact(JSONNumber(0.1)) == Ok("0.1")
+assert toStringCompact(JSONNumber(0.123)) == Ok("0.123")
+assert toStringCompact(JSONNumber(0.9)) == Ok("0.9")
+assert toStringCompact(JSONNumber(1.123)) == Ok("1.123")
+assert toStringCompact(JSONNumber(0e0)) == Ok("0.0")
+assert toStringCompact(JSONNumber(1e0)) == Ok("1.0")
+assert toStringCompact(JSONNumber(1e1)) == Ok("10.0")
+assert toStringCompact(JSONNumber(1E1)) == Ok("10.0")
+assert toStringCompact(JSONNumber(1e2)) == Ok("100.0")
+assert toStringCompact(JSONNumber(1e3)) == Ok("1000.0")
+assert toStringCompact(JSONNumber(-1e2)) == Ok("-100.0")
+assert toStringCompact(JSONNumber(1e-1)) == Ok("0.1")
+assert toStringCompact(JSONNumber(1.23e-4)) == Ok("0.000123")
+
+// FIXME semantics for negative zero still not defined
+
+// Big numbers
+assert toStringCompact(JSONNumber(1152921504606846976)) ==
+Ok("1152921504606846976")
+assert toStringCompact(JSONNumber(1152921504606847000.0)) ==
+Ok("1152921504606847000.0")
+
+// Invalid numbers
+
+// There's currently a github issue for NaN and infinity syntax: https://github.com/grain-lang/grain/issues/693
+let nan = 0.0 / 0.0
+let infinity = 1.0 / 0.0
+let negativeinfinity = -1.0 / 0.0
+
+assert match (toStringCompact(JSONNumber(nan))) {
+  Err(InvalidNumber(_)) => true,
+  _ => false,
+}
+
+assert match (toStringCompact(JSONNumber(infinity))) {
+  Err(InvalidNumber(_)) => true,
+  _ => false,
+}
+
+assert match (toStringCompact(JSONNumber(negativeinfinity))) {
+  Err(InvalidNumber(_)) => true,
+  _ => false,
+}
+
+// Pretty printing
+
+let simplePrimitives = [
+  JSONNull,
+  JSONBoolean(true),
+  JSONBoolean(false),
+  JSONNumber(2),
+  JSONString("abc"),
+]
+
+let comprehensiveNestingCombinations = [
+  JSONArray([]),
+  JSONArray([JSONNumber(1)]),
+  JSONArray([JSONNumber(1), JSONNumber(2)]),
+  JSONArray([JSONNumber(1), JSONNumber(2), JSONNumber(3)]),
+  JSONArray(
+    [
+      JSONArray([]),
+      JSONArray([JSONNumber(1)]),
+      JSONArray([JSONNumber(1), JSONNumber(2)]),
+      JSONArray([JSONNumber(1), JSONNumber(2), JSONNumber(3)]),
+    ]
+  ),
+  JSONArray([JSONArray([JSONArray([])])]),
+  JSONObject([]),
+  JSONObject([("a", JSONString("A"))]),
+  JSONObject([("a", JSONString("A")), ("b", JSONString("B"))]),
+  JSONObject(
+    [("a", JSONString("A")), ("b", JSONString("B")), ("c", JSONString("C"))]
+  ),
+  JSONObject([("a", JSONObject([("b", JSONObject([("c", JSONObject([]))]))]))]),
+  JSONObject(
+    [
+      (
+        "arrays",
+        JSONArray(
+          [
+            JSONArray([]),
+            JSONArray([JSONNumber(1)]),
+            JSONArray([JSONNumber(1), JSONNumber(2)]),
+            JSONArray([JSONNumber(1), JSONNumber(2), JSONNumber(3)]),
+          ]
+        ),
+      ),
+      (
+        "objects",
+        JSONObject(
+          [
+            ("a", JSONString("A")),
+            ("b", JSONString("B")),
+            ("c", JSONString("C")),
+          ]
+        ),
+      ),
+    ]
+  ),
+]
+
+let comprehensiveJSONObject = JSONObject(
+  [
+    ("primitives", JSONArray(simplePrimitives)),
+    ("nesting", JSONArray(comprehensiveNestingCombinations)),
+  ]
+)
+
+// Indentation and line breaks
+
+assert List.map(json =>
+  toString(
+    json,
+    {
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: CompactObjectEntries,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false,
+    }
+  ), comprehensiveNestingCombinations) ==
+[
+  Ok("[]"),
+  Ok("[1]"),
+  Ok("[1,2]"),
+  Ok("[1,2,3]"),
+  Ok("[[],[1],[1,2],[1,2,3]]"),
+  Ok("[[[]]]"),
+  Ok("{}"),
+  Ok("{\"a\":\"A\"}"),
+  Ok("{\"a\":\"A\",\"b\":\"B\"}"),
+  Ok("{\"a\":\"A\",\"b\":\"B\",\"c\":\"C\"}"),
+  Ok("{\"a\":{\"b\":{\"c\":{}}}}"),
+  Ok(
+    "{\"arrays\":[[],[1],[1,2],[1,2,3]],\"objects\":{\"a\":\"A\",\"b\":\"B\",\"c\":\"C\"}}"
+  ),
+]
+
+assert List.map(json =>
+  toString(
+    json,
+    {
+      indentation: IndentWithSpaces(2),
+      arrayFormat: OneArrayEntryPerLine,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: false,
+    }
+  ), comprehensiveNestingCombinations) ==
+[
+  Ok("[]"),
+  Ok("[\n  1\n]"),
+  Ok("[\n  1,\n  2\n]"),
+  Ok("[\n  1,\n  2,\n  3\n]"),
+  Ok(
+    "[\n  [],\n  [\n    1\n  ],\n  [\n    1,\n    2\n  ],\n  [\n    1,\n    2,\n    3\n  ]\n]"
+  ),
+  Ok("[\n  [\n    []\n  ]\n]"),
+  Ok("{}"),
+  Ok("{\n  \"a\": \"A\"\n}"),
+  Ok("{\n  \"a\": \"A\",\n  \"b\": \"B\"\n}"),
+  Ok("{\n  \"a\": \"A\",\n  \"b\": \"B\",\n  \"c\": \"C\"\n}"),
+  Ok("{\n  \"a\": {\n    \"b\": {\n      \"c\": {}\n    }\n  }\n}"),
+  Ok(
+    "{\n  \"arrays\": [\n    [],\n    [\n      1\n    ],\n    [\n      1,\n      2\n    ],\n    [\n      1,\n      2,\n      3\n    ]\n  ],\n  \"objects\": {\n    \"a\": \"A\",\n    \"b\": \"B\",\n    \"c\": \"C\"\n  }\n}"
+  ),
+]
+
+// Round trips
+assert Result.map(parse, toStringCompact(comprehensiveJSONObject)) ==
+Ok(Ok(comprehensiveJSONObject))
+
+assert Result.map(parse, toStringPretty(comprehensiveJSONObject)) ==
+Ok(Ok(comprehensiveJSONObject))
