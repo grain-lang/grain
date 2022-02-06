@@ -1,4 +1,5 @@
 open Grain_typed;
+open Grain_diagnostics;
 
 let get_signature_from_statement =
     (stmt: Grain_typed__Typedtree.toplevel_stmt) =>
@@ -51,7 +52,7 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
   List.fold_left(
     (acc, stmt: Grain_typed__Typedtree.toplevel_stmt) => {
       let (file, startline, startchar, sbol) =
-        Utils.get_raw_pos_info(stmt.ttop_loc.loc_start);
+        Locations.get_raw_pos_info(stmt.ttop_loc.loc_start);
 
       let signature = get_signature_from_statement(stmt);
       switch (signature) {
