@@ -42,7 +42,7 @@ export let rec fromInt32 = (n: Int32) => {
   let sign = if (v < 0n) { -1n } else { 1n }
   let ptr = init(sign, 1n)
   let abs = v * sign
-  WasmI32.store(ptr, abs, 8n)
+  WasmI32.store(ptr, abs, 12n)
   Memory.decRef(WasmI32.fromGrain(fromInt32))
   WasmI32.toGrain(ptr): BigInt
 }
@@ -117,6 +117,28 @@ let addIntoBufferN = (rp: Buffer, a: WasmI32, b: WasmI32, n: WasmI32) => {
 }
 
 @disableGC
+let absAdd = (a: WasmI32, b: WasmI32) => {
+  let (<) = WasmI32.lt
+  let an = absSize(a)
+  let bn = absSize(b)
+  let rp = Buffer.make(8) // 1 Int64
+
+  let limbs = if (an > bn) {
+    addIntoBufferN(rp, b, a, bn)
+  } else {
+    addIntoBufferN(rp, a, b, an)
+  }
+  
+  let sign = if (WasmI64.lt(limbs, 0N) { -1n } else { 1n };
+  let src = init(sign, limbs)
+  let dst = WasmI32.fromGrain(rp.data)
+  let len = WasmI32.fromGrain(dst, 4n)
+  Memory.copy(src + 8n, dst + 8n, len)
+
+  WasmI32.toGrain(ptr): BigInt
+}
+
+@disableGC
 let subIntoBufferN = (rp: Buffer, a: WasmI32, b: WasmI32, n: WasmI32) => {
   let (-) = WasmI64.sub
   let (+) = WasmI64.add
@@ -126,29 +148,11 @@ let subIntoBufferN = (rp: Buffer, a: WasmI32, b: WasmI32, n: WasmI32) => {
     let mut a = safeGetLimb(a, i)
     let mut b = safeGetLimb(b, i)
     b += cy
-    cy = if (b < cy) { 1N } else { 1N }
+    cy = if (b < cy) { 1N } else { 0N }
     cy += if (a < b) { 1N } else { 0N }
     Buffer.addInt64(rp, a - b)
   }
   cy
-}
-
-
-@disableGC
-let absAdd = (a: WasmI32, b: WasmI32) => {
-  let (<) = WasmI32.lt
-  let an = absSize(a)
-  let bn = absSize(b)
-  let mut rp = Buffer.make(8) // 1 int64
-  let len = if (an < bn) { bn } else { an }
-  
-  let size = addIntoBufferN(rp, a, b, len)
-  
-  // TODO: get sign
-  let sign = 0n;
-  
-  let ptr = init(sign, size)
-  WasmI32.toGrain(ptr): BigInt
 }
 
 @disableGC
@@ -175,19 +179,22 @@ let absSub = (a: WasmI32, b: WasmI32) => {
   let len = if (an < bn) { bn } else { an }
   let cmp = cmpN(a, b, len)
 
-  let mut rp = Buffer.make(8) // 1 int64
+  let rp = Buffer.make(8) // 1 int64
+
   let limbs = if (cmp > 0n) {
     subIntoBufferN(rp, a, b, bn)
   } else if (cmp < 0n) {
     -1N * subIntoBufferN(rp, a, b, an)
   } else {
-    0N
+    1N
   }
   
-  // TODO: get sign
-  let sign = 0n;
+  let sign = if (WasmI64.lt(limbs, 0N) { -1n } else { 1n };
+  let src = init(sign, limbs)
+  let dst = WasmI32.fromGrain(rp.data)
+  let len = WasmI32.fromGrain(dst, 4n)
+  Memory.copy(src + 8n, dst + 8n, len)
   
-  let ptr = init(sign, limbs)
   WasmI32.toGrain(ptr): BigInt
 }
 
@@ -228,20 +235,6 @@ let rec sub = (a: BigInt, b: BigInt) => {
   Memory.decRef(WasmI32.fromGrain(add))
   res
 }
-
-
-
-// @disableGC
-// export let rec getSign = (bigint: BigInt) => {
-//   let (<) = WasmI32.lt
-//   let src = WasmI32.fromGrain(bytes)
-//   let size = WasmI32.load(ptr, 4n)
-//   if (size < 0n) {
-//     -1
-//   } else {
-//     1
-//   }
-// }
 
 
 // @disableGC
