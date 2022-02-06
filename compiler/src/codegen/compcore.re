@@ -632,27 +632,54 @@ type bind_action =
   | BindSet(Expression.t)
   | BindTee(Expression.t);
 
-let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
-  let instrs =
-    List.init(
-      env.num_args + env.stack_size.stack_size_ptr,
-      i => {
-        // cleanup called on args and i32 (GC-tracked) locals
+let filter_mapi = {
+  let rec filter_mapi = (count, f) =>
+    fun
+    | [hd, ...tl] => {
+        switch (f(hd, count)) {
+        | Some(result) => [result, ...filter_mapi(count + 1, f, tl)]
+        | None => filter_mapi(count + 1, f, tl)
+        };
+      }
+    | [] => [];
+
+  filter_mapi(0);
+};
+
+let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => {
+  let arg_instrs =
+    filter_mapi(
+      (arg, i) => {
+        // cleanup called on args
         // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
         // |-----[env.num_args]-----| |----[len(swap_slots)]------|
-        let offset =
-          if (i < env.num_args) {
-            0;
-          } else {
-            Array.length(swap_slots);
-          };
+        switch (arg) {
+        | Types.HeapAllocated =>
+          let arg = Expression.Local_get.make(wasm_mod, i, Type.int32);
+          Some(
+            singleton @@
+            Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg)),
+          );
+        | _ => None
+        }
+      },
+      argtypes,
+    );
+  let stack_instrs =
+    List.init(
+      env.stack_size.stack_size_ptr,
+      i => {
+        // cleanup called Grain ptr (i32, GC-tracked) locals
+        // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
+        // |-----[env.num_args]-----| |----[len(swap_slots)]------|
+        let offset = env.num_args + Array.length(swap_slots);
         let slot_no = i + offset;
         let arg = Expression.Local_get.make(wasm_mod, slot_no, Type.int32);
         singleton @@
         Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg));
       },
     );
-  flatten(instrs);
+  flatten(List.append(arg_instrs, stack_instrs));
 };
 let appropriate_incref = (wasm_mod, env, arg, b) =>
   switch (b) {
@@ -1059,7 +1086,8 @@ let tee_swap =
   | _ => raise(Not_found)
   };
 
-let cleanup_locals = (wasm_mod, env: codegen_env, arg, rtype): Expression.t => {
+let cleanup_locals =
+    (wasm_mod, env: codegen_env, arg, argtypes, rtype): Expression.t => {
   /* Do the following (if GC is enabled):
         - Move the given argument (the return value) into a swap variable, incrementing its refcount
         - Call decref() on all non-swap locals (should include return value)
@@ -1072,7 +1100,7 @@ let cleanup_locals = (wasm_mod, env: codegen_env, arg, rtype): Expression.t => {
     Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
     Concatlist.list_of_t(
       singleton(set_swap(wasm_mod, env, 0, arg, ~skip_incref=false))
-      @ cleanup_local_slot_instructions(wasm_mod, env)
+      @ cleanup_local_slot_instructions(wasm_mod, env, argtypes)
       +@ [get_swap(wasm_mod, env, 0)],
     )
   | _ => failwith("NYI: multiple return types")
@@ -3139,7 +3167,7 @@ let compile_function =
     | None => compile_block(wasm_mod, body_env, body_instrs)
     };
   let inner_body =
-    cleanup_locals(wasm_mod, body_env, inner_body, return_type);
+    cleanup_locals(wasm_mod, body_env, inner_body, args, return_type);
   let body = Expression.Return.make(wasm_mod, inner_body);
   let locals =
     [
