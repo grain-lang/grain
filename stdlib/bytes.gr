@@ -317,7 +317,7 @@ export let fill = (value: Int32, bytes: Bytes) => {
  *
  * @param bytes: The byte sequence to clear
  *
- * @since v0.3.2
+ * @since v0.5.0
  */
 @disableGC
 export let rec clear = (bytes: Bytes) => {
