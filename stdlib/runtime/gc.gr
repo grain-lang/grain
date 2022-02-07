@@ -45,8 +45,18 @@ primitive unbox: Box<a> -> a = "@unbox"
 
 exception DecRefError
 
-export let decimalCount32 = box((n: WasmI32) => 0n)
-export let utoa32Buffered = box((a: WasmI32, b: WasmI32, c: WasmI32) => void)
+let decimalCount32Dummy = (n: WasmI32) => 0n
+let utoa32BufferedDummy = (a: WasmI32, b: WasmI32, c: WasmI32) => void
+
+// When these boxes are backpatched, the reference count of each function will
+// fall to zero which would cause them to be freed. We can't free anything that
+// got allocated in runtime mode (since that memory space is not managed by the
+// GC, so here we prevent that by manually setting a higher refcount.
+WasmI32.store(WasmI32.fromGrain(decimalCount32Dummy) - 8n, 2n, 0n)
+WasmI32.store(WasmI32.fromGrain(utoa32BufferedDummy) - 8n, 2n, 0n)
+
+export let decimalCount32 = box(decimalCount32Dummy)
+export let utoa32Buffered = box(utoa32BufferedDummy)
 
 let mut _DEBUG = false
 
