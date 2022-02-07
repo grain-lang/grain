@@ -6,7 +6,7 @@ exports › let_rec_export
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $wimport__grainEnv_relocBase) $foo_1153)
+ (elem $elem (global.get $wimport__grainEnv_relocBase) $foo_1155)
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
@@ -16,11 +16,11 @@ exports › let_rec_export
  (global $global_2 i32 (i32.const 1))
  (export \"memory\" (memory $0))
  (export \"GRAIN$EXPORT$foo\" (global $global_0))
- (export \"foo\" (func $foo_1153))
+ (export \"foo\" (func $foo_1155))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_2))
- (func $foo_1153 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $foo_1155 (; has Stack IR ;) (param $0 i32) (result i32)
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
@@ -89,5 +89,5 @@ exports › let_rec_export
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 607
+ ;; custom section \"cmi\", size 625
 )

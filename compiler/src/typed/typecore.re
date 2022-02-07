@@ -247,6 +247,7 @@ let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
             val_kind: TValUnbound(ValUnboundGhostRecursive),
             val_loc: loc_let,
             val_mutable: false,
+            val_global: false,
           },
           env,
         )
@@ -834,7 +835,7 @@ and type_expect_ =
   | PExpLet(rec_flag, mut_flag, pats) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =
-      type_let(env, rec_flag, mut_flag, pats, scp, true);
+      type_let(env, rec_flag, mut_flag, false, pats, scp, true);
     /*let () =
       if rec_flag = Recursive then
         check_recursive_bindings env pat_exp_list
@@ -1710,6 +1711,7 @@ and type_let =
       env,
       rec_flag,
       mut_flag,
+      global_flag,
       spat_sexp_list,
       scope,
       allow,
@@ -1750,7 +1752,15 @@ and type_let =
   let nvs = List.map(_ => newvar(), spatl);
   let mut = mut_flag == Mutable;
   let (pat_list, new_env, force, unpacks, pv) =
-    type_pattern_list(~mut, env, spatl, scope, nvs, allow);
+    type_pattern_list(
+      ~mut,
+      ~global=global_flag,
+      env,
+      spatl,
+      scope,
+      nvs,
+      allow,
+    );
   let attrs_list = List.map(fst, spatl);
   let is_recursive = rec_flag == Recursive;
   /* If recursive, first unify with an approximation of the expression */
@@ -2089,6 +2099,7 @@ let type_binding = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
       env,
       rec_flag,
       mut_flag,
+      true,
       spat_sexp_list,
       scope,
       false,
@@ -2096,9 +2107,17 @@ let type_binding = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
 
   (pat_exp_list, new_env);
 };
-let type_let = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
+let type_let = (env, rec_flag, mut_flag, global_flag, spat_sexp_list, scope) => {
   let (pat_exp_list, new_env, _unpacks) =
-    type_let(env, rec_flag, mut_flag, spat_sexp_list, scope, false);
+    type_let(
+      env,
+      rec_flag,
+      mut_flag,
+      global_flag,
+      spat_sexp_list,
+      scope,
+      false,
+    );
   (pat_exp_list, new_env);
 };
 

@@ -6,7 +6,7 @@ basic functionality › pattern_match_unsafe_wasm
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $wimport__grainEnv_relocBase) $test_1153 $foo_1154)
+ (elem $elem (global.get $wimport__grainEnv_relocBase) $test_1155 $foo_1156)
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
@@ -15,93 +15,81 @@ basic functionality › pattern_match_unsafe_wasm
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
- (global $global_1 i32 (i32.const 2))
+ (global $global_0 (mut i32) (i32.const 0))
+ (global $global_2 i32 (i32.const 2))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $global_1))
- (func $test_1153 (; has Stack IR ;) (param $0 i32) (result i32)
-  (local $1 i32)
-  (local $2 i32)
-  (i32.store offset=16
-   (tuple.extract 0
-    (tuple.make
-     (local.tee $2
-      (tuple.extract 0
-       (tuple.make
-        (block (result i32)
-         (i32.store
-          (local.tee $1
-           (tuple.extract 0
-            (tuple.make
-             (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-              (i32.const 20)
-             )
-             (i32.const 0)
+ (export \"GRAIN$TABLE_SIZE\" (global $global_2))
+ (func $test_1155 (; has Stack IR ;) (param $0 i32) (result i32)
+  (drop
+   (call $foo_1156
+    (local.tee $0
+     (tuple.extract 0
+      (tuple.make
+       (block (result i32)
+        (i32.store
+         (local.tee $0
+          (tuple.extract 0
+           (tuple.make
+            (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+             (i32.const 16)
             )
+            (i32.const 0)
            )
           )
-          (i32.const 7)
          )
-         (i32.store offset=4
-          (local.get $1)
-          (i32.const 2)
-         )
-         (i32.store offset=8
-          (local.get $1)
-          (i32.add
-           (global.get $wimport__grainEnv_relocBase)
-           (i32.const 1)
-          )
-         )
-         (i32.store offset=12
-          (local.get $1)
+         (i32.const 7)
+        )
+        (i32.store offset=4
+         (local.get $0)
+         (i32.const 2)
+        )
+        (i32.store offset=8
+         (local.get $0)
+         (i32.add
+          (global.get $wimport__grainEnv_relocBase)
           (i32.const 1)
          )
-         (local.get $1)
         )
-        (i32.const 0)
+        (i32.store offset=12
+         (local.get $0)
+         (i32.const 0)
+        )
+        (local.get $0)
        )
+       (i32.const 0)
       )
      )
-     (local.get $1)
     )
-   )
-   (i32.load offset=16
-    (local.get $0)
-   )
-  )
-  (drop
-   (call $foo_1154
-    (local.get $2)
     (i32.const 0)
    )
   )
   (drop
-   (call $foo_1154
-    (local.get $2)
+   (call $foo_1156
+    (local.get $0)
     (i32.const 1)
    )
   )
   (drop
-   (call $foo_1154
-    (local.get $2)
+   (call $foo_1156
+    (local.get $0)
     (i32.const 5)
    )
   )
   (drop
-   (call $foo_1154
-    (local.get $2)
+   (call $foo_1156
+    (local.get $0)
     (i32.const 8)
    )
   )
-  (call $foo_1154
-   (local.get $2)
+  (call $foo_1156
+   (local.get $0)
    (i32.const 42)
   )
  )
- (func $foo_1154 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
+ (func $foo_1156 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (block $switch.31_outer (result i32)
    (drop
@@ -265,12 +253,12 @@ basic functionality › pattern_match_unsafe_wasm
                  (unreachable)
                 )
                )
-               (local.set $2
+               (local.set $1
                 (tuple.extract 0
                  (tuple.make
                   (block (result i32)
                    (i32.store
-                    (local.tee $1
+                    (local.tee $0
                      (tuple.extract 0
                       (tuple.make
                        (call $wimport_GRAIN$MODULE$runtime/gc_malloc
@@ -284,14 +272,14 @@ basic functionality › pattern_match_unsafe_wasm
                     (i32.const 1)
                    )
                    (i32.store offset=4
-                    (local.get $1)
+                    (local.get $0)
                     (i32.const 5)
                    )
                    (i64.store offset=8
-                    (local.get $1)
+                    (local.get $0)
                     (i64.const 491327616111)
                    )
-                   (local.get $1)
+                   (local.get $0)
                   )
                   (i32.const 0)
                  )
@@ -302,14 +290,12 @@ basic functionality › pattern_match_unsafe_wasm
                  (local.tee $0
                   (tuple.extract 0
                    (tuple.make
-                    (i32.load offset=16
-                     (local.get $0)
-                    )
-                    (local.get $1)
+                    (global.get $gimport_pervasives_print)
+                    (local.get $0)
                    )
                   )
                  )
-                 (local.get $2)
+                 (local.get $1)
                  (i32.load offset=8
                   (local.get $0)
                  )
@@ -322,9 +308,7 @@ basic functionality › pattern_match_unsafe_wasm
                (local.tee $0
                 (tuple.extract 0
                  (tuple.make
-                  (i32.load offset=16
-                   (local.get $0)
-                  )
+                  (global.get $gimport_pervasives_print)
                   (i32.const 0)
                  )
                 )
@@ -342,9 +326,7 @@ basic functionality › pattern_match_unsafe_wasm
              (local.tee $0
               (tuple.extract 0
                (tuple.make
-                (i32.load offset=16
-                 (local.get $0)
-                )
+                (global.get $gimport_pervasives_print)
                 (i32.const 0)
                )
               )
@@ -362,9 +344,7 @@ basic functionality › pattern_match_unsafe_wasm
            (local.tee $0
             (tuple.extract 0
              (tuple.make
-              (i32.load offset=16
-               (local.get $0)
-              )
+              (global.get $gimport_pervasives_print)
               (i32.const 0)
              )
             )
@@ -382,9 +362,7 @@ basic functionality › pattern_match_unsafe_wasm
          (local.tee $0
           (tuple.extract 0
            (tuple.make
-            (i32.load offset=16
-             (local.get $0)
-            )
+            (global.get $gimport_pervasives_print)
             (i32.const 0)
            )
           )
@@ -402,9 +380,7 @@ basic functionality › pattern_match_unsafe_wasm
        (local.tee $0
         (tuple.extract 0
          (tuple.make
-          (i32.load offset=16
-           (local.get $0)
-          )
+          (global.get $gimport_pervasives_print)
           (i32.const 0)
          )
         )
@@ -421,9 +397,7 @@ basic functionality › pattern_match_unsafe_wasm
     (local.tee $0
      (tuple.extract 0
       (tuple.make
-       (i32.load offset=16
-        (local.get $0)
-       )
+       (global.get $gimport_pervasives_print)
        (i32.const 0)
       )
      )
@@ -437,81 +411,66 @@ basic functionality › pattern_match_unsafe_wasm
  )
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
-  (local $1 i32)
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (i32.store offset=16
-       (local.tee $0
-        (tuple.extract 0
-         (tuple.make
-          (local.tee $1
+  (tuple.extract 0
+   (tuple.make
+    (block (result i32)
+     (global.set $global_0
+      (tuple.extract 0
+       (tuple.make
+        (block (result i32)
+         (i32.store
+          (local.tee $0
            (tuple.extract 0
             (tuple.make
-             (block (result i32)
-              (i32.store
-               (local.tee $0
-                (tuple.extract 0
-                 (tuple.make
-                  (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-                   (i32.const 20)
-                  )
-                  (i32.const 0)
-                 )
-                )
-               )
-               (i32.const 7)
-              )
-              (i32.store offset=4
-               (local.get $0)
-               (i32.const 1)
-              )
-              (i32.store offset=8
-               (local.get $0)
-               (global.get $wimport__grainEnv_relocBase)
-              )
-              (i32.store offset=12
-               (local.get $0)
-               (i32.const 1)
-              )
-              (local.get $0)
+             (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+              (i32.const 16)
              )
-             (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-              (i32.const 0)
-             )
+             (i32.const 0)
             )
            )
           )
-          (local.get $0)
+          (i32.const 7)
          )
+         (i32.store offset=4
+          (local.get $0)
+          (i32.const 1)
+         )
+         (i32.store offset=8
+          (local.get $0)
+          (global.get $wimport__grainEnv_relocBase)
+         )
+         (i32.store offset=12
+          (local.get $0)
+          (i32.const 0)
+         )
+         (local.get $0)
         )
-       )
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (global.get $gimport_pervasives_print)
-       )
-      )
-      (call $test_1153
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (local.get $1)
+        (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (global.get $global_0)
+        )
        )
       )
      )
-     (local.get $0)
+     (local.set $0
+      (tuple.extract 0
+       (tuple.make
+        (global.get $global_0)
+        (local.get $0)
+       )
+      )
+     )
+     (call $test_1155
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (global.get $global_0)
+      )
+     )
     )
+    (local.get $0)
    )
   )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $1)
-   )
-  )
-  (local.get $0)
  )
  (func $_start (; has Stack IR ;)
   (drop

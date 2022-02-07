@@ -9,8 +9,6 @@ open Mashtree;
 
 type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
-  /* Useful due to us needing a second pass over exports (for mutual recursion) */
-  ce_exported_globals: Ident.tbl(int32),
   ce_stack_idx_ptr: int,
   ce_stack_idx_i32: int,
   ce_stack_idx_i64: int,
@@ -21,7 +19,6 @@ type compilation_env = {
 
 let initial_compilation_env = {
   ce_binds: Ident.empty,
-  ce_exported_globals: Ident.empty,
   ce_stack_idx_ptr: 0,
   ce_stack_idx_i32: 0,
   ce_stack_idx_i64: 0,
@@ -63,6 +60,16 @@ let next_lift = () => {
   ret;
 };
 
+/** Imports which are always in scope */
+let global_imports = ref(Ident.Set.empty);
+
+let set_global_imports = imports => {
+  global_imports :=
+    Ident.Set.of_list(
+      Ident.fold_all((id, _, acc) => [id, ...acc], imports, []),
+    );
+};
+
 /** Global index (index of global variables) */
 
 let global_table =
@@ -100,8 +107,14 @@ let next_global = (exported, id, ty: Types.allocation_type) =>
     ret;
   };
 
-let find_id = (id, env) => Ident.find_same(id, env.ce_binds);
-let find_global = (id, env) => Ident.find_same(id, env.ce_exported_globals);
+let global_name = slot => Printf.sprintf("global_%d", slot);
+
+let find_id = (id, env) =>
+  try(Ident.find_same(id, env.ce_binds)) {
+  | Not_found =>
+    let (_, slot, alloc) = Ident.find_same(id, global_table^);
+    MGlobalBind(global_name(Int32.to_int(slot)), alloc);
+  };
 
 let worklist_reset = () => Queue.clear(compilation_worklist);
 let worklist_enqueue = elt => Queue.add(elt, compilation_worklist);
@@ -544,9 +557,15 @@ let compile_lambda =
   register_function(id);
   let (body, return_type) = body;
   let used_var_set = Anf_utils.anf_free_vars(body);
-  let free_var_set =
-    Ident.Set.diff(used_var_set) @@
-    Ident.Set.of_list(List.map(((arg, _)) => arg, args));
+  let arg_vars = List.map(((arg, _)) => arg, args);
+  let global_vars =
+    Ident.fold_all((id, _, acc) => [id, ...acc], global_table^, []);
+  let accessible_var_set =
+    Ident.Set.union(
+      global_imports^,
+      Ident.Set.of_list(arg_vars @ global_vars),
+    );
+  let free_var_set = Ident.Set.diff(used_var_set, accessible_var_set);
   let free_vars = Ident.Set.elements(free_var_set);
   /* Bind all non-arguments in the function body to
      their respective closure slots */
@@ -554,7 +573,7 @@ let compile_lambda =
     List_utils.fold_lefti(
       (acc, closure_idx, var) =>
         Ident.add(var, MClosureBind(Int32.of_int(closure_idx)), acc),
-      Ident.empty,
+      env.ce_binds,
       free_vars,
     );
   let closure_arg = (Ident.create("$self"), Types.HeapAllocated);
@@ -579,7 +598,6 @@ let compile_lambda =
   ) =
     Anf_utils.anf_count_vars(body);
   let lam_env = {
-    ...env,
     ce_binds: arg_binds,
     ce_stack_idx_ptr: 0,
     ce_stack_idx_i32: 0,
@@ -650,7 +668,6 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
   let idx = next_lift();
   let arity = List.length(args);
   let lam_env = {
-    ...env,
     ce_binds: Ident.empty,
     ce_stack_idx_ptr: 0,
     ce_stack_idx_i32: 0,
@@ -687,7 +704,7 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
 
 let next_global = (~exported=false, id, ty) => {
   let ret = next_global(exported, id, ty);
-  Printf.sprintf("global_%d", ret);
+  global_name(ret);
 };
 
 let rec compile_comp = (~id=?, env, c) => {
@@ -882,44 +899,39 @@ and compile_anf_expr = (env, a) =>
     let rec get_locs = (env, binds) => {
       switch (binds) {
       | [(id, {comp_allocation_type}), ...rest] =>
-        let (alloc, gc, stack_idx, next_env) =
+        let (alloc, stack_idx, next_env) =
           switch (comp_allocation_type) {
           | HeapAllocated => (
               Types.HeapAllocated,
-              true,
               env.ce_stack_idx_ptr,
               {...env, ce_stack_idx_ptr: env.ce_stack_idx_ptr + 1},
             )
           | StackAllocated(WasmI32) => (
               Types.StackAllocated(WasmI32),
-              false,
               env.ce_stack_idx_i32,
               {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
             )
           | StackAllocated(WasmI64) => (
               Types.StackAllocated(WasmI64),
-              false,
               env.ce_stack_idx_i64,
               {...env, ce_stack_idx_i64: env.ce_stack_idx_i64 + 1},
             )
           | StackAllocated(WasmF32) => (
               Types.StackAllocated(WasmF32),
-              false,
               env.ce_stack_idx_f32,
               {...env, ce_stack_idx_f32: env.ce_stack_idx_f32 + 1},
             )
           | StackAllocated(WasmF64) => (
               Types.StackAllocated(WasmF64),
-              false,
               env.ce_stack_idx_f64,
               {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
             )
           };
         let (env, loc) =
           switch (global) {
-          | Global => (
+          | Global({exported}) => (
               env,
-              MGlobalBind(next_global(~exported=true, id, alloc), alloc, gc),
+              MGlobalBind(next_global(~exported, id, alloc), alloc),
             )
           | Nonglobal => (
               next_env,
@@ -1022,10 +1034,9 @@ let lift_imports = (env, imports) => {
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create_persistent(mod_);
       let mimp_name = Ident.create_persistent(name);
-      let (alloc, gc) =
+      let alloc =
         switch (imp_shape) {
-        | GlobalShape(HeapAllocated as alloc) => (alloc, true)
-        | GlobalShape(alloc) => (alloc, false)
+        | GlobalShape(alloc) => alloc
         | FunctionShape(_) =>
           failwith("internal: GrainValue had FunctionShape")
         };
@@ -1051,7 +1062,6 @@ let lift_imports = (env, imports) => {
                   Ident.name(mimp_name),
                 ),
                 alloc,
-                gc,
               ),
               env.ce_binds,
             ),
@@ -1060,10 +1070,9 @@ let lift_imports = (env, imports) => {
     | WasmValue(mod_, name) =>
       let mimp_mod = Ident.create_persistent(mod_);
       let mimp_name = Ident.create_persistent(name);
-      let (alloc, gc) =
+      let alloc =
         switch (imp_shape) {
-        | GlobalShape(HeapAllocated as alloc) => (alloc, true)
-        | GlobalShape(alloc) => (alloc, false)
+        | GlobalShape(alloc) => alloc
         | FunctionShape(_) =>
           failwith("internal: WasmValue had FunctionShape")
         };
@@ -1089,7 +1098,6 @@ let lift_imports = (env, imports) => {
                   Ident.name(mimp_name),
                 ),
                 alloc,
-                gc,
               ),
               env.ce_binds,
             ),
@@ -1098,7 +1106,7 @@ let lift_imports = (env, imports) => {
     | WasmFunction(mod_, name) =>
       let glob =
         next_global(
-          ~exported=imp_exported == Global,
+          ~exported=imp_exported == Global({exported: true}),
           imp_use_id,
           Types.StackAllocated(WasmI32),
         );
@@ -1129,11 +1137,7 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(
-                          glob,
-                          Types.StackAllocated(WasmI32),
-                          true,
-                        ),
+                        MGlobalBind(glob, Types.HeapAllocated),
                         {
                           instr_desc:
                             MAllocate(
@@ -1163,7 +1167,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(glob, Types.StackAllocated(WasmI32), true),
+              MGlobalBind(glob, HeapAllocated),
               env.ce_binds,
             ),
         },
@@ -1188,6 +1192,9 @@ let transl_anf_program =
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);
+
+  set_global_imports(env.ce_binds);
+
   let (
     stack_size_ptr,
     stack_size_i32,

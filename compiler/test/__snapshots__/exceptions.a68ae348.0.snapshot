@@ -6,7 +6,7 @@ exceptions › exception_4
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $wimport__grainEnv_relocBase) $Foo_1153)
+ (elem $elem (global.get $wimport__grainEnv_relocBase) $Foo_1155)
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $wimport__grainEnv_moduleRuntimeId i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
@@ -24,7 +24,7 @@ exceptions › exception_4
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_3))
- (func $Foo_1153 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $Foo_1155 (; has Stack IR ;) (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local.set $1
    (tuple.extract 0
@@ -57,7 +57,7 @@ exceptions › exception_4
       )
       (i32.store offset=12
        (local.get $3)
-       (i32.const 2307)
+       (i32.const 2311)
       )
       (i32.store offset=16
        (local.get $3)
@@ -136,7 +136,7 @@ exceptions › exception_4
           )
           (i64.store offset=32
            (local.get $0)
-           (i64.const 12884903041)
+           (i64.const 12884903043)
           )
           (i64.store offset=40
            (local.get $0)
@@ -144,7 +144,7 @@ exceptions › exception_4
           )
           (i64.store offset=48
            (local.get $0)
-           (i64.const 4960687226900)
+           (i64.const 4969277161492)
           )
           (i64.store offset=56
            (local.get $0)
@@ -253,7 +253,7 @@ exceptions › exception_4
          )
          (i32.store offset=12
           (local.get $0)
-          (i32.const 2311)
+          (i32.const 2315)
          )
          (i32.store offset=16
           (local.get $0)

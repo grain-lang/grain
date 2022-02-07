@@ -89,17 +89,37 @@ let convert_binds = anf_binds => {
   let ans =
     switch (last_bind) {
     | BSeq(exp) => AExp.comp(exp)
-    | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], void)
-    | BLetRec(names) => AExp.let_(Recursive, names, void)
-    | BLetExport(rf, binds) => AExp.let_(~global=Global, rf, binds, void)
+    | BLet(name, exp, global) =>
+      AExp.let_(~global, Nonrecursive, [(name, exp)], void)
+    | BLetMut(name, exp, global) =>
+      AExp.let_(
+        ~mut_flag=Mutable,
+        ~global,
+        Nonrecursive,
+        [(name, exp)],
+        void,
+      )
+    | BLetRec(names, global) => AExp.let_(~global, Recursive, names, void)
+    | BLetRecMut(names, global) =>
+      AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, void)
     };
   List.fold_left(
     (body, bind) =>
       switch (bind) {
       | BSeq(exp) => AExp.seq(exp, body)
-      | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], body)
-      | BLetRec(names) => AExp.let_(Recursive, names, body)
-      | BLetExport(rf, binds) => AExp.let_(~global=Global, rf, binds, body)
+      | BLet(name, exp, global) =>
+        AExp.let_(~global, Nonrecursive, [(name, exp)], body)
+      | BLetMut(name, exp, global) =>
+        AExp.let_(
+          ~mut_flag=Mutable,
+          ~global,
+          Nonrecursive,
+          [(name, exp)],
+          body,
+        )
+      | BLetRec(names, global) => AExp.let_(~global, Recursive, names, body)
+      | BLetRecMut(names, global) =>
+        AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, body)
       },
     ans,
     top_binds,
@@ -118,9 +138,10 @@ let extract_bindings = (mut_flag, pat, cexpr) => {
           BLet(
             name,
             {...e, comp_desc: CPrim1(BoxBind, get_imm(e.comp_desc))},
+            Nonglobal,
           )
       )
-    | Immutable => (((name, e)) => BLet(name, e))
+    | Immutable => (((name, e)) => BLet(name, e, Nonglobal))
     };
   List.map(map_fn, MatchCompiler.extract_bindings(pat, cexpr));
 };
@@ -157,7 +178,11 @@ let rec transl_imm =
   | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_fullpath: Path.PExternal(_, original_name, _), val_mutable},
+      {
+        val_fullpath: Path.PExternal(_, original_name, _),
+        val_mutable,
+        val_global,
+      },
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
@@ -166,10 +191,14 @@ let rec transl_imm =
         ~env,
         lookup_symbol(~allocation_type, mod_, mod_decl, ident, original_name),
       );
-    if (val_mutable && !boxed) {
+    if (val_mutable && !val_global && !boxed) {
       let tmp = gensym("unbox_mut");
       let setup = [
-        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
+        BLet(
+          tmp,
+          Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+          Nonglobal,
+        ),
       ];
       (Imm.id(~loc, ~env, tmp), setup);
     } else {
@@ -178,7 +207,7 @@ let rec transl_imm =
   | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_mutable},
+      {val_mutable, val_global},
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
@@ -187,10 +216,14 @@ let rec transl_imm =
         ~env,
         lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
       );
-    if (val_mutable && !boxed) {
+    if (val_mutable && !val_global && !boxed) {
       let tmp = gensym("unbox_mut");
       let setup = [
-        BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
+        BLet(
+          tmp,
+          Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+          Nonglobal,
+        ),
       ];
       (Imm.id(~loc, ~env, tmp), setup);
     } else {
@@ -200,12 +233,16 @@ let rec transl_imm =
     failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
   | TExpIdent(Path.PIdent(ident) as path, _, _) =>
     switch (Env.find_value(path, env)) {
-    | {val_fullpath: Path.PIdent(_), val_mutable} =>
+    | {val_fullpath: Path.PIdent(_), val_mutable, val_global} =>
       let id = Imm.id(~loc, ~env, ident);
-      if (val_mutable && !boxed) {
+      if (val_mutable && !val_global && !boxed) {
         let tmp = gensym("unbox_mut");
         let setup = [
-          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
+          BLet(
+            tmp,
+            Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+            Nonglobal,
+          ),
         ];
         (Imm.id(~loc, ~env, tmp), setup);
       } else {
@@ -214,6 +251,7 @@ let rec transl_imm =
     | {
         val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
         val_mutable,
+        val_global,
       } =>
       let mod_decl = Env.find_module(p, None, env);
       let id =
@@ -222,10 +260,14 @@ let rec transl_imm =
           ~env,
           lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
         );
-      if (val_mutable && !boxed) {
+      if (val_mutable && !val_global && !boxed) {
         let tmp = gensym("unbox_mut");
         let setup = [
-          BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id)),
+          BLet(
+            tmp,
+            Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+            Nonglobal,
+          ),
         ];
         (Imm.id(~loc, ~env, tmp), setup);
       } else {
@@ -239,7 +281,7 @@ let rec transl_imm =
     | Left(imm) => (imm, [])
     | Right((name, cexpr)) =>
       let tmp = gensym(name);
-      (Imm.id(~loc, ~env, tmp), [BLet(tmp, cexpr)]);
+      (Imm.id(~loc, ~env, tmp), [BLet(tmp, cexpr, Nonglobal)]);
     }
   | TExpNull => (Imm.const(~loc, ~env, Const_bool(false)), [])
   | TExpPrim1(op, arg) =>
@@ -248,7 +290,13 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       arg_setup
-      @ [BLet(tmp, Comp.prim1(~loc, ~env, ~allocation_type, op, arg_imm))],
+      @ [
+        BLet(
+          tmp,
+          Comp.prim1(~loc, ~env, ~allocation_type, op, arg_imm),
+          Nonglobal,
+        ),
+      ],
     );
   | TExpPrim2(And, left, right) =>
     let tmp = gensym("boolBinop");
@@ -271,6 +319,7 @@ let rec transl_imm =
               Comp.imm(~loc, ~env, ~allocation_type, left_imm),
             ),
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -295,6 +344,7 @@ let rec transl_imm =
             ),
             transl_anf_expression(right),
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -310,6 +360,7 @@ let rec transl_imm =
         BLet(
           tmp,
           Comp.prim2(~loc, ~env, ~allocation_type, op, left_imm, right_imm),
+          Nonglobal,
         ),
       ],
     );
@@ -319,7 +370,13 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
-      @ [BLet(tmp, Comp.primn(~loc, ~env, ~allocation_type, op, new_args))],
+      @ [
+        BLet(
+          tmp,
+          Comp.primn(~loc, ~env, ~allocation_type, op, new_args),
+          Nonglobal,
+        ),
+      ],
     );
   | TExpBoxAssign(left, right) =>
     let tmp = gensym("assign");
@@ -333,6 +390,31 @@ let rec transl_imm =
         BLet(
           tmp,
           Comp.box_assign(~loc, ~env, ~allocation_type, left_imm, right_imm),
+          Nonglobal,
+        ),
+      ],
+    );
+  | TExpAssign(
+      {exp_desc: TExpIdent(_, _, {val_global: true})} as left,
+      right,
+    ) =>
+    let tmp = gensym("assign");
+    let (left_imm, left_setup) = transl_imm(left);
+    let id =
+      switch (left_imm) {
+      | {imm_desc: ImmId(id)} => id
+      | _ => failwith("Impossible by syntax")
+      };
+
+    let (right_imm, right_setup) = transl_imm(right);
+    (
+      Imm.id(~loc, ~env, tmp),
+      right_setup
+      @ [
+        BLet(
+          tmp,
+          Comp.local_assign(~loc, ~env, ~allocation_type, id, right_imm),
+          Nonglobal,
         ),
       ],
     );
@@ -348,6 +430,7 @@ let rec transl_imm =
         BLet(
           tmp,
           Comp.assign(~loc, ~env, ~allocation_type, left_imm, right_imm),
+          Nonglobal,
         ),
       ],
     );
@@ -368,6 +451,7 @@ let rec transl_imm =
             transl_anf_expression(_then),
             transl_anf_expression(_else),
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -385,6 +469,7 @@ let rec transl_imm =
             None,
             transl_anf_expression(body),
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -409,6 +494,7 @@ let rec transl_imm =
             Option.map(transl_anf_expression, inc),
             transl_anf_expression(body),
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -456,6 +542,7 @@ let rec transl_imm =
             (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
             new_args,
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -501,14 +588,18 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
       @ [
-        BLetRec(List.combine(names, new_binds)),
-        BLet(tmp, Comp.imm(~allocation_type, Imm.const(Const_void))),
+        BLetRec(List.combine(names, new_binds), Nonglobal),
+        BLet(
+          tmp,
+          Comp.imm(~allocation_type, Imm.const(Const_void)),
+          Nonglobal,
+        ),
       ],
     );
   | TExpLambda([{mb_pat, mb_body: body}], _) =>
     let tmp = gensym("lam_lambda");
     let (lam, _) = transl_comp_expression(e);
-    (Imm.id(~loc, ~env, tmp), [BLet(tmp, lam)]);
+    (Imm.id(~loc, ~env, tmp), [BLet(tmp, lam, Nonglobal)]);
   | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")
   | TExpLambda(_, _) => failwith("NYI: transl_imm: Multi-branch lambda")
   | TExpTuple(args) =>
@@ -517,7 +608,7 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
-      @ [BLet(tmp, Comp.tuple(~loc, ~env, new_args))],
+      @ [BLet(tmp, Comp.tuple(~loc, ~env, new_args), Nonglobal)],
     );
   | TExpArray(args) =>
     let tmp = gensym("tup");
@@ -525,7 +616,7 @@ let rec transl_imm =
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)
-      @ [BLet(tmp, Comp.array(~loc, ~env, new_args))],
+      @ [BLet(tmp, Comp.array(~loc, ~env, new_args), Nonglobal)],
     );
   | TExpArrayGet(arr, idx) =>
     let tmp = gensym("array_access");
@@ -539,6 +630,7 @@ let rec transl_imm =
         BLet(
           tmp,
           Comp.array_get(~loc, ~env, ~allocation_type, idx_var, arr_var),
+          Nonglobal,
         ),
       ],
     );
@@ -563,6 +655,7 @@ let rec transl_imm =
             arr_var,
             arg_var,
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -608,6 +701,7 @@ let rec transl_imm =
             ),
             new_args,
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -627,6 +721,7 @@ let rec transl_imm =
             Int32.of_int(ld.lbl_pos),
             var,
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -649,6 +744,7 @@ let rec transl_imm =
             record,
             arg,
           ),
+          Nonglobal,
         ),
       ],
     );
@@ -664,13 +760,16 @@ let rec transl_imm =
         transl_imm,
         exp_ans,
       );
-    (Imm.id(~loc, ~env, tmp), (exp_setup @ setup) @ [BLet(tmp, ans)]);
+    (
+      Imm.id(~loc, ~env, tmp),
+      (exp_setup @ setup) @ [BLet(tmp, ans, Nonglobal)],
+    );
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
   };
 }
 
 and bind_patts =
-    (~exported=false, ~mut_flag, pat: pattern): (Ident.t, list(anf_bind)) => {
+    (~mut_flag, ~global, pat: pattern): (Ident.t, list(anf_bind)) => {
   let postprocess_item = (cur, acc) =>
     switch (cur) {
     | None => acc
@@ -697,8 +796,8 @@ and bind_patts =
           )
         };
       let binds =
-        switch (mut_flag) {
-        | Mutable =>
+        switch (mut_flag, global) {
+        | (Mutable, Nonglobal) =>
           let tmp = gensym("mut_bind_destructure");
           let boxed =
             Comp.prim1(
@@ -706,20 +805,9 @@ and bind_patts =
               BoxBind,
               Imm.id(tmp),
             );
-          if (exported) {
-            [
-              BLet(tmp, access),
-              BLetExport(Nonrecursive, [(ident, boxed)]),
-            ];
-          } else {
-            [BLet(tmp, access), BLet(ident, boxed)];
-          };
-        | Immutable =>
-          if (exported) {
-            [BLetExport(Nonrecursive, [(ident, access)])];
-          } else {
-            [BLet(ident, access)];
-          }
+          [BLet(tmp, access, Nonglobal), BLet(ident, boxed, global)];
+        | (Mutable, Global(_)) => [BLetMut(ident, access, global)]
+        | _ => [BLet(ident, access, global)]
         };
       binds @ extras @ acc;
     };
@@ -914,7 +1002,7 @@ and transl_comp_expression =
         ...e,
         exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
       });
-    (body_ans, exp_setup @ [BLet(bind, exp_ans)] @ body_setup);
+    (body_ans, exp_setup @ [BLet(bind, exp_ans, Nonglobal)] @ body_setup);
   | TExpLet(
       Nonrecursive,
       mut_flag,
@@ -932,14 +1020,17 @@ and transl_comp_expression =
     let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
 
     /* Extract items from destructure */
-    let (tmp, anf_patts) = bind_patts(~mut_flag, pat);
+    let (tmp, anf_patts) = bind_patts(~mut_flag, ~global=Nonglobal, pat);
 
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
         exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
       });
-    (body_ans, exp_setup @ [BLet(tmp, exp_ans), ...anf_patts] @ body_setup);
+    (
+      body_ans,
+      exp_setup @ [BLet(tmp, exp_ans, Nonglobal), ...anf_patts] @ body_setup,
+    );
 
   | TExpLet(Nonrecursive, _, [_, ..._]) => failwith("Impossible by pre_anf")
   | TExpLet(Recursive, mut_flag, binds) =>
@@ -972,7 +1063,8 @@ and transl_comp_expression =
       );
     (
       Comp.imm(~allocation_type, Imm.const(Const_void)),
-      List.concat(new_setup) @ [BLetRec(List.combine(names, new_binds))],
+      List.concat(new_setup)
+      @ [BLetRec(List.combine(names, new_binds), Nonglobal)],
     );
   | TExpLambda(
       [
@@ -1129,11 +1221,26 @@ and transl_anf_expression =
   List.fold_right(
     (bind, body) =>
       switch (bind) {
+      | BLet(_, _, Global(_))
+      | BLetMut(_, _, Global(_))
+      | BLetRec(_, Global(_)) => failwith("Global bind at non-toplevel")
       | BSeq(exp) => AExp.seq(~loc, ~env, exp, body)
-      | BLet(name, exp) =>
-        AExp.let_(~loc, ~env, Nonrecursive, [(name, exp)], body)
-      | BLetRec(names) => AExp.let_(~loc, ~env, Recursive, names, body)
-      | BLetExport(name, exp) => failwith("Global bind at non-toplevel")
+      | BLet(name, exp, global) =>
+        AExp.let_(~loc, ~env, ~global, Nonrecursive, [(name, exp)], body)
+      | BLetMut(name, exp, global) =>
+        AExp.let_(~loc, ~env, ~global, Nonrecursive, [(name, exp)], body)
+      | BLetRec(names, global) =>
+        AExp.let_(~loc, ~env, ~global, Recursive, names, body)
+      | BLetRecMut(names, global) =>
+        AExp.let_(
+          ~loc,
+          ~env,
+          ~mut_flag=Mutable,
+          ~global,
+          Recursive,
+          names,
+          body,
+        )
       },
     ans_setup,
     AExp.comp(~loc, ~env, ans),
@@ -1201,7 +1308,7 @@ let bind_constructor =
       );
     | CstrUnboxed => failwith("NYI: ANF CstrUnboxed")
     };
-  BLetExport(Nonrecursive, [(cd_id, rhs)]);
+  BLet(cd_id, rhs, Global({exported: true}));
 };
 
 let linearize_decl = (env, loc, typath, decl) => {
@@ -1265,63 +1372,29 @@ let rec transl_anf_statement =
       | TPatVar(bind, _)
       | TPatAlias({pat_desc: TPatAny}, bind, _) =>
         switch (mut_flag) {
-        | Mutable =>
-          let tmp = gensym("mut_bind_destructure");
-          let boxed =
-            Comp.prim1(
-              ~allocation_type=
-                get_allocation_type(vb_expr.exp_env, vb_expr.exp_type),
-              BoxBind,
-              Imm.id(tmp),
-            );
-          if (exported) {
-            [
-              BLet(tmp, exp_ans),
-              BLetExport(Nonrecursive, [(bind, boxed)]),
-            ];
-          } else {
-            [BLet(tmp, exp_ans), BLet(bind, boxed)];
-          };
-        | Immutable =>
-          if (exported) {
-            [BLetExport(Nonrecursive, [(bind, exp_ans)])];
-          } else {
-            [BLet(bind, exp_ans)];
-          }
+        | Mutable => [BLetMut(bind, exp_ans, Global({exported: exported}))]
+        | Immutable => [BLet(bind, exp_ans, Global({exported: exported}))]
         }
       | TPatTuple(_)
       | TPatRecord(_) =>
-        let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag, vb_pat);
-        [BLet(tmp, exp_ans), ...anf_patts];
+        let (tmp, anf_patts) =
+          bind_patts(
+            ~mut_flag,
+            ~global=Global({exported: exported}),
+            vb_pat,
+          );
+        [BLet(tmp, exp_ans, Global({exported: exported})), ...anf_patts];
       | TPatAlias(patt, bind, _) =>
         let binds =
           switch (mut_flag) {
-          | Mutable =>
-            let tmp = gensym("mut_bind_destructure");
-            let boxed =
-              Comp.prim1(
-                ~allocation_type=
-                  get_allocation_type(patt.pat_env, patt.pat_type),
-                BoxBind,
-                Imm.id(tmp),
-              );
-            if (exported) {
-              [
-                BLet(tmp, exp_ans),
-                BLetExport(Nonrecursive, [(bind, boxed)]),
-              ];
-            } else {
-              [BLet(tmp, exp_ans), BLet(bind, boxed)];
-            };
-          | Immutable =>
-            if (exported) {
-              [BLetExport(Nonrecursive, [(bind, exp_ans)])];
-            } else {
-              [BLet(bind, exp_ans)];
-            }
+          | Mutable => [
+              BLetMut(bind, exp_ans, Global({exported: exported})),
+            ]
+          | Immutable => [BLet(bind, exp_ans, Global({exported: exported}))]
           };
-        let (tmp, anf_patts) = bind_patts(~exported, ~mut_flag, patt);
-        binds @ [BLet(tmp, exp_ans), ...anf_patts];
+        let (tmp, anf_patts) =
+          bind_patts(~mut_flag, ~global=Global({exported: exported}), patt);
+        binds @ [BLet(tmp, exp_ans, Nonglobal), ...anf_patts];
       | TPatAny => [BSeq(exp_ans)]
       | _ =>
         failwith(
@@ -1366,22 +1439,23 @@ let rec transl_anf_statement =
         binds,
       );
 
-    switch (export_flag) {
-    | Exported => (
-        Some(
-          List.concat(new_setup)
-          @ [BLetExport(Recursive, List.combine(names, new_binds))],
-        ),
-        [],
-      )
-    | Nonexported => (
-        Some(
-          List.concat(new_setup)
-          @ [BLetRec(List.combine(names, new_binds))],
-        ),
-        [],
-      )
-    };
+    let exported = export_flag == Exported;
+    let bind =
+      switch (mut_flag) {
+      | Mutable => [
+          BLetRecMut(
+            List.combine(names, new_binds),
+            Global({exported: exported}),
+          ),
+        ]
+      | Immutable => [
+          BLetRec(
+            List.combine(names, new_binds),
+            Global({exported: exported}),
+          ),
+        ]
+      };
+    (Some(List.concat(new_setup) @ bind), []);
   | TTopExpr(expr) =>
     let expr = {...expr, exp_attributes: attributes};
     let (comp, setup) = transl_comp_expression(expr);
@@ -1410,7 +1484,7 @@ let rec transl_anf_statement =
   | TTopForeign(exported, desc) =>
     let global =
       switch (exported) {
-      | Exported => Global
+      | Exported => Global({exported: true})
       | Nonexported => Nonglobal
       };
     let external_name =

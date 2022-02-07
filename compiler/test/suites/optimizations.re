@@ -211,65 +211,113 @@ describe("optimizations", ({test}) => {
   );
   assertAnf(
     "test_local_mutations1",
-    "let mut x = 5; x = 6",
+    "export let foo = () => {let mut x = 5; x = 6}",
     {
       open Grain_typed;
+      let foo = Ident.create("foo");
       let x = Ident.create("x");
       AExp.let_(
         Nonrecursive,
-        ~mut_flag=Mutable,
+        ~global=Global({exported: true}),
         [
           (
-            x,
-            Comp.imm(
-              ~allocation_type=HeapAllocated,
-              Imm.const(Const_number(Const_number_int(5L))),
+            foo,
+            Comp.lambda(
+              ~name="foo",
+              [],
+              (
+                AExp.let_(
+                  Nonrecursive,
+                  ~mut_flag=Mutable,
+                  [
+                    (
+                      x,
+                      Comp.imm(
+                        ~allocation_type=HeapAllocated,
+                        Imm.const(Const_number(Const_number_int(5L))),
+                      ),
+                    ),
+                  ],
+                ) @@
+                AExp.comp(
+                  Comp.local_assign(
+                    ~allocation_type=StackAllocated(WasmI32),
+                    x,
+                    Imm.const(Const_number(Const_number_int(6L))),
+                  ),
+                ),
+                StackAllocated(WasmI32),
+              ),
             ),
           ),
         ],
-      ) @@
-      AExp.comp(
-        Comp.local_assign(
-          ~allocation_type=StackAllocated(WasmI32),
-          x,
-          Imm.const(Const_number(Const_number_int(6L))),
+        AExp.comp(
+          Comp.imm(
+            ~allocation_type=StackAllocated(WasmI32),
+            Imm.const(Const_void),
+          ),
         ),
       );
     },
   );
   assertAnf(
     "test_no_local_mutation_optimization_of_closure_scope_mut",
-    "/* grainc-flags --experimental-wasm-tail-call */ let mut x = 5; let foo = () => x; foo()",
+    "/* grainc-flags --experimental-wasm-tail-call */ export let bar = () => { let mut x = 5; let foo = () => x; foo() }",
     {
       open Grain_typed;
       let x = Ident.create("x");
+      let bar = Ident.create("bar");
       let foo = Ident.create("foo");
       AExp.let_(
         Nonrecursive,
+        ~global=Global({exported: true}),
         [
           (
-            x,
-            Comp.prim1(
-              ~allocation_type=HeapAllocated,
-              BoxBind,
-              Imm.const(Const_number(Const_number_int(5L))),
-            ),
-          ),
-        ],
-      ) @@
-      AExp.let_(
-        Nonrecursive,
-        [
-          (
-            foo,
+            bar,
             Comp.lambda(
+              ~name="bar",
               [],
               (
+                AExp.let_(
+                  Nonrecursive,
+                  [
+                    (
+                      x,
+                      Comp.prim1(
+                        ~allocation_type=HeapAllocated,
+                        BoxBind,
+                        Imm.const(Const_number(Const_number_int(5L))),
+                      ),
+                    ),
+                  ],
+                ) @@
+                AExp.let_(
+                  Nonrecursive,
+                  [
+                    (
+                      foo,
+                      Comp.lambda(
+                        [],
+                        (
+                          AExp.comp(
+                            Comp.prim1(
+                              ~allocation_type=HeapAllocated,
+                              UnboxBind,
+                              Imm.id(x),
+                            ),
+                          ),
+                          HeapAllocated,
+                        ),
+                      ),
+                    ),
+                  ],
+                ) @@
                 AExp.comp(
-                  Comp.prim1(
+                  Comp.app(
+                    ~tail=true,
                     ~allocation_type=HeapAllocated,
-                    UnboxBind,
-                    Imm.id(x),
+                    (Imm.id(foo), ([], HeapAllocated)),
+                    [],
                   ),
                 ),
                 HeapAllocated,
@@ -277,13 +325,11 @@ describe("optimizations", ({test}) => {
             ),
           ),
         ],
-      ) @@
-      AExp.comp(
-        Comp.app(
-          ~tail=true,
-          ~allocation_type=HeapAllocated,
-          (Imm.id(foo), ([], HeapAllocated)),
-          [],
+        AExp.comp(
+          Comp.imm(
+            ~allocation_type=StackAllocated(WasmI32),
+            Imm.const(Const_void),
+          ),
         ),
       );
     },
@@ -391,7 +437,7 @@ describe("optimizations", ({test}) => {
       let arg = Ident.create("lambda_arg");
       let app = Ident.create("app");
       AExp.let_(
-        ~global=Global,
+        ~global=Global({exported: true}),
         Nonrecursive,
         [
           (
@@ -465,7 +511,7 @@ describe("optimizations", ({test}) => {
       let fill = Ident.create("fill");
       let copy = Ident.create("copy");
       AExp.let_(
-        ~global=Global,
+        ~global=Global({exported: true}),
         Nonrecursive,
         [
           (
@@ -546,7 +592,7 @@ describe("optimizations", ({test}) => {
       open Grain_typed;
       let foo = Ident.create("foo");
       AExp.let_(
-        ~global=Global,
+        ~global=Global({exported: true}),
         Nonrecursive,
         [
           (

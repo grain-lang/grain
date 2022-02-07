@@ -14,144 +14,136 @@ arrays › array_access4
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/exception\" \"printException\" (func $wimport_GRAIN$MODULE$runtime/exception_printException (param i32 i32) (result i32)))
- (global $global_1 i32 (i32.const 0))
+ (global $global_0 (mut i32) (i32.const 0))
+ (global $global_2 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $global_1))
+ (export \"GRAIN$TABLE_SIZE\" (global $global_2))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
   (local $2 i32)
-  (local $3 i32)
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (block (result i32)
-      (if
-       (i32.lt_s
-        (local.tee $1
-         (i32.const -2)
-        )
-        (i32.sub
-         (i32.const 0)
-         (i32.load offset=4
-          (local.tee $2
+  (tuple.extract 0
+   (tuple.make
+    (block (result i32)
+     (global.set $global_0
+      (tuple.extract 0
+       (tuple.make
+        (block (result i32)
+         (i32.store
+          (local.tee $0
            (tuple.extract 0
             (tuple.make
-             (local.tee $3
-              (tuple.extract 0
-               (tuple.make
-                (block (result i32)
-                 (i32.store
-                  (local.tee $0
-                   (tuple.extract 0
-                    (tuple.make
-                     (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-                      (i32.const 20)
-                     )
-                     (i32.const 0)
-                    )
-                   )
-                  )
-                  (i32.const 5)
-                 )
-                 (i32.store offset=4
-                  (local.get $0)
-                  (i32.const 3)
-                 )
-                 (i32.store offset=8
-                  (local.get $0)
-                  (i32.const 3)
-                 )
-                 (i32.store offset=12
-                  (local.get $0)
-                  (i32.const 5)
-                 )
-                 (i32.store offset=16
-                  (local.get $0)
-                  (i32.const 7)
-                 )
-                 (local.get $0)
-                )
-                (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                 (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-                 (i32.const 0)
-                )
-               )
-              )
+             (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+              (i32.const 20)
              )
              (i32.const 0)
             )
            )
           )
+          (i32.const 5)
          )
-        )
-       )
-       (block
-        (drop
-         (call $wimport_GRAIN$MODULE$runtime/exception_printException
-          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException)
-          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds)
+         (i32.store offset=4
+          (local.get $0)
+          (i32.const 3)
          )
-        )
-        (unreachable)
-       )
-      )
-      (if
-       (i32.le_s
-        (i32.load offset=4
-         (local.get $2)
-        )
-        (local.get $1)
-       )
-       (block
-        (drop
-         (call $wimport_GRAIN$MODULE$runtime/exception_printException
-          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException)
-          (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds)
+         (i32.store offset=8
+          (local.get $0)
+          (i32.const 3)
          )
-        )
-        (unreachable)
-       )
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (i32.load offset=8
-        (i32.add
-         (i32.shl
-          (if (result i32)
-           (i32.lt_s
-            (local.get $1)
-            (i32.const 0)
-           )
-           (i32.add
-            (local.get $1)
-            (i32.load offset=4
-             (local.get $2)
-            )
-           )
-           (local.get $1)
-          )
-          (i32.const 2)
+         (i32.store offset=12
+          (local.get $0)
+          (i32.const 5)
          )
-         (local.get $2)
+         (i32.store offset=16
+          (local.get $0)
+          (i32.const 7)
+         )
+         (local.get $0)
+        )
+        (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (global.get $global_0)
         )
        )
       )
      )
-     (local.get $0)
+     (if
+      (i32.lt_s
+       (local.tee $1
+        (i32.const -2)
+       )
+       (i32.sub
+        (i32.const 0)
+        (i32.load offset=4
+         (local.tee $2
+          (tuple.extract 0
+           (tuple.make
+            (global.get $global_0)
+            (i32.const 0)
+           )
+          )
+         )
+        )
+       )
+      )
+      (block
+       (drop
+        (call $wimport_GRAIN$MODULE$runtime/exception_printException
+         (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException)
+         (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds)
+        )
+       )
+       (unreachable)
+      )
+     )
+     (if
+      (i32.le_s
+       (i32.load offset=4
+        (local.get $2)
+       )
+       (local.get $1)
+      )
+      (block
+       (drop
+        (call $wimport_GRAIN$MODULE$runtime/exception_printException
+         (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$printException)
+         (global.get $wimport_GRAIN$MODULE$runtime/exception_GRAIN$EXPORT$IndexOutOfBounds)
+        )
+       )
+       (unreachable)
+      )
+     )
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (i32.load offset=8
+       (i32.add
+        (i32.shl
+         (if (result i32)
+          (i32.lt_s
+           (local.get $1)
+           (i32.const 0)
+          )
+          (i32.add
+           (local.get $1)
+           (i32.load offset=4
+            (local.get $2)
+           )
+          )
+          (local.get $1)
+         )
+         (i32.const 2)
+        )
+        (local.get $2)
+       )
+      )
+     )
     )
+    (local.get $0)
    )
   )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $3)
-   )
-  )
-  (local.get $0)
  )
  (func $_start (; has Stack IR ;)
   (drop
