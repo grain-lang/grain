@@ -130,6 +130,7 @@ let cstr = (id, args) => {
 
 let ident_false = ident_create("false")
 and ident_true = ident_create("true")
+and ident_void_cstr = ident_create("()")
 and ident_some = ident_create("Some")
 and ident_none = ident_create("None")
 and ident_ok = ident_create("Ok")
