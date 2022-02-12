@@ -73,15 +73,23 @@ let process_completion =
   switch (Utils.getTextDocumenUriAndPosition(json)) {
   | (Some(uri), Some(line), Some(char)) =>
     let completable = get_original_text(log, documents, uri, line, char);
-
     switch (completable) {
-    | Nothing => log("Nothing to complete")
+    | Nothing =>
+      log("Nothing to complete");
+      Rpc.send_completion(log, stdout, id, []);
     | Lident(text) =>
       if (!Hashtbl.mem(cached_code, uri)) {
-        log("Can't find compiled code for " ++ uri);
+        // no compiled code available
+        Rpc.send_completion(
+          log,
+          stdout,
+          id,
+          [],
+        );
       } else {
         let compiledCode = Hashtbl.find(cached_code, uri);
 
+        let modules = Env.get_all_modules(compiledCode.env);
         let firstChar = text.[0];
 
         let completions =
@@ -89,19 +97,13 @@ let process_completion =
           | 'A' .. 'Z' =>
             if (String.contains(text, '.')) {
               // find module name
-
               let pos = String.rindex(text, '.');
               let modName = String.sub(text, 0, pos);
               let ident: Ident.t = {name: modName, stamp: 0, flags: 0};
               let mod_ident: Path.t = PIdent(ident);
 
-              // only look up completions for imported modules
-
               log("looking for module " ++ modName);
-
-              let modules = Env.get_all_modules(compiledCode.env);
-              let _ = List.map((m: Ident.t) => log(m.name), modules);
-
+              // only look up completions for imported modules
               if (!List.exists((m: Ident.t) => m.name == modName, modules)) {
                 [];
               } else {
@@ -120,7 +122,6 @@ let process_completion =
                           (s: Types.signature_item) => {
                             switch (s) {
                             | TSigValue(ident, vd) =>
-                              log("Complete on TSigValue");
                               let string_of_value_description =
                                   (~ident: Ident.t, vd) => {
                                 Format.asprintf(
@@ -129,7 +130,6 @@ let process_completion =
                                   vd,
                                 );
                               };
-                              log(string_of_value_description(~ident, vd));
                               let item: Rpc.completion_item = {
                                 label: ident.name,
                                 kind: 3,
@@ -139,7 +139,7 @@ let process_completion =
                               Some(item);
 
                             | TSigType(ident, td, recstatus) =>
-                              log("Completing A TSigType");
+                              //log("Completing A TSigType");
                               // let string_of_type_declaration =
                               //     (~ident: Ident.t, td) => {
                               //   (
@@ -151,19 +151,14 @@ let process_completion =
                               //     ),
                               //   );
                               // };
-                              // log(string_of_type_declaration(~ident, td));
-                              None;
-                            | _ =>
-                              log("Not a TSigType");
-                              None;
+                              None
+                            | _ => None
                             }
                           },
                           sigs,
                         );
                       fnsigs;
-                    | _ =>
-                      log("not a TModSignature");
-                      [];
+                    | _ => []
                     };
                   }
                 | exception _ =>
@@ -173,44 +168,18 @@ let process_completion =
               };
             } else {
               let modules = Env.get_all_modules(compiledCode.env);
-              log("Completing modules");
 
-              let modules =
-                List.map(
-                  (m: Ident.t) => {
-                    let item: Rpc.completion_item = {
-                      label: m.name,
-                      kind: 9,
-                      detail: "",
-                    };
-                    item;
-                  },
-                  modules,
-                );
-
-              //   let values: list((Ident.t, Types.value_description)) =
-              //     Env.get_all_values(log, compiledCode.env);
-
-              //   let upperVals =
-              //     List.filter_map(
-              //       ((i: Ident.t, l: Types.value_description)) => {
-              //         switch (i.name.[0]) {
-              //         | 'A' .. 'Z' =>
-              //           let item: Rpc.completion_item = {
-              //             label: i.name,
-              //             kind: 9,
-              //             detail: Utils.lens_sig(l.val_type),
-              //           };
-              //           Some(item);
-              //         | _ => None
-              //         }
-              //       },
-              //       values,
-              //     );
-
-              //   modules @ upperVals;
-
-              modules;
+              List.map(
+                (m: Ident.t) => {
+                  let item: Rpc.completion_item = {
+                    label: m.name,
+                    kind: 9,
+                    detail: "",
+                  };
+                  item;
+                },
+                modules,
+              );
             }
 
           | _ =>
