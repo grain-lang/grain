@@ -2750,3 +2750,59 @@ let () = {
       }
     );
 };
+
+// LSP additions
+
+let find_all_labels = (env): list(Types.label_description) =>
+  // let labels = env.labels;
+  //  let data = IdTbl.find_all(env);
+  //  EnvLazy.force(subst_modtype_maker, data);
+  try({
+    let current = env.labels.current;
+
+    let acc =
+      Ident.fold_all((k, desc, accu) => [desc, ...accu], current, []);
+
+    // switch (env.labels.opened) {
+    // | None => []
+    // | Some(labels) => []
+    // };
+    acc;
+  }) {
+  | Not_found => raise(Not_found)
+  };
+
+let get_all_values = (log, env): list((Ident.t, Types.value_description)) =>
+  try({
+    let current = env.values.current;
+
+    let acc =
+      Ident.fold_all((k, desc, accu) => [(k, desc), ...accu], current, []);
+
+    let _ =
+      switch (env.labels.opened) {
+      | None =>
+        log("*****Nothing opened");
+        [];
+      | Some(opened) =>
+        let next = opened.next;
+        log("***** We have opened");
+        [];
+      };
+    acc;
+  }) {
+  | Not_found => raise(Not_found)
+  };
+
+let get_all_modules = (env): list(Ident.t) =>
+  try({
+    let current = env.modules.current;
+    Ident.fold_all((k, _, accu) => [k, ...accu], current, []);
+  }) {
+  // switch (env.labels.opened) {
+  // | None => []
+  // | Some(labels) => []
+  // };
+
+  | Not_found => raise(Not_found)
+  };
