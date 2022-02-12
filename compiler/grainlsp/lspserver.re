@@ -25,13 +25,23 @@ let loop = log =>
           Hover.get_hover(log, id, json, compiled_code)
         | "textDocument/codeLens" =>
           Lenses.process_get_lenses(log, id, json, compiled_code)
-        | "textDocument/definition" =>
-          Definitions.goto_definition(
+        // Disabled until we can get locations for external values back with locations
+        // | "textDocument/definition" =>
+        //   Definitions.goto_definition(
+        //     log,
+        //     id,
+        //     json,
+        //     compiled_code,
+        //     cached_code,
+        //   )
+        | "textDocument/completion" =>
+          Completion.process_completion(
             log,
             id,
             json,
             compiled_code,
             cached_code,
+            documents,
           )
         | "shutdown" =>
           Rpc.send_null_message(log, stdout, id);

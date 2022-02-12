@@ -23,6 +23,8 @@ let goto_definition = (log, id, json, compiled_code, cached_code) => {
             switch (Env.find_value(path, compiled_code.env)) {
             | exception exn => log("No definition found")
             | lookup =>
+              // Currently broken due to Subst.loc returning without location
+              // so we don't advertise this.
               let loc = lookup.val_loc;
               let (filename, _, _, _) =
                 Locations.get_raw_pos_info(loc.loc_start);

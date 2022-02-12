@@ -1,15 +1,15 @@
 let jsonrpc = "2.0";
 
-type protocolMsg =
+type protocol_msg =
   | Message(int, string, Yojson.Safe.t)
   | Error(string)
   | Notification(string, Yojson.Safe.t);
 
-// [@deriving yojson]
-// type completion_values = {
-//   resolveProvider: bool,
-//   triggerCharacters: list(string),
-// };
+[@deriving yojson]
+type completion_values = {
+  resolveProvider: bool,
+  triggerCharacters: list(string),
+};
 
 // [@deriving yojson]
 // type signature_helpers = {
@@ -25,7 +25,7 @@ type lsp_capabilities = {
   documentFormattingProvider: bool,
   textDocumentSync: int,
   hoverProvider: bool,
-  // completionProvider: completion_values,
+  completionProvider: completion_values,
   // signatureHelpProvider: signature_helpers,
   definitionProvider: bool,
   typeDefinitionProvider: bool,
@@ -139,6 +139,26 @@ type definition_response = {
   result: definition_result,
 };
 
+[@deriving yojson]
+type completion_item = {
+  label: string,
+  kind: int,
+  detail: string,
+};
+
+[@deriving yojson]
+type completion_result = {
+  isIncomplete: bool,
+  items: list(completion_item),
+};
+
+[@deriving yojson]
+type completion_response = {
+  jsonrpc: string,
+  id: int,
+  result: completion_result,
+};
+
 let convert_range = range => {
   let r_start: position = {
     line: range.start_line - 1,
@@ -148,7 +168,7 @@ let convert_range = range => {
   {start: r_start, range_end: r_end};
 };
 
-let read_message = (log, input): protocolMsg => {
+let read_message = (log, input): protocol_msg => {
   let clength = input_line(input);
   let cl = "Content-Length: ";
   let cll = String.length(cl);
@@ -207,10 +227,10 @@ let send_capabilities = (log, output, id: int) => {
   //     retriggerCharacters: [","],
   //   };
 
-  //   let completion_vals: completion_values = {
-  //     resolveProvider: true,
-  //     triggerCharacters: ["."],
-  //   };
+  let completion_vals: completion_values = {
+    resolveProvider: true,
+    triggerCharacters: ["."],
+  };
 
   let codeVals: code_values = {resolveProvider: true};
 
@@ -218,9 +238,9 @@ let send_capabilities = (log, output, id: int) => {
     documentFormattingProvider: false,
     textDocumentSync: 1,
     hoverProvider: true,
-    //  completionProvider: completion_vals,
+    completionProvider: completion_vals,
     //  signatureHelpProvider: sig_helpers,
-    definitionProvider: true,
+    definitionProvider: false, // disabled until we can resolve the external module location
     typeDefinitionProvider: false,
     referencesProvider: false,
     documentSymbolProvider: false,
@@ -351,6 +371,32 @@ let send_go_to_definition =
   let definition_info: definition_result = {uri, range: range_ext};
   let response: definition_response = {jsonrpc, id, result: definition_info};
   let res = definition_response_to_yojson(response);
+  let strJson = Yojson.Safe.pretty_to_string(res);
+
+  send(output, strJson);
+};
+
+let send_completion =
+    (log, output, id: int, completions: list(completion_item)) => {
+  // let items = List.map(item => completion_item_to_yojson(item), completions);
+
+  // let sigInfo =
+  //   `Assoc([("isIncomplete", `Bool(false)), ("items", `List(items))]);
+
+  // let res =
+  //   `Assoc([
+  //     ("jsonrpc", `String("2.0")),
+  //     ("id", `Int(id)),
+  //     ("result", sigInfo),
+  //   ]);
+
+  let completion_info: completion_result = {
+    isIncomplete: false,
+    items: completions,
+  };
+  let response: completion_response = {jsonrpc, id, result: completion_info};
+
+  let res = completion_response_to_yojson(response);
   let strJson = Yojson.Safe.pretty_to_string(res);
 
   send(output, strJson);

@@ -1,7 +1,8 @@
 (library
  (name lspserver)
  (public_name grain.lspserver)
- (modules log utils rpc lenses processcode hover definitions lspserver)
+ (modules log utils rpc lenses processcode hover definitions completion
+   lspserver)
  (libraries grain grain_diagnostics grain_parsing grain_utils
    ppx_deriving_yojson.runtime yojson)
  (preprocess
