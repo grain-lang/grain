@@ -205,7 +205,7 @@ program
   .command("lsp")
   .description("start the Grain LSP server")
   .action(
-    wrapAction(function (options,program) {
+    wrapAction(function (options, program) {
       // The lsp subcommand inherits all options of the
       // top level grain command
       lsp(program);

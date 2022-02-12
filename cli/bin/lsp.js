@@ -1,6 +1,5 @@
 const exec = require("./exec");
 
 module.exports = function (program) {
-
-  exec.grainlsp( program, { stdio: "inherit" });
+  exec.grainlsp(program, { stdio: "inherit" });
 };
