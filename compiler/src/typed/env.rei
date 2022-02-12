@@ -323,7 +323,6 @@ let summary: t => summary;
 
 // LSP additions
 
-let find_all_labels: t => list(Types.label_description);
 let get_all_values:
   (string => unit, t) => list((Ident.t, Types.value_description));
 let get_all_modules: t => list(Ident.t);
