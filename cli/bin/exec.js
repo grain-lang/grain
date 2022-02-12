@@ -111,10 +111,7 @@ function getGrainlsp() {
 
 const grainlsp = getGrainlsp();
 
-function execGrainlsp(
-  program,
-  execOpts = { stdio: "pipe" }
-) {
+function execGrainlsp(program, execOpts = { stdio: "pipe" }) {
   const flags = [];
 
   const options = program.parent.options.concat(program.options);
@@ -125,10 +122,7 @@ function execGrainlsp(
     if (flag) flags.push(flag);
   });
 
-  return execSync(
-    `${grainlsp} ${flags.join(" ")} `,
-    execOpts
-  );
+  return execSync(`${grainlsp} ${flags.join(" ")} `, execOpts);
 }
 
 module.exports = {
