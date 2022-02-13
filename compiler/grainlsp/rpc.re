@@ -120,8 +120,14 @@ type markup_content = {
 };
 
 [@deriving yojson]
+type marked_string = {
+  language: string,
+  value: string,
+};
+
+[@deriving yojson]
 type hover_result = {
-  contents: markup_content,
+  contents: marked_string,
   range,
 };
 
@@ -298,7 +304,7 @@ let send_hover = (log, output, id: int, signature, range: range_t) => {
   let range_ext = convert_range(range);
   let hover_info: hover_result = {
     contents: {
-      kind: "markdown",
+      language: "grain",
       value: signature,
     },
     range: range_ext,

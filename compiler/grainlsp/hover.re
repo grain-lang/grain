@@ -185,18 +185,12 @@ let get_hover_from_statement =
               let printed_vals =
                 List.fold_left(
                   (acc, v: Rpc.completion_item) =>
-                    acc ++ "let " ++ v.detail ++ "  \n",
+                    acc ++ "  let " ++ v.detail ++ "\n",
                   "",
                   vals,
                 );
-              "### "
-              ++ modname
-              ++ "\n"
-              ++ "```grain\n"
-              ++ "{\n"
-              ++ printed_vals
-              ++ "}"
-              ++ "```";
+
+              "{\n" ++ printed_vals ++ "}";
             } else {
               Utils.lens_sig(e.exp_type);
             };
