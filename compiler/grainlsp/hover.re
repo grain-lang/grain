@@ -1,7 +1,15 @@
 open Grain_typed;
 
 let get_hover_from_statement =
-    (log, stmt: Typedtree.toplevel_stmt, line, char) =>
+    (
+      log,
+      stmt: Typedtree.toplevel_stmt,
+      uri,
+      line,
+      char,
+      documents,
+      compiled_code,
+    ) =>
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => ("import declaration", None)
   | TTopForeign(export_flag, value_description) => ("foreign", None)
@@ -111,12 +119,114 @@ let get_hover_from_statement =
   | TTopExpr(expression) =>
     let node = Utils.get_node_from_expression(log, expression, line, char);
     switch (node) {
-    | Error(err) => (err, None)
+    | Error(err) => ("NYI: " ++ err, None)
     | NotInRange => (
         Utils.lens_sig(expression.exp_type),
         Some(expression.exp_loc),
       )
-    | Expression(e) => (Utils.lens_sig(e.exp_type), Some(e.exp_loc))
+    | Expression(e) =>
+      let desc = e.exp_desc;
+      let txt =
+        switch (desc) {
+        | TExpIdent(path, loc, vd) =>
+          log("hover line " ++ string_of_int(line));
+          log("hover char " ++ string_of_int(char));
+
+          // let original =
+          //   Utils.get_original_text(log, documents, uri, line - 1, char);
+
+          // switch (original) {
+          // | Nothing => log("No original code")
+          // | Lident(text) => log("hovering over " ++ text)
+          // };
+
+          // "TExpIdent";
+
+          let parts =
+            switch (path) {
+            | PIdent(ident) => ("", ident.name)
+            | PExternal(mod_path, name, _) => (
+                switch (mod_path) {
+                | PIdent(ident) => ident.name
+                | PExternal(mod_path, name, _) => ""
+                },
+                name,
+              )
+            };
+
+          let (modname, func) = parts;
+
+          // work out if the cursor is in the module name or the func name
+
+          if (modname == "") {
+            log("no mod name");
+            func;
+          } else {
+            let lstart = loc.loc.loc_start;
+
+            let mod_start = lstart.pos_cnum - lstart.pos_bol;
+
+            log("mod_start " ++ string_of_int(mod_start));
+
+            let mod_end = mod_start + String.length(modname);
+
+            log("mod_end " ++ string_of_int(mod_end));
+
+            log("char is " ++ string_of_int(char));
+
+            if (char < mod_end) {
+              let vals =
+                switch (path) {
+                | PIdent(ident) => []
+                | PExternal(mod_path, name, _) =>
+                  Completion.get_module_exports(log, mod_path, compiled_code)
+                };
+
+              let printed_vals =
+                List.fold_left(
+                  (acc, v: Rpc.completion_item) =>
+                    acc ++ "let " ++ v.detail ++ "  \n",
+                  "",
+                  vals,
+                );
+              "### "
+              ++ modname
+              ++ "\n"
+              ++ "```grain\n"
+              ++ "{\n"
+              ++ printed_vals
+              ++ "}"
+              ++ "```";
+            } else {
+              Utils.lens_sig(e.exp_type);
+            };
+          };
+
+        | TExpApp(_) => "TExpApp"
+        | TExpConstruct(_) => "TExpConstruct"
+        | _ =>
+          log("some other val");
+          Utils.lens_sig(e.exp_type);
+        };
+
+      // let extras = e.exp_extra;
+
+      // log("expression info:");
+      // let _ =
+      //   List.map(
+      //     (e: (Grain_typed__Typedtree.exp_extra, Grain_utils__Warnings.loc)) => {
+      //       let (x: Typedtree.exp_extra, loc) = e;
+      //       switch (x) {
+      //       | TExpConstraint(core_t) =>
+      //         log("constraint: " ++ Utils.lens_sig(core_t.ctyp_type))
+      //       };
+      //     },
+      //     extras,
+      //   );
+
+      (txt, Some(e.exp_loc));
+
+    //   (Utils.lens_sig(e.exp_type), Some(e.exp_loc))
     | Pattern(p) => (Utils.lens_sig(p.pat_type), Some(p.pat_loc))
     };
 
@@ -124,7 +234,7 @@ let get_hover_from_statement =
   | TTopExport(export_declarations) => ("export", None)
   };
 
-let get_hover = (log, id, json, compiled_code) => {
+let get_hover = (log, id, json, compiled_code, documents) => {
   switch (Utils.getTextDocumenUriAndPosition(json)) {
   | (Some(uri), Some(line), Some(char)) =>
     if (Hashtbl.mem(compiled_code, uri)) {
@@ -138,7 +248,15 @@ let get_hover = (log, id, json, compiled_code) => {
         switch (node) {
         | Some(stmt) =>
           let (signature, loc) =
-            get_hover_from_statement(log, stmt, ln, char);
+            get_hover_from_statement(
+              log,
+              stmt,
+              uri,
+              ln,
+              char,
+              documents,
+              compiled_code,
+            );
           let range =
             switch (loc) {
             | None => Utils.loc_to_range(stmt.ttop_loc)

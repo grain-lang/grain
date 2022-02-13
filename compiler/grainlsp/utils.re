@@ -11,6 +11,10 @@ type node_t =
   | NotInRange
   | Error(string);
 
+type source_text =
+  | Nothing
+  | Lident(string);
+
 let loc_to_range = (pos: Location.t): Rpc.range_t => {
   let (_, startline, startchar, _) =
     Locations.get_raw_pos_info(pos.loc_start);
@@ -199,8 +203,10 @@ let rec get_node_from_expression =
 
     | TExpApp(func, expressions) =>
       if (is_point_inside_location(log, func.exp_loc, line, char)) {
+        log("is inside function location");
         Expression(func);
       } else {
+        log("looking in locations");
         switch (expressions) {
         | [] => Error("")
         | _ =>
@@ -343,3 +349,43 @@ let rec print_path = (ident: Path.t) => {
     print_path(externalIdent) ++ "." ++ second
   };
 };
+
+let find_completable = (text, offset) => {
+  let rec loop = i => {
+    i < 0
+      ? Lident(String.sub(text, i + 1, offset - (i + 1)))
+      : (
+        switch (text.[i]) {
+        | 'a' .. 'z'
+        | 'A' .. 'Z'
+        | '0' .. '9'
+        | '.'
+        | '_' => loop(i - 1)
+        | _ =>
+          i == offset - 1
+            ? Nothing : Lident(String.sub(text, i + 1, offset - (i + 1)))
+        }
+      );
+  };
+  loop(offset - 1);
+};
+
+let get_original_text = (log, documents, uri, line, char) =>
+  if (!Hashtbl.mem(documents, uri)) {
+    log("Can't find source code for " ++ uri);
+    Nothing;
+  } else {
+    let sourceCode = Hashtbl.find(documents, uri);
+    // try and find the code we are completing in the original source
+
+    let lines = String.split_on_char('\n', sourceCode);
+    let line = List.nth(lines, line);
+    let completable = find_completable(line, char);
+
+    let _ =
+      switch (completable) {
+      | Nothing => log("nothing completable found")
+      | Lident(ident) => log("Let's complete on " ++ ident)
+      };
+    completable;
+  };

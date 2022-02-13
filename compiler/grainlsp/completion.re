@@ -4,30 +4,6 @@ open Grain_parsing;
 open Grain_utils;
 open Grain_typed;
 
-type completable =
-  | Nothing
-  | Lident(string);
-
-let find_completable = (text, offset) => {
-  let rec loop = i => {
-    i < 0
-      ? Lident(String.sub(text, i + 1, offset - (i + 1)))
-      : (
-        switch (text.[i]) {
-        | 'a' .. 'z'
-        | 'A' .. 'Z'
-        | '0' .. '9'
-        | '.'
-        | '_' => loop(i - 1)
-        | _ =>
-          i == offset - 1
-            ? Nothing : Lident(String.sub(text, i + 1, offset - (i + 1)))
-        }
-      );
-  };
-  loop(offset - 1);
-};
-
 // maps Grain types to LSP types
 let rec get_kind = (desc: Types.type_desc) =>
   switch (desc) {
@@ -41,25 +17,83 @@ let rec get_kind = (desc: Types.type_desc) =>
   | _ => 1
   };
 
-let get_original_text = (log, documents, uri, line, char) =>
-  if (!Hashtbl.mem(documents, uri)) {
-    log("Can't find source code for " ++ uri);
-    Nothing;
-  } else {
-    let sourceCode = Hashtbl.find(documents, uri);
-    // try and find the code we are completing in the original source
+let process_resolution =
+    (
+      log: string => unit,
+      id,
+      json,
+      compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
+      cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
+      documents,
+    ) => {
+  // right now we just resolve nothing new but respond to the client at least
+  Rpc.send_completion(
+    log,
+    stdout,
+    id,
+    [],
+  );
+};
 
-    let lines = String.split_on_char('\n', sourceCode);
-    let line = List.nth(lines, line);
-    let completable = find_completable(line, char);
+let get_module_exports =
+    (log, mod_ident, compiled_code: Typedtree.typed_program) => {
+  switch (Env.find_module(mod_ident, None, compiled_code.env)) {
+  | lookup =>
+    switch (lookup.md_filepath) {
+    | None =>
+      log("no module path found");
+      [];
+    | Some(p) =>
+      let mtype: Grain_typed.Types.module_type = lookup.md_type;
+      switch (mtype) {
+      | TModSignature(sigs) =>
+        let fnsigs =
+          List.filter_map(
+            (s: Types.signature_item) => {
+              switch (s) {
+              | TSigValue(ident, vd) =>
+                let string_of_value_description = (~ident: Ident.t, vd) => {
+                  Format.asprintf(
+                    "%a",
+                    Printtyp.value_description(ident),
+                    vd,
+                  );
+                };
+                let item: Rpc.completion_item = {
+                  label: ident.name,
+                  kind: 3,
+                  detail: string_of_value_description(~ident, vd),
+                };
+                Some(item);
 
-    let _ =
-      switch (completable) {
-      | Nothing => log("nothing completable found")
-      | Lident(ident) => log("Let's complete on " ++ ident)
+              | TSigType(ident, td, recstatus) =>
+                //log("Completing A TSigType");
+                // let string_of_type_declaration =
+                //     (~ident: Ident.t, td) => {
+                //   (
+                //     ident.name,
+                //     Format.asprintf(
+                //       "%a",
+                //       Printtyp.type_declaration(ident),
+                //       td,
+                //     ),
+                //   );
+                // };
+                None
+              | _ => None
+              }
+            },
+            sigs,
+          );
+        fnsigs;
+      | _ => []
       };
-    completable;
+    }
+  | exception _ =>
+    log("Module not found");
+    [];
   };
+};
 
 let process_completion =
     (
@@ -72,7 +106,8 @@ let process_completion =
     ) => {
   switch (Utils.getTextDocumenUriAndPosition(json)) {
   | (Some(uri), Some(line), Some(char)) =>
-    let completable = get_original_text(log, documents, uri, line, char);
+    let completable =
+      Utils.get_original_text(log, documents, uri, line, char);
     switch (completable) {
     | Nothing =>
       log("Nothing to complete");
@@ -107,84 +142,44 @@ let process_completion =
               if (!List.exists((m: Ident.t) => m.name == modName, modules)) {
                 [];
               } else {
-                switch (Env.find_module(mod_ident, None, compiledCode.env)) {
-                | lookup =>
-                  switch (lookup.md_filepath) {
-                  | None =>
-                    log("no module path found");
-                    [];
-                  | Some(p) =>
-                    let mtype: Grain_typed.Types.module_type = lookup.md_type;
-                    switch (mtype) {
-                    | TModSignature(sigs) =>
-                      let fnsigs =
-                        List.filter_map(
-                          (s: Types.signature_item) => {
-                            switch (s) {
-                            | TSigValue(ident, vd) =>
-                              let string_of_value_description =
-                                  (~ident: Ident.t, vd) => {
-                                Format.asprintf(
-                                  "%a",
-                                  Printtyp.value_description(ident),
-                                  vd,
-                                );
-                              };
-                              let item: Rpc.completion_item = {
-                                label: ident.name,
-                                kind: 3,
-                                detail:
-                                  string_of_value_description(~ident, vd),
-                              };
-                              Some(item);
-
-                            | TSigType(ident, td, recstatus) =>
-                              //log("Completing A TSigType");
-                              // let string_of_type_declaration =
-                              //     (~ident: Ident.t, td) => {
-                              //   (
-                              //     ident.name,
-                              //     Format.asprintf(
-                              //       "%a",
-                              //       Printtyp.type_declaration(ident),
-                              //       td,
-                              //     ),
-                              //   );
-                              // };
-                              None
-                            | _ => None
-                            }
-                          },
-                          sigs,
-                        );
-                      fnsigs;
-                    | _ => []
-                    };
-                  }
-                | exception _ =>
-                  log("Module not found");
-                  [];
-                };
+                get_module_exports(log, mod_ident, compiledCode);
               };
             } else {
               let modules = Env.get_all_modules(compiledCode.env);
+              let types = Env.get_all_type_names(compiledCode.env);
 
-              List.map(
-                (m: Ident.t) => {
-                  let item: Rpc.completion_item = {
-                    label: m.name,
-                    kind: 9,
-                    detail: "",
-                  };
-                  item;
-                },
-                modules,
-              );
+              let converted_modules =
+                List.map(
+                  (m: Ident.t) => {
+                    let item: Rpc.completion_item = {
+                      label: m.name,
+                      kind: 9,
+                      detail: "",
+                    };
+                    item;
+                  },
+                  modules,
+                );
+
+              let converted_types =
+                List.map(
+                  (t: Ident.t) => {
+                    let item: Rpc.completion_item = {
+                      label: t.name,
+                      kind: 22,
+                      detail: "",
+                    };
+                    item;
+                  },
+                  types,
+                );
+
+              converted_modules @ converted_types;
             }
 
           | _ =>
             let values: list((Ident.t, Types.value_description)) =
-              Env.get_all_values(log, compiledCode.env);
+              Env.get_all_values(compiledCode.env);
 
             List.map(
               ((i: Ident.t, l: Types.value_description)) => {
@@ -203,6 +198,6 @@ let process_completion =
       }
     };
 
-  | _ => ()
+  | _ => Rpc.send_completion(log, stdout, id, [])
   };
 };
