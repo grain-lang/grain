@@ -22,7 +22,7 @@ let loop = log =>
         log("received message " ++ action);
         switch (action) {
         | "textDocument/hover" =>
-          Hover.get_hover(log, id, json, compiled_code)
+          Hover.get_hover(log, id, json, compiled_code, documents)
         | "textDocument/codeLens" =>
           Lenses.process_get_lenses(log, id, json, compiled_code)
         // Disabled until we can get locations for external values back with locations
@@ -36,6 +36,15 @@ let loop = log =>
         //   )
         | "textDocument/completion" =>
           Completion.process_completion(
+            log,
+            id,
+            json,
+            compiled_code,
+            cached_code,
+            documents,
+          )
+        | "completionItem/resolve" =>
+          Completion.process_resolution(
             log,
             id,
             json,

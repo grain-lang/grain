@@ -114,8 +114,14 @@ type diagnostics_message = {
 };
 
 [@deriving yojson]
+type markup_content = {
+  kind: string,
+  value: string,
+};
+
+[@deriving yojson]
 type hover_result = {
-  contents: string,
+  contents: markup_content,
   range,
 };
 
@@ -290,10 +296,17 @@ let send_lenses = (log, output, id: int, lenses: list(lens_t)) => {
 
 let send_hover = (log, output, id: int, signature, range: range_t) => {
   let range_ext = convert_range(range);
-  let hover_info: hover_result = {contents: signature, range: range_ext};
+  let hover_info: hover_result = {
+    contents: {
+      kind: "markdown",
+      value: signature,
+    },
+    range: range_ext,
+  };
   let response: hover_response = {jsonrpc, id, result: hover_info};
   let res = hover_response_to_yojson(response);
   let strJson = Yojson.Safe.pretty_to_string(res);
+  log(strJson);
   send(output, strJson);
 };
 

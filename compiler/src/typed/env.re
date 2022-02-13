@@ -2753,15 +2753,16 @@ let () = {
 
 // LSP additions
 
-let get_all_values = (log, env): list((Ident.t, Types.value_description)) => {
+let get_all_values = (env): list((Ident.t, Types.value_description)) => {
   let current = env.values.current;
   Ident.fold_all((k, desc, accu) => [(k, desc), ...accu], current, []);
 };
 
-// let get_all_types = (log, env): list((Ident.t, Types.type_declaration)) => {
-//   let current = env.types.current;
-//   Ident.fold_all((k, desc, accu) => [(k, desc), ...accu], current, []);
-// };
+let get_all_type_names = env => {
+  let current = env.types.current;
+  // Ident.fold_all((_,(k, desc, accu)) => [(k, desc), ...accu], current, []);
+  Ident.fold_all((k, decl, accu) => [k, ...accu], current, []);
+};
 
 let get_all_modules = (env): list(Ident.t) => {
   let current = env.modules.current;
