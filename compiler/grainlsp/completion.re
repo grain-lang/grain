@@ -35,66 +35,6 @@ let process_resolution =
   );
 };
 
-let get_module_exports =
-    (log, mod_ident, compiled_code: Typedtree.typed_program) => {
-  switch (Env.find_module(mod_ident, None, compiled_code.env)) {
-  | lookup =>
-    switch (lookup.md_filepath) {
-    | None =>
-      log("no module path found");
-      [];
-    | Some(p) =>
-      let mtype: Grain_typed.Types.module_type = lookup.md_type;
-      switch (mtype) {
-      | TModSignature(sigs) =>
-        let fnsigs =
-          List.filter_map(
-            (s: Types.signature_item) => {
-              switch (s) {
-              | TSigValue(ident, vd) =>
-                let string_of_value_description = (~ident: Ident.t, vd) => {
-                  Format.asprintf(
-                    "%a",
-                    Printtyp.value_description(ident),
-                    vd,
-                  );
-                };
-                let item: Rpc.completion_item = {
-                  label: ident.name,
-                  kind: 3,
-                  detail: string_of_value_description(~ident, vd),
-                };
-                Some(item);
-
-              | TSigType(ident, td, recstatus) =>
-                //log("Completing A TSigType");
-                // let string_of_type_declaration =
-                //     (~ident: Ident.t, td) => {
-                //   (
-                //     ident.name,
-                //     Format.asprintf(
-                //       "%a",
-                //       Printtyp.type_declaration(ident),
-                //       td,
-                //     ),
-                //   );
-                // };
-                None
-              | _ => None
-              }
-            },
-            sigs,
-          );
-        fnsigs;
-      | _ => []
-      };
-    }
-  | exception _ =>
-    log("Module not found");
-    [];
-  };
-};
-
 let process_completion =
     (
       log: string => unit,
@@ -142,7 +82,7 @@ let process_completion =
               if (!List.exists((m: Ident.t) => m.name == modName, modules)) {
                 [];
               } else {
-                get_module_exports(log, mod_ident, compiledCode);
+                Utils.get_module_exports(log, mod_ident, compiledCode);
               };
             } else {
               let modules = Env.get_all_modules(compiledCode.env);
@@ -155,6 +95,7 @@ let process_completion =
                       label: m.name,
                       kind: 9,
                       detail: "",
+                      documentation: "",
                     };
                     item;
                   },
@@ -168,6 +109,7 @@ let process_completion =
                       label: t.name,
                       kind: 22,
                       detail: "",
+                      documentation: "",
                     };
                     item;
                   },
@@ -186,7 +128,8 @@ let process_completion =
                 let item: Rpc.completion_item = {
                   label: i.name,
                   kind: get_kind(l.val_type.desc),
-                  detail: Utils.lens_sig(l.val_type),
+                  detail: Utils.lens_sig(l.val_type, ~env=compiledCode.env),
+                  documentation: "This is also some documentation",
                 };
                 item;
               },

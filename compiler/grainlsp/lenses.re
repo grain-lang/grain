@@ -35,7 +35,7 @@ let get_signature_from_statement =
         List.fold_left(
           (acc, vbs: Typedtree.value_binding) =>
             (acc == "" ? "" : acc ++ ", ")
-            ++ Utils.lens_sig(vbs.vb_expr.exp_type),
+            ++ Utils.lens_sig(vbs.vb_expr.exp_type, ~env=stmt.ttop_env),
           "",
           value_bindings,
         );
@@ -43,7 +43,7 @@ let get_signature_from_statement =
     }
   | TTopExpr(expression) =>
     let expr_type = expression.exp_type;
-    Some(Utils.lens_sig(expr_type));
+    Some(Utils.lens_sig(expr_type, ~env=expression.exp_env));
   | TTopException(export_flag, type_exception) => None
   | TTopExport(export_declarations) => None
   };
