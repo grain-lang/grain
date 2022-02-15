@@ -5,6 +5,8 @@ open Grain_utils;
 open Grain_typed;
 open Grain_diagnostics;
 
+let mark_down_grain = code => "```grain\n" ++ code ++ "\n```";
+
 type node_t =
   | Expression(Typedtree.expression)
   | Pattern(Typedtree.pattern)
@@ -14,6 +16,14 @@ type node_t =
 type source_text =
   | Nothing
   | Lident(string);
+
+let rec print_path = (ident: Path.t) => {
+  switch (ident) {
+  | PIdent(name) => name.name
+  | PExternal(externalIdent, second, _) =>
+    print_path(externalIdent) ++ "." ++ second
+  };
+};
 
 let loc_to_range = (pos: Location.t): Rpc.range_t => {
   let (_, startline, startchar, _) =
@@ -113,22 +123,204 @@ let getTextDocumenUriAndPosition = json => {
   (uri, line, char);
 };
 
-let lens_sig = (t: Types.type_expr) => {
-  let buf = Buffer.create(64);
-  let ppf = Format.formatter_of_buffer(buf);
-  Printtyp.type_expr(ppf, t);
-  Format.pp_print_flush(ppf, ());
-  let sigStr = Buffer.contents(buf);
-  sigStr;
-};
+let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
+  switch (t.desc) {
+  | TTyRecord(fields) =>
+    // let record_name = lens_sig(e.exp_type, ~env=e.exp_env);
+    let labelText =
+      List.fold_left(
+        (acc, (name: string, t: Types.type_expr)) => {
+          let existing =
+            if (acc == "") {
+              acc;
+            } else {
+              acc ++ ",\n";
+            };
 
-let print_expr = (~t: Types.type_expr) => {
-  let buf = Buffer.create(64);
-  let ppf = Format.formatter_of_buffer(buf);
-  Printtyp.type_expr(ppf, t);
-  Format.pp_print_flush(ppf, ());
-  let sigStr = Buffer.contents(buf);
-  sigStr;
+          existing ++ "  " ++ name ++ ": " ++ lens_sig(~env, t);
+        },
+        "",
+        fields,
+      );
+
+    "record " ++ "record_name" ++ " {\n" ++ labelText ++ "\n}";
+  | TTyTuple(args) =>
+    switch (args) {
+    | [] => ""
+    | _ =>
+      "("
+      ++ List.fold_left(
+           (acc, arg) => {
+             let existing =
+               if (acc == "") {
+                 acc;
+               } else {
+                 acc ++ ", ";
+               };
+             existing ++ lens_sig(~env, arg);
+           },
+           "",
+           args,
+         )
+      ++ ")"
+    }
+  | TTyVar(v) =>
+    switch (v) {
+    | None => ""
+    | Some(txt) => txt
+    }
+  | TTyUniVar(_) => "TTyUniVar"
+  | TTyPoly(_) => "TTyPoly"
+  | TTyLink(te) => lens_sig(~depth=depth + 1, ~env, te)
+
+  | TTySubst(_) => "link is a subst"
+  | TTyConstr(path, types, r) =>
+    let decl = Env.find_type(path, env);
+
+    let tk = decl.type_kind;
+
+    let type_text =
+      switch (types) {
+      | [] => ""
+      | _ =>
+        "<"
+        ++ List.fold_left(
+             (acc, tt: Types.type_expr) => {
+               let existing =
+                 if (acc == "") {
+                   acc;
+                 } else {
+                   acc ++ ",";
+                 };
+               let typeInf = lens_sig(~env, tt);
+
+               existing ++ typeInf;
+             },
+             "",
+             types,
+           )
+        ++ ">"
+      };
+
+    switch (tk) {
+    | TDataRecord(fields) =>
+      let labelText =
+        List.fold_left(
+          (acc, field: Types.record_field) => {
+            let existing =
+              if (acc == "") {
+                acc;
+              } else {
+                acc ++ ",\n";
+              };
+            let typeInf = lens_sig(~env, field.rf_type);
+            let rf_name = field.rf_name;
+
+            existing ++ "  " ++ rf_name.name ++ ": " ++ typeInf;
+          },
+          "",
+          fields,
+        );
+
+      "record "
+      ++ print_path(path)
+      ++ type_text
+      ++ " {\n"
+      ++ labelText
+      ++ "\n}";
+    | TDataVariant(decls) =>
+      let declText =
+        List.fold_left(
+          (acc, decl: Types.constructor_declaration) => {
+            let existing =
+              if (acc == "") {
+                acc;
+              } else {
+                acc ++ ",\n";
+              };
+            let decl_name = decl.cd_id.name;
+
+            let args = decl.cd_args;
+
+            let decl_contructions =
+              switch (args) {
+              | TConstrTuple(types) =>
+                switch (types) {
+                | [] => ""
+                | _ =>
+                  " ("
+                  ++ List.fold_left(
+                       (acc, t: Types.type_expr) => {
+                         let existing =
+                           if (acc == "") {
+                             acc;
+                           } else {
+                             acc ++ ",\n";
+                           };
+
+                         existing ++ "cons type";
+                       },
+                       "",
+                       types,
+                     )
+                  ++ ")"
+                }
+              | TConstrSingleton => ""
+              };
+
+            existing ++ "  " ++ decl_name ++ decl_contructions;
+          },
+          "",
+          decls,
+        );
+
+      let parts =
+        switch (path) {
+        | PIdent(ident) => ("", ident.name)
+        | PExternal(mod_path, name, _) => (
+            switch (mod_path) {
+            | PIdent(ident) => ident.name
+            | PExternal(mod_path, name, _) => ""
+            },
+            name,
+          )
+        };
+
+      let (modname, after) = parts;
+
+      if (modname == "Pervasives") {
+        after ++ type_text;
+      } else {
+        "enum "
+        ++ print_path(path)
+        ++ type_text
+        ++ " {\n"
+        ++ declText
+        ++ "\n}"
+        ++ type_text;
+      };
+
+    | TDataAbstract => print_path(path) ++ type_text
+    | TDataOpen => print_path(path) ++ type_text
+    };
+
+  | TTyArrow(args, rettype, _) =>
+    let arg_text =
+      List.fold_left(
+        (acc, arg) => {
+          let existing =
+            if (acc == "") {
+              acc;
+            } else {
+              acc ++ ", ";
+            };
+          existing ++ lens_sig(~env, arg);
+        },
+        "",
+        args,
+      );
+    "(" ++ arg_text ++ ") -> " ++ lens_sig(~env, rettype);
+  };
 };
 
 let rec get_node_from_pattern = (log, pattern: Typedtree.pattern, line, char) => {
@@ -342,14 +534,6 @@ let getNodeFromStmt =
   | TTopExport(export_declarations) => Error("export")
   };
 
-let rec print_path = (ident: Path.t) => {
-  switch (ident) {
-  | PIdent(name) => name.name
-  | PExternal(externalIdent, second, _) =>
-    print_path(externalIdent) ++ "." ++ second
-  };
-};
-
 let find_completable = (text, offset) => {
   let rec loop = i => {
     i < 0
@@ -389,3 +573,134 @@ let get_original_text = (log, documents, uri, line, char) =>
       };
     completable;
   };
+
+let get_module_exports =
+    (log, mod_ident, compiled_code: Typedtree.typed_program) => {
+  switch (Env.find_module(mod_ident, None, compiled_code.env)) {
+  | lookup =>
+    switch (lookup.md_filepath) {
+    | None =>
+      log("no module path found");
+      [];
+    | Some(p) =>
+      let mtype: Grain_typed.Types.module_type = lookup.md_type;
+      switch (mtype) {
+      | TModSignature(sigs) =>
+        let fnsigs =
+          List.filter_map(
+            (s: Types.signature_item) => {
+              switch (s) {
+              | TSigValue(ident, vd) =>
+                let string_of_value_description = (~ident: Ident.t, vd) => {
+                  Format.asprintf(
+                    "%a",
+                    Printtyp.value_description(ident),
+                    vd,
+                  );
+                };
+                let item: Rpc.completion_item = {
+                  label: ident.name,
+                  kind: 3,
+                  detail: string_of_value_description(~ident, vd),
+                  documentation: "This is some documentation",
+                };
+                Some(item);
+
+              | TSigType(ident, td, recstatus) =>
+                //log("Completing A TSigType");
+                // let string_of_type_declaration =
+                //     (~ident: Ident.t, td) => {
+                //   (
+                //     ident.name,
+                //     Format.asprintf(
+                //       "%a",
+                //       Printtyp.type_declaration(ident),
+                //       td,
+                //     ),
+                //   );
+                // };
+                None
+              | _ => None
+              }
+            },
+            sigs,
+          );
+        fnsigs;
+      | _ => []
+      };
+    }
+  | exception _ =>
+    log("Module not found");
+    [];
+  };
+};
+
+let rec expression_lens =
+        (log, line, char, e: Typedtree.expression, compiled_code) => {
+  log("expression_lens");
+  let desc = e.exp_desc;
+  let txt =
+    switch (desc) {
+    | TExpRecordGet(expr, loc, field) =>
+      log("TExpRecordGet");
+
+      if (is_point_inside_location(log, expr.exp_loc, line, char)) {
+        lens_sig(~env=e.exp_env, expr.exp_type);
+      } else {
+        lens_sig(~env=e.exp_env, e.exp_type);
+      };
+
+    | TExpPrim1(_) => "TExpPrim1"
+    | TExpPrim2(_) => "TExpPrim2"
+    | TExpPrimN(_) => "TExpPrimN"
+    | TExpIdent(path, loc, vd) =>
+      log("TExpIdent");
+      log(print_path(path));
+      let parts =
+        switch (path) {
+        | PIdent(ident) => ("", ident.name)
+        | PExternal(mod_path, name, _) => (
+            switch (mod_path) {
+            | PIdent(ident) => ident.name
+            | PExternal(mod_path, name, _) => ""
+            },
+            name,
+          )
+        };
+
+      let (modname, _after) = parts;
+      log("modname " ++ modname);
+
+      // // work out if the cursor is in the module name or after it
+      if (modname == "" || modname == "Pervasives") {
+        lens_sig(e.exp_type, ~env=e.exp_env);
+      } else {
+        let lstart = loc.loc.loc_start;
+        let mod_start = lstart.pos_cnum - lstart.pos_bol;
+        let mod_end = mod_start + String.length(modname);
+
+        if (char < mod_end) {
+          let vals =
+            switch (path) {
+            | PIdent(ident) => []
+            | PExternal(mod_path, name, _) =>
+              get_module_exports(log, mod_path, compiled_code)
+            };
+          let printed_vals =
+            List.fold_left(
+              (acc, v: Rpc.completion_item) =>
+                acc ++ "  let " ++ v.detail ++ "\n",
+              "",
+              vals,
+            );
+          printed_vals;
+        } else {
+          lens_sig(e.exp_type, ~env=e.exp_env);
+        };
+      };
+
+    | _ => lens_sig(~env=e.exp_env, e.exp_type)
+    };
+
+  (mark_down_grain(txt), Some(e.exp_loc));
+};
