@@ -76,6 +76,53 @@ let setInt64 = (ptr, i, v) => {
 }
 
 @disableGC
+let toref = (ptr: WasmI32) => {
+  let ref = Memory.malloc(4n)
+  Memory.store(ref, ptr, 4n)
+  ref
+}
+
+@disableGC
+let deref = (ref: WasmI32) => {
+  WasmI32.load(ref, 0n)
+}
+
+@disableGC
+let setref = (ref: WasmI32, ptr: WasmI32) => {
+  Memory.free(WasmI32.load(ref, 0n))
+  WasmI32.set(ref, ptr, 0n)
+}
+
+@disableGC
+let realloc = (ref: WasmI32, size: WasmI32) => {
+  let (+) = WasmI32.add
+  let (>) = WasmI32.gt
+  
+  let r = deref(ref)
+  let size = if (size > 0n) { size } else { 1n }
+
+  if (getSize(r) > 0n) {
+    setref(init(size))
+  }
+
+  deref(ref) + 8n
+}
+
+@disableGC
+let normalizedSize = (xp, n) => {
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gt
+  let (==) = WasmI32.eq
+  let mut n_ = n;
+  
+  while (n_ > 0n && Wasm.load(xp, n_ - 1) == 0n) {
+    n_ -= 1
+  }
+  
+  n_
+}
+
+@disableGC
 export let rec fromInt32 = (n: Int32) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
@@ -147,13 +194,23 @@ let add1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
 }
 
 @disableGC
-let absAdd = (rp, ap, an, bp, bn) => {
+let absAdd = (rref, a, b) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (>) = WasmI32.gt
   let (>=) = WasmI32.gte
 
-  if (an >= bn) {
+  let an = absi32(getSize(a))
+  let bn = absi32(getSize(b))
+
+  let max = if (an >= bn) { an } else { bn }
+  let mut r = deref(rref)
+
+  let mut rp = r + 8n
+  let a = aptr + 8n
+  let b = bptr + 8n
+
+  let cy = if (an >= bn) {
     let mut cy = addN(rp, a, b, bn)
     if (an > bn) {
       cy = add1(rp + bn, a, a + bn, an - bn, cy)
@@ -161,6 +218,44 @@ let absAdd = (rp, ap, an, bp, bn) => {
     cy
   } else {
     addN(rp, b, a, an)
+  }
+
+  setInt64(rp, an, cy)
+
+  an + WasmI32.wrapI64(cy)
+}
+
+@disableGC
+let cmp = (ap, bp, n) => {
+  let (+) = WasmI32.add
+  let (<) = WasmI32.lt
+  
+  let mut res = 0n;
+  for (let mut i = 0n; i < n; i += 1n) {
+    let (!=) = WasmI64.ne
+    let (>) = WasmI64.gt
+    
+    let a = getInt64(ap, i)
+    let b = getInt64(abp, i)
+    
+    if (a != b) {
+      res = if (a > b) { 1n } else { -1n }
+      break
+    }
+  }
+  
+  res
+}
+
+@disableGC
+let cmp4 = (ap, an, bp, bn) => {
+  let (<) = WasmI32.lt
+  let (!=) = WasmI32.ne
+
+  if (an != bn) {
+    if (an < bn) { -1n } else { 1n }
+  } else {
+    cmp(ap, bp, an)
   }
 }
 
@@ -184,11 +279,68 @@ let subN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
     
     setInt64(rp, i, a - b)
   }
+  
   cy
 }
 
 @disableGC
-let rec add = (a: BigInt, b: BigInt) => {
+let sub1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
+  let (+) = WasmI32.add
+  let (<) = WasmI32.lt
+  
+  let mut b_ = b;
+  for (let mut i = 0n; i < n; i += 1n) {
+    let (+) = WasmI64.add
+    let (<) = WasmI64.lt
+    
+    let a = getInt64(ap, i)
+    let cy = if (r < b_) { 1N } else { 0N }
+    b_ = cy    
+  }
+  
+  b_
+}
+
+@disableGC
+let absSub = (rref, a, b) => {
+  let (<) = WasmI32.lt
+  let (>) = WasmI32.gt
+  let (==) = WasmI64.eq
+
+  let an = absi32(getSize(a))
+  let bn = absi32(getSize(b))
+
+  let max = if (an >= bn) { an } else { bn }
+  let mut r = deref(rref)
+
+  let mut rp = r + 8n
+  let a = aptr + 8n
+  let b = bptr + 8n
+
+  let cmp = cmp4(ap, an, bp, bn)
+  if (cmp < 0n) {
+    rp = realloc(rref, an);
+    let mut cy = subN(rp, ap, bp, bn)
+    if (an > bn) {
+      cy = sub1(rp + bn, ap + bn, an - bn, cy)
+    }
+    assert(cy == 0N)
+    normalizedSize(rp, an);
+  } else if (cmp > 0n) {
+    rp = realloc(rref, bn);
+    let mut cy = subN(rp, ap, bp, bn)
+    if (an > bn) {
+      cy = sub1(rp + bn, ap + bn, an - bn, cy)
+    }
+    assert(cy == 0N)
+    -normalizedSize(rp, bn);
+  } else {
+    0n
+  }
+}
+
+@disableGC
+export let rec add = (a: BigInt, b: BigInt) => {
   let (+) = WasmI32.add
   let (^) = WasmI32.xor
   let (>=) = WasmI32.gte
@@ -199,136 +351,23 @@ let rec add = (a: BigInt, b: BigInt) => {
   let an = absi32(getSize(a))
   let bn = absi32(getSize(b))
   
-  let max = if (an >= bn) { an } else { bn }
-  let cptr = init(max + 1n)
-  
-  let rp = cptr + 8n
-  let a = aptr + 8n
-  let b = bptr + 8n
+  let rref = toref(init(1n))
 
-  let cy = if ((an ^ bn) >= 0n) {
-    absAdd(rp, a, an, b, bn)
+  let rn = if ((an ^ bn) >= 0n) {
+    absAdd(rref, aptr, bptr)
   } else {
-    throw Exception.AssertionError("unimplemented")
+    absSub(rref, aptr, bptr)
   }
 
-  setInt64(rp + an, 0n, cy)
-
-  let rn = an + WasmI32.wrapI64(cy)
+  let r = deref(rref)
+  Memory.free(ref)
   if (0n > an) {
     setSize(r, -rn)
   } else {
     setSize(r, rn)
   };
 
-  WasmI32.toGrain(ptr): BigInt
+
+  WasmI32.toGrain(r): BigInt
 }
 
-// @disableGC
-// let subIntoBufferN = (rp: Buffer, a: WasmI32, b: WasmI32, n: WasmI32) => {
-//   let (-) = WasmI64.sub
-//   let (+) = WasmI64.add
-//   let (<) = WasmI64.lt
-//   let mut cy = 0N;
-//   for (let mut i = 0n; WasmI32.lt(i, n); i = WasmI32.add(i, 1n)) {
-//     let mut a = safeGetLimb(a, i)
-//     let mut b = safeGetLimb(b, i)
-//     b += cy
-//     cy = if (b < cy) { 1N } else { 0N }
-//     cy += if (a < b) { 1N } else { 0N }
-//     Buffer.addInt64(rp, a - b)
-//   }
-//   cy
-// }
-
-// @disableGC
-// let cmpN = (a, b, n) => {
-//   let mut res = 0n;
-//   while (--n >= 0) {
-//     let x = safeGetLimb(a, n)
-//     let y = safeGetLimb(b, n)
-//     if (x != y) {
-//       res = if (x > y) { 1n } else { -1n }
-//       break
-//     }
-//   }
-//   res
-// }
-
-// @disableGC
-// let absSub = (a: WasmI32, b: WasmI32) => {
-//   let (<) = WasmI32.lt
-//   let (*) = 
-//   let an = absi32(getSize(a))
-//   let bn = absi32(getSize(b))
-
-//   let len = if (an < bn) { bn } else { an }
-//   let cmp = cmpN(a, b, len)
-
-//   let rp = Buffer.make(8) // 1 int64
-
-//   let limbs = if (cmp > 0n) {
-//     subIntoBufferN(rp, a, b, bn)
-//   } else if (cmp < 0n) {
-//     -1N * subIntoBufferN(rp, a, b, an)
-//   } else {
-//     1N
-//   }
-  
-//   let sign = if (WasmI64.lt(limbs, 0N) { -1n } else { 1n };
-//   let src = init(sign, limbs)
-//   let dst = WasmI32.fromGrain(rp.data)
-//   let len = WasmI32.fromGrain(dst, 4n)
-//   Memory.copy(src + 8n, dst + 8n, len)
-  
-//   WasmI32.toGrain(ptr): BigInt
-// }
-
-// @disableGC
-// let rec sub = (a: BigInt, b: BigInt) => {
-//   let (^) = WasmI32.xor
-//   let (>=) = WasmI32.gte
-//   let aptr = WasmI32.fromGrain(a)
-//   let bptr = WasmI32.fromGrain(b)
-//   let an = WasmI32.load(aptr, 4n)
-//   let bn = WasmI32.load(bptr, 4n)
-//   if ((an ^ bn) >= 0n) {
-//     absSub(aptr, bptr)
-//   } else {
-//     absAdd(aptr, bptr)
-//   }
-// }
-
-
-// @disableGC
-// export let rec fromString = (str: String) => {
-//   let s = String.trim(str)
-//   Memory.decRef(WasmI32.fromGrain(str))
-  
-//   let stringLen = String.length(s)
-  
-//   // empty string
-//   if (stringLen == 0) {
-//     throw Exception.InvalidArgument("The given string is not a valid number")
-//   }
-
-//   // get the sign
-//   let mut isNegative = String.charAt(0) == '-'
-  
-//   // bad negative number (only leading '-')
-//   if (isNegative && stringLen == 1) {
-//     throw Exception.InvalidArgument("The given string is not a valid number")
-//   }
-
-//   Memory.decRef(WasmI32.fromGrain(stringLen))
-
-//   // Parse the string!!!!!!
-//   throw Exception.AssertionError("fromString unimplemented")
-
-//   let size = 0n;
-//   Memory.decRef(WasmI32.fromGrain(s))
-//   let bigint = alloc(coerceNumberToWasmI32(size))
-//   let ret = WasmI32.toGrain(bigint): BigInt
-//   Memory.decRef(WasmI32.fromGrain(make))
-//   ret
-// }
