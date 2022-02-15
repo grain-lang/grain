@@ -367,7 +367,6 @@ export let rec add = (a: BigInt, b: BigInt) => {
     setSize(r, rn)
   };
 
-
   WasmI32.toGrain(r): BigInt
 }
 
