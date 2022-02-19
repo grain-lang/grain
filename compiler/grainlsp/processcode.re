@@ -9,7 +9,7 @@ let compile_source = (log, uri, source) => {
 
   let filename = Filename.basename(uri);
 
-  Grain_utils.Config.stdlib_dir := Some("/Users/marcus/Projects/grain/stdlib");
+  Grain_utils.Config.stdlib_dir := Some("/Users/marcus/Projects/grain/stdlib"); // FIX ME!!
   switch (
     Compile.compile_string(
       ~hook=stop_after_typed_well_formed,
@@ -55,7 +55,7 @@ let compile_source = (log, uri, source) => {
   };
 };
 
-let getTextDocumentFromParams = json => {
+let get_text_document_from_params = json => {
   let params = Yojson.Safe.Util.member("params", json);
   let textDocument = Yojson.Safe.Util.member("textDocument", params);
   let uri =
@@ -91,8 +91,8 @@ let getTextDocumentFromParams = json => {
 };
 
 let textDocument_didOpenOrChange =
-    (log, json, documents, compiledCode, cachedCode) => {
-  switch (getTextDocumentFromParams(json)) {
+    (~log, ~documents, ~compiled_code, ~cached_code, request) => {
+  switch (get_text_document_from_params(request)) {
   | Some((uri, text)) =>
     if (!Hashtbl.mem(documents, uri)) {
       Hashtbl.add(documents, uri, text);
@@ -102,26 +102,35 @@ let textDocument_didOpenOrChange =
     let compilerRes = compile_source(log, uri, text);
     switch (compilerRes) {
     | (Some(typed_program), None, warnings) =>
-      if (!Hashtbl.mem(compiledCode, uri)) {
-        Hashtbl.add(compiledCode, uri, typed_program);
+      if (!Hashtbl.mem(compiled_code, uri)) {
+        Hashtbl.add(compiled_code, uri, typed_program);
       } else {
-        Hashtbl.replace(compiledCode, uri, typed_program);
+        Hashtbl.replace(compiled_code, uri, typed_program);
       };
-      if (!Hashtbl.mem(cachedCode, uri)) {
-        Hashtbl.add(cachedCode, uri, typed_program);
+      if (!Hashtbl.mem(cached_code, uri)) {
+        Hashtbl.add(cached_code, uri, typed_program);
       } else {
-        Hashtbl.replace(cachedCode, uri, typed_program);
+        Hashtbl.replace(cached_code, uri, typed_program);
       };
       switch (warnings) {
-      | None => Rpc.clear_diagnostics(log, stdout, uri)
-      | Some(wrns) => Rpc.send_diagnostics(log, stdout, uri, None, warnings)
+      | None => Rpc.clear_diagnostics(~log, ~output=stdout, uri)
+      | Some(wrns) =>
+        Rpc.send_diagnostics(~log, ~output=stdout, ~uri, ~warnings, None)
       };
 
     | (_, Some(err), _) =>
-      Hashtbl.remove(compiledCode, uri);
-      log("failed to compile");
-      Rpc.send_diagnostics(log, stdout, uri, Some(err), None);
-    | (None, None, _) => Rpc.clear_diagnostics(log, stdout, uri)
+      if (!Hashtbl.mem(compiled_code, uri)) {
+        Hashtbl.remove(compiled_code, uri);
+      };
+      log("Failed to compile");
+      Rpc.send_diagnostics(
+        ~log,
+        ~output=stdout,
+        ~uri,
+        ~warnings=None,
+        Some(err),
+      );
+    | (None, None, _) => Rpc.clear_diagnostics(~log, ~output=stdout, uri)
     };
   | _ => ()
   };

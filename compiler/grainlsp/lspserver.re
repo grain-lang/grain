@@ -22,35 +22,35 @@ let loop = log =>
         log("received message " ++ action);
         switch (action) {
         | "textDocument/hover" =>
-          Hover.get_hover(log, id, json, compiled_code, documents)
+          Hover.get_hover(~log, ~id, ~compiled_code, ~documents, json)
         | "textDocument/codeLens" =>
-          Lenses.process_get_lenses(log, id, json, compiled_code)
+          Lenses.process_get_lenses(~log, ~id, ~compiled_code, json)
         // Disabled until we can get locations for external values back with locations
         // | "textDocument/definition" =>
         //   Definitions.goto_definition(
-        //     log,
-        //     id,
+        //     ~log,
+        //     ~id,
+        //     ~compiled_code,
+        //     ~cached_code,
         //     json,
-        //     compiled_code,
-        //     cached_code,
         //   )
         | "textDocument/completion" =>
           Completion.process_completion(
-            log,
-            id,
+            ~log,
+            ~id,
+            ~compiled_code,
+            ~cached_code,
+            ~documents,
             json,
-            compiled_code,
-            cached_code,
-            documents,
           )
         | "completionItem/resolve" =>
           Completion.process_resolution(
-            log,
-            id,
+            ~log,
+            ~id,
+            ~compiled_code,
+            ~cached_code,
+            ~documents,
             json,
-            compiled_code,
-            cached_code,
-            documents,
           )
         | "shutdown" =>
           Rpc.send_null_message(log, stdout, id);
@@ -72,16 +72,16 @@ let loop = log =>
         | "textDocument/didOpen"
         | "textDocument/didChange" =>
           Processcode.textDocument_didOpenOrChange(
-            log,
+            ~log,
+            ~documents,
+            ~compiled_code,
+            ~cached_code,
             json,
-            documents,
-            compiled_code,
-            cached_code,
           )
         | _ => ()
         };
       | Error(_) =>
-        log("!!!Received Error");
+        log("Received Error, shutting down");
         is_shutting_down := true;
       };
     };

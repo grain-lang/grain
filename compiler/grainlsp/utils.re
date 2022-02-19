@@ -25,6 +25,22 @@ let rec print_path = (ident: Path.t) => {
   };
 };
 
+let comma_join = (~sep, ~print_fn, vals) => {
+  List.fold_left(
+    (acc, arg) => {
+      let existing =
+        if (acc == "") {
+          acc;
+        } else {
+          acc ++ sep;
+        };
+      existing ++ print_fn(arg);
+    },
+    "",
+    vals,
+  );
+};
+
 let loc_to_range = (pos: Location.t): Rpc.range_t => {
   let (_, startline, startchar, _) =
     Locations.get_raw_pos_info(pos.loc_start);
@@ -40,9 +56,9 @@ let loc_to_range = (pos: Location.t): Rpc.range_t => {
   range;
 };
 
-let is_point_inside_stmt = (loc1: Grain_parsing.Location.t, line: int) => {
-  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
-  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
+let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
+  let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc.loc_start);
+  let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);
   if (line == raw1l || line == raw1le) {
     true;
   } else if (line > raw1l && line < raw1le) {
@@ -52,7 +68,7 @@ let is_point_inside_stmt = (loc1: Grain_parsing.Location.t, line: int) => {
   };
 };
 let is_point_inside_location =
-    (log, loc1: Grain_parsing.Location.t, line: int, char: int) => {
+    (~line: int, ~char: int, loc1: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
 
@@ -86,15 +102,14 @@ let is_point_inside_location =
   res;
 };
 
-let findBestMatch = (typed_program: Typedtree.typed_program, line, char) => {
+let find_best_match = (~line, ~char, typed_program: Typedtree.typed_program) => {
   // see if it falls within a top level statement (which it must!)
-
   let rec loop = (statements: list(Grain_typed.Typedtree.toplevel_stmt)) =>
     switch (statements) {
     | [] => None
     | [stmt, ...tail] =>
       let loc = stmt.ttop_loc;
-      if (is_point_inside_stmt(loc, line)) {
+      if (is_point_inside_stmt(~line, loc)) {
         Some(stmt);
       } else {
         loop(List.tl(statements));
@@ -103,7 +118,7 @@ let findBestMatch = (typed_program: Typedtree.typed_program, line, char) => {
   loop(typed_program.statements);
 };
 
-let getTextDocumenUriAndPosition = json => {
+let get_text_document_uri_and_position = json => {
   let params = Yojson.Safe.Util.member("params", json);
   let textDocument = Yojson.Safe.Util.member("textDocument", params);
   let position = Yojson.Safe.Util.member("position", params);
@@ -123,57 +138,38 @@ let getTextDocumenUriAndPosition = json => {
   (uri, line, char);
 };
 
+let print_sig = (t: Types.type_expr) => {
+  let buf = Buffer.create(64);
+  let ppf = Format.formatter_of_buffer(buf);
+  Printtyp.type_expr(ppf, t);
+  Format.pp_print_flush(ppf, ());
+  let sigStr = Buffer.contents(buf);
+  sigStr;
+};
+
 let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
   switch (t.desc) {
-  | TTyRecord(fields) =>
-    // let record_name = lens_sig(e.exp_type, ~env=e.exp_env);
-    let labelText =
-      List.fold_left(
-        (acc, (name: string, t: Types.type_expr)) => {
-          let existing =
-            if (acc == "") {
-              acc;
-            } else {
-              acc ++ ",\n";
-            };
+  | TTyRecord(fields) => print_sig(t)
 
-          existing ++ "  " ++ name ++ ": " ++ lens_sig(~env, t);
-        },
-        "",
-        fields,
-      );
-
-    "record " ++ "record_name" ++ " {\n" ++ labelText ++ "\n}";
   | TTyTuple(args) =>
     switch (args) {
     | [] => ""
-    | _ =>
-      "("
-      ++ List.fold_left(
-           (acc, arg) => {
-             let existing =
-               if (acc == "") {
-                 acc;
-               } else {
-                 acc ++ ", ";
-               };
-             existing ++ lens_sig(~env, arg);
-           },
-           "",
-           args,
-         )
-      ++ ")"
+    | _ => "(" ++ comma_join(~sep=", ", ~print_fn=print_sig, args) ++ ")"
     }
   | TTyVar(v) =>
     switch (v) {
     | None => ""
     | Some(txt) => txt
     }
-  | TTyUniVar(_) => "TTyUniVar"
-  | TTyPoly(_) => "TTyPoly"
+  | TTyUniVar(v) =>
+    switch (v) {
+    | None => ""
+    | Some(var) => var
+    }
+  | TTyPoly(te, _) => lens_sig(~depth=depth + 1, ~env, te)
   | TTyLink(te) => lens_sig(~depth=depth + 1, ~env, te)
 
-  | TTySubst(_) => "link is a subst"
+  | TTySubst(t) => lens_sig(~depth=depth + 1, ~env, t)
   | TTyConstr(path, types, r) =>
     let decl = Env.find_type(path, env);
 
@@ -182,24 +178,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
     let type_text =
       switch (types) {
       | [] => ""
-      | _ =>
-        "<"
-        ++ List.fold_left(
-             (acc, tt: Types.type_expr) => {
-               let existing =
-                 if (acc == "") {
-                   acc;
-                 } else {
-                   acc ++ ",";
-                 };
-               let typeInf = lens_sig(~env, tt);
-
-               existing ++ typeInf;
-             },
-             "",
-             types,
-           )
-        ++ ">"
+      | _ => "<" ++ comma_join(~sep=", ", ~print_fn=print_sig, types) ++ ">"
       };
 
     switch (tk) {
@@ -249,20 +228,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
                 | [] => ""
                 | _ =>
                   " ("
-                  ++ List.fold_left(
-                       (acc, t: Types.type_expr) => {
-                         let existing =
-                           if (acc == "") {
-                             acc;
-                           } else {
-                             acc ++ ",\n";
-                           };
-
-                         existing ++ "cons type";
-                       },
-                       "",
-                       types,
-                     )
+                  ++ comma_join(~sep=",\n", ~print_fn=print_sig, types)
                   ++ ")"
                 }
               | TConstrSingleton => ""
@@ -286,10 +252,12 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
           )
         };
 
-      let (modname, after) = parts;
+      let (modname, typ) = parts;
 
       if (modname == "Pervasives") {
-        after ++ type_text;
+        typ ++ type_text;
+      } else if (typ == "Void") {
+        "Void";
       } else {
         "enum "
         ++ print_path(path)
@@ -305,31 +273,20 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
     };
 
   | TTyArrow(args, rettype, _) =>
-    let arg_text =
-      List.fold_left(
-        (acc, arg) => {
-          let existing =
-            if (acc == "") {
-              acc;
-            } else {
-              acc ++ ", ";
-            };
-          existing ++ lens_sig(~env, arg);
-        },
-        "",
-        args,
-      );
-    "(" ++ arg_text ++ ") -> " ++ lens_sig(~env, rettype);
+    let arg_text = comma_join(~sep=", ", ~print_fn=print_sig, args);
+
+    "(" ++ arg_text ++ ") -> " ++ print_sig(rettype);
   };
 };
 
-let rec get_node_from_pattern = (log, pattern: Typedtree.pattern, line, char) => {
+let rec get_node_from_pattern =
+        (~log: string => 'a, ~line, ~char, pattern: Typedtree.pattern) => {
   switch (pattern.pat_desc) {
   | TPatTuple(args) =>
     let pats =
       List.filter(
         (p: Typedtree.pattern) =>
-          is_point_inside_location(log, p.pat_loc, line, char),
+          is_point_inside_location(~line, ~char, p.pat_loc),
         args,
       );
     switch (pats) {
@@ -343,8 +300,24 @@ let rec get_node_from_pattern = (log, pattern: Typedtree.pattern, line, char) =>
   };
 };
 
-let rec get_node_from_expression =
-        (log, expr: Typedtree.expression, line, char) => {
+let rec find_location_in_expressions =
+        (~log, ~line, ~char, ~default, expressions) => {
+  let exps =
+    List.filter(
+      (e: Typedtree.expression) =>
+        is_point_inside_location(~line, ~char, e.exp_loc),
+      expressions,
+    );
+
+  switch (exps) {
+  | [] => default
+  | [expr] => get_node_from_expression(~log, ~line, ~char, expr)
+  | _ => Error("Multiple matches, should not happen")
+  };
+}
+
+and get_node_from_expression =
+    (~log: string => 'a, ~line, ~char, expr: Typedtree.expression) => {
   let node =
     switch (expr.exp_desc) {
     | TExpLet(rec_flag, mut_flag, vbs) =>
@@ -354,7 +327,7 @@ let rec get_node_from_expression =
         let matches =
           List.map(
             (vb: Typedtree.value_binding) =>
-              get_node_from_expression(log, vb.vb_expr, line, char),
+              get_node_from_expression(~log, ~line, ~char, vb.vb_expr),
             vbs,
           );
         let filtered =
@@ -378,112 +351,217 @@ let rec get_node_from_expression =
       }
     | TExpBlock(expressions) =>
       switch (expressions) {
-      | [] => Error("")
+      | [] => Expression(expr)
       | _ =>
-        let exps =
-          List.filter(
-            (e: Typedtree.expression) =>
-              is_point_inside_location(log, e.exp_loc, line, char),
-            expressions,
-          );
-        switch (exps) {
-        | [] => NotInRange
-        | [expr] => get_node_from_expression(log, expr, line, char)
-        | _ => Error("Multiple blocks match")
-        };
+        find_location_in_expressions(
+          ~log,
+          ~line,
+          ~char,
+          ~default=Expression(expr),
+          expressions,
+        )
       }
-
     | TExpApp(func, expressions) =>
-      if (is_point_inside_location(log, func.exp_loc, line, char)) {
-        log("is inside function location");
+      if (is_point_inside_location(~line, ~char, func.exp_loc)) {
         Expression(func);
       } else {
-        log("looking in locations");
-        switch (expressions) {
-        | [] => Error("")
-        | _ =>
-          let exps =
-            List.filter(
-              (e: Typedtree.expression) =>
-                is_point_inside_location(log, e.exp_loc, line, char),
-              expressions,
-            );
-
-          switch (exps) {
-          | [] => Error("No function application matches")
-          | [expr] => Expression(expr)
-          | _ => Error("Multiple function applications match")
-          };
-        };
+        find_location_in_expressions(
+          ~log,
+          ~line,
+          ~char,
+          ~default=Expression(expr),
+          expressions,
+        );
       }
     | TExpLambda([{mb_pat: pattern, mb_body: body}], _) =>
-      let node = get_node_from_pattern(log, pattern, line, char);
+      let node = get_node_from_pattern(~log, ~line, ~char, pattern);
       switch (node) {
-      | Error(_) => get_node_from_expression(log, body, line, char)
+      | Error(_) => get_node_from_expression(~log, ~line, ~char, body)
       | _ => node
       };
     | TExpIf(cond, trueexp, falseexp) =>
-      let condNode = get_node_from_expression(log, cond, line, char);
+      let condNode = get_node_from_expression(~log, ~line, ~char, cond);
       let trueMatch =
         switch (condNode) {
         | NotInRange
-        | Error(_) => get_node_from_expression(log, trueexp, line, char)
+        | Error(_) => get_node_from_expression(~log, ~line, ~char, trueexp)
         | _ => condNode
         };
 
       switch (trueMatch) {
       | NotInRange
-      | Error(_) => get_node_from_expression(log, falseexp, line, char)
+      | Error(_) => get_node_from_expression(~log, ~line, ~char, falseexp)
       | _ => trueMatch
       };
 
     | TExpArray(expressions)
     | TExpTuple(expressions) =>
-      let exps =
-        List.filter(
-          (e: Typedtree.expression) =>
-            is_point_inside_location(log, e.exp_loc, line, char),
-          expressions,
-        );
-
-      switch (exps) {
-      | [] => Error("No match")
-      | [expr] => Expression(expr)
-      | _ => Error("Multiple matches")
-      };
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        expressions,
+      )
 
     | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")
-    | TExpLambda(_, _) => failwith("NYI: transl_imm: Multi-branch lambda")
-    | TExpContinue => Error("TExpContinue")
-    | TExpBreak => Error("TExpBreak")
-    | TExpNull => Error("TExpNull")
-    | TExpIdent(_) => Error("TExpIdent")
+    | TExpLambda(_, _) =>
+      failwith("Impossible: transl_imm: Multi-branch lambda")
+    | TExpContinue => Expression(expr)
+    | TExpBreak => Expression(expr)
+    | TExpNull => Expression(expr)
+    | TExpIdent(_) => Expression(expr)
     | TExpConstant(const) =>
-      if (is_point_inside_location(log, expr.exp_loc, line, char)) {
+      if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
         Expression(expr);
       } else {
         NotInRange;
       }
-    | TExpArrayGet(_) => Error("TExpArrayGet")
-    | TExpArraySet(_) => Error("TExpArraySet")
-    | TExpRecord(_) => Error("TExpRecord")
-    | TExpRecordGet(_) => Error("TExpRecordGet")
-    | TExpRecordSet(_) => Error("TExpRecordSet")
-    | TExpMatch(_) => Error("TExpMatch")
-    | TExpPrim1(_) => Error("TExpPrim1")
-    | TExpPrim2(_) => Error("TExpPrim2")
-    | TExpPrimN(_) => Error("TExpPrimN")
-    | TExpBoxAssign(_) => Error("TExpBoxAssign")
-    | TExpAssign(_) => Error("TExpAssign")
-    | TExpWhile(_) => Error("TExpWhile")
-    | TExpFor(_) => Error("TExpFor")
-    | TExpConstruct(_) => Error("TExpConstruct")
+    | TExpArrayGet(e1, e2) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e1, e2],
+      )
+    | TExpArraySet(e1, e2, e3) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e1, e2, e3],
+      )
+    | TExpRecord(_) => Expression(expr)
+    | TExpRecordGet(e, _, _) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e],
+      )
+    | TExpRecordSet(e1, _, _, e2) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e1, e2],
+      )
+    | TExpMatch(cond, branches, _) =>
+      if (is_point_inside_location(~line, ~char, cond.exp_loc)) {
+        Expression(cond);
+      } else {
+        List.fold_left(
+          (acc, mb: Typedtree.match_branch) =>
+            if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
+              get_node_from_pattern(~log, ~line, ~char, mb.mb_pat);
+            } else if (is_point_inside_location(
+                         ~line,
+                         ~char,
+                         mb.mb_body.exp_loc,
+                       )) {
+              get_node_from_expression(~log, ~line, ~char, mb.mb_body);
+            } else {
+              switch (mb.mb_guard) {
+              | None => acc
+              | Some(e) =>
+                if (is_point_inside_location(~line, ~char, e.exp_loc)) {
+                  get_node_from_expression(~log, ~line, ~char, e);
+                } else {
+                  acc;
+                }
+              };
+            },
+          Expression(expr),
+          branches,
+        );
+      }
+    | TExpPrim1(_, e) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e],
+      )
+    | TExpPrim2(_, e1, e2) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e1, e2],
+      )
+    | TExpPrimN(_, expressions) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        expressions,
+      )
+    | TExpBoxAssign(e1, e2) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e1, e2],
+      )
+    | TExpAssign(e1, e2) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [e1, e2],
+      )
+    | TExpWhile(cond, block) =>
+      if (is_point_inside_location(~line, ~char, cond.exp_loc)) {
+        get_node_from_expression(~log, ~line, ~char, cond);
+      } else if (is_point_inside_location(~line, ~char, block.exp_loc)) {
+        get_node_from_expression(~log, ~line, ~char, block);
+      } else {
+        Expression(expr);
+      }
+
+    | TExpFor(e1, e2, e3, block) =>
+      if (is_point_inside_location(~line, ~char, block.exp_loc)) {
+        get_node_from_expression(~log, ~line, ~char, block);
+      } else {
+        List.fold_left(
+          (acc, exp) =>
+            switch (exp) {
+            | None => acc
+            | Some(e: Typedtree.expression) =>
+              if (is_point_inside_location(~line, ~char, e.exp_loc)) {
+                get_node_from_expression(~log, ~line, ~char, e);
+              } else {
+                acc;
+              }
+            },
+          Expression(expr),
+          [e1, e2, e3],
+        );
+      }
+
+    | TExpConstruct(_, _, expressions) =>
+      find_location_in_expressions(
+        ~log,
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        expressions,
+      )
     };
 
   switch (node) {
   | NotInRange
   | Error(_) =>
-    if (is_point_inside_location(log, expr.exp_loc, line, char)) {
+    if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
       Expression(expr);
     } else {
       NotInRange;
@@ -492,8 +570,13 @@ let rec get_node_from_expression =
   };
 };
 
-let getNodeFromStmt =
-    (log, stmt: Grain_typed__Typedtree.toplevel_stmt, line, char) =>
+let get_node_from_statement =
+    (
+      ~log: string => 'a,
+      ~line,
+      ~char,
+      stmt: Grain_typed__Typedtree.toplevel_stmt,
+    ) =>
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => Error("import declaration")
   | TTopForeign(export_flag, value_description) => Error("foreign")
@@ -505,7 +588,7 @@ let getNodeFromStmt =
       let matches =
         List.map(
           (vb: Typedtree.value_binding) =>
-            get_node_from_expression(log, vb.vb_expr, line, char),
+            get_node_from_expression(~log, ~line, ~char, vb.vb_expr),
           value_bindings,
         );
       let filtered =
@@ -529,7 +612,7 @@ let getNodeFromStmt =
     }
 
   | TTopExpr(expression) =>
-    get_node_from_expression(log, expression, line, char)
+    get_node_from_expression(~log, ~line, ~char, expression)
   | TTopException(export_flag, type_exception) => Error("exception")
   | TTopExport(export_declarations) => Error("export")
   };
@@ -636,26 +719,27 @@ let get_module_exports =
 };
 
 let rec expression_lens =
-        (log, line, char, e: Typedtree.expression, compiled_code) => {
-  log("expression_lens");
+        (
+          log: string => 'a,
+          line,
+          char,
+          e: Typedtree.expression,
+          compiled_code,
+        ) => {
   let desc = e.exp_desc;
   let txt =
     switch (desc) {
     | TExpRecordGet(expr, loc, field) =>
-      log("TExpRecordGet");
-
-      if (is_point_inside_location(log, expr.exp_loc, line, char)) {
+      if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
         lens_sig(~env=e.exp_env, expr.exp_type);
       } else {
         lens_sig(~env=e.exp_env, e.exp_type);
-      };
+      }
 
-    | TExpPrim1(_) => "TExpPrim1"
-    | TExpPrim2(_) => "TExpPrim2"
+    | TExpPrim1(_, exp) => lens_sig(~env=exp.exp_env, exp.exp_type)
+    | TExpPrim2(_, exp, exp2) => lens_sig(~env=exp.exp_env, exp.exp_type) // FIX me check location using get_location
     | TExpPrimN(_) => "TExpPrimN"
     | TExpIdent(path, loc, vd) =>
-      log("TExpIdent");
-      log(print_path(path));
       let parts =
         switch (path) {
         | PIdent(ident) => ("", ident.name)
@@ -669,9 +753,8 @@ let rec expression_lens =
         };
 
       let (modname, _after) = parts;
-      log("modname " ++ modname);
 
-      // // work out if the cursor is in the module name or after it
+      // work out if the cursor is in the module name or after it
       if (modname == "" || modname == "Pervasives") {
         lens_sig(e.exp_type, ~env=e.exp_env);
       } else {
@@ -702,5 +785,5 @@ let rec expression_lens =
     | _ => lens_sig(~env=e.exp_env, e.exp_type)
     };
 
-  (mark_down_grain(txt), Some(e.exp_loc));
+  mark_down_grain(txt);
 };

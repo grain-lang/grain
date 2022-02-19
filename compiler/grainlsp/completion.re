@@ -19,32 +19,33 @@ let rec get_kind = (desc: Types.type_desc) =>
 
 let process_resolution =
     (
-      log: string => unit,
-      id,
-      json,
-      compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
-      cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
-      documents,
+      ~log: string => unit,
+      ~id,
+      ~compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
+      ~cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
+      ~documents,
+      request,
     ) => {
-  // right now we just resolve nothing new but respond to the client at least
+  // right now we just resolve nothing to clear the client's request
+  // In future we may want to send more details back with Graindoc details for example
   Rpc.send_completion(
-    log,
-    stdout,
-    id,
+    ~log,
+    ~output=stdout,
+    ~id,
     [],
   );
 };
 
 let process_completion =
     (
-      log: string => unit,
-      id,
-      json,
-      compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
-      cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
-      documents,
+      ~log: string => unit,
+      ~id,
+      ~compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
+      ~cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
+      ~documents,
+      request,
     ) => {
-  switch (Utils.getTextDocumenUriAndPosition(json)) {
+  switch (Utils.get_text_document_uri_and_position(request)) {
   | (Some(uri), Some(line), Some(char)) =>
     let completable =
       Utils.get_original_text(log, documents, uri, line, char);
@@ -63,7 +64,6 @@ let process_completion =
         );
       } else {
         let compiledCode = Hashtbl.find(cached_code, uri);
-
         let modules = Env.get_all_modules(compiledCode.env);
         let firstChar = text.[0];
 
@@ -77,7 +77,6 @@ let process_completion =
               let ident: Ident.t = {name: modName, stamp: 0, flags: 0};
               let mod_ident: Path.t = PIdent(ident);
 
-              log("looking for module " ++ modName);
               // only look up completions for imported modules
               if (!List.exists((m: Ident.t) => m.name == modName, modules)) {
                 [];
