@@ -72,7 +72,7 @@ let get_hover_from_statement =
               );
             switch (matches) {
             | [decl] => (
-                Utils.lens_sig(decl.ctyp_type, ~env=compiled_code.env),
+                Utils.lens_sig(~log, decl.ctyp_type, ~env=compiled_code.env),
                 Some(decl.ctyp_loc),
               )
             | _ => (
@@ -122,13 +122,21 @@ let get_hover_from_statement =
         | NotInRange => ("Not in range", None)
         | Expression(e) => (
             Utils.expression_lens(log, line, char, e, compiled_code),
-            Some(e.exp_loc),
+            if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
+              Some(stmt.ttop_loc);
+            } else {
+              Some(e.exp_loc);
+            },
           )
         | Pattern(p) => (
             Utils.mark_down_grain(
-              Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
+              Utils.lens_sig(~log, p.pat_type, ~env=compiled_code.env),
             ),
-            Some(p.pat_loc),
+            if (p.pat_loc == Grain_parsing.Location.dummy_loc) {
+              Some(stmt.ttop_loc);
+            } else {
+              Some(p.pat_loc);
+            },
           )
         }
       | _ => ("Internal error", None)
@@ -139,6 +147,8 @@ let get_hover_from_statement =
     // Because of the List syntax sugar, we don't get a location
     // But as a cover all, if we have a dummy location here,
     // use the enclosing expression location
+
+    log("TTopExpr");
 
     let (loc, node) =
       if (expression.exp_loc == Grain_parsing.Location.dummy_loc) {
@@ -155,18 +165,22 @@ let get_hover_from_statement =
     | Error(err) => ("Error: " ++ err, None)
     | NotInRange => (
         Utils.mark_down_grain(
-          Utils.lens_sig(expression.exp_type, ~env=compiled_code.env),
+          Utils.lens_sig(~log, expression.exp_type, ~env=compiled_code.env),
         ),
         Some(loc),
       )
     | Expression(e) => (
         Utils.expression_lens(log, line, char, e, compiled_code),
-        Some(e.exp_loc),
+        if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
+          Some(loc);
+        } else {
+          Some(e.exp_loc);
+        },
       )
 
     | Pattern(p) => (
         Utils.mark_down_grain(
-          Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
+          Utils.lens_sig(~log, p.pat_type, ~env=compiled_code.env),
         ),
         Some(p.pat_loc),
       )

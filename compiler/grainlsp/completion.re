@@ -127,7 +127,8 @@ let process_completion =
                 let item: Rpc.completion_item = {
                   label: i.name,
                   kind: get_kind(l.val_type.desc),
-                  detail: Utils.lens_sig(l.val_type, ~env=compiledCode.env),
+                  detail:
+                    Utils.lens_sig(~log, l.val_type, ~env=compiledCode.env),
                   documentation: "This is also some documentation",
                 };
                 item;

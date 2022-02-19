@@ -2,7 +2,7 @@ open Grain_typed;
 open Grain_diagnostics;
 
 let get_signature_from_statement =
-    (stmt: Grain_typed__Typedtree.toplevel_stmt) =>
+    (~log, stmt: Grain_typed__Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => None
   | TTopForeign(export_flag, value_description) => None
@@ -35,25 +35,25 @@ let get_signature_from_statement =
         List.fold_left(
           (acc, vbs: Typedtree.value_binding) =>
             (acc == "" ? "" : acc ++ ", ")
-            ++ Utils.lens_sig(vbs.vb_expr.exp_type, ~env=stmt.ttop_env),
+            ++ Utils.lens_sig(~log, vbs.vb_expr.exp_type, ~env=stmt.ttop_env),
           "",
           value_bindings,
         );
       Some(vbses);
     }
   | TTopExpr(expression) =>
-    Some(Utils.lens_sig(expression.exp_type, ~env=expression.exp_env))
+    Some(Utils.lens_sig(~log, expression.exp_type, ~env=expression.exp_env))
   | TTopException(export_flag, type_exception) => None
   | TTopExport(export_declarations) => None
   };
 
-let get_lenses = (typed_program: Typedtree.typed_program) => {
+let get_lenses = (~log, typed_program: Typedtree.typed_program) => {
   List.fold_left(
     (acc, stmt: Grain_typed__Typedtree.toplevel_stmt) => {
       let (file, startline, startchar, sbol) =
         Locations.get_raw_pos_info(stmt.ttop_loc.loc_start);
 
-      let signature = get_signature_from_statement(stmt);
+      let signature = get_signature_from_statement(~log, stmt);
       switch (signature) {
       | None => acc
       | Some(sigval) =>
@@ -78,7 +78,7 @@ let process_get_lenses = (~log, ~id, ~compiled_code, request) => {
   | Some(u) =>
     if (Hashtbl.mem(compiled_code, u)) {
       let compiled_code = Hashtbl.find(compiled_code, u);
-      let lenses = get_lenses(compiled_code);
+      let lenses = get_lenses(~log, compiled_code);
       Rpc.send_lenses(~log, ~output=stdout, ~id, lenses);
     } else {
       Rpc.send_lenses(~log, ~output=stdout, ~id, []);
