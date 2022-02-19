@@ -147,30 +147,43 @@ let print_sig = (t: Types.type_expr) => {
   sigStr;
 };
 
-let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
+let rec lens_sig = (~log, ~depth=0, ~env, t: Types.type_expr) => {
+  log("lens sig at depth " ++ string_of_int(depth));
   switch (t.desc) {
-  | TTyRecord(fields) => print_sig(t)
+  | TTyRecord(fields) =>
+    log("TTyRecord");
+    print_sig(t);
 
   | TTyTuple(args) =>
+    log("TTyTuple");
+
     switch (args) {
     | [] => ""
     | _ => "(" ++ comma_join(~sep=", ", ~print_fn=print_sig, args) ++ ")"
-    }
+    };
   | TTyVar(v) =>
+    log("TTyVar");
     switch (v) {
     | None => ""
     | Some(txt) => txt
-    }
+    };
   | TTyUniVar(v) =>
+    log("TTyUniVar");
     switch (v) {
     | None => ""
     | Some(var) => var
-    }
-  | TTyPoly(te, _) => lens_sig(~depth=depth + 1, ~env, te)
-  | TTyLink(te) => lens_sig(~depth=depth + 1, ~env, te)
+    };
+  | TTyPoly(te, _) => lens_sig(~log, ~depth=depth + 1, ~env, te)
+  | TTyLink(te) =>
+    log("TTyLink");
+    lens_sig(~log, ~depth=depth + 1, ~env, te);
 
-  | TTySubst(t) => lens_sig(~depth=depth + 1, ~env, t)
+  | TTySubst(t) =>
+    log("TTySubst");
+    lens_sig(~log, ~depth=depth + 1, ~env, t);
   | TTyConstr(path, types, r) =>
+    log("TTyConstr");
+
     let decl = Env.find_type(path, env);
 
     let tk = decl.type_kind;
@@ -192,7 +205,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
               } else {
                 acc ++ ",\n";
               };
-            let typeInf = lens_sig(~env, field.rf_type);
+            let typeInf = lens_sig(~log, ~env, field.rf_type);
             let rf_name = field.rf_name;
 
             existing ++ "  " ++ rf_name.name ++ ": " ++ typeInf;
@@ -208,6 +221,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
       ++ labelText
       ++ "\n}";
     | TDataVariant(decls) =>
+      log("TDataVariant");
       let declText =
         List.fold_left(
           (acc, decl: Types.constructor_declaration) => {
@@ -268,11 +282,17 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
         ++ type_text;
       };
 
-    | TDataAbstract => print_path(path) ++ type_text
-    | TDataOpen => print_path(path) ++ type_text
+    | TDataAbstract =>
+      log("TDataAbstract");
+
+      print_path(path) ++ type_text;
+    | TDataOpen =>
+      log("TDataOpen");
+      print_path(path) ++ type_text;
     };
 
   | TTyArrow(args, rettype, _) =>
+    log("TTyArrow");
     let arg_text = comma_join(~sep=", ", ~print_fn=print_sig, args);
 
     "(" ++ arg_text ++ ") -> " ++ print_sig(rettype);
@@ -318,6 +338,7 @@ let rec find_location_in_expressions =
 
 and get_node_from_expression =
     (~log: string => 'a, ~line, ~char, expr: Typedtree.expression) => {
+  log("get_node_from_expression");
   let node =
     switch (expr.exp_desc) {
     | TExpLet(rec_flag, mut_flag, vbs) =>
@@ -576,7 +597,8 @@ let get_node_from_statement =
       ~line,
       ~char,
       stmt: Grain_typed__Typedtree.toplevel_stmt,
-    ) =>
+    ) => {
+  log("get_node_from_statement");
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => Error("import declaration")
   | TTopForeign(export_flag, value_description) => Error("foreign")
@@ -616,6 +638,7 @@ let get_node_from_statement =
   | TTopException(export_flag, type_exception) => Error("exception")
   | TTopExport(export_declarations) => Error("export")
   };
+};
 
 let find_completable = (text, offset) => {
   let rec loop = i => {
@@ -726,18 +749,20 @@ let rec expression_lens =
           e: Typedtree.expression,
           compiled_code,
         ) => {
+  log("Expression Lens");
   let desc = e.exp_desc;
   let txt =
     switch (desc) {
     | TExpRecordGet(expr, loc, field) =>
       if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
-        lens_sig(~env=e.exp_env, expr.exp_type);
+        lens_sig(~log, ~env=e.exp_env, expr.exp_type);
       } else {
-        lens_sig(~env=e.exp_env, e.exp_type);
+        lens_sig(~log, ~env=e.exp_env, e.exp_type);
       }
 
-    | TExpPrim1(_, exp) => lens_sig(~env=exp.exp_env, exp.exp_type)
-    | TExpPrim2(_, exp, exp2) => lens_sig(~env=exp.exp_env, exp.exp_type) // FIX me check location using get_location
+    | TExpPrim1(_, exp) => lens_sig(~log, ~env=exp.exp_env, exp.exp_type)
+    | TExpPrim2(_, exp, exp2) =>
+      lens_sig(~log, ~env=exp.exp_env, exp.exp_type) // FIX me check location using get_location
     | TExpPrimN(_) => "TExpPrimN"
     | TExpIdent(path, loc, vd) =>
       let parts =
@@ -756,7 +781,7 @@ let rec expression_lens =
 
       // work out if the cursor is in the module name or after it
       if (modname == "" || modname == "Pervasives") {
-        lens_sig(e.exp_type, ~env=e.exp_env);
+        lens_sig(~log, e.exp_type, ~env=e.exp_env);
       } else {
         let lstart = loc.loc.loc_start;
         let mod_start = lstart.pos_cnum - lstart.pos_bol;
@@ -778,11 +803,11 @@ let rec expression_lens =
             );
           printed_vals;
         } else {
-          lens_sig(e.exp_type, ~env=e.exp_env);
+          lens_sig(~log, e.exp_type, ~env=e.exp_env);
         };
       };
 
-    | _ => lens_sig(~env=e.exp_env, e.exp_type)
+    | _ => lens_sig(~log, ~env=e.exp_env, e.exp_type)
     };
 
   mark_down_grain(txt);
