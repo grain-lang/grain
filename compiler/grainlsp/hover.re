@@ -42,7 +42,10 @@ let get_hover_from_statement =
             );
 
           switch (matches) {
-          | [decl] => (decl.cd_name.txt, Some(decl.cd_loc))
+          | [decl] => (
+              Utils.mark_down_grain(decl.cd_name.txt),
+              Some(decl.cd_loc),
+            )
           | _ => (
               Utils.mark_down_grain("enum " ++ name.txt),
               Some(node.data_loc),
@@ -72,7 +75,13 @@ let get_hover_from_statement =
               );
             switch (matches) {
             | [decl] => (
-                Utils.lens_sig(~log, decl.ctyp_type, ~env=compiled_code.env),
+                Utils.mark_down_grain(
+                  Utils.lens_sig(
+                    ~log,
+                    decl.ctyp_type,
+                    ~env=compiled_code.env,
+                  ),
+                ),
                 Some(decl.ctyp_loc),
               )
             | _ => (

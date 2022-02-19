@@ -151,38 +151,38 @@ let rec lens_sig = (~log, ~depth=0, ~env, t: Types.type_expr) => {
   log("lens sig at depth " ++ string_of_int(depth));
   switch (t.desc) {
   | TTyRecord(fields) =>
-    log("TTyRecord");
-    print_sig(t);
+    //  log("TTyRecord");
+    print_sig(t)
 
   | TTyTuple(args) =>
-    log("TTyTuple");
+    //  log("TTyTuple");
 
     switch (args) {
     | [] => ""
     | _ => "(" ++ comma_join(~sep=", ", ~print_fn=print_sig, args) ++ ")"
-    };
+    }
   | TTyVar(v) =>
-    log("TTyVar");
+    // log("TTyVar");
     switch (v) {
     | None => ""
     | Some(txt) => txt
-    };
+    }
   | TTyUniVar(v) =>
-    log("TTyUniVar");
+    //log("TTyUniVar");
     switch (v) {
     | None => ""
     | Some(var) => var
-    };
+    }
   | TTyPoly(te, _) => lens_sig(~log, ~depth=depth + 1, ~env, te)
   | TTyLink(te) =>
-    log("TTyLink");
-    lens_sig(~log, ~depth=depth + 1, ~env, te);
+    //   log("TTyLink");
+    lens_sig(~log, ~depth=depth + 1, ~env, te)
 
   | TTySubst(t) =>
-    log("TTySubst");
-    lens_sig(~log, ~depth=depth + 1, ~env, t);
+    //   log("TTySubst");
+    lens_sig(~log, ~depth=depth + 1, ~env, t)
   | TTyConstr(path, types, r) =>
-    log("TTyConstr");
+    //  log("TTyConstr");
 
     let decl = Env.find_type(path, env);
 
@@ -221,7 +221,7 @@ let rec lens_sig = (~log, ~depth=0, ~env, t: Types.type_expr) => {
       ++ labelText
       ++ "\n}";
     | TDataVariant(decls) =>
-      log("TDataVariant");
+      //  log("TDataVariant");
       let declText =
         List.fold_left(
           (acc, decl: Types.constructor_declaration) => {
@@ -283,16 +283,16 @@ let rec lens_sig = (~log, ~depth=0, ~env, t: Types.type_expr) => {
       };
 
     | TDataAbstract =>
-      log("TDataAbstract");
+      //  log("TDataAbstract");
 
-      print_path(path) ++ type_text;
+      print_path(path) ++ type_text
     | TDataOpen =>
-      log("TDataOpen");
-      print_path(path) ++ type_text;
+      //    log("TDataOpen");
+      print_path(path) ++ type_text
     };
 
   | TTyArrow(args, rettype, _) =>
-    log("TTyArrow");
+    //   log("TTyArrow");
     let arg_text = comma_join(~sep=", ", ~print_fn=print_sig, args);
 
     "(" ++ arg_text ++ ") -> " ++ print_sig(rettype);
