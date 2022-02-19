@@ -2,26 +2,25 @@ open Grain_typed;
 
 let get_hover_from_statement =
     (
-      log,
+      ~log,
+      ~uri,
+      ~line,
+      ~char,
+      ~documents,
+      ~compiled_code: Typedtree.typed_program,
       stmt: Typedtree.toplevel_stmt,
-      uri,
-      line,
-      char,
-      documents,
-      compiled_code: Typedtree.typed_program,
     ) => {
-  log("get_hover_from_statement");
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => ("import declaration", None)
   | TTopForeign(export_flag, value_description) => ("foreign", None)
   | TTopData(data_declarations) =>
     switch (data_declarations) {
-    | [] => ("", None)
+    | [] => ("empty data", None)
     | _ =>
       let matches =
         List.filter(
           (dd: Typedtree.data_declaration) =>
-            Utils.is_point_inside_location(log, dd.data_loc, line, char),
+            Utils.is_point_inside_location(~line, ~char, dd.data_loc),
           data_declarations,
         );
       switch (matches) {
@@ -34,7 +33,7 @@ let get_hover_from_statement =
           let matches =
             List.filter(
               (cd: Typedtree.constructor_declaration) =>
-                if (Utils.is_point_inside_location(log, cd.cd_loc, line, char)) {
+                if (Utils.is_point_inside_location(~line, ~char, cd.cd_loc)) {
                   true;
                 } else {
                   false;
@@ -61,10 +60,9 @@ let get_hover_from_statement =
               List.filter(
                 (dp: Typedtree.core_type) =>
                   if (Utils.is_point_inside_location(
-                        log,
+                        ~line,
+                        ~char,
                         dp.ctyp_loc,
-                        line,
-                        char,
                       )) {
                     true;
                   } else {
@@ -90,12 +88,12 @@ let get_hover_from_statement =
 
   | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
     switch (value_bindings) {
-    | [] => ("", None)
+    | [] => ("Error: empty let", None)
     | _ =>
       let matches =
         List.map(
           (vb: Typedtree.value_binding) =>
-            Utils.get_node_from_expression(log, vb.vb_expr, line, char),
+            Utils.get_node_from_expression(~log, ~line, ~char, vb.vb_expr),
           value_bindings,
         );
       let filtered =
@@ -112,24 +110,20 @@ let get_hover_from_statement =
       | [] =>
         let vb = List.hd(value_bindings);
         let expr = vb.vb_expr;
-        // return the type for the whole statement
-        // (
-        // Utils.mark_down_grain(
-        //   Utils.lens_sig(expr.exp_type, ~env=compiled_code.env) ,
-        // ),
-
-        // Some(vb.vb_loc),
-        //);
-
-        Utils.expression_lens(log, line, char, expr, compiled_code);
+        let pat = vb.vb_pat;
+        (
+          Utils.expression_lens(log, line, char, expr, compiled_code),
+          Some(pat.pat_loc),
+        );
 
       | [node] =>
         switch (node) {
         | Error(err) => (err, None)
         | NotInRange => ("Not in range", None)
-        | Expression(e) =>
-          Utils.expression_lens(log, line, char, e, compiled_code)
-        //(Utils.lens_sig(e.exp_type), Some(e.exp_loc))
+        | Expression(e) => (
+            Utils.expression_lens(log, line, char, e, compiled_code),
+            Some(e.exp_loc),
+          )
         | Pattern(p) => (
             Utils.mark_down_grain(
               Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
@@ -142,19 +136,34 @@ let get_hover_from_statement =
     }
 
   | TTopExpr(expression) =>
-    let node = Utils.get_node_from_expression(log, expression, line, char);
+    // Because of the List syntax sugar, we don't get a location
+    // But as a cover all, if we have a dummy location here,
+    // use the enclosing expression location
+
+    let (loc, node) =
+      if (expression.exp_loc == Grain_parsing.Location.dummy_loc) {
+        let nd: Utils.node_t = Expression(expression);
+        (stmt.ttop_loc, nd);
+      } else {
+        (
+          expression.exp_loc,
+          Utils.get_node_from_expression(~log, ~line, ~char, expression),
+        );
+      };
+
     switch (node) {
-    | Error(err) => ("NYI: " ++ err, None)
+    | Error(err) => ("Error: " ++ err, None)
     | NotInRange => (
         Utils.mark_down_grain(
           Utils.lens_sig(expression.exp_type, ~env=compiled_code.env),
         ),
-        Some(expression.exp_loc),
+        Some(loc),
       )
-    | Expression(e) =>
-      Utils.expression_lens(log, line, char, e, compiled_code)
+    | Expression(e) => (
+        Utils.expression_lens(log, line, char, e, compiled_code),
+        Some(e.exp_loc),
+      )
 
-    //   (Utils.lens_sig(e.exp_type), Some(e.exp_loc))
     | Pattern(p) => (
         Utils.mark_down_grain(
           Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
@@ -168,8 +177,8 @@ let get_hover_from_statement =
   };
 };
 
-let get_hover = (log, id, json, compiled_code, documents) => {
-  switch (Utils.getTextDocumenUriAndPosition(json)) {
+let get_hover = (~log, ~id, ~compiled_code, ~documents, request) => {
+  switch (Utils.get_text_document_uri_and_position(request)) {
   | (Some(uri), Some(line), Some(char)) =>
     if (Hashtbl.mem(compiled_code, uri)) {
       let ln = line + 1;
@@ -178,25 +187,25 @@ let get_hover = (log, id, json, compiled_code, documents) => {
       switch (compiled_code_opt) {
       | None => ()
       | Some(compiled_code) =>
-        let node = Utils.findBestMatch(compiled_code, ln, char);
+        let node = Utils.find_best_match(~line=ln, ~char, compiled_code);
         switch (node) {
         | Some(stmt) =>
           let (signature, loc) =
             get_hover_from_statement(
-              log,
+              ~log,
+              ~uri,
+              ~line=ln,
+              ~char,
+              ~documents,
+              ~compiled_code,
               stmt,
-              uri,
-              ln,
-              char,
-              documents,
-              compiled_code,
             );
           let range =
             switch (loc) {
             | None => Utils.loc_to_range(stmt.ttop_loc)
             | Some(l) => Utils.loc_to_range(l)
             };
-          Rpc.send_hover(log, stdout, id, signature, range);
+          Rpc.send_hover(~log, ~output=stdout, ~id, ~range, signature);
         | None => ()
         };
       };

@@ -1,18 +1,19 @@
 open Grain_typed;
 open Grain_diagnostics;
 
-let goto_definition = (log, id, json, compiled_code, cached_code) => {
-  switch (Utils.getTextDocumenUriAndPosition(json)) {
+let goto_definition =
+    (~log: string => 'a, ~id, ~compiled_code, ~cached_code, request) => {
+  switch (Utils.get_text_document_uri_and_position(request)) {
   | (Some(uri), Some(line), Some(char)) =>
     let ln = line + 1;
     let compiled_code_opt = Hashtbl.find_opt(cached_code, uri);
     switch (compiled_code_opt) {
     | None => log("No compiled code available")
     | Some(compiled_code) =>
-      let node = Utils.findBestMatch(compiled_code, ln, char);
+      let node = Utils.find_best_match(~line=ln, ~char, compiled_code);
       switch (node) {
       | Some(stmt) =>
-        let node = Utils.getNodeFromStmt(log, stmt, ln, char);
+        let node = Utils.get_node_from_statement(~log, ~line=ln, ~char, stmt);
         switch ((node: Utils.node_t)) {
         | Error(err) => log(err)
         | NotInRange => log("Not in range")
@@ -34,9 +35,21 @@ let goto_definition = (log, id, json, compiled_code, cached_code) => {
               // full path, so we use the uri instead
               if (String.contains(filename, '/')
                   || String.contains(filename, '\\')) {
-                Rpc.send_go_to_definition(log, stdout, id, filename, range);
+                Rpc.send_go_to_definition(
+                  ~log,
+                  ~output=stdout,
+                  ~id,
+                  ~range,
+                  filename,
+                );
               } else {
-                Rpc.send_go_to_definition(log, stdout, id, uri, range);
+                Rpc.send_go_to_definition(
+                  ~log,
+                  ~output=stdout,
+                  ~id,
+                  ~range,
+                  uri,
+                );
               };
             }
           | _ => log("Not defined")

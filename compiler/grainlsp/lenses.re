@@ -42,8 +42,7 @@ let get_signature_from_statement =
       Some(vbses);
     }
   | TTopExpr(expression) =>
-    let expr_type = expression.exp_type;
-    Some(Utils.lens_sig(expr_type, ~env=expression.exp_env));
+    Some(Utils.lens_sig(expression.exp_type, ~env=expression.exp_env))
   | TTopException(export_flag, type_exception) => None
   | TTopExport(export_declarations) => None
   };
@@ -67,23 +66,22 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
   );
 };
 
-let process_get_lenses = (log, id, json, compiled_code) => {
-  let params = Yojson.Safe.Util.member("params", json);
+let process_get_lenses = (~log, ~id, ~compiled_code, request) => {
+  let params = Yojson.Safe.Util.member("params", request);
   let text_document = Yojson.Safe.Util.member("textDocument", params);
-
   let uri =
     Yojson.Safe.Util.member("uri", text_document)
     |> Yojson.Safe.Util.to_string_option;
 
   switch (uri) {
-  | None => Rpc.send_lenses(log, stdout, id, [])
+  | None => Rpc.send_lenses(~log, ~output=stdout, ~id, [])
   | Some(u) =>
     if (Hashtbl.mem(compiled_code, u)) {
       let compiled_code = Hashtbl.find(compiled_code, u);
       let lenses = get_lenses(compiled_code);
-      Rpc.send_lenses(log, stdout, id, lenses);
+      Rpc.send_lenses(~log, ~output=stdout, ~id, lenses);
     } else {
-      Rpc.send_lenses(log, stdout, id, []);
+      Rpc.send_lenses(~log, ~output=stdout, ~id, []);
     }
   };
 };

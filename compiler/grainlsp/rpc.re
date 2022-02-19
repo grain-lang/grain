@@ -278,7 +278,7 @@ let send_capabilities = (log, output, id: int) => {
   send(output, strJson);
 };
 
-let send_lenses = (log, output, id: int, lenses: list(lens_t)) => {
+let send_lenses = (~log, ~output, ~id: int, lenses: list(lens_t)) => {
   let convertedLenses =
     List.map(
       (l: lens_t) => {
@@ -301,7 +301,7 @@ let send_lenses = (log, output, id: int, lenses: list(lens_t)) => {
   send(output, strJson);
 };
 
-let send_hover = (log, output, id: int, signature, range: range_t) => {
+let send_hover = (~log, ~output, ~id: int, ~range: range_t, signature) => {
   let range_ext = convert_range(range);
   let hover_info: hover_result = {
     contents: {
@@ -319,13 +319,13 @@ let send_hover = (log, output, id: int, signature, range: range_t) => {
 
 let send_diagnostics =
     (
-      log,
-      output,
-      uri,
+      ~log,
+      ~output,
+      ~uri,
+      ~warnings: option(list(Grain_diagnostics.Output.lsp_warning)),
       error: option(Grain_diagnostics.Output.lsp_error),
-      warnings: option(list(Grain_diagnostics.Output.lsp_warning)),
     ) => {
-  let errorDiags =
+  let error_diags =
     switch (error) {
     | None => []
     | Some(err) =>
@@ -338,9 +338,9 @@ let send_diagnostics =
 
   let with_warnings =
     switch (warnings) {
-    | None => errorDiags
+    | None => error_diags
     | Some(warns) =>
-      let warningDiags =
+      let warnings_diags =
         List.map(
           (w: Grain_diagnostics.Output.lsp_warning) => {
             let rstart: position = {line: w.line - 1, character: w.startchar};
@@ -350,7 +350,7 @@ let send_diagnostics =
           },
           warns,
         );
-      List.append(errorDiags, warningDiags);
+      List.append(error_diags, warnings_diags);
     };
 
   let message: diagnostics_message = {
@@ -368,7 +368,7 @@ let send_diagnostics =
   send(output, jsonMessage);
 };
 
-let clear_diagnostics = (log, output, uri) => {
+let clear_diagnostics = (~log, ~output, uri) => {
   let message: diagnostics_message = {
     jsonrpc,
     method: "textDocument/publishDiagnostics",
@@ -385,7 +385,7 @@ let clear_diagnostics = (log, output, uri) => {
 };
 
 let send_go_to_definition =
-    (log, output, id: int, uri: string, range: range_t) => {
+    (~log, ~output, ~id: int, ~range: range_t, uri: string) => {
   let range_ext = convert_range(range);
 
   let definition_info: definition_result = {uri, range: range_ext};
@@ -397,19 +397,7 @@ let send_go_to_definition =
 };
 
 let send_completion =
-    (log, output, id: int, completions: list(completion_item)) => {
-  // let items = List.map(item => completion_item_to_yojson(item), completions);
-
-  // let sigInfo =
-  //   `Assoc([("isIncomplete", `Bool(false)), ("items", `List(items))]);
-
-  // let res =
-  //   `Assoc([
-  //     ("jsonrpc", `String("2.0")),
-  //     ("id", `Int(id)),
-  //     ("result", sigInfo),
-  //   ]);
-
+    (~log, ~output, ~id: int, completions: list(completion_item)) => {
   let completion_info: completion_result = {
     isIncomplete: false,
     items: completions,
