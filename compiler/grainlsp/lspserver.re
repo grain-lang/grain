@@ -88,8 +88,8 @@ let loop = log =>
   };
 
 let run = () => {
-  Log.set_location(rootPath ++ "/lsp_debug.log");
-  Log.log("Hello - from " ++ Sys.executable_name);
+  Log.set_location(rootPath ++ "/.lsp_debug.log");
+  Log.log("LSP starting" ++ Sys.executable_name);
   let log = Log.log;
 
   let initialize = () =>

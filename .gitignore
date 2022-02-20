@@ -46,6 +46,6 @@ cli/bin/grainlsp.bc.js
 
 # LSP log file
 
-./lsp_debug.log
+./.lsp_debug.log
 
 .DS_Store

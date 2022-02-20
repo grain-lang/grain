@@ -2760,7 +2760,6 @@ let get_all_values = (env): list((Ident.t, Types.value_description)) => {
 
 let get_all_type_names = env => {
   let current = env.types.current;
-  // Ident.fold_all((_,(k, desc, accu)) => [(k, desc), ...accu], current, []);
   Ident.fold_all((k, decl, accu) => [k, ...accu], current, []);
 };
 
