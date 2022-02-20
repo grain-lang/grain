@@ -113,9 +113,7 @@ const grainlsp = getGrainlsp();
 
 function execGrainlsp(program, execOpts = { stdio: "pipe" }) {
   const flags = [];
-
-  const options = program.parent.options.concat(program.options);
-  const opts = { ...program.parent.opts(), ...program.opts() };
+  const options = program.opts();
   program.options.forEach((option) => {
     if (!option.forward) return;
     const flag = option.toFlag(options);

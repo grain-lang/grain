@@ -204,6 +204,40 @@ program
 program
   .command("lsp")
   .description("start the Grain LSP server")
+  .forwardOption(
+    "-I, --include-dirs <dirs>",
+    "add additional dependency include directories",
+    list,
+    []
+  )
+  .forwardOption(
+    "-S, --stdlib <path>",
+    "override the standard libary with your own",
+    null,
+    stdlibPath
+  )
+  .forwardOption(
+    "--compilation-mode <mode>",
+    "compilation mode (advanced use only)"
+  )
+  .forwardOption(
+    "--elide-type-info",
+    "don't include runtime type information used by toString/print"
+  )
+  .forwardOption(
+    "--experimental-wasm-tail-call",
+    "enables tail-call optimization"
+  )
+  .forwardOption("--no-gc", "turn off reference counting garbage collection")
+  .forwardOption(
+    "--no-bulk-memory",
+    "polyfill WebAssembly bulk memory instructions"
+  )
+  .forwardOption(
+    "--no-pervasives",
+    "don't automatically import the Grain Pervasives module"
+  )
+  .forwardOption("--strict-sequence", "enable strict sequencing")
   .action(
     wrapAction(function (options, program) {
       // The lsp subcommand inherits all options of the
