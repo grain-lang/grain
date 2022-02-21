@@ -181,7 +181,7 @@ let convert_range = range => {
   {start: r_start, range_end: r_end};
 };
 
-let read_message = (log, input): protocol_msg => {
+let read_message = (input): protocol_msg => {
   let clength = input_line(input);
   let cl = "Content-Length: ";
   let cll = String.length(cl);
@@ -221,7 +221,7 @@ let send = (output, content) => {
   flush(output);
 };
 
-let send_null_message = (log, output, id) => {
+let send_null_message = (output, id) => {
   let res =
     `Assoc([
       ("jsonrpc", `String("2.0")),
@@ -230,11 +230,10 @@ let send_null_message = (log, output, id) => {
     ]);
 
   let strJson = Yojson.Safe.pretty_to_string(res);
-  log(strJson);
   send(output, strJson);
 };
 
-let send_capabilities = (log, output, id: int) => {
+let send_capabilities = (output, id: int) => {
   //   let sig_helpers: signature_helpers = {
   //     triggerCharacters: ["("],
   //     retriggerCharacters: [","],
@@ -274,11 +273,11 @@ let send_capabilities = (log, output, id: int) => {
 
   let res = capabilities_response_to_yojson(response);
   let strJson = Yojson.Safe.to_string(res);
-  log(strJson);
+
   send(output, strJson);
 };
 
-let send_lenses = (~log, ~output, ~id: int, lenses: list(lens_t)) => {
+let send_lenses = (~output, ~id: int, lenses: list(lens_t)) => {
   let convertedLenses =
     List.map(
       (l: lens_t) => {
@@ -301,7 +300,7 @@ let send_lenses = (~log, ~output, ~id: int, lenses: list(lens_t)) => {
   send(output, strJson);
 };
 
-let send_hover = (~log, ~output, ~id: int, ~range: range_t, signature) => {
+let send_hover = (~output, ~id: int, ~range: range_t, signature) => {
   let range_ext = convert_range(range);
   let hover_info: hover_result = {
     contents: {
@@ -313,13 +312,11 @@ let send_hover = (~log, ~output, ~id: int, ~range: range_t, signature) => {
   let response: hover_response = {jsonrpc, id, result: hover_info};
   let res = hover_response_to_yojson(response);
   let strJson = Yojson.Safe.pretty_to_string(res);
-  log(strJson);
   send(output, strJson);
 };
 
 let send_diagnostics =
     (
-      ~log,
       ~output,
       ~uri,
       ~warnings: option(list(Grain_diagnostics.Output.lsp_warning)),
@@ -364,11 +361,11 @@ let send_diagnostics =
 
   let jsonMessage =
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
-  log(jsonMessage);
+
   send(output, jsonMessage);
 };
 
-let clear_diagnostics = (~log, ~output, uri) => {
+let clear_diagnostics = (~output, uri) => {
   let message: diagnostics_message = {
     jsonrpc,
     method: "textDocument/publishDiagnostics",
@@ -384,8 +381,7 @@ let clear_diagnostics = (~log, ~output, uri) => {
   send(output, jsonMessage);
 };
 
-let send_go_to_definition =
-    (~log, ~output, ~id: int, ~range: range_t, uri: string) => {
+let send_go_to_definition = (~output, ~id: int, ~range: range_t, uri: string) => {
   let range_ext = convert_range(range);
 
   let definition_info: definition_result = {uri, range: range_ext};
@@ -396,8 +392,7 @@ let send_go_to_definition =
   send(output, strJson);
 };
 
-let send_completion =
-    (~log, ~output, ~id: int, completions: list(completion_item)) => {
+let send_completion = (~output, ~id: int, completions: list(completion_item)) => {
   let completion_info: completion_result = {
     isIncomplete: false,
     items: completions,
