@@ -2,7 +2,7 @@ open Grain_typed;
 open Grain_diagnostics;
 
 let get_signature_from_statement =
-    (~log, stmt: Grain_typed__Typedtree.toplevel_stmt) =>
+    (stmt: Grain_typed__Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => None
   | TTopForeign(export_flag, value_description) => None
@@ -18,7 +18,11 @@ let get_signature_from_statement =
               switch (decl.data_kind) {
               | TDataVariant(_) => "enum " ++ decl.data_name.txt
               | TDataRecord(_) => "record " ++ decl.data_name.txt
-              | TDataAbstract => "abstract" // not sure about this one
+              | TDataAbstract =>
+                switch (decl.data_manifest) {
+                | None => decl.data_name.txt
+                | Some(t) => Utils.lens_sig(~env=stmt.ttop_env, t.ctyp_type)
+                }
               }
             ),
           "",
@@ -35,25 +39,25 @@ let get_signature_from_statement =
         List.fold_left(
           (acc, vbs: Typedtree.value_binding) =>
             (acc == "" ? "" : acc ++ ", ")
-            ++ Utils.lens_sig(~log, vbs.vb_expr.exp_type, ~env=stmt.ttop_env),
+            ++ Utils.lens_sig(vbs.vb_expr.exp_type, ~env=stmt.ttop_env),
           "",
           value_bindings,
         );
       Some(vbses);
     }
   | TTopExpr(expression) =>
-    Some(Utils.lens_sig(~log, expression.exp_type, ~env=expression.exp_env))
+    Some(Utils.lens_sig(expression.exp_type, ~env=expression.exp_env))
   | TTopException(export_flag, type_exception) => None
   | TTopExport(export_declarations) => None
   };
 
-let get_lenses = (~log, typed_program: Typedtree.typed_program) => {
+let get_lenses = (typed_program: Typedtree.typed_program) => {
   List.fold_left(
     (acc, stmt: Grain_typed__Typedtree.toplevel_stmt) => {
       let (file, startline, startchar, sbol) =
         Locations.get_raw_pos_info(stmt.ttop_loc.loc_start);
 
-      let signature = get_signature_from_statement(~log, stmt);
+      let signature = get_signature_from_statement(stmt);
       switch (signature) {
       | None => acc
       | Some(sigval) =>
@@ -66,7 +70,7 @@ let get_lenses = (~log, typed_program: Typedtree.typed_program) => {
   );
 };
 
-let process_get_lenses = (~log, ~id, ~compiled_code, request) => {
+let process_get_lenses = (~id, ~compiled_code, request) => {
   let params = Yojson.Safe.Util.member("params", request);
   let text_document = Yojson.Safe.Util.member("textDocument", params);
   let uri =
@@ -74,14 +78,14 @@ let process_get_lenses = (~log, ~id, ~compiled_code, request) => {
     |> Yojson.Safe.Util.to_string_option;
 
   switch (uri) {
-  | None => Rpc.send_lenses(~log, ~output=stdout, ~id, [])
+  | None => Rpc.send_lenses(~output=stdout, ~id, [])
   | Some(u) =>
     if (Hashtbl.mem(compiled_code, u)) {
       let compiled_code = Hashtbl.find(compiled_code, u);
-      let lenses = get_lenses(~log, compiled_code);
-      Rpc.send_lenses(~log, ~output=stdout, ~id, lenses);
+      let lenses = get_lenses(compiled_code);
+      Rpc.send_lenses(~output=stdout, ~id, lenses);
     } else {
-      Rpc.send_lenses(~log, ~output=stdout, ~id, []);
+      Rpc.send_lenses(~output=stdout, ~id, []);
     }
   };
 };

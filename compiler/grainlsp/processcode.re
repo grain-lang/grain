@@ -4,9 +4,7 @@ open Grain_parsing;
 open Grain_utils;
 open Grain_typed;
 
-let compile_source = (log, uri, source) => {
-  log("Compiling the source for " ++ uri);
-
+let compile_source = (uri, source) => {
   let filename = Filename.basename(uri);
 
   switch (
@@ -90,7 +88,7 @@ let get_text_document_from_params = json => {
 };
 
 let textDocument_didOpenOrChange =
-    (~log, ~documents, ~compiled_code, ~cached_code, request) => {
+    (~documents, ~compiled_code, ~cached_code, request) => {
   switch (get_text_document_from_params(request)) {
   | Some((uri, text)) =>
     if (!Hashtbl.mem(documents, uri)) {
@@ -98,7 +96,7 @@ let textDocument_didOpenOrChange =
     } else {
       Hashtbl.replace(documents, uri, text);
     };
-    let compilerRes = compile_source(log, uri, text);
+    let compilerRes = compile_source(uri, text);
     switch (compilerRes) {
     | (Some(typed_program), None, warnings) =>
       if (!Hashtbl.mem(compiled_code, uri)) {
@@ -112,24 +110,17 @@ let textDocument_didOpenOrChange =
         Hashtbl.replace(cached_code, uri, typed_program);
       };
       switch (warnings) {
-      | None => Rpc.clear_diagnostics(~log, ~output=stdout, uri)
+      | None => Rpc.clear_diagnostics(~output=stdout, uri)
       | Some(wrns) =>
-        Rpc.send_diagnostics(~log, ~output=stdout, ~uri, ~warnings, None)
+        Rpc.send_diagnostics(~output=stdout, ~uri, ~warnings, None)
       };
 
     | (_, Some(err), _) =>
       if (!Hashtbl.mem(compiled_code, uri)) {
         Hashtbl.remove(compiled_code, uri);
       };
-      log("Failed to compile");
-      Rpc.send_diagnostics(
-        ~log,
-        ~output=stdout,
-        ~uri,
-        ~warnings=None,
-        Some(err),
-      );
-    | (None, None, _) => Rpc.clear_diagnostics(~log, ~output=stdout, uri)
+      Rpc.send_diagnostics(~output=stdout, ~uri, ~warnings=None, Some(err));
+    | (None, None, _) => Rpc.clear_diagnostics(~output=stdout, uri)
     };
   | _ => ()
   };

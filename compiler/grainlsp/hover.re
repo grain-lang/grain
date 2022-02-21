@@ -2,7 +2,6 @@ open Grain_typed;
 
 let get_hover_from_statement =
     (
-      ~log,
       ~uri,
       ~line,
       ~char,
@@ -11,7 +10,7 @@ let get_hover_from_statement =
       stmt: Typedtree.toplevel_stmt,
     ) => {
   switch (stmt.ttop_desc) {
-  | TTopImport(import_declaration) => ("import declaration", None)
+  | TTopImport(import_declaration) => ("import", None)
   | TTopForeign(export_flag, value_description) => ("foreign", None)
   | TTopData(data_declarations) =>
     switch (data_declarations) {
@@ -28,7 +27,15 @@ let get_hover_from_statement =
       | [node] =>
         let name = node.data_name;
         switch (node.data_kind) {
-        | TDataAbstract => ("Abstract declaration", Some(node.data_loc))
+        | TDataAbstract =>
+          switch (node.data_manifest) {
+          | None => (name.txt, Some(node.data_loc))
+          | Some(t) => (
+              Utils.lens_sig(~env=stmt.ttop_env, t.ctyp_type),
+              Some(node.data_loc),
+            )
+          }
+
         | TDataVariant(constrs) =>
           let matches =
             List.filter(
@@ -76,11 +83,7 @@ let get_hover_from_statement =
             switch (matches) {
             | [decl] => (
                 Utils.mark_down_grain(
-                  Utils.lens_sig(
-                    ~log,
-                    decl.ctyp_type,
-                    ~env=compiled_code.env,
-                  ),
+                  Utils.lens_sig(decl.ctyp_type, ~env=compiled_code.env),
                 ),
                 Some(decl.ctyp_loc),
               )
@@ -97,12 +100,12 @@ let get_hover_from_statement =
 
   | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
     switch (value_bindings) {
-    | [] => ("Error: empty let", None)
+    | [] => ("Internal error: empty let", None)
     | _ =>
       let matches =
         List.map(
           (vb: Typedtree.value_binding) =>
-            Utils.get_node_from_expression(~log, ~line, ~char, vb.vb_expr),
+            Utils.get_node_from_expression(~line, ~char, vb.vb_expr),
           value_bindings,
         );
       let filtered =
@@ -121,7 +124,7 @@ let get_hover_from_statement =
         let expr = vb.vb_expr;
         let pat = vb.vb_pat;
         (
-          Utils.expression_lens(log, line, char, expr, compiled_code),
+          Utils.expression_lens(~line, ~char, ~compiled_code, expr),
           Some(pat.pat_loc),
         );
 
@@ -130,7 +133,7 @@ let get_hover_from_statement =
         | Error(err) => (err, None)
         | NotInRange => ("Not in range", None)
         | Expression(e) => (
-            Utils.expression_lens(log, line, char, e, compiled_code),
+            Utils.expression_lens(~line, ~char, ~compiled_code, e),
             if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
               Some(stmt.ttop_loc);
             } else {
@@ -139,7 +142,7 @@ let get_hover_from_statement =
           )
         | Pattern(p) => (
             Utils.mark_down_grain(
-              Utils.lens_sig(~log, p.pat_type, ~env=compiled_code.env),
+              Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
             ),
             if (p.pat_loc == Grain_parsing.Location.dummy_loc) {
               Some(stmt.ttop_loc);
@@ -157,8 +160,6 @@ let get_hover_from_statement =
     // But as a cover all, if we have a dummy location here,
     // use the enclosing expression location
 
-    log("TTopExpr");
-
     let (loc, node) =
       if (expression.exp_loc == Grain_parsing.Location.dummy_loc) {
         let nd: Utils.node_t = Expression(expression);
@@ -166,7 +167,7 @@ let get_hover_from_statement =
       } else {
         (
           expression.exp_loc,
-          Utils.get_node_from_expression(~log, ~line, ~char, expression),
+          Utils.get_node_from_expression(~line, ~char, expression),
         );
       };
 
@@ -174,12 +175,12 @@ let get_hover_from_statement =
     | Error(err) => ("Error: " ++ err, None)
     | NotInRange => (
         Utils.mark_down_grain(
-          Utils.lens_sig(~log, expression.exp_type, ~env=compiled_code.env),
+          Utils.lens_sig(expression.exp_type, ~env=compiled_code.env),
         ),
         Some(loc),
       )
     | Expression(e) => (
-        Utils.expression_lens(log, line, char, e, compiled_code),
+        Utils.expression_lens(~line, ~char, ~compiled_code, e),
         if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
           Some(loc);
         } else {
@@ -189,18 +190,21 @@ let get_hover_from_statement =
 
     | Pattern(p) => (
         Utils.mark_down_grain(
-          Utils.lens_sig(~log, p.pat_type, ~env=compiled_code.env),
+          Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
         ),
         Some(p.pat_loc),
       )
     };
 
-  | TTopException(export_flag, type_exception) => ("exception", None)
+  | TTopException(export_flag, type_exception) =>
+    let exception_type = type_exception.ext_type; // FIX ME
+
+    ("exception", None);
   | TTopExport(export_declarations) => ("export", None)
   };
 };
 
-let get_hover = (~log, ~id, ~compiled_code, ~documents, request) => {
+let get_hover = (~id, ~compiled_code, ~documents, request) => {
   switch (Utils.get_text_document_uri_and_position(request)) {
   | (Some(uri), Some(line), Some(char)) =>
     if (Hashtbl.mem(compiled_code, uri)) {
@@ -215,7 +219,6 @@ let get_hover = (~log, ~id, ~compiled_code, ~documents, request) => {
         | Some(stmt) =>
           let (signature, loc) =
             get_hover_from_statement(
-              ~log,
               ~uri,
               ~line=ln,
               ~char,
@@ -228,7 +231,7 @@ let get_hover = (~log, ~id, ~compiled_code, ~documents, request) => {
             | None => Utils.loc_to_range(stmt.ttop_loc)
             | Some(l) => Utils.loc_to_range(l)
             };
-          Rpc.send_hover(~log, ~output=stdout, ~id, ~range, signature);
+          Rpc.send_hover(~output=stdout, ~id, ~range, signature);
         | None => ()
         };
       };

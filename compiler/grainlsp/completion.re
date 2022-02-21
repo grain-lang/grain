@@ -4,22 +4,21 @@ open Grain_parsing;
 open Grain_utils;
 open Grain_typed;
 
-// maps Grain types to LSP types
+// maps Grain types to LSP CompletionItemKind
 let rec get_kind = (desc: Types.type_desc) =>
   switch (desc) {
-  | TTyVar(_) => 6
-  | TTyArrow(_) => 3
-  | TTyTuple(_) => 22
-  | TTyRecord(_) => 22
-  | TTyConstr(_) => 4
+  | TTyVar(_) => Utils.item_kind_completion_variable
+  | TTyArrow(_) => Utils.item_kind_completion_function
+  | TTyTuple(_) => Utils.item_kind_completion_struct
+  | TTyRecord(_) => Utils.item_kind_completion_struct
+  | TTyConstr(_) => Utils.item_kind_completion_constructor
   | TTySubst(s) => get_kind(s.desc)
   | TTyLink(t) => get_kind(t.desc)
-  | _ => 1
+  | _ => Utils.item_kind_completion_text
   };
 
 let process_resolution =
     (
-      ~log: string => unit,
       ~id,
       ~compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
       ~cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
@@ -29,7 +28,6 @@ let process_resolution =
   // right now we just resolve nothing to clear the client's request
   // In future we may want to send more details back with Graindoc details for example
   Rpc.send_completion(
-    ~log,
     ~output=stdout,
     ~id,
     [],
@@ -38,7 +36,6 @@ let process_resolution =
 
 let process_completion =
     (
-      ~log: string => unit,
       ~id,
       ~compiled_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
       ~cached_code: Stdlib__hashtbl.t(string, Typedtree.typed_program),
@@ -47,21 +44,13 @@ let process_completion =
     ) => {
   switch (Utils.get_text_document_uri_and_position(request)) {
   | (Some(uri), Some(line), Some(char)) =>
-    let completable =
-      Utils.get_original_text(log, documents, uri, line, char);
+    let completable = Utils.get_original_text(documents, uri, line, char);
     switch (completable) {
-    | Nothing =>
-      log("Nothing to complete");
-      Rpc.send_completion(log, stdout, id, []);
+    | Nothing => Rpc.send_completion(stdout, id, [])
     | Lident(text) =>
       if (!Hashtbl.mem(cached_code, uri)) {
         // no compiled code available
-        Rpc.send_completion(
-          log,
-          stdout,
-          id,
-          [],
-        );
+        Rpc.send_completion(stdout, id, []);
       } else {
         let compiledCode = Hashtbl.find(cached_code, uri);
         let modules = Env.get_all_modules(compiledCode.env);
@@ -70,6 +59,7 @@ let process_completion =
         let completions =
           switch (firstChar) {
           | 'A' .. 'Z' =>
+            // autocomplete modules
             if (String.contains(text, '.')) {
               // find module name
               let pos = String.rindex(text, '.');
@@ -81,7 +71,7 @@ let process_completion =
               if (!List.exists((m: Ident.t) => m.name == modName, modules)) {
                 [];
               } else {
-                Utils.get_module_exports(log, mod_ident, compiledCode);
+                Utils.get_module_exports(mod_ident, compiledCode);
               };
             } else {
               let modules = Env.get_all_modules(compiledCode.env);
@@ -119,6 +109,7 @@ let process_completion =
             }
 
           | _ =>
+            // Autocompete anything in scope
             let values: list((Ident.t, Types.value_description)) =
               Env.get_all_values(compiledCode.env);
 
@@ -127,9 +118,8 @@ let process_completion =
                 let item: Rpc.completion_item = {
                   label: i.name,
                   kind: get_kind(l.val_type.desc),
-                  detail:
-                    Utils.lens_sig(~log, l.val_type, ~env=compiledCode.env),
-                  documentation: "This is also some documentation",
+                  detail: Utils.lens_sig(l.val_type, ~env=compiledCode.env),
+                  documentation: "",
                 };
                 item;
               },
@@ -137,10 +127,10 @@ let process_completion =
             );
           };
 
-        Rpc.send_completion(log, stdout, id, completions);
+        Rpc.send_completion(stdout, id, completions);
       }
     };
 
-  | _ => Rpc.send_completion(log, stdout, id, [])
+  | _ => Rpc.send_completion(stdout, id, [])
   };
 };
