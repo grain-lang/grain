@@ -706,8 +706,30 @@ let rec expression_lens =
       }
 
     | TExpPrim1(_, exp) => lens_sig(~env=exp.exp_env, exp.exp_type)
-    | TExpPrim2(_, exp, exp2) => lens_sig(~env=exp.exp_env, exp.exp_type) // FIX me check location using get_location
-    | TExpPrimN(_) => "Primative"
+    | TExpPrim2(_, exp, exp2) =>
+      switch (
+        find_location_in_expressions(
+          ~line,
+          ~char,
+          ~default=NotInRange,
+          [exp, exp2],
+        )
+      ) {
+      | Expression(matched) => lens_sig(~env=e.exp_env, matched.exp_type)
+      | _ => ""
+      }
+    | TExpPrimN(_, expressions) =>
+      switch (
+        find_location_in_expressions(
+          ~line,
+          ~char,
+          ~default=NotInRange,
+          expressions,
+        )
+      ) {
+      | Expression(matched) => lens_sig(~env=e.exp_env, matched.exp_type)
+      | _ => ""
+      }
     | TExpIdent(path, loc, vd) =>
       let parts =
         switch (path) {
@@ -722,7 +744,6 @@ let rec expression_lens =
         };
 
       let (modname, _after) = parts;
-
       // work out if the cursor is in the module name or after it
       if (modname == "" || modname == "Pervasives") {
         lens_sig(e.exp_type, ~env=e.exp_env);
