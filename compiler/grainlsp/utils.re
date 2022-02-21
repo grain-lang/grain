@@ -12,7 +12,7 @@ let item_kind_completion_constructor = 4;
 let item_kind_completion_variable = 6;
 let item_kind_completion_struct = 22;
 
-let mark_down_grain = code => "```grain\n" ++ code ++ "\n```";
+let markdown_grain = code => "```grain\n" ++ code ++ "\n```";
 
 type node_t =
   | Expression(Typedtree.expression)
@@ -754,5 +754,5 @@ let rec expression_lens =
     | _ => lens_sig(~env=e.exp_env, e.exp_type)
     };
 
-  mark_down_grain(txt);
+  markdown_grain(txt);
 };

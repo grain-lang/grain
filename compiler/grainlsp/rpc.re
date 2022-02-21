@@ -11,12 +11,6 @@ type completion_values = {
   triggerCharacters: list(string),
 };
 
-// [@deriving yojson]
-// type signature_helpers = {
-//   triggerCharacters: list(string),
-//   retriggerCharacters: list(string),
-// };
-
 [@deriving yojson]
 type code_values = {resolveProvider: bool};
 
@@ -26,7 +20,6 @@ type lsp_capabilities = {
   textDocumentSync: int,
   hoverProvider: bool,
   completionProvider: completion_values,
-  // signatureHelpProvider: signature_helpers,
   definitionProvider: bool,
   typeDefinitionProvider: bool,
   referencesProvider: bool,
@@ -234,11 +227,6 @@ let send_null_message = (output, id) => {
 };
 
 let send_capabilities = (output, id: int) => {
-  //   let sig_helpers: signature_helpers = {
-  //     triggerCharacters: ["("],
-  //     retriggerCharacters: [","],
-  //   };
-
   let completion_vals: completion_values = {
     resolveProvider: true,
     triggerCharacters: ["."],
@@ -251,7 +239,6 @@ let send_capabilities = (output, id: int) => {
     textDocumentSync: 1,
     hoverProvider: true,
     completionProvider: completion_vals,
-    //  signatureHelpProvider: sig_helpers,
     definitionProvider: false, // disabled until we can resolve the external module location
     typeDefinitionProvider: false,
     referencesProvider: false,
@@ -379,17 +366,6 @@ let clear_diagnostics = (~output, uri) => {
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
 
   send(output, jsonMessage);
-};
-
-let send_go_to_definition = (~output, ~id: int, ~range: range_t, uri: string) => {
-  let range_ext = convert_range(range);
-
-  let definition_info: definition_result = {uri, range: range_ext};
-  let response: definition_response = {jsonrpc, id, result: definition_info};
-  let res = definition_response_to_yojson(response);
-  let strJson = Yojson.Safe.pretty_to_string(res);
-
-  send(output, strJson);
 };
 
 let send_completion = (~output, ~id: int, completions: list(completion_item)) => {
