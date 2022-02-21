@@ -10,8 +10,14 @@ let get_hover_from_statement =
       stmt: Typedtree.toplevel_stmt,
     ) => {
   switch (stmt.ttop_desc) {
-  | TTopImport(import_declaration) => ("import", None)
-  | TTopForeign(export_flag, value_description) => ("foreign", None)
+  | TTopImport(import_declaration) => (
+      Utils.print_path(import_declaration.timp_path),
+      Some(stmt.ttop_loc),
+    )
+  | TTopForeign(export_flag, value_description) =>
+    let tvd_desc = value_description.tvd_desc;
+    let type_sig = Utils.lens_sig(~env=stmt.ttop_env, tvd_desc.ctyp_type);
+    (type_sig, Some(stmt.ttop_loc));
   | TTopData(data_declarations) =>
     switch (data_declarations) {
     | [] => ("empty data", None)
@@ -35,7 +41,6 @@ let get_hover_from_statement =
               Some(node.data_loc),
             )
           }
-
         | TDataVariant(constrs) =>
           let matches =
             List.filter(
@@ -50,11 +55,11 @@ let get_hover_from_statement =
 
           switch (matches) {
           | [decl] => (
-              Utils.mark_down_grain(decl.cd_name.txt),
+              Utils.markdown_grain(decl.cd_name.txt),
               Some(decl.cd_loc),
             )
           | _ => (
-              Utils.mark_down_grain("enum " ++ name.txt),
+              Utils.markdown_grain("enum " ++ name.txt),
               Some(node.data_loc),
             )
           };
@@ -62,7 +67,7 @@ let get_hover_from_statement =
         | TDataRecord(_) =>
           switch (node.data_params) {
           | [] => (
-              Utils.mark_down_grain(node.data_name.txt),
+              Utils.markdown_grain(node.data_name.txt),
               Some(node.data_loc),
             )
           | _ =>
@@ -82,13 +87,13 @@ let get_hover_from_statement =
               );
             switch (matches) {
             | [decl] => (
-                Utils.mark_down_grain(
+                Utils.markdown_grain(
                   Utils.lens_sig(decl.ctyp_type, ~env=compiled_code.env),
                 ),
                 Some(decl.ctyp_loc),
               )
             | _ => (
-                Utils.mark_down_grain(node.data_name.txt),
+                Utils.markdown_grain(node.data_name.txt),
                 Some(node.data_loc),
               )
             };
@@ -141,7 +146,7 @@ let get_hover_from_statement =
             },
           )
         | Pattern(p) => (
-            Utils.mark_down_grain(
+            Utils.markdown_grain(
               Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
             ),
             if (p.pat_loc == Grain_parsing.Location.dummy_loc) {
@@ -174,7 +179,7 @@ let get_hover_from_statement =
     switch (node) {
     | Error(err) => ("Error: " ++ err, None)
     | NotInRange => (
-        Utils.mark_down_grain(
+        Utils.markdown_grain(
           Utils.lens_sig(expression.exp_type, ~env=compiled_code.env),
         ),
         Some(loc),
@@ -189,7 +194,7 @@ let get_hover_from_statement =
       )
 
     | Pattern(p) => (
-        Utils.mark_down_grain(
+        Utils.markdown_grain(
           Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
         ),
         Some(p.pat_loc),
@@ -197,8 +202,7 @@ let get_hover_from_statement =
     };
 
   | TTopException(export_flag, type_exception) =>
-    let exception_type = type_exception.ext_type; // FIX ME
-
+    let exception_type = type_exception.ext_type; // Not sure how to get a good value here
     ("exception", None);
   | TTopExport(export_declarations) => ("export", None)
   };
