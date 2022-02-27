@@ -1,5 +1,3 @@
-/* grainc-flags --no-gc */
-
 /**
  * @module Hash: Utilities for hashing any value.
  * @example import Hash from "hash"
@@ -28,7 +26,6 @@ import WasmI32, {
   ltU as (<),
 } from "runtime/unsafe/wasmi32"
 import Tags from "runtime/unsafe/tags"
-import Memory from "runtime/unsafe/memory"
 
 import { tagSimpleNumber } from "runtime/dataStructures"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
@@ -36,25 +33,32 @@ import { coerceNumberToWasmI32 } from "runtime/numbers"
 import Random from "sys/random"
 import Result from "result"
 
+@unsafe
 let seed = {
-  Memory.incRef(WasmI32.fromGrain(Random.random))
-  Memory.incRef(WasmI32.fromGrain(Result.unwrap))
   let random = Random.random()
-  Memory.incRef(WasmI32.fromGrain(random))
   coerceNumberToWasmI32(Result.unwrap(random))
 }
 
+@unsafe
 let _MAX_HASH_DEPTH = 31n
 
+@unsafe
 let c1 = 0xcc9e2d51n
+@unsafe
 let c2 = 0x1b873593n
+@unsafe
 let r1 = 15n
+@unsafe
 let r2 = 13n
+@unsafe
 let m = 5n
+@unsafe
 let n = 0xe6546b64n
 
+@unsafe
 let mut h = seed
 
+@unsafe
 let hash32 = k => {
   let mut k = k * c1
   k = WasmI32.rotl(k, r1)
@@ -65,6 +69,7 @@ let hash32 = k => {
   h = h * m + n
 }
 
+@unsafe
 let hashRemaining = r => {
   // Note: wasm is little-endian so no swap is necessary
 
@@ -75,6 +80,7 @@ let hashRemaining = r => {
   h = h ^ r
 }
 
+@unsafe
 let finalize = len => {
   h = h ^ len
 
@@ -85,6 +91,7 @@ let finalize = len => {
   h = h ^ h >>> 16n
 }
 
+@unsafe
 let rec hashOne = (val, depth) => {
   if (depth > _MAX_HASH_DEPTH) {
     void
@@ -231,7 +238,8 @@ let rec hashOne = (val, depth) => {
  *
  * @since v0.1.0
  */
-export let rec hash = anything => {
+@unsafe
+export let hash = anything => {
   h = seed
 
   hashOne(WasmI32.fromGrain(anything), 0n)
@@ -239,10 +247,5 @@ export let rec hash = anything => {
 
   // Tag the number on the way out.
   // Since Grain has proper modulus, negative numbers are okay.
-  let result = tagSimpleNumber(h)
-
-  Memory.decRef(WasmI32.fromGrain(hash))
-  Memory.decRef(WasmI32.fromGrain(anything))
-
-  result
+  tagSimpleNumber(h)
 }
