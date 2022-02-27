@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=runtime */
+/* grainc-flags --no-pervasives */
 
 import WasmI32, {
   eq as (==),
@@ -14,7 +14,6 @@ import WasmI32, {
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Tags from "runtime/unsafe/tags"
-import Memory from "runtime/unsafe/memory"
 
 primitive (!): Bool -> Bool = "@not"
 primitive (||): (Bool, Bool) -> Bool = "@or"
@@ -22,8 +21,10 @@ primitive (&&): (Bool, Bool) -> Bool = "@and"
 
 import { isNumber, numberEqual } from "runtime/numbers"
 
+@unsafe
 let cycleMarker = 0x80000000n
 
+@unsafe
 let rec heapEqualHelp = (heapTag, xptr, yptr) => {
   match (heapTag) {
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
@@ -222,10 +223,7 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
   }
 }
 
+@unsafe
 export let rec equal = (x: a, y: a) => {
-  let ret = equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(equal))
-  ret
+  equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
 }
