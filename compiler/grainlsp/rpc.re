@@ -349,6 +349,8 @@ let send_diagnostics =
   let jsonMessage =
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
 
+  Log.log(jsonMessage);
+
   send(output, jsonMessage);
 };
 
@@ -364,6 +366,8 @@ let clear_diagnostics = (~output, uri) => {
 
   let jsonMessage =
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
+
+  Log.log(jsonMessage);
 
   send(output, jsonMessage);
 };

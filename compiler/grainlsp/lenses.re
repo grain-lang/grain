@@ -39,14 +39,13 @@ let get_signature_from_statement =
         List.fold_left(
           (acc, vbs: Typedtree.value_binding) =>
             (acc == "" ? "" : acc ++ ", ")
-            ++ Utils.lens_sig(vbs.vb_expr.exp_type, ~env=stmt.ttop_env),
+            ++ Utils.simple_sig(vbs.vb_expr.exp_type),
           "",
           value_bindings,
         );
       Some(vbses);
     }
-  | TTopExpr(expression) =>
-    Some(Utils.lens_sig(expression.exp_type, ~env=expression.exp_env))
+  | TTopExpr(expression) => Some(Utils.simple_sig(expression.exp_type))
   | TTopException(export_flag, type_exception) => None
   | TTopExport(export_declarations) => None
   };
