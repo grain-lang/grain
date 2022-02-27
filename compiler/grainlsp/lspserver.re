@@ -19,7 +19,6 @@ let loop = () =>
     if (can_read(stdin_descr)) {
       switch (Rpc.read_message(stdin)) {
       | Message(id, action, json) =>
-        Log.log("Message received");
         switch (action) {
         | "textDocument/hover" =>
           Hover.get_hover(~id, ~compiled_code, ~documents, json)
@@ -42,11 +41,10 @@ let loop = () =>
             json,
           )
         | "shutdown" =>
-          Log.log("Shutdown");
           Rpc.send_null_message(stdout, id);
           is_shutting_down := true;
         | _ => ()
-        };
+        }
 
       | Notification("exit", _) =>
         if (is_shutting_down^) {
@@ -55,7 +53,6 @@ let loop = () =>
           exit(1);
         }
       | Notification(method, json) =>
-        Log.log("Notification");
         switch (method) {
         | "textDocument/didOpen"
         | "textDocument/didChange" =>
@@ -66,19 +63,15 @@ let loop = () =>
             json,
           )
         | _ => ()
-        };
+        }
       | Error(_) => is_shutting_down := true
       };
     };
   };
 
 let run = () => {
-  Log.set_location("lsp.log");
-
-  switch (Grain_utils.Config.stdlib_dir^) {
-  | None => Log.log("no stdlib")
-  | Some(lib) => Log.log("stdlib is " ++ lib)
-  };
+  // Will enable this again if we want LSP logging
+  // Log.set_location("lsp.log");
 
   let initialize = () =>
     switch (Rpc.read_message(stdin)) {

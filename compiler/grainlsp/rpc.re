@@ -313,11 +313,19 @@ let send_diagnostics =
     switch (error) {
     | None => []
     | Some(err) =>
-      let rstart: position = {line: err.line - 1, character: err.startchar};
-      let rend: position = {line: err.endline - 1, character: err.endchar};
-      let range = {start: rstart, range_end: rend};
+      if (err.line < 0 || err.startchar < 0) {
+        // dummy location so set to zero
+        let rstart: position = {line: 0, character: 0};
+        let rend: position = {line: 0, character: 0};
+        let range = {start: rstart, range_end: rend};
+        [{range, severity: 1, message: err.lsp_message}];
+      } else {
+        let rstart: position = {line: err.line - 1, character: err.startchar};
+        let rend: position = {line: err.endline - 1, character: err.endchar};
+        let range = {start: rstart, range_end: rend};
 
-      [{range, severity: 1, message: err.lsp_message}];
+        [{range, severity: 1, message: err.lsp_message}];
+      }
     };
 
   let with_warnings =
@@ -326,12 +334,25 @@ let send_diagnostics =
     | Some(warns) =>
       let warnings_diags =
         List.map(
-          (w: Grain_diagnostics.Output.lsp_warning) => {
-            let rstart: position = {line: w.line - 1, character: w.startchar};
-            let rend: position = {line: w.endline - 1, character: w.endchar};
-            let range = {start: rstart, range_end: rend};
-            {range, severity: 2, message: w.lsp_message};
-          },
+          (w: Grain_diagnostics.Output.lsp_warning) =>
+            if (w.line < 0 || w.startchar < 0) {
+              // dummy location so set to zero
+              let rstart: position = {line: 0, character: 0};
+              let rend: position = {line: 0, character: 0};
+              let range = {start: rstart, range_end: rend};
+              {range, severity: 2, message: w.lsp_message};
+            } else {
+              let rstart: position = {
+                line: w.line - 1,
+                character: w.startchar,
+              };
+              let rend: position = {
+                line: w.endline - 1,
+                character: w.endchar,
+              };
+              let range = {start: rstart, range_end: rend};
+              {range, severity: 2, message: w.lsp_message};
+            },
           warns,
         );
       List.append(error_diags, warnings_diags);
@@ -349,8 +370,6 @@ let send_diagnostics =
   let jsonMessage =
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
 
-  Log.log(jsonMessage);
-
   send(output, jsonMessage);
 };
 
@@ -366,8 +385,6 @@ let clear_diagnostics = (~output, uri) => {
 
   let jsonMessage =
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
-
-  Log.log(jsonMessage);
 
   send(output, jsonMessage);
 };
