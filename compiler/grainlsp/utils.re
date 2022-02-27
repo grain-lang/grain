@@ -256,6 +256,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
           )
         };
 
+      // I'm not using oprint here as it doesn't display the field as I want, just the name
       let (modname, typ) = parts;
 
       if (modname == "Pervasives") {
@@ -287,137 +288,6 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
     };
   };
 };
-// let rec lens_sig2 = (~depth=0, ~env, t: Types.type_expr) => {
-//   switch (t.desc) {
-//   | TTyRecord(fields) => print_sig(t)
-
-//   | TTyTuple(args) =>
-//     switch (args) {
-//     | [] => ""
-//     | _ => "(" ++ comma_join(~sep=", ", ~print_fn=print_sig, args) ++ ")"
-//     }
-//   | TTyVar(v) =>
-//     switch (v) {
-//     | None => ""
-//     | Some(txt) => txt
-//     }
-//   | TTyUniVar(v) =>
-//     switch (v) {
-//     | None => ""
-//     | Some(var) => var
-//     }
-//   | TTyPoly(te, _) => lens_sig(~depth=depth + 1, ~env, te)
-//   | TTyLink(te) => lens_sig(~depth=depth + 1, ~env, te)
-
-//   | TTySubst(t) => lens_sig(~depth=depth + 1, ~env, t)
-//   | TTyConstr(path, types, r) =>
-//     let decl = Env.find_type(path, env);
-
-//     let tk = decl.type_kind;
-
-//     let type_text =
-//       switch (types) {
-//       | [] => ""
-//       | _ => "<" ++ comma_join(~sep=", ", ~print_fn=print_sig, types) ++ ">"
-//       };
-
-//     switch (tk) {
-//     | TDataRecord(fields) =>
-//       let labelText =
-//         List.fold_left(
-//           (acc, field: Types.record_field) => {
-//             let existing =
-//               if (acc == "") {
-//                 acc;
-//               } else {
-//                 acc ++ ",\n";
-//               };
-//             let typeInf = lens_sig(~env, field.rf_type);
-//             let rf_name = field.rf_name;
-
-//             existing ++ "  " ++ rf_name.name ++ ": " ++ typeInf;
-//           },
-//           "",
-//           fields,
-//         );
-
-//       "record "
-//       ++ print_path(path)
-//       ++ type_text
-//       ++ " {\n"
-//       ++ labelText
-//       ++ "\n}";
-//     | TDataVariant(decls) =>
-//       let declText =
-//         List.fold_left(
-//           (acc, decl: Types.constructor_declaration) => {
-//             let existing =
-//               if (acc == "") {
-//                 acc;
-//               } else {
-//                 acc ++ ",\n";
-//               };
-//             let decl_name = decl.cd_id.name;
-
-//             let args = decl.cd_args;
-
-//             let decl_contructions =
-//               switch (args) {
-//               | TConstrTuple(types) =>
-//                 switch (types) {
-//                 | [] => ""
-//                 | _ =>
-//                   " ("
-//                   ++ comma_join(~sep=",\n", ~print_fn=print_sig, types)
-//                   ++ ")"
-//                 }
-//               | TConstrSingleton => ""
-//               };
-
-//             existing ++ "  " ++ decl_name ++ decl_contructions;
-//           },
-//           "",
-//           decls,
-//         );
-
-//       let parts =
-//         switch (path) {
-//         | PIdent(ident) => ("", ident.name)
-//         | PExternal(mod_path, name, _) => (
-//             switch (mod_path) {
-//             | PIdent(ident) => ident.name
-//             | PExternal(mod_path, name, _) => ""
-//             },
-//             name,
-//           )
-//         };
-
-//       let (modname, typ) = parts;
-
-//       if (modname == "Pervasives") {
-//         typ ++ type_text;
-//       } else if (typ == "Void") {
-//         "Void";
-//       } else {
-//         "enum "
-//         ++ print_path(path)
-//         ++ type_text
-//         ++ " {\n"
-//         ++ declText
-//         ++ "\n}"
-//         ++ type_text;
-//       };
-
-//     | TDataAbstract => print_path(path) ++ type_text
-//     | TDataOpen => print_path(path) ++ type_text
-//     };
-
-//   | TTyArrow(args, rettype, _) =>
-//     let arg_text = comma_join(~sep=", ", ~print_fn=print_sig, args);
-
-//     "(" ++ arg_text ++ ") -> " ++ print_sig(rettype);
-//   };
-// };
 
 let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
   switch (pattern.pat_desc) {
