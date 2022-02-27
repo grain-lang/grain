@@ -30,22 +30,14 @@ basic functionality › if_one_sided4
        )
       )
      )
-     (drop
-      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-       (block (result i32)
-        (global.set $global_0
-         (tuple.extract 0
-          (tuple.make
-           (i32.const 5)
-           (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-            (global.get $global_0)
-           )
-          )
-         )
+     (global.set $global_0
+      (tuple.extract 0
+       (tuple.make
+        (i32.const 5)
+        (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (global.get $global_0)
         )
-        (i32.const 1879048190)
        )
       )
      )
