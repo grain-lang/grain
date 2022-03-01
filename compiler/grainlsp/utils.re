@@ -68,10 +68,8 @@ let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);
   if (line == raw1l || line == raw1le) {
     true;
-  } else if (line > raw1l && line < raw1le) {
-    true;
   } else {
-    false;
+    line > raw1l && line < raw1le;
   };
 };
 let is_point_inside_location =
@@ -79,34 +77,21 @@ let is_point_inside_location =
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc1.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc1.loc_end);
 
-  let res =
-    if (line == raw1l) {
-      if (char >= raw1c) {
-        if (line == raw1le) {
-          if (char <= raw1ce) {
-            true;
-          } else {
-            false;
-          };
-        } else {
-          true;
-        };
+  if (line == raw1l) {
+    if (char >= raw1c) {
+      if (line == raw1le) {
+        char <= raw1ce;
       } else {
-        false;
-      };
-    } else if (line == raw1le) {
-      if (char <= raw1ce) {
         true;
-      } else {
-        false;
       };
-    } else if (line > raw1l && line < raw1le) {
-      true;
     } else {
       false;
     };
-
-  res;
+  } else if (line == raw1le) {
+    char <= raw1ce;
+  } else {
+    line > raw1l && line < raw1le;
+  };
 };
 
 let find_best_match = (~line, ~char, typed_program: Typedtree.typed_program) => {
