@@ -16,11 +16,10 @@ let lsp = opts =>
     exit(2);
   };
 
-// added spurious arguments to get cmdliner to work until @phated can help
 [@deriving cmdliner]
 type params = {
-  [@name "current-version"] [@docv "VERSION"]
-  current_version: option(string),
+  [@name "debuglsp"] [@docv "DEBUGLOG"]
+  debug_log: option(string),
 };
 
 let cmd = {
