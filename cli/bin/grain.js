@@ -201,6 +201,8 @@ program
     run(wasmFile, program.opts());
   });
 
+// TODO:  #1147 create a common set of parameters that are passed through to commands
+
 program
   .command("lsp")
   .description("start the Grain LSP server")
