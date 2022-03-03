@@ -12,6 +12,27 @@ type completion_values = {
 };
 
 [@deriving yojson]
+type lsp_error = {
+  file: string,
+  line: int,
+  startchar: int,
+  endline: int,
+  endchar: int,
+  lsp_message: string,
+};
+
+[@deriving yojson]
+type lsp_warning = {
+  file: string,
+  line: int,
+  startchar: int,
+  endline: int,
+  endchar: int,
+  number: int,
+  lsp_message: string,
+};
+
+[@deriving yojson]
 type code_values = {resolveProvider: bool};
 
 [@deriving yojson]
@@ -306,8 +327,8 @@ let send_diagnostics =
     (
       ~output,
       ~uri,
-      ~warnings: option(list(Grain_diagnostics.Output.lsp_warning)),
-      error: option(Grain_diagnostics.Output.lsp_error),
+      ~warnings: option(list(lsp_warning)),
+      error: option(lsp_error),
     ) => {
   let error_diags =
     switch (error) {
@@ -334,7 +355,7 @@ let send_diagnostics =
     | Some(warns) =>
       let warnings_diags =
         List.map(
-          (w: Grain_diagnostics.Output.lsp_warning) =>
+          (w: lsp_warning) =>
             if (w.line < 0 || w.startchar < 0) {
               // dummy location so set to zero
               let rstart: position = {line: 0, character: 0};

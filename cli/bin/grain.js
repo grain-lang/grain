@@ -139,7 +139,6 @@ program
     "--hide-locs",
     "hide locations from intermediate trees. Only has an effect with `--verbose`"
   )
-  .forwardOption("--lsp", "generate lsp errors and warnings only")
   .forwardOption("--no-color", "disable colored output")
   .forwardOption("--no-gc", "turn off reference counting garbage collection")
   .forwardOption(
