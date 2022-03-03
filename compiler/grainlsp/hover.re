@@ -201,9 +201,10 @@ let get_hover_from_statement =
       )
     };
 
-  | TTopException(export_flag, type_exception) =>
-    let exception_type = type_exception.ext_type; // Not sure how to get a good value here
-    ("Exception", Some(type_exception.ext_loc));
+  | TTopException(export_flag, type_exception) => (
+      "Exception",
+      Some(type_exception.ext_loc),
+    )
   | TTopExport(export_declarations) => ("Export", None)
   };
 };
