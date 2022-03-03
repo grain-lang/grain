@@ -195,7 +195,7 @@ functions › lam_destructure_3
        (local.tee $0
         (tuple.extract 0
          (tuple.make
-          (local.tee $1
+          (local.tee $2
            (tuple.extract 0
             (tuple.make
              (block (result i32)
@@ -238,12 +238,31 @@ functions › lam_destructure_3
          )
         )
        )
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (global.get $gimport_pervasives_+)
+       (local.tee $1
+        (tuple.extract 0
+         (tuple.make
+          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+           (global.get $gimport_pervasives_+)
+          )
+          (i32.const 0)
+         )
+        )
        )
       )
-      (local.set $2
+      (if
+       (i32.eq
+        (local.get $0)
+        (local.get $1)
+       )
+       (drop
+        (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (local.get $1)
+        )
+       )
+      )
+      (local.set $1
        (tuple.extract 0
         (tuple.make
          (block (result i32)
@@ -289,11 +308,11 @@ functions › lam_destructure_3
       (call $lam_lambda_1156
        (call $wimport_GRAIN$MODULE$runtime/gc_incRef
         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (local.get $1)
+        (local.get $2)
        )
        (call $wimport_GRAIN$MODULE$runtime/gc_incRef
         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (local.get $2)
+        (local.get $1)
        )
       )
      )
@@ -304,13 +323,13 @@ functions › lam_destructure_3
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $1)
+    (local.get $2)
    )
   )
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $2)
+    (local.get $1)
    )
   )
   (local.get $0)

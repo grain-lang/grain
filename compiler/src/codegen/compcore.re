@@ -2515,15 +2515,42 @@ let collect_backpatches = (env, f) => {
 
 let do_backpatches = (wasm_mod, env, backpatches) => {
   let do_backpatch = ((lam, {variables})) => {
-    let get_swap = () => get_swap(wasm_mod, env, 0);
-    let set_swap = set_swap(wasm_mod, env, 0);
-    let preamble = set_swap(lam);
+    let get_var_swap = () => get_swap(wasm_mod, env, 1);
+    let set_var_swap = set_swap(wasm_mod, env, 1);
+    let get_closure_swap = () => get_swap(wasm_mod, env, 0);
+    let set_closure_swap = set_swap(wasm_mod, env, 0);
+    let preamble = set_closure_swap(lam);
     let backpatch_var = (idx, var) =>
-      store(
-        ~offset=4 * (idx + 4),
+      Expression.Block.make(
         wasm_mod,
-        get_swap(),
-        compile_imm(wasm_mod, env, var),
+        gensym_label("backpatch"),
+        [
+          set_var_swap(compile_imm(wasm_mod, env, var)),
+          store(
+            ~offset=4 * (idx + 4),
+            wasm_mod,
+            get_closure_swap(),
+            get_var_swap(),
+          ),
+          // If we store a self-reference, decref it
+          // (it would be cleaner to "not incref" it instead, but
+          //  our memory modle makes that a little complicated to do statically)
+          // Also, note that this should ideally be optimized out often by binaryen
+          Expression.If.make(
+            wasm_mod,
+            Expression.Binary.make(
+              wasm_mod,
+              Op.eq_int32,
+              get_closure_swap(),
+              get_var_swap(),
+            ),
+            Expression.Drop.make(
+              wasm_mod,
+              call_decref(wasm_mod, env, get_var_swap()),
+            ),
+            Expression.Nop.make(wasm_mod),
+          ),
+        ],
       );
     [preamble, ...List.mapi(backpatch_var, variables)];
   };

@@ -26,6 +26,7 @@ import WasmI32, {
   mul as (*),
   and as (&),
   eq as (==),
+  ne as (!=),
 } from "runtime/unsafe/wasmi32"
 
 // Using foreigns directly here to avoid cyclic dependency
@@ -232,7 +233,12 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
       let arity = WasmI32.load(userPtr, 12n)
       let maxOffset = arity * 4n
       for (let mut i = 0n; WasmI32.ltU(i, maxOffset); i += 4n) {
-        ignore(decRef(WasmI32.load(userPtr + i, 16n), false))
+        let val = WasmI32.load(userPtr + i, 16n)
+        // special case: we don't traverse into self-references on lambdas
+        // (this is a hack which allows us to garbage-collect simply-recursive functions)
+        if (val != userPtr) {
+          ignore(decRef(val, false))
+        }
       }
     },
     _ => {
