@@ -15,11 +15,11 @@ let compile_source = (uri, source) => {
     )
   ) {
   | exception exn =>
-    let error = Grain_diagnostics.Output.exn_to_lsp_error(exn);
+    let error = Utils.exn_to_lsp_error(exn);
     let errors =
       switch (error) {
       | None =>
-        let lsp_err: Grain_diagnostics.Output.lsp_error = {
+        let lsp_err: Rpc.lsp_error = {
           file: uri,
           line: 0,
           startchar: 0,
@@ -33,14 +33,11 @@ let compile_source = (uri, source) => {
     errors;
 
   | {cstate_desc: TypedWellFormed(typed_program)} =>
-    let warnings: list(Grain_diagnostics.Output.lsp_warning) =
-      Grain_diagnostics.Output.convert_warnings(
-        Grain_utils.Warnings.get_warnings(),
-        uri,
-      );
+    let warnings: list(Rpc.lsp_warning) =
+      Utils.convert_warnings(Grain_utils.Warnings.get_warnings(), uri);
     (Some(typed_program), None, Some(warnings));
   | _ =>
-    let lsp_error: Grain_diagnostics.Output.lsp_error = {
+    let lsp_error: Rpc.lsp_error = {
       file: uri,
       line: 0,
       startchar: 0,
