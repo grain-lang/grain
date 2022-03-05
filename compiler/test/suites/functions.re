@@ -165,4 +165,24 @@ describe("functions", ({test}) => {
     "func_record_associativity2",
     "record Foo { g: () -> Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
   );
+
+  assertSnapshot(
+    "func_recursive_closure",
+    {|let makeAdder = (n) => (x) => x + n
+export let truc = () => {
+  let rec foo = (x) => {
+    let baz = makeAdder(1);
+    let bar = y => foo(0) + baz(1);
+    if (x == 0) {
+      0
+    } else if (x == 1) {
+      bar(1)
+    } else {
+      foo(x - 1)
+    }
+  }
+  foo(5)
+}
+truc()|},
+  );
 });
