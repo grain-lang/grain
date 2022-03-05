@@ -642,23 +642,9 @@ type bind_action =
   | BindSet(Expression.t)
   | BindTee(Expression.t);
 
-let filter_mapi = {
-  let rec filter_mapi = (count, f) =>
-    fun
-    | [hd, ...tl] => {
-        switch (f(hd, count)) {
-        | Some(result) => [result, ...filter_mapi(count + 1, f, tl)]
-        | None => filter_mapi(count + 1, f, tl)
-        };
-      }
-    | [] => [];
-
-  filter_mapi(0);
-};
-
 let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => {
   let arg_instrs =
-    filter_mapi(
+    List_utils.filter_mapi(
       (arg, i) => {
         // cleanup called on args
         // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
