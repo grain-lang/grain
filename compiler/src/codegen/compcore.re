@@ -2328,7 +2328,9 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | BoxBind => failwith("Unreachable case; should never get here: BoxBind")
   | UnboxBind =>
     failwith("Unreachable case; should never get here: UnboxBind")
-  | WasmFromGrain => compile_imm(~skip_incref=true, wasm_mod, env, arg) // no-op, but we can't cause an incref here
+  | WasmFromGrain =>
+    // no-op, but don't incref as this value should now be considered a raw i32
+    compile_imm(~skip_incref=true, wasm_mod, env, arg)
   | WasmToGrain => compiled_arg // no-op
   | WasmMemoryGrow => Expression.Memory_grow.make(wasm_mod, compiled_arg)
   | WasmUnaryI32({wasm_op, ret_type})
