@@ -20,107 +20,114 @@ pattern matching › constant_match_1
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (call $wimport_GRAIN$MODULE$runtime/dataStructures_newRational
-      (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newRational)
-      (i32.const 1)
-      (i32.const 3)
-     )
-     (i32.const 0)
-    )
-   )
-  )
-  (block $switch.15_outer (result i32)
-   (drop
-    (block $switch.15_branch_1 (result i32)
-     (drop
-      (block $switch.15_branch_2 (result i32)
-       (drop
-        (block $switch.15_branch_3 (result i32)
-         (drop
-          (block $switch.15_default (result i32)
-           (br_table $switch.15_branch_1 $switch.15_branch_2 $switch.15_branch_3 $switch.15_default
-            (i32.const 0)
-            (i32.shr_s
-             (tuple.extract 0
-              (tuple.make
-               (if (result i32)
-                (i32.shr_u
-                 (tuple.extract 0
-                  (tuple.make
-                   (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                     (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
-                    )
-                    (local.get $0)
-                    (i32.const 11)
-                   )
-                   (i32.const 0)
-                  )
-                 )
-                 (i32.const 31)
-                )
-                (i32.const 1)
-                (block (result i32)
-                 (local.set $1
-                  (tuple.extract 0
-                   (tuple.make
-                    (call $wimport_GRAIN$MODULE$runtime/dataStructures_newRational
-                     (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newRational)
-                     (i32.const 1)
-                     (i32.const 3)
-                    )
-                    (i32.const 0)
-                   )
-                  )
-                 )
-                 (select
-                  (i32.const 3)
-                  (i32.const 5)
-                  (i32.shr_u
-                   (tuple.extract 0
-                    (tuple.make
-                     (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                       (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
-                      )
-                      (local.get $0)
-                      (local.get $1)
-                     )
-                     (i32.const 0)
-                    )
-                   )
-                   (i32.const 31)
-                  )
-                 )
-                )
-               )
-               (local.get $1)
-              )
-             )
-             (i32.const 1)
-            )
-           )
-          )
-         )
-         (unreachable)
+  (tuple.extract 0
+   (tuple.make
+    (block (result i32)
+     (local.set $0
+      (tuple.extract 0
+       (tuple.make
+        (call $wimport_GRAIN$MODULE$runtime/dataStructures_newRational
+         (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newRational)
+         (i32.const 1)
+         (i32.const 3)
         )
-       )
-       (br $switch.15_outer
-        (i32.const 2147483646)
+        (i32.const 0)
        )
       )
      )
-     (br $switch.15_outer
-      (i32.const -2)
+     (block $switch.15_outer (result i32)
+      (drop
+       (block $switch.15_branch_1 (result i32)
+        (drop
+         (block $switch.15_branch_2 (result i32)
+          (drop
+           (block $switch.15_branch_3 (result i32)
+            (drop
+             (block $switch.15_default (result i32)
+              (br_table $switch.15_branch_1 $switch.15_branch_2 $switch.15_branch_3 $switch.15_default
+               (i32.const 0)
+               (i32.shr_s
+                (tuple.extract 0
+                 (tuple.make
+                  (if (result i32)
+                   (i32.shr_u
+                    (tuple.extract 0
+                     (tuple.make
+                      (call $wimport_GRAIN$MODULE$runtime/equal_equal
+                       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+                        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                        (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
+                       )
+                       (local.get $0)
+                       (i32.const 11)
+                      )
+                      (i32.const 0)
+                     )
+                    )
+                    (i32.const 31)
+                   )
+                   (i32.const 1)
+                   (block (result i32)
+                    (local.set $1
+                     (tuple.extract 0
+                      (tuple.make
+                       (call $wimport_GRAIN$MODULE$runtime/dataStructures_newRational
+                        (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newRational)
+                        (i32.const 1)
+                        (i32.const 3)
+                       )
+                       (i32.const 0)
+                      )
+                     )
+                    )
+                    (select
+                     (i32.const 3)
+                     (i32.const 5)
+                     (i32.shr_u
+                      (tuple.extract 0
+                       (tuple.make
+                        (call $wimport_GRAIN$MODULE$runtime/equal_equal
+                         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+                          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                          (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
+                         )
+                         (local.get $0)
+                         (local.get $1)
+                        )
+                        (i32.const 0)
+                       )
+                      )
+                      (i32.const 31)
+                     )
+                    )
+                   )
+                  )
+                  (local.get $1)
+                 )
+                )
+                (i32.const 1)
+               )
+              )
+             )
+            )
+            (unreachable)
+           )
+          )
+          (br $switch.15_outer
+           (i32.const 2147483646)
+          )
+         )
+        )
+        (br $switch.15_outer
+         (i32.const -2)
+        )
+       )
+      )
+      (i32.const 2147483646)
      )
     )
+    (i32.const 0)
    )
-   (i32.const 2147483646)
   )
  )
  (func $_start (; has Stack IR ;)

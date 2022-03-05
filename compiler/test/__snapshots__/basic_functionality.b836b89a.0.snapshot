@@ -18,29 +18,36 @@ basic functionality › complex1
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (call_indirect (type $i32_i32_=>_i32)
-     (local.tee $0
-      (tuple.extract 0
-       (tuple.make
-        (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-         (global.get $gimport_pervasives_print)
+  (tuple.extract 0
+   (tuple.make
+    (block (result i32)
+     (drop
+      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+       (call_indirect (type $i32_i32_=>_i32)
+        (local.tee $0
+         (tuple.extract 0
+          (tuple.make
+           (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+            (global.get $gimport_pervasives_print)
+           )
+           (i32.const 0)
+          )
+         )
         )
-        (i32.const 0)
+        (i32.const 7)
+        (i32.load offset=8
+         (local.get $0)
+        )
        )
       )
      )
-     (i32.const 7)
-     (i32.load offset=8
-      (local.get $0)
-     )
+     (i32.const -5)
     )
+    (local.get $0)
    )
   )
-  (i32.const -5)
  )
  (func $_start (; has Stack IR ;)
   (drop

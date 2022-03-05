@@ -42,9 +42,19 @@ let needs_exceptions = ref(false);
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
+let swap_slots_f32 = [|Type.float32|];
+let swap_slots_f64 = [|Type.float64|];
 let swap_i32_offset = 0;
 let swap_i64_offset = Array.length(swap_slots_i32);
-let swap_slots = Array.append(swap_slots_i32, swap_slots_i64);
+let swap_f32_offset = swap_i64_offset + Array.length(swap_slots_i64);
+let swap_f64_offset = swap_f32_offset + Array.length(swap_slots_f32);
+let swap_slots =
+  Array.concat([
+    swap_slots_i32,
+    swap_slots_i64,
+    swap_slots_f32,
+    swap_slots_f64,
+  ]);
 
 /* These are the bare-minimum imports needed for basic runtime support */
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
@@ -965,6 +975,7 @@ let get_swap =
       idx,
     ) =>
   switch (typ) {
+  | Types.HeapAllocated
   | Types.StackAllocated(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
@@ -975,10 +986,7 @@ let get_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(
-        Int32.of_int(idx + swap_i32_offset),
-        Types.StackAllocated(WasmI32),
-      ),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
   | Types.StackAllocated(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
@@ -990,12 +998,32 @@ let get_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(
-        Int32.of_int(idx + swap_i64_offset),
-        Types.StackAllocated(WasmI64),
-      ),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | _ => raise(Not_found)
+  | Types.StackAllocated(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindGet,
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.StackAllocated(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindGet,
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
   };
 
 let set_swap =
@@ -1009,6 +1037,7 @@ let set_swap =
       arg,
     ) =>
   switch (typ) {
+  | Types.HeapAllocated
   | Types.StackAllocated(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
@@ -1019,10 +1048,7 @@ let set_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(
-        Int32.of_int(idx + swap_i32_offset),
-        Types.StackAllocated(WasmI32),
-      ),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
   | Types.StackAllocated(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
@@ -1034,12 +1060,32 @@ let set_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(
-        Int32.of_int(idx + swap_i64_offset),
-        Types.StackAllocated(WasmI64),
-      ),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | _ => raise(Not_found)
+  | Types.StackAllocated(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindSet(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.StackAllocated(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindSet(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
   };
 
 let tee_swap =
@@ -1053,6 +1099,7 @@ let tee_swap =
       arg,
     ) =>
   switch (typ) {
+  | Types.HeapAllocated
   | Types.StackAllocated(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
@@ -1063,10 +1110,7 @@ let tee_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(
-        Int32.of_int(idx + swap_i32_offset),
-        Types.StackAllocated(WasmI32),
-      ),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
   | Types.StackAllocated(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
@@ -1078,12 +1122,32 @@ let tee_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(
-        Int32.of_int(idx + swap_i64_offset),
-        Types.StackAllocated(WasmI64),
-      ),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | _ => raise(Not_found)
+  | Types.StackAllocated(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.StackAllocated(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
   };
 
 let cleanup_locals =
@@ -1095,13 +1159,12 @@ let cleanup_locals =
      */
   switch (rtype) {
   | [_] when Config.no_gc^ => arg
-  | [Types.StackAllocated(_)] => arg
-  | [_] =>
+  | [ty] =>
     Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
     Concatlist.list_of_t(
-      singleton(set_swap(wasm_mod, env, 0, arg, ~skip_incref=false))
+      singleton(set_swap(~ty, wasm_mod, env, 0, arg))
       @ cleanup_local_slot_instructions(wasm_mod, env, argtypes)
-      +@ [get_swap(wasm_mod, env, 0)],
+      +@ [get_swap(~ty, wasm_mod, env, 0)],
     )
   | _ => failwith("NYI: multiple return types")
   };

@@ -13,9 +13,14 @@ basic functionality › int32_1
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
-  (call $wimport_GRAIN$MODULE$runtime/dataStructures_newInt32
-   (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newInt32)
-   (i32.const 42)
+  (tuple.extract 0
+   (tuple.make
+    (call $wimport_GRAIN$MODULE$runtime/dataStructures_newInt32
+     (global.get $wimport_GRAIN$MODULE$runtime/dataStructures_GRAIN$EXPORT$newInt32)
+     (i32.const 42)
+    )
+    (i32.const 0)
+   )
   )
  )
  (func $_start (; has Stack IR ;)
