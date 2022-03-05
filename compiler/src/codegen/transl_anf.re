@@ -558,7 +558,14 @@ let compile_lambda =
     (~name=?, id, env, args, body, attrs, loc): Mashtree.closure_data => {
   register_function(id);
   let (body, return_type) = body;
-  let used_var_set = Anf_utils.anf_free_vars(body);
+  // NOTE: we special-case `id`, since we want to
+  //       have simply-recursive uses of identifiers use
+  //       argument 0 ("$self") rather than do the self-reference
+  //       via a closure variable (this enables a large class
+  //       of recursive functions to be garbage-collectible, since
+  //       Grain's garbage collector does not currently collect
+  //       cyclic reference chains)
+  let used_var_set = Ident.Set.remove(id, Anf_utils.anf_free_vars(body));
   let arg_vars = List.map(((arg, _)) => arg, args);
   let global_vars =
     Ident.fold_all((id, _, acc) => [id, ...acc], global_table^, []);
@@ -587,7 +594,8 @@ let compile_lambda =
       },
       free_binds,
       new_args,
-    );
+    )
+    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.HeapAllocated));
   let idx = next_lift();
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
