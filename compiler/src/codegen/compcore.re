@@ -17,10 +17,7 @@ let memory_debugging_enabled = false;
 type codegen_env = {
   name: option(string),
   num_args: int,
-  global_offset: int,
   stack_size,
-  import_global_offset: int,
-  import_offset: int,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
   imported_funcs: Ident.tbl(Ident.tbl(int32)),
@@ -34,10 +31,6 @@ let gensym_label = s => {
   Printf.sprintf("%s.%d", s, gensym_counter^);
 };
 let reset_labels = () => gensym_counter := 0;
-
-// Whether imports from the runtime/exception module should be included
-// Necessary to prevent a cirular dep for that module
-let needs_exceptions = ref(false);
 
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
@@ -112,6 +105,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: grain_env_mod,
@@ -119,6 +113,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: exception_mod,
@@ -126,6 +121,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: exception_mod,
@@ -133,6 +129,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: exception_mod,
@@ -140,6 +137,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: exception_mod,
@@ -147,6 +145,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
 ];
 
@@ -157,6 +156,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: gc_mod,
@@ -164,6 +164,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: gc_mod,
@@ -171,6 +172,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -178,6 +180,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -185,6 +188,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -192,6 +196,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -199,6 +204,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -206,6 +212,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: equal_mod,
@@ -213,6 +220,7 @@ let grain_runtime_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
 ];
 
@@ -230,6 +238,7 @@ let required_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
 ];
 
@@ -244,6 +253,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: gc_mod,
@@ -255,6 +265,7 @@ let grain_function_imports = [
       ), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: gc_mod,
@@ -266,6 +277,7 @@ let grain_function_imports = [
       ), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: console_mod,
@@ -273,6 +285,7 @@ let grain_function_imports = [
     mimp_type: MFuncImport([Types.StackAllocated(WasmI32)], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -288,6 +301,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -299,6 +313,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -310,6 +325,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -321,6 +337,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: data_structures_mod,
@@ -332,6 +349,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
   {
     mimp_mod: equal_mod,
@@ -347,6 +365,7 @@ let grain_function_imports = [
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
+    mimp_used: false,
   },
 ];
 
@@ -356,10 +375,18 @@ let runtime_function_imports =
 let runtime_imports =
   List.append(runtime_global_imports, runtime_function_imports);
 
+let runtime_imports_tbl = {
+  let tbl = Ident_tbl.create(64);
+  List.iter(
+    ({mimp_name} as imp) => Ident_tbl.add(tbl, mimp_name, imp),
+    runtime_imports,
+  );
+  tbl;
+};
+
 let init_codegen_env = name => {
   name,
   num_args: 0,
-  global_offset: 2,
   stack_size: {
     stack_size_ptr: 0,
     stack_size_i32: 0,
@@ -367,8 +394,6 @@ let init_codegen_env = name => {
     stack_size_f32: 0,
     stack_size_f64: 0,
   },
-  import_global_offset: 0,
-  import_offset: 0,
   backpatches: ref([]),
   imported_funcs: Ident.empty,
   imported_globals: Ident.empty,
@@ -396,7 +421,7 @@ let runtime_type_metadata_ptr = () => runtime_heap_ptr^ + 0x08;
 
 let reset = () => {
   reset_labels();
-  needs_exceptions := false;
+  List.iter(imp => imp.mimp_used = false, runtime_imports);
   runtime_heap_ptr :=
     (
       switch (Grain_utils.Config.memory_base^) {
@@ -406,14 +431,20 @@ let reset = () => {
     );
 };
 
-let get_wasm_imported_name = (mod_, name) =>
+let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
+  if (runtime_import) {
+    // Mark runtime import as used
+    Ident_tbl.find(runtime_imports_tbl, name).mimp_used =
+      true;
+  };
   Printf.sprintf("wimport_%s_%s", Ident.name(mod_), Ident.name(name));
+};
 
-let get_grain_imported_name = (mod_, name) =>
+let get_grain_imported_name = (mod_, name) => {
   Printf.sprintf("gimport_%s_%s", Ident.name(mod_), Ident.name(name));
+};
 
 let call_exception_printer = (wasm_mod, env, args) => {
-  needs_exceptions := true;
   let args = [
     Expression.Global_get.make(
       wasm_mod,
@@ -688,7 +719,6 @@ let appropriate_incref = (wasm_mod, env, arg, b) =>
   | MLocalBind(_)
   | MSwapBind(_)
   | MGlobalBind(_) => arg
-  | _ => call_incref(wasm_mod, env, arg)
   };
 
 let appropriate_decref = (wasm_mod, env, arg, b) =>
@@ -702,7 +732,6 @@ let appropriate_decref = (wasm_mod, env, arg, b) =>
   | MLocalBind(_)
   | MSwapBind(_)
   | MGlobalBind(_) => arg
-  | _ => call_decref(wasm_mod, env, arg)
   };
 
 let compile_bind =
@@ -918,19 +947,6 @@ let compile_bind =
         wasm_mod,
         Expression.Local_get.make(wasm_mod, 0, Type.int32),
       ),
-    );
-  | MImport(i) =>
-    if (!(action == BindGet)) {
-      failwith(
-        "Internal error: attempted to emit instruction which would mutate an import",
-      );
-    };
-    /* Adjust for runtime functions */
-    let slot =
-      Printf.sprintf("global_%d", env.import_offset + Int32.to_int(i));
-    appropriate_incref(
-      env,
-      Expression.Global_get.make(wasm_mod, slot, Type.int32),
     );
   };
 };
@@ -1153,7 +1169,6 @@ let compile_imm =
   };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
-  needs_exceptions := true;
   let err_ident =
     switch (err) {
     | Runtime_errors.MatchFailure => match_failure_ident
@@ -3276,7 +3291,8 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     let internal_name =
       switch (mimp_kind) {
       | MImportGrain => get_grain_imported_name(mimp_mod, mimp_name)
-      | MImportWasm => get_wasm_imported_name(mimp_mod, mimp_name)
+      | MImportWasm =>
+        get_wasm_imported_name(~runtime_import=false, mimp_mod, mimp_name)
       };
     switch (mimp_kind, mimp_type) {
     | (MImportGrain, MGlobalImport(ty, mut)) =>
@@ -3313,17 +3329,10 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   };
 
   let imports =
-    if (needs_exceptions^) {
-      List.append(env.required_imports, imports);
-    } else {
-      List.append(
-        List.filter(
-          ({mimp_mod}) => mimp_mod != exception_mod,
-          env.required_imports,
-        ),
-        imports,
-      );
-    };
+    List.append(
+      List.filter(({mimp_used}) => mimp_used, env.required_imports),
+      imports,
+    );
 
   List.iter(compile_import, imports);
   Import.add_memory_import(
@@ -3553,20 +3562,8 @@ let validate_module = (~name=?, wasm_mod: Module.t) =>
 
 let prepare = (env, {imports}) => {
   let process_import =
-      (
-        ~dynamic_offset=0,
-        ~is_runtime_import=false,
-        acc_env,
-        idx,
-        {mimp_mod, mimp_name, mimp_type, mimp_kind},
-      ) => {
-    let rt_idx =
-      if (is_runtime_import) {
-        idx + dynamic_offset;
-      } else {
-        idx;
-      };
-    let rt_idx_name = Printf.sprintf("global_%d", rt_idx);
+      (acc_env, idx, {mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
+    let idx_name = Transl_anf.global_name(idx);
     let register = (name, tbl) => {
       let tbl =
         switch (Ident.find_same_opt(mimp_mod, tbl)) {
@@ -3583,18 +3580,16 @@ let prepare = (env, {imports}) => {
     let (imported_funcs, imported_globals) =
       switch (mimp_type) {
       | MFuncImport(_) => (
-          register(Int32.of_int(rt_idx), acc_env.imported_funcs),
+          register(Int32.of_int(idx), acc_env.imported_funcs),
           acc_env.imported_globals,
         )
       | MGlobalImport(_) => (
           acc_env.imported_funcs,
-          register(rt_idx_name, acc_env.imported_globals),
+          register(idx_name, acc_env.imported_globals),
         )
       };
     {...acc_env, imported_funcs, imported_globals};
   };
-  let import_offset = List.length(runtime_imports);
-  let import_global_offset = import_offset + List.length(imports);
 
   let required_imports =
     if (Env.is_runtime_mode()) {
@@ -3603,31 +3598,11 @@ let prepare = (env, {imports}) => {
       runtime_imports;
     };
   let new_env =
-    List_utils.fold_lefti(
-      process_import(~is_runtime_import=true),
-      env,
-      runtime_global_imports,
-    );
+    List_utils.fold_lefti(process_import, env, runtime_global_imports);
   let new_env =
-    List_utils.fold_lefti(
-      process_import(~is_runtime_import=true),
-      new_env,
-      runtime_function_imports,
-    );
-  let new_env =
-    List_utils.fold_lefti(
-      process_import(~dynamic_offset=import_global_offset),
-      new_env,
-      imports,
-    );
-  let global_offset = import_global_offset;
-  {
-    ...new_env,
-    import_offset,
-    import_global_offset,
-    global_offset,
-    required_imports,
-  };
+    List_utils.fold_lefti(process_import, new_env, runtime_function_imports);
+  let new_env = List_utils.fold_lefti(process_import, new_env, imports);
+  {...new_env, required_imports};
 };
 
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
@@ -3672,10 +3647,10 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
 
   let compile_all = () => {
     ignore @@ compile_functions(wasm_mod, env, prog);
+    ignore @@ compile_tables(wasm_mod, env, prog);
     ignore @@ compile_imports(wasm_mod, env, prog);
     ignore @@ compile_exports(wasm_mod, env, prog);
     ignore @@ compile_globals(wasm_mod, env, prog);
-    ignore @@ compile_tables(wasm_mod, env, prog);
   };
 
   if (Env.is_runtime_mode()) {

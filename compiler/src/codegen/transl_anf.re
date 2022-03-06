@@ -1049,6 +1049,7 @@ let lift_imports = (env, imports) => {
         mimp_type: process_shape(true, imp_shape),
         mimp_kind: MImportGrain,
         mimp_setup: MCallGetter,
+        mimp_used: true,
       };
       (
         [new_mod, ...imports],
@@ -1085,6 +1086,7 @@ let lift_imports = (env, imports) => {
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
+        mimp_used: true,
       };
       (
         [new_mod, ...imports],
@@ -1119,6 +1121,7 @@ let lift_imports = (env, imports) => {
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
+        mimp_used: true,
       };
       let func_name =
         Printf.sprintf(

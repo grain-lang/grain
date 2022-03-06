@@ -263,8 +263,7 @@ type binding =
   | MLocalBind(int32, Types.allocation_type)
   | MGlobalBind(string, Types.allocation_type)
   | MClosureBind(int32)
-  | MSwapBind(int32, Types.allocation_type) /* Used like a register would be */
-  | MImport(int32); /* Index into list of imports */
+  | MSwapBind(int32, Types.allocation_type); /* Used like a register would be */
 
 [@deriving sexp]
 type immediate =
@@ -424,6 +423,7 @@ type import = {
   mimp_type: import_type,
   mimp_kind: import_kind,
   mimp_setup: import_setup,
+  mutable mimp_used: bool,
 };
 
 [@deriving sexp]
