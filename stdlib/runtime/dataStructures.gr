@@ -100,22 +100,6 @@ export let allocateString = size => {
 }
 
 /**
- * Creates a new Grain string containing the given character
- *
- * @param {WasmI32} c The character for which to allocate a string
- * @returns {WasmI32} The pointer to the string
- */
-export let singleByteString = c => {
-  let str = Memory.malloc(9n)
-
-  WasmI32.store(str, Tags._GRAIN_STRING_HEAP_TAG, 0n)
-  WasmI32.store(str, 1n, 4n)
-  WasmI32.store8(str, c, 8n)
-
-  str
-}
-
-/**
  * Allocates a new Grain char.
  *
  * @returns {WasmI32} The pointer to the char
