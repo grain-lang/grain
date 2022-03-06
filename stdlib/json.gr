@@ -483,75 +483,34 @@ let printBool = (b: Bool, buffer: Buffer.Buffer) => {
 
 exception UnknownNumberTag
 
-// The following few functions are only meant to be called from a @disableGC
-// context of the printNumber function so there's no need to do all the
-// reference adjustment for the parameters and the functions themselves.
-
-@disableGC
+@unsafe
 let printNumberWasmI32 = (value: WasmI32, buffer: Buffer.Buffer) => {
   let s = NumberUtils.itoa32(value, 10n)
-
-  Memory.incRef(WasmI32.fromGrain(Buffer.addString))
-  Memory.incRef(WasmI32.fromGrain(s))
-  Memory.incRef(WasmI32.fromGrain(buffer))
   Buffer.addString(s, buffer)
-
-  Memory.decRef(WasmI32.fromGrain(s))
-
-  let none = None
-  Memory.incRef(WasmI32.fromGrain(none))
-  none
 }
 
-@disableGC
+@unsafe
 let printNumberWasmI64 = (value: WasmI64, buffer: Buffer.Buffer) => {
   let s = NumberUtils.itoa64(value, 10n)
-
-  Memory.incRef(WasmI32.fromGrain(Buffer.addString))
-  Memory.incRef(WasmI32.fromGrain(s))
-  Memory.incRef(WasmI32.fromGrain(buffer))
   Buffer.addString(s, buffer)
-
-  Memory.decRef(WasmI32.fromGrain(s))
-
-  let none = None
-  Memory.incRef(WasmI32.fromGrain(none))
-  none
 }
 
-@disableGC
+@unsafe
 let isFinite = (value: WasmF64) => {
   WasmF64.eq(WasmF64.sub(value, value), 0.W)
 }
 
-@disableGC
+@unsafe
 let isNaN = (value: WasmF64) => {
   WasmF64.ne(value, value)
 }
 
-let makeNaNError = () => Some(InvalidNumber("NaN is not allowed in JSONNumber"))
-
-let makeInfError = () =>
-  Some(InvalidNumber("Infinity is not allowed in JSONNumber"))
-
-let makeNegInfError = () =>
-  Some(InvalidNumber("-Infinity is not allowed in JSONNumber"))
-
-@disableGC
+@unsafe
 let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
-  let result = if (isFinite(value)) {
+  if (isFinite(value)) {
     let s = NumberUtils.dtoa(value)
-
-    Memory.incRef(WasmI32.fromGrain(Buffer.addString))
-    Memory.incRef(WasmI32.fromGrain(s))
-    Memory.incRef(WasmI32.fromGrain(buffer))
     Buffer.addString(s, buffer)
-
-    Memory.decRef(WasmI32.fromGrain(s))
-
-    let none = None
-    Memory.incRef(WasmI32.fromGrain(none))
-    none
+    None
   } else {
     // JSON standard doesn't allow NaN or infinite values in numbers,
     // but WASM f64 (IEEE 754-2008), as well as Grain's number types do
@@ -561,23 +520,16 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     // coninue formatting without representing these values correctly
     // (like JavaScript's JSON.stringify).
     if (isNaN(value)) {
-      // Allocating the exception in a function without @disableGC makes
-      // it easier to avoid problems with reference counting.
-      Memory.incRef(WasmI32.fromGrain(makeNaNError))
-      makeNaNError()
+      Some(InvalidNumber("NaN is not allowed in JSONNumber"))
     } else if (WasmF64.lt(value, 0.0W)) {
-      Memory.incRef(WasmI32.fromGrain(makeNegInfError))
-      makeNegInfError()
+      Some(InvalidNumber("-Infinity is not allowed in JSONNumber"))
     } else {
-      Memory.incRef(WasmI32.fromGrain(makeInfError))
-      makeInfError()
+      Some(InvalidNumber("Infinity is not allowed in JSONNumber"))
     }
   }
-
-  result
 }
 
-@disableGC
+@unsafe
 let rec printNumber = (value: Number, buffer: Buffer.Buffer) => {
   let (&) = WasmI32.and
   let (==) = WasmI32.eq
@@ -586,10 +538,11 @@ let rec printNumber = (value: Number, buffer: Buffer.Buffer) => {
   let (>>) = WasmI32.shrS
 
   let ptr = WasmI32.fromGrain(value)
-  let result = if ((ptr & 1n) != 0n) {
+  if ((ptr & 1n) != 0n) {
     // FIXME expose runtime/numbers.untagSimple?
     let asWasmI32 = ptr >> 1n
     printNumberWasmI32(asWasmI32, buffer)
+    None
   } else if ((ptr & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
     let tag = WasmI32.load(ptr, 0n)
     match (tag) {
@@ -600,11 +553,13 @@ let rec printNumber = (value: Number, buffer: Buffer.Buffer) => {
             let asWasmI32 = WasmI32.load(ptr, 8n)
             // FIXME magic numbers
             printNumberWasmI32(asWasmI32, buffer)
+            None
           },
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             let asWasmI64 = WasmI64.load(ptr, 8n)
             // FIXME magic numbers
             printNumberWasmI64(asWasmI64, buffer)
+            None
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
             // As a compromnise, convert the rational into a float
@@ -650,12 +605,6 @@ let rec printNumber = (value: Number, buffer: Buffer.Buffer) => {
   } else {
     throw UnknownNumberTag
   }
-
-  Memory.decRef(WasmI32.fromGrain(value))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(printNumber))
-
-  result
 }
 
 // Note that this function is not allocated with the JSONWriter because currently
@@ -1567,15 +1516,10 @@ let buildUnexpectedTokenError =
   }
 }
 
-@disableGC
+@unsafe
 let rec toHex = (n: Number) => {
   let x = coerceNumberToWasmI32(n)
-  let result = NumberUtils.itoa32(x, 16n)
-
-  Memory.decRef(WasmI32.fromGrain(n))
-  Memory.decRef(WasmI32.fromGrain(toHex))
-
-  result
+  NumberUtils.itoa32(x, 16n)
 }
 
 let toHexWithZeroPadding = (n: Number, padTo: Number) => {
