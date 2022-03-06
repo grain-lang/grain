@@ -22,18 +22,11 @@ record Buffer {
   mut data: Bytes,
 }
 
-@disableGC
-let mut _SIZE_OFFSET = 1n
+@unsafe
+let mut _SIZE_OFFSET = 4n
 
-@disableGC
-let mut _VALUE_OFFSET = 1n
-
-@disableGC
-let initOffsets = () => {
-  _SIZE_OFFSET = 4n
-  _VALUE_OFFSET = 8n
-}
-initOffsets()
+@unsafe
+let mut _VALUE_OFFSET = 8n
 
 let _8BIT_LEN = 1
 
@@ -44,7 +37,7 @@ let _32BIT_LEN = 4
 let _64BIT_LEN = 8
 
 /* Gets the size of a Bytes via its ptr */
-@disableGC
+@unsafe
 let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 
 /* Doubles the size of buffer's underlying byte sequence, if the given size is larger than the size of a buffer's underlying byte sequence */
@@ -71,14 +64,14 @@ let autogrow = (len, buf) => {
 }
 
 /* Gets the pointer for a char's bytes following the char's tag */
-@disableGC
+@unsafe
 let rec getCharAsWasmI32 = char => {
   let c = WasmI32.fromGrain(char)
   WasmI32.load(c, 4n)
 }
 
 /* Gets the UTF-8 byte length of a char */
-@disableGC
+@unsafe
 let rec getCharByteLength = byte => {
   let (+) = WasmI32.add
   let (&) = WasmI32.and
@@ -95,7 +88,7 @@ let rec getCharByteLength = byte => {
 }
 
 /* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
-@disableGC
+@unsafe
 let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
   let (+) = WasmI32.add
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
@@ -200,10 +193,8 @@ export let reset = buffer => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec truncate = (length, buffer) => {
-  Memory.incRef(WasmI32.fromGrain((<)))
-  Memory.incRef(WasmI32.fromGrain((>)))
+@unsafe
+export let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw Exception.IndexOutOfBounds
 
   let (+) = WasmI32.add
@@ -212,11 +203,6 @@ export let rec truncate = (length, buffer) => {
   let off = coerceNumberToWasmI32(length)
   let ret = Memory.fill(src + _VALUE_OFFSET + off, 0n, size)
   buffer.len = length
-
-  Memory.decRef(WasmI32.fromGrain(length))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(truncate))
-  void
 }
 
 /**
@@ -285,28 +271,18 @@ export let toStringSlice = (start, length, buffer) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec addChar = (char: Char, buffer: Buffer) => {
+@unsafe
+export let addChar = (char: Char, buffer: Buffer) => {
   let n = getCharAsWasmI32(char)
   let bytelen = getCharByteLength(n)
   match (bytelen) {
     1n => {
       let c = Conv.toInt32(n)
-      Memory.incRef(WasmI32.fromGrain(addInt8help))
-      Memory.incRef(WasmI32.fromGrain(c))
-      Memory.incRef(WasmI32.fromGrain(buffer))
       addInt8help(c, buffer)
-      Memory.decRef(WasmI32.fromGrain(c))
-      void
     },
     2n => {
       let c = Conv.toInt32(n)
-      Memory.incRef(WasmI32.fromGrain(addInt16help))
-      Memory.incRef(WasmI32.fromGrain(c))
-      Memory.incRef(WasmI32.fromGrain(buffer))
       addInt16help(c, buffer)
-      Memory.decRef(WasmI32.fromGrain(c))
-      void
     },
     3n => {
       let (<) = WasmI32.ltU
@@ -316,29 +292,14 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
       let (>>) = WasmI32.shrU
       for (let mut i = 0n; i < 3n; i += 1n) {
         let c = Conv.toInt32(n >> i * 8n & 0xffn)
-        Memory.incRef(WasmI32.fromGrain(addInt8help))
-        Memory.incRef(WasmI32.fromGrain(c))
-        Memory.incRef(WasmI32.fromGrain(buffer))
         addInt8help(c, buffer)
-        Memory.decRef(WasmI32.fromGrain(c))
-        void
       }
     },
     _ => {
       let c = Conv.toInt32(n)
-      Memory.incRef(WasmI32.fromGrain(addInt32help))
-      Memory.incRef(WasmI32.fromGrain(c))
-      Memory.incRef(WasmI32.fromGrain(buffer))
       addInt32help(c, buffer)
-      Memory.decRef(WasmI32.fromGrain(c))
-      void
     },
   }
-
-  Memory.decRef(WasmI32.fromGrain(char))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addChar))
-  void
 }
 
 /**
@@ -349,15 +310,10 @@ export let rec addChar = (char: Char, buffer: Buffer) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec addBytes = (bytes, buffer) => {
-  Memory.incRef(WasmI32.fromGrain(Bytes.length))
-  Memory.incRef(WasmI32.fromGrain(bytes))
+@unsafe
+export let addBytes = (bytes, buffer) => {
   let bytelen = Bytes.length(bytes)
 
-  Memory.incRef(WasmI32.fromGrain(autogrow))
-  Memory.incRef(WasmI32.fromGrain(bytelen))
-  Memory.incRef(WasmI32.fromGrain(buffer))
   autogrow(bytelen, buffer)
 
   let off = coerceNumberToWasmI32(buffer.len)
@@ -366,15 +322,7 @@ export let rec addBytes = (bytes, buffer) => {
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(0n, off, len, src, dst)
 
-  Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buffer.len))
-  Memory.incRef(WasmI32.fromGrain(bytelen))
   buffer.len = buffer.len + bytelen
-
-  Memory.decRef(WasmI32.fromGrain(bytes))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addBytes))
-  void
 }
 
 /**
@@ -385,15 +333,10 @@ export let rec addBytes = (bytes, buffer) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec addString = (string, buffer) => {
-  Memory.incRef(WasmI32.fromGrain(String.byteLength))
-  Memory.incRef(WasmI32.fromGrain(string))
+@unsafe
+export let addString = (string, buffer) => {
   let bytelen = String.byteLength(string)
 
-  Memory.incRef(WasmI32.fromGrain(autogrow))
-  Memory.incRef(WasmI32.fromGrain(bytelen))
-  Memory.incRef(WasmI32.fromGrain(buffer))
   autogrow(bytelen, buffer)
 
   let off = coerceNumberToWasmI32(buffer.len)
@@ -402,15 +345,7 @@ export let rec addString = (string, buffer) => {
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(0n, off, len, src, dst)
 
-  Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buffer.len))
-  Memory.incRef(WasmI32.fromGrain(bytelen))
   buffer.len = buffer.len + bytelen
-
-  Memory.decRef(WasmI32.fromGrain(string))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addString))
-  void
 }
 
 /**
@@ -423,21 +358,12 @@ export let rec addString = (string, buffer) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec addStringSlice = (start: Number, end, string, buffer) => {
-  Memory.incRef(WasmI32.fromGrain(String.slice))
-  Memory.incRef(WasmI32.fromGrain(start))
-  Memory.incRef(WasmI32.fromGrain(end))
-  Memory.incRef(WasmI32.fromGrain(string))
+@unsafe
+export let addStringSlice = (start: Number, end, string, buffer) => {
   let slice = String.slice(start, end, string)
 
-  Memory.incRef(WasmI32.fromGrain(String.byteLength))
-  Memory.incRef(WasmI32.fromGrain(slice))
   let bytelen = String.byteLength(slice)
 
-  Memory.incRef(WasmI32.fromGrain(autogrow))
-  Memory.incRef(WasmI32.fromGrain(bytelen))
-  Memory.incRef(WasmI32.fromGrain(buffer))
   autogrow(bytelen, buffer)
 
   let srcOff = 0n
@@ -445,20 +371,8 @@ export let rec addStringSlice = (start: Number, end, string, buffer) => {
   let src = WasmI32.fromGrain(slice)
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(srcOff, dstOff, coerceNumberToWasmI32(bytelen), src, dst)
-  Memory.decRef(WasmI32.fromGrain(slice))
 
-  Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buffer.len))
-  Memory.incRef(WasmI32.fromGrain(bytelen))
   buffer.len = buffer.len + bytelen
-  Memory.decRef(WasmI32.fromGrain(bytelen))
-
-  Memory.decRef(WasmI32.fromGrain(start))
-  Memory.decRef(WasmI32.fromGrain(end))
-  Memory.decRef(WasmI32.fromGrain(string))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addStringSlice))
-  void
 }
 
 /**
@@ -471,8 +385,8 @@ export let rec addStringSlice = (start: Number, end, string, buffer) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec addBytesSlice =
+@unsafe
+export let addBytesSlice =
   (
     start: Number,
     length: Number,
@@ -497,9 +411,6 @@ export let rec addBytesSlice =
     throw Exception.IndexOutOfBounds
   }
 
-  Memory.incRef(WasmI32.fromGrain(autogrow))
-  Memory.incRef(WasmI32.fromGrain(length))
-  Memory.incRef(WasmI32.fromGrain(buffer))
   autogrow(length, buffer)
 
   let dstOff = coerceNumberToWasmI32(buffer.len)
@@ -507,17 +418,7 @@ export let rec addBytesSlice =
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(srcOff, dstOff, len, src, dst)
 
-  Memory.incRef(WasmI32.fromGrain((+)))
-  Memory.incRef(WasmI32.fromGrain(buffer.len))
-  Memory.incRef(WasmI32.fromGrain(length))
   buffer.len = buffer.len + length
-
-  Memory.decRef(WasmI32.fromGrain(start))
-  Memory.decRef(WasmI32.fromGrain(length))
-  Memory.decRef(WasmI32.fromGrain(bytes))
-  Memory.decRef(WasmI32.fromGrain(buffer))
-  Memory.decRef(WasmI32.fromGrain(addBytesSlice))
-  void
 }
 
 /**
