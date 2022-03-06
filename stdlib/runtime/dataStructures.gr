@@ -3,7 +3,7 @@
 /**
  * Allocates a new Grain array.
  *
- * @param numElts The number of elements to be contained in this array
+ * @param numElts: The number of elements to be contained in this array
  * @returns The pointer to the array
  */
 @unsafe
@@ -12,7 +12,7 @@ export primitive allocateArray: WasmI32 -> WasmI32 = "@allocate.array"
 /**
  * Allocates a new Grain tuple.
  *
- * @param numElts The number of elements to be contained in this tuple
+ * @param numElts: The number of elements to be contained in this tuple
  * @returns The pointer to the tuple
  */
 @unsafe
@@ -21,7 +21,7 @@ export primitive allocateTuple: WasmI32 -> WasmI32 = "@allocate.tuple"
 /**
  * Allocates a new Grain bytes.
  *
- * @param size The number of bytes to be contained in this buffer
+ * @param size: The number of bytes to be contained in this buffer
  * @returns The pointer to the bytes
  */
 @unsafe
@@ -30,7 +30,7 @@ export primitive allocateBytes: WasmI32 -> WasmI32 = "@allocate.bytes"
 /**
  * Allocates a new Grain string.
  *
- * @param size The size (in bytes) of the string to allocate
+ * @param size: The size (in bytes) of the string to allocate
  * @returns The pointer to the string
  */
 @unsafe
@@ -56,7 +56,7 @@ export primitive allocateInt32: () -> WasmI32 = "@allocate.int32"
 
 /**
  * Allocates a new Int32 with a prepopulated value
- * @param value The value to store
+ * @param value: The value to store
  * @returns The pointer to the Int32
  */
 @unsafe
@@ -72,7 +72,7 @@ export primitive allocateInt64: () -> WasmI32 = "@allocate.int64"
 
 /**
  * Allocates a new Int64 with a prepopulated value
- * @param value The value to store
+ * @param value: The value to store
  * @returns The pointer to the Int64
  */
 @unsafe
@@ -90,7 +90,7 @@ export primitive allocateFloat32: () -> WasmI32 = "@allocate.float32"
 
 /**
  * Allocates a new Float32 with a prepopulated value
- * @param value The value to store
+ * @param value: The value to store
  * @returns the pointer to the Float32
  */
 @unsafe
@@ -106,7 +106,7 @@ export primitive allocateFloat64: () -> WasmI32 = "@allocate.float64"
 
 /**
  * Allocates a new Float64 with a prepopulated value
- * @param value The value to store
+ * @param value: The value to store
  * @returns The pointer to the Float64
  */
 @unsafe
@@ -124,8 +124,8 @@ export primitive allocateRational: () -> WasmI32 = "@allocate.rational"
 
 /**
  * Allocates a new Rational with a prepopulated value
- * @param value The numerator value to store
- * @param value The denominator value to store
+ * @param value: The numerator value to store
+ * @param value: The denominator value to store
  * @returns The pointer to the Rational
  */
 @unsafe
@@ -134,7 +134,7 @@ export primitive newRational: (WasmI32, WasmI32) -> WasmI32 = "@new.rational"
 /**
  * Load the (tagged) variant of an ADT.
  *
- * @param ptr Untagged pointer to the ADT
+ * @param ptr: Untagged pointer to the ADT
  * @returns The (tagged) ADT variant id
  */
 @unsafe
@@ -143,7 +143,7 @@ export primitive loadAdtVariant: WasmI32 -> WasmI32 = "@adt.load_variant"
 /**
  * Load an untagged string's size.
  *
- * @param ptr Untagged pointer to the string
+ * @param ptr: Untagged pointer to the string
  * @returns The string size (in bytes)
  */
 @unsafe
@@ -152,7 +152,7 @@ export primitive stringSize: WasmI32 -> WasmI32 = "@string.size"
 /**
  * Load an untagged Bytes' size.
  *
- * @param ptr Untagged pointer to the Bytes
+ * @param ptr: Untagged pointer to the Bytes
  * @returns The Bytes size (in bytes)
  */
 @unsafe
@@ -161,7 +161,7 @@ export primitive bytesSize: WasmI32 -> WasmI32 = "@bytes.size"
 /**
  * Tag a simple number.
  *
- * @param num The number to tag
+ * @param num: The number to tag
  * @returns The tagged number
  */
 @unsafe
@@ -170,7 +170,7 @@ export primitive tagSimpleNumber: WasmI32 -> Number = "@tag.simple_number"
 /**
  * Untag a simple number.
  *
- * @param num The number to untag
+ * @param num: The number to untag
  * @returns The untagged number
  */
 @unsafe
