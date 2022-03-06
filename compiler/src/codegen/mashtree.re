@@ -18,6 +18,10 @@ type heap_tag_type = Value_tags.heap_tag_type;
 type attributes = Typedtree.attributes;
 
 type grain_error = Runtime_errors.grain_error;
+let (prim0_of_sexp, sexp_of_prim0) = (
+  Parsetree.prim0_of_sexp,
+  Parsetree.sexp_of_prim0,
+);
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
   Parsetree.sexp_of_prim1,
@@ -166,8 +170,30 @@ type wasm_op =
     | Op_gt_float64
     | Op_ge_float64;
 
+type prim0 =
+  Parsetree.prim0 =
+    | AllocateChar
+    | AllocateInt32
+    | AllocateInt64
+    | AllocateFloat32
+    | AllocateFloat64
+    | AllocateRational;
+
 type prim1 =
   Parsetree.prim1 =
+    | AllocateArray
+    | AllocateTuple
+    | AllocateBytes
+    | AllocateString
+    | NewInt32
+    | NewInt64
+    | NewFloat32
+    | NewFloat64
+    | LoadAdtVariant
+    | StringSize
+    | BytesSize
+    | TagSimpleNumber
+    | UntagSimpleNumber
     | Not
     | Box
     | Unbox
@@ -203,6 +229,7 @@ type prim1 =
 
 type prim2 =
   Parsetree.prim2 =
+    | NewRational
     | Is
     | Eq
     | And
@@ -383,6 +410,7 @@ and instr_desc =
   | MContinue
   | MBreak
   | MSwitch(immediate, list((int32, block)), block, Types.allocation_type) /* value, branches, default, return type */
+  | MPrim0(prim0)
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
   | MPrimN(primn, list(immediate))

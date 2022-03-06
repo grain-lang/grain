@@ -98,8 +98,33 @@ let grain_type_of_wasm_prim_type =
   | Wasm_float64 => Builtin_types.type_wasmf64
   | Grain_bool => Builtin_types.type_bool;
 
+let prim0_type =
+  fun
+  | AllocateChar
+  | AllocateInt32
+  | AllocateInt64
+  | AllocateFloat32
+  | AllocateFloat64
+  | AllocateRational => Builtin_types.type_wasmi32;
+
 let prim1_type =
   fun
+  | AllocateArray
+  | AllocateTuple
+  | AllocateBytes
+  | AllocateString
+  | LoadAdtVariant
+  | StringSize
+  | BytesSize => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
+  | NewInt32 => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
+  | NewInt64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
+  | NewFloat32 => (Builtin_types.type_wasmf32, Builtin_types.type_wasmi32)
+  | NewFloat64 => (Builtin_types.type_wasmf64, Builtin_types.type_wasmi32)
+  | TagSimpleNumber => (Builtin_types.type_wasmi32, Builtin_types.type_number)
+  | UntagSimpleNumber => (
+      Builtin_types.type_number,
+      Builtin_types.type_wasmi32,
+    )
   | Not => (Builtin_types.type_bool, Builtin_types.type_bool)
   | Box
   | BoxBind => {
@@ -137,6 +162,11 @@ let prim1_type =
 
 let prim2_type =
   fun
+  | NewRational => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+    )
   | And
   | Or => (
       Builtin_types.type_bool,
@@ -915,6 +945,16 @@ and type_expect_ =
       exp_extra: [],
       exp_attributes: attributes,
       exp_type: instance(env, ty_expected),
+      exp_env: env,
+    });
+  | PExpPrim0(p0) =>
+    let rettype = prim0_type(p0);
+    rue({
+      exp_desc: TExpPrim0(p0),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: rettype,
       exp_env: env,
     });
   | PExpPrim1(p1, sarg) =>

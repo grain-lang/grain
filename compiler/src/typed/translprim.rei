@@ -7,6 +7,7 @@ type primitive_constant =
 
 type primitive =
   | PrimitiveConstant(primitive_constant)
+  | Primitive0(prim0)
   | Primitive1(prim1)
   | Primitive2(prim2)
   | PrimitiveN(primn);

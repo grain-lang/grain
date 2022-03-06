@@ -30,7 +30,6 @@ import {
   tagSimpleNumber,
   allocateArray,
   allocateString,
-  loadAdtVal,
   newInt64,
   allocateInt64,
 } from "runtime/dataStructures"

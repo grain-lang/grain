@@ -57,8 +57,6 @@ let grain_env_mod = Ident.create_persistent(grain_env_name);
 let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
 let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
 let exception_mod = Ident.create_persistent("GRAIN$MODULE$runtime/exception");
-let data_structures_mod =
-  Ident.create_persistent("GRAIN$MODULE$runtime/dataStructures");
 let console_mod = Ident.create_persistent("console");
 let print_exception_ident = Ident.create_persistent("printException");
 let print_exception_closure_ident =
@@ -73,21 +71,6 @@ let malloc_ident = Ident.create_persistent("malloc");
 let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
 let incref_ident = Ident.create_persistent("incRef");
 let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
-let new_rational_ident = Ident.create_persistent("newRational");
-let new_rational_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$newRational");
-let new_float32_ident = Ident.create_persistent("newFloat32");
-let new_float32_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$newFloat32");
-let new_float64_ident = Ident.create_persistent("newFloat64");
-let new_float64_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$newFloat64");
-let new_int32_ident = Ident.create_persistent("newInt32");
-let new_int32_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$newInt32");
-let new_int64_ident = Ident.create_persistent("newInt64");
-let new_int64_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$newInt64");
 let equal_mod = Ident.create_persistent("GRAIN$MODULE$runtime/equal");
 let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
@@ -175,46 +158,6 @@ let grain_runtime_imports = [
     mimp_used: false,
   },
   {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_rational_closure_ident,
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_float32_closure_ident,
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_float64_closure_ident,
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_int32_closure_ident,
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_int64_closure_ident,
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
     mimp_mod: equal_mod,
     mimp_name: equal_closure_ident,
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
@@ -288,79 +231,11 @@ let grain_function_imports = [
     mimp_used: false,
   },
   {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_rational_ident,
-    mimp_type:
-      MFuncImport(
-        [
-          Types.StackAllocated(WasmI32),
-          Types.StackAllocated(WasmI32),
-          Types.StackAllocated(WasmI32),
-        ],
-        [Types.StackAllocated(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_float32_ident,
-    mimp_type:
-      MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmF32)],
-        [Types.StackAllocated(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_float64_ident,
-    mimp_type:
-      MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmF64)],
-        [Types.StackAllocated(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_int32_ident,
-    mimp_type:
-      MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
-        [Types.StackAllocated(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_mod: data_structures_mod,
-    mimp_name: new_int64_ident,
-    mimp_type:
-      MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI64)],
-        [Types.StackAllocated(WasmI32)],
-      ),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
     mimp_mod: equal_mod,
     mimp_name: equal_ident,
     mimp_type:
       MFuncImport(
-        [
-          Types.StackAllocated(WasmI32),
-          Types.StackAllocated(WasmI32),
-          Types.StackAllocated(WasmI32),
-        ],
+        [Types.HeapAllocated, Types.HeapAllocated, Types.HeapAllocated],
         [Types.StackAllocated(WasmI32)],
       ),
     mimp_kind: MImportWasm,
@@ -517,85 +392,6 @@ let call_decref = (wasm_mod, env, arg) => {
     );
   };
 };
-let call_new_rational = (wasm_mod, env, args) =>
-  Expression.Call.make(
-    wasm_mod,
-    get_wasm_imported_name(data_structures_mod, new_rational_ident),
-    [
-      Expression.Global_get.make(
-        wasm_mod,
-        get_wasm_imported_name(
-          data_structures_mod,
-          new_rational_closure_ident,
-        ),
-        Type.int32,
-      ),
-      ...args,
-    ],
-    Type.int32,
-  );
-let call_new_float32 = (wasm_mod, env, args) =>
-  Expression.Call.make(
-    wasm_mod,
-    get_wasm_imported_name(data_structures_mod, new_float32_ident),
-    [
-      Expression.Global_get.make(
-        wasm_mod,
-        get_wasm_imported_name(
-          data_structures_mod,
-          new_float32_closure_ident,
-        ),
-        Type.int32,
-      ),
-      ...args,
-    ],
-    Type.int32,
-  );
-let call_new_float64 = (wasm_mod, env, args) =>
-  Expression.Call.make(
-    wasm_mod,
-    get_wasm_imported_name(data_structures_mod, new_float64_ident),
-    [
-      Expression.Global_get.make(
-        wasm_mod,
-        get_wasm_imported_name(
-          data_structures_mod,
-          new_float64_closure_ident,
-        ),
-        Type.int32,
-      ),
-      ...args,
-    ],
-    Type.int32,
-  );
-let call_new_int32 = (wasm_mod, env, args) =>
-  Expression.Call.make(
-    wasm_mod,
-    get_wasm_imported_name(data_structures_mod, new_int32_ident),
-    [
-      Expression.Global_get.make(
-        wasm_mod,
-        get_wasm_imported_name(data_structures_mod, new_int32_closure_ident),
-        Type.int32,
-      ),
-      ...args,
-    ],
-    Type.int32,
-  );
-let call_new_int64 = (wasm_mod, env, args) =>
-  Expression.Call.make(
-    wasm_mod,
-    get_wasm_imported_name(data_structures_mod, new_int64_ident),
-    [
-      Expression.Global_get.make(
-        wasm_mod,
-        get_wasm_imported_name(data_structures_mod, new_int64_closure_ident),
-        Type.int32,
-      ),
-      ...args,
-    ],
-    Type.int32,
-  );
 let call_equal = (wasm_mod, env, args) =>
   Expression.Call.make(
     wasm_mod,
@@ -1677,94 +1473,44 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
     );
   };
 
-let heap_runtime_allocate_imm =
-    (~additional_words=0, wasm_mod, env, num_words: immediate) => {
-  let num_words = () =>
-    untag_number(wasm_mod, compile_imm(wasm_mod, env, num_words));
-  let addition =
-    Expression.Binary.make(
-      wasm_mod,
-      Op.add_int32,
-      load(
-        wasm_mod,
-        Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
-      ),
+type heap_allocation_type =
+  | Words(immediate)
+  | Bytes(immediate);
+
+let heap_allocate_imm =
+    (~additional_words=0, wasm_mod, env, amount: heap_allocation_type) => {
+  let num_bytes =
+    switch (amount) {
+    | Words(num_words) when additional_words > 0 =>
       Expression.Binary.make(
         wasm_mod,
         Op.mul_int32,
         Expression.Binary.make(
           wasm_mod,
-          Op.and_int32,
-          Expression.Binary.make(
-            wasm_mod,
-            Op.add_int32,
-            num_words(),
-            // Add 3 extra and clear final bit to round up to an even number of words + 2
-            Expression.Const.make(
-              wasm_mod,
-              const_int32(3 + additional_words),
-            ),
-          ),
-          Expression.Const.make(wasm_mod, const_int32(0xfffffffe)),
+          Op.add_int32,
+          compile_imm(wasm_mod, env, num_words),
+          Expression.Const.make(wasm_mod, const_int32(additional_words)),
         ),
         Expression.Const.make(wasm_mod, const_int32(4)),
-      ),
-    );
-  Expression.Tuple_extract.make(
-    wasm_mod,
-    Expression.Tuple_make.make(
-      wasm_mod,
-      [
-        Expression.Block.make(
-          wasm_mod,
-          gensym_label("heap_allocate_runtime_imm"),
-          [
-            store(
-              wasm_mod,
-              load(
-                wasm_mod,
-                Expression.Const.make(
-                  wasm_mod,
-                  const_int32(runtime_heap_ptr^),
-                ),
-              ),
-              Expression.Const.make(wasm_mod, const_int32(1)),
-            ),
-            Expression.Binary.make(
-              wasm_mod,
-              Op.add_int32,
-              load(
-                wasm_mod,
-                Expression.Const.make(
-                  wasm_mod,
-                  const_int32(runtime_heap_ptr^),
-                ),
-              ),
-              Expression.Const.make(wasm_mod, const_int32(8)),
-            ),
-          ],
-        ),
-        Expression.Block.make(
-          wasm_mod,
-          gensym_label("store_runtime_heap_ptr"),
-          [
-            store(
-              wasm_mod,
-              Expression.Const.make(
-                wasm_mod,
-                const_int32(runtime_heap_ptr^),
-              ),
-              addition,
-            ),
-            // Binaryen tuples must include a concrete value (and tuples are
-            // the only way to use the stack)
-            Expression.Const.make(wasm_mod, const_int32(0)),
-          ],
-        ),
-      ],
-    ),
-    0,
-  );
+      )
+    | Words(num_words) =>
+      Expression.Binary.make(
+        wasm_mod,
+        Op.mul_int32,
+        compile_imm(wasm_mod, env, num_words),
+        Expression.Const.make(wasm_mod, const_int32(4)),
+      )
+    | Bytes(num_bytes) when additional_words > 0 =>
+      Expression.Binary.make(
+        wasm_mod,
+        Op.add_int32,
+        compile_imm(wasm_mod, env, num_bytes),
+        Expression.Const.make(wasm_mod, const_int32(additional_words * 4)),
+      )
+    | Bytes(num_bytes) => compile_imm(wasm_mod, env, num_bytes)
+    };
+
+  call_malloc(wasm_mod, env, [num_bytes]);
 };
 
 let buf_to_ints = (buf: Buffer.t): list(int64) => {
@@ -1865,6 +1611,30 @@ let allocate_byte_like_from_buffer = (wasm_mod, env, buf, tag, label) => {
   );
 };
 
+let allocate_byte_like_uninitialized = (wasm_mod, env, size, tag, label) => {
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let tee_swap = tee_swap(wasm_mod, env, 0);
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        heap_allocate_imm(~additional_words=2, wasm_mod, env, Bytes(size)),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(tag)),
+      ),
+    ),
+    store(~offset=4, wasm_mod, get_swap(), compile_imm(wasm_mod, env, size)),
+  ];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label(label),
+    List.concat([preamble, [get_swap()]]),
+  );
+};
+
 let allocate_string = (wasm_mod, env, str) => {
   let buf = Buffer.create(80);
   Buffer.add_string(buf, str);
@@ -1877,6 +1647,16 @@ let allocate_string = (wasm_mod, env, str) => {
   );
 };
 
+let allocate_string_uninitialized = (wasm_mod, env, size) => {
+  allocate_byte_like_uninitialized(
+    wasm_mod,
+    env,
+    size,
+    StringType,
+    "allocate_string_uninitialized",
+  );
+};
+
 let allocate_bytes = (wasm_mod, env, bytes) => {
   let buf = Buffer.create(80);
   Buffer.add_bytes(buf, bytes);
@@ -1886,6 +1666,16 @@ let allocate_bytes = (wasm_mod, env, bytes) => {
     buf,
     BytesType,
     "allocate_bytes",
+  );
+};
+
+let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
+  allocate_byte_like_uninitialized(
+    wasm_mod,
+    env,
+    size,
+    BytesType,
+    "allocate_bytes_uninitialized",
   );
 };
 
@@ -1923,24 +1713,25 @@ let allocate_char = (wasm_mod, env, char) => {
   );
 };
 
-let allocate_float32 = (wasm_mod, env, i) => {
-  call_new_float32(wasm_mod, env, [i]);
-};
-
-let allocate_float64 = (wasm_mod, env, i) => {
-  call_new_float64(wasm_mod, env, [i]);
-};
-
-let allocate_int32 = (wasm_mod, env, i) => {
-  call_new_int32(wasm_mod, env, [i]);
-};
-
-let allocate_int64 = (wasm_mod, env, i) => {
-  call_new_int64(wasm_mod, env, [i]);
-};
-
-let allocate_rational = (wasm_mod, env, n, d) => {
-  call_new_rational(wasm_mod, env, [n, d]);
+let allocate_char_uninitialized = (wasm_mod, env) => {
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let tee_swap = tee_swap(wasm_mod, env, 0);
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label("allocate_char_uninitialized"),
+    [
+      store(
+        ~offset=0,
+        wasm_mod,
+        tee_swap(heap_allocate(wasm_mod, env, 2)),
+        Expression.Const.make(
+          wasm_mod,
+          const_int32(tag_val_of_heap_tag_type(CharType)),
+        ),
+      ),
+      get_swap(),
+    ],
+  );
 };
 
 let allocate_closure =
@@ -2135,9 +1926,87 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
   );
 };
 
+let allocate_uninitialized_tuple = (~is_box=false, wasm_mod, env, num_elts) => {
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        ~skip_incref=true,
+        wasm_mod,
+        env,
+        0,
+        heap_allocate_imm(
+          ~additional_words=2,
+          wasm_mod,
+          env,
+          Words(num_elts),
+        ),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(TupleType)),
+      ),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
+      compile_imm(wasm_mod, env, num_elts),
+    ),
+  ];
+  let postamble = [get_swap()];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label("allocate_tuple"),
+    List.concat([preamble, postamble]),
+  );
+};
+
 let allocate_box = (wasm_mod, env, elt) =>
   /* At the moment, we make no runtime distinction between boxes and tuples */
   allocate_tuple(~is_box=true, wasm_mod, env, [elt]);
+
+let allocate_uninitialized_array = (wasm_mod, env, num_elts) => {
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        ~skip_incref=true,
+        wasm_mod,
+        env,
+        0,
+        heap_allocate_imm(
+          ~additional_words=2,
+          wasm_mod,
+          env,
+          Words(num_elts),
+        ),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(ArrayType)),
+      ),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
+      compile_imm(wasm_mod, env, num_elts),
+    ),
+  ];
+  let postamble = [get_swap()];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label("allocate_uninitialized_array"),
+    List.concat([preamble, postamble]),
+  );
+};
 
 let allocate_array = (wasm_mod, env, elts) => {
   let num_elts = List.length(elts);
@@ -2246,10 +2115,198 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
   );
 };
 
+type alloc_number_type =
+  | Int32(Expression.t)
+  | Int64(Expression.t)
+  | Float32(Expression.t)
+  | Float64(Expression.t)
+  | Rational(Expression.t, Expression.t);
+
+let allocate_number = (wasm_mod, env, number) => {
+  /* Heap memory layout of numbers:
+     [ <value type tag>, <number_tag>, <payload>]
+     */
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+
+  let (number_tag, instrs) =
+    switch (number) {
+    | Int32(int32) => (
+        BoxedInt32,
+        [store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(), int32)],
+      )
+    | Int64(int64) => (
+        BoxedInt64,
+        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(), int64)],
+      )
+    | Float32(float32) => (
+        BoxedFloat32,
+        [store(~offset=8, ~ty=Type.float32, wasm_mod, get_swap(), float32)],
+      )
+    | Float64(float64) => (
+        BoxedFloat64,
+        [store(~offset=8, ~ty=Type.float64, wasm_mod, get_swap(), float64)],
+      )
+    | Rational(numerator, denominator) => (
+        BoxedRational,
+        [
+          store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(), numerator),
+          store(
+            ~offset=12,
+            ~ty=Type.int32,
+            wasm_mod,
+            get_swap(),
+            denominator,
+          ),
+        ],
+      )
+    };
+
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        ~skip_incref=true,
+        wasm_mod,
+        env,
+        0,
+        // Grain allocations are 8-byte aligned, so no space is saved by
+        // allocating 3 words for 32-bit numbers
+        heap_allocate(wasm_mod, env, 4),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(BoxedNumberType)),
+      ),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_boxed_number_tag_type(number_tag)),
+      ),
+    ),
+  ];
+  let postamble = [get_swap()];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label("allocate_number"),
+    List.concat([preamble, instrs, postamble]),
+  );
+};
+
+let allocate_number_uninitialized = (wasm_mod, env, number_tag) => {
+  /* Heap memory layout of numbers:
+     [ <value type tag>, <number_tag>, <payload>]
+     */
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        ~skip_incref=true,
+        wasm_mod,
+        env,
+        0,
+        // Grain allocations are 8-byte aligned, so no space is saved by
+        // allocating 3 words for 32-bit numbers
+        heap_allocate(wasm_mod, env, 4),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(BoxedNumberType)),
+      ),
+    ),
+    store(
+      ~offset=4,
+      wasm_mod,
+      get_swap(),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_boxed_number_tag_type(number_tag)),
+      ),
+    ),
+  ];
+  let postamble = [get_swap()];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label("allocate_number"),
+    List.concat([preamble, postamble]),
+  );
+};
+
+let allocate_float32 = (wasm_mod, env, i) => {
+  allocate_number(wasm_mod, env, Float32(i));
+};
+
+let allocate_float64 = (wasm_mod, env, i) => {
+  allocate_number(wasm_mod, env, Float64(i));
+};
+
+let allocate_int32 = (wasm_mod, env, i) => {
+  allocate_number(wasm_mod, env, Int32(i));
+};
+
+let allocate_int64 = (wasm_mod, env, i) => {
+  allocate_number(wasm_mod, env, Int64(i));
+};
+
+let allocate_rational = (wasm_mod, env, n, d) => {
+  allocate_number(wasm_mod, env, Rational(n, d));
+};
+
+let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
+  switch (p0) {
+  | AllocateChar => allocate_char_uninitialized(wasm_mod, env)
+  | AllocateInt32 => allocate_number_uninitialized(wasm_mod, env, BoxedInt32)
+  | AllocateInt64 => allocate_number_uninitialized(wasm_mod, env, BoxedInt64)
+  | AllocateFloat32 =>
+    allocate_number_uninitialized(wasm_mod, env, BoxedFloat32)
+  | AllocateFloat64 =>
+    allocate_number_uninitialized(wasm_mod, env, BoxedFloat64)
+  | AllocateRational =>
+    allocate_number_uninitialized(wasm_mod, env, BoxedRational)
+  };
+};
+
 let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   let compiled_arg = compile_imm(wasm_mod, env, arg);
   /* TODO: Overflow checks? */
   switch (p1) {
+  | AllocateArray => allocate_uninitialized_array(wasm_mod, env, arg)
+  | AllocateTuple => allocate_uninitialized_tuple(wasm_mod, env, arg)
+  | AllocateBytes => allocate_bytes_uninitialized(wasm_mod, env, arg)
+  | AllocateString => allocate_string_uninitialized(wasm_mod, env, arg)
+  | NewInt32 => allocate_number(wasm_mod, env, Int32(compiled_arg))
+  | NewInt64 => allocate_number(wasm_mod, env, Int64(compiled_arg))
+  | NewFloat32 => allocate_number(wasm_mod, env, Float32(compiled_arg))
+  | NewFloat64 => allocate_number(wasm_mod, env, Float64(compiled_arg))
+  | LoadAdtVariant => load(~offset=12, wasm_mod, compiled_arg)
+  | StringSize
+  | BytesSize => load(~offset=4, wasm_mod, compiled_arg)
+  | TagSimpleNumber =>
+    Expression.Binary.make(
+      wasm_mod,
+      Op.xor_int32,
+      Expression.Binary.make(
+        wasm_mod,
+        Op.shl_int32,
+        compiled_arg,
+        Expression.Const.make(wasm_mod, const_int32(0x1)),
+      ),
+      Expression.Const.make(wasm_mod, const_int32(0x1)),
+    )
+  | UntagSimpleNumber =>
+    Expression.Binary.make(
+      wasm_mod,
+      Op.shr_s_int32,
+      compiled_arg,
+      Expression.Const.make(wasm_mod, const_int32(0x1)),
+    )
   | Not =>
     /* Flip the first bit */
     Expression.Binary.make(
@@ -2431,6 +2488,12 @@ let compile_prim2 = (wasm_mod, env: codegen_env, p2, arg1, arg2): Expression.t =
         compiled_arg1(),
         compiled_arg2(),
       ),
+    )
+  | NewRational =>
+    allocate_number(
+      wasm_mod,
+      env,
+      Rational(compiled_arg1(), compiled_arg2()),
     )
   | WasmLoadI32({sz, signed}) =>
     compile_wasm_load(
@@ -2898,6 +2961,7 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MAdtOp(adt_op, adt) => compile_adt_op(wasm_mod, env, adt, adt_op)
   | MRecordOp(record_op, record) =>
     compile_record_op(wasm_mod, env, record, record_op)
+  | MPrim0(p0) => compile_prim0(wasm_mod, env, p0)
   | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
   | MPrimN(p, args) => compile_primn(wasm_mod, env, p, args)

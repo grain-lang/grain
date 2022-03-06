@@ -2565,6 +2565,9 @@ and print_expression =
         ]),
       );
 
+    | PExpPrim0(prim0) =>
+      let original_code = get_original_code(expr.pexp_loc, original_source);
+      Doc.text(original_code);
     | PExpPrim1(prim1, expression) =>
       let original_code = get_original_code(expr.pexp_loc, original_source);
       Doc.text(original_code);

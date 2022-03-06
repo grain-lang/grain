@@ -10,6 +10,7 @@ type primitive_constant =
 
 type primitive =
   | PrimitiveConstant(primitive_constant)
+  | Primitive0(prim0)
   | Primitive1(prim1)
   | Primitive2(prim2)
   | PrimitiveN(primn);
@@ -43,6 +44,25 @@ let prim_map =
       ("@heap.base", PrimitiveConstant(HeapBase)),
       ("@heap.start", PrimitiveConstant(HeapStart)),
       ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
+      ("@allocate.char", Primitive0(AllocateChar)),
+      ("@allocate.int32", Primitive0(AllocateInt32)),
+      ("@allocate.int64", Primitive0(AllocateInt64)),
+      ("@allocate.float32", Primitive0(AllocateFloat32)),
+      ("@allocate.float64", Primitive0(AllocateFloat64)),
+      ("@allocate.rational", Primitive0(AllocateRational)),
+      ("@allocate.array", Primitive1(AllocateArray)),
+      ("@allocate.tuple", Primitive1(AllocateTuple)),
+      ("@allocate.bytes", Primitive1(AllocateBytes)),
+      ("@allocate.string", Primitive1(AllocateString)),
+      ("@new.int32", Primitive1(NewInt32)),
+      ("@new.int64", Primitive1(NewInt64)),
+      ("@new.float32", Primitive1(NewFloat32)),
+      ("@new.float64", Primitive1(NewFloat64)),
+      ("@adt.load_variant", Primitive1(LoadAdtVariant)),
+      ("@string.size", Primitive1(StringSize)),
+      ("@bytes.size", Primitive1(BytesSize)),
+      ("@tag.simple_number", Primitive1(TagSimpleNumber)),
+      ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -54,6 +74,7 @@ let prim_map =
       ("@and", Primitive2(And)),
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
+      ("@new.rational", Primitive2(NewRational)),
       ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
       (
         "@wasm.load_8_s_int32",
@@ -1476,6 +1497,16 @@ let transl_prim = (env, desc) => {
           [];
         };
       (Exp.constant(~loc, ~attributes=disable_gc, value), attrs);
+    | Primitive0(
+        (
+          AllocateChar | AllocateInt32 | AllocateInt64 | AllocateFloat32 |
+          AllocateFloat64 |
+          AllocateRational
+        ) as p,
+      ) => (
+        Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.prim0(~loc, p)),
+        [],
+      )
     | Primitive1(
         (
           WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |

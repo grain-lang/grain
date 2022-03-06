@@ -24,12 +24,6 @@ import {
   newFloat64,
 } from "runtime/dataStructures"
 
-export newRational
-export newInt32
-export newInt64
-export newFloat32
-export newFloat64
-
 @unsafe
 let _I32_MAX = 0x7fffffffN
 @unsafe
