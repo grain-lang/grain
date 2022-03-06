@@ -683,8 +683,7 @@ let appropriate_incref = (wasm_mod, env, arg, b) =>
   | MLocalBind(_, Types.HeapAllocated)
   | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated, true) =>
-    call_incref(wasm_mod, env, arg)
+  | MGlobalBind(_, Types.HeapAllocated) => call_incref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
@@ -698,8 +697,7 @@ let appropriate_decref = (wasm_mod, env, arg, b) =>
   | MLocalBind(_, Types.HeapAllocated)
   | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated, true) =>
-    call_decref(wasm_mod, env, arg)
+  | MGlobalBind(_, Types.HeapAllocated) => call_decref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
@@ -852,16 +850,14 @@ let compile_bind =
     | BindSet(arg) => set_slot(slot, typ, arg)
     | BindTee(arg) => tee_slot(slot, typ, arg)
     };
-  | MGlobalBind(slot, wasm_ty, gc) =>
+  | MGlobalBind(slot, wasm_ty) =>
     let typ = wasm_type(wasm_ty);
     switch (action) {
-    | BindGet when !gc => Expression.Global_get.make(wasm_mod, slot, typ)
     | BindGet =>
       appropriate_incref(
         wasm_mod,
         Expression.Global_get.make(wasm_mod, slot, typ),
       )
-    | BindSet(arg) when !gc => Expression.Global_set.make(wasm_mod, slot, arg)
     | BindSet(arg) =>
       Expression.Global_set.make(
         wasm_mod,
@@ -880,15 +876,6 @@ let compile_bind =
           ),
           0,
         ),
-      )
-    | BindTee(arg) when !gc =>
-      Expression.Block.make(
-        wasm_mod,
-        gensym_label("BindTee"),
-        [
-          Expression.Global_set.make(wasm_mod, slot, arg),
-          Expression.Global_get.make(wasm_mod, slot, typ),
-        ],
       )
     | BindTee(arg) =>
       Expression.Block.make(

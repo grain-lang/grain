@@ -8,7 +8,7 @@ open Types;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 [@deriving sexp]
 type global_flag =
-  | Global
+  | Global({exported: bool})
   | Nonglobal;
 
 type loc('a) = Location.loc('a);
@@ -387,6 +387,7 @@ type anf_program = {
 
 type anf_bind =
   | BSeq(comp_expression)
-  | BLet(Ident.t, comp_expression)
-  | BLetRec(list((Ident.t, comp_expression)))
-  | BLetExport(rec_flag, list((Ident.t, comp_expression)));
+  | BLet(Ident.t, comp_expression, global_flag)
+  | BLetMut(Ident.t, comp_expression, global_flag)
+  | BLetRec(list((Ident.t, comp_expression)), global_flag)
+  | BLetRecMut(list((Ident.t, comp_expression)), global_flag);

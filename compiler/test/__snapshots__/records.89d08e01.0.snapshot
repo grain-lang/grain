@@ -51,7 +51,7 @@ records › record_pun_trailing
           )
           (i64.store offset=24
            (local.get $0)
-           (i64.const 68719477889)
+           (i64.const 68719477891)
           )
           (i64.store offset=32
            (local.get $0)
@@ -105,7 +105,7 @@ records › record_pun_trailing
      )
      (i32.store offset=8
       (local.get $0)
-      (i32.const 2307)
+      (i32.const 2311)
      )
      (i32.store offset=12
       (local.get $0)

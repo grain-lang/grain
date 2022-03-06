@@ -261,7 +261,7 @@ type constant =
 type binding =
   | MArgBind(int32, Types.allocation_type)
   | MLocalBind(int32, Types.allocation_type)
-  | MGlobalBind(string, Types.allocation_type, bool)
+  | MGlobalBind(string, Types.allocation_type)
   | MClosureBind(int32)
   | MSwapBind(int32, Types.allocation_type) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */
