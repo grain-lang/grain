@@ -48,7 +48,7 @@ enums › enum_recursive_data_definition
          )
         )
        )
-       (i32.const 3)
+       (i32.const 2)
       )
       (i32.store offset=4
        (local.get $3)
@@ -127,7 +127,7 @@ enums › enum_recursive_data_definition
          )
         )
        )
-       (i32.const 3)
+       (i32.const 2)
       )
       (i32.store offset=4
        (local.get $3)
@@ -315,7 +315,7 @@ enums › enum_recursive_data_definition
              )
             )
            )
-           (i32.const 3)
+           (i32.const 2)
           )
           (i32.store offset=4
            (local.get $0)
@@ -361,7 +361,7 @@ enums › enum_recursive_data_definition
              )
             )
            )
-           (i32.const 7)
+           (i32.const 6)
           )
           (i32.store offset=4
            (local.get $0)
@@ -408,7 +408,7 @@ enums › enum_recursive_data_definition
              )
             )
            )
-           (i32.const 3)
+           (i32.const 2)
           )
           (i32.store offset=4
            (local.get $0)
@@ -454,7 +454,7 @@ enums › enum_recursive_data_definition
              )
             )
            )
-           (i32.const 7)
+           (i32.const 6)
           )
           (i32.store offset=4
            (local.get $0)

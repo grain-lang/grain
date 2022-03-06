@@ -43,7 +43,7 @@ stdlib › stdlib_equal_12
              )
             )
            )
-           (i32.const 5)
+           (i32.const 4)
           )
           (i32.store offset=4
            (local.get $0)
@@ -90,7 +90,7 @@ stdlib › stdlib_equal_12
              )
             )
            )
-           (i32.const 5)
+           (i32.const 4)
           )
           (i32.store offset=4
            (local.get $0)

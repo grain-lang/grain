@@ -126,7 +126,7 @@ basic functionality › func_shadow_and_indirect_call
          )
         )
        )
-       (i32.const 7)
+       (i32.const 6)
       )
       (i32.store offset=4
        (local.get $1)
@@ -224,7 +224,7 @@ basic functionality › func_shadow_and_indirect_call
              )
             )
            )
-           (i32.const 7)
+           (i32.const 6)
           )
           (i32.store offset=4
            (local.get $0)
@@ -309,7 +309,7 @@ basic functionality › func_shadow_and_indirect_call
              )
             )
            )
-           (i32.const 7)
+           (i32.const 6)
           )
           (i32.store offset=4
            (local.get $0)
@@ -397,7 +397,7 @@ basic functionality › func_shadow_and_indirect_call
              )
             )
            )
-           (i32.const 7)
+           (i32.const 6)
           )
           (i32.store offset=4
            (local.get $0)

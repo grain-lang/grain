@@ -44,7 +44,6 @@ let prim_map =
       ("@heap.base", PrimitiveConstant(HeapBase)),
       ("@heap.start", PrimitiveConstant(HeapStart)),
       ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
-      ("@allocate.char", Primitive0(AllocateChar)),
       ("@allocate.int32", Primitive0(AllocateInt32)),
       ("@allocate.int64", Primitive0(AllocateInt64)),
       ("@allocate.float32", Primitive0(AllocateFloat32)),
@@ -63,6 +62,8 @@ let prim_map =
       ("@bytes.size", Primitive1(BytesSize)),
       ("@tag.simple_number", Primitive1(TagSimpleNumber)),
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
+      ("@tag.char", Primitive1(TagChar)),
+      ("@untag.char", Primitive1(UntagChar)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -1499,8 +1500,7 @@ let transl_prim = (env, desc) => {
       (Exp.constant(~loc, ~attributes=disable_gc, value), attrs);
     | Primitive0(
         (
-          AllocateChar | AllocateInt32 | AllocateInt64 | AllocateFloat32 |
-          AllocateFloat64 |
+          AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
           AllocateRational
         ) as p,
       ) => (

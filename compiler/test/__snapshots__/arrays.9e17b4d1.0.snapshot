@@ -29,7 +29,7 @@ arrays › array3
         )
        )
       )
-      (i32.const 5)
+      (i32.const 4)
      )
      (i32.store offset=4
       (local.get $0)

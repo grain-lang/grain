@@ -29,7 +29,7 @@ basic functionality › int64_1
         )
        )
       )
-      (i32.const 6)
+      (i32.const 5)
      )
      (i32.store offset=4
       (local.get $0)

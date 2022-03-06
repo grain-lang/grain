@@ -1679,59 +1679,11 @@ let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
   );
 };
 
-let allocate_char = (wasm_mod, env, char) => {
-  // Copy bytes into a fresh buffer so we can guarantee a copy of a full word
-  let bytes = Bytes.make(4, Char.chr(0));
-  // OCaml String#length is byte length, not Unicode character length
-  // Guaranteed not to be longer than 4 bytes by well-formedness
-  Bytes.blit_string(char, 0, bytes, 0, String.length(char));
-  let value = Bytes.get_int32_le(bytes, 0);
-
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(wasm_mod, env, 0);
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("allocate_char"),
-    [
-      store(
-        ~offset=0,
-        wasm_mod,
-        tee_swap(heap_allocate(wasm_mod, env, 2)),
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(CharType)),
-        ),
-      ),
-      store(
-        ~offset=4,
-        wasm_mod,
-        get_swap(),
-        Expression.Const.make(wasm_mod, wrap_int32(value)),
-      ),
-      get_swap(),
-    ],
-  );
-};
-
-let allocate_char_uninitialized = (wasm_mod, env) => {
-  let get_swap = () => get_swap(wasm_mod, env, 0);
-  let tee_swap = tee_swap(wasm_mod, env, 0);
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("allocate_char_uninitialized"),
-    [
-      store(
-        ~offset=0,
-        wasm_mod,
-        tee_swap(heap_allocate(wasm_mod, env, 2)),
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(tag_val_of_heap_tag_type(CharType)),
-        ),
-      ),
-      get_swap(),
-    ],
-  );
+let create_char = (wasm_mod, env, char) => {
+  let uchar = List.hd @@ Utf8.decodeUtf8String(char);
+  let uchar_int: int = Utf8__Uchar.toInt(uchar);
+  let grain_char = uchar_int lsl 3 lor 0b010;
+  Expression.Const.make(wasm_mod, const_int32(grain_char));
 };
 
 let allocate_closure =
@@ -2261,7 +2213,6 @@ let allocate_rational = (wasm_mod, env, n, d) => {
 
 let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   switch (p0) {
-  | AllocateChar => allocate_char_uninitialized(wasm_mod, env)
   | AllocateInt32 => allocate_number_uninitialized(wasm_mod, env, BoxedInt32)
   | AllocateInt64 => allocate_number_uninitialized(wasm_mod, env, BoxedInt64)
   | AllocateFloat32 =>
@@ -2306,6 +2257,25 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       Op.shr_s_int32,
       compiled_arg,
       Expression.Const.make(wasm_mod, const_int32(0x1)),
+    )
+  | TagChar =>
+    Expression.Binary.make(
+      wasm_mod,
+      Op.xor_int32,
+      Expression.Binary.make(
+        wasm_mod,
+        Op.shl_int32,
+        compiled_arg,
+        Expression.Const.make(wasm_mod, const_int32(0x3)),
+      ),
+      Expression.Const.make(wasm_mod, const_int32(0b10)),
+    )
+  | UntagChar =>
+    Expression.Binary.make(
+      wasm_mod,
+      Op.shr_s_int32,
+      compiled_arg,
+      Expression.Const.make(wasm_mod, const_int32(0x3)),
     )
   | Not =>
     /* Flip the first bit */
@@ -2691,7 +2661,7 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
   | MBytes(bytes) => allocate_bytes(wasm_mod, env, bytes)
   | MString(str) => allocate_string(wasm_mod, env, str)
-  | MChar(char) => allocate_char(wasm_mod, env, char)
+  | MChar(char) => create_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
   | MInt32(i) =>
     allocate_int32(

@@ -14,6 +14,7 @@ import Exception from "runtime/exception"
 import Int32 from "int32"
 import Bytes from "bytes"
 import String from "string"
+import Char from "char"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
 record Buffer {
@@ -60,30 +61,6 @@ let autogrow = (len, buf) => {
     let growBy = newSize - currentSize
 
     buf.data = Bytes.resize(0, growBy, buf.data)
-  }
-}
-
-/* Gets the pointer for a char's bytes following the char's tag */
-@unsafe
-let rec getCharAsWasmI32 = char => {
-  let c = WasmI32.fromGrain(char)
-  WasmI32.load(c, 4n)
-}
-
-/* Gets the UTF-8 byte length of a char */
-@unsafe
-let rec getCharByteLength = byte => {
-  let (+) = WasmI32.add
-  let (&) = WasmI32.and
-  let (==) = WasmI32.eq
-  if ((byte & 0x80n) == 0x00n) {
-    1n
-  } else if ((byte & 0xF0n) == 0xF0n) {
-    4n
-  } else if ((byte & 0xE0n) == 0xE0n) {
-    3n
-  } else {
-    2n
   }
 }
 
@@ -264,45 +241,6 @@ export let toStringSlice = (start, length, buffer) => {
 }
 
 /**
- * Appends the bytes of a char to a buffer.
- *
- * @param char: The character to append to the buffer
- * @param buffer: The buffer to mutate
- *
- * @since v0.4.0
- */
-@unsafe
-export let addChar = (char: Char, buffer: Buffer) => {
-  let n = getCharAsWasmI32(char)
-  let bytelen = getCharByteLength(n)
-  match (bytelen) {
-    1n => {
-      let c = Conv.toInt32(n)
-      addInt8help(c, buffer)
-    },
-    2n => {
-      let c = Conv.toInt32(n)
-      addInt16help(c, buffer)
-    },
-    3n => {
-      let (<) = WasmI32.ltU
-      let (+) = WasmI32.add
-      let (*) = WasmI32.mul
-      let (&) = WasmI32.and
-      let (>>) = WasmI32.shrU
-      for (let mut i = 0n; i < 3n; i += 1n) {
-        let c = Conv.toInt32(n >> i * 8n & 0xffn)
-        addInt8help(c, buffer)
-      }
-    },
-    _ => {
-      let c = Conv.toInt32(n)
-      addInt32help(c, buffer)
-    },
-  }
-}
-
-/**
  * Appends a byte sequence to a buffer.
  *
  * @param bytes: The byte sequence to append
@@ -346,6 +284,18 @@ export let addString = (string, buffer) => {
   appendBytes(0n, off, len, src, dst)
 
   buffer.len = buffer.len + bytelen
+}
+
+/**
+ * Appends the bytes of a char to a buffer.
+ *
+ * @param char: The character to append to the buffer
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.4.0
+ */
+export let addChar = (char, buffer) => {
+  addString(Char.toString(char), buffer)
 }
 
 /**

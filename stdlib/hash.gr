@@ -119,22 +119,6 @@ let rec hashOne = (val, depth) => {
         if (rem != 0n) hashRemaining(rem)
         finalize(length)
       },
-      t when t == Tags._GRAIN_CHAR_HEAP_TAG => {
-        let word = WasmI32.load(heapPtr, 4n)
-        // little-endian byte order
-        let byte = word & 0xFFn
-        let mut shift = 0n
-        if ((byte & 0x80n) == 0x00n) {
-          shift = 24n
-        } else if ((byte & 0xF0n) == 0xF0n) {
-          shift = 0n
-        } else if ((byte & 0xE0n) == 0xE0n) {
-          shift = 8n
-        } else {
-          shift = 16n
-        }
-        hash32(word << shift)
-      },
       t when t == Tags._GRAIN_ADT_HEAP_TAG => {
         // moduleId
         hash32(WasmI32.load(heapPtr, 4n))
@@ -216,13 +200,8 @@ let rec hashOne = (val, depth) => {
         hash32(heapPtr)
       },
     }
-  } else if (val == WasmI32.fromGrain(true)) {
-    hash32(val)
-  } else if (val == WasmI32.fromGrain(false)) {
-    hash32(val)
-  } else if (val == WasmI32.fromGrain(void)) {
-    hash32(val)
   } else {
+    // Handle non-heap values: booleans, chars, void, etc.
     hash32(val)
   }
 }

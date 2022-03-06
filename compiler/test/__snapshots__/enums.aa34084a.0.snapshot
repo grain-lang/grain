@@ -41,7 +41,7 @@ enums › adt_trailing
          )
         )
        )
-       (i32.const 3)
+       (i32.const 2)
       )
       (i32.store offset=4
        (local.get $2)
@@ -181,7 +181,7 @@ enums › adt_trailing
             )
            )
           )
-          (i32.const 7)
+          (i32.const 6)
          )
          (i32.store offset=4
           (local.get $0)
@@ -228,7 +228,7 @@ enums › adt_trailing
             )
            )
           )
-          (i32.const 3)
+          (i32.const 2)
          )
          (i32.store offset=4
           (local.get $0)

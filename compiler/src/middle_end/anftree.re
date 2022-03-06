@@ -158,7 +158,6 @@ type wasm_op =
 
 type prim0 =
   Parsetree.prim0 =
-    | AllocateChar
     | AllocateInt32
     | AllocateInt64
     | AllocateFloat32
@@ -180,6 +179,8 @@ type prim1 =
     | BytesSize
     | TagSimpleNumber
     | UntagSimpleNumber
+    | TagChar
+    | UntagChar
     | Not
     | Box
     | Unbox

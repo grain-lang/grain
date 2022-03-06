@@ -102,7 +102,7 @@ records › record_pun_mixed_trailing
         )
        )
       )
-      (i32.const 4)
+      (i32.const 3)
      )
      (i32.store offset=4
       (local.get $0)

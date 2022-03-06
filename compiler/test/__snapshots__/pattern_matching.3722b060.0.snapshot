@@ -50,7 +50,7 @@ pattern matching › tuple_match_deep
              )
             )
            )
-           (i32.const 8)
+           (i32.const 7)
           )
           (i32.store offset=4
            (local.get $0)
@@ -89,7 +89,7 @@ pattern matching › tuple_match_deep
              )
             )
            )
-           (i32.const 8)
+           (i32.const 7)
           )
           (i32.store offset=4
            (local.get $0)
