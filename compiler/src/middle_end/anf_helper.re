@@ -47,7 +47,7 @@ module Comp = {
     mk(
       ~loc?,
       ~attributes?,
-      ~allocation_type=StackAllocated(WasmI32),
+      ~allocation_type=HeapAllocated,
       ~env?,
       CNumber(i),
     );
