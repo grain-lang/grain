@@ -8,13 +8,13 @@ import Int32 from "int32"
 assert Buffer.length(Buffer.make(0)) == 0
 assert Buffer.length(Buffer.make(1024)) == 0
 
-// it should structurally equal other buffers with similar bytes
-assert Buffer.make(0) == Buffer.make(0)
+// its contents should equal other buffers with equivalent bytes
+assert Buffer.toBytes(Buffer.make(0)) == Buffer.toBytes(Buffer.make(0))
 let a = Buffer.make(0)
 Buffer.addInt8(1l, a)
 let b = Buffer.make(0)
 Buffer.addInt8(1l, b)
-assert a == b
+assert Buffer.toBytes(a) == Buffer.toBytes(b)
 
 // it should add/get int8
 let byteSize = 1
@@ -238,7 +238,7 @@ assert Buffer.toStringSlice(Bytes.length(bytes) - 4, 4, buf) == "🍞"
 let a = buf
 let b = Buffer.make(0)
 Buffer.addString(str, b)
-assert a == b
+assert Buffer.toBytes(a) == Buffer.toBytes(b)
 
 // addChar
 let char = 'a' // 1 byte
