@@ -34,7 +34,6 @@ functions › func_record_associativity1
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
-  (local $4 i32)
   (local.set $0
    (tuple.extract 0
     (tuple.make
@@ -212,7 +211,7 @@ functions › func_record_associativity1
         )
        )
       )
-      (local.set $4
+      (i32.xor
        (tuple.extract 0
         (tuple.make
          (call_indirect (type $i32_=>_i32)
@@ -231,17 +230,8 @@ functions › func_record_associativity1
            (local.get $0)
           )
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-          (i32.const 0)
-         )
+         (i32.const 0)
         )
-       )
-      )
-      (i32.xor
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (local.get $4)
        )
        (i32.const -2147483648)
       )
@@ -266,12 +256,6 @@ functions › func_record_associativity1
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $3)
-   )
-  )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $4)
    )
   )
   (local.get $0)

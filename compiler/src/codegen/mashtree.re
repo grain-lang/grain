@@ -249,14 +249,6 @@ type primn =
     | WasmMemorySize
     | WasmMemoryCompare;
 
-/* Types within the WASM output */
-[@deriving sexp]
-type asmtype =
-  | I32Type
-  | I64Type
-  | F32Type
-  | F64Type;
-
 [@deriving sexp]
 type constant =
   | MConstI32(int32)
@@ -267,11 +259,11 @@ type constant =
 
 [@deriving sexp]
 type binding =
-  | MArgBind(int32, asmtype)
-  | MLocalBind(int32, asmtype)
-  | MGlobalBind(string, asmtype, bool)
+  | MArgBind(int32, Types.allocation_type)
+  | MLocalBind(int32, Types.allocation_type)
+  | MGlobalBind(string, Types.allocation_type, bool)
   | MClosureBind(int32)
-  | MSwapBind(int32, asmtype) /* Used like a register would be */
+  | MSwapBind(int32, Types.allocation_type) /* Used like a register would be */
   | MImport(int32); /* Index into list of imports */
 
 [@deriving sexp]
@@ -358,29 +350,29 @@ and instr_desc =
   | MImmediate(immediate)
   | MCallRaw({
       func: string,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MCallKnown({
       func: string,
       closure: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MReturnCallKnown({
       func: string,
       closure: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MCallIndirect({
       func: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MReturnCallIndirect({
       func: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MError(grain_error, list(immediate))
@@ -391,7 +383,7 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
-  | MSwitch(immediate, list((int32, block)), block, asmtype) /* value, branches, default, return type */
+  | MSwitch(immediate, list((int32, block)), block, Types.allocation_type) /* value, branches, default, return type */
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
   | MPrimN(primn, list(immediate))
@@ -411,8 +403,8 @@ and block = list(instr);
 
 [@deriving sexp]
 type import_type =
-  | MFuncImport(list(asmtype), list(asmtype))
-  | MGlobalImport(asmtype, bool);
+  | MFuncImport(list(Types.allocation_type), list(Types.allocation_type))
+  | MGlobalImport(Types.allocation_type, bool);
 
 [@deriving sexp]
 type import_kind =
@@ -445,14 +437,15 @@ type mash_function = {
   index: int32,
   id: Ident.t,
   name: option(string),
-  args: list(asmtype),
-  return_type: list(asmtype),
+  args: list(Types.allocation_type),
+  return_type: list(Types.allocation_type),
   body: block,
   stack_size,
   attrs: attributes,
   func_loc: Location.t,
 }
 and stack_size = {
+  stack_size_ptr: int,
   stack_size_i32: int,
   stack_size_i64: int,
   stack_size_f32: int,
@@ -466,7 +459,7 @@ type mash_program = {
   exports: list(export),
   main_body: block,
   main_body_stack_size: stack_size,
-  globals: list((int32, asmtype)),
+  globals: list((int32, Types.allocation_type)),
   signature: Cmi_format.cmi_infos,
   type_metadata: list(Types.type_metadata),
 };

@@ -29,6 +29,7 @@ type attributes = list(attribute)
 [@deriving sexp]
 and attribute =
   | Disable_gc
+  | Unsafe
   | External_name(string);
 
 type partial =

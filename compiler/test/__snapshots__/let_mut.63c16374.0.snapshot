@@ -17,8 +17,7 @@ let mut › let-mut4
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
-  (local $2 i32)
-  (local.set $2
+  (local.set $1
    (tuple.extract 0
     (tuple.make
      (block (result i32)
@@ -33,26 +32,13 @@ let mut › let-mut4
         )
        )
       )
-      (local.set $1
+      (local.set $0
        (tuple.extract 0
         (tuple.make
-         (block (result i32)
-          (local.set $0
-           (tuple.extract 0
-            (tuple.make
-             (i32.const 7)
-             (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-              (local.get $0)
-             )
-            )
-           )
-          )
-          (i32.const 1879048190)
-         )
+         (i32.const 7)
          (call $wimport_GRAIN$MODULE$runtime/gc_decRef
           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-          (i32.const 0)
+          (local.get $0)
          )
         )
        )
@@ -72,13 +58,7 @@ let mut › let-mut4
     (local.get $0)
    )
   )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $1)
-   )
-  )
-  (local.get $2)
+  (local.get $1)
  )
  (func $_start (; has Stack IR ;)
   (drop

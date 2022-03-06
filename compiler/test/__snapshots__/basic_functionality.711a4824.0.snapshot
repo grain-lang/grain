@@ -103,7 +103,6 @@ basic functionality › pattern_match_unsafe_wasm
  )
  (func $foo_1154 (; has Stack IR ;) (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
-  (local $3 i32)
   (block $switch.31_outer (result i32)
    (drop
     (block $switch.31_branch_1 (result i32)
@@ -146,27 +145,7 @@ basic functionality › pattern_match_unsafe_wasm
                          (i32.const 31)
                         )
                         (i32.const 1)
-                        (if (result i32)
-                         (i32.shr_u
-                          (local.tee $2
-                           (tuple.extract 0
-                            (tuple.make
-                             (i32.or
-                              (i32.shl
-                               (i32.eq
-                                (local.get $1)
-                                (i32.const 2)
-                               )
-                               (i32.const 31)
-                              )
-                              (i32.const 2147483646)
-                             )
-                             (i32.const 0)
-                            )
-                           )
-                          )
-                          (i32.const 31)
-                         )
+                        (select
                          (i32.const 3)
                          (select
                           (i32.const 5)
@@ -235,25 +214,43 @@ basic functionality › pattern_match_unsafe_wasm
                            )
                           )
                           (i32.shr_u
-                           (local.tee $3
-                            (tuple.extract 0
-                             (tuple.make
-                              (i32.or
-                               (i32.shl
-                                (i32.eq
-                                 (local.get $1)
-                                 (i32.const 3)
-                                )
-                                (i32.const 31)
+                           (tuple.extract 0
+                            (tuple.make
+                             (i32.or
+                              (i32.shl
+                               (i32.eq
+                                (local.get $1)
+                                (i32.const 3)
                                )
-                               (i32.const 2147483646)
+                               (i32.const 31)
                               )
-                              (i32.const 0)
+                              (i32.const 2147483646)
                              )
+                             (i32.const 0)
                             )
                            )
                            (i32.const 31)
                           )
+                         )
+                         (i32.shr_u
+                          (local.tee $2
+                           (tuple.extract 0
+                            (tuple.make
+                             (i32.or
+                              (i32.shl
+                               (i32.eq
+                                (local.get $1)
+                                (i32.const 2)
+                               )
+                               (i32.const 31)
+                              )
+                              (i32.const 2147483646)
+                             )
+                             (i32.const 0)
+                            )
+                           )
+                          )
+                          (i32.const 31)
                          )
                         )
                        )
@@ -296,7 +293,7 @@ basic functionality › pattern_match_unsafe_wasm
                    )
                    (local.get $1)
                   )
-                  (local.get $3)
+                  (i32.const 0)
                  )
                 )
                )

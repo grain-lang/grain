@@ -26,7 +26,6 @@ records › record_recursive_data_definition
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
-  (local $5 i32)
   (local.set $0
    (tuple.extract 0
     (tuple.make
@@ -235,32 +234,19 @@ records › record_recursive_data_definition
         )
        )
       )
-      (local.set $5
+      (i32.store offset=16
+       (local.get $1)
        (tuple.extract 0
         (tuple.make
-         (block (result i32)
-          (i32.store offset=16
-           (local.get $1)
-           (tuple.extract 0
-            (tuple.make
-             (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-              (local.get $3)
-             )
-             (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-              (i32.load offset=16
-               (local.get $1)
-              )
-             )
-            )
-           )
-          )
-          (i32.const 1879048190)
+         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+          (local.get $3)
          )
          (call $wimport_GRAIN$MODULE$runtime/gc_decRef
           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-          (i32.const 0)
+          (i32.load offset=16
+           (local.get $1)
+          )
          )
         )
        )
@@ -334,12 +320,6 @@ records › record_recursive_data_definition
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $3)
-   )
-  )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $5)
    )
   )
   (drop

@@ -42,9 +42,19 @@ let needs_exceptions = ref(false);
 /* Number of swap variables to allocate */
 let swap_slots_i32 = [|Type.int32, Type.int32, Type.int32|];
 let swap_slots_i64 = [|Type.int64|];
+let swap_slots_f32 = [|Type.float32|];
+let swap_slots_f64 = [|Type.float64|];
 let swap_i32_offset = 0;
 let swap_i64_offset = Array.length(swap_slots_i32);
-let swap_slots = Array.append(swap_slots_i32, swap_slots_i64);
+let swap_f32_offset = swap_i64_offset + Array.length(swap_slots_i64);
+let swap_f64_offset = swap_f32_offset + Array.length(swap_slots_f32);
+let swap_slots =
+  Array.concat([
+    swap_slots_i32,
+    swap_slots_i64,
+    swap_slots_f32,
+    swap_slots_f64,
+  ]);
 
 /* These are the bare-minimum imports needed for basic runtime support */
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
@@ -99,42 +109,42 @@ let required_global_imports = [
   {
     mimp_mod: grain_env_mod,
     mimp_name: reloc_base,
-    mimp_type: MGlobalImport(I32Type, false),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: grain_env_mod,
     mimp_name: module_runtime_id,
-    mimp_type: MGlobalImport(I32Type, false),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: exception_mod,
     mimp_name: print_exception_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: exception_mod,
     mimp_name: assertion_error_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: exception_mod,
     mimp_name: index_out_of_bounds_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: exception_mod,
     mimp_name: match_failure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -144,63 +154,63 @@ let grain_runtime_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: malloc_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: gc_mod,
     mimp_name: incref_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: gc_mod,
     mimp_name: decref_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_rational_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float32_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float64_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int32_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int64_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: equal_mod,
     mimp_name: equal_closure_ident,
-    mimp_type: MGlobalImport(I32Type, true),
+    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -213,7 +223,11 @@ let required_function_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: print_exception_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -223,70 +237,114 @@ let grain_function_imports = [
   {
     mimp_mod: gc_mod,
     mimp_name: malloc_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: gc_mod,
     mimp_name: incref_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
+        [Types.StackAllocated(WasmI32)],
+      ), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: gc_mod,
     mimp_name: decref_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]), /* Returns same pointer as argument */
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
+        [Types.StackAllocated(WasmI32)],
+      ), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: console_mod,
     mimp_name: tracepoint_ident,
-    mimp_type: MFuncImport([I32Type], []),
+    mimp_type: MFuncImport([Types.StackAllocated(WasmI32)], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_rational_ident,
-    mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [
+          Types.StackAllocated(WasmI32),
+          Types.StackAllocated(WasmI32),
+          Types.StackAllocated(WasmI32),
+        ],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float32_ident,
-    mimp_type: MFuncImport([I32Type, F32Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmF32)],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_float64_ident,
-    mimp_type: MFuncImport([I32Type, F64Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmF64)],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int32_ident,
-    mimp_type: MFuncImport([I32Type, I32Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: data_structures_mod,
     mimp_name: new_int64_ident,
-    mimp_type: MFuncImport([I32Type, I64Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI64)],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
   {
     mimp_mod: equal_mod,
     mimp_name: equal_ident,
-    mimp_type: MFuncImport([I32Type, I32Type, I32Type], [I32Type]),
+    mimp_type:
+      MFuncImport(
+        [
+          Types.StackAllocated(WasmI32),
+          Types.StackAllocated(WasmI32),
+          Types.StackAllocated(WasmI32),
+        ],
+        [Types.StackAllocated(WasmI32)],
+      ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
   },
@@ -303,6 +361,7 @@ let init_codegen_env = name => {
   num_args: 0,
   global_offset: 2,
   stack_size: {
+    stack_size_ptr: 0,
     stack_size_i32: 0,
     stack_size_i64: 0,
     stack_size_f32: 0,
@@ -583,35 +642,49 @@ type bind_action =
   | BindSet(Expression.t)
   | BindTee(Expression.t);
 
-let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env) => {
-  let instrs =
-    List.init(
-      env.num_args + env.stack_size.stack_size_i32,
-      i => {
-        // cleanup called on args and i32 (GC-tracked) locals
+let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => {
+  let arg_instrs =
+    List_utils.filter_mapi(
+      (arg, i) => {
+        // cleanup called on args
         // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
         // |-----[env.num_args]-----| |----[len(swap_slots)]------|
-        let offset =
-          if (i < env.num_args) {
-            0;
-          } else {
-            Array.length(swap_slots);
-          };
+        switch (arg) {
+        | Types.HeapAllocated =>
+          let arg = Expression.Local_get.make(wasm_mod, i, Type.int32);
+          Some(
+            singleton @@
+            Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg)),
+          );
+        | _ => None
+        }
+      },
+      argtypes,
+    );
+  let stack_instrs =
+    List.init(
+      env.stack_size.stack_size_ptr,
+      i => {
+        // cleanup called Grain ptr (i32, GC-tracked) locals
+        // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
+        // |-----[env.num_args]-----| |----[len(swap_slots)]------|
+        let offset = env.num_args + Array.length(swap_slots);
         let slot_no = i + offset;
         let arg = Expression.Local_get.make(wasm_mod, slot_no, Type.int32);
         singleton @@
         Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg));
       },
     );
-  flatten(instrs);
+  flatten(List.append(arg_instrs, stack_instrs));
 };
 let appropriate_incref = (wasm_mod, env, arg, b) =>
   switch (b) {
-  | MArgBind(_, I32Type)
-  | MLocalBind(_, I32Type)
-  | MSwapBind(_, I32Type)
+  | MArgBind(_, Types.HeapAllocated)
+  | MLocalBind(_, Types.HeapAllocated)
+  | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, I32Type, true) => call_incref(wasm_mod, env, arg)
+  | MGlobalBind(_, Types.HeapAllocated, true) =>
+    call_incref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
@@ -621,11 +694,12 @@ let appropriate_incref = (wasm_mod, env, arg, b) =>
 
 let appropriate_decref = (wasm_mod, env, arg, b) =>
   switch (b) {
-  | MArgBind(_, I32Type)
-  | MLocalBind(_, I32Type)
-  | MSwapBind(_, I32Type)
+  | MArgBind(_, Types.HeapAllocated)
+  | MLocalBind(_, Types.HeapAllocated)
+  | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, I32Type, true) => call_decref(wasm_mod, env, arg)
+  | MGlobalBind(_, Types.HeapAllocated, true) =>
+    call_decref(wasm_mod, env, arg)
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
@@ -705,14 +779,15 @@ let compile_bind =
     );
   };
   switch (b) {
-  | MArgBind(i, wasm_ty) =>
+  | MArgBind(i, alloc) =>
     /* No adjustments are needed for argument bindings */
     let typ =
-      switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
+      switch (alloc) {
+      | Types.HeapAllocated
+      | Types.StackAllocated(WasmI32) => Type.int32
+      | Types.StackAllocated(WasmI64) => Type.int64
+      | Types.StackAllocated(WasmF32) => Type.float32
+      | Types.StackAllocated(WasmF64) => Type.float64
       };
     let slot = Int32.to_int(i);
     switch (action) {
@@ -720,33 +795,43 @@ let compile_bind =
     | BindSet(arg) => set_slot(slot, typ, arg)
     | BindTee(arg) => tee_slot(slot, typ, arg)
     };
-  | MLocalBind(i, wasm_ty) =>
+  | MLocalBind(i, alloc) =>
     /* Local bindings need to be offset to account for arguments and swap variables */
     let (typ, slot) =
-      switch (wasm_ty) {
-      | I32Type => (
+      switch (alloc) {
+      | Types.HeapAllocated => (
           Type.int32,
           env.num_args + Array.length(swap_slots) + Int32.to_int(i),
         )
-      | I64Type => (
+      | Types.StackAllocated(WasmI32) => (
+          Type.int32,
+          env.num_args
+          + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
+          + Int32.to_int(i),
+        )
+      | Types.StackAllocated(WasmI64) => (
           Type.int64,
           env.num_args
           + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
           + Int32.to_int(i),
         )
-      | F32Type => (
+      | Types.StackAllocated(WasmF32) => (
           Type.float32,
           env.num_args
           + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
           + env.stack_size.stack_size_i64
           + Int32.to_int(i),
         )
-      | F64Type => (
+      | Types.StackAllocated(WasmF64) => (
           Type.float64,
           env.num_args
           + Array.length(swap_slots)
+          + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
           + env.stack_size.stack_size_i64
           + env.stack_size.stack_size_f32
@@ -761,26 +846,14 @@ let compile_bind =
   | MSwapBind(i, wasm_ty) =>
     /* Swap bindings need to be offset to account for arguments */
     let slot = env.num_args + Int32.to_int(i);
-    let typ =
-      switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
-      };
+    let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => get_slot(slot, typ)
     | BindSet(arg) => set_slot(slot, typ, arg)
     | BindTee(arg) => tee_slot(slot, typ, arg)
     };
   | MGlobalBind(slot, wasm_ty, gc) =>
-    let typ =
-      switch (wasm_ty) {
-      | I32Type => Type.int32
-      | I64Type => Type.int64
-      | F32Type => Type.float32
-      | F64Type => Type.float64
-      };
+    let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet when !gc => Expression.Global_get.make(wasm_mod, slot, typ)
     | BindGet =>
@@ -880,7 +953,7 @@ let safe_drop = (wasm_mod, env, arg) =>
 
 let get_swap =
     (
-      ~ty as typ=I32Type,
+      ~ty as typ=Types.StackAllocated(WasmI32),
       ~skip_incref=true,
       ~skip_decref=true,
       wasm_mod,
@@ -888,7 +961,8 @@ let get_swap =
       idx,
     ) =>
   switch (typ) {
-  | I32Type =>
+  | Types.HeapAllocated
+  | Types.StackAllocated(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -898,9 +972,9 @@ let get_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset), I32Type),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | I64Type =>
+  | Types.StackAllocated(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -910,23 +984,47 @@ let get_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset), I64Type),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | _ => raise(Not_found)
+  | Types.StackAllocated(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindGet,
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.StackAllocated(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindGet,
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
   };
 
 let set_swap =
     (
       ~skip_incref=true,
       ~skip_decref=true,
-      ~ty as typ=I32Type,
+      ~ty as typ=Types.StackAllocated(WasmI32),
       wasm_mod,
       env,
       idx,
       arg,
     ) =>
   switch (typ) {
-  | I32Type =>
+  | Types.HeapAllocated
+  | Types.StackAllocated(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -936,9 +1034,9 @@ let set_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset), I32Type),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | I64Type =>
+  | Types.StackAllocated(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -948,14 +1046,37 @@ let set_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset), I64Type),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | _ => raise(Not_found)
+  | Types.StackAllocated(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindSet(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.StackAllocated(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindSet(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
   };
 
 let tee_swap =
     (
-      ~ty as typ=I32Type,
+      ~ty as typ=Types.StackAllocated(WasmI32),
       ~skip_incref=true,
       ~skip_decref=true,
       wasm_mod,
@@ -964,7 +1085,8 @@ let tee_swap =
       arg,
     ) =>
   switch (typ) {
-  | I32Type =>
+  | Types.HeapAllocated
+  | Types.StackAllocated(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -974,9 +1096,9 @@ let tee_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset), I32Type),
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | I64Type =>
+  | Types.StackAllocated(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -986,29 +1108,52 @@ let tee_swap =
       ~skip_decref,
       wasm_mod,
       env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset), I64Type),
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | _ => raise(Not_found)
+  | Types.StackAllocated(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.StackAllocated(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee(arg),
+      ~skip_incref,
+      ~skip_decref,
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
   };
 
-let cleanup_locals = (wasm_mod, env: codegen_env, arg, rtype): Expression.t => {
+let cleanup_locals =
+    (wasm_mod, env: codegen_env, arg, argtypes, rtype): Expression.t => {
   /* Do the following (if GC is enabled):
         - Move the given argument (the return value) into a swap variable, incrementing its refcount
         - Call decref() on all non-swap locals (should include return value)
         - Return the value in the swap variable (which should now have no net change in its refcount)
      */
-  let ret =
-    if (Config.no_gc^) {
-      arg;
-    } else {
-      Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
-      Concatlist.list_of_t(
-        singleton(set_swap(wasm_mod, env, 0, arg, ~skip_incref=false))
-        @ cleanup_local_slot_instructions(wasm_mod, env)
-        +@ [get_swap(wasm_mod, env, 0)],
-      );
-    };
-  ret;
+  switch (rtype) {
+  | [_] when Config.no_gc^ => arg
+  | [ty] =>
+    Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
+    Concatlist.list_of_t(
+      singleton(set_swap(~ty, wasm_mod, env, 0, arg))
+      @ cleanup_local_slot_instructions(wasm_mod, env, argtypes)
+      +@ [get_swap(~ty, wasm_mod, env, 0)],
+    )
+  | _ => failwith("NYI: multiple return types")
+  };
 };
 
 let compile_imm =
@@ -1047,9 +1192,13 @@ let call_error_handler = (wasm_mod, env, err, args) => {
         Type.create @@
         Array.map(
           wasm_type,
-          Array.of_list([I32Type, ...List.map(_ => I32Type, args)]),
+          Array.of_list([
+            Types.StackAllocated(WasmI32),
+            ...List.map(_ => Types.StackAllocated(WasmI32), args),
+          ]),
         ),
-        Type.create @@ Array.map(wasm_type, Array.of_list([I32Type])),
+        Type.create @@
+        Array.map(wasm_type, Array.of_list([Types.StackAllocated(WasmI32)])),
       );
     };
   Expression.Block.make(
@@ -1661,7 +1810,10 @@ let call_lambda =
           load(~offset=8, wasm_mod, get_func_swap()),
           args,
           Type.create @@
-          Array.map(wasm_type, Array.of_list([I32Type, ...argsty])),
+          Array.map(
+            wasm_type,
+            Array.of_list([Types.StackAllocated(WasmI32), ...argsty]),
+          ),
           retty,
         ),
       ],
@@ -2162,8 +2314,10 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | BoxBind => failwith("Unreachable case; should never get here: BoxBind")
   | UnboxBind =>
     failwith("Unreachable case; should never get here: UnboxBind")
-  | WasmFromGrain
-  | WasmToGrain => compiled_arg // These are no-ops
+  | WasmFromGrain =>
+    // no-op, but don't incref as this value should now be considered a raw i32
+    compile_imm(~skip_incref=true, wasm_mod, env, arg)
+  | WasmToGrain => compiled_arg // no-op
   | WasmMemoryGrow => Expression.Memory_grow.make(wasm_mod, compiled_arg)
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})
@@ -2623,10 +2777,11 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
       // This default value is never used, but is necessary to make the wasm types work out
       let default_value =
         switch (ty) {
-        | I32Type => const_int32(0)
-        | I64Type => const_int64(0)
-        | F32Type => const_float32(0.)
-        | F64Type => const_float64(0.)
+        | Types.HeapAllocated
+        | Types.StackAllocated(WasmI32) => const_int32(0)
+        | Types.StackAllocated(WasmI64) => const_int64(0)
+        | Types.StackAllocated(WasmF32) => const_float32(0.)
+        | Types.StackAllocated(WasmF64) => const_float64(0.)
         };
       let default_value = Expression.Const.make(wasm_mod, default_value);
       let inner_block_body =
@@ -3063,11 +3218,12 @@ let compile_function =
     | None => compile_block(wasm_mod, body_env, body_instrs)
     };
   let inner_body =
-    cleanup_locals(wasm_mod, body_env, inner_body, return_type);
+    cleanup_locals(wasm_mod, body_env, inner_body, args, return_type);
   let body = Expression.Return.make(wasm_mod, inner_body);
   let locals =
     [
       swap_slots,
+      Array.make(stack_size.stack_size_ptr, Type.int32),
       Array.make(stack_size.stack_size_i32, Type.int32),
       Array.make(stack_size.stack_size_i64, Type.int64),
       Array.make(stack_size.stack_size_f32, Type.float32),
@@ -3113,14 +3269,6 @@ let compute_table_size = (env, {functions}) => {
 };
 
 let compile_imports = (wasm_mod, env, {imports}) => {
-  let compile_asm_type = t =>
-    switch (t) {
-    | I32Type => Type.int32
-    | I64Type => Type.int64
-    | F32Type => Type.float32
-    | F64Type => Type.float64
-    };
-
   let compile_module_name = name =>
     fun
     | MImportWasm => Ident.name(name)
@@ -3151,7 +3299,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
       )
     | (_, MFuncImport(args, ret)) =>
       let proc_list = l =>
-        Type.create @@ Array.of_list @@ List.map(compile_asm_type, l);
+        Type.create @@ Array.of_list @@ List.map(wasm_type, l);
       Import.add_function_import(
         wasm_mod,
         internal_name,
@@ -3161,7 +3309,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
         proc_list(ret),
       );
     | (_, MGlobalImport(typ, mut)) =>
-      let typ = compile_asm_type(typ);
+      let typ = wasm_type(typ);
       Import.add_global_import(
         wasm_mod,
         internal_name,
@@ -3278,10 +3426,11 @@ let compile_tables = (wasm_mod, env, {functions}) => {
 let compile_globals = (wasm_mod, env, {globals} as prog) => {
   let initial_value =
     fun
-    | I32Type => const_int32(0)
-    | I64Type => const_int64(0)
-    | F32Type => const_float32(0.)
-    | F64Type => const_float64(0.);
+    | Types.HeapAllocated
+    | Types.StackAllocated(WasmI32) => const_int32(0)
+    | Types.StackAllocated(WasmI64) => const_int64(0)
+    | Types.StackAllocated(WasmF32) => const_float32(0.)
+    | Types.StackAllocated(WasmF64) => const_float64(0.);
   List.iter(
     ((i, ty)) =>
       ignore @@
@@ -3369,7 +3518,7 @@ let compile_main = (wasm_mod, env, prog) => {
       id: Ident.create(grain_main),
       name: Some(grain_main),
       args: [],
-      return_type: [I32Type],
+      return_type: [Types.StackAllocated(WasmI32)],
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
       attrs: [],
