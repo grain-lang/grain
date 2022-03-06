@@ -142,7 +142,7 @@ export let length = buffer => buffer.len
  * @since v0.4.0
  */
 export let clear = buffer => {
-  Bytes.fill(0x0l, buffer.data)
+  Bytes.clear(buffer.data)
   buffer.len = 0
 }
 

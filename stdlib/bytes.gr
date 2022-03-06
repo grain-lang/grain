@@ -313,6 +313,21 @@ export let fill = (value: Int32, bytes: Bytes) => {
 }
 
 /**
+ * Replaces all bytes in a byte sequence with zeroes.
+ *
+ * @param bytes: The byte sequence to clear
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let clear = (bytes: Bytes) => {
+  let (+) = WasmI32.add
+  let src = WasmI32.fromGrain(bytes)
+  let size = getSize(src)
+  Memory.fill(src + _VALUE_OFFSET, 0n, size)
+}
+
+/**
  * @section Binary operations on integers: Functions for encoding and decoding integers stored in a byte sequence.
  */
 
