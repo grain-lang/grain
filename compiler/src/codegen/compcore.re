@@ -504,30 +504,31 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => 
     );
   flatten(List.append(arg_instrs, stack_instrs));
 };
-let appropriate_incref = (wasm_mod, env, arg, b) =>
+let should_refcount = b =>
   switch (b) {
   | MArgBind(_, Types.HeapAllocated)
   | MLocalBind(_, Types.HeapAllocated)
   | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated) => call_incref(wasm_mod, env, arg)
+  | MGlobalBind(_, Types.HeapAllocated) => true
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
-  | MGlobalBind(_) => arg
+  | MGlobalBind(_) => false
+  };
+
+let appropriate_incref = (wasm_mod, env, arg, b) =>
+  if (should_refcount(b)) {
+    call_incref(wasm_mod, env, arg);
+  } else {
+    arg;
   };
 
 let appropriate_decref = (wasm_mod, env, arg, b) =>
-  switch (b) {
-  | MArgBind(_, Types.HeapAllocated)
-  | MLocalBind(_, Types.HeapAllocated)
-  | MSwapBind(_, Types.HeapAllocated)
-  | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated) => call_decref(wasm_mod, env, arg)
-  | MArgBind(_)
-  | MLocalBind(_)
-  | MSwapBind(_)
-  | MGlobalBind(_) => arg
+  if (should_refcount(b)) {
+    call_decref(wasm_mod, env, arg);
+  } else {
+    arg;
   };
 
 let compile_bind =
@@ -564,40 +565,48 @@ let compile_bind =
     Expression.Local_set.make(
       wasm_mod,
       slot,
-      Expression.Tuple_extract.make(
-        wasm_mod,
-        Expression.Tuple_make.make(
+      if (should_refcount(b)) {
+        Expression.Tuple_extract.make(
           wasm_mod,
-          [
-            arg,
-            appropriate_decref(
-              env,
-              Expression.Local_get.make(wasm_mod, slot, typ),
-            ),
-          ],
-        ),
-        0,
-      ),
+          Expression.Tuple_make.make(
+            wasm_mod,
+            [
+              arg,
+              appropriate_decref(
+                env,
+                Expression.Local_get.make(wasm_mod, slot, typ),
+              ),
+            ],
+          ),
+          0,
+        );
+      } else {
+        arg;
+      },
     );
   };
   let tee_slot = (slot, typ, arg) => {
     Expression.Local_tee.make(
       wasm_mod,
       slot,
-      Expression.Tuple_extract.make(
-        wasm_mod,
-        Expression.Tuple_make.make(
+      if (should_refcount(b)) {
+        Expression.Tuple_extract.make(
           wasm_mod,
-          [
-            arg,
-            appropriate_decref(
-              env,
-              Expression.Local_get.make(wasm_mod, slot, typ),
-            ),
-          ],
-        ),
-        0,
-      ),
+          Expression.Tuple_make.make(
+            wasm_mod,
+            [
+              arg,
+              appropriate_decref(
+                env,
+                Expression.Local_get.make(wasm_mod, slot, typ),
+              ),
+            ],
+          ),
+          0,
+        );
+      } else {
+        arg;
+      },
       typ,
     );
   };
