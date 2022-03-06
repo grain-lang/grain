@@ -191,12 +191,7 @@ export let truncate = (length, buffer) => {
  * @since v0.4.0
  */
 export let toBytes = buffer => {
-  let len = Bytes.length(buffer.data)
-  if (buffer.len == len) {
-    buffer.data
-  } else {
-    Bytes.slice(0, buffer.len, buffer.data)
-  }
+  Bytes.slice(0, buffer.len, buffer.data)
 }
 
 /**
