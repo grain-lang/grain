@@ -16,14 +16,9 @@ arrays › array1_trailing
   (local $0 i32)
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 20)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 20)
     )
    )
    (i32.const 4)
@@ -44,12 +39,7 @@ arrays › array1_trailing
    (local.get $0)
    (i32.const 7)
   )
-  (tuple.extract 0
-   (tuple.make
-    (local.get $0)
-    (local.get $0)
-   )
-  )
+  (local.get $0)
  )
  (func $_start (; has Stack IR ;)
   (drop

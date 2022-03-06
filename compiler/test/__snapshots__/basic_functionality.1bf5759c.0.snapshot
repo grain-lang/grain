@@ -27,12 +27,7 @@ basic functionality › unsafe_wasm_globals
   (drop
    (call_indirect (type $i32_i32_=>_i32)
     (local.tee $0
-     (tuple.extract 0
-      (tuple.make
-       (global.get $gimport_runtime/unsafe/printWasm_printI32)
-       (i32.const 0)
-      )
-     )
+     (global.get $gimport_runtime/unsafe/printWasm_printI32)
     )
     (global.get $gimport_unsafeWasmGlobalsExports__I32_VAL)
     (i32.load offset=8
@@ -43,12 +38,7 @@ basic functionality › unsafe_wasm_globals
   (drop
    (call_indirect (type $i32_i64_=>_i32)
     (local.tee $0
-     (tuple.extract 0
-      (tuple.make
-       (global.get $gimport_runtime/unsafe/printWasm_printI64)
-       (local.get $0)
-      )
-     )
+     (global.get $gimport_runtime/unsafe/printWasm_printI64)
     )
     (global.get $gimport_unsafeWasmGlobalsExports__I64_VAL)
     (i32.load offset=8
@@ -59,12 +49,7 @@ basic functionality › unsafe_wasm_globals
   (drop
    (call_indirect (type $i32_f32_=>_i32)
     (local.tee $0
-     (tuple.extract 0
-      (tuple.make
-       (global.get $gimport_runtime/unsafe/printWasm_printF32)
-       (local.get $0)
-      )
-     )
+     (global.get $gimport_runtime/unsafe/printWasm_printF32)
     )
     (global.get $gimport_unsafeWasmGlobalsExports__F32_VAL)
     (i32.load offset=8
@@ -74,12 +59,7 @@ basic functionality › unsafe_wasm_globals
   )
   (call_indirect (type $i32_f64_=>_i32)
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (global.get $gimport_runtime/unsafe/printWasm_printF64)
-      (local.get $0)
-     )
-    )
+    (global.get $gimport_runtime/unsafe/printWasm_printF64)
    )
    (global.get $gimport_unsafeWasmGlobalsExports__F64_VAL)
    (i32.load offset=8
