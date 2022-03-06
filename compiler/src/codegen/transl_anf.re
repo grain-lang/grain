@@ -260,8 +260,8 @@ module RegisterAllocation = {
       | MSet(b, i) =>
         MSet(apply_allocation_to_bind(b), apply_allocations(ty, allocs, i))
       | MAllocate(x) => MAllocate(x)
-      | MDrop(i) => MDrop(apply_allocations(ty, allocs, i))
-      | MIncRef(i) => MDrop(apply_allocations(ty, allocs, i))
+      | MDrop(i, a) => MDrop(apply_allocations(ty, allocs, i), a)
+      | MIncRef(i) => MIncRef(apply_allocations(ty, allocs, i))
       | MTracepoint(x) => MTracepoint(x)
       };
     {...instr, instr_desc: desc};
@@ -293,7 +293,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let rec live_locals = instr =>
     switch (instr.instr_desc) {
     | MIncRef(i)
-    | MDrop(i) => live_locals(i)
+    | MDrop(i, _) => live_locals(i)
     | MImmediate(imm)
     | MTagOp(_, _, imm)
     | MArityOp(_, _, imm)
@@ -892,7 +892,10 @@ let rec compile_comp = (~id=?, env, c) => {
 and compile_anf_expr = (env, a) =>
   switch (a.anf_desc) {
   | AESeq(hd, tl) => [
-      {instr_desc: MDrop(compile_comp(env, hd)), instr_loc: hd.comp_loc},
+      {
+        instr_desc: MDrop(compile_comp(env, hd), hd.comp_allocation_type),
+        instr_loc: hd.comp_loc,
+      },
       ...compile_anf_expr(env, tl),
     ]
   | AELet(global, recflag, mutflag, binds, body) =>

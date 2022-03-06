@@ -2854,11 +2854,15 @@ and compile_block = (~return_type=?, wasm_mod, env, block) => {
 }
 and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
-  | MDrop(arg) =>
-    Expression.Drop.make(
-      wasm_mod,
-      call_decref(wasm_mod, env, compile_instr(wasm_mod, env, arg)),
-    )
+  | MDrop(arg, ty) =>
+    switch (ty) {
+    | HeapAllocated =>
+      Expression.Drop.make(
+        wasm_mod,
+        call_decref(wasm_mod, env, compile_instr(wasm_mod, env, arg)),
+      )
+    | _ => Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
+    }
   | MIncRef(arg) =>
     switch (arg.instr_desc) {
     | MImmediate(MImmBinding(bind)) =>
