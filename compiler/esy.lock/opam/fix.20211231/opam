@@ -1,3 +1,4 @@
+
 opam-version: "2.0"
 maintainer: "francois.pottier@inria.fr"
 authors: [
@@ -14,12 +15,12 @@ depends: [
   "ocaml" { >= "4.03" }
   "dune" { >= "1.3" }
 ]
-synopsis: "Facilities for memoization and fixed points"
+synopsis: "Algorithmic building blocks for memoization, recursion, and more"
 url {
   src:
-    "https://gitlab.inria.fr/fpottier/fix/-/archive/20211125/archive.tar.gz"
+    "https://gitlab.inria.fr/fpottier/fix/-/archive/20211231/archive.tar.gz"
   checksum: [
-    "md5=d3d316080a2fc9a4f56c15040e141364"
-    "sha512=850cf0d3c6db806ac1d0b9bf39ad82529aecd56af07b2b421f48af15afdeab493f7b73e5d9e7d492e56717a8aeeb61466d87ac8a51fac30e3f77028b5ecd57c4"
+    "md5=0f633b0cdd5faba947d11da113c81fcc"
+    "sha512=6817ce5c79e0c957ef01def7b89059262414af8e8bc7ffafef96430cfb1d78e32350fe7a57e118e68727962338c4fc45023cddb1c4db8c344910d6c8c1873a18"
   ]
 }

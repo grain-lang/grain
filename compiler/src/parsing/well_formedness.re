@@ -384,6 +384,7 @@ type known_attribute = {
 
 let known_attributes = [
   {name: "disableGC", arity: 0},
+  {name: "unsafe", arity: 0},
   {name: "externalName", arity: 1},
 ];
 

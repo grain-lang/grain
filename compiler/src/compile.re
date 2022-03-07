@@ -119,20 +119,32 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
   let cstate_desc =
     switch (cstate_desc) {
     | Initial(input) =>
-      let (name, lexbuf, cleanup) =
+      let (name, lexbuf, source, cleanup) =
         switch (input) {
         | InputString(str) => (
             cs.cstate_filename,
             Lexing.from_string(str),
+            (() => str),
             (() => ()),
           )
         | InputFile(name) =>
           let ic = open_in(name);
-          (Some(name), Lexing.from_channel(ic), (() => close_in(ic)));
+          let source = () => {
+            let ic = open_in_bin(name);
+            let source = really_input_string(ic, in_channel_length(ic));
+            close_in(ic);
+            source;
+          };
+          (
+            Some(name),
+            Lexing.from_channel(ic),
+            source,
+            (() => close_in(ic)),
+          );
         };
 
       let parsed =
-        try(Driver.parse(~name?, lexbuf)) {
+        try(Driver.parse(~name?, lexbuf, source)) {
         | _ as e =>
           cleanup();
           raise(e);

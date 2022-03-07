@@ -19,9 +19,4 @@ describe("lists", ({test}) => {
   assertSnapshot("list1_trailing", "[1, 2, 3,]");
   assertSnapshot("list1_trailing_space", "[1, 2, 3, ]");
   assertCompileError("invalid_empty_trailing", "[,]", "Error: Syntax error");
-  assertCompileError(
-    "invalid_list_spread_trailing",
-    "let a = [3, 4]; [1, 2, ...a,]",
-    "Error: Syntax error",
-  );
 });

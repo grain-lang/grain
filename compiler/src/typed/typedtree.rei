@@ -29,6 +29,7 @@ type attributes = list(attribute)
 [@deriving sexp]
 and attribute =
   | Disable_gc
+  | Unsafe
   | External_name(string);
 
 type partial =
@@ -173,8 +174,31 @@ type wasm_op =
     | Op_gt_float64
     | Op_ge_float64;
 
+type prim0 =
+  Parsetree.prim0 =
+    | AllocateInt32
+    | AllocateInt64
+    | AllocateFloat32
+    | AllocateFloat64
+    | AllocateRational;
+
 type prim1 =
   Parsetree.prim1 =
+    | AllocateArray
+    | AllocateTuple
+    | AllocateBytes
+    | AllocateString
+    | NewInt32
+    | NewInt64
+    | NewFloat32
+    | NewFloat64
+    | LoadAdtVariant
+    | StringSize
+    | BytesSize
+    | TagSimpleNumber
+    | UntagSimpleNumber
+    | TagChar
+    | UntagChar
     | Not
     | Box
     | Unbox
@@ -210,6 +234,7 @@ type prim1 =
 
 type prim2 =
   Parsetree.prim2 =
+    | NewRational
     | Is
     | Eq
     | And
@@ -395,6 +420,7 @@ and expression_desc =
     )
   | TExpLet(rec_flag, mut_flag, list(value_binding))
   | TExpMatch(expression, list(match_branch), partial)
+  | TExpPrim0(prim0)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)
   | TExpPrimN(primn, list(expression))

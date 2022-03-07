@@ -174,7 +174,7 @@ let initial_env = (add_type, empty_env) =>
   |> add_type(ident_bool, decl_bool)
   |> add_type(ident_box, decl_box)
   |> add_type(ident_string, decl_abstr(path_string))
-  |> add_type(ident_char, decl_abstr(path_char))
+  |> add_type(ident_char, decl_abstr_imm(WasmI32, path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
   |> add_type(ident_fd, decl_abstr(path_fd))

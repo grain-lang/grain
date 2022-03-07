@@ -9,11 +9,12 @@
  */
 
 import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
 import Errors from "runtime/unsafe/errors"
+import Tags from "runtime/unsafe/tags"
 import {
   tagSimpleNumber,
-  allocateChar,
+  tagChar,
+  untagChar,
   allocateString,
 } from "runtime/dataStructures"
 
@@ -58,71 +59,13 @@ export let isValid = charCode => {
  * 
  * @since 0.3.0
  */
-@disableGC
-export let rec code = (char: Char) => {
-  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
+@unsafe
+export let code = (char: Char) => {
+  let usv = untagChar(char)
 
-  let char = WasmI32.fromGrain(char)
-
-  let (+) = WasmI32.add
-  let (==) = WasmI32.eq
-  let (>=) = WasmI32.geU
-  let (<=) = WasmI32.leU
-  let (<<) = WasmI32.shl
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
-
-  let mut codePoint = 0n
-  let mut bytesSeen = 0n
-  let mut bytesNeeded = 0n
-  let mut lowerBoundary = 0x80n
-  let mut upperBoundary = 0xBFn
-
-  let mut offset = 0n
-
-  let mut result = 0n
-
-  while (true) {
-    let byte = WasmI32.load8U(char + offset, 4n)
-    offset += 1n
-    if (bytesNeeded == 0n) {
-      if (byte >= 0x00n && byte <= 0x7Fn) {
-        result = byte
-        break
-      } else if (byte >= 0xC2n && byte <= 0xDFn) {
-        bytesNeeded = 1n
-        codePoint = byte & 0x1Fn
-      } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n) lowerBoundary = 0xA0n
-        if (byte == 0xEDn) upperBoundary = 0x9Fn
-        bytesNeeded = 2n
-        codePoint = byte & 0xFn
-      } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n) lowerBoundary = 0x90n
-        if (byte == 0xF4n) upperBoundary = 0x8Fn
-        bytesNeeded = 3n
-        codePoint = byte & 0x7n
-      } else {
-        throw MalformedUtf8
-      }
-      continue
-    }
-    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
-      throw MalformedUtf8
-    }
-    lowerBoundary = 0x80n
-    upperBoundary = 0xBFn
-    codePoint = codePoint << 6n | byte & 0x3Fn
-    bytesSeen += 1n
-    if (bytesSeen == bytesNeeded) {
-      result = codePoint
-      break
-    }
-  }
-
-  Memory.decRef(char)
-  Memory.decRef(WasmI32.fromGrain(code))
-  tagSimpleNumber(result)
+  // This could save an instruction by combining the two tagging operations,
+  // though we stick with tagSimpleNumber for simplicity.
+  tagSimpleNumber(usv)
 }
 
 /**
@@ -134,62 +77,26 @@ export let rec code = (char: Char) => {
  * 
  * @since 0.3.0
  */
-@disableGC
-export let rec fromCode = (usv: Number) => {
-  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-encoder
-
-  let (+) = WasmI32.add
+@unsafe
+export let fromCode = (usv: Number) => {
   let (-) = WasmI32.sub
-  let (*) = WasmI32.mul
-  let (==) = WasmI32.eq
-  let (>) = WasmI32.gtU
-  let (<=) = WasmI32.leU
-  let (<) = WasmI32.ltU
-  let (>>>) = WasmI32.shrU
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
+  let (<<) = WasmI32.shl
 
-  let usv = WasmI32.fromGrain(usv)
-  if ((usv & 1n) == 0n) {
+  if (!isValid(usv)) {
     throw InvalidArgument("Invalid character code")
   }
 
-  let usv = usv >>> 1n
-  let result = if (usv < 0x80n) {
-    let char = allocateChar()
-    WasmI32.store8(char, usv, 4n)
-    WasmI32.toGrain(char): Char
-  } else {
-    let mut count = 0n
-    let mut offset = 0n
-    if (usv <= 0x07FFn) {
-      count = 1n
-      offset = 0xC0n
-    } else if (usv <= 0xFFFFn) {
-      count = 2n
-      offset = 0xE0n
-    } else {
-      count = 3n
-      offset = 0xF0n
-    }
-    let char = allocateChar()
-    WasmI32.store8(char, (usv >>> 6n * count) + offset, 4n)
+  // usv is now guaranteed to be a simple number
+  let usv = WasmI32.fromGrain(usv)
 
-    let mut n = 0n
-    while (count > 0n) {
-      n += 1n
-      let temp = usv >>> 6n * (count - 1n)
-      WasmI32.store8(char + n, 0x80n | temp & 0x3Fn, 4n)
-      count -= 1n
-    }
+  // Here we use a math trick to avoid fully untagging and retagging.
+  // Simple numbers are represented as 2n + 1 and chars are represented as
+  // 8n + 2. Quick reminder that shifting left is the equivalent of multiplying
+  // by 2, and that _GRAIN_CHAR_TAG_TYPE is equal to 2:
+  // 4(2n + 1) - 2 = 8n + 2
+  let char = (usv << 2n) - Tags._GRAIN_CHAR_TAG_TYPE
 
-    WasmI32.toGrain(char): Char
-  }
-
-  // We've asserted that the original `code` was a stack allocated number so
-  // no need to decRef it
-  Memory.decRef(WasmI32.fromGrain(fromCode))
-  result
+  WasmI32.toGrain(char): Char
 }
 
 /**
@@ -240,27 +147,50 @@ export let pred = char => {
  * 
  * @since 0.3.0
  */
-@disableGC
-export let rec toString = (char: Char) => {
+@unsafe
+export let toString = (char: Char) => {
   let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (*) = WasmI32.mul
   let (&) = WasmI32.and
-  let (==) = WasmI32.eq
+  let (|) = WasmI32.or
+  let (>>>) = WasmI32.shrU
+  let (<) = WasmI32.ltU
+  let (>) = WasmI32.gtU
+  let (<=) = WasmI32.leU
 
-  let char = WasmI32.fromGrain(char)
-  let byte = WasmI32.load8U(char, 4n)
-  let n = if ((byte & 0x80n) == 0x00n) {
-    1n
-  } else if ((byte & 0xF0n) == 0xF0n) {
-    4n
-  } else if ((byte & 0xE0n) == 0xE0n) {
-    3n
+  let usv = untagChar(char)
+
+  let result = if (usv < 0x80n) {
+    let string = allocateString(1n)
+    WasmI32.store8(string, usv, 8n)
+    WasmI32.toGrain(string): String
   } else {
-    2n
+    let mut count = 0n
+    let mut offset = 0n
+    if (usv <= 0x07FFn) {
+      count = 1n
+      offset = 0xC0n
+    } else if (usv <= 0xFFFFn) {
+      count = 2n
+      offset = 0xE0n
+    } else {
+      count = 3n
+      offset = 0xF0n
+    }
+    let string = allocateString(count + 1n)
+    WasmI32.store8(string, (usv >>> 6n * count) + offset, 8n)
+
+    let mut n = 0n
+    while (count > 0n) {
+      n += 1n
+      let temp = usv >>> 6n * (count - 1n)
+      WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
+      count -= 1n
+    }
+
+    WasmI32.toGrain(string): String
   }
-  let str = allocateString(n)
-  Memory.copy(str + 8n, char + 4n, n)
-  let ret = WasmI32.toGrain(str): String
-  Memory.decRef(WasmI32.fromGrain(char))
-  Memory.decRef(WasmI32.fromGrain(toString))
-  ret
+
+  result
 }

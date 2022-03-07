@@ -939,6 +939,7 @@ let transl_value_decl = (env, loc, valdecl) => {
         Types.val_loc: loc,
         val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
         val_mutable: false,
+        val_global: true,
       }
     | _ => {
         val_type: ty,
@@ -947,6 +948,7 @@ let transl_value_decl = (env, loc, valdecl) => {
         Types.val_loc: loc,
         val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
         val_mutable: false,
+        val_global: true,
       }
     };
 

@@ -533,7 +533,7 @@ No other changes yet.
 </details>
 
 ```grain
-( or ) : (Option<a>, Option<a>) -> Option<a>
+or : (Option<a>, Option<a>) -> Option<a>
 ```
 
 Behaves like a logical OR (`||`) where the first Option is only returned if it is the `Some` variant and falling back to the second Option in all other cases.

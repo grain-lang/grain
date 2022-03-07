@@ -68,6 +68,7 @@ module E = {
     | PExpMatch(e, mbs) =>
       sub.expr(sub, e);
       List.iter(sub.match_branch(sub), mbs);
+    | PExpPrim0(p0) => ()
     | PExpPrim1(p1, e) => sub.expr(sub, e)
     | PExpPrim2(p2, e1, e2) =>
       sub.expr(sub, e1);

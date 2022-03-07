@@ -588,6 +588,7 @@ let type_attributes = attrs => {
     (({txt}, args)) =>
       switch (txt, args) {
       | ("disableGC", []) => Disable_gc
+      | ("unsafe", []) => Unsafe
       | ("externalName", [{txt}]) => External_name(txt)
       | _ => failwith("type_attributes: impossible by well-formedness")
       },

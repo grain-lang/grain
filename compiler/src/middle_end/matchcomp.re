@@ -317,7 +317,8 @@ module MatchTreeCompiler = {
     List.fold_right(
       (bind, body) =>
         switch (bind) {
-        | BLet(name, exp) => AExp.let_(Nonrecursive, [(name, exp)], body)
+        | BLet(name, exp, global) =>
+          AExp.let_(~global, Nonrecursive, [(name, exp)], body)
         | _ =>
           failwith("match_comp: compile_tree_help: bindings were not BLet")
         },
@@ -350,7 +351,7 @@ module MatchTreeCompiler = {
         };
       let bindings =
         List.map(
-          ((id, expr)) => BLet(id, expr),
+          ((id, expr)) => BLet(id, expr, Nonglobal),
           extract_bindings(
             mb.mb_pat,
             Comp.imm(
@@ -399,6 +400,7 @@ module MatchTreeCompiler = {
                   Int32.of_int(idx),
                   cur_value,
                 ),
+                Nonglobal,
               );
             },
           )
@@ -416,6 +418,7 @@ module MatchTreeCompiler = {
                   Int32.of_int(idx),
                   cur_value,
                 ),
+                Nonglobal,
               );
             },
           )
@@ -433,6 +436,7 @@ module MatchTreeCompiler = {
                   ),
                   cur_value,
                 ),
+                Nonglobal,
               );
             },
           )
@@ -447,6 +451,7 @@ module MatchTreeCompiler = {
                   Int32.of_int(label_pos),
                   cur_value,
                 ),
+                Nonglobal,
               );
             },
             Array.to_list(label_poses),
@@ -456,7 +461,7 @@ module MatchTreeCompiler = {
       let new_values =
         List.map(
           fun
-          | BLet(id, _) => Imm.id(id)
+          | BLet(id, _, _) => Imm.id(id)
           | _ =>
             failwith("matchcomp: compile_tree_help: binding was not BLet"),
           bindings,
@@ -503,6 +508,7 @@ module MatchTreeCompiler = {
                     Const_number(Const_number_int(Int64.of_int(tag))),
                   ),
                 ),
+                Nonglobal,
               ),
             ];
             let (tree_ans, tree_setup) =
@@ -521,7 +527,10 @@ module MatchTreeCompiler = {
         );
       (
         switch_body_ans,
-        [BLet(value_constr_name, value_constr), ...switch_body_setup],
+        [
+          BLet(value_constr_name, value_constr, Nonglobal),
+          ...switch_body_setup,
+        ],
       );
     };
   };
@@ -534,7 +543,7 @@ module MatchTreeCompiler = {
       prerr_newline();*/
     let (ans, setup) = compile_tree_help(tree, [expr], expr, helpI);
     let jmp_name = Ident.create("match_dest");
-    let setup = setup @ [BLet(jmp_name, ans)];
+    let setup = setup @ [BLet(jmp_name, ans, Nonglobal)];
     let switch_branches =
       List.map(
         ((tag, branch, orig_pat)) =>
@@ -917,6 +926,7 @@ let prepare_match_branches = (env, branches) => {
       val_kind: TValReg,
       val_fullpath: PIdent(id),
       val_mutable: false,
+      val_global: false,
       val_loc: Location.dummy_loc,
     };
     let make_expr = (~ty=Builtin_types.type_bool, desc, env, loc) => {

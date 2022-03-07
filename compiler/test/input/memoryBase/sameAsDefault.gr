@@ -1,0 +1,6 @@
+/* grainc-flags --memory-base 0x400 */
+enum Thing {
+  HelloWorld,
+}
+
+print(HelloWorld)
