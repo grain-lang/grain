@@ -1,6 +1,7 @@
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
 import Exception from "runtime/exception"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 import Conv from "runtime/unsafe/conv"
@@ -17,19 +18,27 @@ import Conv from "runtime/unsafe/conv"
 // TODO: use faster abs algos
 // https://stackoverflow.com/questions/664852/which-is-the-fastest-way-to-get-the-absolute-value-of-a-number
 
-@disableGC
-let absi32 = (n) => {
-  let (<) = WasmI32.lt
-  if (n < 0n) { -n } else { n }
+@unsafe
+let absi32 = n => {
+  let (<) = WasmI32.ltS
+  if (n < 0n) {
+    WasmI32.mul(n, -1n)
+  } else {
+    n
+  }
 }
 
-@disableGC
-let absi64 = (n) => {
-  let (<) = WasmI64.lt
-  if (n < 0N) { -n } else { n }
+@unsafe
+let absi64 = n => {
+  let (<) = WasmI64.ltS
+  if (n < 0N) {
+    WasmI64.mul(n, -1n)
+  } else {
+    n
+  }
 }
 
-@disableGC
+@unsafe
 let init = (limbs: WasmI32) => {
   let (+) = WasmI32.add
   let (*) = WasmI32.mul
@@ -53,53 +62,57 @@ let init = (limbs: WasmI32) => {
   ptr
 }
 
-@disableGC
-let getSize = (ptr) => {
+@unsafe
+let getSize = ptr => {
   WasmI32.load(ptr, 4n)
 }
 
-@disableGC
+@unsafe
 let setSize = (ptr, n) => {
   WasmI32.store(ptr, n, 4n)
 }
 
-@disableGC
+@unsafe
 let getInt64 = (ptr, i) => {
   let (*) = WasmI32.mul
   WasmI64.load(ptr, i * 8n)
 }
 
-@disableGC
+@unsafe
 let setInt64 = (ptr, i, v) => {
   let (*) = WasmI32.mul
   WasmI64.store(ptr, v, i * 8n)
 }
 
-@disableGC
+@unsafe
 let toref = (ptr: WasmI32) => {
   let ref = Memory.malloc(4n)
   Memory.store(ref, ptr, 4n)
   ref
 }
 
-@disableGC
+@unsafe
 let deref = (ref: WasmI32) => {
   WasmI32.load(ref, 0n)
 }
 
-@disableGC
+@unsafe
 let setref = (ref: WasmI32, ptr: WasmI32) => {
   Memory.free(WasmI32.load(ref, 0n))
   WasmI32.set(ref, ptr, 0n)
 }
 
-@disableGC
+@unsafe
 let realloc = (ref: WasmI32, size: WasmI32) => {
   let (+) = WasmI32.add
   let (>) = WasmI32.gt
 
   let r = deref(ref)
-  let size = if (size > 0n) { size } else { 1n }
+  let size = if (size > 0n) {
+    size
+  } else {
+    1n
+  }
 
   if (getSize(r) > 0n) {
     setref(init(size))
@@ -108,12 +121,12 @@ let realloc = (ref: WasmI32, size: WasmI32) => {
   deref(ref) + 8n
 }
 
-@disableGC
+@unsafe
 let normalizedSize = (xp, n) => {
   let (-) = WasmI32.sub
   let (>) = WasmI32.gt
   let (==) = WasmI32.eq
-  let mut n_ = n;
+  let mut n_ = n
 
   while (n_ > 0n && Wasm.load(xp, n_ - 1) == 0n) {
     n_ -= 1
@@ -122,13 +135,17 @@ let normalizedSize = (xp, n) => {
   n_
 }
 
-@disableGC
+@unsafe
 export let rec fromInt32 = (n: Int32) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
 
   let v = Conv.fromInt32(n)
-  let len = if (v < 0n) { -1n } else { 1n }
+  let len = if (v < 0n) {
+    -1n
+  } else {
+    1n
+  }
 
   let ptr = init(len)
   setInt64(ptr + 8n, 0n, WasmI64.extendI32U(v))
@@ -136,13 +153,17 @@ export let rec fromInt32 = (n: Int32) => {
   WasmI32.toGrain(ptr): BigInt
 }
 
-@disableGC
+@unsafe
 export let rec fromInt64 = (n: Int64) => {
   let (+) = WasmI32.add
   let (<) = WasmI64.lt
 
   let v = Conv.fromInt64(n)
-  let len = if (v < 0N) { -1n } else { 1n }
+  let len = if (v < 0N) {
+    -1n
+  } else {
+    1n
+  }
 
   let ptr = init(len)
   setInt64(ptr + 8n, 0n, absi64(v))
@@ -150,12 +171,12 @@ export let rec fromInt64 = (n: Int64) => {
   WasmI32.toGrain(ptr): BigInt
 }
 
-@disableGC
+@unsafe
 let addN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
 
-  let mut cy = 0N;
+  let mut cy = 0N
   for (let mut i = 0n; i < n; i += 1n) {
     let (+) = WasmI64.add
     let (*) = WasmI64.mul
@@ -164,9 +185,17 @@ let addN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
     let mut a = getInt64(ap, i)
     let mut b = getInt64(bp, i)
     let mut r = a + cy
-    cy = if (r < cy) { 1N } else { 0N }
+    cy = if (r < cy) {
+      1N
+    } else {
+      0N
+    }
     r += b
-    cy += if (r < b) { 1N } else { 0N }
+    cy += if (r < b) {
+        1N
+      } else {
+        0N
+      }
 
     setInt64(rp, i, r)
   }
@@ -174,18 +203,22 @@ let addN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
   cy
 }
 
-@disableGC
+@unsafe
 let add1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
 
-  let mut b_ = b;
+  let mut b_ = b
   for (let mut i = 0n; i < n; i += 1n) {
     let (+) = WasmI64.add
     let (<) = WasmI64.lt
 
     let r = getInt64(ap, i) + b
-    b_ = if (r < b_) { 1N } else { 0N }
+    b_ = if (r < b_) {
+      1N
+    } else {
+      0N
+    }
 
     setInt64(rp, i, r)
   }
@@ -193,7 +226,7 @@ let add1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
   b_
 }
 
-@disableGC
+@unsafe
 let absAdd = (rref, a, b) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
@@ -203,7 +236,11 @@ let absAdd = (rref, a, b) => {
   let an = absi32(getSize(a))
   let bn = absi32(getSize(b))
 
-  let max = if (an >= bn) { an } else { bn }
+  let max = if (an >= bn) {
+    an
+  } else {
+    bn
+  }
   let mut r = deref(rref)
 
   let mut rp = r + 8n
@@ -225,12 +262,12 @@ let absAdd = (rref, a, b) => {
   an + WasmI32.wrapI64(cy)
 }
 
-@disableGC
+@unsafe
 let cmp = (ap, bp, n) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
 
-  let mut res = 0n;
+  let mut res = 0n
   for (let mut i = 0n; i < n; i += 1n) {
     let (!=) = WasmI64.ne
     let (>) = WasmI64.gt
@@ -239,7 +276,11 @@ let cmp = (ap, bp, n) => {
     let b = getInt64(abp, i)
 
     if (a != b) {
-      res = if (a > b) { 1n } else { -1n }
+      res = if (a > b) {
+        1n
+      } else {
+        -1n
+      }
       break
     }
   }
@@ -247,24 +288,28 @@ let cmp = (ap, bp, n) => {
   res
 }
 
-@disableGC
+@unsafe
 let cmp4 = (ap, an, bp, bn) => {
   let (<) = WasmI32.lt
   let (!=) = WasmI32.ne
 
   if (an != bn) {
-    if (an < bn) { -1n } else { 1n }
+    if (an < bn) {
+      -1n
+    } else {
+      1n
+    }
   } else {
     cmp(ap, bp, an)
   }
 }
 
-@disableGC
+@unsafe
 let subN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
 
-  let mut cy = 0N;
+  let mut cy = 0N
   for (let mut i = 0n; i < n; i += 1n) {
     let (-) = WasmI64.sub
     let (+) = WasmI64.add
@@ -274,8 +319,16 @@ let subN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
     let mut b = getInt64(bp, i)
 
     b += cy
-    cy = if (b < cy) { 1N } else { 0N }
-    cy += if (a < b) { 1N } else { 0N }
+    cy = if (b < cy) {
+      1N
+    } else {
+      0N
+    }
+    cy += if (a < b) {
+        1N
+      } else {
+        0N
+      }
 
     setInt64(rp, i, a - b)
   }
@@ -283,25 +336,29 @@ let subN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
   cy
 }
 
-@disableGC
+@unsafe
 let sub1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
   let (+) = WasmI32.add
   let (<) = WasmI32.lt
 
-  let mut b_ = b;
+  let mut b_ = b
   for (let mut i = 0n; i < n; i += 1n) {
     let (+) = WasmI64.add
     let (<) = WasmI64.lt
 
     let a = getInt64(ap, i)
-    let cy = if (r < b_) { 1N } else { 0N }
+    let cy = if (r < b_) {
+      1N
+    } else {
+      0N
+    }
     b_ = cy
   }
 
   b_
 }
 
-@disableGC
+@unsafe
 let absSub = (rref, a, b) => {
   let (<) = WasmI32.lt
   let (>) = WasmI32.gt
@@ -310,7 +367,11 @@ let absSub = (rref, a, b) => {
   let an = absi32(getSize(a))
   let bn = absi32(getSize(b))
 
-  let max = if (an >= bn) { an } else { bn }
+  let max = if (an >= bn) {
+    an
+  } else {
+    bn
+  }
   let mut r = deref(rref)
 
   let mut rp = r + 8n
@@ -319,27 +380,27 @@ let absSub = (rref, a, b) => {
 
   let cmp = cmp4(ap, an, bp, bn)
   if (cmp < 0n) {
-    rp = realloc(rref, an);
+    rp = realloc(rref, an)
     let mut cy = subN(rp, ap, bp, bn)
     if (an > bn) {
       cy = sub1(rp + bn, ap + bn, an - bn, cy)
     }
-    assert(cy == 0N)
-    normalizedSize(rp, an);
+    assert cy == 0N
+    normalizedSize(rp, an)
   } else if (cmp > 0n) {
-    rp = realloc(rref, bn);
+    rp = realloc(rref, bn)
     let mut cy = subN(rp, ap, bp, bn)
     if (an > bn) {
       cy = sub1(rp + bn, ap + bn, an - bn, cy)
     }
-    assert(cy == 0N)
-    -normalizedSize(rp, bn);
+    assert cy == 0N
+    WasmI32.mul(-1n, normalizedSize(rp, bn))
   } else {
     0n
   }
 }
 
-@disableGC
+@unsafe
 export let rec add = (a: BigInt, b: BigInt) => {
   let (+) = WasmI32.add
   let (^) = WasmI32.xor
@@ -362,11 +423,10 @@ export let rec add = (a: BigInt, b: BigInt) => {
   let r = deref(rref)
   Memory.free(ref)
   if (0n > an) {
-    setSize(r, -rn)
+    setSize(r, WasmI32.mul(-1n, rn))
   } else {
     setSize(r, rn)
-  };
+  }
 
   WasmI32.toGrain(r): BigInt
 }
-
