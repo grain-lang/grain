@@ -6,7 +6,6 @@
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmF64 from "runtime/unsafe/wasmf64"
-import Memory from "runtime/unsafe/memory"
 import { newFloat64 } from "runtime/dataStructures"
 
 import {
@@ -51,16 +50,12 @@ export toNumber
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec add = (x: Float64, y: Float64) => {
+@unsafe
+export let add = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.add(xv, yv))
-  let ret = WasmI32.toGrain(ptr): Float64
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(add))
-  ret
+  WasmI32.toGrain(ptr): Float64
 }
 
 /**
@@ -72,16 +67,12 @@ export let rec add = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec sub = (x: Float64, y: Float64) => {
+@unsafe
+export let sub = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.sub(xv, yv))
-  let ret = WasmI32.toGrain(ptr): Float64
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(sub))
-  ret
+  WasmI32.toGrain(ptr): Float64
 }
 
 /**
@@ -93,16 +84,12 @@ export let rec sub = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec mul = (x: Float64, y: Float64) => {
+@unsafe
+export let mul = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.mul(xv, yv))
-  let ret = WasmI32.toGrain(ptr): Float64
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(mul))
-  ret
+  WasmI32.toGrain(ptr): Float64
 }
 
 /**
@@ -114,16 +101,12 @@ export let rec mul = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec div = (x: Float64, y: Float64) => {
+@unsafe
+export let div = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.div(xv, yv))
-  let ret = WasmI32.toGrain(ptr): Float64
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(div))
-  ret
+  WasmI32.toGrain(ptr): Float64
 }
 
 /**
@@ -139,15 +122,11 @@ export let rec div = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec lt = (x: Float64, y: Float64) => {
+@unsafe
+export let lt = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ret = WasmF64.lt(xv, yv)
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(lt))
-  ret
+  WasmF64.lt(xv, yv)
 }
 
 /**
@@ -159,15 +138,11 @@ export let rec lt = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec gt = (x: Float64, y: Float64) => {
+@unsafe
+export let gt = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ret = WasmF64.gt(xv, yv)
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(gt))
-  ret
+  WasmF64.gt(xv, yv)
 }
 
 /**
@@ -179,15 +154,11 @@ export let rec gt = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec lte = (x: Float64, y: Float64) => {
+@unsafe
+export let lte = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ret = WasmF64.le(xv, yv)
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(lte))
-  ret
+  WasmF64.le(xv, yv)
 }
 
 /**
@@ -199,50 +170,30 @@ export let rec lte = (x: Float64, y: Float64) => {
  * 
  * @since v0.2.0
  */
-@disableGC
-export let rec gte = (x: Float64, y: Float64) => {
+@unsafe
+export let gte = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ret = WasmF64.ge(xv, yv)
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(gte))
-  ret
+  WasmF64.ge(xv, yv)
 }
 
 /**
  * @section Constants: Float64 constant values.
  */
 
-@disableGC
-let rec makeInfinity = () => {
-  let ptr = newFloat64(
-    WasmF64.reinterpretI64(
-      0b0111111111110000000000000000000000000000000000000000000000000000N
-    )
-  )
-  let ret = WasmI32.toGrain(ptr): Float64
-  Memory.decRef(WasmI32.fromGrain(makeInfinity))
-  ret
-}
-
 /**
  * Infinity represented as a Float64 value.
  * 
  * @since v0.4.0
  */
-export let infinity = makeInfinity()
-
-@disableGC
-let rec makeNaN = () => {
+@unsafe
+export let infinity = {
   let ptr = newFloat64(
     WasmF64.reinterpretI64(
-      0b0111111111110000000000000000000000000000000000000000000000000001N
+      0b0111111111110000000000000000000000000000000000000000000000000000N
     )
   )
-  let ret = WasmI32.toGrain(ptr): Float64
-  Memory.decRef(WasmI32.fromGrain(makeNaN))
-  ret
+  WasmI32.toGrain(ptr): Float64
 }
 
 /**
@@ -250,4 +201,12 @@ let rec makeNaN = () => {
  * 
  * @since v0.4.0
  */
-export let nan = makeNaN()
+@unsafe
+export let nan = {
+  let ptr = newFloat64(
+    WasmF64.reinterpretI64(
+      0b0111111111110000000000000000000000000000000000000000000000000001N
+    )
+  )
+  WasmI32.toGrain(ptr): Float64
+}
