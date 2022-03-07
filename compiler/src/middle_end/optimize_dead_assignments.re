@@ -39,7 +39,7 @@ module DAEArg: Anf_mapper.MapArgument = {
 
   let leave_anf_expression = ({anf_desc: desc} as a) =>
     switch (desc) {
-    | AELet(Global, _, _, _, _)
+    | AELet(Global({exported: true}), _, _, _, _)
     | AELet(_, _, Mutable, _, _)
     | AESeq(_)
     | AEComp(_) => a

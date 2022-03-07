@@ -168,7 +168,16 @@ let moreN = (buf: RegExBuf, n) => {
 
 // END Parsing internals for recursive descent
 
+/*
 
+=================================
+REGEX TYPE DEFINITIONS
+=================================
+
+*/
+type RERange = List<(Number, Number)>
+type CharRangeElt = Number
+type CharRange = List<(CharRangeElt, CharRangeElt)>
 /*
 
 =================================
@@ -179,9 +188,7 @@ Based on https://github.com/racket/racket/blob/0a9c70e95a69743dd5d219a395e995be4
 
 */
 
-// [TODO] alias type RERange as List<(Number, Number)>
-
-let rangeInvert = (rng, limitC) => {
+let rangeInvert = (rng: CharRange, limitC) => {
   let rec help = (rng, start) => {
     match(rng) {
       [] when start > limitC => [],
@@ -192,7 +199,7 @@ let rangeInvert = (rng, limitC) => {
   help(rng, 0)
 }
 
-let rec rangeContains = (rng, v) => {
+let rec rangeContains = (rng: CharRange, v: CharRangeElt) => {
   match(rng) {
     [] => false,
     [(start, end), ..._] when (start <= v) && (v <= end) => true,
@@ -200,7 +207,7 @@ let rec rangeContains = (rng, v) => {
   }
 }
 
-let rec rangeAdd = (rng, v) => {
+let rec rangeAdd = (rng: CharRange, v: CharRangeElt) => {
   match(rng) {
     _ when rangeContains(rng, v) => rng,
     _ => rangeUnion(rng, [(v, v)])
@@ -226,18 +233,18 @@ rangeUnion = (rng1, rng2) => {
   }
 }
 
-let rangeAddSpan = (rng, fromC, toC) => {
+let rangeAddSpan = (rng: CharRange, fromC, toC) => {
   rangeUnion(rng, [(fromC, toC)])
 }
 
-let rangeSingleton = (rng) => {
+let rangeSingleton = (rng: CharRange) => {
   match(rng) {
     [(c1, c2)] when c1 == c2 => Some(c1),
     _ => None
   }
 }
 
-let rec rangeIncludes = (rng, lo, hi) => {
+let rec rangeIncludes = (rng: CharRange, lo, hi) => {
   match(rng) {
     [] => false,
     [(c1, c2), ...tl] when lo > c2 => rangeIncludes(tl, lo, hi),
@@ -245,7 +252,7 @@ let rec rangeIncludes = (rng, lo, hi) => {
   }
 }
 
-let rec rangeWithin = (rng, lo, hi) => {
+let rec rangeWithin = (rng: CharRange, lo, hi) => {
   match(rng) {
     [] => true,
     [(c1, _), ..._] when c1 < lo => false,
@@ -254,7 +261,7 @@ let rec rangeWithin = (rng, lo, hi) => {
   }
 }
 
-let rec rangeOverlaps = (rng, lo, hi) => {
+let rec rangeOverlaps = (rng: CharRange, lo, hi) => {
   match(rng) {
     [] => false,
     [(_, c2), ...tl] when lo > c2 => rangeOverlaps(tl, lo, hi),
@@ -262,7 +269,7 @@ let rec rangeOverlaps = (rng, lo, hi) => {
   }
 }
 
-let rangeAddCaseAware = (rng, c, config) => {
+let rangeAddCaseAware = (rng: CharRange, c, config) => {
   match(c) {
     None => Ok(rng),
     Some(c) => {
@@ -283,7 +290,7 @@ let rangeAddCaseAware = (rng, c, config) => {
   }
 }
 
-let rangeAddSpanCaseAware = (rng, fromC, toC, config) => {
+let rangeAddSpanCaseAware = (rng: CharRange, fromC, toC, config) => {
   if (config.caseSensitive) {
     Ok(rangeAddSpan(rng, fromC, toC))
   } else {
@@ -387,7 +394,7 @@ enum ParsedRegularExpression {
   RELookbehind(ParsedRegularExpression, Bool, Box<Number>, Box<Number>, Number, Number), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
   RECut(ParsedRegularExpression, Number, Number, Bool), // regex, n-start, num-n, needs-backtrack
   REReference(Number, Bool), // n, case-sensitive
-  RERange(List<(Number, Number)>),
+  RERange(RERange),
   REUnicodeCategories(List<UnicodeCategory>, Bool) // symlist, true=match/false=does-not-match
 }
 
@@ -405,7 +412,7 @@ let needsBacktrack = (rx: ParsedRegularExpression) => {
   }
 }
 
-let makeRERange = (rng, limitC) => {
+let makeRERange = (rng: CharRange, limitC) => {
   match(rng) {
     [(c1, c2)] when c1 == c2 => RELiteral(Char.fromCode(c1)),
     _ when rangeIncludes(rng, 0, limitC) => REAny,
@@ -664,7 +671,7 @@ parsePosixCharClass = (buf: RegExBuf) => {
   }
 },
 
-parseRangeRest = (buf: RegExBuf, rng, spanFrom: Option<Number>, mustSpanFrom: Option<Number>) => {
+parseRangeRest = (buf: RegExBuf, rng: CharRange, spanFrom: Option<Number>, mustSpanFrom: Option<Number>) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing closing `]`", 0))
   } else {
@@ -763,7 +770,7 @@ parseRangeRest = (buf: RegExBuf, rng, spanFrom: Option<Number>, mustSpanFrom: Op
   }
 },
 
-parseRangeRestSpan = (buf: RegExBuf, c, rng, spanFrom: Option<Number>, mustSpanFrom: Option<Number>) => {
+parseRangeRestSpan = (buf: RegExBuf, c, rng: CharRange, spanFrom: Option<Number>, mustSpanFrom: Option<Number>) => {
   match(mustSpanFrom) {
     Some(n) => {
       if (n > c) {
@@ -1685,7 +1692,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
   /**
    Computes the range of possible UTF-8 byte lengths for the given character range
    */
-  let rangeUtf8EncodingLengths = (rng) => {
+  let rangeUtf8EncodingLengths = (rng: CharRange) => {
     let (min, max, _) = List.reduce(((min1, max1, n), (segStart, segEnd)) => {
       if (rangeOverlaps(rng, segStart, segEnd)) {
         (min(min1, n), max(max1, n), n + 1)
@@ -1968,7 +1975,7 @@ let anyMatcherIterated = (max) => (buf: MatchBuf, pos: Number, start: Number, li
 
 // match byte in set (range)
 
-let rangeMatcher = (rng, next_m) => (buf: MatchBuf, pos: Number, start: Number, limit: Number, end: Number, state, stack) => {
+let rangeMatcher = (rng: CharRange, next_m) => (buf: MatchBuf, pos: Number, start: Number, limit: Number, end: Number, state, stack) => {
   if ({
     pos < limit && match(matchBufChar(buf, pos)) {
       Err(_) => false,
@@ -1977,7 +1984,7 @@ let rangeMatcher = (rng, next_m) => (buf: MatchBuf, pos: Number, start: Number, 
   }) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
 
-let rangeTailMatcher = (rng) => (buf: MatchBuf, pos: Number, start: Number, limit: Number, end: Number, state, stack) => {
+let rangeTailMatcher = (rng: CharRange) => (buf: MatchBuf, pos: Number, start: Number, limit: Number, end: Number, state, stack) => {
   if ({
     pos < limit && match(matchBufChar(buf, pos)) {
       Err(_) => false,
@@ -1986,7 +1993,7 @@ let rangeTailMatcher = (rng) => (buf: MatchBuf, pos: Number, start: Number, limi
   }) Some(pos + 1) else None
 }
 
-let rangeMatcherIterated = (rng, max) => iterateMatcher((buf: MatchBuf, pos: Number, start: Number, limit: Number, end: Number, state, stack) => {
+let rangeMatcherIterated = (rng: CharRange, max) => iterateMatcher((buf: MatchBuf, pos: Number, start: Number, limit: Number, end: Number, state, stack) => {
   match(matchBufChar(buf, pos)) {
     Err(_) => false,
     Ok(c) => rangeContains(rng, Char.code(c))
@@ -2444,7 +2451,7 @@ record RegularExpression {
   reCompiled: ((MatchBuf, Number, Number, Number, Number, Array<Option<(Number, Number)>>, List<StackElt>) -> Option<Number>),
   reMustString: Option<String>,
   reIsAnchored: Bool,
-  reStartRange: Option<List<(Number, Number)>>,
+  reStartRange: Option<RERange>,
 }
 
 /**

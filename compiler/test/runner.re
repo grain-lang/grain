@@ -42,7 +42,7 @@ let read_stream = cstream => {
 let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
-      [],
+      Config.empty,
       () => {
         switch (config_fn) {
         | Some(fn) => fn()
@@ -65,7 +65,7 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
 let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
-      [],
+      Config.empty,
       () => {
         switch (config_fn) {
         | Some(fn) => fn()
@@ -319,8 +319,8 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   );
 };
 
-let parse = (name, lexbuf) => {
-  let ret = Grain_parsing.Driver.parse(~name, lexbuf);
+let parse = (name, lexbuf, source) => {
+  let ret = Grain_parsing.Driver.parse(~name, lexbuf, source);
   open Grain_parsing;
   open Location;
   assert(ret.Parsetree.prog_loc.loc_start.pos_fname == name);
@@ -329,12 +329,8 @@ let parse = (name, lexbuf) => {
 
 let parseString = (name, s) => {
   let lexbuf = Lexing.from_string(s);
-  parse(name, lexbuf);
-};
-
-let parseFile = (name, input_file) => {
-  let lexbuf = Lexing.from_channel(input_file);
-  parse(name, lexbuf);
+  let source = () => s;
+  parse(name, lexbuf, source);
 };
 
 let makeParseRunner =

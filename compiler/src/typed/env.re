@@ -1647,6 +1647,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 val_kind: TValConstructor(desc),
                 val_loc: desc.cstr_loc,
                 val_mutable: false,
+                val_global: true,
               };
               c.comp_values =
                 Tbl.add(Ident.name(id), (val_desc, nopos), c.comp_values);
@@ -1705,6 +1706,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             val_kind: TValConstructor(desc),
             val_loc: desc.cstr_loc,
             val_mutable: false,
+            val_global: true,
           };
           c.comp_values =
             Tbl.add(Ident.name(id), (val_desc, nopos), c.comp_values);
@@ -1776,6 +1778,7 @@ and store_type = (~check, id, info, env) => {
           val_kind: TValConstructor(desc),
           val_loc: desc.cstr_loc,
           val_mutable: false,
+          val_global: true,
         };
         (id, val_desc);
       },
@@ -1868,6 +1871,7 @@ and store_extension = (~check, id, ext, env) => {
       val_fullpath: PIdent(Ident.create(cstr.cstr_name)),
       val_kind: TValConstructor(cstr),
       val_mutable: false,
+      val_global: true,
       val_loc: cstr.cstr_loc,
     };
   };

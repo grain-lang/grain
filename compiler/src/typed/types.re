@@ -137,6 +137,7 @@ type value_description = {
   val_kind: value_kind,
   val_fullpath: Path.t,
   val_mutable: bool,
+  val_global: bool,
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   val_loc: Location.t,
 };

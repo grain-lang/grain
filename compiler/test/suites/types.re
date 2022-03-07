@@ -44,7 +44,7 @@ describe("aliased types", ({test}) => {
     {|
       type Foo<a> = (String, List<a>)
       let foo = (x: Foo<Number>) => {
-        x: (String, List<Number>)
+        (x): (String, List<Number>)
       }
       print(foo(("foo", [1, 2, 3])))
     |},
@@ -55,7 +55,7 @@ describe("aliased types", ({test}) => {
     {|
       type Foo<a> = (String, List<a>)
       let foo = (x: (String, List<Number>)) => {
-        x: Foo<Number>
+        (x): Foo<Number>
       }
       print(foo(("foo", [1, 2, 3])))
     |},
@@ -67,7 +67,7 @@ describe("aliased types", ({test}) => {
       type Bar = Number
       type Foo = Bar
       let foo = (x: Foo) => {
-        x: Bar
+        (x): Bar
       }
       let x: Number = foo(1)
       print(x)

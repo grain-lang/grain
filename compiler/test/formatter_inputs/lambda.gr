@@ -4,3 +4,35 @@ y => {
   let x = 1
   let z = 2
 }
+
+let testfna = forEachCodePoint(c /* arg */ => void)
+
+let testfn = forEachCodePoint(c /* arg */ => { 
+    // a 
+    void 
+    }, "")
+
+let testfn2 = forEachCodePoint(c  // arg 1
+ => { 
+    // a 
+    void 
+    }, "")
+
+let testfn3 = forEachCodePoint((c,  /* arg 1 */
+d, // eol2
+e /* arg */
+// eol
+) => { 
+    // a 
+    void 
+    }, "")
+
+let testfn4 = forEachCodePoint(/* pre */ c /* arg */ => { 
+    // a 
+    void 
+    }, "")
+
+let testfn5 = forEachCodePoint( c  => /* arg */ { 
+    // a 
+    void 
+    }, "")

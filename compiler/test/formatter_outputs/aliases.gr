@@ -30,11 +30,6 @@ type Foo<
 
 type Foo<a, /* Test comment */ b> = String
 
-type Foo<
-  a, // Test comment
-  b
-> = String
-
 // Test comment
 type Foo = String
 

@@ -162,6 +162,7 @@ export let rec parseInt = (string: String, radix: Number) => {
       },
       _ => {
         let value = if (negative) value else WasmI64.mul(value, -1N)
+        Memory.incRef(WasmI32.fromGrain(reducedInteger))
         let number = WasmI32.toGrain(reducedInteger(value)): Number
         Memory.incRef(WasmI32.fromGrain(Ok))
         Ok(number)

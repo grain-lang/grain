@@ -44,6 +44,16 @@ let use_start_section: ref(bool);
 
 let optimization_level: ref(optimization_level);
 
+// [NOTE] This default is here because it is used in multiple locations,
+//        and it doesn't make sense for it to be "owned" by any of them.
+/** The default value for `memory_base` */
+
+let default_memory_base: int;
+
+/** Start address of Grain runtime heap */
+
+let memory_base: ref(option(int));
+
 /** The path to find modules on */
 
 let include_dirs: ref(list(string));
@@ -118,10 +128,6 @@ let source_map: ref(bool);
 
 let safe_string: ref(bool);
 
-/** Just output errors and warnings for LSP mode. */
-
-let lsp_mode: ref(bool);
-
 /** Internal option to disable printing of warnings. */
 
 let print_warnings: ref(bool);
@@ -130,10 +136,10 @@ let print_warnings: ref(bool);
 
 /** Type representing a saved set of configuration options */
 
-type saved_config_opt =
-  | SavedOpt((ref('a), 'a)): saved_config_opt;
+type config;
 
-type config = list(saved_config_opt);
+/** An empty config */
+let empty: config;
 
 /** The current configuration for all programs */
 

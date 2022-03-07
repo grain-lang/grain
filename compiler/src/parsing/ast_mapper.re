@@ -81,6 +81,7 @@ module E = {
         sub.expr(sub, e),
         List.map(sub.match_branch(sub), mbs),
       )
+    | PExpPrim0(p0) => prim0(~loc, ~attributes, p0)
     | PExpPrim1(p1, e) => prim1(~loc, ~attributes, p1, sub.expr(sub, e))
     | PExpPrim2(p2, e1, e2) =>
       prim2(~loc, ~attributes, p2, sub.expr(sub, e1), sub.expr(sub, e2))
