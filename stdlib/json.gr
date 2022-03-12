@@ -530,7 +530,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
 }
 
 @unsafe
-let rec printNumber = (value: Number, buffer: Buffer.Buffer) => {
+let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   let (&) = WasmI32.and
   let (==) = WasmI32.eq
   let (!=) = WasmI32.ne
@@ -1517,7 +1517,7 @@ let buildUnexpectedTokenError =
 }
 
 @unsafe
-let rec toHex = (n: Number) => {
+let toHex = (n: Number) => {
   let x = coerceNumberToWasmI32(n)
   NumberUtils.itoa32(x, 16n)
 }
