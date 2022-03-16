@@ -29,9 +29,9 @@
   "dependencies": {
     "@grain/binaryen.ml": "0.10.0",
     "@opam/cmdliner": ">= 1.0.2",
-    "@opam/dune": ">= 2.0.0",
-    "@opam/dune-build-info": ">= 2.0.0",
-    "@opam/dune-configurator": ">= 2.0.0",
+    "@opam/dune": ">= 2.0.0 < 3.0.0",
+    "@opam/dune-build-info": ">= 2.0.0 < 3.0.0",
+    "@opam/dune-configurator": ">= 2.0.0 < 3.0.0",
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
     "@opam/menhir": "20211125",
