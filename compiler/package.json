@@ -17,7 +17,7 @@
     "prepare": "esy install",
     "build": "esy",
     "postbuild": "esy copy:exe",
-    "build:js": "esy b dune build --no-buffer --profile jsoo",
+    "build:js": "esy b dune build @js --no-buffer",
     "postbuild:js": "esy copy:js",
     "pretest": "esy",
     "test": "esy test",
