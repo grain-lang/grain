@@ -38,15 +38,18 @@ let readWholeFile = filename => {
   s;
 };
 
-describe("garbage collection", ({test}) => {
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
-  let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test);
+describe("garbage collection", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
+  let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test_or_skip);
   let assertRunGC = (name, heapSize, prog) =>
-    makeRunner(test, name, makeGcProgram(prog, heapSize), "");
+    makeRunner(test_or_skip, name, makeGcProgram(prog, heapSize), "");
   let assertRunGCError = (name, heapSize, prog, expected) =>
     makeErrorRunner(
-      test,
+      test_or_skip,
       ~num_pages=1,
       name,
       makeGcProgram(prog, heapSize),
@@ -54,7 +57,7 @@ describe("garbage collection", ({test}) => {
     );
   let assertFileRunGC = (name, heapSize, file, expected) =>
     makeErrorRunner(
-      test,
+      test_or_skip,
       ~num_pages=1,
       name,
       makeGcProgram(readWholeFile("test/input/" ++ file ++ ".gr"), heapSize),

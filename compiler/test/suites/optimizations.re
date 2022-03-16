@@ -4,14 +4,17 @@ open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 open Grain_utils;
 
-describe("optimizations", ({test}) => {
+describe("optimizations", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
+  let assertRun = makeRunner(test_or_skip);
   let assertBinaryenOptimizationsDisabledFileRun =
     makeFileRunner(
       ~config_fn=() => {Config.optimization_level := Config.Level_two},
-      test,
+      test_or_skip,
     );
 
   let assertAnf =

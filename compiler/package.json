@@ -21,6 +21,8 @@
     "postbuild:js": "esy copy:js",
     "pretest": "yarn build",
     "test": "esy test",
+    "pretest:js": "yarn build:js",
+    "test:js": "esy test:js",
     "format": "esy format",
     "check-format": "esy check-format",
     "parser:interpret": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret",

@@ -15,7 +15,8 @@
       "GRAINFORMAT_BIN_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.exe'}",
       "GRAINFORMAT_JS_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.bc.js'}",
       "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
-      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}"
+      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}",
+      "TEST_JS_PATH": "#{self.target_dir / 'default' / 'test' / 'test.bc.js'}"
     }
   },
   "scripts": {
@@ -23,6 +24,7 @@
     "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "test": "#{$TEST_EXEC_PATH}",
+    "test:js": "node #{$TEST_JS_PATH}",
     "format": "dune build @fmt --auto-promote",
     "check-format": "dune build @fmt"
   },

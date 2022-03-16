@@ -1,12 +1,15 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("functions", ({test}) => {
+describe("functions", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
-  let assertFileRunError = makeFileErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
+  let assertFileRunError = makeFileErrorRunner(test_or_skip);
   let tailCallConfig = () => {
     Grain_utils.Config.experimental_tail_call := true;
   };
