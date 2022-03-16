@@ -150,6 +150,8 @@ let transl_const =
     (c: Types.constant): either(imm_expression, (string, comp_expression)) =>
   switch (c) {
   | Const_number(n) => Right(("number", Comp.number(n)))
+  | Const_bigint(neg, limbs, s) =>
+    Right(("number", Comp.number(Const_number_bigint(neg, limbs, s))))
   | Const_int32(i) => Right(("int32", Comp.int32(i)))
   | Const_int64(i) => Right(("int64", Comp.int64(i)))
   | Const_float64(i) => Right(("float64", Comp.float64(i)))

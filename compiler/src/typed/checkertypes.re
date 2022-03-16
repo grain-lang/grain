@@ -68,6 +68,7 @@ let type_constant =
   | Const_wasmi64(_) => instance_def(Builtin_types.type_wasmi64)
   | Const_wasmf32(_) => instance_def(Builtin_types.type_wasmf32)
   | Const_wasmf64(_) => instance_def(Builtin_types.type_wasmf64)
+  | Const_bigint(_) => instance_def(Builtin_types.type_bigint)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
   | Const_bytes(_) => instance_def(Builtin_types.type_bytes)
@@ -162,6 +163,21 @@ let constant:
           Location.errorf(
             ~loc,
             "Float64 literal %sd exceeds the range of representable 64-bit floats.",
+            n,
+          ),
+        )
+      }
+    | PConstBigInt(n) =>
+      switch (Literals.conv_bigint(n)) {
+      | Some((is_negative, limbs)) =>
+        Ok(Const_bigint(is_negative, limbs, n))
+      // Should not happen, since `None` is only returned for the empty string,
+      // and that should be disallowed by the lexer
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Unable to parse big-integer literal %st.",
             n,
           ),
         )

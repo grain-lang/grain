@@ -112,6 +112,7 @@ let prim1_type =
   | AllocateTuple
   | AllocateBytes
   | AllocateString
+  | AllocateBigInt
   | LoadAdtVariant
   | StringSize
   | BytesSize => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
@@ -164,6 +165,11 @@ let prim1_type =
 let prim2_type =
   fun
   | NewRational => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+    )
+  | NewBigInt => (
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,

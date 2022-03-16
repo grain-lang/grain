@@ -86,6 +86,7 @@ describe("stdlib", ({test}) => {
     "enterthevoid\n",
   );
   assertStdlib("array.test");
+  assertStdlib("bigint.test");
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
   assertStdlib("char.test");

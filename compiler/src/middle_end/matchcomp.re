@@ -950,6 +950,7 @@ let prepare_match_branches = (env, branches) => {
       | Const_wasmi64(_) => Builtin_types.type_wasmi64
       | Const_wasmf32(_) => Builtin_types.type_wasmf32
       | Const_wasmf64(_) => Builtin_types.type_wasmf64
+      | Const_bigint(_) => Builtin_types.type_bigint
       | Const_bytes(_) => Builtin_types.type_bytes
       | Const_string(_) => Builtin_types.type_string
       | Const_char(_) => Builtin_types.type_char
@@ -962,6 +963,7 @@ let prepare_match_branches = (env, branches) => {
       | Const_int64(_)
       | Const_float32(_)
       | Const_float64(_)
+      | Const_bigint(_)
       | Const_bytes(_)
       | Const_string(_)
       | Const_char(_) => Eq

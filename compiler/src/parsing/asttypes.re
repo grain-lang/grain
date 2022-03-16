@@ -33,6 +33,7 @@ type constant =
   | Const_wasmi64(int64)
   | Const_wasmf32(float)
   | Const_wasmf64(float)
+  | Const_bigint(bool, array(int64), string) // (is_negative, abs_value, string_rep)
   | Const_bool(bool)
   | Const_void
 
@@ -40,7 +41,8 @@ type constant =
 and number_type =
   | Const_number_int(int64)
   | Const_number_float(float)
-  | Const_number_rational(int32, int32);
+  | Const_number_rational(int32, int32)
+  | Const_number_bigint(bool, array(int64), string);
 
 /** Marker for exported/nonexported let bindings */
 

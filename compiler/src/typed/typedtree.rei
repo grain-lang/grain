@@ -188,6 +188,7 @@ type prim1 =
     | AllocateTuple
     | AllocateBytes
     | AllocateString
+    | AllocateBigInt
     | NewInt32
     | NewInt64
     | NewFloat32
@@ -235,6 +236,7 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | NewRational
+    | NewBigInt
     | Is
     | Eq
     | And

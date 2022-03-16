@@ -184,6 +184,7 @@ type prim1 =
     | AllocateTuple
     | AllocateBytes
     | AllocateString
+    | AllocateBigInt
     | NewInt32
     | NewInt64
     | NewFloat32
@@ -231,6 +232,7 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | NewRational
+    | NewBigInt
     | Is
     | Eq
     | And
@@ -321,7 +323,8 @@ type allocation_type =
   | MInt64(int64)
   | MFloat32(float)
   | MFloat64(float)
-  | MRational(int32, int32);
+  | MRational(int32, int32)
+  | MBigInt(int32, array(int64)); // flags, limbs
 
 [@deriving sexp]
 type tag_op =

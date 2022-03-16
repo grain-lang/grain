@@ -3,13 +3,13 @@ let explode = string => {
   List.init(String.length(string), get_char);
 };
 
-let starts_with = (string, prefix) => {
+let starts_with = (~offset=0, string, prefix) => {
   let prefixLength = String.length(prefix);
-  let stringLength = String.length(string);
+  let stringLength = String.length(string) - offset;
   if (stringLength < prefixLength) {
     false;
   } else {
-    String.sub(string, 0, prefixLength) == prefix;
+    String.sub(string, offset, prefixLength) == prefix;
   };
 };
 
