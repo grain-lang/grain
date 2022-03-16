@@ -19,7 +19,7 @@
     "postbuild": "esy copy:exe",
     "build:js": "esy b dune build @js --no-buffer",
     "postbuild:js": "esy copy:js",
-    "pretest": "esy",
+    "pretest": "yarn build",
     "test": "esy test",
     "format": "esy format",
     "check-format": "esy check-format",
