@@ -53,6 +53,7 @@ let prim_map =
       ("@allocate.tuple", Primitive1(AllocateTuple)),
       ("@allocate.bytes", Primitive1(AllocateBytes)),
       ("@allocate.string", Primitive1(AllocateString)),
+      ("@allocate.bigInt", Primitive1(AllocateBigInt)),
       ("@new.int32", Primitive1(NewInt32)),
       ("@new.int64", Primitive1(NewInt64)),
       ("@new.float32", Primitive1(NewFloat32)),
@@ -76,6 +77,7 @@ let prim_map =
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
       ("@new.rational", Primitive2(NewRational)),
+      ("@new.bigInt", Primitive2(NewBigInt)),
       ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
       (
         "@wasm.load_8_s_int32",

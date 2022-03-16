@@ -534,6 +534,7 @@ let equality_type =
   | Const_number(_)
   | Const_int32(_)
   | Const_int64(_)
+  | Const_bigint(_)
   | Const_float32(_)
   | Const_float64(_)
   | Const_bytes(_)

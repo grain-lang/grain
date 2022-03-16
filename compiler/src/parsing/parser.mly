@@ -22,6 +22,7 @@ module Grain_parsing = struct end
 %token <string> WASMI64
 %token <string> WASMF32
 %token <string> WASMF64
+%token <string> BIGINT
 %token <string> ID
 %token <string> TYPEID
 %token <string> STRING
@@ -203,6 +204,7 @@ const:
   | dash_op? WASMI64 { Const.wasmi64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | dash_op? WASMF32 { Const.wasmf32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | dash_op? WASMF64 { Const.wasmf64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | dash_op? BIGINT { Const.bigint (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | TRUE { Const.bool true, $loc }
   | FALSE { Const.bool false, $loc }
   | VOID { Const.void, $loc }

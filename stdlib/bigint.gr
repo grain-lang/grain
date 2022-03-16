@@ -1,432 +1,180 @@
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
+/**
+ * Arbitary-precision integers.
+ */
 import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Exception from "runtime/exception"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
-import Conv from "runtime/unsafe/conv"
-
-// Layout:
-// -------------------------
-// | tag | size | limbs... |
-// -------------------------
-//
-// tag   | i32    | always _GRAIN_BIGINT_BOXED_NUM_TAG
-// size  | i32    | the number of limbs. If negative, the bigint is negative
-// limbs | i64... |
-
-// TODO: use faster abs algos
-// https://stackoverflow.com/questions/664852/which-is-the-fastest-way-to-get-the-absolute-value-of-a-number
+import BI from "runtime/bigInt"
+import DS from "runtime/dataStructures"
 
 @unsafe
-let absi32 = n => {
-  let (<) = WasmI32.ltS
-  if (n < 0n) {
-    WasmI32.mul(n, -1n)
-  } else {
-    n
-  }
+export let eq = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.eq(num1, num2)
 }
 
 @unsafe
-let absi64 = n => {
-  let (<) = WasmI64.ltS
-  if (n < 0N) {
-    WasmI64.mul(n, -1n)
-  } else {
-    n
-  }
+export let ne = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.ne(num1, num2)
 }
 
 @unsafe
-let init = (limbs: WasmI32) => {
-  let (+) = WasmI32.add
-  let (*) = WasmI32.mul
-  let (<) = WasmI32.lt
-
-  if (limbs == 0n) {
-    throw Exception.InvalidArgument("BigInt must have at least 1 limb")
-  }
-
-  let tagLen = 4n
-  let sizeLen = 4n
-  let limbsLen = absi32(limbs) * 8n
-  let len = tagSize + sizeSize + limbsSize
-
-  let ptr = Memory.malloc(len)
-  Memory.fill(ptr, 0n, len)
-
-  WasmI32.store(ptr, Tags._GRAIN_BIGINT_BOXED_NUM_TAG, 0n)
-  WasmI32.store(ptr, limbs, 4n)
-
-  ptr
+export let lt = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.lt(num1, num2)
 }
 
 @unsafe
-let getSize = ptr => {
-  WasmI32.load(ptr, 4n)
+export let lte = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.lte(num1, num2)
 }
 
 @unsafe
-let setSize = (ptr, n) => {
-  WasmI32.store(ptr, n, 4n)
+export let gt = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.gt(num1, num2)
 }
 
 @unsafe
-let getInt64 = (ptr, i) => {
-  let (*) = WasmI32.mul
-  WasmI64.load(ptr, i * 8n)
+export let gte = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.gte(num1, num2)
 }
 
 @unsafe
-let setInt64 = (ptr, i, v) => {
-  let (*) = WasmI32.mul
-  WasmI64.store(ptr, v, i * 8n)
+export let add = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
 }
 
 @unsafe
-let toref = (ptr: WasmI32) => {
-  let ref = Memory.malloc(4n)
-  Memory.store(ref, ptr, 4n)
-  ref
+export let sub = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
 }
 
 @unsafe
-let deref = (ref: WasmI32) => {
-  WasmI32.load(ref, 0n)
+export let incr = (num: BigInt) => {
+  WasmI32.toGrain(BI.incr(WasmI32.fromGrain(num)))
 }
 
 @unsafe
-let setref = (ref: WasmI32, ptr: WasmI32) => {
-  Memory.free(WasmI32.load(ref, 0n))
-  WasmI32.set(ref, ptr, 0n)
+export let decr = (num: BigInt) => {
+  WasmI32.toGrain(BI.decr(WasmI32.fromGrain(num)))
 }
 
 @unsafe
-let realloc = (ref: WasmI32, size: WasmI32) => {
-  let (+) = WasmI32.add
-  let (>) = WasmI32.gt
-
-  let r = deref(ref)
-  let size = if (size > 0n) {
-    size
-  } else {
-    1n
-  }
-
-  if (getSize(r) > 0n) {
-    setref(init(size))
-  }
-
-  deref(ref) + 8n
+export let mul = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
 }
 
 @unsafe
-let normalizedSize = (xp, n) => {
-  let (-) = WasmI32.sub
-  let (>) = WasmI32.gt
-  let (==) = WasmI32.eq
-  let mut n_ = n
-
-  while (n_ > 0n && Wasm.load(xp, n_ - 1) == 0n) {
-    n_ -= 1
-  }
-
-  n_
+export let shl = (num: BigInt, places: Int32) => {
+  let num = WasmI32.fromGrain(num)
+  let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
+  WasmI32.toGrain(BI.shl(num, places)): BigInt
 }
 
 @unsafe
-export let rec fromInt32 = (n: Int32) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.lt
-
-  let v = Conv.fromInt32(n)
-  let len = if (v < 0n) {
-    -1n
-  } else {
-    1n
-  }
-
-  let ptr = init(len)
-  setInt64(ptr + 8n, 0n, WasmI64.extendI32U(v))
-
-  WasmI32.toGrain(ptr): BigInt
+export let shrS = (num: BigInt, places: Int32) => {
+  let num = WasmI32.fromGrain(num)
+  let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
+  WasmI32.toGrain(BI.shrS(num, places)): BigInt
 }
 
 @unsafe
-export let rec fromInt64 = (n: Int64) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI64.lt
-
-  let v = Conv.fromInt64(n)
-  let len = if (v < 0N) {
-    -1n
-  } else {
-    1n
-  }
-
-  let ptr = init(len)
-  setInt64(ptr + 8n, 0n, absi64(v))
-
-  WasmI32.toGrain(ptr): BigInt
+export let lnot = (num: BigInt) => {
+  WasmI32.toGrain(BI.bitwiseNot(WasmI32.fromGrain(num)))
 }
 
 @unsafe
-let addN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.lt
-
-  let mut cy = 0N
-  for (let mut i = 0n; i < n; i += 1n) {
-    let (+) = WasmI64.add
-    let (*) = WasmI64.mul
-    let (<) = WasmI64.lt
-
-    let mut a = getInt64(ap, i)
-    let mut b = getInt64(bp, i)
-    let mut r = a + cy
-    cy = if (r < cy) {
-      1N
-    } else {
-      0N
-    }
-    r += b
-    cy += if (r < b) {
-        1N
-      } else {
-        0N
-      }
-
-    setInt64(rp, i, r)
-  }
-
-  cy
+export let land = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.bitwiseAnd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  )
 }
 
 @unsafe
-let add1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.lt
-
-  let mut b_ = b
-  for (let mut i = 0n; i < n; i += 1n) {
-    let (+) = WasmI64.add
-    let (<) = WasmI64.lt
-
-    let r = getInt64(ap, i) + b
-    b_ = if (r < b_) {
-      1N
-    } else {
-      0N
-    }
-
-    setInt64(rp, i, r)
-  }
-
-  b_
+export let lor = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.bitwiseOr(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  )
 }
 
 @unsafe
-let absAdd = (rref, a, b) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (>) = WasmI32.gt
-  let (>=) = WasmI32.gte
-
-  let an = absi32(getSize(a))
-  let bn = absi32(getSize(b))
-
-  let max = if (an >= bn) {
-    an
-  } else {
-    bn
-  }
-  let mut r = deref(rref)
-
-  let mut rp = r + 8n
-  let a = aptr + 8n
-  let b = bptr + 8n
-
-  let cy = if (an >= bn) {
-    let mut cy = addN(rp, a, b, bn)
-    if (an > bn) {
-      cy = add1(rp + bn, a, a + bn, an - bn, cy)
-    }
-    cy
-  } else {
-    addN(rp, b, a, an)
-  }
-
-  setInt64(rp, an, cy)
-
-  an + WasmI32.wrapI64(cy)
+export let lxor = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.bitwiseXor(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  )
 }
 
 @unsafe
-let cmp = (ap, bp, n) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.lt
-
-  let mut res = 0n
-  for (let mut i = 0n; i < n; i += 1n) {
-    let (!=) = WasmI64.ne
-    let (>) = WasmI64.gt
-
-    let a = getInt64(ap, i)
-    let b = getInt64(abp, i)
-
-    if (a != b) {
-      res = if (a > b) {
-        1n
-      } else {
-        -1n
-      }
-      break
-    }
-  }
-
-  res
+export let gcd = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
 }
 
 @unsafe
-let cmp4 = (ap, an, bp, bn) => {
-  let (<) = WasmI32.lt
-  let (!=) = WasmI32.ne
-
-  if (an != bn) {
-    if (an < bn) {
-      -1n
-    } else {
-      1n
-    }
-  } else {
-    cmp(ap, bp, an)
-  }
+export let quot = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 @unsafe
-let subN = (rp: WasmI32, ap: WasmI32, bp: WasmI32, n: WasmI32) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.lt
-
-  let mut cy = 0N
-  for (let mut i = 0n; i < n; i += 1n) {
-    let (-) = WasmI64.sub
-    let (+) = WasmI64.add
-    let (<) = WasmI64.lt
-
-    let mut a = getInt64(ap, i)
-    let mut b = getInt64(bp, i)
-
-    b += cy
-    cy = if (b < cy) {
-      1N
-    } else {
-      0N
-    }
-    cy += if (a < b) {
-        1N
-      } else {
-        0N
-      }
-
-    setInt64(rp, i, a - b)
-  }
-
-  cy
+export let div = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.div(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 @unsafe
-let sub1 = (rp: WasmI32, ap: WasmI32, n: WasmI32, b: WasmI64) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.lt
-
-  let mut b_ = b
-  for (let mut i = 0n; i < n; i += 1n) {
-    let (+) = WasmI64.add
-    let (<) = WasmI64.lt
-
-    let a = getInt64(ap, i)
-    let cy = if (r < b_) {
-      1N
-    } else {
-      0N
-    }
-    b_ = cy
-  }
-
-  b_
+export let mod = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.mod(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 @unsafe
-let absSub = (rref, a, b) => {
-  let (<) = WasmI32.lt
-  let (>) = WasmI32.gt
-  let (==) = WasmI64.eq
-
-  let an = absi32(getSize(a))
-  let bn = absi32(getSize(b))
-
-  let max = if (an >= bn) {
-    an
-  } else {
-    bn
-  }
-  let mut r = deref(rref)
-
-  let mut rp = r + 8n
-  let a = aptr + 8n
-  let b = bptr + 8n
-
-  let cmp = cmp4(ap, an, bp, bn)
-  if (cmp < 0n) {
-    rp = realloc(rref, an)
-    let mut cy = subN(rp, ap, bp, bn)
-    if (an > bn) {
-      cy = sub1(rp + bn, ap + bn, an - bn, cy)
-    }
-    assert cy == 0N
-    normalizedSize(rp, an)
-  } else if (cmp > 0n) {
-    rp = realloc(rref, bn)
-    let mut cy = subN(rp, ap, bp, bn)
-    if (an > bn) {
-      cy = sub1(rp + bn, ap + bn, an - bn, cy)
-    }
-    assert cy == 0N
-    WasmI32.mul(-1n, normalizedSize(rp, bn))
-  } else {
-    0n
-  }
+export let rem = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.rem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 @unsafe
-export let rec add = (a: BigInt, b: BigInt) => {
-  let (+) = WasmI32.add
-  let (^) = WasmI32.xor
-  let (>=) = WasmI32.gte
+export let negate = (num: BigInt) => {
+  WasmI32.toGrain(BI.negate(WasmI32.fromGrain(num))): BigInt
+}
 
-  let aptr = WasmI32.fromGrain(a)
-  let bptr = WasmI32.fromGrain(b)
+@unsafe
+export let abs = (num: BigInt) => {
+  WasmI32.toGrain(BI.abs(WasmI32.fromGrain(num))): BigInt
+}
 
-  let an = absi32(getSize(a))
-  let bn = absi32(getSize(b))
+@unsafe
+export let toString = (num: BigInt) => {
+  BI.bigIntToString10(WasmI32.fromGrain(num))
+}
 
-  let rref = toref(init(1n))
+@unsafe
+export let countLeadingZeros = (num: BigInt) => {
+  WasmI32.toGrain(
+    DS.newInt32(BI.countLeadingZeros(WasmI32.fromGrain(num)))
+  ): Int32
+}
 
-  let rn = if ((an ^ bn) >= 0n) {
-    absAdd(rref, aptr, bptr)
-  } else {
-    absSub(rref, aptr, bptr)
-  }
+@unsafe
+export let countTrailingZeros = (num: BigInt) => {
+  WasmI32.toGrain(
+    DS.newInt64(BI.countTrailingZeros(WasmI32.fromGrain(num)))
+  ): Int64
+}
 
-  let r = deref(rref)
-  Memory.free(ref)
-  if (0n > an) {
-    setSize(r, WasmI32.mul(-1n, rn))
-  } else {
-    setSize(r, rn)
-  }
-
-  WasmI32.toGrain(r): BigInt
+@unsafe
+export let popcnt = (num: BigInt) => {
+  WasmI32.toGrain(DS.newInt64(BI.popcnt(WasmI32.fromGrain(num)))): Int64
 }

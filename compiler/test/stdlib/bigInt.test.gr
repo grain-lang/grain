@@ -1,0 +1,264 @@
+import * from "bigInt"
+
+assert toString(15t) == "15"
+assert toString(-15t) == "-15"
+assert toString(
+  120892581961462917470617512089258196146291747061751208925819614629174706175t
+) ==
+"120892581961462917470617512089258196146291747061751208925819614629174706175"
+assert toString(
+  -120892581961462917470617512089258196146291747061751208925819614629174706175t
+) ==
+"-120892581961462917470617512089258196146291747061751208925819614629174706175"
+
+assert toString(15t) == "15"
+assert toString(-15t) == "-15"
+
+// cmp smoke tests:
+assert eq(0t, 0t)
+assert eq(1t, 1t)
+assert eq(-1t, -1t)
+
+assert lt(0t, 1t)
+assert !lt(1t, 0t)
+assert gt(1t, -1t)
+assert !gt(-1t, 1t)
+assert lte(-1t, -1t)
+assert !lte(0t, -1t)
+assert gte(0t, -1t)
+assert !gte(-1t, 0t)
+
+// negate and abs
+assert eq(-5t, negate(5t))
+assert eq(5t, negate(-5t))
+assert eq(5t, abs(5t))
+assert eq(5t, abs(-5t))
+
+// addition and subtraction
+
+assert eq(incr(5t), 6t)
+assert eq(incr(-5t), -4t)
+assert eq(incr(0t), 1t)
+assert eq(
+  incr(
+    105283664383537698179048568639738324582407620177142255774517468458859582470144t
+  ),
+  105283664383537698179048568639738324582407620177142255774517468458859582470145t
+)
+assert eq(
+  incr(
+    -105283664383537698179048568639738324582407620177142255774517468458859582470144t
+  ),
+  -105283664383537698179048568639738324582407620177142255774517468458859582470143t
+)
+assert eq(incr(0xfffffffffffffffft), 0x10000000000000000t)
+
+assert eq(decr(5t), 4t)
+assert eq(decr(-5t), -6t)
+assert eq(decr(0t), -1t)
+
+assert eq(
+  decr(
+    105283664383537698179048568639738324582407620177142255774517468458859582470144t
+  ),
+  105283664383537698179048568639738324582407620177142255774517468458859582470143t
+)
+assert eq(
+  decr(
+    -105283664383537698179048568639738324582407620177142255774517468458859582470144t
+  ),
+  -105283664383537698179048568639738324582407620177142255774517468458859582470145t
+)
+assert eq(decr(0x10000000000000000t), 0xfffffffffffffffft)
+
+assert eq(add(5t, 10t), 15t)
+assert eq(add(negate(5t), 10t), 5t)
+assert eq(add(5t, negate(10t)), -5t)
+
+assert eq(sub(15t, 10t), 5t)
+assert eq(sub(negate(15t), 10t), -25t)
+assert toString(sub(negate(15t), 10t)) == "-25"
+assert eq(sub(15t, negate(10t)), 25t)
+
+assert toString(mul(421t, 200t)) == "84200"
+
+assert eq(84200t, 84200t)
+assert eq(mul(421t, 200t), mul(421t, 200t))
+assert eq(84200t, mul(421t, 200t))
+assert eq(mul(421t, 200t), 84200t)
+
+assert eq(mul(15t, 10t), 150t)
+assert eq(mul(negate(15t), 10t), -150t)
+
+assert eq(gcd(54t, 24t), 6t)
+assert eq(
+  gcd(
+    0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t,
+    0x16A214FB9FBEE69D061E8C4713AFBB863C16At
+  ),
+  2t
+)
+
+let (/) = quot
+assert eq(-20t / 3t, -6t)
+assert eq(-20t / 5t, -4t)
+
+let (/) = div
+assert eq(-20t / 3t, -7t)
+assert eq(-20t / 5t, -4t)
+assert eq(17t / 5t, 3t)
+assert eq(-17t / 5t, -4t)
+assert eq(17t / -5t, -4t)
+assert eq(-17t / -5t, 3t)
+assert eq(
+  0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t /
+  0x16A214FB9FBEE69D061E8C4713AFBB863C16At,
+  0xA48CC03DAE878E7E0805847FDFF6t
+)
+assert eq(
+  -0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t /
+  0x16A214FB9FBEE69D061E8C4713AFBB863C16At,
+  -0xA48CC03DAE878E7E0805847FDFF6t
+)
+assert eq(
+  0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t /
+  -0x16A214FB9FBEE69D061E8C4713AFBB863C16At,
+  -0xA48CC03DAE878E7E0805847FDFF6t
+)
+assert eq(
+  -0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t /
+  -0x16A214FB9FBEE69D061E8C4713AFBB863C16At,
+  0xA48CC03DAE878E7E0805847FDFF6t
+)
+
+let (%) = mod
+assert eq(5t % 3t, 2t)
+assert eq(5t % -3t, -1t)
+assert eq(-5t % 3t, 1t)
+assert eq(-5t % -3t, -2t)
+assert eq(
+  0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t %
+  0x16A214FB9FBEE69D061E8C4713AFBB863C16At,
+  0xd614d1d90dfbb87c5d3438cf6e244816466ct
+)
+
+let (%) = rem
+assert eq(5t % 3t, 2t)
+assert eq(5t % -3t, 2t)
+assert eq(-5t % 3t, -2t)
+assert eq(-5t % -3t, -2t)
+
+assert eq(div(17t, 5t), 3t)
+assert eq(div(negate(17t), 5t), -4t)
+assert eq(div(17t, negate(5t)), -4t)
+
+assert eq(div(negate(17t), negate(5t)), 3t)
+
+let (+) = add
+let (*) = mul
+
+// need to do this until equals() is updated:
+
+assert countLeadingZeros(-5t) == 0l
+assert countLeadingZeros(5t) == 0x7fffffffl
+
+assert countTrailingZeros(-5t) == 0L
+assert countTrailingZeros(5t) == 0L
+assert countTrailingZeros(-8t) == 3L
+assert countTrailingZeros(8t) == 3L
+
+assert popcnt(8t) == 1L
+assert popcnt(35242t) == 7L
+assert popcnt(
+  105283664383537698179048568639738324582407620177142255774517468458859582470144t
+) ==
+88L
+assert popcnt(-1t) == 0x7FFFFFFFFFFFFFFFL
+
+let (==) = eq
+
+assert 5t + 10t == 15t
+assert 0xFFFFFFFFFFFFFFFFt + 0t == 0xFFFFFFFFFFFFFFFFt
+assert 0t + 0xFFFFFFFFFFFFFFFFt == 0xFFFFFFFFFFFFFFFFt
+assert 0xFFFFFFFFFFFFFFFFt + 0xFFFFFFFFFFFFFFFFt == 0x1fffffffffffffffet
+// mul
+assert 0xFFFFFFFFFFFFFFFFt * 0xFFFFFFFFFFFFFFFFt ==
+0xfffffffffffffffe0000000000000001t
+assert 0xFFFFFFFFFFFFFFFFt * 0xFFFFFFFFFFFFFFFFt * 0xAAAt ==
+0xaa9ffffffffffffeaac0000000000000aaat
+
+// bitwise
+assert shl(24t, 1l) == 48t
+assert shl(24t, 2l) == 96t
+assert shl(0xf0f0f0f0f0f0f0f0t, 14l) == 0x3c3c3c3c3c3c3c3c0000t
+assert shl(0xf0f0f0f0f0f0f0f0t, 127l) ==
+0x787878787878787800000000000000000000000000000000t
+
+assert eq(shrS(24t, 0l), 24t)
+assert eq(shrS(24t, 1l), 12t)
+assert eq(shrS(24t, 2l), 6t)
+assert eq(shrS(12884901892t, 2l), 3221225473t)
+
+//print(toString(rem(4t, -10t)))
+//print(toString(twosComplement(5t)))
+//debugDumpNumber(
+//  twosComplement(
+//    -0x173B8EC504479C3E95DEB0460411962F9EF2ECE0D3AACD749BE39E1006FC87B8t
+//  )
+//)
+//debugDumpNumber(
+//  0xE8C4713AFBB863C16A214FB9FBEE69D0610D131F2C55328B641D61EFF9037848t
+//)
+//assert twosComplement(
+//  -0x173B8EC504479C3E95DEB0460411962F9EF2ECE0D3AACD749BE39E1006FC87B8t
+//) ==
+//0xE8C4713AFBB863C16A214FB9FBEE69D0610D131F2C55328B641D61EFF9037848t
+//print(
+//  toString(
+//    twosComplement(
+//      -0x173B8EC504479C3E95DEB0460411962F9EF2ECE0D3AACD749BE39E1006FC87B8t
+//    )
+//  )
+//)
+
+// 173B8EC504479C3E95DEB0460411962F9EF2ECE0D3AACD749BE39E1006FC87B8
+// E8C4713AFBB863C16A214FB9FBEE69D0610D131F2C55328B641D61EFF9037848
+
+let (&) = land
+let (|) = lor
+let (^) = lxor
+
+//print(toString(341237t | 60597t))
+assert (341237t & 60597t) == 9397t
+assert (341237t & -60597t) == 331841t
+assert (-341237t & 60597t) == 51201t
+assert (-341237t & -60597t) == -392437t
+
+assert (341237t | 60597t) == 392437t
+assert (341237t | -60597t) == -51201t
+assert (-341237t | 60597t) == -331841t
+assert (-341237t | -60597t) == -9397t
+
+assert (341237t ^ 60597t) == 383040t
+assert (341237t ^ -60597t) == -383042t
+assert (-341237t ^ 60597t) == -383042t
+assert (-341237t ^ -60597t) == 383040t
+
+//print(
+//  toString(
+//    0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t &
+//    -0x16A214FB9FBEE69D061E8C4713AFBB863C16At
+//  )
+//)
+
+assert (0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t &
+  0x16A214FB9FBEE69D061E8C4713AFBB863C16At) ==
+9059764183839950850606742203634691510321224t
+
+assert eq(lnot(5t), -6t)
+// >>> ~0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848
+// -105283664383537698179048568639738333642171804017093106381259672093551092791369
+assert eq(
+  lnot(0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037848t),
+  -0xe8c4713afbb863c16a214fb9fbee69d0610d131f2c55328b641d61eff9037849t
+)

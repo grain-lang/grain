@@ -546,6 +546,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_bytes(_) => failwith("compile_const: Const_bytes post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_char(_) => failwith("compile_const: Const_char post-ANF")
+  | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
   | Const_float32(f) => MConstF32(f)
@@ -869,6 +870,8 @@ let rec compile_comp = (~id=?, env, c) => {
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
     | CNumber(Const_number_rational(n, d)) => MAllocate(MRational(n, d))
+    | CNumber(Const_number_bigint(negative, limbs, _)) =>
+      MAllocate(MBigInt(if (negative) {1l} else {0l}, limbs))
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))

@@ -50,6 +50,7 @@ let rec analyze_comp_expression =
       true
     | CPrim1(
         AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
+        AllocateBigInt |
         NewInt32 |
         NewInt64 |
         NewFloat32 |
@@ -80,7 +81,8 @@ let rec analyze_comp_expression =
       true
     | CPrim1(Assert | Throw, _) => false
     | CPrim2(
-        NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
+        NewRational | NewBigInt | Is | Eq | And | Or | WasmLoadI32(_) |
+        WasmLoadI64(_) |
         WasmLoadF32 |
         WasmLoadF64 |
         WasmBinaryI32(_) |
