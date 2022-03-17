@@ -6,7 +6,7 @@ basic functionality › block_no_expression
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (elem $elem (global.get $wimport__grainEnv_relocBase) $f_1155)
+ (elem $elem (global.get $wimport__grainEnv_relocBase) $f_1131)
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
@@ -20,7 +20,7 @@ basic functionality › block_no_expression
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_2))
- (func $f_1155 (; has Stack IR ;) (param $0 i32) (result i32)
+ (func $f_1131 (; has Stack IR ;) (param $0 i32) (result i32)
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
@@ -81,7 +81,7 @@ basic functionality › block_no_expression
        )
       )
      )
-     (call $f_1155
+     (call $f_1131
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
        (global.get $global_0)
