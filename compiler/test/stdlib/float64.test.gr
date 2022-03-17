@@ -21,8 +21,8 @@ assert gt(infinity, 100000000.d)
 assert toNumber(infinity) == (toNumber(infinity) - 1)
 assert nan != nan
 
-assert pi == 3.14159274f
+assert pi == 3.14159274d
 assert pi == pi
 
-assert tau == 6.28318548f
+assert tau == 6.28318548d
 assert tau == tau
