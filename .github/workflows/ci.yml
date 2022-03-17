@@ -63,6 +63,7 @@ jobs:
       - name: Run tests
         run: |
           yarn compiler test
+          yarn compiler test:js
 
       - name: Check parser error messages exhaustiveness
         run: |
