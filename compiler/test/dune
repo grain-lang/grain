@@ -11,6 +11,11 @@
  (public_name test)
  (package grain-tests)
  (flags
-  (:standard -linkall -g -w -40))
+  (:standard
+   -linkall
+   -g
+   -w
+   -40
+   (:include ./config/flags.sexp)))
  (libraries grain grain-tests.framework grain-tests.suites grain-tests.utils)
  (modules test))
