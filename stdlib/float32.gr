@@ -247,3 +247,17 @@ let rec makeNaN = () => {
  * @since v0.4.0
  */
 export let nan = makeNaN()
+
+/**
+ * PI represented as a Float32 value.
+ * 
+ * @since next
+ */
+export let pi = 3.14159274f
+
+/**
+ * TAU represented as a Float32 value.
+ * 
+ * @since next
+ */
+export let tau = 6.28318548f
