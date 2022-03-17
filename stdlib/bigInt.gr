@@ -2,6 +2,7 @@
  * Arbitary-precision integers.
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
 import BI from "runtime/bigInt"
 import DS from "runtime/dataStructures"
 
@@ -118,6 +119,26 @@ export let gcd = (num1: BigInt, num2: BigInt) => {
 }
 
 @unsafe
+export let quotRem = (num1: BigInt, num2: BigInt) => {
+  let dest = Memory.malloc(8n)
+  BI.quotRem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2), dest)
+  let q = WasmI32.toGrain(WasmI32.load(dest, 0n)): BigInt
+  let r = WasmI32.toGrain(WasmI32.load(dest, 4n)): BigInt
+  Memory.free(dest)
+  (q, r)
+}
+
+@unsafe
+export let divMod = (num1: BigInt, num2: BigInt) => {
+  let dest = Memory.malloc(8n)
+  BI.divMod(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2), dest)
+  let q = WasmI32.toGrain(WasmI32.load(dest, 0n)): BigInt
+  let r = WasmI32.toGrain(WasmI32.load(dest, 4n)): BigInt
+  Memory.free(dest)
+  (q, r)
+}
+
+@unsafe
 export let quot = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
@@ -158,6 +179,11 @@ export let abs = (num: BigInt) => {
 @unsafe
 export let toString = (num: BigInt) => {
   BI.bigIntToString10(WasmI32.fromGrain(num))
+}
+
+@unsafe
+export let debugDumpNumber = (num: BigInt) => {
+  BI.debugDumpNumber(WasmI32.fromGrain(num))
 }
 
 @unsafe
