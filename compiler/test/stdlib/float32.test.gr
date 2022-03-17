@@ -22,8 +22,8 @@ assert toNumber(infinity) == toNumber(infinity)
 assert toNumber(infinity) == (toNumber(infinity) - 1)
 assert nan != nan
 
-assert pi = 3.1415926535897931d
+assert pi == 3.1415926535897931d
 assert pi == pi
 
-assert tau = 6.2831853071795862d
+assert tau == 6.2831853071795862d
 assert tau == tau
