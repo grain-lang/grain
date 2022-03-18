@@ -1161,7 +1161,7 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
 }
 
 @unsafe
-let genDigits = (buffer, w_frc, w_exp, mp_frc, mp_exp, delta, sign) => {
+let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
   let mut delta = delta
   let one_exp = 0n - mp_exp
   let one_frc = WasmI64.shl(1N, WasmI64.extendI32U(one_exp))
@@ -1284,7 +1284,6 @@ let genDigits = (buffer, w_frc, w_exp, mp_frc, mp_exp, delta, sign) => {
         break
       }
     }
-
   len
 }
 
@@ -1355,7 +1354,6 @@ let grisu2 = (value, buffer, sign) => {
   let exp_pow = _exp_pow
 
   let w_frc = umul64f(frc, frc_pow)
-  let w_exp = umul64e(exp, exp_pow)
 
   let wp_frc = WasmI64.sub(umul64f(_frc_plus, frc_pow), 1N)
   let wp_exp = umul64e(_exp, exp_pow)
@@ -1363,7 +1361,7 @@ let grisu2 = (value, buffer, sign) => {
   let wm_frc = WasmI64.add(umul64f(_frc_minus, frc_pow), 1N)
   let delta = WasmI64.sub(wp_frc, wm_frc)
 
-  genDigits(buffer, w_frc, w_exp, wp_frc, wp_exp, delta, sign)
+  genDigits(buffer, w_frc, wp_frc, wp_exp, delta, sign)
 }
 
 @unsafe
