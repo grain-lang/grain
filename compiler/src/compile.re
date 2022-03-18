@@ -285,6 +285,7 @@ let compile_wasi_polyfill = () => {
 
 let reset_compiler_state = () => {
   Ident.setup();
+  Ctype.reset_levels();
   Env.clear_imports();
   Module_resolution.clear_dependency_graph();
   Grain_utils.Fs_access.flush_all_cached_data();
