@@ -46,7 +46,7 @@ module ConstantFoldingArg: Anf_mapper.MapArgument = {
         comp_desc: CImmExpr({...i, imm_desc: ImmConst(imm)}),
       };
       switch (name) {
-      // [TODO] this should be expanded to make use of BigInts
+      // [TODO] this should be expanded to make use of BigInts (#1169)
       /* in_valid_int_range check to make sure we don't overflow.
          If we will overflow, don't optimize and allow the operation at runtime. */
       | "+" when in_valid_int_range(Int64.add, x, y) =>

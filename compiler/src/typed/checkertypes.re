@@ -112,7 +112,7 @@ let constant:
         )
       }
     | PConstNumber(PConstNumberRational(n, d)) =>
-      // [TODO] allow arbitrary-length arguments in rational constants
+      // [TODO] allow arbitrary-length arguments in rational constants (#1168)
       switch (Literals.conv_number_rational(n, d)) {
       | Some((n, d)) when d == 1l =>
         Ok(Const_number(Const_number_int(Int64.of_int32(n))))
