@@ -14,7 +14,7 @@ import WasmI32, {
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
-import BI from "runtime/bigInt"
+import BI from "runtime/bigint"
 import { reducedInteger } from "runtime/numbers"
 
 @unsafe

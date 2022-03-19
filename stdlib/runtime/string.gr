@@ -20,7 +20,7 @@ import WasmI32, {
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
-import BI from "runtime/bigInt"
+import BI from "runtime/bigint"
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import NumberUtils from "runtime/numberUtils"

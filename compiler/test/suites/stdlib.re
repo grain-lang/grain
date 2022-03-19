@@ -89,7 +89,7 @@ describe("stdlib", ({test, testSkip}) => {
     "enterthevoid\n",
   );
   assertStdlib("array.test");
-  assertStdlib("bigInt.test");
+  assertStdlib("bigint.test");
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
   assertStdlib("char.test");

@@ -30,7 +30,7 @@ import Tags from "runtime/unsafe/tags"
 
 import { tagSimpleNumber } from "runtime/dataStructures"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
-import BI from "runtime/bigInt"
+import BI from "runtime/bigint"
 
 import Random from "sys/random"
 import Result from "result"

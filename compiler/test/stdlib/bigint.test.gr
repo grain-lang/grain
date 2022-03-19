@@ -1,6 +1,6 @@
 import List from "list"
 import Wasi from "runtime/wasi"
-import * from "bigInt"
+import * from "bigint"
 
 assert toString(15t) == "15"
 assert toString(-15t) == "-15"

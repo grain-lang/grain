@@ -1,12 +1,12 @@
 /**
  * @module BigInt: Utilities for working with the BigInt type.
- * @example import BigInt from "bigInt"
+ * @example import BigInt from "bigint"
  *
  * @since v0.5.0
  */
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
-import BI from "runtime/bigInt"
+import BI from "runtime/bigint"
 import DS from "runtime/dataStructures"
 
 import {
