@@ -76,7 +76,7 @@ export let decr = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let negate = (num: BigInt) => {
+export let neg = (num: BigInt) => {
   WasmI32.toGrain(BI.negate(WasmI32.fromGrain(num))): BigInt
 }
 
@@ -135,24 +135,11 @@ export let mul = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
 }
 
-/**
- * Computes the quotient of its operands using signed (truncated) division.
- *
- * @param x: The first operand
- * @param y: The second operand
- * @returns The quotient of its operands
- *
- * @since v0.5.0
- */
-@unsafe
-export let quot = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
-}
+// For further reading on Truncated vs. Floored division: https://en.wikipedia.org/wiki/Modulo_operation
 
 /**
- * Computes the quotient of its operands using signed (floored) division.
+ * Computes the quotient of its operands using signed (truncated) division
+ * (in which the quotient is always rounded towards zero).
  *
  * @param x: The first operand
  * @param y: The second operand
@@ -163,12 +150,13 @@ export let quot = (num1: BigInt, num2: BigInt) => {
 @unsafe
 export let div = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
-    BI.div(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+    BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
 }
 
 /**
- * Computes the remainder of the division of its operands using signed (truncated) division.
+ * Computes the remainder of the division of its operands using signed (truncated) division
+ * (in which the quotient is always rounded towards zero).
  *
  * @param x: The first operand
  * @param y: The second operand
@@ -180,22 +168,6 @@ export let div = (num1: BigInt, num2: BigInt) => {
 export let rem = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.rem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  ): BigInt
-}
-
-/**
- * Computes the remainder of the division of its operands using signed (floored) division.
- *
- * @param x: The first operand
- * @param y: The second operand
- * @returns The remainder of its operands
- *
- * @since v0.5.0
- */
-@unsafe
-export let mod = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(
-    BI.mod(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
 }
 
@@ -219,30 +191,11 @@ export let quotRem = (num1: BigInt, num2: BigInt) => {
 }
 
 /**
- * Computes the quotient and remainder of its operands using signed (floored) division.
- *
- * @param x: The first operand
- * @param y: The second operand
- * @returns The quotient and remainder of its operands
- *
- * @since v0.5.0
- */
-@unsafe
-export let divMod = (num1: BigInt, num2: BigInt) => {
-  let dest = Memory.malloc(8n)
-  BI.divMod(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2), dest)
-  let q = WasmI32.toGrain(WasmI32.load(dest, 0n)): BigInt
-  let r = WasmI32.toGrain(WasmI32.load(dest, 4n)): BigInt
-  Memory.free(dest)
-  (q, r)
-}
-
-/**
  * Computes the greatest common divisior of the two operands.
  *
  * @param x: The first operand
  * @param y: The second operand
- * @returns The quotient and remainder of its operands
+ * @returns The greatest common divisor of its operands
  *
  * @since v0.5.0
  */
@@ -499,7 +452,7 @@ export let ctz = (num: BigInt) => {
 
 /**
  * Counts the number of bits set to `1` in the value, also known as a population count.
- * Will return the maximum integer for negative numbers.
+ * Will return the `None` if given a negative integer
  *
  * @param value: The value to inspect
  * @returns The amount of 1-bits in its operand
@@ -508,7 +461,14 @@ export let ctz = (num: BigInt) => {
  */
 @unsafe
 export let popcnt = (num: BigInt) => {
-  WasmI32.toGrain(DS.newInt64(BI.popcnt(WasmI32.fromGrain(num)))): Int64
+  let flagDest = Memory.malloc(4n)
+  WasmI32.store(flagDest, 0n, 0n)
+  let res = BI.popcnt(WasmI32.fromGrain(num), flagDest)
+  if (WasmI32.eqz(WasmI32.load(flagDest, 0n))) {
+    Some(WasmI32.toGrain(DS.newInt64(res)): Int64)
+  } else {
+    None
+  }
 }
 
 /**

@@ -140,8 +140,8 @@ export let rec parseInt = (string: String, radix: Number) => {
         if (WasmI64.ltS(value, WasmI64.add(limit, digit))) {
           // we overflowed. allocate BigInt and use instead
           isBigInt = 1n
-          valueBigInt = BI.makeWrappedUInt64(WasmI64.mul(prevValue, -1N))
-          radixBigInt = BI.makeWrappedUInt64(radix)
+          valueBigInt = BI.makeWrappedUint64(WasmI64.mul(prevValue, -1N))
+          radixBigInt = BI.makeWrappedUint64(radix)
           let newvalue = BI.mul(valueBigInt, radixBigInt)
           Memory.decRef(valueBigInt)
           valueBigInt = newvalue

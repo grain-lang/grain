@@ -2223,30 +2223,20 @@ let allocate_number_uninitialized =
      [ <value type tag>, <number_tag>, <payload>]
      */
   let get_swap = () => get_swap(wasm_mod, env, 0);
-  let extra_words =
-    Option.value(
-      extra_words,
-      ~default=MImmConst(MConstLiteral(MConstI32(0l))),
-    );
+  let make_alloc = () =>
+    switch (extra_words) {
+    // Grain allocations are 8-byte aligned, so no space is saved by
+    // allocating 3 words for 32-bit numbers
+    | None => heap_allocate(wasm_mod, env, 4)
+    | Some(n) =>
+      heap_allocate_imm(~additional_words=4, wasm_mod, env, Words(n))
+    };
 
   let preamble = [
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        // Grain allocations are 8-byte aligned, so no space is saved by
-        // allocating 3 words for 32-bit numbers
-        heap_allocate_imm(
-          ~additional_words=4,
-          wasm_mod,
-          env,
-          Words(extra_words),
-        ),
-      ),
+      tee_swap(~skip_incref=true, wasm_mod, env, 0, make_alloc()),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(BoxedNumberType)),
@@ -2784,11 +2774,14 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
       compile_imm(wasm_mod, env, n),
       compile_imm(wasm_mod, env, d),
     )
-  | MBigInt(neg, limbs) =>
+  | MBigInt(flags, limbs) =>
     allocate_big_int(
       wasm_mod,
       env,
-      Expression.Const.make(wasm_mod, Literal.int32(neg)),
+      Expression.Const.make(
+        wasm_mod,
+        Literal.int32(Bigint_flags.all_to_int32(flags)),
+      ),
       List.map(
         n => Expression.Const.make(wasm_mod, Literal.int64(n)),
         Array.to_list(limbs),

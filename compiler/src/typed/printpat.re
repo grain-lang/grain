@@ -29,9 +29,9 @@ let pretty_const = c =>
   switch (c) {
   | Const_number(Const_number_int(i)) => Printf.sprintf("%Ld", i)
   | Const_number(Const_number_float(f)) => Printf.sprintf("%f", f)
-  | Const_number(Const_number_rational(neg, n, d, nstr, dstr)) =>
-    Printf.sprintf("%s/%s", nstr, dstr)
-  | Const_number(Const_number_bigint(neg, limbs, str)) => str
+  | Const_number(Const_number_rational({rational_num_rep, rational_den_rep})) =>
+    Printf.sprintf("%s/%s", rational_num_rep, rational_den_rep)
+  | Const_number(Const_number_bigint({bigint_rep})) => bigint_rep
   | Const_bytes(b) => Printf.sprintf("%S", Bytes.to_string(b))
   | Const_string(s) => Printf.sprintf("%S", s)
   | Const_char(c) => Printf.sprintf("%S", c)
@@ -43,7 +43,7 @@ let pretty_const = c =>
   | Const_wasmi64(i) => Printf.sprintf("%LdN", i)
   | Const_wasmf32(f) => Printf.sprintf("%fw", f)
   | Const_wasmf64(f) => Printf.sprintf("%fW", f)
-  | Const_bigint(neg, limbs, str) => str
+  | Const_bigint({bigint_rep}) => bigint_rep
   | Const_bool(true) => "true"
   | Const_bool(false) => "false"
   | Const_void => "void"

@@ -12,14 +12,9 @@ let of_int = n => {
   {limbs: [|Int64.of_int(n)|]};
 };
 
-// Like Int64.of_int32, but guarantees leading 32 bits are zero
-let logical_i32_to_i64 = (n: int32) =>
-  if (Int32.compare(Int32.zero, n) <= 0) {
-    Int64.of_int32(n);
-  } else {
-    let mask = Int32.lognot(0x80000000l);
-    Int64.logor(Int64.of_int32(Int32.logand(n, mask)), 0x80000000L);
-  };
+// Like Int64.of_int32, but guarantees leading 32 bits are zero (since Int64.of_int32 is a signed conversion)
+let int64_of_uint32 = (n: int32) =>
+  Int64.logand(Int64.of_int32(n), 0xffffffffL);
 
 let smart_add = (a, b) => {
   let res = Int64.add(a, b);
@@ -57,15 +52,15 @@ let upper_half = (i64: int64) => {
 
 let concat_halves = (lower: int32, upper: int32) => {
   Int64.logor(
-    Int64.shift_left(logical_i32_to_i64(upper), 32),
-    logical_i32_to_i64(lower),
+    Int64.shift_left(int64_of_uint32(upper), 32),
+    int64_of_uint32(lower),
   );
 };
 
 let merge_half_limbs = (half_limbs: array(int32)) => {
   Array.init((Array.length(half_limbs) + 1) / 2, n =>
     if (n * 2 >= Array.length(half_limbs) - 1) {
-      logical_i32_to_i64(half_limbs[n * 2]);
+      int64_of_uint32(half_limbs[n * 2]);
     } else {
       concat_halves(half_limbs[n * 2], half_limbs[n * 2 + 1]);
     }
@@ -105,7 +100,7 @@ let unsigned_mul_i32 = (num1: t, num2: int32) => {
       Int64.add(
         tmp^,
         Int64.mul(
-          logical_i32_to_i64(num1_half_limbs[i]),
+          int64_of_uint32(num1_half_limbs[i]),
           Int64.of_int32(num2),
         ),
       );

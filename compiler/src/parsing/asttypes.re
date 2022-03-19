@@ -20,6 +20,13 @@ let sexp_locs_disabled = _ => ! Grain_utils.Config.sexp_locs_enabled^;
 /** Auxiliary AST types used by parsetree and typedtree. */;
 
 [@deriving (sexp, yojson)]
+type bigint_data = {
+  bigint_negative: bool,
+  bigint_limbs: array(int64),
+  bigint_rep: string,
+};
+
+[@deriving (sexp, yojson)]
 type constant =
   | Const_number(number_type)
   | Const_bytes(bytes)
@@ -33,7 +40,7 @@ type constant =
   | Const_wasmi64(int64)
   | Const_wasmf32(float)
   | Const_wasmf64(float)
-  | Const_bigint(bool, array(int64), string) // (is_negative, abs_value, string_rep)
+  | Const_bigint(bigint_data) // (is_negative, abs_value, string_rep)
   | Const_bool(bool)
   | Const_void
 
@@ -41,8 +48,14 @@ type constant =
 and number_type =
   | Const_number_int(int64)
   | Const_number_float(float)
-  | Const_number_rational(bool, array(int64), array(int64), string, string)
-  | Const_number_bigint(bool, array(int64), string);
+  | Const_number_rational({
+      rational_negative: bool,
+      rational_num_limbs: array(int64),
+      rational_den_limbs: array(int64),
+      rational_num_rep: string,
+      rational_den_rep: string,
+    })
+  | Const_number_bigint(bigint_data);
 
 /** Marker for exported/nonexported let bindings */
 

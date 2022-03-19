@@ -85,8 +85,16 @@ let constant:
       | Some(n) => Ok(Const_number(Const_number_int(n)))
       | None =>
         switch (Literals.conv_bigint(n)) {
-        | Some((is_negative, limbs)) =>
-          Ok(Const_number(Const_number_bigint(is_negative, limbs, n)))
+        | Some((bigint_negative, bigint_limbs)) =>
+          Ok(
+            Const_number(
+              Const_number_bigint({
+                bigint_negative,
+                bigint_limbs,
+                bigint_rep: n,
+              }),
+            ),
+          )
         // Should not happen, since `None` is only returned for the empty string,
         // and that should be disallowed by the lexer
         | None =>
@@ -117,16 +125,16 @@ let constant:
       | Some((n, d)) when d == 1l =>
         Ok(Const_number(Const_number_int(Int64.of_int32(n))))
       | Some((n, d)) =>
-        // (until above TODO is done, we keep existing behavior and )
+        // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
         Ok(
           Const_number(
-            Const_number_rational(
-              Int32.compare(n, 0l) < 0, // true if rational is less than 0
-              [|Int64.abs(Int64.of_int32(n))|],
-              [|Int64.abs(Int64.of_int32(d))|],
-              Int32.to_string(n),
-              Int32.to_string(Int32.abs(d)),
-            ),
+            Const_number_rational({
+              rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
+              rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
+              rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
+              rational_num_rep: Int32.to_string(n),
+              rational_den_rep: Int32.to_string(Int32.abs(d)),
+            }),
           ),
         )
       | None =>
@@ -189,8 +197,8 @@ let constant:
       }
     | PConstBigInt(n) =>
       switch (Literals.conv_bigint(n)) {
-      | Some((is_negative, limbs)) =>
-        Ok(Const_bigint(is_negative, limbs, n))
+      | Some((bigint_negative, bigint_limbs)) =>
+        Ok(Const_bigint({bigint_negative, bigint_limbs, bigint_rep: n}))
       // Should not happen, since `None` is only returned for the empty string,
       // and that should be disallowed by the lexer
       | None =>

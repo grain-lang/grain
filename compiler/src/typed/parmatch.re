@@ -261,7 +261,10 @@ let const_compare = (x, y) =>
   | (Const_char(c1), Const_char(c2)) => String.compare(c1, c2)
   | (Const_bool(b1), Const_bool(b2)) =>
     Stdlib.compare(if (b1) {1} else {0}, if (b2) {1} else {0})
-  | (Const_bigint(neg1, vals1, _), Const_bigint(neg2, vals2, _)) =>
+  | (
+      Const_bigint({bigint_negative: neg1, bigint_limbs: vals1}),
+      Const_bigint({bigint_negative: neg2, bigint_limbs: vals2}),
+    ) =>
     Stdlib.compare((neg1, vals1), (neg2, vals2))
   | (
       Const_number(_) | Const_bytes(_) | Const_string(_) | Const_char(_) |
@@ -1789,10 +1792,12 @@ let untype_constant =
     Parsetree.PConstNumber(Parsetree.PConstNumberInt(Int64.to_string(i)))
   | Const_number(Const_number_float(f)) =>
     Parsetree.PConstNumber(Parsetree.PConstNumberFloat(Float.to_string(f)))
-  | Const_number(Const_number_rational(_, _, _, n, d)) =>
-    Parsetree.PConstNumber(Parsetree.PConstNumberRational(n, d))
-  | Const_number(Const_number_bigint(_, _, str)) =>
-    Parsetree.PConstNumber(Parsetree.PConstNumberInt(str))
+  | Const_number(Const_number_rational({rational_num_rep, rational_den_rep})) =>
+    Parsetree.PConstNumber(
+      Parsetree.PConstNumberRational(rational_num_rep, rational_den_rep),
+    )
+  | Const_number(Const_number_bigint({bigint_rep})) =>
+    Parsetree.PConstNumber(Parsetree.PConstNumberInt(bigint_rep))
   | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))
   | Const_int64(i) => Parsetree.PConstInt64(Int64.to_string(i))
   | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
@@ -1801,7 +1806,7 @@ let untype_constant =
   | Const_wasmi64(i) => Parsetree.PConstWasmI64(Int64.to_string(i))
   | Const_wasmf32(f) => Parsetree.PConstWasmF32(Float.to_string(f))
   | Const_wasmf64(f) => Parsetree.PConstWasmF64(Float.to_string(f))
-  | Const_bigint(_, _, str) => Parsetree.PConstBigInt(str)
+  | Const_bigint({bigint_rep}) => Parsetree.PConstBigInt(bigint_rep)
   | Const_bytes(b) => Parsetree.PConstBytes(Bytes.to_string(b))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_char(c) => Parsetree.PConstChar(c)

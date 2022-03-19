@@ -15,7 +15,7 @@ describe("functions", ({test, testSkip}) => {
 
   assertFileRun("fib1", "fib", "55\n");
   assertFileRun("fib2", "fib-better", "75025\n");
-  assertFileRun("fib_big", "too-much-fib", "354224848179261915075\n");
+  assertFileRun("fib_big", "fib-bigint", "354224848179261915075\n");
   assertFileRun("indirect", "indirect-tail", "10\n");
   /* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) */

@@ -878,19 +878,17 @@ let rec compile_comp = (~id=?, env, c) => {
       MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
-    | CNumber(Const_number_rational(neg, n, d, _, _)) =>
+    | CNumber(Const_number_rational(_)) =>
       failwith("compile_comp: rational after ANF")
-    | CNumber(Const_number_bigint(negative, limbs, _)) =>
+    | CNumber(Const_number_bigint({bigint_negative, bigint_limbs, _})) =>
       MAllocate(
         MBigInt(
-          Bigint_flags.all_to_int32(
-            if (negative) {
-              [Bigint_flags.BigIntNegative];
-            } else {
-              [];
-            },
-          ),
-          limbs,
+          if (bigint_negative) {
+            [Bigint_flags.BigIntNegative];
+          } else {
+            [];
+          },
+          bigint_limbs,
         ),
       )
     | CRational(n, d) =>

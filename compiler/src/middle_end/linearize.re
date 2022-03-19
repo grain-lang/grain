@@ -134,8 +134,8 @@ let transl_const =
   | Const_number(Const_number_rational(_)) =>
     failwith("Impossible: rational constant in transl_const")
   | Const_number(n) => Right(("number", Comp.number(n)))
-  | Const_bigint(neg, limbs, s) =>
-    Right(("number", Comp.number(Const_number_bigint(neg, limbs, s))))
+  | Const_bigint(data) =>
+    Right(("number", Comp.number(Const_number_bigint(data))))
   | Const_int32(i) => Right(("int32", Comp.int32(i)))
   | Const_int64(i) => Right(("int64", Comp.int64(i)))
   | Const_float64(i) => Right(("float64", Comp.float64(i)))
@@ -294,15 +294,41 @@ let rec transl_imm =
       failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
     }
   // edge case: for Rationals, we need to allocate the underlying bigints in the setup.
-  | TExpConstant(Const_number(Const_number_rational(neg, n, d, nstr, dstr))) =>
+  | TExpConstant(
+      Const_number(
+        Const_number_rational({
+          rational_negative,
+          rational_num_limbs,
+          rational_den_limbs,
+          rational_num_rep,
+          rational_den_rep,
+        }),
+      ),
+    ) =>
     let ntmp = gensym("numerator");
     let dtmp = gensym("denominator");
     let tmp = gensym("rational");
     let setup = [
-      BLet(ntmp, Comp.number(Const_number_bigint(neg, n, nstr)), Nonglobal),
+      BLet(
+        ntmp,
+        Comp.number(
+          Const_number_bigint({
+            bigint_negative: rational_negative,
+            bigint_limbs: rational_num_limbs,
+            bigint_rep: rational_num_rep,
+          }),
+        ),
+        Nonglobal,
+      ),
       BLet(
         dtmp,
-        Comp.number(Const_number_bigint(false, d, dstr)),
+        Comp.number(
+          Const_number_bigint({
+            bigint_negative: false,
+            bigint_limbs: rational_den_limbs,
+            bigint_rep: rational_den_rep,
+          }),
+        ),
         Nonglobal,
       ),
       BLet(

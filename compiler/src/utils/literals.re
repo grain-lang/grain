@@ -88,8 +88,7 @@ let conv_wasmf64 = s => {
   Float.of_string_opt(s);
 };
 
-// this one has to be hand-rolled, unfortunately
-let parse_digit = c => {
+let digit_value = c => {
   switch (c) {
   | '0' .. '9' => Char.code(c) - Char.code('0')
   | 'a' .. 'f' => 10 + (Char.code(c) - Char.code('a'))
@@ -102,10 +101,10 @@ let conv_bigint = s =>
   if (String.length(s) == 0) {
     None;
   } else {
-    // this can be cleaned up substantially with OCaml 4.13
     let neg = s.[0] == '-';
     let first = if (neg) {1} else {0};
     let (first, base) =
+      // This function supports the 0u prefix for parity with Int64.of_string
       if (String_utils.starts_with(~offset=first, s, "0u")
           || String_utils.starts_with(~offset=first, s, "0U")) {
         (first + 2, 10);
@@ -135,7 +134,7 @@ let conv_bigint = s =>
       let accBits = ref(0);
       let results = ref([]);
       for (i in String.length(s) - 1 downto first) {
-        let digit = Int64.of_int(parse_digit(s.[i]));
+        let digit = Int64.of_int(digit_value(s.[i]));
         acc := Int64.logor(acc^, Int64.shift_left(digit, accBits^));
         accBits := accBits^ + bits;
         if (accBits^ >= 64) {
@@ -172,7 +171,7 @@ let conv_bigint = s =>
           result :=
             Int64.add(
               Int64.mul(result^, Int64.of_int(base)),
-              Int64.of_int(parse_digit(s.[i])),
+              Int64.of_int(digit_value(s.[i])),
             );
         };
         result^;

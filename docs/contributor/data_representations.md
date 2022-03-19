@@ -229,7 +229,7 @@ and 32-bit pointer to a BigInt denotes the denominator of the represented fracti
 ╚══════╩═══════════╧══════════════════╧═════════════════╧════════════════════╝
 ```
 
-#### Rational
+#### BigInt
 
 The payload for big integers consists of an unsigned 32-bit integer denoting
 the number of "limbs" (64-bit dwords needed to encode the magnitude), a 16-bit

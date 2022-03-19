@@ -5,6 +5,10 @@ import Tags from "runtime/unsafe/tags"
 import Exception from "runtime/exception"
 import BI from "runtime/bigint"
 
+import {
+  _SMAX32_I64 as _I32_MAX,
+  _SMIN32_I64 as _I32_MIN,
+} from "runtime/unsafe/constants"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
@@ -25,10 +29,6 @@ import {
   newFloat64,
 } from "runtime/dataStructures"
 
-@unsafe
-let _I32_MAX = WasmI64._SMAX32
-@unsafe
-let _I32_MIN = WasmI64._SMIN32
 @unsafe
 let _F32_MAX = 3.40282347e+38W
 @unsafe

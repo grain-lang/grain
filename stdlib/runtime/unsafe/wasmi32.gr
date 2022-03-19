@@ -74,9 +74,3 @@ export primitive extendS16: WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
 // Grain Conversions
 export primitive fromGrain: a -> WasmI32 = "@wasm.fromGrain"
 export primitive toGrain: WasmI32 -> a = "@wasm.toGrain"
-
-// Signed/Unsigned Min/Max Constants
-export let _SMIN = 0xFFFFFFFFn
-export let _SMAX = 0x7FFFFFFFn
-export let _UMIN = 0x0n
-export let _UMAX = 0xFFFFFFFFn
