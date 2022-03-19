@@ -169,11 +169,6 @@ let prim2_type =
       Builtin_types.type_wasmi32,
       Builtin_types.type_wasmi32,
     )
-  | NewBigInt => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-    )
   | And
   | Or => (
       Builtin_types.type_bool,

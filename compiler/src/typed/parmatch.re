@@ -1789,13 +1789,8 @@ let untype_constant =
     Parsetree.PConstNumber(Parsetree.PConstNumberInt(Int64.to_string(i)))
   | Const_number(Const_number_float(f)) =>
     Parsetree.PConstNumber(Parsetree.PConstNumberFloat(Float.to_string(f)))
-  | Const_number(Const_number_rational(n, d)) =>
-    Parsetree.PConstNumber(
-      Parsetree.PConstNumberRational(
-        Int32.to_string(n),
-        Int32.to_string(d),
-      ),
-    )
+  | Const_number(Const_number_rational(_, _, _, n, d)) =>
+    Parsetree.PConstNumber(Parsetree.PConstNumberRational(n, d))
   | Const_number(Const_number_bigint(_, _, str)) =>
     Parsetree.PConstNumber(Parsetree.PConstNumberInt(str))
   | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))

@@ -6,6 +6,14 @@ import Memory from "runtime/unsafe/memory"
 import BI from "runtime/bigInt"
 import DS from "runtime/dataStructures"
 
+import {
+  coerceNumberToBigInt as fromNumber,
+  coerceBigIntToNumber as toNumber,
+} from "runtime/numbers"
+
+export fromNumber
+export toNumber
+
 @unsafe
 export let eq = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
@@ -179,11 +187,6 @@ export let abs = (num: BigInt) => {
 @unsafe
 export let toString = (num: BigInt) => {
   BI.bigIntToString10(WasmI32.fromGrain(num))
-}
-
-@unsafe
-export let debugDumpNumber = (num: BigInt) => {
-  BI.debugDumpNumber(WasmI32.fromGrain(num))
 }
 
 @unsafe

@@ -75,6 +75,7 @@ let rec analyze_comp_expression =
   | CString(_)
   | CChar(_)
   | CNumber(_)
+  | CRational(_)
   | CInt32(_)
   | CInt64(_)
   | CFloat32(_)

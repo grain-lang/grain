@@ -103,6 +103,9 @@ module MakeIter = (Iter: IterArgument) => {
     | CString(s) => ()
     | CChar(c) => ()
     | CNumber(i) => ()
+    | CRational(n, d) =>
+      iter_imm_expression(n);
+      iter_imm_expression(d);
     | CInt32(i) => ()
     | CInt64(i) => ()
     | CFloat32(f) => ()

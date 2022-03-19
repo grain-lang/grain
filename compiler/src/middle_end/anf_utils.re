@@ -140,6 +140,11 @@ and comp_free_vars_help = (env, c: comp_expression) =>
       imm_free_vars_help(env, arg1),
       imm_free_vars_help(env, arg2),
     )
+  | CRational(num, den) =>
+    Ident.Set.union(
+      imm_free_vars_help(env, num),
+      imm_free_vars_help(env, den),
+    )
   | CNumber(_)
   | CInt32(_)
   | CInt64(_)

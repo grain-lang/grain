@@ -237,7 +237,6 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | NewRational
-    | NewBigInt
     | Is
     | Eq
     | And

@@ -29,8 +29,8 @@ let pretty_const = c =>
   switch (c) {
   | Const_number(Const_number_int(i)) => Printf.sprintf("%Ld", i)
   | Const_number(Const_number_float(f)) => Printf.sprintf("%f", f)
-  | Const_number(Const_number_rational(n, d)) =>
-    Printf.sprintf("%ld/%ld", n, d)
+  | Const_number(Const_number_rational(neg, n, d, nstr, dstr)) =>
+    Printf.sprintf("%s/%s", nstr, dstr)
   | Const_number(Const_number_bigint(neg, limbs, str)) => str
   | Const_bytes(b) => Printf.sprintf("%S", Bytes.to_string(b))
   | Const_string(s) => Printf.sprintf("%S", s)

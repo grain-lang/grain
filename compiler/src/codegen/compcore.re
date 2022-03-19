@@ -2781,8 +2781,8 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
     allocate_rational(
       wasm_mod,
       env,
-      Expression.Const.make(wasm_mod, Literal.int32(n)),
-      Expression.Const.make(wasm_mod, Literal.int32(d)),
+      compile_imm(wasm_mod, env, n),
+      compile_imm(wasm_mod, env, d),
     )
   | MBigInt(neg, limbs) =>
     allocate_big_int(

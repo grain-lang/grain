@@ -84,13 +84,20 @@ let constant:
       switch (Literals.conv_number_int(n)) {
       | Some(n) => Ok(Const_number(Const_number_int(n)))
       | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "Number literal %s is outside of the integer range of the Number type.",
-            n,
-          ),
-        )
+        switch (Literals.conv_bigint(n)) {
+        | Some((is_negative, limbs)) =>
+          Ok(Const_number(Const_number_bigint(is_negative, limbs, n)))
+        // Should not happen, since `None` is only returned for the empty string,
+        // and that should be disallowed by the lexer
+        | None =>
+          Error(
+            Location.errorf(
+              ~loc,
+              "Unable to parse big-integer literal %st.",
+              n,
+            ),
+          )
+        }
       }
     | PConstNumber(PConstNumberFloat(n)) =>
       switch (Literals.conv_number_float(n)) {
@@ -105,10 +112,23 @@ let constant:
         )
       }
     | PConstNumber(PConstNumberRational(n, d)) =>
+      // [TODO] allow arbitrary-length arguments in rational constants
       switch (Literals.conv_number_rational(n, d)) {
       | Some((n, d)) when d == 1l =>
         Ok(Const_number(Const_number_int(Int64.of_int32(n))))
-      | Some((n, d)) => Ok(Const_number(Const_number_rational(n, d)))
+      | Some((n, d)) =>
+        // (until above TODO is done, we keep existing behavior and )
+        Ok(
+          Const_number(
+            Const_number_rational(
+              Int32.compare(n, 0l) < 0, // true if rational is less than 0
+              [|Int64.abs(Int64.of_int32(n))|],
+              [|Int64.abs(Int64.of_int32(d))|],
+              Int32.to_string(n),
+              Int32.to_string(Int32.abs(d)),
+            ),
+          ),
+        )
       | None =>
         Error(
           Location.errorf(

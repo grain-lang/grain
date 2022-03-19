@@ -8,4 +8,4 @@ let rec fib_help = (n, cur, next) => {
 
 fib = (n) => {fib_help(n, 0, 1)};
 
-fib(100)
+print(fib(100))

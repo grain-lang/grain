@@ -1,3 +1,4 @@
+/* grainc-flags --no-pervasives */
 /**
  * Arbitary-precision integers.
  */
@@ -5,8 +6,6 @@
 // Useful reading:
 // Modern Computer Arithmetic, Richard Brent and Paul Zimmermann, Cambridge University Press, 2010.
 // https://members.loria.fr/PZimmermann/mca/pub226.html
-
-// [TODO] *once everything is implemented and tested*, remove `DS` import and mark this file as `--no-pervasives`
 
 /*
 This file is *not* a direct port of `nim-lang/bigints`, but pieces of it are, and it does draw substantial inspiration from it.
@@ -23,8 +22,11 @@ import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
+import WasmF32 from "runtime/unsafe/wasmf32"
+import WasmF64 from "runtime/unsafe/wasmf64"
 import Exception from "runtime/exception"
 import DS from "runtime/dataStructures"
+import RPrint from "runtime/utils/printing"
 
 // things we need which are missing due to --no-pervasives:
 primitive (!): Bool -> Bool = "@not"
@@ -149,41 +151,48 @@ let init = (limbs: WasmI32) => {
 @unsafe
 export let debugDumpNumber = (num: WasmI32) => {
   //let num = WasmI32.fromGrain(num)
-  print("-=-=-=-== debug dump ==-=-=-=-")
-  print("Ref Count:")
-  print(DS.newInt32(WasmI32.load(WasmI32.sub(num, 8n), 0n)))
-  print("Heap Tag:")
-  print(DS.newInt32(WasmI32.load(num, 0n)))
-  print("Boxed Num Tag:")
-  print(DS.newInt32(WasmI32.load(num, 4n)))
-  print("Num Limbs:")
+  RPrint.printString("-=-=-=-== debug dump ==-=-=-=-")
+  RPrint.printString("Ref Count:")
+  RPrint.printNumber(WasmI64.extendI32U(WasmI32.load(WasmI32.sub(num, 8n), 0n)))
+  RPrint.printString("Heap Tag:")
+  RPrint.printNumber(WasmI64.extendI32U(WasmI32.load(num, 0n)))
+  RPrint.printString("Boxed Num Tag:")
+  RPrint.printNumber(WasmI64.extendI32U(WasmI32.load(num, 4n)))
+  RPrint.printString("Num Limbs:")
   let limbs = WasmI32.load(num, 8n)
-  print(DS.newInt32(limbs))
-  print("Flags:")
-  print(DS.newInt32(WasmI32.and(0xffffn, WasmI32.load(num, 12n))))
-  print("<reserved>:")
-  print(
-    DS.newInt32(
+  RPrint.printNumber(WasmI64.extendI32U(limbs))
+  RPrint.printString("Flags:")
+  RPrint.printNumber(
+    WasmI64.extendI32U(WasmI32.and(0xffffn, WasmI32.load(num, 12n)))
+  )
+  RPrint.printString("<reserved>:")
+  RPrint.printNumber(
+    WasmI64.extendI32U(
       WasmI32.shrU(WasmI32.and(0xffff0000n, WasmI32.load(num, 12n)), 16n)
     )
   )
-  print("Limbs:")
+  RPrint.printString("Limbs:")
   for (let mut i = 0n; WasmI32.ltS(i, limbs); i = WasmI32.add(i, 1n)) {
     // if a nonzero limb is found, then we're at the min
     let (*) = WasmI32.mul
     let (+) = WasmI32.add
-    print(DS.newInt64(WasmI64.load(num, (i + 2n) * 8n)))
+    RPrint.printNumber(WasmI64.load(num, (i + 2n) * 8n))
   }
 }
 
 @unsafe
-let getSize = ptr => {
+export let getSize = ptr => {
   WasmI32.load(ptr, 8n)
 }
 
 @unsafe
 let setSize = (ptr, n) => {
   WasmI32.store(ptr, n, 8n)
+}
+
+@unsafe
+export let getFlags = ptr => {
+  WasmI32.load(ptr, 12n)
 }
 
 @unsafe
@@ -218,7 +227,7 @@ let setFlag = (ptr, flag, value) => {
 }
 
 @unsafe
-let getLimb = (ptr, i) => {
+export let getLimb = (ptr, i) => {
   let (*) = WasmI32.mul
   let (+) = WasmI32.add
   WasmI64.load(ptr, (i + 2n) * 8n)
@@ -371,6 +380,11 @@ export let makeWrappedUInt64 = (value: WasmI64) => {
   ret
 }
 
+@unsafe
+export let isNegative = (num: WasmI32) => {
+  flagIsSet(num, _IS_NEGATIVE)
+}
+
 /**
  * Returns true if the given bigint is equal to zero
  */
@@ -417,8 +431,215 @@ export let abs = (num: WasmI32) => {
 }
 
 /*
+ * Conversions
+ */
+@unsafe
+export let canConvertToInt32 = (num: WasmI32) => {
+  let (<=) = WasmI64.leU
+  let (==) = WasmI32.eq
+  let numLimbs = getSize(num)
+  if (numLimbs == 0n) {
+    true
+  } else if (numLimbs == 1n) {
+    let limb = getLimb(num, 0n)
+    if (limb <= WasmI64._SMAX32) {
+      true
+    } else {
+      false
+    }
+  } else {
+    false
+  }
+}
+
+@unsafe
+export let toInt32 = (num: WasmI32) => {
+  let (<=) = WasmI64.leU
+  let (==) = WasmI32.eq
+  let numLimbs = getSize(num)
+  if (numLimbs == 0n) {
+    0n
+  } else if (numLimbs == 1n) {
+    let limb = getLimb(num, 0n)
+    if (limb <= WasmI64._SMAX32) {
+      if (flagIsSet(num, _IS_NEGATIVE)) {
+        WasmI32.mul(-1n, WasmI32.wrapI64(limb))
+      } else {
+        WasmI32.wrapI64(limb)
+      }
+    } else {
+      throw Exception.Overflow
+    }
+  } else {
+    throw Exception.Overflow
+  }
+}
+
+@unsafe
+export let canConvertToInt64 = (num: WasmI32) => {
+  let (<=) = WasmI64.leU
+  let (==) = WasmI32.eq
+  let numLimbs = getSize(num)
+  if (numLimbs == 0n) {
+    true
+  } else if (numLimbs == 1n) {
+    let limb = getLimb(num, 0n)
+    if (limb <= WasmI64._SMAX) {
+      true
+    } else {
+      false
+    }
+  } else {
+    false
+  }
+}
+
+@unsafe
+export let toInt64 = (num: WasmI32) => {
+  let (<=) = WasmI64.leU
+  let (==) = WasmI32.eq
+  let numLimbs = getSize(num)
+  if (numLimbs == 0n) {
+    0N
+  } else if (numLimbs == 1n) {
+    let limb = getLimb(num, 0n)
+    if (limb <= WasmI64._SMAX) {
+      if (flagIsSet(num, _IS_NEGATIVE)) {
+        WasmI64.mul(-1N, limb)
+      } else {
+        limb
+      }
+    } else {
+      throw Exception.Overflow
+    }
+  } else {
+    throw Exception.Overflow
+  }
+}
+
+@unsafe
+export let toFloat64 = (num: WasmI32) => {
+  // approximate!
+  // semi-port of https://github.com/JuliaLang/julia/issues/31293#issuecomment-477220553
+  let (<=) = WasmI64.leU
+  let (==) = WasmI32.eq
+  let (+) = WasmF64.add
+  let (*) = WasmF64.mul
+  let numLimbs = getSize(num)
+  let res = if (eqz(num)) {
+    0.W
+  } else if (WasmI32.gtU(numLimbs, 16n)) {
+    // Float64 infinity (bigger than FLOAT_MAX)
+    WasmF64.reinterpretI64(
+      0b0111111111110000000000000000000000000000000000000000000000000000N
+    )
+  } else if (numLimbs == 1n) {
+    WasmF64.convertI64U(getLimb(num, 0n))
+  } else {
+    // We have to convert manually. if anyone has a better way
+    // to do this (performance or accuracy-wise), please submit a PR
+    // factor == 2^64
+    let factor = WasmF64.reinterpretI64(
+      0b0100001111110000000000000000000000000000000000000000000000000000N
+    )
+    let mut result = 0.W
+    for (let mut i = 0n; WasmI32.ltU(i, numLimbs); i = WasmI32.add(i, 1n)) {
+      if (!WasmI32.eqz(i)) {
+        result *= factor
+      }
+      result += WasmF64.convertI64U(getLimb(num, i))
+    }
+    result
+  }
+  if (flagIsSet(num, _IS_NEGATIVE)) {
+    WasmF64.neg(res)
+  } else {
+    res
+  }
+}
+
+@unsafe
+export let toFloat32 = (num: WasmI32) => {
+  WasmF32.demoteF64(toFloat64(num))
+}
+
+/*
  * Comparisons
  */
+
+@unsafe
+let cmpUnsignedI64 = (num1: WasmI32, num2: WasmI64) => {
+  let (-) = WasmI32.sub
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+  let (>=) = WasmI32.geS
+  let num1Limbs = getSize(num1)
+  let num2Limbs = 1n
+  let delta = num1Limbs - num2Limbs
+  let num2abs = if (WasmI64.ltS(num2, 0N)) WasmI64.mul(-1N, num2) else num2
+  if (delta != 0n) {
+    delta
+  } else {
+    // num1 and num2 have the same size. Compare all limbs, high to low
+    let mut result = 0n
+    for (let mut i = num1Limbs - 1n; i >= 0n; i -= 1n) {
+      let limb1 = getLimb(num1, i)
+      let limb2 = if (i == 0n) num2abs else 0N
+      if (WasmI64.ltU(limb1, limb2)) {
+        result = -1n
+        break
+      } else if (WasmI64.ltU(limb2, limb1)) {
+        result = 1n
+        break
+      }
+    }
+    result
+  }
+}
+
+@unsafe
+export let cmpI64 = (num1: WasmI32, num2: WasmI64) => {
+  if (eqz(num1)) {
+    if (WasmI64.eqz(num2)) {
+      0n
+    } else if (WasmI64.ltS(num2, 0N)) {
+      1n
+    } else {
+      -1n
+    }
+  } else if (flagIsSet(num1, _IS_NEGATIVE)) {
+    if (WasmI64.eqz(num2) || !WasmI64.ltS(num2, 0N)) {
+      -1n
+    } else {
+      WasmI32.mul(-1n, cmpUnsignedI64(num1, num2))
+    }
+  } else {
+    if (WasmI64.eqz(num2) || WasmI64.ltS(num2, 0N)) {
+      1n
+    } else {
+      cmpUnsignedI64(num1, num2)
+    }
+  }
+}
+
+@unsafe
+export let cmpF64 = (num1: WasmI32, num2: WasmF64) => {
+  let asf64 = toFloat64(num1)
+  let (<) = WasmF64.lt
+  let (>) = WasmF64.gt
+  if (asf64 < num2) {
+    -1n
+  } else if (asf64 > num2) {
+    1n
+  } else {
+    0n
+  }
+}
+
+@unsafe
+export let cmpF32 = (num1: WasmI32, num2: WasmF32) => {
+  cmpF64(num1, WasmF64.promoteF32(num2))
+}
 
 @unsafe
 let cmpUnsigned = (num1: WasmI32, num2: WasmI32) => {
@@ -449,7 +670,7 @@ let cmpUnsigned = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-let cmp = (num1: WasmI32, num2: WasmI32) => {
+export let cmp = (num1: WasmI32, num2: WasmI32) => {
   if (eqz(num1)) {
     if (eqz(num2)) {
       0n
@@ -1313,7 +1534,6 @@ let bitwiseXorPositive = (num1: WasmI32, num2: WasmI32) => {
 }
 
 // https://stackoverflow.com/a/32298732
-// if you are Johan, email me for a beer
 
 @unsafe
 export let bitwiseNot = (num: WasmI32) => {

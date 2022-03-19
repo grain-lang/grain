@@ -92,7 +92,7 @@ export let _SMAX = 0x7FFFFFFFFFFFFFFFN
 export let _UMIN = 0x0N
 export let _UMAX = 0xFFFFFFFFFFFFFFFFN
 
-export let _SMIN32 = 0xFFFFFFFFN
+export let _SMIN32 = -0x7FFFFFFFN
 export let _SMAX32 = 0x7FFFFFFFN
 export let _UMIN32 = 0x0N
 export let _UMAX32 = 0xFFFFFFFFN

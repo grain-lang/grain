@@ -218,7 +218,6 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | NewRational
-    | NewBigInt
     | Is
     | Eq
     | And
@@ -356,6 +355,7 @@ and comp_expression_desc =
   | CString(string)
   | CChar(string)
   | CNumber(Asttypes.number_type)
+  | CRational(imm_expression, imm_expression) // <- bigInt numerator, bigInt denominator
   | CInt32(int32)
   | CInt64(int64)
   | CFloat32(float)

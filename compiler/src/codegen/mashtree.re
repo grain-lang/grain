@@ -232,7 +232,6 @@ type prim1 =
 type prim2 =
   Parsetree.prim2 =
     | NewRational
-    | NewBigInt
     | Is
     | Eq
     | And
@@ -323,7 +322,7 @@ type allocation_type =
   | MInt64(int64)
   | MFloat32(float)
   | MFloat64(float)
-  | MRational(int32, int32)
+  | MRational(immediate, immediate)
   | MBigInt(int32, array(int64)); // flags, limbs
 
 [@deriving sexp]

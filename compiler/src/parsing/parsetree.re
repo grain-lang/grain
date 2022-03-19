@@ -367,7 +367,6 @@ type prim1 =
 [@deriving (sexp, yojson)]
 type prim2 =
   | NewRational
-  | NewBigInt
   | Is
   | Eq
   | And

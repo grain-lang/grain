@@ -131,7 +131,16 @@ let global_name = id => Ident.unique_name(id);
 let find_id = (id, env) =>
   try(Ident.find_same(id, env.ce_binds)) {
   | Not_found =>
-    let (_, alloc) = Ident.find_same(id, global_table^);
+    let (_, alloc) =
+      try(Ident.find_same(id, global_table^)) {
+      | Not_found =>
+        Printf.eprintf("Not_found: %s\nKnown binds:\n", Ident.name(id));
+        Ident.iter(
+          (id, _) => Printf.eprintf("%s\n", Ident.name(id)),
+          env.ce_binds,
+        );
+        raise(Not_found);
+      };
     MGlobalBind(global_name(id), alloc);
   };
 
@@ -869,9 +878,23 @@ let rec compile_comp = (~id=?, env, c) => {
       MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
-    | CNumber(Const_number_rational(n, d)) => MAllocate(MRational(n, d))
+    | CNumber(Const_number_rational(neg, n, d, _, _)) =>
+      failwith("compile_comp: rational after ANF")
     | CNumber(Const_number_bigint(negative, limbs, _)) =>
-      MAllocate(MBigInt(if (negative) {1l} else {0l}, limbs))
+      MAllocate(
+        MBigInt(
+          Bigint_flags.all_to_int32(
+            if (negative) {
+              [Bigint_flags.BigIntNegative];
+            } else {
+              [];
+            },
+          ),
+          limbs,
+        ),
+      )
+    | CRational(n, d) =>
+      MAllocate(MRational(compile_imm(env, n), compile_imm(env, d)))
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))

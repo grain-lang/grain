@@ -132,6 +132,8 @@ module MakeMap = (Iter: MapArgument) => {
       | CString(s) => CString(s)
       | CChar(c) => CChar(c)
       | CNumber(i) => CNumber(i)
+      | CRational(n, d) =>
+        CRational(map_imm_expression(n), map_imm_expression(d))
       | CInt32(i) => CInt32(i)
       | CInt64(i) => CInt64(i)
       | CFloat32(f) => CFloat32(f)

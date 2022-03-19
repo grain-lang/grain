@@ -131,6 +131,8 @@ let convert_binds = anf_binds => {
 let transl_const =
     (c: Types.constant): Either.t(imm_expression, (string, comp_expression)) => {
   switch (c) {
+  | Const_number(Const_number_rational(_)) =>
+    failwith("Impossible: rational constant in transl_const")
   | Const_number(n) => Right(("number", Comp.number(n)))
   | Const_bigint(neg, limbs, s) =>
     Right(("number", Comp.number(Const_number_bigint(neg, limbs, s))))
@@ -291,6 +293,25 @@ let rec transl_imm =
     | {val_fullpath: Path.PExternal(_)} =>
       failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
     }
+  // edge case: for Rationals, we need to allocate the underlying bigints in the setup.
+  | TExpConstant(Const_number(Const_number_rational(neg, n, d, nstr, dstr))) =>
+    let ntmp = gensym("numerator");
+    let dtmp = gensym("denominator");
+    let tmp = gensym("rational");
+    let setup = [
+      BLet(ntmp, Comp.number(Const_number_bigint(neg, n, nstr)), Nonglobal),
+      BLet(
+        dtmp,
+        Comp.number(Const_number_bigint(false, d, dstr)),
+        Nonglobal,
+      ),
+      BLet(
+        tmp,
+        Comp.rational(Imm.id(~loc, ~env, ntmp), Imm.id(~loc, ~env, dtmp)),
+        Nonglobal,
+      ),
+    ];
+    (Imm.id(~loc, ~env, tmp), setup);
   | TExpConstant(c) =>
     switch (transl_const(c)) {
     | Left(imm) => (imm, [])
