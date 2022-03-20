@@ -10,14 +10,14 @@ No other changes yet.
 </details>
 
 ```grain
-import BigInt from "bigInt"
+import BigInt from "bigint"
 ```
 
 ## Conversions
 
 Functions for converting between Numbers and the BigInt type.
 
-### BigInt.**fromNumber**
+### Bigint.**fromNumber**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -42,7 +42,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The Number represented as an BigInt|
 
-### BigInt.**toNumber**
+### Bigint.**toNumber**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -71,7 +71,7 @@ Returns:
 
 Mathematical operations for BigInt values.
 
-### BigInt.**incr**
+### Bigint.**incr**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -96,7 +96,7 @@ Returns:
 |----|-----------|
 |`a`|The incremented value|
 
-### BigInt.**decr**
+### Bigint.**decr**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -121,7 +121,7 @@ Returns:
 |----|-----------|
 |`a`|The decremented value|
 
-### BigInt.**negate**
+### Bigint.**neg**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -129,7 +129,7 @@ No other changes yet.
 </details>
 
 ```grain
-negate : BigInt -> BigInt
+neg : BigInt -> BigInt
 ```
 
 Negates the given operand.
@@ -146,7 +146,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The negated operand|
 
-### BigInt.**abs**
+### Bigint.**abs**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -171,7 +171,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The operand's absolute value|
 
-### BigInt.**add**
+### Bigint.**add**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -197,7 +197,7 @@ Returns:
 |----|-----------|
 |`a`|The sum of the two operands|
 
-### BigInt.**sub**
+### Bigint.**sub**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -223,7 +223,7 @@ Returns:
 |----|-----------|
 |`a`|The difference of the two operands|
 
-### BigInt.**mul**
+### Bigint.**mul**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -249,33 +249,7 @@ Returns:
 |----|-----------|
 |`a`|The product of the two operands|
 
-### BigInt.**quot**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-quot : (BigInt, BigInt) -> BigInt
-```
-
-Computes the quotient of its operands using signed (truncated) division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`BigInt`|The quotient of its operands|
-
-### BigInt.**div**
+### Bigint.**div**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -286,7 +260,8 @@ No other changes yet.
 div : (BigInt, BigInt) -> BigInt
 ```
 
-Computes the quotient of its operands using signed (floored) division.
+Computes the quotient of its operands using signed (truncated) division
+(in which the quotient is always rounded towards zero).
 
 Parameters:
 
@@ -301,7 +276,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The quotient of its operands|
 
-### BigInt.**rem**
+### Bigint.**rem**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -312,7 +287,8 @@ No other changes yet.
 rem : (BigInt, BigInt) -> BigInt
 ```
 
-Computes the remainder of the division of its operands using signed (truncated) division.
+Computes the remainder of the division of its operands using signed (truncated) division
+(in which the quotient is always rounded towards zero).
 
 Parameters:
 
@@ -327,33 +303,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The remainder of its operands|
 
-### BigInt.**mod**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-mod : (BigInt, BigInt) -> BigInt
-```
-
-Computes the remainder of the division of its operands using signed (floored) division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`BigInt`|The remainder of its operands|
-
-### BigInt.**quotRem**
+### Bigint.**quotRem**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -379,33 +329,7 @@ Returns:
 |----|-----------|
 |`(BigInt, BigInt)`|The quotient and remainder of its operands|
 
-### BigInt.**divMod**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-divMod : (BigInt, BigInt) -> (BigInt, BigInt)
-```
-
-Computes the quotient and remainder of its operands using signed (floored) division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`(BigInt, BigInt)`|The quotient and remainder of its operands|
-
-### BigInt.**gcd**
+### Bigint.**gcd**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -429,13 +353,13 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The quotient and remainder of its operands|
+|`a`|The greatest common divisor of its operands|
 
 ## Bitwise operations
 
 Functions for operating on bits of BigInt values.
 
-### BigInt.**shl**
+### Bigint.**shl**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -461,7 +385,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The shifted value|
 
-### BigInt.**shr**
+### Bigint.**shr**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -491,7 +415,7 @@ Returns:
 
 Functions for comparing BigInt values.
 
-### BigInt.**eqz**
+### Bigint.**eqz**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -516,7 +440,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### BigInt.**eq**
+### Bigint.**eq**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -542,7 +466,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### BigInt.**ne**
+### Bigint.**ne**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -568,7 +492,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
-### BigInt.**lt**
+### Bigint.**lt**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -594,7 +518,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### BigInt.**lte**
+### Bigint.**lte**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -620,7 +544,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### BigInt.**gt**
+### Bigint.**gt**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -646,7 +570,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### BigInt.**gte**
+### Bigint.**gte**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -676,7 +600,7 @@ Returns:
 
 Boolean operations on the bits of BigInt values.
 
-### BigInt.**lnot**
+### Bigint.**lnot**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -701,7 +625,7 @@ Returns:
 |----|-----------|
 |`a`|Containing the inverted bits of the given value|
 
-### BigInt.**land**
+### Bigint.**land**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -727,7 +651,7 @@ Returns:
 |----|-----------|
 |`a`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### BigInt.**lor**
+### Bigint.**lor**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -753,7 +677,7 @@ Returns:
 |----|-----------|
 |`a`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### BigInt.**lxor**
+### Bigint.**lxor**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -779,7 +703,7 @@ Returns:
 |----|-----------|
 |`a`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
-### BigInt.**clz**
+### Bigint.**clz**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -805,7 +729,7 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of leading zeros|
 
-### BigInt.**ctz**
+### Bigint.**ctz**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -830,7 +754,7 @@ Returns:
 |----|-----------|
 |`Int64`|The amount of trailing zeros|
 
-### BigInt.**popcnt**
+### Bigint.**popcnt**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -838,11 +762,11 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : BigInt -> Int64
+popcnt : BigInt -> Option<Int64>
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.
-Will return the maximum integer for negative numbers.
+Will return the `None` if given a negative integer
 
 Parameters:
 
@@ -854,13 +778,13 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The amount of 1-bits in its operand|
+|`Option<Int64>`|The amount of 1-bits in its operand|
 
 ## Other
 
 Other functions on BigInts.
 
-### BigInt.**toString**
+### Bigint.**toString**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
