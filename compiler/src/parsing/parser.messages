@@ -1245,6 +1245,32 @@ program: EXPORT TYPEID AS WHILE
 ## The known suffix of the stack is as follows:
 ## AS
 ##
+program: LET NUMBER_INT AS WHILE
+##
+## Ends in an error in state: 367.
+##
+## pattern -> pattern AS . id_str [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+## pattern -> pattern AS . eols id_str [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## pattern AS
+##
+program: LET NUMBER_INT AS EOL WHILE
+##
+## Ends in an error in state: 369.
+##
+## pattern -> pattern AS eols . id_str [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## pattern AS eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected an identifier to use as an alias.
 
