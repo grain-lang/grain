@@ -3862,6 +3862,32 @@ program: LET LPAREN WASMI64 COMMA EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
+program: LET NUMBER_INT PIPE WHILE
+##
+## Ends in an error in state: 345.
+##
+## pattern -> pattern PIPE . pattern [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON ]
+## pattern -> pattern PIPE . eols pattern [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## pattern PIPE
+##
+program: LET NUMBER_INT PIPE EOL WHILE
+##
+## Ends in an error in state: 404.
+##
+## pattern -> pattern PIPE eols . pattern [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## pattern PIPE eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected a pattern.
 
