@@ -112,6 +112,8 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib(~code=5, "sys.process.test");
   assertStdlib("sys.random.test");
   assertStdlib("sys.time.test");
+  assertStdlib("uint32.test");
+  assertStdlib("uint64.test");
   assertStdlib("wasmf32.test");
   assertStdlib("wasmf64.test");
   assertStdlib("wasmi32.test");

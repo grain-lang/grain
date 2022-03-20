@@ -1,0 +1,65 @@
+import * from "uint32"
+
+assert fromNumber(5) == 5l
+assert fromNumber(0) == 0l
+
+assert toNumber(555l) == 555
+assert toNumber(0l) == 0
+
+assert lnot(0xffffffffl) == 0l
+assert lnot(0l) == 0xffffffffl
+assert lnot(0xf0f0f0f0l) == 0x0f0f0f0fl
+
+assert land(0b1010l, 0b10l) == 0b10l
+assert land(0b1010l, 0l) == 0l
+
+assert lor(0b1010l, 0b0101l) == 0b1111l
+assert lor(0b1010l, 0l) == 0b1010l
+
+assert lxor(0b1010l, 0b1101l) == 0b0111l
+assert lxor(0b1010l, 0l) == 0b1010l
+
+assert shl(-1l, 1l) == -2l
+assert shl(-1l, 2l) == -4l
+assert shl(-1l, 3l) == -8l
+assert shl(-2l, 63l) == 0l
+assert shl(24l, 1l) == 48l
+
+assert shr(4l, 1l) == 2l
+assert shr(4l, 2l) == 1l
+assert shr(4l, 3l) == 0l
+assert shr(-1l, 63l) == 1l
+
+assert shrS(-1l, 63l) == -1l
+assert shrS(-24l, 1l) == -12l
+
+assert gtS(5l, 4l)
+assert gteS(5l, 5l)
+assert ltS(5l, 17l)
+assert lteS(5l, 5l)
+assert !gtS(5l, 5l)
+assert !gteS(5l, 22l)
+assert !ltS(5l, -17l)
+assert !lteS(5l, 4l)
+
+assert gt(5l, 4l)
+assert gte(5l, 5l)
+assert lt(5l, 17l)
+assert lte(5l, 5l)
+assert !gt(5l, 5l)
+assert !gte(5l, 22l)
+assert lt(5l, -17l)
+assert !lte(5l, 4l)
+
+assert clz(0b11l) == 30l
+assert ctz(0b11000l) == 3l
+assert popcnt(0b1100110011l) == 6l
+assert rotl(0b11l, 3l) == 0b11000l
+assert rotr(0b110000l, 3l) == 0b110l
+
+assert eq(5l, 5l)
+assert !eq(5l, 55l)
+assert ne(5l, 55l)
+assert !ne(5l, 5l)
+assert eqz(0l)
+assert !eqz(-42l)

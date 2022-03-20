@@ -1,26 +1,26 @@
 ---
-title: Int32
+title: Uint32
 ---
 
-Utilities for working with the Int32 type.
+Unsigned utilities for working with the Int32 type.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-import Int32 from "int32"
+import Uint32 from "uint32"
 ```
 
 ## Conversions
 
 Functions for converting between Numbers and the Int32 type.
 
-### Int32.**fromNumber**
+### Uint32.**fromNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -42,10 +42,10 @@ Returns:
 |----|-----------|
 |`Int32`|The Number represented as an Int32|
 
-### Int32.**toNumber**
+### Uint32.**toNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -71,10 +71,10 @@ Returns:
 
 Mathematical operations for Int32 values.
 
-### Int32.**incr**
+### Uint32.**incr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -96,10 +96,10 @@ Returns:
 |----|-----------|
 |`Int32`|The incremented value|
 
-### Int32.**decr**
+### Uint32.**decr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -121,10 +121,10 @@ Returns:
 |----|-----------|
 |`Int32`|The decremented value|
 
-### Int32.**add**
+### Uint32.**add**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -147,10 +147,10 @@ Returns:
 |----|-----------|
 |`Int32`|The sum of the two operands|
 
-### Int32.**sub**
+### Uint32.**sub**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -173,10 +173,10 @@ Returns:
 |----|-----------|
 |`Int32`|The difference of the two operands|
 
-### Int32.**mul**
+### Uint32.**mul**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -199,41 +199,15 @@ Returns:
 |----|-----------|
 |`Int32`|The product of the two operands|
 
-### Int32.**div**
+### Uint32.**div**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
 div : (Int32, Int32) -> Int32
-```
-
-Computes the quotient of its operands using signed division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first operand|
-|`y`|`Int32`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int32`|The quotient of its operands|
-
-### Int32.**divU**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-divU : (Int32, Int32) -> Int32
 ```
 
 Computes the quotient of its operands using unsigned division.
@@ -251,18 +225,18 @@ Returns:
 |----|-----------|
 |`Int32`|The quotient of its operands|
 
-### Int32.**rem**
+### Uint32.**divS**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-rem : (Int32, Int32) -> Int32
+divS : (Int32, Int32) -> Int32
 ```
 
-Computes the remainder of the division of its operands using signed division.
+Computes the quotient of its operands using signed division.
 
 Parameters:
 
@@ -275,17 +249,17 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|The remainder of its operands|
+|`Int32`|The quotient of its operands|
 
-### Int32.**remU**
+### Uint32.**rem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-remU : (Int32, Int32) -> Int32
+rem : (Int32, Int32) -> Int32
 ```
 
 Computes the remainder of the division of its operands using unsigned division.
@@ -303,10 +277,36 @@ Returns:
 |----|-----------|
 |`Int32`|The remainder of its operands|
 
-### Int32.**mod**
+### Uint32.**remS**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+remS : (Int32, Int32) -> Int32
+```
+
+Computes the remainder of the division of its operands using signed division.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int32`|The first operand|
+|`y`|`Int32`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int32`|The remainder of its operands|
+
+### Uint32.**mod**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -334,10 +334,10 @@ Returns:
 
 Functions for operating on bits of Int32 values.
 
-### Int32.**rotl**
+### Uint32.**rotl**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -360,10 +360,10 @@ Returns:
 |----|-----------|
 |`Int32`|The rotated value|
 
-### Int32.**rotr**
+### Uint32.**rotr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -386,10 +386,10 @@ Returns:
 |----|-----------|
 |`Int32`|The rotated value|
 
-### Int32.**shl**
+### Uint32.**shl**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -412,10 +412,10 @@ Returns:
 |----|-----------|
 |`Int32`|The shifted value|
 
-### Int32.**shr**
+### Uint32.**shr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -423,7 +423,7 @@ No other changes yet.
 shr : (Int32, Int32) -> Int32
 ```
 
-Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+Shifts the bits of the value right by the given number of bits.
 
 Parameters:
 
@@ -438,18 +438,18 @@ Returns:
 |----|-----------|
 |`Int32`|The shifted value|
 
-### Int32.**shrU**
+### Uint32.**shrS**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-shrU : (Int32, Int32) -> Int32
+shrS : (Int32, Int32) -> Int32
 ```
 
-Shifts the bits of the value right by the given number of bits.
+Shifts the bits of the value right by the given number of bits (signed).
 
 Parameters:
 
@@ -468,10 +468,10 @@ Returns:
 
 Functions for comparing Int32 values.
 
-### Int32.**eq**
+### Uint32.**eq**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -494,10 +494,10 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### Int32.**ne**
+### Uint32.**ne**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -520,10 +520,10 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
-### Int32.**eqz**
+### Uint32.**eqz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -545,10 +545,10 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### Int32.**lt**
+### Uint32.**lt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -571,7 +571,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Int32.**ltU**
+### Uint32.**ltS**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -579,10 +579,10 @@ No other changes yet.
 </details>
 
 ```grain
-ltU : (Int32, Int32) -> Bool
+ltS : (Int32, Int32) -> Bool
 ```
 
-Checks if the first unsigned value is less than the second unsigned value.
+Checks if the first signed value is less than the second signed value.
 
 Parameters:
 
@@ -597,10 +597,10 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Int32.**gt**
+### Uint32.**gt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -623,7 +623,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Int32.**gtU**
+### Uint32.**gtS**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -631,10 +631,10 @@ No other changes yet.
 </details>
 
 ```grain
-gtU : (Int32, Int32) -> Bool
+gtS : (Int32, Int32) -> Bool
 ```
 
-Checks if the first unsigned value is greater than the second unsigned value.
+Checks if the first signed value is greater than the second signed value.
 
 Parameters:
 
@@ -649,10 +649,10 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Int32.**lte**
+### Uint32.**lte**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -675,7 +675,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Int32.**lteU**
+### Uint32.**lteS**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -683,10 +683,10 @@ No other changes yet.
 </details>
 
 ```grain
-lteU : (Int32, Int32) -> Bool
+lteS : (Int32, Int32) -> Bool
 ```
 
-Checks if the first unsigned value is less than or equal to the second unsigned value.
+Checks if the first signed value is less than or equal to the second signed value.
 
 Parameters:
 
@@ -701,10 +701,10 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Int32.**gte**
+### Uint32.**gte**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -727,7 +727,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
-### Int32.**gteU**
+### Uint32.**gteS**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -735,10 +735,10 @@ No other changes yet.
 </details>
 
 ```grain
-gteU : (Int32, Int32) -> Bool
+gteS : (Int32, Int32) -> Bool
 ```
 
-Checks if the first unsigned value is greater than or equal to the second unsigned value.
+Checks if the first signed value is greater than or equal to the second signed value.
 
 Parameters:
 
@@ -757,10 +757,10 @@ Returns:
 
 Boolean operations on the bits of Int32 values.
 
-### Int32.**lnot**
+### Uint32.**lnot**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -782,10 +782,10 @@ Returns:
 |----|-----------|
 |`Int32`|Containing the inverted bits of the given value|
 
-### Int32.**land**
+### Uint32.**land**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -808,10 +808,10 @@ Returns:
 |----|-----------|
 |`Int32`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### Int32.**lor**
+### Uint32.**lor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -834,10 +834,10 @@ Returns:
 |----|-----------|
 |`Int32`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### Int32.**lxor**
+### Uint32.**lxor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -860,10 +860,10 @@ Returns:
 |----|-----------|
 |`Int32`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
-### Int32.**clz**
+### Uint32.**clz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -885,10 +885,10 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of leading zeros|
 
-### Int32.**ctz**
+### Uint32.**ctz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -910,10 +910,10 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of trailing zeros|
 
-### Int32.**popcnt**
+### Uint32.**popcnt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
