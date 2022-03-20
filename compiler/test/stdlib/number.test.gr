@@ -4,7 +4,7 @@ import Int32 from "int32"
 import Int64 from "int64"
 import Float32 from "float32"
 import Float64 from "float64"
-import BI from "bigInt"
+import BI from "bigint"
 
 // add
 assert Number.add(25, 5) == 30
