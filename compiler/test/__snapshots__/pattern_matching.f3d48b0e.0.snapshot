@@ -1,0 +1,59 @@
+pattern matching › or_match_1
+(module
+ (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
+ (import \"_grainEnv\" \"mem\" (memory $0 0))
+ (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
+ (global $global_1 i32 (i32.const 0))
+ (export \"memory\" (memory $0))
+ (export \"_gmain\" (func $_gmain))
+ (export \"_start\" (func $_start))
+ (export \"GRAIN$TABLE_SIZE\" (global $global_1))
+ (func $_gmain (; has Stack IR ;) (result i32)
+  (local $0 i32)
+  (tuple.extract 0
+   (tuple.make
+    (block (result i32)
+     (drop
+      (block $switch.11_branch_1 (result i32)
+       (drop
+        (block $switch.11_default (result i32)
+         (br_table $switch.11_branch_1 $switch.11_default
+          (i32.const 0)
+          (i32.shr_s
+           (tuple.extract 0
+            (tuple.make
+             (if (result i32)
+              (i32.shr_u
+               (local.tee $0
+                (i32.const -2)
+               )
+               (i32.const 31)
+              )
+              (i32.const 1)
+              (unreachable)
+             )
+             (local.get $0)
+            )
+           )
+           (i32.const 1)
+          )
+         )
+        )
+       )
+       (unreachable)
+      )
+     )
+     (i32.const 7)
+    )
+    (i32.const 0)
+   )
+  )
+ )
+ (func $_start (; has Stack IR ;)
+  (drop
+   (call $_gmain)
+  )
+ )
+ ;; custom section \"cmi\", size 242
+)
