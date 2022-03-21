@@ -52,7 +52,7 @@ type sugared_pattern_item =
   | RegularPattern(Parsetree.pattern)
   | SpreadPattern(Parsetree.pattern);
 
-let get_original_code_snippet = (location: Location.t, source: array(string)) => {
+let get_original_code = (location: Location.t, source: array(string)) => {
   let (_, start_line, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
   let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
@@ -73,36 +73,6 @@ let get_original_code_snippet = (location: Location.t, source: array(string)) =>
       };
       text^;
     };
-  } else {
-    raise(Error(FormatterError("Requested beyond end of original source")));
-  };
-};
-
-let get_original_code = (location: Location.t, source: array(string)) => {
-  let (_, start_line, startc, _) =
-    Locations.get_raw_pos_info(location.loc_start);
-  let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
-
-  let text = ref("");
-  if (Array.length(source) > end_line - 1) {
-    if (start_line == end_line) {
-      let full_line = source[start_line - 1];
-
-      let without_trailing = Str.string_before(full_line, endc);
-
-      text := text^ ++ without_trailing;
-    } else {
-      for (line in start_line - 1 to end_line - 1) {
-        if (line + 1 == start_line) {
-          text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
-        } else if (line + 1 == end_line) {
-          text := text^ ++ source[line];
-        } else {
-          text := text^ ++ source[line] ++ "\n";
-        };
-      };
-    };
-    text^;
   } else {
     raise(Error(FormatterError("Requested beyond end of original source")));
   };
@@ -588,8 +558,7 @@ let rec block_item_iterator =
       };
 
     if (disable_formatting) {
-      let original_code =
-        get_original_code_snippet(get_loc(item), original_source);
+      let original_code = get_original_code(get_loc(item), original_source);
 
       let orig_doc =
         Doc.concat([
@@ -1401,7 +1370,7 @@ and print_constant =
   // we get the original code here to ensure it's well formatted and retains the
   // approach of the original code, e.g. char format, number format
   Doc.text(
-    get_original_code_snippet(loc, original_source),
+    get_original_code(loc, original_source),
   );
 }
 
