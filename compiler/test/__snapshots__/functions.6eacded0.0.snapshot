@@ -571,5 +571,5 @@ functions › func_recursive_closure
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 635
+ ;; custom section \"cmi\", size 653
 )
