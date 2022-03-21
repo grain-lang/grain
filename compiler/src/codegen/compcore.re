@@ -315,9 +315,8 @@ let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
   Printf.sprintf("wimport_%s_%s", Ident.name(mod_), Ident.name(name));
 };
 
-let get_grain_imported_name = (mod_, name) => {
+let get_grain_imported_name = (mod_, name) =>
   Printf.sprintf("gimport_%s_%s", Ident.name(mod_), Ident.name(name));
-};
 
 let call_exception_printer = (wasm_mod, env, args) => {
   let args = [
@@ -3323,14 +3322,15 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$MODULE$" ++ Ident.name(name);
 
-  let compile_import_name = name =>
-    fun
-    | MImportWasm => Ident.name(name)
-    | MImportGrain => "GRAIN$EXPORT$" ++ Ident.name(name);
+  let compile_import_name = (name, kind, ty) =>
+    switch (kind, ty) {
+    | (MImportGrain, MGlobalImport(_)) => "GRAIN$EXPORT$" ++ Ident.name(name)
+    | _ => Ident.name(name)
+    };
 
   let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
-    let item_name = compile_import_name(mimp_name, mimp_kind);
+    let item_name = compile_import_name(mimp_name, mimp_kind, mimp_type);
     let internal_name =
       switch (mimp_kind) {
       | MImportGrain => get_grain_imported_name(mimp_mod, mimp_name)
