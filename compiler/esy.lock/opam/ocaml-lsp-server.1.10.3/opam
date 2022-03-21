@@ -1,0 +1,54 @@
+opam-version: "2.0"
+synopsis: "LSP Server for OCaml"
+description: "An LSP server for OCaml."
+maintainer: ["Rudi Grinberg <me@rgrinerg.com>"]
+authors: [
+  "Andrey Popp <8mayday@gmail.com>"
+  "Rusty Key <iam@stfoo.ru>"
+  "Louis Roché <louis@louisroche.net>"
+  "Oleksiy Golovko <alexei.golovko@gmail.com>"
+  "Rudi Grinberg <me@rgrinberg.com>"
+  "Sacha Ayoun <sachaayoun@gmail.com>"
+  "cannorin <cannorin@gmail.com>"
+  "Ulugbek Abdullaev <ulugbekna@gmail.com>"
+  "Thibaut Mattio <thibaut.mattio@gmail.com>"
+  "Max Lantas <mnxndev@outlook.com>"
+]
+license: "ISC"
+homepage: "https://github.com/ocaml/ocaml-lsp"
+bug-reports: "https://github.com/ocaml/ocaml-lsp/issues"
+depends: [
+  "dune" {>= "2.9"}
+  "yojson"
+  "re" {>= "1.5.0"}
+  "ppx_yojson_conv_lib" {>= "v0.14"}
+  "dune-build-info"
+  "spawn"
+  "pp" {>= "1.1.2"}
+  "csexp" {>= "1.5"}
+  "result" {>= "1.5"}
+  "ocamlformat-rpc-lib" {>= "0.18.0" & < "0.20.0"}
+  "odoc" {with-doc}
+  "ocaml" {>= "4.13" & < "4.14"}
+]
+dev-repo: "git+https://github.com/ocaml/ocaml-lsp.git"
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-j"
+    jobs
+    "ocaml-lsp-server.install"
+    "--release"
+  ]
+]
+url {
+  src:
+    "https://github.com/ocaml/ocaml-lsp/releases/download/1.10.3/jsonrpc-1.10.3.tbz"
+  checksum: [
+    "sha256=a3ac1073b0728b94f4bdb0111772c0abaf7ff70324399450eab7156bfac151f1"
+    "sha512=bed6ddbde28088e43db0d40ab27056ba22537d19ffe8117a3da4c77676948f18708b06937dd2c972dce5c5822ea751c9c85cfa1ce3c1b3739460d4a24ebc2282"
+  ]
+}
+x-commit-hash: "a249e618facf7b7f524bf96e6f1cf6728a7fcd90"

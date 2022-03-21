@@ -1,8 +1,11 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("memory_base", ({test}) => {
-  let assertFileRun = makeFileRunner(test);
+describe("memory_base", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertFileRun = makeFileRunner(test_or_skip);
   // Non-snapshots since we want to track functional issues.
   assertFileRun("basecase", "memoryBase/basecase", "HelloWorld\n");
   assertFileRun(

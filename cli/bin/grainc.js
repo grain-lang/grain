@@ -3,4 +3,4 @@ const preparePkg = require("./pkg");
 
 preparePkg();
 
-require("./grainc_js.bc.js");
+require("./grainc.bc.js");

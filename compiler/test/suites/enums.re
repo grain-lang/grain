@@ -1,10 +1,13 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("enums", ({test}) => {
+describe("enums", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
 
   assertFileRun("basicenum", "basicenum", "(false, true, true)\n");
   assertFileRun(

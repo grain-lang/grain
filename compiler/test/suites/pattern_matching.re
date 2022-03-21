@@ -5,11 +5,14 @@ open Grain_utils;
 let {describe} =
   describeConfig |> withCustomMatchers(customMatchers) |> build;
 
-describe("pattern matching", ({test}) => {
+describe("pattern matching", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
   let assertWarning = makeWarningRunner(test);
   let assertNoWarning = makeNoWarningRunner(test);
 

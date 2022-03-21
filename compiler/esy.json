@@ -3,19 +3,20 @@
   "version": "0.4.6",
   "esy": {
     "build": [
-      "dune build --no-buffer"
+      "dune build @native --no-buffer"
     ],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
       "GRAINC_BIN_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc.exe'}",
-      "GRAINC_JS_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc_js.bc.js'}",
+      "GRAINC_JS_PATH": "#{self.target_dir / 'default' / 'grainc' / 'grainc.bc.js'}",
       "GRAINDOC_BIN_PATH": "#{self.target_dir / 'default' / 'graindoc' / 'graindoc.exe'}",
-      "GRAINDOC_JS_PATH": "#{self.target_dir / 'default' / 'graindoc' / 'graindoc_js.bc.js'}",
+      "GRAINDOC_JS_PATH": "#{self.target_dir / 'default' / 'graindoc' / 'graindoc.bc.js'}",
       "GRAINFORMAT_BIN_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.exe'}",
-      "GRAINFORMAT_JS_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat_js.bc.js'}",
+      "GRAINFORMAT_JS_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.bc.js'}",
       "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
-      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}"
+      "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}",
+      "TEST_JS_PATH": "#{self.target_dir / 'default' / 'test' / 'test.bc.js'}"
     }
   },
   "scripts": {
@@ -23,15 +24,16 @@
     "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "test": "#{$TEST_EXEC_PATH}",
+    "test:js": "node #{$TEST_JS_PATH}",
     "format": "dune build @fmt --auto-promote",
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": "0.10.0",
+    "@grain/binaryen.ml": ">= 0.15.0 < 0.16.0",
     "@opam/cmdliner": ">= 1.0.2",
-    "@opam/dune": ">= 2.0.0",
-    "@opam/dune-build-info": ">= 2.0.0",
-    "@opam/dune-configurator": ">= 2.0.0",
+    "@opam/dune": ">= 2.0.0 < 3.0.0",
+    "@opam/dune-build-info": ">= 2.0.0 < 3.0.0",
+    "@opam/dune-configurator": ">= 2.0.0 < 3.0.0",
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
     "@opam/menhir": "20211125",
@@ -43,14 +45,15 @@
     "@opam/sexplib": ">= 0.14.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 1.7.0",
-    "ocaml": "4.11.0"
+    "ocaml": "4.12.0"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": ">= 3.11.0",
-    "@opam/ocaml-lsp-server": "1.4.1",
+    "@opam/js_of_ocaml-compiler": ">= 3.11.0 < 4.0.0",
+    "@opam/ocaml-lsp-server": "^1.8.2",
     "@reason-native/rely": "^3.2.1"
   },
   "resolutions": {
+    "ocaml": "4.12.0",
     "@opam/ocamlfind": "1.8.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
     "@opam/fs": "reasonml/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",

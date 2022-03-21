@@ -60,9 +60,13 @@ jobs:
         run: |
           yarn compiler export-dependencies
 
-      - name: Run tests
+      - name: Run tests (native)
         run: |
           yarn compiler test
+
+      - name: Run tests (js)
+        run: |
+          yarn compiler test:js
 
       - name: Check parser error messages exhaustiveness
         run: |
