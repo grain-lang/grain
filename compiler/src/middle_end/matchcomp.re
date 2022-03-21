@@ -1059,45 +1059,100 @@ module MatchTreeCompiler = {
   };
 
   let collect_bindings = (~mut_boxing=false, ~global=Nonglobal, branches) => {
-    let rec collect_bindings = pat => {
-      let bind = id => {
-        // Dummy value to be filled in during matching
-        let dummy_value = Imm.const(Const_wasmi32(0l));
-        if (mut_boxing) {
-          BLet(
-            id,
-            Comp.prim1(~allocation_type=HeapAllocated, BoxBind, dummy_value),
-            Nonglobal,
-          );
-        } else {
-          BLetMut(
-            id,
-            Comp.imm(
-              ~allocation_type=get_allocation_type(pat.pat_env, pat.pat_type),
-              dummy_value,
-            ),
-            global,
-          );
-        };
+    let ident_map = Ident_tbl.create(10);
+    let bind_map = Hashtbl.create(10);
+    let heap_count = ref(0);
+    let i32_count = ref(0);
+    let i64_count = ref(0);
+    let f32_count = ref(0);
+    let f64_count = ref(0);
+    let handle_branch = ((_, _, pat)) => {
+      heap_count := 0;
+      i32_count := 0;
+      i64_count := 0;
+      f32_count := 0;
+      f64_count := 0;
+      let register = (id, alloc_ty) => {
+        let count =
+          switch (alloc_ty) {
+          | HeapAllocated =>
+            let count = heap_count^;
+            heap_count := heap_count^ + 1;
+            count;
+          | StackAllocated(WasmI32) =>
+            let count = i32_count^;
+            i32_count := i32_count^ + 1;
+            count;
+          | StackAllocated(WasmI64) =>
+            let count = i64_count^;
+            i64_count := i64_count^ + 1;
+            count;
+          | StackAllocated(WasmF32) =>
+            let count = f32_count^;
+            f32_count := f32_count^ + 1;
+            count;
+          | StackAllocated(WasmF64) =>
+            let count = f64_count^;
+            f64_count := f64_count^ + 1;
+            count;
+          };
+        let bind =
+          switch (Hashtbl.find_opt(bind_map, (alloc_ty, count))) {
+          | Some(bind) => bind
+          | None =>
+            let bind = Ident.create("match_bind");
+            Hashtbl.add(bind_map, (alloc_ty, count), bind);
+            bind;
+          };
+        Ident_tbl.add(ident_map, id, bind);
       };
-      switch (pat.pat_desc) {
-      | TPatAny
-      | TPatConstant(_) => []
-      | TPatVar(id, _) => [bind(id)]
-      | TPatConstruct(_, _, pats)
-      | TPatTuple(pats)
-      | TPatArray(pats) => List.flatten @@ List.map(collect_bindings, pats)
-      | TPatRecord(pats, _) =>
-        List.flatten @@
-        List.map(((_, _, pat)) => collect_bindings(pat), pats)
-      | TPatAlias(pat, id, _) => [bind(id), ...collect_bindings(pat)]
-      | TPatOr(left, _) =>
-        // Bindings are the same on both sides of the OR
-        collect_bindings(left)
+      let rec process_pat = pat =>
+        switch (pat.pat_desc) {
+        | TPatAny
+        | TPatConstant(_) => ()
+        | TPatVar(id, _) =>
+          register(id, get_allocation_type(pat.pat_env, pat.pat_type))
+        | TPatConstruct(_, _, pats)
+        | TPatTuple(pats)
+        | TPatArray(pats) => List.iter(process_pat, pats)
+        | TPatRecord(pats, _) =>
+          List.iter(((_, _, pat)) => process_pat(pat), pats)
+        | TPatAlias(pat, id, _) =>
+          register(id, get_allocation_type(pat.pat_env, pat.pat_type));
+          process_pat(pat);
+        | TPatOr(left, _) =>
+          // Bindings are the same on both sides of the OR
+          process_pat(left)
+        };
+      process_pat(pat);
+    };
+    let create_bind = (id, alloc_ty) => {
+      // Dummy value to be filled in during matching
+      let dummy_value = Imm.const(Const_wasmi32(0l));
+      if (mut_boxing) {
+        BLet(
+          id,
+          Comp.prim1(~allocation_type=HeapAllocated, BoxBind, dummy_value),
+          Nonglobal,
+        );
+      } else {
+        BLetMut(
+          id,
+          Comp.imm(~allocation_type=alloc_ty, dummy_value),
+          global,
+        );
       };
     };
-    List.flatten @@
-    List.map(((_, _, pat)) => collect_bindings(pat), branches);
+    List.iter(handle_branch, branches);
+    (
+      ident_map,
+      Hashtbl.fold(
+        ((alloc_ty, _), bind, acc) =>
+          [create_bind(bind, alloc_ty), ...acc],
+        bind_map,
+        [],
+      ),
+    );
   };
 
   let compile_match =
@@ -1110,7 +1165,7 @@ module MatchTreeCompiler = {
     let {tree, branches} = convert_match_branches(branches);
 
     // Create slots for bindings in each of the branches
-    let bind_setup = collect_bindings(branches);
+    let (mapping, bind_setup) = collect_bindings(branches);
     let (ans, setup) =
       compile_tree_help(tree, [expr], expr, helpI, helpConst);
     let jmp_name = Ident.create("match_dest");
