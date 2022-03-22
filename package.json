@@ -17,6 +17,7 @@
     "test": "yarn compiler test",
     "cli": "yarn workspace @grain/cli run",
     "js-runner": "yarn workspace @grain/js-runner run",
+    "precompiler": "yarn cli clean",
     "compiler": "yarn workspace @grain/compiler run",
     "stdlib": "yarn workspace @grain/stdlib run",
     "postcompiler": "yarn stdlib clean"
