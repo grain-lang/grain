@@ -188,4 +188,12 @@ export let truc = () => {
 }
 truc()|},
   );
+  assertCompileError(
+    "newline_before_arrow",
+    {|
+    let x = ()
+      => 1
+    |},
+    "Expected an expression.",
+  );
 });

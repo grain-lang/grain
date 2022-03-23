@@ -2354,7 +2354,7 @@ program: FOR WHILE
 
 Expected `(` to set the for loop parameters.
 
-program: FUN ID EOL THICKARROW WHEN
+program: FUN ID THICKARROW WHEN
 ##
 ## Ends in an error in state: 29.
 ##
@@ -2367,7 +2367,7 @@ program: FUN ID EOL THICKARROW WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 711, spurious reduction of production thickarrow -> eols THICKARROW
+## In state 27, spurious reduction of production thickarrow -> THICKARROW
 ##
 program: WHILE LPAREN WASMI64 RPAREN WHILE
 ##
@@ -2381,23 +2381,6 @@ program: WHILE LPAREN WASMI64 RPAREN WHILE
 
 Expected an expression or `{` to start a block.
 
-program: FUN ID EOL WHILE
-##
-## Ends in an error in state: 710.
-##
-## thickarrow -> eols . THICKARROW [ WHILE WASMI64 WASMI32 WASMF64 WASMF32 VOID TYPEID TRUE THROW STRING NUMBER_INT NUMBER_FLOAT NOT MATCH LPAREN LBRACKRCARET LBRACK LBRACE INT64 INT32 IF ID FUN FOR FLOAT64 FLOAT32 FALSE FAIL DASH CONTINUE CHAR BREAK ASSERT ]
-## thickarrow -> eols . THICKARROW eols [ WHILE WASMI64 WASMI32 WASMF64 WASMF32 VOID TYPEID TRUE THROW STRING NUMBER_INT NUMBER_FLOAT NOT MATCH LPAREN LBRACKRCARET LBRACK LBRACE INT64 INT32 IF ID FUN FOR FLOAT64 FLOAT32 FALSE FAIL DASH CONTINUE CHAR BREAK ASSERT ]
-##
-## The known suffix of the stack is as follows:
-## eols
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-##
 program: FUN ID WHILE
 ##
 ## Ends in an error in state: 26.

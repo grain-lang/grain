@@ -271,4 +271,24 @@ describe("pattern matching", ({test, testSkip}) => {
       "true\n(However, some guarded clause may match this value.)",
     ),
   );
+  assertCompileError(
+    "newline_before_arrow",
+    {|
+      match (1) {
+        a
+          => a
+      }
+    |},
+    "Expected `=>` followed by an expression or a branch guard—the keyword `when` followed by an expression",
+  );
+  assertCompileError(
+    "newline_before_arrow_2",
+    {|
+      match (1) {
+        a when a = 1
+          => a
+      }
+    |},
+    "Expected `=>` followed by an expression.",
+  );
 });
