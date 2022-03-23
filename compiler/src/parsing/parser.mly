@@ -73,9 +73,6 @@ module Grain_parsing = struct end
 
 %right SEMI EOL COMMA DOT COLON
 
-%nonassoc THICKARROW
-%nonassoc _typ
-
 %nonassoc _if
 %nonassoc ELSE
 
@@ -286,13 +283,13 @@ data_typ:
   | type_id %prec _below_infix { Typ.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
-  | data_typ compat_arrow typ { Typ.arrow ~loc:(to_loc $loc) [$1] $3 }
+  | FUN data_typ compat_arrow typ { Typ.arrow ~loc:(to_loc $loc) [$2] $4 }
   | FUN ID compat_arrow typ { Typ.arrow ~loc:(to_loc $loc) [(Typ.var $2)] $4 }
   | FUN lparen typs? rparen compat_arrow typ { Typ.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Typ.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
   | ID { Typ.var ~loc:(to_loc $loc) $1 }
-  | data_typ %prec _typ { $1 }
+  | data_typ { $1 }
 
 typs:
   | lseparated_nonempty_list(comma, typ) comma? { $1 }

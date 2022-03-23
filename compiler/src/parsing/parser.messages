@@ -7002,25 +7002,6 @@ program: WASMI64 COLON LPAREN TYPEID WHEN
 
 Expected `)` for a grouped type or a comma followed by more types for a tuple type.
 
-program: WASMI64 COLON TYPEID ARROW EOL WHILE
-##
-## Ends in an error in state: 100.
-##
-## typ -> data_typ arrow . typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
-##
-## The known suffix of the stack is as follows:
-## data_typ arrow
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-## In state 70, spurious reduction of production arrow -> ARROW eols
-##
-
-Expected a type for the result of the function type.
 
 program: WASMI64 COLON TYPEID LCARET EOL WHILE
 ##

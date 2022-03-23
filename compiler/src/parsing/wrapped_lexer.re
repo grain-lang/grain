@@ -202,6 +202,7 @@ and lex_balanced_step = (state, closing, acc, tok) => {
     switch (tok') {
     | LPAREN => check_lparen_fn(state, closing, [triple', ...tokens @ acc])
     | ID(_)
+    | TYPEID(_)
     | UNDERSCORE => check_id_fn(state, closing, [triple', ...tokens @ acc])
     | _ =>
       // Recurse normally
@@ -227,7 +228,7 @@ and lex_balanced_step = (state, closing, acc, tok) => {
         ),
       ),
     )
-  | (ID(_) | UNDERSCORE, _) when !ignore_fns(state) =>
+  | (ID(_) | TYPEID(_) | UNDERSCORE, _) when !ignore_fns(state) =>
     check_id_fn(state, closing, acc)
   | _ => lex_balanced(state, closing, acc)
   };
@@ -316,7 +317,7 @@ let token = state => {
       lookahead_match(state);
       tok;
     | LPAREN as tok => lookahead_fun(state, save_triple(state.lexbuf, tok))
-    | (ID(_) | UNDERSCORE) as tok =>
+    | (ID(_) | TYPEID(_) | UNDERSCORE) as tok =>
       let tok = save_triple(lexbuf, tok);
       switch (token(state)) {
       | exception exn =>
