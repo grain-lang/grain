@@ -87,4 +87,14 @@ describe("exports", ({test}) => {
     "export let rec foo: () -> Number = () => 5",
     ("foo", Binaryen.Export.external_function),
   );
+  assertHasExport(
+    "issue_918_annotated_func_export3",
+    "export let foo: () => Number = () => 5",
+    ("foo", Binaryen.Export.external_function),
+  );
+  assertHasExport(
+    "issue_918_annotated_func_export4",
+    "export let rec foo: () => Number = () => 5",
+    ("foo", Binaryen.Export.external_function),
+  );
 });

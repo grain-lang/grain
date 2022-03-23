@@ -82,6 +82,7 @@ let inject_fun =
 let is_triggering_token =
   fun
   | THICKARROW
+  // TODO: Remove ARROW in v0.6
   | ARROW => true
   | _ => false;
 

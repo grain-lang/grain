@@ -291,4 +291,13 @@ describe("pattern matching", ({test, testSkip}) => {
     |},
     "Expected `=>` followed by an expression.",
   );
+  assertSnapshot(
+    "branch_arrow_type_annotation",
+    {|
+      let a = x => x + 1
+      match (a) {
+        foo: (number => number) => foo(2)
+      }
+    |},
+  );
 });

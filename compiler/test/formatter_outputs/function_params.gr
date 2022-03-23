@@ -4,7 +4,7 @@ let unit_arg = () => 3
 
 let two_args = (x, y) => 4
 
-export let fake_write: (int, int, int, string) -> string =
+export let fake_write: (int, int, int, string) => string =
   (
     fd,
     iovs,

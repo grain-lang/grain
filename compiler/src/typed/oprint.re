@@ -363,7 +363,7 @@ and print_out_type_1 = ppf =>
       if (args_length != 1) {
         pp_print_char(ppf, ')');
       };
-      pp_print_string(ppf, " ->");
+      pp_print_string(ppf, " =>");
       pp_print_space(ppf, ());
       print_out_type_1(ppf, ty2);
       pp_close_box(ppf, ());
@@ -586,7 +586,7 @@ let out_constr = ref(_ => failwith("Oprint.out_constr"));
 
 let rec print_out_functor = (funct, ppf, m) =>
   if (funct) {
-    fprintf(ppf, "->@ %a", print_out_module_type, m);
+    fprintf(ppf, "=>@ %a", print_out_module_type, m);
   } else {
     print_out_module_type(ppf, m);
   }
@@ -810,7 +810,7 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
     | _ =>
       fprintf(
         ppf,
-        "@[<2>%s :@ %a -> %a@]",
+        "@[<2>%s :@ %a => %a@]",
         name,
         print_typlist(print_simple_out_type, " *"),
         tyl,

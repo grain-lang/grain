@@ -1506,7 +1506,7 @@ and print_type =
         },
       ),
       Doc.space,
-      Doc.text("->"),
+      Doc.text("=>"),
       Doc.space,
       print_type(~original_source, ~comments, parsed_type),
     ])

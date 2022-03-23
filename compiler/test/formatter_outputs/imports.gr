@@ -13,7 +13,7 @@ export foreign wasm storage_read: (
   WasmI64,
   WasmI64,
   WasmI64,
-) -> WasmI64 as storageRead from "env"
+) => WasmI64 as storageRead from "env"
 
 import WasmI32, {
   eq, // comment1
@@ -29,4 +29,4 @@ import * except {
   // just because
 } from "runtime/unsafe/wasmi32"
 
-export foreign wasm promise_results_count: () -> WasmI64 as promiseResultsCount from "env"
+export foreign wasm promise_results_count: () => WasmI64 as promiseResultsCount from "env"

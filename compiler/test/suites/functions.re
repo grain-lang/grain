@@ -168,6 +168,14 @@ describe("functions", ({test, testSkip}) => {
     "func_record_associativity2",
     "record Foo { g: () -> Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
   );
+  assertSnapshot(
+    "func_record_associativity3",
+    "record Foo { f: () => Bool }; let foo = {f: () => false}; !foo.f()",
+  );
+  assertSnapshot(
+    "func_record_associativity4",
+    "record Foo { g: () => Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
+  );
 
   assertSnapshot(
     "func_recursive_closure",
@@ -195,5 +203,12 @@ truc()|},
       => 1
     |},
     "Expected an expression.",
+  );
+
+  assertSnapshot(
+    "func_arrow_type_annotation",
+    {|
+      let a: number => number = x => x + 2
+    |},
   );
 });
