@@ -3,4 +3,4 @@ const preparePkg = require("./pkg");
 
 preparePkg();
 
-require("./grainlsp_js.bc.js");
+require("./grainlsp.bc.js");
