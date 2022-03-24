@@ -40,14 +40,8 @@ cli/bin/grainc.bc.js
 cli/bin/graindoc.exe
 cli/bin/graindoc.bc.js
 cli/bin/grainformat.exe
-<<<<<<< HEAD
 cli/bin/grainformat.bc.js
 cli/bin/grainlsp.exe
 cli/bin/grainlsp.bc.js
-=======
-cli/bin/grainformat_js.bc.js
-cli/bin/grainlsp.exe
-cli/bin/grainlsp_js.bc.js
->>>>>>> c1ed843051788046699f011ddaa3dcf7bf8db630
 
 .DS_Store
