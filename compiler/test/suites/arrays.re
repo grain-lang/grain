@@ -1,11 +1,14 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("arrays", ({test}) => {
+describe("arrays", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertRunError = makeErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertRunError = makeErrorRunner(test_or_skip);
   let assertParse = makeParseRunner(test);
 
   assertRun("array1", "print([> 1, 2, 3])", "[> 1, 2, 3]\n");

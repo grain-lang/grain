@@ -559,6 +559,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     Comp_utils.global_function_table,
     table_offset^,
     -1,
+    Type.funcref,
   );
   let (initial_memory, maximum_memory) =
     switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {

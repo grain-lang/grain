@@ -1,8 +1,11 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("numbers", ({test}) => {
-  let assertRun = makeRunner(test);
+describe("numbers", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertRun = makeRunner(test_or_skip);
   let assertCompileError = makeCompileErrorRunner(test);
 
   assertRun("numbers1", "print(0.3333 + (1 / 3))", "0.6666333333333333\n");

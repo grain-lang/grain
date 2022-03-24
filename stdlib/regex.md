@@ -446,4 +446,3 @@ Examples:
 ```grain
 assert Regex.replaceAll(Result.unwrap(Regex.make("o")), "skoot", "r") == "skrrt"
 ```
-

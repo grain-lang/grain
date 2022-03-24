@@ -21,8 +21,8 @@ module CSVArg: Anf_iterator.IterArgument = {
 
   let leave_anf_expression = ({anf_desc: desc}) => {
     switch (desc) {
-    | AELet(Global, _, _, binds, _) =>
-      /* Assume that all globals are closure scope, since globals could
+    | AELet(Global({exported: true}), _, _, binds, _) =>
+      /* Assume that all exported globals are closure scope, since globals could
          appear in a closure scope in another module */
       let ids = List.map(fst, binds);
       closure_scoped_vars :=

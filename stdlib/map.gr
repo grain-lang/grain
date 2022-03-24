@@ -280,6 +280,8 @@ let setInArray = array => {
     array[i] = (key, value)
     // no decRef on key and value, since they are stored in array
     Memory.decRef(WasmI32.fromGrain(iter))
+    Memory.incRef(WasmI32.fromGrain((+)))
+    Memory.incRef(WasmI32.fromGrain(i))
     i + 1
   }
   iter

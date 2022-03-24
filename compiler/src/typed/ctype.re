@@ -99,6 +99,8 @@ let set_levels = l => {
 };
 
 let get_current_level = () => current_level^;
+let initial_levels = save_levels();
+let reset_levels = () => set_levels(initial_levels);
 let init_def = level => {
   current_level := level;
   nongen_level := level;

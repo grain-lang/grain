@@ -3,4 +3,4 @@ const preparePkg = require("./pkg");
 
 preparePkg();
 
-require("./graindoc_js.bc.js");
+require("./graindoc.bc.js");

@@ -152,6 +152,7 @@ module Exp: {
       list(match_branch)
     ) =>
     expression;
+  let prim0: (~loc: loc=?, ~attributes: attributes=?, prim0) => expression;
   let prim1:
     (~loc: loc=?, ~attributes: attributes=?, prim1, expression) => expression;
   let prim2:
