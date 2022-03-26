@@ -139,7 +139,7 @@ let extension_descr = (path_ext, ext) => {
     cstr_existentials: existentials,
     cstr_args,
     cstr_arity: List.length(cstr_args),
-    cstr_tag: CstrExtension(ext.ext_runtime_id, path_ext, cstr_ext_type),
+    cstr_tag: CstrExtension(ext.ext_name.stamp, path_ext, cstr_ext_type),
     cstr_consts: (-1),
     cstr_nonconsts: (-1),
     cstr_loc: ext.ext_loc,

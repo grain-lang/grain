@@ -1280,6 +1280,7 @@ let bind_constructor =
       Comp.lambda(
         ~loc,
         ~env,
+        ~name=cstr_name,
         args,
         (
           AExp.comp(

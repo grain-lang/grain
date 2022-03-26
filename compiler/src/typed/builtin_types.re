@@ -117,6 +117,7 @@ let cstr = (id, args) => {
   cd_id: id,
   cd_args: TConstrTuple(args),
   cd_res: None,
+  cd_repr: ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Indirect),
   cd_loc: Location.dummy_loc,
 };
 

@@ -301,7 +301,7 @@ type immediate =
 
 [@deriving sexp]
 type closure_data = {
-  func_idx: int32,
+  func_idx: option(int32),
   arity: int32,
   variables: list(immediate),
 };
@@ -368,6 +368,10 @@ type record_op =
   | MRecordSet(int32, immediate);
 
 [@deriving sexp]
+type closure_op =
+  | MClosureSetPtr(int32);
+
+[@deriving sexp]
 type instr = {
   instr_desc,
   instr_loc: Location.t,
@@ -420,6 +424,7 @@ and instr_desc =
   | MArrayOp(array_op, immediate)
   | MAdtOp(adt_op, immediate)
   | MRecordOp(record_op, immediate)
+  | MClosureOp(closure_op, immediate)
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
   | MDrop(instr, Types.allocation_type) /* Ignore the result of an expression. Used for sequences. */
@@ -468,7 +473,6 @@ type export =
 
 [@deriving sexp]
 type mash_function = {
-  index: int32,
   id: Ident.t,
   name: option(string),
   args: list(Types.allocation_type),
@@ -494,6 +498,7 @@ type mash_program = {
   main_body: block,
   main_body_stack_size: stack_size,
   globals: list((int32, Types.allocation_type)),
+  function_table_elements: list(string),
   signature: Cmi_format.cmi_infos,
   type_metadata: list(Types.type_metadata),
 };

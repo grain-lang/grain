@@ -61,7 +61,8 @@ let console_mod = Ident.create_persistent("console");
 let print_exception_ident = Ident.create_persistent("printException");
 let print_exception_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$printException");
-let assertion_error_ident =
+let assertion_error_ident = Ident.create_persistent("AssertionError");
+let assertion_error_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$AssertionError");
 let index_out_of_bounds_ident =
   Ident.create_persistent("GRAIN$EXPORT$IndexOutOfBounds");
@@ -88,7 +89,7 @@ let required_global_imports = [
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
-    mimp_used: false,
+    mimp_used: true,
   },
   {
     mimp_mod: grain_env_mod,
@@ -108,7 +109,7 @@ let required_global_imports = [
   },
   {
     mimp_mod: exception_mod,
-    mimp_name: assertion_error_ident,
+    mimp_name: assertion_error_closure_ident,
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -174,6 +175,18 @@ let required_function_imports = [
   {
     mimp_mod: exception_mod,
     mimp_name: print_exception_ident,
+    mimp_type:
+      MFuncImport(
+        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
+        [Types.StackAllocated(WasmI32)],
+      ),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_mod: exception_mod,
+    mimp_name: assertion_error_ident,
     mimp_type:
       MFuncImport(
         [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
@@ -296,7 +309,10 @@ let runtime_type_metadata_ptr = () => runtime_heap_ptr^ + 0x08;
 
 let reset = () => {
   reset_labels();
-  List.iter(imp => imp.mimp_used = false, runtime_imports);
+  List.iter(
+    imp => imp.mimp_used = imp.mimp_mod == grain_env_mod,
+    runtime_imports,
+  );
   runtime_heap_ptr :=
     (
       switch (Grain_utils.Config.memory_base^) {
@@ -741,7 +757,7 @@ let compile_bind =
     /* Closure bindings need to be calculated */
     if (!(action == BindGet)) {
       failwith(
-        "Internal error: attempted to emit instruction which would mutate closure contents",
+        "Internal error: attempted to emit instruction which would mutate closure values",
       );
     };
     appropriate_incref(
@@ -973,16 +989,19 @@ let compile_imm =
   };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
-  let err_ident =
+  let (err_value_ident, err_func_ident) =
     switch (err) {
-    | Runtime_errors.MatchFailure => match_failure_ident
-    | Runtime_errors.IndexOutOfBounds => index_out_of_bounds_ident
-    | Runtime_errors.AssertionError => assertion_error_ident
+    | Runtime_errors.MatchFailure => (match_failure_ident, None)
+    | Runtime_errors.IndexOutOfBounds => (index_out_of_bounds_ident, None)
+    | Runtime_errors.AssertionError => (
+        assertion_error_closure_ident,
+        Some(get_wasm_imported_name(exception_mod, assertion_error_ident)),
+      )
     };
   let mk_err = () =>
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(exception_mod, err_ident),
+      get_wasm_imported_name(exception_mod, err_value_ident),
       Type.int32,
     );
   let err =
@@ -990,21 +1009,11 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     | [] => mk_err()
     | _ =>
       let compiled_args = args;
-      Expression.Call_indirect.make(
+      Expression.Call.make(
         wasm_mod,
-        global_function_table,
-        load(~offset=8, wasm_mod, mk_err()),
+        Option.get(err_func_ident),
         [mk_err(), ...compiled_args],
-        Type.create @@
-        Array.map(
-          wasm_type,
-          Array.of_list([
-            Types.StackAllocated(WasmI32),
-            ...List.map(_ => Types.StackAllocated(WasmI32), args),
-          ]),
-        ),
-        Type.create @@
-        Array.map(wasm_type, Array.of_list([Types.StackAllocated(WasmI32)])),
+        Type.int32,
       );
     };
   Expression.Block.make(
@@ -1393,6 +1402,33 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
   };
 };
 
+let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
+  // We skip the incref here as this is akin to using a swap slot (the
+  // reference we create here cannot escape, so there isn't a need to add an
+  // incref/decref pair). Since it won't live in a local, it wouldn't be
+  // cleaned up automatically anyway.
+  let closure = () =>
+    compile_imm(~skip_incref=true, wasm_mod, env, closure_imm);
+  switch (op) {
+  | MClosureSetPtr(idx) =>
+    store(
+      ~offset=8,
+      wasm_mod,
+      closure(),
+      Expression.Binary.make(
+        wasm_mod,
+        Op.add_int32,
+        Expression.Global_get.make(
+          wasm_mod,
+          get_wasm_imported_name(grain_env_mod, reloc_base),
+          Type.int32,
+        ),
+        Expression.Const.make(wasm_mod, wrap_int32(idx)),
+      ),
+    )
+  };
+};
+
 /** Heap allocations. */
 
 /** Rounds the given number of words to be aligned correctly */
@@ -1729,6 +1765,22 @@ let allocate_closure =
       );
     patches := List.mapi(patch_var, variables);
   };
+  let func_idx =
+    switch (func_idx) {
+    | Some(idx) =>
+      Expression.Binary.make(
+        wasm_mod,
+        Op.add_int32,
+        Expression.Global_get.make(
+          wasm_mod,
+          get_wasm_imported_name(grain_env_mod, reloc_base),
+          Type.int32,
+        ),
+        Expression.Const.make(wasm_mod, wrap_int32(idx)),
+      )
+    // Use as a sentinel
+    | None => Expression.Const.make(wasm_mod, wrap_int32(-1l))
+    };
   let preamble = [
     store(
       ~offset=0,
@@ -1745,21 +1797,7 @@ let allocate_closure =
       get_swap(),
       Expression.Const.make(wasm_mod, wrap_int32(arity)),
     ),
-    store(
-      ~offset=8,
-      wasm_mod,
-      get_swap(),
-      Expression.Binary.make(
-        wasm_mod,
-        Op.add_int32,
-        Expression.Global_get.make(
-          wasm_mod,
-          get_wasm_imported_name(grain_env_mod, reloc_base),
-          Type.int32,
-        ),
-        Expression.Const.make(wasm_mod, wrap_int32(func_idx)),
-      ),
-    ),
+    store(~offset=8, wasm_mod, get_swap(), func_idx),
     store(
       ~offset=12,
       wasm_mod,
@@ -2939,6 +2977,8 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MAdtOp(adt_op, adt) => compile_adt_op(wasm_mod, env, adt, adt_op)
   | MRecordOp(record_op, record) =>
     compile_record_op(wasm_mod, env, record, record_op)
+  | MClosureOp(closure_op, closure) =>
+    compile_closure_op(wasm_mod, env, closure, closure_op)
   | MPrim0(p0) => compile_prim0(wasm_mod, env, p0)
   | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)
@@ -3245,7 +3285,7 @@ let compile_function =
       ~preamble=?,
       wasm_mod,
       env,
-      {index, id, args, return_type, stack_size, body: body_instrs, func_loc},
+      {id, args, return_type, stack_size, body: body_instrs, func_loc},
     ) => {
   sources := [];
   let arity = List.length(args);
@@ -3312,8 +3352,8 @@ let compile_function =
   func_ref;
 };
 
-let compute_table_size = (env, {functions}) => {
-  List.length(functions);
+let compute_table_size = (env, {function_table_elements}) => {
+  List.length(function_table_elements);
 };
 
 let compile_imports = (wasm_mod, env, {imports}) => {
@@ -3448,14 +3488,12 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   );
 };
 
-let compile_tables = (wasm_mod, env, {functions}) => {
-  let function_names =
-    List.map(({id}) => Ident.unique_name(id), functions);
+let compile_tables = (wasm_mod, env, {function_table_elements}) => {
   Table.add_active_element_segment(
     wasm_mod,
     global_function_table,
     "elem",
-    function_names,
+    function_table_elements,
     Expression.Global_get.make(
       wasm_mod,
       get_wasm_imported_name(grain_env_mod, reloc_base),
@@ -3555,7 +3593,6 @@ let compile_main = (wasm_mod, env, prog) => {
     wasm_mod,
     env,
     {
-      index: Int32.of_int(-99),
       id: Ident.create(grain_main),
       name: Some(grain_main),
       args: [],
@@ -3687,11 +3724,11 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
 
   let compile_all = () => {
-    ignore @@ compile_functions(wasm_mod, env, prog);
-    ignore @@ compile_tables(wasm_mod, env, prog);
-    ignore @@ compile_imports(wasm_mod, env, prog);
-    ignore @@ compile_exports(wasm_mod, env, prog);
     ignore @@ compile_globals(wasm_mod, env, prog);
+    ignore @@ compile_functions(wasm_mod, env, prog);
+    ignore @@ compile_exports(wasm_mod, env, prog);
+    ignore @@ compile_imports(wasm_mod, env, prog);
+    ignore @@ compile_tables(wasm_mod, env, prog);
   };
 
   if (Env.is_runtime_mode()) {

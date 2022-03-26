@@ -1571,22 +1571,19 @@ let transl_prim = (env, desc) => {
       )
     };
 
+  let value = Typecore.type_expression(env, value);
   let binds = [
     {
-      pvb_pat: {
-        ppat_desc: PPatVar(desc.tvd_name),
-        ppat_loc: loc,
+      vb_pat: {
+        pat_desc: TPatVar(desc.tvd_id, desc.tvd_name),
+        pat_loc: loc,
+        pat_extra: [],
+        pat_type: desc.tvd_val.val_type,
+        pat_env: env,
       },
-      pvb_expr: value,
-      pvb_loc: loc,
+      vb_expr: value,
+      vb_loc: loc,
     },
   ];
-  let mut_flag = desc.tvd_val.val_mutable ? Mutable : Immutable;
-  let (binds, env) =
-    Typecore.type_binding(env, Nonrecursive, mut_flag, binds, None);
-  let (path, val_desc) =
-    Env.lookup_value(Identifier.IdentName(desc.tvd_name.txt), env);
-  // Ensure the binding has a proper value_description
-  let new_env = Env.add_value(Path.head(path), desc.tvd_val, env);
-  (binds, new_env, attrs);
+  (binds, env, attrs);
 };
