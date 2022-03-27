@@ -260,7 +260,8 @@ module Val: {
       ~name: str,
       ~alias: option(str),
       ~typ: parsed_type,
-      ~prim: list(string)
+      ~prim: list(string),
+      unit
     ) =>
     value_description;
 };

@@ -676,14 +676,14 @@ export_id_str:
   | type_id_str { ExportExceptData $1 }
 
 foreign_stmt:
-  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { Val.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] }
+  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { Val.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] () }
 
 prim:
   | primitive_ { Location.mkloc $1 (to_loc $loc) }
 
 primitive_stmt:
-  | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
-  | PRIMITIVE prim colon typ equal STRING { Val.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] }
+  | PRIMITIVE id_str colon typ equal STRING { Val.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] () }
+  | PRIMITIVE prim colon typ equal STRING { Val.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] () }
 
 exception_stmt:
   | EXCEPTION type_id_str { Except.singleton ~loc:(to_loc $loc) $2 }

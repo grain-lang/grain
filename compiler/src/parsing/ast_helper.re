@@ -324,7 +324,7 @@ module Top = {
 };
 
 module Val = {
-  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim) => {
+  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim, ()) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {
       pval_mod: mod_,
