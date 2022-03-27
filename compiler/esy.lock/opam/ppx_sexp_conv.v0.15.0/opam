@@ -10,17 +10,17 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"    {>= "4.04.2"}
-  "base"     {>= "v0.14" & < "v0.15"}
-  "sexplib0" {>= "v0.14" & < "v0.15"}
+  "ocaml"    {>= "4.08.0"}
+  "base"     {>= "v0.15" & < "v0.16"}
+  "sexplib0" {>= "v0.15" & < "v0.16"}
   "dune"     {>= "2.0.0"}
-  "ppxlib"   {>= "0.22.0"}
+  "ppxlib"   {>= "0.23.0" & < "0.26.0"}
 ]
 synopsis: "[@@deriving] plugin to generate S-expression conversion functions"
 description: "
 Part of the Jane Street's PPX rewriters collection.
 "
 url {
-  src: "https://github.com/janestreet/ppx_sexp_conv/archive/v0.14.3.tar.gz"
-  checksum: "md5=25caf01245e0113e035ccefe275f85d9"
+src: "https://ocaml.janestreet.com/ocaml-core/v0.15/files/ppx_sexp_conv-v0.15.0.tar.gz"
+checksum: "sha256=d9cd1eefa179acedb8954ba95ed01e8fd685dae6e278061936ce5930d95a8380"
 }

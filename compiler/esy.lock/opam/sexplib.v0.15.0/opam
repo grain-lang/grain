@@ -10,9 +10,9 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"    {>= "4.04.2"}
-  "parsexp"  {>= "v0.14" & < "v0.15"}
-  "sexplib0" {>= "v0.14" & < "v0.15"}
+  "ocaml"    {>= "4.08.0"}
+  "parsexp"  {>= "v0.15" & < "v0.16"}
+  "sexplib0" {>= "v0.15" & < "v0.16"}
   "dune"     {>= "2.0.0"}
   "num"
 ]
@@ -24,6 +24,6 @@ OCaml's standard library that was developed by Jane Street, the
 largest industrial user of OCaml.
 "
 url {
-  src: "https://ocaml.janestreet.com/ocaml-core/v0.14/files/sexplib-v0.14.0.tar.gz"
-  checksum: "md5=6e230eae22face46cb8645e53e351067"
+src: "https://ocaml.janestreet.com/ocaml-core/v0.15/files/sexplib-v0.15.0.tar.gz"
+checksum: "sha256=a562348f2cc150224c31e424e0fb4cb11b5980ddc1effbb3b34c431f822b45f7"
 }
