@@ -51,15 +51,15 @@ let arg_info:
     ~env_docs: string=?,
     ~env_doc: string=?,
     ~env: string=?,
-    ~names: list(string)
+    list(string)
   ) =>
   Cmdliner.Arg.info = (
-  (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, ~names) => {
+  (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, names) => {
     let env =
       Option.map(
         e => {
           let (doc, docs) = (env_doc, env_docs);
-          Cmdliner.Arg.(env_var(~docs?, ~doc?, e));
+          Cmdliner.Cmd.Env.info(~docs?, ~doc?, e);
         },
         env,
       );
@@ -72,7 +72,7 @@ let arg_info:
       ~env_docs: string=?,
       ~env_doc: string=?,
       ~env: string=?,
-      ~names: list(string)
+      list(string)
     ) =>
     Cmdliner.Arg.info
 );
@@ -118,7 +118,7 @@ let opt:
                 ~env_docs?,
                 ~env_doc?,
                 ~env?,
-                ~names,
+                names,
               ),
             )
           ),
@@ -160,7 +160,7 @@ let toggle_flag:
                     ~env_docs?,
                     ~env_doc?,
                     ~env?,
-                    ~names,
+                    names,
                   ),
                 ),
               ],
@@ -360,15 +360,16 @@ let process_used_cli_options = term => {
 
 let apply_inline_flags = (~err, flag_string) => {
   open Cmdliner;
-  let cmd = (
-    process_used_cli_options(with_unapplied_cli_options(Term.const())),
-    Term.info("grainc"),
-  );
+  let cmd =
+    Cmd.v(
+      Cmd.info("grainc"),
+      process_used_cli_options(with_unapplied_cli_options(Term.const())),
+    );
   // Remove grainc-flags prefix
   let len = String.length(flag_string) - 12;
   let flag_string = String.sub(flag_string, 12, len);
   let argv = Array.of_list(String.split_on_char(' ', flag_string));
-  Term.eval(~argv, ~err, cmd);
+  Cmd.eval_value(~argv, ~err, cmd);
 };
 
 let option_conv = ((prsr, prntr)) => (
@@ -605,10 +606,10 @@ let apply_inline_flags = (~on_error, cmt_content) =>
     let err = Format.formatter_of_buffer(err_buf);
     let result = apply_inline_flags(~err, cmt_content);
     switch (result) {
-    | `Ok(_) => ()
-    | `Version
-    | `Help => on_error(`Help)
-    | `Error(_) =>
+    | Ok(`Ok(_)) => ()
+    | Ok(`Version)
+    | Ok(`Help) => on_error(`Help)
+    | Error(_) =>
       Format.pp_print_flush(err, ());
       on_error(`Message(Buffer.contents(err_buf)));
     };

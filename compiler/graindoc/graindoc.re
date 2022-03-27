@@ -244,7 +244,7 @@ let generate_docs =
   | None => print_bytes(contents)
   };
 
-  `Ok();
+  ();
 };
 
 let graindoc = opts => {
@@ -266,14 +266,14 @@ let cmd = {
     | Some(v) => Build_info.V1.Version.to_string(v)
     };
 
-  (
+  Cmd.v(
+    Cmd.info(Sys.argv[0], ~version, ~doc),
     Grain_utils.Config.with_cli_options(graindoc) $ params_cmdliner_term(),
-    Term.info(Sys.argv[0], ~version, ~doc),
   );
 };
 
 let () =
-  switch (Term.eval(cmd)) {
-  | `Error(_) => exit(1)
+  switch (Cmd.eval_value(cmd)) {
+  | Error(_) => exit(1)
   | _ => ()
   };
