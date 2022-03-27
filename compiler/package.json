@@ -15,6 +15,7 @@
     "link": "yarn link",
     "clean": "esy clean",
     "prepare": "esy install",
+    "prebuild": "yarn workspace @grain/cli clean",
     "build": "esy",
     "postbuild": "esy copy:exe",
     "build:js": "esy b dune build @js --no-buffer",
