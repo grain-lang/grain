@@ -10,9 +10,9 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml"    {>= "4.04.2"}
-  "base"     {>= "v0.14" & < "v0.15"}
-  "sexplib0" {>= "v0.14" & < "v0.15"}
+  "ocaml"    {>= "4.08.0"}
+  "base"     {>= "v0.15" & < "v0.16"}
+  "sexplib0" {>= "v0.15" & < "v0.16"}
   "dune"     {>= "2.0.0"}
 ]
 synopsis: "S-expression parsing library"
@@ -38,6 +38,6 @@ s-expressions from files or other external sources, you should use
 parsexp_io.
 "
 url {
-  src: "https://github.com/janestreet/parsexp/archive/refs/tags/v0.14.2.tar.gz"
-  checksum: "sha256=f6e17e4e08dcdce08a6372485a381dcdb3fda0f71b4506d7be982b87b5a1f230"
+src: "https://ocaml.janestreet.com/ocaml-core/v0.15/files/parsexp-v0.15.0.tar.gz"
+checksum: "sha256=d1ee902b12ac7c0c888863025990d06845530fb75328454814e5ce5b6d43d193"
 }

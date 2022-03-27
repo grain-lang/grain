@@ -9,7 +9,7 @@ homepage: "https://github.com/ocaml-ppx/ocamlformat"
 bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
 depends: [
   "dune" {>= "2.8"}
-  "ocaml" {>= "4.08" & < "4.14"}
+  "ocaml" {>= "4.08" & < "4.13"}
   "csexp"
   "sexplib0"
   "odoc" {with-doc}
@@ -29,12 +29,12 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+x-commit-hash: "3697f0f92854a681fd1156fe4f6fb97d060da1d8"
 url {
   src:
-    "https://github.com/ocaml-ppx/ocamlformat/releases/download/0.19.0/ocamlformat-0.19.0.tbz"
+    "https://github.com/ocaml-ppx/ocamlformat/releases/download/0.18.0/ocamlformat-0.18.0.tbz"
   checksum: [
-    "sha256=62fc46aae8f0a4a33ce7f8d7726d7109bff615ea6fcb50d1482f21d20ee50f46"
-    "sha512=408b3af533169f201d7492be869f8ae4acde5583e01693c586929f44b76d569d3d6d555bc056378743d7cb3bd8e11ebc9cbd178ca196bcb82db33127d14902f8"
+    "sha256=981a44296485da6ca29ab2cd8c711270398e5e1d1624408ec403c0b0ea9fe114"
+    "sha512=d1cbd63e4b82ff2e9ec0c96a9305704d3eea3e978c703ef9d1244853d8aaea912ad9f934379eeddfc1a0468b1cb1c2dc39ecf452189f2a35fa1ae53aec10b277"
   ]
 }
-x-commit-hash: "ba67af28ddca8718ef8816b2b0dc1e5b2f5e9591"
