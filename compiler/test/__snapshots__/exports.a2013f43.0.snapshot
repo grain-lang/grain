@@ -33,14 +33,9 @@ exports › let_rec_export
   (local $0 i32)
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 6)
@@ -68,17 +63,7 @@ exports › let_rec_export
     )
    )
   )
-  (tuple.extract 0
-   (tuple.make
-    (i32.const 1879048190)
-    (tuple.extract 0
-     (tuple.make
-      (global.get $global_0)
-      (local.get $0)
-     )
-    )
-   )
-  )
+  (i32.const 1879048190)
  )
  (func $_start (; has Stack IR ;)
   (drop

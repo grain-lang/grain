@@ -39,14 +39,9 @@ functions › lam_destructure_1
   (local $2 i32)
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 6)
@@ -76,19 +71,9 @@ functions › lam_destructure_1
   )
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (tuple.extract 0
-       (tuple.make
-        (local.get $1)
-        (local.get $0)
-       )
-      )
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 1)
@@ -101,7 +86,7 @@ functions › lam_destructure_1
    (local.get $0)
    (i64.const 7303014)
   )
-  (local.set $2
+  (local.set $0
    (tuple.extract 0
     (tuple.make
      (local.get $0)
@@ -112,19 +97,14 @@ functions › lam_destructure_1
     )
    )
   )
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (call $lam_lambda_1131
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $1)
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $2)
-      )
-     )
+  (local.set $2
+   (call $lam_lambda_1131
+    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+     (local.get $1)
+    )
+    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
      (local.get $0)
     )
    )
@@ -138,10 +118,10 @@ functions › lam_destructure_1
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $2)
+    (local.get $0)
    )
   )
-  (local.get $0)
+  (local.get $2)
  )
  (func $_start (; has Stack IR ;)
   (drop

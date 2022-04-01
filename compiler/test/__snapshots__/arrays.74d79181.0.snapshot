@@ -23,17 +23,11 @@ arrays › array_access5
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
-  (local $2 i32)
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 20)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 20)
     )
    )
    (i32.const 4)
@@ -67,19 +61,14 @@ arrays › array_access5
   )
   (if
    (i32.lt_s
-    (local.tee $1
+    (local.tee $0
      (i32.const -3)
     )
     (i32.sub
      (i32.const 0)
      (i32.load offset=4
-      (local.tee $2
-       (tuple.extract 0
-        (tuple.make
-         (global.get $global_0)
-         (i32.const 0)
-        )
-       )
+      (local.tee $1
+       (global.get $global_0)
       )
      )
     )
@@ -97,9 +86,9 @@ arrays › array_access5
   (if
    (i32.le_s
     (i32.load offset=4
-     (local.get $2)
+     (local.get $1)
     )
-    (local.get $1)
+    (local.get $0)
    )
    (block
     (drop
@@ -111,33 +100,28 @@ arrays › array_access5
     (unreachable)
    )
   )
-  (tuple.extract 0
-   (tuple.make
-    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-     (i32.load offset=8
-      (i32.add
-       (i32.shl
-        (if (result i32)
-         (i32.lt_s
-          (local.get $1)
-          (i32.const 0)
-         )
-         (i32.add
-          (local.get $1)
-          (i32.load offset=4
-           (local.get $2)
-          )
-         )
+  (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (i32.load offset=8
+    (i32.add
+     (i32.shl
+      (if (result i32)
+       (i32.lt_s
+        (local.get $0)
+        (i32.const 0)
+       )
+       (i32.add
+        (local.get $0)
+        (i32.load offset=4
          (local.get $1)
         )
-        (i32.const 2)
        )
-       (local.get $2)
+       (local.get $0)
       )
+      (i32.const 2)
      )
+     (local.get $1)
     )
-    (local.get $0)
    )
   )
  )

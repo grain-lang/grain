@@ -32,19 +32,14 @@ let mut › let-mut5
     )
    )
   )
-  (local.set $1
+  (local.set $0
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_i32_=>_i32)
       (local.tee $0
-       (tuple.extract 0
-        (tuple.make
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_-)
-         )
-         (i32.const 0)
-        )
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+        (global.get $gimport_pervasives_-)
        )
       )
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -68,7 +63,7 @@ let mut › let-mut5
     (tuple.make
      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-      (local.get $1)
+      (local.get $0)
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
@@ -77,24 +72,19 @@ let mut › let-mut5
     )
    )
   )
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-      (global.get $global_0)
-     )
-     (local.get $0)
-    )
+  (local.set $1
+   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+    (global.get $global_0)
    )
   )
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $1)
+    (local.get $0)
    )
   )
-  (local.get $0)
+  (local.get $1)
  )
  (func $_start (; has Stack IR ;)
   (drop
