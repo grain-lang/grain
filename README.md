@@ -58,5 +58,4 @@ yarn run
 
 This will display an interactive session where you can select the project and command you want.
 
-
 Copyright ©️ 2017-2022 Philip Blair, Oscar Spencer, & contributors.
