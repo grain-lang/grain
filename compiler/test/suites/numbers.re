@@ -28,7 +28,8 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("numbers10", "print(-2 / 4)", "-1/2\n");
   assertRun("numbers11", "print(2 / -4)", "-1/2\n");
   assertRun("numbers12", "print(-2 / -4)", "1/2\n");
-  assertCompileError("numbers13", "9 / 0", "denominator of zero");
+  assertRun("numbers13", "print(1e3)", "1000.0\n");
+  assertCompileError("numbers14", "9 / 0", "denominator of zero");
   // basic syntax tests
   assertRun("number_syntax1", "print(1.2)", "1.2\n");
   assertRun("number_syntax2", "print(1.)", "1.0\n");
