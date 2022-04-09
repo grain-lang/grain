@@ -14,12 +14,12 @@ arrays › array_access
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/exception\" \"printException\" (func $wimport_GRAIN$MODULE$runtime/exception_printException (param i32 i32) (result i32)))
- (global $global_0 (mut i32) (i32.const 0))
- (global $global_2 i32 (i32.const 0))
+ (global $x_1131 (mut i32) (i32.const 0))
+ (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $global_2))
+ (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -48,13 +48,13 @@ arrays › array_access
    (local.get $0)
    (i32.const 7)
   )
-  (global.set $global_0
+  (global.set $x_1131
    (tuple.extract 0
     (tuple.make
      (local.get $0)
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-      (global.get $global_0)
+      (global.get $x_1131)
      )
     )
    )
@@ -68,7 +68,7 @@ arrays › array_access
      (i32.const 0)
      (i32.load offset=4
       (local.tee $1
-       (global.get $global_0)
+       (global.get $x_1131)
       )
      )
     )
