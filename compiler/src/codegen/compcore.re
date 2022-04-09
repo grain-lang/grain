@@ -20,8 +20,6 @@ type codegen_env = {
   stack_size,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
-  imported_funcs: Ident.tbl(Ident.tbl(int32)),
-  imported_globals: Ident.tbl(Ident.tbl(string)),
   required_imports: list(import),
 };
 
@@ -283,19 +281,8 @@ let init_codegen_env = name => {
     stack_size_f64: 0,
   },
   backpatches: ref([]),
-  imported_funcs: Ident.empty,
-  imported_globals: Ident.empty,
   required_imports: [],
 };
-
-let lookup_ext_global = (env, modname, itemname) =>
-  Ident.find_same(itemname, Ident.find_same(modname, env.imported_globals));
-
-let var_of_ext_global = (env, modname, itemname) =>
-  lookup_ext_global(env, modname, itemname);
-
-let lookup_ext_func = (env, modname, itemname) =>
-  Ident.find_same(itemname, Ident.find_same(modname, env.imported_funcs));
 
 /** Static runtime values */
 
@@ -3436,8 +3423,8 @@ let compile_imports = (wasm_mod, env, {imports}) => {
 let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   let compile_export = (i, export) => {
     switch (export) {
-    | GlobalExport({ex_global_name, ex_global_index}) =>
-      let internal_name = Printf.sprintf("global_%ld", ex_global_index);
+    | GlobalExport({ex_global_name}) =>
+      let internal_name = Ident.unique_name(ex_global_name);
       let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_global_name);
       ignore @@
       Export.add_global_export(wasm_mod, internal_name, exported_name);
@@ -3483,7 +3470,7 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   ignore @@
   Export.add_global_export(
     wasm_mod,
-    Printf.sprintf("global_%d", List.length(globals) + 1),
+    Ident.name(table_size),
     Ident.name(table_size),
   );
 };
@@ -3511,11 +3498,11 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
     | Types.StackAllocated(WasmF32) => const_float32(0.)
     | Types.StackAllocated(WasmF64) => const_float64(0.);
   List.iter(
-    ((i, ty)) =>
+    ((id, ty)) =>
       ignore @@
       Global.add_global(
         wasm_mod,
-        Printf.sprintf("global_%ld", i),
+        Ident.unique_name(id),
         wasm_type(ty),
         true,
         Expression.Const.make(wasm_mod, initial_value(ty)),
@@ -3525,7 +3512,7 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
   ignore @@
   Global.add_global(
     wasm_mod,
-    Printf.sprintf("global_%d", 1 + List.length(globals)),
+    Ident.name(table_size),
     Type.int32,
     false,
     Expression.Const.make(
@@ -3638,49 +3625,14 @@ let validate_module = (~name=?, wasm_mod: Module.t) =>
     raise(WasmRunnerError(wasm_mod, name, "WARNING: Invalid module"))
   };
 
-let prepare = (env, {imports}) => {
-  let process_import =
-      (acc_env, idx, {mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
-    let idx_name = Transl_anf.global_name(idx);
-    let register = (name, tbl) => {
-      let tbl =
-        switch (Ident.find_same_opt(mimp_mod, tbl)) {
-        | None => Ident.add(mimp_mod, Ident.empty, tbl)
-        | Some(_) => tbl
-        };
-      Ident.add(
-        mimp_mod,
-        Ident.add(mimp_name, name, Ident.find_same(mimp_mod, tbl)),
-        tbl,
-      );
-    };
-
-    let (imported_funcs, imported_globals) =
-      switch (mimp_type) {
-      | MFuncImport(_) => (
-          register(Int32.of_int(idx), acc_env.imported_funcs),
-          acc_env.imported_globals,
-        )
-      | MGlobalImport(_) => (
-          acc_env.imported_funcs,
-          register(idx_name, acc_env.imported_globals),
-        )
-      };
-    {...acc_env, imported_funcs, imported_globals};
-  };
-
+let prepare = env => {
   let required_imports =
     if (Env.is_runtime_mode()) {
       List.concat([required_global_imports, required_function_imports]);
     } else {
       runtime_imports;
     };
-  let new_env =
-    List_utils.fold_lefti(process_import, env, runtime_global_imports);
-  let new_env =
-    List_utils.fold_lefti(process_import, new_env, runtime_function_imports);
-  let new_env = List_utils.fold_lefti(process_import, new_env, imports);
-  {...new_env, required_imports};
+  {...env, required_imports};
 };
 
 let compile_wasm_module = (~env=?, ~name=?, prog) => {
@@ -3690,7 +3642,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     | None => init_codegen_env(name)
     | Some(e) => e
     };
-  let env = prepare(env, prog);
+  let env = prepare(env);
   let wasm_mod = Module.create();
   if (Config.source_map^) {
     ignore @@
