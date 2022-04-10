@@ -55,13 +55,14 @@ export enum JSON {
   JSONBoolean(Bool),
   JSONNumber(Number),
   JSONString(String),
-  // Here I've chosen to use a List and not an array as a conscious trade of performance for immutability.
-  // I'd love to use a more advanced persistent collection instead, but there currently aren't any in Grain.
   JSONArray(List<JSON>),
   // Note that JSONObject here is deliberately defined as a simple list of key value pair tuples as opposed
   // to for example a Map in order to accomodate the fact that the ECMA-404 standard doesn't prohibit
   // duplicate names in Objects. Such JSON should be representable by the JSON data structure for lossless
-  // processing. This also vastly simplifies implementation and has the benefit of List's immutability.
+  // processing. This also simplifies implementation by not requiring a purpose built data structure and
+  // has the benefit of List's immutability. It's a concious decision that sacrifices ease of use of the
+  // API for lossless handing of these edge cases with intention of later building more ergonomic APIs on a
+  // higher level of abstraction.
   JSONObject(List<(String, JSON)>),
 }
 
