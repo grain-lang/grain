@@ -1433,6 +1433,8 @@ let rec readCodePoint = (bytePosition: Number, string: String) => {
 
   let byteSize = WasmI32.load(strPtr, 4n)
 
+  Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
+  Memory.incRef(WasmI32.fromGrain(bytePosition))
   let bytePositionW32 = coerceNumberToWasmI32(bytePosition)
 
   let ptr = WasmI32.add(WasmI32.add(strPtr, 8n), bytePositionW32)
