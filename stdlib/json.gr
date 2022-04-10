@@ -783,9 +783,7 @@ let makeCompactJSONWriter = (buffer: Buffer.Buffer) => {
 
   let implHelper = {
     buffer,
-    emitEscapedQuotedString: s => {
-      emitEscapedQuotedString(s)
-    },
+    emitEscapedQuotedString,
   }: JSONWriterCompactImplHelper
 
   {
