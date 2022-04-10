@@ -9,7 +9,7 @@ open Types;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 [@deriving sexp]
 type global_flag =
-  | Global({exported: bool})
+  | Global
   | Nonglobal;
 
 type loc('a) = Location.loc('a);
@@ -386,10 +386,16 @@ type import_spec = {
 };
 
 [@deriving sexp]
+type imports = {
+  specs: list(import_spec),
+  path_map: Path_tbl.t(Ident.t),
+};
+
+[@deriving sexp]
 type anf_program = {
   body: anf_expression,
   env: Env.t,
-  imports: list(import_spec),
+  imports,
   signature: Cmi_format.cmi_infos,
   type_metadata: list(type_metadata),
   analyses: ref(list(analysis)),

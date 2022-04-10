@@ -33,6 +33,6 @@ let analyze = ({imports, body, analyses}) => {
       Grain_utils.Config.no_gc^
     );
   if (root_gc_disabled) {
-    List.iter(process_import, imports);
+    List.iter(process_import, imports.specs);
   };
 };

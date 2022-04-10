@@ -53,7 +53,7 @@ module LocalMutationsMapper = Anf_mapper.MakeMap(LocalMutationsArg);
 let optimize = anfprog => {
   imported_vars :=
     Ident.Set.of_list(
-      List.map(({imp_use_id}) => imp_use_id, anfprog.imports),
+      List.map(({imp_use_id}) => imp_use_id, anfprog.imports.specs),
     );
   LocalMutationsMapper.map_anf_program(anfprog);
 };
