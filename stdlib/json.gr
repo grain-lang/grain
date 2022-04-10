@@ -1418,39 +1418,27 @@ let getCodePoint = (ptr: WasmI32) => {
   result: WasmI32
 }
 
-@disableGC
+@unsafe
 let rec readCodePoint = (bytePosition: Number, string: String) => {
-  let (>>>) = WasmI32.shrU
   let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
   let (<) = WasmI32.ltU
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
 
   let strPtr = WasmI32.fromGrain(string)
 
   let byteSize = WasmI32.load(strPtr, 4n)
 
-  Memory.incRef(WasmI32.fromGrain(coerceNumberToWasmI32))
-  Memory.incRef(WasmI32.fromGrain(bytePosition))
   let bytePositionW32 = coerceNumberToWasmI32(bytePosition)
 
-  let ptr = WasmI32.add(WasmI32.add(strPtr, 8n), bytePositionW32)
+  let ptr = strPtr + 8n + bytePositionW32
 
   let mut idx = 0n
-  let result = if (bytePositionW32 < byteSize) {
+  
+  if (bytePositionW32 < byteSize) {
     let codePoint = getCodePoint(ptr)
     tagSimpleNumber(codePoint)
   } else {
     _END_OF_INPUT
   }
-
-  Memory.decRef(WasmI32.fromGrain(bytePosition))
-  Memory.decRef(WasmI32.fromGrain(string))
-  Memory.decRef(WasmI32.fromGrain(readCodePoint))
-
-  result
 }
 
 let codePointUTF8ByteCount = (usv: Number) => {
