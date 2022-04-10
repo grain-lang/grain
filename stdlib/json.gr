@@ -1332,7 +1332,7 @@ export enum JSONParseError {
 /**
  * Internal data structure used during parsing.
  */
-record JSONParserImplHelper {
+record JSONParserState {
   string: String,
   bufferParse: Buffer.Buffer,
   mut currentCodePoint: Number,
@@ -1457,43 +1457,43 @@ let codePointUTF8ByteCount = (usv: Number) => {
   }
 }
 
-let isAtEndOfInput = (parserImplHelper: JSONParserImplHelper) => {
-  parserImplHelper.currentCodePoint == _END_OF_INPUT
+let isAtEndOfInput = (parserState: JSONParserState) => {
+  parserState.currentCodePoint == _END_OF_INPUT
 }
 
-let next = (parserImplHelper: JSONParserImplHelper) => {
-  let mut c = parserImplHelper.currentCodePoint
+let next = (parserState: JSONParserState) => {
+  let mut c = parserState.currentCodePoint
   if (c != _END_OF_INPUT) {
-    parserImplHelper.bytePos = parserImplHelper.bytePos +
+    parserState.bytePos = parserState.bytePos +
     codePointUTF8ByteCount(c)
 
-    c = readCodePoint(parserImplHelper.bytePos, parserImplHelper.string)
+    c = readCodePoint(parserState.bytePos, parserState.string)
 
-    parserImplHelper.currentCodePoint = c
-    parserImplHelper.pos = parserImplHelper.pos + 1
+    parserState.currentCodePoint = c
+    parserState.pos = parserState.pos + 1
   }
   c
 }
 
-let skipWhiteSpace = (parserImplHelper: JSONParserImplHelper) => {
+let skipWhiteSpace = (parserState: JSONParserState) => {
   // isAtEndOfInput is not strictly necessary here
   // could remove as an optimization
   while (
-    isInterTokenWhiteSpace(parserImplHelper.currentCodePoint) &&
-    !isAtEndOfInput(parserImplHelper)
+    isInterTokenWhiteSpace(parserState.currentCodePoint) &&
+    !isAtEndOfInput(parserState)
   ) {
-    next(parserImplHelper)
+    next(parserState)
     void
   }
 }
 
 let buildUnexpectedTokenError =
   (
-    parserImplHelper: JSONParserImplHelper,
+    parserState: JSONParserState,
     detail: String,
   ) => {
-  let codePoint = parserImplHelper.currentCodePoint
-  let pos = parserImplHelper.pos
+  let codePoint = parserState.currentCodePoint
+  let pos = parserState.pos
   if (codePoint == _END_OF_INPUT) {
     UnexpectedEndOfInput(
       "Unexpected token at position " ++ runtimeToString(pos) ++ ": " ++ detail
@@ -1539,58 +1539,58 @@ let formatCodePointOrEOF = (codePoint: Number) => {
 let expectCodePointAndAdvance =
   (
     expectedCodePoint: Number,
-    parserImplHelper: JSONParserImplHelper,
+    parserState: JSONParserState,
   ) => {
-  let c = parserImplHelper.currentCodePoint
+  let c = parserState.currentCodePoint
   if (c == expectedCodePoint) {
-    next(parserImplHelper)
+    next(parserState)
     None
   } else {
     let detail = "expected " ++
       formatCodePointOrEOF(expectedCodePoint) ++
       ", found " ++
       formatCodePointOrEOF(c)
-    Some(buildUnexpectedTokenError(parserImplHelper, detail))
+    Some(buildUnexpectedTokenError(parserState, detail))
   }
 }
 
-let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
-  skipWhiteSpace(parserImplHelper)
+let rec parseValue = (parserState: JSONParserState) => {
+  skipWhiteSpace(parserState)
 
-  let result = match (parserImplHelper.currentCodePoint) {
-    0x7B => parseObject(parserImplHelper), // '{'
-    0x5B => parseArray(parserImplHelper), // '['
-    0x22 => parseStringValue(parserImplHelper), // '"'
-    0x74 => parseTrueValue(parserImplHelper), // 't'
-    0x66 => parseFalseValue(parserImplHelper), // 'f'
-    0x6E => parseNullValue(parserImplHelper), // 'n'
+  let result = match (parserState.currentCodePoint) {
+    0x7B => parseObject(parserState), // '{'
+    0x5B => parseArray(parserState), // '['
+    0x22 => parseStringValue(parserState), // '"'
+    0x74 => parseTrueValue(parserState), // 't'
+    0x66 => parseFalseValue(parserState), // 'f'
+    0x6E => parseNullValue(parserState), // 'n'
     // TODO Check if having a match case for each digit would be faster or not.
     c when c >= 0x30 && c <= 0x39 || c == 0x2D =>
-      parseNumberValue(parserImplHelper), // '0'..'9' or '-'
+      parseNumberValue(parserState), // '0'..'9' or '-'
     c => {
       let detail = "expected start of a JSON value, found " ++
         formatCodePointOrEOF(c)
-      Err(buildUnexpectedTokenError(parserImplHelper, detail))
+      Err(buildUnexpectedTokenError(parserState, detail))
     },
   }
 
-  skipWhiteSpace(parserImplHelper)
+  skipWhiteSpace(parserState)
 
   result
-}, parseNullValue = (parserImplHelper: JSONParserImplHelper) => {
-  match (expectCodePointAndAdvance(0x6E, parserImplHelper)) {
+}, parseNullValue = (parserState: JSONParserState) => {
+  match (expectCodePointAndAdvance(0x6E, parserState)) {
     // 'n'
     Some(e) => Err(e),
     None => {
-      match (expectCodePointAndAdvance(0x75, parserImplHelper)) {
+      match (expectCodePointAndAdvance(0x75, parserState)) {
         // 'u'
         Some(e) => Err(e),
         None => {
-          match (expectCodePointAndAdvance(0x6C, parserImplHelper)) {
+          match (expectCodePointAndAdvance(0x6C, parserState)) {
             // 'l'
             Some(e) => Err(e),
             None => {
-              match (expectCodePointAndAdvance(0x6C, parserImplHelper)) {
+              match (expectCodePointAndAdvance(0x6C, parserState)) {
                 // 'l'
                 Some(e) => Err(e),
                 None => Ok(JSONNull),
@@ -1601,20 +1601,20 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       }
     },
   }
-}, parseTrueValue = (parserImplHelper: JSONParserImplHelper) => {
-  match (expectCodePointAndAdvance(0x74, parserImplHelper)) {
+}, parseTrueValue = (parserState: JSONParserState) => {
+  match (expectCodePointAndAdvance(0x74, parserState)) {
     // 't'
     Some(e) => Err(e),
     None => {
-      match (expectCodePointAndAdvance(0x72, parserImplHelper)) {
+      match (expectCodePointAndAdvance(0x72, parserState)) {
         // 'r'
         Some(e) => Err(e),
         None => {
-          match (expectCodePointAndAdvance(0x75, parserImplHelper)) {
+          match (expectCodePointAndAdvance(0x75, parserState)) {
             // 'u'
             Some(e) => Err(e),
             None => {
-              match (expectCodePointAndAdvance(0x65, parserImplHelper)) {
+              match (expectCodePointAndAdvance(0x65, parserState)) {
                 // 'e'
                 Some(e) => Err(e),
                 None => Ok(JSONBoolean(true)),
@@ -1625,24 +1625,24 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       }
     },
   }
-}, parseFalseValue = (parserImplHelper: JSONParserImplHelper) => {
-  match (expectCodePointAndAdvance(0x66, parserImplHelper)) {
+}, parseFalseValue = (parserState: JSONParserState) => {
+  match (expectCodePointAndAdvance(0x66, parserState)) {
     // 'f'
     Some(e) => Err(e),
     None => {
-      match (expectCodePointAndAdvance(0x61, parserImplHelper)) {
+      match (expectCodePointAndAdvance(0x61, parserState)) {
         // 'a'
         Some(e) => Err(e),
         None => {
-          match (expectCodePointAndAdvance(0x6C, parserImplHelper)) {
+          match (expectCodePointAndAdvance(0x6C, parserState)) {
             // 'l'
             Some(e) => Err(e),
             None => {
-              match (expectCodePointAndAdvance(0x73, parserImplHelper)) {
+              match (expectCodePointAndAdvance(0x73, parserState)) {
                 // 's'
                 Some(e) => Err(e),
                 None => {
-                  match (expectCodePointAndAdvance(0x65, parserImplHelper)) {
+                  match (expectCodePointAndAdvance(0x65, parserState)) {
                     // 'e'
                     Some(e) => Err(e),
                     None => Ok(JSONBoolean(false)),
@@ -1655,20 +1655,20 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       }
     },
   }
-}, parseString = (parserImplHelper: JSONParserImplHelper) => {
-  match (expectCodePointAndAdvance(0x22, parserImplHelper)) {
+}, parseString = (parserState: JSONParserState) => {
+  match (expectCodePointAndAdvance(0x22, parserState)) {
     // '"'
     Some(e) => Err(e),
     None => {
       let mut err = None
       let mut done = false
-      let buffer = parserImplHelper.bufferParse
+      let buffer = parserState.bufferParse
       Buffer.clear(buffer)
 
       while (!done) {
-        match (parserImplHelper.currentCodePoint) {
+        match (parserState.currentCodePoint) {
           0x22 => { // '"'
-            next(parserImplHelper)
+            next(parserState)
             done = true
             break
           },
@@ -1678,58 +1678,58 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
           },
           0x5C => { // '\'
             // Keep the starting position for better error reporting.
-            let escapeStartPos = parserImplHelper.pos
+            let escapeStartPos = parserState.pos
 
-            next(parserImplHelper)
+            next(parserState)
 
-            match (parserImplHelper.currentCodePoint) {
+            match (parserState.currentCodePoint) {
               0x22 => { // '"'
                 Buffer.addChar('"', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x5C => { // '\'
                 Buffer.addChar('\\', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x2F => { // '/'
                 Buffer.addChar('/', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x62 => { // letter 'b' as in Backspace
                 // emit backspace control code
                 Buffer.addChar('\u{08}', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x66 => { // letter 'f' as in Form Feed
                 // emit Form Feed control code
                 Buffer.addChar('\u{0C}', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x6E => { // letter 'n' as in New line
                 // emit Line Feed control code
                 Buffer.addChar('\u{0A}', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x72 => { // letter 'r' as in carriage Return
                 // emit Carriage Return control code
                 Buffer.addChar('\u{0D}', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x74 => { // letter 't' as in Tab
                 // emit Tab control code
                 Buffer.addChar('\u{09}', buffer)
-                next(parserImplHelper)
+                next(parserState)
                 void
               },
               0x75 => { // 'u' (start of hexadecimal UTF-16 escape sequence)
-                next(parserImplHelper)
+                next(parserState)
 
                 // The escape sequence can either be a standalone code point or
                 // a UTF-16 surrogate pair made of two code units that have to
@@ -1752,7 +1752,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
                     digitIndex >= 0;
                     digitIndex -= 1
                   ) {
-                    let hexDigitCodePoint = parserImplHelper.currentCodePoint
+                    let hexDigitCodePoint = parserState.currentCodePoint
 
                     let mut digit = hexDigitCodePoint
 
@@ -1773,7 +1773,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
                       let detail = "expected exactly 4 hexadecimal digits in the UTF-16 escape sequence, found only " ++
                         runtimeToString(digitsSoFar)
                       err = Some(
-                        buildUnexpectedTokenError(parserImplHelper, detail)
+                        buildUnexpectedTokenError(parserState, detail)
                       )
                       break
                     }
@@ -1781,7 +1781,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
                     let shift = digitIndex * 4
                     codeUnit = codeUnit | digit << shift
 
-                    next(parserImplHelper)
+                    next(parserState)
                     void
                   }
 
@@ -1792,10 +1792,10 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
                     // Plane (U+0000..U+FFFF).
                     if (isHighSurrogate(codeUnit)) {
                       // Next characters should be "\u"
-                      err = expectCodePointAndAdvance(0x5C, parserImplHelper)
+                      err = expectCodePointAndAdvance(0x5C, parserState)
                       // '\'
                       if (Option.isSome(err)) break
-                      err = expectCodePointAndAdvance(0x75, parserImplHelper)
+                      err = expectCodePointAndAdvance(0x75, parserState)
                       // 'u'
                       if (Option.isSome(err)) break
 
@@ -1848,14 +1848,14 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
                 // Only the ones above.
                 let detail = "expected a valid escape sequence or the end of string, found " ++
                   formatCodePointOrEOF(unexpectedCodePoint)
-                err = Some(buildUnexpectedTokenError(parserImplHelper, detail))
+                err = Some(buildUnexpectedTokenError(parserState, detail))
                 break
               },
             }
           },
           c => {
             // Finally the happy case of a simple unescaped code point.
-            next(parserImplHelper)
+            next(parserState)
             addCharFromCodePoint(c, buffer)
           },
         }
@@ -1869,7 +1869,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
           } else {
             Err(
               buildUnexpectedTokenError(
-                parserImplHelper,
+                parserState,
                 "unexpected end of string value"
               )
             )
@@ -1879,18 +1879,18 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       }
     },
   }
-}, parseStringValue = (parserImplHelper: JSONParserImplHelper) => {
-  match (parseString(parserImplHelper)) {
+}, parseStringValue = (parserState: JSONParserState) => {
+  match (parseString(parserState)) {
     Ok(s) => Ok(JSONString(s)),
     Err(e) => Err(e),
   }
-}, parseNumberValue = (parserImplHelper: JSONParserImplHelper) => {
+}, parseNumberValue = (parserState: JSONParserState) => {
   // First char can optionally be a minus sign.
-  let mut c = parserImplHelper.currentCodePoint
+  let mut c = parserState.currentCodePoint
   let isNegative = c == 0x2D
   // '-'
   if (isNegative) {
-    c = next(parserImplHelper)
+    c = next(parserState)
   }
 
   let mut err = None
@@ -1923,7 +1923,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       // this function finishes with the parser positioned on a digit
       // and not on a token expected after a number like ',', ']', '}' or
       // EOF.
-      c = next(parserImplHelper)
+      c = next(parserState)
     },
     x when x >= 0x31 && x <= 0x39 => { // '1'..'9'
       for (;;) {
@@ -1931,7 +1931,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
 
         significand = significand * 10 + digit
 
-        c = next(parserImplHelper)
+        c = next(parserState)
 
         if (c < 0x30 || c > 0x39) {
           break
@@ -1945,13 +1945,13 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       // JSON doesn't allow numbers starting with decimal separator like ".1".
       let detail = "expected a decimal digit, found " ++
         formatCodePointOrEOF(unexpectedCodePoint)
-      err = Some(buildUnexpectedTokenError(parserImplHelper, detail))
+      err = Some(buildUnexpectedTokenError(parserState, detail))
     },
   }
 
   // Optional fractional part of the number.
   if (Option.isNone(err) && c == 0x2E) { // '.'
-    c = next(parserImplHelper)
+    c = next(parserState)
 
     // let mut decimalPos = 10
     // let mut denominator = 1
@@ -1962,7 +1962,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
 
       // denominator = denominator * 10
 
-      c = next(parserImplHelper)
+      c = next(parserState)
 
       exponent -= 1
     }
@@ -1971,16 +1971,16 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
 
   // Optional exponential part of the number.
   if (Option.isNone(err) && (c == 0x65 || c == 0x45)) { // 'e' or 'E'
-    c = next(parserImplHelper)
+    c = next(parserState)
 
     // can start with optional plus or minus sign
     isExponentNegative = match (c) {
       0x2D => { // '-'
-        c = next(parserImplHelper)
+        c = next(parserState)
         true
       },
       0x2B => { // '+'
-        c = next(parserImplHelper)
+        c = next(parserState)
         false
       },
       _ => {
@@ -1996,7 +1996,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
 
       explicitExponent = explicitExponent * 10 + digit
 
-      c = next(parserImplHelper)
+      c = next(parserState)
     }
 
     if (isExponentNegative) {
@@ -2042,8 +2042,8 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       Ok(JSONNumber(result))
     },
   }
-}, parseArray = (parserImplHelper: JSONParserImplHelper) => {
-  match (expectCodePointAndAdvance(0x5B, parserImplHelper)) {
+}, parseArray = (parserState: JSONParserState) => {
+  match (expectCodePointAndAdvance(0x5B, parserState)) {
     // '['
     Some(e) => Err(e),
     None => {
@@ -2054,14 +2054,14 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       let mut done = false
 
       while (!done) {
-        let c = parserImplHelper.currentCodePoint
+        let c = parserState.currentCodePoint
         match (c) {
           0x2C => { // ','
-            next(parserImplHelper)
-            skipWhiteSpace(parserImplHelper)
+            next(parserState)
+            skipWhiteSpace(parserState)
           },
           0x5D => { // ']'
-            next(parserImplHelper)
+            next(parserState)
             done = true
             break
           },
@@ -2071,7 +2071,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
           },
           _ => {
             // note that parseValue skips initial and final whitespace
-            match (parseValue(parserImplHelper)) {
+            match (parseValue(parserState)) {
               Ok(elem) => {
                 elems = [elem, ...elems]
                 void
@@ -2093,7 +2093,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
           } else {
             Err(
               buildUnexpectedTokenError(
-                parserImplHelper,
+                parserState,
                 "unexpected end of array"
               )
             )
@@ -2102,8 +2102,8 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
       }
     },
   }
-}, parseObject = (parserImplHelper: JSONParserImplHelper) => {
-  match (expectCodePointAndAdvance(0x7B, parserImplHelper)) {
+}, parseObject = (parserState: JSONParserState) => {
+  match (expectCodePointAndAdvance(0x7B, parserState)) {
     // '{'
     Some(e) => Err(e),
     None => {
@@ -2116,42 +2116,42 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
 
       // one iteration of this loop should correspond to a key-value pair
       while (!done) {
-        skipWhiteSpace(parserImplHelper)
+        skipWhiteSpace(parserState)
 
-        let c = parserImplHelper.currentCodePoint
+        let c = parserState.currentCodePoint
         match (c) {
           -1 => {
             let detail = "expected a key-value pair or the end of the object"
-            err = Some(buildUnexpectedTokenError(parserImplHelper, detail))
+            err = Some(buildUnexpectedTokenError(parserState, detail))
             break
           },
           0x2C => { // ','
             if (first) {
               let detail = "expected a key-value pair or the end of the object, found ','"
-              err = Some(buildUnexpectedTokenError(parserImplHelper, detail))
+              err = Some(buildUnexpectedTokenError(parserState, detail))
               break
             } else {
-              next(parserImplHelper)
+              next(parserState)
               void
             }
           },
           0x7D => { // '}'
-            next(parserImplHelper)
+            next(parserState)
             done = true
             break
           },
           _ => {
             // A new entry in current object.
             // Just call parseString directly. In case the current character id not '"', it will return an error we can pass along.
-            match (parseString(parserImplHelper)) {
+            match (parseString(parserState)) {
               Ok(key) => {
-                skipWhiteSpace(parserImplHelper)
+                skipWhiteSpace(parserState)
 
-                match (expectCodePointAndAdvance(0x3A, parserImplHelper)) {
+                match (expectCodePointAndAdvance(0x3A, parserState)) {
                   // ':'
                   None => {
                     // note that parseValue skips initial and final whitespace
-                    match (parseValue(parserImplHelper)) {
+                    match (parseValue(parserState)) {
                       Ok(value) => {
                         entries = [(key, value), ...entries]
                         first = false
@@ -2189,7 +2189,7 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
             // but in case it does, may just as well do the right thing.
             Err(
               buildUnexpectedTokenError(
-                parserImplHelper,
+                parserState,
                 "unexpected end of object"
               )
             )
@@ -2214,26 +2214,26 @@ let rec parseValue = (parserImplHelper: JSONParserImplHelper) => {
  * @example print(parse("{\"currency\":\"$\",\"price\":119}"))
  */
 export let parse: String -> Result<JSON, JSONParseError> = (str: String) => {
-  let parserImplHelper = {
+  let parserState = {
     string: str,
     bufferParse: Buffer.make(16),
     currentCodePoint: readCodePoint(0, str),
     pos: 0,
     bytePos: 0,
-  }: JSONParserImplHelper
+  }: JSONParserState
 
-  let root = parseValue(parserImplHelper)
+  let root = parseValue(parserState)
 
-  skipWhiteSpace(parserImplHelper)
+  skipWhiteSpace(parserState)
 
-  if (isAtEndOfInput(parserImplHelper)) {
+  if (isAtEndOfInput(parserState)) {
     root
   } else {
     match (root) {
       Ok(_) => {
         let detail = "expected end of input, found " ++
-          formatCodePointOrEOF(parserImplHelper.currentCodePoint)
-        Err(buildUnexpectedTokenError(parserImplHelper, detail))
+          formatCodePointOrEOF(parserState.currentCodePoint)
+        Err(buildUnexpectedTokenError(parserState, detail))
       },
       e => e,
     }
