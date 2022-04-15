@@ -1,37 +1,31 @@
 imports › import_same_module_unify
 (module
  (type $none_=>_i32 (func (result i32)))
- (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (type $none_=>_none (func))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
  (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $gimport_tlists_Empty (mut i32)))
  (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $gimport_tlists_Cons (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $gimport_tlists_Cons (param i32 i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
-  (local $0 i32)
-  (call_indirect (type $i32_i32_i32_=>_i32)
-   (local.tee $0
-    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-     (global.get $gimport_tlists_Cons)
-    )
+  (call $gimport_tlists_Cons
+   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+    (global.get $gimport_tlists_Cons)
    )
    (i32.const 11)
    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
     (global.get $gimport_tlists_Empty)
-   )
-   (i32.load offset=8
-    (local.get $0)
    )
   )
  )

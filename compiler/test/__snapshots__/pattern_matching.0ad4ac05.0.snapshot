@@ -5,7 +5,6 @@ pattern matching › tuple_match_deep4
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
@@ -17,6 +16,7 @@ pattern matching › tuple_match_deep4
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$pervasives\" \"+\" (func $gimport_pervasives_+ (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $gimport_pervasives_[...] (param i32 i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -47,20 +47,15 @@ pattern matching › tuple_match_deep4
   (local.set $18
    (tuple.extract 0
     (tuple.make
-     (call_indirect (type $i32_i32_i32_=>_i32)
-      (local.tee $0
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (global.get $gimport_pervasives_[...])
-       )
+     (call $gimport_pervasives_[...]
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (global.get $gimport_pervasives_[...])
       )
       (i32.const 5)
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
        (global.get $gimport_pervasives_[])
-      )
-      (i32.load offset=8
-       (local.get $0)
       )
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -232,20 +227,20 @@ pattern matching › tuple_match_deep4
    )
   )
   (local.set $2
-   (block $switch.91_outer (result i32)
+   (block $switch.90_outer (result i32)
     (drop
-     (block $switch.91_branch_1 (result i32)
+     (block $switch.90_branch_1 (result i32)
       (drop
-       (block $switch.91_branch_2 (result i32)
+       (block $switch.90_branch_2 (result i32)
         (drop
-         (block $switch.91_branch_3 (result i32)
+         (block $switch.90_branch_3 (result i32)
           (drop
-           (block $switch.91_branch_4 (result i32)
+           (block $switch.90_branch_4 (result i32)
             (drop
-             (block $switch.91_branch_5 (result i32)
+             (block $switch.90_branch_5 (result i32)
               (drop
-               (block $switch.91_default (result i32)
-                (br_table $switch.91_branch_1 $switch.91_branch_2 $switch.91_branch_3 $switch.91_branch_4 $switch.91_branch_5 $switch.91_default
+               (block $switch.90_default (result i32)
+                (br_table $switch.90_branch_1 $switch.90_branch_2 $switch.90_branch_3 $switch.90_branch_4 $switch.90_branch_5 $switch.90_default
                  (i32.const 0)
                  (i32.shr_s
                   (if (result i32)
@@ -725,7 +720,7 @@ pattern matching › tuple_match_deep4
               (unreachable)
              )
             )
-            (br $switch.91_outer
+            (br $switch.90_outer
              (i32.const 1999)
             )
            )
@@ -778,7 +773,7 @@ pattern matching › tuple_match_deep4
             )
            )
           )
-          (br $switch.91_outer
+          (br $switch.90_outer
            (call $gimport_pervasives_+
             (call $wimport_GRAIN$MODULE$runtime/gc_incRef
              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
@@ -820,7 +815,7 @@ pattern matching › tuple_match_deep4
           )
          )
         )
-        (br $switch.91_outer
+        (br $switch.90_outer
          (call $gimport_pervasives_+
           (call $wimport_GRAIN$MODULE$runtime/gc_incRef
            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
@@ -838,7 +833,7 @@ pattern matching › tuple_match_deep4
         )
        )
       )
-      (br $switch.91_outer
+      (br $switch.90_outer
        (call $gimport_pervasives_+
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
