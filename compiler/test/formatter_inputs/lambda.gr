@@ -12,12 +12,6 @@ let testfn = forEachCodePoint(c /* arg */ => {
     void 
     }, "")
 
-let testfn2 = forEachCodePoint(c  // arg 1
- => { 
-    // a 
-    void 
-    }, "")
-
 let testfn3 = forEachCodePoint((c,  /* arg 1 */
 d, // eol2
 e /* arg */

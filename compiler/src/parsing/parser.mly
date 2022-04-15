@@ -185,7 +185,7 @@ arrow:
   | ARROW opt_eols {}
 
 thickarrow:
-  | opt_eols THICKARROW opt_eols {}
+  | THICKARROW opt_eols {}
 
 equal:
   | EQUAL opt_eols {}
