@@ -888,9 +888,10 @@ module MatchTreeCompiler = {
         ),
         [alias_binding, ...cond_setup],
       );
-    | Fail =>
-      /* FIXME: We need a "throw error" node in ANF */
-      (Comp.imm(~allocation_type=StackAllocated(WasmI32), Imm.trap()), [])
+    | Fail => (
+        Comp.imm(~allocation_type=StackAllocated(WasmI32), Imm.trap()),
+        [],
+      )
     | Explode(matrix_type, alias, rest) =>
       /* Tack on the new bindings. We assume that the indices of 'rest'
          already account for the new indices. */
