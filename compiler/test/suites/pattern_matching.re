@@ -301,4 +301,51 @@ describe("pattern matching", ({test, testSkip}) => {
     |},
     "Expected `=>` followed by an expression.",
   );
+
+  // destructuring
+  assertRun(
+    "destructure_constant",
+    {|
+      let 1 | _ = 5
+      print("ok")
+    |},
+    "ok\n",
+  );
+  assertRun(
+    "destructure_singleton_adt",
+    {|
+      enum NumWrapper { NumWrapper(Number) }
+      let NumWrapper(a) = NumWrapper(5)
+      print(a)
+    |},
+    "5\n",
+  );
+  assertRun(
+    "destructure_adt",
+    {|
+      enum Foo { A(Number), B(Number) }
+      let A(val1) | B(val1) = A(5)
+      let A(val2) | B(val2) = B(6)
+      print(val1)
+      print(val2)
+    |},
+    "5\n6\n",
+  );
+  assertRun(
+    "destructure_tuple",
+    {|
+      let (a, b) = (3, 4)
+      print(a + b)
+    |},
+    "7\n",
+  );
+  assertRun(
+    "destructure_record",
+    {|
+      record Rec { a: Number, b: Number }
+      let {a, b} = { a: 3, b: 4 }
+      print(a + b)
+    |},
+    "7\n",
+  );
 });
