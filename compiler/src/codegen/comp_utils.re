@@ -180,7 +180,7 @@ let write_universal_exports =
                   arguments,
                   call_result_types,
                 )
-              | _ =>
+              | Indirect =>
                 let call_arg_types =
                   Type.create(
                     Array.of_list(
@@ -204,6 +204,7 @@ let write_universal_exports =
                   call_arg_types,
                   call_result_types,
                 );
+              | Unknown => failwith("Impossible: Unknown function call type")
               };
             let function_body =
               switch (rets) {
