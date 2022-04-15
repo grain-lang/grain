@@ -10,7 +10,7 @@ open Grain_utils;
 open Types;
 open Typedtree;
 open Type_utils;
-open Either;
+open Stdlib.Either;
 
 /** The type for compiled match pattern decision trees.
     These trees are evaluated with respect to a stack of values. */
@@ -480,27 +480,27 @@ let rec specialize_constant_matrix = (const, cur, mtx) => {
 
 /* [See paper for details; modified slightly]
 
-    We differ from the paper in that we don't drop the first pattern of the row
-    in the case of an "any" pattern. This is done to have a fully matching row
-    represent the current value stack—each value on the stack now directly
-    corresponds to a pattern in the row. This allows us to efficiently use the
-    bindings created during the pattern matching process in the selected branch.
+   We differ from the paper in that we don't drop the first pattern of the row
+   in the case of an "any" pattern. This is done to have a fully matching row
+   represent the current value stack—each value on the stack now directly
+   corresponds to a pattern in the row. This allows us to efficiently use the
+   bindings created during the pattern matching process in the selected branch.
 
-    This doesn't significantly change anything about compilation of matching
-    with respect to the paper. From the paper's perspective, the pattern is no
-    longer needed and can just be dropped/disregarded. It is slightly faster to
-    drop the pattern (in terms of compilation time) as it wouldn't need to ever
-    be validated again, but we sacrifice this for ease of implementation.
+   This doesn't significantly change anything about compilation of matching
+   with respect to the paper. From the paper's perspective, the pattern is no
+   longer needed and can just be dropped/disregarded. It is slightly faster to
+   drop the pattern (in terms of compilation time) as it wouldn't need to ever
+   be validated again, but we sacrifice this for ease of implementation.
 
-       Row: ([p_1; p_2; ...], a_j)
+      Row: ([p_1; p_2; ...], a_j)
 
-       Pattern p_1 (for row j)       Row(s) of D(P)
-       -----------------------       --------------
-            c(q_1,...,q_n)               No row
-                  _                [([p_1; p_2; ...], a_j)]
-             (q_1 | q_2)           [D(([q_1; p_2; ...], a_j));
-                                    D(([q_2; p_2; ...], a_j))]
-    */
+      Pattern p_1 (for row j)       Row(s) of D(P)
+      -----------------------       --------------
+           c(q_1,...,q_n)               No row
+                 _                [([p_1; p_2; ...], a_j)]
+            (q_1 | q_2)           [D(([q_1; p_2; ...], a_j));
+                                   D(([q_2; p_2; ...], a_j))]
+   */
 let rec default_matrix = (cur, mtx) => {
   let rec default_rows = (row, binds) =>
     switch (row) {

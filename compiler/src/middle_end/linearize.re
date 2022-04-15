@@ -5,7 +5,6 @@ open Typedtree;
 open Type_utils;
 open Anftree;
 open Anf_helper;
-open Grain_utils.Either;
 
 module MatchCompiler = Matchcomp.MatchTreeCompiler;
 
@@ -116,8 +115,7 @@ let convert_binds = anf_binds => {
 };
 
 let transl_const =
-    (c: Types.constant)
-    : Grain_utils.Either.t(imm_expression, (string, comp_expression)) => {
+    (c: Types.constant): Either.t(imm_expression, (string, comp_expression)) => {
   switch (c) {
   | Const_number(n) => Right(("number", Comp.number(n)))
   | Const_int32(i) => Right(("int32", Comp.int32(i)))
