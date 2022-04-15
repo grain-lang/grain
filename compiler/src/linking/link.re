@@ -135,15 +135,15 @@ let is_function_imported = func =>
 //       constructing the AST (either through constructing two separate instances or by
 //       using Expression.copy())
 
-let rec globalize_names = (local_functions, local_globals, local_labels, expr) => {
+let rec globalize_names = (function_names, global_names, label_names, expr) => {
   let globalize_names =
-    globalize_names(local_functions, local_globals, local_labels);
+    globalize_names(function_names, global_names, label_names);
 
-  let add_label = Hashtbl.add(local_labels);
+  let add_label = Hashtbl.add(label_names);
 
-  let find_function = Hashtbl.find(local_functions);
-  let find_global = Hashtbl.find(local_globals);
-  let find_label = Hashtbl.find(local_labels);
+  let find_function = Hashtbl.find(function_names);
+  let find_global = Hashtbl.find(global_names);
+  let find_label = Hashtbl.find(label_names);
 
   let kind = Expression.get_kind(expr);
   switch (kind) {
@@ -307,9 +307,9 @@ let link_all = (linked_mod, dependencies, signature) => {
   table_offset := 0;
 
   let link_one = dep => {
-    let local_functions: Hashtbl.t(string, string) = Hashtbl.create(128);
-    let local_globals: Hashtbl.t(string, string) = Hashtbl.create(128);
-    let local_labels: Hashtbl.t(string, string) = Hashtbl.create(128);
+    let function_names: Hashtbl.t(string, string) = Hashtbl.create(128);
+    let global_names: Hashtbl.t(string, string) = Hashtbl.create(128);
+    let label_names: Hashtbl.t(string, string) = Hashtbl.create(128);
 
     let wasm_mod = Hashtbl.find(modules, dep);
 
@@ -329,12 +329,12 @@ let link_all = (linked_mod, dependencies, signature) => {
               ),
               imported_name,
             );
-          Hashtbl.add(local_globals, internal_name, new_name);
+          Hashtbl.add(global_names, internal_name, new_name);
         } else {
           let imported_name = Import.global_import_get_base(global);
           let internal_name = Global.get_name(global);
           let new_name = gensym(internal_name);
-          Hashtbl.add(local_globals, internal_name, new_name);
+          Hashtbl.add(global_names, internal_name, new_name);
 
           if (Comp_utils.is_grain_env(imported_module)) {
             let value =
@@ -373,13 +373,13 @@ let link_all = (linked_mod, dependencies, signature) => {
       } else {
         let internal_name = Global.get_name(global);
         let new_name = gensym(internal_name);
-        Hashtbl.add(local_globals, internal_name, new_name);
+        Hashtbl.add(global_names, internal_name, new_name);
 
         let ty = Global.get_type(global);
         let mut = Global.is_mutable(global);
         let init = Global.get_init_expr(global);
 
-        globalize_names(local_functions, local_globals, local_labels, init);
+        globalize_names(function_names, global_names, label_names, init);
         ignore @@ Global.add_global(linked_mod, new_name, ty, mut, init);
       };
     };
@@ -405,7 +405,7 @@ let link_all = (linked_mod, dependencies, signature) => {
               ),
               imported_name,
             );
-          Hashtbl.add(local_functions, internal_name, new_name);
+          Hashtbl.add(function_names, internal_name, new_name);
         } else if (has_wasi_polyfill
                    && is_wasi_module(imported_module)
                    && !is_wasi_polyfill_module(dep)) {
@@ -431,12 +431,12 @@ let link_all = (linked_mod, dependencies, signature) => {
                 ),
               )
             };
-          Hashtbl.add(local_functions, internal_name, new_name);
+          Hashtbl.add(function_names, internal_name, new_name);
         } else {
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
           let new_name = gensym(internal_name);
-          Hashtbl.add(local_functions, internal_name, new_name);
+          Hashtbl.add(function_names, internal_name, new_name);
 
           let params = Function.get_params(func);
           let results = Function.get_results(func);
@@ -458,7 +458,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       func => {
         let internal_name = Function.get_name(func);
         let new_name = gensym(internal_name);
-        Hashtbl.add(local_functions, internal_name, new_name);
+        Hashtbl.add(function_names, internal_name, new_name);
       },
       funcs,
     );
@@ -466,14 +466,14 @@ let link_all = (linked_mod, dependencies, signature) => {
     List.iter(
       func => {
         let internal_name = Function.get_name(func);
-        let new_name = Hashtbl.find(local_functions, internal_name);
+        let new_name = Hashtbl.find(function_names, internal_name);
 
         let params = Function.get_params(func);
         let results = Function.get_results(func);
         let num_locals = Function.get_num_vars(func);
         let locals = Array.init(num_locals, i => Function.get_var(func, i));
         let body = Function.get_body(func);
-        globalize_names(local_functions, local_globals, local_labels, body);
+        globalize_names(function_names, global_names, label_names, body);
         ignore @@
         Function.add_function(
           linked_mod,
@@ -488,11 +488,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     );
 
     let local_exported_names =
-      Comp_utils.get_exported_names(
-        ~local_functions,
-        ~local_globals,
-        wasm_mod,
-      );
+      Comp_utils.get_exported_names(~function_names, ~global_names, wasm_mod);
     Hashtbl.add(exported_names, dep, local_exported_names);
 
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
@@ -503,7 +499,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       let size = Element_segment.get_length(segment);
       let elems =
         List.init(size, i =>
-          Hashtbl.find(local_functions, Element_segment.get_data(segment, i))
+          Hashtbl.find(function_names, Element_segment.get_data(segment, i))
         );
       ignore @@
       Table.add_active_element_segment(

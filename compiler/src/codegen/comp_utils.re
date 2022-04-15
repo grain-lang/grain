@@ -92,7 +92,7 @@ let grain_env_name = "_grainEnv";
 
 let is_grain_env = str => grain_env_name == str;
 
-let get_exported_names = (~local_functions=?, ~local_globals=?, wasm_mod) => {
+let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
   let num_exports = Export.get_num_exports(wasm_mod);
   let exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
   for (i in 0 to num_exports - 1) {
@@ -103,16 +103,15 @@ let get_exported_names = (~local_functions=?, ~local_globals=?, wasm_mod) => {
 
     if (export_kind == Export.external_function) {
       let new_internal_name =
-        switch (local_functions) {
-        | Some(local_functions) =>
-          Hashtbl.find(local_functions, internal_name)
+        switch (function_names) {
+        | Some(function_names) => Hashtbl.find(function_names, internal_name)
         | None => internal_name
         };
       Hashtbl.add(exported_names, exported_name, new_internal_name);
     } else if (export_kind == Export.external_global) {
       let new_internal_name =
-        switch (local_globals) {
-        | Some(local_globals) => Hashtbl.find(local_globals, internal_name)
+        switch (global_names) {
+        | Some(global_names) => Hashtbl.find(global_names, internal_name)
         | None => internal_name
         };
       Hashtbl.add(exported_names, exported_name, new_internal_name);
