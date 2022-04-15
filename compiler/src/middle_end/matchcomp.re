@@ -981,7 +981,9 @@ module MatchTreeCompiler = {
           fun
           | BLet(id, _, _) => Imm.id(id)
           | _ =>
-            failwith("matchcomp: compile_tree_help: binding was not BLet"),
+            failwith(
+              "Impossible: matchcomp: compile_tree_help: binding was not BLet",
+            ),
           bindings,
         )
         @ rest_values;
