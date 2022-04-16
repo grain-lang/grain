@@ -5,7 +5,10 @@ open Grain_utils;
 open Grain_typed;
 
 let compile_source = (uri, source) => {
-  let filename = Filename.basename(uri);
+  let filename = Utils.convert_uri_to_filename(uri);
+
+  Log.log(uri);
+  Log.log(filename);
 
   switch (
     Compile.compile_string(
@@ -15,27 +18,24 @@ let compile_source = (uri, source) => {
     )
   ) {
   | exception exn =>
-    let error = Utils.exn_to_lsp_error(exn);
-    let errors =
-      switch (error) {
-      | None =>
-        let lsp_err: Rpc.lsp_error = {
-          file: uri,
-          line: 0,
-          startchar: 0,
-          endline: 0,
-          endchar: 0,
-          lsp_message: "Unable to parse",
-        };
-        (None, Some(lsp_err), None);
-      | Some(err) => (None, Some(err), None)
+    switch (Utils.exn_to_lsp_error(exn)) {
+    | None =>
+      let lsp_err: Rpc.lsp_error = {
+        file: uri,
+        line: 0,
+        startchar: 0,
+        endline: 0,
+        endchar: 0,
+        lsp_message: "Unable to parse",
       };
-    errors;
+      (None, Some(lsp_err), []);
+    | Some(err) => (None, Some(err), [])
+    }
 
   | {cstate_desc: TypedWellFormed(typed_program)} =>
     let warnings: list(Rpc.lsp_warning) =
       Utils.convert_warnings(Grain_utils.Warnings.get_warnings(), uri);
-    (Some(typed_program), None, Some(warnings));
+    (Some(typed_program), None, warnings);
   | _ =>
     let lsp_error: Rpc.lsp_error = {
       file: uri,
@@ -45,7 +45,7 @@ let compile_source = (uri, source) => {
       endchar: 0,
       lsp_message: "Compilation failed with an internal error",
     };
-    (None, Some(lsp_error), None);
+    (None, Some(lsp_error), []);
   };
 };
 
@@ -88,35 +88,23 @@ let textDocument_didOpenOrChange =
     (~documents, ~compiled_code, ~cached_code, request) => {
   switch (get_text_document_from_params(request)) {
   | Some((uri, text)) =>
-    if (!Hashtbl.mem(documents, uri)) {
-      Hashtbl.add(documents, uri, text);
-    } else {
-      Hashtbl.replace(documents, uri, text);
-    };
+    Hashtbl.replace(documents, uri, text);
+
     let compilerRes = compile_source(uri, text);
     switch (compilerRes) {
     | (Some(typed_program), None, warnings) =>
-      if (!Hashtbl.mem(compiled_code, uri)) {
-        Hashtbl.add(compiled_code, uri, typed_program);
-      } else {
-        Hashtbl.replace(compiled_code, uri, typed_program);
-      };
-      if (!Hashtbl.mem(cached_code, uri)) {
-        Hashtbl.add(cached_code, uri, typed_program);
-      } else {
-        Hashtbl.replace(cached_code, uri, typed_program);
-      };
+      Hashtbl.replace(compiled_code, uri, typed_program);
+      Hashtbl.replace(cached_code, uri, typed_program);
       switch (warnings) {
-      | None => Rpc.clear_diagnostics(~output=stdout, uri)
-      | Some(wrns) =>
-        Rpc.send_diagnostics(~output=stdout, ~uri, ~warnings, None)
+      | [] => Rpc.clear_diagnostics(~output=stdout, uri)
+      | _ => Rpc.send_diagnostics(~output=stdout, ~uri, warnings, None)
       };
 
-    | (_, Some(err), _) =>
+    | (_, Some(err), warnings) =>
       if (!Hashtbl.mem(compiled_code, uri)) {
         Hashtbl.remove(compiled_code, uri);
       };
-      Rpc.send_diagnostics(~output=stdout, ~uri, ~warnings=None, Some(err));
+      Rpc.send_diagnostics(~output=stdout, ~uri, warnings, Some(err));
     | (None, None, _) => Rpc.clear_diagnostics(~output=stdout, uri)
     };
   | _ => ()

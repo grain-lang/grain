@@ -5,14 +5,11 @@ open Grain_utils;
 open Grain_typed;
 open Grain_diagnostics;
 
-//  CompletionItemKind
-let item_kind_completion_text = 1;
-let item_kind_completion_function = 3;
-let item_kind_completion_constructor = 4;
-let item_kind_completion_variable = 6;
-let item_kind_completion_struct = 22;
-
-let markdown_grain = code => "```grain\n" ++ code ++ "\n```";
+type source_location = {
+  uri: string,
+  line: int,
+  char: int,
+};
 
 type node_t =
   | Expression(Typedtree.expression)
@@ -32,20 +29,8 @@ let rec print_path = (ident: Path.t) => {
   };
 };
 
-let comma_join = (~sep, ~print_fn, vals) => {
-  List.fold_left(
-    (acc, arg) => {
-      let existing =
-        if (acc == "") {
-          acc;
-        } else {
-          acc ++ sep;
-        };
-      existing ++ print_fn(arg);
-    },
-    "",
-    vals,
-  );
+let map_concat = (~sep, ~print_fn, vals) => {
+  String.concat(",", List.map(v => print_fn(v), vals));
 };
 
 let loc_to_range = (pos: Location.t): Rpc.range_t => {
@@ -127,7 +112,10 @@ let get_text_document_uri_and_position = json => {
     Yojson.Safe.Util.member("character", position)
     |> Yojson.Safe.Util.to_int_option;
 
-  (uri, line, char);
+  switch (uri, line, char) {
+  | (Some(uri), Some(line), Some(char)) => Some({uri, line, char})
+  | _ => None
+  };
 };
 
 let print_sig = (t: Types.type_expr) => {
@@ -166,7 +154,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
     let type_text =
       switch (types) {
       | [] => ""
-      | _ => "<" ++ comma_join(~sep=", ", ~print_fn=print_sig, types) ++ ">"
+      | _ => "<" ++ map_concat(~sep=", ", ~print_fn=print_sig, types) ++ ">"
       };
 
     let tk = decl.type_kind;
@@ -217,7 +205,7 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
                 | [] => ""
                 | _ =>
                   " ("
-                  ++ comma_join(~sep=",\n", ~print_fn=print_sig, types)
+                  ++ map_concat(~sep=",\n", ~print_fn=print_sig, types)
                   ++ ")"
                 }
               | TConstrSingleton => ""
@@ -305,7 +293,7 @@ let rec find_location_in_expressions = (~line, ~char, ~default, expressions) => 
   switch (exps) {
   | [] => default
   | [expr] => get_node_from_expression(~line, ~char, expr)
-  | _ => Error("Multiple matches, should not happen")
+  | _ => Error("Ambiguous locations found")
   };
 }
 
@@ -314,7 +302,10 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
     switch (expr.exp_desc) {
     | TExpLet(rec_flag, mut_flag, vbs) =>
       switch (vbs) {
-      | [] => Error("")
+      | [] =>
+        Error(
+          "Invalid code, can't have a let without at least one value binding",
+        )
       | _ =>
         let matches =
           List.map(
@@ -338,31 +329,29 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
           let expr = vb.vb_expr;
           Expression(expr);
         | [hd] => hd
-        | _ => Error("Too many let matches")
+        | _ => Error("Ambiguous locations found")
         };
       }
+    | TExpBlock(expressions) when expressions == [] => Expression(expr)
     | TExpBlock(expressions) =>
-      switch (expressions) {
-      | [] => Expression(expr)
-      | _ =>
-        find_location_in_expressions(
-          ~line,
-          ~char,
-          ~default=Expression(expr),
-          expressions,
-        )
-      }
+      find_location_in_expressions(
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        expressions,
+      )
+
+    | TExpApp(func, expressions)
+        when is_point_inside_location(~line, ~char, func.exp_loc) =>
+      Expression(func)
     | TExpApp(func, expressions) =>
-      if (is_point_inside_location(~line, ~char, func.exp_loc)) {
-        Expression(func);
-      } else {
-        find_location_in_expressions(
-          ~line,
-          ~char,
-          ~default=Expression(expr),
-          expressions,
-        );
-      }
+      find_location_in_expressions(
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        expressions,
+      )
+
     | TExpLambda([{mb_pat: pattern, mb_body: body}], _) =>
       let node = get_node_from_pattern(~line, ~char, pattern);
       switch (node) {
@@ -370,18 +359,18 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
       | _ => node
       };
     | TExpIf(cond, trueexp, falseexp) =>
-      let condNode = get_node_from_expression(~line, ~char, cond);
-      let trueMatch =
-        switch (condNode) {
+      let cond_node = get_node_from_expression(~line, ~char, cond);
+      let true_match =
+        switch (cond_node) {
         | NotInRange
         | Error(_) => get_node_from_expression(~line, ~char, trueexp)
-        | _ => condNode
+        | _ => cond_node
         };
 
-      switch (trueMatch) {
+      switch (true_match) {
       | NotInRange
       | Error(_) => get_node_from_expression(~line, ~char, falseexp)
-      | _ => trueMatch
+      | _ => true_match
       };
 
     | TExpArray(expressions)
@@ -435,35 +424,39 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         ~default=Expression(expr),
         [e1, e2],
       )
+    | TExpMatch(cond, branches, _)
+        when is_point_inside_location(~line, ~char, cond.exp_loc) =>
+      Expression(cond)
     | TExpMatch(cond, branches, _) =>
-      if (is_point_inside_location(~line, ~char, cond.exp_loc)) {
-        Expression(cond);
-      } else {
-        List.fold_left(
-          (acc, mb: Typedtree.match_branch) =>
-            if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
-              get_node_from_pattern(~line, ~char, mb.mb_pat);
-            } else if (is_point_inside_location(
-                         ~line,
-                         ~char,
-                         mb.mb_body.exp_loc,
-                       )) {
-              get_node_from_expression(~line, ~char, mb.mb_body);
-            } else {
-              switch (mb.mb_guard) {
-              | None => acc
-              | Some(e) =>
-                if (is_point_inside_location(~line, ~char, e.exp_loc)) {
-                  get_node_from_expression(~line, ~char, e);
-                } else {
-                  acc;
-                }
-              };
-            },
-          Expression(expr),
-          branches,
-        );
-      }
+      List.fold_left(
+        (acc, mb: Typedtree.match_branch) =>
+          if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
+            get_node_from_pattern(~line, ~char, mb.mb_pat);
+          } else if (is_point_inside_location(
+                       ~line,
+                       ~char,
+                       mb.mb_body.exp_loc,
+                     )) {
+            get_node_from_expression(~line, ~char, mb.mb_body);
+          } else {
+            switch (mb.mb_guard) {
+            | None => acc
+            | Some(e) when is_point_inside_location(~line, ~char, e.exp_loc) =>
+              get_node_from_expression(~line, ~char, e)
+            | Some(e) => acc
+            };
+          },
+        Expression(expr),
+        branches,
+      )
+
+    | TExpPrim0(_) =>
+      find_location_in_expressions(
+        ~line,
+        ~char,
+        ~default=Expression(expr),
+        [],
+      )
     | TExpPrim1(_, e) =>
       find_location_in_expressions(
         ~line,
@@ -508,25 +501,24 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         Expression(expr);
       }
 
+    | TExpFor(e1, e2, e3, block)
+        when is_point_inside_location(~line, ~char, block.exp_loc) =>
+      get_node_from_expression(~line, ~char, block)
     | TExpFor(e1, e2, e3, block) =>
-      if (is_point_inside_location(~line, ~char, block.exp_loc)) {
-        get_node_from_expression(~line, ~char, block);
-      } else {
-        List.fold_left(
-          (acc, exp) =>
-            switch (exp) {
-            | None => acc
-            | Some(e: Typedtree.expression) =>
-              if (is_point_inside_location(~line, ~char, e.exp_loc)) {
-                get_node_from_expression(~line, ~char, e);
-              } else {
-                acc;
-              }
-            },
-          Expression(expr),
-          [e1, e2, e3],
-        );
-      }
+      List.fold_left(
+        (acc, exp) =>
+          switch (exp) {
+          | None => acc
+          | Some(e: Typedtree.expression) =>
+            if (is_point_inside_location(~line, ~char, e.exp_loc)) {
+              get_node_from_expression(~line, ~char, e);
+            } else {
+              acc;
+            }
+          },
+        Expression(expr),
+        [e1, e2, e3],
+      )
 
     | TExpConstruct(_, _, expressions) =>
       find_location_in_expressions(
@@ -539,12 +531,10 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
 
   switch (node) {
   | NotInRange
-  | Error(_) =>
-    if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
-      Expression(expr);
-    } else {
-      NotInRange;
-    }
+  | Error(_) when is_point_inside_location(~line, ~char, expr.exp_loc) =>
+    Expression(expr)
+  | Error(_) => NotInRange
+
   | _ => node
   };
 };
@@ -555,35 +545,34 @@ let get_node_from_statement =
   | TTopImport(import_declaration) => Error("import declaration")
   | TTopForeign(export_flag, value_description) => Error("foreign")
   | TTopData(data_declarations) => Error("data declaration")
+  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings)
+      when value_bindings == [] =>
+    Error("")
   | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-    switch (value_bindings) {
-    | [] => Error("")
-    | _ =>
-      let matches =
-        List.map(
-          (vb: Typedtree.value_binding) =>
-            get_node_from_expression(~line, ~char, vb.vb_expr),
-          value_bindings,
-        );
-      let filtered =
-        List.filter(
-          m =>
-            switch (m) {
-            | Error(_) => false
-            | _ => true
-            },
-          matches,
-        );
-      switch (filtered) {
-      | [] =>
-        // return the type for the whole statement
-        let vb = List.hd(value_bindings);
-        let expr = vb.vb_expr;
-        Expression(expr);
-      | [node] => node
-      | _ => Error("Too many ttoplet matches")
-      };
-    }
+    let matches =
+      List.map(
+        (vb: Typedtree.value_binding) =>
+          get_node_from_expression(~line, ~char, vb.vb_expr),
+        value_bindings,
+      );
+    let filtered =
+      List.filter(
+        m =>
+          switch (m) {
+          | Error(_) => false
+          | _ => true
+          },
+        matches,
+      );
+    switch (filtered) {
+    | [] =>
+      // return the type for the whole statement
+      let vb = List.hd(value_bindings);
+      let expr = vb.vb_expr;
+      Expression(expr);
+    | [node] => node
+    | _ => Error("Ambigous top level statements matched")
+    };
 
   | TTopExpr(expression) =>
     get_node_from_expression(~line, ~char, expression)
@@ -613,158 +602,14 @@ let find_completable = (text, offset) => {
 };
 
 let get_original_text = (documents, uri, line, char) =>
-  if (!Hashtbl.mem(documents, uri)) {
-    Nothing;
-  } else {
-    let sourceCode = Hashtbl.find(documents, uri);
-    // try and find the code we are completing in the original source
-
-    let lines = String.split_on_char('\n', sourceCode);
+  // try and find the code we are completing in the original source
+  switch (Hashtbl.find_opt(documents, uri)) {
+  | None => Nothing
+  | Some(source_code) =>
+    let lines = String.split_on_char('\n', source_code);
     let line = List.nth(lines, line);
     find_completable(line, char);
   };
-
-let get_module_exports = (mod_ident, compiled_code: Typedtree.typed_program) => {
-  switch (Env.find_module(mod_ident, None, compiled_code.env)) {
-  | lookup =>
-    switch (lookup.md_filepath) {
-    | None => []
-    | Some(p) =>
-      let mtype: Grain_typed.Types.module_type = lookup.md_type;
-      switch (mtype) {
-      | TModSignature(sigs) =>
-        let fnsigs =
-          List.filter_map(
-            (s: Types.signature_item) => {
-              switch (s) {
-              | TSigValue(ident, vd) =>
-                let string_of_value_description = (~ident: Ident.t, vd) => {
-                  Format.asprintf(
-                    "%a",
-                    Printtyp.value_description(ident),
-                    vd,
-                  );
-                };
-                let item: Rpc.completion_item = {
-                  label: ident.name,
-                  kind: 3,
-                  detail: string_of_value_description(~ident, vd),
-                  documentation: "",
-                };
-                Some(item);
-
-              | TSigType(ident, td, recstatus) =>
-                let string_of_type_declaration = (~ident: Ident.t, td) => {
-                  Format.asprintf(
-                    "%a",
-                    Printtyp.type_declaration(ident),
-                    td,
-                  );
-                };
-                let item: Rpc.completion_item = {
-                  label: ident.name,
-                  kind: item_kind_completion_struct,
-                  detail: string_of_type_declaration(~ident, td),
-                  documentation: "",
-                };
-                Some(item);
-              | _ => None
-              }
-            },
-            sigs,
-          );
-        fnsigs;
-      | _ => []
-      };
-    }
-  | exception _ => []
-  };
-};
-
-let rec expression_lens =
-        (~line, ~char, ~compiled_code, e: Typedtree.expression) => {
-  let desc = e.exp_desc;
-  let txt =
-    switch (desc) {
-    | TExpRecordGet(expr, loc, field) =>
-      if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
-        lens_sig(~env=e.exp_env, expr.exp_type);
-      } else {
-        lens_sig(~env=e.exp_env, e.exp_type);
-      }
-
-    | TExpPrim1(_, exp) => lens_sig(~env=exp.exp_env, exp.exp_type)
-    | TExpPrim2(_, exp, exp2) =>
-      switch (
-        find_location_in_expressions(
-          ~line,
-          ~char,
-          ~default=NotInRange,
-          [exp, exp2],
-        )
-      ) {
-      | Expression(matched) => lens_sig(~env=e.exp_env, matched.exp_type)
-      | _ => ""
-      }
-    | TExpPrimN(_, expressions) =>
-      switch (
-        find_location_in_expressions(
-          ~line,
-          ~char,
-          ~default=NotInRange,
-          expressions,
-        )
-      ) {
-      | Expression(matched) => lens_sig(~env=e.exp_env, matched.exp_type)
-      | _ => ""
-      }
-    | TExpIdent(path, loc, vd) =>
-      let parts =
-        switch (path) {
-        | PIdent(ident) => ("", ident.name)
-        | PExternal(mod_path, name, _) => (
-            switch (mod_path) {
-            | PIdent(ident) => ident.name
-            | PExternal(mod_path, name, _) => ""
-            },
-            name,
-          )
-        };
-
-      let (modname, _after) = parts;
-      // work out if the cursor is in the module name or after it
-      if (modname == "" || modname == "Pervasives") {
-        lens_sig(e.exp_type, ~env=e.exp_env);
-      } else {
-        let lstart = loc.loc.loc_start;
-        let mod_start = lstart.pos_cnum - lstart.pos_bol;
-        let mod_end = mod_start + String.length(modname);
-
-        if (char < mod_end) {
-          let vals =
-            switch (path) {
-            | PIdent(ident) => []
-            | PExternal(mod_path, name, _) =>
-              get_module_exports(mod_path, compiled_code)
-            };
-          let printed_vals =
-            List.fold_left(
-              (acc, v: Rpc.completion_item) =>
-                acc ++ "  let " ++ v.detail ++ "\n",
-              "",
-              vals,
-            );
-          printed_vals;
-        } else {
-          lens_sig(e.exp_type, ~env=e.exp_env);
-        };
-      };
-
-    | _ => lens_sig(~env=e.exp_env, e.exp_type)
-    };
-
-  markdown_grain(txt);
-};
 
 let exn_to_lsp_error = (exn: exn): option(Rpc.lsp_error) => {
   let error = Grain_parsing.Location.error_of_exn(exn);
@@ -813,4 +658,15 @@ let convert_warnings = (warnings_this_run, topLevelFileName) => {
     },
     warnings_this_run,
   );
+};
+
+let convert_uri_to_filename = (uri: string) => {
+  let filetype = "file://";
+  let typelen = String.length(filetype);
+  switch (String.sub(uri, 0, typelen)) {
+  | exception exn => uri
+  | start =>
+    String.lowercase_ascii(start) == filetype
+      ? String.sub(uri, typelen, String.length(uri) - typelen) : uri
+  };
 };

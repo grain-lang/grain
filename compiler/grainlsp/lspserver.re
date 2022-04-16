@@ -23,7 +23,7 @@ let loop = () =>
         | "textDocument/hover" =>
           Hover.get_hover(~id, ~compiled_code, ~documents, json)
         | "textDocument/codeLens" =>
-          Lenses.process_get_lenses(~id, ~compiled_code, json)
+          Lenses.send_lenses_to_client(~id, ~compiled_code, json)
         | "textDocument/completion" =>
           Completion.process_completion(
             ~id,
@@ -46,32 +46,27 @@ let loop = () =>
         | _ => ()
         }
 
-      | Notification("exit", _) =>
-        if (is_shutting_down^) {
-          break := true;
-        } else {
-          exit(1);
-        }
-      | Notification(method, json) =>
-        switch (method) {
-        | "textDocument/didOpen"
-        | "textDocument/didChange" =>
-          Processcode.textDocument_didOpenOrChange(
-            ~documents,
-            ~compiled_code,
-            ~cached_code,
-            json,
-          )
-        | _ => ()
-        }
+      | Notification("exit", _) when is_shutting_down^ => break := true
+      | Notification("exit", _) => exit(1)
+      | Notification("textDocument/didOpen", json)
+      | Notification("textDocument/didChange", json) =>
+        Processcode.textDocument_didOpenOrChange(
+          ~documents,
+          ~compiled_code,
+          ~cached_code,
+          json,
+        )
+      | Notification(_, json) => ()
       | Error(_) => is_shutting_down := true
       };
     };
   };
 
 let run = () => {
-  // Will enable this again if we want LSP logging
-  // Log.set_location("lsp.log");
+  // Enable this for LSP debugging, not for normal use
+  // as it writes into the user's project space
+  // Log.log("Debug info") can then be used
+  Log.set_location("lsp.log");
 
   let initialize = () =>
     switch (Rpc.read_message(stdin)) {

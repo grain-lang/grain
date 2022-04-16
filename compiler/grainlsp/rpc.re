@@ -144,6 +144,12 @@ type hover_result = {
   contents: markup_content,
   range,
 };
+[@deriving yojson]
+type null_response = {
+  jsonrpc: string,
+  id: int,
+  result: option(string),
+};
 
 [@deriving yojson]
 type hover_response = {
@@ -214,10 +220,10 @@ let read_message = (input): protocol_msg => {
     let action =
       Yojson.Safe.Util.member("method", json) |> Yojson.Safe.Util.to_string;
 
-    let idOpt =
+    let id_opt =
       Yojson.Safe.Util.member("id", json) |> Yojson.Safe.Util.to_int_option;
 
-    switch (idOpt) {
+    switch (id_opt) {
     | None => Notification(action, json)
     | Some(id) => Message(id, action, json)
     };
@@ -236,15 +242,10 @@ let send = (output, content) => {
 };
 
 let send_null_message = (output, id) => {
-  let res =
-    `Assoc([
-      ("jsonrpc", `String("2.0")),
-      ("id", `Int(id)),
-      ("result", `Null),
-    ]);
-
-  let strJson = Yojson.Safe.pretty_to_string(res);
-  send(output, strJson);
+  let empty_response: null_response = {jsonrpc: "2.0", id, result: None};
+  let res = null_response_to_yojson(empty_response);
+  let str_json = Yojson.Safe.to_string(res);
+  send(output, str_json);
 };
 
 let send_capabilities = (output, id: int) => {
@@ -280,13 +281,13 @@ let send_capabilities = (output, id: int) => {
   };
 
   let res = capabilities_response_to_yojson(response);
-  let strJson = Yojson.Safe.to_string(res);
+  let str_json = Yojson.Safe.to_string(res);
 
-  send(output, strJson);
+  send(output, str_json);
 };
 
 let send_lenses = (~output, ~id: int, lenses: list(lens_t)) => {
-  let convertedLenses =
+  let converted_lenses =
     List.map(
       (l: lens_t) => {
         let rstart: position = {line: l.line - 1, character: 1};
@@ -302,10 +303,10 @@ let send_lenses = (~output, ~id: int, lenses: list(lens_t)) => {
       lenses,
     );
 
-  let response: lens_response = {jsonrpc, id, result: convertedLenses};
+  let response: lens_response = {jsonrpc, id, result: converted_lenses};
   let res = lens_response_to_yojson(response);
-  let strJson = Yojson.Safe.pretty_to_string(res);
-  send(output, strJson);
+  let str_json = Yojson.Safe.to_string(res);
+  send(output, str_json);
 };
 
 let send_hover = (~output, ~id: int, ~range: range_t, signature) => {
@@ -319,17 +320,13 @@ let send_hover = (~output, ~id: int, ~range: range_t, signature) => {
   };
   let response: hover_response = {jsonrpc, id, result: hover_info};
   let res = hover_response_to_yojson(response);
-  let strJson = Yojson.Safe.pretty_to_string(res);
-  send(output, strJson);
+  let str_json = Yojson.Safe.to_string(res);
+  Log.log(str_json);
+  send(output, str_json);
 };
 
 let send_diagnostics =
-    (
-      ~output,
-      ~uri,
-      ~warnings: option(list(lsp_warning)),
-      error: option(lsp_error),
-    ) => {
+    (~output, ~uri, warnings: list(lsp_warning), error: option(lsp_error)) => {
   let error_diags =
     switch (error) {
     | None => []
@@ -351,8 +348,8 @@ let send_diagnostics =
 
   let with_warnings =
     switch (warnings) {
-    | None => error_diags
-    | Some(warns) =>
+    | [] => error_diags
+    | _ =>
       let warnings_diags =
         List.map(
           (w: lsp_warning) =>
@@ -374,7 +371,7 @@ let send_diagnostics =
               let range = {start: rstart, range_end: rend};
               {range, severity: 2, message: w.lsp_message};
             },
-          warns,
+          warnings,
         );
       List.append(error_diags, warnings_diags);
     };
@@ -418,7 +415,7 @@ let send_completion = (~output, ~id: int, completions: list(completion_item)) =>
   let response: completion_response = {jsonrpc, id, result: completion_info};
 
   let res = completion_response_to_yojson(response);
-  let strJson = Yojson.Safe.pretty_to_string(res);
+  let str_json = Yojson.Safe.to_string(res);
 
-  send(output, strJson);
+  send(output, str_json);
 };

@@ -200,7 +200,7 @@ program
     run(wasmFile, program.opts());
   });
 
-// TODO:  #1147 create a common set of parameters that are passed through to commands
+// TODO(#1147): Create a common set of parameters that are passed through to commands
 
 program
   .command("lsp")
