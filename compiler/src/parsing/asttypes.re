@@ -40,7 +40,7 @@ type constant =
   | Const_wasmi64(int64)
   | Const_wasmf32(float)
   | Const_wasmf64(float)
-  | Const_bigint(bigint_data) // (is_negative, abs_value, string_rep)
+  | Const_bigint(bigint_data)
   | Const_bool(bool)
   | Const_void
 

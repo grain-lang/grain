@@ -190,7 +190,7 @@ let rec hashOne = (val, depth) => {
             hash32(WasmI32.load(heapPtr, 12n))
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
-            // should include fixint size once implemented
+            // TODO(#1187): should include fixint size once implemented
             let size = BI.getSize(heapPtr)
             hash32(size)
             hash32(BI.getFlags(heapPtr))

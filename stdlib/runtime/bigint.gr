@@ -86,7 +86,7 @@ let minu64 = (a, b) => {
   if (a < b) a else b
 }
 
-// TODO: use faster abs algos
+// TODO(#1188): use faster abs algos
 // https://stackoverflow.com/questions/664852/which-is-the-fastest-way-to-get-the-absolute-value-of-a-number
 
 @unsafe
@@ -198,8 +198,7 @@ export let getFlags = ptr => {
 
 @unsafe
 let flagIsSet = (ptr, flag) => {
-  let setFlags = WasmI32.load(ptr, 12n)
-  WasmI32.ne(WasmI32.and(setFlags, flag), 0n)
+  WasmI32.ne(WasmI32.and(getFlags(ptr), flag), 0n)
 }
 
 @unsafe
@@ -524,7 +523,7 @@ export let toFloat64 = (num: WasmI32) => {
   let (*) = WasmF64.mul
   let numLimbs = getSize(num)
   let res = if (eqz(num)) {
-    0.W
+    0.0W
   } else if (WasmI32.gtU(numLimbs, 16n)) {
     // Float64 infinity (bigger than FLOAT_MAX)
     WasmF64.reinterpretI64(
@@ -1299,7 +1298,7 @@ let unsignedMul = (num1: WasmI32, num2: WasmI32) => {
   trimNumberInPlace(dest)
 }
 
-// [TODO] Replace with Karatsuba multiplication
+// TODO(#1189): Replace with Karatsuba multiplication
 @unsafe
 export let mul = (num1: WasmI32, num2: WasmI32) => {
   let ret = if (eqz(num1) || eqz(num2)) {
@@ -1496,7 +1495,7 @@ let bitwiseAndPositive =
 
 @unsafe
 let bitwiseOrPositive = (num1: WasmI32, num2: WasmI32) => {
-  // bitwise and, but both num1 and num2 are assumed to be positive
+  // bitwise or, but both num1 and num2 are assumed to be positive
   let num1Limbs = getSize(num1)
   let num2Limbs = getSize(num2)
   let newLimbs = maxu32(num1Limbs, num2Limbs)
@@ -1514,7 +1513,7 @@ let bitwiseOrPositive = (num1: WasmI32, num2: WasmI32) => {
 
 @unsafe
 let bitwiseXorPositive = (num1: WasmI32, num2: WasmI32) => {
-  // bitwise and, but both num1 and num2 are assumed to be positive
+  // bitwise xor, but both num1 and num2 are assumed to be positive
   let num1Limbs = getSize(num1)
   let num2Limbs = getSize(num2)
   let newLimbs = maxu32(num1Limbs, num2Limbs)
@@ -1914,7 +1913,6 @@ let division =
     num1: WasmI32,
     num2: WasmI32,
     destContainer: WasmI32,
-    // returnR: Bool,
     divMod: Bool,
   ) => {
   if (eqz(num2)) {
@@ -1998,11 +1996,6 @@ let division =
   // Finished. Return appropriate number
   WasmI32.store(destContainer, q, 0n)
   WasmI32.store(destContainer, r, 4n)
-  //if (returnR) {
-  //  r
-  //} else {
-  //  q
-  //}
 }
 
 @unsafe

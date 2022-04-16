@@ -971,7 +971,7 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         let yBoxedVal = boxedFloat32Number(y)
         let result = if (isSub) WasmF32.sub(xval, yBoxedVal)
           else WasmF32.add(xval, yBoxedVal)
-        // TODO: (#304) this isn't safe enough
+        // TODO(#304): this isn't safe enough
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -1538,7 +1538,7 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         reducedFractionBigInt(numerator, denominator)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        // [TODO] We should probably use something more accurate if possible here
+        // TODO(#1190): We should probably use something more accurate if possible here
         let asFloat = WasmF32.demoteF64(
           WasmF64.div(BI.toFloat64(xNumerator), BI.toFloat64(xDenominator))
         )
@@ -1549,7 +1549,7 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         }
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        // [TODO] We should probably use something more accurate if possible here
+        // TODO(#1190): We should probably use something more accurate if possible here
         let asFloat = WasmF64.div(
           BI.toFloat64(xNumerator),
           BI.toFloat64(xDenominator)
@@ -2138,13 +2138,13 @@ let convertInexactToExactHelp = x => {
     } else {
       match (tag) {
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-          // [TODO] Investigate if BigInt is more accurate
+          // TODO(#1191): Investigate if BigInt is more accurate
           reducedInteger(
             WasmI64.truncF32S(WasmF32.nearest(boxedFloat32Number(x)))
           )
         },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-          // [TODO] Investigate if BigInt is more accurate
+          // TODO(#1191): Investigate if BigInt is more accurate
           reducedInteger(
             WasmI64.truncF64S(WasmF64.nearest(boxedFloat64Number(x)))
           )

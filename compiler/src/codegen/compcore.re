@@ -2218,13 +2218,13 @@ let allocate_number = (wasm_mod, env, number) => {
 };
 
 let allocate_number_uninitialized =
-    (~extra_words=?, wasm_mod, env, number_tag) => {
+    (~additional_words=?, wasm_mod, env, number_tag) => {
   /* Heap memory layout of numbers:
      [ <value type tag>, <number_tag>, <payload>]
      */
   let get_swap = () => get_swap(wasm_mod, env, 0);
   let make_alloc = () =>
-    switch (extra_words) {
+    switch (additional_words) {
     // Grain allocations are 8-byte aligned, so no space is saved by
     // allocating 3 words for 32-bit numbers
     | None => heap_allocate(wasm_mod, env, 4)
@@ -2307,7 +2307,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | AllocateString => allocate_string_uninitialized(wasm_mod, env, arg)
   | AllocateBigInt =>
     allocate_number_uninitialized(
-      ~extra_words=arg,
+      ~additional_words=arg,
       wasm_mod,
       env,
       BoxedBigInt,

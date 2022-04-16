@@ -21,6 +21,7 @@ assert Number.add(25, 5) == 30
 }
 // sub
 assert Number.sub(25, 5) == 20
+// Rational subtraction tests
 {
   let (-) = Number.sub
   assert 2/3 - 4 == -10/3
