@@ -211,12 +211,20 @@ let reducedFractionBigInt = (x, y) => {
   }
   let quotremResult = Memory.malloc(8n)
   BI.quotRem(x, y, quotremResult)
+  // Note that the contents of quotRem are malloc'ed
+  // inside of quotRem and need to be manually freed.
   let q = WasmI32.load(quotremResult, 0n)
   let r = WasmI32.load(quotremResult, 4n)
+  // free container used to store quotrem result
   Memory.free(quotremResult)
   let ret = if (BI.eqz(r)) {
+    // if remainder is zero, then return the quotient.
+    // We decRef the remainder, since we no longer need it
+    Memory.decRef(r)
     reducedBigInteger(q)
   } else {
+    // remainder is nonzero. we don't need the quotient and
+    // remainder anymore, so we discard them.
     Memory.decRef(q)
     Memory.decRef(r)
     let factor = BI.gcd(x, y)
