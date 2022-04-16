@@ -18,14 +18,12 @@ let incCounter = random => {
 }
 
 // https://arxiv.org/pdf/2004.06278v3.pdf
-@disableGC
-let rec squares = (ctr: Int64, key: Int64) => {
-  // Need to implement with @disableGC because
+@unsafe
+let squares = (ctr: Int64, key: Int64) => {
+  // Need to implement with @unsafe because
   // overflows are part of this algorithm
-  let ctrArg = ctr
-  let keyArg = key
-  let ctr = DS.loadInt64(WasmI32.fromGrain(ctr))
-  let key = DS.loadInt64(WasmI32.fromGrain(key))
+  let ctr = WasmI64.load(WasmI32.fromGrain(ctr), 8n)
+  let key = WasmI64.load(WasmI32.fromGrain(key), 8n)
   let mut x = WasmI64.mul(ctr, key)
   let mut y = x
   let mut z = WasmI64.add(y, key)
@@ -41,33 +39,23 @@ let rec squares = (ctr: Int64, key: Int64) => {
   let ret = WasmI32.wrapI64(
     WasmI64.shrU(WasmI64.add(WasmI64.mul(x, x), z), 32N)
   )
-  let ret = WasmI32.toGrain(DS.newInt32(ret)): Int32
-  Memory.decRef(WasmI32.fromGrain(ctrArg))
-  Memory.decRef(WasmI32.fromGrain(keyArg))
-  Memory.decRef(WasmI32.fromGrain(squares))
-  ret
+  WasmI32.toGrain(DS.newInt32(ret)): Int32
 }
 
-// [NOTE] The PRNG algorithm seems to not work as well with small seeds, but
-// users are more likely to use small numbers for their seeds. Consequently,
-// we produce an actual seed xoring feeding the given seed with a
-// constant (large) number.
-
 /**
- * Creates a new random number generator with the given seed.
+ * Creates a new pseudo-random number generator with the given seed.
  *
- * @param seed: The seed for the random number generator
- * @returns The random number generator
+ * @param seed: The seed for the pseudo-random number generator
+ * @returns The pseudo-random number generator
  */
 export let make = seed => {
   { seed, counter: 0L, initialized: false }
 }
 
 /**
- * Creates a new random number generator with a random seed.
+ * Creates a new pseudo-random number generator with a random seed.
  *
- * @param seed: The seed for the random number generator
- * @returns The random number generator
+ * @returns The pseudo-random number generator
  */
 export let makeUnseeded = () => {
   // TODO: Should we just .expect this result for UX's sake?
@@ -97,9 +85,9 @@ let checkInitialized = (random: Random) => {
 }
 
 /**
- * Generates a random 32-bit integer from the given random number generator.
+ * Generates a random 32-bit integer from the given pseudo-random number generator.
  *
- * @param random: The random number generator to use
+ * @param random: The pseudo-random number generator to use
  * @returns The randomly generated number
  */
 export let nextInt32 = (random: Random) => {
@@ -110,9 +98,9 @@ export let nextInt32 = (random: Random) => {
 }
 
 /**
- * Generates a random 64-bit integer from the given random number generator.
+ * Generates a random 64-bit integer from the given pseudo-random number generator.
  *
- * @param random: The random number generator to use
+ * @param random: The pseudo-random number generator to use
  * @returns The randomly generated number
  */
 export let nextInt64 = (random: Random) => {
@@ -128,8 +116,9 @@ export let nextInt64 = (random: Random) => {
   Int64.lor(Int64.shl(ret1, 32L), ret2)
 }
 
+// (can be removed after #831 lands)
 @disableGC
-export let rec gtU = (x: Int32, y: Int32) => {
+let rec gtU = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   let ret = WasmI32.gtU(xv, yv)
@@ -139,6 +128,15 @@ export let rec gtU = (x: Int32, y: Int32) => {
   ret
 }
 
+/**
+ * Generates a random 32-bit integer from the given pseudo-random number generator
+ * from a uniform distribution in the given range.
+ *
+ * @param random: The pseudo-random number generator to use
+ * @param low: The lower bound of the range (inclusive)
+ * @param high: The upper bound of the range (exclusive)
+ * @returns The randomly generated number
+ */
 export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
   let (+) = Int32.add
@@ -158,6 +156,15 @@ export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
   x + low
 }
 
+/**
+ * Generates a random 64-bit integer from the given pseudo-random number generator
+ * from a uniform distribution in the given range.
+ *
+ * @param random: The pseudo-random number generator to use
+ * @param low: The lower bound of the range (inclusive)
+ * @param high: The upper bound of the range (exclusive)
+ * @returns The randomly generated number
+ */
 export let nextInt64InRange = (random: Random, low: Int64, high: Int64) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
   let (+) = Int64.add
