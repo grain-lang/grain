@@ -209,6 +209,8 @@ let read_message = (input): protocol_msg => {
     /* if on windows, dont need the extra -1 */
     let offset = Sys.os_type == "Win32" ? 0 : (-1); /* -1 for trailing \r */
 
+    // Can't use from_channel as we need to read the number of characters specified.
+
     let num =
       String.sub(clength, cll, String.length(clength) - cll + offset);
     let num = (num |> int_of_string) + (Sys.os_type == "Win32" ? 1 : 2);
@@ -237,7 +239,12 @@ let send = (output, content) => {
   let sep = Sys.os_type == "Unix" ? "\r\n\r\n" : "\n\n";
   let len = string_of_int(length);
 
-  output_string(output, "Content-Length: " ++ len ++ sep ++ content);
+  let for_debug = "Content-Length: " ++ len ++ sep ++ content;
+
+  Log.log(for_debug);
+
+  output_string(output, for_debug);
+
   flush(output);
 };
 
