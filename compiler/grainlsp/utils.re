@@ -264,7 +264,9 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
 
 let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
   switch (pattern.pat_desc) {
-  | TPatTuple(args) =>
+  | TPatTuple(args)
+  | TPatArray(args) =>
+    // these contain patterns we want to search into to find a more accurate match
     let pats =
       List.filter(
         (p: Typedtree.pattern) =>
@@ -272,13 +274,14 @@ let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
         args,
       );
     switch (pats) {
-    | [p] => Pattern(p)
-    | _ => Error("")
+    | [] => Pattern(pattern) // We should always find a more accurate sub pattern, but if not we will use the parent
+    | [p, ..._] => Pattern(p)
     };
 
-  | TPatConstant(c) => Pattern(pattern)
-  | TPatVar(v, _) => Pattern(pattern)
-  | _ => Error("Pattern")
+  | _ =>
+    // we don't go deeper into records as we only display the record type for any part of the pattern
+    // All the other patterns are the top level so we just use their location
+    Pattern(pattern)
   };
 };
 
@@ -539,47 +542,8 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
   };
 };
 
-let get_node_from_statement =
-    (~line, ~char, stmt: Grain_typed__Typedtree.toplevel_stmt) => {
-  switch (stmt.ttop_desc) {
-  | TTopImport(import_declaration) => Error("import declaration")
-  | TTopForeign(export_flag, value_description) => Error("foreign")
-  | TTopData(data_declarations) => Error("data declaration")
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings)
-      when value_bindings == [] =>
-    Error("")
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-    let matches =
-      List.map(
-        (vb: Typedtree.value_binding) =>
-          get_node_from_expression(~line, ~char, vb.vb_expr),
-        value_bindings,
-      );
-    let filtered =
-      List.filter(
-        m =>
-          switch (m) {
-          | Error(_) => false
-          | _ => true
-          },
-        matches,
-      );
-    switch (filtered) {
-    | [] =>
-      // return the type for the whole statement
-      let vb = List.hd(value_bindings);
-      let expr = vb.vb_expr;
-      Expression(expr);
-    | [node] => node
-    | _ => Error("Ambigous top level statements matched")
-    };
-
-  | TTopExpr(expression) =>
-    get_node_from_expression(~line, ~char, expression)
-  | TTopException(export_flag, type_exception) => Error("exception")
-  | TTopExport(export_declarations) => Error("export")
-  };
-};
+// function below taken from
+// https://github.com/jaredly/reason-language-server/blob/ce1b3f8ddb554b6498c2a83ea9c53a6bdf0b6081/src/analyze/PartialParser.re
 
 let find_completable = (text, offset) => {
   let rec loop = i => {

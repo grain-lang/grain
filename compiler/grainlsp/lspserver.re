@@ -62,19 +62,24 @@ let loop = () =>
     };
   };
 
-let run = () => {
-  // Enable this for LSP debugging, not for normal use
-  // as it writes into the user's project space
-  // Log.log("Debug info") can then be used
-  Log.set_location("lsp.log");
+let run = (debug: bool) => {
+  if (debug) {
+    Log.set_level(DebugLog);
+    Log.log("LSP is starting up");
+  };
 
   let initialize = () =>
     switch (Rpc.read_message(stdin)) {
     | Message(id, "initialize", _) =>
       Rpc.send_capabilities(stdout, id);
       loop();
-    | _ => failwith("Client must send 'initialize' as first event")
+      `Ok();
+    | _ =>
+      Log.log("Client must send 'initialize' as first event");
+      `Error((false, "Client must send 'initialize' as first event"));
     };
 
-  initialize();
+  let run_result = initialize();
+  Log.close_log();
+  run_result;
 };

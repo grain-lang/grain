@@ -7,8 +7,7 @@ open Grain_typed;
 let compile_source = (uri, source) => {
   let filename = Utils.convert_uri_to_filename(uri);
 
-  Log.log(uri);
-  Log.log(filename);
+  Log.log("Compiling" ++ filename);
 
   switch (
     Compile.compile_string(

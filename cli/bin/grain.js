@@ -205,6 +205,7 @@ program
 program
   .command("lsp")
   .description("start the Grain LSP server")
+  .forwardOption("--debuglsp", "output lsp debug information to a file")
   .forwardOption(
     "-I, --include-dirs <dirs>",
     "add additional dependency include directories",

@@ -1,16 +1,33 @@
 let out = ref(None);
 
-let initial_dest = Filename.concat(Filename.get_temp_dir_name(), "lsp.log");
-out := Some(open_out(initial_dest));
+type log_level =
+  | NoLog
+  | DebugLog;
 
-let set_location = location => {
+let log_dest = Filename.concat(Filename.get_temp_dir_name(), "lsp.log");
+
+let set_level = (lvl: log_level) => {
   switch (out^) {
   | None => ()
   | Some(out) => close_out(out)
   };
-  output_string(stderr, "Setting log location: " ++ location ++ "\n");
-  flush(stderr);
-  out := Some(open_out(location));
+
+  switch (lvl) {
+  | NoLog =>
+    output_string(stderr, "Logging disabled\n");
+    flush(stderr);
+  | DebugLog =>
+    output_string(stderr, "Debug logging enabled to " ++ log_dest ++ "\n");
+    flush(stderr);
+    out := Some(open_out(log_dest));
+  };
+};
+
+let close_log = () => {
+  switch (out^) {
+  | None => ()
+  | Some(out) => close_out(out)
+  };
 };
 
 let log = msg =>

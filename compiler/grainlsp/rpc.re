@@ -228,7 +228,7 @@ let read_message = (input): protocol_msg => {
     | Some(id) => Message(id, action, json)
     };
   } else {
-    failwith("Invalid header");
+    Error("Invalid header");
   };
 };
 
@@ -321,7 +321,6 @@ let send_hover = (~output, ~id: int, ~range: range_t, signature) => {
   let response: hover_response = {jsonrpc, id, result: hover_info};
   let res = hover_response_to_yojson(response);
   let str_json = Yojson.Safe.to_string(res);
-  Log.log(str_json);
   send(output, str_json);
 };
 

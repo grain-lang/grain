@@ -3,24 +3,18 @@
 open Printf;
 open Cmdliner;
 
-let lsp_wrapper = () => {
-  let _ = Lspserver.run();
-
-  `Ok();
+[@deriving cmdliner]
+type params = {
+  [@name "debuglsp"] [@docv "DEBUG"]
+  debug: bool,
 };
 
-let lsp = opts =>
-  try(lsp_wrapper()) {
+let lsp = (opts: params) =>
+  try(Lspserver.run(opts.debug)) {
   | exn =>
     Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
     exit(2);
   };
-
-[@deriving cmdliner]
-type params = {
-  [@name "debuglsp"] [@docv "DEBUGLOG"]
-  debug_log: option(string),
-};
 
 let cmd = {
   open Term;

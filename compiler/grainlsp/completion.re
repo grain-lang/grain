@@ -27,55 +27,43 @@ let rec get_kind = (desc: Types.type_desc) =>
 let get_module_exports = (mod_ident, compiled_code: Typedtree.typed_program) => {
   switch (Env.find_module(mod_ident, None, compiled_code.env)) {
   | lookup =>
-    switch (lookup.md_filepath) {
-    | None => []
-    | Some(p) =>
-      let mtype: Grain_typed.Types.module_type = lookup.md_type;
-      switch (mtype) {
-      | TModSignature(sigs) =>
-        let fnsigs =
-          List.filter_map(
-            (s: Types.signature_item) => {
-              switch (s) {
-              | TSigValue(ident, vd) =>
-                let string_of_value_description = (~ident: Ident.t, vd) => {
-                  Format.asprintf(
-                    "%a",
-                    Printtyp.value_description(ident),
-                    vd,
-                  );
-                };
-                let item: Rpc.completion_item = {
-                  label: ident.name,
-                  kind: 3,
-                  detail: string_of_value_description(~ident, vd),
-                  documentation: "",
-                };
-                Some(item);
+    switch (lookup.md_filepath, lookup.md_type) {
+    | (None, _) => []
+    | (Some(_), TModSignature(sigs)) =>
+      let fnsigs =
+        List.filter_map(
+          (s: Types.signature_item) => {
+            switch (s) {
+            | TSigValue(ident, vd) =>
+              let string_of_value_description = (~ident: Ident.t, vd) => {
+                Format.asprintf("%a", Printtyp.value_description(ident), vd);
+              };
+              let item: Rpc.completion_item = {
+                label: ident.name,
+                kind: 3,
+                detail: string_of_value_description(~ident, vd),
+                documentation: "",
+              };
+              Some(item);
 
-              | TSigType(ident, td, recstatus) =>
-                let string_of_type_declaration = (~ident: Ident.t, td) => {
-                  Format.asprintf(
-                    "%a",
-                    Printtyp.type_declaration(ident),
-                    td,
-                  );
-                };
-                let item: Rpc.completion_item = {
-                  label: ident.name,
-                  kind: item_kind_completion_struct,
-                  detail: string_of_type_declaration(~ident, td),
-                  documentation: "",
-                };
-                Some(item);
-              | _ => None
-              }
-            },
-            sigs,
-          );
-        fnsigs;
-      | _ => []
-      };
+            | TSigType(ident, td, recstatus) =>
+              let string_of_type_declaration = (~ident: Ident.t, td) => {
+                Format.asprintf("%a", Printtyp.type_declaration(ident), td);
+              };
+              let item: Rpc.completion_item = {
+                label: ident.name,
+                kind: item_kind_completion_struct,
+                detail: string_of_type_declaration(~ident, td),
+                documentation: "",
+              };
+              Some(item);
+            | _ => None
+            }
+          },
+          sigs,
+        );
+      fnsigs;
+    | _ => []
     }
   | exception _ => []
   };

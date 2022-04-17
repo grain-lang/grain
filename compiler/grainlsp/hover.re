@@ -121,69 +121,83 @@ let get_from_statement =
       );
     switch (matches) {
     | [] => LocationError
-    | [node, ..._] =>
-      let name = node.data_name;
-      switch (node.data_kind) {
-      | TDataAbstract =>
-        switch (node.data_manifest) {
-        | None => LocationSignature(name.txt, node.data_loc)
-        | Some(t) =>
-          LocationSignature(
-            Utils.lens_sig(~env=stmt.ttop_env, t.ctyp_type),
-            node.data_loc,
-          )
-        }
-      | TDataVariant(constrs) =>
+    | [{data_name, data_manifest, data_loc, data_kind: TDataAbstract}, ..._] =>
+      switch (data_manifest) {
+      | None => LocationSignature(data_name.txt, data_loc)
+      | Some(t) =>
+        LocationSignature(
+          Utils.lens_sig(~env=stmt.ttop_env, t.ctyp_type),
+          data_loc,
+        )
+      }
+
+    | [
+        {
+          data_name,
+          data_manifest,
+          data_loc,
+          data_kind: TDataVariant(constrs),
+        },
+        ..._,
+      ] =>
+      let matches =
+        List.filter(
+          (cd: Typedtree.constructor_declaration) =>
+            Utils.is_point_inside_location(~line, ~char, cd.cd_loc),
+          constrs,
+        );
+
+      switch (matches) {
+      | [decl] =>
+        LocationSignature(
+          Grain_utils.Markdown.code_block(decl.cd_name.txt),
+          decl.cd_loc,
+        )
+      | _ =>
+        LocationSignature(
+          Grain_utils.Markdown.code_block("enum " ++ data_name.txt),
+          data_loc,
+        )
+      };
+
+    | [
+        {
+          data_name,
+          data_manifest,
+          data_loc,
+          data_params,
+          data_kind: TDataRecord(_),
+        },
+        ..._,
+      ] =>
+      switch (data_params) {
+      | [] =>
+        LocationSignature(
+          Grain_utils.Markdown.code_block(data_name.txt),
+          data_loc,
+        )
+      | _ =>
         let matches =
           List.filter(
-            (cd: Typedtree.constructor_declaration) =>
-              Utils.is_point_inside_location(~line, ~char, cd.cd_loc),
-            constrs,
+            (dp: Typedtree.core_type) =>
+              Utils.is_point_inside_location(~line, ~char, dp.ctyp_loc),
+            data_params,
           );
-
         switch (matches) {
         | [decl] =>
           LocationSignature(
-            Grain_utils.Markdown.code_block(decl.cd_name.txt),
-            decl.cd_loc,
+            Grain_utils.Markdown.code_block(
+              Utils.lens_sig(decl.ctyp_type, ~env=compiled_code.env),
+            ),
+            decl.ctyp_loc,
           )
         | _ =>
           LocationSignature(
-            Grain_utils.Markdown.code_block("enum " ++ name.txt),
-            node.data_loc,
+            Grain_utils.Markdown.code_block(data_name.txt),
+            data_loc,
           )
         };
-
-      | TDataRecord(_) =>
-        switch (node.data_params) {
-        | [] =>
-          LocationSignature(
-            Grain_utils.Markdown.code_block(node.data_name.txt),
-            node.data_loc,
-          )
-        | _ =>
-          let matches =
-            List.filter(
-              (dp: Typedtree.core_type) =>
-                Utils.is_point_inside_location(~line, ~char, dp.ctyp_loc),
-              node.data_params,
-            );
-          switch (matches) {
-          | [decl] =>
-            LocationSignature(
-              Grain_utils.Markdown.code_block(
-                Utils.lens_sig(decl.ctyp_type, ~env=compiled_code.env),
-              ),
-              decl.ctyp_loc,
-            )
-          | _ =>
-            LocationSignature(
-              Grain_utils.Markdown.code_block(node.data_name.txt),
-              node.data_loc,
-            )
-          };
-        }
-      };
+      }
     };
 
   | TTopLet(export_flag, rec_flag, mut_flag, value_bindings)
