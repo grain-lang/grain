@@ -26,14 +26,9 @@ basic functionality › func_shadow
   (local $1 i32)
   (i32.store
    (local.tee $1
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 1)
@@ -66,14 +61,9 @@ basic functionality › func_shadow
   (local $1 i32)
   (i32.store
    (local.tee $1
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 1)
@@ -108,14 +98,9 @@ basic functionality › func_shadow
   (local $2 i32)
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 6)
@@ -143,14 +128,6 @@ basic functionality › func_shadow
     )
    )
   )
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (global.get $global_0)
-     (local.get $0)
-    )
-   )
-  )
   (local.set $2
    (tuple.extract 0
     (tuple.make
@@ -170,14 +147,9 @@ basic functionality › func_shadow
   (drop
    (call_indirect (type $i32_i32_=>_i32)
     (local.tee $0
-     (tuple.extract 0
-      (tuple.make
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (global.get $gimport_pervasives_print)
-       )
-       (local.get $0)
-      )
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (global.get $gimport_pervasives_print)
      )
     )
     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -191,14 +163,9 @@ basic functionality › func_shadow
   )
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (local.get $0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 6)
@@ -229,14 +196,6 @@ basic functionality › func_shadow
     )
    )
   )
-  (local.set $1
-   (tuple.extract 0
-    (tuple.make
-     (global.get $global_1)
-     (local.get $0)
-    )
-   )
-  )
   (local.set $0
    (tuple.extract 0
     (tuple.make
@@ -254,28 +213,18 @@ basic functionality › func_shadow
    )
   )
   (local.set $1
-   (tuple.extract 0
-    (tuple.make
-     (call_indirect (type $i32_i32_=>_i32)
-      (local.tee $1
-       (tuple.extract 0
-        (tuple.make
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_print)
-         )
-         (local.get $1)
-        )
-       )
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $0)
-      )
-      (i32.load offset=8
-       (local.get $1)
-      )
+   (call_indirect (type $i32_i32_=>_i32)
+    (local.tee $1
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (global.get $gimport_pervasives_print)
      )
+    )
+    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+     (local.get $0)
+    )
+    (i32.load offset=8
      (local.get $1)
     )
    )

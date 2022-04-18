@@ -821,7 +821,7 @@ module Persistent_signature = {
   };
 
   let load =
-    ref((~loc=Location.dummy_loc, ~unit_name) => {
+    ref((~loc=Location.dummy_loc, unit_name) => {
       switch (Module_resolution.locate_module_file(~loc, unit_name)) {
       | filename =>
         let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
@@ -892,7 +892,7 @@ let find_pers_struct = (~loc, check, filepath) => {
     | Cannot_load_modules(_) => raise(Not_found)
     | Can_load_modules =>
       let ps = {
-        switch (Persistent_signature.load^(~loc, ~unit_name=filepath)) {
+        switch (Persistent_signature.load^(~loc, filepath)) {
         | Some(ps) => ps
         | None =>
           Hashtbl.add(persistent_structures, filepath, None);

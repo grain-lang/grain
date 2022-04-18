@@ -19,14 +19,9 @@ basic functionality › orshort2
   (drop
    (call_indirect (type $i32_i32_=>_i32)
     (local.tee $0
-     (tuple.extract 0
-      (tuple.make
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (global.get $gimport_pervasives_print)
-       )
-       (i32.const 0)
-      )
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (global.get $gimport_pervasives_print)
      )
     )
     (i32.const 3)
@@ -35,12 +30,7 @@ basic functionality › orshort2
     )
    )
   )
-  (tuple.extract 0
-   (tuple.make
-    (i32.const 2147483646)
-    (local.get $0)
-   )
-  )
+  (i32.const 2147483646)
  )
  (func $_start (; has Stack IR ;)
   (drop

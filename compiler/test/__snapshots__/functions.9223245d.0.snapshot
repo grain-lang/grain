@@ -29,7 +29,7 @@ functions › lam_destructure_7
   (local $7 i32)
   (local $8 i32)
   (local $9 i32)
-  (local.set $3
+  (local.set $5
    (tuple.extract 0
     (tuple.make
      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -45,45 +45,13 @@ functions › lam_destructure_7
     )
    )
   )
-  (local.set $4
-   (tuple.extract 0
-    (tuple.make
-     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-      (i32.load offset=12
-       (local.get $3)
-      )
-     )
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-      (i32.const 0)
-     )
-    )
-   )
-  )
-  (local.set $5
-   (tuple.extract 0
-    (tuple.make
-     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-      (i32.load offset=8
-       (local.get $3)
-      )
-     )
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-      (i32.const 0)
-     )
-    )
-   )
-  )
   (local.set $6
    (tuple.extract 0
     (tuple.make
      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
       (i32.load offset=12
-       (local.get $1)
+       (local.get $5)
       )
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -99,7 +67,7 @@ functions › lam_destructure_7
      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
       (i32.load offset=8
-       (local.get $1)
+       (local.get $5)
       )
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -112,28 +80,10 @@ functions › lam_destructure_7
   (local.set $8
    (tuple.extract 0
     (tuple.make
-     (call_indirect (type $i32_i32_i32_=>_i32)
-      (local.tee $2
-       (tuple.extract 0
-        (tuple.make
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_+)
-         )
-         (i32.const 0)
-        )
-       )
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $7)
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $6)
-      )
-      (i32.load offset=8
-       (local.get $2)
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (i32.load offset=12
+       (local.get $1)
       )
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -146,28 +96,10 @@ functions › lam_destructure_7
   (local.set $9
    (tuple.extract 0
     (tuple.make
-     (call_indirect (type $i32_i32_i32_=>_i32)
-      (local.tee $2
-       (tuple.extract 0
-        (tuple.make
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_+)
-         )
-         (local.get $2)
-        )
-       )
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $8)
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $5)
-      )
+     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
       (i32.load offset=8
-       (local.get $2)
+       (local.get $1)
       )
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -182,14 +114,9 @@ functions › lam_destructure_7
     (tuple.make
      (call_indirect (type $i32_i32_i32_=>_i32)
       (local.tee $2
-       (tuple.extract 0
-        (tuple.make
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_+)
-         )
-         (local.get $2)
-        )
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+        (global.get $gimport_pervasives_+)
        )
       )
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -198,13 +125,71 @@ functions › lam_destructure_7
       )
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $4)
+       (local.get $8)
       )
       (i32.load offset=8
        (local.get $2)
       )
      )
-     (local.get $2)
+     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+      (i32.const 0)
+     )
+    )
+   )
+  )
+  (local.set $3
+   (tuple.extract 0
+    (tuple.make
+     (call_indirect (type $i32_i32_i32_=>_i32)
+      (local.tee $3
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+        (global.get $gimport_pervasives_+)
+       )
+      )
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (local.get $2)
+      )
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (local.get $7)
+      )
+      (i32.load offset=8
+       (local.get $3)
+      )
+     )
+     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+      (i32.const 0)
+     )
+    )
+   )
+  )
+  (local.set $4
+   (tuple.extract 0
+    (tuple.make
+     (call_indirect (type $i32_i32_i32_=>_i32)
+      (local.tee $4
+       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+        (global.get $gimport_pervasives_+)
+       )
+      )
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (local.get $3)
+      )
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (local.get $6)
+      )
+      (i32.load offset=8
+       (local.get $4)
+      )
+     )
+     (local.get $4)
     )
    )
   )
@@ -218,18 +203,6 @@ functions › lam_destructure_7
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $1)
-   )
-  )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $3)
-   )
-  )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $4)
    )
   )
   (drop
@@ -262,7 +235,19 @@ functions › lam_destructure_7
     (local.get $9)
    )
   )
-  (local.get $2)
+  (drop
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+    (local.get $2)
+   )
+  )
+  (drop
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+    (local.get $3)
+   )
+  )
+  (local.get $4)
  )
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
@@ -271,14 +256,9 @@ functions › lam_destructure_7
   (local $3 i32)
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (i32.const 0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 6)
@@ -308,19 +288,9 @@ functions › lam_destructure_7
   )
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 16)
-      )
-      (tuple.extract 0
-       (tuple.make
-        (local.get $1)
-        (local.get $0)
-       )
-      )
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 16)
     )
    )
    (i32.const 7)
@@ -350,14 +320,9 @@ functions › lam_destructure_7
   )
   (i32.store
    (local.tee $0
-    (tuple.extract 0
-     (tuple.make
-      (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-       (i32.const 20)
-      )
-      (local.get $0)
-     )
+    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+     (i32.const 20)
     )
    )
    (i32.const 7)
@@ -381,7 +346,7 @@ functions › lam_destructure_7
     (local.get $2)
    )
   )
-  (local.set $3
+  (local.set $0
    (tuple.extract 0
     (tuple.make
      (local.get $0)
@@ -392,19 +357,14 @@ functions › lam_destructure_7
     )
    )
   )
-  (local.set $0
-   (tuple.extract 0
-    (tuple.make
-     (call $lam_lambda_1135
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $1)
-      )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $3)
-      )
-     )
+  (local.set $3
+   (call $lam_lambda_1135
+    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+     (local.get $1)
+    )
+    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
      (local.get $0)
     )
    )
@@ -424,10 +384,10 @@ functions › lam_destructure_7
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $3)
+    (local.get $0)
    )
   )
-  (local.get $0)
+  (local.get $3)
  )
  (func $_start (; has Stack IR ;)
   (drop

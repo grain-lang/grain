@@ -7,6 +7,7 @@
     "node": ">=14"
   },
   "scripts": {
+    "clean": "del-cli 'bin/*.exe' 'bin/*.bc.js'",
     "link": "yarn link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
@@ -39,6 +40,7 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
+    "del-cli": "^4.0.1",
     "pkg": "^5.3.1",
     "prettier": "^2.3.2"
   }
