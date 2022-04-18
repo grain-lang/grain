@@ -4,19 +4,11 @@ let documents = Hashtbl.create(128);
 let compiled_code = Hashtbl.create(128);
 let cached_code = Hashtbl.create(128); // we keep the last successful compile to help with completion and definitions
 
-// /* Will wait up to 100ms */
-// let can_read = desc => {
-//   let (r, _, _) = Unix.select([desc], [], [], 0.1);
-//   r != [];
-// };
-
 let break = ref(false);
 let is_shutting_down = ref(false);
-//let stdin_descr = Unix.descr_of_in_channel(stdin);
 
 let loop = () =>
   while (! break^) {
-    //  if (can_read(stdin_descr)) {
     switch (Rpc.read_message(stdin)) {
     | Message(id, action, json) =>
       switch (action) {
@@ -58,7 +50,6 @@ let loop = () =>
       )
     | Notification(_, json) => ()
     | Error(_) => is_shutting_down := true
-    //  };
     };
   };
 
@@ -73,13 +64,10 @@ let run = (debug: bool) => {
     | Message(id, "initialize", _) =>
       Rpc.send_capabilities(stdout, id);
       loop();
-      `Ok();
-    | _ =>
-      Log.log("Client must send 'initialize' as first event");
-      `Error((false, "Client must send 'initialize' as first event"));
+
+    | _ => Log.log("Client must send 'initialize' as first event")
     };
 
-  let run_result = initialize();
+  initialize();
   Log.close_log();
-  run_result;
 };

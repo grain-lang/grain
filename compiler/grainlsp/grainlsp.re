@@ -1,5 +1,3 @@
-//let _ = Lspserver.run();
-
 open Printf;
 open Cmdliner;
 
@@ -25,18 +23,15 @@ let cmd = {
     | None => "unknown"
     | Some(v) => Build_info.V1.Version.to_string(v)
     };
-  (
-    Term.(
-      ret(Grain_utils.Config.with_cli_options(lsp) $ params_cmdliner_term())
-    ),
-    Term.info(Sys.argv[0], ~version, ~doc),
+
+  Cmd.v(
+    Cmd.info(Sys.argv[0], ~version, ~doc),
+    Grain_utils.Config.with_cli_options(lsp) $ params_cmdliner_term(),
   );
 };
 
 let () =
-  switch (Term.eval(cmd)) {
-  | `Error(_) =>
-    print_endline("error");
-    exit(1);
-  | _ => print_endline("OK")
+  switch (Cmd.eval_value(cmd)) {
+  | Error(_) => exit(1)
+  | _ => ()
   };

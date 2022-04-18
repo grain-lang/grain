@@ -262,6 +262,35 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
   };
 };
 
+let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
+  let (file, line, startchar, _) = Locations.get_raw_pos_info(loc.loc_start);
+  let (_, endline, endchar, _) = Locations.get_raw_pos_info(loc.loc_end);
+
+  if (startchar >= 0) {
+    if (line == endline) {
+      Printf.sprintf("%s %d:%d,%d\n", msg, line, startchar, endchar);
+    } else {
+      Printf.sprintf(
+        "%s %d:%d - %d:%d\n",
+        msg,
+        line,
+        startchar,
+        endline,
+        endchar,
+      );
+    };
+  } else {
+    Printf.sprintf(
+      "%s %d:%d - %d:%d\n",
+      msg,
+      line,
+      startchar,
+      endline,
+      endchar,
+    );
+  };
+};
+
 let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
   switch (pattern.pat_desc) {
   | TPatTuple(args)
@@ -269,21 +298,46 @@ let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
     // these contain patterns we want to search into to find a more accurate match
     let pats =
       List.filter(
-        (p: Typedtree.pattern) =>
-          is_point_inside_location(~line, ~char, p.pat_loc),
+        (p: Typedtree.pattern) => {
+          let _ = print_loc_string("match pattern", p.pat_loc);
+          is_point_inside_location(~line, ~char, p.pat_loc);
+        },
         args,
       );
     switch (pats) {
-    | [] => Pattern(pattern) // We should always find a more accurate sub pattern, but if not we will use the parent
+    | [] => NotInRange
     | [p, ..._] => Pattern(p)
     };
+  | TPatConstruct(_, _, args) =>
+    // these contain patterns we want to search into to find a more accurate match
+    let pats =
+      List.filter(
+        (p: Typedtree.pattern) => {
+          let _ = print_loc_string("match pattern", p.pat_loc);
+          is_point_inside_location(~line, ~char, p.pat_loc);
+        },
+        args,
+      );
+    switch (pats) {
+    | [] => Pattern(pattern)
+    | [p, ..._] => Pattern(p)
+    };
+  | TPatConstant(_)
+  | TPatVar(_, _) =>
+    if (is_point_inside_location(~line, ~char, pattern.pat_loc)) {
+      Pattern(pattern);
+    } else {
+      NotInRange;
+    }
 
   | _ =>
     // we don't go deeper into records as we only display the record type for any part of the pattern
     // All the other patterns are the top level so we just use their location
-    Pattern(pattern)
+    NotInRange
   };
 };
+
+// to remove
 
 let rec find_location_in_expressions = (~line, ~char, ~default, expressions) => {
   let exps =
@@ -358,7 +412,8 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
     | TExpLambda([{mb_pat: pattern, mb_body: body}], _) =>
       let node = get_node_from_pattern(~line, ~char, pattern);
       switch (node) {
-      | Error(_) => get_node_from_expression(~line, ~char, body)
+      | Error(_)
+      | NotInRange => get_node_from_expression(~line, ~char, body)
       | _ => node
       };
     | TExpIf(cond, trueexp, falseexp) =>
@@ -431,27 +486,45 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         when is_point_inside_location(~line, ~char, cond.exp_loc) =>
       Expression(cond)
     | TExpMatch(cond, branches, _) =>
-      List.fold_left(
-        (acc, mb: Typedtree.match_branch) =>
-          if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
-            get_node_from_pattern(~line, ~char, mb.mb_pat);
-          } else if (is_point_inside_location(
-                       ~line,
-                       ~char,
-                       mb.mb_body.exp_loc,
-                     )) {
-            get_node_from_expression(~line, ~char, mb.mb_body);
-          } else {
-            switch (mb.mb_guard) {
-            | None => acc
-            | Some(e) when is_point_inside_location(~line, ~char, e.exp_loc) =>
-              get_node_from_expression(~line, ~char, e)
-            | Some(e) => acc
-            };
-          },
-        Expression(expr),
-        branches,
-      )
+      let find_match =
+        List.fold_left(
+          (acc, mb: Typedtree.match_branch) =>
+            if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
+              if (acc == NotInRange) {
+                get_node_from_pattern(~line, ~char, mb.mb_pat);
+              } else {
+                acc;
+              };
+            } else if (is_point_inside_location(
+                         ~line,
+                         ~char,
+                         mb.mb_body.exp_loc,
+                       )) {
+              if (acc == NotInRange) {
+                get_node_from_expression(~line, ~char, mb.mb_body);
+              } else {
+                acc;
+              };
+            } else {
+              switch (mb.mb_guard) {
+              | None => acc
+              | Some(e) when is_point_inside_location(~line, ~char, e.exp_loc) =>
+                if (acc == NotInRange) {
+                  get_node_from_expression(~line, ~char, e);
+                } else {
+                  acc;
+                }
+              | Some(e) => acc
+              };
+            },
+          NotInRange,
+          branches,
+        );
+
+      switch (find_match) {
+      | NotInRange => Expression(expr)
+      | _ => find_match
+      };
 
     | TExpPrim0(_) =>
       find_location_in_expressions(
