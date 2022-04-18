@@ -9,7 +9,9 @@ let is_shutting_down = ref(false);
 
 let loop = () =>
   while (! break^) {
+    Log.log("in the loop");
     switch (Rpc.read_message(stdin)) {
+    | exception exn => Log.log("exception on read message")
     | Message(id, action, json) =>
       switch (action) {
       | "textDocument/hover" =>
@@ -35,6 +37,7 @@ let loop = () =>
       | "shutdown" =>
         Rpc.send_null_message(stdout, id);
         is_shutting_down := true;
+        break := true;
       | _ => ()
       }
 
@@ -58,6 +61,8 @@ let run = (debug: bool) => {
     Log.set_level(DebugLog);
     Log.log("LSP is starting up");
   };
+
+  Log.log(Sys.os_type);
 
   let initialize = () =>
     switch (Rpc.read_message(stdin)) {

@@ -19,4 +19,7 @@
  (libraries cmdliner grain grain_utils grain_parsing grain.lspserver
    dune-build-info)
  (preprocess
-  (pps ppx_deriving_cmdliner)))
+  (pps ppx_deriving_cmdliner))
+ (js_of_ocaml
+  (flags --no-sourcemap --no-extern-fs --quiet --disable share))) 
+  

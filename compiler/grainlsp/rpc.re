@@ -1,5 +1,7 @@
 let jsonrpc = "2.0";
 
+let windows_mode = ref(false);
+
 type protocol_msg =
   | Message(int, string, Yojson.Safe.t)
   | Error(string)
@@ -202,21 +204,34 @@ let convert_range = range => {
 };
 
 let read_message = (input): protocol_msg => {
+  Log.log("read_message");
   let clength = input_line(input);
+
+  // This feeld a bit backwards, but on a Windows machine the \r will have been stripped out automatically
+  // and so bizarrley if the Windows separator is there, then this is not a Windows machine!
+  if (!String.contains(clength, '\r')) {
+    Log.log("Enabling Windows mode");
+    windows_mode := true;
+  };
+
+  Log.log(clength);
   let cl = "Content-Length: ";
   let cll = String.length(cl);
   if (String.sub(clength, 0, cll) == cl) {
     /* if on windows, dont need the extra -1 */
-    let offset = Sys.os_type == "Win32" ? 0 : (-1); /* -1 for trailing \r */
 
-    // Can't use from_channel as we need to read the number of characters specified.
+    let offset = windows_mode^ ? 0 : (-1); /* -1 for trailing \r */
+
+    // Can't use from_channel as we need to read the number of characters specified only
 
     let num =
       String.sub(clength, cll, String.length(clength) - cll + offset);
-    let num = (num |> int_of_string) + (Sys.os_type == "Win32" ? 1 : 2);
+    let num = (num |> int_of_string) + (windows_mode^ ? 1 : 2);
     let buffer = Buffer.create(num);
     Buffer.add_channel(buffer, input, num);
     let raw = Buffer.contents(buffer);
+
+    Log.log(raw);
     let json = Yojson.Safe.from_string(raw);
 
     let action =
@@ -236,7 +251,9 @@ let read_message = (input): protocol_msg => {
 
 let send = (output, content) => {
   let length = String.length(content);
-  let sep = Sys.os_type == "Unix" ? "\r\n\r\n" : "\n\n";
+
+  let sep = windows_mode^ ? "\n\n" : "\r\n\r\n";
+
   let len = string_of_int(length);
 
   let for_debug = "Content-Length: " ++ len ++ sep ++ content;
