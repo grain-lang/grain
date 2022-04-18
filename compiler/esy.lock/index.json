@@ -304,12 +304,12 @@
       "overrides": [],
       "dependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/sexplib0@opam:v0.15.0@b58db414",
-        "@opam/parsexp@opam:v0.15.0@742345c3", "@opam/num@opam:1.4@54b259a0",
+        "@opam/parsexp@opam:v0.15.0@742345c3", "@opam/num@opam:1.4@15ff926d",
         "@opam/dune@opam:2.9.3@f57a6d69", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/sexplib0@opam:v0.15.0@b58db414",
-        "@opam/parsexp@opam:v0.15.0@742345c3", "@opam/num@opam:1.4@54b259a0",
+        "@opam/parsexp@opam:v0.15.0@742345c3", "@opam/num@opam:1.4@15ff926d",
         "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
@@ -838,7 +838,7 @@
         "@opam/ocamlformat-rpc-lib@opam:0.18.0@4bef249f",
         "@opam/dune-build-info@opam:2.9.3@ae518c8c",
         "@opam/dune@opam:2.9.3@f57a6d69",
-        "@opam/dot-merlin-reader@opam:4.2@1605899e",
+        "@opam/dot-merlin-reader@opam:4.1@84436e1c",
         "@opam/csexp@opam:1.5.1@8a8fb3a7", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
@@ -849,7 +849,7 @@
         "@opam/ocamlformat-rpc-lib@opam:0.18.0@4bef249f",
         "@opam/dune-build-info@opam:2.9.3@ae518c8c",
         "@opam/dune@opam:2.9.3@f57a6d69",
-        "@opam/dot-merlin-reader@opam:4.2@1605899e",
+        "@opam/dot-merlin-reader@opam:4.1@84436e1c",
         "@opam/csexp@opam:1.5.1@8a8fb3a7"
       ]
     },
@@ -878,8 +878,8 @@
         "ocaml@4.12.0@d41d8cd9", "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
-    "@opam/num@opam:1.4@54b259a0": {
-      "id": "@opam/num@opam:1.4@54b259a0",
+    "@opam/num@opam:1.4@15ff926d": {
+      "id": "@opam/num@opam:1.4@15ff926d",
       "name": "@opam/num",
       "version": "opam:1.4",
       "source": {
@@ -1245,31 +1245,33 @@
         "@opam/base-threads@opam:base@36803084"
       ]
     },
-    "@opam/dot-merlin-reader@opam:4.2@1605899e": {
-      "id": "@opam/dot-merlin-reader@opam:4.2@1605899e",
+    "@opam/dot-merlin-reader@opam:4.1@84436e1c": {
+      "id": "@opam/dot-merlin-reader@opam:4.1@84436e1c",
       "name": "@opam/dot-merlin-reader",
-      "version": "opam:4.2",
+      "version": "opam:4.1",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/31/31587b422b5ebd3eebda730e946868807d829128f8dc7153fb05c0c82742058e#sha256:31587b422b5ebd3eebda730e946868807d829128f8dc7153fb05c0c82742058e",
-          "archive:https://github.com/ocaml/merlin/releases/download/v4.5-414/merlin-4.5-414.tbz#sha256:31587b422b5ebd3eebda730e946868807d829128f8dc7153fb05c0c82742058e"
+          "archive:https://opam.ocaml.org/cache/sha256/14/14a36d6fb8646a5df4530420a7861722f1a4ee04753717947305e3676031e7cd#sha256:14a36d6fb8646a5df4530420a7861722f1a4ee04753717947305e3676031e7cd",
+          "archive:https://github.com/ocaml/merlin/releases/download/v4.1/dot-merlin-reader-v4.1.tbz#sha256:14a36d6fb8646a5df4530420a7861722f1a4ee04753717947305e3676031e7cd"
         ],
         "opam": {
           "name": "dot-merlin-reader",
-          "version": "4.2",
-          "path": "esy.lock/opam/dot-merlin-reader.4.2"
+          "version": "4.1",
+          "path": "esy.lock/opam/dot-merlin-reader.4.1"
         }
       },
       "overrides": [],
       "dependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/yojson@opam:1.7.0@69d87312",
+        "@opam/result@opam:1.5@1c6a6533",
         "@opam/ocamlfind@opam:1.8.1@b7dc3072",
         "@opam/dune@opam:2.9.3@f57a6d69", "@opam/csexp@opam:1.5.1@8a8fb3a7",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/yojson@opam:1.7.0@69d87312",
+        "@opam/result@opam:1.5@1c6a6533",
         "@opam/ocamlfind@opam:1.8.1@b7dc3072",
         "@opam/dune@opam:2.9.3@f57a6d69", "@opam/csexp@opam:1.5.1@8a8fb3a7"
       ]
