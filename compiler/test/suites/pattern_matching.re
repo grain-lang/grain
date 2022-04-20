@@ -215,6 +215,16 @@ describe("pattern matching", ({test, testSkip}) => {
     "constant_match_4",
     "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
   );
+  // Or patterns
+  assertSnapshot("or_match_1", "match (true) { true | false => 3 }");
+  assertSnapshot(
+    "or_match_2",
+    "match (Some(5)) { Some(3 | 4) => false, Some(5) | None => true, _ => false }",
+  );
+  assertSnapshot(
+    "or_match_3",
+    "match ([5]) { [a, _] | [_, a, _] | [a] => true, _ => false }",
+  );
   assertFileRun("mixed_matching", "mixedPatternMatching", "true\n");
   assertWarning(
     "bool_exhaustiveness1",
@@ -290,5 +300,52 @@ describe("pattern matching", ({test, testSkip}) => {
       }
     |},
     "Expected `=>` followed by an expression.",
+  );
+
+  // destructuring
+  assertRun(
+    "destructure_constant",
+    {|
+      let 1 | _ = 5
+      print("ok")
+    |},
+    "ok\n",
+  );
+  assertRun(
+    "destructure_singleton_adt",
+    {|
+      enum NumWrapper { NumWrapper(Number) }
+      let NumWrapper(a) = NumWrapper(5)
+      print(a)
+    |},
+    "5\n",
+  );
+  assertRun(
+    "destructure_adt",
+    {|
+      enum Foo { A(Number), B(Number) }
+      let A(val1) | B(val1) = A(5)
+      let A(val2) | B(val2) = B(6)
+      print(val1)
+      print(val2)
+    |},
+    "5\n6\n",
+  );
+  assertRun(
+    "destructure_tuple",
+    {|
+      let (a, b) = (3, 4)
+      print(a + b)
+    |},
+    "7\n",
+  );
+  assertRun(
+    "destructure_record",
+    {|
+      record Rec { a: Number, b: Number }
+      let {a, b} = { a: 3, b: 4 }
+      print(a + b)
+    |},
+    "7\n",
   );
 });

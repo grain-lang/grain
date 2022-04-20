@@ -70,9 +70,17 @@ let lookup_symbol = (~allocation_type, mod_, mod_decl, name, original_name) => {
   };
 };
 
-type either('a, 'b) =
-  | Left('a)
-  | Right('b);
+let convert_bind = (body, bind) =>
+  switch (bind) {
+  | BSeq(exp) => AExp.seq(exp, body)
+  | BLet(name, exp, global) =>
+    AExp.let_(~global, Nonrecursive, [(name, exp)], body)
+  | BLetMut(name, exp, global) =>
+    AExp.let_(~mut_flag=Mutable, ~global, Nonrecursive, [(name, exp)], body)
+  | BLetRec(names, global) => AExp.let_(~global, Recursive, names, body)
+  | BLetRecMut(names, global) =>
+    AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, body)
+  };
 
 let convert_binds = anf_binds => {
   let void_comp =
@@ -103,51 +111,11 @@ let convert_binds = anf_binds => {
     | BLetRecMut(names, global) =>
       AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, void)
     };
-  List.fold_left(
-    (body, bind) =>
-      switch (bind) {
-      | BSeq(exp) => AExp.seq(exp, body)
-      | BLet(name, exp, global) =>
-        AExp.let_(~global, Nonrecursive, [(name, exp)], body)
-      | BLetMut(name, exp, global) =>
-        AExp.let_(
-          ~mut_flag=Mutable,
-          ~global,
-          Nonrecursive,
-          [(name, exp)],
-          body,
-        )
-      | BLetRec(names, global) => AExp.let_(~global, Recursive, names, body)
-      | BLetRecMut(names, global) =>
-        AExp.let_(~mut_flag=Mutable, ~global, Recursive, names, body)
-      },
-    ans,
-    top_binds,
-  );
-};
-
-let extract_bindings = (mut_flag, pat, cexpr) => {
-  let get_imm =
-    fun
-    | CImmExpr(imm) => imm
-    | _ => failwith("MatchCompiler returned non-immediate for binding");
-  let map_fn =
-    switch (mut_flag) {
-    | Mutable => (
-        ((name, e)) =>
-          BLet(
-            name,
-            {...e, comp_desc: CPrim1(BoxBind, get_imm(e.comp_desc))},
-            Nonglobal,
-          )
-      )
-    | Immutable => (((name, e)) => BLet(name, e, Nonglobal))
-    };
-  List.map(map_fn, MatchCompiler.extract_bindings(pat, cexpr));
+  List.fold_left(convert_bind, ans, top_binds);
 };
 
 let transl_const =
-    (c: Types.constant): either(imm_expression, (string, comp_expression)) =>
+    (c: Types.constant): Either.t(imm_expression, (string, comp_expression)) => {
   switch (c) {
   | Const_number(n) => Right(("number", Comp.number(n)))
   | Const_int32(i) => Right(("int32", Comp.int32(i)))
@@ -159,6 +127,7 @@ let transl_const =
   | Const_char(c) => Right(("char", Comp.char(c)))
   | _ => Left(Imm.const(c))
   };
+};
 
 type item_get =
   | RecordPatGet(int, type_expr)
@@ -168,7 +137,14 @@ type item_get =
 let rec transl_imm =
         (
           ~boxed=false,
-          {exp_desc, exp_loc: loc, exp_env: env, exp_type: typ, _} as e: expression,
+          {
+            exp_desc,
+            exp_loc: loc,
+            exp_env: env,
+            exp_type: typ,
+            exp_attributes: attributes,
+            _,
+          } as e: expression,
         )
         : (imm_expression, list(anf_bind)) => {
   let allocation_type = get_allocation_type(env, typ);
@@ -562,13 +538,62 @@ let rec transl_imm =
       transl_imm({...e, exp_desc: TExpBlock(rest)});
     (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
   | TExpLet(Nonrecursive, _, []) => (Imm.const(Const_void), [])
-  | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest]) =>
-    /* TODO: Destructuring on letrec */
-    let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
-    let binds_setup = extract_bindings(mut_flag, vb_pat, exp_ans);
+  | TExpLet(
+      Nonrecursive,
+      mut_flag,
+      [
+        {
+          vb_expr,
+          vb_pat: {
+            pat_desc:
+              TPatVar(id, _) | TPatAlias({pat_desc: TPatAny}, id, _),
+            pat_env,
+            pat_type,
+          },
+        },
+        ...rest,
+      ],
+    ) =>
+    // Fast path for simple bindings
+    let vb_expr = {
+      ...vb_expr,
+      exp_attributes: attributes @ vb_expr.exp_attributes,
+    };
+    let binds =
+      switch (mut_flag) {
+      | Immutable =>
+        let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
+        exp_setup @ [BLet(id, exp_ans, Nonglobal)];
+      | Mutable =>
+        let (exp_ans, exp_setup) = transl_imm(vb_expr);
+        let boxed =
+          Comp.prim1(
+            ~allocation_type=get_allocation_type(pat_env, pat_type),
+            BoxBind,
+            exp_ans,
+          );
+        exp_setup @ [BLet(id, boxed, Nonglobal)];
+      };
     let (body_ans, body_setup) =
       transl_imm({...e, exp_desc: TExpLet(Nonrecursive, mut_flag, rest)});
-    (body_ans, exp_setup @ binds_setup @ body_setup);
+    (body_ans, binds @ body_setup);
+  | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest]) =>
+    // More complex bindings use the match compiler
+    let vb_expr = {
+      ...vb_expr,
+      exp_attributes: attributes @ vb_expr.exp_attributes,
+    };
+    let (exp_ans, exp_setup) = transl_imm(vb_expr);
+    let binds =
+      MatchCompiler.destructure(
+        ~mut_flag,
+        ~global=Nonglobal,
+        vb_pat,
+        exp_ans,
+      );
+    let (body_ans, body_setup) =
+      transl_imm({...e, exp_desc: TExpLet(Nonrecursive, mut_flag, rest)});
+    (body_ans, exp_setup @ binds @ body_setup);
   | TExpLet(Recursive, mut_flag, binds) =>
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
@@ -577,7 +602,14 @@ let rec transl_imm =
     let (binds, new_binds_setup) =
       List.split(
         List.map(
-          ({vb_pat, vb_expr}) => (vb_pat, transl_comp_expression(vb_expr)),
+          ({vb_pat, vb_expr}) =>
+            (
+              vb_pat,
+              transl_comp_expression({
+                ...vb_expr,
+                exp_attributes: attributes @ vb_expr.exp_attributes,
+              }),
+            ),
           binds,
         ),
       );
@@ -760,12 +792,10 @@ let rec transl_imm =
     let tmp = gensym("match");
     let (exp_ans, exp_setup) = transl_imm(exp);
     let (ans, setup) =
-      MatchCompiler.compile_result(
+      MatchCompiler.compile_match(
         ~allocation_type,
         ~partial,
-        Matchcomp.convert_match_branches(env, branches),
-        transl_anf_expression,
-        transl_imm,
+        branches,
         exp_ans,
       );
     (
@@ -773,113 +803,6 @@ let rec transl_imm =
       (exp_setup @ setup) @ [BLet(tmp, ans, Nonglobal)],
     );
   | TExpConstruct(_) => failwith("NYI: transl_imm: Construct")
-  };
-}
-
-and bind_patts =
-    (~mut_flag, ~global, pat: pattern): (Ident.t, list(anf_bind)) => {
-  let postprocess_item = (cur, acc) =>
-    switch (cur) {
-    | None => acc
-    | Some((ident, (src, idx), extras)) =>
-      let access =
-        switch (idx) {
-        | RecordPatGet(idx, ty) =>
-          Comp.record_get(
-            ~allocation_type=get_allocation_type(pat.pat_env, ty),
-            Int32.of_int(idx),
-            Imm.id(src),
-          )
-        | TuplePatGet(idx, ty) =>
-          Comp.tuple_get(
-            ~allocation_type=get_allocation_type(pat.pat_env, ty),
-            Int32.of_int(idx),
-            Imm.id(src),
-          )
-        | ArrayPatGet(idx, ty) =>
-          Comp.array_get(
-            ~allocation_type=get_allocation_type(pat.pat_env, ty),
-            Imm.const(Const_number(Const_number_int(Int64.of_int(idx)))),
-            Imm.id(src),
-          )
-        };
-      let binds =
-        switch (mut_flag, global) {
-        | (Mutable, Nonglobal) =>
-          let tmp = gensym("mut_bind_destructure");
-          let boxed =
-            Comp.prim1(
-              ~allocation_type=get_allocation_type(pat.pat_env, pat.pat_type),
-              BoxBind,
-              Imm.id(tmp),
-            );
-          [BLet(tmp, access, Nonglobal), BLet(ident, boxed, global)];
-        | (Mutable, Global(_)) => [BLetMut(ident, access, global)]
-        | _ => [BLet(ident, access, global)]
-        };
-      binds @ extras @ acc;
-    };
-  let postprocess = items => List.fold_right(postprocess_item, items, []);
-  /* Pass one: Some(<identifier>, <access path>, <extra binds>)*/
-  let rec anf_patts_pass_one = (src, i, {pat_desc, pat_extra}) => {
-    switch (pat_extra) {
-    | [] => ()
-    | _ => failwith("NYI: anf_patts_pass_one: TPatConstraint")
-    };
-    switch (pat_desc) {
-    | TPatVar(bind, _) => Some((bind, (src, i), []))
-    | TPatAny => None
-    | TPatTuple(patts) =>
-      let tmp = gensym("tup_patt");
-      Some((
-        tmp,
-        (src, i),
-        postprocess @@
-        List.mapi(
-          (i, pat) =>
-            anf_patts_pass_one(tmp, TuplePatGet(i, pat.pat_type), pat),
-          patts,
-        ),
-      ));
-    | TPatArray(patts) =>
-      let tmp = gensym("arr_patt");
-      Some((
-        tmp,
-        (src, i),
-        postprocess @@
-        List.mapi(
-          (i, pat) =>
-            anf_patts_pass_one(tmp, ArrayPatGet(i, pat.pat_type), pat),
-          patts,
-        ),
-      ));
-    | TPatRecord(fields, _) =>
-      let tmp = gensym("rec_patt");
-      Some((
-        tmp,
-        (src, i),
-        postprocess @@
-        List.map(
-          ((_, ld, pat)) =>
-            anf_patts_pass_one(
-              tmp,
-              RecordPatGet(ld.lbl_pos, pat.pat_type),
-              pat,
-            ),
-          fields,
-        ),
-      ));
-    | TPatConstant(_) => failwith("NYI: anf_patts_pass_one: TPatConstant")
-    | TPatConstruct(_) => failwith("NYI: anf_patts_pass_one: TPatConstruct")
-    | TPatOr(_) => failwith("NYI: anf_patts_pass_one: TPatOr")
-    | TPatAlias(_) => failwith("NYI: anf_patts_pass_one: TPatAlias")
-    };
-  };
-  let dummy_id = gensym("dummy");
-  let dummy_idx = TuplePatGet(0, Builtin_types.type_void);
-  switch (anf_patts_pass_one(dummy_id, dummy_idx, pat)) {
-  | Some((tmp, _, binds)) => (tmp, binds)
-  | None => failwith("Bind pattern was not destructable")
   };
 }
 
@@ -988,8 +911,18 @@ and transl_comp_expression =
   | TExpLet(
       Nonrecursive,
       mut_flag,
-      [{vb_expr, vb_pat: {pat_desc: TPatVar(bind, _)}}, ...rest],
+      [
+        {
+          vb_expr,
+          vb_pat: {
+            pat_desc:
+              TPatVar(bind, _) | TPatAlias({pat_desc: TPatAny}, bind, _),
+          },
+        },
+        ...rest,
+      ],
     ) =>
+    // Fast path for simple binding
     let vb_expr = {
       ...vb_expr,
       exp_attributes: attributes @ vb_expr.exp_attributes,
@@ -1015,36 +948,26 @@ and transl_comp_expression =
         exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
       });
     (body_ans, exp_setup @ [BLet(bind, exp_ans, Nonglobal)] @ body_setup);
-  | TExpLet(
-      Nonrecursive,
-      mut_flag,
-      [{vb_expr, vb_pat: {pat_desc: TPatTuple(_)} as pat}, ...rest],
-    )
-  | TExpLet(
-      Nonrecursive,
-      mut_flag,
-      [{vb_expr, vb_pat: {pat_desc: TPatRecord(_)} as pat}, ...rest],
-    ) =>
+  | TExpLet(Nonrecursive, mut_flag, [{vb_expr, vb_pat}, ...rest]) =>
+    // More complex bindings use the match compiler
     let vb_expr = {
       ...vb_expr,
       exp_attributes: attributes @ vb_expr.exp_attributes,
     };
-    let (exp_ans, exp_setup) = transl_comp_expression(vb_expr);
-
-    /* Extract items from destructure */
-    let (tmp, anf_patts) = bind_patts(~mut_flag, ~global=Nonglobal, pat);
-
+    let (exp_ans, exp_setup) = transl_imm(vb_expr);
+    let binds =
+      MatchCompiler.destructure(
+        ~mut_flag,
+        ~global=Nonglobal,
+        vb_pat,
+        exp_ans,
+      );
     let (body_ans, body_setup) =
       transl_comp_expression({
         ...e,
         exp_desc: TExpLet(Nonrecursive, mut_flag, rest),
       });
-    (
-      body_ans,
-      exp_setup @ [BLet(tmp, exp_ans, Nonglobal), ...anf_patts] @ body_setup,
-    );
-
-  | TExpLet(Nonrecursive, _, [_, ..._]) => failwith("Impossible by pre_anf")
+    (body_ans, exp_setup @ binds @ body_setup);
   | TExpLet(Recursive, mut_flag, binds) =>
     if (mut_flag == Mutable) {
       failwith("mutable let rec");
@@ -1109,24 +1032,28 @@ and transl_comp_expression =
           (arg, (anf_args, body)) => {
             let tmp = gensym("lambda_arg");
             let binds =
-              MatchCompiler.extract_bindings(
-                arg,
-                Comp.imm(
-                  ~loc,
-                  ~env,
-                  ~allocation_type=
-                    get_allocation_type(arg.pat_env, arg.pat_type),
-                  Imm.id(~loc, ~env, tmp),
-                ),
-              );
+              switch (arg.pat_desc) {
+              | TPatVar(id, _)
+              | TPatAlias({pat_desc: TPatAny}, id, _) => [
+                  BLet(
+                    id,
+                    Comp.imm(
+                      ~allocation_type=
+                        get_allocation_type(arg.pat_env, arg.pat_type),
+                      Imm.id(~loc, ~env, tmp),
+                    ),
+                    Nonglobal,
+                  ),
+                ]
+              | _ => MatchCompiler.destructure(arg, Imm.id(~loc, ~env, tmp))
+              };
             (
               [
                 (tmp, get_allocation_type(arg.pat_env, arg.pat_type)),
                 ...anf_args,
               ],
               List.fold_right(
-                (bind, body) =>
-                  AExp.let_(~loc, ~env, Nonrecursive, [bind], body),
+                (bind, body) => convert_bind(body, bind),
                 binds,
                 body,
               ),
@@ -1213,12 +1140,10 @@ and transl_comp_expression =
   | TExpMatch(expr, branches, partial) =>
     let (exp_ans, exp_setup) = transl_imm(expr);
     let (ans, setup) =
-      MatchCompiler.compile_result(
+      MatchCompiler.compile_match(
         ~allocation_type,
         ~partial,
-        Matchcomp.convert_match_branches(env, branches),
-        transl_anf_expression,
-        transl_imm,
+        branches,
         exp_ans,
       );
     (ans, exp_setup @ setup);
@@ -1242,7 +1167,15 @@ and transl_anf_expression =
       | BLet(name, exp, global) =>
         AExp.let_(~loc, ~env, ~global, Nonrecursive, [(name, exp)], body)
       | BLetMut(name, exp, global) =>
-        AExp.let_(~loc, ~env, ~global, Nonrecursive, [(name, exp)], body)
+        AExp.let_(
+          ~loc,
+          ~env,
+          ~mut_flag=Mutable,
+          ~global,
+          Nonrecursive,
+          [(name, exp)],
+          body,
+        )
       | BLetRec(names, global) =>
         AExp.let_(~loc, ~env, ~global, Recursive, names, body)
       | BLetRecMut(names, global) =>
@@ -1357,6 +1290,46 @@ let rec transl_anf_statement =
       export_flag,
       Nonrecursive,
       mut_flag,
+      [
+        {
+          vb_expr,
+          vb_pat: {
+            pat_desc:
+              TPatVar(bind, _) | TPatAlias({pat_desc: TPatAny}, bind, _),
+          },
+        },
+        ...rest,
+      ],
+    ) =>
+    // Fast path for simple bindings
+    let vb_expr = {
+      ...vb_expr,
+      exp_attributes: attributes @ vb_expr.exp_attributes,
+    };
+    let exported = export_flag == Exported;
+    let name =
+      if (exported) {
+        Some(Ident.name(bind));
+      } else {
+        None;
+      };
+    let (exp_ans, exp_setup) = transl_comp_expression(~name?, vb_expr);
+    let binds =
+      switch (mut_flag) {
+      | Mutable => [BLetMut(bind, exp_ans, Global({exported: exported}))]
+      | Immutable => [BLet(bind, exp_ans, Global({exported: exported}))]
+      };
+    let (rest_setup, rest_imp) =
+      transl_anf_statement({
+        ...s,
+        ttop_desc: TTopLet(export_flag, Nonrecursive, mut_flag, rest),
+      });
+    let rest_setup = Option.value(~default=[], rest_setup);
+    (Some(exp_setup @ binds @ rest_setup), rest_imp);
+  | TTopLet(
+      export_flag,
+      Nonrecursive,
+      mut_flag,
       [{vb_expr, vb_pat}, ...rest],
     ) =>
     let vb_expr = {
@@ -1375,6 +1348,8 @@ let rec transl_anf_statement =
         None;
       };
     let (exp_ans, exp_setup) = transl_comp_expression(~name?, vb_expr);
+    let tmp = gensym("destructure_target");
+    let destructure_setup = [BLet(tmp, exp_ans, Nonglobal)];
     let (rest_setup, rest_imp) =
       transl_anf_statement({
         ...s,
@@ -1382,39 +1357,13 @@ let rec transl_anf_statement =
       });
     let rest_setup = Option.value(~default=[], rest_setup);
     let setup =
-      switch (vb_pat.pat_desc) {
-      | TPatVar(bind, _)
-      | TPatAlias({pat_desc: TPatAny}, bind, _) =>
-        switch (mut_flag) {
-        | Mutable => [BLetMut(bind, exp_ans, Global({exported: exported}))]
-        | Immutable => [BLet(bind, exp_ans, Global({exported: exported}))]
-        }
-      | TPatTuple(_)
-      | TPatRecord(_) =>
-        let (tmp, anf_patts) =
-          bind_patts(
-            ~mut_flag,
-            ~global=Global({exported: exported}),
-            vb_pat,
-          );
-        [BLet(tmp, exp_ans, Global({exported: exported})), ...anf_patts];
-      | TPatAlias(patt, bind, _) =>
-        let binds =
-          switch (mut_flag) {
-          | Mutable => [
-              BLetMut(bind, exp_ans, Global({exported: exported})),
-            ]
-          | Immutable => [BLet(bind, exp_ans, Global({exported: exported}))]
-          };
-        let (tmp, anf_patts) =
-          bind_patts(~mut_flag, ~global=Global({exported: exported}), patt);
-        binds @ [BLet(tmp, exp_ans, Nonglobal), ...anf_patts];
-      | TPatAny => [BSeq(exp_ans)]
-      | _ =>
-        failwith(
-          "NYI: transl_anf_statement: Non-record or non-tuple destructuring in let",
-        )
-      };
+      destructure_setup
+      @ MatchCompiler.destructure(
+          ~mut_flag,
+          ~global=Global({exported: exported}),
+          vb_pat,
+          Imm.id(tmp),
+        );
     (Some(exp_setup @ setup @ rest_setup), rest_imp);
   | TTopLet(export_flag, Recursive, mut_flag, binds) =>
     let exported = export_flag == Exported;
@@ -1653,3 +1602,6 @@ let transl_anf_module =
 };
 
 let () = Matchcomp.compile_constructor_tag := compile_constructor_tag;
+let () = Matchcomp.transl_anf_expression := transl_anf_expression;
+let () = Matchcomp.transl_imm_expression := transl_imm;
+let () = Matchcomp.transl_const := transl_const;
