@@ -60,6 +60,7 @@ module Grain_parsing = struct end
 
 %nonassoc _below_infix
 
+%left AS
 %left PIPEPIPE
 %left AMPAMP
 %left PIPE
@@ -250,7 +251,8 @@ pattern:
   | type_id { Pat.construct ~loc:(to_loc $loc) $1 [] }
   | lbrack rbrack { Pat.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item_pat) comma? rbrack { Pat.list ~loc:(to_loc $loc) $2 }
-  | pattern pipe_op opt_eols pattern { Pat.or_ ~loc:(to_loc $loc) $1 $4 }
+  | pattern pipe_op opt_eols pattern %prec PIPE { Pat.or_ ~loc:(to_loc $loc) $1 $4 }
+  | pattern AS opt_eols id_str { Pat.alias ~loc:(to_loc $loc) $1 $4 }
 
 list_item_pat:
   | ELLIPSIS pattern { ListSpread ($2, to_loc $loc) }

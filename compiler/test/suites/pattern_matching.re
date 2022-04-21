@@ -225,6 +225,22 @@ describe("pattern matching", ({test, testSkip}) => {
     "or_match_3",
     "match ([5]) { [a, _] | [_, a, _] | [a] => true, _ => false }",
   );
+  // Aliases
+  assertSnapshot("alias_match_1", "match (true) { _ as p => p }");
+  assertSnapshot("alias_match_2", "match (true) { a as b => a && b }");
+  assertRun(
+    "alias_match_3",
+    "match (true) { true | false as p => print(p) }",
+    "true\n",
+  );
+  assertSnapshot(
+    "alias_match_4",
+    "match (Some(5)) { Some(3 | 4 as a) => a, Some(_) | None => 5, _ => 6 }",
+  );
+  assertSnapshot(
+    "alias_match_5",
+    "match (Some(5)) { Some(3 | 4) as a => a, Some(5) | None as a => a, _ => None }",
+  );
   assertFileRun("mixed_matching", "mixedPatternMatching", "true\n");
   assertWarning(
     "bool_exhaustiveness1",
