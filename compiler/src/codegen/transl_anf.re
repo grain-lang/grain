@@ -1235,7 +1235,7 @@ let lift_imports = (env, imports) => {
   (imports, setups, env);
 };
 
-let transl_signature = (functions, imports, signature) => {
+let transl_signature = (~functions, ~imports, signature) => {
   open Types;
 
   let function_exports = ref([]);
@@ -1261,7 +1261,7 @@ let transl_signature = (functions, imports, signature) => {
           switch (imp.imp_desc) {
           | GrainValue(mod_, name) => grain_import_name(mod_, name)
           | WasmFunction(mod_, name) => Ident.unique_name(imp.imp_use_id)
-          | _ => failwith("Wasm or js value had FunctionShape")
+          | _ => failwith("Impossible: Wasm or js value had FunctionShape")
           };
         Ident_tbl.add(func_map, imp.imp_use_id, internal_name);
       | _ => ()
@@ -1345,7 +1345,11 @@ let transl_anf_program =
       compile_remaining_worklist(),
     );
   let (signature, function_exports) =
-    transl_signature(functions, anf_prog.imports, anf_prog.signature);
+    transl_signature(
+      ~functions,
+      ~imports=anf_prog.imports,
+      anf_prog.signature,
+    );
   let exports = function_exports @ global_exports();
 
   {
