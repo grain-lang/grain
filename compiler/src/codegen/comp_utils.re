@@ -116,7 +116,6 @@ let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
         };
       Hashtbl.add(exported_names, exported_name, new_internal_name);
     };
-    ();
   };
   exported_names;
 };

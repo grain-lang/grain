@@ -135,9 +135,9 @@ let is_function_imported = func =>
 //       constructing the AST (either through constructing two separate instances or by
 //       using Expression.copy())
 
-let rec globalize_names = (function_names, global_names, label_names, expr) => {
+let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) => {
   let globalize_names =
-    globalize_names(function_names, global_names, label_names);
+    globalize_names(~function_names, ~global_names, ~label_names);
 
   let add_label = Hashtbl.add(label_names);
 
@@ -379,7 +379,7 @@ let link_all = (linked_mod, dependencies, signature) => {
         let mut = Global.is_mutable(global);
         let init = Global.get_init_expr(global);
 
-        globalize_names(function_names, global_names, label_names, init);
+        globalize_names(~function_names, ~global_names, ~label_names, init);
         ignore @@ Global.add_global(linked_mod, new_name, ty, mut, init);
       };
     };
@@ -473,7 +473,7 @@ let link_all = (linked_mod, dependencies, signature) => {
         let num_locals = Function.get_num_vars(func);
         let locals = Array.init(num_locals, i => Function.get_var(func, i));
         let body = Function.get_body(func);
-        globalize_names(function_names, global_names, label_names, body);
+        globalize_names(~function_names, ~global_names, ~label_names, body);
         ignore @@
         Function.add_function(
           linked_mod,
