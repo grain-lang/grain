@@ -16,6 +16,7 @@ basic functionality › comp22
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"isnt\" (func $gimport_pervasives_isnt (param i32 i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -44,7 +45,7 @@ basic functionality › comp22
    (local.get $0)
    (i32.const 3)
   )
-  (local.set $3
+  (local.set $2
    (tuple.extract 0
     (tuple.make
      (local.get $0)
@@ -55,7 +56,7 @@ basic functionality › comp22
     )
    )
   )
-  (local.set $4
+  (local.set $3
    (tuple.extract 0
     (tuple.make
      (call_indirect (type $i32_i32_i32_=>_i32)
@@ -67,7 +68,7 @@ basic functionality › comp22
       )
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (local.get $3)
+       (local.get $2)
       )
       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
@@ -141,37 +142,32 @@ basic functionality › comp22
     )
    )
   )
-  (local.set $2
-   (call_indirect (type $i32_i32_i32_=>_i32)
-    (local.tee $2
-     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-      (global.get $gimport_pervasives_isnt)
-     )
+  (local.set $4
+   (call $gimport_pervasives_isnt
+    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+     (global.get $gimport_pervasives_isnt)
     )
     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-     (local.get $4)
+     (local.get $3)
     )
     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
      (local.get $1)
     )
-    (i32.load offset=8
-     (local.get $2)
-    )
+   )
+  )
+  (drop
+   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
+    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+    (local.get $2)
    )
   )
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (local.get $3)
-   )
-  )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $4)
    )
   )
   (drop
@@ -186,7 +182,7 @@ basic functionality › comp22
     (local.get $1)
    )
   )
-  (local.get $2)
+  (local.get $4)
  )
  (func $_start (; has Stack IR ;)
   (drop

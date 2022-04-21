@@ -12,6 +12,7 @@ imports › import_relative_path4
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $gimport_pervasives_print (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$./bar/bar\" \"bar\" (func $gimport_./bar/bar_bar (param i32 i32) (result i32)))
  (global $global_1 i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -20,20 +21,15 @@ imports › import_relative_path4
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
-  (local.set $0
+  (local.set $1
    (tuple.extract 0
     (tuple.make
-     (call_indirect (type $i32_i32_=>_i32)
-      (local.tee $0
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-        (global.get $gimport_./bar/bar_bar)
-       )
+     (call $gimport_./bar/bar_bar
+      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (global.get $gimport_./bar/bar_bar)
       )
       (i32.const 5)
-      (i32.load offset=8
-       (local.get $0)
-      )
      )
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
@@ -42,9 +38,9 @@ imports › import_relative_path4
     )
    )
   )
-  (local.set $1
+  (local.set $0
    (call_indirect (type $i32_i32_=>_i32)
-    (local.tee $1
+    (local.tee $0
      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
       (global.get $gimport_pervasives_print)
@@ -52,20 +48,20 @@ imports › import_relative_path4
     )
     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-     (local.get $0)
+     (local.get $1)
     )
     (i32.load offset=8
-     (local.get $1)
+     (local.get $0)
     )
    )
   )
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $0)
+    (local.get $1)
    )
   )
-  (local.get $1)
+  (local.get $0)
  )
  (func $_start (; has Stack IR ;)
   (drop

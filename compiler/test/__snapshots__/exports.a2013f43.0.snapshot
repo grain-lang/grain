@@ -70,5 +70,5 @@ exports › let_rec_export
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 625
+ ;; custom section \"cmi\", size 642
 )

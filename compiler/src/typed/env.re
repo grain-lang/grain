@@ -1630,7 +1630,11 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 switch (desc.cstr_args) {
                 | [] => ReprValue(WasmI32)
                 | args =>
-                  ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+                  ReprFunction(
+                    List.map(_ => WasmI32, args),
+                    [WasmI32],
+                    Unknown,
+                  )
                 };
               let get_path = name =>
                 switch (path) {
@@ -1689,7 +1693,8 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let val_repr =
             switch (desc.cstr_args) {
             | [] => ReprValue(WasmI32)
-            | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+            | args =>
+              ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
             };
           let get_path = name =>
             switch (path) {
@@ -1769,7 +1774,8 @@ and store_type = (~check, id, info, env) => {
         let val_repr =
           switch (desc.cstr_args) {
           | [] => ReprValue(WasmI32)
-          | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+          | args =>
+            ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
           };
         let val_desc = {
           val_type,
@@ -1863,7 +1869,8 @@ and store_extension = (~check, id, ext, env) => {
     let val_repr =
       switch (cstr.cstr_args) {
       | [] => ReprValue(WasmI32)
-      | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+      | args =>
+        ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
       };
     {
       val_type,

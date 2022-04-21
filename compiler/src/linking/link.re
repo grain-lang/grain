@@ -135,7 +135,16 @@ let is_function_imported = func =>
 //       constructing the AST (either through constructing two separate instances or by
 //       using Expression.copy())
 
-let rec globalize_names = (local_names, expr) => {
+let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) => {
+  let globalize_names =
+    globalize_names(~function_names, ~global_names, ~label_names);
+
+  let add_label = Hashtbl.add(label_names);
+
+  let find_function = Hashtbl.find(function_names);
+  let find_global = Hashtbl.find(global_names);
+  let find_label = Hashtbl.find(label_names);
+
   let kind = Expression.get_kind(expr);
   switch (kind) {
   | Invalid => failwith("Invalid expression")
@@ -145,7 +154,7 @@ let rec globalize_names = (local_names, expr) => {
     Option.iter(
       internal_name => {
         let new_name = gensym(internal_name);
-        Hashtbl.add(local_names, internal_name, new_name);
+        add_label(internal_name, new_name);
 
         Expression.Block.set_name(expr, new_name);
       },
@@ -154,77 +163,51 @@ let rec globalize_names = (local_names, expr) => {
 
     let num_children = Expression.Block.get_num_children(expr);
     for (i in 0 to num_children - 1) {
-      globalize_names(local_names, Expression.Block.get_child_at(expr, i));
+      globalize_names(Expression.Block.get_child_at(expr, i));
     };
   | If =>
-    globalize_names(local_names, Expression.If.get_condition(expr));
-    globalize_names(local_names, Expression.If.get_if_true(expr));
-    Option.iter(
-      globalize_names(local_names),
-      Expression.If.get_if_false(expr),
-    );
+    globalize_names(Expression.If.get_condition(expr));
+    globalize_names(Expression.If.get_if_true(expr));
+    Option.iter(globalize_names, Expression.If.get_if_false(expr));
   | Loop =>
     let internal_name = Expression.Loop.get_name(expr);
     let new_name = gensym(internal_name);
-    Hashtbl.add(local_names, internal_name, new_name);
+    add_label(internal_name, new_name);
 
     Expression.Loop.set_name(expr, new_name);
 
-    globalize_names(local_names, Expression.Loop.get_body(expr));
+    globalize_names(Expression.Loop.get_body(expr));
   | Break =>
     let internal_name = Expression.Break.get_name(expr);
-    Expression.Break.set_name(
-      expr,
-      Hashtbl.find(local_names, internal_name),
-    );
+    Expression.Break.set_name(expr, find_label(internal_name));
 
-    Option.iter(
-      globalize_names(local_names),
-      Expression.Break.get_condition(expr),
-    );
-    Option.iter(
-      globalize_names(local_names),
-      Expression.Break.get_value(expr),
-    );
+    Option.iter(globalize_names, Expression.Break.get_condition(expr));
+    Option.iter(globalize_names, Expression.Break.get_value(expr));
   | Switch =>
     let num_names = Expression.Switch.get_num_names(expr);
     for (i in 0 to num_names - 1) {
       let internal_name = Expression.Switch.get_name_at(expr, i);
-      Expression.Switch.set_name_at(
-        expr,
-        i,
-        Hashtbl.find(local_names, internal_name),
-      );
+      Expression.Switch.set_name_at(expr, i, find_label(internal_name));
     };
 
     let internal_default_name = Expression.Switch.get_default_name(expr);
     Option.iter(
-      name =>
-        Expression.Switch.set_default_name(
-          expr,
-          Hashtbl.find(local_names, name),
-        ),
+      name => Expression.Switch.set_default_name(expr, find_label(name)),
       internal_default_name,
     );
 
-    globalize_names(local_names, Expression.Switch.get_condition(expr));
-    Option.iter(
-      globalize_names(local_names),
-      Expression.Switch.get_value(expr),
-    );
+    globalize_names(Expression.Switch.get_condition(expr));
+    Option.iter(globalize_names, Expression.Switch.get_value(expr));
   | Call =>
     let internal_name = Expression.Call.get_target(expr);
-    Expression.Call.set_target(
-      expr,
-      Hashtbl.find(local_names, internal_name),
-    );
+    Expression.Call.set_target(expr, find_function(internal_name));
 
     let num_operands = Expression.Call.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
-      globalize_names(local_names, Expression.Call.get_operand_at(expr, i));
+      globalize_names(Expression.Call.get_operand_at(expr, i));
     };
   | CallIndirect =>
-    globalize_names(local_names, Expression.Call_indirect.get_target(expr));
+    globalize_names(Expression.Call_indirect.get_target(expr));
 
     Expression.Call_indirect.set_table(
       expr,
@@ -233,64 +216,49 @@ let rec globalize_names = (local_names, expr) => {
 
     let num_operands = Expression.Call_indirect.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
-      globalize_names(
-        local_names,
-        Expression.Call_indirect.get_operand_at(expr, i),
-      );
+      globalize_names(Expression.Call_indirect.get_operand_at(expr, i));
     };
   | LocalGet => ()
-  | LocalSet =>
-    globalize_names(local_names, Expression.Local_set.get_value(expr))
+  | LocalSet => globalize_names(Expression.Local_set.get_value(expr))
   | GlobalGet =>
     let internal_name = Expression.Global_get.get_name(expr);
-    Expression.Global_get.set_name(
-      expr,
-      Hashtbl.find(local_names, internal_name),
-    );
+    Expression.Global_get.set_name(expr, find_global(internal_name));
   | GlobalSet =>
     let internal_name = Expression.Global_set.get_name(expr);
-    Expression.Global_set.set_name(
-      expr,
-      Hashtbl.find(local_names, internal_name),
-    );
-    globalize_names(local_names, Expression.Global_set.get_value(expr));
-  | Load => globalize_names(local_names, Expression.Load.get_ptr(expr))
+    Expression.Global_set.set_name(expr, find_global(internal_name));
+    globalize_names(Expression.Global_set.get_value(expr));
+  | Load => globalize_names(Expression.Load.get_ptr(expr))
   | Store =>
-    globalize_names(local_names, Expression.Store.get_ptr(expr));
-    globalize_names(local_names, Expression.Store.get_value(expr));
+    globalize_names(Expression.Store.get_ptr(expr));
+    globalize_names(Expression.Store.get_value(expr));
   | MemoryCopy =>
-    globalize_names(local_names, Expression.Memory_copy.get_dest(expr));
-    globalize_names(local_names, Expression.Memory_copy.get_source(expr));
-    globalize_names(local_names, Expression.Memory_copy.get_size(expr));
+    globalize_names(Expression.Memory_copy.get_dest(expr));
+    globalize_names(Expression.Memory_copy.get_source(expr));
+    globalize_names(Expression.Memory_copy.get_size(expr));
   | MemoryFill =>
-    globalize_names(local_names, Expression.Memory_fill.get_dest(expr));
-    globalize_names(local_names, Expression.Memory_fill.get_value(expr));
-    globalize_names(local_names, Expression.Memory_fill.get_size(expr));
+    globalize_names(Expression.Memory_fill.get_dest(expr));
+    globalize_names(Expression.Memory_fill.get_value(expr));
+    globalize_names(Expression.Memory_fill.get_size(expr));
   | Const => ()
-  | Unary => globalize_names(local_names, Expression.Unary.get_value(expr))
+  | Unary => globalize_names(Expression.Unary.get_value(expr))
   | Binary =>
-    globalize_names(local_names, Expression.Binary.get_left(expr));
-    globalize_names(local_names, Expression.Binary.get_right(expr));
+    globalize_names(Expression.Binary.get_left(expr));
+    globalize_names(Expression.Binary.get_right(expr));
   | Select =>
-    globalize_names(local_names, Expression.Select.get_if_true(expr));
-    globalize_names(local_names, Expression.Select.get_if_false(expr));
-    globalize_names(local_names, Expression.Select.get_condition(expr));
-  | Drop => globalize_names(local_names, Expression.Drop.get_value(expr))
-  | Return => globalize_names(local_names, Expression.Return.get_value(expr))
+    globalize_names(Expression.Select.get_if_true(expr));
+    globalize_names(Expression.Select.get_if_false(expr));
+    globalize_names(Expression.Select.get_condition(expr));
+  | Drop => globalize_names(Expression.Drop.get_value(expr))
+  | Return => globalize_names(Expression.Return.get_value(expr))
   | MemorySize => ()
-  | MemoryGrow =>
-    globalize_names(local_names, Expression.Memory_grow.get_delta(expr))
+  | MemoryGrow => globalize_names(Expression.Memory_grow.get_delta(expr))
   | Unreachable => ()
   | TupleMake =>
     let num_operands = Expression.Tuple_make.get_num_operands(expr);
     for (i in 0 to num_operands - 1) {
-      globalize_names(
-        local_names,
-        Expression.Tuple_make.get_operand_at(expr, i),
-      );
+      globalize_names(Expression.Tuple_make.get_operand_at(expr, i));
     };
-  | TupleExtract =>
-    globalize_names(local_names, Expression.Tuple_extract.get_tuple(expr))
+  | TupleExtract => globalize_names(Expression.Tuple_extract.get_tuple(expr))
   | AtomicRMW
   | AtomicCmpxchg
   | AtomicWait
@@ -339,7 +307,9 @@ let link_all = (linked_mod, dependencies, signature) => {
   table_offset := 0;
 
   let link_one = dep => {
-    let local_names: Hashtbl.t(string, string) = Hashtbl.create(128);
+    let function_names: Hashtbl.t(string, string) = Hashtbl.create(128);
+    let global_names: Hashtbl.t(string, string) = Hashtbl.create(128);
+    let label_names: Hashtbl.t(string, string) = Hashtbl.create(128);
 
     let wasm_mod = Hashtbl.find(modules, dep);
 
@@ -359,12 +329,12 @@ let link_all = (linked_mod, dependencies, signature) => {
               ),
               imported_name,
             );
-          Hashtbl.add(local_names, internal_name, new_name);
+          Hashtbl.add(global_names, internal_name, new_name);
         } else {
           let imported_name = Import.global_import_get_base(global);
           let internal_name = Global.get_name(global);
           let new_name = gensym(internal_name);
-          Hashtbl.add(local_names, internal_name, new_name);
+          Hashtbl.add(global_names, internal_name, new_name);
 
           if (Comp_utils.is_grain_env(imported_module)) {
             let value =
@@ -403,13 +373,13 @@ let link_all = (linked_mod, dependencies, signature) => {
       } else {
         let internal_name = Global.get_name(global);
         let new_name = gensym(internal_name);
-        Hashtbl.add(local_names, internal_name, new_name);
+        Hashtbl.add(global_names, internal_name, new_name);
 
         let ty = Global.get_type(global);
         let mut = Global.is_mutable(global);
         let init = Global.get_init_expr(global);
 
-        globalize_names(local_names, init);
+        globalize_names(~function_names, ~global_names, ~label_names, init);
         ignore @@ Global.add_global(linked_mod, new_name, ty, mut, init);
       };
     };
@@ -435,7 +405,7 @@ let link_all = (linked_mod, dependencies, signature) => {
               ),
               imported_name,
             );
-          Hashtbl.add(local_names, internal_name, new_name);
+          Hashtbl.add(function_names, internal_name, new_name);
         } else if (has_wasi_polyfill
                    && is_wasi_module(imported_module)
                    && !is_wasi_polyfill_module(dep)) {
@@ -461,12 +431,12 @@ let link_all = (linked_mod, dependencies, signature) => {
                 ),
               )
             };
-          Hashtbl.add(local_names, internal_name, new_name);
+          Hashtbl.add(function_names, internal_name, new_name);
         } else {
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
           let new_name = gensym(internal_name);
-          Hashtbl.add(local_names, internal_name, new_name);
+          Hashtbl.add(function_names, internal_name, new_name);
 
           let params = Function.get_params(func);
           let results = Function.get_results(func);
@@ -488,7 +458,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       func => {
         let internal_name = Function.get_name(func);
         let new_name = gensym(internal_name);
-        Hashtbl.add(local_names, internal_name, new_name);
+        Hashtbl.add(function_names, internal_name, new_name);
       },
       funcs,
     );
@@ -496,14 +466,14 @@ let link_all = (linked_mod, dependencies, signature) => {
     List.iter(
       func => {
         let internal_name = Function.get_name(func);
-        let new_name = Hashtbl.find(local_names, internal_name);
+        let new_name = Hashtbl.find(function_names, internal_name);
 
         let params = Function.get_params(func);
         let results = Function.get_results(func);
         let num_locals = Function.get_num_vars(func);
         let locals = Array.init(num_locals, i => Function.get_var(func, i));
         let body = Function.get_body(func);
-        globalize_names(local_names, body);
+        globalize_names(~function_names, ~global_names, ~label_names, body);
         ignore @@
         Function.add_function(
           linked_mod,
@@ -518,7 +488,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     );
 
     let local_exported_names =
-      Comp_utils.get_exported_names(~local_names, wasm_mod);
+      Comp_utils.get_exported_names(~function_names, ~global_names, wasm_mod);
     Hashtbl.add(exported_names, dep, local_exported_names);
 
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
@@ -529,7 +499,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       let size = Element_segment.get_length(segment);
       let elems =
         List.init(size, i =>
-          Hashtbl.find(local_names, Element_segment.get_data(segment, i))
+          Hashtbl.find(function_names, Element_segment.get_data(segment, i))
         );
       ignore @@
       Table.add_active_element_segment(

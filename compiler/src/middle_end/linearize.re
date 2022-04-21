@@ -40,7 +40,8 @@ let get_type_id = typath =>
     id;
   };
 
-let lookup_symbol = (~allocation_type, mod_, mod_decl, name, original_name) => {
+let lookup_symbol =
+    (~allocation_type, ~repr, mod_, mod_decl, name, original_name) => {
   switch (Ident.find_same_opt(mod_, symbol_table^)) {
   | Some(_) => ()
   | None => symbol_table := Ident.add(mod_, Ident.empty, symbol_table^)
@@ -52,16 +53,29 @@ let lookup_symbol = (~allocation_type, mod_, mod_decl, name, original_name) => {
     let fresh = gensym(name);
     switch (mod_decl.md_filepath) {
     | Some(filepath) =>
+      let shape =
+        switch (repr) {
+        | ReprFunction(args, rets, Direct(_)) =>
+          // Add closure argument
+          let args = [
+            HeapAllocated,
+            ...List.map(allocation_type_of_wasm_repr, args),
+          ];
+          // Add return type for functions that return void
+          let rets =
+            switch (rets) {
+            | [] => [StackAllocated(WasmI32)]
+            | _ => List.map(allocation_type_of_wasm_repr, rets)
+            };
+          FunctionShape(args, rets);
+        | _ => GlobalShape(allocation_type)
+        };
       value_imports :=
         [
-          Imp.grain_value(
-            fresh,
-            filepath,
-            original_name,
-            GlobalShape(allocation_type),
-          ),
+          Imp.grain_value(fresh, filepath, original_name, shape),
           ...value_imports^,
-        ]
+        ];
+
     | None => ()
     };
     symbol_table :=
@@ -158,6 +172,7 @@ let rec transl_imm =
         val_fullpath: Path.PExternal(_, original_name, _),
         val_mutable,
         val_global,
+        val_repr,
       },
     ) =>
     let mod_decl = Env.find_module(p, None, env);
@@ -165,7 +180,14 @@ let rec transl_imm =
       Imm.id(
         ~loc,
         ~env,
-        lookup_symbol(~allocation_type, mod_, mod_decl, ident, original_name),
+        lookup_symbol(
+          ~allocation_type,
+          ~repr=val_repr,
+          mod_,
+          mod_decl,
+          ident,
+          original_name,
+        ),
       );
     if (val_mutable && !val_global && !boxed) {
       let tmp = gensym("unbox_mut");
@@ -183,14 +205,21 @@ let rec transl_imm =
   | TExpIdent(
       Path.PExternal(Path.PIdent(mod_) as p, ident, _),
       _,
-      {val_mutable, val_global},
+      {val_mutable, val_global, val_repr},
     ) =>
     let mod_decl = Env.find_module(p, None, env);
     let id =
       Imm.id(
         ~loc,
         ~env,
-        lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
+        lookup_symbol(
+          ~allocation_type,
+          ~repr=val_repr,
+          mod_,
+          mod_decl,
+          ident,
+          ident,
+        ),
       );
     if (val_mutable && !val_global && !boxed) {
       let tmp = gensym("unbox_mut");
@@ -228,13 +257,21 @@ let rec transl_imm =
         val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
         val_mutable,
         val_global,
+        val_repr,
       } =>
       let mod_decl = Env.find_module(p, None, env);
       let id =
         Imm.id(
           ~loc,
           ~env,
-          lookup_symbol(~allocation_type, mod_, mod_decl, ident, ident),
+          lookup_symbol(
+            ~allocation_type,
+            ~repr=val_repr,
+            mod_,
+            mod_decl,
+            ident,
+            ident,
+          ),
         );
       if (val_mutable && !val_global && !boxed) {
         let tmp = gensym("unbox_mut");
