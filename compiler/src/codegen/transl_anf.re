@@ -79,9 +79,9 @@ let global_index = ref(0);
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (exported, ex_global_index, _), acc) =>
+    (ex_global_name, (exported, ex_global_index, _), acc) =>
       if (exported) {
-        [{ex_name, ex_global_index}, ...acc];
+        [GlobalExport({ex_global_name, ex_global_index}), ...acc];
       } else {
         acc;
       },
@@ -511,6 +511,12 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   |> run(Types.StackAllocated(WasmF64));
 };
 
+let grain_import_name = (mod_, name) =>
+  Printf.sprintf("gimport_%s_%s", mod_, name);
+
+let wasm_import_name = (mod_, name) =>
+  Printf.sprintf("wimport_%s_%s", mod_, name);
+
 let compile_const = (c: Asttypes.constant) =>
   switch (c) {
   | Const_number(Const_number_int(i)) => MConstI32(Int64.to_int32(i))
@@ -565,6 +571,7 @@ let known_function = f =>
 let compile_lambda =
     (~name=?, id, env, args, body, attrs, loc): Mashtree.closure_data => {
   register_function(Internal(id));
+
   let (body, return_type) = body;
   // NOTE: we special-case `id`, since we want to
   //       have simply-recursive uses of identifiers use
@@ -654,6 +661,7 @@ let compile_lambda =
 let compile_wrapper =
     (~export_name=?, id, env, func_name, args, rets): Mashtree.closure_data => {
   register_function(Internal(id));
+
   let body = [
     {
       instr_desc:
@@ -1058,7 +1066,7 @@ let lift_imports = (env, imports) => {
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create_persistent(mod_);
       let mimp_name = Ident.create_persistent(name);
-      let import_name = Printf.sprintf("gimport_%s_%s", mod_, name);
+      let import_name = grain_import_name(mod_, name);
       let (alloc, mods) =
         switch (imp_shape) {
         | GlobalShape(alloc) => (
@@ -1137,8 +1145,7 @@ let lift_imports = (env, imports) => {
             Ident.add(
               imp_use_id,
               MGlobalBind(
-                Printf.sprintf(
-                  "wimport_%s_%s",
+                wasm_import_name(
                   Ident.name(mimp_mod),
                   Ident.name(mimp_name),
                 ),
@@ -1160,7 +1167,7 @@ let lift_imports = (env, imports) => {
         mimp_setup: MWrap(Int32.zero),
         mimp_used: true,
       };
-      let func_name = Printf.sprintf("wimport_%s_%s", mod_, name);
+      let func_name = wasm_import_name(mod_, name);
       let export_name =
         if (exported) {
           Some(name);
@@ -1228,36 +1235,70 @@ let lift_imports = (env, imports) => {
   (imports, setups, env);
 };
 
-let transl_signature = (functions, signature) => {
+let transl_signature = (~functions, ~imports, signature) => {
   open Types;
+
+  let function_exports = ref([]);
 
   // At this point in compilation, we know which functions can be called
   // directly/indirectly at the wasm level. We add this information to the
   // module signature.
   let func_map = Ident_tbl.create(30);
   List.iter(
-    func => Ident_tbl.add(func_map, (func: mash_function).id, func),
+    (func: mash_function) =>
+      switch (func.name) {
+      | Some(name) =>
+        Ident_tbl.add(func_map, func.id, Ident.unique_name(func.id))
+      | None => ()
+      },
     functions,
+  );
+  List.iter(
+    imp =>
+      switch (imp.imp_shape) {
+      | FunctionShape(_) =>
+        let internal_name =
+          switch (imp.imp_desc) {
+          | GrainValue(mod_, name) => grain_import_name(mod_, name)
+          | WasmFunction(mod_, name) => Ident.unique_name(imp.imp_use_id)
+          | _ => failwith("Impossible: Wasm or js value had FunctionShape")
+          };
+        Ident_tbl.add(func_map, imp.imp_use_id, internal_name);
+      | _ => ()
+      },
+    imports,
   );
   let sign =
     List.map(
       fun
       | TSigValue(
-          _,
+          vid,
           {
             val_repr: ReprFunction(args, rets, _),
             val_fullpath: Path.PIdent(id),
           } as vd,
         ) => {
           switch (Ident_tbl.find_opt(func_map, id)) {
-          | Some({name: Some(name)}) =>
+          | Some(internal_name) =>
+            let external_name = Ident.name(vid);
+            function_exports :=
+              [
+                FunctionExport({
+                  ex_function_name: external_name,
+                  ex_function_internal_name: internal_name,
+                }),
+                ...function_exports^,
+              ];
             TSigValue(
-              id,
-              {...vd, val_repr: ReprFunction(args, rets, Direct(name))},
-            )
+              vid,
+              {
+                ...vd,
+                val_repr: ReprFunction(args, rets, Direct(external_name)),
+              },
+            );
           | _ =>
             TSigValue(
-              id,
+              vid,
               {...vd, val_repr: ReprFunction(args, rets, Indirect)},
             )
           };
@@ -1265,7 +1306,7 @@ let transl_signature = (functions, signature) => {
       | _ as item => item,
       signature.Cmi_format.cmi_sign,
     );
-  {...signature, cmi_sign: sign};
+  ({...signature, cmi_sign: sign}, function_exports^);
 };
 
 let transl_anf_program =
@@ -1297,14 +1338,19 @@ let transl_anf_program =
   };
   let main_body =
     run_register_allocation @@ setups @ compile_anf_expr(env, anf_prog.body);
-  let exports = global_exports();
   let functions =
     List.map(
       ({body} as f: Mashtree.mash_function) =>
         {...f, body: run_register_allocation(body)},
       compile_remaining_worklist(),
     );
-  let signature = transl_signature(functions, anf_prog.signature);
+  let (signature, function_exports) =
+    transl_signature(
+      ~functions,
+      ~imports=anf_prog.imports,
+      anf_prog.signature,
+    );
+  let exports = function_exports @ global_exports();
 
   {
     functions,

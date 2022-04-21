@@ -3393,53 +3393,51 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   );
 };
 
-let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) => {
-  let compile_export = (i, {ex_name, ex_global_index}) => {
-    let internal_name = Printf.sprintf("global_%ld", ex_global_index);
-    let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_name);
-    ignore @@ Export.add_global_export(wasm_mod, internal_name, exported_name);
-  };
-
-  let compile_external_function_export = ((internal_name, external_name)) => {
-    ignore @@
-    Export.add_function_export(wasm_mod, internal_name, external_name);
+let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
+  let compile_export = (i, export) => {
+    switch (export) {
+    | GlobalExport({ex_global_name, ex_global_index}) =>
+      let internal_name = Printf.sprintf("global_%ld", ex_global_index);
+      let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_global_name);
+      ignore @@
+      Export.add_global_export(wasm_mod, internal_name, exported_name);
+    | FunctionExport({ex_function_internal_name, ex_function_name}) =>
+      ignore @@
+      Export.add_function_export(
+        wasm_mod,
+        ex_function_internal_name,
+        ex_function_name,
+      )
+    };
   };
 
   let exports = {
-    let exported = Hashtbl.create(14);
+    module StringSet = Set.Make(String);
+    let exported_globals = ref(StringSet.empty);
+    let exported_functions = ref(StringSet.empty);
     /* Exports are already reversed, so keeping the first of any name is the correct behavior. */
     List.filter(
-      ({ex_name}) =>
-        if (Hashtbl.mem(exported, Ident.name(ex_name))) {
+      fun
+      | GlobalExport({ex_global_name}) =>
+        if (StringSet.mem(Ident.name(ex_global_name), exported_globals^)) {
           false;
         } else {
-          Hashtbl.add(exported, Ident.name(ex_name), ());
+          exported_globals :=
+            StringSet.add(Ident.name(ex_global_name), exported_globals^);
+          true;
+        }
+      | FunctionExport({ex_function_name}) =>
+        if (StringSet.mem(ex_function_name, exported_functions^)) {
+          false;
+        } else {
+          exported_functions :=
+            StringSet.add(ex_function_name, exported_functions^);
           true;
         },
       exports,
     );
   };
-  let functions = {
-    let exported = Hashtbl.create(14);
-    /* Functions will be reversed, so keeping the first of any name is the correct behavior. */
-    List.filter_map(
-      ({index, name, id}) =>
-        switch (name) {
-        | Some(name) =>
-          if (Hashtbl.mem(exported, name)) {
-            None;
-          } else {
-            Hashtbl.add(exported, name, ());
-            let internal_name = Ident.unique_name(id);
-            Some((internal_name, name));
-          }
-        | None => None
-        },
-      functions,
-    );
-  };
   List.iteri(compile_export, exports);
-  List.iter(compile_external_function_export, List.rev(functions));
   ignore @@ Export.add_function_export(wasm_mod, grain_main, grain_main);
   ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
   ignore @@
