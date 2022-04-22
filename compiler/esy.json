@@ -55,9 +55,9 @@
   "resolutions": {
     "ocaml": "4.12.0",
     "@opam/ocamlfind": "1.8.1",
-    "@opam/fp": "reasonml/reason-native:fp.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/fs": "reasonml/reason-native:fs.opam#a33f1528a6dd86c67f365e226c81312733181c87",
-    "@opam/utf8": "reasonml/reason-native:utf8.opam#a33f1528a6dd86c67f365e226c81312733181c87",
+    "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/utf8": "reasonml/reason-native:utf8.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@reason-native/cli": "reasonml/reason-native:cli.json#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@reason-native/rely": "reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15"
   },

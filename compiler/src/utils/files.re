@@ -13,23 +13,11 @@ let replace_extension = (baseName, newExt) => {
   Printf.sprintf("%s.%s", remove_extension(baseName), newExt);
 };
 
-let normalize_separators = path =>
-  if (Sys.unix) {
-    path;
-  } else {
-    // If we aren't on a Unix-style system, convert `\\` separators to `/`
-    // This is needed until https://github.com/reasonml/reason-native/issues/267
-    // is fixed and we can update the `Fp` library
-    let windows_sep = Str.regexp("\\");
-    let normal_sep = "/";
-    Str.global_replace(windows_sep, normal_sep, path);
-  };
-
 let to_fp = fname => {
-  Fp.testForPath(normalize_separators(fname));
+  Fp.testForPath(fname);
 };
 
-let get_cwd = () => normalize_separators(Sys.getcwd());
+let get_cwd = () => Sys.getcwd();
 
 let filename_to_module_name = fname => {
   let baseName =
@@ -58,7 +46,7 @@ let ensure_parent_directory_exists = fname => {
     switch (to_fp(fname)) {
     | Some(Absolute(path)) => path
     | Some(Relative(path)) =>
-      let base = Fp.absoluteExn(get_cwd());
+      let base = Fp.absoluteCurrentPlatformExn(get_cwd());
       Fp.join(base, path);
     | None =>
       raise(
@@ -85,8 +73,8 @@ let derelativize = (~base=?, fname) => {
     | Some(Relative(path)) =>
       let b =
         switch (base) {
-        | None => Fp.absolute(get_cwd())
-        | Some(path) => Fp.absolute(path)
+        | None => Fp.absoluteCurrentPlatform(get_cwd())
+        | Some(path) => Fp.absoluteCurrentPlatform(path)
         };
       switch (b) {
       | Some(base) => Fp.join(base, path)
@@ -134,7 +122,7 @@ let realpath = path => {
   | None => None
   | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
   | Some(Fp.Relative(relpath)) =>
-    let base = Fp.absoluteExn(get_cwd());
+    let base = Fp.absoluteCurrentPlatformExn(get_cwd());
     let full_path = Fp.join(base, relpath);
     Some(Fp.toString(full_path));
   };
@@ -148,7 +136,7 @@ let realpath_quick = path => {
 };
 
 let smart_cat = (dir, file) => {
-  switch (Fp.absolute(dir)) {
+  switch (Fp.absoluteCurrentPlatform(dir)) {
   | None => Filename.concat(dir, file)
   | Some(abspath) =>
     switch (Fp.relative(file)) {

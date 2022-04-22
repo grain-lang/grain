@@ -167,7 +167,7 @@ let input_file_conv = {
   let (prsr, prntr) = non_dir_file;
 
   (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
+    filename => prsr(filename),
     prntr,
   );
 };
