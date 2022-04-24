@@ -15,7 +15,7 @@
       "GRAINFORMAT_BIN_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.exe'}",
       "GRAINFORMAT_JS_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.bc.js'}",
       "GRAINLSP_BIN_PATH": "#{self.target_dir / 'default' / 'grainlsp' / 'grainlsp.exe'}",
-      "GRAINLSP_JS_PATH": "#{self.target_dir / 'default' / 'grainlsp' / 'grainlsp.bc.js'}",
+      "GRAINLSP_JS_PATH": "#{self.target_dir / 'default' / 'grainlsp' / 'grainlsp_js.bc.js'}",
       "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
       "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}",
       "TEST_JS_PATH": "#{self.target_dir / 'default' / 'test' / 'test.bc.js'}"
@@ -51,6 +51,8 @@
   },
   "devDependencies": {
     "@opam/js_of_ocaml-compiler": ">= 3.11.0 < 4.0.0",
+    "@opam/js_of_ocaml": ">= 3.11.0 < 4.0.0",
+    "@opam/js_of_ocaml-ppx": ">= 3.11.0 < 4.0.0",
     "@opam/ocaml-lsp-server": "1.8.3",
     "@reason-native/rely": "^3.2.1"
   },

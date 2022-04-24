@@ -111,6 +111,10 @@
  (depends
   (reason
    (>= 3.6.0))
+  (js_of_ocaml
+   (>= 3.6.0))
+  (js_of_ocaml-ppx
+   (>= 3.6.0))
   (dune-build-info
    (>= 2.0))
   (cmdliner

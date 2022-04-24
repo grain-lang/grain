@@ -3,22 +3,34 @@
  (public_name grain.lspserver)
  (modules utils rpc lenses processcode hover completion lspserver log)
  (libraries grain grain_diagnostics grain_parsing grain_utils
-   ppx_deriving_yojson.runtime yojson)
+   ppx_deriving_yojson.runtime yojson js_of_ocaml)
  (preprocess
-  (pps ppx_deriving_yojson)))
+  (pps ppx_deriving_yojson js_of_ocaml-ppx)))
 
 (executable
  (name grainlsp)
  (public_name grainlsp)
  (package grainlsp)
  (modules grainlsp)
- (modes exe js)
+ (modes exe )
  (flags
   (:standard
    (:include ./config/flags.sexp)))
  (libraries cmdliner grain grain_utils grain_parsing grain.lspserver
    dune-build-info)
  (preprocess
-  (pps ppx_deriving_cmdliner))
+  (pps ppx_deriving_cmdliner)))
+
+(executable
+ (name grainlsp_js)
+ (modules grainlsp_js)
+ (modes js)
+ (flags
+  (:standard
+   (:include ./config/flags.sexp)))
+ (libraries grain grain_utils grain_parsing grain.lspserver
+   dune-build-info js_of_ocaml)
  (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet --disable share)))
+  (flags --no-sourcemap --no-extern-fs --quiet --disable share))
+  (preprocess
+  (pps js_of_ocaml-ppx))) 

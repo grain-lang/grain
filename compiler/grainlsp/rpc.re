@@ -203,8 +203,24 @@ let convert_range = range => {
   {start: r_start, range_end: r_end};
 };
 
+let parse_message = raw => {
+  let json = Yojson.Safe.from_string(raw);
+
+  let action =
+    Yojson.Safe.Util.member("method", json) |> Yojson.Safe.Util.to_string;
+
+  let id_opt =
+    Yojson.Safe.Util.member("id", json) |> Yojson.Safe.Util.to_int_option;
+
+  switch (id_opt) {
+  | None => Notification(action, json)
+  | Some(id) => Message(id, action, json)
+  };
+};
+
 let read_message = (input): protocol_msg => {
   Log.log("read_message");
+
   let clength = input_line(input);
 
   // This feeld a bit backwards, but on a Windows machine the \r will have been stripped out automatically
@@ -231,19 +247,7 @@ let read_message = (input): protocol_msg => {
     Buffer.add_channel(buffer, input, num);
     let raw = Buffer.contents(buffer);
 
-    Log.log(raw);
-    let json = Yojson.Safe.from_string(raw);
-
-    let action =
-      Yojson.Safe.Util.member("method", json) |> Yojson.Safe.Util.to_string;
-
-    let id_opt =
-      Yojson.Safe.Util.member("id", json) |> Yojson.Safe.Util.to_int_option;
-
-    switch (id_opt) {
-    | None => Notification(action, json)
-    | Some(id) => Message(id, action, json)
-    };
+    parse_message(raw);
   } else {
     Error("Invalid header");
   };
