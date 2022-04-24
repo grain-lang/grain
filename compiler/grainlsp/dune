@@ -12,7 +12,7 @@
  (public_name grainlsp)
  (package grainlsp)
  (modules grainlsp)
- (modes exe )
+ (modes exe)
  (flags
   (:standard
    (:include ./config/flags.sexp)))
@@ -28,9 +28,9 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries grain grain_utils grain_parsing grain.lspserver
-   dune-build-info js_of_ocaml)
+ (libraries grain grain_utils grain_parsing grain.lspserver dune-build-info
+   js_of_ocaml)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet --disable share))
-  (preprocess
-  (pps js_of_ocaml-ppx))) 
+ (preprocess
+  (pps js_of_ocaml-ppx)))
