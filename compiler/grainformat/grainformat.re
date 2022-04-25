@@ -133,10 +133,7 @@ let grainformat =
 let input_file_conv = {
   open Arg;
   let (prsr, prntr) = non_dir_file;
-  (
-    filename => prsr(filename),
-    prntr,
-  );
+  (filename => prsr(filename), prntr);
 };
 
 /** Converter which checks that the given output filename is valid */

@@ -32,10 +32,7 @@ module Input = {
 
   let (prsr, prntr) = Arg.non_dir_file;
 
-  let cmdliner_converter = (
-    filename => prsr(filename),
-    prntr,
-  );
+  let cmdliner_converter = (filename => prsr(filename), prntr);
 };
 
 module Output = {

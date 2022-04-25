@@ -166,10 +166,7 @@ let input_file_conv = {
   open Arg;
   let (prsr, prntr) = non_dir_file;
 
-  (
-    filename => prsr(filename),
-    prntr,
-  );
+  (filename => prsr(filename), prntr);
 };
 
 let input_filename = {
