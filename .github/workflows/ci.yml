@@ -76,6 +76,7 @@ jobs:
 
       # Formatting lint last because building is more important
       - name: Run formatting lint
+        if: matrix.os != 'windows-latest'
         run: |
           yarn compiler check-format
           yarn js-runner check-format
