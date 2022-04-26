@@ -84,5 +84,6 @@ jobs:
 
       # This is to test the CLI is working
       - name: Log Grain version
+        if: matrix.os != 'windows-latest'
         run: |
           grain -v
