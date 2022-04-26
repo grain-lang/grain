@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         node-version: ["14", "16"]
 
     steps:
@@ -61,10 +61,12 @@ jobs:
           yarn compiler export-dependencies
 
       - name: Run tests (native)
+        if: matrix.os != 'windows-latest'
         run: |
           yarn compiler test
 
       - name: Run tests (js)
+        if: matrix.os != 'windows-latest'
         run: |
           yarn compiler test:js
 
@@ -74,6 +76,7 @@ jobs:
 
       # Formatting lint last because building is more important
       - name: Run formatting lint
+        if: matrix.os != 'windows-latest'
         run: |
           yarn compiler check-format
           yarn js-runner check-format
@@ -81,5 +84,6 @@ jobs:
 
       # This is to test the CLI is working
       - name: Log Grain version
+        if: matrix.os != 'windows-latest'
         run: |
           grain -v
