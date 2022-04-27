@@ -275,6 +275,8 @@ let fold_types:
     'a
   ) =>
   'a;
+let fold_labels:
+  ((label_description, 'a) => 'a, option(Identifier.t), t, 'a) => 'a;
 /** Persistent structures are only traversed if they are already loaded. */
 
 let fold_constructors:

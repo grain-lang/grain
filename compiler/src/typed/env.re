@@ -2586,6 +2586,8 @@ let fold_modules = (f, lid, env, acc) =>
 let fold_values = f => find_all(env => env.values, sc => sc.comp_values, f)
 and fold_constructors = f =>
   find_all_simple_list(env => env.constructors, sc => sc.comp_constrs, f)
+and fold_labels = f =>
+  find_all_simple_list(env => env.labels, sc => sc.comp_labels, f)
 and fold_types = f => find_all(env => env.types, sc => sc.comp_types, f)
 and fold_modtypes = f =>
   find_all(env => env.modtypes, sc => sc.comp_modtypes, f);
