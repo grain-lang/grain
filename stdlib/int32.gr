@@ -388,6 +388,22 @@ export let lt = (x: Int32, y: Int32) => {
 }
 
 /**
+ * Checks if the first unsigned value is less than the second unsigned value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let rec ltU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.ltU(xv, yv)
+}
+
+/**
  * Checks if the first value is greater than the second value.
  *
  * @param x: The first value
@@ -401,6 +417,22 @@ export let gt = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.gtS(xv, yv)
+}
+
+/**
+ * Checks if the first unsigned value is greater than the second unsigned value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let rec gtU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.gtU(xv, yv)
 }
 
 /**
@@ -420,6 +452,22 @@ export let lte = (x: Int32, y: Int32) => {
 }
 
 /**
+ * Checks if the first unsigned value is less than or equal to the second unsigned value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let rec lteU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.leU(xv, yv)
+}
+
+/**
  * Checks if the first value is greater than or equal to the second value.
  *
  * @param x: The first value
@@ -433,6 +481,22 @@ export let gte = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.geS(xv, yv)
+}
+
+/**
+ * Checks if the first unsigned value is greater than or equal to the second unsigned value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let rec gteU = (x: Int32, y: Int32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  WasmI32.geU(xv, yv)
 }
 
 /**

@@ -32,10 +32,7 @@ module Input = {
 
   let (prsr, prntr) = Arg.non_dir_file;
 
-  let cmdliner_converter = (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
-    prntr,
-  );
+  let cmdliner_converter = (filename => prsr(filename), prntr);
 };
 
 module Output = {
@@ -54,7 +51,7 @@ module Output = {
   };
 
   let cmdliner_converter = (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
+    filename => prsr(filename),
     Format.pp_print_string,
   );
 };

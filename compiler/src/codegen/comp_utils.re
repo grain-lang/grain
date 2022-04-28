@@ -92,19 +92,26 @@ let grain_env_name = "_grainEnv";
 
 let is_grain_env = str => grain_env_name == str;
 
-let get_exported_names = (~local_names=?, wasm_mod) => {
+let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
   let num_exports = Export.get_num_exports(wasm_mod);
   let exported_names: Hashtbl.t(string, string) = Hashtbl.create(10);
   for (i in 0 to num_exports - 1) {
     let export = Export.get_export_by_index(wasm_mod, i);
     let export_kind = Export.export_get_kind(export);
-    if (export_kind == Export.external_function
-        || export_kind == Export.external_global) {
-      let exported_name = Export.get_name(export);
-      let internal_name = Export.get_value(export);
+    let exported_name = Export.get_name(export);
+    let internal_name = Export.get_value(export);
+
+    if (export_kind == Export.external_function) {
       let new_internal_name =
-        switch (local_names) {
-        | Some(local_names) => Hashtbl.find(local_names, internal_name)
+        switch (function_names) {
+        | Some(function_names) => Hashtbl.find(function_names, internal_name)
+        | None => internal_name
+        };
+      Hashtbl.add(exported_names, exported_name, new_internal_name);
+    } else if (export_kind == Export.external_global) {
+      let new_internal_name =
+        switch (global_names) {
+        | Some(global_names) => Hashtbl.find(global_names, internal_name)
         | None => internal_name
         };
       Hashtbl.add(exported_names, exported_name, new_internal_name);
@@ -133,12 +140,23 @@ let write_universal_exports =
       List.iter(
         item => {
           switch (item) {
-          | TSigValue(id, {val_repr: ReprFunction(args, rets)}) =>
+          | TSigValue(
+              id,
+              {
+                val_repr: ReprFunction(args, rets, direct),
+                val_fullpath: path,
+              },
+            ) =>
             let name = Ident.name(id);
             let exported_name = "GRAIN$EXPORT$" ++ name;
-            let internal_name = Hashtbl.find(exported_names, exported_name);
+            let internal_global_name =
+              Hashtbl.find(exported_names, exported_name);
             let get_closure = () =>
-              Expression.Global_get.make(wasm_mod, internal_name, Type.int32);
+              Expression.Global_get.make(
+                wasm_mod,
+                internal_global_name,
+                Type.int32,
+              );
             let arguments =
               List.mapi(
                 (i, arg) =>
@@ -146,34 +164,47 @@ let write_universal_exports =
                 args,
               );
             let arguments = [get_closure(), ...arguments];
-            let call_arg_types =
-              Type.create(
-                Array.of_list(List.map(type_of_repr, [WasmI32, ...args])),
-              );
             let call_result_types =
               Type.create(
                 Array.of_list(
                   List.map(type_of_repr, rets == [] ? [WasmI32] : rets),
                 ),
               );
-            let func_ptr =
-              Expression.Load.make(
-                wasm_mod,
-                4,
-                8,
-                2,
-                Type.int32,
-                get_closure(),
-              );
             let function_call =
-              Expression.Call_indirect.make(
-                wasm_mod,
-                global_function_table,
-                func_ptr,
-                arguments,
-                call_arg_types,
-                call_result_types,
-              );
+              switch (direct) {
+              | Direct(name) =>
+                Expression.Call.make(
+                  wasm_mod,
+                  Hashtbl.find(exported_names, name),
+                  arguments,
+                  call_result_types,
+                )
+              | Indirect =>
+                let call_arg_types =
+                  Type.create(
+                    Array.of_list(
+                      List.map(type_of_repr, [WasmI32, ...args]),
+                    ),
+                  );
+                let func_ptr =
+                  Expression.Load.make(
+                    wasm_mod,
+                    4,
+                    8,
+                    2,
+                    Type.int32,
+                    get_closure(),
+                  );
+                Expression.Call_indirect.make(
+                  wasm_mod,
+                  global_function_table,
+                  func_ptr,
+                  arguments,
+                  call_arg_types,
+                  call_result_types,
+                );
+              | Unknown => failwith("Impossible: Unknown function call type")
+              };
             let function_body =
               switch (rets) {
               | [] => Expression.Drop.make(wasm_mod, function_call)

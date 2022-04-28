@@ -23,9 +23,8 @@ pattern matching › constant_match_3
   (local $0 i32)
   (local $1 i32)
   (local $2 i32)
-  (local $3 i32)
   (i32.store
-   (local.tee $1
+   (local.tee $0
     (call $wimport_GRAIN$MODULE$runtime/gc_malloc
      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
      (i32.const 16)
@@ -34,17 +33,17 @@ pattern matching › constant_match_3
    (i32.const 1)
   )
   (i32.store offset=4
-   (local.get $1)
+   (local.get $0)
    (i32.const 3)
   )
   (i64.store offset=8
-   (local.get $1)
+   (local.get $0)
    (i64.const 7303014)
   )
   (local.set $1
    (tuple.extract 0
     (tuple.make
-     (local.get $1)
+     (local.get $0)
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
       (i32.const 0)
@@ -69,7 +68,7 @@ pattern matching › constant_match_3
    (local.get $0)
    (i64.const 7303014)
   )
-  (local.set $2
+  (local.set $0
    (tuple.extract 0
     (tuple.make
      (local.get $0)
@@ -80,106 +79,38 @@ pattern matching › constant_match_3
     )
    )
   )
-  (local.set $0
-   (block $switch.28_outer (result i32)
+  (local.set $2
+   (block $switch.13_outer (result i32)
     (drop
-     (block $switch.28_branch_1 (result i32)
+     (block $switch.13_branch_1 (result i32)
       (drop
-       (block $switch.28_branch_2 (result i32)
+       (block $switch.13_branch_2 (result i32)
         (drop
-         (block $switch.28_branch_3 (result i32)
+         (block $switch.13_branch_3 (result i32)
           (drop
-           (block $switch.28_default (result i32)
-            (br_table $switch.28_branch_1 $switch.28_branch_2 $switch.28_branch_3 $switch.28_default
+           (block $switch.13_default (result i32)
+            (br_table $switch.13_branch_1 $switch.13_branch_2 $switch.13_branch_3 $switch.13_default
              (i32.const 0)
              (i32.shr_s
-              (if (result i32)
+              (select
+               (i32.const 3)
+               (i32.const 5)
                (i32.shr_u
-                (select
-                 (i32.const 2147483646)
-                 (local.tee $0
-                  (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                    (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
-                   )
-                   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                    (local.get $1)
-                   )
-                   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                    (local.get $2)
-                   )
-                  )
+                (call $wimport_GRAIN$MODULE$runtime/equal_equal
+                 (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+                  (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                  (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
                  )
-                 (i32.shr_u
+                 (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+                  (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                  (local.get $1)
+                 )
+                 (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+                  (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
                   (local.get $0)
-                  (i32.const 31)
                  )
                 )
                 (i32.const 31)
-               )
-               (i32.const 1)
-               (block (result i32)
-                (i32.store
-                 (local.tee $0
-                  (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-                   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-                   (i32.const 16)
-                  )
-                 )
-                 (i32.const 1)
-                )
-                (i32.store offset=4
-                 (local.get $0)
-                 (i32.const 3)
-                )
-                (i64.store offset=8
-                 (local.get $0)
-                 (i64.const 7303014)
-                )
-                (local.set $3
-                 (tuple.extract 0
-                  (tuple.make
-                   (local.get $0)
-                   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-                    (i32.const 0)
-                   )
-                  )
-                 )
-                )
-                (select
-                 (i32.const 3)
-                 (i32.const 5)
-                 (i32.shr_u
-                  (select
-                   (i32.const -2)
-                   (local.tee $0
-                    (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                      (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
-                     )
-                     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                      (local.get $1)
-                     )
-                     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                      (local.get $3)
-                     )
-                    )
-                   )
-                   (i32.shr_u
-                    (local.get $0)
-                    (i32.const 31)
-                   )
-                  )
-                  (i32.const 31)
-                 )
-                )
                )
               )
               (i32.const 1)
@@ -190,12 +121,12 @@ pattern matching › constant_match_3
           (unreachable)
          )
         )
-        (br $switch.28_outer
+        (br $switch.13_outer
          (i32.const 2147483646)
         )
        )
       )
-      (br $switch.28_outer
+      (br $switch.13_outer
        (i32.const -2)
       )
      )
@@ -212,16 +143,10 @@ pattern matching › constant_match_3
   (drop
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $2)
+    (local.get $0)
    )
   )
-  (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-    (local.get $3)
-   )
-  )
-  (local.get $0)
+  (local.get $2)
  )
  (func $_start (; has Stack IR ;)
   (drop

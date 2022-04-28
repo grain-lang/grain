@@ -42,6 +42,16 @@ assert !gte(5l, 22l)
 assert !lt(5l, -17l)
 assert !lte(5l, 4l)
 
+// unsigned comparisons:
+assert gtU(5l, 4l)
+assert gteU(5l, 5l)
+assert ltU(5l, 17l)
+assert lteU(5l, 5l)
+assert !gtU(5l, 5l)
+assert !gteU(5l, 22l)
+assert ltU(5l, -17l)
+assert !lteU(5l, 4l)
+
 assert clz(0b11l) == 30l
 assert ctz(0b11000l) == 3l
 assert popcnt(0b1100110011l) == 6l

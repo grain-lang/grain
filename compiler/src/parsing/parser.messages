@@ -1245,6 +1245,32 @@ program: EXPORT TYPEID AS WHILE
 ## The known suffix of the stack is as follows:
 ## AS
 ##
+program: LET NUMBER_INT AS WHILE
+##
+## Ends in an error in state: 367.
+##
+## pattern -> pattern AS . id_str [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+## pattern -> pattern AS . eols id_str [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## pattern AS
+##
+program: LET NUMBER_INT AS EOL WHILE
+##
+## Ends in an error in state: 369.
+##
+## pattern -> pattern AS eols . id_str [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## pattern AS eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected an identifier to use as an alias.
 
@@ -3854,6 +3880,32 @@ program: LET LPAREN WASMI64 COMMA EOL WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## pattern COMMA eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LET NUMBER_INT PIPE WHILE
+##
+## Ends in an error in state: 345.
+##
+## pattern -> pattern PIPE . pattern [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON ]
+## pattern -> pattern PIPE . eols pattern [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## pattern PIPE
+##
+program: LET NUMBER_INT PIPE EOL WHILE
+##
+## Ends in an error in state: 404.
+##
+## pattern -> pattern PIPE eols . pattern [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## pattern PIPE eols
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an

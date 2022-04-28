@@ -127,8 +127,14 @@ and wasm_repr =
 
 [@deriving (sexp, yojson)]
 type val_repr =
-  | ReprFunction(list(wasm_repr), list(wasm_repr))
-  | ReprValue(wasm_repr);
+  | ReprFunction(list(wasm_repr), list(wasm_repr), func_direct)
+  | ReprValue(wasm_repr)
+
+[@deriving (sexp, yojson)]
+and func_direct =
+  | Direct(string)
+  | Indirect
+  | Unknown;
 
 [@deriving (sexp, yojson)]
 type value_description = {
