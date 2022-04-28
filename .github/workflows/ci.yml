@@ -19,11 +19,21 @@ jobs:
           node-version: ${{ matrix.node-version }}
           check-latest: true
 
-      # This configures yarn to use node/npm prefix in our path
-      # It also adds `shx` globally for cross-platform shell commands
-      - name: Setup environment
+      # Add yarn's bin to our PATH
+      - name: Setup environment (Unix)
+        if: matrix.os != 'windows-latest'
         run: |
-          yarn config set prefix $(npm config get prefix)
+          echo $(yarn global bin) >> $GITHUB_PATH
+
+      # Add yarn's bin to our PATH
+      - name: Setup environment (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo $(yarn global bin) | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      # Adds `shx` globally for cross-platform shell commands
+      - name: Setup environment (All)
+        run: |
           yarn global add shx
 
       - name: Checkout project
@@ -84,6 +94,5 @@ jobs:
 
       # This is to test the CLI is working
       - name: Log Grain version
-        if: matrix.os != 'windows-latest'
         run: |
           grain -v
