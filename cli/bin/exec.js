@@ -100,7 +100,7 @@ function getGrainlsp() {
   const grainlsp = path.join(__dirname, "grainlsp.exe");
 
   // TODO: Maybe make an installable path & check it?
-  if (process.pkg || !fs.existsSync(grainformat)) {
+  if (process.pkg || !fs.existsSync(grainlsp)) {
     const node = process.execPath;
     const grainlsp_js = path.join(__dirname, "grainlsp.js");
     return `"${node}" ${grainlsp_js}`;
