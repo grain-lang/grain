@@ -1,5 +1,5 @@
 {
-  "checksum": "23b3f1b1140401e850013915a6a09c68",
+  "checksum": "af8b6c623f75208727f18762f4a555aa",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.12.0@d41d8cd9": {
@@ -159,34 +159,6 @@
         "ocaml@4.12.0@d41d8cd9", "@opam/reason@opam:3.8.0@0af856e0",
         "@opam/dune@opam:2.9.3@f57a6d69"
       ]
-    },
-    "@opam/uchar@opam:0.0.2@aedf91f9": {
-      "id": "@opam/uchar@opam:0.0.2@aedf91f9",
-      "name": "@opam/uchar",
-      "version": "opam:0.0.2",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/md5/c9/c9ba2c738d264c420c642f7bb1cf4a36#md5:c9ba2c738d264c420c642f7bb1cf4a36",
-          "archive:https://github.com/ocaml/uchar/releases/download/v0.0.2/uchar-0.0.2.tbz#md5:c9ba2c738d264c420c642f7bb1cf4a36"
-        ],
-        "opam": {
-          "name": "uchar",
-          "version": "0.0.2",
-          "path": "esy.lock/opam/uchar.0.0.2"
-        }
-      },
-      "overrides": [
-        {
-          "opamoverride":
-            "esy.lock/overrides/opam__s__uchar_opam__c__0.0.2_opam_override"
-        }
-      ],
-      "dependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/ocamlbuild@opam:0.14.1@ead10f40",
-        "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [ "ocaml@4.12.0@d41d8cd9" ]
     },
     "@opam/stdlib-shims@opam:0.3.0@72c7bc98": {
       "id": "@opam/stdlib-shims@opam:0.3.0@72c7bc98",
@@ -714,33 +686,6 @@
       ],
       "devDependencies": [ "ocaml@4.12.0@d41d8cd9" ]
     },
-    "@opam/ocamlbuild@opam:0.14.1@ead10f40": {
-      "id": "@opam/ocamlbuild@opam:0.14.1@ead10f40",
-      "name": "@opam/ocamlbuild",
-      "version": "opam:0.14.1",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/md5/70/7027e507ed85f290923ad198f3d2cd1c#md5:7027e507ed85f290923ad198f3d2cd1c",
-          "archive:https://github.com/ocaml/ocamlbuild/archive/refs/tags/0.14.1.tar.gz#md5:7027e507ed85f290923ad198f3d2cd1c"
-        ],
-        "opam": {
-          "name": "ocamlbuild",
-          "version": "0.14.1",
-          "path": "esy.lock/opam/ocamlbuild.0.14.1"
-        }
-      },
-      "overrides": [
-        {
-          "opamoverride":
-            "esy.lock/overrides/opam__s__ocamlbuild_opam__c__0.14.1_opam_override"
-        }
-      ],
-      "dependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [ "ocaml@4.12.0@d41d8cd9" ]
-    },
     "@opam/ocaml-lsp-server@opam:1.8.3@b64dff17": {
       "id": "@opam/ocaml-lsp-server@opam:1.8.3@b64dff17",
       "name": "@opam/ocaml-lsp-server",
@@ -937,34 +882,6 @@
         "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
-    "@opam/js_of_ocaml-ppx@opam:3.11.0@4edaf441": {
-      "id": "@opam/js_of_ocaml-ppx@opam:3.11.0@4edaf441",
-      "name": "@opam/js_of_ocaml-ppx",
-      "version": "opam:3.11.0",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/15/158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a#sha256:158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a",
-          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/3.11.0/js_of_ocaml-3.11.0.tbz#sha256:158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a"
-        ],
-        "opam": {
-          "name": "js_of_ocaml-ppx",
-          "version": "3.11.0",
-          "path": "esy.lock/opam/js_of_ocaml-ppx.3.11.0"
-        }
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/ppxlib@opam:0.25.0@8553d2e8",
-        "@opam/js_of_ocaml@opam:3.11.0@93e18d4d",
-        "@opam/dune@opam:2.9.3@f57a6d69", "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/ppxlib@opam:0.25.0@8553d2e8",
-        "@opam/js_of_ocaml@opam:3.11.0@93e18d4d",
-        "@opam/dune@opam:2.9.3@f57a6d69"
-      ]
-    },
     "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8": {
       "id": "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8",
       "name": "@opam/js_of_ocaml-compiler",
@@ -1001,36 +918,6 @@
         "@opam/menhir@opam:20211125@3696d253",
         "@opam/dune@opam:2.9.3@f57a6d69",
         "@opam/cmdliner@opam:1.1.1@03763729"
-      ]
-    },
-    "@opam/js_of_ocaml@opam:3.11.0@93e18d4d": {
-      "id": "@opam/js_of_ocaml@opam:3.11.0@93e18d4d",
-      "name": "@opam/js_of_ocaml",
-      "version": "opam:3.11.0",
-      "source": {
-        "type": "install",
-        "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/15/158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a#sha256:158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a",
-          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/3.11.0/js_of_ocaml-3.11.0.tbz#sha256:158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a"
-        ],
-        "opam": {
-          "name": "js_of_ocaml",
-          "version": "3.11.0",
-          "path": "esy.lock/opam/js_of_ocaml.3.11.0"
-        }
-      },
-      "overrides": [],
-      "dependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/uchar@opam:0.0.2@aedf91f9",
-        "@opam/ppxlib@opam:0.25.0@8553d2e8",
-        "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8",
-        "@opam/dune@opam:2.9.3@f57a6d69", "@esy-ocaml/substs@0.0.1@d41d8cd9"
-      ],
-      "devDependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/uchar@opam:0.0.2@aedf91f9",
-        "@opam/ppxlib@opam:0.25.0@8553d2e8",
-        "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8",
-        "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
     "@opam/fs@github:reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9": {
@@ -1484,9 +1371,7 @@
       "devDependencies": [
         "@reason-native/rely@github:reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9",
         "@opam/ocaml-lsp-server@opam:1.8.3@b64dff17",
-        "@opam/js_of_ocaml-ppx@opam:3.11.0@4edaf441",
-        "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8",
-        "@opam/js_of_ocaml@opam:3.11.0@93e18d4d"
+        "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8"
       ],
       "installConfig": { "pnp": false }
     },

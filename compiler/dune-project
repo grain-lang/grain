@@ -65,6 +65,10 @@
     (grain (>= 0))))
 
 (package
+  (name grainlsp)
+  (synopsis "Grain Language Server Protocol"))
+
+(package
   (name grain_linking)
   (synopsis "The Grain linker")
   (depends
