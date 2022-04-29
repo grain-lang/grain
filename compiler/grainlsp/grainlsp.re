@@ -1,5 +1,6 @@
 open Printf;
 open Cmdliner;
+open Lspserver;
 
 [@deriving cmdliner]
 type params = {
@@ -7,8 +8,31 @@ type params = {
   debug: bool,
 };
 
+let run = (opts: params) => {
+  if (opts.debug) {
+    Log.set_level(DebugLog);
+    Log.log("LSP is starting up");
+  };
+
+  Log.log(Sys.os_type);
+
+  let rec read_stdin = () => {
+    switch (Rpc.read_message(stdin)) {
+    | exception exn => Log.log("exception on read message")
+    | msg =>
+      let status = Message.process(msg);
+      if (status == Message.Reading) {
+        read_stdin();
+      };
+    };
+  };
+  read_stdin();
+
+  Log.close_log();
+};
+
 let lsp = (opts: params) =>
-  try(Lspserver.run(opts.debug)) {
+  try(run(opts)) {
   | exn =>
     Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
     exit(2);
