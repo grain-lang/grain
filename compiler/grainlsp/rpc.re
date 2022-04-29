@@ -221,14 +221,15 @@ let parse_message = raw => {
 let read_message = (input): protocol_msg => {
   Log.log("read_message");
 
+  // TODO: Catch error?
   let clength = input_line(input);
 
   // This feeld a bit backwards, but on a Windows machine the \r will have been stripped out automatically
   // and so bizarrley if the Windows separator is there, then this is not a Windows machine!
-  if (!String.contains(clength, '\r')) {
-    Log.log("Enabling Windows mode");
-    windows_mode := true;
-  };
+  // if (!String.contains(clength, '\r')) {
+  //   Log.log("Enabling Windows mode");
+  //   windows_mode := true;
+  // };
 
   Log.log(clength);
   let cl = "Content-Length: ";
