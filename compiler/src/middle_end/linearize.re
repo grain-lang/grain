@@ -129,20 +129,85 @@ let convert_binds = anf_binds => {
 };
 
 let transl_const =
-    (c: Types.constant): Either.t(imm_expression, (string, comp_expression)) => {
+    // [TODO] convert to list
+    (~loc=Location.dummy_loc, ~env=Env.empty, c: Types.constant)
+    : Either.t(imm_expression, (ident, list(anf_bind))) => {
+  let with_bind = (name, f) => {
+    let tmp = gensym(name);
+    (tmp, f(tmp));
+  };
   switch (c) {
-  | Const_number(Const_number_rational(_)) =>
-    failwith("Impossible: rational constant in transl_const")
-  | Const_number(n) => Right(("number", Comp.number(n)))
+  // for Rationals, we need to allocate the underlying bigints in the setup.
+  | Const_number(
+      Const_number_rational({
+        rational_negative,
+        rational_num_limbs,
+        rational_den_limbs,
+        rational_num_rep,
+        rational_den_rep,
+      }),
+    ) =>
+    let ntmp = gensym("numerator");
+    let dtmp = gensym("denominator");
+    let tmp = gensym("rational");
+    let setup = [
+      BLet(
+        ntmp,
+        Comp.number(
+          Const_number_bigint({
+            bigint_negative: rational_negative,
+            bigint_limbs: rational_num_limbs,
+            bigint_rep: rational_num_rep,
+          }),
+        ),
+        Nonglobal,
+      ),
+      BLet(
+        dtmp,
+        Comp.number(
+          Const_number_bigint({
+            bigint_negative: false,
+            bigint_limbs: rational_den_limbs,
+            bigint_rep: rational_den_rep,
+          }),
+        ),
+        Nonglobal,
+      ),
+      BLet(
+        tmp,
+        Comp.rational(Imm.id(~loc, ~env, ntmp), Imm.id(~loc, ~env, dtmp)),
+        Nonglobal,
+      ),
+    ];
+    Right((tmp, setup));
+  | Const_number(n) =>
+    Right(
+      with_bind("number", tmp => [BLet(tmp, Comp.number(n), Nonglobal)]),
+    )
   | Const_bigint(data) =>
-    Right(("number", Comp.number(Const_number_bigint(data))))
-  | Const_int32(i) => Right(("int32", Comp.int32(i)))
-  | Const_int64(i) => Right(("int64", Comp.int64(i)))
-  | Const_float64(i) => Right(("float64", Comp.float64(i)))
-  | Const_float32(i) => Right(("float32", Comp.float32(i)))
-  | Const_bytes(b) => Right(("bytes", Comp.bytes(b)))
-  | Const_string(s) => Right(("str", Comp.string(s)))
-  | Const_char(c) => Right(("char", Comp.char(c)))
+    Right(
+      with_bind("number", tmp =>
+        [BLet(tmp, Comp.number(Const_number_bigint(data)), Nonglobal)]
+      ),
+    )
+  | Const_int32(i) =>
+    Right(with_bind("int32", tmp => [BLet(tmp, Comp.int32(i), Nonglobal)]))
+  | Const_int64(i) =>
+    Right(with_bind("int64", tmp => [BLet(tmp, Comp.int64(i), Nonglobal)]))
+  | Const_float64(i) =>
+    Right(
+      with_bind("float64", tmp => [BLet(tmp, Comp.float64(i), Nonglobal)]),
+    )
+  | Const_float32(i) =>
+    Right(
+      with_bind("float32", tmp => [BLet(tmp, Comp.float32(i), Nonglobal)]),
+    )
+  | Const_bytes(b) =>
+    Right(with_bind("bytes", tmp => [BLet(tmp, Comp.bytes(b), Nonglobal)]))
+  | Const_string(s) =>
+    Right(with_bind("str", tmp => [BLet(tmp, Comp.string(s), Nonglobal)]))
+  | Const_char(c) =>
+    Right(with_bind("char", tmp => [BLet(tmp, Comp.char(c), Nonglobal)]))
   | _ => Left(Imm.const(c))
   };
 };
@@ -293,57 +358,10 @@ let rec transl_imm =
     | {val_fullpath: Path.PExternal(_)} =>
       failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
     }
-  // edge case: for Rationals, we need to allocate the underlying bigints in the setup.
-  | TExpConstant(
-      Const_number(
-        Const_number_rational({
-          rational_negative,
-          rational_num_limbs,
-          rational_den_limbs,
-          rational_num_rep,
-          rational_den_rep,
-        }),
-      ),
-    ) =>
-    let ntmp = gensym("numerator");
-    let dtmp = gensym("denominator");
-    let tmp = gensym("rational");
-    let setup = [
-      BLet(
-        ntmp,
-        Comp.number(
-          Const_number_bigint({
-            bigint_negative: rational_negative,
-            bigint_limbs: rational_num_limbs,
-            bigint_rep: rational_num_rep,
-          }),
-        ),
-        Nonglobal,
-      ),
-      BLet(
-        dtmp,
-        Comp.number(
-          Const_number_bigint({
-            bigint_negative: false,
-            bigint_limbs: rational_den_limbs,
-            bigint_rep: rational_den_rep,
-          }),
-        ),
-        Nonglobal,
-      ),
-      BLet(
-        tmp,
-        Comp.rational(Imm.id(~loc, ~env, ntmp), Imm.id(~loc, ~env, dtmp)),
-        Nonglobal,
-      ),
-    ];
-    (Imm.id(~loc, ~env, tmp), setup);
   | TExpConstant(c) =>
-    switch (transl_const(c)) {
+    switch (transl_const(~loc, ~env, c)) {
     | Left(imm) => (imm, [])
-    | Right((name, cexpr)) =>
-      let tmp = gensym(name);
-      (Imm.id(~loc, ~env, tmp), [BLet(tmp, cexpr, Nonglobal)]);
+    | Right((name, cexprs)) => (Imm.id(~loc, ~env, name), cexprs)
     }
   | TExpNull => (Imm.const(~loc, ~env, Const_bool(false)), [])
   | TExpPrim0(op) =>
