@@ -20,8 +20,8 @@ let incCounter = random => {
 // https://arxiv.org/pdf/2004.06278v3.pdf
 @unsafe
 let squares = (ctr: Int64, key: Int64) => {
-  // Need to implement with @unsafe because
-  // overflows are part of this algorithm
+  // Implemented with @unsafe to boost efficiency
+  // and have fine-grained control over overflow semantics
   let ctr = WasmI64.load(WasmI32.fromGrain(ctr), 8n)
   let key = WasmI64.load(WasmI32.fromGrain(key), 8n)
   let mut x = WasmI64.mul(ctr, key)
@@ -55,7 +55,7 @@ export let make = seed => {
 /**
  * Creates a new pseudo-random number generator with a random seed.
  *
- * @returns The pseudo-random number generator
+ * @returns `Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise
  */
 export let makeUnseeded = () => {
   // TODO: Should we just .expect this result for UX's sake?
@@ -114,18 +114,6 @@ export let nextInt64 = (random: Random) => {
   )
   incCounter(random)
   Int64.lor(Int64.shl(ret1, 32L), ret2)
-}
-
-// (can be removed after #831 lands)
-@disableGC
-let rec gtU = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
-  let ret = WasmI32.gtU(xv, yv)
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(y))
-  Memory.decRef(WasmI32.fromGrain(gtU))
-  ret
 }
 
 /**
