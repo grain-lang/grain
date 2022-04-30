@@ -275,7 +275,7 @@ let const_compare = (x, y) =>
       Const_wasmi64(_) |
       Const_wasmf32(_) |
       Const_wasmf64(_) |
-      Const_bigint(_) | // <- impossible
+      Const_bigint(_) |
       Const_void |
       Const_int32(_) |
       Const_int64(_),

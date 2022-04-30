@@ -96,7 +96,7 @@ let constant:
             ),
           )
         // Should not happen, since `None` is only returned for the empty string,
-        // and that should be disallowed by the lexer
+        // and that is disallowed by the lexer
         | None =>
           Error(
             Location.errorf(
@@ -200,7 +200,7 @@ let constant:
       | Some((bigint_negative, bigint_limbs)) =>
         Ok(Const_bigint({bigint_negative, bigint_limbs, bigint_rep: n}))
       // Should not happen, since `None` is only returned for the empty string,
-      // and that should be disallowed by the lexer
+      // and that is disallowed by the lexer
       | None =>
         Error(
           Location.errorf(

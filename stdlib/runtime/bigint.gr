@@ -2013,6 +2013,7 @@ export let quot = (num1: WasmI32, num2: WasmI32) => {
   let dest = Memory.malloc(8n)
   division(num1, num2, dest, false)
   let ret = WasmI32.load(dest, 0n)
+  Memory.free(dest)
   ret
 }
 

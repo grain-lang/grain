@@ -129,7 +129,6 @@ let convert_binds = anf_binds => {
 };
 
 let transl_const =
-    // [TODO] convert to list
     (~loc=Location.dummy_loc, ~env=Env.empty, c: Types.constant)
     : Either.t(imm_expression, (ident, list(anf_bind))) => {
   let with_bind = (name, f) => {
