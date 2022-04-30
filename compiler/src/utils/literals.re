@@ -105,6 +105,10 @@ let conv_bigint = s =>
     let first = if (neg) {1} else {0};
     let (first, base) =
       // This function supports the 0u prefix for parity with Int64.of_string
+      // Note that Grain doesn't support the 0u prefix (as of writing), so this should
+      // never receive a string which starts with 0u, but we still include the support
+      // so as to keep the semantics of all of our string->int conversion functions
+      // synced up.
       if (String_utils.starts_with(~offset=first, s, "0u")
           || String_utils.starts_with(~offset=first, s, "0U")) {
         (first + 2, 10);
