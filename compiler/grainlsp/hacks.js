@@ -9,9 +9,13 @@ function caml_ml_open_descriptor_in (fd)  {
       var fs = require('fs');
       var Buffer = require('buffer').Buffer;
       refill = function () {
-        var buf = Buffer.alloc(1024);
-        var bytesRead = fs.readSync(0, buf);
-        return caml_string_of_jsstring(buf.slice(0, bytesRead).toString('utf8'));
+        var buf = Buffer.alloc(256);
+        var stdinFd = fs.openSync('/dev/stdin', 'rs');
+        var bytesRead = fs.readSync(fd, buf);
+        fs.closeSync(stdinFd);
+        // Ensures we don't have any trailing, empty data
+        var str = buf.slice(0, bytesRead).toString('utf8');
+        return caml_string_of_jsstring(str);
       };
     }
     var channel = {
@@ -25,3 +29,29 @@ function caml_ml_open_descriptor_in (fd)  {
     caml_ml_channels[channel.fd]=channel;
     return channel.fd;
   }
+
+//Provides: js_print_stdout (const)
+//Requires: caml_utf16_of_utf8
+function js_print_stdout(s) {
+  var s = caml_utf16_of_utf8(s);
+  var g = joo_global_object;
+  if (g.process && g.process.stdout && g.process.stdout.write) {
+    // Writing too much data at once causes node's stdout socket to choke
+    // so we write it using 8-length chunks (which seem to flush quickly)
+    var written = 0;
+    var chunk_len = 8;
+    while (written <= s.length) {
+      var chunk = s.slice(written, written + chunk_len);
+      // TODO: Do we need to handle the `drained` flag returned? Throw when not drained?
+      process.stdout.write(chunk);
+      written += chunk_len;
+    }
+  } else {
+    // Do not output the last \n if present
+    // as console logging display a newline at the end
+    if(s.charCodeAt(s.length - 1) == 10)
+      s = s.substr(0,s.length - 1 );
+    var v = g.console;
+    v  && v.log && v.log(s);
+  }
+}
