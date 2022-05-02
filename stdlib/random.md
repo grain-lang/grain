@@ -40,7 +40,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Random, Exception>`|The pseudo-random number generator|
+|`Result<Random, Exception>`|`Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise|
 
 ### Random.**nextInt32**
 

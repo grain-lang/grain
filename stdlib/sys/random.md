@@ -24,7 +24,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Int32, Exception>`|`Ok(num)` of a random number if successful or `Err(exception)` otherwise|
+|`Result<Int32, Exception>`|`Ok(num)` of a random Int32 if successful or `Err(exception)` otherwise|
 
 ### Random.**randomInt64**
 
@@ -38,7 +38,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Int64, Exception>`|`Ok(num)` of a random number if successful or `Err(exception)` otherwise|
+|`Result<Int64, Exception>`|`Ok(num)` of a random Int64 if successful or `Err(exception)` otherwise|
 
 ### Random.**random**
 
