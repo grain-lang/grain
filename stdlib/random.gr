@@ -1,3 +1,8 @@
+/**
+ * @module Random: A pseudo-random number generator implementation.
+ * @example import Random from "random"
+ * @since v0.5.0
+ */
 import WasiRandom from "sys/random"
 import Result from "result"
 import Int32 from "int32"
@@ -7,11 +12,19 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import Memory from "runtime/unsafe/memory"
 import DS from "runtime/dataStructures"
 
+/**
+ * @section Types: Type declarations included in the Random module.
+ */
+
 record Random {
   seed: Int64,
   mut counter: Int64,
   mut initialized: Bool,
 }
+
+/**
+ * @section Values: Functions for working with pseudo-random number generators.
+ */
 
 let incCounter = random => {
   random.counter = Int64.incr(random.counter)
@@ -47,6 +60,8 @@ let squares = (ctr: Int64, key: Int64) => {
  *
  * @param seed: The seed for the pseudo-random number generator
  * @returns The pseudo-random number generator
+ *
+ * @since v0.5.0
  */
 export let make = seed => {
   { seed, counter: 0L, initialized: false }
@@ -56,6 +71,8 @@ export let make = seed => {
  * Creates a new pseudo-random number generator with a random seed.
  *
  * @returns `Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise
+ *
+ * @since v0.5.0
  */
 export let makeUnseeded = () => {
   // TODO: Should we just .expect this result for UX's sake?
@@ -89,6 +106,8 @@ let checkInitialized = (random: Random) => {
  *
  * @param random: The pseudo-random number generator to use
  * @returns The randomly generated number
+ *
+ * @since v0.5.0
  */
 export let nextInt32 = (random: Random) => {
   checkInitialized(random)
@@ -102,6 +121,8 @@ export let nextInt32 = (random: Random) => {
  *
  * @param random: The pseudo-random number generator to use
  * @returns The randomly generated number
+ *
+ * @since v0.5.0
  */
 export let nextInt64 = (random: Random) => {
   checkInitialized(random)
@@ -124,6 +145,8 @@ export let nextInt64 = (random: Random) => {
  * @param low: The lower bound of the range (inclusive)
  * @param high: The upper bound of the range (exclusive)
  * @returns The randomly generated number
+ *
+ * @since v0.5.0
  */
 export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
@@ -152,6 +175,8 @@ export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
  * @param low: The lower bound of the range (inclusive)
  * @param high: The upper bound of the range (exclusive)
  * @returns The randomly generated number
+ *
+ * @since v0.5.0
  */
 export let nextInt64InRange = (random: Random, low: Int64, high: Int64) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
