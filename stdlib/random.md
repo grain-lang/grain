@@ -1,3 +1,22 @@
+---
+title: Random
+---
+
+A pseudo-random number generator implementation.
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+import Random from "random"
+```
+
+## Types
+
+Type declarations included in the Random module.
+
 ### Random.**Random**
 
 ```grain
@@ -8,7 +27,16 @@ record Random {
 }
 ```
 
+## Values
+
+Functions for working with pseudo-random number generators.
+
 ### Random.**make**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 make : Int64 -> Random
@@ -30,6 +58,11 @@ Returns:
 
 ### Random.**makeUnseeded**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 makeUnseeded : () -> Result<Random, Exception>
 ```
@@ -43,6 +76,11 @@ Returns:
 |`Result<Random, Exception>`|`Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise|
 
 ### Random.**nextInt32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 nextInt32 : Random -> Int32
@@ -64,6 +102,11 @@ Returns:
 
 ### Random.**nextInt64**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 nextInt64 : Random -> Int64
 ```
@@ -83,6 +126,11 @@ Returns:
 |`Int64`|The randomly generated number|
 
 ### Random.**nextInt32InRange**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 nextInt32InRange : (Random, Int32, Int32) -> Int32
@@ -106,6 +154,11 @@ Returns:
 |`Int32`|The randomly generated number|
 
 ### Random.**nextInt64InRange**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 nextInt64InRange : (Random, Int64, Int64) -> Int64
