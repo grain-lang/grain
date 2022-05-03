@@ -184,10 +184,64 @@ module Args = {
     let cmdliner_converter = (prsr, prntr);
   };
 
+  module ExistingFileOrDirectory = {
+    type t =
+      | File(Fp.t(Fp.absolute))
+      | Directory(Fp.t(Fp.absolute));
+
+    type err =
+      | InvalidPath(string)
+      | NotExists(Fp.t(Fp.absolute))
+      | InvalidFileType(Fp.t(Fp.absolute));
+
+    let query = fname => {
+      switch (from_string(fname)) {
+      | Some(path) =>
+        let abs_path = derelativize(path);
+        switch (Fs.query(abs_path)) {
+        | Some(File(path, _stat)) => Ok(File(path))
+        | Some(Dir(path, _)) => Ok(Directory(path))
+        | Some(Other(path, _, _)) => Error(InvalidFileType(path))
+        | Some(Link(_, realpath, _)) =>
+          Error(InvalidFileType(derelativize(realpath)))
+        | None => Error(NotExists(abs_path))
+        };
+      | None => Error(InvalidPath(fname))
+      };
+    };
+
+    let prsr = fname => {
+      switch (query(fname)) {
+      | Ok(file) => `Ok(file)
+      | Error(InvalidFileType(path)) =>
+        `Error(
+          Format.sprintf(
+            "%s exists but is not a file or directory",
+            to_string(path),
+          ),
+        )
+      | Error(NotExists(path)) =>
+        `Error(Format.sprintf("%s does not exist", to_string(path)))
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      switch (value) {
+      | File(path) => Format.fprintf(formatter, "File: %s", to_string(path))
+      | Directory(path) =>
+        Format.fprintf(formatter, "Directory: %s", to_string(path))
+      };
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
   module MaybeExistingFile = {
     type t =
-      | Exists(Fp.t(Fp.absolute))
-      | NotExists(Fp.t(Fp.absolute));
+      | Exists(ExistingFile.t)
+      | NotExists(ExistingFile.t);
 
     let prsr = fname => {
       switch (ExistingFile.query(fname)) {
@@ -206,6 +260,41 @@ module Args = {
       switch (value) {
       | Exists(path) =>
         Format.fprintf(formatter, "File: %s", to_string(path))
+      | NotExists(path) =>
+        Format.fprintf(formatter, "Path: %s", to_string(path))
+      };
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
+  module MaybeExistingFileOrDirectory = {
+    type t =
+      | Exists(ExistingFileOrDirectory.t)
+      | NotExists(Fp.t(Fp.absolute));
+
+    let prsr = fname => {
+      switch (ExistingFileOrDirectory.query(fname)) {
+      | Ok(path) => `Ok(Exists(path))
+      | Error(NotExists(path)) => `Ok(NotExists(path))
+      | Error(InvalidFileType(path)) =>
+        `Error(
+          Format.sprintf(
+            "%s exists but is not a file or directory",
+            to_string(path),
+          ),
+        )
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      switch (value) {
+      | Exists(File(path)) =>
+        Format.fprintf(formatter, "File: %s", to_string(path))
+      | Exists(Directory(path)) =>
+        Format.fprintf(formatter, "Directory: %s", to_string(path))
       | NotExists(path) =>
         Format.fprintf(formatter, "Path: %s", to_string(path))
       };
