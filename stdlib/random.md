@@ -2,7 +2,7 @@
 title: Random
 ---
 
-A pseudo-random number generator implementation.
+Pseudo-random number generation.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
