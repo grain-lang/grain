@@ -14,6 +14,11 @@ Functions and constants included in the Sys/Random module.
 
 ### Random.**randomInt32**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 randomInt32 : () -> Result<Int32, Exception>
 ```
@@ -27,6 +32,11 @@ Returns:
 |`Result<Int32, Exception>`|`Ok(num)` of a random Int32 if successful or `Err(exception)` otherwise|
 
 ### Random.**randomInt64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 randomInt64 : () -> Result<Int64, Exception>
