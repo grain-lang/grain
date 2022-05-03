@@ -1,5 +1,5 @@
 /**
- * @module Random: A pseudo-random number generator implementation.
+ * @module Random: Pseudo-random number generation.
  * @example import Random from "random"
  * @since v0.5.0
  */
