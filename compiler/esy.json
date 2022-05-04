@@ -29,7 +29,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.15.0 < 0.16.0",
+    "@grain/binaryen.ml": ">= 0.16.0 < 0.17.0",
     "@opam/cmdliner": ">= 1.0.2",
     "@opam/dune": ">= 2.0.0 < 3.0.0",
     "@opam/dune-build-info": ">= 2.0.0 < 3.0.0",
@@ -53,6 +53,8 @@
     "@reason-native/rely": "^4.0.0"
   },
   "resolutions": {
+    "@grain/libbinaryen": "grain-lang/libbinaryen:package.json#5a65721658c0d41255804f3e58b3818e3c58aa4c",
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#5f403dcaa4531c5b4c709c572f2dd468cb23670a",
     "ocaml": "4.12.0",
     "@opam/ocamlfind": "1.8.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
