@@ -249,7 +249,7 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
     globalize_names(Expression.Select.get_if_false(expr));
     globalize_names(Expression.Select.get_condition(expr));
   | Drop => globalize_names(Expression.Drop.get_value(expr))
-  | Return => globalize_names(Expression.Return.get_value(expr))
+  | Return => Option.iter(globalize_names, Expression.Return.get_value(expr))
   | MemorySize => ()
   | MemoryGrow => globalize_names(Expression.Memory_grow.get_delta(expr))
   | Unreachable => ()
