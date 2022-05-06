@@ -303,7 +303,9 @@ let compile_string =
     cstate_filename: name,
     cstate_outfile: outfile,
   };
-  compile_resume(~is_root_file, ~hook?, cstate);
+  Grain_utils.Config.preserve_all_configs(() =>
+    compile_resume(~is_root_file, ~hook?, cstate)
+  );
 };
 
 let compile_file =
@@ -317,7 +319,9 @@ let compile_file =
     cstate_filename: Some(filename),
     cstate_outfile: outfile,
   };
-  compile_resume(~is_root_file, ~hook?, cstate);
+  Grain_utils.Config.preserve_all_configs(() =>
+    compile_resume(~is_root_file, ~hook?, cstate)
+  );
 };
 
 let anf = Linearize.transl_anf_module;
