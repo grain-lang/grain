@@ -117,7 +117,7 @@ let setSize = (ptr: WasmI32, val: WasmI32) => {
  * Requests that the heap be grown by the given number of bytes.
  *
  * @param nbytes: WasmI32 - The number of bytes requested
- * @return WasmI32 - If unsuccessful, -1. Otherwise, the pointer to the beginning of the extended region.
+ * @returns WasmI32 - If unsuccessful, -1. Otherwise, the pointer to the beginning of the extended region.
  */
 let growHeap = (nbytes: WasmI32) => {
   let mut reqSize = 0n
@@ -213,7 +213,7 @@ export let free = (ap: WasmI32) => {
  *  of the 1970s, the name of this function is taken from K&R).
  *
  * @param nbytes: WasmI32 - The number of bytes to try to grow the heap by
- * @return WasmI32 - If successful, a pointer to the start of the free list. If not successful, -1.
+ * @returns WasmI32 - If successful, a pointer to the start of the free list. If not successful, -1.
  */
 let morecore = (nbytes: WasmI32) => {
   let origSize = heapSize
@@ -238,7 +238,7 @@ let morecore = (nbytes: WasmI32) => {
  * Allocates the requested number of bytes, returning a pointer.
  *
  * @param nbytes: WasmI32 - The number of bytes to allocate
- * @return WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
+ * @returns WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
  */
 export let malloc = (nb: WasmI32) => {
   let mut nbytes = nb
@@ -305,7 +305,7 @@ export let malloc = (nb: WasmI32) => {
  * Returns the current free list pointer
  * (used for debugging)
  *
- * @return WasmI32 - The free list pointer
+ * @returns WasmI32 - The free list pointer
  */
 export let getFreePtr = () => {
   freePtr
