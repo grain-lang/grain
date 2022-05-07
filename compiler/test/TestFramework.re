@@ -31,18 +31,20 @@ let test_formatter_out_dir = Filename.concat(test_dir, "formatter_outputs");
 
 let clean_grain_output = stdlib_dir =>
   Array.iter(
-    file =>
-      if (Filename.check_suffix(file, ".gr.wasm")
-          || Filename.check_suffix(file, ".gr.wat")
-          || Filename.check_suffix(file, ".gr.modsig")) {
-        Sys.remove(file);
-      },
-    Grain_utils.Files.readdir(stdlib_dir, []),
+    file => {
+      let filename = Fp.toString(file);
+      if (Filename.check_suffix(filename, ".gr.wasm")
+          || Filename.check_suffix(filename, ".gr.wat")
+          || Filename.check_suffix(filename, ".gr.modsig")) {
+        Fs.rmExn(file);
+      };
+    },
+    Grain_utils.Files.(readdir(to_absolute(stdlib_dir))),
   );
 
 let clean_output = output =>
   if (Sys.file_exists(output)) {
-    Array.iter(Sys.remove, Grain_utils.Files.readdir(output, []));
+    Array.iter(Fs.rmExn, Grain_utils.Files.(readdir(to_absolute(output))));
   };
 
 let () = {

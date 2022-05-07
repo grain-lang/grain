@@ -19,6 +19,16 @@ let to_fp = fname => {
 
 let get_cwd = () => Sys.getcwd();
 
+let to_absolute = path => {
+  switch (to_fp(path)) {
+  | None => failwith("Invalid path")
+  | Some(Fp.Absolute(absPath)) => absPath
+  | Some(Fp.Relative(relpath)) =>
+    let base = Fp.absoluteCurrentPlatformExn(get_cwd());
+    Fp.join(base, relpath);
+  };
+};
+
 let filename_to_module_name = fname => {
   let baseName =
     Option.bind(to_fp(fname), p =>
@@ -100,18 +110,13 @@ let derelativize = (~base=?, fname) => {
 };
 
 // Recursive readdir
-let rec readdir = (dir, excludes) => {
-  Sys.readdir(dir)
-  |> Array.fold_left(
-       (results, filename) => {
-         let filepath = Filename.concat(dir, filename);
-         Sys.is_directory(filepath)
-         && List.for_all(
-              exclude => !String_utils.starts_with(filename, exclude),
-              excludes,
-            )
-           ? Array.append(results, readdir(filepath, excludes))
-           : Array.append(results, [|filepath|]);
+let rec readdir = dir => {
+  Fs.readDirExn(dir)
+  |> List.fold_left(
+       (results, filepath) => {
+         Sys.is_directory(Fp.toString(filepath))
+           ? Array.append(results, readdir(filepath))
+           : Array.append(results, [|filepath|])
        },
        [||],
      );
