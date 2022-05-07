@@ -105,12 +105,13 @@ let string_of_type_expr = out_type => {
   Option.map(to_string, out_type);
 };
 
-let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
+let for_value_description =
+    (~comments, ~ident: Ident.t, vd: Types.value_description) => {
   let module_name = module_name_of_location(vd.val_loc);
   let name = title_for_api(~module_name, ident);
   let type_sig = string_of_value_description(~ident, vd);
   let comment =
-    Comments.Doc.ending_on_lnum(vd.val_loc.loc_start.pos_lnum - 1);
+    Comments.Doc.ending_on(~lnum=vd.val_loc.loc_start.pos_lnum - 1, comments);
 
   let (description, attributes) =
     switch (comment) {
@@ -137,12 +138,16 @@ let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
   {module_name, name, type_sig, description, attributes};
 };
 
-let for_type_declaration = (~ident: Ident.t, td: Types.type_declaration) => {
+let for_type_declaration =
+    (~comments, ~ident: Ident.t, td: Types.type_declaration) => {
   let module_name = module_name_of_location(td.type_loc);
   let name = title_for_api(~module_name, ident);
   let type_sig = string_of_type_declaration(~ident, td);
   let comment =
-    Comments.Doc.ending_on_lnum(td.type_loc.loc_start.pos_lnum - 1);
+    Comments.Doc.ending_on(
+      ~lnum=td.type_loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let (description, attributes) =
     switch (comment) {
@@ -153,15 +158,16 @@ let for_type_declaration = (~ident: Ident.t, td: Types.type_declaration) => {
   {module_name, name, type_sig, description, attributes};
 };
 
-let for_signature_item = (~env: Env.t, sig_item: Types.signature_item) => {
+let for_signature_item =
+    (~env: Env.t, ~comments, sig_item: Types.signature_item) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
     let vd = Env.find_value(vd.val_fullpath, env);
-    let docblock = for_value_description(~ident, vd);
+    let docblock = for_value_description(~comments, ~ident, vd);
     Some(docblock);
   | TSigType(ident, td, _rec) =>
     let td = Env.find_type(td.type_path, env);
-    let docblock = for_type_declaration(~ident, td);
+    let docblock = for_type_declaration(~comments, ~ident, td);
     Some(docblock);
   | _ => None
   };

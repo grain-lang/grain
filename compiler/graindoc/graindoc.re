@@ -101,13 +101,13 @@ let compile_typed = (opts: params) => {
 
 let generate_docs =
     ({current_version, output}: params, program: Typedtree.typed_program) => {
-  Comments.setup_comments(program.comments);
+  let comments = Comments.to_ordered(program.comments);
 
   let env = program.env;
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
-  let module_comment = Comments.Doc.find_module();
+  let module_comment = Comments.Doc.find_module(comments);
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
     // TODO: Should we fail if more than one `@module` attribute?
@@ -181,7 +181,7 @@ let generate_docs =
   };
 
   let add_docblock = sig_item => {
-    let docblock = Docblock.for_signature_item(~env, sig_item);
+    let docblock = Docblock.for_signature_item(~env, ~comments, sig_item);
     switch (docblock) {
     | Some(docblock) =>
       Buffer.add_buffer(
@@ -192,7 +192,7 @@ let generate_docs =
     };
   };
 
-  let section_comments = Comments.Doc.find_sections();
+  let section_comments = Comments.Doc.find_sections(comments);
   if (List.length(section_comments) == 0) {
     List.iter(add_docblock, signature_items);
   } else {
