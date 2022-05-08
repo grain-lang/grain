@@ -111,6 +111,7 @@ let run = (~num_pages=?, file) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let args = [
+    // "/Users/oscar/.yarn/bin/grain",
     "grain",
     cli_flags,
     "-S",
@@ -120,28 +121,59 @@ let run = (~num_pages=?, file) => {
     "run",
     file,
   ];
-  let command = String.concat(" ", args);
+  let args = String.concat(" ", args);
+  let args = ["/bin/sh", "-c", args];
 
-  let (stdout, stdin, stderr) =
-    Unix.open_process_full(command, Unix.environment());
+  let (stdout, stdout_in) = Spawn.safe_pipe();
+  // let (stderr, stderr_in) = Spawn.safe_pipe();
 
-  let pid = Unix.process_full_pid((stdout, stdin, stderr));
+  let pid =
+    Spawn.spawn(
+      ~prog="/bin/sh",
+      ~argv=args,
+      ~stdout=stdout_in,
+      ~stderr=stdout_in,
+      (),
+    );
+
+  // let (stdout, stdin, stderr) =
+  //   Unix.open_process_full(command, Unix.environment());
+
+  // let pid = Unix.process_full_pid((stdout, stdin, stderr));
   let (_, status, timed_out) =
     try({
-      let (x, status) = Test_utils.waitpid_timeout(15., pid);
+      let (x, status) = Test_utils.waitpid_timeout(1., pid);
       (x, status, false);
     }) {
     | Test_utils.Timeout =>
       Unix.kill(pid, 9);
       ((-1), Unix.WEXITED(-1), true);
     };
+  prerr_endline("reading streams");
+  let buf = Bytes.create(4096);
 
-  let out = read_stream(Stream.of_channel(stdout));
-  let err = read_stream(Stream.of_channel(stderr));
+  Unix.set_nonblock(stdout);
 
-  close_in(stdout);
-  close_in(stderr);
-  close_out(stdin);
+  let out =
+    try(Bytes.sub_string(buf, 0, Unix.read(stdout, buf, 0, 4096))) {
+    | Unix.Unix_error(Unix.EAGAIN | Unix.EWOULDBLOCK, _, _) => "" // if there's nothing to read, the output is empty
+    };
+  // prerr_endline("done reading out");
+  // let err = Bytes.sub_string(buf, 0, Unix.read(stderr, buf, 0, 4096));
+  // prerr_endline("done reading streams");
+  // let out =
+  //   read_stream(Stream.of_channel(Unix.in_channel_of_descr(stdout)));
+  // let err =
+  //   read_stream(Stream.of_channel(Unix.in_channel_of_descr(stderr)));
+
+  // close_in(stdout);
+  // close_in(stderr);
+  // close_out(stdin);
+
+  // Unix.close(stdout);
+  // Unix.close(stdout_in);
+  // Unix.close(stderr);
+  // Unix.close(stderr_in);
 
   let code =
     switch (status) {
@@ -155,7 +187,7 @@ let run = (~num_pages=?, file) => {
     } else {
       out;
     };
-  (out ++ err, code);
+  (out /*++ err*/, code);
 };
 
 let format = file => {

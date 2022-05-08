@@ -3,7 +3,7 @@
 (library
  (name Grain_tests)
  (public_name grain-tests.framework)
- (libraries grain rely.lib)
+ (libraries grain rely.lib spawn)
  (modules TestFramework WarningExtensions test_utils runner))
 
 (executable

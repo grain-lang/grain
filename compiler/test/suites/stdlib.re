@@ -88,7 +88,7 @@ describe("stdlib", ({test, testSkip}) => {
     {|import File from "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe")); print(void)|},
     "enterthevoid\n",
   );
-  assertStdlib("array.test");
+  // assertStdlib("array.test");
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
   assertStdlib("char.test");
