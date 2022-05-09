@@ -131,6 +131,7 @@ let realpath = path => {
 };
 
 // let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
+let shell = "C:\Program Files\PowerShell\7\pwsh.EXE";
 let grain_cmd_loc = "D:\\a\\grain\\grain\\cli\\bin\\grain.js";
 let _ = prerr_endline(grain_cmd_loc);
 
@@ -150,13 +151,23 @@ let run = (~num_pages=?, file) => {
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
-  let args = [cli_flags, "-S", stdlib, "-I", test_libs_dir, "run", file];
+  let args = [
+    "-command",
+    "grain",
+    cli_flags,
+    "-S",
+    stdlib,
+    "-I",
+    test_libs_dir,
+    "run",
+    file,
+  ];
 
   let (pipe_out, pipe_in) = Spawn.safe_pipe();
 
   let pid =
     Spawn.spawn(
-      ~prog=grain_cmd_loc,
+      ~prog=shell,
       ~argv=args,
       ~stdout=pipe_in,
       ~stderr=pipe_in,
