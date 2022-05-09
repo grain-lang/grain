@@ -119,11 +119,15 @@ let resolve_in_path_exn = prog => {
   };
 };
 
-let grain_cmd_loc =
-  Fp.toString @@
-  Fs.resolveLinkExn @@
-  Fp.absoluteCurrentPlatformExn @@
-  resolve_in_path_exn("grain");
+let realpath = path => {
+  let stats = Unix.lstat(path);
+  switch (stats.st_kind) {
+  | Unix.S_LNK => Unix.readlink(path)
+  | _ => path
+  };
+};
+
+let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
 let _ = prerr_endline(grain_cmd_loc);
 
 let run = (~num_pages=?, file) => {
