@@ -131,7 +131,7 @@ let realpath = path => {
 };
 
 // let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
-let shell = "C:\Program Files\PowerShell\7\pwsh.EXE";
+let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
 let grain_cmd_loc = "D:\\a\\grain\\grain\\cli\\bin\\grain.js";
 let _ = prerr_endline(grain_cmd_loc);
 
@@ -184,8 +184,10 @@ let run = (~num_pages=?, file) => {
       ((-1), Unix.WEXITED(-1), true);
     };
 
-  Unix.set_nonblock(pipe_out);
+  // Unix.set_nonblock(pipe_out);
   let buf = Bytes.create(4096);
+  // fake a write so it doesn't block
+  ignore @@ Unix.write(pipe_in, buf, 0, 0);
   let out =
     try(Bytes.sub_string(buf, 0, Unix.read(pipe_out, buf, 0, 4096))) {
     | Unix.Unix_error(Unix.EAGAIN | Unix.EWOULDBLOCK, _, _) => "" // if there's nothing to read, the output is empty
