@@ -130,7 +130,8 @@ let realpath = path => {
   };
 };
 
-let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
+// let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
+let grain_cmd_loc = "D:\\a\\grain\\grain\\cli\\bin\\grain.js";
 let _ = prerr_endline(grain_cmd_loc);
 
 let run = (~num_pages=?, file) => {
