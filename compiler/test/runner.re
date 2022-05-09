@@ -123,6 +123,9 @@ let realpath = path => {
   let stats = Unix.lstat(path);
   switch (stats.st_kind) {
   | Unix.S_LNK => Unix.readlink(path)
+  | Unix.S_REG =>
+    prerr_endline("regular schmegular file");
+    path;
   | _ => path
   };
 };
