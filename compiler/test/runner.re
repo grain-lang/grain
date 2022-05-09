@@ -165,10 +165,13 @@ let run = (~num_pages=?, file) => {
 
   let (pipe_out, pipe_in) = Spawn.safe_pipe();
 
+  let env = Spawn.Env.of_list(Array.to_list(Unix.environment()));
+
   let pid =
     Spawn.spawn(
       ~prog=shell,
       ~argv=args,
+      ~env,
       ~stdout=pipe_in,
       ~stderr=pipe_in,
       (),
