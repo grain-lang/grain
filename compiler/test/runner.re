@@ -94,6 +94,26 @@ let extract_anf = ({cstate_desc}) =>
 let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
+let resolve_in_path = prog =>
+  /* Do not try to resolve in the path if the program is something like
+   * ./this.exe */
+  if (String.split_on_char('/', prog) |> List.length != 1) {
+    Some(prog);
+  } else {
+    let paths = Sys.getenv("PATH") |> String.split_on_char(':');
+    List.map(d => Caml.Filename.concat(d, prog), paths)
+    |> List.find_opt(Caml.Sys.file_exists);
+  };
+
+let resolve_in_path_exn = prog => {
+  switch (resolve_in_path(prog)) {
+  | None => failwith(Printf.sprintf("no program in path %s", prog))
+  | Some(prog) => prog
+  };
+};
+
+let grain_cmd_loc = resolve_in_path_exn("grain");
+
 let run = (~num_pages=?, file) => {
   let cli_flags = "-g";
   let cli_flags =
@@ -110,36 +130,19 @@ let run = (~num_pages=?, file) => {
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
-  let args = [
-    // "/Users/oscar/.yarn/bin/grain",
-    "grain",
-    cli_flags,
-    "-S",
-    stdlib,
-    "-I",
-    test_libs_dir,
-    "run",
-    file,
-  ];
-  let args = String.concat(" ", args);
-  let args = ["/bin/sh", "-c", args];
+  let args = [cli_flags, "-S", stdlib, "-I", test_libs_dir, "run", file];
 
-  let (stdout, stdout_in) = Spawn.safe_pipe();
-  // let (stderr, stderr_in) = Spawn.safe_pipe();
+  let (pipe_out, pipe_in) = Spawn.safe_pipe();
 
   let pid =
     Spawn.spawn(
-      ~prog="/bin/sh",
+      ~prog=grain_cmd_loc,
       ~argv=args,
-      ~stdout=stdout_in,
-      ~stderr=stdout_in,
+      ~stdout=pipe_in,
+      ~stderr=pipe_in,
       (),
     );
 
-  // let (stdout, stdin, stderr) =
-  //   Unix.open_process_full(command, Unix.environment());
-
-  // let pid = Unix.process_full_pid((stdout, stdin, stderr));
   let (_, status, timed_out) =
     try({
       let (x, status) = Test_utils.waitpid_timeout(1., pid);
@@ -149,31 +152,16 @@ let run = (~num_pages=?, file) => {
       Unix.kill(pid, 9);
       ((-1), Unix.WEXITED(-1), true);
     };
-  prerr_endline("reading streams");
+
+  Unix.set_nonblock(pipe_out);
   let buf = Bytes.create(4096);
-
-  Unix.set_nonblock(stdout);
-
   let out =
-    try(Bytes.sub_string(buf, 0, Unix.read(stdout, buf, 0, 4096))) {
+    try(Bytes.sub_string(buf, 0, Unix.read(pipe_out, buf, 0, 4096))) {
     | Unix.Unix_error(Unix.EAGAIN | Unix.EWOULDBLOCK, _, _) => "" // if there's nothing to read, the output is empty
     };
-  // prerr_endline("done reading out");
-  // let err = Bytes.sub_string(buf, 0, Unix.read(stderr, buf, 0, 4096));
-  // prerr_endline("done reading streams");
-  // let out =
-  //   read_stream(Stream.of_channel(Unix.in_channel_of_descr(stdout)));
-  // let err =
-  //   read_stream(Stream.of_channel(Unix.in_channel_of_descr(stderr)));
 
-  // close_in(stdout);
-  // close_in(stderr);
-  // close_out(stdin);
-
-  // Unix.close(stdout);
-  // Unix.close(stdout_in);
-  // Unix.close(stderr);
-  // Unix.close(stderr_in);
+  Unix.close(pipe_out);
+  Unix.close(pipe_in);
 
   let code =
     switch (status) {
@@ -187,7 +175,7 @@ let run = (~num_pages=?, file) => {
     } else {
       out;
     };
-  (out /*++ err*/, code);
+  (out, code);
 };
 
 let format = file => {
