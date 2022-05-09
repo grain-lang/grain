@@ -94,16 +94,23 @@ let extract_anf = ({cstate_desc}) =>
 let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
-let resolve_in_path = prog =>
+let resolve_in_path = prog => {
   /* Do not try to resolve in the path if the program is something like
    * ./this.exe */
-  if (String.split_on_char('/', prog) |> List.length != 1) {
+  let (dirsep, pathsep) =
+    if (Sys.unix) {
+      ('/', ':');
+    } else {
+      ('\'', ';');
+    };
+  if (String.split_on_char(dirsep, prog) |> List.length != 1) {
     Some(prog);
   } else {
-    let paths = Sys.getenv("PATH") |> String.split_on_char(':');
-    List.map(d => Caml.Filename.concat(d, prog), paths)
-    |> List.find_opt(Caml.Sys.file_exists);
+    let paths = Sys.getenv("PATH") |> String.split_on_char(pathsep);
+    List.map(d => Filename.concat(d, prog), paths)
+    |> List.find_opt(Sys.file_exists);
   };
+};
 
 let resolve_in_path_exn = prog => {
   switch (resolve_in_path(prog)) {
