@@ -51,3 +51,37 @@ let open_file_for_writing = f => {
   List.iter(((flusher, _)) => flusher(f), cache_flushers^);
   oc;
 };
+
+/** Recursive readdir */
+let rec readdir = dir => {
+  Fs.readDirExn(dir)
+  |> List.fold_left(
+       (results, filepath) => {
+         Sys.is_directory(Fp.toString(filepath))
+           ? Array.append(results, readdir(filepath))
+           : Array.append(results, [|filepath|])
+       },
+       [||],
+     );
+};
+
+let ensure_parent_directory_exists = fname => {
+  // TODO: Use `derelativize` once Fp.t is used everywhere
+  let full_path =
+    switch (Filepath.to_fp(fname)) {
+    | Some(Absolute(path)) => path
+    | Some(Relative(path)) =>
+      let base = Fp.absoluteCurrentPlatformExn(Filepath.get_cwd());
+      Fp.join(base, path);
+    | None =>
+      raise(
+        Invalid_argument(
+          Printf.sprintf("Invalid filepath (fname: '%s')", fname),
+        ),
+      )
+    };
+  // No longer swallowing the error because we can handle the CWD case
+  // thus we should raise if something is actually wrong
+  // TODO: Switch this to return the Result type
+  Fs.mkDirPExn(Fp.dirName(full_path));
+};

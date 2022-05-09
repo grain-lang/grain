@@ -39,14 +39,14 @@ let clean_grain_output = stdlib_dir =>
         Fs.rmExn(file);
       };
     },
-    Grain_utils.(Filepath.readdir(Filepath.to_absolute(stdlib_dir))),
+    Grain_utils.(Fs_access.readdir(Filepath.to_absolute(stdlib_dir))),
   );
 
 let clean_output = output =>
   if (Sys.file_exists(output)) {
     Array.iter(
       Fs.rmExn,
-      Grain_utils.(Filepath.readdir(Filepath.to_absolute(output))),
+      Grain_utils.(Fs_access.readdir(Filepath.to_absolute(output))),
     );
   };
 

@@ -50,27 +50,6 @@ let filename_to_module_name = fname => {
   String.capitalize_ascii(name);
 };
 
-let ensure_parent_directory_exists = fname => {
-  // TODO: Use `derelativize` once Fp.t is used everywhere
-  let full_path =
-    switch (to_fp(fname)) {
-    | Some(Absolute(path)) => path
-    | Some(Relative(path)) =>
-      let base = Fp.absoluteCurrentPlatformExn(get_cwd());
-      Fp.join(base, path);
-    | None =>
-      raise(
-        Invalid_argument(
-          Printf.sprintf("Invalid filepath (fname: '%s')", fname),
-        ),
-      )
-    };
-  // No longer swallowing the error because we can handle the CWD case
-  // thus we should raise if something is actually wrong
-  // TODO: Switch this to return the Result type
-  Fs.mkDirPExn(Fp.dirName(full_path));
-};
-
 /**
   Converts the given path to an absolute path. Relative paths will be
   treated as relative to [base], if given; otherwise, they will be
@@ -107,19 +86,6 @@ let derelativize = (~base=?, fname) => {
     };
 
   Fp.toString(full_path);
-};
-
-// Recursive readdir
-let rec readdir = dir => {
-  Fs.readDirExn(dir)
-  |> List.fold_left(
-       (results, filepath) => {
-         Sys.is_directory(Fp.toString(filepath))
-           ? Array.append(results, readdir(filepath))
-           : Array.append(results, [|filepath|])
-       },
-       [||],
-     );
 };
 
 let realpath = path => {

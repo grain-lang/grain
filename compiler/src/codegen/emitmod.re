@@ -3,7 +3,7 @@ open Grain_utils;
 open Compmod;
 
 let emit_module = ({asm, signature}, outfile) => {
-  Filepath.ensure_parent_directory_exists(outfile);
+  Fs_access.ensure_parent_directory_exists(outfile);
   if (Config.debug^) {
     let sig_string =
       Sexplib.Sexp.to_string_hum(Cmi_format.sexp_of_cmi_infos(signature));
