@@ -119,12 +119,8 @@ let resolve_in_path_exn = prog => {
   };
 };
 
-let grain_cmd_loc =
-  if (Sys.unix) {
-    resolve_in_path_exn("grain");
-  } else {
-    resolve_in_path_exn("grain.exe");
-  };
+let grain_cmd_loc = resolve_in_path_exn("grain");
+let _ = prerr_endline(grain_cmd_loc);
 
 let run = (~num_pages=?, file) => {
   let cli_flags = "-g";
