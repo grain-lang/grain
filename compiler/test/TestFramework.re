@@ -19,7 +19,7 @@ let () =
     }
   );
 
-let test_dir = Filename.concat(Grain_utils.Files.get_cwd(), "test");
+let test_dir = Filename.concat(Grain_utils.Filepath.get_cwd(), "test");
 let test_libs_dir = Filename.concat(test_dir, "test-libs");
 let test_input_dir = Filename.concat(test_dir, "input");
 let test_output_dir = Filename.concat(test_dir, "output");
@@ -39,18 +39,21 @@ let clean_grain_output = stdlib_dir =>
         Fs.rmExn(file);
       };
     },
-    Grain_utils.Files.(readdir(to_absolute(stdlib_dir))),
+    Grain_utils.(Filepath.readdir(Filepath.to_absolute(stdlib_dir))),
   );
 
 let clean_output = output =>
   if (Sys.file_exists(output)) {
-    Array.iter(Fs.rmExn, Grain_utils.Files.(readdir(to_absolute(output))));
+    Array.iter(
+      Fs.rmExn,
+      Grain_utils.(Filepath.readdir(Filepath.to_absolute(output))),
+    );
   };
 
 let () = {
   /*** Override default stdlib location to use development version of stdlib */
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
-  let stdlib_dir = Grain_utils.Files.derelativize(stdlib_dir);
+  let stdlib_dir = Grain_utils.Filepath.derelativize(stdlib_dir);
   Grain_utils.Config.stdlib_dir := Some(stdlib_dir);
   clean_grain_output(test_input_dir);
   clean_grain_output(stdlib_dir);
