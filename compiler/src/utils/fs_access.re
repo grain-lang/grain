@@ -57,7 +57,7 @@ let rec readdir = dir => {
   Fs.readDirExn(dir)
   |> List.fold_left(
        (results, filepath) => {
-         Sys.is_directory(Fp.toString(filepath))
+         Sys.is_directory(Filepath.to_string(filepath))
            ? Array.append(results, readdir(filepath))
            : Array.append(results, [|filepath|])
        },

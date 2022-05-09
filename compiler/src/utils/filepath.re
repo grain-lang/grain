@@ -87,11 +87,11 @@ module String = {
   let realpath = path => {
     switch (Fp.testForPath(path)) {
     | None => None
-    | Some(Fp.Absolute(abspath)) => Some(Fp.toString(abspath))
+    | Some(Fp.Absolute(abspath)) => Some(to_string(abspath))
     | Some(Fp.Relative(relpath)) =>
       let base = get_cwd();
       let full_path = Fp.join(base, relpath);
-      Some(Fp.toString(full_path));
+      Some(to_string(full_path));
     };
   };
 
@@ -109,8 +109,8 @@ module String = {
     | None => Filename.concat(dir, file)
     | Some(abspath) =>
       switch (Fp.relative(file)) {
-      | None => Filename.concat(Fp.toString(abspath), file)
-      | Some(relpath) => Fp.toString(Fp.join(abspath, relpath))
+      | None => Filename.concat(to_string(abspath), file)
+      | Some(relpath) => to_string(Fp.join(abspath, relpath))
       }
     };
   };

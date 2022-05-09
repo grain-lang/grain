@@ -34,7 +34,7 @@ let test_formatter_out_dir = Fp.At.(test_dir / "formatter_outputs");
 let clean_grain_output = stdlib_dir =>
   Array.iter(
     file => {
-      let filename = Fp.toString(file);
+      let filename = Filepath.to_string(file);
       if (Filename.check_suffix(filename, ".gr.wasm")
           || Filename.check_suffix(filename, ".gr.wat")
           || Filename.check_suffix(filename, ".gr.modsig")) {
@@ -53,7 +53,7 @@ let () = {
   /*** Override default stdlib location to use development version of stdlib */
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
   let stdlib_dir = Filepath.String.derelativize(stdlib_dir);
-  Config.stdlib_dir := Some(Fp.toString(stdlib_dir));
+  Config.stdlib_dir := Some(Filepath.to_string(stdlib_dir));
   clean_grain_output(test_input_dir);
   clean_grain_output(stdlib_dir);
   clean_grain_output(test_libs_dir);
@@ -67,7 +67,7 @@ let () = {
 include Rely.Make({
   let config =
     Rely.TestFrameworkConfig.initialize({
-      snapshotDir: Fp.toString(test_snapshots_dir),
-      projectDir: Fp.toString(test_dir),
+      snapshotDir: Filepath.to_string(test_snapshots_dir),
+      projectDir: Filepath.to_string(test_dir),
     });
 });
