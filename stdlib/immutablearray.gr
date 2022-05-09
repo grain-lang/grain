@@ -12,7 +12,6 @@ import Set from "set"
 import Buffer from "buffer"
 import Option from "option"
 import Number from "number"
-import Exception from "runtime/exception"
 
 // Immutable arrays implemented as relaxed radix balanced trees. This data
 // structure allows access and updating in O(log(n)) time, but since the tree
@@ -189,7 +188,7 @@ export let get = (index, array) => {
 
   let { length, shift, root, tail } = array
   if (index < 0 || index >= length) {
-    throw Exception.IndexOutOfBounds
+    throw IndexOutOfBounds
   } else if (index >= tailIndex(length)) {
     tail[index & bitmask]
   } else {
@@ -229,7 +228,7 @@ export let set = (index, value, array) => {
 
   let { length, shift, root, tail } = array
   if (index < 0 || index >= length) {
-    throw Exception.IndexOutOfBounds
+    throw IndexOutOfBounds
   } else if (index >= tailIndex(length)) {
     { length, shift, root, tail: arraySetCopy(index & bitmask, value, tail) }
   } else {

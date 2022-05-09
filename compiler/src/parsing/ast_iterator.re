@@ -117,6 +117,9 @@ module E = {
     | PExpApp(e, el) =>
       sub.expr(sub, e);
       List.iter(sub.expr(sub), el);
+    | PExpConstruct(c, el) =>
+      iter_ident(sub, c);
+      List.iter(sub.expr(sub), el);
     | PExpBlock(el) => List.iter(sub.expr(sub), el)
     | PExpNull => ()
     };

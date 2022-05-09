@@ -63,7 +63,7 @@ module Grain_parsing = struct end
 %left INFIX_110 DASH
 %left INFIX_120 STAR SLASH
 
-%right SEMI EOL COMMA DOT COLON
+%right SEMI EOL COMMA DOT COLON LPAREN
 
 %nonassoc _if
 %nonassoc ELSE
@@ -104,6 +104,7 @@ module Grain_parsing = struct end
   pattern
   type_id
   value_binds
+  construct_expr
 
 %%
 
@@ -309,7 +310,7 @@ value_binds:
   | lseparated_nonempty_list(comma, value_bind) { $1 }
 
 import_exception:
-  | EXCEPT lbrace lseparated_nonempty_list(comma, id) comma? rbrace {$3}
+  | EXCEPT lbrace lseparated_nonempty_list(comma, any_id) comma? rbrace {$3}
 
 as_prefix(X):
   | AS X {$2}
@@ -318,10 +319,12 @@ aliasable(X):
   | X as_prefix(X)? {($1, $2)}
 
 import_ids:
-  | lseparated_nonempty_list(comma, aliasable(id)) comma? {$1}
+  | lseparated_nonempty_list(comma, aliasable(any_id)) comma? {$1}
 
 import_shape:
-  | id { PImportModule $1 }
+  | simple_id { PImportModule $1 }
+  | type_id { PImportModule $1 }
+  | special_id { PImportModule (mkid [$1] (to_loc $loc)) }
   | STAR import_exception? { PImportAllExcept (Option.value ~default:[] $2) }
   | lbrace import_ids? rbrace { PImportValues (Option.value ~default:[] $2) }
 
@@ -389,6 +392,10 @@ app_expr:
 rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
 
+construct_expr:
+  | type_id lparen lseparated_list(comma, expr) comma? rparen { Exp.construct ~loc:(to_loc $loc) $1 $3 }
+  | type_id %prec LPAREN { Exp.construct ~loc:(to_loc $loc) $1 [] }
+
 // These are all inlined to carry over their precedence.
 %inline infix_op:
   | INFIX_30
@@ -430,14 +437,17 @@ non_modid:
 
 id:
   | modid dot non_modid { mkid (List.append $1 $3) (to_loc $loc) }
-  | modid %prec DOT { (mkid $1) (to_loc $loc) }
   | non_modid { (mkid $1) (to_loc $loc) }
 
 simple_id:
   | LIDENT { (mkid [mkstr $loc $1]) (to_loc $loc) }
 
 type_id:
-  | lseparated_nonempty_list(dot, type_id_str) { (mkid $1) (to_loc $loc) }
+  | lseparated_nonempty_list(dot, type_id_str) %prec DOT { (mkid $1) (to_loc $loc) }
+
+any_id:
+  | id
+  | type_id { $1 }
 
 id_expr:
   // Force any following colon to cause a shift
@@ -543,14 +553,15 @@ non_assign_expr:
   | match_expr         { $1 }
 
 left_accessor_expr:
-  | app_expr    { $1 }
-  | simple_expr { $1 }
-  | array_get   { $1 }
-  | record_get  { $1 }
-  | paren_expr  { $1 }
-  | braced_expr { $1 }
-  | list_expr   { $1 }
-  | array_expr  { $1 }
+  | app_expr       { $1 }
+  | construct_expr { $1 }
+  | simple_expr    { $1 }
+  | array_get      { $1 }
+  | record_get     { $1 }
+  | paren_expr     { $1 }
+  | braced_expr    { $1 }
+  | list_expr      { $1 }
+  | array_expr     { $1 }
 
 block_body_expr:
   | let_expr    { $1 }

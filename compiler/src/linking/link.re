@@ -4,24 +4,9 @@ open Grain_typed;
 open Grain_utils;
 open Cmi_format;
 open Binaryen;
-open Graph;
 
-module String = {
-  type t = string;
-  let compare = compare;
-  let hash = Hashtbl.hash;
-  let equal = (==);
-  let default = "";
-};
-
-module G = Imperative.Digraph.Concrete(String);
-module Topo = Topological.Make(G);
-
-let dependency_graph = G.create(~size=10, ());
 let modules: Hashtbl.t(string, Module.t) = Hashtbl.create(10);
-
-let grain_main = "_gmain";
-let grain_start = "_start";
+let hard_dependencies: Hashtbl.t(string, unit) = Hashtbl.create(10);
 
 let grain_module_name = mod_name => {
   // Remove GRAIN$MODULE$
@@ -61,7 +46,7 @@ let is_wasi_polyfill_module = mod_path => {
 
 let new_base_dir = Filepath.String.dirname;
 
-let rec build_dependency_graph = (~base_dir, mod_path) => {
+let rec load_hard_dependencies = (~base_dir, mod_path) => {
   let wasm_mod = Hashtbl.find(modules, mod_path);
   let num_globals = Global.get_num_globals(wasm_mod);
   for (i in 0 to num_globals - 1) {
@@ -69,14 +54,14 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
     let imported_module = Import.global_import_get_module(global);
     if (is_grain_module(imported_module)) {
       let resolved_import = resolve(~base_dir, imported_module);
+      Hashtbl.add(hard_dependencies, resolved_import, ());
       if (!Hashtbl.mem(modules, resolved_import)) {
         Hashtbl.add(modules, resolved_import, load_module(resolved_import));
-        build_dependency_graph(
+        load_hard_dependencies(
           ~base_dir=new_base_dir(resolved_import),
           resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_path, resolved_import);
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
@@ -86,28 +71,27 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
     let imported_module = Import.function_import_get_module(func);
     if (is_grain_module(imported_module)) {
       let resolved_import = resolve(~base_dir, imported_module);
+      Hashtbl.add(hard_dependencies, resolved_import, ());
       if (!Hashtbl.mem(modules, resolved_import)) {
         Hashtbl.add(modules, resolved_import, load_module(resolved_import));
-        build_dependency_graph(
+        load_hard_dependencies(
           ~base_dir=new_base_dir(resolved_import),
           resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_path, resolved_import);
     } else if (has_wasi_polyfill
                && is_wasi_module(imported_module)
                && !is_wasi_polyfill_module(mod_path)) {
       // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
-      // If we are importing a foreign from WASI, then add a dependency to the polyfill instead.
       let imported_module = wasi_polyfill_module();
+      Hashtbl.add(hard_dependencies, imported_module, ());
       if (!Hashtbl.mem(modules, imported_module)) {
         Hashtbl.add(modules, imported_module, load_module(imported_module));
-        build_dependency_graph(
+        load_hard_dependencies(
           ~base_dir=new_base_dir(imported_module),
           imported_module,
         );
       };
-      G.add_edge(dependency_graph, mod_path, imported_module);
     };
   };
 };
@@ -301,17 +285,25 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
 };
 
 let table_offset = ref(0);
-let module_id = ref(0);
+let module_id = ref(Comp_utils.encoded_int32(0));
 
 let link_all = (linked_mod, dependencies, signature) => {
+  gensym_counter := 0;
   table_offset := 0;
+  module_id := Comp_utils.encoded_int32(0);
+
+  let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
 
   let link_one = dep => {
     let function_names: Hashtbl.t(string, string) = Hashtbl.create(128);
     let global_names: Hashtbl.t(string, string) = Hashtbl.create(128);
     let label_names: Hashtbl.t(string, string) = Hashtbl.create(128);
 
-    let wasm_mod = Hashtbl.find(modules, dep);
+    let wasm_mod =
+      switch (Hashtbl.find_opt(modules, dep)) {
+      | Some(mod_) => mod_
+      | None => load_module(dep)
+      };
 
     let num_globals = Global.get_num_globals(wasm_mod);
     for (i in 0 to num_globals - 1) {
@@ -345,7 +337,8 @@ let link_all = (linked_mod, dependencies, signature) => {
                   Literal.int32(Int32.of_int(table_offset^)),
                 )
               | "moduleRuntimeId" =>
-                incr(module_id);
+                // Module id is tagged; incrementing by 2 is the equivalent of an untagged increment by 1
+                module_id := module_id^ + 2;
                 Expression.Const.make(
                   wasm_mod,
                   Literal.int32(Int32.of_int(module_id^)),
@@ -390,7 +383,6 @@ let link_all = (linked_mod, dependencies, signature) => {
     let (imported_funcs, funcs) =
       List.partition(is_function_imported, funcs);
 
-    let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
     List.iter(
       func => {
         let imported_module = Import.function_import_get_module(func);
@@ -515,12 +507,19 @@ let link_all = (linked_mod, dependencies, signature) => {
       table_offset := table_offset^ + size;
     };
   };
+
+  let main = Module_resolution.current_filename^();
+
+  if (has_wasi_polyfill) {
+    link_one(wasi_polyfill_module());
+  };
   List.iter(link_one, dependencies);
+  link_one(main);
 
   Comp_utils.write_universal_exports(
     linked_mod,
     signature,
-    Hashtbl.find(exported_names, Module_resolution.current_filename^()),
+    Hashtbl.find(exported_names, main),
   );
 
   ignore @@
@@ -549,22 +548,53 @@ let link_all = (linked_mod, dependencies, signature) => {
   );
 
   let starts =
-    List.map(
+    List.filter_map(
       dep => {
-        Expression.Drop.make(
-          linked_mod,
+        let load_type_metadata =
           Expression.Call.make(
             linked_mod,
-            Hashtbl.find(Hashtbl.find(exported_names, dep), grain_main),
+            Hashtbl.find(
+              Hashtbl.find(exported_names, dep),
+              Compcore.grain_type_metadata,
+            ),
             [],
-            Type.int32,
-          ),
-        )
+            Type.none,
+          );
+        if (Hashtbl.mem(hard_dependencies, dep)) {
+          let call_main =
+            Expression.Drop.make(
+              linked_mod,
+              Expression.Call.make(
+                linked_mod,
+                Hashtbl.find(
+                  Hashtbl.find(exported_names, dep),
+                  Compcore.grain_main,
+                ),
+                [],
+                Type.int32,
+              ),
+            );
+          if (Config.elide_type_info^) {
+            Some(call_main);
+          } else {
+            Some(
+              Expression.Block.make(
+                linked_mod,
+                gensym("start"),
+                [load_type_metadata, call_main],
+              ),
+            );
+          };
+        } else if (Config.elide_type_info^) {
+          None;
+        } else {
+          Some(load_type_metadata);
+        };
       },
-      dependencies,
+      dependencies @ [main],
     );
 
-  let start_name = gensym(grain_start);
+  let start_name = gensym(Compcore.grain_start);
   let start =
     Function.add_function(
       linked_mod,
@@ -578,24 +608,26 @@ let link_all = (linked_mod, dependencies, signature) => {
   if (Grain_utils.Config.use_start_section^) {
     Function.set_start(linked_mod, start);
   } else {
-    ignore @@ Export.add_function_export(linked_mod, start_name, grain_start);
+    ignore @@
+    Export.add_function_export(linked_mod, start_name, Compcore.grain_start);
   };
 };
 
 let link_modules = ({asm: wasm_mod, signature}) => {
-  G.clear(dependency_graph);
   Hashtbl.clear(modules);
+  Hashtbl.clear(hard_dependencies);
 
   let main_module = Module_resolution.current_filename^();
   Hashtbl.add(modules, main_module, wasm_mod);
+  Hashtbl.add(hard_dependencies, main_module, ());
 
-  G.add_vertex(dependency_graph, main_module);
-  build_dependency_graph(
+  load_hard_dependencies(
     ~base_dir=Filepath.String.dirname(main_module),
     main_module,
   );
-  let dependencies =
-    Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
+
+  let dependencies = Module_resolution.get_dependencies();
+
   let linked_mod = Module.create();
   link_all(linked_mod, dependencies, signature);
 

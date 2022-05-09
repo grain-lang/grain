@@ -359,17 +359,15 @@ let fromStringHelper = (pathStr, platform) => {
   }
   let isDir = !isFilePath(tokens)
 
-  let path = (variant, mkPath, pathType) => {
-    variant(
-      Option.expect("Impossible: failed parse of " ++ pathType, mkPath(tokens))
-    )
+  let path = (mkPath, pathType) => {
+    Option.expect("Impossible: failed parse of " ++ pathType, mkPath(tokens))
   }
 
   match ((isAbs, isDir)) {
-    (true, true) => path(AbsoluteDir, absoluteDir, "absolute dir"),
-    (true, false) => path(AbsoluteFile, absoluteFile, "absolute file"),
-    (false, true) => path(RelativeDir, relativeDir, "relative dir"),
-    (false, false) => path(RelativeFile, relativeFile, "relative file"),
+    (true, true) => AbsoluteDir(path(absoluteDir, "absolute dir")),
+    (true, false) => AbsoluteFile(path(absoluteFile, "absolute file")),
+    (false, true) => RelativeDir(path(relativeDir, "relative dir")),
+    (false, false) => RelativeFile(path(relativeFile, "relative file")),
   }
 }
 

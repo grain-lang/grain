@@ -4,5 +4,4 @@
 type grain_error =
   | IndexOutOfBounds
   | IndexNonInteger
-  | MatchFailure
-  | AssertionError;
+  | MatchFailure;

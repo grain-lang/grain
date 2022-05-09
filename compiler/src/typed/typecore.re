@@ -121,6 +121,7 @@ let prim1_type =
   | NewInt64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
   | NewFloat32 => (Builtin_types.type_wasmf32, Builtin_types.type_wasmi32)
   | NewFloat64 => (Builtin_types.type_wasmf64, Builtin_types.type_wasmi32)
+  | BuiltinId => (Builtin_types.type_string, Builtin_types.type_wasmi32)
   | TagSimpleNumber => (Builtin_types.type_wasmi32, Builtin_types.type_number)
   | UntagSimpleNumber => (
       Builtin_types.type_number,
@@ -980,6 +981,8 @@ and type_expect_ =
       exp_type: ty_res,
       exp_env: env,
     });
+  | PExpConstruct(cstr, args) =>
+    type_construct(env, loc, cstr, args, ty_expected_explained, attributes)
   | PExpMatch(arg, branches) =>
     begin_def();
     let arg = type_exp(env, arg);
@@ -1431,7 +1434,7 @@ and type_application = (env, funct, args) => {
   (typed_args, instance(env, ty_ret));
 }
 
-and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
+and type_construct = (env, loc, lid, sargs, ty_expected_explained, attrs) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let opath =
     try({
@@ -1444,7 +1447,6 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
     }) {
     | Not_found => None
     };
-
   let constrs = Typetexp.find_all_constructors(env, lid.loc, lid.txt);
   let constr =
     wrap_disambiguate(
@@ -1453,15 +1455,6 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
       Constructor.disambiguate(lid, env, opath),
       constrs,
     );
-  /*Env.mark_constructor Env.Positive env (Identifier.last lid.txt) constr;*/
-  let sargs =
-    switch (sarg) {
-    | None => []
-    | Some({pexp_desc: PExpTuple(sel)}) when constr.cstr_arity > 1 =>
-      /*|| Builtin_attributes.explicit_arity attrs*/
-      sel
-    | Some(se) => [se]
-    };
   if (List.length(sargs) != constr.cstr_arity) {
     raise(
       Error(

@@ -991,7 +991,21 @@ let find = (proj1, proj2, path, env) =>
     data;
   };
 
+let find_tycomp = (proj1, proj2, path, env) =>
+  switch (path) {
+  | PIdent(id) => TycompTbl.find_same(id, proj1(env))
+  | PExternal(m, n, _pos) =>
+    let c = get_components(find_module_descr(m, None, env));
+    switch (Tbl.find(n, proj2(c))) {
+    | [cstr, ..._] => cstr
+    | _ => raise(Not_found)
+    };
+  };
+
 let find_value = find(env => env.values, sc => sc.comp_values);
+
+let find_constructor =
+  find_tycomp(env => env.constructors, sc => sc.comp_constrs);
 
 let find_type_full = find(env => env.types, sc => sc.comp_types)
 
@@ -2612,7 +2626,12 @@ and fold_types = f => find_all(env => env.types, sc => sc.comp_types, f)
 and fold_modtypes = f =>
   find_all(env => env.modtypes, sc => sc.comp_modtypes, f);
 
-let initial_env = Builtin_types.initial_env(add_type(~check=false), empty);
+let initial_env =
+  Builtin_types.initial_env(
+    add_type(~check=false),
+    add_extension(~check=false),
+    empty,
+  );
 
 /* Return the environment summary */
 

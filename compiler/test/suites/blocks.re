@@ -15,10 +15,11 @@ describe("blocks", ({test}) => {
           statements: [
             Top.expr(
               Exp.block([
-                Exp.ident(
+                Exp.construct(
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("Foo")),
                   ),
+                  [],
                 ),
               ]),
             ),

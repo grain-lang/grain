@@ -48,6 +48,7 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CPrim0(Unreachable) => false
       | CPrim1(
           AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
+          BuiltinId |
           NewInt32 |
           NewInt64 |
           NewFloat32 |

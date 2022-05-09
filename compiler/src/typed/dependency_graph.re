@@ -141,6 +141,16 @@ module Make = (DV: Dependency_value) => {
     };
   };
 
+  let get_dependencies = () => {
+    List.rev(
+      G_topological.fold(
+        ((v1, _), acc) => [DV.get_filename(v1), ...acc],
+        graph,
+        [],
+      ),
+    );
+  };
+
   let dump = () => {
     Printf.eprintf("-=-=-=- Dependency Graph -=-=-=-\n");
     G.iter_vertex(

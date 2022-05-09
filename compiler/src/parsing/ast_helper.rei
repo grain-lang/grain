@@ -213,6 +213,9 @@ module Exp: {
   let apply:
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
     expression;
+  let construct:
+    (~loc: loc=?, ~attributes: attributes=?, id, list(expression)) =>
+    expression;
   let binop:
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
     expression;
