@@ -66,20 +66,8 @@ let rec readdir = dir => {
 };
 
 let ensure_parent_directory_exists = fname => {
-  // TODO: Use `derelativize` once Fp.t is used everywhere
-  let full_path =
-    switch (Filepath.to_fp(fname)) {
-    | Some(Absolute(path)) => path
-    | Some(Relative(path)) =>
-      let base = Fp.absoluteCurrentPlatformExn(Filepath.get_cwd());
-      Fp.join(base, path);
-    | None =>
-      raise(
-        Invalid_argument(
-          Printf.sprintf("Invalid filepath (fname: '%s')", fname),
-        ),
-      )
-    };
+  // TODO: Cleanup once Fp.t is used everywhere
+  let full_path = Filepath.String.derelativize(fname);
   // No longer swallowing the error because we can handle the CWD case
   // thus we should raise if something is actually wrong
   // TODO: Switch this to return the Result type

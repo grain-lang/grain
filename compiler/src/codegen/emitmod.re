@@ -7,7 +7,7 @@ let emit_module = ({asm, signature}, outfile) => {
   if (Config.debug^) {
     let sig_string =
       Sexplib.Sexp.to_string_hum(Cmi_format.sexp_of_cmi_infos(signature));
-    let sig_file = Filepath.replace_extension(outfile, "modsig");
+    let sig_file = Filepath.String.replace_extension(outfile, "modsig");
     let oc = open_out(sig_file);
     output_string(oc, sig_string);
     close_out(oc);
@@ -15,7 +15,7 @@ let emit_module = ({asm, signature}, outfile) => {
   if (Config.wat^) {
     Binaryen.Settings.set_colors_enabled(Grain_utils.Config.color_enabled^);
     let asm_string = Binaryen.Module.write_text(asm);
-    let wat_file = Filepath.replace_extension(outfile, "wat");
+    let wat_file = Filepath.String.replace_extension(outfile, "wat");
     let oc = open_out(wat_file);
     output_string(oc, asm_string);
     close_out(oc);
