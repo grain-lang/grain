@@ -132,7 +132,7 @@ let realpath = path => {
 
 // let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
 let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
-let grain_cmd_loc = "D:\\a\\grain\\grain\\cli\\bin\\grain.js";
+let grain_cmd_loc = "D:\\a\\grain\\grain\\node_modules\\.bin\\grain";
 let _ = prerr_endline(grain_cmd_loc);
 
 let run = (~num_pages=?, file) => {
@@ -153,7 +153,7 @@ let run = (~num_pages=?, file) => {
 
   let args = [
     "-command",
-    "grain",
+    grain_cmd_loc,
     cli_flags,
     "-S",
     stdlib,
@@ -179,7 +179,7 @@ let run = (~num_pages=?, file) => {
 
   let (_, status, timed_out) =
     try({
-      let (x, status) = Test_utils.waitpid_timeout(1., pid);
+      let (x, status) = Test_utils.waitpid_timeout(15., pid);
       (x, status, false);
     }) {
     | Test_utils.Timeout =>
