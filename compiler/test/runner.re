@@ -134,6 +134,7 @@ let realpath = path => {
 let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
 let grain_cmd_loc = "D:\\a\\grain\\grain\\node_modules\\.bin\\grain";
 let _ = prerr_endline(grain_cmd_loc);
+let _ = Array.iter(prerr_endline, Unix.environment());
 
 let run = (~num_pages=?, file) => {
   let cli_flags = "-g";
