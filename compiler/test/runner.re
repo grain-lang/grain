@@ -154,7 +154,7 @@ let run = (~num_pages=?, file) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let args = [
-    "-c",
+    "-command",
     String.concat(" ") @@
     ["grain", cli_flags, "-S", stdlib, "-I", test_libs_dir, "run", file],
   ];
@@ -165,7 +165,7 @@ let run = (~num_pages=?, file) => {
 
   let pid =
     Spawn.spawn(
-      ~prog=bash,
+      ~prog=shell,
       ~argv=args,
       ~env,
       ~stdout=pipe_in,
