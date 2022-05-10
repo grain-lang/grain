@@ -27,14 +27,6 @@ let () =
     }
   );
 
-module Input = {
-  type t = string;
-
-  let (prsr, prntr) = Arg.non_dir_file;
-
-  let cmdliner_converter = (filename => prsr(filename), prntr);
-};
-
 module Output = {
   type t = string;
 
@@ -60,7 +52,7 @@ module Output = {
 type params = {
   /** Grain source file for which to extract documentation */
   [@pos 0] [@docv "FILE"]
-  input: Input.t,
+  input: Filepath.Args.ExistingFile.t,
   /** Output filename */
   [@name "o"] [@docv "FILE"]
   output: option(Output.t),
@@ -73,9 +65,13 @@ type params = {
 };
 
 let compile_typed = (opts: params) => {
-  Grain_utils.Config.base_path := dirname(opts.input);
+  let base_path = Filepath.to_string(Filepath.dirname(opts.input));
 
-  switch (Compile.compile_file(~hook=stop_after_typed, opts.input)) {
+  Grain_utils.Config.base_path := base_path;
+
+  let input = Filepath.to_string(opts.input);
+
+  switch (Compile.compile_file(~hook=stop_after_typed, input)) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {

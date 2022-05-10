@@ -137,3 +137,50 @@ module String = {
   // TODO(#216): Replace this with the `get_cwd` that operates on Fp
   let get_cwd = () => Sys.getcwd();
 };
+
+module Args = {
+  module ExistingFile = {
+    type t = Fp.t(Fp.absolute);
+
+    type err =
+      | InvalidPath(string)
+      | NotExists(Fp.t(Fp.absolute))
+      | NotFile(Fp.t(Fp.absolute));
+
+    let query = fname => {
+      switch (from_string(fname)) {
+      | Some(path) =>
+        let abs_path = derelativize(path);
+        switch (Fs.query(abs_path)) {
+        | Some(File(path, _stat)) => Ok(path)
+        | Some(Dir(path, _))
+        | Some(Other(path, _, _)) => Error(NotFile(path))
+        | Some(Link(_, realpath, _)) =>
+          Error(NotFile(derelativize(realpath)))
+        | None => Error(NotExists(abs_path))
+        };
+      | None => Error(InvalidPath(fname))
+      };
+    };
+
+    let prsr = fname => {
+      switch (query(fname)) {
+      | Ok(file) => `Ok(file)
+      | Error(NotFile(path)) =>
+        `Error(
+          Format.sprintf("%s exists but is not a file", to_string(path)),
+        )
+      | Error(NotExists(path)) =>
+        `Error(Format.sprintf("%s does not exist", to_string(path)))
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      Format.fprintf(formatter, "File: %s", to_string(value));
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+};
