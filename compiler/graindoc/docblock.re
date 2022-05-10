@@ -33,7 +33,9 @@ let () =
   });
 
 let module_name_of_location = (loc: Grain_parsing.Location.t) => {
-  Grain_utils.Files.filename_to_module_name(loc.loc_start.pos_fname);
+  Grain_utils.Filepath.String.filename_to_module_name(
+    loc.loc_start.pos_fname,
+  );
 };
 
 let string_of_value_description = (~ident, vd) => {

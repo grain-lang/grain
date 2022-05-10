@@ -325,7 +325,7 @@ let anf = Linearize.transl_anf_module;
 let save_mashed = (f, outfile) =>
   switch (compile_file(~is_root_file=false, ~hook=stop_after_mashed, f)) {
   | {cstate_desc: Mashed(mashed)} =>
-    Grain_utils.Files.ensure_parent_directory_exists(outfile);
+    Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
     let mash_string =
       Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
     let oc = open_out(outfile);

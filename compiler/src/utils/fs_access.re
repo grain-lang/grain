@@ -51,3 +51,25 @@ let open_file_for_writing = f => {
   List.iter(((flusher, _)) => flusher(f), cache_flushers^);
   oc;
 };
+
+/** Recursive readdir */
+let rec readdir = dir => {
+  Fs.readDirExn(dir)
+  |> List.fold_left(
+       (results, filepath) => {
+         Sys.is_directory(Filepath.to_string(filepath))
+           ? Array.append(results, readdir(filepath))
+           : Array.append(results, [|filepath|])
+       },
+       [||],
+     );
+};
+
+let ensure_parent_directory_exists = fname => {
+  // TODO: Cleanup once Fp.t is used everywhere
+  let full_path = Filepath.String.derelativize(fname);
+  // No longer swallowing the error because we can handle the CWD case
+  // thus we should raise if something is actually wrong
+  // TODO: Switch this to return the Result type
+  Fs.mkDirPExn(Fp.dirName(full_path));
+};
