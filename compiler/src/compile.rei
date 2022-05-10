@@ -3,7 +3,6 @@ open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
 open Grain_linking;
-open Optimize;
 
 type input_source =
   | InputString(string)
