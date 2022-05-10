@@ -133,7 +133,8 @@ let realpath = path => {
 // let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
 let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
 let grain_cmd_loc = "D:\\a\\grain\\grain\\node_modules\\.bin\\grain";
-let _ = prerr_endline(resolve_in_path_exn("bash.exe"));
+let bash = resolve_in_path_exn("bash.exe");
+// let _ = prerr_endline(resolve_in_path_exn("bash.exe"));
 // let _ = Array.iter(prerr_endline, Unix.environment());
 
 let run = (~num_pages=?, file) => {
@@ -153,8 +154,7 @@ let run = (~num_pages=?, file) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let args = [
-    "Invoke-Expression",
-    "-command",
+    "-c",
     String.concat(" ") @@
     ["grain", cli_flags, "-S", stdlib, "-I", test_libs_dir, "run", file],
   ];
@@ -165,7 +165,7 @@ let run = (~num_pages=?, file) => {
 
   let pid =
     Spawn.spawn(
-      ~prog=shell,
+      ~prog=bash,
       ~argv=args,
       ~env,
       ~stdout=pipe_in,
