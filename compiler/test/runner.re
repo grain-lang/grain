@@ -154,7 +154,7 @@ let run = (~num_pages=?, file) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let args = [
-    "grain",
+    // "grain",
     cli_flags,
     "-S",
     stdlib,
