@@ -155,6 +155,7 @@ let run = (~num_pages=?, file) => {
 
   let args = [
     // "grain",
+    grain_cmd_loc,
     cli_flags,
     "-S",
     stdlib,
