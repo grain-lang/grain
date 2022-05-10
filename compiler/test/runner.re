@@ -155,7 +155,7 @@ let run = (~num_pages=?, file) => {
   let args = [
     "-command",
     String.concat(" ") @@
-    ["grain", cli_flags, "-S", stdlib, "-I", test_libs_dir, "run", file],
+    [". grain", cli_flags, "-S", stdlib, "-I", test_libs_dir, "run", file],
   ];
 
   let (pipe_out, pipe_in) = Spawn.safe_pipe();
