@@ -1,9 +1,0 @@
-let filteri = (fn, list) => {
-  let rec iter = (fn, list, index) => {
-    match (list) {
-      [] => [],
-      [first, ...rest] => if (fn(first, index)) [first, ...iter(fn, rest, index + 1)] else iter(fn, rest, index + 1)
-    }
-  }
-  iter(fn, list, 0)
-}

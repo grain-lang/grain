@@ -118,6 +118,6 @@ let willBreak: t => bool;
 
 let willIndent: t => bool;
 
-let toString: (~width: int, t) => string;
+let toString: (~width: int, ~win_eol:bool, t) => string;
 [@live]
 let debug: t => unit;

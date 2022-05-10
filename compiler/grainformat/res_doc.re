@@ -255,7 +255,7 @@ let fits = (w, stack) => {
   calculateAll(stack);
 };
 
-let toString = (~width, doc) => {
+let toString = (~width, ~win_eol, doc) => {
   propagateForcedBreaks(doc);
   let buffer = MiniBuffer.create(1000);
 
@@ -291,7 +291,7 @@ let toString = (~width, doc) => {
               MiniBuffer.add_char(buffer, '\n');
               process(~pos=0, [], rest);
             } else {
-              MiniBuffer.flush_newline(buffer);
+              MiniBuffer.flush_newline(buffer, win_eol);
               MiniBuffer.add_string(
                 buffer,
                 [@doesNotRaise] String.make(ind, ' '),
@@ -312,7 +312,7 @@ let toString = (~width, doc) => {
               MiniBuffer.add_string(buffer, " ");
               pos + 1;
             | Hard =>
-              MiniBuffer.flush_newline(buffer);
+              MiniBuffer.flush_newline(buffer, win_eol);
               0;
             | Literal =>
               MiniBuffer.add_char(buffer, '\n');
@@ -448,5 +448,5 @@ let debug = t => {
       );
 
   let doc = toDoc(t);
-  toString(~width=10, doc) |> print_endline;
+  toString(~width=10, ~win_eol=false, doc) |> print_endline;
 };

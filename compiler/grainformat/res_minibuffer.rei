@@ -34,4 +34,4 @@ let add_char: (t, char) => unit;
 let add_string: (t, string) => unit;
 let contents: t => string;
 let create: int => t;
-let flush_newline: t => unit;
+let flush_newline: (t, bool) => unit;

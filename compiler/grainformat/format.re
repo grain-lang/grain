@@ -5,6 +5,12 @@ open Grain_utils;
 open Grain_diagnostics;
 
 module Doc = Res_doc;
+module MiniBuffer = Res_minibuffer;
+
+type eol =
+  | CRLF
+  | LF
+  | SYSDEFAULT;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
@@ -2735,7 +2741,7 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            Doc.line,
+            if (true_is_block) {Doc.space} else {Doc.line},
             Doc.text("else"),
             if (true_is_block) {
               false_made_block := true;
@@ -4136,6 +4142,7 @@ let format_ast =
     (
       ~original_source: array(string),
       parsed_program: Parsetree.parsed_program,
+      line_end: option(eol),
     ) => {
   let get_loc = (stmt: Parsetree.toplevel_stmt) => {
     stmt.ptop_loc;
@@ -4171,5 +4178,12 @@ let format_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
-  Doc.toString(~width=80, final_doc);
+  let win_eol =
+    switch (line_end) {
+    | None
+    | Some(SYSDEFAULT)
+    | Some(LF) => false
+    | Some(CRLF) => true
+    };
+  Doc.toString(~width=80, ~win_eol, final_doc);
 };

@@ -5,19 +5,40 @@ open Grain_parsing;
 open Grain_utils;
 open Filename;
 
+let file_eol: ref(option(Format.eol)) = ref(None);
+
+let determine_eol = line => {
+  let line_len = String.length(line);
+  if (line_len > 0) {
+    // check what the last char was
+    let last_char = line.[line_len - 1];
+    if (last_char == '\r') {
+      file_eol := Some(CRLF);
+    } else {
+      file_eol := Some(LF);
+    };
+  } else {
+    // must use OS default as this file has no newline
+    file_eol := Some(SYSDEFAULT);
+  };
+};
+
 let compile_parsed = (filename: option(string)) => {
   let program_str = ref("");
   let linesList = ref([]);
+  file_eol := None;
 
   switch (
     switch (filename) {
     | None =>
-      // force from stdin for now
-
       /* read from stdin until we get end of buffer */
       try(
         while (true) {
           let line = read_line();
+          switch (file_eol^) {
+          | None => determine_eol(line)
+          | Some(eol) => () // already set
+          };
           linesList := linesList^ @ [line];
         }
       ) {
@@ -25,6 +46,13 @@ let compile_parsed = (filename: option(string)) => {
       };
 
       program_str := String.concat("\n", linesList^);
+      // If this is a CRLF file add in the final \n after the \r that was removed by
+      // input_line
+
+      switch (file_eol^) {
+      | Some(CRLF) => program_str := program_str^ ++ "\n"
+      | _ => ()
+      };
 
       Compile.compile_string(
         ~is_root_file=true,
@@ -34,13 +62,17 @@ let compile_parsed = (filename: option(string)) => {
     | Some(filenm) =>
       // need to read the source file in case we want to use the content
       // for formatter-ignore or decision making
+
       program_str := "";
-
-      let ic = open_in(filenm);
-
+      let ic = open_in_bin(filenm);
       try(
         while (true) {
           let line = input_line(ic);
+
+          switch (file_eol^) {
+          | None => determine_eol(line)
+          | Some(eol) => () // already set
+          };
 
           linesList := linesList^ @ [line];
         }
@@ -50,9 +82,13 @@ let compile_parsed = (filename: option(string)) => {
 
       program_str := String.concat("\n", linesList^);
 
-      // add a new line to the end for where it's in CRLF more
-      // TODO(#940): Handle CRLF properly
-      program_str := program_str^ ++ "\n";
+      // If this is a CRLF file add in the final \n after the \r that was removed by
+      // input_line
+
+      switch (file_eol^) {
+      | Some(CRLF) => program_str := program_str^ ++ "\n"
+      | _ => ()
+      };
 
       Grain_utils.Config.base_path := dirname(filenm);
       Compile.compile_string(
@@ -95,7 +131,10 @@ let format_code =
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let formatted_code = Format.format_ast(~original_source, program);
+  let formatted_code =
+    Format.format_ast(~original_source, program, file_eol^);
+
+  // return the file to its format
 
   let buf = Buffer.create(0);
   Buffer.add_string(buf, formatted_code);

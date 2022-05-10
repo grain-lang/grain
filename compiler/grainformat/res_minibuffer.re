@@ -89,11 +89,14 @@ let add_string = (b, s) => {
 };
 
 /* adds newline and trims all preceding whitespace */
-let flush_newline = b => {
+let flush_newline = (b, win_eol) => {
   let position = ref(b.position);
   while (Bytes.unsafe_get(b.buffer, position^ - 1) == ' ' && position^ >= 0) {
     position := position^ - 1;
   };
   b.position = position^;
+  if (win_eol) {
+    add_char(b, '\r');
+  };
   add_char(b, '\n');
 };
