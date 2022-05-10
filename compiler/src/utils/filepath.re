@@ -6,6 +6,8 @@ let from_string = fname => {
   Fp.testForPath(fname);
 };
 
+let dirname = path => Fp.dirName(path);
+
 /**
   Converts the given path to an absolute path. Relative paths will be
   treated as relative to [base], if given; otherwise, they will be
