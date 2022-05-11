@@ -131,9 +131,19 @@ let realpath = path => {
 };
 
 // let grain_cmd_loc = realpath @@ resolve_in_path_exn("grain");
-let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
-let grain_cmd_loc = "D:\\a\\grain\\grain\\node_modules\\.bin\\grain.cmd";
-let bash = resolve_in_path_exn("bash.exe");
+
+let shell =
+  if (Sys.unix) {
+    Sys.getenv("SHELL");
+  } else {
+    switch (resolve_in_path("pwsh.exe")) {
+    | Some(shell) => shell
+    | None => Option.get(resolve_in_path("powershell.exe"))
+    };
+  };
+// let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
+// let grain_cmd_loc = "D:\\a\\grain\\grain\\node_modules\\.bin\\grain.cmd";
+// let bash = resolve_in_path_exn("bash.exe");
 // let _ = prerr_endline(resolve_in_path_exn("bash.exe"));
 // let _ = Array.iter(prerr_endline, Unix.environment());
 
@@ -154,8 +164,7 @@ let run = (~num_pages=?, file) => {
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
   let args = [
-    // "grain",
-    grain_cmd_loc,
+    "grain",
     cli_flags,
     "-S",
     stdlib,
@@ -165,13 +174,36 @@ let run = (~num_pages=?, file) => {
     file,
   ];
 
+  let args =
+    if (Sys.unix) {
+      [
+        // Pass the command via `-c`
+        "-c",
+        String.concat(" ", args),
+      ];
+    } else {
+      // Exit with the program's exit code rather than PowerShell's
+      List.concat([
+        ["-command"],
+        args,
+        ["; exit $LastExitCode"],
+      ]);
+    };
+
   let (pipe_out, pipe_in) = Spawn.safe_pipe();
+
+  let buf = Bytes.create(4096);
+
+  // If the command produces no output, the pipe will block
+  // Prevent this by writing to the pipe—we'll ignore that byte
+  // Unfortunately, nonblocking mode isn't supported on Windows
+  ignore @@ Unix.write(pipe_in, buf, 0, 1);
 
   let env = Spawn.Env.of_list(Array.to_list(Unix.environment()));
 
   let pid =
     Spawn.spawn(
-      ~prog=grain_cmd_loc,
+      ~prog=shell,
       ~argv=args,
       ~env,
       ~stdout=pipe_in,
@@ -189,12 +221,8 @@ let run = (~num_pages=?, file) => {
       ((-1), Unix.WEXITED(-1), true);
     };
 
-  // Unix.set_nonblock(pipe_out);
-  let buf = Bytes.create(4096);
-  // fake a write so it doesn't block
-  ignore @@ Unix.write(pipe_in, buf, 0, 0);
   let out =
-    try(Bytes.sub_string(buf, 0, Unix.read(pipe_out, buf, 0, 4096))) {
+    try(Bytes.sub_string(buf, 1, Unix.read(pipe_out, buf, 0, 4096) - 1)) {
     | Unix.Unix_error(Unix.EAGAIN | Unix.EWOULDBLOCK, _, _) => "" // if there's nothing to read, the output is empty
     };
 
