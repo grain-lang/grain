@@ -151,7 +151,9 @@ let format_code =
       let oc = Fs_access.open_file_for_writing(src);
       output_bytes(oc, contents);
       close_out(oc);
-    | _ => print_bytes(contents)
+    | _ =>
+       set_binary_mode_out(stdout,true);
+       print_bytes(contents)
     }
   };
 
