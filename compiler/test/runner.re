@@ -177,7 +177,8 @@ let run = (~num_pages=?, file) => {
   let args =
     if (Sys.unix) {
       [
-        // Pass the command via `-c`
+        // Pass the command to the shell via `-c`
+        shell,
         "-c",
         String.concat(" ", args),
       ];
