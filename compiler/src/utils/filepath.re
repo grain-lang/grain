@@ -183,4 +183,34 @@ module Args = {
 
     let cmdliner_converter = (prsr, prntr);
   };
+
+  module MaybeExistingFile = {
+    type t =
+      | Exists(Fp.t(Fp.absolute))
+      | NotExists(Fp.t(Fp.absolute));
+
+    let prsr = fname => {
+      switch (ExistingFile.query(fname)) {
+      | Ok(path) => `Ok(Exists(path))
+      | Error(NotExists(path)) => `Ok(NotExists(path))
+      | Error(NotFile(path)) =>
+        `Error(
+          Format.sprintf("%s exists but is not a file", to_string(path)),
+        )
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      switch (value) {
+      | Exists(path) =>
+        Format.fprintf(formatter, "File: %s", to_string(path))
+      | NotExists(path) =>
+        Format.fprintf(formatter, "Path: %s", to_string(path))
+      };
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
 };
