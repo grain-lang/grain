@@ -19,12 +19,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           check-latest: true
 
-      # Log node version
-      - name: Node version
-        # if: matrix.os != 'windows-latest'
-        run: |
-          node --version
-
       # Add yarn's bin to our PATH
       - name: Setup environment (Unix)
         if: matrix.os != 'windows-latest'
