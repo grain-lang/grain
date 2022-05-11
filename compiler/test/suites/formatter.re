@@ -3,7 +3,8 @@ open Grain_tests.Runner;
 
 describe("formatter", ({test, testSkip}) => {
   let test_or_skip =
-    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+    // Skip in js and on Windows
+    Sys.backend_type == Other("js_of_ocaml") || !Sys.unix ? testSkip : test;
 
   let assertFormatOutput = makeFormatterRunner(test_or_skip);
 
