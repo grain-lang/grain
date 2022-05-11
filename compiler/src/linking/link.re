@@ -612,7 +612,7 @@ let link_modules = ({asm: wasm_mod, signature}) => {
     failwith("Generated invalid linked module");
   };
   switch (Config.optimization_level^) {
-  | Level_three => Module.optimize(linked_mod)
+  | Level_three => Optimize_mod.optimize(linked_mod)
   | Level_zero
   | Level_one
   | Level_two => ()
