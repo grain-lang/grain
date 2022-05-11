@@ -141,6 +141,7 @@ let shell =
     | None => Option.get(resolve_in_path("powershell.exe"))
     };
   };
+prerr_endline(shell);
 // let shell = "C:\\Program Files\\PowerShell\\7\\pwsh.EXE";
 // let grain_cmd_loc = "D:\\a\\grain\\grain\\node_modules\\.bin\\grain.cmd";
 // let bash = resolve_in_path_exn("bash.exe");
