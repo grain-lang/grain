@@ -1,5 +1,5 @@
 {
-  "checksum": "af8b6c623f75208727f18762f4a555aa",
+  "checksum": "c9801eb7c4510f611a8ad84edd83102b",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.12.0@d41d8cd9": {
@@ -128,13 +128,13 @@
       },
       "overrides": [],
       "dependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.2@1ea9f987",
+        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.3@5d74d95b",
         "@opam/dune@opam:2.9.3@f57a6d69", "@opam/cppo@opam:1.6.8@7e48217d",
         "@opam/biniou@opam:1.2.1@420bda02",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.2@1ea9f987",
+        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.3@5d74d95b",
         "@opam/dune@opam:2.9.3@f57a6d69", "@opam/biniou@opam:1.2.1@420bda02"
       ]
     },
@@ -991,23 +991,28 @@
         "ocaml@4.12.0@d41d8cd9", "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
-    "@opam/easy-format@opam:1.3.2@1ea9f987": {
-      "id": "@opam/easy-format@opam:1.3.2@1ea9f987",
+    "@opam/easy-format@opam:1.3.3@5d74d95b": {
+      "id": "@opam/easy-format@opam:1.3.3@5d74d95b",
       "name": "@opam/easy-format",
-      "version": "opam:1.3.2",
+      "version": "opam:1.3.3",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/34/3440c2b882d537ae5e9011eb06abb53f5667e651ea4bb3b460ea8230fa8c1926#sha256:3440c2b882d537ae5e9011eb06abb53f5667e651ea4bb3b460ea8230fa8c1926",
-          "archive:https://github.com/mjambon/easy-format/releases/download/1.3.2/easy-format-1.3.2.tbz#sha256:3440c2b882d537ae5e9011eb06abb53f5667e651ea4bb3b460ea8230fa8c1926"
+          "archive:https://opam.ocaml.org/cache/sha256/ea/eafccae911c26ca23e4ddacee3eaa54654d20f973b8680f84b708cef43adc416#sha256:eafccae911c26ca23e4ddacee3eaa54654d20f973b8680f84b708cef43adc416",
+          "archive:https://github.com/mjambon/easy-format/releases/download/1.3.3/easy-format-1.3.3.tbz#sha256:eafccae911c26ca23e4ddacee3eaa54654d20f973b8680f84b708cef43adc416"
         ],
         "opam": {
           "name": "easy-format",
-          "version": "1.3.2",
-          "path": "esy.lock/opam/easy-format.1.3.2"
+          "version": "1.3.3",
+          "path": "esy.lock/opam/easy-format.1.3.3"
         }
       },
-      "overrides": [],
+      "overrides": [
+        {
+          "opamoverride":
+            "esy.lock/overrides/opam__s__easy_format_opam__c__1.3.3_opam_override"
+        }
+      ],
       "dependencies": [
         "ocaml@4.12.0@d41d8cd9", "@opam/dune@opam:2.9.3@f57a6d69",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
@@ -1254,11 +1259,11 @@
       },
       "overrides": [],
       "dependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.2@1ea9f987",
+        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.3@5d74d95b",
         "@opam/dune@opam:2.9.3@f57a6d69", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
-        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.2@1ea9f987",
+        "ocaml@4.12.0@d41d8cd9", "@opam/easy-format@opam:1.3.3@5d74d95b",
         "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
@@ -1324,14 +1329,14 @@
         "@opam/dune@opam:2.9.3@f57a6d69"
       ]
     },
-    "@grain/libbinaryen@105.1.0@d41d8cd9": {
-      "id": "@grain/libbinaryen@105.1.0@d41d8cd9",
+    "@grain/libbinaryen@106.0.0@d41d8cd9": {
+      "id": "@grain/libbinaryen@106.0.0@d41d8cd9",
       "name": "@grain/libbinaryen",
-      "version": "105.1.0",
+      "version": "106.0.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-105.1.0.tgz#sha1:ed69f20fbe6dee06eb3fd02c2ffb2e2df7c36115"
+          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-106.0.0.tgz#sha1:268a76d0b798fc06cfe4236ccc553bdf19444c32"
         ]
       },
       "overrides": [],
@@ -1366,7 +1371,7 @@
         "@opam/dune-build-info@opam:2.9.3@ae518c8c",
         "@opam/dune@opam:2.9.3@f57a6d69",
         "@opam/cmdliner@opam:1.1.1@03763729",
-        "@grain/binaryen.ml@0.15.0@d41d8cd9"
+        "@grain/binaryen.ml@0.16.0@d41d8cd9"
       ],
       "devDependencies": [
         "@reason-native/rely@github:reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9",
@@ -1375,14 +1380,14 @@
       ],
       "installConfig": { "pnp": false }
     },
-    "@grain/binaryen.ml@0.15.0@d41d8cd9": {
-      "id": "@grain/binaryen.ml@0.15.0@d41d8cd9",
+    "@grain/binaryen.ml@0.16.0@d41d8cd9": {
+      "id": "@grain/binaryen.ml@0.16.0@d41d8cd9",
       "name": "@grain/binaryen.ml",
-      "version": "0.15.0",
+      "version": "0.16.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.15.0.tgz#sha1:484b054695b0f28c0e02d4c6e1f85f17ed7632f2"
+          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.16.0.tgz#sha1:c2393cdfb197bc5fa3440163c612a818610878ee"
         ]
       },
       "overrides": [],
@@ -1390,7 +1395,7 @@
         "ocaml@4.12.0@d41d8cd9",
         "@opam/dune-configurator@opam:2.9.3@174e411b",
         "@opam/dune@opam:2.9.3@f57a6d69",
-        "@grain/libbinaryen@105.1.0@d41d8cd9"
+        "@grain/libbinaryen@106.0.0@d41d8cd9"
       ],
       "devDependencies": [],
       "installConfig": { "pnp": false }
