@@ -469,3 +469,17 @@
  		sed -e 's;@AUTOLINK@;$(OCAML_AUTOLINK);g' \
  		    -e 's;@SYSTEM@;$(SYSTEM);g' \
  		     >findlib_config.ml
+--- ./src/findlib/frontend.ml
++++ ./src/findlib/frontend.ml
+@@ -281,10 +281,8 @@
+ 
+ 
+ let identify_dir d =
+-  if is_win then
+-    failwith "identify_dir";   (* not available *)
+   let s = Unix.stat d in
+-	(s.Unix.st_dev, s.Unix.st_ino)
++  (s.Unix.st_dev, s.Unix.st_ino)
+ ;;
+ 
+ 
