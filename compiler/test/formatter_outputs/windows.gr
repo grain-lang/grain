@@ -1,0 +1,3 @@
+let x = "windows has different eol markers"
+
+let y = "The formatter should preserve that"
