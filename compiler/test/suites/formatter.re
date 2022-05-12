@@ -1,6 +1,9 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
+
 describe("formatter", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
