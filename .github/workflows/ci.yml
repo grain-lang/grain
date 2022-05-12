@@ -71,12 +71,10 @@ jobs:
           yarn compiler export-dependencies
 
       - name: Run tests (native)
-        if: matrix.os != 'windows-latest'
         run: |
           yarn compiler test
 
       - name: Run tests (js)
-        if: matrix.os != 'windows-latest'
         run: |
           yarn compiler test:js
 
