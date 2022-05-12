@@ -318,6 +318,9 @@ let toString = (~width, ~win_eol, doc) => {
               MiniBuffer.flush_newline(buffer, win_eol);
               0;
             | Literal =>
+              if (win_eol) {
+                MiniBuffer.add_char(buffer, '\r');
+              };
               MiniBuffer.add_char(buffer, '\n');
               0;
             | Soft => pos
