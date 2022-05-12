@@ -186,7 +186,7 @@ let run = (~num_pages=?, file) => {
     } else {
       // Exit with the program's exit code rather than PowerShell's
       List.concat([
-        ["-command"],
+        ["PowerShell", "-command"],
         args,
         ["; exit $LastExitCode"],
       ]);
