@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node.exe
 
 // https://github.com/grain-lang/grain/issues/114
 const v8 = require("v8");
