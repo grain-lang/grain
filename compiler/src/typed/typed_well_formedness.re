@@ -83,7 +83,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
 
   let enter_expression: expression => unit =
     ({exp_desc, exp_loc, exp_attributes} as exp) => {
-      // Check #1: Avoid using Pervasives equality ops with WasmXX types
+      // Check: Avoid using Pervasives equality ops with WasmXX types
       switch (exp_desc) {
       | TExpLet(_) when is_marked_unsafe(exp_attributes) => push_unsafe(true)
       | TExpApp(
@@ -107,9 +107,35 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         }
+      // Check: Warn if using Int32.fromNumber(<literal>)
+      | TExpApp(
+          {
+            exp_desc:
+              TExpIdent(
+                Path.PExternal(
+                  Path.PIdent({name: modname}),
+                  "fromNumber",
+                  _,
+                ),
+                _,
+                _,
+              ),
+          },
+          [{exp_desc: TExpConstant(Const_number(Const_number_int(_)))}],
+        )
+          when modname == "Int32" || modname == "Int64" =>
+        let warning =
+          if (modname == "Int32") {
+            Grain_utils.Warnings.FromNumberLiteral32;
+          } else {
+            Grain_utils.Warnings.FromNumberLiteral64;
+          };
+        if (Grain_utils.Warnings.is_active(warning)) {
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
+        };
       | _ => ()
       };
-      // Check #2: Forbid usage of WasmXX types outside of disableGC context
+      // Check: Forbid usage of WasmXX types outside of disableGC context
       switch (exp_desc) {
       | TExpLambda(_) => push_in_lambda(true)
       | _ => ()
