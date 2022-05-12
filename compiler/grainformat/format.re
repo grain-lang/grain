@@ -2735,7 +2735,7 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            Doc.line,
+            if (true_is_block) {Doc.space} else {Doc.line},
             Doc.text("else"),
             if (true_is_block) {
               false_made_block := true;
