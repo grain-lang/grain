@@ -60,10 +60,10 @@ jobs:
           npm run compiler export-dependencies
 
       - name: Run tests (native)
-        if: matrix.os != 'windows-latest'
         run: |
           npm run compiler test
 
+      # Windows still needs some fixes to run correctly in JS
       - name: Run tests (js)
         if: matrix.os != 'windows-latest'
         run: |
