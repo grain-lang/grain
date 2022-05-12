@@ -9,8 +9,7 @@ module MiniBuffer = Res_minibuffer;
 
 type eol =
   | CRLF
-  | LF
-  | SYSDEFAULT;
+  | LF;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
@@ -4181,7 +4180,6 @@ let format_ast =
   let win_eol =
     switch (line_end) {
     | None
-    | Some(SYSDEFAULT)
     | Some(LF) => false
     | Some(CRLF) => true
     };

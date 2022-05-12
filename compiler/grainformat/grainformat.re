@@ -18,8 +18,8 @@ let determine_eol = line => {
       file_eol := Some(LF);
     };
   } else {
-    // must use OS default as this file has no newline
-    file_eol := Some(SYSDEFAULT);
+    // must use OS default as this file has no newline we can use
+    file_eol := if (Sys.os_type == "Win32") Some(CRLF) else Some(LF);
   };
 };
 
