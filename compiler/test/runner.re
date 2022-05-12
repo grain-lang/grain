@@ -6,11 +6,14 @@ open Grain_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
-type customMatchers = {warning: warningExtensions, binaryFile: string => binaryFileExtensions};
+type customMatchers = {
+  warning: warningExtensions,
+  binaryFile: string => binaryFileExtensions,
+};
 
 let customMatchers = createMatcher => {
   warning: warningExtensions(createMatcher),
-  binaryFile: str => binaryFileExtensions(str,createMatcher)
+  binaryFile: str => binaryFileExtensions(str, createMatcher),
 };
 
 let grainfile = name => Filename.concat(test_input_dir, name ++ ".gr");

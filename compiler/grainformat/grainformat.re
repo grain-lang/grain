@@ -19,7 +19,14 @@ let determine_eol = line => {
     };
   } else {
     // must use OS default as this file has no newline we can use
-    file_eol := if (Sys.os_type == "Win32") Some(CRLF) else Some(LF);
+    file_eol :=
+      (
+        if (Sys.os_type == "Win32") {
+          Some(CRLF);
+        } else {
+          Some(LF);
+        }
+      );
   };
 };
 
@@ -152,8 +159,8 @@ let format_code =
       output_bytes(oc, contents);
       close_out(oc);
     | _ =>
-       set_binary_mode_out(stdout,true);
-       print_bytes(contents)
+      set_binary_mode_out(stdout, true);
+      print_bytes(contents);
     }
   };
 
