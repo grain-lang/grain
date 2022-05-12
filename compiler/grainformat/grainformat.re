@@ -139,7 +139,7 @@ let format_code =
       format_in_place: bool,
     ) => {
   let formatted_code =
-    Format.format_ast(~original_source, ~line_end=file_eol^,program );
+    Format.format_ast(~original_source, ~line_end=file_eol^, program);
 
   // return the file to its format
 
