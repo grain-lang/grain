@@ -4140,8 +4140,9 @@ let toplevel_print =
 let format_ast =
     (
       ~original_source: array(string),
+       ~line_end: option(eol),
       parsed_program: Parsetree.parsed_program,
-      line_end: option(eol),
+     
     ) => {
   let get_loc = (stmt: Parsetree.toplevel_stmt) => {
     stmt.ptop_loc;

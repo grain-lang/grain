@@ -21,7 +21,7 @@ let determine_eol = line => {
     // must use OS default as this file has no newline we can use
     file_eol :=
       (
-        if (Sys.os_type == "Win32") {
+        if (Sys.win32) {
           Some(CRLF);
         } else {
           Some(LF);
@@ -139,7 +139,7 @@ let format_code =
       format_in_place: bool,
     ) => {
   let formatted_code =
-    Format.format_ast(~original_source, program, file_eol^);
+    Format.format_ast(~original_source, ~line_end=file_eol^,program );
 
   // return the file to its format
 
