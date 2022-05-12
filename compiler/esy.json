@@ -29,7 +29,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.16.0 < 0.17.0",
+    "@grain/binaryen.ml": ">= 0.17.0 < 0.18.0",
     "@opam/cmdliner": ">= 1.0.2",
     "@opam/dune": ">= 2.0.0 < 3.0.0",
     "@opam/dune-build-info": ">= 2.0.0 < 3.0.0",
