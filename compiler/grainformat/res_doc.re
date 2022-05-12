@@ -288,6 +288,9 @@ let toString = (~width, ~win_eol, doc) => {
           switch (lineSuffices) {
           | [] =>
             if (lineStyle == Literal) {
+              if (win_eol) {
+                MiniBuffer.add_char(buffer, '\r');
+              };
               MiniBuffer.add_char(buffer, '\n');
               process(~pos=0, [], rest);
             } else {
