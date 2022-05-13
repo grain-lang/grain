@@ -11,10 +11,6 @@ import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import { allocateArray } from "runtime/dataStructures"
 
-/**
- * @section Values: Functions for working with the Map data type.
- */
-
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record Bucket<k, v> {
   mut key: k,
@@ -26,6 +22,10 @@ record Map<k, v> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k, v>>>,
 }
+
+/**
+ * @section Values: Functions for working with the Map data type.
+ */
 
 /**
  * Creates a new empty map with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your map and can use `Map.make()` instead.
