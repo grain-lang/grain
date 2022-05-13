@@ -28,6 +28,7 @@
 
 
  */
+open Grain_utils;
 
 module MiniBuffer = Res_minibuffer;
 
@@ -255,9 +256,9 @@ let fits = (w, stack) => {
   calculateAll(stack);
 };
 
-let toString = (~width, ~win_eol, doc) => {
+let toString = (~width, ~eol: Fs_access.eol, doc) => {
   propagateForcedBreaks(doc);
-  let buffer = MiniBuffer.create(1000);
+  let buffer = MiniBuffer.create(~eol, 1000);
 
   let rec process = (~pos, lineSuffices, stack) =>
     switch (stack) {
@@ -288,13 +289,13 @@ let toString = (~width, ~win_eol, doc) => {
           switch (lineSuffices) {
           | [] =>
             if (lineStyle == Literal) {
-              if (win_eol) {
+              if (eol == CRLF) {
                 MiniBuffer.add_char(buffer, '\r');
               };
               MiniBuffer.add_char(buffer, '\n');
               process(~pos=0, [], rest);
             } else {
-              MiniBuffer.flush_newline(buffer, win_eol);
+              MiniBuffer.flush_newline(buffer);
               MiniBuffer.add_string(
                 buffer,
                 [@doesNotRaise] String.make(ind, ' '),
@@ -315,10 +316,10 @@ let toString = (~width, ~win_eol, doc) => {
               MiniBuffer.add_string(buffer, " ");
               pos + 1;
             | Hard =>
-              MiniBuffer.flush_newline(buffer, win_eol);
+              MiniBuffer.flush_newline(buffer);
               0;
             | Literal =>
-              if (win_eol) {
+              if (eol == CRLF) {
                 MiniBuffer.add_char(buffer, '\r');
               };
               MiniBuffer.add_char(buffer, '\n');
@@ -362,7 +363,7 @@ let toString = (~width, ~win_eol, doc) => {
 };
 
 [@live]
-let debug = t => {
+let debug = (~eol, t) => {
   let rec toDoc =
     fun
     | Nil => text("nil")
@@ -454,5 +455,5 @@ let debug = t => {
       );
 
   let doc = toDoc(t);
-  toString(~width=10, ~win_eol=false, doc) |> print_endline;
+  toString(~width=10, ~eol, doc) |> print_endline;
 };

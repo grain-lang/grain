@@ -3,6 +3,27 @@
  various forms of caching.
  */
 
+type eol =
+  | CRLF
+  | LF;
+
+let determine_eol = line => {
+  switch (line) {
+  | Some(line) when String.length(line) > 0 =>
+    // check what the last char was
+    // TODO: Replace with `String.ends_with` in OCaml 4.13
+    let last_char = line.[String.length(line) - 1];
+    if (last_char == '\r') {
+      CRLF;
+    } else {
+      LF;
+    };
+  | _ =>
+    // must use OS default as this file has no newline we can use
+    Sys.win32 ? CRLF : LF
+  };
+};
+
 // TODO: (#598) Should be safe for now, but we should harden this against
 // relative paths by converting everything to absolute paths
 

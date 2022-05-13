@@ -5,92 +5,48 @@ open Grain_parsing;
 open Grain_utils;
 open Filename;
 
-let file_eol: ref(option(Format.eol)) = ref(None);
-
-let determine_eol = line => {
-  let line_len = String.length(line);
-  if (line_len > 0) {
-    // check what the last char was
-    let last_char = line.[line_len - 1];
-    if (last_char == '\r') {
-      file_eol := Some(CRLF);
-    } else {
-      file_eol := Some(LF);
+let get_program_string = filename => {
+  switch (filename) {
+  | None =>
+    let source_buffer = Buffer.create(1000);
+    set_binary_mode_in(stdin, true);
+    /* read from stdin until we get end of buffer */
+    try(
+      while (true) {
+        let c = input_char(stdin);
+        Buffer.add_char(source_buffer, c);
+      }
+    ) {
+    | exn => ()
     };
-  } else {
-    // must use OS default as this file has no newline we can use
-    file_eol :=
-      (
-        if (Sys.win32) {
-          Some(CRLF);
-        } else {
-          Some(LF);
-        }
-      );
+    Buffer.contents(source_buffer);
+  | Some(filename) =>
+    let ic = open_in_bin(filename);
+    let n = in_channel_length(ic);
+    let source_buffer = Buffer.create(n);
+    Buffer.add_channel(source_buffer, ic, n);
+    close_in(ic);
+    Buffer.contents(source_buffer);
   };
 };
 
 let compile_parsed = (filename: option(string)) => {
-  let program_str = ref("");
-  let linesList = ref([]);
-  file_eol := None;
-
   switch (
-    switch (filename) {
-    | None =>
-      /* read from stdin until we get end of buffer */
-      try(
-        while (true) {
-          let line = read_line();
-          switch (file_eol^) {
-          | None => determine_eol(line)
-          | Some(eol) => () // already set
-          };
-          linesList := linesList^ @ [line];
-        }
-      ) {
-      | exn => ()
-      };
+    {
+      let program_str = get_program_string(filename);
 
-      program_str := String.concat("\n", linesList^);
-      // If this is a CRLF file add in the final \n after the \r that was removed by
-      // input_line
+      let lines = String.split_on_char('\n', program_str);
+      let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
 
-      switch (file_eol^) {
-      | Some(CRLF) => program_str := program_str^ ++ "\n"
-      | _ => ()
-      };
+      let compile_state =
+        Compile.compile_string(
+          ~is_root_file=true,
+          ~hook=stop_after_parse,
+          ~name=?filename,
+          program_str,
+        );
 
-      Compile.compile_string(
-        ~is_root_file=true,
-        ~hook=stop_after_parse,
-        program_str^,
-      );
-    | Some(filenm) =>
-      // need to read the source file in case we want to use the content
-      // for formatter-ignore or decision making
-
-      let ic = open_in_bin(filenm);
-      let n = in_channel_length(ic);
-      let source_buffer = Buffer.create(n);
-      let _ = Buffer.add_channel(source_buffer, ic, n);
-      let _ = close_in(ic);
-
-      program_str := Bytes.to_string(Buffer.to_bytes(source_buffer));
-
-      linesList := String.split_on_char('\n', program_str^);
-      switch (linesList^) {
-      | [first_line, ..._] => determine_eol(first_line)
-      | _ => ()
-      };
-
-      Grain_utils.Config.base_path := dirname(filenm);
-      Compile.compile_string(
-        ~is_root_file=true,
-        ~hook=stop_after_parse,
-        ~name=filenm,
-        program_str^,
-      );
+      (compile_state, lines, eol);
     }
   ) {
   | exception exn =>
@@ -111,22 +67,22 @@ let compile_parsed = (filename: option(string)) => {
       bt,
     );
     exit(2);
-  | {cstate_desc: Parsed(parsed_program)} =>
-    `Ok((parsed_program, Array.of_list(linesList^)))
+  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
+    `Ok((parsed_program, Array.of_list(lines), eol))
   | _ => `Error((false, "Invalid compilation state"))
   };
 };
 
 let format_code =
     (
+      ~eol,
       srcfile: option(string),
       program: Parsetree.parsed_program,
       outfile,
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let formatted_code =
-    Format.format_ast(~original_source, ~line_end=file_eol^, program);
+  let formatted_code = Format.format_ast(~original_source, ~eol, program);
 
   // return the file to its format
 
@@ -159,9 +115,9 @@ let grainformat =
       srcfile: option(string),
       outfile,
       format_in_place: bool,
-      (program, source: array(string)),
+      (program, lines: array(string), eol),
     ) =>
-  try(format_code(srcfile, program, outfile, source, format_in_place)) {
+  try(format_code(~eol, srcfile, program, outfile, lines, format_in_place)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 
