@@ -591,7 +591,10 @@ let with_base_path = (path, func) => {
 };
 
 let stdlib_directory = (): option(string) =>
-  Option.map(path => Files.derelativize(path), stdlib_dir^);
+  Option.map(
+    path => Filepath.(to_string(String.derelativize(path))),
+    stdlib_dir^,
+  );
 
 let module_search_path = () => {
   switch (stdlib_directory()) {

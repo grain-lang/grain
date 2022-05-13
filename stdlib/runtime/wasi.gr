@@ -73,7 +73,7 @@ import foreign wasm fd_pread: (
  * @param iovs: The pointer to the array of iovs to write
  * @param iovs_len: The length of the array of iovs
  * @param nwritten: Where to store the number of bytes written
- * @return The number of bytes written
+ * @returns The number of bytes written
  */
 import foreign wasm fd_write: (
   WasmI32,

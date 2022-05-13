@@ -116,8 +116,8 @@ let setSize = (ptr: WasmI32, val: WasmI32) => {
 /**
  * Requests that the heap be grown by the given number of bytes.
  *
- * @param nbytes: WasmI32 - The number of bytes requested
- * @return WasmI32 - If unsuccessful, -1. Otherwise, the pointer to the beginning of the extended region.
+ * @param nbytes: The number of bytes requested
+ * @returns The pointer to the beginning of the extended region if successful or -1 otherwise
  */
 let growHeap = (nbytes: WasmI32) => {
   let mut reqSize = 0n
@@ -164,7 +164,7 @@ let growHeap = (nbytes: WasmI32) => {
 /**
  * Frees the given allocated pointer.
  *
- * @param ap: WasmI32 - The pointer to free
+ * @param ap: The pointer to free
  */
 export let free = (ap: WasmI32) => {
   let mut blockPtr = ap - 8n // 8 bytes for malloc header
@@ -212,8 +212,8 @@ export let free = (ap: WasmI32) => {
  * (if you can't tell from the fact that the name is reminiscient
  *  of the 1970s, the name of this function is taken from K&R).
  *
- * @param nbytes: WasmI32 - The number of bytes to try to grow the heap by
- * @return WasmI32 - If successful, a pointer to the start of the free list. If not successful, -1.
+ * @param nbytes: The number of bytes to try to grow the heap by
+ * @returns A pointer to the start of the free list if successful or -1 otherwise
  */
 let morecore = (nbytes: WasmI32) => {
   let origSize = heapSize
@@ -237,8 +237,8 @@ let morecore = (nbytes: WasmI32) => {
 /**
  * Allocates the requested number of bytes, returning a pointer.
  *
- * @param nbytes: WasmI32 - The number of bytes to allocate
- * @return WasmI32 - The pointer to the allocated region (8-byte aligned), or -1 if the allocation failed.
+ * @param nbytes: The number of bytes to allocate
+ * @returns The pointer to the allocated region (8-byte aligned) or -1 if the allocation failed
  */
 export let malloc = (nb: WasmI32) => {
   let mut nbytes = nb
@@ -302,10 +302,10 @@ export let malloc = (nb: WasmI32) => {
 }
 
 /**
- * Returns the current free list pointer
- * (used for debugging)
+ * Returns the current free list pointer.
+ * Used for debugging.
  *
- * @return WasmI32 - The free list pointer
+ * @returns The free list pointer
  */
 export let getFreePtr = () => {
   freePtr
