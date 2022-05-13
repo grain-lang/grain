@@ -70,30 +70,17 @@ let compile_parsed = (filename: option(string)) => {
       // need to read the source file in case we want to use the content
       // for formatter-ignore or decision making
 
-      program_str := "";
       let ic = open_in_bin(filenm);
-      try(
-        while (true) {
-          let line = input_line(ic);
+      let n = in_channel_length(ic);
+      let source_buffer = Buffer.create(n);
+      let _ = Buffer.add_channel(source_buffer, ic, n);
+      let _ = close_in(ic);
 
-          switch (file_eol^) {
-          | None => determine_eol(line)
-          | Some(eol) => () // already set
-          };
+      program_str := Bytes.to_string(Buffer.to_bytes(source_buffer));
 
-          linesList := linesList^ @ [line];
-        }
-      ) {
-      | exn => ()
-      };
-
-      program_str := String.concat("\n", linesList^);
-
-      // If this is a CRLF file add in the final \n after the \r that was removed by
-      // input_line
-
-      switch (file_eol^) {
-      | Some(CRLF) => program_str := program_str^ ++ "\n"
+      linesList := String.split_on_char('\n', program_str^);
+      switch (linesList^) {
+      | [first_line, ..._] => determine_eol(first_line)
       | _ => ()
       };
 
