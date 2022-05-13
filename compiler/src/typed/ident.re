@@ -100,6 +100,12 @@ let reinit = () =>
     currentstamp := reinit_level^;
   };
 
+let setup = () => {
+  // Identifiers below 1000 are used for Grain builtins
+  currentstamp := 999;
+  reinit_level := (-1);
+};
+
 let hide = i => {...i, stamp: (-1)};
 
 let make_global = i => i.flags = i.flags lor global_flag;

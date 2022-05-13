@@ -1,7 +1,7 @@
 imports › import_relative_path3
 (module
- (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
+ (type $none_=>_none (func))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
@@ -14,14 +14,9 @@ imports › import_relative_path3
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $global_1))
  (func $_gmain (; has Stack IR ;) (result i32)
-  (tuple.extract 0
-   (tuple.make
-    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-     (global.get $gimport_nested/nested_j)
-    )
-    (i32.const 0)
-   )
+  (call $wimport_GRAIN$MODULE$runtime/gc_incRef
+   (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (global.get $gimport_nested/nested_j)
   )
  )
  (func $_start (; has Stack IR ;)

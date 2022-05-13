@@ -1,0 +1,196 @@
+/**
+ * @module Random: Pseudo-random number generation.
+ * @example import Random from "random"
+ * @since v0.5.0
+ */
+import WasiRandom from "sys/random"
+import Result from "result"
+import Int32 from "int32"
+import Int64 from "int64"
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import DS from "runtime/dataStructures"
+
+/**
+ * @section Types: Type declarations included in the Random module.
+ */
+
+record Random {
+  seed: Int64,
+  mut counter: Int64,
+  mut initialized: Bool,
+}
+
+/**
+ * @section Values: Functions for working with pseudo-random number generators.
+ */
+
+let incCounter = random => {
+  random.counter = Int64.incr(random.counter)
+}
+
+// https://arxiv.org/pdf/2004.06278v3.pdf
+@unsafe
+let squares = (ctr: Int64, key: Int64) => {
+  // Implemented with @unsafe to boost efficiency
+  // and have fine-grained control over overflow semantics
+  let ctr = WasmI64.load(WasmI32.fromGrain(ctr), 8n)
+  let key = WasmI64.load(WasmI32.fromGrain(key), 8n)
+  let mut x = WasmI64.mul(ctr, key)
+  let mut y = x
+  let mut z = WasmI64.add(y, key)
+  // round 1
+  x = WasmI64.add(WasmI64.mul(x, x), y)
+  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  // round 2
+  x = WasmI64.add(WasmI64.mul(x, x), z)
+  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  // round 3
+  x = WasmI64.add(WasmI64.mul(x, x), y)
+  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  let ret = WasmI32.wrapI64(
+    WasmI64.shrU(WasmI64.add(WasmI64.mul(x, x), z), 32N)
+  )
+  WasmI32.toGrain(DS.newInt32(ret)): Int32
+}
+
+/**
+ * Creates a new pseudo-random number generator with the given seed.
+ *
+ * @param seed: The seed for the pseudo-random number generator
+ * @returns The pseudo-random number generator
+ *
+ * @since v0.5.0
+ */
+export let make = seed => {
+  { seed, counter: 0L, initialized: false }
+}
+
+/**
+ * Creates a new pseudo-random number generator with a random seed.
+ *
+ * @returns `Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise
+ *
+ * @since v0.5.0
+ */
+export let makeUnseeded = () => {
+  // TODO: Should we just .expect this result for UX's sake?
+  Result.map(seed => {
+    { seed, counter: 0L, initialized: false }
+  }, WasiRandom.randomInt64())
+}
+
+/**
+ * [Internal note]
+ * For low seed numbers, we sometimes need to churn through
+ * some iterations to start getting interesting numbers. Taking
+ * a cue from the API in https://pypi.org/project/squares-rng/ ,
+ * we churn through until we generate an int with a MSB of 1.
+ * Then, to avoid making all of the first generated numbers negative,
+ * we do another increment at the end.
+ */
+let checkInitialized = (random: Random) => {
+  if (!random.initialized) {
+    while (Int32.gt(Int32.clz(squares(random.counter, random.seed)), 0l)) {
+      incCounter(random)
+    }
+    // now that it's initialized, increment it again to make it a little more random
+    incCounter(random)
+    random.initialized = true
+  }
+}
+
+/**
+ * Generates a random 32-bit integer from the given pseudo-random number generator.
+ *
+ * @param random: The pseudo-random number generator to use
+ * @returns The randomly generated number
+ *
+ * @since v0.5.0
+ */
+export let nextInt32 = (random: Random) => {
+  checkInitialized(random)
+  let ret = squares(random.counter, random.seed)
+  incCounter(random)
+  ret
+}
+
+/**
+ * Generates a random 64-bit integer from the given pseudo-random number generator.
+ *
+ * @param random: The pseudo-random number generator to use
+ * @returns The randomly generated number
+ *
+ * @since v0.5.0
+ */
+export let nextInt64 = (random: Random) => {
+  checkInitialized(random)
+  let ret1 = Int64.fromNumber(
+    Int32.toNumber(squares(random.counter, random.seed))
+  )
+  incCounter(random)
+  let ret2 = Int64.fromNumber(
+    Int32.toNumber(squares(random.counter, random.seed))
+  )
+  incCounter(random)
+  Int64.lor(Int64.shl(ret1, 32L), ret2)
+}
+
+/**
+ * Generates a random 32-bit integer from the given pseudo-random number generator
+ * from a uniform distribution in the given range.
+ *
+ * @param random: The pseudo-random number generator to use
+ * @param low: The lower bound of the range (inclusive)
+ * @param high: The upper bound of the range (exclusive)
+ * @returns The randomly generated number
+ *
+ * @since v0.5.0
+ */
+export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
+  // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
+  let (+) = Int32.add
+  let (-) = Int32.sub
+  let (*) = Int32.mul
+  let (/) = Int32.divU
+  let (&) = Int32.land
+  let (>) = Int32.gtU
+  let range = high - low - 1l
+  let mask = Int32.shrU(Int32.lnot(0l), Int32.clz(Int32.lor(range, 1l)))
+  let mut x = nextInt32(random) & mask
+  let mut iters = 0l
+  while (x > range) {
+    x = nextInt32(random) & mask
+    iters += 1l
+  }
+  x + low
+}
+
+/**
+ * Generates a random 64-bit integer from the given pseudo-random number generator
+ * from a uniform distribution in the given range.
+ *
+ * @param random: The pseudo-random number generator to use
+ * @param low: The lower bound of the range (inclusive)
+ * @param high: The upper bound of the range (exclusive)
+ * @returns The randomly generated number
+ *
+ * @since v0.5.0
+ */
+export let nextInt64InRange = (random: Random, low: Int64, high: Int64) => {
+  // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
+  let (+) = Int64.add
+  let (-) = Int64.sub
+  let (*) = Int64.mul
+  let (/) = Int64.divU
+  let (&) = Int64.land
+  let (>) = Int64.gtU
+  let range = high - low - 1L
+  let mask = Int64.shrU(Int64.lnot(0L), Int64.clz(Int64.lor(range, 1L)))
+  let mut x = nextInt64(random) & mask
+  while (x > range) {
+    x = nextInt64(random) & mask
+  }
+  x + low
+}

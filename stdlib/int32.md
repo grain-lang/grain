@@ -571,6 +571,32 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+### Int32.**ltU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+ltU : (Int32, Int32) -> Bool
+```
+
+Checks if the first unsigned value is less than the second unsigned value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int32`|The first value|
+|`y`|`Int32`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
 ### Int32.**gt**
 
 <details disabled>
@@ -583,6 +609,32 @@ gt : (Int32, Int32) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int32`|The first value|
+|`y`|`Int32`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+### Int32.**gtU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gtU : (Int32, Int32) -> Bool
+```
+
+Checks if the first unsigned value is greater than the second unsigned value.
 
 Parameters:
 
@@ -623,6 +675,32 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+### Int32.**lteU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+lteU : (Int32, Int32) -> Bool
+```
+
+Checks if the first unsigned value is less than or equal to the second unsigned value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int32`|The first value|
+|`y`|`Int32`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
 ### Int32.**gte**
 
 <details disabled>
@@ -635,6 +713,32 @@ gte : (Int32, Int32) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int32`|The first value|
+|`y`|`Int32`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+### Int32.**gteU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gteU : (Int32, Int32) -> Bool
+```
+
+Checks if the first unsigned value is greater than or equal to the second unsigned value.
 
 Parameters:
 

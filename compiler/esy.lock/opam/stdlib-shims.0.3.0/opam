@@ -6,7 +6,7 @@ doc: "https://ocaml.github.io/stdlib-shims/"
 dev-repo: "git+https://github.com/ocaml/stdlib-shims.git"
 bug-reports: "https://github.com/ocaml/stdlib-shims/issues"
 tags: ["stdlib" "compatibility" "org:ocaml"]
-license: ["typeof OCaml system"]
+license: ["LGPL-2.1-only WITH OCaml-LGPL-linking-exception"]
 depends: [
   "dune"
   "ocaml" {>= "4.02.3"}

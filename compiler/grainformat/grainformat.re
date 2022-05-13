@@ -133,10 +133,7 @@ let grainformat =
 let input_file_conv = {
   open Arg;
   let (prsr, prntr) = non_dir_file;
-  (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
-    prntr,
-  );
+  (filename => prsr(filename), prntr);
 };
 
 /** Converter which checks that the given output filename is valid */
@@ -188,7 +185,8 @@ let cmd = {
     | Some(v) => Build_info.V1.Version.to_string(v)
     };
 
-  (
+  Cmd.v(
+    Cmd.info(Sys.argv[0], ~version, ~doc),
     Term.(
       ret(
         const(grainformat)
@@ -201,12 +199,11 @@ let cmd = {
           ),
       )
     ),
-    Term.info(Sys.argv[0], ~version, ~doc),
   );
 };
 
 let () =
-  switch (Term.eval(cmd)) {
-  | `Error(_) => exit(1)
+  switch (Cmd.eval_value(cmd)) {
+  | Error(_) => exit(1)
   | _ => ()
   };

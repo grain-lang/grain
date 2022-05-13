@@ -193,6 +193,6 @@ let builtin_values =
    be defined in this file (above!) without breaking .cmi
    compatibility. */
 
-let _ = Ident.set_current_time(999);
+let _ = Ident.setup();
 let builtin_idents = List.rev(builtin_idents^);
 let builtin_decls = List.rev(builtin_decls^);

@@ -248,7 +248,12 @@ let rec combineRightsHelp = (acc, dirflags) => {
         PathUnlinkFile => _RIGHT_PATH_UNLINK_FILE,
         PollFdReadwrite => _RIGHT_POLL_FD_READWRITE,
         SockShutdown => _RIGHT_SOCK_SHUTDOWN,
-        _ => fail "Unknown file right",
+        _ => {
+          ignore(fail "Unknown file right")
+          // `fail` won't allow us to get here, but this is necessary
+          // to make the wasm types work out
+          0N
+        },
       }
       combineRightsHelp(WasmI64.or(flag, acc), tl)
     },

@@ -315,9 +315,8 @@ let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
   Printf.sprintf("wimport_%s_%s", Ident.name(mod_), Ident.name(name));
 };
 
-let get_grain_imported_name = (mod_, name) => {
+let get_grain_imported_name = (mod_, name) =>
   Printf.sprintf("gimport_%s_%s", Ident.name(mod_), Ident.name(name));
-};
 
 let call_exception_printer = (wasm_mod, env, args) => {
   let args = [
@@ -504,30 +503,31 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => 
     );
   flatten(List.append(arg_instrs, stack_instrs));
 };
-let appropriate_incref = (wasm_mod, env, arg, b) =>
+let should_refcount = b =>
   switch (b) {
   | MArgBind(_, Types.HeapAllocated)
   | MLocalBind(_, Types.HeapAllocated)
   | MSwapBind(_, Types.HeapAllocated)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated) => call_incref(wasm_mod, env, arg)
+  | MGlobalBind(_, Types.HeapAllocated) => true
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
-  | MGlobalBind(_) => arg
+  | MGlobalBind(_) => false
+  };
+
+let appropriate_incref = (wasm_mod, env, arg, b) =>
+  if (should_refcount(b)) {
+    call_incref(wasm_mod, env, arg);
+  } else {
+    arg;
   };
 
 let appropriate_decref = (wasm_mod, env, arg, b) =>
-  switch (b) {
-  | MArgBind(_, Types.HeapAllocated)
-  | MLocalBind(_, Types.HeapAllocated)
-  | MSwapBind(_, Types.HeapAllocated)
-  | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated) => call_decref(wasm_mod, env, arg)
-  | MArgBind(_)
-  | MLocalBind(_)
-  | MSwapBind(_)
-  | MGlobalBind(_) => arg
+  if (should_refcount(b)) {
+    call_decref(wasm_mod, env, arg);
+  } else {
+    arg;
   };
 
 let compile_bind =
@@ -564,40 +564,48 @@ let compile_bind =
     Expression.Local_set.make(
       wasm_mod,
       slot,
-      Expression.Tuple_extract.make(
-        wasm_mod,
-        Expression.Tuple_make.make(
+      if (should_refcount(b)) {
+        Expression.Tuple_extract.make(
           wasm_mod,
-          [
-            arg,
-            appropriate_decref(
-              env,
-              Expression.Local_get.make(wasm_mod, slot, typ),
-            ),
-          ],
-        ),
-        0,
-      ),
+          Expression.Tuple_make.make(
+            wasm_mod,
+            [
+              arg,
+              appropriate_decref(
+                env,
+                Expression.Local_get.make(wasm_mod, slot, typ),
+              ),
+            ],
+          ),
+          0,
+        );
+      } else {
+        arg;
+      },
     );
   };
   let tee_slot = (slot, typ, arg) => {
     Expression.Local_tee.make(
       wasm_mod,
       slot,
-      Expression.Tuple_extract.make(
-        wasm_mod,
-        Expression.Tuple_make.make(
+      if (should_refcount(b)) {
+        Expression.Tuple_extract.make(
           wasm_mod,
-          [
-            arg,
-            appropriate_decref(
-              env,
-              Expression.Local_get.make(wasm_mod, slot, typ),
-            ),
-          ],
-        ),
-        0,
-      ),
+          Expression.Tuple_make.make(
+            wasm_mod,
+            [
+              arg,
+              appropriate_decref(
+                env,
+                Expression.Local_get.make(wasm_mod, slot, typ),
+              ),
+            ],
+          ),
+          0,
+        );
+      } else {
+        arg;
+      },
       typ,
     );
   };
@@ -3314,14 +3322,15 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     | MImportWasm => Ident.name(name)
     | MImportGrain => "GRAIN$MODULE$" ++ Ident.name(name);
 
-  let compile_import_name = name =>
-    fun
-    | MImportWasm => Ident.name(name)
-    | MImportGrain => "GRAIN$EXPORT$" ++ Ident.name(name);
+  let compile_import_name = (name, kind, ty) =>
+    switch (kind, ty) {
+    | (MImportGrain, MGlobalImport(_)) => "GRAIN$EXPORT$" ++ Ident.name(name)
+    | _ => Ident.name(name)
+    };
 
   let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
-    let item_name = compile_import_name(mimp_name, mimp_kind);
+    let item_name = compile_import_name(mimp_name, mimp_kind, mimp_type);
     let internal_name =
       switch (mimp_kind) {
       | MImportGrain => get_grain_imported_name(mimp_mod, mimp_name)
@@ -3384,53 +3393,51 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   );
 };
 
-let compile_exports = (wasm_mod, env, {functions, imports, exports, globals}) => {
-  let compile_export = (i, {ex_name, ex_global_index}) => {
-    let internal_name = Printf.sprintf("global_%ld", ex_global_index);
-    let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_name);
-    ignore @@ Export.add_global_export(wasm_mod, internal_name, exported_name);
-  };
-
-  let compile_external_function_export = ((internal_name, external_name)) => {
-    ignore @@
-    Export.add_function_export(wasm_mod, internal_name, external_name);
+let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
+  let compile_export = (i, export) => {
+    switch (export) {
+    | GlobalExport({ex_global_name, ex_global_index}) =>
+      let internal_name = Printf.sprintf("global_%ld", ex_global_index);
+      let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_global_name);
+      ignore @@
+      Export.add_global_export(wasm_mod, internal_name, exported_name);
+    | FunctionExport({ex_function_internal_name, ex_function_name}) =>
+      ignore @@
+      Export.add_function_export(
+        wasm_mod,
+        ex_function_internal_name,
+        ex_function_name,
+      )
+    };
   };
 
   let exports = {
-    let exported = Hashtbl.create(14);
+    module StringSet = Set.Make(String);
+    let exported_globals = ref(StringSet.empty);
+    let exported_functions = ref(StringSet.empty);
     /* Exports are already reversed, so keeping the first of any name is the correct behavior. */
     List.filter(
-      ({ex_name}) =>
-        if (Hashtbl.mem(exported, Ident.name(ex_name))) {
+      fun
+      | GlobalExport({ex_global_name}) =>
+        if (StringSet.mem(Ident.name(ex_global_name), exported_globals^)) {
           false;
         } else {
-          Hashtbl.add(exported, Ident.name(ex_name), ());
+          exported_globals :=
+            StringSet.add(Ident.name(ex_global_name), exported_globals^);
+          true;
+        }
+      | FunctionExport({ex_function_name}) =>
+        if (StringSet.mem(ex_function_name, exported_functions^)) {
+          false;
+        } else {
+          exported_functions :=
+            StringSet.add(ex_function_name, exported_functions^);
           true;
         },
       exports,
     );
   };
-  let functions = {
-    let exported = Hashtbl.create(14);
-    /* Functions will be reversed, so keeping the first of any name is the correct behavior. */
-    List.filter_map(
-      ({index, name, id}) =>
-        switch (name) {
-        | Some(name) =>
-          if (Hashtbl.mem(exported, name)) {
-            None;
-          } else {
-            Hashtbl.add(exported, name, ());
-            let internal_name = Ident.unique_name(id);
-            Some((internal_name, name));
-          }
-        | None => None
-        },
-      functions,
-    );
-  };
   List.iteri(compile_export, exports);
-  List.iter(compile_external_function_export, List.rev(functions));
   ignore @@ Export.add_function_export(wasm_mod, grain_main, grain_main);
   ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
   ignore @@
