@@ -3718,8 +3718,9 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     Bytes.to_string(serialized_cmi),
   );
   validate_module(~name?, wasm_mod);
+
   switch (Config.optimization_level^) {
-  | Level_three => Module.optimize(wasm_mod)
+  | Level_three => Optimize_mod.optimize(wasm_mod)
   | Level_zero
   | Level_one
   | Level_two => ()
