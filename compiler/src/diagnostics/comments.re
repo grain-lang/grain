@@ -280,18 +280,35 @@ module Attribute = {
 type description = option(string);
 type attributes = list(Attribute.t);
 
-module IntMap = Map.Make(Int);
+module type OrderedComments = {
+  type comment = (Typedtree.comment, description, attributes);
 
-type comments = {
-  mutable by_start_lnum:
-    IntMap.t((Typedtree.comment, description, attributes)),
-  mutable by_end_lnum:
-    IntMap.t((Typedtree.comment, description, attributes)),
+  type comments;
+
+  let comments: comments;
+
+  let find_starting_on_lnum: int => option(comment);
+  let find_ending_on_lnum: int => option(comment);
+
+  let iter: ((int, comment) => unit) => unit;
 };
 
-let comments = {by_start_lnum: IntMap.empty, by_end_lnum: IntMap.empty};
+module MakeOrderedComments =
+       (Raw: {let comments: list(Typedtree.comment);})
+       : OrderedComments => {
+  module IntMap = Map.Make(Int);
 
-let setup_comments = (raw_comments: list(Typedtree.comment)) => {
+  type comment = (Typedtree.comment, description, attributes);
+
+  type comments = {
+    mutable by_start_lnum:
+      IntMap.t((Typedtree.comment, description, attributes)),
+    mutable by_end_lnum:
+      IntMap.t((Typedtree.comment, description, attributes)),
+  };
+
+  let comments = {by_start_lnum: IntMap.empty, by_end_lnum: IntMap.empty};
+
   List.iter(
     (comment: Typedtree.comment) => {
       let (start_lnum, end_lnum, data) =
@@ -310,9 +327,22 @@ let setup_comments = (raw_comments: list(Typedtree.comment)) => {
         IntMap.add(start_lnum, data, comments.by_start_lnum);
       comments.by_end_lnum = IntMap.add(end_lnum, data, comments.by_end_lnum);
     },
-    raw_comments,
+    Raw.comments,
   );
+
+  let find_starting_on_lnum = lnum =>
+    IntMap.find_opt(lnum, comments.by_start_lnum);
+  let find_ending_on_lnum = lnum =>
+    IntMap.find_opt(lnum, comments.by_end_lnum);
+
+  let iter = fn => IntMap.iter(fn, comments.by_start_lnum);
 };
+
+let to_ordered = (comments): (module OrderedComments) =>
+  (module
+   MakeOrderedComments({
+     let comments = comments;
+   }));
 
 let start_line = (comment: Typedtree.comment) => {
   switch (comment) {
@@ -333,17 +363,17 @@ let end_line = (comment: Typedtree.comment) => {
 };
 
 module Doc = {
-  let starting_on_lnum = lnum => {
-    let data = IntMap.find_opt(lnum, comments.by_start_lnum);
+  let starting_on = (~lnum, module C: OrderedComments) => {
+    let data = C.find_starting_on_lnum(lnum);
     switch (data) {
     | Some((Doc({cmt_content}), _, _)) => data
     | _ => None
     };
   };
 
-  let ending_on_lnum = lnum => {
+  let ending_on = (~lnum, module C: OrderedComments) => {
     let rec ending_on_lnum_help = (lnum, check_prev) => {
-      let data = IntMap.find_opt(lnum, comments.by_end_lnum);
+      let data = C.find_ending_on_lnum(lnum);
       switch (data) {
       | Some((Doc({cmt_content}), _, _)) => data
       // Hack to handle code that has an attribute on the line before, such as `@disableGC`
@@ -354,14 +384,12 @@ module Doc = {
     ending_on_lnum_help(lnum, true);
   };
 
-  let find_module = () => {
+  let find_module = (module C: OrderedComments) => {
     let module_comments = ref([]);
-    IntMap.iter(
-      (_, (_comment, _desc, attrs) as comment) =>
-        if (List.exists(Attribute.is_module, attrs)) {
-          module_comments := [comment, ...module_comments^];
-        },
-      comments.by_start_lnum,
+    C.iter((_, (_comment, _desc, attrs) as comment) =>
+      if (List.exists(Attribute.is_module, attrs)) {
+        module_comments := [comment, ...module_comments^];
+      }
     );
     if (List.length(module_comments^) > 1) {
       failwith("More than one @module block is not supported");
@@ -370,14 +398,12 @@ module Doc = {
     };
   };
 
-  let find_sections = () => {
+  let find_sections = (module C: OrderedComments) => {
     let section_comments = ref([]);
-    IntMap.iter(
-      (_, (_comment, _desc, attrs) as comment) =>
-        if (List.exists(Attribute.is_section, attrs)) {
-          section_comments := [comment, ...section_comments^];
-        },
-      comments.by_start_lnum,
+    C.iter((_, (_comment, _desc, attrs) as comment) =>
+      if (List.exists(Attribute.is_section, attrs)) {
+        section_comments := [comment, ...section_comments^];
+      }
     );
     List.rev(section_comments^);
   };

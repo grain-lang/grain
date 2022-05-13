@@ -1,11 +1,14 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("let mut", ({test}) => {
+describe("let mut", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
 
   assertSnapshot("let-mut1", "let mut b = 4;b");
   assertSnapshot("let-mut2", "let mut b = (4, (5, 6));b");

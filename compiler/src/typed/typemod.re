@@ -87,7 +87,10 @@ let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
     | Some({txt: IdentName(name)}) => name
     | Some(_) => failwith("multilevel mod name")
     | None =>
-      "%" ++ Grain_utils.Files.filename_to_module_name(mod_.pimp_path.txt)
+      "%"
+      ++ Grain_utils.Filepath.String.filename_to_module_name(
+           mod_.pimp_path.txt,
+         )
     };
   let mod_name = Identifier.IdentName(mod_name);
   let path =
@@ -976,7 +979,8 @@ let get_compilation_mode = () => {
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   /* TODO: Do we maybe need a fallback here? */
-  let modulename = Grain_utils.Files.filename_to_module_name(sourcefile);
+  let modulename =
+    Grain_utils.Filepath.String.filename_to_module_name(sourcefile);
   Env.set_unit((modulename, sourcefile, get_compilation_mode()));
   let initenv = initial_env();
   let (stritems, sg, finalenv) = type_module(initenv, prog);

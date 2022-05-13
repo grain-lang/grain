@@ -32,10 +32,7 @@ module Input = {
 
   let (prsr, prntr) = Arg.non_dir_file;
 
-  let cmdliner_converter = (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
-    prntr,
-  );
+  let cmdliner_converter = (filename => prsr(filename), prntr);
 };
 
 module Output = {
@@ -54,7 +51,7 @@ module Output = {
   };
 
   let cmdliner_converter = (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
+    filename => prsr(filename),
     Format.pp_print_string,
   );
 };
@@ -104,13 +101,13 @@ let compile_typed = (opts: params) => {
 
 let generate_docs =
     ({current_version, output}: params, program: Typedtree.typed_program) => {
-  Comments.setup_comments(program.comments);
+  let comments = Comments.to_ordered(program.comments);
 
   let env = program.env;
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
-  let module_comment = Comments.Doc.find_module();
+  let module_comment = Comments.Doc.find_module(comments);
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
     // TODO: Should we fail if more than one `@module` attribute?
@@ -184,7 +181,7 @@ let generate_docs =
   };
 
   let add_docblock = sig_item => {
-    let docblock = Docblock.for_signature_item(~env, sig_item);
+    let docblock = Docblock.for_signature_item(~env, ~comments, sig_item);
     switch (docblock) {
     | Some(docblock) =>
       Buffer.add_buffer(
@@ -195,7 +192,7 @@ let generate_docs =
     };
   };
 
-  let section_comments = Comments.Doc.find_sections();
+  let section_comments = Comments.Doc.find_sections(comments);
   if (List.length(section_comments) == 0) {
     List.iter(add_docblock, signature_items);
   } else {
@@ -244,7 +241,7 @@ let generate_docs =
   | None => print_bytes(contents)
   };
 
-  `Ok();
+  ();
 };
 
 let graindoc = opts => {
@@ -266,14 +263,14 @@ let cmd = {
     | Some(v) => Build_info.V1.Version.to_string(v)
     };
 
-  (
+  Cmd.v(
+    Cmd.info(Sys.argv[0], ~version, ~doc),
     Grain_utils.Config.with_cli_options(graindoc) $ params_cmdliner_term(),
-    Term.info(Sys.argv[0], ~version, ~doc),
   );
 };
 
 let () =
-  switch (Term.eval(cmd)) {
-  | `Error(_) => exit(1)
+  switch (Cmd.eval_value(cmd)) {
+  | Error(_) => exit(1)
   | _ => ()
   };

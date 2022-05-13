@@ -17,7 +17,7 @@ depends: [
   "yojson" {>= "1.6.0" & < "2.0.0"}
   "result"
   "ppx_deriving" {>= "5.1"}
-  "ppxlib" {>= "0.14.0"}
+  "ppxlib" {>= "0.14.0" & < "0.26.0"}
   "ounit" {with-test & >= "2.0.0"}
 ]
 synopsis:

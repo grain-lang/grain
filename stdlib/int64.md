@@ -571,6 +571,32 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+### Int64.**ltU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+ltU : (Int64, Int64) -> Bool
+```
+
+Checks if the first unsigned value is less than the second unsigned value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
 ### Int64.**gt**
 
 <details disabled>
@@ -583,6 +609,32 @@ gt : (Int64, Int64) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+### Int64.**gtU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gtU : (Int64, Int64) -> Bool
+```
+
+Checks if the first unsigned value is greater than the second unsigned value.
 
 Parameters:
 
@@ -623,6 +675,32 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+### Int64.**lteU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+lteU : (Int64, Int64) -> Bool
+```
+
+Checks if the first unsigned value is less than or equal to the second unsigned value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
 ### Int64.**gte**
 
 <details disabled>
@@ -635,6 +713,32 @@ gte : (Int64, Int64) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Int64`|The first value|
+|`y`|`Int64`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+### Int64.**gteU**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gteU : (Int64, Int64) -> Bool
+```
+
+Checks if the first unsigned value is greater than or equal to the second unsigned value.
 
 Parameters:
 

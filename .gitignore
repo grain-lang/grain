@@ -36,10 +36,10 @@ pkg/
 
 # The grainc.exe binary is copied to the CLI directory during build
 cli/bin/grainc.exe
-cli/bin/grainc_js.bc.js
+cli/bin/grainc.bc.js
 cli/bin/graindoc.exe
-cli/bin/graindoc_js.bc.js
+cli/bin/graindoc.bc.js
 cli/bin/grainformat.exe
-cli/bin/grainformat_js.bc.js
+cli/bin/grainformat.bc.js
 
 .DS_Store

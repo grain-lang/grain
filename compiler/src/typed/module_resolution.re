@@ -103,8 +103,12 @@ module PathTbl = {
 
   let add: (t('a), (string, string), 'a) => unit =
     (tbl, (dir, unit_name), v) => {
-      let dir = Grain_utils.Files.realpath_quick(dir);
-      Hashtbl.add(tbl, Grain_utils.Files.smart_cat(dir, unit_name), v);
+      let dir = Grain_utils.Filepath.String.realpath_quick(dir);
+      Hashtbl.add(
+        tbl,
+        Grain_utils.Filepath.String.smart_cat(dir, unit_name),
+        v,
+      );
     };
 
   let find_opt:
@@ -114,7 +118,10 @@ module PathTbl = {
       if (!disable_relpath && is_relpath(unit_name)) {
         Hashtbl.find_opt(
           tbl,
-          Grain_utils.Files.canonicalize_relpath(base_path, unit_name),
+          Grain_utils.Filepath.String.canonicalize_relpath(
+            base_path,
+            unit_name,
+          ),
         );
       } else {
         List.fold_left(
@@ -124,7 +131,7 @@ module PathTbl = {
             | None =>
               Hashtbl.find_opt(
                 tbl,
-                Grain_utils.Files.(
+                Grain_utils.Filepath.String.(
                   smart_cat(realpath_quick(elt), unit_name)
                 ),
               )
@@ -162,7 +169,9 @@ let current_resolution_table = () => {
 
 let log_resolution = (unit_name, dir, basename) => {
   let resolution =
-    Grain_utils.Files.derelativize @@ Filename.concat(dir, basename);
+    Grain_utils.Filepath.(
+      to_string @@ String.derelativize @@ Filename.concat(dir, basename)
+    );
   PathTbl.add(current_resolution_table(), (dir, unit_name), resolution);
   resolution;
 };
@@ -190,7 +199,9 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
     if (cache) {
       log_resolution(unit_name, dir, basename);
     } else {
-      Grain_utils.Files.derelativize @@ Filename.concat(dir, basename);
+      Grain_utils.Filepath.(
+        to_string @@ String.derelativize @@ Filename.concat(dir, basename)
+      );
     };
   };
 };
@@ -248,7 +259,7 @@ let located_to_out_file_name = (~base=?, located) => {
     | GrainModule(_, Some(outpath))
     | WasmModule(outpath) => outpath
     };
-  Grain_utils.Files.derelativize(~base?, ret);
+  Grain_utils.Filepath.(to_string(String.derelativize(~base?, ret)));
 };
 
 let locate_unit_object_file = (~path=?, ~base_dir=?, unit_name) => {
@@ -408,7 +419,7 @@ module Dependency_graph =
         | Some(WasmModule(_)) =>
           failwith("impossible: compile_module > WasmModule")
         | Some(GrainModule(srcpath, _)) =>
-          Grain_utils.Files.derelativize(srcpath)
+          Grain_utils.Filepath.(to_string(String.derelativize(srcpath)))
         };
       let outpath = get_output_name(srcpath);
       let loc = Option.value(loc, ~default=Grain_parsing.Location.dummy_loc);

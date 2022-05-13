@@ -456,10 +456,15 @@ type import = {
 };
 
 [@deriving sexp]
-type export = {
-  ex_name: Ident.t,
-  ex_global_index: int32,
-};
+type export =
+  | FunctionExport({
+      ex_function_name: string,
+      ex_function_internal_name: string,
+    })
+  | GlobalExport({
+      ex_global_name: Ident.t,
+      ex_global_index: int32,
+    });
 
 [@deriving sexp]
 type mash_function = {
