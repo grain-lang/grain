@@ -256,6 +256,7 @@ let rec forEachBucket = (fn, node) => {
  * @param set: The set to iterate
  * 
  * @since 0.3.0
+ * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
 export let forEach = (fn, set) => {
   let buckets = set.buckets

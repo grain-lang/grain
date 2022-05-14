@@ -212,9 +212,16 @@ Parameters:
 
 ### Set.**forEach**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Ensured the iterator function return type is always `Void`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
