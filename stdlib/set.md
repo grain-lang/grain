@@ -42,19 +42,19 @@ No other changes yet.
 makeSized : Number -> Set<a>
 ```
 
-Creates a new empty set with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
+Creates a new empty set with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your set and can use `Set.make()` instead.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`storageLength`|`Number`|The initial storage length of the set|
+|`size`|`Number`|The initial storage size of the set|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Set<a>`|An empty set with the given initial storage length|
+|`Set<a>`|An empty set with the given initial storage size|
 
 ### Set.**make**
 
@@ -152,7 +152,7 @@ No other changes yet.
 size : Set<a> -> Number
 ```
 
-Returns the number of values within the set.
+Provides the count of values within the set.
 
 Parameters:
 
@@ -164,7 +164,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The number of elements in the set|
+|`Number`|The count of elements in the set|
 
 ### Set.**isEmpty**
 
