@@ -24,7 +24,7 @@ record Map<k, v> {
 }
 
 /**
- * @section Values: Functions for working with the Map data type.
+ * @section Values: Functions for working with Maps.
  */
 
 /**
