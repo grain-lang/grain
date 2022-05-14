@@ -28,16 +28,16 @@ record Map<k, v> {
  */
 
 /**
- * Creates a new empty map with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your map and can use `Map.make()` instead.
+ * Creates a new empty map with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your map and can use `Map.make()` instead.
  *
- * @param storageLength: The initial storage length of the map
- * @returns An empty map with the given initial storage length
+ * @param size: The initial storage size of the map
+ * @returns An empty map with the given initial storage size
  * 
  * @since v0.2.0
  */
 // TODO: This could take an `eq` function to custom comparisons
-export let makeSized = storageLength => {
-  let buckets = Array.make(storageLength, None)
+export let makeSized = storageSize => {
+  let buckets = Array.make(storageSize, None)
   { size: 0, buckets }
 }
 
@@ -254,7 +254,7 @@ export let remove = (key, map) => {
 }
 
 /**
- * Updates a value in the map by calling an updater function that receives the previously stored value as an `Option`. If the key didn't exist previously, the value will be `None`.
+ * Updates a value in the map by calling an updater function that receives the previously stored value as an `Option` and returns the new value to be stored as an `Option`. If the key didn't exist previously, the value will be `None`. If `None` is returned from the updater function, the key-value pair is removed.
  *
  * @param key: The unique key in the map
  * @param fn: The updater function
@@ -271,10 +271,10 @@ export let update = (key, fn, map) => {
 }
 
 /**
- * Returns the amount of key-value pairs stored within the map.
+ * Provides the count of key-value pairs stored within the map.
  *
  * @param map: The map to inspect
- * @returns The amount of key-value pairs in the map
+ * @returns The count of key-value pairs in the map
  * 
  * @since v0.2.0
  */
@@ -326,6 +326,7 @@ let rec forEachBucket = (fn, node) => {
  * @param map: The map to iterate
  * 
  * @since v0.2.0
+ * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
 export let forEach = (fn, map) => {
   let buckets = map.buckets
