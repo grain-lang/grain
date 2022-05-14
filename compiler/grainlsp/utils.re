@@ -30,7 +30,7 @@ let rec print_path = (ident: Path.t) => {
 };
 
 let map_concat = (~sep, ~print_fn, vals) => {
-  String.concat(",", List.map(v => print_fn(v), vals));
+  String.concat(sep, List.map(v => print_fn(v), vals));
 };
 
 let loc_to_range = (pos: Location.t): Rpc.range_t => {
@@ -118,15 +118,6 @@ let get_text_document_uri_and_position = json => {
   };
 };
 
-let print_sig = (t: Types.type_expr) => {
-  let buf = Buffer.create(64);
-  let ppf = Format.formatter_of_buffer(buf);
-  Printtyp.type_expr(ppf, t);
-  Format.pp_print_flush(ppf, ());
-  let sigStr = Buffer.contents(buf);
-  sigStr;
-};
-
 let string_of_type_expr = out_type => {
   let printer = (ppf, out_type) => {
     Oprint.out_type^(ppf, out_type);
@@ -151,114 +142,33 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
   | TTySubst(t) => lens_sig(~depth=depth + 1, ~env, t)
   | TTyConstr(path, types, r) =>
     let decl = Env.find_type(path, env);
-    let type_text =
-      switch (types) {
-      | [] => ""
-      | _ => "<" ++ map_concat(~sep=", ", ~print_fn=print_sig, types) ++ ">"
-      };
-
     let tk = decl.type_kind;
     switch (tk) {
     | TDataRecord(fields) =>
+      // the special case I want to handle, which is to print the full record
       let labelText =
-        List.fold_left(
-          (acc, field: Types.record_field) => {
-            let existing =
-              if (acc == "") {
-                acc;
-              } else {
-                acc ++ ",\n";
-              };
-            let typeInf = lens_sig(~env, field.rf_type);
-            let rf_name = field.rf_name;
-
-            existing ++ "  " ++ rf_name.name ++ ": " ++ typeInf;
-          },
-          "",
+        map_concat(
+          ~sep=",\n",
+          ~print_fn=
+            (field: Types.record_field) => {
+              let typeInf = lens_sig(~env, field.rf_type);
+              let rf_name = field.rf_name;
+              "  " ++ rf_name.name ++ ": " ++ typeInf;
+            },
           fields,
         );
 
-      "record "
-      ++ print_path(path)
-      ++ type_text
-      ++ " {\n"
-      ++ labelText
-      ++ "\n}";
+      simple_sig(t) ++ " {\n" ++ labelText ++ "\n}";
     | TDataVariant(decls) =>
-      let declText =
-        List.fold_left(
-          (acc, decl: Types.constructor_declaration) => {
-            let existing =
-              if (acc == "") {
-                acc;
-              } else {
-                acc ++ ",\n";
-              };
-            let decl_name = decl.cd_id.name;
+      switch (path) {
+      | PIdent(name) => "A"
+      | _ => simple_sig(t)
+      }
 
-            let args = decl.cd_args;
-
-            let decl_contructions =
-              switch (args) {
-              | TConstrTuple(types) =>
-                switch (types) {
-                | [] => ""
-                | _ =>
-                  " ("
-                  ++ map_concat(~sep=",\n", ~print_fn=print_sig, types)
-                  ++ ")"
-                }
-              | TConstrSingleton => ""
-              };
-
-            existing ++ "  " ++ decl_name ++ decl_contructions;
-          },
-          "",
-          decls,
-        );
-
-      let parts =
-        switch (path) {
-        | PIdent(ident) => ("", ident.name)
-        | PExternal(mod_path, name, _) => (
-            switch (mod_path) {
-            | PIdent(ident) => ident.name
-            | PExternal(mod_path, name, _) => ""
-            },
-            name,
-          )
-        };
-
-      // I'm not using oprint here as it doesn't display the field as I want, just the name
-      let (modname, typ) = parts;
-
-      if (modname == "Pervasives") {
-        typ ++ type_text;
-      } else if (typ == "Void") {
-        "Void";
-      } else {
-        "enum "
-        ++ print_path(path)
-        ++ type_text
-        ++ " {\n"
-        ++ declText
-        ++ "\n}"
-        ++ type_text;
-      };
-    | _ =>
-      let tree = Printtyp.tree_of_typexp(true, t);
-      switch (string_of_type_expr(Some(tree))) {
-      | None => ""
-      | Some(tstr) => tstr
-      };
+    | _ => simple_sig(t)
     };
 
-  | _ =>
-    let tree = Printtyp.tree_of_typexp(true, t);
-    switch (string_of_type_expr(Some(tree))) {
-    | None => ""
-    | Some(tstr) => tstr
-    };
+  | _ => simple_sig(t)
   };
 };
 
