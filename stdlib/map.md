@@ -146,7 +146,7 @@ No other changes yet.
 update : (a, (Option<b> -> Option<b>), Map<a, b>) -> Void
 ```
 
-Updates a value in the map by calling an updater function that receives the previously stored value as an `Option`. If the key didn't exist previously, the value will be `None`.
+Updates a value in the map by calling an updater function that receives the previously stored value as an `Option` and returns the new value to be stored as an `Option`. If the key didn't exist previously, the value will be `None`. If `None` is returned from the updater function, the key-value pair is removed.
 
 Parameters:
 
@@ -167,7 +167,7 @@ No other changes yet.
 size : Map<a, b> -> Number
 ```
 
-Returns the amount of key-value pairs stored within the map.
+Provides the count of key-value pairs stored within the map.
 
 Parameters:
 
@@ -179,7 +179,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The amount of key-value pairs in the map|
+|`Number`|The count of key-value pairs in the map|
 
 ### Map.**isEmpty**
 
@@ -227,9 +227,16 @@ Parameters:
 
 ### Map.**forEach**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.2.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Ensured the iterator function return type is always `Void`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
