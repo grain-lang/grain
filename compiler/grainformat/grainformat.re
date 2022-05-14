@@ -8,7 +8,7 @@ open Filename;
 let get_program_string = filename => {
   switch (filename) {
   | None =>
-    let source_buffer = Buffer.create(1000);
+    let source_buffer = Buffer.create(1024);
     set_binary_mode_in(stdin, true);
     /* read from stdin until we get end of buffer */
     try(

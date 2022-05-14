@@ -258,7 +258,7 @@ let fits = (w, stack) => {
 
 let toString = (~width, ~eol: Fs_access.eol, doc) => {
   propagateForcedBreaks(doc);
-  let buffer = MiniBuffer.create(~eol, 1000);
+  let buffer = MiniBuffer.create(~eol, 1024);
 
   let rec process = (~pos, lineSuffices, stack) =>
     switch (stack) {
