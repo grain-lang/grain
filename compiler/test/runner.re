@@ -1,14 +1,19 @@
 open TestFramework;
 open WarningExtensions;
+open BinaryFileExtensions;
 open Grain.Compile;
 open Grain_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
-type customMatchers = {warning: warningExtensions};
+type customMatchers = {
+  warning: warningExtensions,
+  binaryFile: string => binaryFileExtensions,
+};
 
 let customMatchers = createMatcher => {
   warning: warningExtensions(createMatcher),
+  binaryFile: str => binaryFileExtensions(str, createMatcher),
 };
 
 let grainfile = name =>
@@ -395,12 +400,9 @@ let makeFormatterRunner = (test, name, filename) => {
       let infile = formatter_in_file(filename);
       let (result, _) = format(infile);
 
-      // toEqualFile reads a file and misses the final newline,
-      // so we will trim our final newline
+      // we need do a binary content comparison to ensure the EOL is correct
 
-      expect.string(String.trim(result)).toEqualFile(
-        formatter_out_file(name),
-      );
+      expect.ext.binaryFile(result).toBinaryMatch(formatter_out_file(name));
     },
   );
 };

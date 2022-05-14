@@ -5,62 +5,48 @@ open Grain_parsing;
 open Grain_utils;
 open Filename;
 
+let get_program_string = filename => {
+  switch (filename) {
+  | None =>
+    let source_buffer = Buffer.create(1024);
+    set_binary_mode_in(stdin, true);
+    /* read from stdin until we get end of buffer */
+    try(
+      while (true) {
+        let c = input_char(stdin);
+        Buffer.add_char(source_buffer, c);
+      }
+    ) {
+    | exn => ()
+    };
+    Buffer.contents(source_buffer);
+  | Some(filename) =>
+    let ic = open_in_bin(filename);
+    let n = in_channel_length(ic);
+    let source_buffer = Buffer.create(n);
+    Buffer.add_channel(source_buffer, ic, n);
+    close_in(ic);
+    Buffer.contents(source_buffer);
+  };
+};
+
 let compile_parsed = (filename: option(string)) => {
-  let program_str = ref("");
-  let linesList = ref([]);
-
   switch (
-    switch (filename) {
-    | None =>
-      // force from stdin for now
+    {
+      let program_str = get_program_string(filename);
 
-      /* read from stdin until we get end of buffer */
-      try(
-        while (true) {
-          let line = read_line();
-          linesList := linesList^ @ [line];
-        }
-      ) {
-      | exn => ()
-      };
+      let lines = String.split_on_char('\n', program_str);
+      let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
 
-      program_str := String.concat("\n", linesList^);
+      let compile_state =
+        Compile.compile_string(
+          ~is_root_file=true,
+          ~hook=stop_after_parse,
+          ~name=?filename,
+          program_str,
+        );
 
-      Compile.compile_string(
-        ~is_root_file=true,
-        ~hook=stop_after_parse,
-        program_str^,
-      );
-    | Some(filenm) =>
-      // need to read the source file in case we want to use the content
-      // for formatter-ignore or decision making
-      program_str := "";
-
-      let ic = open_in(filenm);
-
-      try(
-        while (true) {
-          let line = input_line(ic);
-
-          linesList := linesList^ @ [line];
-        }
-      ) {
-      | exn => ()
-      };
-
-      program_str := String.concat("\n", linesList^);
-
-      // add a new line to the end for where it's in CRLF more
-      // TODO(#940): Handle CRLF properly
-      program_str := program_str^ ++ "\n";
-
-      Grain_utils.Config.base_path := dirname(filenm);
-      Compile.compile_string(
-        ~is_root_file=true,
-        ~hook=stop_after_parse,
-        ~name=filenm,
-        program_str^,
-      );
+      (compile_state, lines, eol);
     }
   ) {
   | exception exn =>
@@ -81,21 +67,24 @@ let compile_parsed = (filename: option(string)) => {
       bt,
     );
     exit(2);
-  | {cstate_desc: Parsed(parsed_program)} =>
-    `Ok((parsed_program, Array.of_list(linesList^)))
+  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
+    `Ok((parsed_program, Array.of_list(lines), eol))
   | _ => `Error((false, "Invalid compilation state"))
   };
 };
 
 let format_code =
     (
+      ~eol,
       srcfile: option(string),
       program: Parsetree.parsed_program,
       outfile,
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let formatted_code = Format.format_ast(~original_source, program);
+  let formatted_code = Format.format_ast(~original_source, ~eol, program);
+
+  // return the file to its format
 
   let buf = Buffer.create(0);
   Buffer.add_string(buf, formatted_code);
@@ -112,7 +101,9 @@ let format_code =
       let oc = Fs_access.open_file_for_writing(src);
       output_bytes(oc, contents);
       close_out(oc);
-    | _ => print_bytes(contents)
+    | _ =>
+      set_binary_mode_out(stdout, true);
+      print_bytes(contents);
     }
   };
 
@@ -124,9 +115,9 @@ let grainformat =
       srcfile: option(string),
       outfile,
       format_in_place: bool,
-      (program, source: array(string)),
+      (program, lines: array(string), eol),
     ) =>
-  try(format_code(srcfile, program, outfile, source, format_in_place)) {
+  try(format_code(~eol, srcfile, program, outfile, lines, format_in_place)) {
   | e => `Error((false, Printexc.to_string(e)))
   };
 
