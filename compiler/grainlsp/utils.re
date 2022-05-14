@@ -159,11 +159,6 @@ let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
         );
 
       simple_sig(t) ++ " {\n" ++ labelText ++ "\n}";
-    | TDataVariant(decls) =>
-      switch (path) {
-      | PIdent(name) => "A"
-      | _ => simple_sig(t)
-      }
 
     | _ => simple_sig(t)
     };
