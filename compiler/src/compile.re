@@ -303,7 +303,9 @@ let compile_string =
     cstate_filename: name,
     cstate_outfile: outfile,
   };
-  compile_resume(~is_root_file, ~hook?, cstate);
+  Grain_utils.Config.preserve_all_configs(() =>
+    compile_resume(~is_root_file, ~hook?, cstate)
+  );
 };
 
 let compile_file =
@@ -317,7 +319,9 @@ let compile_file =
     cstate_filename: Some(filename),
     cstate_outfile: outfile,
   };
-  compile_resume(~is_root_file, ~hook?, cstate);
+  Grain_utils.Config.preserve_all_configs(() =>
+    compile_resume(~is_root_file, ~hook?, cstate)
+  );
 };
 
 let anf = Linearize.transl_anf_module;
@@ -325,7 +329,7 @@ let anf = Linearize.transl_anf_module;
 let save_mashed = (f, outfile) =>
   switch (compile_file(~is_root_file=false, ~hook=stop_after_mashed, f)) {
   | {cstate_desc: Mashed(mashed)} =>
-    Grain_utils.Files.ensure_parent_directory_exists(outfile);
+    Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
     let mash_string =
       Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
     let oc = open_out(outfile);

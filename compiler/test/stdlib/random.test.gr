@@ -1,0 +1,25 @@
+import Random from "random"
+
+let rng1 = Random.make(0xf00L)
+let rng2 = Random.make(0xf00L)
+
+assert Random.nextInt32(rng1) == 833494444l
+assert Random.nextInt32(rng2) == 833494444l
+assert Random.nextInt32(rng1) == -1746193004l
+assert Random.nextInt32(rng2) == -1746193004l
+
+assert Random.nextInt32(rng1) == Random.nextInt32(rng2)
+assert Random.nextInt64(rng1) == Random.nextInt64(rng2)
+assert Random.nextInt64(rng1) == Random.nextInt64(rng2)
+
+assert Random.nextInt64(rng1) == -2063148927841070477L
+assert Random.nextInt64(rng2) == -2063148927841070477L
+assert Random.nextInt64(rng1) != -2063148927841070477L
+
+assert Random.nextInt32InRange(rng1, 5l, 20l) == 5l
+assert Random.nextInt32InRange(rng1, 5l, 20l) == 18l
+assert Random.nextInt32InRange(rng1, 5l, 20l) == 19l
+
+assert Random.nextInt64InRange(rng1, 5L, 20L) == 18L
+assert Random.nextInt64InRange(rng1, 5L, 20L) == 10L
+assert Random.nextInt64InRange(rng1, 5L, 20L) == 11L
