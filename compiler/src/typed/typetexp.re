@@ -581,6 +581,7 @@ let fold_values = fold_simple(Env.fold_values);
 let fold_types = fold_simple(Env.fold_types);
 let fold_modules = fold_persistent(Env.fold_modules);
 let fold_constructors = fold_descr(Env.fold_constructors, d => d.cstr_name);
+let fold_labels = fold_descr(Env.fold_labels, l => l.lbl_name);
 let fold_modtypes = fold_simple(Env.fold_modtypes);
 
 let type_attributes = attrs => {
@@ -743,7 +744,10 @@ let report_error = (env, ppf) =>
       fprintf(ppf, "Unbound constructor %a", identifier, lid);
       spellcheck(ppf, fold_constructors, env, lid);
     }
-  | Unbound_label(_)
+  | Unbound_label(lid) => {
+      fprintf(ppf, "Unbound record label %a", identifier, lid);
+      spellcheck(ppf, fold_labels, env, lid);
+    }
   | Unbound_class(_)
   | Unbound_cltype(_) =>
     failwith("Impossible: deprecated error type in typetexp")

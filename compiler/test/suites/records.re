@@ -46,6 +46,11 @@ describe("records", ({test, testSkip}) => {
     "record Rec {foo: Number}; {foo: 4, bar: 4}",
     "Unbound record label bar",
   );
+  assertCompileError(
+    "record_err_3",
+    "let foo = \"\"; foo.charAt(0)",
+    "Unbound record label charAt",
+  );
   assertRun(
     "record_get_1",
     "record Rec {foo: Number}; let bar = {foo: 4}; print(bar.foo)",
