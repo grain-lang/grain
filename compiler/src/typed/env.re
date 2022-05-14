@@ -2757,20 +2757,3 @@ let () = {
       }
     );
 };
-
-// LSP additions
-
-let get_all_values = (env): list((Ident.t, Types.value_description)) => {
-  let current = env.values.current;
-  Ident.fold_all((k, desc, accu) => [(k, desc), ...accu], current, []);
-};
-
-let get_all_type_names = env => {
-  let current = env.types.current;
-  Ident.fold_all((k, decl, accu) => [k, ...accu], current, []);
-};
-
-let get_all_modules = (env): list(Ident.t) => {
-  let current = env.modules.current;
-  Ident.fold_all((k, _, accu) => [k, ...accu], current, []);
-};

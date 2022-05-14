@@ -320,9 +320,3 @@ module Persistent_signature: {
    exported in debugging information. */
 
 let summary: t => summary;
-
-// LSP additions
-
-let get_all_values: t => list((Ident.t, Types.value_description));
-let get_all_type_names: t => list(Ident.t);
-let get_all_modules: t => list(Ident.t);

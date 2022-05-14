@@ -231,7 +231,6 @@ let read_message = (input): protocol_msg => {
   //   windows_mode := true;
   // };
 
-  Log.log(clength);
   let cl = "Content-Length: ";
   let cll = String.length(cl);
   if (String.sub(clength, 0, cll) == cl) {
@@ -261,11 +260,11 @@ let send = (output, content) => {
 
   let len = string_of_int(length);
 
-  let for_debug = "Content-Length: " ++ len ++ sep ++ content;
+  let msg = "Content-Length: " ++ len ++ sep ++ content;
 
-  Log.log(for_debug);
+  Log.log(msg);
 
-  output_string(output, for_debug);
+  output_string(output, msg);
 
   flush(output);
 };

@@ -109,7 +109,16 @@ let process_completion =
       switch (Hashtbl.find_opt(cached_code, location.uri)) {
       | None => Rpc.send_completion(stdout, id, [])
       | Some(compiled_code) =>
-        let modules = Env.get_all_modules(compiled_code.env);
+        let modules =
+          Env.fold_modules(
+            (tag, path, decl, acc) => {
+              List.append(acc, [Utils.print_path(path)])
+            },
+            None,
+            compiled_code.env,
+            [],
+          );
+
         let first_char = text.[0];
 
         let completions =
@@ -118,14 +127,21 @@ let process_completion =
             // autocomplete modules
             switch (String.rindex(text, '.')) {
             | exception exn =>
-              let modules = Env.get_all_modules(compiled_code.env);
-              let types = Env.get_all_type_names(compiled_code.env);
+              let types =
+                Env.fold_types(
+                  (tag, path, (type_decl, type_descs), acc) => {
+                    List.append(acc, [Utils.print_path(path)])
+                  },
+                  None,
+                  compiled_code.env,
+                  [],
+                );
 
               let converted_modules =
                 List.map(
-                  (m: Ident.t) => {
+                  (m: string) => {
                     let item: Rpc.completion_item = {
-                      label: m.name,
+                      label: m,
                       kind: 9,
                       detail: "",
                       documentation: "",
@@ -137,9 +153,9 @@ let process_completion =
 
               let converted_types =
                 List.map(
-                  (t: Ident.t) => {
+                  (t: string) => {
                     let item: Rpc.completion_item = {
-                      label: t.name,
+                      label: t,
                       kind: 22,
                       detail: "",
                       documentation: "",
@@ -158,7 +174,7 @@ let process_completion =
               let mod_ident: Path.t = PIdent(ident);
 
               // only look up completions for imported modules
-              if (!List.exists((m: Ident.t) => m.name == mod_name, modules)) {
+              if (!List.exists((m: string) => m == mod_name, modules)) {
                 [];
               } else {
                 get_module_exports(mod_ident, compiled_code);
@@ -167,13 +183,20 @@ let process_completion =
 
           | _ =>
             // Autocompete anything in scope
-            let values: list((Ident.t, Types.value_description)) =
-              Env.get_all_values(compiled_code.env);
+            let values: list((string, Types.value_description)) =
+              Env.fold_values(
+                (tag, path, vd, acc) => {
+                  List.append(acc, [(Utils.print_path(path), vd)])
+                },
+                None,
+                compiled_code.env,
+                [],
+              );
 
             List.map(
-              ((i: Ident.t, l: Types.value_description)) => {
+              ((i: string, l: Types.value_description)) => {
                 let item: Rpc.completion_item = {
-                  label: i.name,
+                  label: i,
                   kind: get_kind(l.val_type.desc),
                   detail: Utils.lens_sig(l.val_type, ~env=compiled_code.env),
                   documentation: "",
