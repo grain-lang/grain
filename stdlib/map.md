@@ -15,7 +15,7 @@ import Map from "map"
 
 ## Values
 
-Functions for working with the Map data type.
+Functions for working with Maps.
 
 ### Map.**makeSized**
 
