@@ -79,22 +79,6 @@ let is_point_inside_location =
   };
 };
 
-let find_best_match = (~line, ~char, typed_program: Typedtree.typed_program) => {
-  // see if it falls within a top level statement (which it must!)
-  let rec loop = (statements: list(Grain_typed.Typedtree.toplevel_stmt)) =>
-    switch (statements) {
-    | [] => None
-    | [stmt, ...tail] =>
-      let loc = stmt.ttop_loc;
-      if (is_point_inside_stmt(~line, loc)) {
-        Some(stmt);
-      } else {
-        loop(List.tl(statements));
-      };
-    };
-  loop(typed_program.statements);
-};
-
 let get_text_document_uri_and_position = json => {
   let params = Yojson.Safe.Util.member("params", json);
   let textDocument = Yojson.Safe.Util.member("textDocument", params);
@@ -196,6 +180,22 @@ let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
   };
 };
 
+let find_best_match = (~line, ~char, typed_program: Typedtree.typed_program) => {
+  // see if it falls within a top level statement (which it must!)
+  let rec loop = (statements: list(Grain_typed.Typedtree.toplevel_stmt)) =>
+    switch (statements) {
+    | [] => None
+    | [stmt, ...tail] =>
+      let loc = stmt.ttop_loc;
+      if (is_point_inside_stmt(~line, loc)) {
+        Some(stmt);
+      } else {
+        loop(List.tl(statements));
+      };
+    };
+  loop(typed_program.statements);
+};
+
 let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
   switch (pattern.pat_desc) {
   | TPatTuple(args)
@@ -242,8 +242,6 @@ let rec get_node_from_pattern = (~line, ~char, pattern: Typedtree.pattern) => {
   };
 };
 
-// to remove
-
 let rec find_location_in_expressions = (~line, ~char, ~default, expressions) => {
   let exps =
     List.filter(
@@ -253,7 +251,17 @@ let rec find_location_in_expressions = (~line, ~char, ~default, expressions) => 
     );
 
   switch (exps) {
-  | [] => default
+  | [] =>
+    switch (default) {
+    | Expression(def) =>
+      if (is_point_inside_location(~line, ~char, def.exp_loc)) {
+        default;
+      } else {
+        NotInRange;
+      }
+    | _ => NotInRange
+    }
+
   | [expr] => get_node_from_expression(~line, ~char, expr)
   | _ => Error("Ambiguous locations found")
   };
@@ -393,35 +401,50 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
     | TExpMatch(cond, branches, _) =>
       let find_match =
         List.fold_left(
-          (acc, mb: Typedtree.match_branch) =>
-            if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
-              if (acc == NotInRange) {
-                get_node_from_pattern(~line, ~char, mb.mb_pat);
-              } else {
-                acc;
-              };
-            } else if (is_point_inside_location(
-                         ~line,
-                         ~char,
-                         mb.mb_body.exp_loc,
-                       )) {
-              if (acc == NotInRange) {
-                get_node_from_expression(~line, ~char, mb.mb_body);
-              } else {
-                acc;
-              };
-            } else {
-              switch (mb.mb_guard) {
-              | None => acc
-              | Some(e) when is_point_inside_location(~line, ~char, e.exp_loc) =>
+          (acc, mb: Typedtree.match_branch) => {
+            let found_in_branch =
+              if (is_point_inside_location(~line, ~char, mb.mb_pat.pat_loc)) {
                 if (acc == NotInRange) {
-                  get_node_from_expression(~line, ~char, e);
+                  get_node_from_pattern(~line, ~char, mb.mb_pat);
                 } else {
                   acc;
-                }
-              | Some(e) => acc
+                };
+              } else if (is_point_inside_location(
+                           ~line,
+                           ~char,
+                           mb.mb_body.exp_loc,
+                         )) {
+                if (acc == NotInRange) {
+                  get_node_from_expression(~line, ~char, mb.mb_body);
+                } else {
+                  acc;
+                };
+              } else {
+                switch (mb.mb_guard) {
+                | None => acc
+                | Some(e)
+                    when is_point_inside_location(~line, ~char, e.exp_loc) =>
+                  if (acc == NotInRange) {
+                    get_node_from_expression(~line, ~char, e);
+                  } else {
+                    acc;
+                  }
+                | Some(e) => acc
+                };
               };
-            },
+
+            switch (found_in_branch) {
+            | Pattern(_)
+            | Expression(_) => found_in_branch
+            | _ =>
+              // TODO #1221 - default to the branch body when lists mean we don't get locations
+              if (is_point_inside_location(~line, ~char, mb.mb_loc)) {
+                Expression(mb.mb_body);
+              } else {
+                found_in_branch;
+              }
+            };
+          },
           NotInRange,
           branches,
         );

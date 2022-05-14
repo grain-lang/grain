@@ -312,7 +312,6 @@ let get_hover = (~id, ~compiled_code, ~documents, request) => {
   switch (Utils.get_text_document_uri_and_position(request)) {
   | Some(location) =>
     let ln = location.line + 1;
-
     switch (Hashtbl.find_opt(compiled_code, location.uri)) {
     | None => ()
     | Some(compiled_code) =>
