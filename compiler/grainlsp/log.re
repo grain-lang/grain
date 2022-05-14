@@ -4,8 +4,6 @@ type log_level =
   | NoLog
   | DebugLog;
 
-//let log_dest = Filename.concat(Filename.get_temp_dir_name(), "lsp.log");
-
 let log_dest = "lsp.log";
 
 let set_level = (lvl: log_level) => {
