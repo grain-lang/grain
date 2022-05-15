@@ -17,8 +17,9 @@ function unix_opendir(path) {
 //Requires: caml_string_of_jsstring
 //Requires: make_unix_err_args, caml_raise_with_args, caml_named_value
 function unix_readdir(dir_handle) {
+    var dir;
     try {
-        var dir = dir_handle.readSync();
+        dir = dir_handle.readSync();
     } catch (e) {
         var unix_error = caml_named_value('Unix.Unix_error');
         caml_raise_with_args(unix_error, make_unix_err_args("EBADF", "readdir", dir_handle.path));
