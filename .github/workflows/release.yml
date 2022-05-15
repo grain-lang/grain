@@ -31,19 +31,20 @@ jobs:
       stdlib_download_url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
       js-runner_download_url: ${{ steps.js-runner-upload.outputs.browser_download_url }}
     steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
       # Many of these steps are the same as building the compiler for tests
       - name: Setup Node.js
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: "14"
           check-latest: true
+          cache: 'npm'
 
       - name: Setup environment
         run: |
           npm install -g shx
-
-      - name: Checkout project
-        uses: actions/checkout@v2
 
       - name: Set up JS runner and CLI
         run: |
@@ -194,7 +195,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup NodeJS
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: "14"
           registry-url: "https://registry.npmjs.org"
@@ -212,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup NodeJS
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: "14"
           registry-url: "https://registry.npmjs.org"

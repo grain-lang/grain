@@ -13,19 +13,20 @@ jobs:
         node-version: ["16"]
 
     steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
       - name: Setup Node.js
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
+          cache: 'npm'
 
       # Adds `shx` globally for cross-platform shell commands
       - name: Setup environment (All)
         run: |
           npm install -g shx
-
-      - name: Checkout project
-        uses: actions/checkout@v2
 
       - name: Set up JS runner and CLI
         run: |
