@@ -223,7 +223,7 @@ let rec forEachBucket = (fn, node) => {
   match (node) {
     None => void,
     Some({ key, value, next }) => {
-      fn(key, value)
+      fn(key, value): Void
       forEachBucket(fn, next)
     },
   }
