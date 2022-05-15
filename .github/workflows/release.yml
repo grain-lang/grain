@@ -16,7 +16,7 @@ jobs:
       js-runner_upload_url: ${{ steps.release.outputs.js-runner--upload_url }}
       js-runner_release_created: ${{ steps.release.outputs.js-runner--release_created }}
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v2.33.1
+      - uses: GoogleCloudPlatform/release-please-action@v3.2.2
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
