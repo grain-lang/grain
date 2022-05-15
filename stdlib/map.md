@@ -240,7 +240,7 @@ Parameters:
 </details>
 
 ```grain
-forEach : (((a, b) -> c), Map<a, b>) -> Void
+forEach : (((a, b) -> Void), Map<a, b>) -> Void
 ```
 
 Iterates the map, calling an iterator function with each key and value.
@@ -249,7 +249,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The iterator function to call with each key and value|
+|`fn`|`(a, b) -> Void`|The iterator function to call with each key and value|
 |`map`|`Map<a, b>`|The map to iterate|
 
 ### Map.**reduce**
