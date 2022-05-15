@@ -13,39 +13,28 @@ jobs:
         node-version: ["16"]
 
     steps:
+      - name: Checkout project
+        uses: actions/checkout@v2
+
       - name: Setup Node.js
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
-
-      # Add yarn's bin to our PATH
-      - name: Setup environment (Unix)
-        if: matrix.os != 'windows-latest'
-        run: |
-          echo $(yarn global bin) >> $GITHUB_PATH
-
-      # Add yarn's bin to our PATH
-      - name: Setup environment (Windows)
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo $(yarn global bin) | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          cache: 'npm'
 
       # Adds `shx` globally for cross-platform shell commands
       - name: Setup environment (All)
         run: |
-          yarn global add shx
-
-      - name: Checkout project
-        uses: actions/checkout@v2
+          npm install -g shx
 
       - name: Set up JS runner and CLI
         run: |
-          yarn
+          npm ci
 
       - name: Esy setup
         run: |
-          yarn compiler prepare
+          npm run compiler prepare
 
       - name: Esy cache
         id: esy-cache
@@ -57,40 +46,40 @@ jobs:
       - name: Import esy cache
         if: steps.esy-cache.outputs.cache-hit == 'true'
         run: |
-          yarn compiler import-dependencies
+          npm run compiler import-dependencies
           shx rm -rf compiler/_export
 
       - name: Build compiler
         run: |
-          yarn compiler build
+          npm run compiler build
 
       # Re-export dependencies if anything has changed or if it is the first time
       - name: Build esy cache
         if: steps.esy-cache.outputs.cache-hit != 'true'
         run: |
-          yarn compiler export-dependencies
+          npm run compiler export-dependencies
 
       - name: Run tests (native)
         if: matrix.os != 'windows-latest'
         run: |
-          yarn compiler test
+          npm run compiler test
 
       - name: Run tests (js)
         if: matrix.os != 'windows-latest'
         run: |
-          yarn compiler test:js
+          npm run compiler test:js
 
       - name: Check parser error messages exhaustiveness
         run: |
-          yarn compiler parser:check-errors
+          npm run compiler parser:check-errors
 
       # Formatting lint last because building is more important
       - name: Run formatting lint
         if: matrix.os != 'windows-latest'
         run: |
-          yarn compiler check-format
-          yarn js-runner check-format
-          yarn cli check-format
+          npm run compiler check-format
+          npm run js-runner check-format
+          npm run cli check-format
 
       # This is to test the CLI is working
       - name: Log Grain version

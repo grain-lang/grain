@@ -8,7 +8,7 @@
   },
   "scripts": {
     "clean": "del-cli 'bin/*.exe' 'bin/*.bc.js'",
-    "link": "yarn link",
+    "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1",

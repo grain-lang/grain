@@ -12,8 +12,8 @@ COPY . /grain
 WORKDIR /grain
 
 # Build the compiler and CLI
-RUN yarn --pure-lockfile && \
-    yarn compiler build
+RUN npm ci && \
+    npm run compiler build
 
 # Set up container environment
 WORKDIR /

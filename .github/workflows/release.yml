@@ -31,28 +31,28 @@ jobs:
       stdlib_download_url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
       js-runner_download_url: ${{ steps.js-runner-upload.outputs.browser_download_url }}
     steps:
-      # Many of these steps are the same as building the compiler for tests
-      - name: Setup Node.js
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: "16"
-          check-latest: true
-
-      - name: Setup environment
-        run: |
-          yarn config set prefix $(npm config get prefix)
-          yarn global add shx
-
       - name: Checkout project
         uses: actions/checkout@v2
 
+      # Many of these steps are the same as building the compiler for tests
+      - name: Setup Node.js
+        uses: actions/setup-node@v3.1.1
+        with:
+          node-version: "16"
+          check-latest: true
+          cache: 'npm'
+
+      - name: Setup environment
+        run: |
+          npm install -g shx
+
       - name: Set up JS runner and CLI
         run: |
-          yarn
+          npm ci
 
       - name: Esy setup
         run: |
-          yarn compiler prepare
+          npm run compiler prepare
 
       - name: Esy cache
         id: esy-cache
@@ -64,19 +64,19 @@ jobs:
       - name: Import esy cache
         if: steps.esy-cache.outputs.cache-hit == 'true'
         run: |
-          yarn compiler import-dependencies
+          npm run compiler import-dependencies
           shx rm -rf compiler/_export
 
       # Don't build grainc.exe, only the JS builds
       # TODO(#589): Actually build the exe's these once users can install them locally
       - name: Build compiler
         run: |
-          yarn compiler build:js
+          npm run compiler build:js
 
       # This will log a warning because we removed the grainc.exe file
       - name: Build Binaries
         run: |
-          yarn cli build-pkg --target win-x64,mac-x64,linux-x64
+          npm run cli build-pkg -- --target=win-x64,mac-x64,linux-x64
 
       - name: Upload Binary (Windows)
         uses: actions/upload-release-asset@v1
@@ -195,7 +195,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup NodeJS
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: "16"
           registry-url: "https://registry.npmjs.org"
@@ -213,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Setup NodeJS
-        uses: actions/setup-node@v2.1.2
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: "16"
           registry-url: "https://registry.npmjs.org"
