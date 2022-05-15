@@ -9,11 +9,11 @@ basic functionality › decr_2
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$decr\" (global $gimport_pervasives_decr (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$pervasives\" \"decr\" (func $gimport_pervasives_decr (param i32 i32) (result i32)))
- (global $global_1 i32 (i32.const 0))
+ (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $global_1))
+ (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
  (func $_gmain (; has Stack IR ;) (result i32)
   (call $gimport_pervasives_decr
    (call $wimport_GRAIN$MODULE$runtime/gc_incRef

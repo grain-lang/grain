@@ -90,12 +90,11 @@ let set_global_imports = imports => {
 /** Global index (index of global variables) */
 
 let global_table =
-  ref(Ident.empty: Ident.tbl((bool, int32, Types.allocation_type)));
-let global_index = ref(0);
+  ref(Ident.empty: Ident.tbl((bool, Types.allocation_type)));
 
 let get_globals = () => {
   Ident.fold_all(
-    (_, (_, slot, ty), acc) => [(slot, ty), ...acc],
+    (id, (_, ty), acc) => [(id, ty), ...acc],
     global_table^,
     [],
   );
@@ -104,9 +103,9 @@ let get_globals = () => {
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_global_name, (exported, ex_global_index, _), acc) =>
+    (ex_global_name, (exported, _), acc) =>
       if (exported) {
-        [GlobalExport({ex_global_name, ex_global_index}), ...acc];
+        [GlobalExport({ex_global_name: ex_global_name}), ...acc];
       } else {
         acc;
       },
@@ -117,28 +116,23 @@ let global_exports = () => {
 
 let reset_global = () => {
   global_table := Ident.empty;
-  global_index := 0;
 };
 
-let next_global = (exported, id, ty: Types.allocation_type) =>
-  /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
+let get_global = (exported, id, ty: Types.allocation_type) =>
   switch (Ident.find_same_opt(id, global_table^)) {
-  | Some((_, ret, _)) => Int32.to_int(ret)
+  | Some(_) => id
   | None =>
-    let ret = global_index^;
-    global_table :=
-      Ident.add(id, (exported, Int32.of_int(ret), ty), global_table^);
-    global_index := ret + 1;
-    ret;
+    global_table := Ident.add(id, (exported, ty), global_table^);
+    id;
   };
 
-let global_name = slot => Printf.sprintf("global_%d", slot);
+let global_name = id => Ident.unique_name(id);
 
 let find_id = (id, env) =>
   try(Ident.find_same(id, env.ce_binds)) {
   | Not_found =>
-    let (_, slot, alloc) = Ident.find_same(id, global_table^);
-    MGlobalBind(global_name(Int32.to_int(slot)), alloc);
+    let (_, alloc) = Ident.find_same(id, global_table^);
+    MGlobalBind(global_name(id), alloc);
   };
 
 let worklist_reset = () => Queue.clear(compilation_worklist);
@@ -761,8 +755,8 @@ let compile_wrapper =
   {func_idx, arity: Int32.of_int(arity + 1), variables: []};
 };
 
-let next_global = (~exported=false, id, ty) => {
-  let ret = next_global(exported, id, ty);
+let get_global = (~exported=false, id, ty) => {
+  let ret = get_global(exported, id, ty);
   global_name(ret);
 };
 
@@ -994,7 +988,7 @@ and compile_anf_expr = (env, a) =>
           switch (global) {
           | Global({exported}) => (
               env,
-              MGlobalBind(next_global(~exported, id, alloc), alloc),
+              MGlobalBind(get_global(~exported, id, alloc), alloc),
             )
           | Nonglobal => (
               next_env,
@@ -1206,7 +1200,7 @@ let lift_imports = (env, imports) => {
     | WasmFunction(mod_, name) =>
       let exported = imp_exported == Global({exported: true});
       let glob =
-        next_global(~exported, imp_use_id, Types.StackAllocated(WasmI32));
+        get_global(~exported, imp_use_id, Types.StackAllocated(WasmI32));
       let new_mod = {
         mimp_mod: Ident.create_persistent(mod_),
         mimp_name: Ident.create_persistent(name),

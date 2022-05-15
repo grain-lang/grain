@@ -466,10 +466,7 @@ type export =
       ex_function_name: string,
       ex_function_internal_name: string,
     })
-  | GlobalExport({
-      ex_global_name: Ident.t,
-      ex_global_index: int32,
-    });
+  | GlobalExport({ex_global_name: Ident.t});
 
 [@deriving sexp]
 type mash_function = {
@@ -497,7 +494,7 @@ type mash_program = {
   exports: list(export),
   main_body: block,
   main_body_stack_size: stack_size,
-  globals: list((int32, Types.allocation_type)),
+  globals: list((Ident.t, Types.allocation_type)),
   function_table_elements: list(string),
   signature: Cmi_format.cmi_infos,
   type_metadata: list(Types.type_metadata),

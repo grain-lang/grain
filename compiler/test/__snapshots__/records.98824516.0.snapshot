@@ -12,12 +12,12 @@ records › record_destruct_deep
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
- (global $global_0 (mut i32) (i32.const 0))
- (global $global_2 i32 (i32.const 0))
+ (global $foo_1133 (mut i32) (i32.const 0))
+ (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $global_2))
+ (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -166,13 +166,13 @@ records › record_destruct_deep
     )
    )
   )
-  (global.set $global_0
+  (global.set $foo_1133
    (tuple.extract 0
     (tuple.make
      (i32.const 0)
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-      (global.get $global_0)
+      (global.get $foo_1133)
      )
     )
    )
@@ -213,7 +213,7 @@ records › record_destruct_deep
    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
     (block (result i32)
-     (global.set $global_0
+     (global.set $foo_1133
       (tuple.extract 0
        (tuple.make
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -222,7 +222,7 @@ records › record_destruct_deep
         )
         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-         (global.get $global_0)
+         (global.get $foo_1133)
         )
        )
       )
@@ -234,7 +234,7 @@ records › record_destruct_deep
   (local.set $4
    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-    (global.get $global_0)
+    (global.get $foo_1133)
    )
   )
   (drop
