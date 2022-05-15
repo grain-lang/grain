@@ -225,7 +225,7 @@ Parameters:
 </details>
 
 ```grain
-forEach : ((a -> b), Set<a>) -> Void
+forEach : ((a -> Void), Set<a>) -> Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -234,7 +234,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The iterator function to call with each element|
+|`fn`|`a -> Void`|The iterator function to call with each element|
 |`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reduce**
