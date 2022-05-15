@@ -17,15 +17,15 @@ RUN npm ci && \
     npm run compiler build
 
 # Remove build files
-RUN rm -rf node_modules compiler/_esy
+RUN rm -rf compiler/_esy
 
 FROM node:16-slim
 
 COPY --from=builder /grain /grain
 WORKDIR /grain
 
-# Link CLI in new image and restore only necessary node_modules
-RUN NODE_ENV=production npm ci
+# Link CLI in new image
+RUN npm run cli link
 
 # Set up container environment
 WORKDIR /
