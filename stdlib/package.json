@@ -18,7 +18,7 @@
     "directory": "stdlib"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "main": "index.js",
   "files": [
