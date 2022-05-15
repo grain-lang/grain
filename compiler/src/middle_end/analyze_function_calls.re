@@ -2,6 +2,19 @@ open Anftree;
 open Anf_iterator;
 open Grain_typed;
 
+/*
+   This module tracks function calls throughout the program to determine whether
+   functions are ever used as first-class values. If not, we can skip adding a
+   pointer in a WebAssembly table and use the regular call instruction over
+   call_indirect, which gives a significant performance boost.
+
+   We implement a simple algorithm to track this: we increment a counter each
+   time we see a function identifier, and we decrement that counter each time we
+   see that identifier used to call the function. If the count works out to be
+   zero, then the identifier was only used to make direct calls. A nonzero count
+   means the identifier was used in some other way.
+ */
+
 let direct_function_calls = Ident_tbl.create(32);
 
 let register_function = id => {
@@ -25,6 +38,9 @@ let mark_ident_seen = id => {
 let has_indirect_call = id => {
   switch (Ident_tbl.find_opt(direct_function_calls, id)) {
   | Some(count) => count != 0
+  // If we don't know about the identifier being asked about (likely a
+  // function recieved as a parameter to another function), we default to a
+  // safe fallback: assume the function is being used as a first-class value.
   | None => true
   };
 };
