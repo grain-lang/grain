@@ -1,8 +1,11 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("numbers", ({test}) => {
-  let assertRun = makeRunner(test);
+describe("numbers", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertRun = makeRunner(test_or_skip);
   let assertCompileError = makeCompileErrorRunner(test);
 
   assertRun("numbers1", "print(0.3333 + (1 / 3))", "0.6666333333333333\n");
@@ -25,7 +28,8 @@ describe("numbers", ({test}) => {
   assertRun("numbers10", "print(-2 / 4)", "-1/2\n");
   assertRun("numbers11", "print(2 / -4)", "-1/2\n");
   assertRun("numbers12", "print(-2 / -4)", "1/2\n");
-  assertCompileError("numbers13", "9 / 0", "denominator of zero");
+  assertRun("numbers13", "print(1e3)", "1000.0\n");
+  assertCompileError("numbers14", "9 / 0", "denominator of zero");
   // basic syntax tests
   assertRun("number_syntax1", "print(1.2)", "1.2\n");
   assertRun("number_syntax2", "print(1.)", "1.0\n");

@@ -1,12 +1,15 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("functions", ({test}) => {
+describe("functions", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
-  let assertFileRunError = makeFileErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
+  let assertFileRunError = makeFileErrorRunner(test_or_skip);
   let tailCallConfig = () => {
     Grain_utils.Config.experimental_tail_call := true;
   };
@@ -164,5 +167,33 @@ describe("functions", ({test}) => {
   assertSnapshot(
     "func_record_associativity2",
     "record Foo { g: () -> Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
+  );
+
+  assertSnapshot(
+    "func_recursive_closure",
+    {|let makeAdder = (n) => (x) => x + n
+export let truc = () => {
+  let rec foo = (x) => {
+    let baz = makeAdder(1);
+    let bar = y => foo(0) + baz(1);
+    if (x == 0) {
+      0
+    } else if (x == 1) {
+      bar(1)
+    } else {
+      foo(x - 1)
+    }
+  }
+  foo(5)
+}
+truc()|},
+  );
+  assertCompileError(
+    "newline_before_arrow",
+    {|
+    let x = ()
+      => 1
+    |},
+    "Expected an expression.",
   );
 });

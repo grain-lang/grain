@@ -63,6 +63,7 @@ let debug_expression = (expr: Parsetree.expression) => {
     print_loc("PExpRecordSet", expr.pexp_loc)
   | PExpMatch(expression, match_branches) =>
     print_loc("PExpMatch", expr.pexp_loc)
+  | PExpPrim0(prim0) => print_loc("PExpPrim0", expr.pexp_loc)
   | PExpPrim1(prim1, expression) => print_loc("PExpPrim1", expr.pexp_loc)
   | PExpPrim2(prim2, expression, expression1) =>
     print_loc("PExpPrim2", expr.pexp_loc)

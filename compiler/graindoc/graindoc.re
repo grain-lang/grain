@@ -27,52 +27,30 @@ let () =
     }
   );
 
-module Input = {
-  type t = string;
-
-  let (prsr, prntr) = Arg.non_dir_file;
-
-  let cmdliner_converter = (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
-    prntr,
-  );
-};
-
-module Output = {
-  type t = string;
-
-  /** Checks that the given output filename is valid */
-  let prsr = s => {
-    let s_dir = dirname(s);
-    Sys.file_exists(s_dir)
-      ? if (Sys.is_directory(s_dir)) {
-          `Ok(s);
-        } else {
-          `Error(Format.sprintf("`%s' is not a directory", s_dir));
-        }
-      : `Error(Format.sprintf("no `%s' directory", s_dir));
-  };
-
-  let cmdliner_converter = (
-    filename => prsr(Grain_utils.Files.normalize_separators(filename)),
-    Format.pp_print_string,
-  );
-};
-
 [@deriving cmdliner]
 type params = {
   /** Grain source file for which to extract documentation */
   [@pos 0] [@docv "FILE"]
-  input: Input.t,
+  input: Filepath.Args.ExistingFile.t,
   /** Output filename */
   [@name "o"] [@docv "FILE"]
-  output: option(Output.t),
+  output: option(Filepath.Args.MaybeExistingFile.t),
+  /**
+    The version to use as current when generating markdown for `@since` and `@history` attributes.
+    Any future versions will be replace with `next` in the output.
+  */
+  [@name "current-version"] [@docv "VERSION"]
+  current_version: option(string),
 };
 
 let compile_typed = (opts: params) => {
-  Grain_utils.Config.base_path := dirname(opts.input);
+  let base_path = Filepath.to_string(Filepath.dirname(opts.input));
 
-  switch (Compile.compile_file(~hook=stop_after_typed, opts.input)) {
+  Grain_utils.Config.base_path := base_path;
+
+  let input = Filepath.to_string(opts.input);
+
+  switch (Compile.compile_file(~hook=stop_after_typed, input)) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -97,18 +75,14 @@ let compile_typed = (opts: params) => {
 };
 
 let generate_docs =
-    (
-      ~version as current_version,
-      opts: params,
-      program: Typedtree.typed_program,
-    ) => {
-  Comments.setup_comments(program.comments);
+    ({current_version, output}: params, program: Typedtree.typed_program) => {
+  let comments = Comments.to_ordered(program.comments);
 
   let env = program.env;
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
-  let module_comment = Comments.Doc.find_module();
+  let module_comment = Comments.Doc.find_module(comments);
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
     // TODO: Should we fail if more than one `@module` attribute?
@@ -132,12 +106,7 @@ let generate_docs =
       |> Option.map((attr: Comments.Attribute.t) => {
            switch (attr) {
            | Since({attr_version}) =>
-             let (<) = Version.String.less_than;
-             if (current_version < attr_version) {
-               Format.sprintf("Added in %s", Html.code("next"));
-             } else {
-               Format.sprintf("Added in %s", Html.code(attr_version));
-             };
+             Docblock.output_for_since(~current_version, attr_version)
            | _ =>
              failwith("Unreachable: Non-`since` attribute can't exist here.")
            }
@@ -148,12 +117,11 @@ let generate_docs =
       |> List.map((attr: Comments.Attribute.t) => {
            switch (attr) {
            | History({attr_version, attr_desc}) =>
-             let (<) = Version.String.less_than;
-             if (current_version < attr_version) {
-               [Html.code("next"), attr_desc];
-             } else {
-               [Html.code(attr_version), attr_desc];
-             };
+             Docblock.output_for_history(
+               ~current_version,
+               attr_version,
+               attr_desc,
+             )
            | _ =>
              failwith("Unreachable: Non-`since` attribute can't exist here.")
            }
@@ -188,7 +156,7 @@ let generate_docs =
   };
 
   let add_docblock = sig_item => {
-    let docblock = Docblock.for_signature_item(~env, sig_item);
+    let docblock = Docblock.for_signature_item(~env, ~comments, sig_item);
     switch (docblock) {
     | Some(docblock) =>
       Buffer.add_buffer(
@@ -199,7 +167,7 @@ let generate_docs =
     };
   };
 
-  let section_comments = Comments.Doc.find_sections();
+  let section_comments = Comments.Doc.find_sections(comments);
   if (List.length(section_comments) == 0) {
     List.iter(add_docblock, signature_items);
   } else {
@@ -240,24 +208,32 @@ let generate_docs =
   };
 
   let contents = Buffer.to_bytes(buf);
-  switch (opts.output) {
-  | Some(outfile) =>
-    let oc = Fs_access.open_file_for_writing(outfile);
+  switch (output) {
+  | Some(NotExists(outfile)) =>
+    Fs_access.ensure_parent_directory_exists(Filepath.to_string(outfile))
+  | _ => ()
+  };
+
+  switch (output) {
+  | Some(Exists(outfile))
+  | Some(NotExists(outfile)) =>
+    let oc = Fs_access.open_file_for_writing(Filepath.to_string(outfile));
     output_bytes(oc, contents);
     close_out(oc);
   | None => print_bytes(contents)
   };
 
-  `Ok();
+  ();
 };
 
-let graindoc = (~version, opts) =>
-  try({
-    let program = compile_typed(opts);
-    generate_docs(~version, opts, program);
-  }) {
-  | e => `Error((false, Printexc.to_string(e)))
+let graindoc = opts => {
+  let program = compile_typed(opts);
+  try(generate_docs(opts, program)) {
+  | exn =>
+    Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
+    exit(2);
   };
+};
 
 let cmd = {
   open Term;
@@ -269,15 +245,14 @@ let cmd = {
     | Some(v) => Build_info.V1.Version.to_string(v)
     };
 
-  (
-    Grain_utils.Config.with_cli_options(graindoc(~version))
-    $ params_cmdliner_term(),
-    Term.info(Sys.argv[0], ~version, ~doc),
+  Cmd.v(
+    Cmd.info(Sys.argv[0], ~version, ~doc),
+    Grain_utils.Config.with_cli_options(graindoc) $ params_cmdliner_term(),
   );
 };
 
 let () =
-  switch (Term.eval(cmd)) {
-  | `Error(_) => exit(1)
-  | _ => exit(0)
+  switch (Cmd.eval_value(cmd)) {
+  | Error(_) => exit(1)
+  | _ => ()
   };

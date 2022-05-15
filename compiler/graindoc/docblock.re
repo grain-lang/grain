@@ -11,8 +11,31 @@ type t = {
   attributes: list(Comments.Attribute.t),
 };
 
+exception
+  MissingFlag({
+    flag: string,
+    attr: string,
+  });
+
+let () =
+  Printexc.register_printer(exn => {
+    switch (exn) {
+    | MissingFlag({flag, attr}) =>
+      let msg =
+        Printf.sprintf(
+          "Must provide %s when generating docs with `%s` attribute.",
+          flag,
+          attr,
+        );
+      Some(msg);
+    | _ => None
+    }
+  });
+
 let module_name_of_location = (loc: Grain_parsing.Location.t) => {
-  Grain_utils.Files.filename_to_module_name(loc.loc_start.pos_fname);
+  Grain_utils.Filepath.String.filename_to_module_name(
+    loc.loc_start.pos_fname,
+  );
 };
 
 let string_of_value_description = (~ident, vd) => {
@@ -25,6 +48,35 @@ let string_of_type_declaration = (~ident, td) => {
 
 let title_for_api = (~module_name, ident: Ident.t) => {
   Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
+};
+
+let output_for_since = (~current_version, attr_version) => {
+  let current_version =
+    switch (current_version) {
+    | Some(version) => version
+    | None => raise(MissingFlag({flag: "--current-version", attr: "@since"}))
+    };
+  let (<) = Version.String.less_than;
+  if (current_version < attr_version) {
+    Format.sprintf("Added in %s", Html.code("next"));
+  } else {
+    Format.sprintf("Added in %s", Html.code(attr_version));
+  };
+};
+
+let output_for_history = (~current_version, attr_version, attr_desc) => {
+  let current_version =
+    switch (current_version) {
+    | Some(version) => version
+    | None =>
+      raise(MissingFlag({flag: "--current-version", attr: "@history"}))
+    };
+  let (<) = Version.String.less_than;
+  if (current_version < attr_version) {
+    [Html.code("next"), attr_desc];
+  } else {
+    [Html.code(attr_version), attr_desc];
+  };
 };
 
 let types_for_function = (~ident, vd: Types.value_description) => {
@@ -55,12 +107,13 @@ let string_of_type_expr = out_type => {
   Option.map(to_string, out_type);
 };
 
-let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
+let for_value_description =
+    (~comments, ~ident: Ident.t, vd: Types.value_description) => {
   let module_name = module_name_of_location(vd.val_loc);
   let name = title_for_api(~module_name, ident);
   let type_sig = string_of_value_description(~ident, vd);
   let comment =
-    Comments.Doc.ending_on_lnum(vd.val_loc.loc_start.pos_lnum - 1);
+    Comments.Doc.ending_on(~lnum=vd.val_loc.loc_start.pos_lnum - 1, comments);
 
   let (description, attributes) =
     switch (comment) {
@@ -87,12 +140,16 @@ let for_value_description = (~ident: Ident.t, vd: Types.value_description) => {
   {module_name, name, type_sig, description, attributes};
 };
 
-let for_type_declaration = (~ident: Ident.t, td: Types.type_declaration) => {
+let for_type_declaration =
+    (~comments, ~ident: Ident.t, td: Types.type_declaration) => {
   let module_name = module_name_of_location(td.type_loc);
   let name = title_for_api(~module_name, ident);
   let type_sig = string_of_type_declaration(~ident, td);
   let comment =
-    Comments.Doc.ending_on_lnum(td.type_loc.loc_start.pos_lnum - 1);
+    Comments.Doc.ending_on(
+      ~lnum=td.type_loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let (description, attributes) =
     switch (comment) {
@@ -103,15 +160,16 @@ let for_type_declaration = (~ident: Ident.t, td: Types.type_declaration) => {
   {module_name, name, type_sig, description, attributes};
 };
 
-let for_signature_item = (~env: Env.t, sig_item: Types.signature_item) => {
+let for_signature_item =
+    (~env: Env.t, ~comments, sig_item: Types.signature_item) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
     let vd = Env.find_value(vd.val_fullpath, env);
-    let docblock = for_value_description(~ident, vd);
+    let docblock = for_value_description(~comments, ~ident, vd);
     Some(docblock);
   | TSigType(ident, td, _rec) =>
     let td = Env.find_type(td.type_path, env);
-    let docblock = for_type_declaration(~ident, td);
+    let docblock = for_type_declaration(~comments, ~ident, td);
     Some(docblock);
   | _ => None
   };
@@ -162,12 +220,7 @@ let to_markdown = (~current_version, docblock) => {
     |> Option.map((attr: Comments.Attribute.t) => {
          switch (attr) {
          | Since({attr_version}) =>
-           let (<) = Version.String.less_than;
-           if (current_version < attr_version) {
-             Format.sprintf("Added in %s", Html.code("next"));
-           } else {
-             Format.sprintf("Added in %s", Html.code(attr_version));
-           };
+           output_for_since(~current_version, attr_version)
          | _ =>
            failwith("Unreachable: Non-`since` attribute can't exist here.")
          }
@@ -178,12 +231,7 @@ let to_markdown = (~current_version, docblock) => {
     |> List.map((attr: Comments.Attribute.t) => {
          switch (attr) {
          | History({attr_version, attr_desc}) =>
-           let (<) = Version.String.less_than;
-           if (current_version < attr_version) {
-             [Html.code("next"), attr_desc];
-           } else {
-             [Html.code(attr_version), attr_desc];
-           };
+           output_for_history(~current_version, attr_version, attr_desc)
          | _ =>
            failwith("Unreachable: Non-`since` attribute can't exist here.")
          }

@@ -49,6 +49,30 @@ module ConstantPropagationArg: Anf_mapper.MapArgument = {
       }
     | _ => i
     };
+
+  let leave_anf_program = ({signature} as p) => {
+    // Support directly exporting imports
+    let cmi_sign =
+      List.map(
+        fun
+        | TSigValue(vid, {val_fullpath: Path.PIdent(id)} as vd) as item => {
+            switch (Ident.find_same_opt(id, known_constants^)) {
+            | Some(ImmId(immid)) =>
+              TSigValue(vid, {...vd, val_fullpath: Path.PIdent(immid)})
+            | _ => item
+            };
+          }
+        | item => item,
+        signature.cmi_sign,
+      );
+    {
+      ...p,
+      signature: {
+        ...signature,
+        cmi_sign,
+      },
+    };
+  };
 };
 
 module ConstantPropagationMapper = Anf_mapper.MakeMap(ConstantPropagationArg);

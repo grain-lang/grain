@@ -87,7 +87,10 @@ let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
     | Some({txt: IdentName(name)}) => name
     | Some(_) => failwith("multilevel mod name")
     | None =>
-      "%" ++ Grain_utils.Files.filename_to_module_name(mod_.pimp_path.txt)
+      "%"
+      ++ Grain_utils.Filepath.String.filename_to_module_name(
+           mod_.pimp_path.txt,
+         )
     };
   let mod_name = Identifier.IdentName(mod_name);
   let path =
@@ -460,12 +463,13 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | Nonexported => None
       };
-    let (defs, newenv) = Translprim.transl_prim(newenv, desc);
+    let (defs, newenv, attrs) = Translprim.transl_prim(newenv, desc);
     let prim = {
       ttop_desc: TTopLet(e, Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
-      ttop_attributes: Typetexp.type_attributes(attributes),
+      ttop_attributes:
+        List.append(Typetexp.type_attributes(attributes), attrs),
     };
     (newenv, signature, prim);
   };
@@ -975,7 +979,8 @@ let get_compilation_mode = () => {
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   /* TODO: Do we maybe need a fallback here? */
-  let modulename = Grain_utils.Files.filename_to_module_name(sourcefile);
+  let modulename =
+    Grain_utils.Filepath.String.filename_to_module_name(sourcefile);
   Env.set_unit((modulename, sourcefile, get_compilation_mode()));
   let initenv = initial_env();
   let (stritems, sg, finalenv) = type_module(initenv, prog);

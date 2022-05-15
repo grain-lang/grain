@@ -117,6 +117,7 @@ let cstr = (id, args) => {
   cd_id: id,
   cd_args: TConstrTuple(args),
   cd_res: None,
+  cd_repr: ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Indirect),
   cd_loc: Location.dummy_loc,
 };
 
@@ -174,7 +175,7 @@ let initial_env = (add_type, empty_env) =>
   |> add_type(ident_bool, decl_bool)
   |> add_type(ident_box, decl_box)
   |> add_type(ident_string, decl_abstr(path_string))
-  |> add_type(ident_char, decl_abstr(path_char))
+  |> add_type(ident_char, decl_abstr_imm(WasmI32, path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
   |> add_type(ident_fd, decl_abstr(path_fd))
@@ -193,6 +194,6 @@ let builtin_values =
    be defined in this file (above!) without breaking .cmi
    compatibility. */
 
-let _ = Ident.set_current_time(999);
+let _ = Ident.setup();
 let builtin_idents = List.rev(builtin_idents^);
 let builtin_decls = List.rev(builtin_decls^);

@@ -28,7 +28,7 @@ depends: [
   "result"
   "ppx_deriving" {>= "5.0"}
   "dune"
-  "ppxlib"       {>= "0.18.0"}
+  "ppxlib"       {>= "0.18.0" & < "0.26.0"}
   "alcotest"     {with-test}
 ]
 synopsis: "Cmdliner.Term.t generator"

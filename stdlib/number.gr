@@ -71,19 +71,16 @@ export let div = (/)
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec sqrt = (x: Number) => {
+@unsafe
+export let sqrt = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let x = WasmI32.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
-  let ret = if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
+  if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
     WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
   } else {
     WasmI32.toGrain(newFloat64(sqrtd)): Number
   }
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(sqrt))
-  ret
 }
 
 /**
@@ -134,14 +131,11 @@ export let max = (x: Number, y: Number) => if (x > y) x else y
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec ceil = (x: Number) => {
+@unsafe
+export let ceil = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
-  let ret = WasmI32.toGrain(reducedInteger(ceiling)): Number
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(ceil))
-  ret
+  WasmI32.toGrain(reducedInteger(ceiling)): Number
 }
 
 /**
@@ -152,14 +146,11 @@ export let rec ceil = (x: Number) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec floor = (x: Number) => {
+@unsafe
+export let floor = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let floored = WasmI64.truncF64S(WasmF64.floor(xval))
-  let ret = WasmI32.toGrain(reducedInteger(floored)): Number
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(floor))
-  ret
+  WasmI32.toGrain(reducedInteger(floored)): Number
 }
 
 /**
@@ -170,14 +161,11 @@ export let rec floor = (x: Number) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec trunc = (x: Number) => {
+@unsafe
+export let trunc = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let trunced = WasmI64.truncF64S(xval)
-  let ret = WasmI32.toGrain(reducedInteger(trunced)): Number
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(trunc))
-  ret
+  WasmI32.toGrain(reducedInteger(trunced)): Number
 }
 
 /**
@@ -188,14 +176,11 @@ export let rec trunc = (x: Number) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec round = (x: Number) => {
+@unsafe
+export let round = (x: Number) => {
   let xval = coerceNumberToWasmF64(x)
   let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
-  let ret = WasmI32.toGrain(reducedInteger(rounded)): Number
-  Memory.decRef(WasmI32.fromGrain(x))
-  Memory.decRef(WasmI32.fromGrain(round))
-  ret
+  WasmI32.toGrain(reducedInteger(rounded)): Number
 }
 
 /**
@@ -227,10 +212,10 @@ export let neg = (x: Number) => if (x > 0) x * -1 else x
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec isFinite = (x: Number) => {
+@unsafe
+export let isFinite = (x: Number) => {
   let asPtr = WasmI32.fromGrain(x)
-  let ret = if (isBoxedNumber(asPtr)) {
+  if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
@@ -251,9 +236,6 @@ export let rec isFinite = (x: Number) => {
     // Simple numbers are integers and cannot be infinite.
     true
   }
-  Memory.decRef(asPtr)
-  Memory.decRef(WasmI32.fromGrain(isFinite))
-  ret
 }
 
 /**
@@ -265,10 +247,10 @@ export let rec isFinite = (x: Number) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec isNaN = (x: Number) => {
+@unsafe
+export let isNaN = (x: Number) => {
   let asPtr = WasmI32.fromGrain(x)
-  let ret = if (isBoxedNumber(asPtr)) {
+  if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
@@ -287,9 +269,6 @@ export let rec isNaN = (x: Number) => {
     // Simple numbers are integers and cannot be NaN.
     false
   }
-  Memory.decRef(asPtr)
-  Memory.decRef(WasmI32.fromGrain(isNaN))
-  ret
 }
 
 /**
@@ -301,12 +280,12 @@ export let rec isNaN = (x: Number) => {
  *
  * @since v0.4.0
  */
-@disableGC
-export let rec isInfinite = (x: Number) => {
+@unsafe
+export let isInfinite = (x: Number) => {
   // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
   // so see those functions to understand what's going on here.
   let asPtr = WasmI32.fromGrain(x)
-  let ret = if (isBoxedNumber(asPtr)) {
+  if (isBoxedNumber(asPtr)) {
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       let wf64 = WasmF64.load(asPtr, 8n)
@@ -320,9 +299,6 @@ export let rec isInfinite = (x: Number) => {
   } else {
     false
   }
-  Memory.decRef(asPtr)
-  Memory.decRef(WasmI32.fromGrain(isInfinite))
-  ret
 }
 
 /**

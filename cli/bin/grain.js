@@ -159,6 +159,10 @@ program
     "--parser-debug-level <level>",
     "debugging level for parser output"
   )
+  .forwardOption(
+    "--memory-base <addr>",
+    "set the base address for the Grain heap"
+  )
   .forwardOption("--source-map", "generate source maps")
   .forwardOption("--strict-sequence", "enable strict sequencing")
   .forwardOption(
@@ -205,6 +209,10 @@ program
 program
   .command("doc <file>")
   .description("generate documentation for a grain file")
+  .forwardOption(
+    "--current-version <version>",
+    "provide a version to use as current when generating markdown for `@since` and `@history` attributes"
+  )
   .action(
     wrapAction(function (file, options, program) {
       doc(file, program);

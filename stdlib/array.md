@@ -266,7 +266,7 @@ Returns:
 ### Array.**cycle**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.4</code></summary>
 No other changes yet.
 </details>
 
@@ -1030,7 +1030,7 @@ Returns:
 ### Array.**sort**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.5</code></summary>
 No other changes yet.
 </details>
 
@@ -1052,7 +1052,7 @@ Parameters:
 ### Array.**rotate**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.4.5</code></summary>
 No other changes yet.
 </details>
 

@@ -30,7 +30,6 @@ import {
   tagSimpleNumber,
   allocateArray,
   allocateString,
-  loadAdtVal,
   newInt64,
   allocateInt64,
 } from "runtime/dataStructures"
@@ -249,7 +248,12 @@ let rec combineRightsHelp = (acc, dirflags) => {
         PathUnlinkFile => _RIGHT_PATH_UNLINK_FILE,
         PollFdReadwrite => _RIGHT_POLL_FD_READWRITE,
         SockShutdown => _RIGHT_SOCK_SHUTDOWN,
-        _ => fail "Unknown file right",
+        _ => {
+          ignore(fail "Unknown file right")
+          // `fail` won't allow us to get here, but this is necessary
+          // to make the wasm types work out
+          0N
+        },
       }
       combineRightsHelp(WasmI64.or(flag, acc), tl)
     },
@@ -904,7 +908,7 @@ export let rec fdStats = (fd: FileDescriptor) => {
     let flagsToWasmVal = (flag, i) => {
       let rightsInheriting = WasmI64.load(structPtr, 16n)
       (rightsInheriting &
-      1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
+        1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
       0N
     }
     Memory.incRef(WasmI32.fromGrain(List.filteri))
@@ -1180,7 +1184,7 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
     if (used <= 0n) {
       Memory.free(buf)
       Memory.free(bufUsed)
-      wasmSafeOk(WasmI32.toGrain(allocateArray(0n)): (Array<DirectoryEntry>))
+      wasmSafeOk(WasmI32.toGrain(allocateArray(0n)): Array<DirectoryEntry>)
     } else {
       bufLen = WasmI32.load(buf, 16n) + structWidth * 2n
 
@@ -1256,7 +1260,7 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
             bufs = next
           }
 
-          wasmSafeOk(WasmI32.toGrain(arr): (Array<DirectoryEntry>))
+          wasmSafeOk(WasmI32.toGrain(arr): Array<DirectoryEntry>)
         },
       }
     }

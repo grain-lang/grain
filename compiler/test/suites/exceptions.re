@@ -1,10 +1,13 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("exceptions", ({test}) => {
+describe("exceptions", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
-  let assertRun = makeRunner(test);
-  let assertRunError = makeErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertRunError = makeErrorRunner(test_or_skip);
 
   assertRun("exception_1", "exception Foo; print(Foo)", "Foo\n");
   assertSnapshot("exception_2", "export exception Foo; Foo");

@@ -821,7 +821,7 @@ module Persistent_signature = {
   };
 
   let load =
-    ref((~loc=Location.dummy_loc, ~unit_name) => {
+    ref((~loc=Location.dummy_loc, unit_name) => {
       switch (Module_resolution.locate_module_file(~loc, unit_name)) {
       | filename =>
         let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
@@ -892,7 +892,7 @@ let find_pers_struct = (~loc, check, filepath) => {
     | Cannot_load_modules(_) => raise(Not_found)
     | Can_load_modules =>
       let ps = {
-        switch (Persistent_signature.load^(~loc, ~unit_name=filepath)) {
+        switch (Persistent_signature.load^(~loc, filepath)) {
         | Some(ps) => ps
         | None =>
           Hashtbl.add(persistent_structures, filepath, None);
@@ -1630,7 +1630,11 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 switch (desc.cstr_args) {
                 | [] => ReprValue(WasmI32)
                 | args =>
-                  ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+                  ReprFunction(
+                    List.map(_ => WasmI32, args),
+                    [WasmI32],
+                    Direct(Ident.unique_name(id)),
+                  )
                 };
               let get_path = name =>
                 switch (path) {
@@ -1647,6 +1651,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 val_kind: TValConstructor(desc),
                 val_loc: desc.cstr_loc,
                 val_mutable: false,
+                val_global: true,
               };
               c.comp_values =
                 Tbl.add(Ident.name(id), (val_desc, nopos), c.comp_values);
@@ -1688,7 +1693,12 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let val_repr =
             switch (desc.cstr_args) {
             | [] => ReprValue(WasmI32)
-            | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+            | args =>
+              ReprFunction(
+                List.map(_ => WasmI32, args),
+                [WasmI32],
+                Direct(Ident.unique_name(id)),
+              )
             };
           let get_path = name =>
             switch (path) {
@@ -1705,6 +1715,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             val_kind: TValConstructor(desc),
             val_loc: desc.cstr_loc,
             val_mutable: false,
+            val_global: true,
           };
           c.comp_values =
             Tbl.add(Ident.name(id), (val_desc, nopos), c.comp_values);
@@ -1767,7 +1778,8 @@ and store_type = (~check, id, info, env) => {
         let val_repr =
           switch (desc.cstr_args) {
           | [] => ReprValue(WasmI32)
-          | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+          | args =>
+            ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
           };
         let val_desc = {
           val_type,
@@ -1776,6 +1788,7 @@ and store_type = (~check, id, info, env) => {
           val_kind: TValConstructor(desc),
           val_loc: desc.cstr_loc,
           val_mutable: false,
+          val_global: true,
         };
         (id, val_desc);
       },
@@ -1860,7 +1873,12 @@ and store_extension = (~check, id, ext, env) => {
     let val_repr =
       switch (cstr.cstr_args) {
       | [] => ReprValue(WasmI32)
-      | args => ReprFunction(List.map(_ => WasmI32, args), [WasmI32])
+      | args =>
+        ReprFunction(
+          List.map(_ => WasmI32, args),
+          [WasmI32],
+          Direct(Ident.unique_name(id)),
+        )
       };
     {
       val_type,
@@ -1868,6 +1886,7 @@ and store_extension = (~check, id, ext, env) => {
       val_fullpath: PIdent(Ident.create(cstr.cstr_name)),
       val_kind: TValConstructor(cstr),
       val_mutable: false,
+      val_global: true,
       val_loc: cstr.cstr_loc,
     };
   };
@@ -2575,6 +2594,8 @@ let fold_modules = (f, lid, env, acc) =>
 let fold_values = f => find_all(env => env.values, sc => sc.comp_values, f)
 and fold_constructors = f =>
   find_all_simple_list(env => env.constructors, sc => sc.comp_constrs, f)
+and fold_labels = f =>
+  find_all_simple_list(env => env.labels, sc => sc.comp_labels, f)
 and fold_types = f => find_all(env => env.types, sc => sc.comp_types, f)
 and fold_modtypes = f =>
   find_all(env => env.modtypes, sc => sc.comp_modtypes, f);

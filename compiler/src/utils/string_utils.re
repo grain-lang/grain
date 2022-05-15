@@ -13,13 +13,6 @@ let starts_with = (string, prefix) => {
   };
 };
 
-let trim_each_line = str => {
-  str
-  |> Str.split(Str.regexp("\\(\r\n\\|\n\\)"))
-  |> List.map(String.trim)
-  |> String.concat("\n");
-};
-
 let deasterisk_each_line = str => {
   Str.global_replace(Str.regexp("^[ \t]*\\*"), "", str);
 };
@@ -49,6 +42,56 @@ let slice = (~first=?, ~last=?, string) => {
   } else {
     String.sub(string, first, newLength);
   };
+};
+
+type trim =
+  | KeepIndent
+  | FullTrim;
+
+let get_common_indentation = lines => {
+  let min_whitespace_length =
+    List.fold_left(
+      (min_whitespace_length, line) => {
+        let non_empty_line =
+          Str.string_match(Str.regexp("^\\([ \t]*\\)[^ \t]"), line, 0);
+        if (non_empty_line) {
+          let whitespace = Str.matched_group(1, line);
+          let whitespace_length = String.length(whitespace);
+          switch (min_whitespace_length) {
+          | None => Some(whitespace_length)
+          | Some(min_whitespace_length) =>
+            Some(min(min_whitespace_length, whitespace_length))
+          };
+        } else {
+          min_whitespace_length;
+        };
+      },
+      None,
+      lines,
+    );
+
+  Option.value(~default=0, min_whitespace_length);
+};
+
+let trim_each_line = (~style=FullTrim, str) => {
+  let lines = str |> Str.split(Str.regexp("\\(\r\n\\|\n\\)"));
+
+  let min_whitespace_length =
+    switch (style) {
+    | KeepIndent => get_common_indentation(lines)
+    | FullTrim => 0
+    };
+
+  let trim_style = line => {
+    switch (style) {
+    | KeepIndent =>
+      let line = slice(~first=min_whitespace_length, line);
+      Str.global_replace(Str.regexp("[ \t]+$"), "", line);
+    | FullTrim => String.trim(line)
+    };
+  };
+
+  lines |> List.map(trim_style) |> String.concat("\n");
 };
 
 /** TODO(#436): Re-enable these when we can include in the Windows build

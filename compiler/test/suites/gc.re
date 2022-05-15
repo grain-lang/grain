@@ -7,12 +7,15 @@ let makeGcProgram = (program, heap_size) => {
     import WasmI32 from "runtime/unsafe/wasmi32"
     import Malloc from "runtime/malloc"
     import Memory from "runtime/unsafe/memory"
+
+    primitive heapBase: WasmI32 = "@heap.base"
+
     @disableGC
     let leak = () => {
       // find current memory pointer, subtract space for two malloc headers + 1 GC header
       let offset = WasmI32.sub(Memory.malloc(8n), 24n)
       // Calculate how much memory is left
-      let availableMemory = WasmI32.sub(offset, Malloc._RESERVED_RUNTIME_SPACE)
+      let availableMemory = WasmI32.sub(offset, WasmI32.add(Malloc._RESERVED_RUNTIME_SPACE, heapBase))
       // Calculate how much memory to leak
       let toLeak = WasmI32.sub(availableMemory, %dn)
       // Memory is not reclaimed due to no gc context
@@ -35,15 +38,18 @@ let readWholeFile = filename => {
   s;
 };
 
-describe("garbage collection", ({test}) => {
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
-  let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test);
+describe("garbage collection", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
+  let assertMemoryLimitedFileRun = makeFileRunner(~num_pages=1, test_or_skip);
   let assertRunGC = (name, heapSize, prog) =>
-    makeRunner(test, name, makeGcProgram(prog, heapSize), "");
+    makeRunner(test_or_skip, name, makeGcProgram(prog, heapSize), "");
   let assertRunGCError = (name, heapSize, prog, expected) =>
     makeErrorRunner(
-      test,
+      test_or_skip,
       ~num_pages=1,
       name,
       makeGcProgram(prog, heapSize),
@@ -51,7 +57,7 @@ describe("garbage collection", ({test}) => {
     );
   let assertFileRunGC = (name, heapSize, file, expected) =>
     makeErrorRunner(
-      test,
+      test_or_skip,
       ~num_pages=1,
       name,
       makeGcProgram(readWholeFile("test/input/" ++ file ++ ".gr"), heapSize),

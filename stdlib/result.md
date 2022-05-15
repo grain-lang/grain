@@ -272,7 +272,7 @@ No other changes yet.
 </details>
 
 ```grain
-( or ) : (Result<a, b>, Result<a, b>) -> Result<a, b>
+or : (Result<a, b>, Result<a, b>) -> Result<a, b>
 ```
 
 Behaves like a logical OR (`||`) where the first Result is only returned if it is the `Ok` variant and falling back to the second Result in all other cases.

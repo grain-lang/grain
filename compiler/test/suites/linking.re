@@ -1,13 +1,15 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("linking", ({test}) => {
-  let assertRun = makeRunner(test);
-  let assertRunError = makeErrorRunner(test);
+describe("linking", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+  let assertRun = makeRunner(test_or_skip);
+  let assertRunError = makeErrorRunner(test_or_skip);
   let assertWasiPolyfillRun = file =>
     makeRunner(
       ~config_fn=() => {Grain_utils.Config.wasi_polyfill := Some(file)},
-      test,
+      test_or_skip,
     );
 
   assertRun("link_simple", {|print("Hello, world!")|}, "Hello, world!\n");

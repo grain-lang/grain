@@ -9,8 +9,7 @@ open Mashtree;
 
 type compilation_env = {
   ce_binds: Ident.tbl(Mashtree.binding),
-  /* Useful due to us needing a second pass over exports (for mutual recursion) */
-  ce_exported_globals: Ident.tbl(int32),
+  ce_stack_idx_ptr: int,
   ce_stack_idx_i32: int,
   ce_stack_idx_i64: int,
   ce_stack_idx_f32: int,
@@ -20,7 +19,7 @@ type compilation_env = {
 
 let initial_compilation_env = {
   ce_binds: Ident.empty,
-  ce_exported_globals: Ident.empty,
+  ce_stack_idx_ptr: 0,
   ce_stack_idx_i32: 0,
   ce_stack_idx_i64: 0,
   ce_stack_idx_f32: 0,
@@ -37,7 +36,6 @@ type worklist_elt = {
   env: compilation_env,
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
-  idx: int, /* Lambda-lifted index */
   id: Ident.t,
   name: option(string),
   attrs: attributes,
@@ -49,40 +47,66 @@ type worklist_elt = {
 // but I don't think we are threading yet
 let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
-/** Lambda-lifting index (function index) */
+/** Function table indexes */
 
-let lift_index = ref(0);
+let function_table_index = ref(0);
+let function_table_idents = ref([]);
 
-let reset_lift = () => lift_index := 0;
+let reset_function_table_info = () => {
+  function_table_index := 0;
+  function_table_idents := [];
+};
 
-let next_lift = () => {
-  let ret = lift_index^;
-  lift_index := ret + 1;
+type function_ident =
+  | FuncId(Ident.t)
+  | FuncName(string);
+
+let next_function_table_index = ident => {
+  let name =
+    switch (ident) {
+    | FuncId(id) => Ident.unique_name(id)
+    | FuncName(name) => name
+    };
+  function_table_idents := [name, ...function_table_idents^];
+  let ret = function_table_index^;
+  function_table_index := ret + 1;
   ret;
 };
 
-let asmtype_of_alloctype = {
-  Types.(
-    fun
-    | HeapAllocated
-    | StackAllocated(WasmI32) => I32Type
-    | StackAllocated(WasmI64) => I64Type
-    | StackAllocated(WasmF32) => F32Type
-    | StackAllocated(WasmF64) => F64Type
-  );
+let get_function_table_idents = () => {
+  List.rev(function_table_idents^);
+};
+
+/** Imports which are always in scope */
+let global_imports = ref(Ident.Set.empty);
+
+let set_global_imports = imports => {
+  global_imports :=
+    Ident.Set.of_list(
+      Ident.fold_all((id, _, acc) => [id, ...acc], imports, []),
+    );
 };
 
 /** Global index (index of global variables) */
 
-let global_table = ref(Ident.empty: Ident.tbl((bool, int32, asmtype)));
+let global_table =
+  ref(Ident.empty: Ident.tbl((bool, int32, Types.allocation_type)));
 let global_index = ref(0);
+
+let get_globals = () => {
+  Ident.fold_all(
+    (_, (_, slot, ty), acc) => [(slot, ty), ...acc],
+    global_table^,
+    [],
+  );
+};
 
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_name, (exported, ex_global_index, _), acc) =>
+    (ex_global_name, (exported, ex_global_index, _), acc) =>
       if (exported) {
-        [{ex_name, ex_global_index}, ...acc];
+        [GlobalExport({ex_global_name, ex_global_index}), ...acc];
       } else {
         acc;
       },
@@ -96,7 +120,7 @@ let reset_global = () => {
   global_index := 0;
 };
 
-let next_global = (exported, id, ty) =>
+let next_global = (exported, id, ty: Types.allocation_type) =>
   /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
   switch (Ident.find_same_opt(id, global_table^)) {
   | Some((_, ret, _)) => Int32.to_int(ret)
@@ -108,8 +132,14 @@ let next_global = (exported, id, ty) =>
     ret;
   };
 
-let find_id = (id, env) => Ident.find_same(id, env.ce_binds);
-let find_global = (id, env) => Ident.find_same(id, env.ce_exported_globals);
+let global_name = slot => Printf.sprintf("global_%d", slot);
+
+let find_id = (id, env) =>
+  try(Ident.find_same(id, env.ce_binds)) {
+  | Not_found =>
+    let (_, slot, alloc) = Ident.find_same(id, global_table^);
+    MGlobalBind(global_name(Int32.to_int(slot)), alloc);
+  };
 
 let worklist_reset = () => Queue.clear(compilation_worklist);
 let worklist_enqueue = elt => Queue.add(elt, compilation_worklist);
@@ -153,7 +183,7 @@ module RegisterAllocation = {
   };
 
   let rec apply_allocations =
-          (ty: Mashtree.asmtype, allocs: t, instr: Mashtree.instr)
+          (ty: Types.allocation_type, allocs: t, instr: Mashtree.instr)
           : Mashtree.instr => {
     let apply_allocation_to_bind =
       fun
@@ -173,12 +203,14 @@ module RegisterAllocation = {
       | MTagOp(top, tt, i) => MTagOp(top, tt, apply_allocation_to_imm(i))
       | MArityOp(aop, at, i) =>
         MArityOp(aop, at, apply_allocation_to_imm(i))
+      | MPrim0(pop) => MPrim0(pop)
       | MPrim1(pop, i) => MPrim1(pop, apply_allocation_to_imm(i))
       | MTupleOp(top, i) => MTupleOp(top, apply_allocation_to_imm(i))
       | MBoxOp(bop, i) => MBoxOp(bop, apply_allocation_to_imm(i))
       | MArrayOp(aop, i) => MArrayOp(aop, apply_allocation_to_imm(i))
       | MRecordOp(rop, i) => MRecordOp(rop, apply_allocation_to_imm(i))
       | MAdtOp(aop, i) => MAdtOp(aop, apply_allocation_to_imm(i))
+      | MClosureOp(cop, i) => MClosureOp(cop, apply_allocation_to_imm(i))
       | MCallRaw({func, func_type, args}) =>
         MCallRaw({
           func,
@@ -255,15 +287,15 @@ module RegisterAllocation = {
       | MSet(b, i) =>
         MSet(apply_allocation_to_bind(b), apply_allocations(ty, allocs, i))
       | MAllocate(x) => MAllocate(x)
-      | MDrop(i) => MDrop(apply_allocations(ty, allocs, i))
-      | MIncRef(i) => MDrop(apply_allocations(ty, allocs, i))
+      | MDrop(i, a) => MDrop(apply_allocations(ty, allocs, i), a)
+      | MIncRef(i) => MIncRef(apply_allocations(ty, allocs, i))
       | MTracepoint(x) => MTracepoint(x)
       };
     {...instr, instr_desc: desc};
   };
 };
 
-type live_local = (Mashtree.asmtype, int);
+type live_local = (Types.allocation_type, int);
 
 let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let uniq = l => {
@@ -288,7 +320,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let rec live_locals = instr =>
     switch (instr.instr_desc) {
     | MIncRef(i)
-    | MDrop(i) => live_locals(i)
+    | MDrop(i, _) => live_locals(i)
     | MImmediate(imm)
     | MTagOp(_, _, imm)
     | MArityOp(_, _, imm)
@@ -297,7 +329,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MBoxOp(_, imm)
     | MArrayOp(_, imm)
     | MRecordOp(_, imm)
-    | MAdtOp(_, imm) => imm_live_local(imm)
+    | MAdtOp(_, imm)
+    | MClosureOp(_, imm) => imm_live_local(imm)
     | MCallRaw({args: is})
     | MError(_, is) => List.concat(List.map(imm_live_local, is))
     | MCallKnown({closure: imm, args: is})
@@ -311,6 +344,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       Option.fold(~none=[], ~some=block_live_locals, b1)
       @ Option.fold(~none=[], ~some=block_live_locals, b2)
       @ block_live_locals(b3)
+    | MPrim0(_)
     | MContinue
     | MBreak => []
     | MSwitch(v, bs, d, ty) =>
@@ -332,48 +366,76 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   /*** Mapping from (instruction index) -> (used locals) */
   let instr_live_sets =
     List.mapi((i, instr) => (i, uniq @@ live_locals(instr)), instrs);
-  let (num_locals_i32, num_locals_i64, num_locals_f32, num_locals_f64) = {
-    let rec help = ((ty, acc)) =>
+  let (
+    num_locals_ptr,
+    num_locals_i32,
+    num_locals_i64,
+    num_locals_f32,
+    num_locals_f64,
+  ) = {
+    let rec help = ((ty: Types.allocation_type, acc: int)) =>
       fun
       | [] => (ty, acc)
       | [(hd_ty, hd), ...tl] when hd_ty == ty && hd > acc =>
         help((ty, hd), tl)
       | [_, ...tl] => help((ty, acc), tl);
+    let ptr =
+      snd @@
+      help(
+        (Types.HeapAllocated, 0),
+        List.map(
+          ((_, lst)) => help((Types.HeapAllocated, 0), lst),
+          instr_live_sets,
+        ),
+      );
     let i32 =
       snd @@
       help(
-        (I32Type, 0),
-        List.map(((_, lst)) => help((I32Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmI32), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmI32), 0), lst),
+          instr_live_sets,
+        ),
       );
     let i64 =
       snd @@
       help(
-        (I64Type, 0),
-        List.map(((_, lst)) => help((I64Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmI64), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmI64), 0), lst),
+          instr_live_sets,
+        ),
       );
     let f32 =
       snd @@
       help(
-        (F32Type, 0),
-        List.map(((_, lst)) => help((F32Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmF32), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmF32), 0), lst),
+          instr_live_sets,
+        ),
       );
     let f64 =
       snd @@
       help(
-        (F64Type, 0),
-        List.map(((_, lst)) => help((F64Type, 0), lst), instr_live_sets),
+        (Types.StackAllocated(WasmF64), 0),
+        List.map(
+          ((_, lst)) => help((Types.StackAllocated(WasmF64), 0), lst),
+          instr_live_sets,
+        ),
       );
-    (i32 + 1, i64 + 1, f32 + 1, f64 + 1);
+    (ptr + 1, i32 + 1, i64 + 1, f32 + 1, f64 + 1);
   };
   /* Printf.eprintf "Live sets:\n";
      List.iter (fun (i, items) -> Printf.eprintf "%d -> [%s]\n" i (BatString.join ", " (List.map string_of_int items))) instr_live_sets; */
-  let run = (ty, instrs) => {
+  let run = (ty: Types.allocation_type, instrs) => {
     let num_locals =
       switch (ty) {
-      | I32Type => num_locals_i32
-      | I64Type => num_locals_i64
-      | F32Type => num_locals_f32
-      | F64Type => num_locals_f64
+      | Types.HeapAllocated => num_locals_ptr
+      | Types.StackAllocated(WasmI32) => num_locals_i32
+      | Types.StackAllocated(WasmI64) => num_locals_i64
+      | Types.StackAllocated(WasmF32) => num_locals_f32
+      | Types.StackAllocated(WasmF64) => num_locals_f64
       };
     if (num_locals < 2) {
       instrs;
@@ -469,8 +531,18 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       instrs;
     };
   };
-  run(I32Type, instrs) |> run(I64Type) |> run(F32Type) |> run(F64Type);
+  run(Types.HeapAllocated, instrs)
+  |> run(Types.StackAllocated(WasmI32))
+  |> run(Types.StackAllocated(WasmI64))
+  |> run(Types.StackAllocated(WasmF32))
+  |> run(Types.StackAllocated(WasmF64));
 };
+
+let grain_import_name = (mod_, name) =>
+  Printf.sprintf("gimport_%s_%s", mod_, name);
+
+let wasm_import_name = (mod_, name) =>
+  Printf.sprintf("wimport_%s_%s", mod_, name);
 
 let compile_const = (c: Asttypes.constant) =>
   switch (c) {
@@ -500,16 +572,24 @@ let compile_imm = (env, i: imm_expression) =>
   | ImmTrap => MImmTrap
   };
 
+type known_function =
+  | Internal(Ident.t)
+  | Imported(Ident.t, string);
+
 let known_functions = Ident_tbl.create(50);
-let register_function = id => Ident_tbl.add(known_functions, id, ());
+let register_function = func =>
+  switch (func) {
+  | Internal(id)
+  | Imported(id, _) => Ident_tbl.add(known_functions, id, func)
+  };
 let clear_known_functions = () => Ident_tbl.clear(known_functions);
 let known_function = f =>
   switch (f.imm_desc) {
   | ImmId(id) =>
-    if (Ident_tbl.mem(known_functions, id)) {
-      Some(Ident.unique_name(id));
-    } else {
-      None;
+    switch (Ident_tbl.find_opt(known_functions, id)) {
+    | Some(Internal(id)) => Some(Ident.unique_name(id))
+    | Some(Imported(id, name)) => Some(name)
+    | None => None
     }
   | ImmConst(_)
   | ImmTrap => failwith("Impossible: function application of non-function")
@@ -517,12 +597,26 @@ let known_function = f =>
 
 let compile_lambda =
     (~name=?, id, env, args, body, attrs, loc): Mashtree.closure_data => {
-  register_function(id);
+  register_function(Internal(id));
+
   let (body, return_type) = body;
-  let used_var_set = Anf_utils.anf_free_vars(body);
-  let free_var_set =
-    Ident.Set.diff(used_var_set) @@
-    Ident.Set.of_list(List.map(((arg, _)) => arg, args));
+  // NOTE: we special-case `id`, since we want to
+  //       have simply-recursive uses of identifiers use
+  //       argument 0 ("$self") rather than do the self-reference
+  //       via a closure variable (this enables a large class
+  //       of recursive functions to be garbage-collectible, since
+  //       Grain's garbage collector does not currently collect
+  //       cyclic reference chains)
+  let used_var_set = Ident.Set.remove(id, Anf_utils.anf_free_vars(body));
+  let arg_vars = List.map(((arg, _)) => arg, args);
+  let global_vars =
+    Ident.fold_all((id, _, acc) => [id, ...acc], global_table^, []);
+  let accessible_var_set =
+    Ident.Set.union(
+      global_imports^,
+      Ident.Set.of_list(arg_vars @ global_vars),
+    );
+  let free_var_set = Ident.Set.diff(used_var_set, accessible_var_set);
   let free_vars = Ident.Set.elements(free_var_set);
   /* Bind all non-arguments in the function body to
      their respective closure slots */
@@ -530,7 +624,7 @@ let compile_lambda =
     List_utils.fold_lefti(
       (acc, closure_idx, var) =>
         Ident.add(var, MClosureBind(Int32.of_int(closure_idx)), acc),
-      Ident.empty,
+      env.ce_binds,
       free_vars,
     );
   let closure_arg = (Ident.create("$self"), Types.HeapAllocated);
@@ -538,23 +632,31 @@ let compile_lambda =
   let arg_binds =
     List_utils.fold_lefti(
       (acc, arg_idx, (arg, arg_type)) => {
-        Ident.add(
-          arg,
-          MArgBind(Int32.of_int(arg_idx), asmtype_of_alloctype(arg_type)),
-          acc,
-        )
+        Ident.add(arg, MArgBind(Int32.of_int(arg_idx), arg_type), acc)
       },
       free_binds,
       new_args,
-    );
-  let idx = next_lift();
+    )
+    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.HeapAllocated));
+  let func_idx =
+    if (Analyze_function_calls.has_indirect_call(id)) {
+      Some(Int32.of_int(next_function_table_index(FuncId(id))));
+    } else {
+      None;
+    };
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
-  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+  let (
+    stack_size_ptr,
+    stack_size_i32,
+    stack_size_i64,
+    stack_size_f32,
+    stack_size_f64,
+  ) =
     Anf_utils.anf_count_vars(body);
   let lam_env = {
-    ...env,
     ce_binds: arg_binds,
+    ce_stack_idx_ptr: 0,
     ce_stack_idx_i32: 0,
     ce_stack_idx_i64: 0,
     ce_stack_idx_f32: 0,
@@ -564,13 +666,13 @@ let compile_lambda =
   let worklist_item = {
     body: Anf(body),
     env: lam_env,
-    idx,
     id,
     name,
     args,
     return_type,
     attrs,
     stack_size: {
+      stack_size_ptr,
       stack_size_i32,
       stack_size_i64,
       stack_size_f32,
@@ -580,29 +682,26 @@ let compile_lambda =
   };
   worklist_enqueue(worklist_item);
   {
-    func_idx: Int32.of_int(idx),
+    func_idx,
     arity: Int32.of_int(arity),
     /* These variables should be in scope when the lambda is constructed. */
     variables: List.map(id => MImmBinding(find_id(id, env)), free_vars),
   };
 };
 
-let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data => {
+let compile_wrapper =
+    (~export_name=?, id, env, func_name, args, rets): Mashtree.closure_data => {
+  register_function(Internal(id));
+
   let body = [
     {
       instr_desc:
         MCallRaw({
           func: func_name,
-          func_type: (
-            List.map(asmtype_of_alloctype, args),
-            List.map(asmtype_of_alloctype, rets),
-          ),
+          func_type: (args, rets),
           args:
             List.mapi(
-              (i, arg) =>
-                MImmBinding(
-                  MArgBind(Int32.of_int(i + 1), asmtype_of_alloctype(arg)),
-                ),
+              (i, arg) => MImmBinding(MArgBind(Int32.of_int(i + 1), arg)),
               args,
             ),
         }),
@@ -625,11 +724,16 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
       )
     | _ => (body, rets)
     };
-  let idx = next_lift();
+  let func_idx =
+    if (Analyze_function_calls.has_indirect_call(id)) {
+      Some(Int32.of_int(next_function_table_index(FuncId(id))));
+    } else {
+      None;
+    };
   let arity = List.length(args);
   let lam_env = {
-    ...env,
     ce_binds: Ident.empty,
+    ce_stack_idx_ptr: 0,
     ce_stack_idx_i32: 0,
     ce_stack_idx_i64: 0,
     ce_stack_idx_f32: 0,
@@ -639,12 +743,12 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
   let worklist_item = {
     body: Precompiled(body),
     env: lam_env,
-    idx,
     id,
-    name: None,
+    name: export_name,
     args: [Types.HeapAllocated, ...args],
     return_type,
     stack_size: {
+      stack_size_ptr: 0,
       stack_size_i32: 0,
       stack_size_i64: 0,
       stack_size_f32: 0,
@@ -654,16 +758,12 @@ let compile_wrapper = (id, env, func_name, args, rets): Mashtree.closure_data =>
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
-  {
-    func_idx: Int32.of_int(idx),
-    arity: Int32.of_int(arity + 1),
-    variables: [],
-  };
+  {func_idx, arity: Int32.of_int(arity + 1), variables: []};
 };
 
 let next_global = (~exported=false, id, ty) => {
   let ret = next_global(exported, id, ty);
-  Printf.sprintf("global_%d", ret);
+  global_name(ret);
 };
 
 let rec compile_comp = (~id=?, env, c) => {
@@ -673,15 +773,15 @@ let rec compile_comp = (~id=?, env, c) => {
       let compiled_arg = compile_imm(env, arg);
       let switch_type =
         Option.fold(
-          ~none=I32Type,
-          ~some=((_, exp)) => asmtype_of_alloctype(exp.anf_allocation_type),
+          ~none=Types.StackAllocated(WasmI32),
+          ~some=((_, exp)) => exp.anf_allocation_type,
           List.nth_opt(branches, 0),
         );
       let default =
         switch (partial) {
         | Partial => [
             {
-              instr_desc: MError(Runtime_errors.MatchFailure, [compiled_arg]),
+              instr_desc: MError(Runtime_errors.MatchFailure, []),
               instr_loc: c.comp_loc,
             },
           ]
@@ -713,6 +813,7 @@ let rec compile_comp = (~id=?, env, c) => {
       )
     | CContinue => MContinue
     | CBreak => MBreak
+    | CPrim0(p0) => MPrim0(p0)
     | CPrim1(Box, arg)
     | CPrim1(BoxBind, arg) => MAllocate(MBox(compile_imm(env, arg)))
     | CPrim1(Unbox, arg)
@@ -820,10 +921,7 @@ let rec compile_comp = (~id=?, env, c) => {
         ),
       );
     | CApp((f, (argsty, retty)), args, true) =>
-      let func_type = (
-        List.map(asmtype_of_alloctype, argsty),
-        [asmtype_of_alloctype(retty)],
-      );
+      let func_type = (argsty, [retty]);
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
       switch (known_function(f)) {
@@ -831,10 +929,7 @@ let rec compile_comp = (~id=?, env, c) => {
       | None => MReturnCallIndirect({func: closure, func_type, args})
       };
     | CApp((f, (argsty, retty)), args, _) =>
-      let func_type = (
-        List.map(asmtype_of_alloctype, argsty),
-        [asmtype_of_alloctype(retty)],
-      );
+      let func_type = (argsty, [retty]);
       let closure = compile_imm(env, f);
       let args = List.map(compile_imm(env), args);
       switch (known_function(f)) {
@@ -844,7 +939,10 @@ let rec compile_comp = (~id=?, env, c) => {
     | CAppBuiltin(modname, name, args) =>
       MCallRaw({
         func: "builtin",
-        func_type: (List.map(i => I32Type, args), [I32Type]),
+        func_type: (
+          List.map(i => Types.StackAllocated(WasmI32), args),
+          [Types.StackAllocated(WasmI32)],
+        ),
         args: List.map(compile_imm(env), args),
       })
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
@@ -854,59 +952,53 @@ let rec compile_comp = (~id=?, env, c) => {
 and compile_anf_expr = (env, a) =>
   switch (a.anf_desc) {
   | AESeq(hd, tl) => [
-      {instr_desc: MDrop(compile_comp(env, hd)), instr_loc: hd.comp_loc},
+      {
+        instr_desc: MDrop(compile_comp(env, hd), hd.comp_allocation_type),
+        instr_loc: hd.comp_loc,
+      },
       ...compile_anf_expr(env, tl),
     ]
   | AELet(global, recflag, mutflag, binds, body) =>
     let rec get_locs = (env, binds) => {
       switch (binds) {
       | [(id, {comp_allocation_type}), ...rest] =>
-        let (asmtype, gc, stack_idx, next_env) =
+        let (alloc, stack_idx, next_env) =
           switch (comp_allocation_type) {
           | HeapAllocated => (
-              I32Type,
-              true,
-              env.ce_stack_idx_i32,
-              {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
+              Types.HeapAllocated,
+              env.ce_stack_idx_ptr,
+              {...env, ce_stack_idx_ptr: env.ce_stack_idx_ptr + 1},
             )
           | StackAllocated(WasmI32) => (
-              I32Type,
-              false,
+              Types.StackAllocated(WasmI32),
               env.ce_stack_idx_i32,
               {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
             )
           | StackAllocated(WasmI64) => (
-              I64Type,
-              false,
+              Types.StackAllocated(WasmI64),
               env.ce_stack_idx_i64,
               {...env, ce_stack_idx_i64: env.ce_stack_idx_i64 + 1},
             )
           | StackAllocated(WasmF32) => (
-              F32Type,
-              false,
+              Types.StackAllocated(WasmF32),
               env.ce_stack_idx_f32,
               {...env, ce_stack_idx_f32: env.ce_stack_idx_f32 + 1},
             )
           | StackAllocated(WasmF64) => (
-              F64Type,
-              false,
+              Types.StackAllocated(WasmF64),
               env.ce_stack_idx_f64,
               {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
             )
           };
         let (env, loc) =
           switch (global) {
-          | Global => (
+          | Global({exported}) => (
               env,
-              MGlobalBind(
-                next_global(~exported=true, id, asmtype),
-                asmtype,
-                gc,
-              ),
+              MGlobalBind(next_global(~exported, id, alloc), alloc),
             )
           | Nonglobal => (
               next_env,
-              MLocalBind(Int32.of_int(stack_idx), asmtype),
+              MLocalBind(Int32.of_int(stack_idx), alloc),
             )
           };
         let env = {...env, ce_binds: Ident.add(id, loc, env.ce_binds)};
@@ -970,15 +1062,14 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {idx: index, id, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
+        {id, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
       ) => {
     let body = compile_worklist_elt(cur);
     let func = {
-      index: Int32.of_int(index),
       id,
       name,
-      args: List.map(asmtype_of_alloctype, args),
-      return_type: List.map(asmtype_of_alloctype, return_type),
+      args,
+      return_type,
       body,
       stack_size,
       attrs,
@@ -992,12 +1083,8 @@ let compile_remaining_worklist = () => {
 let lift_imports = (env, imports) => {
   let process_shape = (mut, shape) =>
     switch (shape) {
-    | GlobalShape(alloc) => MGlobalImport(asmtype_of_alloctype(alloc), mut)
-    | FunctionShape(inputs, outputs) =>
-      MFuncImport(
-        List.map(asmtype_of_alloctype, inputs),
-        List.map(asmtype_of_alloctype, outputs),
-      )
+    | GlobalShape(alloc) => MGlobalImport(alloc, mut)
+    | FunctionShape(inputs, outputs) => MFuncImport(inputs, outputs)
     };
 
   let process_import =
@@ -1009,40 +1096,73 @@ let lift_imports = (env, imports) => {
     | GrainValue(mod_, name) =>
       let mimp_mod = Ident.create_persistent(mod_);
       let mimp_name = Ident.create_persistent(name);
-      let (asmtype, gc) =
+      let import_name = grain_import_name(mod_, name);
+      let (alloc, mods, closure_setups) =
         switch (imp_shape) {
-        | GlobalShape(HeapAllocated as alloc) => (
-            asmtype_of_alloctype(alloc),
-            true,
+        | GlobalShape(alloc) => (
+            alloc,
+            [
+              {
+                mimp_mod,
+                mimp_name,
+                mimp_type: process_shape(true, imp_shape),
+                mimp_kind: MImportGrain,
+                mimp_setup: MCallGetter,
+                mimp_used: true,
+              },
+            ],
+            [],
           )
-        | GlobalShape(alloc) => (asmtype_of_alloctype(alloc), false)
         | FunctionShape(_) =>
-          failwith("internal: GrainValue had FunctionShape")
+          register_function(Imported(imp_use_id, import_name));
+          let closure_setups =
+            if (Analyze_function_calls.has_indirect_call(imp_use_id)) {
+              let idx = next_function_table_index(FuncName(import_name));
+              [
+                {
+                  instr_desc:
+                    MClosureOp(
+                      MClosureSetPtr(Int32.of_int(idx)),
+                      MImmBinding(MGlobalBind(import_name, HeapAllocated)),
+                    ),
+                  instr_loc: Location.dummy_loc,
+                },
+              ];
+            } else {
+              [];
+            };
+          (
+            HeapAllocated,
+            [
+              {
+                mimp_mod,
+                mimp_name,
+                mimp_type: process_shape(true, GlobalShape(HeapAllocated)),
+                mimp_kind: MImportGrain,
+                mimp_setup: MCallGetter,
+                mimp_used: true,
+              },
+              {
+                mimp_mod,
+                mimp_name,
+                mimp_type: process_shape(true, imp_shape),
+                mimp_kind: MImportGrain,
+                mimp_setup: MSetupNone,
+                mimp_used: true,
+              },
+            ],
+            closure_setups,
+          );
         };
-      let new_mod = {
-        mimp_mod,
-        mimp_name,
-        mimp_type: process_shape(true, imp_shape),
-        mimp_kind: MImportGrain,
-        mimp_setup: MCallGetter,
-      };
       (
-        [new_mod, ...imports],
-        setups,
+        mods @ imports,
+        [closure_setups, ...setups],
         {
           ...env,
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(
-                Printf.sprintf(
-                  "gimport_%s_%s",
-                  Ident.name(mimp_mod),
-                  Ident.name(mimp_name),
-                ),
-                asmtype,
-                gc,
-              ),
+              MGlobalBind(import_name, alloc),
               env.ce_binds,
             ),
         },
@@ -1050,13 +1170,9 @@ let lift_imports = (env, imports) => {
     | WasmValue(mod_, name) =>
       let mimp_mod = Ident.create_persistent(mod_);
       let mimp_name = Ident.create_persistent(name);
-      let (asmtype, gc) =
+      let alloc =
         switch (imp_shape) {
-        | GlobalShape(HeapAllocated as alloc) => (
-            asmtype_of_alloctype(alloc),
-            true,
-          )
-        | GlobalShape(alloc) => (asmtype_of_alloctype(alloc), false)
+        | GlobalShape(alloc) => alloc
         | FunctionShape(_) =>
           failwith("internal: WasmValue had FunctionShape")
         };
@@ -1066,6 +1182,7 @@ let lift_imports = (env, imports) => {
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
+        mimp_used: true,
       };
       (
         [new_mod, ...imports],
@@ -1076,34 +1193,35 @@ let lift_imports = (env, imports) => {
             Ident.add(
               imp_use_id,
               MGlobalBind(
-                Printf.sprintf(
-                  "wimport_%s_%s",
+                wasm_import_name(
                   Ident.name(mimp_mod),
                   Ident.name(mimp_name),
                 ),
-                asmtype,
-                gc,
+                alloc,
               ),
               env.ce_binds,
             ),
         },
       );
     | WasmFunction(mod_, name) =>
+      let exported = imp_exported == Global({exported: true});
       let glob =
-        next_global(~exported=imp_exported == Global, imp_use_id, I32Type);
+        next_global(~exported, imp_use_id, Types.StackAllocated(WasmI32));
       let new_mod = {
         mimp_mod: Ident.create_persistent(mod_),
         mimp_name: Ident.create_persistent(name),
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
         mimp_setup: MWrap(Int32.zero),
+        mimp_used: true,
       };
-      let func_name =
-        Printf.sprintf(
-          "wimport_%s_%s",
-          Ident.name(new_mod.mimp_mod),
-          Ident.name(new_mod.mimp_name),
-        );
+      let func_name = wasm_import_name(mod_, name);
+      let export_name =
+        if (exported) {
+          Some(name);
+        } else {
+          None;
+        };
       (
         [new_mod, ...imports],
         [
@@ -1118,12 +1236,13 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(glob, I32Type, true),
+                        MGlobalBind(glob, Types.HeapAllocated),
                         {
                           instr_desc:
                             MAllocate(
                               MClosure(
                                 compile_wrapper(
+                                  ~export_name?,
                                   imp_use_id,
                                   env,
                                   func_name,
@@ -1148,7 +1267,7 @@ let lift_imports = (env, imports) => {
           ce_binds:
             Ident.add(
               imp_use_id,
-              MGlobalBind(glob, I32Type, true),
+              MGlobalBind(glob, HeapAllocated),
               env.ce_binds,
             ),
         },
@@ -1164,18 +1283,153 @@ let lift_imports = (env, imports) => {
   (imports, setups, env);
 };
 
+let transl_signature = (~functions, ~imports, signature) => {
+  open Types;
+
+  let function_exports = ref([]);
+
+  // At this point in compilation, we know which functions can be called
+  // directly/indirectly at the wasm level. We add this information to the
+  // module signature.
+  let func_map = Ident_tbl.create(30);
+  List.iter(
+    (func: mash_function) =>
+      switch (func.name) {
+      | Some(name) =>
+        Ident_tbl.add(func_map, func.id, Ident.unique_name(func.id))
+      | None => ()
+      },
+    functions,
+  );
+  List.iter(
+    imp =>
+      switch (imp.imp_shape) {
+      | FunctionShape(_) =>
+        let internal_name =
+          switch (imp.imp_desc) {
+          | GrainValue(mod_, name) => grain_import_name(mod_, name)
+          | WasmFunction(mod_, name) => Ident.unique_name(imp.imp_use_id)
+          | _ => failwith("Impossible: Wasm or js value had FunctionShape")
+          };
+        Ident_tbl.add(func_map, imp.imp_use_id, internal_name);
+      | _ => ()
+      },
+    imports,
+  );
+  let sign =
+    List.map(
+      fun
+      | TSigValue(
+          vid,
+          {
+            val_repr: ReprFunction(args, rets, _),
+            val_fullpath: Path.PIdent(id),
+          } as vd,
+        ) => {
+          switch (Ident_tbl.find_opt(func_map, id)) {
+          | Some(internal_name) =>
+            let external_name = Ident.name(vid);
+            function_exports :=
+              [
+                FunctionExport({
+                  ex_function_name: external_name,
+                  ex_function_internal_name: internal_name,
+                }),
+                ...function_exports^,
+              ];
+            TSigValue(
+              vid,
+              {
+                ...vd,
+                val_repr: ReprFunction(args, rets, Direct(external_name)),
+              },
+            );
+          | _ =>
+            TSigValue(
+              vid,
+              {...vd, val_repr: ReprFunction(args, rets, Indirect)},
+            )
+          };
+        }
+      | TSigType(tid, {type_kind: TDataVariant(cds)} as td, rs) => {
+          let cds =
+            List.map(
+              ({cd_id, cd_repr} as cd) => {
+                switch (cd_repr) {
+                | ReprFunction(args, res, _) =>
+                  let external_name = Ident.name(cd_id);
+                  let internal_name = Ident.unique_name(cd_id);
+                  function_exports :=
+                    [
+                      FunctionExport({
+                        ex_function_name: external_name,
+                        ex_function_internal_name: internal_name,
+                      }),
+                      ...function_exports^,
+                    ];
+                  {
+                    ...cd,
+                    cd_repr: ReprFunction(args, res, Direct(internal_name)),
+                  };
+                | ReprValue(_) => cd
+                }
+              },
+              cds,
+            );
+          TSigType(tid, {...td, type_kind: TDataVariant(cds)}, rs);
+        }
+      | TSigTypeExt(tid, {ext_name, ext_args, ext_repr} as cstr, rs) => {
+          let cstr =
+            switch (ext_repr) {
+            | ReprFunction(args, res, _) =>
+              let external_name = Ident.name(ext_name);
+              let internal_name = Ident.unique_name(ext_name);
+              function_exports :=
+                [
+                  FunctionExport({
+                    ex_function_name: external_name,
+                    ex_function_internal_name: internal_name,
+                  }),
+                  ...function_exports^,
+                ];
+              {
+                ...cstr,
+                ext_repr: ReprFunction(args, res, Direct(internal_name)),
+              };
+            | ReprValue(_) => cstr
+            };
+          TSigTypeExt(tid, cstr, rs);
+        }
+      | _ as item => item,
+      signature.Cmi_format.cmi_sign,
+    );
+  ({...signature, cmi_sign: sign}, function_exports^);
+};
+
 let transl_anf_program =
     (anf_prog: Anftree.anf_program): Mashtree.mash_program => {
-  reset_lift();
+  reset_function_table_info();
   reset_global();
   worklist_reset();
   clear_known_functions();
 
+  Analyze_function_calls.analyze(anf_prog);
+
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);
-  let (stack_size_i32, stack_size_i64, stack_size_f32, stack_size_f64) =
+
+  set_global_imports(env.ce_binds);
+
+  let (
+    stack_size_ptr,
+    stack_size_i32,
+    stack_size_i64,
+    stack_size_f32,
+    stack_size_f64,
+  ) =
     Anf_utils.anf_count_vars(anf_prog.body);
   let main_body_stack_size = {
+    stack_size_ptr,
     stack_size_i32,
     stack_size_i64,
     stack_size_f32,
@@ -1183,13 +1437,21 @@ let transl_anf_program =
   };
   let main_body =
     run_register_allocation @@ setups @ compile_anf_expr(env, anf_prog.body);
-  let exports = global_exports();
   let functions =
     List.map(
       ({body} as f: Mashtree.mash_function) =>
         {...f, body: run_register_allocation(body)},
       compile_remaining_worklist(),
     );
+  let (signature, function_exports) =
+    transl_signature(
+      ~functions,
+      ~imports=anf_prog.imports,
+      anf_prog.signature,
+    );
+  let exports = function_exports @ global_exports();
+  let globals = get_globals();
+  let function_table_elements = get_function_table_idents();
 
   {
     functions,
@@ -1197,13 +1459,9 @@ let transl_anf_program =
     exports,
     main_body,
     main_body_stack_size,
-    globals:
-      Ident.fold_all(
-        (_, (_, slot, ty), acc) => [(slot, ty), ...acc],
-        global_table^,
-        [],
-      ),
-    signature: anf_prog.signature,
+    globals,
+    function_table_elements,
+    signature,
     type_metadata: anf_prog.type_metadata,
   };
 };

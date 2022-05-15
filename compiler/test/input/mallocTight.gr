@@ -1,10 +1,18 @@
 /* grainc-flags --compilation-mode=runtime */
 
 import Malloc from "runtime/malloc"
-import WasmI32, { add as (+), sub as (-), mul as (*), eq as (==), ne as (!=) } from "runtime/unsafe/wasmi32"
+import WasmI32, {
+  add as (+),
+  sub as (-),
+  mul as (*),
+  eq as (==),
+  ne as (!=),
+} from "runtime/unsafe/wasmi32"
 
-primitive assert : Bool -> Void = "@assert"
-primitive ignore : a -> Void = "@ignore"
+primitive assert: Bool -> Void = "@assert"
+primitive ignore: a -> Void = "@ignore"
+
+primitive heapBase: WasmI32 = "@heap.base"
 
 // Because we're in runtime mode, malloc has yet to be called
 // This provides us with a clean slate to test malloc
@@ -14,7 +22,7 @@ ignore(Malloc.malloc(8n))
 
 // The free list should be pointing at the base
 let base = Malloc.getFreePtr()
-assert base == Malloc._RESERVED_RUNTIME_SPACE
+assert base == Malloc._RESERVED_RUNTIME_SPACE + heapBase
 
 // grab the next (and only) block in the free list
 let block = WasmI32.load(Malloc.getFreePtr(), 0n)

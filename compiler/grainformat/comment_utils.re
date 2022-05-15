@@ -269,6 +269,10 @@ let comment_to_doc = (comment: Parsetree.comment) => {
     | Doc(_) => Doc.hardLine
     | _ => Doc.nil
     };
+  // this is needed for a couple of reasons.  cmt_content doesn't include the comment delimiters (// or /*)
+  // if we use cmt_source, it passes through the newline for line comments, which we don't want here
+  // we want our own line/hardline formatting blocks
+
   Doc.concat([Doc.text(String.trim(comment_string)), newline]);
 };
 

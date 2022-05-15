@@ -1,7 +1,7 @@
 {
   "name": "@grain/compiler",
   "private": true,
-  "version": "0.4.5",
+  "version": "0.4.6",
   "bin": {
     "grainc": "_esy/default/build/install/default/bin/grainc"
   },
@@ -15,14 +15,21 @@
     "link": "yarn link",
     "clean": "esy clean",
     "prepare": "esy install",
+    "prebuild": "yarn workspace @grain/cli clean",
     "build": "esy",
     "postbuild": "esy copy:exe",
-    "build:js": "esy b dune build --no-buffer --profile jsoo",
+    "build:js": "esy b dune build @js --no-buffer",
     "postbuild:js": "esy copy:js",
-    "pretest": "esy",
+    "pretest": "yarn build",
     "test": "esy test",
+    "pretest:js": "yarn build:js",
+    "test:js": "esy test:js",
     "format": "esy format",
     "check-format": "esy check-format",
+    "parser:interpret": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret",
+    "parser:interpret-error": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret-error",
+    "parser:list-errors": "esy b menhir src/parsing/parser.mly --unused-tokens --list-errors > src/parsing/parser.messages.generated",
+    "parser:check-errors": "yarn parser:list-errors && esy b menhir src/parsing/parser.mly --unused-tokens --compare-errors src/parsing/parser.messages.generated --compare-errors src/parsing/parser.messages",
     "import-dependencies": "esy import-dependencies _export",
     "export-dependencies": "esy export-dependencies",
     "build-dependencies": "esy build-dependencies"

@@ -119,20 +119,32 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
   let cstate_desc =
     switch (cstate_desc) {
     | Initial(input) =>
-      let (name, lexbuf, cleanup) =
+      let (name, lexbuf, source, cleanup) =
         switch (input) {
         | InputString(str) => (
             cs.cstate_filename,
             Lexing.from_string(str),
+            (() => str),
             (() => ()),
           )
         | InputFile(name) =>
           let ic = open_in(name);
-          (Some(name), Lexing.from_channel(ic), (() => close_in(ic)));
+          let source = () => {
+            let ic = open_in_bin(name);
+            let source = really_input_string(ic, in_channel_length(ic));
+            close_in(ic);
+            source;
+          };
+          (
+            Some(name),
+            Lexing.from_channel(ic),
+            source,
+            (() => close_in(ic)),
+          );
         };
 
       let parsed =
-        try(Driver.parse(~name?, lexbuf)) {
+        try(Driver.parse(~name?, lexbuf, source)) {
         | _ as e =>
           cleanup();
           raise(e);
@@ -272,6 +284,8 @@ let compile_wasi_polyfill = () => {
 };
 
 let reset_compiler_state = () => {
+  Ident.setup();
+  Ctype.reset_levels();
   Env.clear_imports();
   Module_resolution.clear_dependency_graph();
   Grain_utils.Fs_access.flush_all_cached_data();
@@ -289,7 +303,9 @@ let compile_string =
     cstate_filename: name,
     cstate_outfile: outfile,
   };
-  compile_resume(~is_root_file, ~hook?, cstate);
+  Grain_utils.Config.preserve_all_configs(() =>
+    compile_resume(~is_root_file, ~hook?, cstate)
+  );
 };
 
 let compile_file =
@@ -303,7 +319,9 @@ let compile_file =
     cstate_filename: Some(filename),
     cstate_outfile: outfile,
   };
-  compile_resume(~is_root_file, ~hook?, cstate);
+  Grain_utils.Config.preserve_all_configs(() =>
+    compile_resume(~is_root_file, ~hook?, cstate)
+  );
 };
 
 let anf = Linearize.transl_anf_module;
@@ -311,7 +329,7 @@ let anf = Linearize.transl_anf_module;
 let save_mashed = (f, outfile) =>
   switch (compile_file(~is_root_file=false, ~hook=stop_after_mashed, f)) {
   | {cstate_desc: Mashed(mashed)} =>
-    Grain_utils.Files.ensure_parent_directory_exists(outfile);
+    Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
     let mash_string =
       Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
     let oc = open_out(outfile);

@@ -52,7 +52,7 @@ type sugared_pattern_item =
   | RegularPattern(Parsetree.pattern)
   | SpreadPattern(Parsetree.pattern);
 
-let get_original_code_snippet = (location: Location.t, source: array(string)) => {
+let get_original_code = (location: Location.t, source: array(string)) => {
   let (_, start_line, startc, _) =
     Locations.get_raw_pos_info(location.loc_start);
   let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
@@ -73,36 +73,6 @@ let get_original_code_snippet = (location: Location.t, source: array(string)) =>
       };
       text^;
     };
-  } else {
-    raise(Error(FormatterError("Requested beyond end of original source")));
-  };
-};
-
-let get_original_code = (location: Location.t, source: array(string)) => {
-  let (_, start_line, startc, _) =
-    Locations.get_raw_pos_info(location.loc_start);
-  let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
-
-  let text = ref("");
-  if (Array.length(source) > end_line - 1) {
-    if (start_line == end_line) {
-      let full_line = source[start_line - 1];
-
-      let without_trailing = Str.string_before(full_line, endc);
-
-      text := text^ ++ without_trailing;
-    } else {
-      for (line in start_line - 1 to end_line - 1) {
-        if (line + 1 == start_line) {
-          text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
-        } else if (line + 1 == end_line) {
-          text := text^ ++ source[line];
-        } else {
-          text := text^ ++ source[line] ++ "\n";
-        };
-      };
-    };
-    text^;
   } else {
     raise(Error(FormatterError("Requested beyond end of original source")));
   };
@@ -401,6 +371,7 @@ let rec block_item_iterator_line =
           comments,
         )
       };
+
     let leading_comment_docs =
       Comment_utils.new_comments_to_docs(leading_comments);
 
@@ -587,8 +558,7 @@ let rec block_item_iterator =
       };
 
     if (disable_formatting) {
-      let original_code =
-        get_original_code_snippet(get_loc(item), original_source);
+      let original_code = get_original_code(get_loc(item), original_source);
 
       let orig_doc =
         Doc.concat([
@@ -663,6 +633,7 @@ let rec block_item_iterator =
           ~location=get_loc(item),
           comments,
         );
+
       let comments_without_leading =
         remove_used_comments(~remove_comments=leading_comments, comments);
 
@@ -755,6 +726,7 @@ let rec item_iterator =
           ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
           ~comments: list(Parsetree.comment),
           ~separator,
+          ~followed_by_arrow: option(bool)=?,
           items: list('a),
         ) => {
   switch (items) {
@@ -860,6 +832,7 @@ let rec item_iterator =
              ~print_item,
              ~comments,
              ~separator,
+             ~followed_by_arrow?,
              remainder,
            ),
       ];
@@ -893,12 +866,29 @@ let rec item_iterator =
             Comment_utils.new_comments_to_docs(leading_comments),
             filler,
             print_item(~comments=item_comments, item),
-            Doc.lineSuffix(
-              Doc.concat([
-                bcb,
-                Comment_utils.block_trailing_comments_docs(trailing_comments),
-              ]),
-            ),
+            switch (followed_by_arrow) {
+            | Some(true) =>
+              switch (trailing) {
+              | Line(cmt)
+              | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
+              | _ =>
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ])
+              }
+            | _ =>
+              Doc.lineSuffix(
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ]),
+              )
+            },
           ]);
 
         | ([leading, ..._], []) =>
@@ -918,12 +908,29 @@ let rec item_iterator =
         | ([], [trailing, ..._]) =>
           Doc.concat([
             print_item(~comments=item_comments, item),
-            Doc.lineSuffix(
-              Doc.concat([
-                bcb,
-                Comment_utils.block_trailing_comments_docs(trailing_comments),
-              ]),
-            ),
+            switch (followed_by_arrow) {
+            | Some(true) =>
+              switch (trailing) {
+              | Line(cmt)
+              | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
+              | _ =>
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ])
+              }
+            | _ =>
+              Doc.lineSuffix(
+                Doc.concat([
+                  bcb,
+                  Comment_utils.block_trailing_comments_docs(
+                    trailing_comments,
+                  ),
+                ]),
+              )
+            },
           ])
 
         | ([], []) => print_item(~comments=item_comments, item)
@@ -936,6 +943,7 @@ let rec item_iterator =
              ~print_item,
              ~comments=comments_without_item_comments,
              ~separator,
+             ~followed_by_arrow?,
              remainder,
            ),
       ];
@@ -1226,13 +1234,7 @@ and print_pattern =
       }
     | PPatTuple(patterns) => (
         Doc.group(
-          print_patterns(
-            ~wrapper=pat.ppat_loc,
-            ~next_loc,
-            ~comments,
-            ~original_source,
-            patterns,
-          ),
+          print_patterns(~next_loc, ~comments, ~original_source, patterns),
         ),
         true,
       )
@@ -1242,13 +1244,7 @@ and print_pattern =
             Doc.lbracket,
             Doc.text(">"),
             Doc.space,
-            print_patterns(
-              ~wrapper=pat.ppat_loc,
-              ~next_loc,
-              ~comments,
-              ~original_source,
-              patterns,
-            ),
+            print_patterns(~next_loc, ~comments, ~original_source, patterns),
             Doc.rbracket,
           ]),
         ),
@@ -1267,13 +1263,7 @@ and print_pattern =
       )
     | PPatConstraint(pattern, parsed_type) => (
         Doc.concat([
-          print_patterns(
-            ~wrapper=pat.ppat_loc,
-            ~next_loc,
-            ~comments,
-            ~original_source,
-            [pattern],
-          ),
+          print_patterns(~next_loc, ~comments, ~original_source, [pattern]),
           Doc.text(":"),
           Doc.space,
           print_type(~original_source, ~comments, parsed_type),
@@ -1309,7 +1299,6 @@ and print_pattern =
             | _patterns =>
               add_parens(
                 print_patterns(
-                  ~wrapper=pat.ppat_loc,
                   ~next_loc,
                   ~comments,
                   ~original_source,
@@ -1381,7 +1370,7 @@ and print_constant =
   // we get the original code here to ensure it's well formatted and retains the
   // approach of the original code, e.g. char format, number format
   Doc.text(
-    get_original_code_snippet(loc, original_source),
+    get_original_code(loc, original_source),
   );
 }
 
@@ -1729,14 +1718,22 @@ and print_infix_application =
 
     let wrapped_left =
       if (left_needs_parens) {
-        Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
+        if (Doc.willBreak(right_expr)) {
+          Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
+        } else {
+          Doc.concat([Doc.lparen, Doc.indent(left_expr), Doc.rparen]);
+        };
       } else {
         left_expr;
       };
 
     let wrapped_right =
       if (right_needs_parens) {
-        Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
+        if (Doc.willBreak(right_expr)) {
+          Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
+        } else {
+          Doc.concat([Doc.lparen, Doc.indent(right_expr), Doc.rparen]);
+        };
       } else {
         right_expr;
       };
@@ -1775,12 +1772,13 @@ and print_arg_lambda =
         ~location=expression.pexp_loc,
         comments,
       );
+
     let raw_args =
       print_patterns(
-        ~wrapper=lambda.pexp_loc,
         ~next_loc=expression.pexp_loc,
         ~comments,
         ~original_source,
+        ~followed_by_arrow=true,
         patterns,
       );
 
@@ -1822,12 +1820,12 @@ and print_arg_lambda =
             let after_brace_comments =
               Comment_utils.get_after_brace_comments(
                 ~loc=expression.pexp_loc,
-                comments,
+                comments_in_expression,
               );
             let cleaned_comments =
               remove_used_comments(
                 ~remove_comments=after_brace_comments,
-                comments,
+                comments_in_expression,
               );
 
             let print_attribute = (expr: Parsetree.expression) =>
@@ -1906,6 +1904,7 @@ and print_arguments_with_callback_in_first_position =
   | [callback, expr] =>
     let printed_callback =
       print_arg_lambda(~comments, ~original_source, callback);
+
     let printed_arg = print_arg(~comments, ~original_source, expr);
 
     Doc.ifBreaks(
@@ -1926,6 +1925,7 @@ and print_arguments_with_callback_in_first_position =
   | [callback, ...remainder] =>
     let printed_callback =
       print_arg_lambda(~comments, ~original_source, callback);
+
     let printed_args =
       switch (remainder) {
       | [] => Doc.nil
@@ -2143,16 +2143,19 @@ and check_for_pun = (expr: Parsetree.expression) =>
 
 and print_patterns =
     (
-      ~wrapper: Location.t,
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
+      ~followed_by_arrow: option(bool)=?,
       patterns: list(Parsetree.pattern),
     ) => {
   let get_loc = (p: Parsetree.pattern) => p.ppat_loc;
   let print_item = (~comments, p: Parsetree.pattern) => {
     print_pattern(~original_source, ~comments, ~next_loc, p);
   };
+
+  let comments_in_scope =
+    Comment_utils.get_comments_before_location(~location=next_loc, comments);
 
   switch (patterns) {
   | [] => Doc.nil
@@ -2161,8 +2164,9 @@ and print_patterns =
       item_iterator(
         ~get_loc,
         ~print_item,
-        ~comments,
+        ~comments=comments_in_scope,
         ~separator=Doc.comma,
+        ~followed_by_arrow?,
         patterns,
       );
     Doc.join(Doc.line, items);
@@ -2175,14 +2179,15 @@ and paren_wrap_patterns =
       ~next_loc: Location.t,
       ~comments: list(Parsetree.comment),
       ~original_source: array(string),
+      ~followed_by_arrow: bool,
       patterns: list(Parsetree.pattern),
     ) => {
   let args =
     print_patterns(
-      ~wrapper,
       ~next_loc,
       ~comments,
       ~original_source,
+      ~followed_by_arrow,
       patterns,
     );
 
@@ -2529,6 +2534,9 @@ and print_expression =
         ]),
       );
 
+    | PExpPrim0(prim0) =>
+      let original_code = get_original_code(expr.pexp_loc, original_source);
+      Doc.text(original_code);
     | PExpPrim1(prim1, expression) =>
       let original_code = get_original_code(expr.pexp_loc, original_source);
       Doc.text(original_code);
@@ -2727,7 +2735,7 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            Doc.line,
+            if (true_is_block) {Doc.space} else {Doc.line},
             Doc.text("else"),
             if (true_is_block) {
               false_made_block := true;
@@ -2950,37 +2958,9 @@ and print_expression =
             ~comments=comments_in_expression,
             expression,
           ),
-          switch (parsed_type.ptyp_desc) {
-          | PTyConstr(locidentifier, parsedtypes) =>
-            switch (parsedtypes) {
-            | [] =>
-              Doc.concat([
-                Doc.text(":"),
-                Doc.space,
-                print_type(~original_source, ~comments, parsed_type),
-              ])
-
-            | _ =>
-              Doc.concat([
-                Doc.text(":"),
-                Doc.space,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.softLine,
-                    Doc.lparen, // TODO needed to fix compiler bug (trailing type annotation needs paren, #866)
-                    print_type(~original_source, ~comments, parsed_type),
-                    Doc.rparen,
-                  ]),
-                ),
-              ])
-            }
-          | _ =>
-            Doc.concat([
-              Doc.text(":"),
-              Doc.space,
-              print_type(~original_source, ~comments, parsed_type),
-            ])
-          },
+          Doc.text(":"),
+          Doc.space,
+          print_type(~original_source, ~comments, parsed_type),
         ]),
       );
     | PExpLambda(patterns, expression) =>
@@ -3003,6 +2983,7 @@ and print_expression =
           ~next_loc=expression.pexp_loc,
           ~comments=patterns_comments,
           ~original_source,
+          ~followed_by_arrow=true,
           patterns,
         );
 
@@ -4154,6 +4135,7 @@ let toplevel_print =
 let format_ast =
     (
       ~original_source: array(string),
+      ~eol: Fs_access.eol,
       parsed_program: Parsetree.parsed_program,
     ) => {
   let get_loc = (stmt: Parsetree.toplevel_stmt) => {
@@ -4190,5 +4172,5 @@ let format_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
-  Doc.toString(~width=80, final_doc);
+  Doc.toString(~width=80, ~eol, final_doc);
 };

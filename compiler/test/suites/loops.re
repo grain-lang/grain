@@ -1,10 +1,13 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("loops", ({test}) => {
+describe("loops", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
+  let assertRun = makeRunner(test_or_skip);
 
   assertRun(
     "loop1",

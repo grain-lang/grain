@@ -1,12 +1,15 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("stdlib", ({test}) => {
+describe("stdlib", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
-  let assertStdlib = makeStdlibRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
+  let assertStdlib = makeStdlibRunner(test_or_skip);
 
   assertSnapshot("stdlib_cons", "[1, 2, 3]");
   assertSnapshot(

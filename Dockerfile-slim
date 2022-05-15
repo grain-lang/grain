@@ -1,7 +1,7 @@
 # This Dockerfile constructs a minimal environment in which Grain programs can be compiled.
 # The environment is only meant to build Grain programs, not develop the compiler.
 
-FROM node:16-slim
+FROM node:16 as builder
 
 LABEL name="Grain"
 LABEL description="Grain CLI"
@@ -13,23 +13,19 @@ COPY . /grain
 WORKDIR /grain
 
 # Build the compiler and CLI
-RUN apt-get update && \
-    # Install necessary build tools to build the Grain compiler
-    apt-get install git curl zlib1g build-essential -y && \
-    # Install all JavaScript dependencies
-    yarn --pure-lockfile && \
-    # Build the Grain compiler
-    yarn compiler build && \
-    # Remove all node modules and only install modules necessary to run the CLI (no dev dependencies)
-    yarn cache clean && \
-    rm -rf node_modules && \
-    NODE_ENV=production yarn --pure-lockfile && \
-    # Remove all esy build files
-    rm -rf compiler/_esy && \
-    rm -rf ~/.esy && \
-    # Remove all of the build tooling and apt lists
-    apt-get remove build-essential -y && \
-    rm -rf /var/lib/apt/lists/*
+RUN yarn --pure-lockfile && \
+    yarn compiler build
+
+# Remove build files
+RUN rm -rf node_modules compiler/_esy
+
+FROM node:16-slim
+
+COPY --from=builder /grain /grain
+WORKDIR /grain
+
+# Link CLI in new image and restore only necessary node_modules
+RUN NODE_ENV=production yarn --pure-lockfile
 
 # Set up container environment
 WORKDIR /

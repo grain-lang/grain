@@ -4,7 +4,6 @@ open Sexplib.Conv;
 [@deriving sexp]
 type heap_tag_type =
   | StringType
-  | CharType
   | ADTType
   | RecordType
   | ArrayType
@@ -16,26 +15,24 @@ type heap_tag_type =
 let tag_val_of_heap_tag_type =
   fun
   | StringType => 1
-  | CharType => 2
-  | ADTType => 3
-  | RecordType => 4
-  | ArrayType => 5
-  | BoxedNumberType => 6
-  | LambdaType => 7
-  | TupleType => 8
-  | BytesType => 9;
+  | ADTType => 2
+  | RecordType => 3
+  | ArrayType => 4
+  | BoxedNumberType => 5
+  | LambdaType => 6
+  | TupleType => 7
+  | BytesType => 8;
 
 let heap_tag_type_of_tag_val =
   fun
   | 1 => StringType
-  | 2 => CharType
-  | 3 => ADTType
-  | 4 => RecordType
-  | 5 => ArrayType
-  | 6 => BoxedNumberType
-  | 7 => LambdaType
-  | 8 => TupleType
-  | 9 => BytesType
+  | 2 => ADTType
+  | 3 => RecordType
+  | 4 => ArrayType
+  | 5 => BoxedNumberType
+  | 6 => LambdaType
+  | 7 => TupleType
+  | 8 => BytesType
   | x => failwith(Printf.sprintf("Unknown tag type: %d", x));
 
 [@deriving sexp]
@@ -67,18 +64,5 @@ let boxed_number_tag_type_of_tag_val =
 type tag_type =
   | NumberTagType
   | ConstTagType
+  | CharTagType
   | GenericHeapType(option(heap_tag_type));
-
-let and_mask_of_tag_type =
-  fun
-  | NumberTagType => 0b0001
-  | ConstTagType => 0b0111
-  | GenericHeapType(_) => 0b0111;
-
-let tag_val_of_tag_type =
-  fun
-  | NumberTagType => 0b0001
-  | ConstTagType => 0b0110
-  | GenericHeapType(_) => 0b0000;
-
-let shift_amount_of_tag_type = tt => 31 - tag_val_of_tag_type(tt);

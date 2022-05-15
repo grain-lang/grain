@@ -1,5 +1,19 @@
 # Changelog
 
+### [0.4.6](https://www.github.com/grain-lang/grain/compare/@grain/compiler-v0.4.5...@grain/compiler-v0.4.6) (2022-01-17)
+
+
+### Bug Fixes
+
+* **compiler:** Account for config that is not digestable ([#1098](https://www.github.com/grain-lang/grain/issues/1098)) ([b58323f](https://www.github.com/grain-lang/grain/commit/b58323f1764f4d870875b8c4ef19f9861b4188ad))
+* **compiler:** Apply optimization flag at link stage ([#1099](https://www.github.com/grain-lang/grain/issues/1099)) ([49dac79](https://www.github.com/grain-lang/grain/commit/49dac797aa4833cc141f7c58d18d80d7cbc6b1c7))
+* **compiler:** Inform the compiler that lsp mode is running on a root file ([b58323f](https://www.github.com/grain-lang/grain/commit/b58323f1764f4d870875b8c4ef19f9861b4188ad))
+* **compiler:** Move lsp flag into grainc to remove it as a recompilation flag ([b58323f](https://www.github.com/grain-lang/grain/commit/b58323f1764f4d870875b8c4ef19f9861b4188ad))
+* **graindoc:** Remove special idents from receiving parens ([#1104](https://www.github.com/grain-lang/grain/issues/1104)) ([5cb0fda](https://www.github.com/grain-lang/grain/commit/5cb0fda652cad0644f48d8196089430dca1cac0d))
+* **grainfmt:** Indent function application args when adding parens ([#1095](https://www.github.com/grain-lang/grain/issues/1095)) ([64af7d3](https://www.github.com/grain-lang/grain/commit/64af7d387dca2fddb9b3d190ccdf5790ec3d8e65))
+* **grainfmt:** Inform the formatter that it is running against root files ([b58323f](https://www.github.com/grain-lang/grain/commit/b58323f1764f4d870875b8c4ef19f9861b4188ad))
+* **grainfmt:** Scope the comments in callback lambda closure ([#1090](https://www.github.com/grain-lang/grain/issues/1090)) ([0975580](https://www.github.com/grain-lang/grain/commit/09755801d8598691e4a2884a732c0ed9a9e10a2d))
+
 ### [0.4.5](https://www.github.com/grain-lang/grain/compare/@grain/compiler-v0.4.4...@grain/compiler-v0.4.5) (2021-12-31)
 
 

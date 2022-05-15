@@ -18,6 +18,10 @@ type heap_tag_type = Value_tags.heap_tag_type;
 type attributes = Typedtree.attributes;
 
 type grain_error = Runtime_errors.grain_error;
+let (prim0_of_sexp, sexp_of_prim0) = (
+  Parsetree.prim0_of_sexp,
+  Parsetree.sexp_of_prim0,
+);
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
   Parsetree.sexp_of_prim1,
@@ -166,8 +170,31 @@ type wasm_op =
     | Op_gt_float64
     | Op_ge_float64;
 
+type prim0 =
+  Parsetree.prim0 =
+    | AllocateInt32
+    | AllocateInt64
+    | AllocateFloat32
+    | AllocateFloat64
+    | AllocateRational;
+
 type prim1 =
   Parsetree.prim1 =
+    | AllocateArray
+    | AllocateTuple
+    | AllocateBytes
+    | AllocateString
+    | NewInt32
+    | NewInt64
+    | NewFloat32
+    | NewFloat64
+    | LoadAdtVariant
+    | StringSize
+    | BytesSize
+    | TagSimpleNumber
+    | UntagSimpleNumber
+    | TagChar
+    | UntagChar
     | Not
     | Box
     | Unbox
@@ -203,6 +230,7 @@ type prim1 =
 
 type prim2 =
   Parsetree.prim2 =
+    | NewRational
     | Is
     | Eq
     | And
@@ -249,14 +277,6 @@ type primn =
     | WasmMemorySize
     | WasmMemoryCompare;
 
-/* Types within the WASM output */
-[@deriving sexp]
-type asmtype =
-  | I32Type
-  | I64Type
-  | F32Type
-  | F64Type;
-
 [@deriving sexp]
 type constant =
   | MConstI32(int32)
@@ -267,12 +287,11 @@ type constant =
 
 [@deriving sexp]
 type binding =
-  | MArgBind(int32, asmtype)
-  | MLocalBind(int32, asmtype)
-  | MGlobalBind(string, asmtype, bool)
+  | MArgBind(int32, Types.allocation_type)
+  | MLocalBind(int32, Types.allocation_type)
+  | MGlobalBind(string, Types.allocation_type)
   | MClosureBind(int32)
-  | MSwapBind(int32, asmtype) /* Used like a register would be */
-  | MImport(int32); /* Index into list of imports */
+  | MSwapBind(int32, Types.allocation_type); /* Used like a register would be */
 
 [@deriving sexp]
 type immediate =
@@ -282,7 +301,7 @@ type immediate =
 
 [@deriving sexp]
 type closure_data = {
-  func_idx: int32,
+  func_idx: option(int32),
   arity: int32,
   variables: list(immediate),
 };
@@ -349,6 +368,10 @@ type record_op =
   | MRecordSet(int32, immediate);
 
 [@deriving sexp]
+type closure_op =
+  | MClosureSetPtr(int32);
+
+[@deriving sexp]
 type instr = {
   instr_desc,
   instr_loc: Location.t,
@@ -358,29 +381,29 @@ and instr_desc =
   | MImmediate(immediate)
   | MCallRaw({
       func: string,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MCallKnown({
       func: string,
       closure: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MReturnCallKnown({
       func: string,
       closure: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MCallIndirect({
       func: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MReturnCallIndirect({
       func: immediate,
-      func_type: (list(asmtype), list(asmtype)),
+      func_type: (list(Types.allocation_type), list(Types.allocation_type)),
       args: list(immediate),
     })
   | MError(grain_error, list(immediate))
@@ -391,7 +414,8 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
-  | MSwitch(immediate, list((int32, block)), block, asmtype) /* value, branches, default, return type */
+  | MSwitch(immediate, list((int32, block)), block, Types.allocation_type) /* value, branches, default, return type */
+  | MPrim0(prim0)
   | MPrim1(prim1, immediate)
   | MPrim2(prim2, immediate, immediate)
   | MPrimN(primn, list(immediate))
@@ -400,9 +424,10 @@ and instr_desc =
   | MArrayOp(array_op, immediate)
   | MAdtOp(adt_op, immediate)
   | MRecordOp(record_op, immediate)
+  | MClosureOp(closure_op, immediate)
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
-  | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
+  | MDrop(instr, Types.allocation_type) /* Ignore the result of an expression. Used for sequences. */
   | MIncRef(instr) /* Apply a GC incRef to the value */
   | MTracepoint(int) /* Prints a message to the console; for compiler debugging */
 
@@ -411,8 +436,8 @@ and block = list(instr);
 
 [@deriving sexp]
 type import_type =
-  | MFuncImport(list(asmtype), list(asmtype))
-  | MGlobalImport(asmtype, bool);
+  | MFuncImport(list(Types.allocation_type), list(Types.allocation_type))
+  | MGlobalImport(Types.allocation_type, bool);
 
 [@deriving sexp]
 type import_kind =
@@ -432,27 +457,33 @@ type import = {
   mimp_type: import_type,
   mimp_kind: import_kind,
   mimp_setup: import_setup,
+  mutable mimp_used: bool,
 };
 
 [@deriving sexp]
-type export = {
-  ex_name: Ident.t,
-  ex_global_index: int32,
-};
+type export =
+  | FunctionExport({
+      ex_function_name: string,
+      ex_function_internal_name: string,
+    })
+  | GlobalExport({
+      ex_global_name: Ident.t,
+      ex_global_index: int32,
+    });
 
 [@deriving sexp]
 type mash_function = {
-  index: int32,
   id: Ident.t,
   name: option(string),
-  args: list(asmtype),
-  return_type: list(asmtype),
+  args: list(Types.allocation_type),
+  return_type: list(Types.allocation_type),
   body: block,
   stack_size,
   attrs: attributes,
   func_loc: Location.t,
 }
 and stack_size = {
+  stack_size_ptr: int,
   stack_size_i32: int,
   stack_size_i64: int,
   stack_size_f32: int,
@@ -466,7 +497,8 @@ type mash_program = {
   exports: list(export),
   main_body: block,
   main_body_stack_size: stack_size,
-  globals: list((int32, asmtype)),
+  globals: list((int32, Types.allocation_type)),
+  function_table_elements: list(string),
   signature: Cmi_format.cmi_infos,
   type_metadata: list(Types.type_metadata),
 };

@@ -54,21 +54,11 @@ export class ManagedMemory {
     );
   }
 
-  decRef(userPtr, src, ignoreZeros) {
+  decRef(userPtr) {
     let closure = this._runner.memoryManager.requiredExport(
       "GRAIN$EXPORT$decRef"
     ).value;
     return this._runner.memoryManager.requiredExport("decRef")(
-      closure,
-      userPtr
-    );
-  }
-
-  decRefIgnoreZeros(userPtr) {
-    let closure = this._runner.memoryManager.requiredExport(
-      "GRAIN$EXPORT$decRefIgnoreZeros"
-    ).value;
-    return this._runner.memoryManager.requiredExport("decRefIgnoreZeros")(
       closure,
       userPtr
     );

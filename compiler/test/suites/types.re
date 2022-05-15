@@ -1,9 +1,12 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("aliased types", ({test}) => {
+describe("aliased types", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
+  let assertRun = makeRunner(test_or_skip);
 
   assertRun(
     "type_alias_1",
@@ -44,7 +47,7 @@ describe("aliased types", ({test}) => {
     {|
       type Foo<a> = (String, List<a>)
       let foo = (x: Foo<Number>) => {
-        x: (String, List<Number>)
+        (x): (String, List<Number>)
       }
       print(foo(("foo", [1, 2, 3])))
     |},
@@ -55,7 +58,7 @@ describe("aliased types", ({test}) => {
     {|
       type Foo<a> = (String, List<a>)
       let foo = (x: (String, List<Number>)) => {
-        x: Foo<Number>
+        (x): Foo<Number>
       }
       print(foo(("foo", [1, 2, 3])))
     |},
@@ -67,7 +70,7 @@ describe("aliased types", ({test}) => {
       type Bar = Number
       type Foo = Bar
       let foo = (x: Foo) => {
-        x: Bar
+        (x): Bar
       }
       let x: Number = foo(1)
       print(x)

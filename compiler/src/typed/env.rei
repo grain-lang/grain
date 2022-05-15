@@ -275,6 +275,8 @@ let fold_types:
     'a
   ) =>
   'a;
+let fold_labels:
+  ((label_description, 'a) => 'a, option(Identifier.t), t, 'a) => 'a;
 /** Persistent structures are only traversed if they are already loaded. */
 
 let fold_constructors:
@@ -313,7 +315,7 @@ module Persistent_signature: {
       the .cmi file in the load path. This function can be overridden to load
       it from memory, for instance to build a self-contained toplevel. */
 
-  let load: ref((~loc: Location.t=?, ~unit_name: string) => option(t));
+  let load: ref((~loc: Location.t=?, string) => option(t));
 };
 
 /* Summaries -- compact representation of an environment, to be

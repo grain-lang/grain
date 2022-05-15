@@ -17,20 +17,15 @@
 
 open Parsetree;
 
+exception SyntaxError(Location.t, string);
+
+type listitem('a) =
+  | ListItem('a)
+  | ListSpread('a, Location.t);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
-
-/** Default value for all optional location arguments. */
-
-let default_loc_src: ref(unit => loc);
-
-/** Set the [default_loc] within the scope of the execution
-        of the provided function. */
-
-let with_default_loc: (loc, unit => 'a) => 'a;
-
-let with_default_loc_src: (unit => loc, unit => 'a) => 'a;
 
 module Const: {
   let string: string => constant;
@@ -99,7 +94,7 @@ module Pat: {
   let record:
     (~loc: loc=?, list((option((id, pattern)), Asttypes.closed_flag))) =>
     pattern;
-  let list: (~loc: loc=?, list(pattern), option(pattern)) => pattern;
+  let list: (~loc: loc=?, list(listitem(pattern))) => pattern;
   let constant: (~loc: loc=?, constant) => pattern;
   let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
   let construct: (~loc: loc=?, id, list(pattern)) => pattern;
@@ -124,12 +119,7 @@ module Exp: {
     (~loc: loc=?, ~attributes: attributes=?, expression, id, expression) =>
     expression;
   let list:
-    (
-      ~loc: loc=?,
-      ~attributes: attributes=?,
-      list(expression),
-      option(expression)
-    ) =>
+    (~loc: loc=?, ~attributes: attributes=?, list(listitem(expression))) =>
     expression;
   let array:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
@@ -162,6 +152,7 @@ module Exp: {
       list(match_branch)
     ) =>
     expression;
+  let prim0: (~loc: loc=?, ~attributes: attributes=?, prim0) => expression;
   let prim1:
     (~loc: loc=?, ~attributes: attributes=?, prim1, expression) => expression;
   let prim2:
@@ -207,6 +198,9 @@ module Exp: {
     (~loc: loc=?, ~attributes: attributes=?, list(pattern), expression) =>
     expression;
   let apply:
+    (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
+    expression;
+  let binop:
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
     expression;
   let block:
@@ -266,7 +260,8 @@ module Val: {
       ~name: str,
       ~alias: option(str),
       ~typ: parsed_type,
-      ~prim: list(string)
+      ~prim: list(string),
+      unit
     ) =>
     value_description;
 };

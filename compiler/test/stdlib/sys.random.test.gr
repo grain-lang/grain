@@ -1,11 +1,29 @@
 import Random from "sys/random"
 
-let r1 = Random.random()
-let r2 = Random.random()
+// Just smoke tests, there's a miniscule chance these could fail
 
-// Just a smoke test, there's a miniscule chance this could fail
+let r1 = Random.randomInt32()
+let r2 = Random.randomInt32()
 match ((r1, r2)) {
   (Ok(x), Ok(y)) => assert x != y,
   (Err(err), _) => throw err,
-  (_, Err(err)) => throw err
+  (_, Err(err)) => throw err,
+}
+
+let r1 = Random.randomInt64()
+let r2 = Random.randomInt64()
+
+match ((r1, r2)) {
+  (Ok(x), Ok(y)) => assert x != y,
+  (Err(err), _) => throw err,
+  (_, Err(err)) => throw err,
+}
+
+let r1 = Random.random()
+let r2 = Random.random()
+
+match ((r1, r2)) {
+  (Ok(x), Ok(y)) => assert x != y,
+  (Err(err), _) => throw err,
+  (_, Err(err)) => throw err,
 }

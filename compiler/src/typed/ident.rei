@@ -68,6 +68,7 @@ let binding_time: t => int;
 let current_time: unit => int;
 let set_current_time: int => unit;
 let reinit: unit => unit;
+let setup: unit => unit;
 
 type tbl('a);
 /* Association tables from identifiers to type 'a. */

@@ -3,7 +3,14 @@ open Ast_helper;
 open Typedtree;
 open Parsetree;
 
+type primitive_constant =
+  | HeapBase
+  | HeapStart
+  | HeapTypeMetadata;
+
 type primitive =
+  | PrimitiveConstant(primitive_constant)
+  | Primitive0(prim0)
   | Primitive1(prim1)
   | Primitive2(prim2)
   | PrimitiveN(primn);
@@ -15,7 +22,7 @@ module PrimMap =
     let equal = (a, b) => String.compare(a, b) === 0;
   });
 
-let default_loc = default_loc_src^();
+let default_loc = Location.dummy_loc;
 
 let mkident = name =>
   Exp.ident(Location.mkloc(Identifier.IdentName(name), default_loc));
@@ -34,6 +41,29 @@ let pat_c = mkpatvar("c");
 let prim_map =
   PrimMap.of_seq(
     List.to_seq([
+      ("@heap.base", PrimitiveConstant(HeapBase)),
+      ("@heap.start", PrimitiveConstant(HeapStart)),
+      ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
+      ("@allocate.int32", Primitive0(AllocateInt32)),
+      ("@allocate.int64", Primitive0(AllocateInt64)),
+      ("@allocate.float32", Primitive0(AllocateFloat32)),
+      ("@allocate.float64", Primitive0(AllocateFloat64)),
+      ("@allocate.rational", Primitive0(AllocateRational)),
+      ("@allocate.array", Primitive1(AllocateArray)),
+      ("@allocate.tuple", Primitive1(AllocateTuple)),
+      ("@allocate.bytes", Primitive1(AllocateBytes)),
+      ("@allocate.string", Primitive1(AllocateString)),
+      ("@new.int32", Primitive1(NewInt32)),
+      ("@new.int64", Primitive1(NewInt64)),
+      ("@new.float32", Primitive1(NewFloat32)),
+      ("@new.float64", Primitive1(NewFloat64)),
+      ("@adt.load_variant", Primitive1(LoadAdtVariant)),
+      ("@string.size", Primitive1(StringSize)),
+      ("@bytes.size", Primitive1(BytesSize)),
+      ("@tag.simple_number", Primitive1(TagSimpleNumber)),
+      ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
+      ("@tag.char", Primitive1(TagChar)),
+      ("@untag.char", Primitive1(UntagChar)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -45,6 +75,7 @@ let prim_map =
       ("@and", Primitive2(And)),
       ("@or", Primitive2(Or)),
       ("@array.length", Primitive1(ArrayLength)),
+      ("@new.rational", Primitive2(NewRational)),
       ("@wasm.load_int32", Primitive2(WasmLoadI32({sz: 4, signed: false}))),
       (
         "@wasm.load_8_s_int32",
@@ -1398,6 +1429,13 @@ let prim_map =
     ]),
   );
 
+let active_memory_base = () => {
+  switch (Grain_utils.Config.memory_base^) {
+  | Some(x) => x
+  | None => Grain_utils.Config.default_memory_base
+  };
+};
+
 let transl_prim = (env, desc) => {
   let loc = desc.tvd_loc;
 
@@ -1406,10 +1444,69 @@ let transl_prim = (env, desc) => {
     | Not_found => failwith("This primitive does not exist.")
     };
 
-  let diable_gc = [(Location.mknoloc("disableGC"), [])];
+  let disable_gc = [(Location.mknoloc("disableGC"), [])];
 
-  let value =
+  // `attrs` are attributes which should be applied to the `let` which gets implicitly generated.
+  //
+  // Specifically, consider:
+  //
+  // primitive equal: (a, a) -> Bool = "@equal"
+  //
+  // This will get pseudo-generated into something like (note: not syntactically correct):
+  //
+  // let equal = @disableGC (a, b) => <@equal>(a, b)
+  //
+  // For *constant* values, this is not good enough. Consider:
+  //
+  // primitive heapBase = "@heap.base"
+  //
+  // Since the RHS is just the constant value (inlined here), this binding effectively becomes
+  //
+  // let heapBase = 0x400n
+  //
+  // which means that we need to put the `@disableGC` on the *outside* of the `heapBase` binding.
+  // This is what the `attrs` list here controls; by returning `attrs == [Typedtree.Disable_gc]`,
+  // we will generate
+  //
+  // @disableGC let heapBase = 0x400n
+  //
+  // Which can pass through the rest of the compilation without issue.
+  //
+  let (value, attrs) =
     switch (prim) {
+    | PrimitiveConstant(const) =>
+      let (value, needs_disablegc) =
+        switch (const) {
+        // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
+        | HeapBase => (
+            Const.wasmi32(string_of_int(active_memory_base())),
+            true,
+          )
+        | HeapStart => (
+            Const.wasmi32(string_of_int(active_memory_base() + 0x10)),
+            true,
+          )
+        | HeapTypeMetadata => (
+            Const.wasmi32(string_of_int(active_memory_base() + 0x8)),
+            true,
+          )
+        };
+      let attrs =
+        if (needs_disablegc) {
+          [Typedtree.Disable_gc];
+        } else {
+          [];
+        };
+      (Exp.constant(~loc, ~attributes=disable_gc, value), attrs);
+    | Primitive0(
+        (
+          AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
+          AllocateRational
+        ) as p,
+      ) => (
+        Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.prim0(~loc, p)),
+        [],
+      )
     | Primitive1(
         (
           WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
@@ -1417,14 +1514,19 @@ let transl_prim = (env, desc) => {
           WasmFromGrain |
           WasmToGrain
         ) as p,
-      ) =>
-      Exp.lambda(
-        ~loc,
-        ~attributes=diable_gc,
-        [pat_a],
-        Exp.prim1(~loc, p, id_a),
+      ) => (
+        Exp.lambda(
+          ~loc,
+          ~attributes=disable_gc,
+          [pat_a],
+          Exp.prim1(~loc, p, id_a),
+        ),
+        [],
       )
-    | Primitive1(p) => Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a))
+    | Primitive1(p) => (
+        Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a)),
+        [],
+      )
     | Primitive2(
         (
           WasmBinaryI32(_) | WasmBinaryI64(_) | WasmBinaryF32(_) |
@@ -1434,17 +1536,23 @@ let transl_prim = (env, desc) => {
           WasmLoadF32 |
           WasmLoadF64
         ) as p,
-      ) =>
-      Exp.lambda(
-        ~loc,
-        ~attributes=diable_gc,
-        [pat_a, pat_b],
-        Exp.prim2(~loc, p, id_a, id_b),
+      ) => (
+        Exp.lambda(
+          ~loc,
+          ~attributes=disable_gc,
+          [pat_a, pat_b],
+          Exp.prim2(~loc, p, id_a, id_b),
+        ),
+        [],
       )
-    | Primitive2(p) =>
-      Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b))
-    | PrimitiveN(WasmMemorySize as p) =>
-      Exp.lambda(~loc, ~attributes=diable_gc, [], Exp.primn(~loc, p, []))
+    | Primitive2(p) => (
+        Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b)),
+        [],
+      )
+    | PrimitiveN(WasmMemorySize as p) => (
+        Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.primn(~loc, p, [])),
+        [],
+      )
     | PrimitiveN(
         (
           WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
@@ -1452,31 +1560,30 @@ let transl_prim = (env, desc) => {
           WasmMemoryFill |
           WasmMemoryCompare
         ) as p,
-      ) =>
-      Exp.lambda(
-        ~loc,
-        ~attributes=diable_gc,
-        [pat_a, pat_b, pat_c],
-        Exp.primn(~loc, p, [id_a, id_b, id_c]),
+      ) => (
+        Exp.lambda(
+          ~loc,
+          ~attributes=disable_gc,
+          [pat_a, pat_b, pat_c],
+          Exp.primn(~loc, p, [id_a, id_b, id_c]),
+        ),
+        [],
       )
     };
 
+  let value = Typecore.type_expression(env, value);
   let binds = [
     {
-      pvb_pat: {
-        ppat_desc: PPatVar(desc.tvd_name),
-        ppat_loc: loc,
+      vb_pat: {
+        pat_desc: TPatVar(desc.tvd_id, desc.tvd_name),
+        pat_loc: loc,
+        pat_extra: [],
+        pat_type: desc.tvd_val.val_type,
+        pat_env: env,
       },
-      pvb_expr: value,
-      pvb_loc: loc,
+      vb_expr: value,
+      vb_loc: loc,
     },
   ];
-  let mut_flag = desc.tvd_val.val_mutable ? Mutable : Immutable;
-  let (binds, env) =
-    Typecore.type_binding(env, Nonrecursive, mut_flag, binds, None);
-  let (path, val_desc) =
-    Env.lookup_value(Identifier.IdentName(desc.tvd_name.txt), env);
-  // Ensure the binding has a proper value_description
-  let new_env = Env.add_value(Path.head(path), desc.tvd_val, env);
-  (binds, new_env);
+  (binds, env, attrs);
 };

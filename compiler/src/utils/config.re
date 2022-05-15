@@ -1,13 +1,19 @@
+type digestable =
+  | Digestable
+  | NotDigestable;
+
 type config_opt =
-  | Opt((ref('a), 'a)): config_opt;
+  | Opt((ref('a), 'a, digestable)): config_opt;
 
 type saved_config_opt =
-  | SavedOpt((ref('a), 'a)): saved_config_opt;
+  | SavedOpt((ref('a), 'a, digestable)): saved_config_opt;
 
 type digestable_opt =
   | DigestableOpt('a): digestable_opt;
 
 type config = list(saved_config_opt);
+
+let empty: config = [];
 
 /* Here we model the API provided by cmdliner without introducing
    an explicit dependency on it (that's left to grainc). */
@@ -30,10 +36,10 @@ type config_spec =
 let opts: ref(list(config_opt)) = (ref([]): ref(list(config_opt)));
 let specs: ref(list(config_spec)) = (ref([]): ref(list(config_spec)));
 
-let internal_opt: 'a. 'a => ref('a) =
-  v => {
+let internal_opt: 'a. ('a, digestable) => ref('a) =
+  (v, digestable) => {
     let cur = ref(v);
-    opts := [Opt((cur, v)), ...opts^];
+    opts := [Opt((cur, v, digestable)), ...opts^];
     cur;
   };
 
@@ -45,15 +51,15 @@ let arg_info:
     ~env_docs: string=?,
     ~env_doc: string=?,
     ~env: string=?,
-    ~names: list(string)
+    list(string)
   ) =>
   Cmdliner.Arg.info = (
-  (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, ~names) => {
+  (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, names) => {
     let env =
       Option.map(
         e => {
           let (doc, docs) = (env_doc, env_docs);
-          Cmdliner.Arg.(env_var(~docs?, ~doc?, e));
+          Cmdliner.Cmd.Env.info(~docs?, ~doc?, e);
         },
         env,
       );
@@ -66,7 +72,7 @@ let arg_info:
       ~env_docs: string=?,
       ~env_doc: string=?,
       ~env: string=?,
-      ~names: list(string)
+      list(string)
     ) =>
     Cmdliner.Arg.info
 );
@@ -97,7 +103,7 @@ let opt:
     ~conv as c,
     v,
   ) => {
-    let cur = internal_opt(v);
+    let cur = internal_opt(v, Digestable);
     specs :=
       [
         Spec(
@@ -112,7 +118,7 @@ let opt:
                 ~env_docs?,
                 ~env_doc?,
                 ~env?,
-                ~names,
+                names,
               ),
             )
           ),
@@ -137,7 +143,7 @@ let toggle_flag:
   ) =>
   ref(bool) = (
   (~docs=?, ~docv=?, ~doc=?, ~env_docs=?, ~env_doc=?, ~env=?, ~names, default) => {
-    let cur = internal_opt(default);
+    let cur = internal_opt(default, Digestable);
     specs :=
       [
         Spec(
@@ -154,7 +160,7 @@ let toggle_flag:
                     ~env_docs?,
                     ~env_doc?,
                     ~env?,
-                    ~names,
+                    names,
                   ),
                 ),
               ],
@@ -183,21 +189,21 @@ let toggle_flag:
 let save_config = () => {
   let single_save =
     fun
-    | Opt((cur, _)) => SavedOpt((cur, cur^));
+    | Opt((cur, _, digestable)) => SavedOpt((cur, cur^, digestable));
   List.map(single_save, opts^);
 };
 
 let restore_config = {
   let single_restore =
     fun
-    | SavedOpt((ptr, value)) => ptr := value;
+    | SavedOpt((ptr, value, _)) => ptr := value;
   List.iter(single_restore);
 };
 
 let reset_config = () => {
   let single_reset =
     fun
-    | Opt((cur, default)) => cur := default;
+    | Opt((cur, default, _)) => cur := default;
   List.iter(single_reset, opts^);
 };
 
@@ -214,7 +220,14 @@ let get_root_config_digest = () => {
   | Some(dgst) => dgst
   | None =>
     let config_opts =
-      List.map((SavedOpt((_, opt))) => DigestableOpt(opt), root_config^);
+      root_config^
+      |> List.filter((SavedOpt((_, _, digestable))) =>
+           switch (digestable) {
+           | Digestable => true
+           | NotDigestable => false
+           }
+         )
+      |> List.map((SavedOpt((_, opt, _))) => DigestableOpt(opt));
     let config = Marshal.to_bytes(config_opts, []);
     let ret = Digest.to_hex(Digest.bytes(config));
     root_config_digest := Some(ret);
@@ -347,15 +360,16 @@ let process_used_cli_options = term => {
 
 let apply_inline_flags = (~err, flag_string) => {
   open Cmdliner;
-  let cmd = (
-    process_used_cli_options(with_unapplied_cli_options(Term.const())),
-    Term.info("grainc"),
-  );
+  let cmd =
+    Cmd.v(
+      Cmd.info("grainc"),
+      process_used_cli_options(with_unapplied_cli_options(Term.const())),
+    );
   // Remove grainc-flags prefix
   let len = String.length(flag_string) - 12;
   let flag_string = String.sub(flag_string, 12, len);
   let argv = Array.of_list(String.split_on_char(' ', flag_string));
-  Term.eval(~argv, ~err, cmd);
+  Cmd.eval_value(~argv, ~err, cmd);
 };
 
 let option_conv = ((prsr, prntr)) => (
@@ -388,6 +402,16 @@ let optimization_level =
         ("3", Level_three),
       ]),
     Level_three,
+  );
+
+let default_memory_base = 0x400;
+
+let memory_base =
+  opt(
+    ~doc="Set the start address for the Grain runtime heap.",
+    ~names=["memory-base"],
+    ~conv=option_conv(Cmdliner.Arg.int),
+    None,
   );
 
 let include_dirs =
@@ -547,17 +571,10 @@ let elide_type_info =
 let source_map =
   toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
 
-let lsp_mode =
-  toggle_flag(
-    ~names=["lsp"],
-    ~doc="Generate lsp errors and warnings only",
-    false,
-  );
-
-let print_warnings = internal_opt(true);
+let print_warnings = internal_opt(true, NotDigestable);
 
 /* To be filled in by grainc */
-let base_path = internal_opt("");
+let base_path = internal_opt("", NotDigestable);
 
 let with_base_path = (path, func) => {
   let old_base_path = base_path^;
@@ -574,7 +591,10 @@ let with_base_path = (path, func) => {
 };
 
 let stdlib_directory = (): option(string) =>
-  Option.map(path => Files.derelativize(path), stdlib_dir^);
+  Option.map(
+    path => Filepath.(to_string(String.derelativize(path))),
+    stdlib_dir^,
+  );
 
 let module_search_path = () => {
   switch (stdlib_directory()) {
@@ -589,10 +609,10 @@ let apply_inline_flags = (~on_error, cmt_content) =>
     let err = Format.formatter_of_buffer(err_buf);
     let result = apply_inline_flags(~err, cmt_content);
     switch (result) {
-    | `Ok(_) => ()
-    | `Version
-    | `Help => on_error(`Help)
-    | `Error(_) =>
+    | Ok(`Ok(_)) => ()
+    | Ok(`Version)
+    | Ok(`Help) => on_error(`Help)
+    | Error(_) =>
       Format.pp_print_flush(err, ());
       on_error(`Message(Buffer.contents(err_buf)));
     };

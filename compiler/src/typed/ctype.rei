@@ -49,6 +49,7 @@ type levels = {
 };
 let save_levels: unit => levels;
 let set_levels: levels => unit;
+let reset_levels: unit => unit;
 
 let newty: type_desc => type_expr;
 let newvar: (~name: string=?, unit) => type_expr;

@@ -5,11 +5,14 @@ open Grain_utils;
 let {describe} =
   describeConfig |> withCustomMatchers(customMatchers) |> build;
 
-describe("pattern matching", ({test}) => {
+describe("pattern matching", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
-  let assertFileRun = makeFileRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+  let assertFileRun = makeFileRunner(test_or_skip);
   let assertWarning = makeWarningRunner(test);
   let assertNoWarning = makeNoWarningRunner(test);
 
@@ -212,6 +215,32 @@ describe("pattern matching", ({test}) => {
     "constant_match_4",
     "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
   );
+  // Or patterns
+  assertSnapshot("or_match_1", "match (true) { true | false => 3 }");
+  assertSnapshot(
+    "or_match_2",
+    "match (Some(5)) { Some(3 | 4) => false, Some(5) | None => true, _ => false }",
+  );
+  assertSnapshot(
+    "or_match_3",
+    "match ([5]) { [a, _] | [_, a, _] | [a] => true, _ => false }",
+  );
+  // Aliases
+  assertSnapshot("alias_match_1", "match (true) { _ as p => p }");
+  assertSnapshot("alias_match_2", "match (true) { a as b => a && b }");
+  assertRun(
+    "alias_match_3",
+    "match (true) { true | false as p => print(p) }",
+    "true\n",
+  );
+  assertSnapshot(
+    "alias_match_4",
+    "match (Some(5)) { Some(3 | 4 as a) => a, Some(_) | None => 5, _ => 6 }",
+  );
+  assertSnapshot(
+    "alias_match_5",
+    "match (Some(5)) { Some(3 | 4) as a => a, Some(5) | None as a => a, _ => None }",
+  );
   assertFileRun("mixed_matching", "mixedPatternMatching", "true\n");
   assertWarning(
     "bool_exhaustiveness1",
@@ -267,5 +296,72 @@ describe("pattern matching", ({test}) => {
     Warnings.PartialMatch(
       "true\n(However, some guarded clause may match this value.)",
     ),
+  );
+  assertCompileError(
+    "newline_before_arrow",
+    {|
+      match (1) {
+        a
+          => a
+      }
+    |},
+    "Expected `=>` followed by an expression or a branch guard—the keyword `when` followed by an expression",
+  );
+  assertCompileError(
+    "newline_before_arrow_2",
+    {|
+      match (1) {
+        a when a = 1
+          => a
+      }
+    |},
+    "Expected `=>` followed by an expression.",
+  );
+
+  // destructuring
+  assertRun(
+    "destructure_constant",
+    {|
+      let 1 | _ = 5
+      print("ok")
+    |},
+    "ok\n",
+  );
+  assertRun(
+    "destructure_singleton_adt",
+    {|
+      enum NumWrapper { NumWrapper(Number) }
+      let NumWrapper(a) = NumWrapper(5)
+      print(a)
+    |},
+    "5\n",
+  );
+  assertRun(
+    "destructure_adt",
+    {|
+      enum Foo { A(Number), B(Number) }
+      let A(val1) | B(val1) = A(5)
+      let A(val2) | B(val2) = B(6)
+      print(val1)
+      print(val2)
+    |},
+    "5\n6\n",
+  );
+  assertRun(
+    "destructure_tuple",
+    {|
+      let (a, b) = (3, 4)
+      print(a + b)
+    |},
+    "7\n",
+  );
+  assertRun(
+    "destructure_record",
+    {|
+      record Rec { a: Number, b: Number }
+      let {a, b} = { a: 3, b: 4 }
+      print(a + b)
+    |},
+    "7\n",
   );
 });

@@ -1,62 +1,90 @@
-import * from "list";
+import * from "list"
 
 export record Rec {
   foo: List<Number>,
-  bar: String
-};
+  bar: String,
+}
 
 export enum Poly {
   PList(List<Number>),
   PArray(Array<Poly>),
   PAssoc(Rec),
   PMulti(List<String>, Number, Rec),
-  PPoly(List<Poly>)
-};
+  PPoly(List<Poly>),
+}
 
-let test = (test) => {
-  let (input, expected) = test;
+let test = test => {
+  let (input, expected) = test
   let result = match (input) {
     PList([]) => 1,
-    PList([a, b]) => a + b,
+    PList([a, b] | [_, a, b]) => a + b,
     PList([a, ..._]) => a,
-    PAssoc({foo: [], _}) => 1,
-    PAssoc({foo: [a, b], _}) => a + b,
-    PAssoc({foo: [a, ..._], _}) => a,
-    PMulti([], a, {foo: [], _}) => a,
-    PMulti([_, ..._], a, {foo: [b, ..._], _}) => a + b,
-    PMulti([], _, {foo: [b, ..._], _}) => b,
-    PMulti([_, ..._], a, {foo: [b, c, ..._], _}) => a + b + c,
-    PPoly([PList([a]), PAssoc({foo: [b], _}), PMulti([], c, {foo: [d], _})]) => a + b + c + d,
+    PAssoc({ foo: [], _ }) => 1,
+    PAssoc({ foo: [a, b], _ }) => a + b,
+    PAssoc({ foo: [a, ..._], _ }) => a,
+    PMulti([], a, { foo: [], _ }) => a,
+    PMulti([_, ..._], a, { foo: [b, ..._], _ }) => a + b,
+    PMulti([], _, { foo: [b, ..._], _ }) => b,
+    PMulti([_, ..._], a, { foo: [b, c, ..._], _ }) => a + b + c,
+    PPoly(
+      [PList([a]), PAssoc({ foo: [b], _ }), PMulti([], c, { foo: [d], _ })]
+    ) =>
+      a +
+      b +
+      c +
+      d,
     PPoly([]) => 42,
+    PPoly([PList([]) | PPoly([])]) => 50,
+    PPoly([PList([a, b]) | PPoly([PList([a, b]) | PPoly([PList([a, b])])])]) =>
+      a +
+      b,
     PPoly([_, ..._]) => 43,
-    PArray([>]) => 44,
+    PArray([> ]) => 44,
     PArray([> PList([a, b])]) => a + b,
     PArray([> PPoly([PList([a, b])]), PList([c, d])]) => a + b + c + d,
-    PArray(_) => 45
-  };
+    PArray(_) => 45,
+  }
+  if (result != expected) {
+    print("Failed case " ++ toString(input) ++ ":")
+    print("Expected " ++ toString(expected) ++ " but got " ++ toString(result))
+  }
   result == expected
-};
+}
 
 let tests = [
   (PList([]), 1),
   (PList([2]), 2),
   (PList([2, 7]), 9),
-  (PList([2, 7, 10]), 2),
-  (PAssoc({foo: [], bar: "bar"}), 1),
-  (PAssoc({foo: [2], bar: "bar"}), 2),
-  (PAssoc({foo: [2, 7], bar: "bar"}), 9),
-  (PAssoc({foo: [2, 7, 10], bar: "bar"}), 2),
-  (PMulti([], 17, {foo: [], bar: "bar"}), 17),
-  (PMulti(["foo"], 17, {foo: [3], bar: "bar"}), 20),
-  (PMulti([], 11, {foo: [4], bar: "bar"}), 4),
-  (PMulti(["foo"], 17, {foo: [3, 5], bar: "bar"}), 20),
-  (PPoly([PList([1]), PAssoc({foo: [2], bar: "bar"}), PMulti([], 3, {foo: [4], bar: "bar"})]), 10),
+  (PList([2, 7, 10]), 17),
+  (PList([2, 7, 10, 11]), 2),
+  (PAssoc({ foo: [], bar: "bar" }), 1),
+  (PAssoc({ foo: [2], bar: "bar" }), 2),
+  (PAssoc({ foo: [2, 7], bar: "bar" }), 9),
+  (PAssoc({ foo: [2, 7, 10], bar: "bar" }), 2),
+  (PMulti([], 17, { foo: [], bar: "bar" }), 17),
+  (PMulti(["foo"], 17, { foo: [3], bar: "bar" }), 20),
+  (PMulti([], 11, { foo: [4], bar: "bar" }), 4),
+  (PMulti(["foo"], 17, { foo: [3, 5], bar: "bar" }), 20),
+  (
+    PPoly(
+      [
+        PList([1]),
+        PAssoc({ foo: [2], bar: "bar" }),
+        PMulti([], 3, { foo: [4], bar: "bar" }),
+      ]
+    ),
+    10,
+  ),
   (PPoly([]), 42),
-  (PPoly([PPoly([])]), 43),
+  (PPoly([PPoly([])]), 50),
+  (PPoly([PList([])]), 50),
+  (PPoly([PList([7, 8])]), 15),
+  (PPoly([PPoly([PList([7, 8])])]), 15),
+  (PPoly([PPoly([PPoly([PList([7, 8])])])]), 15),
   (PArray([>]), 44),
   (PArray([> PList([3, 4])]), 7),
   (PArray([> PPoly([PList([3, 4])]), PList([5, 6])]), 18),
   (PArray([> PList([3, 4]), PList([3, 4])]), 45),
-];
+]
 
 print(every(test, tests))

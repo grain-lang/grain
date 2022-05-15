@@ -1,0 +1,5 @@
+enum Thing {
+  HelloWorld,
+}
+
+print(HelloWorld)

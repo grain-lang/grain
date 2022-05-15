@@ -1,26 +1,35 @@
 open TestFramework;
 open WarningExtensions;
+open BinaryFileExtensions;
 open Grain.Compile;
 open Grain_utils;
 open Grain_middle_end.Anftree;
 open Grain_middle_end.Anf_helper;
 
-type customMatchers = {warning: warningExtensions};
+type customMatchers = {
+  warning: warningExtensions,
+  binaryFile: string => binaryFileExtensions,
+};
 
 let customMatchers = createMatcher => {
   warning: warningExtensions(createMatcher),
+  binaryFile: str => binaryFileExtensions(str, createMatcher),
 };
 
-let grainfile = name => Filename.concat(test_input_dir, name ++ ".gr");
-let stdlibfile = name => Filename.concat(test_stdlib_dir, name ++ ".gr");
-let wasmfile = name => Filename.concat(test_output_dir, name ++ ".gr.wasm");
-let watfile = name => Filename.concat(test_output_dir, name ++ ".gr.wat");
+let grainfile = name =>
+  Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".gr")));
+let stdlibfile = name =>
+  Filepath.to_string(Fp.At.(test_stdlib_dir / (name ++ ".gr")));
+let wasmfile = name =>
+  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wasm")));
+let watfile = name =>
+  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wat")));
 
 let formatter_out_file = name =>
-  Filename.concat(test_formatter_out_dir, name ++ ".gr");
+  Filepath.to_string(Fp.At.(test_formatter_out_dir / (name ++ ".gr")));
 
 let formatter_in_file = name =>
-  Filename.concat(test_formatter_in_dir, name ++ ".gr");
+  Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
 
 let read_stream = cstream => {
   let buf = Bytes.create(2048);
@@ -42,7 +51,7 @@ let read_stream = cstream => {
 let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
-      [],
+      Config.empty,
       () => {
         switch (config_fn) {
         | Some(fn) => fn()
@@ -54,7 +63,8 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
           Config.maximum_memory_pages := Some(pages);
         | None => ()
         };
-        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+        Config.include_dirs :=
+          [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
         let outfile = wasmfile(name);
         compile_string(~is_root_file=true, ~hook?, ~name, ~outfile, prog);
       },
@@ -65,7 +75,7 @@ let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
 let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
-      [],
+      Config.empty,
       () => {
         switch (config_fn) {
         | Some(fn) => fn()
@@ -77,7 +87,8 @@ let compile_file = (~num_pages=?, ~config_fn=?, ~hook=?, filename, outfile) => {
           Config.maximum_memory_pages := Some(pages);
         | None => ()
         };
-        Config.include_dirs := [test_libs_dir, ...Config.include_dirs^];
+        Config.include_dirs :=
+          [Filepath.to_string(test_libs_dir), ...Config.include_dirs^];
         compile_file(~is_root_file=true, ~hook?, ~outfile, filename);
       },
     )
@@ -116,7 +127,7 @@ let run = (~num_pages=?, file) => {
     "-S",
     stdlib,
     "-I",
-    test_libs_dir,
+    Filepath.to_string(test_libs_dir),
     "run",
     file,
   ];
@@ -319,8 +330,8 @@ let makeStdlibRunner = (test, ~code=0, name) => {
   );
 };
 
-let parse = (name, lexbuf) => {
-  let ret = Grain_parsing.Driver.parse(~name, lexbuf);
+let parse = (name, lexbuf, source) => {
+  let ret = Grain_parsing.Driver.parse(~name, lexbuf, source);
   open Grain_parsing;
   open Location;
   assert(ret.Parsetree.prog_loc.loc_start.pos_fname == name);
@@ -329,12 +340,8 @@ let parse = (name, lexbuf) => {
 
 let parseString = (name, s) => {
   let lexbuf = Lexing.from_string(s);
-  parse(name, lexbuf);
-};
-
-let parseFile = (name, input_file) => {
-  let lexbuf = Lexing.from_channel(input_file);
-  parse(name, lexbuf);
+  let source = () => s;
+  parse(name, lexbuf, source);
 };
 
 let makeParseRunner =
@@ -393,12 +400,9 @@ let makeFormatterRunner = (test, name, filename) => {
       let infile = formatter_in_file(filename);
       let (result, _) = format(infile);
 
-      // toEqualFile reads a file and misses the final newline,
-      // so we will trim our final newline
+      // we need do a binary content comparison to ensure the EOL is correct
 
-      expect.string(String.trim(result)).toEqualFile(
-        formatter_out_file(name),
-      );
+      expect.ext.binaryFile(result).toBinaryMatch(formatter_out_file(name));
     },
   );
 };

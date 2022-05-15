@@ -18,15 +18,26 @@ let wasm_unsafe_types = [
   Builtin_types.path_wasmf64,
 ];
 
-let exp_is_wasm_unsafe = ({exp_type: {desc}}) => {
-  switch (desc) {
-  | TTyConstr(path, _, _) => List.mem(path, wasm_unsafe_types)
-  | _ => false
+let rec exp_is_wasm_unsafe = ({exp_type}) => {
+  let rec type_is_wasm_unsafe = t => {
+    switch (t.desc) {
+    | TTyConstr(path, _, _) => List.mem(path, wasm_unsafe_types)
+    | TTyLink(t) => type_is_wasm_unsafe(t)
+    | _ => false
+    };
   };
+  type_is_wasm_unsafe(exp_type);
 };
 
-let is_marked_disable_gc = attrs => {
-  List.mem(Disable_gc, attrs);
+let is_marked_unsafe = attrs => {
+  // Disable_gc implies Unsafe
+  List.exists(
+    fun
+    | Disable_gc
+    | Unsafe => true
+    | _ => false,
+    attrs,
+  );
 };
 
 let make_bool_stack = () => {
@@ -64,13 +75,7 @@ let (
   dump_in_lambda,
 ) =
   make_bool_stack();
-let (
-  push_disable_gc,
-  pop_disable_gc,
-  is_disable_gc,
-  reset_disable_gc,
-  dump_disable_gc,
-) =
+let (push_unsafe, pop_unsafe, is_unsafe, reset_unsafe, dump_unsafe) =
   make_bool_stack();
 
 module WellFormednessArg: TypedtreeIter.IteratorArgument = {
@@ -80,8 +85,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
     ({exp_desc, exp_loc, exp_attributes} as exp) => {
       // Check #1: Avoid using Pervasives equality ops with WasmXX types
       switch (exp_desc) {
-      | TExpLet(_) when is_marked_disable_gc(exp_attributes) =>
-        push_disable_gc(true)
+      | TExpLet(_) when is_marked_unsafe(exp_attributes) => push_unsafe(true)
       | TExpApp(
           {
             exp_desc:
@@ -115,7 +119,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           && !(
                Grain_utils.Config.no_gc^
                || Grain_utils.Config.compilation_mode^ == Some("runtime")
-               || is_disable_gc()
+               || is_unsafe()
              )) {
         raise(Error(exp_loc, WasmOutsideDisableGc));
       };
@@ -123,14 +127,14 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
 
   let enter_toplevel_stmt = ({ttop_desc, ttop_attributes}) => {
     switch (ttop_desc) {
-    | TTopLet(_) => push_disable_gc(is_marked_disable_gc(ttop_attributes))
+    | TTopLet(_) => push_unsafe(is_marked_unsafe(ttop_attributes))
     | _ => ()
     };
   };
 
   let leave_expression = ({exp_desc, exp_attributes}) => {
     switch (exp_desc) {
-    | TExpLet(_) when is_marked_disable_gc(exp_attributes) => pop_disable_gc()
+    | TExpLet(_) when is_marked_unsafe(exp_attributes) => pop_unsafe()
     | TExpLambda(_) => pop_in_lambda()
     | _ => ()
     };
@@ -138,7 +142,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
 
   let leave_toplevel_stmt = ({ttop_desc}) => {
     switch (ttop_desc) {
-    | TTopLet(_) => pop_disable_gc()
+    | TTopLet(_) => pop_unsafe()
     | _ => ()
     };
   };
@@ -157,7 +161,7 @@ let report_error = ppf =>
   | WasmOutsideDisableGc =>
     fprintf(
       ppf,
-      "Wasm types cannot be used outside of a @disableGC context@.",
+      "Wasm types cannot be used outside of an @unsafe or @disableGC context@.",
     );
 
 let () =

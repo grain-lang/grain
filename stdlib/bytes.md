@@ -281,6 +281,25 @@ Parameters:
 |`value`|`Int32`|The value replacing each byte|
 |`bytes`|`Bytes`|The byte sequence to update|
 
+### Bytes.**clear**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+clear : Bytes -> Void
+```
+
+Replaces all bytes in a byte sequence with zeroes.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`bytes`|`Bytes`|The byte sequence to clear|
+
 ## Binary operations on integers
 
 Functions for encoding and decoding integers stored in a byte sequence.

@@ -8,7 +8,7 @@ open Types;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 [@deriving sexp]
 type global_flag =
-  | Global
+  | Global({exported: bool})
   | Nonglobal;
 
 type loc('a) = Location.loc('a);
@@ -156,8 +156,31 @@ type wasm_op =
     | Op_gt_float64
     | Op_ge_float64;
 
+type prim0 =
+  Parsetree.prim0 =
+    | AllocateInt32
+    | AllocateInt64
+    | AllocateFloat32
+    | AllocateFloat64
+    | AllocateRational;
+
 type prim1 =
   Parsetree.prim1 =
+    | AllocateArray
+    | AllocateTuple
+    | AllocateBytes
+    | AllocateString
+    | NewInt32
+    | NewInt64
+    | NewFloat32
+    | NewFloat64
+    | LoadAdtVariant
+    | StringSize
+    | BytesSize
+    | TagSimpleNumber
+    | UntagSimpleNumber
+    | TagChar
+    | UntagChar
     | Not
     | Box
     | Unbox
@@ -193,6 +216,7 @@ type prim1 =
 
 type prim2 =
   Parsetree.prim2 =
+    | NewRational
     | Is
     | Eq
     | And
@@ -238,6 +262,11 @@ type primn =
     | WasmMemoryFill
     | WasmMemorySize
     | WasmMemoryCompare;
+
+let (prim0_of_sexp, sexp_of_prim0) = (
+  Parsetree.prim0_of_sexp,
+  Parsetree.sexp_of_prim0,
+);
 
 let (prim1_of_sexp, sexp_of_prim1) = (
   Parsetree.prim1_of_sexp,
@@ -286,6 +315,7 @@ type comp_expression = {
 [@deriving sexp]
 and comp_expression_desc =
   | CImmExpr(imm_expression)
+  | CPrim0(prim0)
   | CPrim1(prim1, imm_expression)
   | CPrim2(prim2, imm_expression, imm_expression)
   | CPrimN(primn, list(imm_expression))
@@ -387,6 +417,7 @@ type anf_program = {
 
 type anf_bind =
   | BSeq(comp_expression)
-  | BLet(Ident.t, comp_expression)
-  | BLetRec(list((Ident.t, comp_expression)))
-  | BLetExport(rec_flag, list((Ident.t, comp_expression)));
+  | BLet(Ident.t, comp_expression, global_flag)
+  | BLetMut(Ident.t, comp_expression, global_flag)
+  | BLetRec(list((Ident.t, comp_expression)), global_flag)
+  | BLetRecMut(list((Ident.t, comp_expression)), global_flag);

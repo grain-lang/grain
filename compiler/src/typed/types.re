@@ -127,8 +127,14 @@ and wasm_repr =
 
 [@deriving (sexp, yojson)]
 type val_repr =
-  | ReprFunction(list(wasm_repr), list(wasm_repr))
-  | ReprValue(wasm_repr);
+  | ReprFunction(list(wasm_repr), list(wasm_repr), func_direct)
+  | ReprValue(wasm_repr)
+
+[@deriving (sexp, yojson)]
+and func_direct =
+  | Direct(string)
+  | Indirect
+  | Unknown;
 
 [@deriving (sexp, yojson)]
 type value_description = {
@@ -137,6 +143,7 @@ type value_description = {
   val_kind: value_kind,
   val_fullpath: Path.t,
   val_mutable: bool,
+  val_global: bool,
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   val_loc: Location.t,
 };
@@ -155,6 +162,7 @@ type constructor_declaration = {
   cd_id: Ident.t,
   cd_args: constructor_arguments,
   cd_res: option(type_expr),
+  cd_repr: val_repr,
   [@sexp_drop_if sexp_locs_disabled]
   cd_loc: Location.t,
 }
@@ -168,7 +176,8 @@ type extension_constructor = {
   ext_type_path: Path.t,
   ext_type_params: list(type_expr),
   ext_args: constructor_arguments,
-  ext_runtime_id: int,
+  ext_repr: val_repr,
+  ext_name: Ident.t,
   [@sexp_drop_if sexp_locs_disabled]
   ext_loc: Location.t,
 };

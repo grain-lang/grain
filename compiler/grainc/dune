@@ -1,30 +1,12 @@
 (executable
- (enabled_if
-  (<> %{profile} jsoo))
  (name grainc)
  (public_name grainc)
  (package grain)
  (modules grainc)
- (modes exe)
+ (modes exe js)
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries grain grain_diagnostics binaryen.native dune-build-info))
-
-(rule
- (target grainc_js.re)
- (action
-  (copy %{dep:grainc.re} %{target})))
-
-(executable
- (enabled_if
-  (= %{profile} jsoo))
- (name grainc_js)
- (public_name grainc_js)
- (package grainc)
- (modules grainc_js)
- ; exe is only here so dune-build-info works
- (modes exe js)
- (libraries grain grain_diagnostics binaryen.js dune-build-info)
+ (libraries grain grain_diagnostics binaryen dune-build-info)
  (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --quiet)))
+  (flags --no-sourcemap --no-extern-fs --quiet --disable share)))

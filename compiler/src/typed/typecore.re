@@ -98,8 +98,34 @@ let grain_type_of_wasm_prim_type =
   | Wasm_float64 => Builtin_types.type_wasmf64
   | Grain_bool => Builtin_types.type_bool;
 
+let prim0_type =
+  fun
+  | AllocateInt32
+  | AllocateInt64
+  | AllocateFloat32
+  | AllocateFloat64
+  | AllocateRational => Builtin_types.type_wasmi32;
+
 let prim1_type =
   fun
+  | AllocateArray
+  | AllocateTuple
+  | AllocateBytes
+  | AllocateString
+  | LoadAdtVariant
+  | StringSize
+  | BytesSize => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
+  | NewInt32 => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
+  | NewInt64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
+  | NewFloat32 => (Builtin_types.type_wasmf32, Builtin_types.type_wasmi32)
+  | NewFloat64 => (Builtin_types.type_wasmf64, Builtin_types.type_wasmi32)
+  | TagSimpleNumber => (Builtin_types.type_wasmi32, Builtin_types.type_number)
+  | UntagSimpleNumber => (
+      Builtin_types.type_number,
+      Builtin_types.type_wasmi32,
+    )
+  | TagChar => (Builtin_types.type_wasmi32, Builtin_types.type_char)
+  | UntagChar => (Builtin_types.type_char, Builtin_types.type_wasmi32)
   | Not => (Builtin_types.type_bool, Builtin_types.type_bool)
   | Box
   | BoxBind => {
@@ -137,6 +163,11 @@ let prim1_type =
 
 let prim2_type =
   fun
+  | NewRational => (
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+      Builtin_types.type_wasmi32,
+    )
   | And
   | Or => (
       Builtin_types.type_bool,
@@ -247,6 +278,7 @@ let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
             val_kind: TValUnbound(ValUnboundGhostRecursive),
             val_loc: loc_let,
             val_mutable: false,
+            val_global: false,
           },
           env,
         )
@@ -834,7 +866,7 @@ and type_expect_ =
   | PExpLet(rec_flag, mut_flag, pats) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =
-      type_let(env, rec_flag, mut_flag, pats, scp, true);
+      type_let(env, rec_flag, mut_flag, false, pats, scp, true);
     /*let () =
       if rec_flag = Recursive then
         check_recursive_bindings env pat_exp_list
@@ -914,6 +946,16 @@ and type_expect_ =
       exp_extra: [],
       exp_attributes: attributes,
       exp_type: instance(env, ty_expected),
+      exp_env: env,
+    });
+  | PExpPrim0(p0) =>
+    let rettype = prim0_type(p0);
+    rue({
+      exp_desc: TExpPrim0(p0),
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: rettype,
       exp_env: env,
     });
   | PExpPrim1(p1, sarg) =>
@@ -1710,6 +1752,7 @@ and type_let =
       env,
       rec_flag,
       mut_flag,
+      global_flag,
       spat_sexp_list,
       scope,
       allow,
@@ -1750,7 +1793,15 @@ and type_let =
   let nvs = List.map(_ => newvar(), spatl);
   let mut = mut_flag == Mutable;
   let (pat_list, new_env, force, unpacks, pv) =
-    type_pattern_list(~mut, env, spatl, scope, nvs, allow);
+    type_pattern_list(
+      ~mut,
+      ~global=global_flag,
+      env,
+      spatl,
+      scope,
+      nvs,
+      allow,
+    );
   let attrs_list = List.map(fst, spatl);
   let is_recursive = rec_flag == Recursive;
   /* If recursive, first unify with an approximation of the expression */
@@ -2089,6 +2140,7 @@ let type_binding = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
       env,
       rec_flag,
       mut_flag,
+      true,
       spat_sexp_list,
       scope,
       false,
@@ -2096,9 +2148,17 @@ let type_binding = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
 
   (pat_exp_list, new_env);
 };
-let type_let = (env, rec_flag, mut_flag, spat_sexp_list, scope) => {
+let type_let = (env, rec_flag, mut_flag, global_flag, spat_sexp_list, scope) => {
   let (pat_exp_list, new_env, _unpacks) =
-    type_let(env, rec_flag, mut_flag, spat_sexp_list, scope, false);
+    type_let(
+      env,
+      rec_flag,
+      mut_flag,
+      global_flag,
+      spat_sexp_list,
+      scope,
+      false,
+    );
   (pat_exp_list, new_env);
 };
 

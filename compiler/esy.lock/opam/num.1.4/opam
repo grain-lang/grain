@@ -13,9 +13,13 @@ depends: [
 conflicts: ["base-num"]
 build: make
 install: [
-  make
-  "install" {!ocaml:preinstalled}
-  "findlib-install" {ocaml:preinstalled}
+  ["ocamlfind" "remove" "num"]
+  ["ocamlfind" "remove" "num-top"]
+  [
+    make
+    "install" {!ocaml:preinstalled}
+    "findlib-install" {ocaml:preinstalled}
+  ]
 ]
 dev-repo: "git+https://github.com/ocaml/num.git"
 url {

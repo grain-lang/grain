@@ -1054,7 +1054,8 @@ let check_unused = (~lev=get_current_level(), env, expected_ty, cases) =>
     cases,
   );
 
-let add_pattern_variables = (~check=?, ~check_as=?, ~mut=false, env) => {
+let add_pattern_variables =
+    (~check=?, ~check_as=?, ~mut=false, ~global=false, env) => {
   let pv = get_ref(pattern_variables);
   (
     List.fold_right(
@@ -1070,6 +1071,7 @@ let add_pattern_variables = (~check=?, ~check_as=?, ~mut=false, env) => {
             Types.val_loc: loc,
             val_fullpath: Path.PIdent(id),
             val_mutable: mut,
+            val_global: global,
           },
           env,
         );
@@ -1092,7 +1094,8 @@ let type_pattern = (~lev, env, spat, scope, expected_ty) => {
   (pat, new_env, get_ref(pattern_force), unpacks);
 };
 
-let type_pattern_list = (~mut=false, env, spatl, scope, expected_tys, allow) => {
+let type_pattern_list =
+    (~mut=false, ~global=false, env, spatl, scope, expected_tys, allow) => {
   reset_pattern(/*scope*/ None, allow);
   let new_env = ref(env);
   let type_pat = ((attrs, pat), ty) => {
@@ -1110,7 +1113,8 @@ let type_pattern_list = (~mut=false, env, spatl, scope, expected_tys, allow) => 
   };
 
   let patl = List.map2(type_pat, spatl, expected_tys);
-  let (new_env, unpacks, pv) = add_pattern_variables(~mut, new_env^);
+  let (new_env, unpacks, pv) =
+    add_pattern_variables(~mut, ~global, new_env^);
   (patl, new_env, get_ref(pattern_force), unpacks, pv);
 };
 

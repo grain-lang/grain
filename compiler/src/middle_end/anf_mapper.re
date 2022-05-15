@@ -41,6 +41,7 @@ module MakeMap = (Iter: MapArgument) => {
     let d =
       switch (desc) {
       | CImmExpr(i) => CImmExpr(map_imm_expression(i))
+      | CPrim0(p0) => CPrim0(p0)
       | CPrim1(p1, arg) => CPrim1(p1, map_imm_expression(arg))
       | CPrim2(p2, arg1, arg2) =>
         let arg1 = map_imm_expression(arg1);

@@ -42,6 +42,7 @@ module MakeIter = (Iter: IterArgument) => {
     Iter.enter_comp_expression(c);
     switch (desc) {
     | CImmExpr(i) => iter_imm_expression(i)
+    | CPrim0(_) => ()
     | CPrim1(_, arg) => iter_imm_expression(arg)
     | CPrim2(_, arg1, arg2) =>
       iter_imm_expression(arg1);

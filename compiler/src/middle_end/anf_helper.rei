@@ -55,6 +55,15 @@ module Comp: {
   let float64:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, float) =>
     comp_expression;
+  let prim0:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~allocation_type: allocation_type,
+      ~env: env=?,
+      prim0
+    ) =>
+    comp_expression;
   let prim1:
     (
       ~loc: loc=?,

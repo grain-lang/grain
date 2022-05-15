@@ -52,7 +52,7 @@ let initLength = length => {
  */
 @disableGC
 export let rec length = array => {
-  let ptr = WasmI32.fromGrain(array: (Array<a>))
+  let ptr = WasmI32.fromGrain(array: Array<a>)
   let ret = tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
   Memory.decRef(ptr)
   Memory.decRef(WasmI32.fromGrain(length))
@@ -89,7 +89,7 @@ export let rec make /*: (Number, a) -> Array<a>*/ =
       _ARRAY_START_OFFSET
     )
   }
-  let ret = WasmI32.toGrain(array): (Array<a>)
+  let ret = WasmI32.toGrain(array): Array<a>
   Memory.decRef(WasmI32.fromGrain(lengthArg))
   Memory.decRef(WasmI32.fromGrain(item))
   Memory.decRef(WasmI32.fromGrain(make))
@@ -133,7 +133,7 @@ export let rec init /*: (Number, Number -> a) -> Array<a>*/ =
   }
   Memory.decRef(WasmI32.fromGrain(fn))
   Memory.decRef(WasmI32.fromGrain(init))
-  WasmI32.toGrain(array): (Array<a>)
+  WasmI32.toGrain(array): Array<a>
 }
 
 /**

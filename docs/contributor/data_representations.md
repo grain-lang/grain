@@ -8,22 +8,14 @@ Values in Grain are tagged. This means that we reserve a number of bits to signa
 
 You can find all of the tags in the code in [codegen/value_tags.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/value_tags.re), but they'll be broken down here.
 
-### Numbers
+### Stack tags
 
-Typically, tags span 3 bits. That's usually fine, but if we limited numbers to 29 bits, we could only support ~500 million possible numbers, which is a bit lame. For this reason, we dedicate the final bit of our 32-bit values to numbers—if the final bit is a 1, it's a "simple" 31-bit integer. This leaves us with three other possible tags— `0b010`, `0b100`, and `0b110`.  
-
-To avoid overwriting data, we shift simple numbers to the left by 1 bit, then set the last bit to the value 1. This means that every Grain simple number is stored as `2n + 1`. The process of converting a simple number to this representation is called "tagging". Untagging and re-tagging can be costly, but thankfully, math is our friend. Addition on two Grain simple numbers `x` and `y` could be done by computing `2((x - 1)/2 + (y - 1)/2) + 1`, but some quick simplification shows we only need to compute `x + y - 1`, which makes basic addition only two WebAssembly instructions. There are other tricks like this for the other operations that allow us to avoid unnecessary untagging. (Additionally, since the tag information is held in the final bit, untagging can be done with a single instruction, `shr_s` by 1, if necessary.)
-
-31 bits allow us to represent more than 2 billion numbers (from -1073741824 to 1073741823), which is a few more than the 500 million we'd get from 29 bits. If larger numbers (or non-integer numbers) are needed, then Grain will fall back onto one of the other (heap-allocated) number types. The heap-allocated numbers are described in detail later.
-
-### Other values
-
-For other values, we look at the last 3 bits to determine the type.
+We look at the last 3 bits of an i32 on the stack to determine its type.
 
 ```plaintext
 simple number    0bxx1
 pointer*         0b000
-reserved         0b010
+chars            0b010
 reserved         0b100
 constants        0b110
 
@@ -32,7 +24,21 @@ constants        0b110
 
 Since heap-allocated values (`pointers` in the chart above) are "tagged" with `0b000`, nothing needs to be done to tag or untag the value. If it's necessary, you can determine the type of the heap object from the first 32-bit value you find at that memory address—it corresponds to the type (string, record, array, ADT, etc.), and you can find these corresponding heap tags in `value_tags.ml` as well.
 
-## Structure of Heap Data
+## Structure of Stack-Allocated Data
+
+### Simple numbers
+
+Typically, tags span 3 bits. That's usually fine, but if we limited numbers to 29 bits, we could only support ~500 million possible numbers, which is a bit lame. For this reason, we dedicate the final bit of our 32-bit values to numbers—if the final bit is a 1, it's a "simple" 31-bit integer. This leaves us with three other possible tags— `0b010`, `0b100`, and `0b110`.
+
+To avoid overwriting data, we shift simple numbers to the left by 1 bit, then set the last bit to the value 1. This means that every Grain simple number is stored as `2n + 1`. The process of converting a simple number to this representation is called "tagging". Untagging and re-tagging can be costly, but thankfully, math is our friend. Addition on two Grain simple numbers `x` and `y` could be done by computing `2((x - 1)/2 + (y - 1)/2) + 1`, but some quick simplification shows we only need to compute `x + y - 1`, which makes basic addition only two WebAssembly instructions. There are other tricks like this for the other operations that allow us to avoid unnecessary untagging. (Additionally, since the tag information is held in the final bit, untagging can be done with a single instruction, `shr_s` by 1, if necessary.)
+
+31 bits allow us to represent more than 2 billion numbers (from -1073741824 to 1073741823), which is a few more than the 500 million we'd get from 29 bits. If larger numbers (or non-integer numbers) are needed, then Grain will fall back onto one of the other (heap-allocated) number types. The heap-allocated numbers are described in detail later.
+
+### Chars
+
+The Grain `Char` type is represented as a tagged Unicode scalar value. They're similar to simple numbers, though they use a full 3-bit tag, `0b010`. Unicode scalar values exist in the range 0x0-10FFFF, which means it only takes 21 bits to store a USV—that leaves plenty of room for our 3-bit tag, and we cover the full spectrum of USVs. To tag a USV, we shift the value left by 3 bits and set the last 3 bits to our tag value, `0b010`. This means that Grain chars are stored as `8n + 2`, where `n` is the USV. Just like numbers, there are some tricks we can do to avoid untagging and retagging when manipulating chars. For example, the successor of a char can be found by just adding 8: `8(n + 1) + 2` is `(8n + 2) + 8`.
+
+## Structure of Heap-Allocated Data
 
 ### Tuples
 
@@ -131,20 +137,6 @@ Chars and Strings are currently the only data types that store data in 8-bit chu
 
 The size is **untagged**. Note that Grain strings are UTF-8 encoded, so one byte does not necessarily fully represent one character. As such, the size set here is the size of the string in bytes, rather than the actual number of characters. The size will always be greater than or equal to the number of characters in the string.
 
-[More information on strings.](./string.md)
-
-### Chars
-
-A Char in Grain is a single [Unicode scalar value](http://www.unicode.org/glossary/#unicode_scalar_value), encoded in UTF-8. As such, it may use between 1-4 bytes to represent the character.
-
-```plaintext
-╔══════╦═══════════╤════════╤═════════╤═════════╤═════════╗
-║ size ║ 32        │ 8      │ 8       │ 8       │ 8       ║
-╠══════╬═══════════╪════════╪═════════╪═════════╪═════════╣
-║ what ║ value tag │ byte 1 │ byte 2? │ byte 3? │ byte 4? ║
-╚══════╩═══════════╧════════╧═════════╧═════════╧═════════╝
-```
-
 For completeness, here are the layouts of UTF-8 byte sequences:
 
 ```plaintext
@@ -158,7 +150,7 @@ For completeness, here are the layouts of UTF-8 byte sequences:
 ╚═══════════╩══════════════════╩═════════════════╩══════════╩══════════╩══════════╩══════════╝
 ```
 
-Something worth mentioning: WebAssembly uses little-endian byte order. If you load the full 32-bit word for the character (instead of loading the bytes one-by-one), the bytes will be in reverse order, i.e. byte 1 is `word & 0xFF`, byte 2 is `word & 0xFF00 >> 8`, byte 3 is `word & 0xFF0000 >> 16`, and byte 4 is `word & 0xFF000000 >> 24`. This is useful to know if you're writing optimizations.
+[More information on strings.](./string.md)
 
 ### Heap-Allocated Numbers
 

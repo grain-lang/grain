@@ -3,4 +3,4 @@ const preparePkg = require("./pkg");
 
 preparePkg();
 
-require("./grainformat_js.bc.js");
+require("./grainformat.bc.js");

@@ -47,7 +47,7 @@ module Comp = {
     mk(
       ~loc?,
       ~attributes?,
-      ~allocation_type=StackAllocated(WasmI32),
+      ~allocation_type=HeapAllocated,
       ~env?,
       CNumber(i),
     );
@@ -83,6 +83,8 @@ module Comp = {
       ~env?,
       CFloat64(i),
     );
+  let prim0 = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, p0) =>
+    mk(~loc?, ~attributes?, ~allocation_type, ~env?, CPrim0(p0));
   let prim1 = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, p1, a) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CPrim1(p1, a));
   let prim2 = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, p2, a1, a2) =>

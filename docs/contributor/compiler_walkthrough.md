@@ -2,20 +2,20 @@
 
 This guide will take you through all of the phases of the compiler to give you a general sense of how we go from a `.gr` file to a `.wasm` file.
 
-We'll largely be following the `next_state` function in [compile.re](https://github.com/grain-lang/grain/blob/master/compiler/src/compile.re).
+We'll largely be following the `next_state` function in [compile.re](https://github.com/grain-lang/grain/blob/main/compiler/src/compile.re).
 
 ## Lexing
 
 Lexing is the process of breaking up a string input into tokens. A Grain program string is tokenized into things like:
 
-* keywords (`let`, `import`, `data`, `assert`, etc.)
-* constants (`17`, `'foobar'`, etc.)
-* delimiters (`{`, `}`, `[`, `]`, `,`, `;`, etc.)
-* operators (`*`, `+`, `==`, `&&`, etc.)
-* identifiers (`myVar`, `List`, etc.)
-* comments (`# this is a comment`, etc.)
+- keywords (`let`, `import`, `data`, `assert`, etc.)
+- constants (`17`, `'foobar'`, etc.)
+- delimiters (`{`, `}`, `[`, `]`, `,`, `;`, etc.)
+- operators (`*`, `+`, `==`, `&&`, etc.)
+- identifiers (`myVar`, `List`, etc.)
+- comments (`# this is a comment`, etc.)
 
-To make this happen, we use [ocamllex](https://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html). `ocamllex` is a tool that generates OCaml code to do this based on rules we've defined in [parsing/lexer.mll](https://github.com/grain-lang/grain/blob/master/compiler/src/parsing/lexer.mll).
+To make this happen, we use [ocamllex](https://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html). `ocamllex` is a tool that generates OCaml code to do this based on rules we've defined in [parsing/lexer.mll](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/lexer.mll).
 
 ## Parsing
 
@@ -29,23 +29,23 @@ Once we've got our tokens, we move on to parsing. The goal of parsing is to take
 1     2
 ```
 
-Writing a parser by hand would be annoying, so instead we use [dypgen](http://dypgen.free.fr/). `dypgen` is a dynamic parser generator that produces OCaml code for a parser based on some rules we've defined. We call these rules a "grammar" and you can find the grammar for the Grain language in [parsing/parser.dyp](https://github.com/grain-lang/grain/blob/master/compiler/src/parsing/parser.dyp). If you'd like to learn more about BNF grammars, check out [this resource](http://people.cs.ksu.edu/~schmidt/300s05/Lectures/GrammarNotes/bnf.html).
+Writing a parser by hand is great when you've got a stable grammar, but the language is still rapidly evolving. Using a parser generator allows us to iterate quickly. [Menhir](http://gallium.inria.fr/~fpottier/menhir/) is an excellent production-grade parser generator that produces OCaml code for a parser based on some rules we've defined. We call these rules a "grammar" and you can find the grammar for the Grain language in [parsing/parser.mly](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parser.mly). If you'd like to learn more about BNF grammars, check out [this resource](http://people.cs.ksu.edu/~schmidt/300s05/Lectures/GrammarNotes/bnf.html).
 
-The definition for the Grain AST (which we often refer to as the parsetree) can be found in [parsing/parsetree.re](https://github.com/grain-lang/grain/blob/master/compiler/src/parsing/parsetree.re).
+The definition for the Grain AST (which we often refer to as the parsetree) can be found in [parsing/parsetree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/parsetree.re).
 
 ## Well-formedness
 
 This is just a fancy term for asking the question "does this program—for the most part—make sense?" In Grain, type identifers must always start with a capital letter, so there's a well-formedness check that enforces this. In general, we like to be as lenient as possible while parsing and provide helpful error messages from well-formedness checks. If a user writes a program like `data foo = ...`, it's much better to say `Error: 'foo' should be capitalized` rather than `Syntax error`.
 
-You can find the Grain well-formedness checks in [parsing/well_formedness.re](https://github.com/grain-lang/grain/blob/master/compiler/src/parsing/well_formedness.re).
+You can find the Grain well-formedness checks in [parsing/well_formedness.re](https://github.com/grain-lang/grain/blob/main/compiler/src/parsing/well_formedness.re).
 
 ## Typechecking
 
 Grain implements a [Hindley-Milner type system](https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system). This is by far the most academically challenging step of the compilation process. As such, the Grain typechecker is largely borrowed from the [OCaml compiler](https://github.com/ocaml/ocaml) (yay open source 🎉). This is the process that infers the type of all Grain expressions, and makes sure they line up.
 
-The internals pretty much never need to be touched 🙏, though it's sometimes necessary to make changes to how we make calls to the typechecker in [typed/typemod.re](https://github.com/grain-lang/grain/blob/master/compiler/src/typed/typemod.re) or [typed/typecore.re](https://github.com/grain-lang/grain/blob/master/compiler/src/typed/typecore.re).
+The internals pretty much never need to be touched 🙏, though it's sometimes necessary to make changes to how we make calls to the typechecker in [typed/typemod.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typemod.re) or [typed/typecore.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typecore.re).
 
-After typechecking a module, we're left with a typedtree. You can find the definition in [typed/typedtree.re](https://github.com/grain-lang/grain/blob/master/compiler/src/typed/typedtree.re).
+After typechecking a module, we're left with a typedtree. You can find the definition in [typed/typedtree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/typed/typedtree.re).
 
 ## Linearization
 
@@ -57,7 +57,7 @@ $arg2 := bar(5)
 foo($arg1, $arg2)
 ```
 
-This gets us a step closer to actually starting to emit wasm instructions. The linearization step produces an anftree, and you can find the definition in [middle_end/anftree.re](https://github.com/grain-lang/grain/blob/master/compiler/src/middle_end/anftree.re).
+This gets us a step closer to actually starting to emit wasm instructions. The linearization step produces an anftree, and you can find the definition in [middle_end/anftree.re](https://github.com/grain-lang/grain/blob/main/compiler/src/middle_end/anftree.re).
 
 ## Optimization
 
@@ -115,15 +115,15 @@ After:
 6
 ```
 
-You can find the entrypoints into optimization in [middle_end/optimize.re](https://github.com/grain-lang/grain/blob/master/compiler/src/middle_end/optimize.re).
+You can find the entrypoints into optimization in [middle_end/optimize.re](https://github.com/grain-lang/grain/blob/main/compiler/src/middle_end/optimize.re).
 
 ## Mashing
 
-We couldn't think of a better name for this stage, but it's (mostly) the last representation before outputting the actual WebAssembly instructions. It's here that we decide what actually gets allocated in memory and how we retrieve and change things in memory. You can find the mashtree [here](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/mashtree.re) and the conversion process from ANF in [codegen/transl_anf.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/transl_anf.re).
+We couldn't think of a better name for this stage, but it's (mostly) the last representation before outputting the actual WebAssembly instructions. It's here that we decide what actually gets allocated in memory and how we retrieve and change things in memory. You can find the mashtree [here](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/mashtree.re) and the conversion process from ANF in [codegen/transl_anf.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/transl_anf.re).
 
 ## Code generation
 
-The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of WebAssembly instructions for each action that needs to happen. We use a project called [Binaryen](https://github.com/WebAssembly/binaryen) to generate our wasm code, via [Binaryen.ml](https://github.com/grain-lang/binaryen.ml). You can get a general idea of how Binaryen works from the example in the [Binaryen.ml README](https://github.com/grain-lang/binaryen.ml/blob/master/README.md). You can then see how we use it in Grain in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/compcore.re).
+The code generation (or codegen) step is where we generate the actual WebAssembly code for the program. By this point, we should have reduced the complexity of the original program down enough that there is a straightforward set of WebAssembly instructions for each action that needs to happen. We use a project called [Binaryen](https://github.com/WebAssembly/binaryen) to generate our wasm code, via [Binaryen.ml](https://github.com/grain-lang/binaryen.ml). You can get a general idea of how Binaryen works from the example in the [Binaryen.ml README](https://github.com/grain-lang/binaryen.ml/blob/main/README.md). You can then see how we use it in Grain in [codegen/compcore.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/compcore.re).
 
 If you're curious about the wasm spec in general, you can check it out [here](https://webassembly.github.io/spec/core/index.html).
 

@@ -1,10 +1,13 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("records", ({test}) => {
+describe("records", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRun = makeRunner(test);
+  let assertRun = makeRunner(test_or_skip);
 
   assertRun(
     "record_1",
@@ -23,7 +26,7 @@ describe("records", ({test}) => {
   );
   assertSnapshot(
     "record_pun",
-    "export record Rec {foo: Number}; let foo = 4; {foo}",
+    "export record Rec {foo: Number}; let foo = 4; {foo,}",
   );
   assertSnapshot(
     "record_pun_multiple",
@@ -42,6 +45,11 @@ describe("records", ({test}) => {
     "record_err_2",
     "record Rec {foo: Number}; {foo: 4, bar: 4}",
     "Unbound record label bar",
+  );
+  assertCompileError(
+    "record_err_3",
+    "let foo = \"\"; foo.charAt(0)",
+    "Unbound record label charAt",
   );
   assertRun(
     "record_get_1",

@@ -1,11 +1,19 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("formatter", ({test}) => {
-  let assertFormatOutput = makeFormatterRunner(test);
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
+
+describe("formatter", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertFormatOutput = makeFormatterRunner(test_or_skip);
+
   assertFormatOutput("aliases", "aliases");
   assertFormatOutput("application", "application");
   assertFormatOutput("application2", "application2");
+  assertFormatOutput("application_indenting", "application_indenting");
   assertFormatOutput("function_params", "function_params");
   assertFormatOutput("variants", "variants");
   assertFormatOutput("matches", "matches");
@@ -35,4 +43,5 @@ describe("formatter", ({test}) => {
   assertFormatOutput("brace_comments", "brace_comments");
   assertFormatOutput("while_loops", "while_loops");
   assertFormatOutput("parens", "parens");
+  assertFormatOutput("windows", "windows");
 });
