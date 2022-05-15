@@ -20,15 +20,15 @@ record Set<k> {
 
 // TODO: This could take an `eq` function to custom comparisons
 /**
- * Creates a new empty set with an initial storage of the given length. As values are added or removed, the length may grow or shrink. Generally, you won't need to care about the length of your set and can use `Set.make()` instead.
+ * Creates a new empty set with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your set and can use `Set.make()` instead.
  *
- * @param storageLength: The initial storage length of the set
- * @returns An empty set with the given initial storage length
+ * @param size: The initial storage size of the set
+ * @returns An empty set with the given initial storage size
  * 
  * @since 0.3.0
  */
-export let makeSized = storageLength => {
-  let buckets = Array.make(storageLength, None)
+export let makeSized = size => {
+  let buckets = Array.make(size, None)
   { size: 0, buckets }
 }
 /**
@@ -201,10 +201,10 @@ export let remove = (key, set) => {
 }
 
 /**
- * Returns the number of values within the set.
+ * Provides the count of values within the set.
  *
  * @param set: The set to inspect
- * @returns The number of elements in the set
+ * @returns The count of elements in the set
  * 
  * @since 0.3.0
  */
@@ -256,6 +256,7 @@ let rec forEachBucket = (fn, node) => {
  * @param set: The set to iterate
  * 
  * @since 0.3.0
+ * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
 export let forEach = (fn, set) => {
   let buckets = set.buckets
