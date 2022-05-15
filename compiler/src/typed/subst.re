@@ -224,6 +224,7 @@ let constructor_declaration = (s, c) => {
   cd_id: c.cd_id,
   cd_args: constructor_arguments(s, c.cd_args),
   cd_res: Option.map(typexp(s), c.cd_res),
+  cd_repr: c.cd_repr,
   cd_loc: loc(s, c.cd_loc),
 };
 
@@ -276,7 +277,8 @@ let extension_constructor = (s, ext) => {
   ext_type_path: type_path(s, ext.ext_type_path),
   ext_type_params: List.map(typexp(s), ext.ext_type_params),
   ext_args: constructor_arguments(s, ext.ext_args),
-  ext_runtime_id: ext.ext_runtime_id,
+  ext_repr: ext.ext_repr,
+  ext_name: ext.ext_name,
   ext_loc: loc(s, ext.ext_loc),
 };
 

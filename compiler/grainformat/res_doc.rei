@@ -118,6 +118,6 @@ let willBreak: t => bool;
 
 let willIndent: t => bool;
 
-let toString: (~width: int, t) => string;
+let toString: (~width: int, ~eol: Grain_utils.Fs_access.eol, t) => string;
 [@live]
-let debug: t => unit;
+let debug: (~eol: Grain_utils.Fs_access.eol, t) => unit;

@@ -36,7 +36,6 @@ type worklist_elt = {
   env: compilation_env,
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
-  idx: int, /* Lambda-lifted index */
   id: Ident.t,
   name: option(string),
   attrs: attributes,
@@ -48,16 +47,34 @@ type worklist_elt = {
 // but I don't think we are threading yet
 let compilation_worklist: Queue.t(worklist_elt) = Queue.create();
 
-/** Lambda-lifting index (function index) */
+/** Function table indexes */
 
-let lift_index = ref(0);
+let function_table_index = ref(0);
+let function_table_idents = ref([]);
 
-let reset_lift = () => lift_index := 0;
+let reset_function_table_info = () => {
+  function_table_index := 0;
+  function_table_idents := [];
+};
 
-let next_lift = () => {
-  let ret = lift_index^;
-  lift_index := ret + 1;
+type function_ident =
+  | FuncId(Ident.t)
+  | FuncName(string);
+
+let next_function_table_index = ident => {
+  let name =
+    switch (ident) {
+    | FuncId(id) => Ident.unique_name(id)
+    | FuncName(name) => name
+    };
+  function_table_idents := [name, ...function_table_idents^];
+  let ret = function_table_index^;
+  function_table_index := ret + 1;
   ret;
+};
+
+let get_function_table_idents = () => {
+  List.rev(function_table_idents^);
 };
 
 /** Imports which are always in scope */
@@ -73,15 +90,22 @@ let set_global_imports = imports => {
 /** Global index (index of global variables) */
 
 let global_table =
-  ref(Ident.empty: Ident.tbl((bool, int32, Types.allocation_type)));
-let global_index = ref(0);
+  ref(Ident.empty: Ident.tbl((bool, Types.allocation_type)));
+
+let get_globals = () => {
+  Ident.fold_all(
+    (id, (_, ty), acc) => [(id, ty), ...acc],
+    global_table^,
+    [],
+  );
+};
 
 let global_exports = () => {
   let tbl = global_table^;
   Ident.fold_all(
-    (ex_global_name, (exported, ex_global_index, _), acc) =>
+    (ex_global_name, (exported, _), acc) =>
       if (exported) {
-        [GlobalExport({ex_global_name, ex_global_index}), ...acc];
+        [GlobalExport({ex_global_name: ex_global_name}), ...acc];
       } else {
         acc;
       },
@@ -92,28 +116,23 @@ let global_exports = () => {
 
 let reset_global = () => {
   global_table := Ident.empty;
-  global_index := 0;
 };
 
-let next_global = (exported, id, ty: Types.allocation_type) =>
-  /* RIP Hygiene (this behavior works as expected until we have more metaprogramming constructs) */
+let get_global = (exported, id, ty: Types.allocation_type) =>
   switch (Ident.find_same_opt(id, global_table^)) {
-  | Some((_, ret, _)) => Int32.to_int(ret)
+  | Some(_) => id
   | None =>
-    let ret = global_index^;
-    global_table :=
-      Ident.add(id, (exported, Int32.of_int(ret), ty), global_table^);
-    global_index := ret + 1;
-    ret;
+    global_table := Ident.add(id, (exported, ty), global_table^);
+    id;
   };
 
-let global_name = slot => Printf.sprintf("global_%d", slot);
+let global_name = id => Ident.unique_name(id);
 
 let find_id = (id, env) =>
   try(Ident.find_same(id, env.ce_binds)) {
   | Not_found =>
-    let (_, slot, alloc) = Ident.find_same(id, global_table^);
-    MGlobalBind(global_name(Int32.to_int(slot)), alloc);
+    let (_, alloc) = Ident.find_same(id, global_table^);
+    MGlobalBind(global_name(id), alloc);
   };
 
 let worklist_reset = () => Queue.clear(compilation_worklist);
@@ -185,6 +204,7 @@ module RegisterAllocation = {
       | MArrayOp(aop, i) => MArrayOp(aop, apply_allocation_to_imm(i))
       | MRecordOp(rop, i) => MRecordOp(rop, apply_allocation_to_imm(i))
       | MAdtOp(aop, i) => MAdtOp(aop, apply_allocation_to_imm(i))
+      | MClosureOp(cop, i) => MClosureOp(cop, apply_allocation_to_imm(i))
       | MCallRaw({func, func_type, args}) =>
         MCallRaw({
           func,
@@ -303,7 +323,8 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MBoxOp(_, imm)
     | MArrayOp(_, imm)
     | MRecordOp(_, imm)
-    | MAdtOp(_, imm) => imm_live_local(imm)
+    | MAdtOp(_, imm)
+    | MClosureOp(_, imm) => imm_live_local(imm)
     | MCallRaw({args: is})
     | MError(_, is) => List.concat(List.map(imm_live_local, is))
     | MCallKnown({closure: imm, args: is})
@@ -611,7 +632,12 @@ let compile_lambda =
       new_args,
     )
     |> Ident.add(id, MArgBind(Int32.of_int(0), Types.HeapAllocated));
-  let idx = next_lift();
+  let func_idx =
+    if (Analyze_function_calls.has_indirect_call(id)) {
+      Some(Int32.of_int(next_function_table_index(FuncId(id))));
+    } else {
+      None;
+    };
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
   let (
@@ -634,7 +660,6 @@ let compile_lambda =
   let worklist_item = {
     body: Anf(body),
     env: lam_env,
-    idx,
     id,
     name,
     args,
@@ -651,7 +676,7 @@ let compile_lambda =
   };
   worklist_enqueue(worklist_item);
   {
-    func_idx: Int32.of_int(idx),
+    func_idx,
     arity: Int32.of_int(arity),
     /* These variables should be in scope when the lambda is constructed. */
     variables: List.map(id => MImmBinding(find_id(id, env)), free_vars),
@@ -693,7 +718,12 @@ let compile_wrapper =
       )
     | _ => (body, rets)
     };
-  let idx = next_lift();
+  let func_idx =
+    if (Analyze_function_calls.has_indirect_call(id)) {
+      Some(Int32.of_int(next_function_table_index(FuncId(id))));
+    } else {
+      None;
+    };
   let arity = List.length(args);
   let lam_env = {
     ce_binds: Ident.empty,
@@ -707,7 +737,6 @@ let compile_wrapper =
   let worklist_item = {
     body: Precompiled(body),
     env: lam_env,
-    idx,
     id,
     name: export_name,
     args: [Types.HeapAllocated, ...args],
@@ -723,15 +752,11 @@ let compile_wrapper =
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
-  {
-    func_idx: Int32.of_int(idx),
-    arity: Int32.of_int(arity + 1),
-    variables: [],
-  };
+  {func_idx, arity: Int32.of_int(arity + 1), variables: []};
 };
 
-let next_global = (~exported=false, id, ty) => {
-  let ret = next_global(exported, id, ty);
+let get_global = (~exported=false, id, ty) => {
+  let ret = get_global(exported, id, ty);
   global_name(ret);
 };
 
@@ -750,7 +775,7 @@ let rec compile_comp = (~id=?, env, c) => {
         switch (partial) {
         | Partial => [
             {
-              instr_desc: MError(Runtime_errors.MatchFailure, [compiled_arg]),
+              instr_desc: MError(Runtime_errors.MatchFailure, []),
               instr_loc: c.comp_loc,
             },
           ]
@@ -963,7 +988,7 @@ and compile_anf_expr = (env, a) =>
           switch (global) {
           | Global({exported}) => (
               env,
-              MGlobalBind(next_global(~exported, id, alloc), alloc),
+              MGlobalBind(get_global(~exported, id, alloc), alloc),
             )
           | Nonglobal => (
               next_env,
@@ -1031,11 +1056,10 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {idx: index, id, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
+        {id, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
       ) => {
     let body = compile_worklist_elt(cur);
     let func = {
-      index: Int32.of_int(index),
       id,
       name,
       args,
@@ -1067,7 +1091,7 @@ let lift_imports = (env, imports) => {
       let mimp_mod = Ident.create_persistent(mod_);
       let mimp_name = Ident.create_persistent(name);
       let import_name = grain_import_name(mod_, name);
-      let (alloc, mods) =
+      let (alloc, mods, closure_setups) =
         switch (imp_shape) {
         | GlobalShape(alloc) => (
             alloc,
@@ -1081,9 +1105,26 @@ let lift_imports = (env, imports) => {
                 mimp_used: true,
               },
             ],
+            [],
           )
         | FunctionShape(_) =>
           register_function(Imported(imp_use_id, import_name));
+          let closure_setups =
+            if (Analyze_function_calls.has_indirect_call(imp_use_id)) {
+              let idx = next_function_table_index(FuncName(import_name));
+              [
+                {
+                  instr_desc:
+                    MClosureOp(
+                      MClosureSetPtr(Int32.of_int(idx)),
+                      MImmBinding(MGlobalBind(import_name, HeapAllocated)),
+                    ),
+                  instr_loc: Location.dummy_loc,
+                },
+              ];
+            } else {
+              [];
+            };
           (
             HeapAllocated,
             [
@@ -1104,11 +1145,12 @@ let lift_imports = (env, imports) => {
                 mimp_used: true,
               },
             ],
+            closure_setups,
           );
         };
       (
         mods @ imports,
-        setups,
+        [closure_setups, ...setups],
         {
           ...env,
           ce_binds:
@@ -1158,7 +1200,7 @@ let lift_imports = (env, imports) => {
     | WasmFunction(mod_, name) =>
       let exported = imp_exported == Global({exported: true});
       let glob =
-        next_global(~exported, imp_use_id, Types.StackAllocated(WasmI32));
+        get_global(~exported, imp_use_id, Types.StackAllocated(WasmI32));
       let new_mod = {
         mimp_mod: Ident.create_persistent(mod_),
         mimp_name: Ident.create_persistent(name),
@@ -1303,6 +1345,55 @@ let transl_signature = (~functions, ~imports, signature) => {
             )
           };
         }
+      | TSigType(tid, {type_kind: TDataVariant(cds)} as td, rs) => {
+          let cds =
+            List.map(
+              ({cd_id, cd_repr} as cd) => {
+                switch (cd_repr) {
+                | ReprFunction(args, res, _) =>
+                  let external_name = Ident.name(cd_id);
+                  let internal_name = Ident.unique_name(cd_id);
+                  function_exports :=
+                    [
+                      FunctionExport({
+                        ex_function_name: external_name,
+                        ex_function_internal_name: internal_name,
+                      }),
+                      ...function_exports^,
+                    ];
+                  {
+                    ...cd,
+                    cd_repr: ReprFunction(args, res, Direct(internal_name)),
+                  };
+                | ReprValue(_) => cd
+                }
+              },
+              cds,
+            );
+          TSigType(tid, {...td, type_kind: TDataVariant(cds)}, rs);
+        }
+      | TSigTypeExt(tid, {ext_name, ext_args, ext_repr} as cstr, rs) => {
+          let cstr =
+            switch (ext_repr) {
+            | ReprFunction(args, res, _) =>
+              let external_name = Ident.name(ext_name);
+              let internal_name = Ident.unique_name(ext_name);
+              function_exports :=
+                [
+                  FunctionExport({
+                    ex_function_name: external_name,
+                    ex_function_internal_name: internal_name,
+                  }),
+                  ...function_exports^,
+                ];
+              {
+                ...cstr,
+                ext_repr: ReprFunction(args, res, Direct(internal_name)),
+              };
+            | ReprValue(_) => cstr
+            };
+          TSigTypeExt(tid, cstr, rs);
+        }
       | _ as item => item,
       signature.Cmi_format.cmi_sign,
     );
@@ -1311,10 +1402,12 @@ let transl_signature = (~functions, ~imports, signature) => {
 
 let transl_anf_program =
     (anf_prog: Anftree.anf_program): Mashtree.mash_program => {
-  reset_lift();
+  reset_function_table_info();
   reset_global();
   worklist_reset();
   clear_known_functions();
+
+  Analyze_function_calls.analyze(anf_prog);
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports);
@@ -1351,6 +1444,8 @@ let transl_anf_program =
       anf_prog.signature,
     );
   let exports = function_exports @ global_exports();
+  let globals = get_globals();
+  let function_table_elements = get_function_table_idents();
 
   {
     functions,
@@ -1358,12 +1453,8 @@ let transl_anf_program =
     exports,
     main_body,
     main_body_stack_size,
-    globals:
-      Ident.fold_all(
-        (_, (_, slot, ty), acc) => [(slot, ty), ...acc],
-        global_table^,
-        [],
-      ),
+    globals,
+    function_table_elements,
     signature,
     type_metadata: anf_prog.type_metadata,
   };

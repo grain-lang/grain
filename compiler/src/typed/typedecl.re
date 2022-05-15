@@ -290,10 +290,28 @@ let transl_declaration = (env, sdecl, id) => {
           cd_loc: scstr.pcd_loc,
         };
 
+        let repr =
+          switch (args) {
+          | TConstrSingleton => ReprValue(WasmI32)
+          | TConstrTuple(args) =>
+            ReprFunction(
+              List.map(
+                arg =>
+                  Type_utils.wasm_repr_of_allocation_type(
+                    Type_utils.get_allocation_type(env, arg),
+                  ),
+                args,
+              ),
+              [WasmI32],
+              Indirect,
+            )
+          };
+
         let cstr = {
           Types.cd_id: name,
           cd_args: args,
           cd_res: ret_type,
+          cd_repr: repr,
           cd_loc: scstr.pcd_loc,
         };
 
@@ -1052,11 +1070,29 @@ let transl_extension_constructor =
       (args, TExtRebind(path, lid));
     };
 
+  let repr =
+    switch (args) {
+    | TConstrSingleton => ReprValue(WasmI32)
+    | TConstrTuple(args) =>
+      ReprFunction(
+        List.map(
+          arg =>
+            Type_utils.wasm_repr_of_allocation_type(
+              Type_utils.get_allocation_type(env, arg),
+            ),
+          args,
+        ),
+        [WasmI32],
+        Indirect,
+      )
+    };
+
   let ext = {
     ext_type_path: type_path,
     ext_type_params: typext_params,
     ext_args: args,
-    ext_runtime_id: id.stamp,
+    ext_repr: repr,
+    ext_name: id,
     Types.ext_loc: sext.pext_loc,
   };
 

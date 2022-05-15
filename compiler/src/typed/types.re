@@ -162,6 +162,7 @@ type constructor_declaration = {
   cd_id: Ident.t,
   cd_args: constructor_arguments,
   cd_res: option(type_expr),
+  cd_repr: val_repr,
   [@sexp_drop_if sexp_locs_disabled]
   cd_loc: Location.t,
 }
@@ -175,7 +176,8 @@ type extension_constructor = {
   ext_type_path: Path.t,
   ext_type_params: list(type_expr),
   ext_args: constructor_arguments,
-  ext_runtime_id: int,
+  ext_repr: val_repr,
+  ext_name: Ident.t,
   [@sexp_drop_if sexp_locs_disabled]
   ext_loc: Location.t,
 };

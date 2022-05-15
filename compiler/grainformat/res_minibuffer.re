@@ -33,9 +33,10 @@ type t = {
   mutable buffer: bytes,
   mutable position: int,
   mutable length: int,
+  eol: Grain_utils.Fs_access.eol,
 };
 
-let create = n => {
+let create = (~eol, n) => {
   let n =
     if (n < 1) {
       1;
@@ -43,7 +44,7 @@ let create = n => {
       n;
     };
   let s = ([@doesNotRaise] Bytes.create)(n);
-  {buffer: s, position: 0, length: n};
+  {buffer: s, position: 0, length: n, eol};
 };
 
 let contents = b =>
@@ -95,5 +96,8 @@ let flush_newline = b => {
     position := position^ - 1;
   };
   b.position = position^;
+  if (b.eol == CRLF) {
+    add_char(b, '\r');
+  };
   add_char(b, '\n');
 };

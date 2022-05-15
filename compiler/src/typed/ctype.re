@@ -3241,12 +3241,31 @@ let nondep_extension_constructor = (env, id, ext) =>
 
     let args =
       map_type_expr_cstr_args(nondep_type_rec(env, id), ext.ext_args);
+
+    let repr =
+      switch (args) {
+      | TConstrSingleton => ReprValue(WasmI32)
+      | TConstrTuple(args) =>
+        ReprFunction(
+          List.map(
+            arg =>
+              Type_utils.wasm_repr_of_allocation_type(
+                Type_utils.get_allocation_type(env, arg),
+              ),
+            args,
+          ),
+          [WasmI32],
+          Indirect,
+        )
+      };
+
     clear_hash();
     {
       ext_type_path: type_path,
       ext_type_params: type_params,
       ext_args: args,
-      ext_runtime_id: ext.ext_runtime_id,
+      ext_repr: repr,
+      ext_name: id,
       ext_loc: ext.ext_loc,
     };
   }) {
