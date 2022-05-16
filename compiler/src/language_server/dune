@@ -1,0 +1,11 @@
+(library
+ (name grain_language_server)
+ (libraries
+  grain
+  grain_diagnostics
+  grain_parsing
+  grain_utils
+  ppx_deriving_yojson.runtime
+  yojson)
+ (preprocess
+  (pps ppx_deriving_yojson)))

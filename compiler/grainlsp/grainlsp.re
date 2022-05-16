@@ -1,6 +1,5 @@
-open Printf;
 open Cmdliner;
-open Lspserver;
+open Grain_language_server;
 
 [@deriving cmdliner]
 type params = {
@@ -41,7 +40,7 @@ let lsp = (opts: params) =>
 let cmd = {
   open Term;
 
-  let doc = "Grain LSP server";
+  let doc = "Grain LSP";
   let version =
     switch (Build_info.V1.version()) {
     | None => "unknown"

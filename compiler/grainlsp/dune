@@ -1,11 +1,3 @@
-(library
- (name lspserver)
- (modules utils rpc lenses processcode hover completion message log)
- (libraries grain grain_diagnostics grain_parsing grain_utils
-   ppx_deriving_yojson.runtime yojson)
- (preprocess
-  (pps ppx_deriving_yojson)))
-
 (executable
  (name grainlsp)
  (public_name grainlsp)
@@ -15,8 +7,7 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain grain_utils grain_parsing lspserver
-   dune-build-info)
+ (libraries cmdliner grain_utils grain_language_server dune-build-info)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --disable share)
   (javascript_files hacks.js))
