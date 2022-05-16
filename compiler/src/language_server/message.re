@@ -43,12 +43,7 @@ let process = (msg: Rpc.protocol_msg) => {
     exit(1)
   | Notification("textDocument/didOpen", json)
   | Notification("textDocument/didChange", json) when is_initialized^ =>
-    Processcode.textDocument_didOpenOrChange(
-      ~documents,
-      ~compiled_code,
-      ~cached_code,
-      json,
-    );
+    Code_file.process(~documents, ~compiled_code, ~cached_code, json);
     Reading;
   | Notification(_)
   | Message(_) =>

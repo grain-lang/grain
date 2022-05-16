@@ -7,27 +7,6 @@ type protocol_msg =
   | Notification(string, Yojson.Safe.t);
 
 [@deriving yojson]
-type lsp_error = {
-  file: string,
-  line: int,
-  startchar: int,
-  endline: int,
-  endchar: int,
-  lsp_message: string,
-};
-
-[@deriving yojson]
-type lsp_warning = {
-  file: string,
-  line: int,
-  startchar: int,
-  endline: int,
-  endchar: int,
-  number: int,
-  lsp_message: string,
-};
-
-[@deriving yojson]
 type position = {
   line: int,
   character: int,
@@ -71,26 +50,6 @@ type lens_response = {
   jsonrpc: string,
   id: msg_id,
   result: list(lsp_lens_t),
-};
-
-[@deriving yojson]
-type diagnostic_t = {
-  range,
-  severity: int,
-  message: string,
-};
-
-[@deriving yojson]
-type document_diagnostics = {
-  uri: string,
-  diagnostics: list(diagnostic_t),
-};
-
-[@deriving yojson]
-type diagnostics_message = {
-  jsonrpc: string,
-  method: string,
-  params: document_diagnostics,
 };
 
 [@deriving yojson]
@@ -149,14 +108,3 @@ let send_lenses: (~output: out_channel, ~id: msg_id, list(lens_t)) => unit;
 
 let send_hover:
   (~output: out_channel, ~id: msg_id, ~range: range_t, string) => unit;
-
-let send_diagnostics:
-  (
-    ~output: out_channel,
-    ~uri: string,
-    list(lsp_warning),
-    option(lsp_error)
-  ) =>
-  unit;
-
-let clear_diagnostics: (~output: out_channel, string) => unit;

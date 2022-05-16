@@ -76,26 +76,6 @@ type lens_response = {
 };
 
 [@deriving yojson]
-type diagnostic_t = {
-  range,
-  severity: int,
-  message: string,
-};
-
-[@deriving yojson]
-type document_diagnostics = {
-  uri: string,
-  diagnostics: list(diagnostic_t),
-};
-
-[@deriving yojson]
-type diagnostics_message = {
-  jsonrpc: string,
-  method: string,
-  params: document_diagnostics,
-};
-
-[@deriving yojson]
 type markup_content = {
   kind: string,
   value: string,
@@ -260,86 +240,4 @@ let send_hover = (~output, ~id: int, ~range: range_t, signature) => {
   let res = hover_response_to_yojson(response);
   let str_json = Yojson.Safe.to_string(res);
   send(output, str_json);
-};
-
-let send_diagnostics =
-    (~output, ~uri, warnings: list(lsp_warning), error: option(lsp_error)) => {
-  let error_diags =
-    switch (error) {
-    | None => []
-    | Some(err) =>
-      if (err.line < 0 || err.startchar < 0) {
-        // dummy location so set to zero
-        let rstart: position = {line: 0, character: 0};
-        let rend: position = {line: 0, character: 0};
-        let range = {start: rstart, range_end: rend};
-        [{range, severity: 1, message: err.lsp_message}];
-      } else {
-        let rstart: position = {line: err.line - 1, character: err.startchar};
-        let rend: position = {line: err.endline - 1, character: err.endchar};
-        let range = {start: rstart, range_end: rend};
-
-        [{range, severity: 1, message: err.lsp_message}];
-      }
-    };
-
-  let with_warnings =
-    switch (warnings) {
-    | [] => error_diags
-    | _ =>
-      let warnings_diags =
-        List.map(
-          (w: lsp_warning) =>
-            if (w.line < 0 || w.startchar < 0) {
-              // dummy location so set to zero
-              let rstart: position = {line: 0, character: 0};
-              let rend: position = {line: 0, character: 0};
-              let range = {start: rstart, range_end: rend};
-              {range, severity: 2, message: w.lsp_message};
-            } else {
-              let rstart: position = {
-                line: w.line - 1,
-                character: w.startchar,
-              };
-              let rend: position = {
-                line: w.endline - 1,
-                character: w.endchar,
-              };
-              let range = {start: rstart, range_end: rend};
-              {range, severity: 2, message: w.lsp_message};
-            },
-          warnings,
-        );
-      List.append(error_diags, warnings_diags);
-    };
-
-  let message: diagnostics_message = {
-    jsonrpc,
-    method: "textDocument/publishDiagnostics",
-    params: {
-      uri,
-      diagnostics: with_warnings,
-    },
-  };
-
-  let jsonMessage =
-    Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
-
-  send(output, jsonMessage);
-};
-
-let clear_diagnostics = (~output, uri) => {
-  let message: diagnostics_message = {
-    jsonrpc,
-    method: "textDocument/publishDiagnostics",
-    params: {
-      uri,
-      diagnostics: [],
-    },
-  };
-
-  let jsonMessage =
-    Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
-
-  send(output, jsonMessage);
 };

@@ -576,55 +576,6 @@ let get_original_text = (documents, uri, line, char) =>
     find_completable(line, char);
   };
 
-let exn_to_lsp_error = (exn: exn): option(Rpc.lsp_error) => {
-  let error = Grain_parsing.Location.error_of_exn(exn);
-
-  switch (error) {
-  | Some(err) =>
-    switch (err) {
-    | `Ok(e) =>
-      let (file, line, startchar) =
-        Grain_parsing.Location.get_pos_info(e.loc.loc_start);
-      let (_, endline, endchar) =
-        Grain_parsing.Location.get_pos_info(e.loc.loc_end);
-      let error_json: Rpc.lsp_error = {
-        file,
-        line,
-        startchar,
-        endline,
-        endchar,
-        lsp_message: e.msg,
-      };
-      Some(error_json);
-    | _ => None
-    }
-  | _ => None
-  };
-};
-
-let convert_warnings = (warnings_this_run, topLevelFileName) => {
-  List.map(
-    w => {
-      let (loc: Grain_utils.Warnings.loc, warn: Grain_utils.Warnings.t) = w;
-      let (file, line, startchar) =
-        Grain_parsing.Location.get_pos_info(loc.loc_start);
-      let (_, endline, endchar) =
-        Grain_parsing.Location.get_pos_info(loc.loc_end);
-      let warning: Rpc.lsp_warning = {
-        file,
-        line,
-        startchar,
-        endline,
-        endchar,
-        number: Grain_utils.Warnings.number(warn),
-        lsp_message: Grain_utils.Warnings.message(warn),
-      };
-      warning;
-    },
-    warnings_this_run,
-  );
-};
-
 let convert_uri_to_filename = (uri: string) => {
   let filetype = "file://";
   let typelen = String.length(filetype);
