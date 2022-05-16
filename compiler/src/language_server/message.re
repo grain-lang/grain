@@ -6,7 +6,7 @@ type status =
   | Reading
   | Break;
 
-let is_initialized = ref(true);
+let is_initialized = ref(false);
 let is_shutting_down = ref(false);
 
 let process = (msg: Rpc.protocol_msg) => {
