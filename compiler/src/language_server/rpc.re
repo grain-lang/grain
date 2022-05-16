@@ -175,10 +175,42 @@ type definition_response = {
   result: definition_result,
 };
 
+// This is the full enumeration of all CompletionItemKind as declared by the language server
+// protocol (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind),
+// but not all will be used by Grain LSP
+[@deriving (enum, yojson)]
+type completion_item_kind =
+  // Since these are using ppx_deriving enum, order matters
+  | [@value 1] CompletionItemKindText
+  | CompletionItemKindMethod
+  | CompletionItemKindFunction
+  | CompletionItemKindConstructor
+  | CompletionItemKindField
+  | CompletionItemKindVariable
+  | CompletionItemKindClass
+  | CompletionItemKindInterface
+  | CompletionItemKindModule
+  | CompletionItemKindProperty
+  | CompletionItemKindUnit
+  | CompletionItemKindValue
+  | CompletionItemKindEnum
+  | CompletionItemKindKeyword
+  | CompletionItemKindSnippet
+  | CompletionItemKindColor
+  | CompletionItemKindFile
+  | CompletionItemKindReference
+  | CompletionItemKindFolder
+  | CompletionItemKindEnumMember
+  | CompletionItemKindConstant
+  | CompletionItemKindStruct
+  | CompletionItemKindEvent
+  | CompletionItemKindOperator
+  | CompletionItemKindTypeParameter;
+
 [@deriving yojson]
 type completion_item = {
   label: string,
-  kind: int,
+  kind: completion_item_kind,
   detail: string,
   documentation: string,
 };

@@ -40,6 +40,7 @@
     "@opam/fs": "0.0.2",
     "@opam/menhir": "20211125",
     "@opam/ocamlgraph": ">= 2.0.0",
+    "@opam/ppx_deriving": ">= 5.2.1",
     "@opam/ppx_deriving_cmdliner": ">= 0.6.0",
     "@opam/ppx_deriving_yojson": ">= 3.5.2",
     "@opam/ppx_sexp_conv": ">= 0.14.0",

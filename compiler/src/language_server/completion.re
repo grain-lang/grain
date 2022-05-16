@@ -1,27 +1,16 @@
-open Grain;
-open Compile;
-open Grain_parsing;
-open Grain_utils;
 open Grain_typed;
-
-//  CompletionItemKind
-let item_kind_completion_text = 1;
-let item_kind_completion_function = 3;
-let item_kind_completion_constructor = 4;
-let item_kind_completion_variable = 6;
-let item_kind_completion_struct = 22;
 
 // maps Grain types to LSP CompletionItemKind
 let rec get_kind = (desc: Types.type_desc) =>
   switch (desc) {
-  | TTyVar(_) => item_kind_completion_variable
-  | TTyArrow(_) => item_kind_completion_function
-  | TTyTuple(_) => item_kind_completion_struct
-  | TTyRecord(_) => item_kind_completion_struct
-  | TTyConstr(_) => item_kind_completion_constructor
+  | TTyVar(_) => Rpc.CompletionItemKindVariable
+  | TTyArrow(_) => Rpc.CompletionItemKindFunction
+  | TTyTuple(_) => Rpc.CompletionItemKindStruct
+  | TTyRecord(_) => Rpc.CompletionItemKindStruct
+  | TTyConstr(_) => Rpc.CompletionItemKindConstructor
   | TTySubst(s) => get_kind(s.desc)
   | TTyLink(t) => get_kind(t.desc)
-  | _ => item_kind_completion_text
+  | _ => Rpc.CompletionItemKindText
   };
 
 let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
@@ -37,7 +26,7 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
             | TSigValue(ident, vd) =>
               let item: Rpc.completion_item = {
                 label: ident.name,
-                kind: item_kind_completion_function,
+                kind: CompletionItemKindFunction,
                 detail: Printtyp.string_of_value_description(~ident, vd),
                 documentation: "",
               };
@@ -45,7 +34,7 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
             | TSigType(ident, td, recstatus) =>
               let item: Rpc.completion_item = {
                 label: ident.name,
-                kind: item_kind_completion_struct,
+                kind: CompletionItemKindStruct,
                 detail: Printtyp.string_of_type_declaration(~ident, td),
                 documentation: "",
               };
@@ -135,7 +124,7 @@ let process_completion =
                   (m: string) => {
                     let item: Rpc.completion_item = {
                       label: m,
-                      kind: 9,
+                      kind: CompletionItemKindModule,
                       detail: "",
                       documentation: "",
                     };
@@ -149,7 +138,7 @@ let process_completion =
                   (t: string) => {
                     let item: Rpc.completion_item = {
                       label: t,
-                      kind: 22,
+                      kind: CompletionItemKindStruct,
                       detail: "",
                       documentation: "",
                     };
