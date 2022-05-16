@@ -74,7 +74,7 @@ let rec expression_lens =
             };
           let printed_vals =
             List.fold_left(
-              (acc, v: Rpc.completion_item) =>
+              (acc, v: Completion.completion_item) =>
                 acc ++ "  let " ++ v.detail ++ "\n",
               "",
               vals,

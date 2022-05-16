@@ -1,7 +1,19 @@
 open Grain_typed;
 
+[@deriving yojson]
+type completion_item_kind;
+
+[@deriving yojson]
+type completion_item = {
+  label: string,
+  kind: completion_item_kind,
+  detail: string,
+  documentation: string,
+};
+
+// TODO: Move out of here
 let get_module_exports:
-  (~path: Path.t, Typedtree.typed_program) => list(Rpc.completion_item);
+  (~path: Path.t, Typedtree.typed_program) => list(completion_item);
 
 module Resolution: {
   let process:

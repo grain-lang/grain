@@ -139,59 +139,6 @@ type definition_response = {
   result: definition_result,
 };
 
-// This is the full enumeration of all CompletionItemKind as declared by the language server
-// protocol (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind),
-// but not all will be used by Grain LSP
-[@deriving (enum, yojson)]
-type completion_item_kind =
-  // Since these are using ppx_deriving enum, order matters
-  | [@value 1] CompletionItemKindText
-  | CompletionItemKindMethod
-  | CompletionItemKindFunction
-  | CompletionItemKindConstructor
-  | CompletionItemKindField
-  | CompletionItemKindVariable
-  | CompletionItemKindClass
-  | CompletionItemKindInterface
-  | CompletionItemKindModule
-  | CompletionItemKindProperty
-  | CompletionItemKindUnit
-  | CompletionItemKindValue
-  | CompletionItemKindEnum
-  | CompletionItemKindKeyword
-  | CompletionItemKindSnippet
-  | CompletionItemKindColor
-  | CompletionItemKindFile
-  | CompletionItemKindReference
-  | CompletionItemKindFolder
-  | CompletionItemKindEnumMember
-  | CompletionItemKindConstant
-  | CompletionItemKindStruct
-  | CompletionItemKindEvent
-  | CompletionItemKindOperator
-  | CompletionItemKindTypeParameter;
-
-[@deriving yojson]
-type completion_item = {
-  label: string,
-  kind: completion_item_kind,
-  detail: string,
-  documentation: string,
-};
-
-[@deriving yojson]
-type completion_result = {
-  isIncomplete: bool,
-  items: list(completion_item),
-};
-
-[@deriving yojson]
-type completion_response = {
-  jsonrpc: string,
-  id: int,
-  result: completion_result,
-};
-
 let jsonrpc = "2.0";
 
 let convert_range = range => {
@@ -395,17 +342,4 @@ let clear_diagnostics = (~output, uri) => {
     Yojson.Safe.to_string(diagnostics_message_to_yojson(message));
 
   send(output, jsonMessage);
-};
-
-let send_completion = (~output, ~id: int, completions: list(completion_item)) => {
-  let completion_info: completion_result = {
-    isIncomplete: false,
-    items: completions,
-  };
-  let response: completion_response = {jsonrpc, id, result: completion_info};
-
-  let res = completion_response_to_yojson(response);
-  let str_json = Yojson.Safe.to_string(res);
-
-  send(output, str_json);
 };

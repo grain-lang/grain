@@ -1,16 +1,69 @@
 open Grain_typed;
 
+// This is the full enumeration of all CompletionItemKind as declared by the language server
+// protocol (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind),
+// but not all will be used by Grain LSP
+[@deriving (enum, yojson)]
+type completion_item_kind =
+  // Since these are using ppx_deriving enum, order matters
+  | [@value 1] CompletionItemKindText
+  | CompletionItemKindMethod
+  | CompletionItemKindFunction
+  | CompletionItemKindConstructor
+  | CompletionItemKindField
+  | CompletionItemKindVariable
+  | CompletionItemKindClass
+  | CompletionItemKindInterface
+  | CompletionItemKindModule
+  | CompletionItemKindProperty
+  | CompletionItemKindUnit
+  | CompletionItemKindValue
+  | CompletionItemKindEnum
+  | CompletionItemKindKeyword
+  | CompletionItemKindSnippet
+  | CompletionItemKindColor
+  | CompletionItemKindFile
+  | CompletionItemKindReference
+  | CompletionItemKindFolder
+  | CompletionItemKindEnumMember
+  | CompletionItemKindConstant
+  | CompletionItemKindStruct
+  | CompletionItemKindEvent
+  | CompletionItemKindOperator
+  | CompletionItemKindTypeParameter;
+
+[@deriving yojson]
+type completion_item = {
+  label: string,
+  kind: completion_item_kind,
+  detail: string,
+  documentation: string,
+};
+
+[@deriving yojson]
+type completion_result = {
+  isIncomplete: bool,
+  items: list(completion_item),
+};
+
+[@deriving yojson]
+type completion_response = {
+  jsonrpc: string,
+  id: Rpc.msg_id,
+  result: completion_result,
+};
+
 // maps Grain types to LSP CompletionItemKind
 let rec get_kind = (desc: Types.type_desc) =>
   switch (desc) {
-  | TTyVar(_) => Rpc.CompletionItemKindVariable
-  | TTyArrow(_) => Rpc.CompletionItemKindFunction
-  | TTyTuple(_) => Rpc.CompletionItemKindStruct
-  | TTyRecord(_) => Rpc.CompletionItemKindStruct
-  | TTyConstr(_) => Rpc.CompletionItemKindConstructor
+  | TTyVar(_) => CompletionItemKindVariable
+  | TTyArrow(_) => CompletionItemKindFunction
+  | TTyTuple(_) => CompletionItemKindStruct
+  | TTyRecord(_) => CompletionItemKindStruct
+  | TTyConstr(_) => CompletionItemKindConstructor
   | TTySubst(s) => get_kind(s.desc)
   | TTyLink(t) => get_kind(t.desc)
-  | _ => Rpc.CompletionItemKindText
+  | _ => CompletionItemKindText
   };
 
 let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
@@ -24,7 +77,7 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
           (s: Types.signature_item) => {
             switch (s) {
             | TSigValue(ident, vd) =>
-              let item: Rpc.completion_item = {
+              let item: completion_item = {
                 label: ident.name,
                 kind: CompletionItemKindFunction,
                 detail: Printtyp.string_of_value_description(~ident, vd),
@@ -32,7 +85,7 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
               };
               Some(item);
             | TSigType(ident, td, recstatus) =>
-              let item: Rpc.completion_item = {
+              let item: completion_item = {
                 label: ident.name,
                 kind: CompletionItemKindStruct,
                 detail: Printtyp.string_of_type_declaration(~ident, td),
@@ -51,6 +104,23 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
   };
 };
 
+let send_completion = (~id: Rpc.msg_id, completions: list(completion_item)) => {
+  let completion_info: completion_result = {
+    isIncomplete: false,
+    items: completions,
+  };
+  let response: completion_response = {
+    jsonrpc: Rpc.jsonrpc,
+    id,
+    result: completion_info,
+  };
+
+  let res = completion_response_to_yojson(response);
+  let str_json = Yojson.Safe.to_string(res);
+
+  Rpc.send(stdout, str_json);
+};
+
 module Resolution = {
   // As per https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
   // If computing full completion items is expensive, servers can additionally provide a handler for
@@ -66,8 +136,7 @@ module Resolution = {
       ) => {
     // Right now we just resolve nothing to clear the client's request
     // In future we may want to send more details back with Graindoc details for example
-    Rpc.send_completion(
-      ~output=stdout,
+    send_completion(
       ~id,
       [],
     );
@@ -92,10 +161,10 @@ let process =
         location.char,
       );
     switch (completable) {
-    | Nothing => Rpc.send_completion(stdout, id, [])
+    | Nothing => send_completion(~id, [])
     | Lident(text) =>
       switch (Hashtbl.find_opt(cached_code, location.uri)) {
-      | None => Rpc.send_completion(stdout, id, [])
+      | None => send_completion(~id, [])
       | Some(compiled_code) =>
         let modules =
           Env.fold_modules(
@@ -128,7 +197,7 @@ let process =
               let converted_modules =
                 List.map(
                   (m: string) => {
-                    let item: Rpc.completion_item = {
+                    let item: completion_item = {
                       label: m,
                       kind: CompletionItemKindModule,
                       detail: "",
@@ -142,7 +211,7 @@ let process =
               let converted_types =
                 List.map(
                   (t: string) => {
-                    let item: Rpc.completion_item = {
+                    let item: completion_item = {
                       label: t,
                       kind: CompletionItemKindStruct,
                       detail: "",
@@ -182,7 +251,7 @@ let process =
 
             List.map(
               ((i: string, l: Types.value_description)) => {
-                let item: Rpc.completion_item = {
+                let item: completion_item = {
                   label: i,
                   kind: get_kind(l.val_type.desc),
                   detail: Utils.lens_sig(l.val_type, ~env=compiled_code.env),
@@ -194,10 +263,10 @@ let process =
             );
           };
 
-        Rpc.send_completion(stdout, id, completions);
+        send_completion(~id, completions);
       }
     };
 
-  | _ => Rpc.send_completion(stdout, id, [])
+  | _ => send_completion(~id, [])
   };
 };
