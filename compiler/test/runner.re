@@ -105,46 +105,33 @@ let extract_anf = ({cstate_desc}) =>
 let compile_string_to_final_anf = (name, s) =>
   extract_anf(compile_string(~hook=stop_after_optimization, ~name, s));
 
-let run = (~num_pages=?, file) => {
-  let cli_flags = "-g";
-  let cli_flags =
-    switch (num_pages) {
-    | Some(x) =>
-      Printf.sprintf(
-        "%s --initial-memory-pages %d --maximum-memory-pages %d",
-        cli_flags,
-        x,
-        x,
-      )
-    | None => cli_flags
-    };
+let open_process = args => {
+  // We need to run the tests in powershell on Windows to have the correct environment
+  let program = Sys.win32 ? "powershell.exe" : "/usr/bin/env";
 
-  let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
+  // This differs based on the shell we are using
+  let pre_command = [|Sys.win32 ? "-command" : "-c"|];
 
-  let args = [
-    "grain",
-    cli_flags,
-    "-S",
-    stdlib,
-    "-I",
-    Filepath.to_string(test_libs_dir),
-    "run",
-    file,
-  ];
-  let command = String.concat(" ", args);
+  // Powershell doesn't exit with the script's exit code so we need to do this
+  let exit = Sys.win32 ? [|";", "exit", "$LastExitCode"|] : [||];
 
   let (stdout, stdin, stderr) =
-    Unix.open_process_full(command, Unix.environment());
+    Unix.open_process_args_full(
+      program,
+      Array.concat([pre_command, args, exit]),
+      Unix.environment(),
+    );
 
   let pid = Unix.process_full_pid((stdout, stdin, stderr));
-  let (_, status, timed_out) =
+  let (status, timed_out) =
     try({
-      let (x, status) = Test_utils.waitpid_timeout(15., pid);
-      (x, status, false);
+      let (_, status) = Test_utils.waitpid_timeout(15., pid);
+      (status, false);
     }) {
     | Test_utils.Timeout =>
-      Unix.kill(pid, 9);
-      ((-1), Unix.WEXITED(-1), true);
+      // Windows only supports the `sigkill` signal
+      Unix.kill(pid, Sys.sigkill);
+      (Unix.WEXITED(-1), true);
     };
 
   let out = read_stream(Stream.of_channel(stdout));
@@ -166,31 +153,40 @@ let run = (~num_pages=?, file) => {
     } else {
       out;
     };
+
+  (code, out, err);
+};
+
+let run = (~num_pages=?, file) => {
+  let mem_flags =
+    switch (num_pages) {
+    | Some(x) => [|
+        "--initial-memory-pages",
+        string_of_int(x),
+        "--maximum-memory-pages",
+        string_of_int(x),
+      |]
+    | None => [||]
+    };
+
+  let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
+
+  let cmd =
+    Array.concat([
+      [|"grain", "-g"|],
+      mem_flags,
+      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), "run", file|],
+    ]);
+
+  let (code, out, err) = open_process(cmd);
+
   (out ++ err, code);
 };
 
 let format = file => {
-  let args = ["grain", "format", file];
-  let command = String.concat(" ", args);
+  let cmd = [|"grain", "format", file|];
 
-  let (stdout, stdin, stderr) =
-    Unix.open_process_full(command, Unix.environment());
-
-  let pid = Unix.process_full_pid((stdout, stdin, stderr));
-  let (_, status) = Unix.waitpid([], pid);
-
-  let out = read_stream(Stream.of_channel(stdout));
-  let err = read_stream(Stream.of_channel(stderr));
-
-  close_in(stdout);
-  close_in(stderr);
-  close_out(stdin);
-
-  let code =
-    switch (status) {
-    | Unix.WEXITED(code) => code
-    | _ => failwith("process did not exit properly")
-    };
+  let (code, out, err) = open_process(cmd);
 
   (out ++ err, code);
 };
