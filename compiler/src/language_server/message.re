@@ -13,7 +13,7 @@ let process = (msg: Rpc.protocol_msg) => {
   switch (msg) {
   | Message(id, "initialize", _) =>
     is_initialized := true;
-    Rpc.send_capabilities(stdout, id);
+    Capabilities.process(id);
     Reading;
   | Message(id, "textDocument/hover", json) when is_initialized^ =>
     Hover.process(~id, ~compiled_code, ~documents, json);

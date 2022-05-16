@@ -1,15 +1,10 @@
+[@deriving yojson]
 type msg_id;
 
 type protocol_msg =
   | Message(msg_id, string, Yojson.Safe.t)
   | Error(string)
   | Notification(string, Yojson.Safe.t);
-
-[@deriving yojson]
-type completion_values = {
-  resolveProvider: bool,
-  triggerCharacters: list(string),
-};
 
 [@deriving yojson]
 type lsp_error = {
@@ -30,26 +25,6 @@ type lsp_warning = {
   endchar: int,
   number: int,
   lsp_message: string,
-};
-
-[@deriving yojson]
-type code_values = {resolveProvider: bool};
-
-[@deriving yojson]
-type lsp_capabilities = {
-  documentFormattingProvider: bool,
-  textDocumentSync: int,
-  hoverProvider: bool,
-  completionProvider: completion_values,
-  definitionProvider: bool,
-  typeDefinitionProvider: bool,
-  referencesProvider: bool,
-  documentSymbolProvider: bool,
-  codeActionProvider: bool,
-  codeLensProvider: code_values,
-  documentHighlightProvider: bool,
-  documentRangeFormattingProvider: bool,
-  renameProvider: bool,
 };
 
 [@deriving yojson]
@@ -80,15 +55,6 @@ type range = {
 };
 
 [@deriving yojson]
-type capabilities_result = {capabilities: lsp_capabilities};
-[@deriving yojson]
-type capabilities_response = {
-  jsonrpc: string,
-  id: int,
-  result: capabilities_result,
-};
-
-[@deriving yojson]
 type command_t = {
   title: string,
   // command: string,
@@ -103,7 +69,7 @@ type lsp_lens_t = {
 [@deriving yojson]
 type lens_response = {
   jsonrpc: string,
-  id: int,
+  id: msg_id,
   result: list(lsp_lens_t),
 };
 
@@ -147,14 +113,14 @@ type hover_result = {
 [@deriving yojson]
 type null_response = {
   jsonrpc: string,
-  id: int,
+  id: msg_id,
   result: option(string),
 };
 
 [@deriving yojson]
 type hover_response = {
   jsonrpc: string,
-  id: int,
+  id: msg_id,
   result: hover_result,
 };
 
@@ -167,7 +133,7 @@ type definition_result = {
 [@deriving yojson]
 type definition_response = {
   jsonrpc: string,
-  id: int,
+  id: msg_id,
   result: definition_result,
 };
 
@@ -220,17 +186,17 @@ type completion_result = {
 [@deriving yojson]
 type completion_response = {
   jsonrpc: string,
-  id: int,
+  id: msg_id,
   result: completion_result,
 };
+
+let jsonrpc: string;
 
 let read_message: in_channel => protocol_msg;
 
 let send: (out_channel, string) => unit;
 
 let send_null_message: (out_channel, msg_id) => unit;
-
-let send_capabilities: (out_channel, msg_id) => unit;
 
 let send_lenses: (~output: out_channel, ~id: msg_id, list(lens_t)) => unit;
 

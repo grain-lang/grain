@@ -1,19 +1,12 @@
-let jsonrpc = "2.0";
-
 let windows_mode = ref(false);
 
+[@deriving yojson]
 type msg_id = int;
 
 type protocol_msg =
   | Message(msg_id, string, Yojson.Safe.t)
   | Error(string)
   | Notification(string, Yojson.Safe.t);
-
-[@deriving yojson]
-type completion_values = {
-  resolveProvider: bool,
-  triggerCharacters: list(string),
-};
 
 [@deriving yojson]
 type lsp_error = {
@@ -34,26 +27,6 @@ type lsp_warning = {
   endchar: int,
   number: int,
   lsp_message: string,
-};
-
-[@deriving yojson]
-type code_values = {resolveProvider: bool};
-
-[@deriving yojson]
-type lsp_capabilities = {
-  documentFormattingProvider: bool,
-  textDocumentSync: int,
-  hoverProvider: bool,
-  completionProvider: completion_values,
-  definitionProvider: bool,
-  typeDefinitionProvider: bool,
-  referencesProvider: bool,
-  documentSymbolProvider: bool,
-  codeActionProvider: bool,
-  codeLensProvider: code_values,
-  documentHighlightProvider: bool,
-  documentRangeFormattingProvider: bool,
-  renameProvider: bool,
 };
 
 [@deriving yojson]
@@ -81,15 +54,6 @@ type range = {
   start: position,
   [@key "end"]
   range_end: position,
-};
-
-[@deriving yojson]
-type capabilities_result = {capabilities: lsp_capabilities};
-[@deriving yojson]
-type capabilities_response = {
-  jsonrpc: string,
-  id: int,
-  result: capabilities_result,
 };
 
 [@deriving yojson]
@@ -228,6 +192,8 @@ type completion_response = {
   result: completion_result,
 };
 
+let jsonrpc = "2.0";
+
 let convert_range = range => {
   let r_start: position = {
     line: range.start_line - 1,
@@ -307,44 +273,6 @@ let send_null_message = (output, id) => {
   let empty_response: null_response = {jsonrpc: "2.0", id, result: None};
   let res = null_response_to_yojson(empty_response);
   let str_json = Yojson.Safe.to_string(res);
-  send(output, str_json);
-};
-
-let send_capabilities = (output, id: int) => {
-  let completion_vals: completion_values = {
-    resolveProvider: true,
-    triggerCharacters: ["."],
-  };
-
-  let codeVals: code_values = {resolveProvider: true};
-
-  let capabilities: lsp_capabilities = {
-    documentFormattingProvider: false,
-    textDocumentSync: 1,
-    hoverProvider: true,
-    completionProvider: completion_vals,
-    definitionProvider: false, // disabled until we can resolve the external module location
-    typeDefinitionProvider: false,
-    referencesProvider: false,
-    documentSymbolProvider: false,
-    codeActionProvider: false,
-    codeLensProvider: codeVals,
-    documentHighlightProvider: false,
-    documentRangeFormattingProvider: false,
-    renameProvider: false,
-  };
-
-  let response: capabilities_response = {
-    jsonrpc,
-    id,
-    result: {
-      capabilities: capabilities,
-    },
-  };
-
-  let res = capabilities_response_to_yojson(response);
-  let str_json = Yojson.Safe.to_string(res);
-
   send(output, str_json);
 };
 
