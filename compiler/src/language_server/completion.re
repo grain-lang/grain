@@ -81,7 +81,7 @@ let process_resolution =
 
 let process_completion =
     (
-      ~id,
+      ~id: Rpc.msg_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
       ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
       ~documents,

@@ -2,8 +2,10 @@ let jsonrpc = "2.0";
 
 let windows_mode = ref(false);
 
+type msg_id = int;
+
 type protocol_msg =
-  | Message(int, string, Yojson.Safe.t)
+  | Message(msg_id, string, Yojson.Safe.t)
   | Error(string)
   | Notification(string, Yojson.Safe.t);
 
