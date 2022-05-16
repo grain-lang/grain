@@ -46,9 +46,12 @@ let type_scheme_max: (~b_reset_names: bool=?, formatter, type_expr) => unit;
 /* End Maxence */
 let tree_of_value_description: (Ident.t, value_description) => out_sig_item;
 let value_description: (Ident.t, formatter, value_description) => unit;
+let string_of_value_description:
+  (~ident: Ident.t, value_description) => string;
 let tree_of_type_declaration:
   (Ident.t, type_declaration, rec_status) => out_sig_item;
 let type_declaration: (Ident.t, formatter, type_declaration) => unit;
+let string_of_type_declaration: (~ident: Ident.t, type_declaration) => string;
 let extension_constructor: (Ident.t, formatter, extension_constructor) => unit;
 let tree_of_module:
   (Ident.t, ~ellipsis: bool=?, module_type, rec_status) => out_sig_item;

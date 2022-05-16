@@ -38,14 +38,6 @@ let module_name_of_location = (loc: Grain_parsing.Location.t) => {
   );
 };
 
-let string_of_value_description = (~ident, vd) => {
-  Format.asprintf("%a", Printtyp.value_description(ident), vd);
-};
-
-let string_of_type_declaration = (~ident, td) => {
-  Format.asprintf("%a", Printtyp.type_declaration(ident), td);
-};
-
 let title_for_api = (~module_name, ident: Ident.t) => {
   Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
 };
@@ -111,7 +103,7 @@ let for_value_description =
     (~comments, ~ident: Ident.t, vd: Types.value_description) => {
   let module_name = module_name_of_location(vd.val_loc);
   let name = title_for_api(~module_name, ident);
-  let type_sig = string_of_value_description(~ident, vd);
+  let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
     Comments.Doc.ending_on(~lnum=vd.val_loc.loc_start.pos_lnum - 1, comments);
 
@@ -144,7 +136,7 @@ let for_type_declaration =
     (~comments, ~ident: Ident.t, td: Types.type_declaration) => {
   let module_name = module_name_of_location(td.type_loc);
   let name = title_for_api(~module_name, ident);
-  let type_sig = string_of_type_declaration(~ident, td);
+  let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
     Comments.Doc.ending_on(
       ~lnum=td.type_loc.loc_start.pos_lnum - 1,

@@ -926,6 +926,10 @@ let tree_of_type_declaration = (id, decl, rs) =>
 let type_declaration = (id, ppf, decl) =>
   Oprint.out_sig_item^(ppf, tree_of_type_declaration(id, decl, TRecFirst));
 
+let string_of_type_declaration = (~ident, td) => {
+  asprintf("%a", type_declaration(ident), td);
+};
+
 let constructor_arguments = (ppf, a) => {
   let tys = tree_of_constructor_arguments(a);
   Oprint.out_type^(ppf, Otyp_tuple(tys));
@@ -996,6 +1000,10 @@ let tree_of_value_description = (id, decl) => {
 
 let value_description = (id, ppf, decl) =>
   Oprint.out_sig_item^(ppf, tree_of_value_description(id, decl));
+
+let string_of_value_description = (~ident, vd) => {
+  asprintf("%a", value_description(ident), vd);
+};
 
 /* Print a module type */
 
