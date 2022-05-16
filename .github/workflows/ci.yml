@@ -65,7 +65,6 @@ jobs:
 
       # Windows still needs some fixes to run correctly in JS
       - name: Run tests (js)
-        if: matrix.os != 'windows-latest'
         run: |
           npm run compiler test:js
 
