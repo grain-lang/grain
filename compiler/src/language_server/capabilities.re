@@ -54,7 +54,7 @@ let capabilities = {
   renameProvider: false,
 };
 
-let process = (id: Rpc.msg_id) => {
+let process = (~id: Rpc.msg_id, ()) => {
   let response = {
     jsonrpc: Rpc.jsonrpc,
     id,
