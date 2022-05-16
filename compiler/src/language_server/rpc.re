@@ -15,35 +15,10 @@ type position = {
 };
 
 [@deriving yojson]
-type lens_t = {
-  line: int,
-  signature: string,
-};
-
-[@deriving yojson]
 type range = {
   start: position,
   [@key "end"]
   range_end: position,
-};
-
-[@deriving yojson]
-type command_t = {
-  title: string,
-  // command: string,
-};
-
-[@deriving yojson]
-type lsp_lens_t = {
-  range,
-  command: command_t,
-};
-
-[@deriving yojson]
-type lens_response = {
-  jsonrpc: string,
-  id: int,
-  result: list(lsp_lens_t),
 };
 
 [@deriving yojson]
@@ -142,30 +117,6 @@ let send = (output, content) => {
 let send_null_message = (output, id) => {
   let empty_response: null_response = {jsonrpc: "2.0", id, result: None};
   let res = null_response_to_yojson(empty_response);
-  let str_json = Yojson.Safe.to_string(res);
-  send(output, str_json);
-};
-
-let send_lenses = (~output, ~id: int, lenses: list(lens_t)) => {
-  let converted_lenses =
-    List.map(
-      (l: lens_t) => {
-        let rstart: position = {line: l.line - 1, character: 1};
-        let rend: position = {line: l.line - 1, character: 1};
-        let range = {
-          {start: rstart, range_end: rend};
-        };
-
-        //TODO: Why was this "command string"
-        let command = {title: l.signature};
-        let lsp_lens: lsp_lens_t = {range, command};
-        lsp_lens;
-      },
-      lenses,
-    );
-
-  let response: lens_response = {jsonrpc, id, result: converted_lenses};
-  let res = lens_response_to_yojson(response);
   let str_json = Yojson.Safe.to_string(res);
   send(output, str_json);
 };

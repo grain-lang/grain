@@ -29,10 +29,6 @@ let rec print_path = (ident: Path.t) => {
   };
 };
 
-let map_concat = (~sep, ~print_fn, vals) => {
-  String.concat(sep, List.map(v => print_fn(v), vals));
-};
-
 let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);
@@ -84,55 +80,6 @@ let get_text_document_uri_and_position = json => {
   switch (uri, line, char) {
   | (Some(uri), Some(line), Some(char)) => Some({uri, line, char})
   | _ => None
-  };
-};
-
-let string_of_type_expr = out_type => {
-  let printer = (ppf, out_type) => {
-    Oprint.out_type^(ppf, out_type);
-  };
-  let to_string = out_type => {
-    Format.asprintf("%a", printer, out_type);
-  };
-  Option.map(to_string, out_type);
-};
-
-let simple_sig = (t: Types.type_expr) => {
-  let tree = Printtyp.tree_of_typexp(true, t);
-  switch (string_of_type_expr(Some(tree))) {
-  | None => ""
-  | Some(tstr) => tstr
-  };
-};
-
-let rec lens_sig = (~depth=0, ~env, t: Types.type_expr) => {
-  switch (t.desc) {
-  | TTyLink(te) => lens_sig(~depth=depth + 1, ~env, te)
-  | TTySubst(t) => lens_sig(~depth=depth + 1, ~env, t)
-  | TTyConstr(path, types, r) =>
-    let decl = Env.find_type(path, env);
-    let tk = decl.type_kind;
-    switch (tk) {
-    | TDataRecord(fields) =>
-      // the special case I want to handle, which is to print the full record
-      let labelText =
-        map_concat(
-          ~sep=",\n",
-          ~print_fn=
-            (field: Types.record_field) => {
-              let typeInf = lens_sig(~env, field.rf_type);
-              let rf_name = field.rf_name;
-              "  " ++ rf_name.name ++ ": " ++ typeInf;
-            },
-          fields,
-        );
-
-      simple_sig(t) ++ " {\n" ++ labelText ++ "\n}";
-
-    | _ => simple_sig(t)
-    };
-
-  | _ => simple_sig(t)
   };
 };
 

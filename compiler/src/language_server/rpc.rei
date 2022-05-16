@@ -13,35 +13,10 @@ type position = {
 };
 
 [@deriving yojson]
-type lens_t = {
-  line: int,
-  signature: string,
-};
-
-[@deriving yojson]
 type range = {
   start: position,
   [@key "end"]
   range_end: position,
-};
-
-[@deriving yojson]
-type command_t = {
-  title: string,
-  // command: string,
-};
-
-[@deriving yojson]
-type lsp_lens_t = {
-  range,
-  command: command_t,
-};
-
-[@deriving yojson]
-type lens_response = {
-  jsonrpc: string,
-  id: msg_id,
-  result: list(lsp_lens_t),
 };
 
 [@deriving yojson]
@@ -77,5 +52,3 @@ let read_message: in_channel => protocol_msg;
 let send: (out_channel, string) => unit;
 
 let send_null_message: (out_channel, msg_id) => unit;
-
-let send_lenses: (~output: out_channel, ~id: msg_id, list(lens_t)) => unit;
