@@ -107,7 +107,7 @@ let compile_string_to_final_anf = (name, s) =>
 
 let open_process = args => {
   // We need to run the tests in powershell on Windows to have the correct environment
-  let shell = Sys.win32 ? "powershell.exe" : "/usr/bin/env";
+  let program = Sys.win32 ? "powershell.exe" : "/usr/bin/env";
 
   // This differs based on the shell we are using
   let pre_command = [|Sys.win32 ? "-command" : "-c"|];
@@ -117,7 +117,7 @@ let open_process = args => {
 
   let (stdout, stdin, stderr) =
     Unix.open_process_args_full(
-      shell,
+      program,
       Array.concat([pre_command, args, exit]),
       Unix.environment(),
     );
