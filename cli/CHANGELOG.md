@@ -1,5 +1,36 @@
 # Changelog
 
+## [0.5.0](https://github.com/grain-lang/grain/compare/cli-v0.4.7...cli-v0.5.0) (2022-05-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* Switch from yarn to npm (#1226)
+* Drop node 14 support (#1092)
+* **graindoc:** Add `--current-version` flag, required for since/history attributes (#1116)
+* **compiler:** Add `--memory-base` flag (#1115)
+
+### Features
+
+* **compiler:** Add `--memory-base` flag ([#1115](https://github.com/grain-lang/grain/issues/1115)) ([0680826](https://github.com/grain-lang/grain/commit/068082663c4387c3ab54c052869e9b9a06b87e26))
+* **compiler:** Consolidate exe & js modes ([fc61950](https://github.com/grain-lang/grain/commit/fc6195013457dd29f78951322bfaf2ae27c1bdd2))
+* **compiler:** Upgrade binaryen to 0.15.0 to support Mac M1 arch ([#1151](https://github.com/grain-lang/grain/issues/1151)) ([fc61950](https://github.com/grain-lang/grain/commit/fc6195013457dd29f78951322bfaf2ae27c1bdd2))
+* **graindoc:** Add `--current-version` flag, required for since/history attributes ([#1116](https://github.com/grain-lang/grain/issues/1116)) ([0f681ea](https://github.com/grain-lang/grain/commit/0f681ea140749395f3ce99a460f30778537183ac))
+
+
+### Miscellaneous Chores
+
+* Drop node 14 support ([#1092](https://github.com/grain-lang/grain/issues/1092)) ([ef4358f](https://github.com/grain-lang/grain/commit/ef4358ff7de14a35edf3e971e04513d497fe1574))
+* Switch from yarn to npm ([#1226](https://github.com/grain-lang/grain/issues/1226)) ([5ea9274](https://github.com/grain-lang/grain/commit/5ea92743a05fffb4298deda64100a3d7fc2259cb))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @grain/js-runner bumped from ^0.4.0 to ^0.5.0
+    * @grain/stdlib bumped from ^0.4.6 to ^0.5.0
+
 ### [0.4.7](https://www.github.com/grain-lang/grain/compare/cli-v0.4.6...cli-v0.4.7) (2022-01-17)
 
 
