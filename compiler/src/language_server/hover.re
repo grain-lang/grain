@@ -308,7 +308,7 @@ let get_from_statement =
   };
 };
 
-let get_hover = (~id, ~compiled_code, ~documents, request) => {
+let process = (~id, ~compiled_code, ~documents, request) => {
   switch (Utils.get_text_document_uri_and_position(request)) {
   | Some(location) =>
     let ln = location.line + 1;

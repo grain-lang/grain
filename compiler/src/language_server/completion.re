@@ -51,24 +51,30 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
   };
 };
 
-let process_resolution =
-    (
+module Resolution = {
+  // As per https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
+  // If computing full completion items is expensive, servers can additionally provide a handler for
+  // the completion item resolve request (‘completionItem/resolve’). This request is sent when a
+  // completion item is selected in the user interface.
+  let process =
+      (
+        ~id,
+        ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
+        ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
+        ~documents,
+        request,
+      ) => {
+    // Right now we just resolve nothing to clear the client's request
+    // In future we may want to send more details back with Graindoc details for example
+    Rpc.send_completion(
+      ~output=stdout,
       ~id,
-      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~documents,
-      request,
-    ) => {
-  // right now we just resolve nothing to clear the client's request
-  // In future we may want to send more details back with Graindoc details for example
-  Rpc.send_completion(
-    ~output=stdout,
-    ~id,
-    [],
-  );
+      [],
+    );
+  };
 };
 
-let process_completion =
+let process =
     (
       ~id: Rpc.msg_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
