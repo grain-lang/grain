@@ -93,7 +93,7 @@ type capabilities_response = {
 [@deriving yojson]
 type command_t = {
   title: string,
-  command: string,
+  // command: string,
 };
 
 [@deriving yojson]
@@ -324,7 +324,8 @@ let send_lenses = (~output, ~id: int, lenses: list(lens_t)) => {
           {start: rstart, range_end: rend};
         };
 
-        let command = {title: l.signature, command: "command string"};
+        //TODO: Why was this "command string"
+        let command = {title: l.signature};
         let lsp_lens: lsp_lens_t = {range, command};
         lsp_lens;
       },
