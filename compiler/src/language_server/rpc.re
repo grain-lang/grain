@@ -9,27 +9,6 @@ type protocol_msg =
   | Notification(string, Yojson.Safe.t);
 
 [@deriving yojson]
-type lsp_error = {
-  file: string,
-  line: int,
-  startchar: int,
-  endline: int,
-  endchar: int,
-  lsp_message: string,
-};
-
-[@deriving yojson]
-type lsp_warning = {
-  file: string,
-  line: int,
-  startchar: int,
-  endline: int,
-  endchar: int,
-  number: int,
-  lsp_message: string,
-};
-
-[@deriving yojson]
 type position = {
   line: int,
   character: int,
@@ -39,14 +18,6 @@ type position = {
 type lens_t = {
   line: int,
   signature: string,
-};
-
-[@deriving yojson]
-type range_t = {
-  start_line: int,
-  start_char: int,
-  end_line: int,
-  end_char: int,
 };
 
 [@deriving yojson]
@@ -76,34 +47,15 @@ type lens_response = {
 };
 
 [@deriving yojson]
-type markup_content = {
-  kind: string,
-  value: string,
-};
-
-[@deriving yojson]
 type marked_string = {
   language: string,
   value: string,
-};
-
-[@deriving yojson]
-type hover_result = {
-  contents: markup_content,
-  range,
 };
 [@deriving yojson]
 type null_response = {
   jsonrpc: string,
   id: int,
   result: option(string),
-};
-
-[@deriving yojson]
-type hover_response = {
-  jsonrpc: string,
-  id: int,
-  result: hover_result,
 };
 
 [@deriving yojson]
@@ -120,15 +72,6 @@ type definition_response = {
 };
 
 let jsonrpc = "2.0";
-
-let convert_range = range => {
-  let r_start: position = {
-    line: range.start_line - 1,
-    character: range.start_char,
-  };
-  let r_end: position = {line: range.end_line - 1, character: range.end_char};
-  {start: r_start, range_end: r_end};
-};
 
 let parse_message = raw => {
   let json = Yojson.Safe.from_string(raw);
@@ -223,21 +166,6 @@ let send_lenses = (~output, ~id: int, lenses: list(lens_t)) => {
 
   let response: lens_response = {jsonrpc, id, result: converted_lenses};
   let res = lens_response_to_yojson(response);
-  let str_json = Yojson.Safe.to_string(res);
-  send(output, str_json);
-};
-
-let send_hover = (~output, ~id: int, ~range: range_t, signature) => {
-  let range_ext = convert_range(range);
-  let hover_info: hover_result = {
-    contents: {
-      kind: "markdown",
-      value: signature,
-    },
-    range: range_ext,
-  };
-  let response: hover_response = {jsonrpc, id, result: hover_info};
-  let res = hover_response_to_yojson(response);
   let str_json = Yojson.Safe.to_string(res);
   send(output, str_json);
 };

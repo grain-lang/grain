@@ -33,21 +33,6 @@ let map_concat = (~sep, ~print_fn, vals) => {
   String.concat(sep, List.map(v => print_fn(v), vals));
 };
 
-let loc_to_range = (pos: Location.t): Rpc.range_t => {
-  let (_, startline, startchar, _) =
-    Locations.get_raw_pos_info(pos.loc_start);
-  let (_, endline, endchar) =
-    Grain_parsing.Location.get_pos_info(pos.loc_end);
-
-  let range: Rpc.range_t = {
-    start_line: startline,
-    start_char: startchar,
-    end_line: endline,
-    end_char: endchar,
-  };
-  range;
-};
-
 let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);

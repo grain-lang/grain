@@ -1,8 +1,68 @@
+open Grain;
+open Compile;
+open Grain_parsing;
+open Grain_utils;
 open Grain_typed;
+open Grain_diagnostics;
 
 type node_location =
   | LocationSignature(string, Grain_utils.Warnings.loc)
   | LocationError;
+
+[@deriving yojson]
+type markup_content = {
+  kind: string,
+  value: string,
+};
+
+[@deriving yojson]
+type hover_result = {
+  contents: markup_content,
+  range: Rpc.range,
+};
+
+[@deriving yojson]
+type hover_response = {
+  jsonrpc: string,
+  id: Rpc.msg_id,
+  result: hover_result,
+};
+
+let loc_to_range = (pos: Location.t): Rpc.range => {
+  let (_, startline, startchar, _) =
+    Locations.get_raw_pos_info(pos.loc_start);
+  let (_, endline, endchar) =
+    Grain_parsing.Location.get_pos_info(pos.loc_end);
+
+  {
+    start: {
+      line: startline - 1,
+      character: startchar,
+    },
+    range_end: {
+      line: endline - 1,
+      character: endchar,
+    },
+  };
+};
+
+let send_hover = (~id: Rpc.msg_id, ~range: Rpc.range, signature) => {
+  let hover_info: hover_result = {
+    contents: {
+      kind: "markdown",
+      value: signature,
+    },
+    range,
+  };
+  let response: hover_response = {
+    jsonrpc: Rpc.jsonrpc,
+    id,
+    result: hover_info,
+  };
+  let res = hover_response_to_yojson(response);
+  let str_json = Yojson.Safe.to_string(res);
+  Rpc.send(stdout, str_json);
+};
 
 let rec expression_lens =
         (~line, ~char, ~compiled_code, e: Typedtree.expression) => {
@@ -308,7 +368,13 @@ let get_from_statement =
   };
 };
 
-let process = (~id, ~compiled_code, ~documents, request) => {
+let process =
+    (
+      ~id: Rpc.msg_id,
+      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
+      ~documents: Hashtbl.t(string, string),
+      request: Yojson.Safe.t,
+    ) => {
   switch (Utils.get_text_document_uri_and_position(request)) {
   | Some(location) =>
     let ln = location.line + 1;
@@ -330,19 +396,9 @@ let process = (~id, ~compiled_code, ~documents, request) => {
           )
         ) {
         | LocationError =>
-          Rpc.send_hover(
-            ~output=stdout,
-            ~id,
-            ~range=Utils.loc_to_range(stmt.ttop_loc),
-            "",
-          )
+          send_hover(~id, ~range=loc_to_range(stmt.ttop_loc), "")
         | LocationSignature(signature, loc) =>
-          Rpc.send_hover(
-            ~output=stdout,
-            ~id,
-            ~range=Utils.loc_to_range(loc),
-            signature,
-          )
+          send_hover(~id, ~range=loc_to_range(loc), signature)
         }
 
       | None => ()
