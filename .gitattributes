@@ -1,0 +1,5 @@
+# Autodetect text files
+* text=auto
+
+# Ensure snapshots always use LF
+*.snapshot text eol=lf
