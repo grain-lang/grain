@@ -19,7 +19,7 @@ let process = (msg: Rpc.protocol_msg) => {
     Hover.process(~id, ~compiled_code, ~documents, json);
     Reading;
   | Message(id, "textDocument/codeLens", json) when is_initialized^ =>
-    Lenses.send_lenses_to_client(~id, ~compiled_code, json);
+    Lenses.process(~id, ~compiled_code, json);
     Reading;
   | Message(id, "textDocument/completion", json) when is_initialized^ =>
     Completion.process(~id, ~compiled_code, ~cached_code, ~documents, json);

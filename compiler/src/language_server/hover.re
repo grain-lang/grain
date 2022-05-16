@@ -164,7 +164,7 @@ let get_from_statement =
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) =>
     LocationSignature(
-      Utils.print_path(import_declaration.timp_path),
+      Printtyp.string_of_path(import_declaration.timp_path),
       stmt.ttop_loc,
     )
   | TTopForeign(export_flag, value_description) =>

@@ -21,14 +21,6 @@ type source_text =
   | Nothing
   | Lident(string);
 
-let rec print_path = (ident: Path.t) => {
-  switch (ident) {
-  | PIdent(name) => name.name
-  | PExternal(externalIdent, second, _) =>
-    print_path(externalIdent) ++ "." ++ second
-  };
-};
-
 let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);

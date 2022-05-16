@@ -169,7 +169,7 @@ let process =
         let modules =
           Env.fold_modules(
             (tag, path, decl, acc) => {
-              List.append(acc, [Utils.print_path(path)])
+              List.append(acc, [Printtyp.string_of_path(path)])
             },
             None,
             compiled_code.env,
@@ -187,7 +187,7 @@ let process =
               let types =
                 Env.fold_types(
                   (tag, path, (type_decl, type_descs), acc) => {
-                    List.append(acc, [Utils.print_path(path)])
+                    List.append(acc, [Printtyp.string_of_path(path)])
                   },
                   None,
                   compiled_code.env,
@@ -242,7 +242,7 @@ let process =
             let values: list((string, Types.value_description)) =
               Env.fold_values(
                 (tag, path, vd, acc) => {
-                  List.append(acc, [(Utils.print_path(path), vd)])
+                  List.append(acc, [(Printtyp.string_of_path(path), vd)])
                 },
                 None,
                 compiled_code.env,
