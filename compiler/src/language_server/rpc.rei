@@ -19,25 +19,6 @@ type range = {
   range_end: position,
 };
 
-[@deriving yojson]
-type marked_string = {
-  language: string,
-  value: string,
-};
-
-[@deriving yojson]
-type definition_result = {
-  uri: string,
-  range,
-};
-
-[@deriving yojson]
-type definition_response = {
-  jsonrpc: string,
-  id: msg_id,
-  result: definition_result,
-};
-
 let jsonrpc: string;
 
 let read_message: in_channel => protocol_msg;
