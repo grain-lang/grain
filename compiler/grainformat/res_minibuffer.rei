@@ -33,5 +33,5 @@ type t;
 let add_char: (t, char) => unit;
 let add_string: (t, string) => unit;
 let contents: t => string;
-let create: int => t;
+let create: (~eol: Grain_utils.Fs_access.eol, int) => t;
 let flush_newline: t => unit;

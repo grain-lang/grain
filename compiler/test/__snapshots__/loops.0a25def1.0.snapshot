@@ -18,13 +18,13 @@ loops › loop2
  (import \"GRAIN$MODULE$pervasives\" \">\" (func $gimport_pervasives_> (param i32 i32 i32) (result i32)))
  (import \"GRAIN$MODULE$pervasives\" \"+\" (func $gimport_pervasives_+ (param i32 i32 i32) (result i32)))
  (import \"GRAIN$MODULE$pervasives\" \"-\" (func $gimport_pervasives_- (param i32 i32 i32) (result i32)))
- (global $global_1 (mut i32) (i32.const 0))
- (global $global_0 (mut i32) (i32.const 0))
- (global $global_3 i32 (i32.const 0))
+ (global $count_1132 (mut i32) (i32.const 0))
+ (global $b_1131 (mut i32) (i32.const 0))
+ (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
- (export \"GRAIN$TABLE_SIZE\" (global $global_3))
+ (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
  (func $_gmain (; has Stack IR ;) (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -48,13 +48,13 @@ loops › loop2
    (local.get $0)
    (i32.const 25)
   )
-  (global.set $global_0
+  (global.set $b_1131
    (tuple.extract 0
     (tuple.make
      (local.get $0)
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-      (global.get $global_0)
+      (global.get $b_1131)
      )
     )
    )
@@ -76,13 +76,13 @@ loops › loop2
    (local.get $0)
    (i32.const 1)
   )
-  (global.set $global_1
+  (global.set $count_1132
    (tuple.extract 0
     (tuple.make
      (local.get $0)
      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
-      (global.get $global_1)
+      (global.get $count_1132)
      )
     )
    )
@@ -96,7 +96,7 @@ loops › loop2
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
          (i32.load offset=8
-          (global.get $global_0)
+          (global.get $b_1131)
          )
         )
         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -133,7 +133,7 @@ loops › loop2
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
          (i32.load offset=8
-          (global.get $global_0)
+          (global.get $b_1131)
          )
         )
         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -165,7 +165,7 @@ loops › loop2
       )
      )
      (i32.store offset=8
-      (global.get $global_0)
+      (global.get $b_1131)
       (tuple.extract 0
        (tuple.make
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -175,7 +175,7 @@ loops › loop2
         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
          (i32.load offset=8
-          (global.get $global_0)
+          (global.get $b_1131)
          )
         )
        )
@@ -187,7 +187,7 @@ loops › loop2
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
          (i32.load offset=8
-          (global.get $global_1)
+          (global.get $count_1132)
          )
         )
         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
@@ -219,7 +219,7 @@ loops › loop2
       )
      )
      (i32.store offset=8
-      (global.get $global_1)
+      (global.get $count_1132)
       (tuple.extract 0
        (tuple.make
         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
@@ -229,7 +229,7 @@ loops › loop2
         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
          (i32.load offset=8
-          (global.get $global_1)
+          (global.get $count_1132)
          )
         )
        )
@@ -243,7 +243,7 @@ loops › loop2
    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
     (i32.load offset=8
-     (global.get $global_1)
+     (global.get $count_1132)
     )
    )
   )

@@ -4,7 +4,8 @@
  (name Grain_tests)
  (public_name grain-tests.framework)
  (libraries grain rely.lib)
- (modules TestFramework WarningExtensions test_utils runner))
+ (modules TestFramework WarningExtensions BinaryFileExtensions test_utils
+   runner))
 
 (executable
  (name test)

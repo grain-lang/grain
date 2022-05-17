@@ -4,11 +4,11 @@
   "description": "A command line tool for the Grain language.",
   "main": "index.js",
   "engines": {
-    "node": ">=14"
+    "node": ">=16"
   },
   "scripts": {
     "clean": "del-cli 'bin/*.exe' 'bin/*.bc.js'",
-    "link": "yarn link",
+    "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
     "test": "echo \"Error: no test specified\" && exit 1",

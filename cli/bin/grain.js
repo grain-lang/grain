@@ -8,14 +8,8 @@ const v8 = require("v8");
  *   This method should be used with care. Changing settings after the VM has started may result
  *   in unpredictable behavior, including crashes and data loss; or it may simply do nothing.
  *
- * This seems to work for our needs with Node 14, but we should be cautious when updating.
+ * This seems to work for our needs with Node 16, but we should be cautious when updating.
  */
-if (
-  process.versions.node.startsWith("14.") ||
-  process.versions.node.startsWith("15.")
-) {
-  v8.setFlagsFromString("--experimental-wasm-bigint");
-}
 v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const program = require("commander");

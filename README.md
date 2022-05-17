@@ -35,27 +35,19 @@ For instructions on how to build Grain from source, please consult the [official
 To build the JS runner:
 
 ```bash
-yarn js-runner build
+npm run js-runner build
 ```
 
 To link the CLI:
 
 ```bash
-yarn cli link
+npm run cli link
 ```
 
 To reset your compiler build:
 
 ```bash
-yarn compiler clean
+npm run compiler clean
 ```
-
-To navigate tasks available in the system:
-
-```bash
-yarn run
-```
-
-This will display an interactive session where you can select the project and command you want.
 
 Copyright ©️ 2017-2022 Philip Blair, Oscar Spencer, & contributors.

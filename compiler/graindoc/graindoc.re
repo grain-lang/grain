@@ -27,43 +27,14 @@ let () =
     }
   );
 
-module Input = {
-  type t = string;
-
-  let (prsr, prntr) = Arg.non_dir_file;
-
-  let cmdliner_converter = (filename => prsr(filename), prntr);
-};
-
-module Output = {
-  type t = string;
-
-  /** Checks that the given output filename is valid */
-  let prsr = s => {
-    let s_dir = dirname(s);
-    Sys.file_exists(s_dir)
-      ? if (Sys.is_directory(s_dir)) {
-          `Ok(s);
-        } else {
-          `Error(Format.sprintf("`%s' is not a directory", s_dir));
-        }
-      : `Error(Format.sprintf("no `%s' directory", s_dir));
-  };
-
-  let cmdliner_converter = (
-    filename => prsr(filename),
-    Format.pp_print_string,
-  );
-};
-
 [@deriving cmdliner]
 type params = {
   /** Grain source file for which to extract documentation */
   [@pos 0] [@docv "FILE"]
-  input: Input.t,
+  input: Filepath.Args.ExistingFile.t,
   /** Output filename */
   [@name "o"] [@docv "FILE"]
-  output: option(Output.t),
+  output: option(Filepath.Args.MaybeExistingFile.t),
   /**
     The version to use as current when generating markdown for `@since` and `@history` attributes.
     Any future versions will be replace with `next` in the output.
@@ -73,9 +44,13 @@ type params = {
 };
 
 let compile_typed = (opts: params) => {
-  Grain_utils.Config.base_path := dirname(opts.input);
+  let base_path = Filepath.to_string(Filepath.dirname(opts.input));
 
-  switch (Compile.compile_file(~hook=stop_after_typed, opts.input)) {
+  Grain_utils.Config.base_path := base_path;
+
+  let input = Filepath.to_string(opts.input);
+
+  switch (Compile.compile_file(~hook=stop_after_typed, input)) {
   | exception exn =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -234,8 +209,15 @@ let generate_docs =
 
   let contents = Buffer.to_bytes(buf);
   switch (output) {
-  | Some(outfile) =>
-    let oc = Fs_access.open_file_for_writing(outfile);
+  | Some(NotExists(outfile)) =>
+    Fs_access.ensure_parent_directory_exists(Filepath.to_string(outfile))
+  | _ => ()
+  };
+
+  switch (output) {
+  | Some(Exists(outfile))
+  | Some(NotExists(outfile)) =>
+    let oc = Fs_access.open_file_for_writing(Filepath.to_string(outfile));
     output_bytes(oc, contents);
     close_out(oc);
   | None => print_bytes(contents)

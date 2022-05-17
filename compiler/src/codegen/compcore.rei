@@ -9,8 +9,6 @@ type codegen_env = {
   stack_size,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
-  imported_funcs: Ident.tbl(Ident.tbl(int32)),
-  imported_globals: Ident.tbl(Ident.tbl(string)),
   required_imports: list(import),
 };
 

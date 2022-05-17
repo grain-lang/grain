@@ -7,8 +7,8 @@ image:
 
 tasks:
   - init: |
-      yarn --pure-lockfile
-      yarn compiler build
+      npm ci
+      npm run compiler build
 vscode:
   extensions:
     - ocamllabs.ocaml-platform

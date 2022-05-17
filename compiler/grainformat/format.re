@@ -4135,6 +4135,7 @@ let toplevel_print =
 let format_ast =
     (
       ~original_source: array(string),
+      ~eol: Fs_access.eol,
       parsed_program: Parsetree.parsed_program,
     ) => {
   let get_loc = (stmt: Parsetree.toplevel_stmt) => {
@@ -4171,5 +4172,5 @@ let format_ast =
 
   let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
 
-  Doc.toString(~width=80, final_doc);
+  Doc.toString(~width=80, ~eol, final_doc);
 };

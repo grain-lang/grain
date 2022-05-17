@@ -1633,7 +1633,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                   ReprFunction(
                     List.map(_ => WasmI32, args),
                     [WasmI32],
-                    Unknown,
+                    Direct(Ident.unique_name(id)),
                   )
                 };
               let get_path = name =>
@@ -1694,7 +1694,11 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             switch (desc.cstr_args) {
             | [] => ReprValue(WasmI32)
             | args =>
-              ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
+              ReprFunction(
+                List.map(_ => WasmI32, args),
+                [WasmI32],
+                Direct(Ident.unique_name(id)),
+              )
             };
           let get_path = name =>
             switch (path) {
@@ -1870,7 +1874,11 @@ and store_extension = (~check, id, ext, env) => {
       switch (cstr.cstr_args) {
       | [] => ReprValue(WasmI32)
       | args =>
-        ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
+        ReprFunction(
+          List.map(_ => WasmI32, args),
+          [WasmI32],
+          Direct(Ident.unique_name(id)),
+        )
       };
     {
       val_type,
@@ -2586,6 +2594,8 @@ let fold_modules = (f, lid, env, acc) =>
 let fold_values = f => find_all(env => env.values, sc => sc.comp_values, f)
 and fold_constructors = f =>
   find_all_simple_list(env => env.constructors, sc => sc.comp_constrs, f)
+and fold_labels = f =>
+  find_all_simple_list(env => env.labels, sc => sc.comp_labels, f)
 and fold_types = f => find_all(env => env.types, sc => sc.comp_types, f)
 and fold_modtypes = f =>
   find_all(env => env.modtypes, sc => sc.comp_modtypes, f);
