@@ -756,8 +756,9 @@ let process =
     (
       ~id: Rpc.message_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~documents: Hashtbl.t(string, string),
-      request: Yojson.Safe.t,
+      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
+      ~documents,
+      request,
     ) => {
   switch (Utils.get_text_document_uri_and_position(request)) {
   | Some(location) =>

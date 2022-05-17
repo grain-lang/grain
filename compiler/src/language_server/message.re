@@ -13,15 +13,15 @@ let is_shutting_down = ref(false);
 
 let process = (msg: Rpc.protocol_msg) => {
   switch (msg) {
-  | Message(id, "initialize", _) =>
+  | Message(id, "initialize", json) =>
     is_initialized := true;
-    Capabilities.process(~id, ());
+    Capabilities.process(~id, ~compiled_code, ~cached_code, ~documents, json);
     Reading;
   | Message(id, "textDocument/hover", json) when is_initialized^ =>
-    Hover.process(~id, ~compiled_code, ~documents, json);
+    Hover.process(~id, ~compiled_code, ~cached_code, ~documents, json);
     Reading;
   | Message(id, "textDocument/codeLens", json) when is_initialized^ =>
-    Lenses.process(~id, ~compiled_code, json);
+    Lenses.process(~id, ~compiled_code, ~cached_code, ~documents, json);
     Reading;
   | Message(id, "textDocument/completion", json) when is_initialized^ =>
     Completion.process(~id, ~compiled_code, ~cached_code, ~documents, json);
@@ -36,7 +36,7 @@ let process = (msg: Rpc.protocol_msg) => {
     );
     Reading;
   | Message(id, "shutdown", json) when is_initialized^ =>
-    Shutdown.process(~id, ());
+    Shutdown.process(~id, ~compiled_code, ~cached_code, ~documents, json);
     is_shutting_down := true;
     Reading;
   | Notification("exit", _) when is_shutting_down^ => Break
@@ -45,7 +45,7 @@ let process = (msg: Rpc.protocol_msg) => {
     exit(1)
   | Notification("textDocument/didOpen", json)
   | Notification("textDocument/didChange", json) when is_initialized^ =>
-    Code_file.process(~documents, ~compiled_code, ~cached_code, json);
+    Code_file.process(~compiled_code, ~cached_code, ~documents, json);
     Reading;
   | Notification(_)
   | Message(_) =>

@@ -2,9 +2,9 @@ open Grain_typed;
 
 let process:
   (
-    ~documents: Hashtbl.t(string, string),
     ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
     ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
+    ~documents: Hashtbl.t(string, string),
     Yojson.Safe.t
   ) =>
   unit;

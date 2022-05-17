@@ -272,10 +272,10 @@ let clear_diagnostics = (~uri, ()) => {
 
 let process =
     (
-      ~documents: Hashtbl.t(string, string),
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
       ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-      request: Yojson.Safe.t,
+      ~documents,
+      request,
     ) => {
   switch (get_text_document_from_params(request)) {
   | Some((uri, text)) =>

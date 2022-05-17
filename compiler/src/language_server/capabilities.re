@@ -1,3 +1,5 @@
+open Grain_typed;
+
 [@deriving yojson]
 type completion_values = {
   resolveProvider: bool,
@@ -54,7 +56,14 @@ let capabilities = {
   renameProvider: false,
 };
 
-let process = (~id: Rpc.message_id, ()) => {
+let process =
+    (
+      ~id: Rpc.message_id,
+      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
+      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
+      ~documents,
+      request,
+    ) => {
   let response = {
     jsonrpc: Rpc.version,
     id,

@@ -113,7 +113,9 @@ let process =
     (
       ~id: Rpc.message_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      request: Yojson.Safe.t,
+      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
+      ~documents,
+      request,
     ) => {
   let params = Yojson.Safe.Util.member("params", request);
   let text_document = Yojson.Safe.Util.member("textDocument", params);
