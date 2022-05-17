@@ -18,7 +18,7 @@ let get_module_exports:
 module Resolution: {
   let process:
     (
-      ~id: Rpc.msg_id,
+      ~id: Rpc.message_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
       ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
       ~documents: Hashtbl.t(string, string),
@@ -29,7 +29,7 @@ module Resolution: {
 
 let process:
   (
-    ~id: Rpc.msg_id,
+    ~id: Rpc.message_id,
     ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
     ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
     ~documents: Hashtbl.t(string, string),

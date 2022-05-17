@@ -1,5 +1,6 @@
 open Grain;
 open Compile;
+open Grain_utils;
 open Grain_typed;
 
 [@deriving yojson]

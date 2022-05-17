@@ -1,11 +1,11 @@
 [@deriving yojson]
 type null_response = {
   jsonrpc: Rpc.version,
-  id: Rpc.msg_id,
+  id: Rpc.message_id,
   result: option(string),
 };
 
-let process = (~id: Rpc.msg_id, ()) => {
+let process = (~id: Rpc.message_id, ()) => {
   let empty_response: null_response = {
     jsonrpc: Rpc.version,
     id,

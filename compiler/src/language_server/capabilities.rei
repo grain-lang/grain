@@ -1,1 +1,1 @@
-let process: (~id: Rpc.msg_id, unit) => unit;
+let process: (~id: Rpc.message_id, unit) => unit;

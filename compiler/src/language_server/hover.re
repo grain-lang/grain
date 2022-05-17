@@ -30,7 +30,7 @@ type hover_result = {
 [@deriving yojson]
 type hover_response = {
   jsonrpc: Rpc.version,
-  id: Rpc.msg_id,
+  id: Rpc.message_id,
   result: hover_result,
 };
 
@@ -444,7 +444,7 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
   };
 };
 
-let send_hover = (~id: Rpc.msg_id, ~range: Rpc.range, signature) => {
+let send_hover = (~id: Rpc.message_id, ~range: Rpc.range, signature) => {
   let hover_info: hover_result = {
     contents: {
       kind: "markdown",
@@ -754,7 +754,7 @@ let get_from_statement =
 
 let process =
     (
-      ~id: Rpc.msg_id,
+      ~id: Rpc.message_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
       ~documents: Hashtbl.t(string, string),
       request: Yojson.Safe.t,

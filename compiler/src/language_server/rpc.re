@@ -6,10 +6,10 @@ let windows_mode = ref(false);
 type version = string;
 
 [@deriving yojson]
-type msg_id = int;
+type message_id = int;
 
 type protocol_msg =
-  | Message(msg_id, string, Yojson.Safe.t)
+  | Message(message_id, string, Yojson.Safe.t)
   | Error(string)
   | Notification(string, Yojson.Safe.t);
 

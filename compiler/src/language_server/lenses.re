@@ -17,11 +17,11 @@ type lense = {
 [@deriving yojson]
 type lense_response = {
   jsonrpc: Rpc.version,
-  id: Rpc.msg_id,
+  id: Rpc.message_id,
   result: list(lense),
 };
 
-let send_lenses = (~id: Rpc.msg_id, lenses: list(lense)) => {
+let send_lenses = (~id: Rpc.message_id, lenses: list(lense)) => {
   let response: lense_response = {jsonrpc: Rpc.version, id, result: lenses};
   let res = lense_response_to_yojson(response);
   let str_json = Yojson.Safe.to_string(res);
@@ -111,7 +111,7 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
 
 let process =
     (
-      ~id: Rpc.msg_id,
+      ~id: Rpc.message_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
       request: Yojson.Safe.t,
     ) => {

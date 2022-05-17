@@ -49,7 +49,7 @@ type completion_result = {
 [@deriving yojson]
 type completion_response = {
   jsonrpc: Rpc.version,
-  id: Rpc.msg_id,
+  id: Rpc.message_id,
   result: completion_result,
 };
 
@@ -135,7 +135,8 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
   };
 };
 
-let send_completion = (~id: Rpc.msg_id, completions: list(completion_item)) => {
+let send_completion =
+    (~id: Rpc.message_id, completions: list(completion_item)) => {
   let completion_info: completion_result = {
     isIncomplete: false,
     items: completions,
@@ -176,7 +177,7 @@ module Resolution = {
 
 let process =
     (
-      ~id: Rpc.msg_id,
+      ~id: Rpc.message_id,
       ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
       ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
       ~documents,

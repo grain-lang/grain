@@ -2,10 +2,10 @@
 type version;
 
 [@deriving yojson]
-type msg_id;
+type message_id;
 
 type protocol_msg =
-  | Message(msg_id, string, Yojson.Safe.t)
+  | Message(message_id, string, Yojson.Safe.t)
   | Error(string)
   | Notification(string, Yojson.Safe.t);
 
