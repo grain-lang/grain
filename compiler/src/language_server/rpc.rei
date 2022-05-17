@@ -1,4 +1,7 @@
 [@deriving yojson]
+type version;
+
+[@deriving yojson]
 type msg_id;
 
 type protocol_msg =
@@ -19,7 +22,7 @@ type range = {
   range_end: position,
 };
 
-let jsonrpc: string;
+let version: version;
 
 let read_message: in_channel => protocol_msg;
 

@@ -48,7 +48,7 @@ type completion_result = {
 
 [@deriving yojson]
 type completion_response = {
-  jsonrpc: string,
+  jsonrpc: Rpc.version,
   id: Rpc.msg_id,
   result: completion_result,
 };
@@ -141,7 +141,7 @@ let send_completion = (~id: Rpc.msg_id, completions: list(completion_item)) => {
     items: completions,
   };
   let response: completion_response = {
-    jsonrpc: Rpc.jsonrpc,
+    jsonrpc: Rpc.version,
     id,
     result: completion_info,
   };

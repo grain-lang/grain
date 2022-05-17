@@ -29,7 +29,7 @@ type hover_result = {
 
 [@deriving yojson]
 type hover_response = {
-  jsonrpc: string,
+  jsonrpc: Rpc.version,
   id: Rpc.msg_id,
   result: hover_result,
 };
@@ -453,7 +453,7 @@ let send_hover = (~id: Rpc.msg_id, ~range: Rpc.range, signature) => {
     range,
   };
   let response: hover_response = {
-    jsonrpc: Rpc.jsonrpc,
+    jsonrpc: Rpc.version,
     id,
     result: hover_info,
   };

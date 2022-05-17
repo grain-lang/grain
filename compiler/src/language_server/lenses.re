@@ -16,13 +16,13 @@ type lense = {
 
 [@deriving yojson]
 type lense_response = {
-  jsonrpc: string,
+  jsonrpc: Rpc.version,
   id: Rpc.msg_id,
   result: list(lense),
 };
 
 let send_lenses = (~id: Rpc.msg_id, lenses: list(lense)) => {
-  let response: lense_response = {jsonrpc: Rpc.jsonrpc, id, result: lenses};
+  let response: lense_response = {jsonrpc: Rpc.version, id, result: lenses};
   let res = lense_response_to_yojson(response);
   let str_json = Yojson.Safe.to_string(res);
   Rpc.send(stdout, str_json);

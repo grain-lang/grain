@@ -3,6 +3,9 @@ open Grain_utils;
 let windows_mode = ref(false);
 
 [@deriving yojson]
+type version = string;
+
+[@deriving yojson]
 type msg_id = int;
 
 type protocol_msg =
@@ -23,22 +26,7 @@ type range = {
   range_end: position,
 };
 
-let jsonrpc = "2.0";
-
-let parse_message = raw => {
-  let json = Yojson.Safe.from_string(raw);
-
-  let action =
-    Yojson.Safe.Util.member("method", json) |> Yojson.Safe.Util.to_string;
-
-  let id_opt =
-    Yojson.Safe.Util.member("id", json) |> Yojson.Safe.Util.to_int_option;
-
-  switch (id_opt) {
-  | None => Notification(action, json)
-  | Some(id) => Message(id, action, json)
-  };
-};
+let version: version = "2.0";
 
 let read_message = (input): protocol_msg => {
   Logfile.log("read_message");
@@ -69,7 +57,18 @@ let read_message = (input): protocol_msg => {
     Buffer.add_channel(buffer, input, num);
     let raw = Buffer.contents(buffer);
 
-    parse_message(raw);
+    let json = Yojson.Safe.from_string(raw);
+
+    let action =
+      Yojson.Safe.Util.member("method", json) |> Yojson.Safe.Util.to_string;
+
+    let id_opt =
+      Yojson.Safe.Util.member("id", json) |> Yojson.Safe.Util.to_int_option;
+
+    switch (id_opt) {
+    | None => Notification(action, json)
+    | Some(id) => Message(id, action, json)
+    };
   } else {
     Error("Invalid header");
   };

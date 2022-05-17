@@ -28,7 +28,7 @@ type capabilities_result = {capabilities: lsp_capabilities};
 
 [@deriving yojson]
 type capabilities_response = {
-  jsonrpc: string,
+  jsonrpc: Rpc.version,
   id: Rpc.msg_id,
   result: capabilities_result,
 };
@@ -56,7 +56,7 @@ let capabilities = {
 
 let process = (~id: Rpc.msg_id, ()) => {
   let response = {
-    jsonrpc: Rpc.jsonrpc,
+    jsonrpc: Rpc.version,
     id,
     result: {
       capabilities: capabilities,

@@ -38,7 +38,7 @@ type document_diagnostics = {
 
 [@deriving yojson]
 type diagnostics_message = {
-  jsonrpc: string,
+  jsonrpc: Rpc.version,
   method: string,
   params: document_diagnostics,
 };
@@ -239,7 +239,7 @@ let send_diagnostics =
     };
 
   let message: diagnostics_message = {
-    jsonrpc: Rpc.jsonrpc,
+    jsonrpc: Rpc.version,
     method: "textDocument/publishDiagnostics",
     params: {
       uri,
@@ -255,7 +255,7 @@ let send_diagnostics =
 
 let clear_diagnostics = (~uri, ()) => {
   let message: diagnostics_message = {
-    jsonrpc: Rpc.jsonrpc,
+    jsonrpc: Rpc.version,
     method: "textDocument/publishDiagnostics",
     params: {
       uri,
