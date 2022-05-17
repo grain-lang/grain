@@ -31,7 +31,7 @@ type marked_string = {
 [@deriving yojson]
 type null_response = {
   jsonrpc: string,
-  id: int,
+  id: msg_id,
   result: option(string),
 };
 
@@ -114,11 +114,4 @@ let send = (output, content) => {
   output_string(output, msg);
 
   flush(output);
-};
-
-let send_null_message = (output, id) => {
-  let empty_response: null_response = {jsonrpc: "2.0", id, result: None};
-  let res = null_response_to_yojson(empty_response);
-  let str_json = Yojson.Safe.to_string(res);
-  send(output, str_json);
 };

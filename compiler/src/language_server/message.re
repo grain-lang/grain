@@ -36,7 +36,7 @@ let process = (msg: Rpc.protocol_msg) => {
     );
     Reading;
   | Message(id, "shutdown", json) when is_initialized^ =>
-    Rpc.send_null_message(stdout, id);
+    Shutdown.process(~id, ());
     is_shutting_down := true;
     Reading;
   | Notification("exit", _) when is_shutting_down^ => Break

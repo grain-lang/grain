@@ -26,13 +26,6 @@ type marked_string = {
 };
 
 [@deriving yojson]
-type null_response = {
-  jsonrpc: string,
-  id: msg_id,
-  result: option(string),
-};
-
-[@deriving yojson]
 type definition_result = {
   uri: string,
   range,
@@ -50,5 +43,3 @@ let jsonrpc: string;
 let read_message: in_channel => protocol_msg;
 
 let send: (out_channel, string) => unit;
-
-let send_null_message: (out_channel, msg_id) => unit;
