@@ -35,25 +35,19 @@ let get_module_exports = (mod_ident, compiled_code: Typedtree.typed_program) => 
           (s: Types.signature_item) => {
             switch (s) {
             | TSigValue(ident, vd) =>
-              let string_of_value_description = (~ident: Ident.t, vd) => {
-                Format.asprintf("%a", Printtyp.value_description(ident), vd);
-              };
               let item: Rpc.completion_item = {
                 label: ident.name,
                 kind: 3,
-                detail: string_of_value_description(~ident, vd),
+                detail: Printtyp.string_of_value_description(~ident, vd),
                 documentation: "",
               };
               Some(item);
 
             | TSigType(ident, td, recstatus) =>
-              let string_of_type_declaration = (~ident: Ident.t, td) => {
-                Format.asprintf("%a", Printtyp.type_declaration(ident), td);
-              };
               let item: Rpc.completion_item = {
                 label: ident.name,
                 kind: item_kind_completion_struct,
-                detail: string_of_type_declaration(~ident, td),
+                detail: Printtyp.string_of_type_declaration(~ident, td),
                 documentation: "",
               };
               Some(item);
