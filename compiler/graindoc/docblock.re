@@ -73,30 +73,13 @@ let output_for_history = (~current_version, attr_version, attr_desc) => {
 
 let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
-  | TTyArrow(_) =>
-    switch (Printtyp.tree_of_value_description(ident, vd)) {
-    | Osig_value({oval_type: Otyp_arrow(args, returns)}) => (
-        Some(args),
-        Some(returns),
-      )
-    | _ => failwith("types_for_function: impossible via implementation")
-    }
+  | TTyArrow(args, returns, _) => (Some(args), Some(returns))
   | _ => (None, None)
   };
 };
 
 let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
-};
-
-let string_of_type_expr = out_type => {
-  let printer = (ppf, out_type) => {
-    Oprint.out_type^(ppf, out_type);
-  };
-  let to_string = out_type => {
-    Format.asprintf("%a", printer, out_type);
-  };
-  Option.map(to_string, out_type);
 };
 
 let for_value_description =
@@ -119,10 +102,12 @@ let for_value_description =
     (idx, attr) => {
       switch (attr) {
       | Param(attr) =>
-        let attr_type = lookup_type_expr(~idx, args) |> string_of_type_expr;
+        let attr_type =
+          lookup_type_expr(~idx, args)
+          |> Option.map(Printtyp.string_of_type_sch);
         Param({...attr, attr_type});
       | Returns(attr) =>
-        let attr_type = string_of_type_expr(returns);
+        let attr_type = Option.map(Printtyp.string_of_type_sch, returns);
         Returns({...attr, attr_type});
       | _ => attr
       };

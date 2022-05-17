@@ -38,8 +38,12 @@ let reset_and_mark_loops_list: list(type_expr) => unit;
 let type_expr: (formatter, type_expr) => unit;
 let constructor_arguments: (formatter, constructor_arguments) => unit;
 let tree_of_type_scheme: type_expr => out_type;
+// The `type_sch` functions avoid resetting the marked variables
 let type_sch: (formatter, type_expr) => unit;
+let string_of_type_sch: type_expr => string;
+// The `type_scheme` functions reset the marked variables
 let type_scheme: (formatter, type_expr) => unit;
+let string_of_type_scheme: type_expr => string;
 /* Maxence */
 let reset_names: unit => unit;
 let type_scheme_max: (~b_reset_names: bool=?, formatter, type_expr) => unit;

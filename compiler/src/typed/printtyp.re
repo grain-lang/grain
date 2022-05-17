@@ -744,6 +744,14 @@ and type_scheme = (ppf, ty) => {
   typexp(true, ppf, ty);
 };
 
+let string_of_type_sch = ty => {
+  asprintf("%a", type_sch, ty);
+};
+
+let string_of_type_scheme = ty => {
+  asprintf("%a", type_scheme, ty);
+};
+
 /* Maxence */
 let type_scheme_max = (~b_reset_names=true, ppf, ty) => {
   if (b_reset_names) {
