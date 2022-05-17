@@ -1,3 +1,5 @@
+open Grain_utils;
+
 let documents = Hashtbl.create(128);
 let compiled_code = Hashtbl.create(128);
 let cached_code = Hashtbl.create(128); // we keep the last successful compile to help with completion and definitions
@@ -49,7 +51,7 @@ let process = (msg: Rpc.protocol_msg) => {
   | Message(_) =>
     /* TODO: What should happen here? */
     if (is_initialized^ == false) {
-      Log.log("Client must send 'initialize' as first event");
+      Logfile.log("Client must send 'initialize' as first event");
       Break;
     } else {
       Reading;

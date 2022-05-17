@@ -90,7 +90,7 @@ let warning_to_lsp_warning =
 let compile_source = (uri, source) => {
   let filename = Utils.convert_uri_to_filename(uri);
 
-  Log.log("Compiling" ++ filename);
+  Logfile.log("Compiling" ++ filename);
 
   switch (
     Compile.compile_string(

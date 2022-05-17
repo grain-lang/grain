@@ -1,3 +1,5 @@
+open Grain_utils;
+
 let windows_mode = ref(false);
 
 [@deriving yojson]
@@ -64,7 +66,7 @@ let parse_message = raw => {
 };
 
 let read_message = (input): protocol_msg => {
-  Log.log("read_message");
+  Logfile.log("read_message");
 
   // TODO: Catch error?
   let clength = input_line(input);
@@ -107,7 +109,7 @@ let send = (output, content) => {
 
   let msg = "Content-Length: " ++ len ++ sep ++ content;
 
-  Log.log(msg);
+  Logfile.log(msg);
 
   output_string(output, msg);
 

@@ -1,4 +1,5 @@
 open Cmdliner;
+open Grain_utils;
 open Grain_language_server;
 
 [@deriving cmdliner]
@@ -9,15 +10,15 @@ type params = {
 
 let run = (opts: params) => {
   if (opts.debug) {
-    Log.set_level(DebugLog);
-    Log.log("LSP is starting up");
+    Logfile.open_("lsp.log");
+    Logfile.log("LSP is starting up");
   };
 
-  Log.log(Sys.os_type);
+  Logfile.log(Sys.os_type);
 
   let rec read_stdin = () => {
     switch (Rpc.read_message(stdin)) {
-    | exception exn => Log.log("exception on read message")
+    | exception exn => Logfile.log("exception on read message")
     | msg =>
       let status = Message.process(msg);
       if (status == Message.Reading) {
@@ -27,7 +28,7 @@ let run = (opts: params) => {
   };
   read_stdin();
 
-  Log.close_log();
+  Logfile.close();
 };
 
 let lsp = (opts: params) =>
