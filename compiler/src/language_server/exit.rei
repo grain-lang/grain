@@ -1,12 +1,12 @@
 open Grain_typed;
 
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensParams
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#exit
 module RequestParams: {
-  [@deriving yojson({strict: false})]
+  [@deriving yojson]
   type t;
 };
 
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLens
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#exit
 module ResponseResult: {
   [@deriving yojson]
   type t;

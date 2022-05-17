@@ -1,76 +1,54 @@
 open Grain_typed;
 open Grain_diagnostics;
 
-[@deriving yojson]
-type command = {
-  title: string,
-  // Open question: Why was this "command string" in every lense?
-  // command: string,
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLensParams
+module RequestParams = {
+  [@deriving yojson({strict: false})]
+  type t = {
+    [@key "textDocument"]
+    text_document: Protocol.text_document_identifier,
+  };
 };
 
-[@deriving yojson]
-type lense = {
-  range: Rpc.range,
-  command,
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#codeLens
+module ResponseResult = {
+  [@deriving yojson]
+  type lense = {
+    range: Protocol.range,
+    command: Protocol.command,
+  };
+
+  [@deriving yojson]
+  type t = list(lense);
 };
 
-[@deriving yojson]
-type lense_response = {
-  jsonrpc: Rpc.version,
-  id: Rpc.message_id,
-  result: list(lense),
-};
-
-let send_lenses = (~id: Rpc.message_id, lenses: list(lense)) => {
-  let response: lense_response = {jsonrpc: Rpc.version, id, result: lenses};
-  let res = lense_response_to_yojson(response);
-  let str_json = Yojson.Safe.to_string(res);
-  Rpc.send(stdout, str_json);
-};
-
-let get_signature_from_statement =
-    (stmt: Grain_typed__Typedtree.toplevel_stmt) =>
+let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => None
   | TTopForeign(export_flag, value_description) => None
-  | TTopData(data_declarations) when data_declarations == [] => None
+  | TTopData([]) => None
   | TTopData(data_declarations) =>
     let decls =
-      List.fold_left(
-        (acc, decl: Typedtree.data_declaration) =>
-          (acc == "" ? "" : acc ++ ", ")
-          ++ (
-            switch (decl.data_kind) {
-            | TDataVariant(_) => "enum " ++ decl.data_name.txt
-            | TDataRecord(_) => "record " ++ decl.data_name.txt
-            | TDataAbstract =>
-              switch (decl.data_manifest) {
-              | None => decl.data_name.txt
-              | Some(t) => Printtyp.string_of_type_scheme(t.ctyp_type)
-              }
-            }
+      List.map(
+        (decl: Typedtree.data_declaration) =>
+          Printtyp.string_of_type_declaration(
+            ~ident=decl.data_id,
+            decl.data_type,
           ),
-        "",
         data_declarations,
       );
 
-    Some(decls);
-
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings)
-      when value_bindings == [] =>
-    None
+    Some(String.concat(", ", decls));
+  | TTopLet(export_flag, rec_flag, mut_flag, []) => None
   | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
-    let vbses =
-      String.concat(
-        ", ",
-        List.map(
-          (vbs: Typedtree.value_binding) =>
-            Printtyp.string_of_type_scheme(vbs.vb_expr.exp_type),
-          value_bindings,
-        ),
+    let bindings =
+      List.map(
+        (vbs: Typedtree.value_binding) =>
+          Printtyp.string_of_type_scheme(vbs.vb_expr.exp_type),
+        value_bindings,
       );
-    Some(vbses);
 
+    Some(String.concat(", ", bindings));
   | TTopExpr(expression) =>
     Some(Printtyp.string_of_type_scheme(expression.exp_type))
   | TTopException(export_flag, type_exception) => None
@@ -79,17 +57,17 @@ let get_signature_from_statement =
 
 let get_lenses = (typed_program: Typedtree.typed_program) => {
   List.filter_map(
-    (stmt: Grain_typed__Typedtree.toplevel_stmt) => {
-      let (file, startline, startchar, sbol) =
+    (stmt: Typedtree.toplevel_stmt) => {
+      let (_, startline, startchar, _) =
         Locations.get_raw_pos_info(stmt.ttop_loc.loc_start);
 
       let signature = get_signature_from_statement(stmt);
       switch (signature) {
       | None => None
       | Some(sigval) =>
-        let lense: lense = {
+        let lense: ResponseResult.lense = {
           range: {
-            start: {
+            range_start: {
               line: startline - 1,
               character: 1,
             },
@@ -100,6 +78,7 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
           },
           command: {
             title: sigval,
+            command: "",
           },
         };
         Some(lense);
@@ -111,26 +90,16 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
 
 let process =
     (
-      ~id: Rpc.message_id,
-      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~documents,
-      request,
+      ~id: Protocol.message_id,
+      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~documents: Hashtbl.t(Protocol.uri, string),
+      params: RequestParams.t,
     ) => {
-  let params = Yojson.Safe.Util.member("params", request);
-  let text_document = Yojson.Safe.Util.member("textDocument", params);
-  let uri =
-    Yojson.Safe.Util.member("uri", text_document)
-    |> Yojson.Safe.Util.to_string_option;
-
-  switch (uri) {
-  | None => send_lenses(~id, [])
-  | Some(u) =>
-    switch (Hashtbl.find_opt(compiled_code, u)) {
-    | None => send_lenses(~id, [])
-    | Some(compiled_code) =>
-      let lenses = get_lenses(compiled_code);
-      send_lenses(~id, lenses);
-    }
+  switch (Hashtbl.find_opt(compiled_code, params.text_document.uri)) {
+  | None => Protocol.response(~id, ResponseResult.to_yojson([]))
+  | Some(compiled_code) =>
+    let lenses = get_lenses(compiled_code);
+    Protocol.response(~id, ResponseResult.to_yojson(lenses));
   };
 };

@@ -9,6 +9,9 @@ type params = {
 };
 
 let run = (opts: params) => {
+  set_binary_mode_in(stdin, true);
+  set_binary_mode_out(stdout, true);
+
   if (opts.debug) {
     Logfile.open_("lsp.log");
     Logfile.log("LSP is starting up");
@@ -17,11 +20,11 @@ let run = (opts: params) => {
   Logfile.log(Sys.os_type);
 
   let rec read_stdin = () => {
-    switch (Rpc.read_message(stdin)) {
-    | exception exn => Logfile.log("exception on read message")
-    | msg =>
-      let status = Message.process(msg);
-      if (status == Message.Reading) {
+    switch (Protocol.request()) {
+    | Error(err) => Logfile.log("exception on read message: " ++ err)
+    | Ok(msg) =>
+      let status = Driver.process(msg);
+      if (status == Driver.Reading) {
         read_stdin();
       };
     };

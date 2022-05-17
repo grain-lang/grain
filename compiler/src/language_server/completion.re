@@ -40,17 +40,23 @@ type completion_item = {
   documentation: string,
 };
 
-[@deriving yojson]
-type completion_result = {
-  isIncomplete: bool,
-  items: list(completion_item),
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionParams
+module RequestParams = {
+  [@deriving yojson({strict: false})]
+  type t = {
+    [@key "textDocument"]
+    text_document: Protocol.text_document_identifier,
+    position: Protocol.position,
+  };
 };
 
-[@deriving yojson]
-type completion_response = {
-  jsonrpc: Rpc.version,
-  id: Rpc.message_id,
-  result: completion_result,
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionList
+module ResponseResult = {
+  [@deriving yojson]
+  type t = {
+    isIncomplete: bool,
+    items: list(completion_item),
+  };
 };
 
 // Original implementation https://github.com/jaredly/reason-language-server/blob/ce1b3f8ddb554b6498c2a83ea9c53a6bdf0b6081/src/analyze/PartialParser.re#L178-L198
@@ -136,35 +142,32 @@ let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
 };
 
 let send_completion =
-    (~id: Rpc.message_id, completions: list(completion_item)) => {
-  let completion_info: completion_result = {
-    isIncomplete: false,
-    items: completions,
-  };
-  let response: completion_response = {
-    jsonrpc: Rpc.version,
-    id,
-    result: completion_info,
-  };
-
-  let res = completion_response_to_yojson(response);
-  let str_json = Yojson.Safe.to_string(res);
-
-  Rpc.send(stdout, str_json);
+    (~id: Protocol.message_id, completions: list(completion_item)) => {
+  Protocol.response(
+    ~id,
+    ResponseResult.to_yojson({isIncomplete: false, items: completions}),
+  );
 };
 
 module Resolution = {
+  // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
+  module RequestParams = {
+    // TODO: implement the rest of the fields
+    [@deriving yojson({strict: false})]
+    type t = {label: string};
+  };
+
   // As per https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
   // If computing full completion items is expensive, servers can additionally provide a handler for
   // the completion item resolve request (‘completionItem/resolve’). This request is sent when a
   // completion item is selected in the user interface.
   let process =
       (
-        ~id,
-        ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-        ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-        ~documents,
-        request,
+        ~id: Protocol.message_id,
+        ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+        ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+        ~documents: Hashtbl.t(Protocol.uri, string),
+        params: RequestParams.t,
       ) => {
     // Right now we just resolve nothing to clear the client's request
     // In future we may want to send more details back with Graindoc details for example
@@ -177,128 +180,123 @@ module Resolution = {
 
 let process =
     (
-      ~id: Rpc.message_id,
-      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~documents,
-      request,
+      ~id: Protocol.message_id,
+      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~documents: Hashtbl.t(Protocol.uri, string),
+      params: RequestParams.t,
     ) => {
-  switch (Utils.get_text_document_uri_and_position(request)) {
-  | Some(location) =>
-    let completable =
-      get_original_text(
-        documents,
-        location.uri,
-        location.line,
-        location.char,
-      );
-    switch (completable) {
+  let completable =
+    get_original_text(
+      documents,
+      params.text_document.uri,
+      params.position.line,
+      params.position.character,
+    );
+  switch (completable) {
+  | None => send_completion(~id, [])
+  | Some(text) =>
+    switch (Hashtbl.find_opt(cached_code, params.text_document.uri)) {
     | None => send_completion(~id, [])
-    | Some(text) =>
-      switch (Hashtbl.find_opt(cached_code, location.uri)) {
-      | None => send_completion(~id, [])
-      | Some(compiled_code) =>
-        let modules =
-          Env.fold_modules(
-            (tag, path, decl, acc) => {
-              List.append(acc, [Printtyp.string_of_path(path)])
-            },
-            None,
-            compiled_code.env,
-            [],
-          );
+    | Some(compiled_code) =>
+      let modules =
+        Env.fold_modules(
+          (tag, path, decl, acc) => {
+            List.append(acc, [Printtyp.string_of_path(path)])
+          },
+          None,
+          compiled_code.env,
+          [],
+        );
 
-        let first_char = text.[0];
+      let first_char = text.[0];
 
-        let completions =
-          switch (first_char) {
-          | 'A' .. 'Z' =>
-            // autocomplete modules
-            switch (String.rindex(text, '.')) {
-            | exception exn =>
-              let types =
-                Env.fold_types(
-                  (tag, path, (type_decl, type_descs), acc) => {
-                    List.append(acc, [Printtyp.string_of_path(path)])
-                  },
-                  None,
-                  compiled_code.env,
-                  [],
-                );
-
-              let converted_modules =
-                List.map(
-                  (m: string) => {
-                    let item: completion_item = {
-                      label: m,
-                      kind: CompletionItemKindModule,
-                      detail: "",
-                      documentation: "",
-                    };
-                    item;
-                  },
-                  modules,
-                );
-
-              let converted_types =
-                List.map(
-                  (t: string) => {
-                    let item: completion_item = {
-                      label: t,
-                      kind: CompletionItemKindStruct,
-                      detail: "",
-                      documentation: "",
-                    };
-                    item;
-                  },
-                  types,
-                );
-
-              converted_modules @ converted_types;
-            | pos =>
-              // find module name
-
-              let mod_name = String.sub(text, 0, pos);
-              let ident: Ident.t = {name: mod_name, stamp: 0, flags: 0};
-
-              // only look up completions for imported modules
-              if (!List.exists((m: string) => m == mod_name, modules)) {
-                [];
-              } else {
-                get_module_exports(~path=PIdent(ident), compiled_code);
-              };
-            }
-
-          | _ =>
-            // Autocompete anything in scope
-            let values: list((string, Types.value_description)) =
-              Env.fold_values(
-                (tag, path, vd, acc) => {
-                  List.append(acc, [(Printtyp.string_of_path(path), vd)])
+      let completions =
+        switch (first_char) {
+        | 'A' .. 'Z' =>
+          // autocomplete modules
+          switch (String.rindex(text, '.')) {
+          | exception exn =>
+            let types =
+              Env.fold_types(
+                (tag, path, (type_decl, type_descs), acc) => {
+                  List.append(acc, [Printtyp.string_of_path(path)])
                 },
                 None,
                 compiled_code.env,
                 [],
               );
 
-            List.map(
-              ((i: string, l: Types.value_description)) => {
-                let item: completion_item = {
-                  label: i,
-                  kind: get_kind(l.val_type.desc),
-                  detail: Printtyp.string_of_type_scheme(l.val_type),
-                  documentation: "",
-                };
-                item;
+            let converted_modules =
+              List.map(
+                (m: string) => {
+                  let item: completion_item = {
+                    label: m,
+                    kind: CompletionItemKindModule,
+                    detail: "",
+                    documentation: "",
+                  };
+                  item;
+                },
+                modules,
+              );
+
+            let converted_types =
+              List.map(
+                (t: string) => {
+                  let item: completion_item = {
+                    label: t,
+                    kind: CompletionItemKindStruct,
+                    detail: "",
+                    documentation: "",
+                  };
+                  item;
+                },
+                types,
+              );
+
+            converted_modules @ converted_types;
+          | pos =>
+            // find module name
+
+            let mod_name = String.sub(text, 0, pos);
+            let ident: Ident.t = {name: mod_name, stamp: 0, flags: 0};
+
+            // only look up completions for imported modules
+            if (!List.exists((m: string) => m == mod_name, modules)) {
+              [];
+            } else {
+              get_module_exports(~path=PIdent(ident), compiled_code);
+            };
+          }
+
+        | _ =>
+          // Autocompete anything in scope
+          let values: list((string, Types.value_description)) =
+            Env.fold_values(
+              (tag, path, vd, acc) => {
+                List.append(acc, [(Printtyp.string_of_path(path), vd)])
               },
-              values,
+              None,
+              compiled_code.env,
+              [],
             );
-          };
 
-        send_completion(~id, completions);
-      }
-    };
+          List.map(
+            ((i: string, l: Types.value_description)) => {
+              let item: completion_item = {
+                label: i,
+                kind: get_kind(l.val_type.desc),
+                detail: Printtyp.string_of_type_scheme(l.val_type),
+                documentation: "",
+              };
+              item;
+            },
+            values,
+          );
+        };
 
-  | _ => send_completion(~id, [])
+      send_completion(~id, completions);
+    }
   };
 };

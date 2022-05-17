@@ -5,6 +5,31 @@ open Grain_utils;
 open Grain_typed;
 open Grain_diagnostics;
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hoverParams
+module RequestParams = {
+  [@deriving yojson({strict: false})]
+  type t = {
+    [@key "textDocument"]
+    text_document: Protocol.text_document_identifier,
+    position: Protocol.position,
+  };
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#hover
+module ResponseResult = {
+  [@deriving yojson]
+  type markup_content = {
+    kind: string,
+    value: string,
+  };
+
+  [@deriving yojson]
+  type t = {
+    contents: markup_content,
+    range: Protocol.range,
+  };
+};
+
 type node_location =
   | LocationSignature(string, Warnings.loc)
   | LocationError;
@@ -15,33 +40,14 @@ type node_t =
   | NotInRange
   | Error(string);
 
-[@deriving yojson]
-type markup_content = {
-  kind: string,
-  value: string,
-};
-
-[@deriving yojson]
-type hover_result = {
-  contents: markup_content,
-  range: Rpc.range,
-};
-
-[@deriving yojson]
-type hover_response = {
-  jsonrpc: Rpc.version,
-  id: Rpc.message_id,
-  result: hover_result,
-};
-
-let loc_to_range = (pos: Location.t): Rpc.range => {
+let loc_to_range = (pos: Location.t): Protocol.range => {
   let (_, startline, startchar, _) =
     Locations.get_raw_pos_info(pos.loc_start);
   let (_, endline, endchar) =
     Grain_parsing.Location.get_pos_info(pos.loc_end);
 
   {
-    start: {
+    range_start: {
       line: startline - 1,
       character: startchar,
     },
@@ -171,39 +177,36 @@ let rec find_location_in_expressions = (~line, ~char, ~default, expressions) => 
 and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
   let node =
     switch (expr.exp_desc) {
+    | TExpLet(rec_flag, mut_flag, []) =>
+      Error(
+        "Invalid code, can't have a let without at least one value binding",
+      )
     | TExpLet(rec_flag, mut_flag, vbs) =>
-      switch (vbs) {
+      let matches =
+        List.map(
+          (vb: Typedtree.value_binding) =>
+            get_node_from_expression(~line, ~char, vb.vb_expr),
+          vbs,
+        );
+      let filtered =
+        List.filter(
+          m =>
+            switch (m) {
+            | Error(_) => false
+            | _ => true
+            },
+          matches,
+        );
+      switch (filtered) {
       | [] =>
-        Error(
-          "Invalid code, can't have a let without at least one value binding",
-        )
-      | _ =>
-        let matches =
-          List.map(
-            (vb: Typedtree.value_binding) =>
-              get_node_from_expression(~line, ~char, vb.vb_expr),
-            vbs,
-          );
-        let filtered =
-          List.filter(
-            m =>
-              switch (m) {
-              | Error(_) => false
-              | _ => true
-              },
-            matches,
-          );
-        switch (filtered) {
-        | [] =>
-          // return the type for the whole statement
-          let vb = List.hd(vbs);
-          let expr = vb.vb_expr;
-          Expression(expr);
-        | [hd] => hd
-        | _ => Error("Ambiguous locations found")
-        };
-      }
-    | TExpBlock(expressions) when expressions == [] => Expression(expr)
+        // return the type for the whole statement
+        let vb = List.hd(vbs);
+        let expr = vb.vb_expr;
+        Expression(expr);
+      | [hd] => hd
+      | _ => Error("Ambiguous locations found")
+      };
+    | TExpBlock([]) => Expression(expr)
     | TExpBlock(expressions) =>
       find_location_in_expressions(
         ~line,
@@ -211,7 +214,6 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         ~default=Expression(expr),
         expressions,
       )
-
     | TExpApp(func, expressions)
         when is_point_inside_location(~line, ~char, func.exp_loc) =>
       Expression(func)
@@ -222,7 +224,6 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         ~default=Expression(expr),
         expressions,
       )
-
     | TExpLambda([{mb_pat: pattern, mb_body: body}], _) =>
       let node = get_node_from_pattern(~line, ~char, pattern);
       switch (node) {
@@ -244,7 +245,6 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
       | Error(_) => get_node_from_expression(~line, ~char, falseexp)
       | _ => true_match
       };
-
     | TExpArray(expressions)
     | TExpTuple(expressions) =>
       find_location_in_expressions(
@@ -253,7 +253,6 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         ~default=Expression(expr),
         expressions,
       )
-
     | TExpLambda([], _) => failwith("Impossible: transl_imm: Empty lambda")
     | TExpLambda(_, _) =>
       failwith("Impossible: transl_imm: Multi-branch lambda")
@@ -261,12 +260,10 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
     | TExpBreak => Expression(expr)
     | TExpNull => Expression(expr)
     | TExpIdent(_) => Expression(expr)
-    | TExpConstant(const) =>
-      if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
-        Expression(expr);
-      } else {
-        NotInRange;
-      }
+    | TExpConstant(const)
+        when is_point_inside_location(~line, ~char, expr.exp_loc) =>
+      Expression(expr)
+    | TExpConstant(const) => NotInRange
     | TExpArrayGet(e1, e2) =>
       find_location_in_expressions(
         ~line,
@@ -354,7 +351,6 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
       | NotInRange => Expression(expr)
       | _ => find_match
       };
-
     | TExpPrim0(_) =>
       find_location_in_expressions(
         ~line,
@@ -397,15 +393,13 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         ~default=Expression(expr),
         [e1, e2],
       )
-    | TExpWhile(cond, block) =>
-      if (is_point_inside_location(~line, ~char, cond.exp_loc)) {
-        get_node_from_expression(~line, ~char, cond);
-      } else if (is_point_inside_location(~line, ~char, block.exp_loc)) {
-        get_node_from_expression(~line, ~char, block);
-      } else {
-        Expression(expr);
-      }
-
+    | TExpWhile(cond, block)
+        when is_point_inside_location(~line, ~char, cond.exp_loc) =>
+      get_node_from_expression(~line, ~char, cond)
+    | TExpWhile(cond, block)
+        when is_point_inside_location(~line, ~char, block.exp_loc) =>
+      get_node_from_expression(~line, ~char, block)
+    | TExpWhile(cond, block) => Expression(expr)
     | TExpFor(e1, e2, e3, block)
         when is_point_inside_location(~line, ~char, block.exp_loc) =>
       get_node_from_expression(~line, ~char, block)
@@ -424,7 +418,6 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         Expression(expr),
         [e1, e2, e3],
       )
-
     | TExpConstruct(_, _, expressions) =>
       find_location_in_expressions(
         ~line,
@@ -439,27 +432,21 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
   | Error(_) when is_point_inside_location(~line, ~char, expr.exp_loc) =>
     Expression(expr)
   | Error(_) => NotInRange
-
   | _ => node
   };
 };
 
-let send_hover = (~id: Rpc.message_id, ~range: Rpc.range, signature) => {
-  let hover_info: hover_result = {
-    contents: {
-      kind: "markdown",
-      value: signature,
-    },
-    range,
-  };
-  let response: hover_response = {
-    jsonrpc: Rpc.version,
-    id,
-    result: hover_info,
-  };
-  let res = hover_response_to_yojson(response);
-  let str_json = Yojson.Safe.to_string(res);
-  Rpc.send(stdout, str_json);
+let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) => {
+  Protocol.response(
+    ~id,
+    ResponseResult.to_yojson({
+      contents: {
+        kind: "markdown",
+        value: signature,
+      },
+      range,
+    }),
+  );
 };
 
 let rec expression_lens =
@@ -467,13 +454,11 @@ let rec expression_lens =
   let desc = e.exp_desc;
   let txt =
     switch (desc) {
+    | TExpRecordGet(expr, loc, field)
+        when is_point_inside_location(~line, ~char, expr.exp_loc) =>
+      Printtyp.string_of_type_scheme(expr.exp_type)
     | TExpRecordGet(expr, loc, field) =>
-      if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
-        Printtyp.string_of_type_scheme(expr.exp_type);
-      } else {
-        Printtyp.string_of_type_scheme(e.exp_type);
-      }
-
+      Printtyp.string_of_type_scheme(e.exp_type)
     | TExpPrim1(_, exp) => Printtyp.string_of_type_scheme(exp.exp_type)
     | TExpPrim2(_, exp, exp2) =>
       switch (
@@ -569,7 +554,7 @@ let get_from_statement =
     let tvd_desc = value_description.tvd_desc;
     let type_sig = Printtyp.string_of_type_scheme(tvd_desc.ctyp_type);
     LocationSignature(type_sig, stmt.ttop_loc);
-  | TTopData(data_declarations) when data_declarations == [] => LocationError
+  | TTopData([]) => LocationError
   | TTopData(data_declarations) =>
     let matches =
       List.filter(
@@ -648,10 +633,7 @@ let get_from_statement =
       }
     };
 
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings)
-      when value_bindings == [] =>
-    LocationError
-
+  | TTopLet(export_flag, rec_flag, mut_flag, []) => LocationError
   | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
     let matches =
       List.map(
@@ -754,42 +736,40 @@ let get_from_statement =
 
 let process =
     (
-      ~id: Rpc.message_id,
-      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~documents,
-      request,
+      ~id: Protocol.message_id,
+      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~documents: Hashtbl.t(Protocol.uri, string),
+      params: RequestParams.t,
     ) => {
-  switch (Utils.get_text_document_uri_and_position(request)) {
-  | Some(location) =>
-    let ln = location.line + 1;
-    switch (Hashtbl.find_opt(compiled_code, location.uri)) {
+  let ln = params.position.line + 1;
+  switch (Hashtbl.find_opt(compiled_code, params.text_document.uri)) {
+  | None => ()
+  | Some(compiled_code) =>
+    let node =
+      find_best_match(
+        ~line=ln,
+        ~char=params.position.character,
+        compiled_code,
+      );
+    switch (node) {
+    | Some(stmt) =>
+      switch (
+        get_from_statement(
+          ~uri=params.text_document.uri,
+          ~line=ln,
+          ~char=params.position.character,
+          ~documents,
+          ~compiled_code,
+          stmt,
+        )
+      ) {
+      | LocationError =>
+        send_hover(~id, ~range=loc_to_range(stmt.ttop_loc), "")
+      | LocationSignature(signature, loc) =>
+        send_hover(~id, ~range=loc_to_range(loc), signature)
+      }
     | None => ()
-    | Some(compiled_code) =>
-      let node =
-        find_best_match(~line=ln, ~char=location.char, compiled_code);
-      switch (node) {
-      | Some(stmt) =>
-        switch (
-          get_from_statement(
-            ~uri=location.uri,
-            ~line=ln,
-            ~char=location.char,
-            ~documents,
-            ~compiled_code,
-            stmt,
-          )
-        ) {
-        | LocationError =>
-          send_hover(~id, ~range=loc_to_range(stmt.ttop_loc), "")
-        | LocationSignature(signature, loc) =>
-          send_hover(~id, ~range=loc_to_range(loc), signature)
-        }
-
-      | None => ()
-      };
     };
-
-  | _ => ()
   };
 };

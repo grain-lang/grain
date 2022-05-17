@@ -11,28 +11,46 @@ type completion_item = {
   documentation: string,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionParams
+module RequestParams: {
+  [@deriving yojson({strict: false})]
+  type t;
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionList
+module ResponseResult: {
+  [@deriving yojson]
+  type t;
+};
+
 // TODO: Move out of here
 let get_module_exports:
   (~path: Path.t, Typedtree.typed_program) => list(completion_item);
 
+let process:
+  (
+    ~id: Protocol.message_id,
+    ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+    ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+    ~documents: Hashtbl.t(Protocol.uri, string),
+    RequestParams.t
+  ) =>
+  unit;
+
 module Resolution: {
+  // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
+  module RequestParams: {
+    [@deriving yojson({strict: false})]
+    type t;
+  };
+
   let process:
     (
-      ~id: Rpc.message_id,
-      ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-      ~documents: Hashtbl.t(string, string),
-      Yojson.Safe.t
+      ~id: Protocol.message_id,
+      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~documents: Hashtbl.t(Protocol.uri, string),
+      RequestParams.t
     ) =>
     unit;
 };
-
-let process:
-  (
-    ~id: Rpc.message_id,
-    ~compiled_code: Hashtbl.t(string, Typedtree.typed_program),
-    ~cached_code: Hashtbl.t(string, Typedtree.typed_program),
-    ~documents: Hashtbl.t(string, string),
-    Yojson.Safe.t
-  ) =>
-  unit;

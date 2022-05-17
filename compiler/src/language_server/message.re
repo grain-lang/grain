@@ -1,63 +1,68 @@
-open Grain_utils;
+open Grain_typed;
 
-let documents = Hashtbl.create(128);
-let compiled_code = Hashtbl.create(128);
-let cached_code = Hashtbl.create(128); // we keep the last successful compile to help with completion and definitions
+type t =
+  | Initialize(Protocol.message_id, Initialize.RequestParams.t)
+  | TextDocumentHover(Protocol.message_id, Hover.RequestParams.t)
+  | TextDocumentCodeLens(Protocol.message_id, Lenses.RequestParams.t)
+  | TextDocumentCompletion(Protocol.message_id, Completion.RequestParams.t)
+  | CompletionItemResolve(
+      Protocol.message_id,
+      Completion.Resolution.RequestParams.t,
+    )
+  | Shutdown(Protocol.message_id, Shutdown.RequestParams.t)
+  | Exit(Protocol.message_id, Exit.RequestParams.t)
+  | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
+  | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
+  | Unsupported
+  | Error(string);
 
-type status =
-  | Reading
-  | Break;
-
-let is_initialized = ref(false);
-let is_shutting_down = ref(false);
-
-let process = (msg: Rpc.protocol_msg) => {
+let of_request = (msg: Protocol.request_message): t => {
   switch (msg) {
-  | Message(id, "initialize", json) =>
-    is_initialized := true;
-    Capabilities.process(~id, ~compiled_code, ~cached_code, ~documents, json);
-    Reading;
-  | Message(id, "textDocument/hover", json) when is_initialized^ =>
-    Hover.process(~id, ~compiled_code, ~cached_code, ~documents, json);
-    Reading;
-  | Message(id, "textDocument/codeLens", json) when is_initialized^ =>
-    Lenses.process(~id, ~compiled_code, ~cached_code, ~documents, json);
-    Reading;
-  | Message(id, "textDocument/completion", json) when is_initialized^ =>
-    Completion.process(~id, ~compiled_code, ~cached_code, ~documents, json);
-    Reading;
-  | Message(id, "completionItem/resolve", json) when is_initialized^ =>
-    Completion.Resolution.process(
-      ~id,
-      ~compiled_code,
-      ~cached_code,
-      ~documents,
-      json,
-    );
-    Reading;
-  | Message(id, "shutdown", json) when is_initialized^ =>
-    Shutdown.process(~id, ~compiled_code, ~cached_code, ~documents, json);
-    is_shutting_down := true;
-    Reading;
-  | Notification("exit", _) when is_shutting_down^ => Break
-  | Notification("exit", _) =>
-    // TODO: Why is this doing an exit(1) ?
-    exit(1)
-  | Notification("textDocument/didOpen", json)
-  | Notification("textDocument/didChange", json) when is_initialized^ =>
-    Code_file.process(~compiled_code, ~cached_code, ~documents, json);
-    Reading;
-  | Notification(_)
-  | Message(_) =>
-    /* TODO: What should happen here? */
-    if (is_initialized^ == false) {
-      Logfile.log("Client must send 'initialize' as first event");
-      Break;
-    } else {
-      Reading;
+  | {method: "initialize", id: Some(id), params} =>
+    switch (Initialize.RequestParams.of_yojson(params)) {
+    | Ok(params) => Initialize(id, params)
+    | Error(msg) => Error(msg)
     }
-  | Error(_) =>
-    is_shutting_down := true;
-    Break;
+  | {method: "textDocument/hover", id: Some(id), params} =>
+    switch (Hover.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentHover(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/codeLens", id: Some(id), params} =>
+    switch (Lenses.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentCodeLens(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/completion", id: Some(id), params} =>
+    switch (Completion.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentCompletion(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "completionItem/resolve", id: Some(id), params} =>
+    switch (Completion.Resolution.RequestParams.of_yojson(params)) {
+    | Ok(params) => CompletionItemResolve(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "shutdown", id: Some(id), params} =>
+    switch (Shutdown.RequestParams.of_yojson(params)) {
+    | Ok(params) => Shutdown(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "exit", id: Some(id), params} =>
+    switch (Exit.RequestParams.of_yojson(params)) {
+    | Ok(params) => Exit(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/didOpen", id, params} =>
+    switch (Code_file.DidOpen.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentDidOpen(params.text_document.uri, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/didChange", id, params} =>
+    switch (Code_file.DidChange.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentDidChange(params.text_document.uri, params)
+    | Error(msg) => Error(msg)
+    }
+  | _ => Unsupported
   };
 };
