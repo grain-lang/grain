@@ -38,14 +38,6 @@ let module_name_of_location = (loc: Grain_parsing.Location.t) => {
   );
 };
 
-let string_of_value_description = (~ident, vd) => {
-  Format.asprintf("%a", Printtyp.value_description(ident), vd);
-};
-
-let string_of_type_declaration = (~ident, td) => {
-  Format.asprintf("%a", Printtyp.type_declaration(ident), td);
-};
-
 let title_for_api = (~module_name, ident: Ident.t) => {
   Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
 };
@@ -81,14 +73,7 @@ let output_for_history = (~current_version, attr_version, attr_desc) => {
 
 let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
-  | TTyArrow(_) =>
-    switch (Printtyp.tree_of_value_description(ident, vd)) {
-    | Osig_value({oval_type: Otyp_arrow(args, returns)}) => (
-        Some(args),
-        Some(returns),
-      )
-    | _ => failwith("types_for_function: impossible via implementation")
-    }
+  | TTyArrow(args, returns, _) => (Some(args), Some(returns))
   | _ => (None, None)
   };
 };
@@ -97,21 +82,11 @@ let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
 };
 
-let string_of_type_expr = out_type => {
-  let printer = (ppf, out_type) => {
-    Oprint.out_type^(ppf, out_type);
-  };
-  let to_string = out_type => {
-    Format.asprintf("%a", printer, out_type);
-  };
-  Option.map(to_string, out_type);
-};
-
 let for_value_description =
     (~comments, ~ident: Ident.t, vd: Types.value_description) => {
   let module_name = module_name_of_location(vd.val_loc);
   let name = title_for_api(~module_name, ident);
-  let type_sig = string_of_value_description(~ident, vd);
+  let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
     Comments.Doc.ending_on(~lnum=vd.val_loc.loc_start.pos_lnum - 1, comments);
 
@@ -127,10 +102,12 @@ let for_value_description =
     (idx, attr) => {
       switch (attr) {
       | Param(attr) =>
-        let attr_type = lookup_type_expr(~idx, args) |> string_of_type_expr;
+        let attr_type =
+          lookup_type_expr(~idx, args)
+          |> Option.map(Printtyp.string_of_type_sch);
         Param({...attr, attr_type});
       | Returns(attr) =>
-        let attr_type = string_of_type_expr(returns);
+        let attr_type = Option.map(Printtyp.string_of_type_sch, returns);
         Returns({...attr, attr_type});
       | _ => attr
       };
@@ -144,7 +121,7 @@ let for_type_declaration =
     (~comments, ~ident: Ident.t, td: Types.type_declaration) => {
   let module_name = module_name_of_location(td.type_loc);
   let name = title_for_api(~module_name, ident);
-  let type_sig = string_of_type_declaration(~ident, td);
+  let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
     Comments.Doc.ending_on(
       ~lnum=td.type_loc.loc_start.pos_lnum - 1,
