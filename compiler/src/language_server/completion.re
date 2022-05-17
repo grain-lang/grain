@@ -53,6 +53,37 @@ type completion_response = {
   result: completion_result,
 };
 
+// Original implementation https://github.com/jaredly/reason-language-server/blob/ce1b3f8ddb554b6498c2a83ea9c53a6bdf0b6081/src/analyze/PartialParser.re#L178-L198
+let find_completable = (text, offset) => {
+  let rec loop = i => {
+    i < 0
+      ? Some(String.sub(text, i + 1, offset - (i + 1)))
+      : (
+        switch (text.[i]) {
+        | 'a' .. 'z'
+        | 'A' .. 'Z'
+        | '0' .. '9'
+        | '.'
+        | '_' => loop(i - 1)
+        | _ =>
+          i == offset - 1
+            ? None : Some(String.sub(text, i + 1, offset - (i + 1)))
+        }
+      );
+  };
+  loop(offset - 1);
+};
+
+let get_original_text = (documents, uri, line, char) =>
+  // try and find the code we are completing in the original source
+  switch (Hashtbl.find_opt(documents, uri)) {
+  | None => None
+  | Some(source_code) =>
+    let lines = String.split_on_char('\n', source_code);
+    let line = List.nth(lines, line);
+    find_completable(line, char);
+  };
+
 // maps Grain types to LSP CompletionItemKind
 let rec get_kind = (desc: Types.type_desc) =>
   switch (desc) {
@@ -154,15 +185,15 @@ let process =
   switch (Utils.get_text_document_uri_and_position(request)) {
   | Some(location) =>
     let completable =
-      Utils.get_original_text(
+      get_original_text(
         documents,
         location.uri,
         location.line,
         location.char,
       );
     switch (completable) {
-    | Nothing => send_completion(~id, [])
-    | Lident(text) =>
+    | None => send_completion(~id, [])
+    | Some(text) =>
       switch (Hashtbl.find_opt(cached_code, location.uri)) {
       | None => send_completion(~id, [])
       | Some(compiled_code) =>
