@@ -254,7 +254,7 @@ let process =
                 let item: completion_item = {
                   label: i,
                   kind: get_kind(l.val_type.desc),
-                  detail: Utils.lens_sig(l.val_type, ~env=compiled_code.env),
+                  detail: Printtyp.string_of_type_scheme(l.val_type),
                   documentation: "",
                 };
                 item;

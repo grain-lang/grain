@@ -71,12 +71,12 @@ let rec expression_lens =
     switch (desc) {
     | TExpRecordGet(expr, loc, field) =>
       if (Utils.is_point_inside_location(~line, ~char, expr.exp_loc)) {
-        Utils.lens_sig(~env=e.exp_env, expr.exp_type);
+        Printtyp.string_of_type_scheme(expr.exp_type);
       } else {
-        Utils.lens_sig(~env=e.exp_env, e.exp_type);
+        Printtyp.string_of_type_scheme(e.exp_type);
       }
 
-    | TExpPrim1(_, exp) => Utils.lens_sig(~env=exp.exp_env, exp.exp_type)
+    | TExpPrim1(_, exp) => Printtyp.string_of_type_scheme(exp.exp_type)
     | TExpPrim2(_, exp, exp2) =>
       switch (
         Utils.find_location_in_expressions(
@@ -87,7 +87,7 @@ let rec expression_lens =
         )
       ) {
       | Expression(matched) =>
-        Utils.lens_sig(~env=e.exp_env, matched.exp_type)
+        Printtyp.string_of_type_scheme(matched.exp_type)
       | _ => ""
       }
     | TExpPrimN(_, expressions) =>
@@ -100,7 +100,7 @@ let rec expression_lens =
         )
       ) {
       | Expression(matched) =>
-        Utils.lens_sig(~env=e.exp_env, matched.exp_type)
+        Printtyp.string_of_type_scheme(matched.exp_type)
       | _ => ""
       }
     | TExpIdent(path, loc, vd) =>
@@ -119,7 +119,7 @@ let rec expression_lens =
       let (modname, _after) = parts;
       // work out if the cursor is in the module name or after it
       if (modname == "" || modname == "Pervasives") {
-        Utils.lens_sig(e.exp_type, ~env=e.exp_env);
+        Printtyp.string_of_type_scheme(e.exp_type);
       } else {
         let lstart = loc.loc.loc_start;
         let mod_start = lstart.pos_cnum - lstart.pos_bol;
@@ -141,11 +141,11 @@ let rec expression_lens =
             );
           printed_vals;
         } else {
-          Utils.lens_sig(e.exp_type, ~env=e.exp_env);
+          Printtyp.string_of_type_scheme(e.exp_type);
         };
       };
 
-    | _ => Utils.lens_sig(~env=e.exp_env, e.exp_type)
+    | _ => Printtyp.string_of_type_scheme(e.exp_type)
     };
 
   Grain_utils.Markdown.code_block(txt);
@@ -169,7 +169,7 @@ let get_from_statement =
     )
   | TTopForeign(export_flag, value_description) =>
     let tvd_desc = value_description.tvd_desc;
-    let type_sig = Utils.lens_sig(~env=stmt.ttop_env, tvd_desc.ctyp_type);
+    let type_sig = Printtyp.string_of_type_scheme(tvd_desc.ctyp_type);
     LocationSignature(type_sig, stmt.ttop_loc);
   | TTopData(data_declarations) when data_declarations == [] => LocationError
   | TTopData(data_declarations) =>
@@ -186,7 +186,7 @@ let get_from_statement =
       | None => LocationSignature(data_name.txt, data_loc)
       | Some(t) =>
         LocationSignature(
-          Utils.lens_sig(~env=stmt.ttop_env, t.ctyp_type),
+          Printtyp.string_of_type_scheme(t.ctyp_type),
           data_loc,
         )
       }
@@ -247,7 +247,7 @@ let get_from_statement =
         | [decl] =>
           LocationSignature(
             Grain_utils.Markdown.code_block(
-              Utils.lens_sig(decl.ctyp_type, ~env=compiled_code.env),
+              Printtyp.string_of_type_scheme(decl.ctyp_type),
             ),
             decl.ctyp_loc,
           )
@@ -307,7 +307,7 @@ let get_from_statement =
       | Pattern(p) =>
         LocationSignature(
           Grain_utils.Markdown.code_block(
-            Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
+            Printtyp.string_of_type_scheme(p.pat_type),
           ),
           if (p.pat_loc == Grain_parsing.Location.dummy_loc) {
             stmt.ttop_loc;
@@ -340,7 +340,7 @@ let get_from_statement =
     | NotInRange =>
       LocationSignature(
         Grain_utils.Markdown.code_block(
-          Utils.lens_sig(expression.exp_type, ~env=compiled_code.env),
+          Printtyp.string_of_type_scheme(expression.exp_type),
         ),
         loc,
       )
@@ -357,7 +357,7 @@ let get_from_statement =
     | Pattern(p) =>
       LocationSignature(
         Grain_utils.Markdown.code_block(
-          Utils.lens_sig(p.pat_type, ~env=compiled_code.env),
+          Printtyp.string_of_type_scheme(p.pat_type),
         ),
         p.pat_loc,
       )
