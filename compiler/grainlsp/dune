@@ -9,7 +9,7 @@
    (:include ./config/flags.sexp)))
  (libraries cmdliner grain_utils grain_language_server dune-build-info)
  (js_of_ocaml
-  (flags --no-sourcemap --no-extern-fs --disable share)
+  (flags --no-sourcemap --no-extern-fs --quiet --disable share)
   (javascript_files hacks.js))
  (preprocess
   (pps ppx_deriving_cmdliner)))
