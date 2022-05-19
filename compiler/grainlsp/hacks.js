@@ -10,9 +10,19 @@ function caml_ml_open_descriptor_in (fd)  {
       var Buffer = require('buffer').Buffer;
       refill = function () {
         var buf = Buffer.alloc(256);
-        var stdinFd = fs.openSync('/dev/stdin', 'rs');
+        var stdinFd;
+        var needsClose = false;
+        try {
+          stdinFd = fs.openSync('/dev/stdin', 'rs');
+          needsClose = true;
+        } catch(e) {
+          // Opening /dev/stdin will fail on Windows so we open the fd
+          stdinFd = fs.openSync(process.stdin.fd, 'rs');
+        }
         var bytesRead = fs.readSync(fd, buf);
-        fs.closeSync(stdinFd);
+        if (needsClose) {
+          fs.closeSync(stdinFd);
+        }
         // Ensures we don't have any trailing, empty data
         var str = buf.slice(0, bytesRead).toString('utf8');
         return caml_string_of_jsstring(str);
