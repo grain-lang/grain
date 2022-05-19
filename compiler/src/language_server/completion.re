@@ -1,4 +1,5 @@
 open Grain_typed;
+open Grain_diagnostics;
 
 // This is the full enumeration of all CompletionItemKind as declared by the language server
 // protocol (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItemKind),
@@ -102,44 +103,6 @@ let rec get_kind = (desc: Types.type_desc) =>
   | TTyLink(t) => get_kind(t.desc)
   | _ => CompletionItemKindText
   };
-
-let get_module_exports = (~path, compiled_code: Typedtree.typed_program) => {
-  switch (Env.find_module(path, None, compiled_code.env)) {
-  | lookup =>
-    switch (lookup.md_filepath, lookup.md_type) {
-    // Open question: Why does this need the filepath if it doesn't use it?
-    | (Some(_), TModSignature(sigs)) =>
-      let fnsigs =
-        List.filter_map(
-          (s: Types.signature_item) => {
-            switch (s) {
-            | TSigValue(ident, vd) =>
-              let item: completion_item = {
-                label: ident.name,
-                kind: CompletionItemKindFunction,
-                detail: Printtyp.string_of_value_description(~ident, vd),
-                documentation: "",
-              };
-              Some(item);
-            | TSigType(ident, td, recstatus) =>
-              let item: completion_item = {
-                label: ident.name,
-                kind: CompletionItemKindStruct,
-                detail: Printtyp.string_of_type_declaration(~ident, td),
-                documentation: "",
-              };
-              Some(item);
-            | _ => None
-            }
-          },
-          sigs,
-        );
-      fnsigs;
-    | _ => []
-    }
-  | exception _ => []
-  };
-};
 
 let send_completion =
     (~id: Protocol.message_id, completions: list(completion_item)) => {
@@ -266,7 +229,24 @@ let process =
             if (!List.exists((m: string) => m == mod_name, modules)) {
               [];
             } else {
-              get_module_exports(~path=PIdent(ident), compiled_code);
+              List.map(
+                (m: Modules.export) => {
+                  let kind =
+                    switch (m.kind) {
+                    | Function => CompletionItemKindFunction
+                    | Record => CompletionItemKindStruct
+                    | Value => CompletionItemKindValue
+                    };
+
+                  {
+                    label: m.name,
+                    kind,
+                    detail: m.signature,
+                    documentation: "",
+                  };
+                },
+                Modules.get_exports(~path=PIdent(ident), compiled_code),
+              );
             };
           }
 

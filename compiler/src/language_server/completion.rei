@@ -23,10 +23,6 @@ module ResponseResult: {
   type t;
 };
 
-// TODO: Move out of here
-let get_module_exports:
-  (~path: Path.t, Typedtree.typed_program) => list(completion_item);
-
 let process:
   (
     ~id: Protocol.message_id,

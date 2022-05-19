@@ -513,12 +513,12 @@ let rec expression_lens =
             switch (path) {
             | PIdent(ident) => []
             | PExternal(mod_path, name, _) =>
-              Completion.get_module_exports(mod_path, compiled_code)
+              Modules.get_exports(mod_path, compiled_code)
             };
           let printed_vals =
             List.fold_left(
-              (acc, v: Completion.completion_item) =>
-                acc ++ "  let " ++ v.detail ++ "\n",
+              (acc, v: Modules.export) =>
+                acc ++ "  let " ++ v.signature ++ "\n",
               "",
               vals,
             );
