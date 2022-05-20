@@ -32,6 +32,10 @@
 
 (package
   (name grainlsp)
+  (synopsis "Grain LSP"))
+
+(package
+  (name grain_language_server)
   (synopsis "Grain Language Server Protocol"))
 
 (package

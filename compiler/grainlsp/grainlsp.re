@@ -1,6 +1,6 @@
-open Printf;
 open Cmdliner;
-open Lspserver;
+open Grain_utils;
+open Grain_language_server;
 
 [@deriving cmdliner]
 type params = {
@@ -9,26 +9,30 @@ type params = {
 };
 
 let run = (opts: params) => {
+  set_binary_mode_in(stdin, true);
+  set_binary_mode_out(stdout, true);
+
   if (opts.debug) {
-    Log.set_level(DebugLog);
-    Log.log("LSP is starting up");
+    Logfile.open_("lsp.log");
+    Logfile.log("LSP is starting up");
   };
 
-  Log.log(Sys.os_type);
+  Logfile.log(Sys.os_type);
 
   let rec read_stdin = () => {
-    switch (Rpc.read_message(stdin)) {
-    | exception exn => Log.log("exception on read message")
-    | msg =>
-      let status = Message.process(msg);
-      if (status == Message.Reading) {
-        read_stdin();
-      };
+    switch (Protocol.request()) {
+    | Error(err) => Logfile.log("exception on read message: " ++ err)
+    | Ok(msg) =>
+      switch (Driver.process(msg)) {
+      | Exit(code) => exit(code)
+      | Break => ()
+      | Reading => read_stdin()
+      }
     };
   };
   read_stdin();
 
-  Log.close_log();
+  Logfile.close();
 };
 
 let lsp = (opts: params) =>
@@ -41,7 +45,7 @@ let lsp = (opts: params) =>
 let cmd = {
   open Term;
 
-  let doc = "Grain LSP server";
+  let doc = "Grain LSP";
   let version =
     switch (Build_info.V1.version()) {
     | None => "unknown"
