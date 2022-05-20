@@ -1,16 +1,5 @@
 open Grain_typed;
 
-[@deriving yojson]
-type completion_item_kind;
-
-[@deriving yojson]
-type completion_item = {
-  label: string,
-  kind: completion_item_kind,
-  detail: string,
-  documentation: string,
-};
-
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionParams
 module RequestParams: {
   [@deriving yojson({strict: false})]
