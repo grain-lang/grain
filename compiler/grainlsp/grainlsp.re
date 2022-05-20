@@ -23,10 +23,11 @@ let run = (opts: params) => {
     switch (Protocol.request()) {
     | Error(err) => Logfile.log("exception on read message: " ++ err)
     | Ok(msg) =>
-      let status = Driver.process(msg);
-      if (status == Driver.Reading) {
-        read_stdin();
-      };
+      switch (Driver.process(msg)) {
+      | Exit(code) => exit(code)
+      | Break => ()
+      | Reading => read_stdin()
+      }
     };
   };
   read_stdin();

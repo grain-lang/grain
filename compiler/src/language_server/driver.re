@@ -3,7 +3,9 @@ open Grain_typed;
 
 type status =
   | Reading
-  | Break;
+  | Break
+  | Exit(int);
+
 let documents: Hashtbl.t(Protocol.uri, string) = Hashtbl.create(128);
 let compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program) =
   Hashtbl.create(128);
@@ -42,9 +44,7 @@ let process = msg => {
     is_shutting_down := true;
     Reading;
   | Exit(id, _) when is_shutting_down^ => Break
-  | Exit(id, _) =>
-    // TODO: Why is this doing an exit(1) ?
-    exit(1)
+  | Exit(id, _) => Exit(1)
   | TextDocumentDidOpen(uri, params) when is_initialized^ =>
     Code_file.DidOpen.process(
       ~uri,
