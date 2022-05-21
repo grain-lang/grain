@@ -236,6 +236,9 @@ let process =
                     | Function => CompletionItemKindFunction
                     | Record => CompletionItemKindStruct
                     | Value => CompletionItemKindValue
+                    | AbstractType => CompletionItemKindTypeParameter
+                    | Variant => CompletionItemKindEnum
+                    | Exception => CompletionItemKindTypeParameter
                     };
 
                   {

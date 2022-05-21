@@ -3,6 +3,9 @@ open Grain_typed;
 type export_kind =
   | Function
   | Record
+  | Variant
+  | AbstractType
+  | Exception
   | Value;
 
 type export = {
@@ -33,10 +36,36 @@ let get_exports = (~path, compiled_code: Typedtree.typed_program) => {
                 kind: Value,
                 signature: Printtyp.string_of_value_description(~ident, vd),
               })
-            | TSigType(ident, td, recstatus) =>
+            | TSigType(
+                ident,
+                {type_kind: TDataRecord(_), _} as td,
+                recstatus,
+              ) =>
               Some({
                 name: ident.name,
                 kind: Record,
+                signature: Printtyp.string_of_type_declaration(~ident, td),
+              })
+            | TSigType(
+                ident,
+                {type_kind: TDataVariant(_), _} as td,
+                recstatus,
+              ) =>
+              Some({
+                name: ident.name,
+                kind: Variant,
+                signature: Printtyp.string_of_type_declaration(~ident, td),
+              })
+            | TSigType(ident, {type_kind: TDataAbstract, _} as td, recstatus) =>
+              Some({
+                name: ident.name,
+                kind: AbstractType,
+                signature: Printtyp.string_of_type_declaration(~ident, td),
+              })
+            | TSigType(ident, {type_kind: TDataOpen, _} as td, recstatus) =>
+              Some({
+                name: ident.name,
+                kind: Exception, // Currently we only use TDataOpen for exceptions
                 signature: Printtyp.string_of_type_declaration(~ident, td),
               })
             | _ => None

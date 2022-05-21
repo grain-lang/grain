@@ -515,14 +515,20 @@ let rec expression_lens =
             | PExternal(mod_path, name, _) =>
               Modules.get_exports(mod_path, compiled_code)
             };
-          let printed_vals =
-            List.fold_left(
-              (acc, v: Modules.export) =>
-                acc ++ "  let " ++ v.signature ++ "\n",
-              "",
+          let signatures =
+            List.map(
+              (v: Modules.export) =>
+                switch (v.kind) {
+                | Function
+                | Value => Format.sprintf("let %s", v.signature)
+                | Record
+                | AbstractType
+                | Exception
+                | Variant => v.signature
+                },
               vals,
             );
-          printed_vals;
+          String.concat("\n", signatures);
         } else {
           Printtyp.string_of_type_scheme(e.exp_type);
         };
