@@ -62,10 +62,6 @@ let include_dirs: ref(list(string));
 
 let stdlib_dir: ref(option(string));
 
-/** The base path where all Grain files for the program reside */
-
-let base_path: ref(string);
-
 /** Whether color output should be enabled */
 
 let color_enabled: ref(bool);
@@ -185,9 +181,6 @@ let preserve_all_configs: (unit => 'a) => 'a;
 /** Wraps the given thunk with extractors for compiler command-line options */
 
 let with_cli_options: 'a => Cmdliner.Term.t('a);
-
-/** Runs the given thunk with the given base_path value */
-let with_base_path: (string, unit => 'a) => 'a;
 
 /** Applies compile flags provided at the start of a file */
 

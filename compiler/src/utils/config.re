@@ -573,23 +573,6 @@ let source_map =
 
 let print_warnings = internal_opt(true, NotDigestable);
 
-/* To be filled in by grainc */
-let base_path = internal_opt("", NotDigestable);
-
-let with_base_path = (path, func) => {
-  let old_base_path = base_path^;
-  base_path := path;
-  try({
-    let ret = func();
-    base_path := old_base_path;
-    ret;
-  }) {
-  | e =>
-    base_path := old_base_path;
-    raise(e);
-  };
-};
-
 let stdlib_directory = (): option(string) =>
   Option.map(
     path => Filepath.(to_string(String.derelativize(path))),
