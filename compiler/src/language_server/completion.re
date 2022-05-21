@@ -234,10 +234,10 @@ let process =
                   let kind =
                     switch (m.kind) {
                     | Function => CompletionItemKindFunction
-                    | Record => CompletionItemKindStruct
                     | Value => CompletionItemKindValue
-                    | AbstractType => CompletionItemKindTypeParameter
-                    | Variant => CompletionItemKindEnum
+                    | Record => CompletionItemKindStruct
+                    | Enum => CompletionItemKindEnum
+                    | Abstract => CompletionItemKindTypeParameter
                     | Exception => CompletionItemKindTypeParameter
                     };
 

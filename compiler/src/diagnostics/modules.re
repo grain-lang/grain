@@ -2,11 +2,11 @@ open Grain_typed;
 
 type export_kind =
   | Function
+  | Value
   | Record
-  | Variant
-  | AbstractType
-  | Exception
-  | Value;
+  | Enum
+  | Abstract
+  | Exception;
 
 type export = {
   name: string,
@@ -53,13 +53,13 @@ let get_exports = (~path, compiled_code: Typedtree.typed_program) => {
               ) =>
               Some({
                 name: ident.name,
-                kind: Variant,
+                kind: Enum,
                 signature: Printtyp.string_of_type_declaration(~ident, td),
               })
             | TSigType(ident, {type_kind: TDataAbstract, _} as td, recstatus) =>
               Some({
                 name: ident.name,
-                kind: AbstractType,
+                kind: Abstract,
                 signature: Printtyp.string_of_type_declaration(~ident, td),
               })
             | TSigType(ident, {type_kind: TDataOpen, _} as td, recstatus) =>

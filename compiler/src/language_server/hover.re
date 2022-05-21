@@ -522,9 +522,9 @@ let rec expression_lens =
                 | Function
                 | Value => Format.sprintf("let %s", v.signature)
                 | Record
-                | AbstractType
-                | Exception
-                | Variant => v.signature
+                | Enum
+                | Abstract
+                | Exception => v.signature
                 },
               vals,
             );
