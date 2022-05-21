@@ -70,7 +70,10 @@ let process = msg => {
   | _ =>
     /* TODO: What should happen here? */
     if (is_initialized^ == false) {
-      Logfile.log("Client must send 'initialize' as first event");
+      Log.log_message(
+        Log.Error,
+        "Client must send 'initialize' as first event",
+      );
       Break;
     } else {
       Reading;

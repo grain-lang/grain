@@ -13,15 +13,16 @@ let run = (opts: params) => {
   set_binary_mode_out(stdout, true);
 
   if (opts.debug) {
-    Logfile.open_("lsp.log");
-    Logfile.log("LSP is starting up");
+    Log.set_debug_level(Log.Debug);
+    Log.log_message(Log.Info, "LSP is starting up");
+  } else {
+    Log.set_debug_level(Log.Off);
   };
-
-  Logfile.log(Sys.os_type);
 
   let rec read_stdin = () => {
     switch (Protocol.request()) {
-    | Error(err) => Logfile.log("exception on read message: " ++ err)
+    | Error(err) =>
+      Log.log_message(Log.Error, "exception on read message: " ++ err)
     | Ok(msg) =>
       switch (Driver.process(msg)) {
       | Exit(code) => exit(code)
@@ -31,8 +32,6 @@ let run = (opts: params) => {
     };
   };
   read_stdin();
-
-  Logfile.close();
 };
 
 let lsp = (opts: params) =>

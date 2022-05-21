@@ -42,6 +42,10 @@ type diagnostic = {
   message: string,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#logTrace
+[@deriving yojson({strict: false})]
+type log_trace = {message: string};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#command
 [@deriving yojson]
 type command = {
