@@ -140,13 +140,19 @@ let for_type_declaration =
 let for_signature_item =
     (~env: Env.t, ~comments, sig_item: Types.signature_item) => {
   switch (sig_item) {
-  | TSigValue(ident, vd) =>
-    let vd = Env.find_value(vd.val_fullpath, env);
-    let docblock = for_value_description(~comments, ~ident, vd);
+  | TSigValue(ident, ovd) =>
+    // Fetch original location as signatures don't contain real locations
+    let vd = Env.find_value(ovd.val_fullpath, env);
+    let val_loc = vd.val_loc;
+    let docblock =
+      for_value_description(~comments, ~ident, {...ovd, val_loc});
     Some(docblock);
-  | TSigType(ident, td, _rec) =>
-    let td = Env.find_type(td.type_path, env);
-    let docblock = for_type_declaration(~comments, ~ident, td);
+  | TSigType(ident, otd, _rec) =>
+    // Fetch original location as signatures don't contain real locations
+    let td = Env.find_type(otd.type_path, env);
+    let type_loc = td.type_loc;
+    let docblock =
+      for_type_declaration(~comments, ~ident, {...otd, type_loc});
     Some(docblock);
   | _ => None
   };
