@@ -5,16 +5,16 @@ pattern matching › alias_match_5
  (type $none_=>_none (func))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/equal\" \"GRAIN$EXPORT$equal\" (global $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$None\" (global $gimport_pervasives_None (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$Some\" (global $gimport_pervasives_Some (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/equal\" \"equal\" (func $wimport_GRAIN$MODULE$runtime/equal_equal (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"Some\" (func $gimport_pervasives_Some (param i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/equal\" \"GRAIN$EXPORT$equal\" (global $GRAIN$EXPORT$equal_0 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$None\" (global $None_1149 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$Some\" (global $Some_1134 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/equal\" \"equal\" (func $equal_0 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"Some\" (func $Some_1134 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -29,15 +29,15 @@ pattern matching › alias_match_5
   (local.set $0
    (tuple.extract 0
     (tuple.make
-     (call $gimport_pervasives_Some
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (global.get $gimport_pervasives_Some)
+     (call $Some_1134
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $Some_1134)
       )
       (i32.const 11)
      )
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (i32.const 0)
      )
     )
@@ -47,8 +47,8 @@ pattern matching › alias_match_5
    (tuple.extract 0
     (tuple.make
      (i32.const 0)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (i32.const 0)
      )
     )
@@ -58,8 +58,8 @@ pattern matching › alias_match_5
    (tuple.extract 0
     (tuple.make
      (i32.const 0)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (i32.const 0)
      )
     )
@@ -98,18 +98,18 @@ pattern matching › alias_match_5
                )
                (block (result i32)
                 (drop
-                 (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                  (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                 (call $decRef_0
+                  (global.get $GRAIN$EXPORT$decRef_0)
                   (block (result i32)
                    (local.set $2
                     (tuple.extract 0
                      (tuple.make
-                      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                      (call $incRef_0
+                       (global.get $GRAIN$EXPORT$incRef_0)
                        (local.get $0)
                       )
-                      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                      (call $decRef_0
+                       (global.get $GRAIN$EXPORT$decRef_0)
                        (local.get $2)
                       )
                      )
@@ -139,14 +139,14 @@ pattern matching › alias_match_5
                  (local.set $3
                   (tuple.extract 0
                    (tuple.make
-                    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                    (call $incRef_0
+                     (global.get $GRAIN$EXPORT$incRef_0)
                      (i32.load offset=20
                       (local.get $0)
                      )
                     )
-                    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                    (call $decRef_0
+                     (global.get $GRAIN$EXPORT$decRef_0)
                      (i32.const 0)
                     )
                    )
@@ -154,13 +154,13 @@ pattern matching › alias_match_5
                  )
                  (if (result i32)
                   (i32.shr_u
-                   (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                     (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
+                   (call $equal_0
+                    (call $incRef_0
+                     (global.get $GRAIN$EXPORT$incRef_0)
+                     (global.get $GRAIN$EXPORT$equal_0)
                     )
-                    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                    (call $incRef_0
+                     (global.get $GRAIN$EXPORT$incRef_0)
                      (local.get $3)
                     )
                     (i32.const 7)
@@ -169,18 +169,18 @@ pattern matching › alias_match_5
                   )
                   (block (result i32)
                    (drop
-                    (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                    (call $decRef_0
+                     (global.get $GRAIN$EXPORT$decRef_0)
                      (block (result i32)
                       (local.set $1
                        (tuple.extract 0
                         (tuple.make
-                         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                         (call $incRef_0
+                          (global.get $GRAIN$EXPORT$incRef_0)
                           (local.get $0)
                          )
-                         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                         (call $decRef_0
+                          (global.get $GRAIN$EXPORT$decRef_0)
                           (local.get $1)
                          )
                         )
@@ -194,13 +194,13 @@ pattern matching › alias_match_5
                   )
                   (if (result i32)
                    (i32.shr_u
-                    (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                      (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
+                    (call $equal_0
+                     (call $incRef_0
+                      (global.get $GRAIN$EXPORT$incRef_0)
+                      (global.get $GRAIN$EXPORT$equal_0)
                      )
-                     (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                     (call $incRef_0
+                      (global.get $GRAIN$EXPORT$incRef_0)
                       (local.get $3)
                      )
                      (i32.const 9)
@@ -209,18 +209,18 @@ pattern matching › alias_match_5
                    )
                    (block (result i32)
                     (drop
-                     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                     (call $decRef_0
+                      (global.get $GRAIN$EXPORT$decRef_0)
                       (block (result i32)
                        (local.set $1
                         (tuple.extract 0
                          (tuple.make
-                          (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                          (call $incRef_0
+                           (global.get $GRAIN$EXPORT$incRef_0)
                            (local.get $0)
                           )
-                          (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                           (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                          (call $decRef_0
+                           (global.get $GRAIN$EXPORT$decRef_0)
                            (local.get $1)
                           )
                          )
@@ -234,13 +234,13 @@ pattern matching › alias_match_5
                    )
                    (if (result i32)
                     (i32.shr_u
-                     (call $wimport_GRAIN$MODULE$runtime/equal_equal
-                      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-                       (global.get $wimport_GRAIN$MODULE$runtime/equal_GRAIN$EXPORT$equal)
+                     (call $equal_0
+                      (call $incRef_0
+                       (global.get $GRAIN$EXPORT$incRef_0)
+                       (global.get $GRAIN$EXPORT$equal_0)
                       )
-                      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                      (call $incRef_0
+                       (global.get $GRAIN$EXPORT$incRef_0)
                        (local.get $3)
                       )
                       (i32.const 11)
@@ -249,18 +249,18 @@ pattern matching › alias_match_5
                     )
                     (block (result i32)
                      (drop
-                      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                      (call $decRef_0
+                       (global.get $GRAIN$EXPORT$decRef_0)
                        (block (result i32)
                         (local.set $2
                          (tuple.extract 0
                           (tuple.make
-                           (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-                            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+                           (call $incRef_0
+                            (global.get $GRAIN$EXPORT$incRef_0)
                             (local.get $0)
                            )
-                           (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-                            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+                           (call $decRef_0
+                            (global.get $GRAIN$EXPORT$decRef_0)
                             (local.get $2)
                            )
                           )
@@ -289,48 +289,48 @@ pattern matching › alias_match_5
          )
         )
         (br $switch.37_outer
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_None)
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
+          (global.get $None_1149)
          )
         )
        )
       )
       (br $switch.37_outer
-       (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-        (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+       (call $incRef_0
+        (global.get $GRAIN$EXPORT$incRef_0)
         (local.get $2)
        )
       )
      )
     )
-    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
      (local.get $1)
     )
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $0)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $1)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $2)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $3)
    )
   )

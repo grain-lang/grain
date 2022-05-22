@@ -5,31 +5,31 @@ imports › import_muliple_modules
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $gimport_tlists_Empty (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $gimport_exportStar_x (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $gimport_tlists_Cons (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $gimport_tlists_Cons (param i32 i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1149 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $x_1148 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1147 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1147 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
  (func $_gmain (; has Stack IR ;) (result i32)
-  (call $gimport_tlists_Cons
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-    (global.get $gimport_tlists_Cons)
+  (call $Cons_1147
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
+    (global.get $Cons_1147)
    )
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-    (global.get $gimport_exportStar_x)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
+    (global.get $x_1148)
    )
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-    (global.get $gimport_tlists_Empty)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
+    (global.get $Empty_1149)
    )
   )
  )
