@@ -39,7 +39,7 @@ let cmd = {
 
   Cmd.v(
     Cmd.info(Sys.argv[0], ~version, ~doc),
-    Grain_utils.Config.with_cli_options(lsp),
+    Grain_utils.Config.with_cli_options(lsp) $ const(),
   );
 };
 
