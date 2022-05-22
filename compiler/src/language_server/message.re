@@ -13,6 +13,7 @@ type t =
   | Exit(Protocol.message_id, Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
+  | SetTrace(Protocol.trace_value)
   | Unsupported
   | Error(string);
 
@@ -61,6 +62,11 @@ let of_request = (msg: Protocol.request_message): t => {
   | {method: "textDocument/didChange", id, params} =>
     switch (Code_file.DidChange.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentDidChange(params.text_document.uri, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "$/setTrace", params} =>
+    switch (Trace.RequestParams.of_yojson(params)) {
+    | Ok(params) => SetTrace(params.value)
     | Error(msg) => Error(msg)
     }
   | _ => Unsupported

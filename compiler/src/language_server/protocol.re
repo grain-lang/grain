@@ -49,6 +49,11 @@ type command = {
   command: string,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#traceValue
+// TODO: Implement custom yojson serde functions to convert to an enum
+[@deriving yojson]
+type trace_value = string; // 'off' | 'messages' | 'verbose';
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentIdentifier
 [@deriving yojson]
 type text_document_identifier = {uri};
