@@ -13,6 +13,16 @@ No other changes yet.
 import Map from "map"
 ```
 
+## Types
+
+Type declarations included in the Map module.
+
+### Map.**Map**
+
+```grain
+type Map<k, v>
+```
+
 ## Values
 
 Functions for working with Maps.
