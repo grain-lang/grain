@@ -2,13 +2,7 @@ open Cmdliner;
 open Grain_utils;
 open Grain_language_server;
 
-[@deriving cmdliner]
-type params = {
-  [@name "debuglsp"] [@docv "DEBUG"]
-  debug: bool,
-};
-
-let run = (opts: params) => {
+let run = () => {
   set_binary_mode_in(stdin, true);
   set_binary_mode_out(stdout, true);
 
@@ -26,8 +20,8 @@ let run = (opts: params) => {
   read_stdin();
 };
 
-let lsp = (opts: params) =>
-  try(run(opts)) {
+let lsp = () =>
+  try(run()) {
   | exn =>
     Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
     exit(2);
@@ -45,7 +39,7 @@ let cmd = {
 
   Cmd.v(
     Cmd.info(Sys.argv[0], ~version, ~doc),
-    Grain_utils.Config.with_cli_options(lsp) $ params_cmdliner_term(),
+    Grain_utils.Config.with_cli_options(lsp),
   );
 };
 
