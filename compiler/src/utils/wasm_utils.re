@@ -460,11 +460,8 @@ module BinarySection =
           /* Now we're at the start of the section. Time to read */
           let realsize = size - (pos_in(inchan) - offset);
           let bytes = Bytes.create(realsize);
-          if (input(inchan, bytes, 0, realsize) == realsize) {
-            Some(Spec.deserialize(bytes));
-          } else {
-            process(tl);
-          };
+          really_input(inchan, bytes, 0, realsize);
+          Some(Spec.deserialize(bytes));
         | _ => process(tl)
         };
       };
