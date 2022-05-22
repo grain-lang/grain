@@ -33,9 +33,16 @@ let set_level = (level: string) => {
 };
 
 let log = (~verbose=?, message: string) =>
-  if (trace_level^ != Off) {
+  switch (trace_level^) {
+  | Off => ()
+  | Messages =>
+    Protocol.notification(
+      ~method="$/logTrace",
+      NotificationParams.to_yojson({message, verbose: None}),
+    )
+  | Verbose =>
     Protocol.notification(
       ~method="$/logTrace",
       NotificationParams.to_yojson({message, verbose}),
-    );
+    )
   };
