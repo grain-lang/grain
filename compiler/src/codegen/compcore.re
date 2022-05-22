@@ -47,15 +47,28 @@ let swap_slots =
     swap_slots_f64,
   ]);
 
-/* These are the bare-minimum imports needed for basic runtime support */
+/** These are the bare-minimum imports needed for basic runtime support */
+
+/* The Grain environment */
+let grain_env_mod = grain_env_name;
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
-let grain_env_mod = grain_env_name;
+
+/* Memory allocation */
 let malloc_mod = "GRAIN$MODULE$runtime/malloc";
+let malloc_ident = Ident.create_persistent("malloc");
+let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
+
+/* Garbage collection */
 let gc_mod = "GRAIN$MODULE$runtime/gc";
+let incref_ident = Ident.create_persistent("incRef");
+let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
+let decref_ident = Ident.create_persistent("decRef");
+let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
+
+/* Exceptions */
 let exception_mod = "GRAIN$MODULE$runtime/exception";
-let console_mod = "console";
 let print_exception_ident = Ident.create_persistent("printException");
 let print_exception_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$printException");
@@ -66,15 +79,14 @@ let index_out_of_bounds_ident =
   Ident.create_persistent("GRAIN$EXPORT$IndexOutOfBounds");
 let match_failure_ident =
   Ident.create_persistent("GRAIN$EXPORT$MatchFailure");
-let malloc_ident = Ident.create_persistent("malloc");
-let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
-let incref_ident = Ident.create_persistent("incRef");
-let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
+
+/* Equality checking */
 let equal_mod = "GRAIN$MODULE$runtime/equal";
 let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
-let decref_ident = Ident.create_persistent("decRef");
-let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
+
+/* JS-runner support */
+let console_mod = "console";
 let tracepoint_ident = Ident.create_persistent("tracepoint");
 
 let grain_main = "_gmain";
