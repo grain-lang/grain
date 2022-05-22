@@ -27,7 +27,6 @@ let () =
   );
 
 let compile_file = (name, outfile_arg) => {
-  Grain_utils.Config.base_path := dirname(name);
   if (!Printexc.backtrace_status() && Grain_utils.Config.verbose^) {
     Printexc.record_backtrace(true);
   };

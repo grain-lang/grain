@@ -20,6 +20,8 @@ module RequestParams = {
     locale: option(string),
     [@key "rootUri"]
     root_uri: option(Protocol.uri),
+    [@default "off"]
+    trace: Protocol.trace_value,
   };
 };
 
@@ -81,8 +83,10 @@ let process =
       ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
       ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
       ~documents: Hashtbl.t(Protocol.uri, string),
-      request: RequestParams.t,
+      params: RequestParams.t,
     ) => {
+  // The initialize request can set up the initial trace level
+  Trace.set_level(params.trace);
   Protocol.response(
     ~id,
     ResponseResult.to_yojson({capabilities: ResponseResult.capabilities}),

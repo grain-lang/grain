@@ -44,10 +44,6 @@ type params = {
 };
 
 let compile_typed = (opts: params) => {
-  let base_path = Filepath.to_string(Filepath.dirname(opts.input));
-
-  Grain_utils.Config.base_path := base_path;
-
   let input = Filepath.to_string(opts.input);
 
   switch (Compile.compile_file(~hook=stop_after_typed, input)) {

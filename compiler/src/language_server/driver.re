@@ -63,6 +63,9 @@ let process = msg => {
       params,
     );
     Reading;
+  | SetTrace(trace_value) =>
+    Trace.set_level(trace_value);
+    Reading;
   | Error(msg) =>
     prerr_endline(msg);
     is_shutting_down := true;
@@ -70,10 +73,7 @@ let process = msg => {
   | _ =>
     /* TODO: What should happen here? */
     if (is_initialized^ == false) {
-      Log.log_message(
-        Log.Error,
-        "Client must send 'initialize' as first event",
-      );
+      Trace.log("Client must send 'initialize' as first event");
       Break;
     } else {
       Reading;

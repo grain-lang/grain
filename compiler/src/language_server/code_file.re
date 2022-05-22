@@ -43,7 +43,7 @@ let warning_to_diagnostic =
 let compile_source = (uri, source) => {
   let filename = Protocol.uri_to_filename(uri);
 
-  Log.log_message(Log.Info, "Compiling " ++ filename);
+  Trace.log("Compiling " ++ filename);
 
   switch (
     Compile.compile_string(
