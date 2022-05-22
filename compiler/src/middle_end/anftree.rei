@@ -300,6 +300,12 @@ type comp_expression = {
 }
 
 [@deriving sexp]
+and closure_status =
+  | Uncomputed
+  | Precomputed(list(Ident.t))
+  | Unnecessary
+
+[@deriving sexp]
 and comp_expression_desc =
   | CImmExpr(imm_expression)
   | CPrim0(prim0)
@@ -337,6 +343,7 @@ and comp_expression_desc =
       option(string),
       list((Ident.t, allocation_type)),
       (anf_expression, allocation_type),
+      closure_status,
     )
   | CBytes(bytes)
   | CString(string)
@@ -375,7 +382,11 @@ and anf_expression_desc =
 
 [@deriving sexp]
 type import_shape =
-  | FunctionShape(list(allocation_type), list(allocation_type))
+  | FunctionShape({
+      args: list(allocation_type),
+      returns: list(allocation_type),
+      has_closure: bool,
+    })
   | GlobalShape(allocation_type);
 
 [@deriving sexp]

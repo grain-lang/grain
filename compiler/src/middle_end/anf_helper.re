@@ -223,7 +223,7 @@ module Comp = {
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CLambda(name, args, body),
+      CLambda(name, args, body, Uncomputed),
     );
   let bytes = (~loc=?, ~attributes=?, ~env=?, b) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CBytes(b));

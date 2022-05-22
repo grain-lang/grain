@@ -1,6 +1,8 @@
 open Anftree;
 
 let analysis_passes = [
+  Analyze_globals.analyze,
+  Analyze_function_calls.analyze,
   Analyze_manual_memory_management.analyze,
   Analyze_purity.analyze,
   Analyze_tail_calls.analyze,

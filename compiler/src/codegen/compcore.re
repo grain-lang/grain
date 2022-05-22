@@ -3821,6 +3821,7 @@ let compile_main = (wasm_mod, env, prog) => {
       name: Some(grain_main),
       args: [],
       return_type: [Types.Unmanaged(WasmI32)],
+      has_closure: false,
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
       attrs: [],

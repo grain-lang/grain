@@ -81,7 +81,7 @@ describe("garbage collection", ({test, testSkip}) => {
   );
   assertRunGCError(
     "fib_gc_err",
-    1024,
+    512,
     {|
     let fib = x => {
       let rec fib_help = (n, acc) => {
@@ -100,7 +100,7 @@ describe("garbage collection", ({test, testSkip}) => {
   );
   assertRunGC(
     "fib_gc",
-    2048,
+    1024,
     {|
     let fib = x => {
       let rec fib_help = (n, acc) => {

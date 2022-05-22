@@ -90,7 +90,10 @@ type val_repr =
 
 [@deriving (sexp, yojson)]
 and func_direct =
-  | Direct(string)
+  | Direct({
+      name: string,
+      closure: bool,
+    })
   | Indirect
   | Unknown;
 
