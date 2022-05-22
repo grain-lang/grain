@@ -1095,9 +1095,7 @@ let lift_imports = (env, imports) => {
         {imp_use_id, imp_desc, imp_shape, imp_exported},
       ) => {
     switch (imp_desc) {
-    | GrainValue(mod_, name) =>
-      let mimp_mod = mod_;
-      let mimp_name = name;
+    | GrainValue(mimp_mod, mimp_name) =>
       let (alloc, mods, closure_setups) =
         switch (imp_shape) {
         | GlobalShape(alloc) => (
@@ -1181,9 +1179,7 @@ let lift_imports = (env, imports) => {
             ),
         },
       );
-    | WasmValue(mod_, name) =>
-      let mimp_mod = mod_;
-      let mimp_name = name;
+    | WasmValue(mimp_mod, mimp_name) =>
       let alloc =
         switch (imp_shape) {
         | GlobalShape(alloc) => alloc
