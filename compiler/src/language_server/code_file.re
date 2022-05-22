@@ -60,6 +60,9 @@ let compile_source = (uri, source) => {
       let (_, endline, endchar) =
         Grain_parsing.Location.get_pos_info(e.loc.loc_end);
 
+      let startchar = startchar < 0 ? 0 : startchar;
+      let endchar = endchar < 0 ? 0 : endchar;
+
       let range: Protocol.range = {
         range_start: {
           line: line - 1,
