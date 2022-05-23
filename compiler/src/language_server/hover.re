@@ -58,6 +58,11 @@ let loc_to_range = (pos: Location.t): Protocol.range => {
   };
 };
 
+// We need to use the "grain-type" markdown syntax to have correct coloring on hover items
+let grain_type_code_block = Markdown.code_block(~syntax="grain-type");
+// Used for module hovers
+let grain_code_block = Markdown.code_block(~syntax="grain");
+
 let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);
@@ -452,92 +457,90 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
 let rec expression_lens =
         (~line, ~char, ~compiled_code, e: Typedtree.expression) => {
   let desc = e.exp_desc;
-  let txt =
-    switch (desc) {
-    | TExpRecordGet(expr, loc, field)
-        when is_point_inside_location(~line, ~char, expr.exp_loc) =>
-      Printtyp.string_of_type_scheme(expr.exp_type)
-    | TExpRecordGet(expr, loc, field) =>
-      Printtyp.string_of_type_scheme(e.exp_type)
-    | TExpPrim1(_, exp) => Printtyp.string_of_type_scheme(exp.exp_type)
-    | TExpPrim2(_, exp, exp2) =>
-      switch (
-        find_location_in_expressions(
-          ~line,
-          ~char,
-          ~default=NotInRange,
-          [exp, exp2],
+  switch (desc) {
+  | TExpRecordGet(expr, loc, field)
+      when is_point_inside_location(~line, ~char, expr.exp_loc) =>
+    grain_type_code_block(Printtyp.string_of_type_scheme(expr.exp_type))
+  | TExpRecordGet(expr, loc, field) =>
+    grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type))
+  | TExpPrim1(_, exp) =>
+    grain_type_code_block(Printtyp.string_of_type_scheme(exp.exp_type))
+  | TExpPrim2(_, exp, exp2) =>
+    switch (
+      find_location_in_expressions(
+        ~line,
+        ~char,
+        ~default=NotInRange,
+        [exp, exp2],
+      )
+    ) {
+    | Expression(matched) =>
+      grain_type_code_block(Printtyp.string_of_type_scheme(matched.exp_type))
+    | _ => ""
+    }
+  | TExpPrimN(_, expressions) =>
+    switch (
+      find_location_in_expressions(
+        ~line,
+        ~char,
+        ~default=NotInRange,
+        expressions,
+      )
+    ) {
+    | Expression(matched) =>
+      grain_type_code_block(Printtyp.string_of_type_scheme(matched.exp_type))
+    | _ => ""
+    }
+  | TExpIdent(path, loc, vd) =>
+    let parts =
+      switch (path) {
+      | PIdent(ident) => ("", ident.name)
+      | PExternal(mod_path, name, _) => (
+          switch (mod_path) {
+          | PIdent(ident) => ident.name
+          | PExternal(mod_path, name, _) => ""
+          },
+          name,
         )
-      ) {
-      | Expression(matched) =>
-        Printtyp.string_of_type_scheme(matched.exp_type)
-      | _ => ""
-      }
-    | TExpPrimN(_, expressions) =>
-      switch (
-        find_location_in_expressions(
-          ~line,
-          ~char,
-          ~default=NotInRange,
-          expressions,
-        )
-      ) {
-      | Expression(matched) =>
-        Printtyp.string_of_type_scheme(matched.exp_type)
-      | _ => ""
-      }
-    | TExpIdent(path, loc, vd) =>
-      let parts =
-        switch (path) {
-        | PIdent(ident) => ("", ident.name)
-        | PExternal(mod_path, name, _) => (
-            switch (mod_path) {
-            | PIdent(ident) => ident.name
-            | PExternal(mod_path, name, _) => ""
-            },
-            name,
-          )
-        };
-
-      let (modname, _after) = parts;
-      // work out if the cursor is in the module name or after it
-      if (modname == "" || modname == "Pervasives") {
-        Printtyp.string_of_type_scheme(e.exp_type);
-      } else {
-        let lstart = loc.loc.loc_start;
-        let mod_start = lstart.pos_cnum - lstart.pos_bol;
-        let mod_end = mod_start + String.length(modname);
-
-        if (char < mod_end) {
-          let vals =
-            switch (path) {
-            | PIdent(ident) => []
-            | PExternal(mod_path, name, _) =>
-              Modules.get_exports(mod_path, compiled_code)
-            };
-          let signatures =
-            List.map(
-              (v: Modules.export) =>
-                switch (v.kind) {
-                | Function
-                | Value => Format.sprintf("let %s", v.signature)
-                | Record
-                | Enum
-                | Abstract
-                | Exception => v.signature
-                },
-              vals,
-            );
-          String.concat("\n", signatures);
-        } else {
-          Printtyp.string_of_type_scheme(e.exp_type);
-        };
       };
 
-    | _ => Printtyp.string_of_type_scheme(e.exp_type)
+    let (modname, _after) = parts;
+    // work out if the cursor is in the module name or after it
+    if (modname == "" || modname == "Pervasives") {
+      grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type));
+    } else {
+      let lstart = loc.loc.loc_start;
+      let mod_start = lstart.pos_cnum - lstart.pos_bol;
+      let mod_end = mod_start + String.length(modname);
+
+      if (char < mod_end) {
+        let vals =
+          switch (path) {
+          | PIdent(ident) => []
+          | PExternal(mod_path, name, _) =>
+            Modules.get_exports(mod_path, compiled_code)
+          };
+        let signatures =
+          List.map(
+            (v: Modules.export) =>
+              switch (v.kind) {
+              | Function
+              | Value => Format.sprintf("let %s", v.signature)
+              | Record
+              | Enum
+              | Abstract
+              | Exception => v.signature
+              },
+            vals,
+          );
+        grain_code_block(String.concat("\n", signatures));
+      } else {
+        grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type));
+      };
     };
 
-  Markdown.code_block(txt);
+  | _ => grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type))
+  };
 };
 
 let get_from_statement =
@@ -575,7 +578,7 @@ let get_from_statement =
       | None => LocationSignature(data_name.txt, data_loc)
       | Some(t) =>
         LocationSignature(
-          Printtyp.string_of_type_scheme(t.ctyp_type),
+          grain_type_code_block(Printtyp.string_of_type_scheme(t.ctyp_type)),
           data_loc,
         )
       }
@@ -598,10 +601,13 @@ let get_from_statement =
 
       switch (matches) {
       | [decl] =>
-        LocationSignature(Markdown.code_block(decl.cd_name.txt), decl.cd_loc)
+        LocationSignature(
+          grain_type_code_block(decl.cd_name.txt),
+          decl.cd_loc,
+        )
       | _ =>
         LocationSignature(
-          Markdown.code_block("enum " ++ data_name.txt),
+          grain_type_code_block("enum " ++ data_name.txt),
           data_loc,
         )
       };
@@ -617,7 +623,8 @@ let get_from_statement =
         ..._,
       ] =>
       switch (data_params) {
-      | [] => LocationSignature(Markdown.code_block(data_name.txt), data_loc)
+      | [] =>
+        LocationSignature(grain_type_code_block(data_name.txt), data_loc)
       | _ =>
         let matches =
           List.filter(
@@ -628,13 +635,13 @@ let get_from_statement =
         switch (matches) {
         | [decl] =>
           LocationSignature(
-            Markdown.code_block(
+            grain_type_code_block(
               Printtyp.string_of_type_scheme(decl.ctyp_type),
             ),
             decl.ctyp_loc,
           )
         | _ =>
-          LocationSignature(Markdown.code_block(data_name.txt), data_loc)
+          LocationSignature(grain_type_code_block(data_name.txt), data_loc)
         };
       }
     };
@@ -682,7 +689,7 @@ let get_from_statement =
         )
       | Pattern(p) =>
         LocationSignature(
-          Markdown.code_block(Printtyp.string_of_type_scheme(p.pat_type)),
+          grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type)),
           if (p.pat_loc == Grain_parsing.Location.dummy_loc) {
             stmt.ttop_loc;
           } else {
@@ -713,7 +720,7 @@ let get_from_statement =
     | Error(err) => LocationError
     | NotInRange =>
       LocationSignature(
-        Markdown.code_block(
+        grain_type_code_block(
           Printtyp.string_of_type_scheme(expression.exp_type),
         ),
         loc,
@@ -730,7 +737,7 @@ let get_from_statement =
 
     | Pattern(p) =>
       LocationSignature(
-        Markdown.code_block(Printtyp.string_of_type_scheme(p.pat_type)),
+        grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type)),
         p.pat_loc,
       )
     };
