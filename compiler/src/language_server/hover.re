@@ -455,17 +455,21 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
 };
 
 let rec expression_lens =
-        (~line, ~char, ~compiled_code, e: Typedtree.expression) => {
-  let desc = e.exp_desc;
-  switch (desc) {
-  | TExpRecordGet(expr, loc, field)
+        (
+          ~line,
+          ~char,
+          ~compiled_code: Typedtree.typed_program,
+          e: Typedtree.expression,
+        ) => {
+  switch (e) {
+  | {exp_desc: TExpRecordGet(expr, loc, field)}
       when is_point_inside_location(~line, ~char, expr.exp_loc) =>
     grain_type_code_block(Printtyp.string_of_type_scheme(expr.exp_type))
-  | TExpRecordGet(expr, loc, field) =>
+  | {exp_desc: TExpRecordGet(expr, loc, field)} =>
     grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type))
-  | TExpPrim1(_, exp) =>
+  | {exp_desc: TExpPrim1(_, exp)} =>
     grain_type_code_block(Printtyp.string_of_type_scheme(exp.exp_type))
-  | TExpPrim2(_, exp, exp2) =>
+  | {exp_desc: TExpPrim2(_, exp, exp2)} =>
     switch (
       find_location_in_expressions(
         ~line,
@@ -478,7 +482,7 @@ let rec expression_lens =
       grain_type_code_block(Printtyp.string_of_type_scheme(matched.exp_type))
     | _ => ""
     }
-  | TExpPrimN(_, expressions) =>
+  | {exp_desc: TExpPrimN(_, expressions)} =>
     switch (
       find_location_in_expressions(
         ~line,
@@ -491,52 +495,43 @@ let rec expression_lens =
       grain_type_code_block(Printtyp.string_of_type_scheme(matched.exp_type))
     | _ => ""
     }
-  | TExpIdent(path, loc, vd) =>
-    let parts =
-      switch (path) {
-      | PIdent(ident) => ("", ident.name)
-      | PExternal(mod_path, name, _) => (
-          switch (mod_path) {
-          | PIdent(ident) => ident.name
-          | PExternal(mod_path, name, _) => ""
-          },
-          name,
-        )
-      };
+  | {exp_desc: TExpIdent(_), exp_type: {desc: TTyConstr(path, _, _)}}
+  | {
+      exp_desc: TExpIdent(_),
+      exp_type: {desc: TTyLink({desc: TTyConstr(path, _, _)})},
+    }
+  | {
+      exp_desc: TExpIdent(_),
+      exp_type: {desc: TTySubst({desc: TTyConstr(path, _, _)})},
+    } =>
+    let td = Env.find_type(path, e.exp_env);
+    grain_type_code_block(
+      Printtyp.string_of_type_declaration(~ident=Path.head(path), td),
+    );
+  | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
+      when Path.name(mod_path) != "Pervasives" =>
+    let lstart = loc.loc.loc_start;
+    let mod_start = lstart.pos_cnum - lstart.pos_bol;
+    let mod_end = mod_start + String.length(Path.name(mod_path));
 
-    let (modname, _after) = parts;
-    // work out if the cursor is in the module name or after it
-    if (modname == "" || modname == "Pervasives") {
-      grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type));
+    if (char < mod_end) {
+      let vals = Modules.get_exports(mod_path, compiled_code);
+      let signatures =
+        List.map(
+          (v: Modules.export) =>
+            switch (v.kind) {
+            | Function
+            | Value => Format.sprintf("let %s", v.signature)
+            | Record
+            | Enum
+            | Abstract
+            | Exception => v.signature
+            },
+          vals,
+        );
+      grain_code_block(String.concat("\n", signatures));
     } else {
-      let lstart = loc.loc.loc_start;
-      let mod_start = lstart.pos_cnum - lstart.pos_bol;
-      let mod_end = mod_start + String.length(modname);
-
-      if (char < mod_end) {
-        let vals =
-          switch (path) {
-          | PIdent(ident) => []
-          | PExternal(mod_path, name, _) =>
-            Modules.get_exports(mod_path, compiled_code)
-          };
-        let signatures =
-          List.map(
-            (v: Modules.export) =>
-              switch (v.kind) {
-              | Function
-              | Value => Format.sprintf("let %s", v.signature)
-              | Record
-              | Enum
-              | Abstract
-              | Exception => v.signature
-              },
-            vals,
-          );
-        grain_code_block(String.concat("\n", signatures));
-      } else {
-        grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type));
-      };
+      grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type));
     };
 
   | _ => grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type))
