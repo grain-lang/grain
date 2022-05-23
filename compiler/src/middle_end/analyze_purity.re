@@ -144,7 +144,6 @@ let rec analyze_comp_expression =
       analyze_anf_expression(body);
       true;
     | CNumber(_)
-    | CRational(_, _)
     | CInt32(_)
     | CInt64(_)
     | CFloat32(_)

@@ -136,49 +136,6 @@ let transl_const =
     (tmp, f(tmp));
   };
   switch (c) {
-  // for Rationals, we need to allocate the underlying bigints in the setup.
-  | Const_number(
-      Const_number_rational({
-        rational_negative,
-        rational_num_limbs,
-        rational_den_limbs,
-        rational_num_rep,
-        rational_den_rep,
-      }),
-    ) =>
-    let ntmp = gensym("numerator");
-    let dtmp = gensym("denominator");
-    let tmp = gensym("rational");
-    let setup = [
-      BLet(
-        ntmp,
-        Comp.number(
-          Const_number_bigint({
-            bigint_negative: rational_negative,
-            bigint_limbs: rational_num_limbs,
-            bigint_rep: rational_num_rep,
-          }),
-        ),
-        Nonglobal,
-      ),
-      BLet(
-        dtmp,
-        Comp.number(
-          Const_number_bigint({
-            bigint_negative: false,
-            bigint_limbs: rational_den_limbs,
-            bigint_rep: rational_den_rep,
-          }),
-        ),
-        Nonglobal,
-      ),
-      BLet(
-        tmp,
-        Comp.rational(Imm.id(~loc, ~env, ntmp), Imm.id(~loc, ~env, dtmp)),
-        Nonglobal,
-      ),
-    ];
-    Right((tmp, setup));
   | Const_number(n) =>
     Right(
       with_bind("number", tmp => [BLet(tmp, Comp.number(n), Nonglobal)]),

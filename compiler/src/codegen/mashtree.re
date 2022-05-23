@@ -322,8 +322,16 @@ type allocation_type =
   | MInt64(int64)
   | MFloat32(float)
   | MFloat64(float)
-  | MRational(immediate, immediate)
-  | MBigInt(list(Bigint_flags.t), array(int64)); // flags, limbs
+  | MRational({
+      numerator_flags: list(Bigint_flags.t),
+      numerator_limbs: array(int64),
+      denominator_flags: list(Bigint_flags.t),
+      denominator_limbs: array(int64),
+    })
+  | MBigInt({
+      flags: list(Bigint_flags.t),
+      limbs: array(int64),
+    });
 
 [@deriving sexp]
 type tag_op =

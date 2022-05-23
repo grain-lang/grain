@@ -2112,59 +2112,107 @@ let allocate_number = (wasm_mod, env, number) => {
   /* Heap memory layout of numbers:
      [ <value type tag>, <number_tag>, <payload>]
      */
-  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let get_swap = get_swap(wasm_mod, env);
 
-  let (number_tag, instrs, needed_words) =
+  let (number_tag, swap_slot, instrs, needed_words) =
     switch (number) {
-    | Int32(int32) => (
+    | Int32(int32) =>
+      let slot = 0;
+      (
         BoxedInt32,
-        [store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(), int32)],
+        slot,
+        [store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(slot), int32)],
         3,
-      )
-    | Int64(int64) => (
+      );
+    | Int64(int64) =>
+      let slot = 0;
+      (
         BoxedInt64,
-        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(), int64)],
+        slot,
+        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(slot), int64)],
         4,
-      )
-    | Float32(float32) => (
+      );
+    | Float32(float32) =>
+      let slot = 0;
+      (
         BoxedFloat32,
-        [store(~offset=8, ~ty=Type.float32, wasm_mod, get_swap(), float32)],
-        3,
-      )
-    | Float64(float64) => (
-        BoxedFloat64,
-        [store(~offset=8, ~ty=Type.float64, wasm_mod, get_swap(), float64)],
-        4,
-      )
-    | Rational(numerator, denominator) => (
-        BoxedRational,
+        slot,
         [
-          store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(), numerator),
+          store(
+            ~offset=8,
+            ~ty=Type.float32,
+            wasm_mod,
+            get_swap(slot),
+            float32,
+          ),
+        ],
+        3,
+      );
+    | Float64(float64) =>
+      let slot = 0;
+      (
+        BoxedFloat64,
+        slot,
+        [
+          store(
+            ~offset=8,
+            ~ty=Type.float64,
+            wasm_mod,
+            get_swap(slot),
+            float64,
+          ),
+        ],
+        4,
+      );
+    | Rational(numerator, denominator) =>
+      // Rationals use a different swap slot to allow allocation of
+      // intermediate bigints
+      let slot = 1;
+      (
+        BoxedRational,
+        slot,
+        [
+          store(
+            ~offset=8,
+            ~ty=Type.int32,
+            wasm_mod,
+            get_swap(slot),
+            numerator,
+          ),
           store(
             ~offset=12,
             ~ty=Type.int32,
             wasm_mod,
-            get_swap(),
+            get_swap(slot),
             denominator,
           ),
         ],
         4,
-      )
-    | BigInt(flags, limbs) => (
+      );
+    | BigInt(flags, limbs) =>
+      let slot = 0;
+      (
         BoxedBigInt,
+        slot,
         List.append(
           [
             store(
               ~offset=8,
               ~ty=Type.int32,
               wasm_mod,
-              get_swap(),
+              get_swap(slot),
               Expression.Const.make(
                 wasm_mod,
                 const_int32(List.length(limbs)),
               ),
             ),
-            store(~offset=12, ~ty=Type.int32, wasm_mod, get_swap(), flags),
+            store(
+              ~offset=12,
+              ~ty=Type.int32,
+              wasm_mod,
+              get_swap(slot),
+              flags,
+            ),
           ],
           List.mapi(
             (i, limb) => {
@@ -2172,7 +2220,7 @@ let allocate_number = (wasm_mod, env, number) => {
                 ~offset=16 + i * 8,
                 ~ty=Type.int64,
                 wasm_mod,
-                get_swap(),
+                get_swap(slot),
                 limb,
               )
             },
@@ -2180,7 +2228,7 @@ let allocate_number = (wasm_mod, env, number) => {
           ),
         ),
         4 + 2 * List.length(limbs),
-      )
+      );
     };
 
   let preamble = [
@@ -2191,7 +2239,7 @@ let allocate_number = (wasm_mod, env, number) => {
         ~skip_incref=true,
         wasm_mod,
         env,
-        0,
+        swap_slot,
         heap_allocate(wasm_mod, env, needed_words),
       ),
       Expression.Const.make(
@@ -2202,14 +2250,14 @@ let allocate_number = (wasm_mod, env, number) => {
     store(
       ~offset=4,
       wasm_mod,
-      get_swap(),
+      get_swap(swap_slot),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_boxed_number_tag_type(number_tag)),
       ),
     ),
   ];
-  let postamble = [get_swap()];
+  let postamble = [get_swap(swap_slot)];
   Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_number"),
@@ -2767,14 +2815,7 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
       env,
       Expression.Const.make(wasm_mod, Literal.float64(i)),
     )
-  | MRational(n, d) =>
-    allocate_rational(
-      wasm_mod,
-      env,
-      compile_imm(wasm_mod, env, n),
-      compile_imm(wasm_mod, env, d),
-    )
-  | MBigInt(flags, limbs) =>
+  | MBigInt({flags, limbs}) =>
     allocate_big_int(
       wasm_mod,
       env,
@@ -2787,6 +2828,39 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
         Array.to_list(limbs),
       ),
     )
+  | MRational({
+      numerator_flags,
+      numerator_limbs,
+      denominator_flags,
+      denominator_limbs,
+    }) =>
+    let numerator =
+      allocate_big_int(
+        wasm_mod,
+        env,
+        Expression.Const.make(
+          wasm_mod,
+          Literal.int32(Bigint_flags.all_to_int32(numerator_flags)),
+        ),
+        List.map(
+          n => Expression.Const.make(wasm_mod, Literal.int64(n)),
+          Array.to_list(numerator_limbs),
+        ),
+      );
+    let denominator =
+      allocate_big_int(
+        wasm_mod,
+        env,
+        Expression.Const.make(
+          wasm_mod,
+          Literal.int32(Bigint_flags.all_to_int32(denominator_flags)),
+        ),
+        List.map(
+          n => Expression.Const.make(wasm_mod, Literal.int64(n)),
+          Array.to_list(denominator_limbs),
+        ),
+      );
+    allocate_rational(wasm_mod, env, numerator, denominator);
   };
 
 let collect_backpatches = (env, f) => {

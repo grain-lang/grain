@@ -51,14 +51,6 @@ module Comp = {
       ~env?,
       CNumber(i),
     );
-  let rational = (~loc=?, ~attributes=?, ~env=?, num, den) =>
-    mk(
-      ~loc?,
-      ~attributes?,
-      ~allocation_type=HeapAllocated,
-      ~env?,
-      CRational(num, den),
-    );
   let int32 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(
       ~loc?,

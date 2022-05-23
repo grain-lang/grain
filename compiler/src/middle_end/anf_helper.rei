@@ -43,15 +43,6 @@ module Comp: {
       Asttypes.number_type
     ) =>
     comp_expression;
-  let rational:
-    (
-      ~loc: loc=?,
-      ~attributes: attributes=?,
-      ~env: env=?,
-      imm_expression,
-      imm_expression
-    ) =>
-    comp_expression;
   let int32:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
     comp_expression;

@@ -878,21 +878,39 @@ let rec compile_comp = (~id=?, env, c) => {
       MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
-    | CNumber(Const_number_rational(_)) =>
-      failwith("compile_comp: rational after ANF")
+    | CNumber(
+        Const_number_rational({
+          rational_negative,
+          rational_num_limbs,
+          rational_den_limbs,
+          _,
+        }),
+      ) =>
+      MAllocate(
+        MRational({
+          numerator_flags:
+            if (rational_negative) {
+              [Bigint_flags.BigIntNegative];
+            } else {
+              [];
+            },
+          numerator_limbs: rational_num_limbs,
+          denominator_flags: [],
+          denominator_limbs: rational_den_limbs,
+        }),
+      )
     | CNumber(Const_number_bigint({bigint_negative, bigint_limbs, _})) =>
       MAllocate(
-        MBigInt(
-          if (bigint_negative) {
-            [Bigint_flags.BigIntNegative];
-          } else {
-            [];
-          },
-          bigint_limbs,
-        ),
+        MBigInt({
+          flags:
+            if (bigint_negative) {
+              [Bigint_flags.BigIntNegative];
+            } else {
+              [];
+            },
+          limbs: bigint_limbs,
+        }),
       )
-    | CRational(n, d) =>
-      MAllocate(MRational(compile_imm(env, n), compile_imm(env, d)))
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))
