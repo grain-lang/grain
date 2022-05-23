@@ -17,6 +17,11 @@ let deasterisk_each_line = str => {
   Str.global_replace(Str.regexp("^[ \t]*\\*"), "", str);
 };
 
+let char_at = (str, i) =>
+  try(Some(str.[i])) {
+  | _ => None
+  };
+
 /**
 Slices a string given optional zero-based [~first] and [~last] indexes. The character
 at the [~last] index will not be included in the result.
