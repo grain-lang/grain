@@ -121,7 +121,6 @@ describe("utils/literals", ({test}) => {
   });
 
   test("literals_conv_bigint7", ({expect}) => {
-    Printf.eprintf("bi7\n");
     let res =
       Literals.conv_bigint(
         "120892581961462917470617512089258196146291747061751208925819614629174706175",
@@ -175,8 +174,6 @@ describe("utils/literals", ({test}) => {
     expect.option(res).toBeSome();
     let (neg, res) = Option.get(res);
     expect.bool(neg).toBeTrue();
-    Printf.eprintf("length: %d\n", Array.length(res));
-    Printf.eprintf("res[0]: %Ld\n", res[0]);
     expect.array(res).toEqual(~equals=Int64.equal, [|13L|]);
   });
 });
