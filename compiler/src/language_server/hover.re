@@ -58,6 +58,9 @@ let loc_to_range = (pos: Location.t): Protocol.range => {
   };
 };
 
+// We need to use the "grain-type" markdown syntax to have correct coloring on hover items
+let code_block = Markdown.code_block(~syntax="grain-type");
+
 let is_point_inside_stmt = (~line: int, loc: Grain_parsing.Location.t) => {
   let (_, raw1l, raw1c, _) = Locations.get_raw_pos_info(loc.loc_start);
   let (_, raw1le, raw1ce, _) = Locations.get_raw_pos_info(loc.loc_end);
@@ -537,7 +540,7 @@ let rec expression_lens =
     | _ => Printtyp.string_of_type_scheme(e.exp_type)
     };
 
-  Markdown.code_block(txt);
+  code_block(txt);
 };
 
 let get_from_statement =
@@ -575,7 +578,7 @@ let get_from_statement =
       | None => LocationSignature(data_name.txt, data_loc)
       | Some(t) =>
         LocationSignature(
-          Printtyp.string_of_type_scheme(t.ctyp_type),
+          code_block(Printtyp.string_of_type_scheme(t.ctyp_type)),
           data_loc,
         )
       }
@@ -598,12 +601,9 @@ let get_from_statement =
 
       switch (matches) {
       | [decl] =>
-        LocationSignature(Markdown.code_block(decl.cd_name.txt), decl.cd_loc)
+        LocationSignature(code_block(decl.cd_name.txt), decl.cd_loc)
       | _ =>
-        LocationSignature(
-          Markdown.code_block("enum " ++ data_name.txt),
-          data_loc,
-        )
+        LocationSignature(code_block("enum " ++ data_name.txt), data_loc)
       };
 
     | [
@@ -617,7 +617,7 @@ let get_from_statement =
         ..._,
       ] =>
       switch (data_params) {
-      | [] => LocationSignature(Markdown.code_block(data_name.txt), data_loc)
+      | [] => LocationSignature(code_block(data_name.txt), data_loc)
       | _ =>
         let matches =
           List.filter(
@@ -628,13 +628,10 @@ let get_from_statement =
         switch (matches) {
         | [decl] =>
           LocationSignature(
-            Markdown.code_block(
-              Printtyp.string_of_type_scheme(decl.ctyp_type),
-            ),
+            code_block(Printtyp.string_of_type_scheme(decl.ctyp_type)),
             decl.ctyp_loc,
           )
-        | _ =>
-          LocationSignature(Markdown.code_block(data_name.txt), data_loc)
+        | _ => LocationSignature(code_block(data_name.txt), data_loc)
         };
       }
     };
@@ -682,7 +679,7 @@ let get_from_statement =
         )
       | Pattern(p) =>
         LocationSignature(
-          Markdown.code_block(Printtyp.string_of_type_scheme(p.pat_type)),
+          code_block(Printtyp.string_of_type_scheme(p.pat_type)),
           if (p.pat_loc == Grain_parsing.Location.dummy_loc) {
             stmt.ttop_loc;
           } else {
@@ -713,9 +710,7 @@ let get_from_statement =
     | Error(err) => LocationError
     | NotInRange =>
       LocationSignature(
-        Markdown.code_block(
-          Printtyp.string_of_type_scheme(expression.exp_type),
-        ),
+        code_block(Printtyp.string_of_type_scheme(expression.exp_type)),
         loc,
       )
     | Expression(e) =>
@@ -730,7 +725,7 @@ let get_from_statement =
 
     | Pattern(p) =>
       LocationSignature(
-        Markdown.code_block(Printtyp.string_of_type_scheme(p.pat_type)),
+        code_block(Printtyp.string_of_type_scheme(p.pat_type)),
         p.pat_loc,
       )
     };
