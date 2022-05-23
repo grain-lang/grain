@@ -1,3 +1,4 @@
+open Grain_utils;
 open Grain_typed;
 open Grain_diagnostics;
 
@@ -64,17 +65,21 @@ module ResponseResult = {
 let find_completable = (text, offset) => {
   let rec loop = i => {
     i < 0
-      ? Some(String.sub(text, i + 1, offset - (i + 1)))
+      ? Some(String_utils.slice(~first=0, ~last=offset + 1, text))
       : (
-        switch (text.[i]) {
-        | 'a' .. 'z'
-        | 'A' .. 'Z'
-        | '0' .. '9'
-        | '.'
-        | '_' => loop(i - 1)
+        switch (String_utils.char_at(text, i)) {
+        | Some('a' .. 'z' | 'A' .. 'Z' | '0' .. '9' | '.' | '_') =>
+          loop(i - 1)
         | _ =>
           i == offset - 1
-            ? None : Some(String.sub(text, i + 1, offset - (i + 1)))
+            ? None
+            : Some(
+                String_utils.slice(
+                  ~first=i + 1,
+                  ~last=offset - (i + 1),
+                  text,
+                ),
+              )
         }
       );
   };
@@ -87,8 +92,8 @@ let get_original_text = (documents, uri, line, char) =>
   | None => None
   | Some(source_code) =>
     let lines = String.split_on_char('\n', source_code);
-    let line = List.nth(lines, line);
-    find_completable(line, char);
+    let line = List.nth_opt(lines, line);
+    Option.bind(line, line => find_completable(line, char));
   };
 
 // maps Grain types to LSP CompletionItemKind
@@ -172,11 +177,9 @@ let process =
           [],
         );
 
-      let first_char = text.[0];
-
       let completions =
-        switch (first_char) {
-        | 'A' .. 'Z' =>
+        switch (String_utils.char_at(text, 0)) {
+        | Some('A' .. 'Z') =>
           // autocomplete modules
           switch (String.rindex(text, '.')) {
           | exception exn =>
@@ -222,7 +225,7 @@ let process =
           | pos =>
             // find module name
 
-            let mod_name = String.sub(text, 0, pos);
+            let mod_name = String_utils.slice(~first=0, ~last=pos, text);
             let ident: Ident.t = {name: mod_name, stamp: 0, flags: 0};
 
             // only look up completions for imported modules
