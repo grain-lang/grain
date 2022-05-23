@@ -81,7 +81,8 @@ type request_message = {
   [@default None]
   id: option(message_id),
   method: string,
-  params: Yojson.Safe.t,
+  [@default None]
+  params: option(Yojson.Safe.t),
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage

@@ -76,10 +76,9 @@ type versioned_text_document_identifier = {
 [@deriving yojson({strict: false})]
 type request_message = {
   jsonrpc: version,
-  [@default None]
   id: option(message_id),
   method: string,
-  params: Yojson.Safe.t,
+  params: option(Yojson.Safe.t),
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseMessage

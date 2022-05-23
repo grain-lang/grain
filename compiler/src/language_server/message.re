@@ -19,52 +19,52 @@ type t =
 
 let of_request = (msg: Protocol.request_message): t => {
   switch (msg) {
-  | {method: "initialize", id: Some(id), params} =>
+  | {method: "initialize", id: Some(id), params: Some(params)} =>
     switch (Initialize.RequestParams.of_yojson(params)) {
     | Ok(params) => Initialize(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "textDocument/hover", id: Some(id), params} =>
+  | {method: "textDocument/hover", id: Some(id), params: Some(params)} =>
     switch (Hover.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentHover(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "textDocument/codeLens", id: Some(id), params} =>
+  | {method: "textDocument/codeLens", id: Some(id), params: Some(params)} =>
     switch (Lenses.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentCodeLens(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "textDocument/completion", id: Some(id), params} =>
+  | {method: "textDocument/completion", id: Some(id), params: Some(params)} =>
     switch (Completion.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentCompletion(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "completionItem/resolve", id: Some(id), params} =>
+  | {method: "completionItem/resolve", id: Some(id), params: Some(params)} =>
     switch (Completion.Resolution.RequestParams.of_yojson(params)) {
     | Ok(params) => CompletionItemResolve(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "shutdown", id: Some(id), params} =>
-    switch (Shutdown.RequestParams.of_yojson(params)) {
+  | {method: "shutdown", id: Some(id), params: None} =>
+    switch (Shutdown.RequestParams.of_yojson(`Null)) {
     | Ok(params) => Shutdown(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "exit", id: Some(id), params} =>
-    switch (Exit.RequestParams.of_yojson(params)) {
+  | {method: "exit", id: Some(id), params: None} =>
+    switch (Exit.RequestParams.of_yojson(`Null)) {
     | Ok(params) => Exit(id, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "textDocument/didOpen", id, params} =>
+  | {method: "textDocument/didOpen", id, params: Some(params)} =>
     switch (Code_file.DidOpen.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentDidOpen(params.text_document.uri, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "textDocument/didChange", id, params} =>
+  | {method: "textDocument/didChange", id, params: Some(params)} =>
     switch (Code_file.DidChange.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentDidChange(params.text_document.uri, params)
     | Error(msg) => Error(msg)
     }
-  | {method: "$/setTrace", params} =>
+  | {method: "$/setTrace", params: Some(params)} =>
     switch (Trace.RequestParams.of_yojson(params)) {
     | Ok(params) => SetTrace(params.value)
     | Error(msg) => Error(msg)
