@@ -23,7 +23,11 @@ type t =
   | UnreachableCase
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
-  | FuncWasmUnsafe(string);
+  | FuncWasmUnsafe(string)
+  | FromNumberLiteralI32(string)
+  | FromNumberLiteralI64(string)
+  | FromNumberLiteralF32(string)
+  | FromNumberLiteralF64(string);
 
 let number =
   fun
@@ -43,9 +47,13 @@ let number =
   | NoCmiFile(_) => 14
   | NonClosedRecordPattern(_) => 15
   | UnusedExtension => 16
-  | FuncWasmUnsafe(_) => 17;
+  | FuncWasmUnsafe(_) => 17
+  | FromNumberLiteralI32(_) => 18
+  | FromNumberLiteralI64(_) => 19
+  | FromNumberLiteralF32(_) => 20
+  | FromNumberLiteralF64(_) => 21;
 
-let last_warning_number = 17;
+let last_warning_number = 21;
 
 let message =
   fun
@@ -108,7 +116,27 @@ let message =
   | FuncWasmUnsafe(func) =>
     "it looks like you are using "
     ++ func
-    ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use one of the equivalent functions in `WasmI32`, `WasmI64`, `WasmF32`, or `WasmF64` instead.";
+    ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use one of the equivalent functions in `WasmI32`, `WasmI64`, `WasmF32`, or `WasmF64` instead."
+  | FromNumberLiteralI32(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Int32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sl`) instead.",
+      n,
+    )
+  | FromNumberLiteralI64(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Int64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sL`) instead.",
+      n,
+    )
+  | FromNumberLiteralF32(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
+      n,
+    )
+  | FromNumberLiteralF64(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
+      n,
+    );
 
 let sub_locs =
   fun
@@ -151,6 +179,10 @@ let defaults = [
   ShadowConstructor(""),
   NoCmiFile("", None),
   FuncWasmUnsafe(""),
+  FromNumberLiteralI32(""),
+  FromNumberLiteralI64(""),
+  FromNumberLiteralF32(""),
+  FromNumberLiteralF64(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);
