@@ -1,13 +1,17 @@
 open Grain_utils;
 
+let uri_to_yojson = (uri: Uri.t): Yojson.Safe.t =>
+  Uri.to_string(uri) |> [%to_yojson: string];
+let uri_of_yojson = (json: Yojson.Safe.t) =>
+  json |> [%of_yojson: string] |> Result.map(Uri.of_string);
+
+type uri = [@to_yojson uri_to_yojson] [@of_yojson uri_of_yojson] Uri.t;
+
 [@deriving yojson]
 type version = string;
 
 [@deriving yojson]
 type message_id = int;
-
-[@deriving yojson]
-type uri = string;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [@deriving yojson({strict: false})]
@@ -169,11 +173,5 @@ let notification = (~method, params) => {
 };
 
 let uri_to_filename = (uri: uri): string => {
-  let filetype = "file://";
-  let typelen = String.length(filetype);
-  if (String_utils.starts_with(String.lowercase_ascii(uri), filetype)) {
-    String_utils.slice(~first=typelen, uri);
-  } else {
-    uri;
-  };
+  Uri.path(uri);
 };
