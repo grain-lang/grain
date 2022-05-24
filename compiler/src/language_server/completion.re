@@ -34,6 +34,16 @@ type completion_item_kind =
   | CompletionItemKindOperator
   | CompletionItemKindTypeParameter;
 
+let completion_item_kind_to_yojson = severity =>
+  completion_item_kind_to_enum(severity) |> [%to_yojson: int];
+let completion_item_kind_of_yojson = json =>
+  Result.bind(json |> [%of_yojson: int], value => {
+    switch (completion_item_kind_of_enum(value)) {
+    | Some(severity) => Ok(severity)
+    | None => Result.Error("Invalid enum value")
+    }
+  });
+
 [@deriving yojson]
 type completion_item = {
   label: string,
