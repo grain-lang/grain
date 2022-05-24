@@ -112,6 +112,7 @@ let prim1_type =
   | AllocateTuple
   | AllocateBytes
   | AllocateString
+  | AllocateBigInt
   | LoadAdtVariant
   | StringSize
   | BytesSize => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)

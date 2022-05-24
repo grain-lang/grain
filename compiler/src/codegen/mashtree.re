@@ -184,6 +184,7 @@ type prim1 =
     | AllocateTuple
     | AllocateBytes
     | AllocateString
+    | AllocateBigInt
     | NewInt32
     | NewInt64
     | NewFloat32
@@ -321,7 +322,16 @@ type allocation_type =
   | MInt64(int64)
   | MFloat32(float)
   | MFloat64(float)
-  | MRational(int32, int32);
+  | MRational({
+      numerator_flags: list(Bigint_flags.t),
+      numerator_limbs: array(int64),
+      denominator_flags: list(Bigint_flags.t),
+      denominator_limbs: array(int64),
+    })
+  | MBigInt({
+      flags: list(Bigint_flags.t),
+      limbs: array(int64),
+    });
 
 [@deriving sexp]
 type tag_op =

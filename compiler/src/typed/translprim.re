@@ -53,6 +53,7 @@ let prim_map =
       ("@allocate.tuple", Primitive1(AllocateTuple)),
       ("@allocate.bytes", Primitive1(AllocateBytes)),
       ("@allocate.string", Primitive1(AllocateString)),
+      ("@allocate.bigInt", Primitive1(AllocateBigInt)),
       ("@new.int32", Primitive1(NewInt32)),
       ("@new.int64", Primitive1(NewInt64)),
       ("@new.float32", Primitive1(NewFloat32)),

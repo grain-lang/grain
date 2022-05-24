@@ -1,59 +1,120 @@
 import Number from "number"
 import Result from "result"
+import Int32 from "int32"
+import Int64 from "int64"
+import Float32 from "float32"
 import Float64 from "float64"
+import BI from "bigint"
 
 // add
 assert Number.add(25, 5) == 30
+// Rational addition tests
+{
+  let (+) = Number.add
+  assert 2/3 + 4 == 14/3
+  assert 2/3 + Int32.toNumber(4l) == 14/3
+  assert 2/3 + Int64.toNumber(4L) == 14/3
+  assert 4 + (2/3) == 14/3
+  assert Int32.toNumber(4l) + 2/3 == 14/3
+  assert Int64.toNumber(4L) + 2/3 == 14/3
+  assert 2/3 + 4.0 == 4.666666666666667
+}
 // sub
 assert Number.sub(25, 5) == 20
+// Rational subtraction tests
+{
+  let (-) = Number.sub
+  assert 2/3 - 4 == -10/3
+  assert 2/3 - Int32.toNumber(4l) == -10/3
+  assert 2/3 - Int64.toNumber(4L) == -10/3
+  assert 4 - (2/3) == 10/3
+  assert Int32.toNumber(4l) - 2/3 == 10/3
+  assert Int64.toNumber(4L) - 2/3 == 10/3
+  assert (2/3) - 4.0 == -3.3333333333333335
+  assert 4.0 - (2/3) == 3.3333333333333335
+}
 // mul
 assert Number.mul(5, 5) == 25
+// Rational mult tests
+{
+  let (*) = Number.mul
+  assert (2/3) * 4 == 8/3
+  assert (2/3) * Int32.toNumber(4l) == 8/3
+  assert (2/3) * Int64.toNumber(4L) == 8/3
+  assert 4 * (2/3) == 8/3
+  assert Int32.toNumber(4l) * (2/3) == 8/3
+  assert Int64.toNumber(4L) * (2/3) == 8/3
+  assert (2/3) * 4.0 < 2.666666666666667
+  assert 2.6666666666666 < (2/3) * 4.0
+}
 // div
 assert Number.div(25, 5) == 5
+// Rational div tests
+{
+  let (/) = Number.div
+  assert (2/3) / 4 == 1/6
+  assert (2/3) / Int32.toNumber(4l) == 1/6
+  assert (2/3) / Int64.toNumber(4L) == 1/6
+  assert 4 / (2/3) == 6
+  assert Int32.toNumber(4l) / (2/3) == 6
+  assert Int64.toNumber(4L) / (2/3) == 6
+  assert (2/3) / 4.0  == 0.16666666666666666
+  assert 4.0 / (2/3) == 6.0
+}
 // sqrt
 assert Number.sqrt(25) == 5
 assert Number.sqrt(25.0) == 5.0
 assert Number.sqrt(35) == 5.916079783099616
 assert Number.sqrt(2/4) == 0.7071067811865476
+assert Number.sqrt(9266609011276477657) == 3044110545.180066
 // min
 assert Number.min(5, 6) == 5
 assert Number.min(6, 5) == 5
 assert Number.min(1/2, 1/4) == 1/4
 assert Number.min(0.5, 0.25) == 0.25
+assert Number.min(355894508425808343204914141312, 6) == 6
 // max
 assert Number.max(6, 5) == 6
 assert Number.max(5, 6) == 6
 assert Number.max(1/2, 1/4) == 1/2
 assert Number.max(0.5, 0.25) == 0.5
+assert Number.max(BI.toNumber(1234t), BI.toNumber(12t)) == BI.toNumber(1234t)
+assert Number.max(355894508425808343204914141312, 6) == 355894508425808343204914141312
 // ceil
 assert Number.ceil(-25.5) == -25
 assert Number.ceil(25.5) == 26
 assert Number.ceil(25) == 25
 assert Number.ceil(22/7) == 4
+assert Number.ceil(BI.toNumber(1234t)) == BI.toNumber(1234t)
 // floor
 assert Number.floor(-25.5) == -26
 assert Number.floor(25.5) == 25
 assert Number.floor(25) == 25
 assert Number.floor(22/7) == 3
+assert Number.floor(BI.toNumber(1234t)) == BI.toNumber(1234t)
 // trunc
 assert Number.trunc(-25.5) == -25
 assert Number.trunc(25.5) == 25
 assert Number.trunc(25) == 25
 assert Number.trunc(22/7) == 3
+assert Number.trunc(BI.toNumber(1234t)) == BI.toNumber(1234t)
 // round
 assert Number.round(-25.5) == -26
 assert Number.round(-25.25) == -25
 assert Number.round(25.25) == 25
 assert Number.round(25.5) == 26
 assert Number.round(22/7) == 3
+assert Number.round(BI.toNumber(1234t)) == BI.toNumber(1234t)
 // abs
 assert Number.abs(-25.5) == 25.5
 assert Number.abs(25.5) == 25.5
 assert Number.abs(-1/2) == 1/2
 // neg
-assert Number.neg(-25.5) == -25.5
+assert Number.neg(-25.5) == 25.5
 assert Number.neg(25.5) == -25.5
 assert Number.neg(1/2) == -1/2
+assert Number.neg(BI.toNumber(1234t)) == BI.toNumber(-1234t)
+assert Number.neg(BI.toNumber(-1234t)) == BI.toNumber(1234t)
 
 // isFinite
 assert Number.isFinite(0.0/0.0) == false // NaN
@@ -69,6 +130,7 @@ assert Number.isFinite(25.76)
 assert Number.isFinite(-25.00)
 assert Number.isFinite(1/2)
 assert Number.isFinite(-1/2)
+assert Number.isFinite(BI.toNumber(-141435902485091384901384t))
 
 // isNaN
 assert Number.isNaN(0.0/0.0)
@@ -84,6 +146,7 @@ assert Number.isNaN(1/2) == false
 assert Number.isNaN(-1/2) == false
 assert Number.isNaN(1.0/0.0) == false // infinity
 assert Number.isNaN(-1.0/0.0) == false // -infinity
+assert Number.isNaN(BI.toNumber(1t)) == false
 
 // isInfinite
 assert Number.isInfinite(1.0/0.0) // infinity
@@ -99,6 +162,7 @@ assert Number.isInfinite(25.76) == false
 assert Number.isInfinite(-25.00) == false
 assert Number.isInfinite(1/2) == false
 assert Number.isInfinite(-1/2) == false
+assert Number.isInfinite(BI.toNumber(-1t)) == false
 
 // parseInt
 assert Number.parseInt("42", 10) == Ok(42)
@@ -125,11 +189,11 @@ assert Number.parseInt("0B100101110110", 10) == Ok(0b100101110110)
 assert Number.parseInt("100101110110", 2) == Ok(0b100101110110)
 assert Number.parseInt("zyxw44ab", 36) == Ok(2818805666483)
 assert Number.parseInt("ZYXW44AB", 36) == Ok(2818805666483)
+assert Number.parseInt("9223372036854775808", 10) == Ok(9223372036854775808)
+assert Number.parseInt("-9223372036854775808", 10) == Ok(-9223372036854775808)
 assert Result.isErr(Number.parseInt("", 10))
 assert Result.isErr(Number.parseInt("_", 10))
 assert Result.isErr(Number.parseInt("1.23", 10))
-assert Result.isErr(Number.parseInt("9223372036854775808", 10))
-assert Result.isErr(Number.parseInt("-9223372036854775809", 10))
 assert Result.isErr(Number.parseInt("000000", 1))
 assert Result.isErr(Number.parseInt("zzzzz", 37))
 assert Result.isErr(Number.parseInt("zzzzz", 9223372036854775807))
@@ -139,6 +203,8 @@ assert Result.isErr(Number.parseInt("10", 2/3))
 // Number.sign
 assert Number.sign(-10000) == -1
 assert Number.sign(22222) == 1
+assert Number.sign(BI.toNumber(-1t)) == -1
+assert Number.sign(BI.toNumber(1t)) == 1
 // TODO(#693): Replace with Infinity literal when it exists
 assert 1 / Number.sign(0.0) == Float64.toNumber(Float64.infinity)
 // TODO(#693): Replace with -Infinity literal when it exists

@@ -125,6 +125,7 @@ type constant =
   | PConstWasmI64(string)
   | PConstWasmF32(string)
   | PConstWasmF64(string)
+  | PConstBigInt(string)
   | PConstBool(bool)
   | PConstVoid
   | PConstBytes(string)
@@ -316,6 +317,7 @@ type prim1 =
   | AllocateTuple
   | AllocateBytes
   | AllocateString
+  | AllocateBigInt
   | NewInt32
   | NewInt64
   | NewFloat32

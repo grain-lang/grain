@@ -169,7 +169,8 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("int64_1", "99999999999999999L");
   assertSnapshot("int64_pun_1", "9999999 * 99999999");
   assertSnapshot("int64_pun_2", "-99999999 - 999999999");
-  assertRunError("overflow1", "9223372036854775807 + 1", "Overflow");
+  assertSnapshot("bigint_1", "9223372036854775807 + 1");
+  assertSnapshot("bigint_2", "0x42355430892589308190890313423");
   assertSnapshot("block_no_expression", "let f = () => { let x = 5 }; f()");
   assertSnapshotFile("func_shadow", "funcShadow");
   assertSnapshotFile(

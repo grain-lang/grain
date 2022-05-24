@@ -46,6 +46,7 @@ module Const = {
   let wasmi64 = i => PConstWasmI64(i);
   let wasmf32 = f => PConstWasmF32(f);
   let wasmf64 = f => PConstWasmF64(f);
+  let bigint = i => PConstBigInt(i);
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };

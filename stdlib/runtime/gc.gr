@@ -215,6 +215,14 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
   }
 }, decRefChildren = (userPtr: WasmI32) => {
   match (WasmI32.load(userPtr, 0n)) {
+    t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+      let tag = WasmI32.load(userPtr, 4n)
+      if (userPtr == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) {
+        // decRef underlying BigInts
+        ignore(decRef(WasmI32.load(userPtr, 8n), false))
+        ignore(decRef(WasmI32.load(userPtr, 12n), false))
+      }
+    },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       let arity = WasmI32.load(userPtr, 16n)
       let maxOffset = arity * 4n

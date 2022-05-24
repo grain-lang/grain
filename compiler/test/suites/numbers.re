@@ -41,6 +41,16 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("number_syntax8", "print(1.2e2)", "120.0\n");
   assertRun("number_syntax9", "print(1l)", "1\n");
   assertRun("number_syntax10", "print(1L)", "1\n");
+  assertRun(
+    "number_syntax11",
+    "print(987654321987654321987654321)",
+    "987654321987654321987654321\n",
+  );
+  assertRun(
+    "number_syntax12",
+    "print(987654321987654321987654321t)",
+    "987654321987654321987654321\n",
+  );
   // equality checks
   assertRun(
     "nan_equality1",
@@ -56,11 +66,6 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("number_equality", {|print(5.0 == 5)|}, "true\n");
   assertRun("number_equality2", {|print(5 == 5.0)|}, "true\n");
   // syntax errors
-  assertCompileError(
-    "number_syntax_err1",
-    "987654321987654321987654321",
-    "outside of the integer range",
-  );
   assertCompileError(
     "number_syntax_err2",
     "987654321987654321987654321l",

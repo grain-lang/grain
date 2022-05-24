@@ -78,7 +78,7 @@ let rec analyze_comp_expression =
         _,
       ) =>
       true
-    | CPrim1(Assert | Throw, _) => false
+    | CPrim1(Assert | Throw | AllocateBigInt, _) => false
     | CPrim2(
         NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
         WasmLoadF32 |

@@ -87,3 +87,124 @@ let conv_wasmf32 = s => {
 let conv_wasmf64 = s => {
   Float.of_string_opt(s);
 };
+
+let digit_value = c => {
+  switch (c) {
+  | '0' .. '9' => Char.code(c) - Char.code('0')
+  | 'a' .. 'f' => 10 + (Char.code(c) - Char.code('a'))
+  | 'A' .. 'F' => 10 + (Char.code(c) - Char.code('A'))
+  | _ => failwith("Impossible: Bad char: " ++ String.make(1, c))
+  };
+};
+
+let conv_bigint = s =>
+  if (String.length(s) == 0) {
+    None;
+  } else {
+    let neg = s.[0] == '-';
+    let first = if (neg) {1} else {0};
+    let (first, base) =
+      // This function supports the 0u prefix for parity with Int64.of_string
+      // Note that Grain doesn't support the 0u prefix (as of writing), so this should
+      // never receive a string which starts with 0u, but we still include the support
+      // so as to keep the semantics of all of our string->int conversion functions
+      // synced up.
+      if (String_utils.starts_with(~offset=first, s, "0u")
+          || String_utils.starts_with(~offset=first, s, "0U")) {
+        (first + 2, 10);
+      } else if (String_utils.starts_with(~offset=first, s, "0b")
+                 || String_utils.starts_with(~offset=first, s, "0B")) {
+        (first + 2, 2);
+      } else if (String_utils.starts_with(~offset=first, s, "0o")
+                 || String_utils.starts_with(~offset=first, s, "0O")) {
+        (first + 2, 8);
+      } else if (String_utils.starts_with(~offset=first, s, "0x")
+                 || String_utils.starts_with(~offset=first, s, "0X")) {
+        (first + 2, 16);
+      } else {
+        (first, 10);
+      };
+    if (base == 2 || base == 8 || base == 16) {
+      // easier case for bases which are powers of two
+      let bits =
+        if (base == 2) {
+          1;
+        } else if (base == 8) {
+          3;
+        } else {
+          4;
+        };
+      let acc = ref(Int64.zero);
+      let accBits = ref(0);
+      let results = ref([]);
+      for (i in String.length(s) - 1 downto first) {
+        let digit = Int64.of_int(digit_value(s.[i]));
+        acc := Int64.logor(acc^, Int64.shift_left(digit, accBits^));
+        accBits := accBits^ + bits;
+        if (accBits^ >= 64) {
+          results := [acc^, ...results^];
+          accBits := accBits^ - 64;
+          acc := Int64.shift_right_logical(digit, bits - accBits^);
+        };
+      };
+      if (Int64.unsigned_compare(acc^, Int64.zero) > 0) {
+        results := [acc^, ...results^];
+      };
+      Some((neg, Array.of_list(List.rev(results^))));
+    } else {
+      // Base 10. Need to use the mini-bigint implementation
+      // to properly convert to a power-of-two base.
+      // [NOTE] We save some operations by reading 9 places at a time
+      //        (signed i32 max is 10 digits in base 10)
+      let places_at_a_time = 9;
+      let rec compute_chunk_locations = (start, string_length, acc) => {
+        let remaining_length = string_length - start;
+        if (remaining_length <= places_at_a_time) {
+          [(start, string_length), ...acc];
+        } else {
+          compute_chunk_locations(
+            start,
+            string_length - places_at_a_time,
+            [(string_length - places_at_a_time, string_length), ...acc],
+          );
+        };
+      };
+      let get_chunk = ((start_idx, end_idx)) => {
+        let result = ref(Int64.zero);
+        for (i in start_idx to end_idx - 1) {
+          result :=
+            Int64.add(
+              Int64.mul(result^, Int64.of_int(base)),
+              Int64.of_int(digit_value(s.[i])),
+            );
+        };
+        result^;
+      };
+      // factor == 10l ** (places_at_a_time)
+      let factor =
+        List.fold_left(
+          Int32.mul,
+          Int32.one,
+          List.init(places_at_a_time, n => Int32.of_int(base)),
+        );
+      let chunks =
+        List.map(
+          get_chunk,
+          compute_chunk_locations(first, String.length(s), []),
+        );
+      let result =
+        List.fold_left(
+          (acc, chunk) => {
+            let ret =
+              Mini_bigint.unsigned_add_i64(
+                Mini_bigint.unsigned_mul_i32(acc, factor),
+                chunk,
+              );
+            ret;
+          },
+          Mini_bigint.zero(),
+          chunks,
+        );
+      Some((neg, result.limbs));
+    };
+  };

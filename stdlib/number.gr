@@ -201,7 +201,7 @@ export let abs = (x: Number) => if (0 > x) x * -1 else x
  *
  * @since v0.4.0
  */
-export let neg = (x: Number) => if (x > 0) x * -1 else x
+export let neg = (x: Number) => x * -1
 
 /**
  * Checks if a number is finite.
