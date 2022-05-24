@@ -25,7 +25,9 @@ type t =
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string)
   | FromNumberLiteralI32(string)
-  | FromNumberLiteralI64(string);
+  | FromNumberLiteralI64(string)
+  | FromNumberLiteralF32(string)
+  | FromNumberLiteralF64(string);
 
 let number =
   fun
@@ -47,9 +49,11 @@ let number =
   | UnusedExtension => 16
   | FuncWasmUnsafe(_) => 17
   | FromNumberLiteralI32(_) => 18
-  | FromNumberLiteralI64(_) => 19;
+  | FromNumberLiteralI64(_) => 19
+  | FromNumberLiteralF32(_) => 20
+  | FromNumberLiteralF64(_) => 21;
 
-let last_warning_number = 19;
+let last_warning_number = 21;
 
 let message =
   fun
@@ -122,6 +126,16 @@ let message =
     Printf.sprintf(
       "it looks like you are calling Int64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sL`) instead.",
       n,
+    )
+  | FromNumberLiteralF32(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
+      n,
+    )
+  | FromNumberLiteralF64(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
+      n,
     );
 
 let sub_locs =
@@ -167,6 +181,8 @@ let defaults = [
   FuncWasmUnsafe(""),
   FromNumberLiteralI32(""),
   FromNumberLiteralI64(""),
+  FromNumberLiteralF32(""),
+  FromNumberLiteralF64(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

@@ -121,14 +121,36 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
                 _,
               ),
           },
-          [{exp_desc: TExpConstant(Const_number(Const_number_int(n)))}],
+          [
+            {
+              exp_desc:
+                TExpConstant(
+                  Const_number(
+                    (Const_number_int(_) | Const_number_float(_)) as n,
+                  ),
+                ),
+            },
+          ],
         )
-          when modname == "Int32" || modname == "Int64" =>
+          when
+            modname == "Int32"
+            || modname == "Int64"
+            || modname == "Float32"
+            || modname == "Float64" =>
+        // NOTE: Due to type-checking, we shouldn't need to worry about ending up with a FloatXX value and a Const_number_float
+        let n_str =
+          switch (n) {
+          | Const_number_int(nint) => Int64.to_string(nint)
+          | Const_number_float(nfloat) => Float.to_string(nfloat)
+          | _ => failwith("Impossible")
+          };
         let warning =
-          if (modname == "Int32") {
-            Grain_utils.Warnings.FromNumberLiteralI32(Int64.to_string(n));
-          } else {
-            Grain_utils.Warnings.FromNumberLiteralI64(Int64.to_string(n));
+          switch (modname) {
+          | "Int32" => Grain_utils.Warnings.FromNumberLiteralI32(n_str)
+          | "Int64" => Grain_utils.Warnings.FromNumberLiteralI64(n_str)
+          | "Float32" => Grain_utils.Warnings.FromNumberLiteralF32(n_str)
+          | "Float64" => Grain_utils.Warnings.FromNumberLiteralF64(n_str)
+          | _ => failwith("Impossible")
           };
         if (Grain_utils.Warnings.is_active(warning)) {
           Grain_parsing.Location.prerr_warning(exp_loc, warning);
