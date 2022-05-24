@@ -121,14 +121,14 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
                 _,
               ),
           },
-          [{exp_desc: TExpConstant(Const_number(Const_number_int(_)))}],
+          [{exp_desc: TExpConstant(Const_number(Const_number_int(n)))}],
         )
           when modname == "Int32" || modname == "Int64" =>
         let warning =
           if (modname == "Int32") {
-            Grain_utils.Warnings.FromNumberLiteral32;
+            Grain_utils.Warnings.FromNumberLiteralI32(Int64.to_string(n));
           } else {
-            Grain_utils.Warnings.FromNumberLiteral64;
+            Grain_utils.Warnings.FromNumberLiteralI64(Int64.to_string(n));
           };
         if (Grain_utils.Warnings.is_active(warning)) {
           Grain_parsing.Location.prerr_warning(exp_loc, warning);

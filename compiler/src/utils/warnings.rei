@@ -38,8 +38,8 @@ type t =
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string)
-  | FromNumberLiteral32
-  | FromNumberLiteral64;
+  | FromNumberLiteralI32(string)
+  | FromNumberLiteralI64(string);
 
 let is_active: t => bool;
 let is_error: t => bool;

@@ -24,8 +24,8 @@ type t =
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
   | FuncWasmUnsafe(string)
-  | FromNumberLiteral32
-  | FromNumberLiteral64;
+  | FromNumberLiteralI32(string)
+  | FromNumberLiteralI64(string);
 
 let number =
   fun
@@ -46,8 +46,8 @@ let number =
   | NonClosedRecordPattern(_) => 15
   | UnusedExtension => 16
   | FuncWasmUnsafe(_) => 17
-  | FromNumberLiteral32 => 18
-  | FromNumberLiteral64 => 19;
+  | FromNumberLiteralI32(_) => 18
+  | FromNumberLiteralI64(_) => 19;
 
 let last_warning_number = 19;
 
@@ -113,8 +113,16 @@ let message =
     "it looks like you are using "
     ++ func
     ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use one of the equivalent functions in `WasmI32`, `WasmI64`, `WasmF32`, or `WasmF64` instead."
-  | FromNumberLiteral32 => "it looks like you are calling Int32.fromNumber() with a constant number. Try using the literal syntax (e.g. `16l`) instead."
-  | FromNumberLiteral64 => "it looks like you are calling Int64.fromNumber() with a constant number. Try using the literal syntax (e.g. `16L`) instead.";
+  | FromNumberLiteralI32(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Int32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sl`) instead.",
+      n,
+    )
+  | FromNumberLiteralI64(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Int64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sL`) instead.",
+      n,
+    );
 
 let sub_locs =
   fun
@@ -157,8 +165,8 @@ let defaults = [
   ShadowConstructor(""),
   NoCmiFile("", None),
   FuncWasmUnsafe(""),
-  FromNumberLiteral32,
-  FromNumberLiteral64,
+  FromNumberLiteralI32(""),
+  FromNumberLiteralI64(""),
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);
