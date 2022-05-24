@@ -11,8 +11,10 @@
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain"
+    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain",
+    "build:test": "pushd __test__ && grain compile --wasi-polyfill wasi.gr --use-start-section index.gr && popd",
+    "pretest": "npm run build:test",
+    "test": "jest --ci --detectOpenHandles"
   },
   "pkg": {
     "assets": "bin/*.js"
@@ -42,6 +44,8 @@
   "devDependencies": {
     "del-cli": "^4.0.1",
     "pkg": "^5.3.1",
-    "prettier": "^2.3.2"
+    "prettier": "^2.3.2",
+    "jest": "28.1.0",
+    "near-workspaces": "2.0.0"
   }
 }
