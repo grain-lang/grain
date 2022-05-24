@@ -2,9 +2,7 @@
   "name": "@grain/compiler",
   "version": "0.4.6",
   "esy": {
-    "build": [
-      "dune build @native --no-buffer"
-    ],
+    "build": ["dune build @native --no-buffer"],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
@@ -46,6 +44,7 @@
     "@opam/ppx_sexp_conv": ">= 0.14.0",
     "@opam/reason": ">= 3.6.2",
     "@opam/sexplib": ">= 0.14.0",
+    "@opam/uri": ">= 4.2.0 < 5.0.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 1.7.0",
     "ocaml": "4.12.0"
