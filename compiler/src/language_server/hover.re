@@ -742,7 +742,7 @@ let get_from_statement =
     | Expression(e) =>
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, e),
-        get_expression_location(~enclosing=stmt.ttop_loc, e),
+        get_expression_location(~enclosing=loc, e),
       )
 
     | Pattern(p) =>
