@@ -459,15 +459,9 @@ let get_expression_location =
   switch (e) {
   | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
       when Path.name(mod_path) != "Pervasives" =>
-    // let loc_end_pos: Lexing.position = {
-    //   ...loc.loc.loc_end,
-    //   pos_cnum:
-    //     loc.loc.loc_start.pos_cnum + String.length(Path.name(mod_path)),
-    // };
-
-    // {...loc.loc, loc_end: loc_end_pos};
-
     let ident = loc.txt;
+
+    // don't use this really. we need a function
     let l =
       switch (ident) {
       | IdentName(loc) => loc
