@@ -454,7 +454,34 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
   );
 };
 
-// TODO Make hovers for modules work
+let get_expression_location =
+    (~enclosing: Location.t, e: Typedtree.expression) =>
+  switch (e) {
+  | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
+      when Path.name(mod_path) != "Pervasives" =>
+    let ident = loc.txt;
+
+    // don't use this really. we need a function
+    let l =
+      switch (ident) {
+      | IdentName(loc) => loc
+      | IdentExternal(t, loc) =>
+        switch (t) {
+        | IdentName(loc) => loc
+        | IdentExternal(t, loc) => loc
+        }
+      };
+
+    l.loc;
+
+  | _ =>
+    if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
+      enclosing;
+    } else {
+      e.exp_loc;
+    }
+  };
+
 let rec expression_lens =
         (
           ~line,
@@ -665,6 +692,7 @@ let get_from_statement =
       let vb = List.hd(value_bindings);
       let expr = vb.vb_expr;
       let pat = vb.vb_pat;
+
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, expr),
         pat.pat_loc,
@@ -675,14 +703,11 @@ let get_from_statement =
       | Error(err) => LocationError
       | NotInRange => LocationError
       | Expression(e) =>
+        let loc = get_expression_location(~enclosing=stmt.ttop_loc, e);
         LocationSignature(
           expression_lens(~line, ~char, ~compiled_code, e),
-          if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
-            stmt.ttop_loc;
-          } else {
-            e.exp_loc;
-          },
-        )
+          loc,
+        );
       | Pattern(p) =>
         LocationSignature(
           grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type)),
@@ -724,11 +749,7 @@ let get_from_statement =
     | Expression(e) =>
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, e),
-        if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
-          loc;
-        } else {
-          e.exp_loc;
-        },
+        get_expression_location(~enclosing=loc, e),
       )
 
     | Pattern(p) =>
