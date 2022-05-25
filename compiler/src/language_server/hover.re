@@ -459,13 +459,26 @@ let get_expression_location =
   switch (e) {
   | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
       when Path.name(mod_path) != "Pervasives" =>
-    let loc_end_pos: Lexing.position = {
-      ...loc.loc.loc_end,
-      pos_cnum:
-        loc.loc.loc_start.pos_cnum + String.length(Path.name(mod_path)),
-    };
+    // let loc_end_pos: Lexing.position = {
+    //   ...loc.loc.loc_end,
+    //   pos_cnum:
+    //     loc.loc.loc_start.pos_cnum + String.length(Path.name(mod_path)),
+    // };
 
-    {...loc.loc, loc_end: loc_end_pos};
+    // {...loc.loc, loc_end: loc_end_pos};
+
+    let ident = loc.txt;
+    let l =
+      switch (ident) {
+      | IdentName(loc) => loc
+      | IdentExternal(t, loc) =>
+        switch (t) {
+        | IdentName(loc) => loc
+        | IdentExternal(t, loc) => loc
+        }
+      };
+
+    l.loc;
 
   | _ =>
     if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
