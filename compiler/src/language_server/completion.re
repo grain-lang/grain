@@ -84,7 +84,8 @@ module RequestParams = {
     [@key "textDocument"]
     text_document: Protocol.text_document_identifier,
     position: Protocol.position,
-    context: completion_context,
+    [@default None]
+    context: option(completion_context),
   };
 };
 
@@ -203,11 +204,15 @@ let process =
   | None => send_completion(~id, [])
   | Some(prior_version_text) =>
     let text =
-      switch (params.context.trigger_kind) {
-      | CompletionTriggerCharacter =>
-        prior_version_text
-        ++ Option.value(~default="", params.context.trigger_character)
-      | _ => prior_version_text
+      switch (params.context) {
+      | None => prior_version_text
+      | Some(ctx) =>
+        switch (ctx.trigger_kind) {
+        | CompletionTriggerCharacter =>
+          prior_version_text
+          ++ Option.value(~default="", ctx.trigger_character)
+        | _ => prior_version_text
+        }
       };
     switch (Hashtbl.find_opt(cached_code, params.text_document.uri)) {
     | None => send_completion(~id, [])
