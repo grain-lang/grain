@@ -108,7 +108,9 @@ module PathTbl = {
     ) =>
     option('a) =
     (~disable_relpath=false, tbl, base_path, path, unit_name) =>
-      if (!disable_relpath && Grain_utils.Filepath.is_relative(unit_name)) {
+      if (!disable_relpath
+          && Filepath.is_relative(unit_name)
+          && !Filepath.is_module(unit_name)) {
         Hashtbl.find_opt(tbl, Filepath.append(base_path, unit_name));
       } else {
         List.fold_left(
