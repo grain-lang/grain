@@ -7,7 +7,7 @@
     "node": ">=16"
   },
   "scripts": {
-    "clean": "del-cli 'bin/*.exe' 'bin/*.bc.js'",
+    "clean": "del-cli \"bin/*.exe\" \"bin/*.bc.js\"",
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
