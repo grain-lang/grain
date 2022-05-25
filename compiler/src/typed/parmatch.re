@@ -776,7 +776,7 @@ let pat_of_constr = (ex_pat, cstr) => {
   ...ex_pat,
   pat_desc:
     TPatConstruct(
-      mknoloc(Identifier.IdentName("?pat_of_constr?")),
+      mknoloc(Identifier.IdentName(mknoloc("?pat_of_constr?"))),
       cstr,
       omegas(cstr.cstr_arity),
     ),
@@ -1846,7 +1846,10 @@ module Conv = {
         )
       | TPatConstruct(cstr_lid, cstr, lst) =>
         let id = fresh(cstr.cstr_name);
-        let lid = {...cstr_lid, txt: Identifier.IdentName(id)};
+        let lid = {
+          ...cstr_lid,
+          txt: Identifier.IdentName({...cstr_lid, txt: id}),
+        };
         Hashtbl.add(constrs, id, cstr);
         mkpat(PPatConstruct(lid, List.map(loop, lst)));
       };

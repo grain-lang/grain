@@ -94,7 +94,11 @@ describe("arrays", ({test, testSkip}) => {
           statements: [
             Top.expr(
               Exp.array_set(
-                Exp.ident(Location.mknoloc(Identifier.IdentName("state"))),
+                Exp.ident(
+                  Location.mknoloc(
+                    Identifier.IdentName(Location.mknoloc("state")),
+                  ),
+                ),
                 Exp.constant(Const.number(PConstNumberInt("0"))),
                 Exp.constant(Const.number(PConstNumberInt("5"))),
               ),

@@ -230,7 +230,7 @@ annotated_expr:
   | non_binop_expr colon typ { Exp.constraint_ ~loc:(to_loc $loc) $1 $3 }
 
 binop_expr:
-  | non_stmt_expr infix_op opt_eols non_stmt_expr { Exp.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [$1; $4] }
+  | non_stmt_expr infix_op opt_eols non_stmt_expr { Exp.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
 
 ellipsis_prefix(X):
   | ELLIPSIS X {$2}
@@ -242,7 +242,7 @@ pattern:
   // Allow rational numbers in patterns
   | dash_op? NUMBER_INT slash_op dash_op? NUMBER_INT { Pat.constant ~loc:(to_loc $sloc) @@ Const.number (PConstNumberRational ((if Option.is_some $1 then "-" ^ $2 else $2), (if Option.is_some $4 then "-" ^ $5 else $5))) }
   | ID { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
-  | special_id { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
+  | special_id { Pat.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | lparen tuple_patterns rparen { Pat.tuple ~loc:(to_loc $loc) $2 }
   | lbrackrcaret patterns rbrack { Pat.array ~loc:(to_loc $loc) $2 }
@@ -376,7 +376,7 @@ data_declaration:
   | RECORD TYPEID id_vec? data_labels { Dat.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
 prim1_expr:
-  | NOT non_assign_expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) ["!"]) [$2] }
+  | NOT non_assign_expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "!"]) [$2] }
 
 paren_expr:
   | lparen expr rparen { $2 }
@@ -476,14 +476,13 @@ special_op:
   | infix_op | prefix_op {$1}
 
 %inline special_id:
-  | lparen special_op rparen { $2 }
+  | lparen special_op rparen { mkstr $loc($2) $2 }
 
 %inline modid:
-  | lseparated_nonempty_list(dot, TYPEID) { $1 }
+  | lseparated_nonempty_list(dot, type_id_str) { $1 }
 
 non_modid:
-  | ID
-  | special_id { [$1] }
+  | id_str { [$1] }
 
 id:
   | modid dot non_modid { mkid (List.append $1 $3) (to_loc $loc) }
@@ -491,10 +490,10 @@ id:
   | non_modid { (mkid $1) (to_loc $loc) }
 
 simple_id:
-  | ID { (mkid [$1]) (to_loc $loc) }
+  | ID { (mkid [mkstr $loc $1]) (to_loc $loc) }
 
 type_id:
-  | lseparated_nonempty_list(dot, TYPEID) { (mkid $1) (to_loc $loc) }
+  | lseparated_nonempty_list(dot, type_id_str) { (mkid $1) (to_loc $loc) }
 
 id_expr:
   // Force any following colon to cause a shift
@@ -575,9 +574,9 @@ array_expr:
   | lbrackrcaret opt_eols lseparated_nonempty_list(comma, expr) comma? rbrack { Exp.array ~loc:(to_loc $loc) $3 }
 
 stmt_expr:
-  | THROW expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) ["throw"]) [$2] }
-  | ASSERT expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) ["assert"]) [$2] }
-  | FAIL expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) ["fail"]) [$2] }
+  | THROW expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [$2] }
+  | ASSERT expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [$2] }
+  | FAIL expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [$2] }
   | CONTINUE { Exp.continue ~loc:(to_loc $loc) () }
   | BREAK { Exp.break ~loc:(to_loc $loc) () }
 
@@ -586,7 +585,7 @@ assign_binop_op:
   | dasheq_op
   | stareq_op
   | slasheq_op
-  | percenteq_op {$1}
+  | percenteq_op { mkstr $loc $1 }
 
 assign_expr:
   | left_accessor_expr GETS opt_eols expr { Exp.box_assign ~loc:(to_loc $loc) $1 $4 }
@@ -667,7 +666,7 @@ file_path:
 
 id_str:
   | ID { Location.mkloc $1 (to_loc $loc) }
-  | special_id { Location.mkloc $1 (to_loc $loc) }
+  | special_id { $1 }
 
 type_id_str:
   | TYPEID { Location.mkloc $1 (to_loc $loc) }

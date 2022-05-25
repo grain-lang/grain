@@ -84,7 +84,7 @@ let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
         mod_.pimp_val,
       )
     ) {
-    | Some({txt: IdentName(name)}) => name
+    | Some({txt: IdentName({txt: name})}) => name
     | Some(_) => failwith("multilevel mod name")
     | None =>
       "%"
@@ -92,7 +92,7 @@ let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
            mod_.pimp_path.txt,
          )
     };
-  let mod_name = Identifier.IdentName(mod_name);
+  let mod_name = Identifier.IdentName(mknoloc(mod_name));
   let path =
     Typetexp.lookup_module(
       ~load=true,
@@ -605,7 +605,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             | Some(alias) => alias.txt
             | None => name.txt
             };
-          let name = {txt: Identifier.IdentName(name.txt), loc};
+          let name = {txt: Identifier.IdentName(name), loc};
           let bind_name = {txt: exported_name, loc};
           {
             pvb_pat: {
@@ -661,7 +661,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   let type_export_aliases = ref([]);
   let process_export_data = (env, exports, loc) => {
     let process_one = (rs, {pex_name: name, pex_alias: alias, pex_loc: loc}) => {
-      let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name.txt));
+      let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name));
       switch (alias) {
       | Some(alias) =>
         type_export_aliases :=
@@ -929,7 +929,9 @@ let open_implicit_module = (m, env, in_env) => {
   let values =
     if (in_env) {
       [
-        PImportModule(Location.mknoloc(Identifier.IdentName(modname))),
+        PImportModule(
+          Location.mknoloc(Identifier.IdentName(Location.mknoloc(modname))),
+        ),
         PImportAllExcept([]),
       ];
     } else {

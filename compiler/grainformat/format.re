@@ -1012,7 +1012,7 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
     | PPatConstruct(innerfunc, innerpatterns) =>
       let func =
         switch (innerfunc.txt) {
-        | IdentName(name) => name
+        | IdentName({txt: name}) => name
         | _ => ""
         };
 
@@ -1041,7 +1041,7 @@ and is_empty_list = (expr: Parsetree.expression) => {
   | PExpId(loc) =>
     let loc_txt =
       switch (loc.txt) {
-      | IdentName(name) => name
+      | IdentName({txt: name}) => name
       | _ => ""
       };
 
@@ -1273,7 +1273,7 @@ and print_pattern =
     | PPatConstruct(location, patterns) =>
       let func =
         switch (location.txt) {
-        | IdentName(name) => name
+        | IdentName({txt: name}) => name
         | _ => ""
         };
       if (func == list_cons) {
@@ -1376,13 +1376,13 @@ and print_constant =
 
 and print_ident = (ident: Identifier.t) => {
   switch (ident) {
-  | IdentName(name) =>
+  | IdentName({txt: name}) =>
     if (infixop(name) || prefixop(name)) {
       Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
     } else {
       Doc.text(name);
     }
-  | IdentExternal(externalIdent, second) =>
+  | IdentExternal(externalIdent, {txt: second}) =>
     Doc.concat([
       print_ident(externalIdent),
       Doc.text("."),
@@ -2128,7 +2128,7 @@ and get_function_name = (expr: Parsetree.expression) => {
 
   | PExpId({txt: id}) =>
     switch (id) {
-    | IdentName(name) => name
+    | IdentName(name) => name.txt
     | _ => ""
     }
   | _ => ""

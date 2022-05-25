@@ -265,8 +265,8 @@ let primn_type =
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
   List.fold_right(
-    ((id, ty, _name, _loc, _as_var), env) => {
-      let lid = Identifier.IdentName(Ident.name(id));
+    ((id, ty, _name, loc, _as_var), env) => {
+      let lid = Identifier.IdentName(mkloc(Ident.name(id), loc));
       switch (Env.lookup_value(~mark=false, lid, env)) {
       | _ => env
       | exception Not_found =>
@@ -294,7 +294,7 @@ let all_idents_cases = el => {
   let idents = Hashtbl.create(8);
   let rec f_expr = iter =>
     fun
-    | {pexp_desc: PExpId({txt: Identifier.IdentName(id), _}), _} =>
+    | {pexp_desc: PExpId({txt: Identifier.IdentName({txt: id}), _}), _} =>
       Hashtbl.replace(idents, id, ())
     | e => default_iterator.expr(iter, e);
 
@@ -885,7 +885,10 @@ and type_expect_ =
     let pat =
       switch (args) {
       | [] =>
-        Pat.construct(Location.mknoloc(Identifier.IdentName("()")), [])
+        Pat.construct(
+          Location.mknoloc(Identifier.IdentName(Location.mknoloc("()"))),
+          [],
+        )
       | args => Pat.tuple(args)
       };
     type_function(
@@ -1255,7 +1258,7 @@ and type_function =
     | [{pmb_pat: {ppat_desc: PPatTuple(args)}, _}] => List.length(args)
     /* FIXME: Less hard-coding, please */
     | [{pmb_pat: {ppat_desc: PPatConstruct({txt: ident, _}, []), _}, _}]
-        when Identifier.equal(ident, Identifier.IdentName("()")) => 0
+        when Identifier.equal(ident, Identifier.IdentName(mknoloc("()"))) => 0
     | _ => failwith("Impossible: type_function: impossible caselist")
     };
   let arity = arity(caselist);

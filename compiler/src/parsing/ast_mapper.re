@@ -23,6 +23,16 @@ type mapper = {
 
 let map_loc = (sub, {loc, txt}) => {loc: sub.location(sub, loc), txt};
 let map_opt = (sub, loc_opt) => Option.map(map_loc(sub), loc_opt);
+let map_identifier = (sub, {loc, txt}) => {
+  open Identifier;
+  let rec map_ident = id =>
+    switch (id) {
+    | IdentName(n) => IdentName(map_loc(sub, n))
+    | IdentExternal(mod_, n) =>
+      IdentExternal(map_ident(mod_), map_loc(sub, n))
+    };
+  {loc: sub.location(sub, loc), txt: map_ident(txt)};
+};
 
 module Cnst = {
   let map = (sub, c) => c;
@@ -39,7 +49,7 @@ module E = {
         attrs,
       );
     switch (desc) {
-    | PExpId(i) => ident(~loc, ~attributes, map_loc(sub, i))
+    | PExpId(i) => ident(~loc, ~attributes, map_identifier(sub, i))
     | PExpConstant(c) => constant(~loc, ~attributes, sub.constant(sub, c))
     | PExpTuple(es) => tuple(~loc, ~attributes, List.map(sub.expr(sub), es))
     | PExpArray(es) => array(~loc, ~attributes, List.map(sub.expr(sub), es))
