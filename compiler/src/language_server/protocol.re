@@ -37,6 +37,16 @@ type diagnostic_severity =
   | Information
   | Hint;
 
+let diagnostic_severity_to_yojson = severity =>
+  diagnostic_severity_to_enum(severity) |> [%to_yojson: int];
+let diagnostic_severity_of_yojson = json =>
+  Result.bind(json |> [%of_yojson: int], value => {
+    switch (diagnostic_severity_of_enum(value)) {
+    | Some(severity) => Ok(severity)
+    | None => Result.Error("Invalid enum value")
+    }
+  });
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnostic
 [@deriving yojson]
 type diagnostic = {
