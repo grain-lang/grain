@@ -14,7 +14,7 @@
     "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain",
     "build:test": "pushd __test__ && grain compile --wasi-polyfill wasi.gr --use-start-section index.gr && popd",
     "pretest": "npm run build:test",
-    "test": "jest --ci --detectOpenHandles"
+    "test": "jest --detectOpenHandles"
   },
   "pkg": {
     "assets": "bin/*.js"
