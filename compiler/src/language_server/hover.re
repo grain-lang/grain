@@ -454,6 +454,7 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
   );
 };
 
+// TODO Make hovers for modules work
 let rec expression_lens =
         (
           ~line,
