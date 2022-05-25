@@ -7,6 +7,66 @@ let from_string = fname => {
 };
 
 let dirname = path => Fp.dirName(path);
+let basename = path => Option.value(~default="", Fp.baseName(path));
+let extension = path => {
+  let baseName = basename(path);
+  switch (String.rindex_opt(baseName, '.')) {
+  | Some(index) => String_utils.slice(~first=index, baseName)
+  | None => ""
+  };
+};
+
+let is_absolute = (path: Fp.firstClass) =>
+  switch (path) {
+  | Absolute(_) => true
+  | Relative(_) => false
+  };
+
+let is_relative = (path: Fp.firstClass) =>
+  switch (path) {
+  | Relative(_) => true
+  | Absolute(_) => false
+  };
+
+let to_absolute = (path: Fp.firstClass) => {
+  switch (path) {
+  | Absolute(path) => path
+  | Relative(path) =>
+    failwith("Path is NOT absolute: " ++ Fp.toDebugString(path))
+  };
+};
+
+let to_relative = (path: Fp.firstClass) => {
+  switch (path) {
+  | Relative(path) => path
+  | Absolute(path) =>
+    failwith("Path is NOT relative: " ++ Fp.toDebugString(path))
+  };
+};
+
+let remove_extension = path => {
+  let baseName = basename(path);
+  let baseName =
+    switch (String.rindex_opt(baseName, '.')) {
+    | Some(index) => String_utils.slice(~last=index, baseName)
+    | None => baseName
+    };
+  Fp.append(dirname(path), baseName);
+};
+
+let replace_extension = (path, newExt) => {
+  let baseName = basename(path);
+  let baseName =
+    switch (String.rindex_opt(baseName, '.')) {
+    | Some(index) => String_utils.slice(~last=index, baseName)
+    | None => baseName
+    };
+  Fp.append(dirname(path), baseName ++ newExt);
+};
+
+let append_extension = (path, newExt) => {
+  Fp.append(dirname(path), basename(path) ++ newExt);
+};
 
 /**
   Converts the given path to an absolute path. Relative paths will be

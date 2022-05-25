@@ -111,7 +111,9 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
   };
 };
 
-let scan_for_imports = (~defer_errors=true, filename: string): list(string) => {
+let scan_for_imports =
+    (~defer_errors=true, filename: Fp.t(Fp.absolute)): list(Fp.firstClass) => {
+  let filename = Grain_utils.Filepath.to_string(filename);
   let ic = open_in(filename);
   let lexbuf = Lexing.from_channel(ic);
   try({
@@ -150,7 +152,8 @@ let scan_for_imports = (~defer_errors=true, filename: string): list(string) => {
     List.sort_uniq(
       String.compare,
       List.append(implicit_opens, found_imports^),
-    );
+    )
+    |> List.filter_map(Grain_utils.Filepath.from_string);
   }) {
   | e =>
     close_in(ic);

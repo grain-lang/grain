@@ -5,11 +5,11 @@ type optimization_level =
   | Level_three;
 
 /** The Grain stdlib directory, based on the current configuration */
-let stdlib_directory: unit => option(string);
+let stdlib_directory: unit => option(Fp.t(Fp.absolute));
 
 /** The list of directories to search for modules in, based on the current configuration */
 
-let module_search_path: unit => list(string);
+let module_search_path: unit => list(Fp.t(Fp.absolute));
 
 /** Whether verbose output should be written */
 

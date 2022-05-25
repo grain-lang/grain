@@ -26,7 +26,7 @@ type compilation_state_desc =
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_outfile: option(string),
+  cstate_outfile: option(Fp.t(Fp.absolute)),
 };
 
 type compilation_action =
@@ -275,7 +275,12 @@ let compile_wasi_polyfill = () => {
       let cstate = {
         cstate_desc: Initial(InputFile(file)),
         cstate_filename: Some(file),
-        cstate_outfile: Some(default_output_filename(file)),
+        cstate_outfile:
+          Some(
+            Grain_utils.Filepath.String.derelativize(
+              default_output_filename(file),
+            ),
+          ),
       };
       ignore(compile_resume(~hook=stop_after_object_file_emitted, cstate));
     })

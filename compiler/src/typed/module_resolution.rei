@@ -1,21 +1,23 @@
 let locate_module_file:
-  (~loc: Grain_parsing.Location.t, ~disable_relpath: bool=?, string) => string;
+  (~loc: Grain_parsing.Location.t, ~disable_relpath: bool=?, Fp.firstClass) =>
+  Fp.t(Fp.absolute);
 
 let locate_unit_object_file:
-  (~path: list(string)=?, ~base_dir: string=?, string) => string;
+  (
+    ~path: list(Fp.t(Fp.absolute))=?,
+    ~base_dir: Fp.t(Fp.absolute)=?,
+    Fp.firstClass
+  ) =>
+  Fp.t(Fp.absolute);
 
 let resolve_unit:
-  (
-    ~search_path: list(string)=?,
-    ~cache: bool=?,
-    ~base_dir: string=?,
-    string
-  ) =>
-  string;
+  (~cache: bool=?, ~base_dir: Fp.t(Fp.absolute)=?, Fp.firstClass) =>
+  Fp.t(Fp.absolute);
 
-let compile_module_dependency: ref((string, string) => unit);
+let compile_module_dependency:
+  ref((Fp.t(Fp.absolute), Fp.t(Fp.absolute)) => unit);
 
-let read_file_cmi: string => Cmi_format.cmi_infos;
+let read_file_cmi: Fp.t(Fp.absolute) => Cmi_format.cmi_infos;
 
 let clear_dependency_graph: unit => unit;
 
@@ -25,8 +27,6 @@ let with_preserve_unit:
 
 let current_unit_name: ref(unit => string);
 
-let current_filename: ref(unit => string);
+let current_filename: ref(unit => Fp.t(Fp.absolute));
 
 let dump_dependency_graph: unit => unit;
-
-let is_relpath: string => bool;

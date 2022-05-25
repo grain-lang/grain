@@ -573,16 +573,13 @@ let source_map =
 
 let print_warnings = internal_opt(true, NotDigestable);
 
-let stdlib_directory = (): option(string) =>
-  Option.map(
-    path => Filepath.(to_string(String.derelativize(path))),
-    stdlib_dir^,
-  );
+let stdlib_directory = (): option(Fp.t(Fp.absolute)) =>
+  Option.map(path => Filepath.String.derelativize(path), stdlib_dir^);
 
 let module_search_path = () => {
   switch (stdlib_directory()) {
-  | Some(x) => include_dirs^ @ [x] /* stdlib goes last */
-  | None => include_dirs^
+  | Some(x) => List.map(Filepath.String.derelativize, include_dirs^) @ [x] /* stdlib goes last */
+  | None => List.map(Filepath.String.derelativize, include_dirs^)
   };
 };
 

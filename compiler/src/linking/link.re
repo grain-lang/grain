@@ -58,7 +58,7 @@ let is_wasi_module = mod_name => {
 let is_wasi_polyfill_module = mod_path =>
   mod_path == resolve(wasi_polyfill_module());
 
-let new_base_dir = Filename.dirname;
+let new_base_dir = Filepath.dirname;
 
 let rec build_dependency_graph = (~base_dir, mod_path) => {
   let wasm_mod = Hashtbl.find(modules, mod_path);

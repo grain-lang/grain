@@ -695,9 +695,10 @@ type pers_struct = {
 let persistent_structures: Hashtbl.t(string, option(pers_struct)) =
   Hashtbl.create(17);
 
-let unit_to_file: Hashtbl.t(string, string) = Hashtbl.create(17);
+let unit_to_file: Hashtbl.t(Fp.firstClass, string) = Hashtbl.create(17);
 
-let compilation_in_progress: Hashtbl.t(string, Location.loc(string)) =
+let compilation_in_progress:
+  Hashtbl.t(Fp.t(Fp.absolute), Location.loc(string)) =
   Hashtbl.create(17); /* (module, dependent) */
 
 /* Consistency between persistent structures */
@@ -744,15 +745,20 @@ let check_consistency = ps =>
   try(
     List.iter(
       ((name, crco)) =>
-        switch (crco) {
-        | None => ()
-        | Some(crc) =>
+        switch (Filepath.from_string(name), crco) {
+        | (Some(name), Some(crc)) =>
           let resolved_file_name =
             Module_resolution.resolve_unit(
-              ~base_dir=Filename.dirname(ps.ps_filename),
+              ~base_dir=Filepath.String.derelativize(ps.ps_filename),
               name,
             );
-          Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
+          Consistbl.check(
+            crc_units,
+            Filepath.to_string(resolved_file_name),
+            crc,
+            ps.ps_filename,
+          );
+        | _ => ()
         },
       ps.ps_crcs,
     )
@@ -824,7 +830,10 @@ module Persistent_signature = {
     ref((~loc=Location.dummy_loc, unit_name) => {
       switch (Module_resolution.locate_module_file(~loc, unit_name)) {
       | filename =>
-        let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
+        let ret = {
+          filename: Filepath.to_string(filename),
+          cmi: Module_resolution.read_file_cmi(filename),
+        };
         Some(ret);
       | exception Not_found => None
       }
@@ -892,11 +901,15 @@ let find_pers_struct = (~loc, check, filepath) => {
     | Cannot_load_modules(_) => raise(Not_found)
     | Can_load_modules =>
       let ps = {
-        switch (Persistent_signature.load^(~loc, filepath)) {
-        | Some(ps) => ps
-        | None =>
-          Hashtbl.add(persistent_structures, filepath, None);
-          raise(Not_found);
+        switch (Filepath.from_string(filepath)) {
+        | Some(f) =>
+          switch (Persistent_signature.load^(~loc, f)) {
+          | Some(ps) => ps
+          | None =>
+            Hashtbl.add(persistent_structures, filepath, None);
+            raise(Not_found);
+          }
+        | None => raise(Not_found)
         };
       };
 
@@ -2129,8 +2142,12 @@ let add_components =
 };
 
 let same_filepath = (unit1, unit2) =>
-  Module_resolution.resolve_unit(unit1)
-  == Module_resolution.resolve_unit(unit2);
+  switch (Filepath.from_string(unit1), Filepath.from_string(unit2)) {
+  | (Some(unit1), Some(unit2)) =>
+    Module_resolution.resolve_unit(unit1)
+    == Module_resolution.resolve_unit(unit2)
+  | _ => false
+  };
 
 let check_opened = (mod_: Parsetree.import_declaration, env) => {
   let rec find_open = summary =>
@@ -2211,13 +2228,17 @@ let open_pers_signature = (name, filepath, env) =>
 let open_signature_of_initially_opened_module =
     (~loc=Location.dummy_loc, root, env) => {
   let filter_modules = m =>
-    // disabling relative paths should be overkill, but is technically the correct
-    // behavior for initially opened modules
-    switch (
-      Module_resolution.locate_module_file(~loc, ~disable_relpath=true, m)
-    ) {
-    | _ => false
-    | exception Not_found => true
+    switch (Filepath.from_string(m)) {
+    | Some(m) =>
+      // disabling relative paths should be overkill, but is technically the correct
+      // behavior for initially opened modules
+      switch (
+        Module_resolution.locate_module_file(~loc, ~disable_relpath=true, m)
+      ) {
+      | _ => false
+      | exception Not_found => true
+      }
+    | None => true
     };
 
   open_signature(None, root, env, ~filter_modules);
@@ -2372,18 +2393,18 @@ let imports = () => {
     Consistbl.extract(StringSet.elements(imported_units^), crc_units);
   List.map(
     ((unit, crc)) =>
-      switch (crc) {
-      | Some(_) => (unit, crc)
-      | None =>
+      switch (Filepath.from_string(unit), crc) {
+      | (Some(u), None) =>
         try({
           let cmi =
             Module_resolution.read_file_cmi(
-              Module_resolution.locate_unit_object_file(unit),
+              Module_resolution.locate_unit_object_file(u),
             );
           (unit, Some(Cmi_format.cmi_to_crc(cmi)));
         }) {
         | _ => (unit, crc)
         }
+      | _ => (unit, crc)
       },
     ret,
   );
@@ -2700,9 +2721,10 @@ let report_error = ppf =>
       label,
     )
   | Unbound_module(_, modname) => fprintf(ppf, "Unbound module %s", modname)
-  | No_module_file(m, None) => fprintf(ppf, "Missing file for module %s", m)
+  | No_module_file(m, None) =>
+    fprintf(ppf, "Env: Missing file for module %s", m)
   | No_module_file(m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module %s: %s", m, msg)
+    fprintf(ppf, "Env: Missing file for module %s: %s", m, msg)
   | Value_not_found_in_module(_, name, path) =>
     fprintf(ppf, "Export \"%s\" was not found in \"%s\"", name, path)
   | Cyclic_dependencies(dep, chain) =>

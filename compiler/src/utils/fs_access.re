@@ -27,31 +27,34 @@ let determine_eol = line => {
 // TODO: (#598) Should be safe for now, but we should harden this against
 // relative paths by converting everything to absolute paths
 
-let modified_cache = Hashtbl.create(16);
+let modified_cache: Hashtbl.t(Fp.t(Fp.absolute), float) =
+  Hashtbl.create(16);
 
 let last_modified = f => {
   switch (Hashtbl.find_opt(modified_cache, f)) {
   | Some(t) => t
   | None =>
-    let t = Unix.(stat(f).st_mtime);
+    let t = Unix.(stat(Filepath.to_string(f)).st_mtime);
     Hashtbl.add(modified_cache, f, t);
     t;
   };
 };
 
-let exists_cache = Hashtbl.create(16);
+let exists_cache: Hashtbl.t(Fp.t(Fp.absolute), bool) = Hashtbl.create(16);
 
 let file_exists = f => {
+  // Hashtbl.iter((path, _) => prerr_endline(path), exists_cache);
   switch (Hashtbl.find_opt(exists_cache, f)) {
   | Some(e) => e
   | None =>
-    let e = Sys.file_exists(f);
+    let e = Sys.file_exists(Filepath.to_string(f));
     Hashtbl.add(exists_cache, f, e);
     e;
   };
 };
 
-let cache_flushers: ref(list((string => unit, unit => unit))) = ref([]);
+let cache_flushers: ref(list((Fp.t(Fp.absolute) => unit, unit => unit))) =
+  ref([]);
 
 let register_cache_flusher = f => {
   cache_flushers := [f, ...cache_flushers^];
@@ -65,7 +68,7 @@ let flush_all_cached_data = () => {
 
 /** For writing out compiled output. Flushes caches as appropriate */
 let open_file_for_writing = f => {
-  let oc = open_out_bin(f);
+  let oc = open_out_bin(Filepath.to_string(f));
   Hashtbl.remove(exists_cache, f);
   Hashtbl.add(exists_cache, f, true);
   Hashtbl.remove(modified_cache, f);
@@ -86,11 +89,11 @@ let rec readdir = dir => {
      );
 };
 
-let ensure_parent_directory_exists = fname => {
-  // TODO: Cleanup once Fp.t is used everywhere
-  let full_path = Filepath.String.derelativize(fname);
+let ensure_parent_directory_exists = full_path => {
   // No longer swallowing the error because we can handle the CWD case
   // thus we should raise if something is actually wrong
   // TODO: Switch this to return the Result type
-  Fs.mkDirPExn(Fp.dirName(full_path));
+  Fs.mkDirPExn(
+    Fp.dirName(full_path),
+  );
 };
