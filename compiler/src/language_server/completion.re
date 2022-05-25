@@ -129,6 +129,7 @@ let get_original_text = (documents, uri, line, char) =>
   | Some(source_code) =>
     let lines = String.split_on_char('\n', source_code);
     let line = List.nth_opt(lines, line);
+    // UGH, this is really not nice:
     let old_char = char > 0 ? char - 1 : char; // the position is against the earlier version of the document so move back 1
     Option.bind(line, line => find_completable(line, old_char));
   };
