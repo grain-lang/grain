@@ -98,7 +98,7 @@ let rec narrow_unbound_lid_error: 'a. (_, _, _, _) => 'a =
     | Identifier.IdentName(_) => ()
     | Identifier.IdentExternal(mlid, id) =>
       check_module(mlid);
-      error(Unbound_value_in_module(mlid, id));
+      error(Unbound_value_in_module(mlid, id.txt));
     /* let md = Env.find_module (Env.lookup_module ~load:true mlid None env) None env in
        begin match Env.scrape_alias env md.md_type with
        | TModIdent _ ->
@@ -113,7 +113,7 @@ let rec narrow_unbound_lid_error: 'a. (_, _, _, _) => 'a =
 let find_component = (lookup: (~mark: _=?) => _, make_error, env, loc, lid) =>
   try(
     switch (lid) {
-    | Identifier.IdentExternal(Identifier.IdentName("*predef*"), s) =>
+    | Identifier.IdentExternal(Identifier.IdentName({txt: "*predef*"}), s) =>
       lookup(Identifier.IdentName(s), Env.initial_env)
     | _ => lookup(lid, env)
     }
@@ -558,9 +558,9 @@ let spellcheck = (ppf, fold, env, lid) => {
   };
   switch (lid) {
   | Identifier.IdentName(s) =>
-    Misc.did_you_mean(ppf, () => choices(~path=None, s))
+    Misc.did_you_mean(ppf, () => choices(~path=None, s.txt))
   | Identifier.IdentExternal(r, s) =>
-    Misc.did_you_mean(ppf, () => choices(~path=Some(r), s))
+    Misc.did_you_mean(ppf, () => choices(~path=Some(r), s.txt))
   };
 };
 

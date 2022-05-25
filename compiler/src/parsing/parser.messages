@@ -5512,36 +5512,6 @@ program: PRIMITIVE THROW WHILE
 
 Expected a type annotation—a colon followed by a type.
 
-program: PRIMITIVE LPAREN STAR WHILE
-##
-## Ends in an error in state: 184.
-##
-## id_str -> lparen special_op . rparen [ TYPE SEMI RECORD LPAREN LET IMPORT FROM EXPORT EOL EOF ENUM COMMA COLON AT AS ]
-##
-## The known suffix of the stack is as follows:
-## lparen special_op
-##
-
-Expected `)` to complete the infix operator reference.
-
-program: PRIMITIVE LPAREN WHILE
-##
-## Ends in an error in state: 183.
-##
-## id_str -> lparen . special_op rparen [ TYPE SEMI RECORD LPAREN LET IMPORT FROM EXPORT EOL EOF ENUM COMMA COLON AT AS ]
-##
-## The known suffix of the stack is as follows:
-## lparen
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2, spurious reduction of production lparen -> LPAREN
-##
-
-Expected an infix or prefix operator.
-
 program: PRIMITIVE WHILE
 ##
 ## Ends in an error in state: 764.

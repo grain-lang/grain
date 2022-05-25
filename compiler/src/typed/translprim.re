@@ -25,7 +25,12 @@ module PrimMap =
 let default_loc = Location.dummy_loc;
 
 let mkident = name =>
-  Exp.ident(Location.mkloc(Identifier.IdentName(name), default_loc));
+  Exp.ident(
+    Location.mkloc(
+      Identifier.IdentName(Location.mkloc(name, default_loc)),
+      default_loc,
+    ),
+  );
 let mkpatvar = name => {
   ppat_desc: PPatVar(Location.mkloc(name, default_loc)),
   ppat_loc: default_loc,

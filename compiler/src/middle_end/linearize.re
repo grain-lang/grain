@@ -1070,7 +1070,7 @@ and transl_comp_expression =
       ],
       _,
     )
-      when Identifier.equal(ident, Identifier.IdentName("()")) =>
+      when Identifier.equal(ident, Identifier.IdentName(mknoloc("()"))) =>
     let anf_body = transl_anf_expression(body);
     (
       Comp.lambda(

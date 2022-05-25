@@ -78,14 +78,21 @@ module NameChoice =
     /*Env.mark_type_used env (Path.last tpath) (Env.find_type tpath env);*/
     switch (lid.txt) {
     | Identifier.IdentName(s) =>
-      try(List.find(nd => get_name(nd) == s, descrs)) {
+      try(List.find(nd => get_name(nd) == s.txt, descrs)) {
       | Not_found =>
         let names = List.map(get_name, descrs);
         raise(
           Error(
             lid.loc,
             env,
-            WrongName("", mk_expected(newvar()), type_kind, tpath, s, names),
+            WrongName(
+              "",
+              mk_expected(newvar()),
+              type_kind,
+              tpath,
+              s.txt,
+              names,
+            ),
           ),
         );
       }
