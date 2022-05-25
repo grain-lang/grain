@@ -27,7 +27,7 @@
     "index.js"
   ],
   "scripts": {
-    "clean": "del-cli '**/*.wasm' '**/*.wat' '**/*.modsig'"
+    "clean": "del-cli \"**/*.wasm\" \"**/*.wat\" \"**/*.modsig\""
   },
   "dependencies": {},
   "devDependencies": {
