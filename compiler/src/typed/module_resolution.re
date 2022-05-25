@@ -75,15 +75,14 @@ let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
         | None => try_dir(rem)
         };
       };
-  if (Filepath.is_absolute(name)) {
+  if (Filepath.is_absolute(name)
+      && Fs_access.file_exists(Filepath.from_absolute_string(name))) {
     let abs_path = Filepath.from_absolute_string(name);
-    if (Fs_access.file_exists(abs_path)) {
-      let (basename, ext) = Filepath.basename(abs_path);
-      (abs_path, Filepath.dirname(abs_path), basename, ext);
-    } else {
-      try(try_dir(path)) {
-      | Not_found => raise(Not_found)
-      };
+    let (basename, ext) = Filepath.basename(abs_path);
+    (abs_path, Filepath.dirname(abs_path), basename, ext);
+  } else if (Filepath.is_module(name)) {
+    try(try_dir(path)) {
+    | Not_found => raise(Not_found)
     };
   } else {
     try_dir([base_dir]);

@@ -16,6 +16,7 @@ let append: (t, string) => t;
 
 let is_absolute: string => bool;
 let is_relative: string => bool;
+let is_module: string => bool;
 
 module String: {let filename_to_module_name: string => string;};
 

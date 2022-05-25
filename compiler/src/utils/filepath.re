@@ -63,6 +63,9 @@ let is_relative = fname =>
   | _ => false
   };
 
+// A "module" filepath is a relative filepath that doesn't start with `./`
+let is_module = fname => is_relative(fname) && Filename.is_implicit(fname); // This is the one usage of Filename we should allow
+
 module String = {
   // This module is converting strings into Fp.t and then back into Strings
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
