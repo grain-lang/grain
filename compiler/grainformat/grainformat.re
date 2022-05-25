@@ -92,13 +92,13 @@ let format_code =
   let contents = Buffer.to_bytes(buf);
   switch (outfile) {
   | Some(outfile) =>
-    let oc = Fs_access.open_file_for_writing(outfile);
+    let oc = open_out_bin(outfile);
     output_bytes(oc, contents);
     close_out(oc);
   | None =>
     switch (srcfile, format_in_place) {
     | (Some(src), true) =>
-      let oc = Fs_access.open_file_for_writing(src);
+      let oc = open_out_bin(src);
       output_bytes(oc, contents);
       close_out(oc);
     | _ =>

@@ -4,6 +4,7 @@ open Printf;
 open Lexing;
 open Filename;
 open Cmdliner;
+open Grain_utils;
 
 let () =
   Printexc.register_printer(exc =>
@@ -99,12 +100,25 @@ let compile_file = (name, outfile_arg) => {
   };
   try({
     let outfile =
-      Option.value(
-        ~default=Compile.default_output_filename(name),
-        outfile_arg,
-      );
+      switch (outfile_arg) {
+      | Some(path) =>
+        switch (Filepath.from_string(path)) {
+        | Some(path) => path
+        | None => failwith("Invalid path")
+        }
+      | None =>
+        switch (Filepath.from_string(name)) {
+        | Some(path) =>
+          let dir = Filepath.dirname(path);
+          Filepath.append(dir, Compile.default_output_filename(path));
+        | None => failwith("Invalid path")
+        }
+      };
     if (Grain_utils.Config.debug^) {
-      Compile.save_mashed(name, Compile.default_mashtree_filename(outfile));
+      let dir = Filepath.dirname(outfile);
+      let mashtree_output =
+        Filepath.append(dir, Compile.default_mashtree_filename(outfile));
+      Compile.save_mashed(name, mashtree_output);
     };
     let hook =
       if (Grain_utils.Config.statically_link^) {

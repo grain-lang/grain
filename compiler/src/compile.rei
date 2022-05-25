@@ -3,6 +3,7 @@ open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
 open Grain_linking;
+open Grain_utils;
 
 type input_source =
   | InputString(string)
@@ -25,7 +26,7 @@ type compilation_state_desc =
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_outfile: option(string),
+  cstate_outfile: option(Filepath.t),
 };
 
 type compilation_action =
@@ -38,9 +39,9 @@ type error =
 
 exception InlineFlagsError(Location.t, error);
 
-let default_output_filename: string => string;
+let default_output_filename: Filepath.t => string;
 
-let default_mashtree_filename: string => string;
+let default_mashtree_filename: Filepath.t => string;
 
 let stop_after_parse: compilation_state => compilation_action;
 
@@ -69,7 +70,7 @@ let compile_string:
     ~is_root_file: bool=?,
     ~hook: compilation_state => compilation_action=?,
     ~name: string=?,
-    ~outfile: string=?,
+    ~outfile: Filepath.t=?,
     ~reset: bool=?,
     string
   ) =>
@@ -79,10 +80,10 @@ let compile_file:
   (
     ~is_root_file: bool=?,
     ~hook: compilation_state => compilation_action=?,
-    ~outfile: string=?,
+    ~outfile: Filepath.t=?,
     ~reset: bool=?,
     string
   ) =>
   compilation_state;
 
-let save_mashed: (string, string) => unit;
+let save_mashed: (string, Filepath.t) => unit;

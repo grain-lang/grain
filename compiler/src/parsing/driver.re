@@ -1,6 +1,7 @@
 /** External frontend for running the parser. */
 open Lexing;
 open Location;
+open Grain_utils;
 
 let apply_filename_to_lexbuf = (name, lexbuf) => {
   Lexing.set_filename(lexbuf, name);
@@ -111,7 +112,9 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
   };
 };
 
-let scan_for_imports = (~defer_errors=true, filename: string): list(string) => {
+let scan_for_imports =
+    (~defer_errors=true, filename: Filepath.t): list(string) => {
+  let filename = Filepath.to_string(filename);
   let ic = open_in(filename);
   let lexbuf = Lexing.from_channel(ic);
   try({
@@ -127,18 +130,18 @@ let scan_for_imports = (~defer_errors=true, filename: string): list(string) => {
       List.map(
         o => {
           switch (o) {
-          | Grain_utils.Config.Pervasives_mod => "pervasives"
-          | Grain_utils.Config.Gc_mod => "runtime/gc"
+          | Config.Pervasives_mod => "pervasives"
+          | Config.Gc_mod => "runtime/gc"
           }
         },
         switch (comments) {
         | [Block({cmt_content}), ..._] =>
-          Grain_utils.Config.with_inline_flags(
+          Config.with_inline_flags(
             ~on_error=_ => (),
             cmt_content,
-            Grain_utils.Config.get_implicit_opens,
+            Config.get_implicit_opens,
           )
-        | _ => Grain_utils.Config.get_implicit_opens()
+        | _ => Config.get_implicit_opens()
         },
       );
     let found_imports = ref([]);

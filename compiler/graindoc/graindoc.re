@@ -31,10 +31,10 @@ let () =
 type params = {
   /** Grain source file for which to extract documentation */
   [@pos 0] [@docv "FILE"]
-  input: Filepath.Args.ExistingFile.t,
+  input: Filepath.Args.ExistingFile.arg,
   /** Output filename */
   [@name "o"] [@docv "FILE"]
-  output: option(Filepath.Args.MaybeExistingFile.t),
+  output: option(Filepath.Args.MaybeExistingFile.arg),
   /**
     The version to use as current when generating markdown for `@since` and `@history` attributes.
     Any future versions will be replace with `next` in the output.
@@ -206,14 +206,14 @@ let generate_docs =
   let contents = Buffer.to_bytes(buf);
   switch (output) {
   | Some(NotExists(outfile)) =>
-    Fs_access.ensure_parent_directory_exists(Filepath.to_string(outfile))
+    Fs_access.ensure_parent_directory_exists(outfile)
   | _ => ()
   };
 
   switch (output) {
   | Some(Exists(outfile))
   | Some(NotExists(outfile)) =>
-    let oc = Fs_access.open_file_for_writing(Filepath.to_string(outfile));
+    let oc = Fs_access.open_file_for_writing(outfile);
     output_bytes(oc, contents);
     close_out(oc);
   | None => print_bytes(contents)

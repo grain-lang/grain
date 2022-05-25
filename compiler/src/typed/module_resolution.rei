@@ -1,32 +1,27 @@
+open Grain_parsing;
+open Grain_utils;
+
 let locate_module_file:
-  (~loc: Grain_parsing.Location.t, ~disable_relpath: bool=?, string) => string;
+  (~loc: Location.t, ~disable_relpath: bool=?, string) => Filepath.t;
 
 let locate_unit_object_file:
-  (~path: list(string)=?, ~base_dir: string=?, string) => string;
+  (~path: list(Filepath.t)=?, ~base_dir: Filepath.t=?, string) => Filepath.t;
 
 let resolve_unit:
-  (
-    ~search_path: list(string)=?,
-    ~cache: bool=?,
-    ~base_dir: string=?,
-    string
-  ) =>
-  string;
+  (~cache: bool=?, ~base_dir: Filepath.t=?, string) => Filepath.t;
 
-let compile_module_dependency: ref((string, string) => unit);
+let compile_module_dependency: ref((Filepath.t, Filepath.t) => unit);
 
-let read_file_cmi: string => Cmi_format.cmi_infos;
+let read_file_cmi: Filepath.t => Cmi_format.cmi_infos;
 
 let clear_dependency_graph: unit => unit;
 
 // Patched in by env.re:
 let with_preserve_unit:
-  ref((~loc: Grain_parsing.Location.t, string, string, unit => unit) => unit);
+  ref((~loc: Location.t, string, string, unit => unit) => unit);
 
 let current_unit_name: ref(unit => string);
 
-let current_filename: ref(unit => string);
+let current_filename: ref(unit => Filepath.t);
 
 let dump_dependency_graph: unit => unit;
-
-let is_relpath: string => bool;

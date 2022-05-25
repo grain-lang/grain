@@ -18,7 +18,7 @@ module G = Imperative.Digraph.Concrete(String);
 module Topo = Topological.Make(G);
 
 let dependency_graph = G.create(~size=10, ());
-let modules: Hashtbl.t(string, Module.t) = Hashtbl.create(10);
+let modules: Hashtbl.t(Filepath.t, Module.t) = Hashtbl.create(10);
 
 let grain_main = "_gmain";
 let grain_start = "_start";
@@ -34,6 +34,7 @@ let resolve = (~base_dir=?, mod_name) => {
 };
 
 let load_module = fullpath => {
+  let fullpath = Filepath.to_string(fullpath);
   let ic = open_in_bin(fullpath);
   let length = in_channel_length(ic);
   let module_bytes = Bytes.create(length);
@@ -48,7 +49,13 @@ let is_grain_module = mod_name => {
 
 let wasi_polyfill_module = () => {
   "GRAIN$MODULE$./"
-  ++ Filename.remove_extension(Option.get(Config.wasi_polyfill^));
+  ++ fst(
+       Filepath.basename(
+         Option.get(
+           Option.bind(Config.wasi_polyfill^, Filepath.from_string),
+         ),
+       ),
+     );
 };
 
 let is_wasi_module = mod_name => {
@@ -58,7 +65,7 @@ let is_wasi_module = mod_name => {
 let is_wasi_polyfill_module = mod_path =>
   mod_path == resolve(wasi_polyfill_module());
 
-let new_base_dir = Filename.dirname;
+let new_base_dir = Filepath.dirname;
 
 let rec build_dependency_graph = (~base_dir, mod_path) => {
   let wasm_mod = Hashtbl.find(modules, mod_path);
@@ -75,7 +82,11 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
           resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_path, resolved_import);
+      G.add_edge(
+        dependency_graph,
+        Filepath.to_string(mod_path),
+        Filepath.to_string(resolved_import),
+      );
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
@@ -92,7 +103,11 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
           resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_path, resolved_import);
+      G.add_edge(
+        dependency_graph,
+        Filepath.to_string(mod_path),
+        Filepath.to_string(resolved_import),
+      );
     } else if (has_wasi_polyfill
                && is_wasi_module(imported_module)
                && !is_wasi_polyfill_module(mod_path)) {
@@ -107,7 +122,11 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
           resolved_import,
         );
       };
-      G.add_edge(dependency_graph, mod_path, resolved_import);
+      G.add_edge(
+        dependency_graph,
+        Filepath.to_string(mod_path),
+        Filepath.to_string(resolved_import),
+      );
     };
   };
 };
@@ -118,7 +137,7 @@ let gensym = name => {
   Printf.sprintf("%s.linked.%d", name, gensym_counter^);
 };
 
-let exported_names: Hashtbl.t(string, Hashtbl.t(string, string)) =
+let exported_names: Hashtbl.t(Filepath.t, Hashtbl.t(string, string)) =
   Hashtbl.create(10);
 
 let is_global_imported = global =>
@@ -427,7 +446,7 @@ let link_all = (linked_mod, dependencies, signature) => {
                 Printf.sprintf(
                   "Unable to locate `%s` in your polyfill. Required by `%s`",
                   imported_name,
-                  dep,
+                  Filepath.to_string(dep),
                 ),
               )
             };
@@ -589,13 +608,15 @@ let link_modules = ({asm: wasm_mod, signature}) => {
   let main_module = Module_resolution.current_filename^();
   Hashtbl.add(modules, main_module, wasm_mod);
 
-  G.add_vertex(dependency_graph, main_module);
+  G.add_vertex(dependency_graph, Filepath.to_string(main_module));
   build_dependency_graph(
-    ~base_dir=Filename.dirname(main_module),
+    ~base_dir=Filepath.dirname(main_module),
     main_module,
   );
   let dependencies =
     Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
+  let dependencies =
+    List.map(dep => Option.get(Filepath.from_string(dep)), dependencies);
   let linked_mod = Module.create();
   link_all(linked_mod, dependencies, signature);
 

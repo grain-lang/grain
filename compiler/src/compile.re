@@ -3,6 +3,7 @@ open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
 open Grain_linking;
+open Grain_utils;
 open Optimize;
 
 type input_source =
@@ -26,7 +27,7 @@ type compilation_state_desc =
 type compilation_state = {
   cstate_desc: compilation_state_desc,
   cstate_filename: option(string),
-  cstate_outfile: option(string),
+  cstate_outfile: option(Filepath.t),
 };
 
 type compilation_action =
@@ -39,21 +40,14 @@ type error =
 
 exception InlineFlagsError(Location.t, error);
 
-/** `remove_extension` new enough that we should just use this */
-
-let safe_remove_extension = name =>
-  try(Filename.chop_extension(name)) {
-  | Invalid_argument(_) => name
-  };
-
 let default_output_filename = name =>
-  safe_remove_extension(name) ++ ".gr.wasm";
+  fst(Filepath.basename(name)) ++ ".gr.wasm";
 
 let default_assembly_filename = name =>
-  safe_remove_extension(name) ++ ".wast";
+  fst(Filepath.basename(name)) ++ ".wast";
 
 let default_mashtree_filename = name =>
-  safe_remove_extension(name) ++ ".mashtree";
+  fst(Filepath.basename(name)) ++ ".mashtree";
 
 let compile_prog = p =>
   Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
@@ -268,14 +262,16 @@ let stop_after_assembled =
   | s => Continue(s);
 
 let compile_wasi_polyfill = () => {
-  switch (Grain_utils.Config.wasi_polyfill^) {
+  switch (
+    Option.bind(Grain_utils.Config.wasi_polyfill^, Filepath.from_string)
+  ) {
   | Some(file) =>
     Grain_utils.Config.preserve_config(() => {
       Grain_utils.Config.compilation_mode := Some("runtime");
       let cstate = {
-        cstate_desc: Initial(InputFile(file)),
-        cstate_filename: Some(file),
-        cstate_outfile: Some(default_output_filename(file)),
+        cstate_desc: Initial(InputFile(Filepath.to_string(file))),
+        cstate_filename: Some(Filepath.to_string(file)),
+        cstate_outfile: Filepath.from_string(default_output_filename(file)),
       };
       ignore(compile_resume(~hook=stop_after_object_file_emitted, cstate));
     })
@@ -332,6 +328,7 @@ let save_mashed = (f, outfile) =>
     Grain_utils.Fs_access.ensure_parent_directory_exists(outfile);
     let mash_string =
       Sexplib.Sexp.to_string_hum @@ Mashtree.sexp_of_mash_program(mashed);
+    let outfile = Filepath.to_string(outfile);
     let oc = open_out(outfile);
     output_string(oc, mash_string);
     close_out(oc);
@@ -368,7 +365,7 @@ let () =
             ~outfile,
             ~reset=false,
             ~hook=stop_after_object_file_emitted,
-            input,
+            Filepath.to_string(input),
           ),
         )
     );

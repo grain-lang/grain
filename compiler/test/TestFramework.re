@@ -21,15 +21,15 @@ let () =
     }
   );
 
-let test_dir = Fp.At.(Filepath.get_cwd() / "test");
-let test_libs_dir = Fp.At.(test_dir / "test-libs");
-let test_input_dir = Fp.At.(test_dir / "input");
-let test_output_dir = Fp.At.(test_dir / "output");
-let test_stdlib_dir = Fp.At.(test_dir / "stdlib");
-let test_snapshots_dir = Fp.At.(test_dir / "__snapshots__");
+let test_dir = Filepath.At.(Filepath.cwd() / "test");
+let test_libs_dir = Filepath.At.(test_dir / "test-libs");
+let test_input_dir = Filepath.At.(test_dir / "input");
+let test_output_dir = Filepath.At.(test_dir / "output");
+let test_stdlib_dir = Filepath.At.(test_dir / "stdlib");
+let test_snapshots_dir = Filepath.At.(test_dir / "__snapshots__");
 
-let test_formatter_in_dir = Fp.At.(test_dir / "formatter_inputs");
-let test_formatter_out_dir = Fp.At.(test_dir / "formatter_outputs");
+let test_formatter_in_dir = Filepath.At.(test_dir / "formatter_inputs");
+let test_formatter_out_dir = Filepath.At.(test_dir / "formatter_outputs");
 
 let clean_grain_output = stdlib_dir =>
   Array.iter(
@@ -38,7 +38,7 @@ let clean_grain_output = stdlib_dir =>
       if (Filename.check_suffix(filename, ".gr.wasm")
           || Filename.check_suffix(filename, ".gr.wat")
           || Filename.check_suffix(filename, ".gr.modsig")) {
-        Fs.rmExn(file);
+        Fs_access.remove(file);
       };
     },
     Fs_access.readdir(stdlib_dir),
@@ -46,13 +46,13 @@ let clean_grain_output = stdlib_dir =>
 
 let clean_output = output =>
   if (Sys.file_exists(Filepath.to_string(output))) {
-    Array.iter(Fs.rmExn, Fs_access.readdir(output));
+    Array.iter(Fs_access.remove, Fs_access.readdir(output));
   };
 
 let () = {
   /*** Override default stdlib location to use development version of stdlib */
   let stdlib_dir = Unix.getenv("GRAIN_STDLIB");
-  let stdlib_dir = Filepath.String.derelativize(stdlib_dir);
+  let stdlib_dir = Option.get(Filepath.from_string(stdlib_dir));
   Config.stdlib_dir := Some(Filepath.to_string(stdlib_dir));
   clean_grain_output(test_input_dir);
   clean_grain_output(stdlib_dir);

@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_utils;
 
 describe("linking", ({test, testSkip}) => {
   let test_or_skip =
@@ -53,7 +54,7 @@ describe("linking", ({test, testSkip}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
     ignore @@ compile(name, {|print("Hello, world!")|});
-    let ic = open_in_bin(outfile);
+    let ic = open_in_bin(Filepath.to_string(outfile));
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
     let export_sections =
@@ -91,7 +92,7 @@ describe("linking", ({test, testSkip}) => {
       name,
       {|print("Hello, world!")|},
     );
-    let ic = open_in_bin(outfile);
+    let ic = open_in_bin(Filepath.to_string(outfile));
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
     let start_section =

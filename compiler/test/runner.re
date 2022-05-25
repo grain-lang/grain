@@ -17,19 +17,18 @@ let customMatchers = createMatcher => {
 };
 
 let grainfile = name =>
-  Filepath.to_string(Fp.At.(test_input_dir / (name ++ ".gr")));
+  Filepath.to_string(Filepath.At.(test_input_dir / (name ++ ".gr")));
 let stdlibfile = name =>
-  Filepath.to_string(Fp.At.(test_stdlib_dir / (name ++ ".gr")));
-let wasmfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wasm")));
+  Filepath.to_string(Filepath.At.(test_stdlib_dir / (name ++ ".gr")));
+let wasmfile = name => Filepath.At.(test_output_dir / (name ++ ".gr.wasm"));
 let watfile = name =>
-  Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wat")));
+  Filepath.to_string(Filepath.At.(test_output_dir / (name ++ ".gr.wat")));
 
 let formatter_out_file = name =>
-  Filepath.to_string(Fp.At.(test_formatter_out_dir / (name ++ ".gr")));
+  Filepath.to_string(Filepath.At.(test_formatter_out_dir / (name ++ ".gr")));
 
 let formatter_in_file = name =>
-  Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
+  Filepath.to_string(Filepath.At.(test_formatter_in_dir / (name ++ ".gr")));
 
 let read_stream = cstream => {
   let buf = Bytes.create(2048);
@@ -175,7 +174,14 @@ let run = (~num_pages=?, file) => {
     Array.concat([
       [|"grain", "-g"|],
       mem_flags,
-      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), "run", file|],
+      [|
+        "-S",
+        stdlib,
+        "-I",
+        Filepath.to_string(test_libs_dir),
+        "run",
+        Filepath.to_string(file),
+      |],
     ]);
 
   let (code, out, err) = open_process(cmd);

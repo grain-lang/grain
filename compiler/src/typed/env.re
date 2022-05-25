@@ -749,10 +749,18 @@ let check_consistency = ps =>
         | Some(crc) =>
           let resolved_file_name =
             Module_resolution.resolve_unit(
-              ~base_dir=Filename.dirname(ps.ps_filename),
+              ~base_dir=
+                Filepath.dirname(
+                  Filepath.from_absolute_string(ps.ps_filename),
+                ),
               name,
             );
-          Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
+          Consistbl.check(
+            crc_units,
+            Filepath.to_string(resolved_file_name),
+            crc,
+            ps.ps_filename,
+          );
         },
       ps.ps_crcs,
     )
@@ -824,7 +832,10 @@ module Persistent_signature = {
     ref((~loc=Location.dummy_loc, unit_name) => {
       switch (Module_resolution.locate_module_file(~loc, unit_name)) {
       | filename =>
-        let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
+        let ret = {
+          filename: Filepath.to_string(filename),
+          cmi: Module_resolution.read_file_cmi(filename),
+        };
         Some(ret);
       | exception Not_found => None
       }
@@ -2700,9 +2711,10 @@ let report_error = ppf =>
       label,
     )
   | Unbound_module(_, modname) => fprintf(ppf, "Unbound module %s", modname)
-  | No_module_file(m, None) => fprintf(ppf, "Missing file for module %s", m)
+  | No_module_file(m, None) =>
+    fprintf(ppf, "Env: Missing file for module %s", m)
   | No_module_file(m, Some(msg)) =>
-    fprintf(ppf, "Missing file for module %s: %s", m, msg)
+    fprintf(ppf, "Env: Missing file for module %s: %s", m, msg)
   | Value_not_found_in_module(_, name, path) =>
     fprintf(ppf, "Export \"%s\" was not found in \"%s\"", name, path)
   | Cyclic_dependencies(dep, chain) =>
@@ -2763,7 +2775,7 @@ let () = {
     (
       () => {
         let (_, source, _) = get_unit();
-        source;
+        Option.get(Filepath.from_string(source));
       }
     );
 };
