@@ -151,8 +151,8 @@ let malformed_identifiers = (errs, super) => {
             ((name, alias)) =>
               switch (name, alias) {
               | (
-                  {txt: IdentName(orig)},
-                  Some({txt: IdentName(alias), loc}),
+                  {txt: IdentName({txt: orig})},
+                  Some({txt: IdentName({txt: alias}), loc}),
                 )
                   when casing_mismatch(orig, alias) =>
                 errs := [IllegalAliasName(alias, loc), ...errs^]
@@ -206,7 +206,7 @@ let modules_have_correct_case = (errs, super) => {
   let iter_mod = (self, import) => {
     List.iter(
       fun
-      | PImportModule({loc: name_loc, txt: IdentName(name)}) =>
+      | PImportModule({loc: name_loc, txt: IdentName({txt: name})}) =>
         check_uppercase(name_loc, name)
       | PImportModule(_) /* IdentExternal handled by another WF rule */
       | PImportAllExcept(_)

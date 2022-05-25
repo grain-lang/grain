@@ -9,13 +9,13 @@ describe("functions", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
-  let assertFileRunError = makeFileErrorRunner(test_or_skip);
   let tailCallConfig = () => {
     Grain_utils.Config.experimental_tail_call := true;
   };
 
   assertFileRun("fib1", "fib", "55\n");
   assertFileRun("fib2", "fib-better", "75025\n");
+  assertFileRun("fib_big", "fib-bigint", "354224848179261915075\n");
   assertFileRun("indirect", "indirect-tail", "10\n");
   /* NOTE: This file also will test that we're doing tail calls
      and mutual recursion properly (should stack overflow otherwise) */
@@ -35,7 +35,6 @@ describe("functions", ({test, testSkip}) => {
   /* This will test that we are doing tail calls for arbitrary-arity
      functions correctly */
   assertFileRun("sinister_tail_call", "sinister-tail-call", "true\n");
-  assertFileRunError("fib_big", "too-much-fib", "overflow");
   assertRun("func_no_args", "let foo = (() => {print(5)});\nfoo()", "5\n");
   assertCompileError(
     "multi_bind",

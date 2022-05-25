@@ -2105,45 +2105,130 @@ type alloc_number_type =
   | Int64(Expression.t)
   | Float32(Expression.t)
   | Float64(Expression.t)
-  | Rational(Expression.t, Expression.t);
+  | Rational(Expression.t, Expression.t)
+  | BigInt(Expression.t, list(Expression.t));
 
 let allocate_number = (wasm_mod, env, number) => {
   /* Heap memory layout of numbers:
      [ <value type tag>, <number_tag>, <payload>]
      */
-  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let get_swap = get_swap(wasm_mod, env);
 
-  let (number_tag, instrs) =
+  let (number_tag, swap_slot, instrs, needed_words) =
     switch (number) {
-    | Int32(int32) => (
+    | Int32(int32) =>
+      let slot = 0;
+      (
         BoxedInt32,
-        [store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(), int32)],
-      )
-    | Int64(int64) => (
+        slot,
+        [store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(slot), int32)],
+        3,
+      );
+    | Int64(int64) =>
+      let slot = 0;
+      (
         BoxedInt64,
-        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(), int64)],
-      )
-    | Float32(float32) => (
+        slot,
+        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(slot), int64)],
+        4,
+      );
+    | Float32(float32) =>
+      let slot = 0;
+      (
         BoxedFloat32,
-        [store(~offset=8, ~ty=Type.float32, wasm_mod, get_swap(), float32)],
-      )
-    | Float64(float64) => (
-        BoxedFloat64,
-        [store(~offset=8, ~ty=Type.float64, wasm_mod, get_swap(), float64)],
-      )
-    | Rational(numerator, denominator) => (
-        BoxedRational,
+        slot,
         [
-          store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(), numerator),
+          store(
+            ~offset=8,
+            ~ty=Type.float32,
+            wasm_mod,
+            get_swap(slot),
+            float32,
+          ),
+        ],
+        3,
+      );
+    | Float64(float64) =>
+      let slot = 0;
+      (
+        BoxedFloat64,
+        slot,
+        [
+          store(
+            ~offset=8,
+            ~ty=Type.float64,
+            wasm_mod,
+            get_swap(slot),
+            float64,
+          ),
+        ],
+        4,
+      );
+    | Rational(numerator, denominator) =>
+      // Rationals use a different swap slot to allow allocation of
+      // intermediate bigints
+      let slot = 1;
+      (
+        BoxedRational,
+        slot,
+        [
+          store(
+            ~offset=8,
+            ~ty=Type.int32,
+            wasm_mod,
+            get_swap(slot),
+            numerator,
+          ),
           store(
             ~offset=12,
             ~ty=Type.int32,
             wasm_mod,
-            get_swap(),
+            get_swap(slot),
             denominator,
           ),
         ],
-      )
+        4,
+      );
+    | BigInt(flags, limbs) =>
+      let slot = 0;
+      (
+        BoxedBigInt,
+        slot,
+        List.append(
+          [
+            store(
+              ~offset=8,
+              ~ty=Type.int32,
+              wasm_mod,
+              get_swap(slot),
+              Expression.Const.make(
+                wasm_mod,
+                const_int32(List.length(limbs)),
+              ),
+            ),
+            store(
+              ~offset=12,
+              ~ty=Type.int32,
+              wasm_mod,
+              get_swap(slot),
+              flags,
+            ),
+          ],
+          List.mapi(
+            (i, limb) => {
+              store(
+                ~offset=16 + i * 8,
+                ~ty=Type.int64,
+                wasm_mod,
+                get_swap(slot),
+                limb,
+              )
+            },
+            limbs,
+          ),
+        ),
+        4 + 2 * List.length(limbs),
+      );
     };
 
   let preamble = [
@@ -2154,10 +2239,8 @@ let allocate_number = (wasm_mod, env, number) => {
         ~skip_incref=true,
         wasm_mod,
         env,
-        0,
-        // Grain allocations are 8-byte aligned, so no space is saved by
-        // allocating 3 words for 32-bit numbers
-        heap_allocate(wasm_mod, env, 4),
+        swap_slot,
+        heap_allocate(wasm_mod, env, needed_words),
       ),
       Expression.Const.make(
         wasm_mod,
@@ -2167,14 +2250,14 @@ let allocate_number = (wasm_mod, env, number) => {
     store(
       ~offset=4,
       wasm_mod,
-      get_swap(),
+      get_swap(swap_slot),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_boxed_number_tag_type(number_tag)),
       ),
     ),
   ];
-  let postamble = [get_swap()];
+  let postamble = [get_swap(swap_slot)];
   Expression.Block.make(
     wasm_mod,
     gensym_label("allocate_number"),
@@ -2182,25 +2265,26 @@ let allocate_number = (wasm_mod, env, number) => {
   );
 };
 
-let allocate_number_uninitialized = (wasm_mod, env, number_tag) => {
+let allocate_number_uninitialized =
+    (~additional_words=?, wasm_mod, env, number_tag) => {
   /* Heap memory layout of numbers:
      [ <value type tag>, <number_tag>, <payload>]
      */
   let get_swap = () => get_swap(wasm_mod, env, 0);
+  let make_alloc = () =>
+    switch (additional_words) {
+    // Grain allocations are 8-byte aligned, so no space is saved by
+    // allocating 3 words for 32-bit numbers
+    | None => heap_allocate(wasm_mod, env, 4)
+    | Some(n) =>
+      heap_allocate_imm(~additional_words=4, wasm_mod, env, Words(n))
+    };
 
   let preamble = [
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        // Grain allocations are 8-byte aligned, so no space is saved by
-        // allocating 3 words for 32-bit numbers
-        heap_allocate(wasm_mod, env, 4),
-      ),
+      tee_swap(~skip_incref=true, wasm_mod, env, 0, make_alloc()),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(BoxedNumberType)),
@@ -2244,6 +2328,10 @@ let allocate_rational = (wasm_mod, env, n, d) => {
   allocate_number(wasm_mod, env, Rational(n, d));
 };
 
+let allocate_big_int = (wasm_mod, env, n, d) => {
+  allocate_number(wasm_mod, env, BigInt(n, d));
+};
+
 let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   switch (p0) {
   | AllocateInt32 => allocate_number_uninitialized(wasm_mod, env, BoxedInt32)
@@ -2265,6 +2353,13 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | AllocateTuple => allocate_uninitialized_tuple(wasm_mod, env, arg)
   | AllocateBytes => allocate_bytes_uninitialized(wasm_mod, env, arg)
   | AllocateString => allocate_string_uninitialized(wasm_mod, env, arg)
+  | AllocateBigInt =>
+    allocate_number_uninitialized(
+      ~additional_words=arg,
+      wasm_mod,
+      env,
+      BoxedBigInt,
+    )
   | NewInt32 => allocate_number(wasm_mod, env, Int32(compiled_arg))
   | NewInt64 => allocate_number(wasm_mod, env, Int64(compiled_arg))
   | NewFloat32 => allocate_number(wasm_mod, env, Float32(compiled_arg))
@@ -2720,13 +2815,52 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
       env,
       Expression.Const.make(wasm_mod, Literal.float64(i)),
     )
-  | MRational(n, d) =>
-    allocate_rational(
+  | MBigInt({flags, limbs}) =>
+    allocate_big_int(
       wasm_mod,
       env,
-      Expression.Const.make(wasm_mod, Literal.int32(n)),
-      Expression.Const.make(wasm_mod, Literal.int32(d)),
+      Expression.Const.make(
+        wasm_mod,
+        Literal.int32(Bigint_flags.all_to_int32(flags)),
+      ),
+      List.map(
+        n => Expression.Const.make(wasm_mod, Literal.int64(n)),
+        Array.to_list(limbs),
+      ),
     )
+  | MRational({
+      numerator_flags,
+      numerator_limbs,
+      denominator_flags,
+      denominator_limbs,
+    }) =>
+    let numerator =
+      allocate_big_int(
+        wasm_mod,
+        env,
+        Expression.Const.make(
+          wasm_mod,
+          Literal.int32(Bigint_flags.all_to_int32(numerator_flags)),
+        ),
+        List.map(
+          n => Expression.Const.make(wasm_mod, Literal.int64(n)),
+          Array.to_list(numerator_limbs),
+        ),
+      );
+    let denominator =
+      allocate_big_int(
+        wasm_mod,
+        env,
+        Expression.Const.make(
+          wasm_mod,
+          Literal.int32(Bigint_flags.all_to_int32(denominator_flags)),
+        ),
+        List.map(
+          n => Expression.Const.make(wasm_mod, Literal.int64(n)),
+          Array.to_list(denominator_limbs),
+        ),
+      );
+    allocate_rational(wasm_mod, env, numerator, denominator);
   };
 
 let collect_backpatches = (env, f) => {

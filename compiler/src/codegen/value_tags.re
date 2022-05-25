@@ -41,7 +41,8 @@ type boxed_number_tag_type =
   | BoxedInt64
   | BoxedRational
   | BoxedFloat32
-  | BoxedFloat64;
+  | BoxedFloat64
+  | BoxedBigInt;
 
 let tag_val_of_boxed_number_tag_type =
   fun
@@ -49,7 +50,8 @@ let tag_val_of_boxed_number_tag_type =
   | BoxedFloat64 => 2
   | BoxedInt32 => 3
   | BoxedInt64 => 4
-  | BoxedRational => 5;
+  | BoxedRational => 5
+  | BoxedBigInt => 6;
 
 let boxed_number_tag_type_of_tag_val =
   fun
@@ -58,6 +60,7 @@ let boxed_number_tag_type_of_tag_val =
   | 3 => BoxedInt32
   | 4 => BoxedInt64
   | 5 => BoxedRational
+  | 6 => BoxedBigInt
   | x => failwith(Printf.sprintf("Unknown boxed num tag type: %d", x));
 
 [@deriving sexp]

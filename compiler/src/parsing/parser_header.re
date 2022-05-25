@@ -54,7 +54,7 @@ let fix_tyvar_mapper = super => {
             | _ => false
             }
           ) =>
-      let id = mkloc(IdentName(v), ptyp_loc);
+      let id = mkloc(IdentName(mkloc(v, ptyp_loc)), ptyp_loc);
       {...t, ptyp_desc: PTyConstr(id, [])};
     | _ => super.typ(mapper, t)
     };

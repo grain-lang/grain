@@ -420,6 +420,7 @@ let echo_eof = () => {
   incr(num_loc_lines);
 };
 
+[@deriving (sexp, yojson)]
 type loc('a) = {
   txt: 'a,
   loc: t,

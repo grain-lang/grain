@@ -78,6 +78,7 @@ let printer: ref((formatter, t) => unit);
 
 /** The type for location-tagged values. */
 
+[@deriving (sexp, yojson)]
 type loc('a) = {
   /** The tagged value*/
   txt: 'a,

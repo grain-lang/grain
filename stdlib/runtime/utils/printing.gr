@@ -1,0 +1,62 @@
+/* grainc-flags --no-pervasives */
+// Printing utilities for runtime code (primarily for debugging)
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import NumberUtils from "runtime/numberUtils"
+
+import foreign wasm fd_write: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+
+@unsafe
+export let rec numberToString = (n: WasmI64) => {
+  NumberUtils.itoa64(n, 10n)
+}
+
+@unsafe
+export let rec printNumber = (n: WasmI64) => {
+  // like print(), but `s` should be a Grain string
+  let (+) = WasmI32.add
+  let s = numberToString(n)
+  let ptr = WasmI32.fromGrain(s)
+  // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
+  // buf: <iov> <written> <newline char>
+  // fd_write(STDOUT (1), iov, len(iov), written)
+  let buf = Memory.malloc(37n)
+  let iov = buf
+  let written = buf + 32n
+  let lf = buf + 36n
+  WasmI32.store(iov, ptr + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
+  WasmI32.store8(lf, 10n, 0n)
+  WasmI32.store(iov, lf, 8n)
+  WasmI32.store(iov, 1n, 12n)
+  fd_write(1n, iov, 2n, written)
+  Memory.free(buf)
+  void
+}
+
+@unsafe
+export let rec printString = (s: String) => {
+  // like print(), but `s` should be a Grain string
+  let (+) = WasmI32.add
+  let ptr = WasmI32.fromGrain(s)
+  // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
+  // buf: <iov> <written> <newline char>
+  // fd_write(STDOUT (1), iov, len(iov), written)
+  let buf = Memory.malloc(37n)
+  let iov = buf
+  let written = buf + 32n
+  let lf = buf + 36n
+  WasmI32.store(iov, ptr + 8n, 0n)
+  WasmI32.store(iov, WasmI32.load(ptr, 4n), 4n)
+  WasmI32.store8(lf, 10n, 0n)
+  WasmI32.store(iov, lf, 8n)
+  WasmI32.store(iov, 1n, 12n)
+  fd_write(1n, iov, 2n, written)
+  Memory.free(buf)
+  void
+}

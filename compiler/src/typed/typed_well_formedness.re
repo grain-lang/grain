@@ -83,7 +83,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
 
   let enter_expression: expression => unit =
     ({exp_desc, exp_loc, exp_attributes} as exp) => {
-      // Check #1: Avoid using Pervasives equality ops with WasmXX types
+      // Check: Avoid using Pervasives equality ops with WasmXX types
       switch (exp_desc) {
       | TExpLet(_) when is_marked_unsafe(exp_attributes) => push_unsafe(true)
       | TExpApp(
@@ -107,9 +107,57 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
           };
         }
+      // Check: Warn if using Int32.fromNumber(<literal>)
+      | TExpApp(
+          {
+            exp_desc:
+              TExpIdent(
+                Path.PExternal(
+                  Path.PIdent({name: modname}),
+                  "fromNumber",
+                  _,
+                ),
+                _,
+                _,
+              ),
+          },
+          [
+            {
+              exp_desc:
+                TExpConstant(
+                  Const_number(
+                    (Const_number_int(_) | Const_number_float(_)) as n,
+                  ),
+                ),
+            },
+          ],
+        )
+          when
+            modname == "Int32"
+            || modname == "Int64"
+            || modname == "Float32"
+            || modname == "Float64" =>
+        // NOTE: Due to type-checking, we shouldn't need to worry about ending up with a FloatXX value and a Const_number_float
+        let n_str =
+          switch (n) {
+          | Const_number_int(nint) => Int64.to_string(nint)
+          | Const_number_float(nfloat) => Float.to_string(nfloat)
+          | _ => failwith("Impossible")
+          };
+        let warning =
+          switch (modname) {
+          | "Int32" => Grain_utils.Warnings.FromNumberLiteralI32(n_str)
+          | "Int64" => Grain_utils.Warnings.FromNumberLiteralI64(n_str)
+          | "Float32" => Grain_utils.Warnings.FromNumberLiteralF32(n_str)
+          | "Float64" => Grain_utils.Warnings.FromNumberLiteralF64(n_str)
+          | _ => failwith("Impossible")
+          };
+        if (Grain_utils.Warnings.is_active(warning)) {
+          Grain_parsing.Location.prerr_warning(exp_loc, warning);
+        };
       | _ => ()
       };
-      // Check #2: Forbid usage of WasmXX types outside of disableGC context
+      // Check: Forbid usage of WasmXX types outside of disableGC context
       switch (exp_desc) {
       | TExpLambda(_) => push_in_lambda(true)
       | _ => ()

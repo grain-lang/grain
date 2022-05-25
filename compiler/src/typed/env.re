@@ -1147,10 +1147,10 @@ let mark_extension_used = (env, ext, loc) => ();
 let rec lookup_module_descr_aux = (~mark, id, env) =>
   Identifier.(
     switch (id) {
-    | IdentName(s) =>
+    | IdentName({txt: s}) =>
       let id = Ident.create_persistent(s);
       (PIdent(id), IdTbl.find_same(id, env.components));
-    | IdentExternal(m, n) =>
+    | IdentExternal(m, {txt: n}) =>
       let (p, descr) = lookup_module_descr(~mark, m, env);
       /* let (_, pos) = Tbl.find n (get_components descr).comp_components in */
       /* FIXME: Should this have a proper position? */
@@ -1168,7 +1168,7 @@ and lookup_module_descr = (~mark, id, env) => {
 
 and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
   switch (id) {
-  | Identifier.IdentName(s) =>
+  | Identifier.IdentName({txt: s}) =>
     try({
       let (p, data) = IdTbl.find_name(~mark, s, env.modules);
       let {md_loc, md_type} = EnvLazy.force(subst_modtype_maker, data);
@@ -1198,7 +1198,7 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
       };
       p;
     }
-  | Identifier.IdentExternal(l, s) =>
+  | Identifier.IdentExternal(l, {txt: s}) =>
     let (p, descr) = lookup_module_descr(~mark, l, env);
     let c = get_components(descr);
     let (_data, pos) = Tbl.find(s, c.comp_modules);
@@ -1213,8 +1213,8 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
 let lookup_idtbl = (~mark, proj1, proj2, id, env) =>
   Identifier.(
     switch (id) {
-    | IdentName(s) => IdTbl.find_name(~mark, s, proj1(env))
-    | IdentExternal(m, n) =>
+    | IdentName({txt: s}) => IdTbl.find_name(~mark, s, proj1(env))
+    | IdentExternal(m, {txt: n}) =>
       let (p, desc) = lookup_module_descr(~mark, id, env);
       let (data, pos) = Tbl.find(n, proj2(get_components(desc)));
       let new_path =
@@ -1229,8 +1229,8 @@ let lookup_idtbl = (~mark, proj1, proj2, id, env) =>
 let lookup_tycomptbl = (~mark, proj1, proj2, id, env) =>
   Identifier.(
     switch (id) {
-    | IdentName(s) => TycompTbl.find_all(s, proj1(env))
-    | IdentExternal(m, n) =>
+    | IdentName({txt: s}) => TycompTbl.find_all(s, proj1(env))
+    | IdentExternal(m, {txt: n}) =>
       let (p, desc) = lookup_module_descr(~mark, id, env);
       let comps =
         try(Tbl.find(n, proj2(get_components(desc)))) {
@@ -2160,7 +2160,7 @@ let add_module_signature =
     | Identifier.IdentExternal(_) => failwith("NYI mod identifer is external")
     };
 
-  let mod_ident = Ident.create_persistent(name);
+  let mod_ident = Ident.create_persistent(name.txt);
   let filename = Some(mod_.pimp_path.txt);
   switch (check_opened(mod_, env0)) {
   | Some(path) =>
@@ -2263,7 +2263,7 @@ let open_signature =
               List.find_opt(
                 ((val_name, _)) =>
                   switch ((val_name: Parsetree.loc(Identifier.t)).txt) {
-                  | Identifier.IdentName(id_name) => id_name == name
+                  | Identifier.IdentName({txt: id_name}) => id_name == name
                   | Identifier.IdentExternal(_) => failwith("NYI")
                   },
                 values,
@@ -2272,7 +2272,7 @@ let open_signature =
             | Some((val_name, val_alias)) =>
               let new_name = Option.value(~default=val_name, val_alias);
               switch (new_name.txt) {
-              | Identifier.IdentName(id_name) =>
+              | Identifier.IdentName({txt: id_name}) =>
                 imported := [val_name, ...imported^];
                 Some(id_name);
               | Identifier.IdentExternal(_) => failwith("NYI")
@@ -2307,7 +2307,7 @@ let open_signature =
             if (List.exists(
                   id =>
                     switch (id.txt) {
-                    | Identifier.IdentName(id_name) =>
+                    | Identifier.IdentName({txt: id_name}) =>
                       if (id_name == name) {
                         rejected := [id, ...rejected^];
                         true;

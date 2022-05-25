@@ -171,6 +171,7 @@ type prim1 =
     | AllocateTuple
     | AllocateBytes
     | AllocateString
+    | AllocateBigInt
     | NewInt32
     | NewInt64
     | NewFloat32

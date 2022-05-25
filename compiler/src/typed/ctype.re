@@ -2187,7 +2187,7 @@ let complete_type_list = (~allow_absent=false, env, nl1, lv2, mty2, nl2, tl2) =>
       try({
         let path =
           Env.lookup_type(
-            concat_longident(Identifier.IdentName("Pkg"), n),
+            concat_longident(Identifier.IdentName(mknoloc("Pkg")), n),
             env',
           );
 
@@ -3316,6 +3316,6 @@ let maybe_pointer_type = (env, typ) =>
 
 let rec lid_of_path = (~hash="") =>
   fun
-  | Path.PIdent(id) => Identifier.IdentName(hash ++ Ident.name(id))
+  | Path.PIdent(id) => Identifier.IdentName(mknoloc(hash ++ Ident.name(id)))
   | Path.PExternal(p1, s, _) =>
-    Identifier.IdentExternal(lid_of_path(p1), hash ++ s);
+    Identifier.IdentExternal(lid_of_path(p1), mknoloc(hash ++ s));

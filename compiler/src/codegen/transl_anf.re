@@ -131,7 +131,16 @@ let global_name = id => Ident.unique_name(id);
 let find_id = (id, env) =>
   try(Ident.find_same(id, env.ce_binds)) {
   | Not_found =>
-    let (_, alloc) = Ident.find_same(id, global_table^);
+    let (_, alloc) =
+      try(Ident.find_same(id, global_table^)) {
+      | Not_found =>
+        Printf.eprintf("Not_found: %s\nKnown binds:\n", Ident.name(id));
+        Ident.iter(
+          (id, _) => Printf.eprintf("%s\n", Ident.name(id)),
+          env.ce_binds,
+        );
+        raise(Not_found);
+      };
     MGlobalBind(global_name(id), alloc);
   };
 
@@ -546,6 +555,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_bytes(_) => failwith("compile_const: Const_bytes post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_char(_) => failwith("compile_const: Const_char post-ANF")
+  | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
   | Const_float32(f) => MConstF32(f)
@@ -868,7 +878,39 @@ let rec compile_comp = (~id=?, env, c) => {
       MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
-    | CNumber(Const_number_rational(n, d)) => MAllocate(MRational(n, d))
+    | CNumber(
+        Const_number_rational({
+          rational_negative,
+          rational_num_limbs,
+          rational_den_limbs,
+          _,
+        }),
+      ) =>
+      MAllocate(
+        MRational({
+          numerator_flags:
+            if (rational_negative) {
+              [Bigint_flags.BigIntNegative];
+            } else {
+              [];
+            },
+          numerator_limbs: rational_num_limbs,
+          denominator_flags: [],
+          denominator_limbs: rational_den_limbs,
+        }),
+      )
+    | CNumber(Const_number_bigint({bigint_negative, bigint_limbs, _})) =>
+      MAllocate(
+        MBigInt({
+          flags:
+            if (bigint_negative) {
+              [Bigint_flags.BigIntNegative];
+            } else {
+              [];
+            },
+          limbs: bigint_limbs,
+        }),
+      )
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))

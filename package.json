@@ -14,11 +14,11 @@
   },
   "scripts": {
     "prepare": "npm run js-runner build && npm run cli link",
-    "test": "npm run compiler test",
-    "cli": "npm run --workspace=@grain/cli",
-    "js-runner": "npm run --workspace=@grain/js-runner",
-    "compiler": "npm run --workspace=@grain/compiler",
-    "stdlib": "npm run --workspace=@grain/stdlib",
+    "test": "npm run compiler test --",
+    "cli": "npm run --workspace=@grain/cli --",
+    "js-runner": "npm run --workspace=@grain/js-runner --",
+    "compiler": "npm run --workspace=@grain/compiler --",
+    "stdlib": "npm run --workspace=@grain/stdlib --",
     "postcompiler": "npm run stdlib clean"
   }
 }

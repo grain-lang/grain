@@ -1,0 +1,17 @@
+/* grainc-flags --compilation-mode=runtime */
+
+// Signed/Unsigned Min/Max Constants
+export let _SMIN_I32 = 0xFFFFFFFFn
+export let _SMAX_I32 = 0x7FFFFFFFn
+export let _UMIN_I32 = 0x0n
+export let _UMAX_I32 = 0xFFFFFFFFn
+
+export let _SMIN_I64 = 0xFFFFFFFFFFFFFFFFN
+export let _SMAX_I64 = 0x7FFFFFFFFFFFFFFFN
+export let _UMIN_I64 = 0x0N
+export let _UMAX_I64 = 0xFFFFFFFFFFFFFFFFN
+
+export let _SMIN32_I64 = -0x7FFFFFFFN
+export let _SMAX32_I64 = 0x7FFFFFFFN
+export let _UMIN32_I64 = 0x0N
+export let _UMAX32_I64 = 0xFFFFFFFFN

@@ -68,6 +68,7 @@ let type_constant =
   | Const_wasmi64(_) => instance_def(Builtin_types.type_wasmi64)
   | Const_wasmf32(_) => instance_def(Builtin_types.type_wasmf32)
   | Const_wasmf64(_) => instance_def(Builtin_types.type_wasmf64)
+  | Const_bigint(_) => instance_def(Builtin_types.type_bigint)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
   | Const_bytes(_) => instance_def(Builtin_types.type_bytes)
@@ -83,13 +84,28 @@ let constant:
       switch (Literals.conv_number_int(n)) {
       | Some(n) => Ok(Const_number(Const_number_int(n)))
       | None =>
-        Error(
-          Location.errorf(
-            ~loc,
-            "Number literal %s is outside of the integer range of the Number type.",
-            n,
-          ),
-        )
+        switch (Literals.conv_bigint(n)) {
+        | Some((bigint_negative, bigint_limbs)) =>
+          Ok(
+            Const_number(
+              Const_number_bigint({
+                bigint_negative,
+                bigint_limbs,
+                bigint_rep: n,
+              }),
+            ),
+          )
+        // Should not happen, since `None` is only returned for the empty string,
+        // and that is disallowed by the lexer
+        | None =>
+          Error(
+            Location.errorf(
+              ~loc,
+              "Unable to parse big-integer literal %st.",
+              n,
+            ),
+          )
+        }
       }
     | PConstNumber(PConstNumberFloat(n)) =>
       switch (Literals.conv_number_float(n)) {
@@ -104,10 +120,23 @@ let constant:
         )
       }
     | PConstNumber(PConstNumberRational(n, d)) =>
+      // TODO(#1168): allow arbitrary-length arguments in rational constants
       switch (Literals.conv_number_rational(n, d)) {
       | Some((n, d)) when d == 1l =>
         Ok(Const_number(Const_number_int(Int64.of_int32(n))))
-      | Some((n, d)) => Ok(Const_number(Const_number_rational(n, d)))
+      | Some((n, d)) =>
+        // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
+        Ok(
+          Const_number(
+            Const_number_rational({
+              rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
+              rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
+              rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
+              rational_num_rep: Int32.to_string(n),
+              rational_den_rep: Int32.to_string(Int32.abs(d)),
+            }),
+          ),
+        )
       | None =>
         Error(
           Location.errorf(
@@ -162,6 +191,21 @@ let constant:
           Location.errorf(
             ~loc,
             "Float64 literal %sd exceeds the range of representable 64-bit floats.",
+            n,
+          ),
+        )
+      }
+    | PConstBigInt(n) =>
+      switch (Literals.conv_bigint(n)) {
+      | Some((bigint_negative, bigint_limbs)) =>
+        Ok(Const_bigint({bigint_negative, bigint_limbs, bigint_rep: n}))
+      // Should not happen, since `None` is only returned for the empty string,
+      // and that is disallowed by the lexer
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Unable to parse big-integer literal %st.",
             n,
           ),
         )
