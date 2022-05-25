@@ -34,12 +34,29 @@ type completion_item_kind =
   | CompletionItemKindOperator
   | CompletionItemKindTypeParameter;
 
+[@deriving (enum, yojson)]
+type completion_trigger_kind =
+  // Since these are using ppx_deriving enum, order matters
+  | [@value 1] CompletionTriggerInvoke
+  | CompletionTriggerCharacter
+  | CompletionTriggerForIncompleteCompletions;
+
 let completion_item_kind_to_yojson = severity =>
   completion_item_kind_to_enum(severity) |> [%to_yojson: int];
 let completion_item_kind_of_yojson = json =>
   Result.bind(json |> [%of_yojson: int], value => {
     switch (completion_item_kind_of_enum(value)) {
     | Some(severity) => Ok(severity)
+    | None => Result.Error("Invalid enum value")
+    }
+  });
+
+let completion_trigger_kind_to_yojson = kind =>
+  completion_trigger_kind_to_enum(kind) |> [%to_yojson: int];
+let completion_trigger_kind_of_yojson = json =>
+  Result.bind(json |> [%of_yojson: int], value => {
+    switch (completion_trigger_kind_of_enum(value)) {
+    | Some(kind) => Ok(kind)
     | None => Result.Error("Invalid enum value")
     }
   });
@@ -52,6 +69,14 @@ type completion_item = {
   documentation: string,
 };
 
+[@deriving yojson({strict: false})]
+type completion_context = {
+  [@key "triggerKind"]
+  trigger_kind: completion_trigger_kind,
+  [@key "triggerCharacter"] [@default None]
+  trigger_character: option(string),
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionParams
 module RequestParams = {
   [@deriving yojson({strict: false})]
@@ -59,6 +84,7 @@ module RequestParams = {
     [@key "textDocument"]
     text_document: Protocol.text_document_identifier,
     position: Protocol.position,
+    context: completion_context,
   };
 };
 
@@ -103,7 +129,8 @@ let get_original_text = (documents, uri, line, char) =>
   | Some(source_code) =>
     let lines = String.split_on_char('\n', source_code);
     let line = List.nth_opt(lines, line);
-    Option.bind(line, line => find_completable(line, char));
+    let old_char = char > 0 ? char - 1 : char; // the position is against the earlier version of the document so move back 1
+    Option.bind(line, line => find_completable(line, old_char));
   };
 
 // maps Grain types to LSP CompletionItemKind
@@ -173,7 +200,14 @@ let process =
     );
   switch (completable) {
   | None => send_completion(~id, [])
-  | Some(text) =>
+  | Some(prior_version_text) =>
+    let text =
+      switch (params.context.trigger_kind) {
+      | CompletionTriggerCharacter =>
+        prior_version_text
+        ++ Option.value(~default="", params.context.trigger_character)
+      | _ => prior_version_text
+      };
     switch (Hashtbl.find_opt(cached_code, params.text_document.uri)) {
     | None => send_completion(~id, [])
     | Some(compiled_code) =>
@@ -293,6 +327,6 @@ let process =
         };
 
       send_completion(~id, completions);
-    }
+    };
   };
 };
