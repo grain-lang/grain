@@ -454,6 +454,27 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
   );
 };
 
+let get_expression_location =
+    (~enclosing: Location.t, e: Typedtree.expression) =>
+  switch (e) {
+  | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
+      when Path.name(mod_path) != "Pervasives" =>
+    let loc_end_pos: Lexing.position = {
+      ...loc.loc.loc_end,
+      pos_cnum:
+        loc.loc.loc_start.pos_cnum + String.length(Path.name(mod_path)),
+    };
+
+    {...loc.loc, loc_end: loc_end_pos};
+
+  | _ =>
+    if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
+      enclosing;
+    } else {
+      e.exp_loc;
+    }
+  };
+
 let rec expression_lens =
         (
           ~line,
@@ -675,27 +696,7 @@ let get_from_statement =
       | Error(err) => LocationError
       | NotInRange => LocationError
       | Expression(e) =>
-        let loc =
-          switch (e) {
-          | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
-              when Path.name(mod_path) != "Pervasives" =>
-            let loc_end_pos: Lexing.position = {
-              ...loc.loc.loc_end,
-              pos_cnum:
-                loc.loc.loc_start.pos_cnum
-                + String.length(Path.name(mod_path)),
-            };
-
-            {...loc.loc, loc_end: loc_end_pos};
-
-          | _ =>
-            if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
-              stmt.ttop_loc;
-            } else {
-              e.exp_loc;
-            }
-          };
-
+        let loc = get_expression_location(~enclosing=stmt.ttop_loc, e);
         LocationSignature(
           expression_lens(~line, ~char, ~compiled_code, e),
           loc,
@@ -741,11 +742,7 @@ let get_from_statement =
     | Expression(e) =>
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, e),
-        if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
-          loc;
-        } else {
-          e.exp_loc;
-        },
+        get_expression_location(~enclosing=stmt.ttop_loc, e),
       )
 
     | Pattern(p) =>
