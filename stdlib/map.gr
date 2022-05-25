@@ -18,6 +18,10 @@ record Bucket<k, v> {
   mut next: Option<Bucket<k, v>>,
 }
 
+/**
+ * @section Types: Type declarations included in the Map module.
+ */
+
 record Map<k, v> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k, v>>>,
@@ -35,6 +39,7 @@ record Map<k, v> {
  * 
  * @since v0.2.0
  */
+
 // TODO: This could take an `eq` function to custom comparisons
 export let makeSized = size => {
   let buckets = Array.make(size, None)

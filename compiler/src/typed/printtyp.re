@@ -14,8 +14,8 @@ module String = Misc.Stdlib.String;
 
 let rec identifier = ppf =>
   fun
-  | IdentName(s) => pp_print_string(ppf, s)
-  | IdentExternal(p, s) => fprintf(ppf, "%a::%s", identifier, p, s);
+  | IdentName(s) => pp_print_string(ppf, s.txt)
+  | IdentExternal(p, s) => fprintf(ppf, "%a::%s", identifier, p, s.txt);
 
 /* Print an identifier */
 
@@ -44,7 +44,12 @@ let non_shadowed_pervasive =
   | PExternal(PIdent(id), s, _pos) as path =>
     Ident.same(id, ident_pervasives)
     && (
-      try(Path.same(path, Env.lookup_type(IdentName(s), printing_env^))) {
+      try(
+        Path.same(
+          path,
+          Env.lookup_type(IdentName(mknoloc(s)), printing_env^),
+        )
+      ) {
       | Not_found => true
       }
     )

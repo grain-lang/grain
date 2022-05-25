@@ -18,7 +18,7 @@ basic functionality › int32_1
    (local.tee $0
     (call $wimport_GRAIN$MODULE$runtime/gc_malloc
      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
-     (i32.const 16)
+     (i32.const 12)
     )
    )
    (i32.const 5)

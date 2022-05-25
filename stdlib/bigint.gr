@@ -1,0 +1,489 @@
+/**
+ * @module BigInt: Utilities for working with the BigInt type.
+ * @example import BigInt from "bigint"
+ *
+ * @since v0.5.0
+ */
+import WasmI32 from "runtime/unsafe/wasmi32"
+import Memory from "runtime/unsafe/memory"
+import BI from "runtime/bigint"
+import DS from "runtime/dataStructures"
+
+import {
+  coerceNumberToBigInt as fromNumber,
+  coerceBigIntToNumber as toNumber,
+} from "runtime/numbers"
+
+/**
+ * @section Conversions: Functions for converting between Numbers and the BigInt type.
+ */
+
+/**
+ * Converts a Number to a BigInt.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a BigInt
+ *
+ * @since v0.5.0
+ */
+export fromNumber
+/**
+ * Converts a BigInt to a Number.
+ *
+ * @param num: The value to convert
+ * @returns The BigInt represented as a Number
+ *
+ * @since v0.5.0
+ */
+export toNumber
+
+/**
+ * @section Operations: Mathematical operations for BigInt values.
+ */
+
+/**
+ * Increments the value by one.
+ *
+ * @param num: The value to increment
+ * @returns The incremented value
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let incr = (num: BigInt) => {
+  WasmI32.toGrain(BI.incr(WasmI32.fromGrain(num)))
+}
+
+/**
+ * Decrements the value by one.
+ *
+ * @param num: The value to decrement
+ * @returns The decremented value
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let decr = (num: BigInt) => {
+  WasmI32.toGrain(BI.decr(WasmI32.fromGrain(num)))
+}
+
+/**
+ * Negates the given operand.
+ *
+ * @param num: The operand
+ * @returns The negated operand
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let neg = (num: BigInt) => {
+  WasmI32.toGrain(BI.negate(WasmI32.fromGrain(num))): BigInt
+}
+
+/**
+ * Returns the absolute value of the given operand.
+ *
+ * @param num: The operand
+ * @returns The operand's absolute value
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let abs = (num: BigInt) => {
+  WasmI32.toGrain(BI.abs(WasmI32.fromGrain(num))): BigInt
+}
+
+/**
+ * Computes the sum of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The sum of the two operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let add = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+}
+
+/**
+ * Computes the difference of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The difference of the two operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let sub = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+}
+
+/**
+ * Computes the product of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The product of the two operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let mul = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+}
+
+// For further reading on Truncated vs. Floored division: https://en.wikipedia.org/wiki/Modulo_operation
+
+/**
+ * Computes the quotient of its operands using signed (truncated) division
+ * (in which the quotient is always rounded towards zero).
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The quotient of its operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let div = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
+}
+
+/**
+ * Computes the remainder of the division of its operands using signed (truncated) division
+ * (in which the quotient is always rounded towards zero).
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The remainder of its operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let rem = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.rem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
+}
+
+/**
+ * Computes the quotient and remainder of its operands using signed (truncated) division.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The quotient and remainder of its operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let quotRem = (num1: BigInt, num2: BigInt) => {
+  let dest = Memory.malloc(8n)
+  BI.quotRem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2), dest)
+  let q = WasmI32.toGrain(WasmI32.load(dest, 0n)): BigInt
+  let r = WasmI32.toGrain(WasmI32.load(dest, 4n)): BigInt
+  Memory.free(dest)
+  (q, r)
+}
+
+/**
+ * Computes the greatest common divisior of the two operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The greatest common divisor of its operands
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let gcd = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+}
+
+/**
+ * @section Bitwise operations: Functions for operating on bits of BigInt values.
+ */
+
+/**
+ * Shifts the bits of the value left by the given number of bits.
+ *
+ * @param num: The value to shift
+ * @param places: The number of bits to shift by
+ * @returns The shifted value
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let shl = (num: BigInt, places: Int32) => {
+  let num = WasmI32.fromGrain(num)
+  let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
+  WasmI32.toGrain(BI.shl(num, places)): BigInt
+}
+
+/**
+ * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+ *
+ * @param num: The value to shift
+ * @param places: The amount to shift by
+ * @returns The shifted value
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let shr = (num: BigInt, places: Int32) => {
+  let num = WasmI32.fromGrain(num)
+  let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
+  WasmI32.toGrain(BI.shrS(num, places)): BigInt
+}
+
+/**
+ * @section Comparisons: Functions for comparing BigInt values.
+ */
+
+/**
+ * Checks if the given value is equal to zero.
+ *
+ * @param num: The value to inspect
+ * @returns `true` if the first value is equal to zero or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let eqz = (num: BigInt) => {
+  let num = WasmI32.fromGrain(num)
+  BI.eqz(num)
+}
+
+/**
+ * Checks if the first value is equal to the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let eq = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.eq(num1, num2)
+}
+
+/**
+ * Checks if the first value is not equal to the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is not equal to the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let ne = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.ne(num1, num2)
+}
+
+/**
+ * Checks if the first value is less than the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let lt = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.lt(num1, num2)
+}
+
+/**
+ * Checks if the first value is less than or equal to the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let lte = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.lte(num1, num2)
+}
+
+/**
+ * Checks if the first value is greater than the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let gt = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.gt(num1, num2)
+}
+
+/**
+ * Checks if the first value is greater than or equal to the second value.
+ *
+ * @param num1: The first value
+ * @param num2: The second value
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let gte = (num1: BigInt, num2: BigInt) => {
+  let num1 = WasmI32.fromGrain(num1)
+  let num2 = WasmI32.fromGrain(num2)
+  BI.gte(num1, num2)
+}
+
+/**
+ * @section Bitwise logic: Boolean operations on the bits of BigInt values.
+ */
+
+/**
+ * Computes the bitwise NOT of the given value.
+ *
+ * @param num: The given value
+ * @returns Containing the inverted bits of the given value
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let lnot = (num: BigInt) => {
+  WasmI32.toGrain(BI.bitwiseNot(WasmI32.fromGrain(num)))
+}
+
+/**
+ * Computes the bitwise AND (`&`) on the given operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let land = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.bitwiseAnd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  )
+}
+
+/**
+ * Computes the bitwise OR (`|`) on the given operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let lor = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.bitwiseOr(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  )
+}
+
+/**
+ * Computes the bitwise XOR (`^`) on the given operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let lxor = (num1: BigInt, num2: BigInt) => {
+  WasmI32.toGrain(
+    BI.bitwiseXor(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  )
+}
+
+/**
+ * Counts the number of leading zero bits in the value.
+ * Will return the maximum integer for negative numbers.
+ *
+ * @param num: The value to inspect
+ * @returns The amount of leading zeros
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let clz = (num: BigInt) => {
+  WasmI32.toGrain(
+    DS.newInt32(BI.countLeadingZeros(WasmI32.fromGrain(num)))
+  ): Int32
+}
+
+/**
+ * Counts the number of trailing zero bits in the value.
+ *
+ * @param num: The value to inspect
+ * @returns The amount of trailing zeros
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let ctz = (num: BigInt) => {
+  WasmI32.toGrain(
+    DS.newInt64(BI.countTrailingZeros(WasmI32.fromGrain(num)))
+  ): Int64
+}
+
+/**
+ * Counts the number of bits set to `1` in the value, also known as a population count.
+ * Will return the `None` if given a negative integer
+ *
+ * @param num: The value to inspect
+ * @returns The amount of 1-bits in its operand
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let popcnt = (num: BigInt) => {
+  let flagDest = Memory.malloc(4n)
+  WasmI32.store(flagDest, 0n, 0n)
+  let res = BI.popcnt(WasmI32.fromGrain(num), flagDest)
+  if (WasmI32.eqz(WasmI32.load(flagDest, 0n))) {
+    Some(WasmI32.toGrain(DS.newInt64(res)): Int64)
+  } else {
+    None
+  }
+}
+
+/**
+ * @section Other: Other functions on BigInts.
+ */
+
+/**
+ * Converts the given operand to a string.
+ *
+ * @param num: The operand
+ * @returns The operand, as a string
+ *
+ * @since v0.5.0
+ */
+@unsafe
+export let toString = (num: BigInt) => {
+  BI.bigIntToString10(WasmI32.fromGrain(num))
+}

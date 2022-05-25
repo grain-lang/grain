@@ -104,10 +104,12 @@ let transl_imm_expression:
   ref(_ => failwith("forward decl"));
 let transl_const:
   ref(
-    Asttypes.constant =>
-    Either.t(Anftree.imm_expression, (string, Anftree.comp_expression)),
+    (~loc: Location.t=?, ~env: Env.t=?, Asttypes.constant) =>
+    Either.t(Anftree.imm_expression, (Ident.t, list(Anftree.anf_bind))),
   ) =
-  ref(_ => failwith("forward decl"));
+  ref((~loc=Location.dummy_loc, ~env=Env.empty, _) =>
+    failwith("forward decl")
+  );
 
 /** Utilities */
 
@@ -534,6 +536,7 @@ let equality_type =
   | Const_number(_)
   | Const_int32(_)
   | Const_int64(_)
+  | Const_bigint(_)
   | Const_float32(_)
   | Const_float64(_)
   | Const_bytes(_)
@@ -798,7 +801,16 @@ module MatchTreeCompiler = {
   };
 
   let rec compile_tree_help =
-          (~mut_boxing=false, tree, values, expr, helpI, helpConst) => {
+          (
+            ~loc=Location.dummy_loc,
+            ~env=Env.empty,
+            ~mut_boxing=false,
+            tree,
+            values,
+            expr,
+            helpI,
+            helpConst,
+          ) => {
     switch (tree) {
     | Leaf(i, patterns, aliases) =>
       let env = expr.imm_env;
@@ -828,9 +840,25 @@ module MatchTreeCompiler = {
         );
       let (cond, cond_setup) = helpI(guard);
       let (true_comp, true_setup) =
-        compile_tree_help(true_tree, values, expr, helpI, helpConst);
+        compile_tree_help(
+          ~loc,
+          ~env,
+          true_tree,
+          values,
+          expr,
+          helpI,
+          helpConst,
+        );
       let (false_comp, false_setup) =
-        compile_tree_help(false_tree, values, expr, helpI, helpConst);
+        compile_tree_help(
+          ~loc,
+          ~env,
+          false_tree,
+          values,
+          expr,
+          helpI,
+          helpConst,
+        );
       (
         Comp.if_(
           ~allocation_type=true_comp.comp_allocation_type,
@@ -854,9 +882,7 @@ module MatchTreeCompiler = {
       let (const, const_setup) =
         switch (helpConst(const)) {
         | Left(imm) => (imm, [])
-        | Right((name, comp)) =>
-          let id = Ident.create(name);
-          (Imm.id(id), [BLet(id, comp, Nonglobal)]);
+        | Right((name, binds)) => (Imm.id(name), binds)
         };
       let cond =
         Comp.prim2(
@@ -868,9 +894,25 @@ module MatchTreeCompiler = {
       let cond_id = Ident.create("match_conditional");
       let cond_setup = const_setup @ [BLet(cond_id, cond, Nonglobal)];
       let (true_comp, true_setup) =
-        compile_tree_help(true_tree, values, expr, helpI, helpConst);
+        compile_tree_help(
+          ~loc,
+          ~env,
+          true_tree,
+          values,
+          expr,
+          helpI,
+          helpConst,
+        );
       let (false_comp, false_setup) =
-        compile_tree_help(false_tree, values, expr, helpI, helpConst);
+        compile_tree_help(
+          ~loc,
+          ~env,
+          false_tree,
+          values,
+          expr,
+          helpI,
+          helpConst,
+        );
 
       // Add a binding for aliases
       let alias_binding =
@@ -1000,10 +1042,20 @@ module MatchTreeCompiler = {
       ];
 
       let (rest_ans, rest_setup) =
-        compile_tree_help(rest, new_values, expr, helpI, helpConst);
+        compile_tree_help(
+          ~loc,
+          ~env,
+          rest,
+          new_values,
+          expr,
+          helpI,
+          helpConst,
+        );
       (rest_ans, bindings @ rest_setup);
     | Swap(idx, rest_tree) =>
       compile_tree_help(
+        ~loc,
+        ~env,
         rest_tree,
         swap_list(idx, values),
         expr,
@@ -1019,7 +1071,16 @@ module MatchTreeCompiler = {
 
       /* Runs when no cases match */
       let base_tree = Option.value(~default=Fail, default_tree);
-      let base = compile_tree_help(base_tree, values, expr, helpI, helpConst);
+      let base =
+        compile_tree_help(
+          ~loc,
+          ~env,
+          base_tree,
+          values,
+          expr,
+          helpI,
+          helpConst,
+        );
       let value_constr_name = Ident.create("match_constructor");
       let value_constr_id = Imm.id(value_constr_name);
       let value_constr =
@@ -1056,7 +1117,15 @@ module MatchTreeCompiler = {
               ),
             ];
             let (tree_ans, tree_setup) =
-              compile_tree_help(tree, values, expr, helpI, helpConst);
+              compile_tree_help(
+                ~loc,
+                ~env,
+                tree,
+                values,
+                expr,
+                helpI,
+                helpConst,
+              );
             let ans =
               Comp.if_(
                 ~allocation_type=tree_ans.comp_allocation_type,
@@ -1132,8 +1201,9 @@ module MatchTreeCompiler = {
 
     // Create slots for bindings in each of the branches
     let bind_setup = collect_bindings(branches);
+    let {imm_loc: loc, imm_env: env} = expr;
     let (ans, setup) =
-      compile_tree_help(tree, [expr], expr, helpI, helpConst);
+      compile_tree_help(~loc, ~env, tree, [expr], expr, helpI, helpConst);
     let jmp_name = Ident.create("match_dest");
     let setup = bind_setup @ setup @ [BLet(jmp_name, ans, Nonglobal)];
     let switch_branches =
@@ -1183,8 +1253,18 @@ module MatchTreeCompiler = {
 
     // Create slots for bindings in each of the branches
     let bind_setup = collect_bindings(~mut_boxing, ~global, branches);
+    let {imm_loc: loc, imm_env: env} = expr;
     let (ans, setup) =
-      compile_tree_help(~mut_boxing, tree, [expr], expr, helpI, helpConst);
+      compile_tree_help(
+        ~loc,
+        ~env,
+        ~mut_boxing,
+        tree,
+        [expr],
+        expr,
+        helpI,
+        helpConst,
+      );
     bind_setup @ setup @ [BSeq(ans)];
   };
 };

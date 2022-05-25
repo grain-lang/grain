@@ -525,7 +525,7 @@ and type_pat_aux =
         Typetexp.find_all_constructors(
           env^,
           name.loc,
-          Identifier.IdentName(name.txt),
+          Identifier.IdentName(name),
         )
       };
 
@@ -549,7 +549,7 @@ and type_pat_aux =
           ...sp,
           ppat_desc:
             PPatConstruct(
-              Location.mkloc(Identifier.IdentName(name.txt), name.loc),
+              Location.mkloc(Identifier.IdentName(name), name.loc),
               [],
             ),
         },
@@ -754,7 +754,7 @@ and type_pat_aux =
 
     let candidates =
       switch (lid.txt, constrs) {
-      | (Identifier.IdentName(s), Some(constrs))
+      | (Identifier.IdentName({txt: s}), Some(constrs))
           when Hashtbl.mem(constrs, s) => [
           (Hashtbl.find(constrs, s), (() => ())),
         ]

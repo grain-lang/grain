@@ -25,10 +25,12 @@ import WasmI32, {
   gtU as (>),
   ltU as (<),
 } from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
 import Tags from "runtime/unsafe/tags"
 
 import { tagSimpleNumber } from "runtime/dataStructures"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
+import BI from "runtime/bigint"
 
 import Random from "sys/random"
 import Result from "result"
@@ -67,6 +69,13 @@ let hash32 = k => {
   h = h ^ k
   h = WasmI32.rotl(h, r2)
   h = h * m + n
+}
+
+@unsafe
+let hash64 = k => {
+  // convenience function for hashing 64-bit values
+  hash32(WasmI32.wrapI64(k))
+  hash32(WasmI32.wrapI64(WasmI64.shrU(k, 32N)))
 }
 
 @unsafe
@@ -180,6 +189,15 @@ let rec hashOne = (val, depth) => {
             hash32(WasmI32.load(heapPtr, 8n))
             hash32(WasmI32.load(heapPtr, 12n))
           },
+          t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+            // TODO(#1187): should include fixint size once implemented
+            let size = BI.getSize(heapPtr)
+            hash32(size)
+            hash32(BI.getFlags(heapPtr))
+            for (let mut i = 0n; i < size; i += 1n) {
+              hash64(BI.getLimb(heapPtr, i))
+            }
+          },
           t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
             hash32(WasmI32.load(heapPtr, 8n))
           },
@@ -188,8 +206,8 @@ let rec hashOne = (val, depth) => {
             hash32(WasmI32.load(heapPtr, 12n))
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
-            hash32(WasmI32.load(heapPtr, 12n))
+            hashOne(WasmI32.load(heapPtr, 8n), depth + 1n)
+            hashOne(WasmI32.load(heapPtr, 12n), depth + 1n)
           },
           _ => {
             hash32(heapPtr)

@@ -27,9 +27,12 @@ type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
 
-let ident_empty = {txt: Identifier.IdentName("[]"), loc: Location.dummy_loc};
+let ident_empty = {
+  txt: Identifier.IdentName(Location.mknoloc("[]")),
+  loc: Location.dummy_loc,
+};
 let ident_cons = {
-  txt: Identifier.IdentName("[...]"),
+  txt: Identifier.IdentName(Location.mknoloc("[...]")),
   loc: Location.dummy_loc,
 };
 
@@ -46,6 +49,7 @@ module Const = {
   let wasmi64 = i => PConstWasmI64(i);
   let wasmf32 = f => PConstWasmF32(f);
   let wasmf64 = f => PConstWasmF64(f);
+  let bigint = i => PConstBigInt(i);
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };
@@ -241,7 +245,7 @@ module Exp = {
   let binop = (~loc=?, ~attributes=?, a, b) => {
     switch (a, b) {
     | (
-        {pexp_desc: PExpId({txt: IdentName("/")})},
+        {pexp_desc: PExpId({txt: IdentName({txt: "/"})})},
         [
           {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
           {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},

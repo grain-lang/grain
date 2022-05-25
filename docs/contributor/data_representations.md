@@ -217,14 +217,28 @@ The payload for Float64 values is a single, signed, 64-bit float.
 
 #### Rational
 
-The payload for rational numbers consists of two numbers. A signed 32-bit
-integer denotes the numerator of the represented fraction, and an unsigned 32-bit
-integer denotes the denominator of the represented fraction.
+The payload for rational numbers consists of two numbers. A 32-bit
+pointer to a BigInt denotes the numerator of the represented fraction,
+and 32-bit pointer to a BigInt denotes the denominator of the represented fraction.
 
 ```plaintext
-╔══════╦═══════════╤══════════════════╤══════════════════════════════════════╗
-║ size ║ 32        │ 32               │ 32              │ 32                 ║
-╠══════╬═══════════╪══════════════════╪═════════════════╪════════════════════╣
-║ what ║ value tag │ boxed number tag │ numerator (i32) │ denominator (u32)  ║
-╚══════╩═══════════╧══════════════════╧═════════════════╧════════════════════╝
+╔══════╦═══════════╤══════════════════╤══════════════════════════════════════════════════════╗
+║ size ║ 32        │ 32               │ 32                      │ 32                         ║
+╠══════╬═══════════╪══════════════════╪═════════════════════════╪════════════════════════════╣
+║ what ║ value tag │ boxed number tag │ numerator (ptr<BigInt>) │ denominator (ptr<BigInt>)  ║
+╚══════╩═══════════╧══════════════════╧═════════════════════════╧════════════════════════════╝
+```
+
+#### BigInt
+
+The payload for big integers consists of an unsigned 32-bit integer denoting
+the number of "limbs" (64-bit dwords needed to encode the magnitude), a 16-bit
+bitflag, 16 bits of reserved space, and the 64-bit limbs containing the value.
+
+```plaintext
+╔══════╦═══════════╤══════════════════╤═════════════════╤═══════════════════════════════════════════════════════════╗
+║ size ║ 32        │ 32               │ 32              │ 16              │ 16                 │ 64 * size          ║
+╠══════╬═══════════╪══════════════════╪═════════════════╪═════════════════╪═════════════════════════════════════════╣
+║ what ║ value tag │ boxed number tag │ size            | flags           │ <reserved>         | limbs (u64)        ║
+╚══════╩═══════════╧══════════════════╧═════════════════╧═════════════════╧═════════════════════════════════════════╝
 ```

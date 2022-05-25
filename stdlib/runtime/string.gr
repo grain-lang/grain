@@ -20,6 +20,7 @@ import WasmI32, {
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
+import BI from "runtime/bigint"
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import NumberUtils from "runtime/numberUtils"
@@ -476,9 +477,12 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           NumberUtils.itoa64(WasmI64.load(ptr, 8n), 10n)
         },
+        t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+          BI.bigIntToString10(ptr)
+        },
         t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-          let numerator = NumberUtils.itoa32(WasmI32.load(ptr, 8n), 10n)
-          let denominator = NumberUtils.itoa32(WasmI32.load(ptr, 12n), 10n)
+          let numerator = BI.bigIntToString10(WasmI32.load(ptr, 8n))
+          let denominator = BI.bigIntToString10(WasmI32.load(ptr, 12n))
           let slash = "/"
           let strings = [numerator, slash, denominator]
           join(strings)
