@@ -21,6 +21,7 @@ open Asttypes;
 open Parsetree;
 open Types;
 open Format;
+open Grain_utils;
 
 module String = Misc.Stdlib.String;
 
@@ -986,7 +987,7 @@ let type_implementation = prog => {
   let (stritems, sg, finalenv) = type_module(initenv, prog);
   let (statements, env) = stritems;
   let simple_sg = simplify_signature(sg);
-  let filename = sourcefile; /* TODO: I think this is okay */
+  let filename = Option.get(Filepath.from_string(sourcefile)); /* TODO: I think this is okay */
   let coercion =
     Includemod.compunit(
       initenv,

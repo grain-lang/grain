@@ -194,14 +194,15 @@ let open_signature_of_initially_opened_module:
 
 /* Arguments: module name, file name. Results: signature. */
 let build_signature:
-  (~deprecated: string=?, signature, string, string) => Cmi_format.cmi_infos;
+  (~deprecated: string=?, signature, string, Filepath.t) =>
+  Cmi_format.cmi_infos;
 /* Arguments: signature, module name, file name. */
 let build_signature_with_imports:
   (
     ~deprecated: string=?,
     signature,
     string,
-    string,
+    Filepath.t,
     list((string, option(Digest.t)))
   ) =>
   Cmi_format.cmi_infos;
@@ -216,9 +217,6 @@ let crc_of_unit: string => Digest.t;
 
 let imports: unit => list((string, option(Digest.t)));
 
-/* [is_imported_opaque md] returns true if [md] is an opaque imported module  */
-let is_imported_opaque: string => bool;
-
 /* Direct access to the table of imported compilation units with their CRC */
 
 module Consistbl: (module type of {
@@ -226,7 +224,6 @@ module Consistbl: (module type of {
 });
 
 let crc_units: Consistbl.t;
-let add_import: string => unit;
 let clear_imports: unit => unit;
 
 /* By-name insertions */

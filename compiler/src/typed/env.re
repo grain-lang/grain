@@ -688,7 +688,7 @@ type pers_struct = {
   ps_sig: Lazy.t(signature),
   ps_comps: module_components,
   ps_crcs: list((string, option(Digest.t))),
-  ps_filename: string,
+  ps_filename: Filepath.t,
   ps_flags: list(pers_flags),
 };
 
@@ -706,28 +706,35 @@ module Consistbl = Consistbl.Make(Misc.Stdlib.String);
 
 let crc_units = Consistbl.create();
 
+module FilepathSet =
+  Set.Make({
+    type t = Filepath.t;
+    let compare = (p1, p2) =>
+      String.compare(Filepath.to_string(p1), Filepath.to_string(p2));
+  });
+
 module StringSet =
   Set.Make({
     type t = string;
     let compare = String.compare;
   });
 
-let imported_units = ref(StringSet.empty);
+let imported_units = ref(FilepathSet.empty);
 
 let add_import = s => {
-  imported_units := StringSet.add(s, imported_units^);
+  imported_units := FilepathSet.add(s, imported_units^);
 };
 
-let imported_opaque_units = ref(StringSet.empty);
+let imported_opaque_units = ref(FilepathSet.empty);
 
 let add_imported_opaque = s =>
-  imported_opaque_units := StringSet.add(s, imported_opaque_units^);
+  imported_opaque_units := FilepathSet.add(s, imported_opaque_units^);
 
 let with_cleared_imports = thunk => {
   let old_imported_units = imported_units^;
   let old_opaque_units = imported_opaque_units^;
-  imported_units := StringSet.empty;
-  imported_opaque_units := StringSet.empty;
+  imported_units := FilepathSet.empty;
+  imported_opaque_units := FilepathSet.empty;
   let ret = thunk();
   imported_units := old_imported_units;
   imported_opaque_units := old_opaque_units;
@@ -736,8 +743,8 @@ let with_cleared_imports = thunk => {
 
 let clear_imports = () => {
   Consistbl.clear(crc_units);
-  imported_units := StringSet.empty;
-  imported_opaque_units := StringSet.empty;
+  imported_units := FilepathSet.empty;
+  imported_opaque_units := FilepathSet.empty;
 };
 
 let check_consistency = ps =>
@@ -749,17 +756,14 @@ let check_consistency = ps =>
         | Some(crc) =>
           let resolved_file_name =
             Module_resolution.resolve_unit(
-              ~base_dir=
-                Filepath.dirname(
-                  Filepath.from_absolute_string(ps.ps_filename),
-                ),
+              ~base_dir=Filepath.dirname(ps.ps_filename),
               name,
             );
           Consistbl.check(
             crc_units,
             Filepath.to_string(resolved_file_name),
             crc,
-            ps.ps_filename,
+            Filepath.to_string(ps.ps_filename),
           );
         },
       ps.ps_crcs,
@@ -772,16 +776,16 @@ let check_consistency = ps =>
 /* Reading persistent structures from .cmi files */
 
 let save_pers_struct = (crc, ps) => {
-  let filename = ps.ps_filename;
+  let filename = Filepath.to_string(ps.ps_filename);
   Hashtbl.add(persistent_structures, filename, Some(ps));
   List.iter(
     fun
     | Rectypes => ()
     | Unsafe_string => ()
-    | Opaque => add_imported_opaque(filename),
+    | Opaque => add_imported_opaque(ps.ps_filename),
     ps.ps_flags,
   );
-  Consistbl.set(crc_units, filename, crc, ps.ps_filename);
+  Consistbl.set(crc_units, filename, crc, filename);
 };
 
 let get_dependency_chain = (~loc, unit_name) => {
@@ -840,7 +844,6 @@ module Persistent_signature = {
 };
 
 let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
-  let filename = Filepath.to_string(filename);
   let name = cmi.cmi_name;
   let sign = cmi.cmi_sign;
   let crcs = cmi.cmi_crcs;
@@ -882,7 +885,11 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   if (check) {
     check_consistency(ps);
   };
-  Hashtbl.add(persistent_structures, filename, Some(ps));
+  Hashtbl.add(
+    persistent_structures,
+    Filepath.to_string(filename),
+    Some(ps),
+  );
   ps;
 };
 
@@ -903,7 +910,7 @@ let find_pers_struct = (~loc, check, filepath) => {
         };
       };
 
-      add_import(filepath);
+      add_import(ps.filename);
       acknowledge_pers_struct(check, ps);
     }
   };
@@ -955,7 +962,7 @@ let check_pers_struct = (~loc, name, filename) =>
     /* PR#6843: record the weak dependency ([add_import]) regardless of
        whether the check succeeds, to help make builds more
        deterministic. */
-    add_import(filename);
+    // add_import(filename);
     if (Warnings.is_active(Warnings.NoCmiFile("", None))) {
       add_delayed_check_forward^(() =>
         check_pers_struct(~loc, name, filename)
@@ -2364,7 +2371,10 @@ let crc_of_unit = filename => {
 
 let imports = () => {
   let ret =
-    Consistbl.extract(StringSet.elements(imported_units^), crc_units);
+    Consistbl.extract(
+      FilepathSet.elements(imported_units^) |> List.map(Filepath.to_string),
+      crc_units,
+    );
   List.map(
     ((unit, crc)) =>
       switch (crc) {
@@ -2383,9 +2393,6 @@ let imports = () => {
     ret,
   );
 };
-
-/* Returns true if [s] is an imported opaque module */
-let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
 
 /* Save a signature to a file */
 /*
