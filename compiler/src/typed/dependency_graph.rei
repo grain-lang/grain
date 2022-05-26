@@ -1,7 +1,9 @@
+open Grain_utils;
+
 module type Dependency_value = {
   type t;
-  let get_dependencies: (t, string => option(t)) => list(t);
-  let get_filename: t => string;
+  let get_dependencies: (t, Filepath.t => option(t)) => list(t);
+  let get_filename: t => Filepath.t;
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
   // Guaranteed to only be called when dependencies are compiled.
@@ -23,13 +25,13 @@ module Make:
     /**
    Returns the dependency graph node corresponding to the given filename.
    */
-    let lookup_filename: string => option(DV.t);
+    let lookup_filename: Filepath.t => option(DV.t);
 
     /**
    Compiles the dependencies of the given filename.
    */
     let compile_dependencies:
-      (~loc: Grain_parsing.Location.t=?, string) => unit;
+      (~loc: Grain_parsing.Location.t=?, Filepath.t) => unit;
 
     /**
    Dumps the edges in this graph to stderr.

@@ -17,7 +17,7 @@ describe("foreigns", ({test}) => {
       export let bar = () => foo(1)
       |},
     );
-    let ic = open_in_bin(Filepath.to_string(outfile));
+    let ic = Fs_access.open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
     let import_sections =

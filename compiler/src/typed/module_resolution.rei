@@ -18,7 +18,7 @@ let clear_dependency_graph: unit => unit;
 
 // Patched in by env.re:
 let with_preserve_unit:
-  ref((~loc: Location.t, string, string, unit => unit) => unit);
+  ref((~loc: Location.t, string, Filepath.t, unit => unit) => unit);
 
 let current_unit_name: ref(unit => string);
 

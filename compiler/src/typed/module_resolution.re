@@ -20,7 +20,7 @@ let compile_module_dependency: ref((Filepath.t, Filepath.t) => unit) =
   );
 
 let with_preserve_unit:
-  ref((~loc: Location.t, string, string, unit => unit) => unit) =
+  ref((~loc: Location.t, string, Filepath.t, unit => unit) => unit) =
   ref((~loc, _, _, _) =>
     failwith("with_preserve_unit should be filled in by env.re")
   );
@@ -257,9 +257,9 @@ module Dependency_graph =
     let equal = (dn1, dn2) =>
       String.equal(dn1.dn_file_name, dn2.dn_file_name);
 
-    let get_filename = dn => dn.dn_file_name;
+    let get_filename = dn => Filepath.from_absolute_string(dn.dn_file_name);
 
-    let rec get_dependencies: (t, string => option(t)) => list(t) =
+    let rec get_dependencies: (t, Filepath.t => option(t)) => list(t) =
       (dn, lookup) => {
         let base_dir =
           Filepath.dirname(Filepath.from_absolute_string(dn.dn_file_name));
@@ -271,8 +271,7 @@ module Dependency_graph =
             name => {
               let located = locate_module(base_dir, active_search_path, name);
               let out_file_name = located_to_out_file_name(located);
-              let dn_file_name = Filepath.to_string(out_file_name);
-              let existing_dependency = lookup(dn_file_name);
+              let existing_dependency = lookup(out_file_name);
               switch (existing_dependency) {
               | Some(ed) =>
                 Hashtbl.add(ed.dn_unit_name, Some(dn), name);
@@ -282,7 +281,7 @@ module Dependency_graph =
                 Hashtbl.add(tbl, Some(dn), name);
                 {
                   dn_unit_name: tbl,
-                  dn_file_name,
+                  dn_file_name: Filepath.to_string(out_file_name),
                   dn_up_to_date: ref(false), // <- needs to be checked
                   dn_latest_resolution: ref(Some(located)),
                 };
@@ -308,8 +307,7 @@ module Dependency_graph =
                 let located =
                   locate_module(base_dir, active_search_path, name);
                 let out_file_name = located_to_out_file_name(located);
-                let dn_file_name = Filepath.to_string(out_file_name);
-                let existing_dependency = lookup(dn_file_name);
+                let existing_dependency = lookup(out_file_name);
                 switch (existing_dependency) {
                 | Some(ed) =>
                   Hashtbl.add(ed.dn_unit_name, Some(dn), name);
@@ -319,7 +317,7 @@ module Dependency_graph =
                   Hashtbl.add(tbl, Some(dn), name);
                   {
                     dn_unit_name: tbl,
-                    dn_file_name,
+                    dn_file_name: Filepath.to_string(out_file_name),
                     dn_up_to_date: ref(false), // <- needs to be checked
                     dn_latest_resolution: ref(Some(located)),
                   };
@@ -402,8 +400,7 @@ module Dependency_graph =
         | Seq.Nil => failwith("Impossible: empty dn_unit_name")
         | Seq.Cons((parent, unit_name), _) => unit_name
         };
-      with_preserve_unit^(
-        ~loc, chosen_unit_name, Filepath.to_string(srcpath), () =>
+      with_preserve_unit^(~loc, chosen_unit_name, srcpath, () =>
         Grain_utils.Warnings.with_preserve_warnings(() =>
           Grain_utils.Config.preserve_config(() =>
             compile_module_dependency^(srcpath, outpath)
@@ -428,12 +425,9 @@ let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
     | Not_found => error(No_module_file(unit_name, None))
     };
   let out_file = located_to_out_file_name(located);
-  let dn_file_name = Filepath.to_string(out_file);
   let current_dep_node =
-    Dependency_graph.lookup_filename(
-      Filepath.to_string(current_filename^()),
-    );
-  let existing_dependency = Dependency_graph.lookup_filename(dn_file_name);
+    Dependency_graph.lookup_filename(current_filename^());
+  let existing_dependency = Dependency_graph.lookup_filename(out_file);
   let dn =
     switch (existing_dependency) {
     | Some(ed) =>
@@ -444,13 +438,13 @@ let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
       Hashtbl.add(tbl, current_dep_node, unit_name);
       {
         dn_unit_name: tbl,
-        dn_file_name,
+        dn_file_name: Filepath.to_string(out_file),
         dn_up_to_date: ref(false), // <- needs to be checked
         dn_latest_resolution: ref(Some(located)),
       };
     };
   Dependency_graph.register(dn);
-  Dependency_graph.compile_dependencies(~loc, dn_file_name);
+  Dependency_graph.compile_dependencies(~loc, out_file);
   let ret = located_to_out_file_name(located);
   ret;
 };

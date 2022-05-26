@@ -695,9 +695,9 @@ type pers_struct = {
 let persistent_structures: Hashtbl.t(string, option(pers_struct)) =
   Hashtbl.create(17);
 
-let unit_to_file: Hashtbl.t(string, string) = Hashtbl.create(17);
+let unit_to_file: Hashtbl.t(string, Filepath.t) = Hashtbl.create(17);
 
-let compilation_in_progress: Hashtbl.t(string, Location.loc(string)) =
+let compilation_in_progress: Hashtbl.t(Filepath.t, Location.loc(string)) =
   Hashtbl.create(17); /* (module, dependent) */
 
 /* Consistency between persistent structures */

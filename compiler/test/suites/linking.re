@@ -54,7 +54,7 @@ describe("linking", ({test, testSkip}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
     ignore @@ compile(name, {|print("Hello, world!")|});
-    let ic = open_in_bin(Filepath.to_string(outfile));
+    let ic = Fs_access.open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
     let export_sections =
@@ -92,7 +92,7 @@ describe("linking", ({test, testSkip}) => {
       name,
       {|print("Hello, world!")|},
     );
-    let ic = open_in_bin(Filepath.to_string(outfile));
+    let ic = Fs_access.open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
     let start_section =

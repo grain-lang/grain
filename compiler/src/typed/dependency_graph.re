@@ -2,11 +2,12 @@
  Data Structure for managing graph of module dependencies during compilation
  */
 open Graph;
+open Grain_utils;
 
 module type Dependency_value = {
   type t;
-  let get_dependencies: (t, string => option(t)) => list(t);
-  let get_filename: t => string;
+  let get_dependencies: (t, Filepath.t => option(t)) => list(t);
+  let get_filename: t => Filepath.t;
   let is_up_to_date: t => bool;
   let check_up_to_date: t => unit;
   let compile_module: (~loc: Grain_parsing.Location.t=?, t) => unit;
@@ -51,7 +52,7 @@ module Make = (DV: Dependency_value) => {
     });
 
   let graph = G.create();
-  let filename_to_nodes = Hashtbl.create(16);
+  let filename_to_nodes: Hashtbl.t(Filepath.t, DV.t) = Hashtbl.create(16);
 
   let add_dependency = dependency => {
     G.add_vertex(graph, (dependency, ref(Needs_processing)));
@@ -152,7 +153,7 @@ module Make = (DV: Dependency_value) => {
         let (v1, _) = v;
         Printf.eprintf(
           "%s (in degree: %d) (out degree: %d)\n",
-          DV.get_filename(v1),
+          Filepath.to_string(DV.get_filename(v1)),
           G.in_degree(graph, v),
           G.out_degree(graph, v),
         );
@@ -164,15 +165,16 @@ module Make = (DV: Dependency_value) => {
       ((v1, _), (v2, _)) => {
         Printf.eprintf(
           "%s ---> %s\n",
-          DV.get_filename(v1),
-          DV.get_filename(v2),
+          Filepath.to_string(DV.get_filename(v1)),
+          Filepath.to_string(DV.get_filename(v2)),
         )
       },
       graph,
     );
     Printf.eprintf("-=-=-=- Topological Sort -=-=-=-\n");
     G_topological.iter(
-      ((v1, _)) => Printf.eprintf("%s, ", DV.get_filename(v1)),
+      ((v1, _)) =>
+        Printf.eprintf("%s, ", Filepath.to_string(DV.get_filename(v1))),
       graph,
     );
     Printf.eprintf("\n");

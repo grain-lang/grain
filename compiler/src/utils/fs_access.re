@@ -103,3 +103,8 @@ let remove = full_path => {
   let full_path = Filepath.to_fp(full_path);
   Fs.rmExn(full_path);
 };
+
+let open_in_bin = path => {
+  let path = Filepath.to_string(path);
+  open_in_bin(path);
+};
