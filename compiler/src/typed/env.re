@@ -962,7 +962,7 @@ let check_pers_struct = (~loc, name, filename) =>
     /* PR#6843: record the weak dependency ([add_import]) regardless of
        whether the check succeeds, to help make builds more
        deterministic. */
-    // add_import(filename);
+    add_import(Option.get(Filepath.from_string(filename)));
     if (Warnings.is_active(Warnings.NoCmiFile("", None))) {
       add_delayed_check_forward^(() =>
         check_pers_struct(~loc, name, filename)
