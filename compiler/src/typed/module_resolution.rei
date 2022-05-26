@@ -28,5 +28,3 @@ let current_unit_name: ref(unit => string);
 let current_filename: ref(unit => string);
 
 let dump_dependency_graph: unit => unit;
-
-let is_relpath: string => bool;
