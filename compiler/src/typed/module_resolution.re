@@ -151,9 +151,10 @@ let current_resolution_table = () => {
   };
 };
 
-let log_resolution = (unit_name, dir, fullpath) => {
-  PathTbl.add(current_resolution_table(), (dir, unit_name), fullpath);
-  fullpath;
+let log_resolution = (unit_name, dir, basename) => {
+  let resolution = Filepath.append(dir, basename);
+  PathTbl.add(current_resolution_table(), (dir, unit_name), resolution);
+  resolution;
 };
 
 let resolve_unit = (~cache=true, ~base_dir=?, unit_name) => {
@@ -170,12 +171,12 @@ let resolve_unit = (~cache=true, ~base_dir=?, unit_name) => {
   | (true, Some(res)) => res
   | _ =>
     let exts = [".gr", ".gr.wasm"];
-    let (fullpath, dir, basename, _) =
+    let (_, dir, basename, _) =
       find_in_path_uncap(~exts, base_dir, path, unit_name);
     if (cache) {
-      log_resolution(unit_name, dir, fullpath);
+      log_resolution(unit_name, dir, basename);
     } else {
-      fullpath;
+      Filepath.append(dir, basename);
     };
   };
 };
@@ -198,7 +199,7 @@ let locate_module = (~disable_relpath=false, base_dir, path, unit_name) => {
         find_in_path_uncap(~exts=[".gr.wasm"], base_dir, path, unit_name)
       ) {
       | (objpath, dir, basename, ext) =>
-        ignore(log_resolution(unit_name, dir, objpath));
+        ignore(log_resolution(unit_name, dir, basename));
         switch (find_ext_in_dir(dir, basename, grain_src_exts)) {
         | Some((srcpath, _, _, _)) => (
             dir,
