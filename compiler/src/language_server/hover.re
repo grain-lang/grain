@@ -454,25 +454,26 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
   );
 };
 
+// gets the "outside" location in a chain of identifiers
+let rec get_location_list_from_ident = (ident: Identifier.t) => {
+  switch (ident) {
+  | IdentName(l) => [l.loc]
+  | IdentExternal(t, l) => get_location_list_from_ident(t) @ [l.loc]
+  };
+};
+
 let get_expression_location =
     (~enclosing: Location.t, e: Typedtree.expression) =>
   switch (e) {
   | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
       when Path.name(mod_path) != "Pervasives" =>
     let ident = loc.txt;
+    let indent_locations = get_location_list_from_ident(ident);
 
-    // don't use this really. we need a function
-    let l =
-      switch (ident) {
-      | IdentName(loc) => loc
-      | IdentExternal(t, loc) =>
-        switch (t) {
-        | IdentName(loc) => loc
-        | IdentExternal(t, loc) => loc
-        }
-      };
-
-    l.loc;
+    switch (indent_locations) {
+    | [first_loc, ..._] => first_loc
+    | _ => enclosing // should never happen but fall back to this if we must
+    };
 
   | _ =>
     if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
