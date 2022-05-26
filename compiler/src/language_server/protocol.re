@@ -72,6 +72,23 @@ type trace_value = string; // 'off' | 'messages' | 'verbose';
 [@deriving yojson]
 type text_document_identifier = {uri};
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentSyncKind
+[@deriving (enum, yojson)]
+type text_document_sync_kind =
+  | [@value 0] No // This is `None` via the spec, but we don't want to collide with Option's `None`
+  | Full
+  | Incremental;
+
+let text_document_sync_kind_to_yojson = kind =>
+  text_document_sync_kind_to_enum(kind) |> [%to_yojson: int];
+let text_document_sync_kind_of_yojson = json =>
+  Result.bind(json |> [%of_yojson: int], value => {
+    switch (text_document_sync_kind_of_enum(value)) {
+    | Some(kind) => Ok(kind)
+    | None => Result.Error("Invalid enum value")
+    }
+  });
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocumentItem
 [@deriving yojson({strict: false})]
 type text_document_item = {
