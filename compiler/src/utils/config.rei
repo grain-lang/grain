@@ -7,6 +7,9 @@ type optimization_level =
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
 
+/** The WASI polyfill path, based on the current configuration */
+let wasi_polyfill_path: unit => option(string);
+
 /** The list of directories to search for modules in, based on the current configuration */
 
 let module_search_path: unit => list(string);

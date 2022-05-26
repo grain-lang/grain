@@ -579,6 +579,12 @@ let stdlib_directory = (): option(string) =>
     stdlib_dir^,
   );
 
+let wasi_polyfill_path = (): option(string) =>
+  Option.map(
+    path => Filepath.(to_string(String.derelativize(path))),
+    wasi_polyfill^,
+  );
+
 let module_search_path = () => {
   switch (stdlib_directory()) {
   | Some(x) => include_dirs^ @ [x] /* stdlib goes last */
