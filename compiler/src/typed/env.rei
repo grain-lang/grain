@@ -1,4 +1,5 @@
 open Grain_parsing;
+open Grain_utils;
 open Parsetree;
 open Types;
 
@@ -191,9 +192,6 @@ let open_signature:
 let open_signature_of_initially_opened_module:
   (~loc: Location.t=?, Path.t, option(string), t) => option(t);
 
-/* Read, save a signature to/from a file */
-
-let read_signature: string => signature;
 /* Arguments: module name, file name. Results: signature. */
 let build_signature:
   (~deprecated: string=?, signature, string, string) => Cmi_format.cmi_infos;
@@ -307,7 +305,7 @@ let check_value_name: (string, Location.t) => unit;
 module Persistent_signature: {
   type t = {
     /** Name of the file containing the signature. */
-    filename: string,
+    filename: Filepath.t,
     cmi: Cmi_format.cmi_infos,
   };
 

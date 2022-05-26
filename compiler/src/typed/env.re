@@ -824,7 +824,7 @@ let mark_completed = (unit_name, sourcefile) => {
 
 module Persistent_signature = {
   type t = {
-    filename: string,
+    filename: Filepath.t,
     cmi: Cmi_format.cmi_infos,
   };
 
@@ -832,10 +832,7 @@ module Persistent_signature = {
     ref((~loc=Location.dummy_loc, unit_name) => {
       switch (Module_resolution.locate_module_file(~loc, unit_name)) {
       | filename =>
-        let ret = {
-          filename: Filepath.to_string(filename),
-          cmi: Module_resolution.read_file_cmi(filename),
-        };
+        let ret = {filename, cmi: Module_resolution.read_file_cmi(filename)};
         Some(ret);
       | exception Not_found => None
       }
@@ -843,6 +840,7 @@ module Persistent_signature = {
 };
 
 let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
+  let filename = Filepath.to_string(filename);
   let name = cmi.cmi_name;
   let sign = cmi.cmi_sign;
   let crcs = cmi.cmi_crcs;
@@ -886,12 +884,6 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   };
   Hashtbl.add(persistent_structures, filename, Some(ps));
   ps;
-};
-
-let read_pers_struct = (check, filename) => {
-  add_import(filename);
-  let cmi = read_cmi(filename);
-  acknowledge_pers_struct(check, {Persistent_signature.filename, cmi});
 };
 
 let find_pers_struct = (~loc, check, filepath) => {
@@ -955,8 +947,6 @@ let check_pers_struct = (~loc, name, filename) =>
     let err = No_module_file(name, Some(msg));
     error(err);
   };
-
-let read_pers_struct = filename => read_pers_struct(true, filename);
 
 let find_pers_struct = filename => find_pers_struct(true, filename);
 
@@ -2354,12 +2344,6 @@ let open_signature =
       mod_.pimp_val,
     );
   Some(env);
-};
-
-/* Read a signature from a file */
-let read_signature = filename => {
-  let ps = read_pers_struct(filename);
-  Lazy.force(ps.ps_sig);
 };
 
 /* Return the CRC of the given compilation unit */
