@@ -136,6 +136,8 @@ let version: version = "2.0";
 
 let header_prefix = "Content-Length: ";
 
+let sep = "\r\n\r\n";
+
 let request = (): result(request_message, string) => {
   switch (input_line(stdin)) {
   | exception exn => Error("Failed to read input")
@@ -169,8 +171,6 @@ let response = (~id=?, result) => {
     );
   let length = String.length(content);
 
-  let sep = "\r\n\r\n";
-
   let len = string_of_int(length);
 
   let msg = header_prefix ++ len ++ sep ++ content;
@@ -188,8 +188,6 @@ let notification = (~method, params) => {
       notification_message_to_yojson(notification_message),
     );
   let length = String.length(content);
-
-  let sep = "\r\n\r\n";
 
   let len = string_of_int(length);
 
