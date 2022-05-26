@@ -3,6 +3,10 @@ type t = Fp.t(Fp.absolute);
 let from_fp = fp => fp;
 let to_fp = fp => fp;
 
+let (==) = Fp.absoluteEq;
+
+let root = Fp.root;
+
 let cwd = () => Fp.absoluteCurrentPlatformExn(Sys.getcwd());
 
 let to_string = path => Fp.toString(path);

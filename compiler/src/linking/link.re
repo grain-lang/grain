@@ -6,15 +6,14 @@ open Cmi_format;
 open Binaryen;
 open Graph;
 
-module String = {
-  type t = string;
-  let compare = compare;
-  let hash = Hashtbl.hash;
-  let equal = (==);
-  let default = "";
-};
-
-module G = Imperative.Digraph.Concrete(String);
+module G =
+  Imperative.Digraph.Concrete({
+    type t = Filepath.t;
+    let compare = compare;
+    let hash = Hashtbl.hash;
+    let equal = Filepath.(==);
+    let default = Filepath.root;
+  });
 module Topo = Topological.Make(G);
 
 let dependency_graph = G.create(~size=10, ());
@@ -82,11 +81,7 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
           resolved_import,
         );
       };
-      G.add_edge(
-        dependency_graph,
-        Filepath.to_string(mod_path),
-        Filepath.to_string(resolved_import),
-      );
+      G.add_edge(dependency_graph, mod_path, resolved_import);
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
@@ -103,11 +98,7 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
           resolved_import,
         );
       };
-      G.add_edge(
-        dependency_graph,
-        Filepath.to_string(mod_path),
-        Filepath.to_string(resolved_import),
-      );
+      G.add_edge(dependency_graph, mod_path, resolved_import);
     } else if (has_wasi_polyfill
                && is_wasi_module(imported_module)
                && !is_wasi_polyfill_module(mod_path)) {
@@ -122,11 +113,7 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
           resolved_import,
         );
       };
-      G.add_edge(
-        dependency_graph,
-        Filepath.to_string(mod_path),
-        Filepath.to_string(resolved_import),
-      );
+      G.add_edge(dependency_graph, mod_path, resolved_import);
     };
   };
 };
@@ -608,15 +595,13 @@ let link_modules = ({asm: wasm_mod, signature}) => {
   let main_module = Module_resolution.current_filename^();
   Hashtbl.add(modules, main_module, wasm_mod);
 
-  G.add_vertex(dependency_graph, Filepath.to_string(main_module));
+  G.add_vertex(dependency_graph, main_module);
   build_dependency_graph(
     ~base_dir=Filepath.dirname(main_module),
     main_module,
   );
   let dependencies =
     Topo.fold((dep, acc) => [dep, ...acc], dependency_graph, []);
-  let dependencies =
-    List.map(dep => Option.get(Filepath.from_string(dep)), dependencies);
   let linked_mod = Module.create();
   link_all(linked_mod, dependencies, signature);
 

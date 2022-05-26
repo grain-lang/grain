@@ -1,5 +1,8 @@
 type t;
 
+let (==): (t, t) => bool;
+let root: t;
+
 let cwd: unit => t;
 
 let from_fp: Fp.t(Fp.absolute) => t;
