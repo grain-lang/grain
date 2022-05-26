@@ -28,12 +28,6 @@ module RequestParams = {
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
 module ResponseResult = {
   [@deriving yojson]
-  type completion_values = {
-    resolveProvider: bool,
-    triggerCharacters: list(string),
-  };
-
-  [@deriving yojson]
   type code_values = {resolveProvider: bool};
 
   [@deriving yojson]
@@ -41,7 +35,6 @@ module ResponseResult = {
     documentFormattingProvider: bool,
     textDocumentSync: int,
     hoverProvider: bool,
-    completionProvider: completion_values,
     definitionProvider: bool,
     typeDefinitionProvider: bool,
     referencesProvider: bool,
@@ -59,10 +52,6 @@ module ResponseResult = {
     documentFormattingProvider: false,
     textDocumentSync: 1,
     hoverProvider: true,
-    completionProvider: {
-      resolveProvider: true,
-      triggerCharacters: ["."],
-    },
     definitionProvider: false, // disabled until we can resolve the external module location
     typeDefinitionProvider: false,
     referencesProvider: false,
