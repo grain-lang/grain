@@ -313,17 +313,18 @@ let makeFileErrorRunner = (test, name, filename, expected) => {
 };
 
 let makeStdlibRunner = (test, ~code=0, name) => {
-  test(
-    name,
-    ({expect}) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      // Run stdlib suites in release mode
+      Config.profile := Some(Release);
       let infile = stdlibfile(name);
       let outfile = wasmfile(name);
       ignore @@ compile_file(infile, outfile);
       let (result, exit_code) = run(outfile);
       expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");
-    },
-  );
+    })
+  });
 };
 
 let parse = (name, lexbuf, source) => {

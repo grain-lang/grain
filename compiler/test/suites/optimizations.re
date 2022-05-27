@@ -12,10 +12,7 @@ describe("optimizations", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertBinaryenOptimizationsDisabledFileRun =
-    makeFileRunner(
-      ~config_fn=() => {Config.optimization_level := Config.Level_two},
-      test_or_skip,
-    );
+    makeFileRunner(test_or_skip);
 
   let assertAnf =
       (
