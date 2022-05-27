@@ -3,6 +3,7 @@ open Grain;
 open Compile;
 open Grain_parsing;
 open Grain_utils;
+open Grain_formatting;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingParams
 module RequestParams = {
@@ -39,33 +40,6 @@ module ResponseResult = {
   type t = list(text_edit);
 };
 
-type compilation_error =
-  | ParseError
-  | InvalidCompilationState;
-
-let parse_source = (program_str: string) => {
-  switch (
-    {
-      let lines = String.split_on_char('\n', program_str);
-      let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
-      let compile_state =
-        Compile.compile_string(
-          ~is_root_file=true,
-          ~hook=stop_after_parse,
-          ~name=?None,
-          program_str,
-        );
-
-      (compile_state, lines, eol);
-    }
-  ) {
-  | exception exn => Error(ParseError)
-  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
-    Ok((parsed_program, Array.of_list(lines), eol))
-  | _ => Error(InvalidCompilationState)
-  };
-};
-
 let process =
     (
       ~id: Protocol.message_id,
@@ -84,16 +58,10 @@ let process =
       "The source code to be formatted isn't available",
     );
   | Some(compiled_code) =>
-    let parsed_source = parse_source(compiled_code);
-
-    switch (parsed_source) {
+    switch (Format.parse_source(compiled_code)) {
     | Ok((parsed_program, lines, eol)) =>
       let formatted_code =
-        Grain_formatting.Format.format_ast(
-          ~original_source=lines,
-          ~eol,
-          parsed_program,
-        );
+        Format.format_ast(~original_source=lines, ~eol, parsed_program);
 
       let range: Protocol.range = {
         range_start: {
@@ -109,7 +77,7 @@ let process =
       Trace.log("ready to return a formatted result");
       let res: ResponseResult.t = [{range, newText: formatted_code}];
       Protocol.response(~id, ResponseResult.to_yojson(res));
-    | Error(ParseError) =>
+    | Error(ParseError(_)) =>
       Trace.log("Unable to parse source code");
       Protocol.error_response(
         ~id,
@@ -123,6 +91,6 @@ let process =
         ~code=-32700,
         "Unable to format the source code",
       );
-    };
+    }
   };
 };
