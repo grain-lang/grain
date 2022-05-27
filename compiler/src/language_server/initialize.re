@@ -28,52 +28,56 @@ module RequestParams = {
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
 module ResponseResult = {
   [@deriving yojson]
-  type completion_values = {
-    resolveProvider: bool,
-    triggerCharacters: list(string),
+  type code_values = {
+    [@key "resolveProvider"]
+    resolve_provider: bool,
   };
 
   [@deriving yojson]
-  type code_values = {resolveProvider: bool};
-
-  [@deriving yojson]
   type lsp_capabilities = {
-    documentFormattingProvider: bool,
-    textDocumentSync: int,
-    hoverProvider: bool,
-    completionProvider: completion_values,
-    definitionProvider: bool,
-    typeDefinitionProvider: bool,
-    referencesProvider: bool,
-    documentSymbolProvider: bool,
-    codeActionProvider: bool,
-    codeLensProvider: code_values,
-    documentHighlightProvider: bool,
-    documentRangeFormattingProvider: bool,
-    renameProvider: bool,
+    [@key "documentFormattingProvider"]
+    document_formatting_provider: bool,
+    [@key "textDocumentSync"]
+    text_document_sync: Protocol.text_document_sync_kind,
+    [@key "hoverProvider"]
+    hover_provider: bool,
+    [@key "definitionProvider"]
+    definition_provider: bool,
+    [@key "typeDefinitionProvider"]
+    type_definition_provider: bool,
+    [@key "referencesProvider"]
+    references_provider: bool,
+    [@key "documentSymbolProvider"]
+    document_symbol_provider: bool,
+    [@key "codeActionProvider"]
+    code_action_provider: bool,
+    [@key "codeLensProvider"]
+    code_lens_provider: code_values,
+    [@key "documentHighlightProvider"]
+    document_highlight_provider: bool,
+    [@key "documentRangeFormattingProvider"]
+    document_range_formatting_provider: bool,
+    [@key "renameProvider"]
+    rename_provider: bool,
   };
   [@deriving yojson]
   type t = {capabilities: lsp_capabilities};
 
   let capabilities = {
-    documentFormattingProvider: true,
-    textDocumentSync: 1,
-    hoverProvider: true,
-    completionProvider: {
-      resolveProvider: true,
-      triggerCharacters: ["."],
+    document_formatting_provider: true,
+    text_document_sync: Full,
+    hover_provider: true,
+    definition_provider: false, // disabled until we can resolve the external module location
+    type_definition_provider: false,
+    references_provider: false,
+    document_symbol_provider: false,
+    code_action_provider: false,
+    code_lens_provider: {
+      resolve_provider: true,
     },
-    definitionProvider: false, // disabled until we can resolve the external module location
-    typeDefinitionProvider: false,
-    referencesProvider: false,
-    documentSymbolProvider: false,
-    codeActionProvider: false,
-    codeLensProvider: {
-      resolveProvider: true,
-    },
-    documentHighlightProvider: false,
-    documentRangeFormattingProvider: false,
-    renameProvider: false,
+    document_highlight_provider: false,
+    document_range_formatting_provider: false,
+    rename_provider: false,
   };
 };
 
