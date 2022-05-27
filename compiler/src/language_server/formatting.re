@@ -55,24 +55,7 @@ let parse_source = (program_str: string) => {
       (compile_state, lines, eol);
     }
   ) {
-  | exception exn =>
-    let bt =
-      if (Printexc.backtrace_status()) {
-        Some(Printexc.get_backtrace());
-      } else {
-        None;
-      };
-    Grain_parsing.Location.report_exception(Stdlib.Format.err_formatter, exn);
-    Option.iter(
-      s =>
-        if (Grain_utils.Config.debug^) {
-          prerr_string("Backtrace:\n");
-          prerr_string(s);
-          prerr_string("\n");
-        },
-      bt,
-    );
-    `Error((false, "Failed to parse code"));
+  | exception exn => `Error((false, "Failed to parse code"))
   | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
     `Ok((parsed_program, Array.of_list(lines), eol))
   | _ => `Error((false, "Invalid compilation state"))
