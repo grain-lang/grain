@@ -43,7 +43,6 @@ module ResponseResult = {
 let process =
     (
       ~id: Protocol.message_id,
-      ~uri: Protocol.uri,
       ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
       ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
       ~documents: Hashtbl.t(Protocol.uri, string),
