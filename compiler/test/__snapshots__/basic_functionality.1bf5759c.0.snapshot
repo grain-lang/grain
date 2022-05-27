@@ -7,7 +7,10 @@ basic functionality › unsafe_wasm_globals
  (type $i32_i64_=>_i32 (func (param i32 i64) (result i32)))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
+ (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F64_VAL\" (global $_F64_VAL_1162 (mut f64)))
  (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printF64\" (global $printF64_1161 (mut i32)))
  (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F32_VAL\" (global $_F32_VAL_1160 (mut f32)))
@@ -21,35 +24,46 @@ basic functionality › unsafe_wasm_globals
  (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printI64\" (func $printI64_1157 (param i32 i64) (result i32)))
  (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printI32\" (func $printI32_1155 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
+ (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gmain (; has Stack IR ;) (result i32)
-  (drop
-   (call $printI32_1155
-    (global.get $printI32_1155)
-    (global.get $_I32_VAL_1156)
+ (func $_gmain (result i32)
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (return
+   (block $compile_block.1 (result i32)
+    (drop
+     (call $printI32_1155
+      (global.get $printI32_1155)
+      (global.get $_I32_VAL_1156)
+     )
+    )
+    (drop
+     (call $printI64_1157
+      (global.get $printI64_1157)
+      (global.get $_I64_VAL_1158)
+     )
+    )
+    (drop
+     (call $printF32_1159
+      (global.get $printF32_1159)
+      (global.get $_F32_VAL_1160)
+     )
+    )
+    (call $printF64_1161
+     (global.get $printF64_1161)
+     (global.get $_F64_VAL_1162)
+    )
    )
-  )
-  (drop
-   (call $printI64_1157
-    (global.get $printI64_1157)
-    (global.get $_I64_VAL_1158)
-   )
-  )
-  (drop
-   (call $printF32_1159
-    (global.get $printF32_1159)
-    (global.get $_F32_VAL_1160)
-   )
-  )
-  (call $printF64_1161
-   (global.get $printF64_1161)
-   (global.get $_F64_VAL_1162)
   )
  )
- (func $_start (; has Stack IR ;)
+ (func $_start
   (drop
    (call $_gmain)
   )

@@ -4,6 +4,7 @@ exceptions › exception_2
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
+ (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
@@ -14,108 +15,138 @@ exceptions › exception_2
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
  (global $Foo_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
+ (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"GRAIN$EXPORT$Foo\" (global $Foo_1131))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gmain (; has Stack IR ;) (result i32)
+ (func $_gmain (result i32)
   (local $0 i32)
-  (i32.store
-   (local.tee $0
-    (call $malloc_0
-     (global.get $GRAIN$EXPORT$malloc_0)
-     (i32.const 48)
-    )
-   )
-   (i32.const 1)
-  )
-  (i32.store offset=4
-   (local.get $0)
-   (i32.const 40)
-  )
-  (i64.store offset=8
-   (local.get $0)
-   (i64.const 0)
-  )
-  (i64.store offset=16
-   (local.get $0)
-   (i64.const 120259084289)
-  )
-  (i64.store offset=24
-   (local.get $0)
-   (i64.const 85899345922)
-  )
-  (i64.store offset=32
-   (local.get $0)
-   (i64.const 12884903019)
-  )
-  (i64.store offset=40
-   (local.get $0)
-   (i64.const 7302982)
-  )
-  (i32.store offset=8
-   (local.get $0)
-   (i32.load
-    (i32.const 1032)
-   )
-  )
-  (i32.store offset=12
-   (local.get $0)
-   (global.get $moduleRuntimeId_0)
-  )
-  (i32.store
-   (i32.const 1032)
-   (i32.add
-    (local.get $0)
-    (i32.const 8)
-   )
-  )
-  (i32.store
-   (local.tee $0
-    (call $malloc_0
-     (global.get $GRAIN$EXPORT$malloc_0)
-     (i32.const 20)
-    )
-   )
-   (i32.const 2)
-  )
-  (i32.store offset=4
-   (local.get $0)
-   (i32.shl
-    (global.get $moduleRuntimeId_0)
-    (i32.const 1)
-   )
-  )
-  (i32.store offset=8
-   (local.get $0)
-   (i32.const 5)
-  )
-  (i32.store offset=12
-   (local.get $0)
-   (i32.const 2263)
-  )
-  (i32.store offset=16
-   (local.get $0)
-   (i32.const 0)
-  )
-  (global.set $Foo_1131
-   (tuple.extract 0
-    (tuple.make
-     (local.get $0)
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (global.get $Foo_1131)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (return
+   (block $cleanup_locals.8 (result i32)
+    (local.set $0
+     (block $compile_function_preamble.7 (result i32)
+      (block $compile_type_metadata.2
+       (local.set $0
+        (i32.add
+         (block $allocate_string.1 (result i32)
+          (i32.store
+           (local.tee $0
+            (call $malloc_0
+             (global.get $GRAIN$EXPORT$malloc_0)
+             (i32.const 48)
+            )
+           )
+           (i32.const 1)
+          )
+          (i32.store offset=4
+           (local.get $0)
+           (i32.const 40)
+          )
+          (i64.store offset=8
+           (local.get $0)
+           (i64.const 0)
+          )
+          (i64.store offset=16
+           (local.get $0)
+           (i64.const 120259084289)
+          )
+          (i64.store offset=24
+           (local.get $0)
+           (i64.const 85899345922)
+          )
+          (i64.store offset=32
+           (local.get $0)
+           (i64.const 12884903019)
+          )
+          (i64.store offset=40
+           (local.get $0)
+           (i64.const 7302982)
+          )
+          (local.get $0)
+         )
+         (i32.const 8)
+        )
+       )
+       (i32.store
+        (local.get $0)
+        (i32.load
+         (i32.const 1032)
+        )
+       )
+       (i32.store offset=4
+        (local.get $0)
+        (global.get $moduleRuntimeId_0)
+       )
+       (i32.store
+        (i32.const 1032)
+        (local.get $0)
+       )
+      )
+      (block $compile_block.6 (result i32)
+       (block $compile_store.5
+        (global.set $Foo_1131
+         (tuple.extract 0
+          (tuple.make
+           (block $allocate_adt.3 (result i32)
+            (i32.store
+             (local.tee $0
+              (call $malloc_0
+               (global.get $GRAIN$EXPORT$malloc_0)
+               (i32.const 20)
+              )
+             )
+             (i32.const 2)
+            )
+            (i32.store offset=4
+             (local.get $0)
+             (i32.mul
+              (global.get $moduleRuntimeId_0)
+              (i32.const 2)
+             )
+            )
+            (i32.store offset=8
+             (local.get $0)
+             (i32.const 5)
+            )
+            (i32.store offset=12
+             (local.get $0)
+             (i32.const 2263)
+            )
+            (i32.store offset=16
+             (local.get $0)
+             (i32.const 0)
+            )
+            (local.get $0)
+           )
+           (call $decRef_0
+            (global.get $GRAIN$EXPORT$decRef_0)
+            (global.get $Foo_1131)
+           )
+          )
+         )
+        )
+        (block $do_backpatches.4
+        )
+       )
+       (call $incRef_0
+        (global.get $GRAIN$EXPORT$incRef_0)
+        (global.get $Foo_1131)
+       )
+      )
      )
     )
+    (local.get $0)
    )
   )
-  (call $incRef_0
-   (global.get $GRAIN$EXPORT$incRef_0)
-   (global.get $Foo_1131)
-  )
  )
- (func $_start (; has Stack IR ;)
+ (func $_start
   (drop
    (call $_gmain)
   )
