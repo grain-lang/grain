@@ -462,18 +462,24 @@ let rec get_location_list_from_ident = (ident: Identifier.t) => {
   };
 };
 
-let get_expression_location =
-    (~enclosing: Location.t, e: Typedtree.expression) =>
+let get_expression_location_for_hover =
+    (~enclosing: Location.t, ~line, ~char, e: Typedtree.expression) =>
   switch (e) {
   | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
       when Path.name(mod_path) != "Pervasives" =>
     let ident = loc.txt;
     let indent_locations = get_location_list_from_ident(ident);
 
-    switch (indent_locations) {
-    | [first_loc, ..._] => first_loc
-    | _ => enclosing // should never happen but fall back to this if we must
-    };
+    List.fold_left(
+      (acc, l: Location.t) =>
+        if (is_point_inside_location(~line, ~char, l)) {
+          l;
+        } else {
+          acc;
+        },
+      enclosing,
+      indent_locations,
+    );
 
   | _ =>
     if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
@@ -704,7 +710,13 @@ let get_from_statement =
       | Error(err) => LocationError
       | NotInRange => LocationError
       | Expression(e) =>
-        let loc = get_expression_location(~enclosing=stmt.ttop_loc, e);
+        let loc =
+          get_expression_location_for_hover(
+            ~line,
+            ~char,
+            ~enclosing=stmt.ttop_loc,
+            e,
+          );
         LocationSignature(
           expression_lens(~line, ~char, ~compiled_code, e),
           loc,
@@ -750,7 +762,7 @@ let get_from_statement =
     | Expression(e) =>
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, e),
-        get_expression_location(~enclosing=loc, e),
+        get_expression_location_for_hover(~line, ~char, ~enclosing=loc, e),
       )
 
     | Pattern(p) =>
