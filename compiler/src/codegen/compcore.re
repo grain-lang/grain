@@ -97,7 +97,7 @@ let required_global_imports = [
     mimp_id: reloc_base,
     mimp_mod: grain_env_mod,
     mimp_name: Ident.name(reloc_base),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: true,
@@ -106,7 +106,7 @@ let required_global_imports = [
     mimp_id: module_runtime_id,
     mimp_mod: grain_env_mod,
     mimp_name: Ident.name(module_runtime_id),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -115,7 +115,7 @@ let required_global_imports = [
     mimp_id: print_exception_closure_ident,
     mimp_mod: exception_mod,
     mimp_name: Ident.name(print_exception_closure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -124,7 +124,7 @@ let required_global_imports = [
     mimp_id: assertion_error_closure_ident,
     mimp_mod: exception_mod,
     mimp_name: Ident.name(assertion_error_closure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -133,7 +133,7 @@ let required_global_imports = [
     mimp_id: index_out_of_bounds_ident,
     mimp_mod: exception_mod,
     mimp_name: Ident.name(index_out_of_bounds_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -142,7 +142,7 @@ let required_global_imports = [
     mimp_id: match_failure_ident,
     mimp_mod: exception_mod,
     mimp_name: Ident.name(match_failure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -154,7 +154,7 @@ let grain_runtime_imports = [
     mimp_id: malloc_closure_ident,
     mimp_mod: gc_mod,
     mimp_name: Ident.name(malloc_closure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -163,7 +163,7 @@ let grain_runtime_imports = [
     mimp_id: incref_closure_ident,
     mimp_mod: gc_mod,
     mimp_name: Ident.name(incref_closure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -172,7 +172,7 @@ let grain_runtime_imports = [
     mimp_id: decref_closure_ident,
     mimp_mod: gc_mod,
     mimp_name: Ident.name(decref_closure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -181,7 +181,7 @@ let grain_runtime_imports = [
     mimp_id: equal_closure_ident,
     mimp_mod: equal_mod,
     mimp_name: Ident.name(equal_closure_ident),
-    mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -198,8 +198,8 @@ let required_function_imports = [
     mimp_name: Ident.name(print_exception_ident),
     mimp_type:
       MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
-        [Types.StackAllocated(WasmI32)],
+        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
+        [Types.Unmanaged(WasmI32)],
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -211,8 +211,8 @@ let required_function_imports = [
     mimp_name: Ident.name(assertion_error_ident),
     mimp_type:
       MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
-        [Types.StackAllocated(WasmI32)],
+        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
+        [Types.Unmanaged(WasmI32)],
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -227,8 +227,8 @@ let grain_function_imports = [
     mimp_name: Ident.name(malloc_ident),
     mimp_type:
       MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
-        [Types.StackAllocated(WasmI32)],
+        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
+        [Types.Unmanaged(WasmI32)],
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -240,8 +240,8 @@ let grain_function_imports = [
     mimp_name: Ident.name(incref_ident),
     mimp_type:
       MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
-        [Types.StackAllocated(WasmI32)],
+        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
+        [Types.Unmanaged(WasmI32)],
       ), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -253,8 +253,8 @@ let grain_function_imports = [
     mimp_name: Ident.name(decref_ident),
     mimp_type:
       MFuncImport(
-        [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
-        [Types.StackAllocated(WasmI32)],
+        [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
+        [Types.Unmanaged(WasmI32)],
       ), /* Returns same pointer as argument */
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -264,7 +264,7 @@ let grain_function_imports = [
     mimp_id: tracepoint_ident,
     mimp_mod: console_mod,
     mimp_name: Ident.name(tracepoint_ident),
-    mimp_type: MFuncImport([Types.StackAllocated(WasmI32)], []),
+    mimp_type: MFuncImport([Types.Unmanaged(WasmI32)], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -275,8 +275,8 @@ let grain_function_imports = [
     mimp_name: Ident.name(equal_ident),
     mimp_type:
       MFuncImport(
-        [Types.HeapAllocated, Types.HeapAllocated, Types.HeapAllocated],
-        [Types.StackAllocated(WasmI32)],
+        [Types.Managed, Types.Managed, Types.Managed],
+        [Types.Unmanaged(WasmI32)],
       ),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -507,7 +507,7 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => 
         // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
         // |-----[env.num_args]-----| |----[len(swap_slots)]------|
         switch (arg) {
-        | Types.HeapAllocated =>
+        | Types.Managed =>
           let arg = Expression.Local_get.make(wasm_mod, i, Type.int32);
           Some(
             singleton @@
@@ -536,11 +536,11 @@ let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => 
 };
 let should_refcount = b =>
   switch (b) {
-  | MArgBind(_, Types.HeapAllocated)
-  | MLocalBind(_, Types.HeapAllocated)
-  | MSwapBind(_, Types.HeapAllocated)
+  | MArgBind(_, Types.Managed)
+  | MLocalBind(_, Types.Managed)
+  | MSwapBind(_, Types.Managed)
   | MClosureBind(_)
-  | MGlobalBind(_, Types.HeapAllocated) => true
+  | MGlobalBind(_, Types.Managed) => true
   | MArgBind(_)
   | MLocalBind(_)
   | MSwapBind(_)
@@ -645,11 +645,11 @@ let compile_bind =
     /* No adjustments are needed for argument bindings */
     let typ =
       switch (alloc) {
-      | Types.HeapAllocated
-      | Types.StackAllocated(WasmI32) => Type.int32
-      | Types.StackAllocated(WasmI64) => Type.int64
-      | Types.StackAllocated(WasmF32) => Type.float32
-      | Types.StackAllocated(WasmF64) => Type.float64
+      | Types.Managed
+      | Types.Unmanaged(WasmI32) => Type.int32
+      | Types.Unmanaged(WasmI64) => Type.int64
+      | Types.Unmanaged(WasmF32) => Type.float32
+      | Types.Unmanaged(WasmF64) => Type.float64
       };
     let slot = Int32.to_int(i);
     switch (action) {
@@ -661,18 +661,18 @@ let compile_bind =
     /* Local bindings need to be offset to account for arguments and swap variables */
     let (typ, slot) =
       switch (alloc) {
-      | Types.HeapAllocated => (
+      | Types.Managed => (
           Type.int32,
           env.num_args + Array.length(swap_slots) + Int32.to_int(i),
         )
-      | Types.StackAllocated(WasmI32) => (
+      | Types.Unmanaged(WasmI32) => (
           Type.int32,
           env.num_args
           + Array.length(swap_slots)
           + env.stack_size.stack_size_ptr
           + Int32.to_int(i),
         )
-      | Types.StackAllocated(WasmI64) => (
+      | Types.Unmanaged(WasmI64) => (
           Type.int64,
           env.num_args
           + Array.length(swap_slots)
@@ -680,7 +680,7 @@ let compile_bind =
           + env.stack_size.stack_size_i32
           + Int32.to_int(i),
         )
-      | Types.StackAllocated(WasmF32) => (
+      | Types.Unmanaged(WasmF32) => (
           Type.float32,
           env.num_args
           + Array.length(swap_slots)
@@ -689,7 +689,7 @@ let compile_bind =
           + env.stack_size.stack_size_i64
           + Int32.to_int(i),
         )
-      | Types.StackAllocated(WasmF64) => (
+      | Types.Unmanaged(WasmF64) => (
           Type.float64,
           env.num_args
           + Array.length(swap_slots)
@@ -791,7 +791,7 @@ let safe_drop = (wasm_mod, env, arg) =>
 
 let get_swap =
     (
-      ~ty as typ=Types.StackAllocated(WasmI32),
+      ~ty as typ=Types.Unmanaged(WasmI32),
       ~skip_incref=true,
       ~skip_decref=true,
       wasm_mod,
@@ -799,8 +799,8 @@ let get_swap =
       idx,
     ) =>
   switch (typ) {
-  | Types.HeapAllocated
-  | Types.StackAllocated(WasmI32) =>
+  | Types.Managed
+  | Types.Unmanaged(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -812,7 +812,7 @@ let get_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | Types.StackAllocated(WasmI64) =>
+  | Types.Unmanaged(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -824,7 +824,7 @@ let get_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | Types.StackAllocated(WasmF32) =>
+  | Types.Unmanaged(WasmF32) =>
     if (idx > Array.length(swap_slots_f32)) {
       raise(Not_found);
     };
@@ -836,7 +836,7 @@ let get_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
     );
-  | Types.StackAllocated(WasmF64) =>
+  | Types.Unmanaged(WasmF64) =>
     if (idx > Array.length(swap_slots_f64)) {
       raise(Not_found);
     };
@@ -854,15 +854,15 @@ let set_swap =
     (
       ~skip_incref=true,
       ~skip_decref=true,
-      ~ty as typ=Types.StackAllocated(WasmI32),
+      ~ty as typ=Types.Unmanaged(WasmI32),
       wasm_mod,
       env,
       idx,
       arg,
     ) =>
   switch (typ) {
-  | Types.HeapAllocated
-  | Types.StackAllocated(WasmI32) =>
+  | Types.Managed
+  | Types.Unmanaged(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -874,7 +874,7 @@ let set_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | Types.StackAllocated(WasmI64) =>
+  | Types.Unmanaged(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -886,7 +886,7 @@ let set_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | Types.StackAllocated(WasmF32) =>
+  | Types.Unmanaged(WasmF32) =>
     if (idx > Array.length(swap_slots_f32)) {
       raise(Not_found);
     };
@@ -898,7 +898,7 @@ let set_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
     );
-  | Types.StackAllocated(WasmF64) =>
+  | Types.Unmanaged(WasmF64) =>
     if (idx > Array.length(swap_slots_f64)) {
       raise(Not_found);
     };
@@ -914,7 +914,7 @@ let set_swap =
 
 let tee_swap =
     (
-      ~ty as typ=Types.StackAllocated(WasmI32),
+      ~ty as typ=Types.Unmanaged(WasmI32),
       ~skip_incref=true,
       ~skip_decref=true,
       wasm_mod,
@@ -923,8 +923,8 @@ let tee_swap =
       arg,
     ) =>
   switch (typ) {
-  | Types.HeapAllocated
-  | Types.StackAllocated(WasmI32) =>
+  | Types.Managed
+  | Types.Unmanaged(WasmI32) =>
     if (idx > Array.length(swap_slots_i32)) {
       raise(Not_found);
     };
@@ -936,7 +936,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
     );
-  | Types.StackAllocated(WasmI64) =>
+  | Types.Unmanaged(WasmI64) =>
     if (idx > Array.length(swap_slots_i64)) {
       raise(Not_found);
     };
@@ -948,7 +948,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
     );
-  | Types.StackAllocated(WasmF32) =>
+  | Types.Unmanaged(WasmF32) =>
     if (idx > Array.length(swap_slots_f32)) {
       raise(Not_found);
     };
@@ -960,7 +960,7 @@ let tee_swap =
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
     );
-  | Types.StackAllocated(WasmF64) =>
+  | Types.Unmanaged(WasmF64) =>
     if (idx > Array.length(swap_slots_f64)) {
       raise(Not_found);
     };
@@ -1619,7 +1619,7 @@ let call_lambda =
           Type.create @@
           Array.map(
             wasm_type,
-            Array.of_list([Types.StackAllocated(WasmI32), ...argsty]),
+            Array.of_list([Types.Unmanaged(WasmI32), ...argsty]),
           ),
           retty,
         ),
@@ -3007,11 +3007,11 @@ and compile_switch = (wasm_mod, env, arg, branches, default, ty) => {
       // This default value is never used, but is necessary to make the wasm types work out
       let default_value =
         switch (ty) {
-        | Types.HeapAllocated
-        | Types.StackAllocated(WasmI32) => const_int32(0)
-        | Types.StackAllocated(WasmI64) => const_int64(0)
-        | Types.StackAllocated(WasmF32) => const_float32(0.)
-        | Types.StackAllocated(WasmF64) => const_float64(0.)
+        | Types.Managed
+        | Types.Unmanaged(WasmI32) => const_int32(0)
+        | Types.Unmanaged(WasmI64) => const_int64(0)
+        | Types.Unmanaged(WasmF32) => const_float32(0.)
+        | Types.Unmanaged(WasmF64) => const_float64(0.)
         };
       let default_value = Expression.Const.make(wasm_mod, default_value);
       let inner_block_body =
@@ -3099,7 +3099,7 @@ and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
   | MDrop(arg, ty) =>
     switch (ty) {
-    | HeapAllocated =>
+    | Managed =>
       Expression.Drop.make(
         wasm_mod,
         call_decref(wasm_mod, env, compile_instr(wasm_mod, env, arg)),
@@ -3650,11 +3650,11 @@ let compile_tables = (wasm_mod, env, {function_table_elements}) => {
 let compile_globals = (wasm_mod, env, {globals} as prog) => {
   let initial_value =
     fun
-    | Types.HeapAllocated
-    | Types.StackAllocated(WasmI32) => const_int32(0)
-    | Types.StackAllocated(WasmI64) => const_int64(0)
-    | Types.StackAllocated(WasmF32) => const_float32(0.)
-    | Types.StackAllocated(WasmF64) => const_float64(0.);
+    | Types.Managed
+    | Types.Unmanaged(WasmI32) => const_int32(0)
+    | Types.Unmanaged(WasmI64) => const_int64(0)
+    | Types.Unmanaged(WasmF32) => const_float32(0.)
+    | Types.Unmanaged(WasmF64) => const_float64(0.);
   List.iter(
     ((id, ty)) =>
       ignore @@
@@ -3741,7 +3741,7 @@ let compile_main = (wasm_mod, env, prog) => {
       id: Ident.create(grain_main),
       name: Some(grain_main),
       args: [],
-      return_type: [Types.StackAllocated(WasmI32)],
+      return_type: [Types.Unmanaged(WasmI32)],
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
       attrs: [],

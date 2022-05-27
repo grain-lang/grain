@@ -76,7 +76,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{ if (true) {4} else {5} }",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(4L))),
       ),
     ),
@@ -86,7 +86,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{ if (false) {4} else {5} }",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(5L))),
       ),
     ),
@@ -96,7 +96,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{ let x = true; if (x) {4} else {5} }",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(4L))),
       ),
     ),
@@ -106,7 +106,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{let x = if (true) {4} else {5}; x}",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(4L))),
       ),
     ),
@@ -121,7 +121,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{\n    let x = 4;\n    let y = x;\n    x}",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(4L))),
       ),
     ),
@@ -135,15 +135,15 @@ describe("optimizations", ({test, testSkip}) => {
       let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda(
-          [(x, HeapAllocated)],
+          [(x, Managed)],
           (
             AExp.comp(
               Comp.imm(
-                ~allocation_type=HeapAllocated,
+                ~allocation_type=Managed,
                 Imm.const(Const_number(Const_number_int(4L))),
               ),
             ),
-            HeapAllocated,
+            Managed,
           ),
         ),
       );
@@ -155,7 +155,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(17L))),
       ),
     ),
@@ -166,7 +166,7 @@ describe("optimizations", ({test, testSkip}) => {
     "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
     AExp.comp(
       Comp.imm(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         Imm.const(Const_number(Const_number_int(30L))),
       ),
     ),
@@ -178,14 +178,14 @@ describe("optimizations", ({test, testSkip}) => {
       open Grain_typed;
       let arg = Ident.create("lambda_arg");
       AExp.comp(
-        Comp.lambda([(arg, HeapAllocated)]) @@
+        Comp.lambda([(arg, Managed)]) @@
         (
           AExp.comp @@
           Comp.tuple([
             Imm.id(arg),
             Imm.const(Const_number(Const_number_int(1L))),
           ]),
-          HeapAllocated,
+          Managed,
         ),
       );
     },
@@ -198,15 +198,15 @@ describe("optimizations", ({test, testSkip}) => {
       let x = Ident.create("lambda_arg");
       AExp.comp(
         Comp.lambda(
-          [(x, HeapAllocated)],
+          [(x, Managed)],
           (
             AExp.comp(
               Comp.imm(
-                ~allocation_type=HeapAllocated,
+                ~allocation_type=Managed,
                 Imm.const(Const_number(Const_number_int(1L))),
               ),
             ),
-            HeapAllocated,
+            Managed,
           ),
         ),
       );
@@ -236,7 +236,7 @@ describe("optimizations", ({test, testSkip}) => {
                     (
                       x,
                       Comp.imm(
-                        ~allocation_type=HeapAllocated,
+                        ~allocation_type=Managed,
                         Imm.const(Const_number(Const_number_int(5L))),
                       ),
                     ),
@@ -244,19 +244,19 @@ describe("optimizations", ({test, testSkip}) => {
                 ) @@
                 AExp.comp(
                   Comp.local_assign(
-                    ~allocation_type=StackAllocated(WasmI32),
+                    ~allocation_type=Unmanaged(WasmI32),
                     x,
                     Imm.const(Const_number(Const_number_int(6L))),
                   ),
                 ),
-                StackAllocated(WasmI32),
+                Unmanaged(WasmI32),
               ),
             ),
           ),
         ],
         AExp.comp(
           Comp.imm(
-            ~allocation_type=StackAllocated(WasmI32),
+            ~allocation_type=Unmanaged(WasmI32),
             Imm.const(Const_void),
           ),
         ),
@@ -287,7 +287,7 @@ describe("optimizations", ({test, testSkip}) => {
                     (
                       x,
                       Comp.prim1(
-                        ~allocation_type=HeapAllocated,
+                        ~allocation_type=Managed,
                         BoxBind,
                         Imm.const(Const_number(Const_number_int(5L))),
                       ),
@@ -304,12 +304,12 @@ describe("optimizations", ({test, testSkip}) => {
                         (
                           AExp.comp(
                             Comp.prim1(
-                              ~allocation_type=HeapAllocated,
+                              ~allocation_type=Managed,
                               UnboxBind,
                               Imm.id(x),
                             ),
                           ),
-                          HeapAllocated,
+                          Managed,
                         ),
                       ),
                     ),
@@ -318,19 +318,19 @@ describe("optimizations", ({test, testSkip}) => {
                 AExp.comp(
                   Comp.app(
                     ~tail=true,
-                    ~allocation_type=HeapAllocated,
-                    (Imm.id(foo), ([], HeapAllocated)),
+                    ~allocation_type=Managed,
+                    (Imm.id(foo), ([], Managed)),
                     [],
                   ),
                 ),
-                HeapAllocated,
+                Managed,
               ),
             ),
           ),
         ],
         AExp.comp(
           Comp.imm(
-            ~allocation_type=StackAllocated(WasmI32),
+            ~allocation_type=Unmanaged(WasmI32),
             Imm.const(Const_void),
           ),
         ),
@@ -352,12 +352,10 @@ describe("optimizations", ({test, testSkip}) => {
         [
           (
             foo,
-            Comp.lambda([(arg, HeapAllocated)]) @@
+            Comp.lambda([(arg, Managed)]) @@
             (
-              AExp.comp @@
-              Comp.imm(~allocation_type=HeapAllocated) @@
-              Imm.id(arg),
-              HeapAllocated,
+              AExp.comp @@ Comp.imm(~allocation_type=Managed) @@ Imm.id(arg),
+              Managed,
             ),
           ),
         ],
@@ -368,8 +366,8 @@ describe("optimizations", ({test, testSkip}) => {
           (
             app,
             Comp.app(
-              ~allocation_type=HeapAllocated,
-              (Imm.id(foo), ([HeapAllocated], HeapAllocated)),
+              ~allocation_type=Managed,
+              (Imm.id(foo), ([Managed], Managed)),
               [Imm.const(Const_number(Const_number_int(3L)))],
             ),
           ),
@@ -377,9 +375,9 @@ describe("optimizations", ({test, testSkip}) => {
       ) @@
       AExp.comp @@
       Comp.app(
-        ~allocation_type=HeapAllocated,
+        ~allocation_type=Managed,
         ~tail=true,
-        (Imm.id(plus), ([HeapAllocated, HeapAllocated], HeapAllocated)),
+        (Imm.id(plus), ([Managed, Managed], Managed)),
         [Imm.id(app), Imm.const(Const_number(Const_number_int(5L)))],
       );
     },
@@ -448,11 +446,7 @@ describe("optimizations", ({test, testSkip}) => {
             Comp.lambda(
               ~name=Ident.name(foo),
               ~attributes=[Disable_gc],
-              [
-                (arg, HeapAllocated),
-                (arg, HeapAllocated),
-                (arg, HeapAllocated),
-              ],
+              [(arg, Managed), (arg, Managed), (arg, Managed)],
               (
                 AExp.let_(
                   Nonrecursive,
@@ -460,28 +454,22 @@ describe("optimizations", ({test, testSkip}) => {
                     (
                       app,
                       Comp.app(
-                        ~allocation_type=HeapAllocated,
-                        (
-                          Imm.id(plus),
-                          ([HeapAllocated, HeapAllocated], HeapAllocated),
-                        ),
+                        ~allocation_type=Managed,
+                        (Imm.id(plus), ([Managed, Managed], Managed)),
                         [Imm.id(arg), Imm.id(arg)],
                       ),
                     ),
                   ],
                   AExp.comp(
                     Comp.app(
-                      ~allocation_type=HeapAllocated,
+                      ~allocation_type=Managed,
                       ~tail=true,
-                      (
-                        Imm.id(plus),
-                        ([HeapAllocated, HeapAllocated], HeapAllocated),
-                      ),
+                      (Imm.id(plus), ([Managed, Managed], Managed)),
                       [Imm.id(app), Imm.id(arg)],
                     ),
                   ),
                 ),
-                HeapAllocated,
+                Managed,
               ),
             ),
           ),
@@ -489,7 +477,7 @@ describe("optimizations", ({test, testSkip}) => {
       ) @@
       AExp.comp(
         Comp.imm(
-          ~allocation_type=StackAllocated(WasmI32),
+          ~allocation_type=Unmanaged(WasmI32),
           Imm.const(Const_void),
         ),
       );
@@ -526,16 +514,16 @@ describe("optimizations", ({test, testSkip}) => {
               (
                 AExp.seq(
                   Comp.app(
-                    ~allocation_type=StackAllocated(WasmI32),
+                    ~allocation_type=Unmanaged(WasmI32),
                     (
                       Imm.id(fill),
                       (
                         [
-                          StackAllocated(WasmI32),
-                          StackAllocated(WasmI32),
-                          StackAllocated(WasmI32),
+                          Unmanaged(WasmI32),
+                          Unmanaged(WasmI32),
+                          Unmanaged(WasmI32),
                         ],
-                        StackAllocated(WasmI32),
+                        Unmanaged(WasmI32),
                       ),
                     ),
                     [
@@ -546,16 +534,16 @@ describe("optimizations", ({test, testSkip}) => {
                   ),
                   AExp.comp(
                     Comp.app(
-                      ~allocation_type=StackAllocated(WasmI32),
+                      ~allocation_type=Unmanaged(WasmI32),
                       (
                         Imm.id(copy),
                         (
                           [
-                            StackAllocated(WasmI32),
-                            StackAllocated(WasmI32),
-                            StackAllocated(WasmI32),
+                            Unmanaged(WasmI32),
+                            Unmanaged(WasmI32),
+                            Unmanaged(WasmI32),
                           ],
-                          StackAllocated(WasmI32),
+                          Unmanaged(WasmI32),
                         ),
                       ),
                       [
@@ -566,7 +554,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                StackAllocated(WasmI32),
+                Unmanaged(WasmI32),
               ),
             ),
           ),
@@ -574,7 +562,7 @@ describe("optimizations", ({test, testSkip}) => {
       ) @@
       AExp.comp(
         Comp.imm(
-          ~allocation_type=StackAllocated(WasmI32),
+          ~allocation_type=Unmanaged(WasmI32),
           Imm.const(Const_void),
         ),
       );
@@ -607,7 +595,7 @@ describe("optimizations", ({test, testSkip}) => {
               (
                 AExp.seq(
                   Comp.primn(
-                    ~allocation_type=StackAllocated(WasmI32),
+                    ~allocation_type=Unmanaged(WasmI32),
                     WasmMemoryFill,
                     [
                       Imm.const(Const_wasmi32(0l)),
@@ -617,7 +605,7 @@ describe("optimizations", ({test, testSkip}) => {
                   ),
                   AExp.comp(
                     Comp.primn(
-                      ~allocation_type=StackAllocated(WasmI32),
+                      ~allocation_type=Unmanaged(WasmI32),
                       WasmMemoryCopy,
                       [
                         Imm.const(Const_wasmi32(0l)),
@@ -627,7 +615,7 @@ describe("optimizations", ({test, testSkip}) => {
                     ),
                   ),
                 ),
-                StackAllocated(WasmI32),
+                Unmanaged(WasmI32),
               ),
             ),
           ),
@@ -635,7 +623,7 @@ describe("optimizations", ({test, testSkip}) => {
       ) @@
       AExp.comp(
         Comp.imm(
-          ~allocation_type=StackAllocated(WasmI32),
+          ~allocation_type=Unmanaged(WasmI32),
           Imm.const(Const_void),
         ),
       );
