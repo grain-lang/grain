@@ -124,6 +124,10 @@ program
     "don't include runtime type information used by toString/print"
   )
   .forwardOption(
+    "--release",
+    "produce WebAssembly modules suitable for production"
+  )
+  .forwardOption(
     "--experimental-wasm-tail-call",
     "enables tail-call optimization"
   )

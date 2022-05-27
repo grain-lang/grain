@@ -3866,11 +3866,12 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
   );
   validate_module(~name?, wasm_mod);
 
-  switch (Config.optimization_level^) {
-  | Level_three => Optimize_mod.optimize(wasm_mod)
-  | Level_zero
-  | Level_one
-  | Level_two => ()
+  switch (Config.optimization_level^, Config.release_mode^) {
+  | (_, true)
+  | (Level_three, _) => Optimize_mod.optimize(wasm_mod)
+  | (Level_zero, _)
+  | (Level_one, _)
+  | (Level_two, _) => ()
   };
   wasm_mod;
 };

@@ -117,6 +117,10 @@ let wat: ref(bool);
 
 let elide_type_info: ref(bool);
 
+/** Whether or not we're compiling for production */
+
+let release_mode: ref(bool);
+
 /** Whether or not to generate source maps. */
 
 let source_map: ref(bool);

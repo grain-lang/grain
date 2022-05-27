@@ -568,6 +568,13 @@ let elide_type_info =
     false,
   );
 
+let release_mode =
+  toggle_flag(
+    ~names=["release"],
+    ~doc="Produce WebAssembly modules suitable for production",
+    false,
+  );
+
 let source_map =
   toggle_flag(~names=["source-map"], ~doc="Generate source maps", false);
 
