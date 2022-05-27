@@ -20,11 +20,7 @@ Type declarations included in the Random module.
 ### Random.**Random**
 
 ```grain
-record Random {
-  seed: Int64,
-  counter: Int64,
-  initialized: Bool,
-}
+type Random
 ```
 
 ## Values

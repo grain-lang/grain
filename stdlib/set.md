@@ -16,19 +16,13 @@ import Set from "set"
 ### Set.**Bucket**
 
 ```grain
-record Bucket<t> {
-  key: t,
-  next: Option<Bucket<t>>,
-}
+type Bucket<t>
 ```
 
 ### Set.**Set**
 
 ```grain
-record Set<k> {
-  size: Number,
-  buckets: Array<Option<Bucket<k>>>,
-}
+type Set<k>
 ```
 
 ### Set.**makeSized**

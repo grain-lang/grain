@@ -5,7 +5,7 @@ title: BigInt
 Utilities for working with the BigInt type.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -20,7 +20,7 @@ Functions for converting between Numbers and the BigInt type.
 ### Bigint.**fromNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -28,7 +28,7 @@ No other changes yet.
 fromNumber : Number -> BigInt
 ```
 
-Converts a Number to an BigInt.
+Converts a Number to a BigInt.
 
 Parameters:
 
@@ -40,12 +40,12 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`BigInt`|The Number represented as an BigInt|
+|`BigInt`|The Number represented as a BigInt|
 
 ### Bigint.**toNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -53,13 +53,13 @@ No other changes yet.
 toNumber : BigInt -> Number
 ```
 
-Converts an BigInt to a Number.
+Converts a BigInt to a Number.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to convert|
+|`num`|`BigInt`|The value to convert|
 
 Returns:
 
@@ -74,7 +74,7 @@ Mathematical operations for BigInt values.
 ### Bigint.**incr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -88,7 +88,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to increment|
+|`num`|`BigInt`|The value to increment|
 
 Returns:
 
@@ -99,7 +99,7 @@ Returns:
 ### Bigint.**decr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -113,7 +113,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to decrement|
+|`num`|`BigInt`|The value to decrement|
 
 Returns:
 
@@ -124,7 +124,7 @@ Returns:
 ### Bigint.**neg**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -149,7 +149,7 @@ Returns:
 ### Bigint.**abs**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -157,7 +157,7 @@ No other changes yet.
 abs : BigInt -> BigInt
 ```
 
-Returns the absolute value of the given operand
+Returns the absolute value of the given operand.
 
 Parameters:
 
@@ -174,7 +174,7 @@ Returns:
 ### Bigint.**add**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -188,8 +188,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -200,7 +200,7 @@ Returns:
 ### Bigint.**sub**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -214,8 +214,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -226,7 +226,7 @@ Returns:
 ### Bigint.**mul**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -240,8 +240,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -252,7 +252,7 @@ Returns:
 ### Bigint.**div**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -267,8 +267,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -279,7 +279,7 @@ Returns:
 ### Bigint.**rem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -294,8 +294,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -306,7 +306,7 @@ Returns:
 ### Bigint.**quotRem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -320,8 +320,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -332,7 +332,7 @@ Returns:
 ### Bigint.**gcd**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -346,8 +346,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -362,7 +362,7 @@ Functions for operating on bits of BigInt values.
 ### Bigint.**shl**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -376,8 +376,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to shift|
-|`amount`|`Int32`|The number of bits to shift by|
+|`num`|`BigInt`|The value to shift|
+|`places`|`Int32`|The number of bits to shift by|
 
 Returns:
 
@@ -388,7 +388,7 @@ Returns:
 ### Bigint.**shr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -402,8 +402,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to shift|
-|`amount`|`Int32`|The amount to shift by|
+|`num`|`BigInt`|The value to shift|
+|`places`|`Int32`|The amount to shift by|
 
 Returns:
 
@@ -418,7 +418,7 @@ Functions for comparing BigInt values.
 ### Bigint.**eqz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -432,7 +432,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to inspect|
+|`num`|`BigInt`|The value to inspect|
 
 Returns:
 
@@ -443,7 +443,7 @@ Returns:
 ### Bigint.**eq**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -457,8 +457,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first value|
-|`y`|`BigInt`|The second value|
+|`num1`|`BigInt`|The first value|
+|`num2`|`BigInt`|The second value|
 
 Returns:
 
@@ -469,7 +469,7 @@ Returns:
 ### Bigint.**ne**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -483,8 +483,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first value|
-|`y`|`BigInt`|The second value|
+|`num1`|`BigInt`|The first value|
+|`num2`|`BigInt`|The second value|
 
 Returns:
 
@@ -495,7 +495,7 @@ Returns:
 ### Bigint.**lt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -509,8 +509,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first value|
-|`y`|`BigInt`|The second value|
+|`num1`|`BigInt`|The first value|
+|`num2`|`BigInt`|The second value|
 
 Returns:
 
@@ -521,7 +521,7 @@ Returns:
 ### Bigint.**lte**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -535,8 +535,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first value|
-|`y`|`BigInt`|The second value|
+|`num1`|`BigInt`|The first value|
+|`num2`|`BigInt`|The second value|
 
 Returns:
 
@@ -547,7 +547,7 @@ Returns:
 ### Bigint.**gt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -561,8 +561,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first value|
-|`y`|`BigInt`|The second value|
+|`num1`|`BigInt`|The first value|
+|`num2`|`BigInt`|The second value|
 
 Returns:
 
@@ -573,7 +573,7 @@ Returns:
 ### Bigint.**gte**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -587,8 +587,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first value|
-|`y`|`BigInt`|The second value|
+|`num1`|`BigInt`|The first value|
+|`num2`|`BigInt`|The second value|
 
 Returns:
 
@@ -603,7 +603,7 @@ Boolean operations on the bits of BigInt values.
 ### Bigint.**lnot**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -617,7 +617,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The given value|
+|`num`|`BigInt`|The given value|
 
 Returns:
 
@@ -628,7 +628,7 @@ Returns:
 ### Bigint.**land**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -642,8 +642,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -654,7 +654,7 @@ Returns:
 ### Bigint.**lor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -668,8 +668,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -680,7 +680,7 @@ Returns:
 ### Bigint.**lxor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -694,8 +694,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`BigInt`|The first operand|
-|`y`|`BigInt`|The second operand|
+|`num1`|`BigInt`|The first operand|
+|`num2`|`BigInt`|The second operand|
 
 Returns:
 
@@ -706,7 +706,7 @@ Returns:
 ### Bigint.**clz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -721,7 +721,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to inspect|
+|`num`|`BigInt`|The value to inspect|
 
 Returns:
 
@@ -732,7 +732,7 @@ Returns:
 ### Bigint.**ctz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -746,7 +746,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to inspect|
+|`num`|`BigInt`|The value to inspect|
 
 Returns:
 
@@ -757,7 +757,7 @@ Returns:
 ### Bigint.**popcnt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -772,7 +772,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`BigInt`|The value to inspect|
+|`num`|`BigInt`|The value to inspect|
 
 Returns:
 
@@ -787,7 +787,7 @@ Other functions on BigInts.
 ### Bigint.**toString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
