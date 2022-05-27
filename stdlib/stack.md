@@ -15,9 +15,7 @@ Type declarations included in the Stack module.
 ### Stack.**Stack**
 
 ```grain
-record Stack<a> {
-  data: List<a>,
-}
+type Stack<a>
 ```
 
 Stacks are immutable data structures that store their data in a List.
