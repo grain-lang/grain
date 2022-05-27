@@ -1,8 +1,9 @@
 (library
  (name format)
  (public_name grainformat.format)
- (modules format res_doc res_minibuffer debug comment_utils)
- (libraries grain grain_diagnostics grain_parsing grain_utils))
+ (modules debug)
+ (libraries grain grain_diagnostics grain_parsing grain_utils
+   grain_formatting))
 
 (executable
  (name grainformat)
@@ -13,7 +14,7 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain grain_utils grain_parsing grainformat.format
-   binaryen dune-build-info)
+ (libraries cmdliner grain grain_utils grain_parsing grain_formatting
+   grainformat.format binaryen dune-build-info)
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet --disable share)))

@@ -82,7 +82,8 @@ let format_code =
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let formatted_code = Format.format_ast(~original_source, ~eol, program);
+  let formatted_code =
+    Grain_formatting.Format.format_ast(~original_source, ~eol, program);
 
   // return the file to its format
 
