@@ -4,7 +4,7 @@ open Compile;
 open Grain_parsing;
 open Grain_utils;
 
-//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingParams
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingParams
 module RequestParams = {
   // TODO: Implement the rest of the fields
   [@deriving yojson({strict: false})]
@@ -27,7 +27,7 @@ module RequestParams = {
   };
 };
 
-//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
 module ResponseResult = {
   [@deriving yojson]
   type text_edit = {
@@ -38,6 +38,10 @@ module ResponseResult = {
   [@deriving yojson]
   type t = list(text_edit);
 };
+
+type compilation_error =
+  | ParseError
+  | InvalidCompilationState;
 
 let parse_source = (program_str: string) => {
   switch (
@@ -55,10 +59,10 @@ let parse_source = (program_str: string) => {
       (compile_state, lines, eol);
     }
   ) {
-  | exception exn => `Error((false, "Failed to parse code"))
+  | exception exn => Error(ParseError)
   | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
-    `Ok((parsed_program, Array.of_list(lines), eol))
-  | _ => `Error((false, "Invalid compilation state"))
+    Ok((parsed_program, Array.of_list(lines), eol))
+  | _ => Error(InvalidCompilationState)
   };
 };
 
@@ -83,7 +87,7 @@ let process =
     let parsed_source = parse_source(compiled_code);
 
     switch (parsed_source) {
-    | `Ok(parsed_program, lines, eol) =>
+    | Ok((parsed_program, lines, eol)) =>
       let formatted_code =
         Grain_formatting.Format.format_ast(
           ~original_source=lines,
@@ -105,9 +109,15 @@ let process =
       Trace.log("ready to return a formatted result");
       let res: ResponseResult.t = [{range, newText: formatted_code}];
       Protocol.response(~id, ResponseResult.to_yojson(res));
-
-    | `Error(_) =>
-      Trace.log("Error formatting");
+    | Error(ParseError) =>
+      Trace.log("Unable to parse source code");
+      Protocol.error_response(
+        ~id,
+        ~code=-32700,
+        "Unable to format the source code",
+      );
+    | Error(InvalidCompilationState) =>
+      Trace.log("Reached an invalid compilation state");
       Protocol.error_response(
         ~id,
         ~code=-32700,
