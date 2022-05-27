@@ -4,7 +4,7 @@ open Compile;
 open Grain_parsing;
 open Grain_utils;
 
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeParams
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingParams
 module RequestParams = {
   // TODO: Implement the rest of the fields
   [@deriving yojson({strict: false})]
@@ -27,7 +27,7 @@ module RequestParams = {
   };
 };
 
-// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initializeResult
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textEdit
 module ResponseResult = {
   [@deriving yojson]
   type text_edit = {
