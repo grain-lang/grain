@@ -39,6 +39,10 @@
   (synopsis "Grain Language Server Protocol"))
 
 (package
+ (name grain_formatting)
+ (synopsis "Grain formatting"))
+
+(package
   (name grain_linking)
   (synopsis "The Grain linker"))
 

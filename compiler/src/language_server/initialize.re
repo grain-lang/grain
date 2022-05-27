@@ -64,7 +64,7 @@ module ResponseResult = {
   type t = {capabilities: lsp_capabilities};
 
   let capabilities = {
-    document_formatting_provider: false,
+    document_formatting_provider: true,
     text_document_sync: Full,
     hover_provider: true,
     definition_provider: false, // disabled until we can resolve the external module location

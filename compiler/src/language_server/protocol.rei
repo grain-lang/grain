@@ -79,6 +79,28 @@ type versioned_text_document_identifier = {
   version: int,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#errorCodes
+[@deriving (enum, yojson)]
+type error_code =
+  | ParseError
+  | InvalidRequest
+  | MethodNotFound
+  | InvalidParams
+  | InternalError
+  | ServerNotInitialized
+  | UnknownErrorCode
+  | RequestFailed
+  | ServerCancelled
+  | ContentModified
+  | RequestCancelled;
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseError
+[@deriving yojson({strict: false})]
+type response_error = {
+  code: error_code,
+  message: string,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#requestMessage
 [@deriving yojson({strict: false})]
 type request_message = {
@@ -93,7 +115,8 @@ type request_message = {
 type response_message = {
   jsonrpc: version,
   id: option(message_id),
-  result: Yojson.Safe.t,
+  result: option(Yojson.Safe.t),
+  error: option(response_error),
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
@@ -107,6 +130,8 @@ type notification_message = {
 let request: unit => result(request_message, string);
 
 let response: (~id: message_id=?, Yojson.Safe.t) => unit;
+
+let error: (~id: message_id=?, response_error) => unit;
 
 let notification: (~method: string, Yojson.Safe.t) => unit;
 

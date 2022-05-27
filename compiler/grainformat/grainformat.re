@@ -3,6 +3,7 @@ open Grain;
 open Compile;
 open Grain_parsing;
 open Grain_utils;
+open Grain_formatting;
 open Filename;
 
 let get_program_string = filename => {
@@ -31,25 +32,9 @@ let get_program_string = filename => {
 };
 
 let compile_parsed = (filename: option(string)) => {
-  switch (
-    {
-      let program_str = get_program_string(filename);
-
-      let lines = String.split_on_char('\n', program_str);
-      let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
-
-      let compile_state =
-        Compile.compile_string(
-          ~is_root_file=true,
-          ~hook=stop_after_parse,
-          ~name=?filename,
-          program_str,
-        );
-
-      (compile_state, lines, eol);
-    }
-  ) {
-  | exception exn =>
+  let program_str = get_program_string(filename);
+  switch (Format.parse_source(program_str)) {
+  | Error(ParseError(exn)) =>
     let bt =
       if (Printexc.backtrace_status()) {
         Some(Printexc.get_backtrace());
@@ -67,9 +52,9 @@ let compile_parsed = (filename: option(string)) => {
       bt,
     );
     exit(2);
-  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
-    `Ok((parsed_program, Array.of_list(lines), eol))
-  | _ => `Error((false, "Invalid compilation state"))
+  | Ok((parsed_program, lines, eol)) => `Ok((parsed_program, lines, eol))
+  | Error(InvalidCompilationState) =>
+    `Error((false, "Invalid compilation state"))
   };
 };
 
@@ -82,7 +67,8 @@ let format_code =
       original_source: array(string),
       format_in_place: bool,
     ) => {
-  let formatted_code = Format.format_ast(~original_source, ~eol, program);
+  let formatted_code =
+    Grain_formatting.Format.format_ast(~original_source, ~eol, program);
 
   // return the file to its format
 

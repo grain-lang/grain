@@ -51,6 +51,9 @@ let process = msg => {
       params,
     );
     Reading;
+  | Formatting(id, params) when is_initialized^ =>
+    Formatting.process(~id, ~compiled_code, ~cached_code, ~documents, params);
+    Reading;
   | SetTrace(trace_value) =>
     Trace.set_level(trace_value);
     Reading;
