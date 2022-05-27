@@ -71,6 +71,6 @@ let analyze = ({imports, body, analyses}) => {
     | JSFunction(_) => ()
     };
   };
-  List.iter(process_import, imports);
+  List.iter(process_import, imports.specs);
   analyses := [InlineableWasmTable(inline_wasm_tbl^), ...analyses^];
 };

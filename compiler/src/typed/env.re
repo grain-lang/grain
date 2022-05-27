@@ -1599,7 +1599,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
         switch (item) {
         | TSigValue(id, decl) =>
           let decl' = Subst.value_description(sub, decl);
-          let decl' = {...decl', val_fullpath: path};
+          let decl' = {...decl', val_fullpath: path, val_internalpath: path};
           c.comp_values =
             Tbl.add(Ident.name(id), (decl', pos^), c.comp_values);
           switch (decl.val_kind) {
@@ -1644,10 +1644,12 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 | PExternal(PExternal(_), _, _) =>
                   failwith("NYI: Multiple PExternal")
                 };
+              let path = get_path(desc.cstr_name);
               let val_desc = {
                 val_type,
                 val_repr,
-                val_fullpath: get_path(desc.cstr_name),
+                val_internalpath: path,
+                val_fullpath: path,
                 val_kind: TValConstructor(desc),
                 val_loc: desc.cstr_loc,
                 val_mutable: false,
@@ -1708,10 +1710,12 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             | PExternal(PExternal(_), _, _) =>
               failwith("NYI: Multiple PExternal")
             };
+          let path = get_path(desc.cstr_name);
           let val_desc = {
             val_type,
             val_repr,
-            val_fullpath: get_path(desc.cstr_name),
+            val_internalpath: path,
+            val_fullpath: path,
             val_kind: TValConstructor(desc),
             val_loc: desc.cstr_loc,
             val_mutable: false,
@@ -1781,10 +1785,12 @@ and store_type = (~check, id, info, env) => {
           | args =>
             ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
           };
+        let path = PIdent(Ident.create(desc.cstr_name));
         let val_desc = {
           val_type,
           val_repr,
-          val_fullpath: PIdent(Ident.create(desc.cstr_name)),
+          val_internalpath: path,
+          val_fullpath: path,
           val_kind: TValConstructor(desc),
           val_loc: desc.cstr_loc,
           val_mutable: false,
@@ -1880,10 +1886,12 @@ and store_extension = (~check, id, ext, env) => {
           Direct(Ident.unique_name(id)),
         )
       };
+    let path = PIdent(Ident.create(cstr.cstr_name));
     {
       val_type,
       val_repr,
-      val_fullpath: PIdent(Ident.create(cstr.cstr_name)),
+      val_internalpath: path,
+      val_fullpath: path,
       val_kind: TValConstructor(cstr),
       val_mutable: false,
       val_global: true,

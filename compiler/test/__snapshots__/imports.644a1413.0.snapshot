@@ -4,15 +4,15 @@ imports › import_relative_path4
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
- (import \"GRAIN$MODULE$./bar/bar\" \"GRAIN$EXPORT$bar\" (global $gimport_./bar/bar_bar (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $gimport_pervasives_print (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$./bar/bar\" \"bar\" (func $gimport_./bar/bar_bar (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $gimport_pervasives_print (param i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$./bar/bar\" \"GRAIN$EXPORT$bar\" (global $bar_1136 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1134 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$./bar/bar\" \"bar\" (func $bar_1136 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1134 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
@@ -24,35 +24,35 @@ imports › import_relative_path4
   (local.set $0
    (tuple.extract 0
     (tuple.make
-     (call $gimport_./bar/bar_bar
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (global.get $gimport_./bar/bar_bar)
+     (call $bar_1136
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $bar_1136)
       )
       (i32.const 5)
      )
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (i32.const 0)
      )
     )
    )
   )
   (local.set $1
-   (call $gimport_pervasives_print
-    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-     (global.get $gimport_pervasives_print)
+   (call $print_1134
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $print_1134)
     )
-    (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
      (local.get $0)
     )
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $0)
    )
   )

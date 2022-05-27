@@ -19,16 +19,27 @@ module CSVArg: Anf_iterator.IterArgument = {
     | _ => ()
     };
 
-  let leave_anf_expression = ({anf_desc: desc}) => {
-    switch (desc) {
-    | AELet(Global({exported: true}), _, _, binds, _) =>
-      /* Assume that all exported globals are closure scope, since globals could
-         appear in a closure scope in another module */
-      let ids = List.map(fst, binds);
-      closure_scoped_vars :=
-        Ident.Set.union(closure_scoped_vars^, Ident.Set.of_list(ids));
-    | _ => ()
-    };
+  let leave_anf_program = ({signature: {cmi_sign}}) => {
+    Types.(
+      List.iter(
+        fun
+        | TSigValue(_, {val_fullpath: PIdent(id)})
+        | TSigTypeExt(_, {ext_name: id}, _) =>
+          closure_scoped_vars := Ident.Set.add(id, closure_scoped_vars^)
+        | TSigType(_, {type_kind: TDataVariant(cds)}, _) =>
+          List.iter(
+            ({cd_id}) =>
+              closure_scoped_vars :=
+                Ident.Set.add(cd_id, closure_scoped_vars^),
+            cds,
+          )
+        | TSigType(_) => ()
+        | TSigValue(_) => failwith("NYI: external val_fullpath")
+        | TSigModule(_)
+        | TSigModType(_) => failwith("NYI: modules in module signatures"),
+        cmi_sign,
+      )
+    );
   };
 };
 

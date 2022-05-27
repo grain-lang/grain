@@ -186,8 +186,7 @@ let rec anf_count_vars = a =>
       List.map(((_, c)) => comp_count_vars(c), binds);
     let rec count_binds = (ptr, i32, i64, f32, f64, binds) => {
       switch (global, binds) {
-      | (Global(_), [_, ...rest]) =>
-        count_binds(ptr, i32, i64, f32, f64, rest)
+      | (Global, [_, ...rest]) => count_binds(ptr, i32, i64, f32, f64, rest)
       | (_, [(_, {comp_allocation_type: HeapAllocated}), ...rest]) =>
         count_binds(ptr + 1, i32, i64, f32, f64, rest)
       | (

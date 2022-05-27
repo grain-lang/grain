@@ -84,3 +84,10 @@ jobs:
       - name: Log Grain version
         run: |
           grain -v
+
+      # This is to test that we didn't actually introduce multivalue
+      # which might happen through a binaryen optimization
+      - name: Run NEAR smoketest
+        if: matrix.os != 'windows-latest'
+        run: |
+          npm run cli test

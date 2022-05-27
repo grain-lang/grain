@@ -141,6 +141,7 @@ type value_description = {
   val_type: type_expr,
   val_repr,
   val_kind: value_kind,
+  val_internalpath: Path.t,
   val_fullpath: Path.t,
   val_mutable: bool,
   val_global: bool,

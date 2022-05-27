@@ -943,6 +943,9 @@ let rec parse_native_repr_attributes = (env, core_type, ty, ~global_repr) =>
 let transl_value_decl = (env, loc, valdecl) => {
   let cty = Typetexp.transl_type_scheme(env, valdecl.pval_type);
   let ty = cty.ctyp_type;
+  let name =
+    Option.value(~default=valdecl.pval_name, valdecl.pval_name_alias).txt;
+  let id = Ident.create(name);
   let v =
     switch (valdecl.pval_prim) {
     /*[] when Env.is_in_signature env ->
@@ -955,7 +958,8 @@ let transl_value_decl = (env, loc, valdecl) => {
         val_repr: Type_utils.repr_of_type(env, ty),
         val_kind: TValPrim(prim),
         Types.val_loc: loc,
-        val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
+        val_internalpath: PIdent(id),
+        val_fullpath: Path.PIdent(Ident.create("<bogus>")),
         val_mutable: false,
         val_global: true,
       }
@@ -964,17 +968,14 @@ let transl_value_decl = (env, loc, valdecl) => {
         val_repr: Type_utils.repr_of_type(env, ty),
         val_kind: TValReg,
         Types.val_loc: loc,
-        val_fullpath: Path.PIdent(Ident.create("<bogus>")) /*val_attributes = valdecl.pval_attributes*/,
+        val_internalpath: PIdent(id),
+        val_fullpath: Path.PIdent(Ident.create("<bogus>")),
         val_mutable: false,
         val_global: true,
       }
     };
 
-  let (id, newenv) = {
-    let name =
-      Option.value(~default=valdecl.pval_name, valdecl.pval_name_alias).txt;
-    Env.enter_value(name, v, env);
-  };
+  let newenv = Env.add_value(id, v, env);
   /*~check:(fun s -> Warnings.Unused_value_declaration s)*/
 
   let desc = {

@@ -83,7 +83,7 @@ module FuncCallsArg: Anf_iterator.IterArgument = {
         | _ => ()
         }
       },
-      imports,
+      imports.specs,
     );
   };
 };
