@@ -116,5 +116,5 @@ enums › adt_trailing
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 504
+ ;; custom section \"cmi\", size 498
 )
