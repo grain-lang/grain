@@ -105,6 +105,38 @@ type versioned_text_document_identifier = {
   version: int,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#errorCodes
+[@deriving (enum, yojson)]
+type error_code =
+  | [@value (-32700)] ParseError
+  | [@value (-32600)] InvalidRequest
+  | [@value (-32601)] MethodNotFound
+  | [@value (-32602)] InvalidParams
+  | [@value (-32603)] InternalError
+  | [@value (-32002)] ServerNotInitialized
+  | [@value (-32001)] UnknownErrorCode
+  | [@value (-32803)] RequestFailed
+  | [@value (-32802)] ServerCancelled
+  | [@value (-32801)] ContentModified
+  | [@value (-32800)] RequestCancelled;
+
+let error_code_to_yojson = kind =>
+  error_code_to_enum(kind) |> [%to_yojson: int];
+let error_code_of_yojson = json =>
+  Result.bind(json |> [%of_yojson: int], value => {
+    switch (error_code_of_enum(value)) {
+    | Some(kind) => Ok(kind)
+    | None => Result.Error("Invalid enum value")
+    }
+  });
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#responseError
+[@deriving yojson({strict: false})]
+type response_error = {
+  code: error_code,
+  message: string,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#requestMessage
 [@deriving yojson({strict: false})]
 type request_message = {
@@ -121,20 +153,8 @@ type request_message = {
 type response_message = {
   jsonrpc: version,
   id: option(message_id),
-  result: Yojson.Safe.t,
-};
-
-[@deriving yojson({strict: false})]
-type response_error = {
-  code: int,
-  message: string,
-};
-
-[@deriving yojson({strict: false})]
-type response_error_message = {
-  jsonrpc: version,
-  id: option(message_id),
-  error: response_error,
+  result: option(Yojson.Safe.t),
+  error: option(response_error),
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
@@ -176,7 +196,12 @@ let request = (): result(request_message, string) => {
 };
 
 let response = (~id=?, result) => {
-  let response_message = {jsonrpc: version, id, result};
+  let response_message = {
+    jsonrpc: version,
+    id,
+    result: Some(result),
+    error: None,
+  };
   let content =
     Yojson.Safe.to_string(
       ~std=true,
@@ -186,6 +211,27 @@ let response = (~id=?, result) => {
 
   let len = string_of_int(length);
 
+  let msg = header_prefix ++ len ++ sep ++ content;
+
+  output_string(stdout, msg);
+
+  flush(stdout);
+};
+
+let error = (~id=?, error) => {
+  let response_message = {
+    jsonrpc: version,
+    id,
+    result: None,
+    error: Some(error),
+  };
+  let content =
+    Yojson.Safe.to_string(
+      ~std=true,
+      response_message_to_yojson(response_message),
+    );
+  let length = String.length(content);
+  let len = string_of_int(length);
   let msg = header_prefix ++ len ++ sep ++ content;
 
   output_string(stdout, msg);
@@ -213,21 +259,4 @@ let notification = (~method, params) => {
 
 let uri_to_filename = (uri: uri): string => {
   Uri.path(uri);
-};
-
-let error_response = (~id=?, ~code, message: string) => {
-  let error = {code, message};
-  let response_message = {jsonrpc: version, id, error};
-  let content =
-    Yojson.Safe.to_string(
-      ~std=true,
-      response_error_message_to_yojson(response_message),
-    );
-  let length = String.length(content);
-  let len = string_of_int(length);
-  let msg = header_prefix ++ len ++ sep ++ content;
-
-  output_string(stdout, msg);
-
-  flush(stdout);
 };

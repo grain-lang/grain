@@ -47,48 +47,70 @@ let process =
     ) => {
   switch (Hashtbl.find_opt(documents, params.text_document.uri)) {
   | None =>
-    Trace.log("The code requested isn't available on the server");
-    Protocol.error_response(
+    Protocol.error(
       ~id,
-      ~code=0,
-      "The source code to be formatted isn't available",
-    );
+      {
+        code: InvalidParams,
+        message:
+          "The document is not available on the server: "
+          ++ Protocol.uri_to_filename(params.text_document.uri),
+      },
+    )
   | Some(compiled_code) =>
     switch (Format.parse_source(compiled_code)) {
     | Ok((parsed_program, lines, eol)) =>
-      let formatted_code =
-        Format.format_ast(~original_source=lines, ~eol, parsed_program);
+      // I'm pretty sure this code path can raise errors. We should change these to Results
+      try({
+        let formatted_code =
+          Format.format_ast(~original_source=lines, ~eol, parsed_program);
 
-      let range: Protocol.range = {
-        range_start: {
-          line: 0,
-          character: 0,
-        },
-        range_end:
-          // Use Int32.max_int to ensure we fit the entire number in JSON
-          {
-            line: Int32.to_int(Int32.max_int),
-            character: Int32.to_int(Int32.max_int),
+        let range: Protocol.range = {
+          range_start: {
+            line: 0,
+            character: 0,
           },
-      };
+          range_end:
+            // Use Int32.max_int to ensure we fit the entire number in JSON
+            {
+              line: Int32.to_int(Int32.max_int),
+              character: Int32.to_int(Int32.max_int),
+            },
+        };
 
-      Trace.log("ready to return a formatted result");
-      let res: ResponseResult.t = Some([{range, newText: formatted_code}]);
-      Protocol.response(~id, ResponseResult.to_yojson(res));
+        let res: ResponseResult.t = Some([{range, newText: formatted_code}]);
+        Protocol.response(~id, ResponseResult.to_yojson(res));
+      }) {
+      | exn =>
+        Protocol.error(
+          ~id,
+          {
+            code: RequestFailed,
+            message:
+              "Failed to format the document: "
+              ++ Protocol.uri_to_filename(params.text_document.uri),
+          },
+        )
+      }
     | Error(ParseError(_)) =>
-      Trace.log("Unable to parse source code");
-      Protocol.error_response(
+      Protocol.error(
         ~id,
-        ~code=-32700,
-        "Unable to format the source code",
-      );
+        {
+          code: RequestFailed,
+          message:
+            "Unable to parse the document: "
+            ++ Protocol.uri_to_filename(params.text_document.uri),
+        },
+      )
     | Error(InvalidCompilationState) =>
-      Trace.log("Reached an invalid compilation state");
-      Protocol.error_response(
+      Protocol.error(
         ~id,
-        ~code=-32700,
-        "Unable to format the source code",
-      );
+        {
+          code: RequestFailed,
+          message:
+            "Reached an invalid compilation state when compiling: "
+            ++ Protocol.uri_to_filename(params.text_document.uri),
+        },
+      )
     }
   };
 };
