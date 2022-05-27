@@ -124,6 +124,19 @@ type response_message = {
   result: Yojson.Safe.t,
 };
 
+[@deriving yojson({strict: false})]
+type response_error = {
+  code: int,
+  message: string,
+};
+
+[@deriving yojson({strict: false})]
+type response_error_message = {
+  jsonrpc: version,
+  id: option(message_id),
+  error: response_error,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
 [@deriving yojson({strict: false})]
 type notification_message = {
@@ -200,4 +213,21 @@ let notification = (~method, params) => {
 
 let uri_to_filename = (uri: uri): string => {
   Uri.path(uri);
+};
+
+let error_response = (~id=?, ~code, message: string) => {
+  let error = {code, message};
+  let response_message = {jsonrpc: version, id, error};
+  let content =
+    Yojson.Safe.to_string(
+      ~std=true,
+      response_error_message_to_yojson(response_message),
+    );
+  let length = String.length(content);
+  let len = string_of_int(length);
+  let msg = header_prefix ++ len ++ sep ++ content;
+
+  output_string(stdout, msg);
+
+  flush(stdout);
 };

@@ -89,7 +89,13 @@ let process =
       params: RequestParams.t,
     ) => {
   switch (Hashtbl.find_opt(documents, params.text_document.uri)) {
-  | None => Trace.log("The code requested isn't available on the server")
+  | None =>
+    Trace.log("The code requested isn't available on the server");
+    Protocol.error_response(
+      ~id,
+      ~code=0,
+      "The source code to be formatted isn't available",
+    );
   | Some(compiled_code) =>
     let parsed_source = parse_source(compiled_code);
 
@@ -117,7 +123,13 @@ let process =
       let res: ResponseResult.t = [{range, newText: formatted_code}];
       Protocol.response(~id, ResponseResult.to_yojson(res));
 
-    | `Error(_) => Trace.log("Error formatting")
+    | `Error(_) =>
+      Trace.log("Error formatting");
+      Protocol.error_response(
+        ~id,
+        ~code=-32700,
+        "Unable to format the source code",
+      );
     };
   };
 };

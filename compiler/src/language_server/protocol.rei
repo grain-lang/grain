@@ -96,6 +96,19 @@ type response_message = {
   result: Yojson.Safe.t,
 };
 
+[@deriving yojson({strict: false})]
+type response_error = {
+  code: int,
+  message: string,
+};
+
+[@deriving yojson({strict: false})]
+type response_error_message = {
+  jsonrpc: version,
+  id: option(message_id),
+  error: response_error,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#notificationMessage
 [@deriving yojson({strict: false})]
 type notification_message = {
@@ -107,6 +120,8 @@ type notification_message = {
 let request: unit => result(request_message, string);
 
 let response: (~id: message_id=?, Yojson.Safe.t) => unit;
+
+let error_response: (~id: message_id=?, ~code: int, string) => unit;
 
 let notification: (~method: string, Yojson.Safe.t) => unit;
 
