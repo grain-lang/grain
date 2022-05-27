@@ -1,19 +1,16 @@
 open Grain_typed;
-open Grain;
-open Compile;
-open Grain_parsing;
-open Grain_utils;
 open Grain_formatting;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#documentFormattingParams
 module RequestParams = {
-  // TODO: Implement the rest of the fields
   [@deriving yojson({strict: false})]
   type formatting_options = {
     [@key "tabSize"]
     tab_size: int,
     [@key "insertSpaces"]
     insert_spaces: bool,
+    [@key "trimTrailingWhitespace"] [@default None]
+    trim_trailing_whitespace: option(bool),
     [@key "insertFinalNewLine"] [@default None]
     insert_final_new_line: option(bool),
     [@key "trimFinalNewlines"] [@default None]
@@ -37,7 +34,7 @@ module ResponseResult = {
   };
 
   [@deriving yojson]
-  type t = list(text_edit);
+  type t = option(list(text_edit));
 };
 
 let process =
@@ -67,14 +64,16 @@ let process =
           line: 0,
           character: 0,
         },
-        range_end: {
-          line: Int.max_int,
-          character: Int.max_int,
-        },
+        range_end:
+          // Use Int32.max_int to ensure we fit the entire number in JSON
+          {
+            line: Int32.to_int(Int32.max_int),
+            character: Int32.to_int(Int32.max_int),
+          },
       };
 
       Trace.log("ready to return a formatted result");
-      let res: ResponseResult.t = [{range, newText: formatted_code}];
+      let res: ResponseResult.t = Some([{range, newText: formatted_code}]);
       Protocol.response(~id, ResponseResult.to_yojson(res));
     | Error(ParseError(_)) =>
       Trace.log("Unable to parse source code");
