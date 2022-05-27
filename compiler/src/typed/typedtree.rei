@@ -490,12 +490,12 @@ type value_description = {
 };
 
 type toplevel_stmt_desc =
-  | TTopForeign(export_flag, value_description)
+  | TTopForeign(value_description)
   | TTopImport(import_declaration)
   | TTopExport(list(export_declaration))
   | TTopData(list(data_declaration))
-  | TTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
-  | TTopException(export_flag, extension_constructor)
+  | TTopLet(rec_flag, mut_flag, list(value_binding))
+  | TTopException(extension_constructor)
   | TTopExpr(expression);
 
 [@deriving sexp]

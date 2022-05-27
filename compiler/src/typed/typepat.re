@@ -1069,6 +1069,7 @@ let add_pattern_variables =
             val_repr: Type_utils.repr_of_type(env, ty),
             val_kind: TValReg,
             Types.val_loc: loc,
+            val_internalpath: Path.PIdent(id),
             val_fullpath: Path.PIdent(id),
             val_mutable: mut,
             val_global: global,

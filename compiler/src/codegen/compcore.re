@@ -47,15 +47,28 @@ let swap_slots =
     swap_slots_f64,
   ]);
 
-/* These are the bare-minimum imports needed for basic runtime support */
+/** These are the bare-minimum imports needed for basic runtime support */
+
+/* The Grain environment */
+let grain_env_mod = grain_env_name;
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
-let grain_env_mod = Ident.create_persistent(grain_env_name);
-let malloc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/malloc");
-let gc_mod = Ident.create_persistent("GRAIN$MODULE$runtime/gc");
-let exception_mod = Ident.create_persistent("GRAIN$MODULE$runtime/exception");
-let console_mod = Ident.create_persistent("console");
+
+/* Memory allocation */
+let malloc_mod = "GRAIN$MODULE$runtime/malloc";
+let malloc_ident = Ident.create_persistent("malloc");
+let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
+
+/* Garbage collection */
+let gc_mod = "GRAIN$MODULE$runtime/gc";
+let incref_ident = Ident.create_persistent("incRef");
+let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
+let decref_ident = Ident.create_persistent("decRef");
+let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
+
+/* Exceptions */
+let exception_mod = "GRAIN$MODULE$runtime/exception";
 let print_exception_ident = Ident.create_persistent("printException");
 let print_exception_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$printException");
@@ -66,15 +79,14 @@ let index_out_of_bounds_ident =
   Ident.create_persistent("GRAIN$EXPORT$IndexOutOfBounds");
 let match_failure_ident =
   Ident.create_persistent("GRAIN$EXPORT$MatchFailure");
-let malloc_ident = Ident.create_persistent("malloc");
-let malloc_closure_ident = Ident.create_persistent("GRAIN$EXPORT$malloc");
-let incref_ident = Ident.create_persistent("incRef");
-let incref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$incRef");
-let equal_mod = Ident.create_persistent("GRAIN$MODULE$runtime/equal");
+
+/* Equality checking */
+let equal_mod = "GRAIN$MODULE$runtime/equal";
 let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
-let decref_ident = Ident.create_persistent("decRef");
-let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
+
+/* JS-runner support */
+let console_mod = "console";
 let tracepoint_ident = Ident.create_persistent("tracepoint");
 
 let grain_main = "_gmain";
@@ -82,48 +94,54 @@ let grain_start = "_start";
 
 let required_global_imports = [
   {
+    mimp_id: reloc_base,
     mimp_mod: grain_env_mod,
-    mimp_name: reloc_base,
+    mimp_name: Ident.name(reloc_base),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: true,
   },
   {
+    mimp_id: module_runtime_id,
     mimp_mod: grain_env_mod,
-    mimp_name: module_runtime_id,
+    mimp_name: Ident.name(module_runtime_id),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: print_exception_closure_ident,
     mimp_mod: exception_mod,
-    mimp_name: print_exception_closure_ident,
+    mimp_name: Ident.name(print_exception_closure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: assertion_error_closure_ident,
     mimp_mod: exception_mod,
-    mimp_name: assertion_error_closure_ident,
+    mimp_name: Ident.name(assertion_error_closure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: index_out_of_bounds_ident,
     mimp_mod: exception_mod,
-    mimp_name: index_out_of_bounds_ident,
+    mimp_name: Ident.name(index_out_of_bounds_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: match_failure_ident,
     mimp_mod: exception_mod,
-    mimp_name: match_failure_ident,
+    mimp_name: Ident.name(match_failure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -133,32 +151,36 @@ let required_global_imports = [
 
 let grain_runtime_imports = [
   {
+    mimp_id: malloc_closure_ident,
     mimp_mod: gc_mod,
-    mimp_name: malloc_closure_ident,
+    mimp_name: Ident.name(malloc_closure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: incref_closure_ident,
     mimp_mod: gc_mod,
-    mimp_name: incref_closure_ident,
+    mimp_name: Ident.name(incref_closure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: decref_closure_ident,
     mimp_mod: gc_mod,
-    mimp_name: decref_closure_ident,
+    mimp_name: Ident.name(decref_closure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: equal_closure_ident,
     mimp_mod: equal_mod,
-    mimp_name: equal_closure_ident,
+    mimp_name: Ident.name(equal_closure_ident),
     mimp_type: MGlobalImport(Types.StackAllocated(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -171,8 +193,9 @@ let runtime_global_imports =
 
 let required_function_imports = [
   {
+    mimp_id: print_exception_ident,
     mimp_mod: exception_mod,
-    mimp_name: print_exception_ident,
+    mimp_name: Ident.name(print_exception_ident),
     mimp_type:
       MFuncImport(
         [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
@@ -183,8 +206,9 @@ let required_function_imports = [
     mimp_used: false,
   },
   {
+    mimp_id: assertion_error_ident,
     mimp_mod: exception_mod,
-    mimp_name: assertion_error_ident,
+    mimp_name: Ident.name(assertion_error_ident),
     mimp_type:
       MFuncImport(
         [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
@@ -198,8 +222,9 @@ let required_function_imports = [
 
 let grain_function_imports = [
   {
+    mimp_id: malloc_ident,
     mimp_mod: gc_mod,
-    mimp_name: malloc_ident,
+    mimp_name: Ident.name(malloc_ident),
     mimp_type:
       MFuncImport(
         [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
@@ -210,8 +235,9 @@ let grain_function_imports = [
     mimp_used: false,
   },
   {
+    mimp_id: incref_ident,
     mimp_mod: gc_mod,
-    mimp_name: incref_ident,
+    mimp_name: Ident.name(incref_ident),
     mimp_type:
       MFuncImport(
         [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
@@ -222,8 +248,9 @@ let grain_function_imports = [
     mimp_used: false,
   },
   {
+    mimp_id: decref_ident,
     mimp_mod: gc_mod,
-    mimp_name: decref_ident,
+    mimp_name: Ident.name(decref_ident),
     mimp_type:
       MFuncImport(
         [Types.StackAllocated(WasmI32), Types.StackAllocated(WasmI32)],
@@ -234,16 +261,18 @@ let grain_function_imports = [
     mimp_used: false,
   },
   {
+    mimp_id: tracepoint_ident,
     mimp_mod: console_mod,
-    mimp_name: tracepoint_ident,
+    mimp_name: Ident.name(tracepoint_ident),
     mimp_type: MFuncImport([Types.StackAllocated(WasmI32)], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
   {
+    mimp_id: equal_ident,
     mimp_mod: equal_mod,
-    mimp_name: equal_ident,
+    mimp_name: Ident.name(equal_ident),
     mimp_type:
       MFuncImport(
         [Types.HeapAllocated, Types.HeapAllocated, Types.HeapAllocated],
@@ -264,7 +293,7 @@ let runtime_imports =
 let runtime_imports_tbl = {
   let tbl = Ident_tbl.create(64);
   List.iter(
-    ({mimp_name} as imp) => Ident_tbl.add(tbl, mimp_name, imp),
+    ({mimp_id} as imp) => Ident_tbl.add(tbl, mimp_id, imp),
     runtime_imports,
   );
   tbl;
@@ -315,11 +344,10 @@ let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
     Ident_tbl.find(runtime_imports_tbl, name).mimp_used =
       true;
   };
-  Printf.sprintf("wimport_%s_%s", Ident.name(mod_), Ident.name(name));
+  Ident.unique_name(name);
 };
 
-let get_grain_imported_name = (mod_, name) =>
-  Printf.sprintf("gimport_%s_%s", Ident.name(mod_), Ident.name(name));
+let get_grain_imported_name = (mod_, name) => Ident.unique_name(name);
 
 let call_exception_printer = (wasm_mod, env, args) => {
   let args = [
@@ -3480,23 +3508,23 @@ let compute_table_size = (env, {function_table_elements}) => {
 let compile_imports = (wasm_mod, env, {imports}) => {
   let compile_module_name = name =>
     fun
-    | MImportWasm => Ident.name(name)
-    | MImportGrain => "GRAIN$MODULE$" ++ Ident.name(name);
+    | MImportWasm => name
+    | MImportGrain => "GRAIN$MODULE$" ++ name;
 
   let compile_import_name = (name, kind, ty) =>
     switch (kind, ty) {
-    | (MImportGrain, MGlobalImport(_)) => "GRAIN$EXPORT$" ++ Ident.name(name)
-    | _ => Ident.name(name)
+    | (MImportGrain, MGlobalImport(_)) => "GRAIN$EXPORT$" ++ name
+    | _ => name
     };
 
-  let compile_import = ({mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
+  let compile_import = ({mimp_id, mimp_mod, mimp_name, mimp_type, mimp_kind}) => {
     let module_name = compile_module_name(mimp_mod, mimp_kind);
     let item_name = compile_import_name(mimp_name, mimp_kind, mimp_type);
     let internal_name =
       switch (mimp_kind) {
-      | MImportGrain => get_grain_imported_name(mimp_mod, mimp_name)
+      | MImportGrain => get_grain_imported_name(mimp_mod, mimp_id)
       | MImportWasm =>
-        get_wasm_imported_name(~runtime_import=false, mimp_mod, mimp_name)
+        get_wasm_imported_name(~runtime_import=false, mimp_mod, mimp_id)
       };
     switch (mimp_kind, mimp_type) {
     | (MImportGrain, MGlobalImport(ty, mut)) =>
@@ -3539,17 +3567,11 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     );
 
   List.iter(compile_import, imports);
-  Import.add_memory_import(
-    wasm_mod,
-    "mem",
-    Ident.name(grain_env_mod),
-    "mem",
-    false,
-  );
+  Import.add_memory_import(wasm_mod, "mem", grain_env_mod, "mem", false);
   Import.add_table_import(
     wasm_mod,
     global_function_table,
-    Ident.name(grain_env_mod),
+    grain_env_mod,
     global_function_table,
   );
 };
@@ -3557,11 +3579,14 @@ let compile_imports = (wasm_mod, env, {imports}) => {
 let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   let compile_export = (i, export) => {
     switch (export) {
-    | GlobalExport({ex_global_name}) =>
-      let internal_name = Ident.unique_name(ex_global_name);
-      let exported_name = "GRAIN$EXPORT$" ++ Ident.name(ex_global_name);
+    | GlobalExport({ex_global_internal_name, ex_global_name}) =>
+      let ex_global_name = "GRAIN$EXPORT$" ++ ex_global_name;
       ignore @@
-      Export.add_global_export(wasm_mod, internal_name, exported_name);
+      Export.add_global_export(
+        wasm_mod,
+        ex_global_internal_name,
+        ex_global_name,
+      );
     | FunctionExport({ex_function_internal_name, ex_function_name}) =>
       ignore @@
       Export.add_function_export(
@@ -3580,11 +3605,10 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
     List.filter(
       fun
       | GlobalExport({ex_global_name}) =>
-        if (StringSet.mem(Ident.name(ex_global_name), exported_globals^)) {
+        if (StringSet.mem(ex_global_name, exported_globals^)) {
           false;
         } else {
-          exported_globals :=
-            StringSet.add(Ident.name(ex_global_name), exported_globals^);
+          exported_globals := StringSet.add(ex_global_name, exported_globals^);
           true;
         }
       | FunctionExport({ex_function_name}) =>

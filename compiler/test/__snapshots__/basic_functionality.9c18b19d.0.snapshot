@@ -4,9 +4,9 @@ basic functionality › if_one_sided3
  (type $none_=>_none (func))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
- (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
  (global $x_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (export \"memory\" (memory $0))
@@ -18,8 +18,8 @@ basic functionality › if_one_sided3
    (tuple.extract 0
     (tuple.make
      (i32.const 3)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (global.get $x_1131)
      )
     )
@@ -29,8 +29,8 @@ basic functionality › if_one_sided3
    (tuple.extract 0
     (tuple.make
      (i32.const 5)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (global.get $x_1131)
      )
     )

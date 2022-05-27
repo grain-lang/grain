@@ -462,8 +462,9 @@ type import_setup =
 
 [@deriving sexp]
 type import = {
-  mimp_mod: Ident.t,
-  mimp_name: Ident.t,
+  mimp_id: Ident.t,
+  mimp_mod: string,
+  mimp_name: string,
   mimp_type: import_type,
   mimp_kind: import_kind,
   mimp_setup: import_setup,
@@ -476,7 +477,10 @@ type export =
       ex_function_name: string,
       ex_function_internal_name: string,
     })
-  | GlobalExport({ex_global_name: Ident.t});
+  | GlobalExport({
+      ex_global_name: string,
+      ex_global_internal_name: string,
+    });
 
 [@deriving sexp]
 type mash_function = {

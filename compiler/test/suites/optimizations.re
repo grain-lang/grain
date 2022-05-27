@@ -221,7 +221,7 @@ describe("optimizations", ({test, testSkip}) => {
       let x = Ident.create("x");
       AExp.let_(
         Nonrecursive,
-        ~global=Global({exported: true}),
+        ~global=Global,
         [
           (
             foo,
@@ -273,7 +273,7 @@ describe("optimizations", ({test, testSkip}) => {
       let foo = Ident.create("foo");
       AExp.let_(
         Nonrecursive,
-        ~global=Global({exported: true}),
+        ~global=Global,
         [
           (
             bar,
@@ -440,7 +440,7 @@ describe("optimizations", ({test, testSkip}) => {
       let arg = Ident.create("lambda_arg");
       let app = Ident.create("app");
       AExp.let_(
-        ~global=Global({exported: true}),
+        ~global=Global,
         Nonrecursive,
         [
           (
@@ -514,7 +514,7 @@ describe("optimizations", ({test, testSkip}) => {
       let fill = Ident.create("fill");
       let copy = Ident.create("copy");
       AExp.let_(
-        ~global=Global({exported: true}),
+        ~global=Global,
         Nonrecursive,
         [
           (
@@ -595,7 +595,7 @@ describe("optimizations", ({test, testSkip}) => {
       open Grain_typed;
       let foo = Ident.create("foo");
       AExp.let_(
-        ~global=Global({exported: true}),
+        ~global=Global,
         Nonrecursive,
         [
           (

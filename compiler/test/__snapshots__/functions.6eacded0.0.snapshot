@@ -7,23 +7,23 @@ functions › func_recursive_closure
  (type $none_=>_none (func))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
- (import \"_grainEnv\" \"relocBase\" (global $wimport__grainEnv_relocBase i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $gimport_pervasives_- (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $gimport_pervasives_== (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $gimport_pervasives_+ (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $wimport_GRAIN$MODULE$runtime/gc_malloc (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $wimport_GRAIN$MODULE$runtime/gc_incRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $wimport_GRAIN$MODULE$runtime/gc_decRef (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"-\" (func $gimport_pervasives_- (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"==\" (func $gimport_pervasives_== (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $gimport_pervasives_+ (param i32 i32 i32) (result i32)))
+ (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1157 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $==_1152 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1142 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"-\" (func $-_1157 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"==\" (func $==_1152 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1142 (param i32 i32 i32) (result i32)))
  (global $truc_1134 (mut i32) (i32.const 0))
  (global $makeAdder_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 1))
- (elem $elem (global.get $wimport__grainEnv_relocBase) $func_1165)
+ (elem $elem (global.get $relocBase_0) $func_1165)
  (export \"memory\" (memory $0))
  (export \"truc\" (func $truc_1134))
  (export \"GRAIN$EXPORT$truc\" (global $truc_1134))
@@ -35,8 +35,8 @@ functions › func_recursive_closure
   (local $2 i32)
   (i32.store
    (local.tee $1
-    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+    (call $malloc_0
+     (global.get $GRAIN$EXPORT$malloc_0)
      (i32.const 16)
     )
    )
@@ -58,8 +58,8 @@ functions › func_recursive_closure
    (tuple.extract 0
     (tuple.make
      (local.get $1)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (i32.const 0)
      )
     )
@@ -69,8 +69,8 @@ functions › func_recursive_closure
    (tuple.extract 0
     (tuple.make
      (call $foo_1135
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
        (local.get $1)
       )
       (i32.const 11)
@@ -80,14 +80,14 @@ functions › func_recursive_closure
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $0)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $1)
    )
   )
@@ -98,17 +98,17 @@ functions › func_recursive_closure
   (local.set $2
    (tuple.extract 0
     (tuple.make
-     (call $gimport_pervasives_+
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-       (global.get $gimport_pervasives_+)
+     (call $+_1142
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $+_1142)
       )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
        (local.get $1)
       )
-      (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
        (i32.load offset=16
         (local.get $0)
        )
@@ -119,14 +119,14 @@ functions › func_recursive_closure
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $0)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $1)
    )
   )
@@ -141,15 +141,15 @@ functions › func_recursive_closure
   (local $7 i32)
   (local $8 i32)
   (local.set $3
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
     (global.get $makeAdder_1131)
    )
   )
   (i32.store
    (local.tee $2
-    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+    (call $malloc_0
+     (global.get $GRAIN$EXPORT$malloc_0)
      (i32.const 20)
     )
    )
@@ -161,7 +161,7 @@ functions › func_recursive_closure
   )
   (i32.store offset=8
    (local.get $2)
-   (global.get $wimport__grainEnv_relocBase)
+   (global.get $relocBase_0)
   )
   (i32.store offset=12
    (local.get $2)
@@ -169,20 +169,20 @@ functions › func_recursive_closure
   )
   (i32.store offset=16
    (local.get $2)
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
     (i32.const 3)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $3)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (i32.const 3)
    )
   )
@@ -195,8 +195,8 @@ functions › func_recursive_closure
        (local.get $2)
       )
      )
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (i32.const 0)
      )
     )
@@ -204,8 +204,8 @@ functions › func_recursive_closure
   )
   (i32.store
    (local.tee $2
-    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+    (call $malloc_0
+     (global.get $GRAIN$EXPORT$malloc_0)
      (i32.const 24)
     )
    )
@@ -228,22 +228,22 @@ functions › func_recursive_closure
     (tuple.extract 0
      (tuple.make
       (local.get $2)
-      (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-       (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+      (call $decRef_0
+       (global.get $GRAIN$EXPORT$decRef_0)
        (i32.const 0)
       )
      )
     )
    )
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
     (local.get $0)
    )
   )
   (i32.store offset=20
    (local.get $2)
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
     (local.get $5)
    )
   )
@@ -252,13 +252,13 @@ functions › func_recursive_closure
     (tuple.make
      (if (result i32)
       (i32.shr_u
-       (call $gimport_pervasives_==
-        (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-         (global.get $gimport_pervasives_==)
+       (call $==_1152
+        (call $incRef_0
+         (global.get $GRAIN$EXPORT$incRef_0)
+         (global.get $==_1152)
         )
-        (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-         (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+        (call $incRef_0
+         (global.get $GRAIN$EXPORT$incRef_0)
          (local.get $1)
         )
         (i32.const 1)
@@ -268,13 +268,13 @@ functions › func_recursive_closure
       (i32.const 1)
       (if (result i32)
        (i32.shr_u
-        (call $gimport_pervasives_==
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-          (global.get $gimport_pervasives_==)
+        (call $==_1152
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
+          (global.get $==_1152)
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
           (local.get $1)
          )
          (i32.const 3)
@@ -283,8 +283,8 @@ functions › func_recursive_closure
        )
        (block (result i32)
         (local.set $3
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
           (local.get $2)
          )
         )
@@ -292,16 +292,16 @@ functions › func_recursive_closure
          (tuple.extract 0
           (tuple.make
            (call $foo_1135
-            (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
              (i32.load offset=16
               (local.get $3)
              )
             )
             (i32.const 1)
            )
-           (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+           (call $decRef_0
+            (global.get $GRAIN$EXPORT$decRef_0)
             (i32.const 0)
            )
           )
@@ -312,8 +312,8 @@ functions › func_recursive_closure
           (tuple.make
            (call_indirect (type $i32_i32_=>_i32)
             (local.tee $4
-             (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-              (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+             (call $incRef_0
+              (global.get $GRAIN$EXPORT$incRef_0)
               (i32.load offset=20
                (local.get $3)
               )
@@ -324,8 +324,8 @@ functions › func_recursive_closure
              (local.get $4)
             )
            )
-           (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+           (call $decRef_0
+            (global.get $GRAIN$EXPORT$decRef_0)
             (i32.const 0)
            )
           )
@@ -334,17 +334,17 @@ functions › func_recursive_closure
         (local.set $4
          (tuple.extract 0
           (tuple.make
-           (call $gimport_pervasives_+
-            (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-             (global.get $gimport_pervasives_+)
+           (call $+_1142
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
+             (global.get $+_1142)
             )
-            (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
              (local.get $6)
             )
-            (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
              (local.get $7)
             )
            )
@@ -353,26 +353,26 @@ functions › func_recursive_closure
          )
         )
         (drop
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (call $decRef_0
+          (global.get $GRAIN$EXPORT$decRef_0)
           (local.get $3)
          )
         )
         (drop
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (call $decRef_0
+          (global.get $GRAIN$EXPORT$decRef_0)
           (i32.const 3)
          )
         )
         (drop
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (call $decRef_0
+          (global.get $GRAIN$EXPORT$decRef_0)
           (local.get $6)
          )
         )
         (drop
-         (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+         (call $decRef_0
+          (global.get $GRAIN$EXPORT$decRef_0)
           (local.get $7)
          )
         )
@@ -382,31 +382,31 @@ functions › func_recursive_closure
         (local.set $8
          (tuple.extract 0
           (tuple.make
-           (call $gimport_pervasives_-
-            (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
-             (global.get $gimport_pervasives_-)
+           (call $-_1157
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
+             (global.get $-_1157)
             )
-            (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-             (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
              (local.get $1)
             )
             (i32.const 3)
            )
-           (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-            (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+           (call $decRef_0
+            (global.get $GRAIN$EXPORT$decRef_0)
             (i32.const 0)
            )
           )
          )
         )
         (call $foo_1135
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
           (local.get $0)
          )
-         (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-          (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
           (local.get $8)
          )
         )
@@ -418,32 +418,32 @@ functions › func_recursive_closure
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $0)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $1)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $5)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $2)
    )
   )
   (drop
-   (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+   (call $decRef_0
+    (global.get $GRAIN$EXPORT$decRef_0)
     (local.get $8)
    )
   )
@@ -453,8 +453,8 @@ functions › func_recursive_closure
   (local $0 i32)
   (i32.store
    (local.tee $0
-    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+    (call $malloc_0
+     (global.get $GRAIN$EXPORT$malloc_0)
      (i32.const 16)
     )
    )
@@ -476,8 +476,8 @@ functions › func_recursive_closure
    (tuple.extract 0
     (tuple.make
      (local.get $0)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (global.get $makeAdder_1131)
      )
     )
@@ -485,8 +485,8 @@ functions › func_recursive_closure
   )
   (i32.store
    (local.tee $0
-    (call $wimport_GRAIN$MODULE$runtime/gc_malloc
-     (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$malloc)
+    (call $malloc_0
+     (global.get $GRAIN$EXPORT$malloc_0)
      (i32.const 16)
     )
    )
@@ -508,16 +508,16 @@ functions › func_recursive_closure
    (tuple.extract 0
     (tuple.make
      (local.get $0)
-     (call $wimport_GRAIN$MODULE$runtime/gc_decRef
-      (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$decRef)
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
       (global.get $truc_1134)
      )
     )
    )
   )
   (call $truc_1134
-   (call $wimport_GRAIN$MODULE$runtime/gc_incRef
-    (global.get $wimport_GRAIN$MODULE$runtime/gc_GRAIN$EXPORT$incRef)
+   (call $incRef_0
+    (global.get $GRAIN$EXPORT$incRef_0)
     (global.get $truc_1134)
    )
   )
@@ -527,5 +527,5 @@ functions › func_recursive_closure
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 653
+ ;; custom section \"cmi\", size 712
 )
