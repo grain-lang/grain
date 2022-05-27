@@ -555,7 +555,7 @@ let get_from_statement =
       Printtyp.string_of_path(import_declaration.timp_path),
       stmt.ttop_loc,
     )
-  | TTopForeign(export_flag, value_description) =>
+  | TTopForeign(value_description) =>
     let tvd_desc = value_description.tvd_desc;
     let type_sig = Printtyp.string_of_type_scheme(tvd_desc.ctyp_type);
     LocationSignature(type_sig, stmt.ttop_loc);
@@ -642,8 +642,8 @@ let get_from_statement =
       }
     };
 
-  | TTopLet(export_flag, rec_flag, mut_flag, []) => LocationError
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
+  | TTopLet(rec_flag, mut_flag, []) => LocationError
+  | TTopLet(rec_flag, mut_flag, value_bindings) =>
     let matches =
       List.map(
         (vb: Typedtree.value_binding) =>
@@ -738,7 +738,7 @@ let get_from_statement =
       )
     };
 
-  | TTopException(export_flag, type_exception) => LocationError
+  | TTopException(type_exception) => LocationError
   | TTopExport(export_declarations) => LocationError
   };
 };
