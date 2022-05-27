@@ -25,7 +25,7 @@ module ResponseResult = {
 let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
   | TTopImport(import_declaration) => None
-  | TTopForeign(export_flag, value_description) => None
+  | TTopForeign( value_description) => None
   | TTopData([]) => None
   | TTopData(data_declarations) =>
     let decls =
@@ -39,8 +39,8 @@ let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
       );
 
     Some(String.concat(", ", decls));
-  | TTopLet(export_flag, rec_flag, mut_flag, []) => None
-  | TTopLet(export_flag, rec_flag, mut_flag, value_bindings) =>
+  | TTopLet( rec_flag, mut_flag, []) => None
+  | TTopLet( rec_flag, mut_flag, value_bindings) =>
     let bindings =
       List.map(
         (vbs: Typedtree.value_binding) =>
@@ -51,7 +51,7 @@ let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
     Some(String.concat(", ", bindings));
   | TTopExpr(expression) =>
     Some(Printtyp.string_of_type_scheme(expression.exp_type))
-  | TTopException(export_flag, type_exception) => None
+  | TTopException( type_exception) => None
   | TTopExport(export_declarations) => None
   };
 
