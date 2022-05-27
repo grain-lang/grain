@@ -47,7 +47,7 @@ let is_grain_module = mod_name => {
 };
 
 let wasi_polyfill_module = () => {
-  Filename.remove_extension(Option.get(Config.wasi_polyfill_path()))
+  Filepath.String.remove_extension(Option.get(Config.wasi_polyfill_path()))
   ++ ".gr.wasm";
 };
 
@@ -59,7 +59,7 @@ let is_wasi_polyfill_module = mod_path => {
   mod_path == wasi_polyfill_module();
 };
 
-let new_base_dir = Filename.dirname;
+let new_base_dir = Filepath.String.dirname;
 
 let rec build_dependency_graph = (~base_dir, mod_path) => {
   let wasm_mod = Hashtbl.find(modules, mod_path);
@@ -591,7 +591,7 @@ let link_modules = ({asm: wasm_mod, signature}) => {
 
   G.add_vertex(dependency_graph, main_module);
   build_dependency_graph(
-    ~base_dir=Filename.dirname(main_module),
+    ~base_dir=Filepath.String.dirname(main_module),
     main_module,
   );
   let dependencies =

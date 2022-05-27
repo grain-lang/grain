@@ -1,3 +1,8 @@
+//Provides: os_type
+var os_type = (globalThis.process &&
+    globalThis.process.platform &&
+    globalThis.process.platform == "win32") ? "Win32" : "Unix";
+
 //Provides: unix_opendir
 //Requires: caml_jsstring_of_string
 //Requires: make_unix_err_args, caml_raise_with_args, caml_named_value

@@ -3806,7 +3806,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
     ignore @@
     Module.add_debug_info_filename(
       wasm_mod,
-      Filename.basename(Option.get(name)),
+      Filepath.String.basename(Option.get(name)),
     );
   };
   let default_features = [

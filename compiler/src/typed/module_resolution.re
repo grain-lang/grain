@@ -50,15 +50,11 @@ let read_file_cmi = f => {
 };
 
 let get_output_name = name => {
-  let name =
-    try(Filename.chop_extension(name)) {
-    | Invalid_argument(_) => name
-    };
-  name ++ ".gr.wasm";
+  Filepath.String.remove_extension(name) ++ ".gr.wasm";
 };
 
 let find_ext_in_dir = (dir, name) => {
-  let fullname = Filename.concat(dir, name);
+  let fullname = Filepath.String.concat(dir, name);
   let rec process_ext =
     fun
     | [] => None
@@ -67,9 +63,6 @@ let find_ext_in_dir = (dir, name) => {
     | [_, ...tl] => process_ext(tl);
   process_ext;
 };
-
-let is_relpath = path =>
-  Filename.is_relative(path) && !Filename.is_implicit(path);
 
 let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
   let rec try_dir =
@@ -81,14 +74,14 @@ let find_in_path_uncap = (~exts=[], base_dir, path, name) => {
         | None => try_dir(rem)
         };
       };
-  if (!Filename.is_relative(name) && Grain_utils.Fs_access.file_exists(name)) {
+  if (!Filepath.String.is_relative(name) && Fs_access.file_exists(name)) {
     (
       name,
-      Filename.dirname(name),
-      Filename.remove_extension(Filename.basename(name)),
-      Filename.extension(name),
+      Filepath.String.dirname(name),
+      Filepath.String.(remove_extension(basename(name))),
+      Filepath.String.extension(name),
     );
-  } else if (is_relpath(name)) {
+  } else if (Filepath.String.is_relpath(name)) {
     try_dir([base_dir]);
   } else {
     try(try_dir(path)) {
@@ -103,25 +96,18 @@ module PathTbl = {
 
   let add: (t('a), (string, string), 'a) => unit =
     (tbl, (dir, unit_name), v) => {
-      let dir = Grain_utils.Filepath.String.realpath_quick(dir);
-      Hashtbl.add(
-        tbl,
-        Grain_utils.Filepath.String.smart_cat(dir, unit_name),
-        v,
-      );
+      let dir = Filepath.String.realpath_quick(dir);
+      Hashtbl.add(tbl, Filepath.String.smart_cat(dir, unit_name), v);
     };
 
   let find_opt:
     (~disable_relpath: bool=?, t('a), string, list(string), string) =>
     option('a) =
     (~disable_relpath=false, tbl, base_path, path, unit_name) =>
-      if (!disable_relpath && is_relpath(unit_name)) {
+      if (!disable_relpath && Filepath.String.is_relpath(unit_name)) {
         Hashtbl.find_opt(
           tbl,
-          Grain_utils.Filepath.String.canonicalize_relpath(
-            base_path,
-            unit_name,
-          ),
+          Filepath.String.canonicalize_relpath(base_path, unit_name),
         );
       } else {
         List.fold_left(
@@ -131,9 +117,7 @@ module PathTbl = {
             | None =>
               Hashtbl.find_opt(
                 tbl,
-                Grain_utils.Filepath.String.(
-                  smart_cat(realpath_quick(elt), unit_name)
-                ),
+                Filepath.String.(smart_cat(realpath_quick(elt), unit_name)),
               )
             }
           },
@@ -169,8 +153,8 @@ let current_resolution_table = () => {
 
 let log_resolution = (unit_name, dir, basename) => {
   let resolution =
-    Grain_utils.Filepath.(
-      to_string @@ String.derelativize @@ Filename.concat(dir, basename)
+    Filepath.(
+      to_string @@ String.derelativize @@ String.concat(dir, basename)
     );
   PathTbl.add(current_resolution_table(), (dir, unit_name), resolution);
   resolution;
@@ -179,12 +163,12 @@ let log_resolution = (unit_name, dir, basename) => {
 let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
   let base_dir =
     switch (base_dir) {
-    | None => Filename.dirname(current_filename^())
+    | None => Filepath.String.dirname(current_filename^())
     | Some(bd) => bd
     };
   let path =
     switch (search_path) {
-    | None => Grain_utils.Config.module_search_path()
+    | None => Config.module_search_path()
     | Some(p) => p
     };
   switch (
@@ -199,8 +183,8 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
     if (cache) {
       log_resolution(unit_name, dir, basename);
     } else {
-      Grain_utils.Filepath.(
-        to_string @@ String.derelativize @@ Filename.concat(dir, basename)
+      Filepath.(
+        to_string @@ String.derelativize @@ String.concat(dir, basename)
       );
     };
   };
@@ -259,19 +243,19 @@ let located_to_out_file_name = (~base=?, located) => {
     | GrainModule(_, Some(outpath))
     | WasmModule(outpath) => outpath
     };
-  Grain_utils.Filepath.(to_string(String.derelativize(~base?, ret)));
+  Filepath.to_string(Filepath.String.derelativize(~base?, ret));
 };
 
 let locate_unit_object_file = (~path=?, ~base_dir=?, unit_name) => {
   let base_dir =
     switch (base_dir) {
-    | None => Filename.dirname(current_filename^())
+    | None => Filepath.String.dirname(current_filename^())
     | Some(bd) => bd
     };
   let path =
     switch (path) {
     | Some(p) => p
-    | None => Grain_utils.Config.module_search_path()
+    | None => Config.module_search_path()
     };
   located_to_out_file_name(locate_module(base_dir, path, unit_name));
 };
@@ -289,7 +273,7 @@ module Dependency_graph =
 
     let rec get_dependencies: (t, string => option(t)) => list(t) =
       (dn, lookup) => {
-        let base_dir = Filename.dirname(dn.dn_file_name);
+        let base_dir = Filepath.String.dirname(dn.dn_file_name);
         let active_search_path = Config.module_search_path();
         let located = dn.dn_latest_resolution^;
 
@@ -372,7 +356,7 @@ module Dependency_graph =
           // all dependencies have expected CRC, and the module was compiled with
           // the current compiler configuration. Otherwise, we need to recompile.
           let config_sum = Cmi_format.config_sum();
-          let base_dir = Filename.dirname(srcpath);
+          let base_dir = Filepath.String.dirname(srcpath);
           dn.dn_up_to_date :=
             (
               switch (read_file_cmi(objpath)) {
@@ -419,7 +403,7 @@ module Dependency_graph =
         | Some(WasmModule(_)) =>
           failwith("impossible: compile_module > WasmModule")
         | Some(GrainModule(srcpath, _)) =>
-          Grain_utils.Filepath.(to_string(String.derelativize(srcpath)))
+          Filepath.to_string(Filepath.String.derelativize(srcpath))
         };
       let outpath = get_output_name(srcpath);
       let loc = Option.value(loc, ~default=Grain_parsing.Location.dummy_loc);
@@ -429,8 +413,8 @@ module Dependency_graph =
         | Seq.Cons((parent, unit_name), _) => unit_name
         };
       with_preserve_unit^(~loc, chosen_unit_name, srcpath, () =>
-        Grain_utils.Warnings.with_preserve_warnings(() =>
-          Grain_utils.Config.preserve_config(() =>
+        Warnings.with_preserve_warnings(() =>
+          Config.preserve_config(() =>
             compile_module_dependency^(srcpath, outpath)
           )
         )
@@ -439,7 +423,7 @@ module Dependency_graph =
       dn.dn_up_to_date := true;
       PathTbl.add(
         current_located_module_cache(),
-        (Filename.dirname(outpath), chosen_unit_name),
+        (Filepath.String.dirname(outpath), chosen_unit_name),
         GrainModule(srcpath, Some(outpath)),
       );
     };
@@ -448,8 +432,8 @@ module Dependency_graph =
 let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
   /* NOTE: We need to take care here to *not* wrap get_up_to_date with this try/with, since
      it will falsely raise No_module_file if a Not_found is raised during the compilation */
-  let base_dir = Filename.dirname(current_filename^());
-  let path = Grain_utils.Config.module_search_path();
+  let base_dir = Filepath.String.dirname(current_filename^());
+  let path = Config.module_search_path();
   let located =
     try(locate_module(~disable_relpath, base_dir, path, unit_name)) {
     | Not_found => error(No_module_file(unit_name, None))

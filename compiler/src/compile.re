@@ -3,6 +3,7 @@ open Grain_typed;
 open Grain_middle_end;
 open Grain_codegen;
 open Grain_linking;
+open Grain_utils;
 open Optimize;
 
 type input_source =
@@ -39,21 +40,14 @@ type error =
 
 exception InlineFlagsError(Location.t, error);
 
-/** `remove_extension` new enough that we should just use this */
-
-let safe_remove_extension = name =>
-  try(Filename.chop_extension(name)) {
-  | Invalid_argument(_) => name
-  };
-
 let default_output_filename = name =>
-  safe_remove_extension(name) ++ ".gr.wasm";
+  Filepath.String.remove_extension(name) ++ ".gr.wasm";
 
 let default_assembly_filename = name =>
-  safe_remove_extension(name) ++ ".wast";
+  Filepath.String.remove_extension(name) ++ ".wast";
 
 let default_mashtree_filename = name =>
-  safe_remove_extension(name) ++ ".mashtree";
+  Filepath.String.remove_extension(name) ++ ".mashtree";
 
 let compile_prog = p =>
   Compcore.module_to_bytes @@ Compcore.compile_wasm_module(p);
