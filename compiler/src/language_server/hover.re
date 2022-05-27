@@ -454,7 +454,6 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
   );
 };
 
-// gets the "outside" location in a chain of identifiers
 let rec get_location_list_from_ident = (ident: Identifier.t) => {
   switch (ident) {
   | IdentName(l) => [l.loc]
