@@ -401,7 +401,7 @@ let optimization_level =
         ("2", Level_two),
         ("3", Level_three),
       ]),
-    Level_three,
+    Level_two,
   );
 
 let default_memory_base = 0x400;
