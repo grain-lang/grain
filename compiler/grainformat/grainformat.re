@@ -7,7 +7,7 @@ open Grain_utils.Filepath.Args;
 
 [@deriving cmdliner]
 type io_params = {
-  /** Grain source file for which to format */
+  /** Grain source file or directory of source files to format */
   [@pos 0] [@docv "FILE"]
   input: ExistingFileOrDirectory.t,
   /** Output file or directory */
