@@ -207,7 +207,7 @@ program
   );
 
 program
-  .command("doc <file>")
+  .command("doc <file|dir>")
   .description("generate documentation for a grain file")
   .forwardOption(
     "--current-version <version>",
