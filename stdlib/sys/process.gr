@@ -1,4 +1,3 @@
-/* grainc-flags --no-gc */
 /**
  * @module Sys/Process: Utilities for accessing functionality and information about the Grain program's process.
  *
@@ -95,31 +94,20 @@ export enum Signal {
  * @section Values: Functions and constants included in the Sys/Process module.
  */
 
-let wasmSafeOk = val => {
-  Memory.incRef(WasmI32.fromGrain(Ok))
-  Memory.incRef(WasmI32.fromGrain(val))
-  Ok(val)
-}
-
-let wasmSafeErr = err => {
-  Memory.incRef(WasmI32.fromGrain(Err))
-  Memory.incRef(WasmI32.fromGrain(err))
-  Err(err)
-}
-
 /**
  * Access command line arguments.
  *
  * @returns `Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise
  */
-export let rec argv = () => {
+@unsafe
+export let argv = () => {
   let argcPtr = Memory.malloc(8n)
   let argvBufSizePtr = argcPtr + 4n
 
   let mut err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(argcPtr)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let argc = WasmI32.load(argcPtr, 0n)
     let argvBufSize = WasmI32.load(argvBufSizePtr, 0n)
@@ -132,7 +120,7 @@ export let rec argv = () => {
       Memory.free(argcPtr)
       Memory.free(argvPtr)
       Memory.free(argvBufPtr)
-      wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+      Err(Wasi.SystemError(tagSimpleNumber(err)))
     } else {
       let arr = allocateArray(argc)
 
@@ -154,11 +142,9 @@ export let rec argv = () => {
       Memory.free(argvPtr)
       Memory.free(argvBufPtr)
 
-      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
+      Ok(WasmI32.toGrain(arr): Array<String>)
     }
   }
-  Memory.decRef(WasmI32.fromGrain(argv))
-  ret
 }
 
 /**
@@ -166,14 +152,15 @@ export let rec argv = () => {
  *
  * @returns `Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise
  */
-export let rec env = () => {
+@unsafe
+export let env = () => {
   let envcPtr = Memory.malloc(8n)
   let envvBufSizePtr = envcPtr + 4n
 
   let mut err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(envcPtr)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let envc = WasmI32.load(envcPtr, 0n)
     let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
@@ -186,7 +173,7 @@ export let rec env = () => {
       Memory.free(envcPtr)
       Memory.free(envvPtr)
       Memory.free(envvBufPtr)
-      wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+      Err(Wasi.SystemError(tagSimpleNumber(err)))
     } else {
       let arr = allocateArray(envc)
 
@@ -208,11 +195,9 @@ export let rec env = () => {
       Memory.free(envvPtr)
       Memory.free(envvBufPtr)
 
-      wasmSafeOk(WasmI32.toGrain(arr): Array<String>)
+      Ok(WasmI32.toGrain(arr): Array<String>)
     }
   }
-  Memory.decRef(WasmI32.fromGrain(env))
-  ret
 }
 
 /**
@@ -221,19 +206,18 @@ export let rec env = () => {
  * @param code: The value to exit with. An exit code of 0 is considered normal, with other values having meaning depending on the platform
  * @returns `Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended
  */
-export let rec exit = (code: Number) => {
+@unsafe
+export let exit = (code: Number) => {
   let mut code = WasmI32.fromGrain(code)
 
-  let ret = if ((code & 1n) == 0n) {
-    wasmSafeErr(InvalidArgument("Invalid exit code"))
+  if ((code & 1n) == 0n) {
+    Err(InvalidArgument("Invalid exit code"))
   } else {
     code = code >> 1n
     Wasi.proc_exit(code)
     // Never actually hit because it exited
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(exit))
-  ret
 }
 
 /**
@@ -242,17 +226,16 @@ export let rec exit = (code: Number) => {
  * @param signal: The signal to send
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec sigRaise = (signalPtr: Signal) => {
+@unsafe
+export let sigRaise = (signalPtr: Signal) => {
   let signal = WasmI32.fromGrain(signalPtr)
   let signal = WasmI32.load(signal, 12n) >> 1n
   let err = Wasi.proc_raise(signal)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(sigRaise))
-  ret
 }
 
 /**
@@ -260,13 +243,12 @@ export let rec sigRaise = (signalPtr: Signal) => {
  *
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec schedYield = () => {
+@unsafe
+export let schedYield = () => {
   let err = Wasi.sched_yield()
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(schedYield))
-  ret
 }
