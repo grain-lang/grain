@@ -91,15 +91,14 @@ let get_lenses = (typed_program: Typedtree.typed_program) => {
 let process =
     (
       ~id: Protocol.message_id,
-      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
       params: RequestParams.t,
     ) => {
   switch (Hashtbl.find_opt(compiled_code, params.text_document.uri)) {
   | None => Protocol.response(~id, ResponseResult.to_yojson([]))
-  | Some(compiled_code) =>
-    let lenses = get_lenses(compiled_code);
+  | Some({program}) =>
+    let lenses = get_lenses(program);
     Protocol.response(~id, ResponseResult.to_yojson(lenses));
   };
 };

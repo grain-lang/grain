@@ -13,8 +13,7 @@ module DidOpen: {
   let process:
     (
       ~uri: Protocol.uri,
-      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
       RequestParams.t
     ) =>
@@ -38,8 +37,7 @@ module DidChange: {
   let process:
     (
       ~uri: Protocol.uri,
-      ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
-      ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
       RequestParams.t
     ) =>

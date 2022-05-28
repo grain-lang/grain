@@ -2,6 +2,8 @@ open Grain;
 open Compile;
 open Grain_utils;
 open Grain_typed;
+open Sourcetree;
+open Lsp_types;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#publishDiagnosticsParams
 module NotificationParams = {
@@ -165,8 +167,7 @@ module DidOpen = {
   let process =
       (
         ~uri: Protocol.uri,
-        ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
-        ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+        ~compiled_code: Hashtbl.t(Protocol.uri, code),
         ~documents: Hashtbl.t(Protocol.uri, string),
         params: RequestParams.t,
       ) => {
@@ -175,16 +176,25 @@ module DidOpen = {
     let compilerRes = compile_source(uri, params.text_document.text);
     switch (compilerRes) {
     | {program: Some(typed_program), error: None, warnings} =>
-      Hashtbl.replace(compiled_code, uri, typed_program);
-      Hashtbl.replace(cached_code, uri, typed_program);
+      Hashtbl.replace(
+        compiled_code,
+        uri,
+        {
+          program: typed_program,
+          sourcetree: Sourcetree.from_program(typed_program),
+          dirty: false,
+        },
+      );
       switch (warnings) {
       | [] => clear_diagnostics(~uri, ())
       | _ => send_diagnostics(~uri, warnings, None)
       };
 
     | {program, error: Some(err), warnings} =>
-      if (!Hashtbl.mem(compiled_code, uri)) {
-        Hashtbl.remove(compiled_code, uri);
+      switch (Hashtbl.find_opt(compiled_code, uri)) {
+      | Some(code) =>
+        Hashtbl.replace(compiled_code, uri, {...code, dirty: true})
+      | None => ()
       };
       send_diagnostics(~uri, warnings, Some(err));
     | {program: None, error: None, warnings} => clear_diagnostics(~uri, ())
@@ -215,8 +225,7 @@ module DidChange = {
   let process =
       (
         ~uri: Protocol.uri,
-        ~compiled_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
-        ~cached_code: Hashtbl.t(Protocol.uri, Typedtree.typed_program),
+        ~compiled_code: Hashtbl.t(Protocol.uri, code),
         ~documents: Hashtbl.t(Protocol.uri, string),
         params: RequestParams.t,
       ) => {
@@ -227,16 +236,25 @@ module DidChange = {
     let compilerRes = compile_source(uri, change.text);
     switch (compilerRes) {
     | {program: Some(typed_program), error: None, warnings} =>
-      Hashtbl.replace(compiled_code, uri, typed_program);
-      Hashtbl.replace(cached_code, uri, typed_program);
+      Hashtbl.replace(
+        compiled_code,
+        uri,
+        {
+          program: typed_program,
+          sourcetree: Sourcetree.from_program(typed_program),
+          dirty: false,
+        },
+      );
       switch (warnings) {
       | [] => clear_diagnostics(~uri, ())
       | _ => send_diagnostics(~uri, warnings, None)
       };
 
     | {program, error: Some(err), warnings} =>
-      if (!Hashtbl.mem(compiled_code, uri)) {
-        Hashtbl.remove(compiled_code, uri);
+      switch (Hashtbl.find_opt(compiled_code, uri)) {
+      | Some(code) =>
+        Hashtbl.replace(compiled_code, uri, {...code, dirty: true})
+      | None => ()
       };
       send_diagnostics(~uri, warnings, Some(err));
     | {program: None, error: None, warnings} => clear_diagnostics(~uri, ())
