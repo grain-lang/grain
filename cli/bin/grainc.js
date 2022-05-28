@@ -1,6 +1,3 @@
-// A wrapper around grainc_js.bc.js that prepares the `pkg` env
-const preparePkg = require("./pkg");
-
-preparePkg();
-
+// A wrapper around grainc.bc.js that prepares the `pkg` env
+require("./pkg");
 require("./grainc.bc.js");

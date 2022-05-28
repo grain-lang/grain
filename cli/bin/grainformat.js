@@ -1,6 +1,3 @@
-// A wrapper around grainformat_js.bc.js that prepares the `pkg` env
-const preparePkg = require("./pkg");
-
-preparePkg();
-
+// A wrapper around grainformat.bc.js that prepares the `pkg` env
+require("./pkg");
 require("./grainformat.bc.js");

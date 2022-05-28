@@ -1,9 +1,5 @@
 // This function paves over some of the weird virtual filesystem stuff inside `pkg`
-function preparePkg() {
-  if (!process.pkg) {
-    return;
-  }
-
+if (process.pkg) {
   const fs = require("fs");
   const path = require("path");
   const stdlibPath = require("@grain/stdlib");
@@ -29,5 +25,3 @@ function preparePkg() {
     }
   );
 }
-
-module.exports = preparePkg;

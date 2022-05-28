@@ -17,7 +17,11 @@ function getGrainc() {
 
 const grainc = getGrainc();
 
-function execGrainc(commandOrFile = "", program, execOpts = { stdio: "pipe" }) {
+function execGrainc(
+  commandOrFile = "",
+  program,
+  execOpts = { stdio: "inherit" }
+) {
   const flags = [];
   const options = program.opts();
   program.options.forEach((option) => {
@@ -47,7 +51,7 @@ const graindoc = getGraindoc();
 function execGraindoc(
   commandOrFile = "",
   program,
-  execOpts = { stdio: "pipe" }
+  execOpts = { stdio: "inherit" }
 ) {
   const flags = [];
   // Inherit compiler flags passed to the parent
@@ -80,7 +84,7 @@ const grainformat = getGrainformat();
 function execGrainformat(
   commandOrFile = "",
   program,
-  execOpts = { stdio: "pipe" }
+  execOpts = { stdio: "inherit" }
 ) {
   const flags = [];
   // Inherit compiler flags passed to the parent
