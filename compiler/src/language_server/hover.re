@@ -454,7 +454,40 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
   );
 };
 
-// TODO Make hovers for modules work
+let rec get_location_list_from_ident = (ident: Identifier.t) => {
+  switch (ident) {
+  | IdentName(l) => [l.loc]
+  | IdentExternal(t, l) => get_location_list_from_ident(t) @ [l.loc]
+  };
+};
+
+let get_expression_location_for_hover =
+    (~enclosing: Location.t, ~line, ~char, e: Typedtree.expression) =>
+  switch (e) {
+  | {exp_desc: TExpIdent(PExternal(mod_path, _, _), loc, vd)}
+      when Path.name(mod_path) != "Pervasives" =>
+    let ident = loc.txt;
+    let indent_locations = get_location_list_from_ident(ident);
+
+    List.fold_left(
+      (acc, l: Location.t) =>
+        if (is_point_inside_location(~line, ~char, l)) {
+          l;
+        } else {
+          acc;
+        },
+      enclosing,
+      indent_locations,
+    );
+
+  | _ =>
+    if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
+      enclosing;
+    } else {
+      e.exp_loc;
+    }
+  };
+
 let rec expression_lens =
         (
           ~line,
@@ -665,6 +698,7 @@ let get_from_statement =
       let vb = List.hd(value_bindings);
       let expr = vb.vb_expr;
       let pat = vb.vb_pat;
+
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, expr),
         pat.pat_loc,
@@ -675,14 +709,17 @@ let get_from_statement =
       | Error(err) => LocationError
       | NotInRange => LocationError
       | Expression(e) =>
+        let loc =
+          get_expression_location_for_hover(
+            ~line,
+            ~char,
+            ~enclosing=stmt.ttop_loc,
+            e,
+          );
         LocationSignature(
           expression_lens(~line, ~char, ~compiled_code, e),
-          if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
-            stmt.ttop_loc;
-          } else {
-            e.exp_loc;
-          },
-        )
+          loc,
+        );
       | Pattern(p) =>
         LocationSignature(
           grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type)),
@@ -724,11 +761,7 @@ let get_from_statement =
     | Expression(e) =>
       LocationSignature(
         expression_lens(~line, ~char, ~compiled_code, e),
-        if (e.exp_loc == Grain_parsing.Location.dummy_loc) {
-          loc;
-        } else {
-          e.exp_loc;
-        },
+        get_expression_location_for_hover(~line, ~char, ~enclosing=loc, e),
       )
 
     | Pattern(p) =>
