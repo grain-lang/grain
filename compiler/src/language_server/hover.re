@@ -37,6 +37,7 @@ type node_location =
 type node_t =
   | Expression(Typedtree.expression)
   | Pattern(Typedtree.pattern)
+  | LabelField((Location.t, Typedtree.expression))
   | NotInRange
   | Error(string);
 
@@ -283,7 +284,37 @@ and get_node_from_expression = (~line, ~char, expr: Typedtree.expression) => {
         ~default=Expression(expr),
         [e1, e2, e3],
       )
-    | TExpRecord(_) => Expression(expr)
+    | TExpRecord(fields) =>
+      switch (
+        Array.fold_left(
+          (
+            acc,
+            field: (
+              Types.label_description,
+              Typedtree.record_label_definition,
+            ),
+          ) => {
+            let (ld, rld) = field;
+            switch (rld) {
+            | Kept(te) => acc // TODO: not sure what to do here
+            | Overridden(loc, expr) =>
+              if (is_point_inside_location(~line, ~char, expr.exp_loc)) {
+                [Expression(expr)] @ acc;
+              } else if (is_point_inside_location(~line, ~char, loc.loc)) {
+                [LabelField((loc.loc, expr))] @ acc;
+              } else {
+                acc;
+              }
+            };
+          },
+          [],
+          fields,
+        )
+      ) {
+      | [node, ..._] => node
+      | _ => Expression(expr)
+      }
+
     | TExpRecordGet(e, _, _) =>
       find_location_in_expressions(
         ~line,
@@ -614,27 +645,27 @@ let get_from_statement =
           data_manifest,
           data_loc,
           data_params,
-          data_kind: TDataRecord(_),
+          data_kind: TDataRecord(record_fields),
         },
         ..._,
       ] =>
-      switch (data_params) {
+      switch (record_fields) {
       | [] =>
         LocationSignature(grain_type_code_block(data_name.txt), data_loc)
       | _ =>
         let matches =
           List.filter(
-            (dp: Typedtree.core_type) =>
-              is_point_inside_location(~line, ~char, dp.ctyp_loc),
-            data_params,
+            (rf: Typedtree.record_field) =>
+              is_point_inside_location(~line, ~char, rf.rf_loc),
+            record_fields,
           );
         switch (matches) {
-        | [decl] =>
+        | [field] =>
           LocationSignature(
             grain_type_code_block(
-              Printtyp.string_of_type_scheme(decl.ctyp_type),
+              Printtyp.string_of_type_scheme(field.rf_type.ctyp_type),
             ),
-            decl.ctyp_loc,
+            field.rf_loc,
           )
         | _ =>
           LocationSignature(grain_type_code_block(data_name.txt), data_loc)
@@ -692,6 +723,15 @@ let get_from_statement =
             p.pat_loc;
           },
         )
+      | LabelField((loc, e)) =>
+        LocationSignature(
+          expression_lens(~line, ~char, ~compiled_code, e),
+          if (loc == Grain_parsing.Location.dummy_loc) {
+            stmt.ttop_loc;
+          } else {
+            loc;
+          },
+        )
       }
     | _ => LocationError
     };
@@ -735,6 +775,15 @@ let get_from_statement =
       LocationSignature(
         grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type)),
         p.pat_loc,
+      )
+    | LabelField((field_loc, e)) =>
+      LocationSignature(
+        expression_lens(~line, ~char, ~compiled_code, e),
+        if (field_loc == Grain_parsing.Location.dummy_loc) {
+          loc;
+        } else {
+          field_loc;
+        },
       )
     };
 
