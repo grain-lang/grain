@@ -220,9 +220,8 @@ program
   );
 
 program
-  .command("format [file]")
+  .command("format <file|dir>")
   .description("format a grain file")
-  .forwardOption("--in-place", "format in place")
   .action(
     wrapAction(function (file, options, program) {
       format(file, program);
