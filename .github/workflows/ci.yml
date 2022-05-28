@@ -45,6 +45,8 @@ jobs:
 
       - name: Import esy cache
         if: steps.esy-cache.outputs.cache-hit == 'true'
+        # Don't crash the run if esy cache import fails - mostly happens on Windows
+        continue-on-error: true
         run: |
           npm run compiler import-dependencies
           shx rm -rf compiler/_export
