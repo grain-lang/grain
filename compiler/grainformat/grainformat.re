@@ -130,13 +130,11 @@ let enumerate_directory = (input_dir_path, output_dir_path) => {
 let enumerate_runs = opts =>
   switch (opts.input, opts.output) {
   | (File(input_file_path), None) =>
-    prerr_endline("file + no output");
-    `Ok([{input_path: input_file_path, output_path: None}]);
+    `Ok([{input_path: input_file_path, output_path: None}])
   | (File(input_file_path), Some(Exists(File(output_file_path)))) =>
-    prerr_endline("file & file");
     `Ok([
       {input_path: input_file_path, output_path: Some(output_file_path)},
-    ]);
+    ])
   | (File(input_file_path), Some(NotExists(output_file_path))) =>
     `Ok([
       {input_path: input_file_path, output_path: Some(output_file_path)},
