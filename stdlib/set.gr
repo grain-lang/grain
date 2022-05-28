@@ -13,10 +13,18 @@ record Bucket<t> {
   mut next: Option<Bucket<t>>,
 }
 
+/**
+ * @section Types: Type declarations included in the Set module.
+ */
+
 record Set<k> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k>>>,
 }
+
+/**
+ * @section Values: Functions for working with Sets.
+ */
 
 // TODO: This could take an `eq` function to custom comparisons
 /**
