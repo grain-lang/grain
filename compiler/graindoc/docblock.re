@@ -91,7 +91,7 @@ let enumerate_exports = stmts => {
   id_tbl^;
 };
 
-let location_for_ident = (~env, ~exports, ident) => {
+let location_for_ident = (~exports, ident) => {
   snd(Ident.find_name(Ident.name(ident), exports));
 };
 
@@ -199,18 +199,17 @@ let for_type_declaration =
 
 let for_signature_item =
     (
-      ~env: Env.t,
       ~comments,
       ~exports: Ident.tbl(Grain_parsing.Location.t),
       sig_item: Types.signature_item,
     ) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
-    let loc = location_for_ident(~env, ~exports, ident);
+    let loc = location_for_ident(~exports, ident);
     let docblock = for_value_description(~comments, ~ident, ~loc, vd);
     Some(docblock);
   | TSigType(ident, td, _rec) =>
-    let loc = location_for_ident(~env, ~exports, ident);
+    let loc = location_for_ident(~exports, ident);
     let docblock = for_type_declaration(~comments, ~ident, ~loc, td);
     Some(docblock);
   | _ => None
@@ -219,17 +218,16 @@ let for_signature_item =
 
 let signature_item_in_range =
     (
-      ~env: Env.t,
       ~exports: Ident.tbl(Grain_parsing.Location.t),
       sig_item: Types.signature_item,
       range: Grain_utils.Range.t,
     ) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
-    let loc = location_for_ident(~env, ~exports, ident);
+    let loc = location_for_ident(~exports, ident);
     Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
   | TSigType(ident, td, _rec) =>
-    let loc = location_for_ident(~env, ~exports, ident);
+    let loc = location_for_ident(~exports, ident);
     Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
   | _ => false
   };
