@@ -35,6 +35,19 @@ let () =
 let enumerate_exports = stmts => {
   let id_tbl = ref(Ident.empty);
 
+  let rec pattern_ids = ({pat_desc, pat_loc}: Typedtree.pattern) => {
+    switch (pat_desc) {
+    | TPatVar(id, _) => [(id, pat_loc)]
+    | TPatAlias(subpat, id, _) => [(id, pat_loc), ...pattern_ids(subpat)]
+    | TPatTuple(pats)
+    | TPatArray(pats)
+    | TPatConstruct(_, _, pats) => List.concat(List.map(pattern_ids, pats))
+    | TPatRecord(elts, _) =>
+      List.concat(List.map(((_, _, pat)) => pattern_ids(pat), elts))
+    | _ => []
+    };
+  };
+
   module ExportIterator =
     TypedtreeIter.MakeIterator({
       include TypedtreeIter.DefaultIteratorArgument;
@@ -56,6 +69,16 @@ let enumerate_exports = stmts => {
             },
             decls,
           )
+        | TTopLet(_, _, vbinds) =>
+          List.iter(
+            ({vb_pat}: Typedtree.value_binding) => {
+              List.iter(
+                ((id, loc)) => {id_tbl := Ident.add(id, loc, id_tbl^)},
+                pattern_ids(vb_pat),
+              )
+            },
+            vbinds,
+          )
         | _ => ()
         };
       };
@@ -66,17 +89,7 @@ let enumerate_exports = stmts => {
   id_tbl^;
 };
 
-// TODO: This need to be fixed to not do the Env.find_value
-// but I can't figure it out
-let location_for_value = (~env, ~ident, ~exports, path) =>
-  try({
-    let vd = Env.find_value(path, env);
-    vd.val_loc;
-  }) {
-  | exn => snd(Ident.find_name(Ident.name(ident), exports))
-  };
-
-let location_for_type = (~env, ~exports, ident) => {
+let location_for_ident = (~env, ~exports, ident) => {
   snd(Ident.find_name(Ident.name(ident), exports));
 };
 
@@ -183,14 +196,19 @@ let for_type_declaration =
 };
 
 let for_signature_item =
-    (~env: Env.t, ~comments, ~exports, sig_item: Types.signature_item) => {
+    (
+      ~env: Env.t,
+      ~comments,
+      ~exports: Ident.tbl(Grain_parsing.Location.t),
+      sig_item: Types.signature_item,
+    ) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
-    let loc = location_for_value(~env, ~ident, ~exports, vd.val_fullpath);
+    let loc = location_for_ident(~env, ~exports, ident);
     let docblock = for_value_description(~comments, ~ident, ~loc, vd);
     Some(docblock);
   | TSigType(ident, td, _rec) =>
-    let loc = location_for_type(~env, ~exports, ident);
+    let loc = location_for_ident(~env, ~exports, ident);
     let docblock = for_type_declaration(~comments, ~ident, ~loc, td);
     Some(docblock);
   | _ => None
@@ -200,16 +218,16 @@ let for_signature_item =
 let signature_item_in_range =
     (
       ~env: Env.t,
-      ~exports,
+      ~exports: Ident.tbl(Grain_parsing.Location.t),
       sig_item: Types.signature_item,
       range: Grain_utils.Range.t,
     ) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
-    let loc = location_for_value(~env, ~ident, ~exports, vd.val_fullpath);
+    let loc = location_for_ident(~env, ~exports, ident);
     Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
   | TSigType(ident, td, _rec) =>
-    let loc = location_for_type(~env, ~exports, ident);
+    let loc = location_for_ident(~env, ~exports, ident);
     Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
   | _ => false
   };
