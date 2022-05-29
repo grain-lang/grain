@@ -1,6 +1,22 @@
 open Grain_parsing;
 open Grain_typed;
 
+/*
+   This module implements a data structure used for efficient querying of
+   Typedtree nodes given a location. The underlying data type is a Segment Tree,
+   a balanced binary tree which gives us O(log n) lookups of matching intervals.
+   You can learn more about Segment Trees here:
+
+   https://en.wikipedia.org/wiki/Segment_tree
+
+   The SegmentTree implementation is generic for future use cases where we might
+   need one, though for now as this is the only use case it's kept here.
+
+   The current Sourcetree implementation returns _all_ nodes at a given point,
+   sorted by specificity. In the future this may change to return just the most
+   specific node if performance is a concern.
+ */
+
 module type OrderableSegment = {
   include Set.OrderedType;
 
