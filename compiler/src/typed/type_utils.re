@@ -10,7 +10,7 @@ let rec get_allocation_type = (env, ty) => {
   | TTyTuple(_)
   | TTyRecord(_)
   | TTyUniVar(_)
-  | TTyPoly(_) => HeapAllocated
+  | TTyPoly(_) => Managed
   };
 };
 
@@ -78,13 +78,13 @@ let rec returns_void = ty => {
 
 let wasm_repr_of_allocation_type = alloc_type => {
   switch (alloc_type) {
-  | StackAllocated(repr) => repr
-  | HeapAllocated => WasmI32
+  | Unmanaged(repr) => repr
+  | Managed => WasmI32
   };
 };
 
 let allocation_type_of_wasm_repr = repr => {
-  StackAllocated(repr);
+  Unmanaged(repr);
 };
 
 let repr_of_type = (env, ty) =>

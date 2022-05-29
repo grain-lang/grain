@@ -737,7 +737,7 @@ module MatchTreeCompiler = {
           BSeq(
             Comp.assign(
               ~env,
-              ~allocation_type=HeapAllocated,
+              ~allocation_type=Managed,
               Imm.id(name),
               Imm.id(value),
             ),
@@ -746,7 +746,7 @@ module MatchTreeCompiler = {
           BSeq(
             Comp.local_assign(
               ~env,
-              ~allocation_type=HeapAllocated,
+              ~allocation_type=Managed,
               name,
               Imm.id(value),
             ),
@@ -816,7 +816,7 @@ module MatchTreeCompiler = {
       let env = expr.imm_env;
       (
         Comp.imm(
-          ~allocation_type=StackAllocated(WasmI32),
+          ~allocation_type=Unmanaged(WasmI32),
           Imm.const(Const_number(Const_number_int(Int64.of_int(i)))),
         ),
         get_bindings(~mut_boxing, env, patterns, values, aliases),
@@ -886,7 +886,7 @@ module MatchTreeCompiler = {
         };
       let cond =
         Comp.prim2(
-          ~allocation_type=StackAllocated(WasmI32),
+          ~allocation_type=Unmanaged(WasmI32),
           equality_op,
           cur_value,
           const,
@@ -918,7 +918,7 @@ module MatchTreeCompiler = {
       let alias_binding =
         BLet(
           alias,
-          Comp.imm(~allocation_type=HeapAllocated, cur_value),
+          Comp.imm(~allocation_type=Managed, cur_value),
           Nonglobal,
         );
 
@@ -932,7 +932,7 @@ module MatchTreeCompiler = {
         [alias_binding, ...cond_setup],
       );
     | Fail => (
-        Comp.imm(~allocation_type=StackAllocated(WasmI32), Imm.trap()),
+        Comp.imm(~allocation_type=Unmanaged(WasmI32), Imm.trap()),
         [],
       )
     | Explode(matrix_type, alias, rest) =>
@@ -953,7 +953,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.adt_get(
-                  ~allocation_type=HeapAllocated,
+                  ~allocation_type=Managed,
                   Int32.of_int(idx),
                   cur_value,
                 ),
@@ -971,7 +971,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.tuple_get(
-                  ~allocation_type=HeapAllocated,
+                  ~allocation_type=Managed,
                   Int32.of_int(idx),
                   cur_value,
                 ),
@@ -987,7 +987,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.array_get(
-                  ~allocation_type=HeapAllocated,
+                  ~allocation_type=Managed,
                   Imm.const(
                     Const_number(Const_number_int(Int64.of_int(idx))),
                   ),
@@ -1006,7 +1006,7 @@ module MatchTreeCompiler = {
               BLet(
                 id,
                 Comp.record_get(
-                  ~allocation_type=HeapAllocated,
+                  ~allocation_type=Managed,
                   Int32.of_int(label_pos),
                   cur_value,
                 ),
@@ -1035,7 +1035,7 @@ module MatchTreeCompiler = {
       let bindings = [
         BLet(
           alias,
-          Comp.imm(~allocation_type=HeapAllocated, cur_value),
+          Comp.imm(~allocation_type=Managed, cur_value),
           Nonglobal,
         ),
         ...bindings,
@@ -1088,7 +1088,7 @@ module MatchTreeCompiler = {
         | ConstructorSwitch => Comp.adt_get_tag(cur_value)
         | ArraySwitch =>
           Comp.prim1(
-            ~allocation_type=StackAllocated(WasmI32),
+            ~allocation_type=Unmanaged(WasmI32),
             ArrayLength,
             cur_value,
           )
@@ -1106,7 +1106,7 @@ module MatchTreeCompiler = {
               BLet(
                 cmp_id_name,
                 Comp.prim2(
-                  ~allocation_type=StackAllocated(WasmI32),
+                  ~allocation_type=Unmanaged(WasmI32),
                   Is,
                   value_constr_id,
                   Imm.const(
@@ -1156,7 +1156,7 @@ module MatchTreeCompiler = {
         if (mut_boxing) {
           BLet(
             id,
-            Comp.prim1(~allocation_type=HeapAllocated, BoxBind, dummy_value),
+            Comp.prim1(~allocation_type=Managed, BoxBind, dummy_value),
             Nonglobal,
           );
         } else {

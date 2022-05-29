@@ -423,5 +423,5 @@ records › record_destruct_4
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 501
+ ;; custom section \"cmi\", size 495
 )

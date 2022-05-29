@@ -357,45 +357,45 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     let ptr =
       snd @@
       help(
-        (Types.HeapAllocated, 0),
+        (Types.Managed, 0),
         List.map(
-          ((_, lst)) => help((Types.HeapAllocated, 0), lst),
+          ((_, lst)) => help((Types.Managed, 0), lst),
           instr_live_sets,
         ),
       );
     let i32 =
       snd @@
       help(
-        (Types.StackAllocated(WasmI32), 0),
+        (Types.Unmanaged(WasmI32), 0),
         List.map(
-          ((_, lst)) => help((Types.StackAllocated(WasmI32), 0), lst),
+          ((_, lst)) => help((Types.Unmanaged(WasmI32), 0), lst),
           instr_live_sets,
         ),
       );
     let i64 =
       snd @@
       help(
-        (Types.StackAllocated(WasmI64), 0),
+        (Types.Unmanaged(WasmI64), 0),
         List.map(
-          ((_, lst)) => help((Types.StackAllocated(WasmI64), 0), lst),
+          ((_, lst)) => help((Types.Unmanaged(WasmI64), 0), lst),
           instr_live_sets,
         ),
       );
     let f32 =
       snd @@
       help(
-        (Types.StackAllocated(WasmF32), 0),
+        (Types.Unmanaged(WasmF32), 0),
         List.map(
-          ((_, lst)) => help((Types.StackAllocated(WasmF32), 0), lst),
+          ((_, lst)) => help((Types.Unmanaged(WasmF32), 0), lst),
           instr_live_sets,
         ),
       );
     let f64 =
       snd @@
       help(
-        (Types.StackAllocated(WasmF64), 0),
+        (Types.Unmanaged(WasmF64), 0),
         List.map(
-          ((_, lst)) => help((Types.StackAllocated(WasmF64), 0), lst),
+          ((_, lst)) => help((Types.Unmanaged(WasmF64), 0), lst),
           instr_live_sets,
         ),
       );
@@ -406,11 +406,11 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
   let run = (ty: Types.allocation_type, instrs) => {
     let num_locals =
       switch (ty) {
-      | Types.HeapAllocated => num_locals_ptr
-      | Types.StackAllocated(WasmI32) => num_locals_i32
-      | Types.StackAllocated(WasmI64) => num_locals_i64
-      | Types.StackAllocated(WasmF32) => num_locals_f32
-      | Types.StackAllocated(WasmF64) => num_locals_f64
+      | Types.Managed => num_locals_ptr
+      | Types.Unmanaged(WasmI32) => num_locals_i32
+      | Types.Unmanaged(WasmI64) => num_locals_i64
+      | Types.Unmanaged(WasmF32) => num_locals_f32
+      | Types.Unmanaged(WasmF64) => num_locals_f64
       };
     if (num_locals < 2) {
       instrs;
@@ -506,11 +506,11 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
       instrs;
     };
   };
-  run(Types.HeapAllocated, instrs)
-  |> run(Types.StackAllocated(WasmI32))
-  |> run(Types.StackAllocated(WasmI64))
-  |> run(Types.StackAllocated(WasmF32))
-  |> run(Types.StackAllocated(WasmF64));
+  run(Types.Managed, instrs)
+  |> run(Types.Unmanaged(WasmI32))
+  |> run(Types.Unmanaged(WasmI64))
+  |> run(Types.Unmanaged(WasmF32))
+  |> run(Types.Unmanaged(WasmF64));
 };
 
 let wasm_import_name = (mod_, name) =>
@@ -600,7 +600,7 @@ let compile_lambda =
       env.ce_binds,
       free_vars,
     );
-  let closure_arg = (Ident.create("$self"), Types.HeapAllocated);
+  let closure_arg = (Ident.create("$self"), Types.Managed);
   let new_args = [closure_arg, ...args];
   let arg_binds =
     List_utils.fold_lefti(
@@ -610,7 +610,7 @@ let compile_lambda =
       free_binds,
       new_args,
     )
-    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.HeapAllocated));
+    |> Ident.add(id, MArgBind(Int32.of_int(0), Types.Managed));
   let func_idx =
     if (Analyze_function_calls.has_indirect_call(id)) {
       Some(Int32.of_int(next_function_table_index(FuncId(id))));
@@ -693,7 +693,7 @@ let compile_wrapper =
             },
           ],
         ),
-        [Types.StackAllocated(Types.WasmI32)],
+        [Types.Unmanaged(Types.WasmI32)],
       )
     | _ => (body, rets)
     };
@@ -718,7 +718,7 @@ let compile_wrapper =
     env: lam_env,
     id,
     name,
-    args: [Types.HeapAllocated, ...args],
+    args: [Types.Managed, ...args],
     return_type,
     stack_size: {
       stack_size_ptr: 0,
@@ -746,7 +746,7 @@ let rec compile_comp = (~id=?, env, c) => {
       let compiled_arg = compile_imm(env, arg);
       let switch_type =
         Option.fold(
-          ~none=Types.StackAllocated(WasmI32),
+          ~none=Types.Unmanaged(WasmI32),
           ~some=((_, exp)) => exp.anf_allocation_type,
           List.nth_opt(branches, 0),
         );
@@ -945,8 +945,8 @@ let rec compile_comp = (~id=?, env, c) => {
       MCallRaw({
         func: "builtin",
         func_type: (
-          List.map(i => Types.StackAllocated(WasmI32), args),
-          [Types.StackAllocated(WasmI32)],
+          List.map(i => Types.Unmanaged(WasmI32), args),
+          [Types.Unmanaged(WasmI32)],
         ),
         args: List.map(compile_imm(env), args),
       })
@@ -969,28 +969,28 @@ and compile_anf_expr = (env, a) =>
       | [(id, {comp_allocation_type}), ...rest] =>
         let (alloc, stack_idx, next_env) =
           switch (comp_allocation_type) {
-          | HeapAllocated => (
-              Types.HeapAllocated,
+          | Managed => (
+              Types.Managed,
               env.ce_stack_idx_ptr,
               {...env, ce_stack_idx_ptr: env.ce_stack_idx_ptr + 1},
             )
-          | StackAllocated(WasmI32) => (
-              Types.StackAllocated(WasmI32),
+          | Unmanaged(WasmI32) => (
+              Types.Unmanaged(WasmI32),
               env.ce_stack_idx_i32,
               {...env, ce_stack_idx_i32: env.ce_stack_idx_i32 + 1},
             )
-          | StackAllocated(WasmI64) => (
-              Types.StackAllocated(WasmI64),
+          | Unmanaged(WasmI64) => (
+              Types.Unmanaged(WasmI64),
               env.ce_stack_idx_i64,
               {...env, ce_stack_idx_i64: env.ce_stack_idx_i64 + 1},
             )
-          | StackAllocated(WasmF32) => (
-              Types.StackAllocated(WasmF32),
+          | Unmanaged(WasmF32) => (
+              Types.Unmanaged(WasmF32),
               env.ce_stack_idx_f32,
               {...env, ce_stack_idx_f32: env.ce_stack_idx_f32 + 1},
             )
-          | StackAllocated(WasmF64) => (
-              Types.StackAllocated(WasmF64),
+          | Unmanaged(WasmF64) => (
+              Types.Unmanaged(WasmF64),
               env.ce_stack_idx_f64,
               {...env, ce_stack_idx_f64: env.ce_stack_idx_f64 + 1},
             )
@@ -1129,10 +1129,7 @@ let lift_imports = (env, imports) => {
                     MClosureOp(
                       MClosureSetPtr(Int32.of_int(idx)),
                       MImmBinding(
-                        MGlobalBind(
-                          Ident.unique_name(imp_use_id),
-                          HeapAllocated,
-                        ),
+                        MGlobalBind(Ident.unique_name(imp_use_id), Managed),
                       ),
                     ),
                   instr_loc: Location.dummy_loc,
@@ -1142,13 +1139,13 @@ let lift_imports = (env, imports) => {
               [];
             };
           (
-            HeapAllocated,
+            Managed,
             [
               {
                 mimp_id: imp_use_id,
                 mimp_mod,
                 mimp_name,
-                mimp_type: process_shape(true, GlobalShape(HeapAllocated)),
+                mimp_type: process_shape(true, GlobalShape(Managed)),
                 mimp_kind: MImportGrain,
                 mimp_setup: MCallGetter,
                 mimp_used: true,
@@ -1209,7 +1206,7 @@ let lift_imports = (env, imports) => {
         },
       );
     | WasmFunction(mod_, name) =>
-      let glob = get_global(imp_use_id, Types.StackAllocated(WasmI32));
+      let glob = get_global(imp_use_id, Types.Unmanaged(WasmI32));
       let mimp_id = Ident.create(wasm_import_name(mod_, name));
       let new_mod = {
         mimp_id,
@@ -1234,7 +1231,7 @@ let lift_imports = (env, imports) => {
                   instr_desc:
                     MStore([
                       (
-                        MGlobalBind(glob, Types.HeapAllocated),
+                        MGlobalBind(glob, Types.Managed),
                         {
                           instr_desc:
                             MAllocate(
@@ -1263,11 +1260,7 @@ let lift_imports = (env, imports) => {
         {
           ...env,
           ce_binds:
-            Ident.add(
-              imp_use_id,
-              MGlobalBind(glob, HeapAllocated),
-              env.ce_binds,
-            ),
+            Ident.add(imp_use_id, MGlobalBind(glob, Managed), env.ce_binds),
         },
       );
     | JSFunction(_) => failwith("NYI: lift_imports JSFunction")

@@ -5,11 +5,11 @@ open Grain_utils;
 
 let wasm_type =
   fun
-  | Types.HeapAllocated
-  | Types.StackAllocated(WasmI32) => Type.int32
-  | Types.StackAllocated(WasmI64) => Type.int64
-  | Types.StackAllocated(WasmF32) => Type.float32
-  | Types.StackAllocated(WasmF64) => Type.float64;
+  | Types.Managed
+  | Types.Unmanaged(WasmI32) => Type.int32
+  | Types.Unmanaged(WasmI64) => Type.int64
+  | Types.Unmanaged(WasmF32) => Type.float32
+  | Types.Unmanaged(WasmF64) => Type.float64;
 
 let encoded_int32 = n => n * 2 + 1;
 

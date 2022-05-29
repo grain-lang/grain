@@ -851,7 +851,7 @@ let new_declaration = (newtype, manifest) => {
   type_newtype_level: newtype,
   type_loc: Location.dummy_loc,
   type_path: PIdent({stamp: (-1), name: "", flags: 0}),
-  type_allocation: HeapAllocated,
+  type_allocation: Managed,
 };
 
 let instance_constructor = (~in_pattern=?, cstr) => {
@@ -3304,7 +3304,7 @@ let maybe_pointer_type = (env, typ) =>
   | TTyConstr(p, _args, _abbrev) =>
     try({
       let type_decl = Env.find_type(p, env);
-      type_decl.type_allocation == HeapAllocated;
+      type_decl.type_allocation == Managed;
     }) {
     | Not_found => true
     /* This can happen due to e.g. missing -I options,

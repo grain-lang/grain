@@ -108,12 +108,12 @@ let decl_abstr = path => {
   type_path: path,
   type_manifest: None,
   type_newtype_level: Some((0, 0)),
-  type_allocation: HeapAllocated,
+  type_allocation: Managed,
 };
 
 let decl_abstr_imm = (repr, path) => {
   ...decl_abstr(path),
-  type_allocation: StackAllocated(repr),
+  type_allocation: Unmanaged(repr),
 };
 
 let cstr = (id, args) => {

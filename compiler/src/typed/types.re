@@ -115,8 +115,8 @@ type value_kind =
 
 [@deriving (sexp, yojson)]
 type allocation_type =
-  | StackAllocated(wasm_repr)
-  | HeapAllocated
+  | Unmanaged(wasm_repr)
+  | Managed
 
 [@deriving (sexp, yojson)]
 and wasm_repr =

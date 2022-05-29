@@ -377,5 +377,5 @@ functions › func_record_associativity2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 763
+ ;; custom section \"cmi\", size 751
 )

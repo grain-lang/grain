@@ -334,5 +334,5 @@ records › record_recursive_data_definition
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 768
+ ;; custom section \"cmi\", size 756
 )
