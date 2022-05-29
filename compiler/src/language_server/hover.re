@@ -32,10 +32,6 @@ module ResponseResult = {
   };
 };
 
-type node_location =
-  | LocationSignature(string, Warnings.loc)
-  | LocationError;
-
 let loc_to_range = (pos: Location.t): Protocol.range => {
   let (_, startline, startchar, _) =
     Locations.get_raw_pos_info(pos.loc_start);
@@ -70,6 +66,10 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) =
       range,
     }),
   );
+};
+
+let send_no_result = (~id: Protocol.message_id) => {
+  Protocol.response(~id, `Null);
 };
 
 let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
@@ -147,7 +147,7 @@ let process =
       )
     | [Module(path, loc), ..._] =>
       send_hover(~id, ~range=loc_to_range(loc), module_lens(~program, path))
-    | _ => ()
+    | _ => send_no_result(~id)
     };
   };
 };
