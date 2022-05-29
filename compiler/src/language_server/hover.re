@@ -92,11 +92,29 @@ let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
 };
 
 let expression_lens = (e: Typedtree.expression) => {
-  grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type));
+  switch (e.exp_desc) {
+  | TExpRecord(fields) =>
+    let (path, _, decl) =
+      Ctype.extract_concrete_typedecl(e.exp_env, e.exp_type);
+    grain_code_block(
+      Printtyp.string_of_type_declaration(~ident=Path.head(path), decl),
+    );
+  | _ => grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type))
+  };
 };
 
 let pattern_lens = (p: Typedtree.pattern) => {
   grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type));
+};
+
+let type_lens = (ty: Typedtree.core_type) => {
+  grain_type_code_block(Printtyp.string_of_type_scheme(ty.ctyp_type));
+};
+
+let declaration_lens = (decl: Typedtree.data_declaration) => {
+  grain_type_code_block(
+    Printtyp.string_of_type_declaration(~ident=decl.data_id, decl.data_type),
+  );
 };
 
 let process =
@@ -119,6 +137,14 @@ let process =
       )
     | [Pattern(pat), ..._] =>
       send_hover(~id, ~range=loc_to_range(pat.pat_loc), pattern_lens(pat))
+    | [Type(ty), ..._] =>
+      send_hover(~id, ~range=loc_to_range(ty.ctyp_loc), type_lens(ty))
+    | [Declaration(decl), ..._] =>
+      send_hover(
+        ~id,
+        ~range=loc_to_range(decl.data_loc),
+        declaration_lens(decl),
+      )
     | [Module(path, loc), ..._] =>
       send_hover(~id, ~range=loc_to_range(loc), module_lens(~program, path))
     | _ => ()

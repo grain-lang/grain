@@ -122,7 +122,9 @@ module type Sourcetree = {
   include SegmentTree with type point = Protocol.position;
   type node =
     | Expression(Typedtree.expression)
+    | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
+    | Declaration(Typedtree.data_declaration)
     | Module(Path.t, Location.t);
 
   type sourcetree = t(node);
@@ -171,7 +173,9 @@ module Sourcetree: Sourcetree = {
 
   type node =
     | Expression(Typedtree.expression)
+    | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
+    | Declaration(Typedtree.data_declaration)
     | Module(Path.t, Location.t);
 
   type sourcetree = t(node);
@@ -216,6 +220,17 @@ module Sourcetree: Sourcetree = {
         let enter_pattern = pat => {
           segments :=
             [(loc_to_interval(pat.pat_loc), Pattern(pat)), ...segments^];
+        };
+        let enter_core_type = ty => {
+          segments :=
+            [(loc_to_interval(ty.ctyp_loc), Type(ty)), ...segments^];
+        };
+        let enter_data_declaration = decl => {
+          segments :=
+            [
+              (loc_to_interval(decl.data_loc), Declaration(decl)),
+              ...segments^,
+            ];
         };
       });
     Iterator.iter_typed_program(program);
