@@ -77,15 +77,15 @@ module Make = (Ord: OrderableSegment) => {
     switch (segments) {
     | [] => Leaf
     | segments =>
-      let x_center = center(segments);
+      let pivot = center(segments);
       let rec split = (left_acc, center_acc, right_acc, segments) => {
         switch (segments) {
         | [] => (left_acc, center_acc, right_acc)
         | [((first, last), _) as k, ...rest]
-            when Ord.compare(last, x_center) < 0 =>
+            when Ord.compare(last, pivot) < 0 =>
           split([k, ...left_acc], center_acc, right_acc, rest)
         | [((first, last), _) as k, ...rest]
-            when Ord.compare(first, x_center) > 0 =>
+            when Ord.compare(first, pivot) > 0 =>
           split(left_acc, center_acc, [k, ...right_acc], rest)
         | [((first, last), _) as k, ...rest] =>
           split(left_acc, [k, ...center_acc], right_acc, rest)
@@ -93,7 +93,7 @@ module Make = (Ord: OrderableSegment) => {
       };
       let (left, center, right) = split([], [], [], segments);
       Node({
-        center: x_center,
+        center: pivot,
         data: center,
         left: create(left),
         right: create(right),
