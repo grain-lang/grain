@@ -2172,8 +2172,12 @@ let add_module_signature =
   let filename = Some(mod_.pimp_path.txt);
   switch (check_opened(mod_, env0)) {
   | Some(path) =>
-    let mod_type = TModAlias(path);
-    env0 |> add_module(mod_ident, mod_type, filename);
+    if (Path.same(path, PIdent(mod_ident))) {
+      env0;
+    } else {
+      let mod_type = TModAlias(path);
+      env0 |> add_module(mod_ident, mod_type, filename);
+    }
   | _ =>
     let {ps_sig} = find_pers_struct(mod_.pimp_path.txt, mod_.pimp_loc);
     let sign = Lazy.force(ps_sig);
