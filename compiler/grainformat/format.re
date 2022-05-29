@@ -3723,10 +3723,13 @@ let data_print =
     Doc.concat([Doc.comma, Doc.hardLine]),
     List.map(
       data => {
-        let (expt, decl:Parsetree.data_declaration) = data;
-        // localise the comments
+        let (expt, decl: Parsetree.data_declaration) = data;
 
-       let data_comments=Comment_utils.get_comments_inside_location(~location=decl.pdata_loc,comments);
+        let data_comments =
+          Comment_utils.get_comments_inside_location(
+            ~location=decl.pdata_loc,
+            comments,
+          );
 
         Doc.concat([
           switch ((expt: Asttypes.export_flag)) {
