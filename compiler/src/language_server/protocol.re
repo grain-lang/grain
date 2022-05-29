@@ -178,14 +178,17 @@ let request = (): result(request_message, string) => {
     let len =
       String_utils.slice(
         ~first=String.length(header_prefix),
-        ~last=-1 /* newline? */,
+        ~last=-1 /* don't include the CR of the CRLF */,
         header,
       );
 
     switch (int_of_string_opt(len)) {
     | None => Error("Invalid Content-Length in header")
     | Some(len) =>
-      // TODO: Comment about this +2
+      // The LSP specification uses Windows CRLF separators
+      // and there's a CRLF between the header and the content we need to consume
+      // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#headerPart
+
       switch (really_input_string(stdin, len + 2)) {
       | exception exn => Error("Failed to read message")
       | raw => request_message_of_yojson(Yojson.Safe.from_string(raw))

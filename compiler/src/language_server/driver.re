@@ -59,10 +59,12 @@ let process = msg => {
     Reading;
   | Error(msg) =>
     prerr_endline(msg);
+    Trace.log(msg);
     is_shutting_down := true;
     Break;
   | _ =>
-    /* TODO: What should happen here? */
+    // If we don't get initialize as the first event we stop the server
+    // this signals to the client to restart
     if (is_initialized^ == false) {
       Trace.log("Client must send 'initialize' as first event");
       Break;
