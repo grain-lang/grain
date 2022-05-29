@@ -89,9 +89,10 @@ module MakeIterator =
     Iter.leave_bindings(rec_flag, mut_flag);
   }
 
-  and iter_match_branch = ({mb_pat, mb_body}) => {
+  and iter_match_branch = ({mb_pat, mb_body, mb_guard}) => {
     iter_pattern(mb_pat);
     iter_expression(mb_body);
+    Option.iter(iter_expression, mb_guard);
   }
 
   and iter_match_branches = branches => List.iter(iter_match_branch, branches)
