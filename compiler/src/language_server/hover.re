@@ -90,6 +90,10 @@ let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
   grain_code_block(String.concat("\n", signatures));
 };
 
+let value_lens = (desc: Types.value_description) => {
+  grain_type_code_block(Printtyp.string_of_type_scheme(desc.val_type));
+};
+
 let expression_lens = (e: Typedtree.expression) => {
   switch (e.exp_desc) {
   | TExpRecord(fields) =>
@@ -128,6 +132,8 @@ let process =
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
+    | [Value(loc, desc), ..._] =>
+      send_hover(~id, ~range=loc_to_range(loc), value_lens(desc))
     | [Expression(exp), ..._] =>
       send_hover(
         ~id,

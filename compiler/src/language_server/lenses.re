@@ -50,7 +50,11 @@ let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
 
     Some(String.concat(", ", bindings));
   | TTopExpr(expression) =>
-    Some(Printtyp.string_of_type_scheme(expression.exp_type))
+    switch (expression.exp_desc) {
+    | TExpIdent(_, _, desc) =>
+      Some(Printtyp.string_of_type_scheme(desc.val_type))
+    | _ => Some(Printtyp.string_of_type_scheme(expression.exp_type))
+    }
   | TTopException(type_exception) => None
   | TTopExport(export_declarations) => None
   };
