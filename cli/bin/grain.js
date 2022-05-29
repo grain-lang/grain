@@ -34,21 +34,6 @@ function graincVersion() {
   return exec.grainc("--version", program).toString().trim();
 }
 
-function wrapAction(action, logError = false) {
-  return (...args) => {
-    try {
-      return action(...args);
-    } catch (e) {
-      if (logError) console.error(e);
-      if (program.opts().graceful) {
-        process.exit();
-      } else {
-        process.exit(1);
-      }
-    }
-  };
-}
-
 class ForwardOption extends program.Option {
   // A ForwardOption is forwarded to the underlying program
   forward = true;
@@ -107,7 +92,6 @@ program
   })
   .description("Compile and run Grain programs. 🌾")
   .addOption(new program.Option("-p, --print-output").hideHelp())
-  .option("-g, --graceful", "return a 0 exit code if the program errors")
   .forwardOption(
     "-I, --include-dirs <dirs>",
     "add additional dependency include directories",
@@ -197,13 +181,11 @@ program
 program
   .command("compile <file>")
   .description("compile a grain program into wasm")
-  .action(
-    wrapAction(function (file) {
-      // The compile subcommand inherits all behaviors/options of the
-      // top level grain command
-      compile(file, program);
-    })
-  );
+  .action(function (file) {
+    // The compile subcommand inherits all behaviors/options of the
+    // top level grain command
+    compile(file, program);
+  });
 
 program
   .command("run <file>")
@@ -217,13 +199,11 @@ program
 program
   .command("lsp <file>")
   .description("check a grain file for LSP")
-  .action(
-    wrapAction(function (file) {
-      // The lsp subcommand inherits all options of the
-      // top level grain command
-      lsp(file, program);
-    })
-  );
+  .action(function (file) {
+    // The lsp subcommand inherits all options of the
+    // top level grain command
+    lsp(file, program);
+  });
 
 program
   .command("doc <file|dir>")
@@ -232,18 +212,14 @@ program
     "--current-version <version>",
     "provide a version to use as current when generating markdown for `@since` and `@history` attributes"
   )
-  .action(
-    wrapAction(function (file, options, program) {
-      doc(file, program);
-    })
-  );
+  .action(function (file, options, program) {
+    doc(file, program);
+  });
 
 program
   .command("format <file|dir>")
   .description("format a grain file")
-  .action(
-    wrapAction(function (file, options, program) {
-      format(file, program);
-    })
-  );
+  .action(function (file, options, program) {
+    format(file, program);
+  });
 program.parse(process.argv);

@@ -173,7 +173,7 @@ let run = (~num_pages=?, file) => {
 
   let cmd =
     Array.concat([
-      [|"grain", "-g"|],
+      [|"grain"|],
       mem_flags,
       [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), "run", file|],
     ]);
