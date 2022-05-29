@@ -137,6 +137,7 @@ module Make = (Ord: OrderableSegment) => {
 module type Sourcetree = {
   include SegmentTree with type point = Protocol.position;
   type node =
+    | Value(Location.t, Types.value_description)
     | Expression(Typedtree.expression)
     | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
@@ -195,6 +196,7 @@ module Sourcetree: Sourcetree = {
   });
 
   type node =
+    | Value(Location.t, Types.value_description)
     | Expression(Typedtree.expression)
     | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
@@ -225,20 +227,38 @@ module Sourcetree: Sourcetree = {
       TypedtreeIter.MakeIterator({
         include TypedtreeIter.DefaultIteratorArgument;
         let enter_expression = exp => {
-          open Parsetree;
-          open Path;
-          switch (exp.exp_desc) {
-          | TExpIdent(
-              PExternal(path, _, _),
-              {txt: IdentExternal(IdentName({loc}), _)},
-              _,
-            ) =>
-            segments :=
-              [(loc_to_interval(loc), Module(path, loc)), ...segments^]
-          | _ => ()
-          };
-          segments :=
-            [(loc_to_interval(exp.exp_loc), Expression(exp)), ...segments^];
+          Parsetree.(
+            Path.(
+              switch (exp.exp_desc) {
+              | TExpIdent(
+                  PExternal(path, _, _),
+                  {txt: IdentExternal(IdentName({loc}), _)},
+                  desc,
+                ) =>
+                segments :=
+                  [
+                    (loc_to_interval(loc), Module(path, loc)),
+                    (
+                      loc_to_interval(exp.exp_loc),
+                      Value(exp.exp_loc, desc),
+                    ),
+                    ...segments^,
+                  ]
+              | TExpIdent(_, _, desc) =>
+                segments :=
+                  [
+                    (loc_to_interval(exp.exp_loc), Value(exp.exp_loc, desc)),
+                    ...segments^,
+                  ]
+              | _ =>
+                segments :=
+                  [
+                    (loc_to_interval(exp.exp_loc), Expression(exp)),
+                    ...segments^,
+                  ]
+              }
+            )
+          );
         };
         let enter_pattern = pat => {
           segments :=
