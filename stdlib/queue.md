@@ -13,6 +13,16 @@ No other changes yet.
 import Queue from "queue"
 ```
 
+## Types
+
+Type declarations included in the Queue module.
+
+### Queue.**Queue**
+
+```grain
+type Queue<a>
+```
+
 ## Values
 
 Functions for working with queues.
