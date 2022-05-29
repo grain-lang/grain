@@ -509,6 +509,7 @@ type import_declaration = {
 
 [@deriving sexp]
 type export_declaration = {
+  tex_id: Ident.t,
   tex_path: Path.t,
   [@sexp_drop_if sexp_locs_disabled]
   tex_loc: Location.t,
