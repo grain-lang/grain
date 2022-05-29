@@ -164,8 +164,6 @@ class GrainCommand extends commander.Command {
       "--no-pervasives",
       "don't automatically import the Grain Pervasives module"
     );
-    // TODO: Remove this
-    cmd.forwardOption("-O <level>", "set the optimization level");
     cmd.forwardOption(
       "--parser-debug-level <level>",
       "debugging level for parser output"
