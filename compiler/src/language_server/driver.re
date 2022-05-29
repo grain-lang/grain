@@ -60,8 +60,12 @@ let process = msg => {
   | Error(msg) =>
     prerr_endline(msg);
     Trace.log(msg);
-    is_shutting_down := true;
-    Break;
+    let error: Protocol.response_error = {
+      code: Protocol.InvalidRequest,
+      message: msg,
+    };
+    Protocol.error(error);
+    Reading;
   | _ =>
     // If we don't get initialize as the first event we stop the server
     // this signals to the client to restart
