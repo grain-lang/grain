@@ -23,7 +23,6 @@ let process = msg => {
     Initialize.process(~id, ~compiled_code, ~documents, params);
     Reading;
   | TextDocumentHover(id, params) when is_initialized^ =>
-    Trace.log("handling hover event");
     Hover.process(~id, ~compiled_code, ~documents, params);
     Reading;
   | TextDocumentCodeLens(id, params) when is_initialized^ =>

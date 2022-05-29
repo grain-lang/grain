@@ -74,7 +74,6 @@ let send_no_result = (~id: Protocol.message_id) => {
 
 let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
   let vals = Modules.get_exports(p, program);
-  Trace.log("located module");
   let signatures =
     List.map(
       (v: Modules.export) =>
