@@ -158,7 +158,14 @@ module Sourcetree: Sourcetree = {
         if (x.line == y.line) {
           {line: x.line, character: (x.character + y.character) / 2};
         } else {
-          {line: (x.line + y.line) / 2, character: x.character};
+          {
+            line: (x.line + y.line) / 2,
+            // It's difficult to choose a character that represets the
+            // "center" of two positions since we don't know how many
+            // total characters are in the range. For simplicity, we
+            // choose the character at the start of `x`.
+            character: x.character,
+          };
         }
       );
     };
