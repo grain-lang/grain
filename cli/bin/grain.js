@@ -14,11 +14,7 @@ v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const program = require("commander");
 const exec = require("./exec.js");
-const compile = require("./compile.js");
 const run = require("./run.js");
-const lsp = require("./lsp.js");
-const doc = require("./doc.js");
-const format = require("./format.js");
 
 const stdlibPath = require("@grain/stdlib");
 
@@ -31,7 +27,7 @@ function num(val) {
 }
 
 function graincVersion() {
-  return exec.grainc("--version", program).toString().trim();
+  return exec.grainc("--version", program, { stdio: "pipe" }).toString().trim();
 }
 
 class ForwardOption extends program.Option {
@@ -175,7 +171,12 @@ program
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file, options, program) {
-    run(compile(file, program), options);
+    exec.grainc(file, program);
+    if (options.o) {
+      run(options.o, program.opts());
+    } else {
+      run(file.replace(/\.gr$/, ".gr.wasm"), program.opts());
+    }
   });
 
 program
@@ -184,7 +185,7 @@ program
   .action(function (file) {
     // The compile subcommand inherits all behaviors/options of the
     // top level grain command
-    compile(file, program);
+    exec.grainc(file, program);
   });
 
 program
@@ -202,7 +203,12 @@ program
   .action(function (file) {
     // The lsp subcommand inherits all options of the
     // top level grain command
-    lsp(file, program);
+
+    // call the compiler, passing stdio through so the compiler gets the source code on stdin
+    // and we get the compiler output in stdout
+    // we still take the file name so we have it available
+
+    exec.grainc(`--lsp ${file}`, program);
   });
 
 program
@@ -213,13 +219,13 @@ program
     "provide a version to use as current when generating markdown for `@since` and `@history` attributes"
   )
   .action(function (file, options, program) {
-    doc(file, program);
+    exec.graindoc(file, program);
   });
 
 program
   .command("format <file|dir>")
   .description("format a grain file")
   .action(function (file, options, program) {
-    format(file, program);
+    exec.grainformat(file, program);
   });
 program.parse(process.argv);
