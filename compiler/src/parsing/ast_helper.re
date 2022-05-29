@@ -243,6 +243,23 @@ module Exp = {
   // because the parser would expect a number). It's easier to just parse it
   // as division and have this action decide that it's actually a rational.
   let binop = (~loc=?, ~attributes=?, a, b) => {
+    // Locations of nested binops are difficult to compute in the parser so we
+    // just set the location manually here
+    let loc =
+      Location.(
+        Option.map(
+          loc =>
+            switch (b) {
+            | [{pexp_loc: {loc_start}}, {pexp_loc: {loc_end}}] => {
+                ...loc,
+                loc_start,
+                loc_end,
+              }
+            | _ => failwith("Impossible: not a binop")
+            },
+          loc,
+        )
+      );
     switch (a, b) {
     | (
         {pexp_desc: PExpId({txt: IdentName({txt: "/"})})},
