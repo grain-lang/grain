@@ -78,7 +78,8 @@ let generate_docs =
     (~current_version, ~output=?, program: Typedtree.typed_program) => {
   let comments = Comments.to_ordered(program.comments);
 
-  let env = program.env;
+  let exports = Docblock.enumerate_exports(program.statements);
+
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
@@ -156,7 +157,7 @@ let generate_docs =
   };
 
   let add_docblock = sig_item => {
-    let docblock = Docblock.for_signature_item(~env, ~comments, sig_item);
+    let docblock = Docblock.for_signature_item(~comments, ~exports, sig_item);
     switch (docblock) {
     | Some(docblock) =>
       Buffer.add_buffer(
@@ -197,7 +198,7 @@ let generate_docs =
         );
         List.iter(
           sig_item =>
-            if (Docblock.signature_item_in_range(~env, sig_item, range)) {
+            if (Docblock.signature_item_in_range(~exports, sig_item, range)) {
               add_docblock(sig_item);
             },
           signature_items,

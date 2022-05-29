@@ -602,7 +602,10 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             };
           let name = Identifier.IdentName(name);
           let (p, {val_fullpath} as desc) = Env.lookup_value(name, env);
-          (TSigValue(id, desc), {tex_path: val_fullpath, tex_loc: loc});
+          (
+            TSigValue(id, desc),
+            {tex_id: id, tex_path: val_fullpath, tex_loc: loc},
+          );
         },
         exports,
       );

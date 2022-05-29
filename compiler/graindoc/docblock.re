@@ -32,6 +32,69 @@ let () =
     }
   });
 
+let enumerate_exports = stmts => {
+  let id_tbl = ref(Ident.empty);
+
+  let rec pattern_ids = ({pat_desc, pat_loc}: Typedtree.pattern) => {
+    switch (pat_desc) {
+    | TPatVar(id, _) => [(id, pat_loc)]
+    | TPatAlias(subpat, id, _) => [(id, pat_loc), ...pattern_ids(subpat)]
+    | TPatTuple(pats)
+    | TPatArray(pats)
+    | TPatConstruct(_, _, pats) => List.concat(List.map(pattern_ids, pats))
+    | TPatRecord(elts, _) =>
+      List.concat(List.map(((_, _, pat)) => pattern_ids(pat), elts))
+    | _ => []
+    };
+  };
+
+  module ExportIterator =
+    TypedtreeIter.MakeIterator({
+      include TypedtreeIter.DefaultIteratorArgument;
+
+      let enter_toplevel_stmt =
+          ({ttop_desc, ttop_attributes}: Typedtree.toplevel_stmt) => {
+        switch (ttop_desc) {
+        | TTopData(decls) =>
+          List.iter(
+            ({data_id, data_loc}: Typedtree.data_declaration) => {
+              id_tbl := Ident.add(data_id, data_loc, id_tbl^)
+            },
+            decls,
+          )
+        | TTopExport(decls) =>
+          List.iter(
+            ({tex_id, tex_loc}: Typedtree.export_declaration) => {
+              id_tbl := Ident.add(tex_id, tex_loc, id_tbl^)
+            },
+            decls,
+          )
+        | TTopForeign({tvd_id, tvd_loc}) =>
+          id_tbl := Ident.add(tvd_id, tvd_loc, id_tbl^)
+        | TTopLet(_, _, vbinds) =>
+          List.iter(
+            ({vb_pat}: Typedtree.value_binding) => {
+              List.iter(
+                ((id, loc)) => {id_tbl := Ident.add(id, loc, id_tbl^)},
+                pattern_ids(vb_pat),
+              )
+            },
+            vbinds,
+          )
+        | _ => ()
+        };
+      };
+    });
+
+  List.iter(ExportIterator.iter_toplevel_stmt, stmts);
+
+  id_tbl^;
+};
+
+let location_for_ident = (~exports, ident) => {
+  snd(Ident.find_name(Ident.name(ident), exports));
+};
+
 let module_name_of_location = (loc: Grain_parsing.Location.t) => {
   Grain_utils.Filepath.String.filename_to_module_name(
     loc.loc_start.pos_fname,
@@ -83,12 +146,12 @@ let lookup_type_expr = (~idx, type_exprs) => {
 };
 
 let for_value_description =
-    (~comments, ~ident: Ident.t, vd: Types.value_description) => {
-  let module_name = module_name_of_location(vd.val_loc);
+    (~comments, ~ident: Ident.t, ~loc, vd: Types.value_description) => {
+  let module_name = module_name_of_location(loc);
   let name = title_for_api(~module_name, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
-    Comments.Doc.ending_on(~lnum=vd.val_loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
 
   let (description, attributes) =
     switch (comment) {
@@ -118,15 +181,12 @@ let for_value_description =
 };
 
 let for_type_declaration =
-    (~comments, ~ident: Ident.t, td: Types.type_declaration) => {
-  let module_name = module_name_of_location(td.type_loc);
+    (~comments, ~ident: Ident.t, ~loc, td: Types.type_declaration) => {
+  let module_name = module_name_of_location(loc);
   let name = title_for_api(~module_name, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
-    Comments.Doc.ending_on(
-      ~lnum=td.type_loc.loc_start.pos_lnum - 1,
-      comments,
-    );
+    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
 
   let (description, attributes) =
     switch (comment) {
@@ -138,35 +198,37 @@ let for_type_declaration =
 };
 
 let for_signature_item =
-    (~env: Env.t, ~comments, sig_item: Types.signature_item) => {
+    (
+      ~comments,
+      ~exports: Ident.tbl(Grain_parsing.Location.t),
+      sig_item: Types.signature_item,
+    ) => {
   switch (sig_item) {
-  | TSigValue(ident, ovd) =>
-    // Fetch original location as signatures don't contain real locations
-    let vd = Env.find_value(ovd.val_fullpath, env);
-    let val_loc = vd.val_loc;
-    let docblock =
-      for_value_description(~comments, ~ident, {...ovd, val_loc});
+  | TSigValue(ident, vd) =>
+    let loc = location_for_ident(~exports, ident);
+    let docblock = for_value_description(~comments, ~ident, ~loc, vd);
     Some(docblock);
-  | TSigType(ident, otd, _rec) =>
-    // Fetch original location as signatures don't contain real locations
-    let td = Env.find_type(otd.type_path, env);
-    let type_loc = td.type_loc;
-    let docblock =
-      for_type_declaration(~comments, ~ident, {...otd, type_loc});
+  | TSigType(ident, td, _rec) =>
+    let loc = location_for_ident(~exports, ident);
+    let docblock = for_type_declaration(~comments, ~ident, ~loc, td);
     Some(docblock);
   | _ => None
   };
 };
 
 let signature_item_in_range =
-    (~env: Env.t, sig_item: Types.signature_item, range: Grain_utils.Range.t) => {
+    (
+      ~exports: Ident.tbl(Grain_parsing.Location.t),
+      sig_item: Types.signature_item,
+      range: Grain_utils.Range.t,
+    ) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
-    let vd = Env.find_value(vd.val_fullpath, env);
-    Grain_utils.Range.inRange(vd.val_loc.loc_start.pos_lnum, range);
+    let loc = location_for_ident(~exports, ident);
+    Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
   | TSigType(ident, td, _rec) =>
-    let td = Env.find_type(td.type_path, env);
-    Grain_utils.Range.inRange(td.type_loc.loc_start.pos_lnum, range);
+    let loc = location_for_ident(~exports, ident);
+    Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
   | _ => false
   };
 };
