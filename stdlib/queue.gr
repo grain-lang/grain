@@ -5,6 +5,10 @@
  */
 import List from "list"
 
+/**
+ * @section Types: Type declarations included in the Queue module.
+ */
+
 record Queue<a> {
   forwards: List<a>,
   backwards: List<a>,
