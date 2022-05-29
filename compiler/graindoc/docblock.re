@@ -69,6 +69,8 @@ let enumerate_exports = stmts => {
             },
             decls,
           )
+        | TTopForeign({tvd_id, tvd_loc}) =>
+          id_tbl := Ident.add(tvd_id, tvd_loc, id_tbl^)
         | TTopLet(_, _, vbinds) =>
           List.iter(
             ({vb_pat}: Typedtree.value_binding) => {
