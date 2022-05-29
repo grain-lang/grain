@@ -15,5 +15,7 @@
    (:include ./config/flags.sexp)))
  (libraries cmdliner grain grain_utils grain_parsing grainformat.format
    binaryen dune-build-info)
+ (preprocess
+  (pps ppx_deriving_cmdliner))
  (js_of_ocaml
   (flags --no-sourcemap --no-extern-fs --quiet --disable share)))

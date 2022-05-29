@@ -29,10 +29,10 @@ let () =
 
 [@deriving cmdliner]
 type io_params = {
-  /** Grain source file for which to extract documentation */
+  /** Grain source file or directory of source files to document */
   [@pos 0] [@docv "FILE"]
   input: ExistingFileOrDirectory.t,
-  /** Output filename */
+  /** Output file or directory */
   [@name "o"] [@docv "FILE"]
   output: option(MaybeExistingFileOrDirectory.t),
 };
