@@ -13,17 +13,19 @@ No other changes yet.
 import Set from "set"
 ```
 
-### Set.**Bucket**
+## Types
 
-```grain
-type Bucket<t>
-```
+Type declarations included in the Set module.
 
 ### Set.**Set**
 
 ```grain
 type Set<k>
 ```
+
+## Values
+
+Functions for working with Sets.
 
 ### Set.**makeSized**
 
