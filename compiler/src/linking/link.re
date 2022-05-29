@@ -611,11 +611,9 @@ let link_modules = ({asm: wasm_mod, signature}) => {
   if (Module.validate(linked_mod) != 1) {
     failwith("Generated invalid linked module");
   };
-  switch (Config.optimization_level^) {
-  | Level_three => Optimize_mod.optimize(linked_mod)
-  | Level_zero
-  | Level_one
-  | Level_two => ()
+  switch (Config.profile^) {
+  | Some(Release) => Optimize_mod.optimize(linked_mod)
+  | None => ()
   };
   linked_mod;
 };

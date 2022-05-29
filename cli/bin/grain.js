@@ -69,19 +69,34 @@ class ForwardOption extends program.Option {
   }
 }
 
+class ProfileOption extends program.Option {
+  // Like ForwardOption, ProfileOption is forwarded to the underlying program
+  // but we convert the flag into a profile flag, i.e. `--release` becomes `--profile=release`
+  forward = true;
+
+  toFlag(opts) {
+    const attribute = this.attributeName();
+    if (opts[attribute]) {
+      return `--profile=${attribute}`;
+    }
+  }
+}
+
+const optionApplicator = (Option) =>
+  function (flags, description, parser, defaultValue) {
+    const option = new Option(flags, description);
+    if (parser) option.argParser(parser);
+    if (typeof defaultValue !== "undefined") option.default(defaultValue);
+    return this.addOption(option);
+  };
+
 // Adds .forwardOption to commands. Similar to Commander's native .option,
 // but will forward the flag to the underlying program.
-program.Command.prototype.forwardOption = function (
-  flags,
-  description,
-  parser,
-  defaultValue
-) {
-  const option = new ForwardOption(flags, description);
-  if (parser) option.argParser(parser);
-  if (typeof defaultValue !== "undefined") option.default(defaultValue);
-  return this.addOption(option);
-};
+program.Command.prototype.forwardOption = optionApplicator(ForwardOption);
+
+// Adds .profileOption to commands. Similar to Commander's native .option,
+// but will convert the flag from the shorthand to the full form.
+program.Command.prototype.profileOption = optionApplicator(ProfileOption);
 
 program
   .option("-v, --version", "output CLI and compiler versions")
@@ -122,6 +137,10 @@ program
   .forwardOption(
     "--elide-type-info",
     "don't include runtime type information used by toString/print"
+  )
+  .profileOption(
+    "--release",
+    "compile using the release profile (production mode)"
   )
   .forwardOption(
     "--experimental-wasm-tail-call",

@@ -159,13 +159,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       TypedWellFormed(typed_mod);
     | TypedWellFormed(typed_mod) =>
       Linearized(Linearize.transl_anf_module(typed_mod))
-    | Linearized(anfed) =>
-      switch (Grain_utils.Config.optimization_level^) {
-      | Level_one
-      | Level_two
-      | Level_three => Optimized(Optimize.optimize_program(anfed))
-      | Level_zero => Optimized(anfed)
-      }
+    | Linearized(anfed) => Optimized(Optimize.optimize_program(anfed))
     | Optimized(optimized) =>
       Mashed(Transl_anf.transl_anf_program(optimized))
     | Mashed(mashed) =>

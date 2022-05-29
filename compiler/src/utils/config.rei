@@ -1,8 +1,5 @@
-type optimization_level =
-  | Level_zero
-  | Level_one
-  | Level_two
-  | Level_three;
+type profile =
+  | Release;
 
 /** The Grain stdlib directory, based on the current configuration */
 let stdlib_directory: unit => option(string);
@@ -43,9 +40,9 @@ let wasi_polyfill: ref(option(string));
 
 let use_start_section: ref(bool);
 
-/** Whether optimizations should be run */
+/** Compilation profile, e.g. release for production builds */
 
-let optimization_level: ref(optimization_level);
+let profile: ref(option(profile));
 
 // [NOTE] This default is here because it is used in multiple locations,
 //        and it doesn't make sense for it to be "owned" by any of them.
