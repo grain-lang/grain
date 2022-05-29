@@ -140,7 +140,7 @@ program
   )
   .profileOption(
     "--release",
-    "produce WebAssembly modules suitable for production"
+    "compile using the release profile (production mode)"
   )
   .forwardOption(
     "--experimental-wasm-tail-call",
