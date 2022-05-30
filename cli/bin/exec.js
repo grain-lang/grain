@@ -17,7 +17,11 @@ function getGrainc() {
 
 const grainc = getGrainc();
 
-function execGrainc(commandOrFile = "", program, execOpts = { stdio: "pipe" }) {
+function execGrainc(
+  commandOrFile = "",
+  program,
+  execOpts = { stdio: "inherit" }
+) {
   const flags = [];
   const options = program.opts();
   program.options.forEach((option) => {
@@ -47,7 +51,7 @@ const graindoc = getGraindoc();
 function execGraindoc(
   commandOrFile = "",
   program,
-  execOpts = { stdio: "pipe" }
+  execOpts = { stdio: "inherit" }
 ) {
   const flags = [];
   // Inherit compiler flags passed to the parent
@@ -80,13 +84,15 @@ const grainformat = getGrainformat();
 function execGrainformat(
   commandOrFile = "",
   program,
-  execOpts = { stdio: "pipe" }
+  execOpts = { stdio: "inherit" }
 ) {
   const flags = [];
-  const options = program.opts();
-  program.options.forEach((option) => {
+  // Inherit compiler flags passed to the parent
+  const options = program.parent.options.concat(program.options);
+  const opts = { ...program.parent.opts(), ...program.opts() };
+  options.forEach((option) => {
     if (!option.forward) return;
-    const flag = option.toFlag(options);
+    const flag = option.toFlag(opts);
     if (flag) flags.push(flag);
   });
 
@@ -111,7 +117,7 @@ function getGrainlsp() {
 
 const grainlsp = getGrainlsp();
 
-function execGrainlsp(program, execOpts = { stdio: "pipe" }) {
+function execGrainlsp(program, execOpts = { stdio: "inherit" }) {
   const flags = [];
   const options = program.opts();
   program.options.forEach((option) => {

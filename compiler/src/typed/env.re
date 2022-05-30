@@ -749,7 +749,7 @@ let check_consistency = ps =>
         | Some(crc) =>
           let resolved_file_name =
             Module_resolution.resolve_unit(
-              ~base_dir=Filename.dirname(ps.ps_filename),
+              ~base_dir=Filepath.String.dirname(ps.ps_filename),
               name,
             );
           Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);

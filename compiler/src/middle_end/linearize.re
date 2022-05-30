@@ -56,13 +56,13 @@ let lookup_symbol =
         | ReprFunction(args, rets, Direct(_)) =>
           // Add closure argument
           let args = [
-            HeapAllocated,
+            Managed,
             ...List.map(allocation_type_of_wasm_repr, args),
           ];
           // Add return type for functions that return void
           let rets =
             switch (rets) {
-            | [] => [StackAllocated(WasmI32)]
+            | [] => [Unmanaged(WasmI32)]
             | _ => List.map(allocation_type_of_wasm_repr, rets)
             };
           FunctionShape(args, rets);
@@ -96,10 +96,7 @@ let convert_bind = (body, bind) =>
 
 let convert_binds = anf_binds => {
   let void_comp =
-    Comp.imm(
-      ~allocation_type=StackAllocated(WasmI32),
-      Imm.const(Const_void),
-    );
+    Comp.imm(~allocation_type=Unmanaged(WasmI32), Imm.const(Const_void));
   let void = AExp.comp(void_comp);
   let (last_bind, top_binds) =
     switch (anf_binds) {
@@ -1153,7 +1150,7 @@ and transl_comp_expression =
         ~attributes,
         ~allocation_type,
         ~env,
-        (new_func, ([HeapAllocated], StackAllocated(WasmI32))),
+        (new_func, ([Managed], Unmanaged(WasmI32))),
         new_args,
       ),
       func_setup @ List.concat(new_setup),
@@ -1312,7 +1309,7 @@ let bind_constructor =
             ~env,
             Comp.adt(~loc, ~env, imm_tytag, imm_tag, arg_ids),
           ),
-          HeapAllocated,
+          Managed,
         ),
       );
     | CstrUnboxed => failwith("NYI: ANF CstrUnboxed")
@@ -1557,7 +1554,7 @@ let linearize_builtins = (env, builtins) => {
     List.map(
       decl =>
         switch (decl.type_kind) {
-        | TDataVariant(_) when decl.type_allocation == HeapAllocated =>
+        | TDataVariant(_) when decl.type_allocation == Managed =>
           linearize_decl(env, Location.dummy_loc, decl.type_path, decl)
         | _ => []
         },

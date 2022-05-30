@@ -384,24 +384,15 @@ let option_conv = ((prsr, prntr)) => (
     | Some(x) => prntr(ppf, x),
 );
 
-type optimization_level =
-  | Level_zero
-  | Level_one
-  | Level_two
-  | Level_three;
+type profile =
+  | Release;
 
-let optimization_level =
+let profile =
   opt(
-    ~doc="Set the optimization level.",
-    ~names=["O"],
-    ~conv=
-      Cmdliner.Arg.enum([
-        ("0", Level_zero),
-        ("1", Level_one),
-        ("2", Level_two),
-        ("3", Level_three),
-      ]),
-    Level_three,
+    ~doc="Set a compilation profile.",
+    ~names=["profile"],
+    ~conv=Cmdliner.Arg.enum([("release", Some(Release))]),
+    None,
   );
 
 let default_memory_base = 0x400;

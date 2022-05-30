@@ -1,4 +1,3 @@
-/* grainc-flags --no-gc */
 /**
  * @module Sys/Random: System access to random values.
  *
@@ -15,18 +14,6 @@ import { tagSimpleNumber, newInt32, newInt64 } from "runtime/dataStructures"
  * @section Values: Functions and constants included in the Sys/Random module.
  */
 
-let wasmSafeOk = val => {
-  Memory.incRef(WasmI32.fromGrain(Ok))
-  Memory.incRef(WasmI32.fromGrain(val))
-  Ok(val)
-}
-
-let wasmSafeErr = err => {
-  Memory.incRef(WasmI32.fromGrain(Err))
-  Memory.incRef(WasmI32.fromGrain(err))
-  Err(err)
-}
-
 /**
  * Produce a random 32-bit integer. This function can be slow, so it's best to seed a generator if lots of random data is needed.
  *
@@ -34,20 +21,19 @@ let wasmSafeErr = err => {
  *
  * @since v0.5.0
  */
-export let rec randomInt32 = () => {
+@unsafe
+export let randomInt32 = () => {
   let buf = Memory.malloc(4n)
 
   let err = Wasi.random_get(buf, 4n)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let rand = WasmI32.load(buf, 0n)
     Memory.free(buf)
-    wasmSafeOk(WasmI32.toGrain(newInt32(rand)): Int32)
+    Ok(WasmI32.toGrain(newInt32(rand)): Int32)
   }
-  Memory.decRef(WasmI32.fromGrain(randomInt32))
-  ret
 }
 
 /**
@@ -57,20 +43,19 @@ export let rec randomInt32 = () => {
  *
  * @since v0.5.0
  */
-export let rec randomInt64 = () => {
+@unsafe
+export let randomInt64 = () => {
   let buf = Memory.malloc(8n)
 
   let err = Wasi.random_get(buf, 8n)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let rand = WasmI64.load(buf, 0n)
     Memory.free(buf)
-    wasmSafeOk(WasmI32.toGrain(newInt64(rand)): Int64)
+    Ok(WasmI32.toGrain(newInt64(rand)): Int64)
   }
-  Memory.decRef(WasmI32.fromGrain(randomInt64))
-  ret
 }
 
 /**
@@ -78,18 +63,17 @@ export let rec randomInt64 = () => {
  *
  * @returns `Ok(num)` of a random number if successful or `Err(exception)` otherwise
  */
-export let rec random = () => {
+@unsafe
+export let random = () => {
   let buf = Memory.malloc(4n)
 
   let err = Wasi.random_get(buf, 4n)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let rand = WasmI32.load(buf, 0n)
     Memory.free(buf)
-    wasmSafeOk(tagSimpleNumber(rand))
+    Ok(tagSimpleNumber(rand))
   }
-  Memory.decRef(WasmI32.fromGrain(random))
-  ret
 }

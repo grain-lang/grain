@@ -78,20 +78,6 @@ Returns:
 |----|-----------|
 |`WasmI32`|The pointer to the string|
 
-### DataStructures.**allocateChar**
-
-```grain
-allocateChar : () -> WasmI32
-```
-
-Allocates a new Grain char.
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`WasmI32`|The pointer to the char|
-
 ### DataStructures.**allocateInt32**
 
 ```grain
@@ -362,4 +348,44 @@ Returns:
 |type|description|
 |----|-----------|
 |`WasmI32`|The untagged number|
+
+### DataStructures.**tagChar**
+
+```grain
+tagChar : WasmI32 -> Char
+```
+
+Tag a char.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`WasmI32`|The usv to tag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|The tagged char|
+
+### DataStructures.**untagChar**
+
+```grain
+untagChar : Char -> WasmI32
+```
+
+Untag a char.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`Char`|The char to untag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The untagged usv|
 

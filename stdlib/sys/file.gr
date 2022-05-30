@@ -1,4 +1,3 @@
-/* grainc-flags --no-gc */
 /**
  * @module Sys/File: Utilities for accessing the filesystem & working with files.
  *
@@ -56,6 +55,7 @@ export enum LookupFlag {
 }
 
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
+@unsafe
 let rec combineLookupFlagsHelp = (acc, dirflags) => {
   match (dirflags) {
     [hd, ...tl] => {
@@ -67,6 +67,7 @@ let rec combineLookupFlagsHelp = (acc, dirflags) => {
     [] => acc,
   }
 }
+@unsafe
 let combineLookupFlags = dirflags => {
   combineLookupFlagsHelp(0n, dirflags)
 }
@@ -86,6 +87,7 @@ export enum OpenFlag {
 }
 
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
+@unsafe
 let rec combineOpenFlagsHelp = (acc, dirflags) => {
   match (dirflags) {
     [hd, ...tl] => {
@@ -100,6 +102,7 @@ let rec combineOpenFlagsHelp = (acc, dirflags) => {
     [] => acc,
   }
 }
+@unsafe
 let combineOpenFlags = dirflags => {
   combineOpenFlagsHelp(0n, dirflags)
 }
@@ -183,37 +186,67 @@ export enum Rights {
 
 // Grain currently cannot close over unsafe wasm i64s, so these are here in
 // module so they get inlined
+@unsafe
 let _RIGHT_FD_DATASYNC = 1N
+@unsafe
 let _RIGHT_FD_READ = 2N
+@unsafe
 let _RIGHT_FD_SEEK = 4N
+@unsafe
 let _RIGHT_FD_FDSTAT_SET_FLAGS = 8N
+@unsafe
 let _RIGHT_FD_SYNC = 16N
+@unsafe
 let _RIGHT_FD_TELL = 32N
+@unsafe
 let _RIGHT_FD_WRITE = 64N
+@unsafe
 let _RIGHT_FD_ADVISE = 128N
+@unsafe
 let _RIGHT_FD_ALLOCATE = 256N
+@unsafe
 let _RIGHT_PATH_CREATE_DIRECTORY = 512N
+@unsafe
 let _RIGHT_PATH_CREATE_FILE = 1024N
+@unsafe
 let _RIGHT_PATH_LINK_SOURCE = 2048N
+@unsafe
 let _RIGHT_PATH_LINK_TARGET = 4096N
+@unsafe
 let _RIGHT_PATH_OPEN = 8192N
+@unsafe
 let _RIGHT_FD_READDIR = 16384N
+@unsafe
 let _RIGHT_PATH_READLINK = 32768N
+@unsafe
 let _RIGHT_PATH_RENAME_SOURCE = 65536N
+@unsafe
 let _RIGHT_PATH_RENAME_TARGET = 131072N
+@unsafe
 let _RIGHT_PATH_FILESTAT_GET = 262144N
+@unsafe
 let _RIGHT_PATH_FILESTAT_SET_SIZE = 524288N
+@unsafe
 let _RIGHT_PATH_FILESTAT_SET_TIMES = 1048576N
+@unsafe
 let _RIGHT_FD_FILESTAT_GET = 2097152N
+@unsafe
 let _RIGHT_FD_FILESTAT_SET_SIZE = 4194304N
+@unsafe
 let _RIGHT_FD_FILESTAT_SET_TIMES = 8388608N
+@unsafe
 let _RIGHT_PATH_SYMLINK = 16777216N
+@unsafe
 let _RIGHT_PATH_REMOVE_DIRECTORY = 33554432N
+@unsafe
 let _RIGHT_PATH_UNLINK_FILE = 67108864N
+@unsafe
 let _RIGHT_POLL_FD_READWRITE = 134217728N
+@unsafe
 let _RIGHT_SOCK_SHUTDOWN = 268435456N
 
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
+@unsafe
 let rec combineRightsHelp = (acc, dirflags) => {
   match (dirflags) {
     [] => acc,
@@ -259,6 +292,7 @@ let rec combineRightsHelp = (acc, dirflags) => {
     },
   }
 }
+@unsafe
 let combineRights = dirflags => {
   combineRightsHelp(0N, dirflags)
 }
@@ -282,6 +316,7 @@ export enum FdFlag {
 }
 
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
+@unsafe
 let rec combineFdFlagsHelp = (acc, dirflags) => {
   match (dirflags) {
     [hd, ...tl] => {
@@ -297,6 +332,7 @@ let rec combineFdFlagsHelp = (acc, dirflags) => {
     [] => acc,
   }
 }
+@unsafe
 let combineFdFlags = dirflags => {
   combineFdFlagsHelp(0n, dirflags)
 }
@@ -324,6 +360,7 @@ export enum Filetype {
 }
 
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
+@unsafe
 let filetypeFromNumber = filetype => {
   match (filetype) {
     0n => Unknown,
@@ -404,18 +441,6 @@ export let stderr = FileDescriptor(2)
  */
 export let pwdfd = FileDescriptor(3)
 
-let wasmSafeOk = val => {
-  Memory.incRef(WasmI32.fromGrain(Ok))
-  Memory.incRef(WasmI32.fromGrain(val))
-  Ok(val)
-}
-
-let wasmSafeErr = err => {
-  Memory.incRef(WasmI32.fromGrain(Err))
-  Memory.incRef(WasmI32.fromGrain(err))
-  Err(err)
-}
-
 /**
  * Open a file or directory.
  *
@@ -428,7 +453,8 @@ let wasmSafeErr = err => {
  * @param flags: Flags which affect read/write operations on this file descriptor
  * @returns `Ok(fd)` of the opened file or directory if successful or `Err(exception)` otherwise
  */
-export let rec pathOpen =
+@unsafe
+export let pathOpen =
   (
     dirFd: FileDescriptor,
     dirFlags: List<LookupFlag>,
@@ -469,25 +495,16 @@ export let rec pathOpen =
     combinedFsFlags,
     newFd
   )
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(newFd)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let fd = FileDescriptor(tagSimpleNumber(WasmI32.load(newFd, 0n)))
 
     Memory.free(newFd)
 
-    wasmSafeOk(fd)
+    Ok(fd)
   }
-  Memory.decRef(WasmI32.fromGrain(dirFdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(pathArg))
-  Memory.decRef(WasmI32.fromGrain(openFlags))
-  Memory.decRef(WasmI32.fromGrain(rights))
-  Memory.decRef(WasmI32.fromGrain(rightsInheritingArg))
-  Memory.decRef(WasmI32.fromGrain(flags))
-  Memory.decRef(WasmI32.fromGrain(pathOpen))
-  ret
 }
 
 /**
@@ -497,7 +514,8 @@ export let rec pathOpen =
  * @param size: The maximum number of bytes to read from the file descriptor
  * @returns `Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise
  */
-export let rec fdRead = (fd: FileDescriptor, size: Number) => {
+@unsafe
+export let fdRead = (fd: FileDescriptor, size: Number) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -512,10 +530,10 @@ export let rec fdRead = (fd: FileDescriptor, size: Number) => {
   let mut nread = iovs + 3n * 4n
 
   let err = Wasi.fd_read(fd, iovs, 1n, nread)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     Memory.free(strPtr)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     nread = WasmI32.load(nread, 0n)
 
@@ -523,12 +541,8 @@ export let rec fdRead = (fd: FileDescriptor, size: Number) => {
 
     Memory.free(iovs)
 
-    wasmSafeOk((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
+    Ok((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
   }
-  Memory.decRef(WasmI32.fromGrain(fd))
-  Memory.decRef(WasmI32.fromGrain(size))
-  Memory.decRef(WasmI32.fromGrain(fdRead))
-  ret
 }
 
 /**
@@ -539,7 +553,8 @@ export let rec fdRead = (fd: FileDescriptor, size: Number) => {
  * @param size: The maximum number of bytes to read from the file descriptor
  * @returns `Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise
  */
-export let rec fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
+@unsafe
+export let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let fdArg = fd
   let offsetArg = offset
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
@@ -557,10 +572,10 @@ export let rec fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let mut nread = iovs + 3n * 4n
 
   let err = Wasi.fd_pread(fd, iovs, 1n, offset, nread)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
     Memory.free(strPtr)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     nread = WasmI32.load(nread, 0n)
 
@@ -568,13 +583,8 @@ export let rec fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
 
     Memory.free(iovs)
 
-    wasmSafeOk((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
+    Ok((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(offsetArg))
-  Memory.decRef(WasmI32.fromGrain(size))
-  Memory.decRef(WasmI32.fromGrain(fdPread))
-  ret
 }
 
 /**
@@ -584,7 +594,8 @@ export let rec fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
  * @param data: The data to be written
  * @returns `Ok(numBytes)` of the number of bytes written if successful or `Err(Exception)` otherwise
  */
-export let rec fdWrite = (fd: FileDescriptor, data: String) => {
+@unsafe
+export let fdWrite = (fd: FileDescriptor, data: String) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -597,20 +608,16 @@ export let rec fdWrite = (fd: FileDescriptor, data: String) => {
   let mut nwritten = iovs + 3n * 4n
 
   let err = Wasi.fd_write(fd, iovs, 1n, nwritten)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     nwritten = WasmI32.load(nwritten, 0n)
 
     Memory.free(iovs)
 
-    wasmSafeOk(tagSimpleNumber(nwritten))
+    Ok(tagSimpleNumber(nwritten))
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(data))
-  Memory.decRef(WasmI32.fromGrain(fdWrite))
-  ret
 }
 
 /**
@@ -621,7 +628,8 @@ export let rec fdWrite = (fd: FileDescriptor, data: String) => {
  * @param offset: The position within the file to begin writing
  * @returns `Ok(numBytes)` of the number of bytes written if successful or `Err(exception)` otherwise
  */
-export let rec fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
+@unsafe
+export let fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   let fdArg = fd
   let offsetArg = offset
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
@@ -637,21 +645,16 @@ export let rec fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
   let mut nwritten = iovs + 3n * 4n
 
   let err = Wasi.fd_pwrite(fd, iovs, 1n, offset, nwritten)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(iovs)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     nwritten = WasmI32.load(nwritten, 0n)
 
     Memory.free(iovs)
 
-    wasmSafeOk(tagSimpleNumber(nwritten))
+    Ok(tagSimpleNumber(nwritten))
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(data))
-  Memory.decRef(WasmI32.fromGrain(offsetArg))
-  Memory.decRef(WasmI32.fromGrain(fdPwrite))
-  ret
 }
 
 /**
@@ -662,12 +665,8 @@ export let rec fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
  * @param size: The number of bytes to allocate
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdAllocate =
-  (
-    fd: FileDescriptor,
-    offset: Int64,
-    size: Int64,
-  ) => {
+@unsafe
+export let fdAllocate = (fd: FileDescriptor, offset: Int64, size: Int64) => {
   let fdArg = fd
   let offsetArg = offset
   let sizeArg = size
@@ -678,16 +677,11 @@ export let rec fdAllocate =
   let size = WasmI64.load(WasmI32.fromGrain(size), 8n)
 
   let err = Wasi.fd_allocate(fd, offset, size)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(offsetArg))
-  Memory.decRef(WasmI32.fromGrain(sizeArg))
-  Memory.decRef(WasmI32.fromGrain(fdAllocate))
-  ret
 }
 
 /**
@@ -696,19 +690,17 @@ export let rec fdAllocate =
  * @param fd: The file descriptor to close
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdClose = (fd: FileDescriptor) => {
+@unsafe
+export let fdClose = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let err = Wasi.fd_close(fd)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdClose))
-  ret
 }
 
 /**
@@ -717,19 +709,17 @@ export let rec fdClose = (fd: FileDescriptor) => {
  * @param fd: The file descriptor to synchronize
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdDatasync = (fd: FileDescriptor) => {
+@unsafe
+export let fdDatasync = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let err = Wasi.fd_datasync(fd)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdDatasync))
-  ret
 }
 
 /**
@@ -738,127 +728,51 @@ export let rec fdDatasync = (fd: FileDescriptor) => {
  * @param fd: The file descriptor to synchronize
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSync = (fd: FileDescriptor) => {
+@unsafe
+export let fdSync = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let err = Wasi.fd_sync(fd)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdSync))
-  ret
 }
 
-let wasmSafeCons = (a, b) => {
-  // [TODO] Once grain-lang/grain#802 is fixed:
-  // Memory.incRef(WasmI32.fromGrain([...]))
-  Memory.incRef(WasmI32.fromGrain(cons))
-  Memory.incRef(WasmI32.fromGrain(a))
-  Memory.incRef(WasmI32.fromGrain(b))
-  cons(a, b)
-  // [TODO] Once grain-lang/grain#802 is fixed:
-  // [a, ...b]
-}
-
-let orderedFdflags = wasmSafeCons(
-  Append,
-  wasmSafeCons(
-    Dsync,
-    wasmSafeCons(Nonblock, wasmSafeCons(Rsync, wasmSafeCons(Sync, [])))
-  )
-)
-let orderedRights = wasmSafeCons(
+let orderedFdflags = [Append, Dsync, Nonblock, Rsync, Sync]
+let orderedRights = [
   FdDatasync,
-  wasmSafeCons(
-    FdRead,
-    wasmSafeCons(
-      FdSeek,
-      wasmSafeCons(
-        FdSetFlags,
-        wasmSafeCons(
-          FdSync,
-          wasmSafeCons(
-            FdTell,
-            wasmSafeCons(
-              FdWrite,
-              wasmSafeCons(
-                FdAdvise,
-                wasmSafeCons(
-                  FdAllocate,
-                  wasmSafeCons(
-                    PathCreateDirectory,
-                    wasmSafeCons(
-                      PathCreateFile,
-                      wasmSafeCons(
-                        PathLinkSource,
-                        wasmSafeCons(
-                          PathLinkTarget,
-                          wasmSafeCons(
-                            PathOpen,
-                            wasmSafeCons(
-                              FdReaddir,
-                              wasmSafeCons(
-                                PathReadlink,
-                                wasmSafeCons(
-                                  PathRenameSource,
-                                  wasmSafeCons(
-                                    PathRenameTarget,
-                                    wasmSafeCons(
-                                      PathFilestats,
-                                      wasmSafeCons(
-                                        PathSetSize,
-                                        wasmSafeCons(
-                                          PathSetTimes,
-                                          wasmSafeCons(
-                                            FdFilestats,
-                                            wasmSafeCons(
-                                              FdSetSize,
-                                              wasmSafeCons(
-                                                FdSetTimes,
-                                                wasmSafeCons(
-                                                  PathSymlink,
-                                                  wasmSafeCons(
-                                                    PathRemoveDirectory,
-                                                    wasmSafeCons(
-                                                      PathUnlinkFile,
-                                                      wasmSafeCons(
-                                                        PollFdReadwrite,
-                                                        wasmSafeCons(
-                                                          SockShutdown,
-                                                          []
-                                                        )
-                                                      )
-                                                    )
-                                                  )
-                                                )
-                                              )
-                                            )
-                                          )
-                                        )
-                                      )
-                                    )
-                                  )
-                                )
-                              )
-                            )
-                          )
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
-    )
-  )
-)
+  FdRead,
+  FdSeek,
+  FdSetFlags,
+  FdSync,
+  FdTell,
+  FdWrite,
+  FdAdvise,
+  FdAllocate,
+  PathCreateDirectory,
+  PathCreateFile,
+  PathLinkSource,
+  PathLinkTarget,
+  PathOpen,
+  FdReaddir,
+  PathReadlink,
+  PathRenameSource,
+  PathRenameTarget,
+  PathFilestats,
+  PathSetSize,
+  PathSetTimes,
+  FdFilestats,
+  FdSetSize,
+  FdSetTimes,
+  PathSymlink,
+  PathRemoveDirectory,
+  PathUnlinkFile,
+  PollFdReadwrite,
+  SockShutdown,
+]
 
 /**
  * Retrieve information about a file descriptor.
@@ -866,16 +780,17 @@ let orderedRights = wasmSafeCons(
  * @param fd: The file descriptor of which to retrieve information
  * @returns `Ok(stats)` of the `Stats` associated with the file descriptor if successful or `Err(exception)` otherwise
  */
-export let rec fdStats = (fd: FileDescriptor) => {
+@unsafe
+export let fdStats = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let structPtr = Memory.malloc(24n)
 
   let err = Wasi.fd_fdstat_get(fd, structPtr)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(structPtr)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let filetype = WasmI32.load8U(structPtr, 0n)
 
@@ -885,11 +800,7 @@ export let rec fdStats = (fd: FileDescriptor) => {
       let fdflags = WasmI32.load16U(structPtr, 4n)
       WasmI32.gtU(fdflags & 1n << (WasmI32.fromGrain(i) >> 1n), 0n)
     }
-    Memory.incRef(WasmI32.fromGrain(List.filteri))
-    Memory.incRef(WasmI32.fromGrain(flagsToWasmVal))
-    Memory.incRef(WasmI32.fromGrain(orderedFdflags))
     let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
-    Memory.free(WasmI32.fromGrain(flagsToWasmVal))
 
     let (&) = WasmI64.and
     let (>) = WasmI64.gtU
@@ -899,11 +810,7 @@ export let rec fdStats = (fd: FileDescriptor) => {
       let rights = WasmI64.load(structPtr, 8n)
       (rights & 1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) > 0N
     }
-    Memory.incRef(WasmI32.fromGrain(List.filteri))
-    Memory.incRef(WasmI32.fromGrain(flagsToWasmVal))
-    Memory.incRef(WasmI32.fromGrain(orderedRights))
     let rightsList = List.filteri(flagsToWasmVal, orderedRights)
-    Memory.free(WasmI32.fromGrain(flagsToWasmVal))
 
     let flagsToWasmVal = (flag, i) => {
       let rightsInheriting = WasmI64.load(structPtr, 16n)
@@ -911,15 +818,11 @@ export let rec fdStats = (fd: FileDescriptor) => {
         1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
       0N
     }
-    Memory.incRef(WasmI32.fromGrain(List.filteri))
-    Memory.incRef(WasmI32.fromGrain(flagsToWasmVal))
-    Memory.incRef(WasmI32.fromGrain(orderedRights))
     let rightsInheritingList = List.filteri(flagsToWasmVal, orderedRights)
-    Memory.free(WasmI32.fromGrain(flagsToWasmVal))
 
     Memory.free(structPtr)
 
-    wasmSafeOk(
+    Ok(
       {
         filetype,
         flags: fdflagsList,
@@ -928,9 +831,6 @@ export let rec fdStats = (fd: FileDescriptor) => {
       }
     )
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdStats))
-  ret
 }
 
 /**
@@ -940,7 +840,8 @@ export let rec fdStats = (fd: FileDescriptor) => {
  * @param flags: The flags to apply to the file descriptor
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
+@unsafe
+export let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
   let fdArg = fd
   let flagsArg = flags
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
@@ -948,15 +849,11 @@ export let rec fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
   let flags = combineFdFlags(flags)
 
   let err = Wasi.fd_fdstat_set_flags(fd, flags)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(flagsArg))
-  Memory.decRef(WasmI32.fromGrain(fdSetFlags))
-  ret
 }
 
 /**
@@ -967,7 +864,8 @@ export let rec fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
  * @param rightsInheriting: Inheriting rights to apply to the file descriptor
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetRights =
+@unsafe
+export let fdSetRights =
   (
     fd: FileDescriptor,
     rights: List<Rights>,
@@ -982,16 +880,11 @@ export let rec fdSetRights =
   let rightsInheriting = combineRights(rightsInheriting)
 
   let err = Wasi.fd_fdstat_set_rights(fd, rights, rightsInheriting)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(rightsArg))
-  Memory.decRef(WasmI32.fromGrain(rightsInheritingArg))
-  Memory.decRef(WasmI32.fromGrain(fdSetRights))
-  ret
 }
 
 /**
@@ -1000,16 +893,17 @@ export let rec fdSetRights =
  * @param fd: The file descriptor of the file to retrieve information
  * @returns `Ok(info)` of the `Filestats` associated with the file descriptor if successful or `Err(exception)` otherwise
  */
-export let rec fdFilestats = (fd: FileDescriptor) => {
+@unsafe
+export let fdFilestats = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let filestats = Memory.malloc(64n)
 
   let err = Wasi.fd_filestat_get(fd, filestats)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(filestats)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
     let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
@@ -1028,13 +922,10 @@ export let rec fdFilestats = (fd: FileDescriptor) => {
 
     Memory.free(filestats)
 
-    wasmSafeOk(
+    Ok(
       { device, inode, filetype, linkcount, size, accessed, modified, changed }
     )
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdFilestats))
-  ret
 }
 
 /**
@@ -1044,7 +935,8 @@ export let rec fdFilestats = (fd: FileDescriptor) => {
  * @param size: The number of bytes to retain in the file
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetSize = (fd: FileDescriptor, size: Int64) => {
+@unsafe
+export let fdSetSize = (fd: FileDescriptor, size: Int64) => {
   let fdArg = fd
   let sizeArg = size
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
@@ -1052,15 +944,11 @@ export let rec fdSetSize = (fd: FileDescriptor, size: Int64) => {
   let size = WasmI64.load(WasmI32.fromGrain(size), 8n)
 
   let err = Wasi.fd_filestat_set_size(fd, size)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(sizeArg))
-  Memory.decRef(WasmI32.fromGrain(fdSetSize))
-  ret
 }
 
 /**
@@ -1070,22 +958,19 @@ export let rec fdSetSize = (fd: FileDescriptor, size: Int64) => {
  * @param timestamp: The time to set
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
+@unsafe
+export let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let time = WasmI64.load(WasmI32.fromGrain(timestamp), 8n)
 
   let err = Wasi.fd_filestat_set_times(fd, time, 0N, Wasi._TIME_SET_ATIM)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(timestamp))
-  Memory.decRef(WasmI32.fromGrain(fdSetAccessTime))
-  ret
 }
 
 /**
@@ -1094,19 +979,17 @@ export let rec fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
  * @param fd: The file descriptor of the file to update
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetAccessTimeNow = (fd: FileDescriptor) => {
+@unsafe
+export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_ATIM_NOW)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdSetAccessTimeNow))
-  ret
 }
 
 /**
@@ -1116,22 +999,19 @@ export let rec fdSetAccessTimeNow = (fd: FileDescriptor) => {
  * @param timestamp: The time to set
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
+@unsafe
+export let fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let time = WasmI64.load(WasmI32.fromGrain(timestamp), 8n)
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, time, Wasi._TIME_SET_MTIM)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(timestamp))
-  Memory.decRef(WasmI32.fromGrain(fdSetModifiedTime))
-  ret
 }
 
 /**
@@ -1140,19 +1020,17 @@ export let rec fdSetModifiedTime = (fd: FileDescriptor, timestamp: Int64) => {
  * @param fd: The file descriptor of the file to update
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdSetModifiedTimeNow = (fd: FileDescriptor) => {
+@unsafe
+export let fdSetModifiedTimeNow = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let err = Wasi.fd_filestat_set_times(fd, 0N, 0N, Wasi._TIME_SET_MTIM_NOW)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdSetModifiedTime))
-  ret
 }
 
 /**
@@ -1161,7 +1039,8 @@ export let rec fdSetModifiedTimeNow = (fd: FileDescriptor) => {
  * @param fd: The directory to read
  * @returns `Ok(dirEntries)` of an array of `DirectoryEntry` for each entry in the directory if successful or `Err(exception)` otherwise
  */
-export let rec fdReaddir = (fd: FileDescriptor) => {
+@unsafe
+export let fdReaddir = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -1174,17 +1053,17 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
   let mut bufLen = structWidth
 
   let err = Wasi.fd_readdir(fd, buf, bufLen, cookie, bufUsed)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
     Memory.free(bufUsed)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let used = WasmI32.load(bufUsed, 0n)
 
     if (used <= 0n) {
       Memory.free(buf)
       Memory.free(bufUsed)
-      wasmSafeOk(WasmI32.toGrain(allocateArray(0n)): Array<DirectoryEntry>)
+      Ok(WasmI32.toGrain(allocateArray(0n)): Array<DirectoryEntry>)
     } else {
       bufLen = WasmI32.load(buf, 16n) + structWidth * 2n
 
@@ -1260,14 +1139,11 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
             bufs = next
           }
 
-          wasmSafeOk(WasmI32.toGrain(arr): Array<DirectoryEntry>)
+          Ok(WasmI32.toGrain(arr): Array<DirectoryEntry>)
         },
       }
     }
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdReaddir))
-  ret
 }
 
 /**
@@ -1277,7 +1153,8 @@ export let rec fdReaddir = (fd: FileDescriptor) => {
  * @param toFd: The file descriptor to overwrite
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
+@unsafe
+export let fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
   let fromFdArg = fromFd
   let toFdArg = toFd
   let fromFd = match (fromFd) {
@@ -1287,15 +1164,11 @@ export let rec fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
   let toFd = match (toFd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
   let err = Wasi.fd_renumber(fromFd, toFd)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fromFdArg))
-  Memory.decRef(WasmI32.fromGrain(toFdArg))
-  Memory.decRef(WasmI32.fromGrain(fdRenumber))
-  ret
 }
 
 /**
@@ -1306,7 +1179,8 @@ export let rec fdRenumber = (fromFd: FileDescriptor, toFd: FileDescriptor) => {
  * @param whence: The location from which the offset is relative
  * @returns `Ok(offset)` of the new offset of the file descriptor, relative to the start of the file, if successful or `Err(exception)` otherwise
  */
-export let rec fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
+@unsafe
+export let fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let fdArg = fd
   let offsetArg = offset
   let whenceArg = whence
@@ -1324,17 +1198,12 @@ export let rec fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
   let newoffsetPtr = newoffset + 8n
 
   let err = Wasi.fd_seek(fd, offset, whence, newoffsetPtr)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(newoffset)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(WasmI32.toGrain(newoffset): Int64)
+    Ok(WasmI32.toGrain(newoffset): Int64)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(offsetArg))
-  Memory.decRef(WasmI32.fromGrain(whenceArg))
-  Memory.decRef(WasmI32.fromGrain(fdSeek))
-  ret
 }
 
 /**
@@ -1343,7 +1212,8 @@ export let rec fdSeek = (fd: FileDescriptor, offset: Int64, whence: Whence) => {
  * @param fd: The file descriptor to read the offset
  * @returns `Ok(offset)` of the offset of the file descriptor, relative to the start of the file, if successful or `Err(exception)` otherwise
  */
-export let rec fdTell = (fd: FileDescriptor) => {
+@unsafe
+export let fdTell = (fd: FileDescriptor) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -1351,15 +1221,12 @@ export let rec fdTell = (fd: FileDescriptor) => {
   let offsetPtr = offset + 8n
 
   let err = Wasi.fd_tell(fd, offsetPtr)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(offset)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(WasmI32.toGrain(offset): Int64)
+    Ok(WasmI32.toGrain(offset): Int64)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(fdTell))
-  ret
 }
 
 /**
@@ -1369,7 +1236,8 @@ export let rec fdTell = (fd: FileDescriptor) => {
  * @param path: The path to the new directory
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathCreateDirectory = (fd: FileDescriptor, path: String) => {
+@unsafe
+export let pathCreateDirectory = (fd: FileDescriptor, path: String) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -1378,15 +1246,11 @@ export let rec pathCreateDirectory = (fd: FileDescriptor, path: String) => {
   let size = WasmI32.load(stringPtr, 4n)
 
   let err = Wasi.path_create_directory(fd, stringPtr + 8n, size)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(pathCreateDirectory))
-  ret
 }
 
 /**
@@ -1397,7 +1261,8 @@ export let rec pathCreateDirectory = (fd: FileDescriptor, path: String) => {
  * @param path: The path to retrieve information about
  * @returns `Ok(info)` of the `Filestats` associated with the file descriptor if successful or `Err(exception)` otherwise
  */
-export let rec pathFilestats =
+@unsafe
+export let pathFilestats =
   (
     fd: FileDescriptor,
     dirFlags: List<LookupFlag>,
@@ -1421,9 +1286,9 @@ export let rec pathFilestats =
     pathSize,
     filestats
   )
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(filestats)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
     let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
@@ -1442,15 +1307,10 @@ export let rec pathFilestats =
 
     Memory.free(filestats)
 
-    wasmSafeOk(
+    Ok(
       { device, inode, filetype, linkcount, size, accessed, modified, changed }
     )
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(pathFilestats))
-  ret
 }
 
 /**
@@ -1462,7 +1322,8 @@ export let rec pathFilestats =
  * @param timestamp: The time to set
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathSetAccessTime =
+@unsafe
+export let pathSetAccessTime =
   (
     fd: FileDescriptor,
     dirFlags: List<LookupFlag>,
@@ -1489,17 +1350,11 @@ export let rec pathSetAccessTime =
     0N,
     Wasi._TIME_SET_ATIM
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(timestamp))
-  Memory.decRef(WasmI32.fromGrain(pathSetAccessTime))
-  ret
 }
 
 /**
@@ -1510,6 +1365,7 @@ export let rec pathSetAccessTime =
  * @param path: The path to set the time
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
+@unsafe
 export let pathSetAccessTimeNow =
   (
     fd: FileDescriptor,
@@ -1534,16 +1390,11 @@ export let pathSetAccessTimeNow =
     0N,
     Wasi._TIME_SET_ATIM_NOW
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(pathSetAccessTime))
-  ret
 }
 
 /**
@@ -1555,7 +1406,8 @@ export let pathSetAccessTimeNow =
  * @param timestamp: The time to set
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathSetModifiedTime =
+@unsafe
+export let pathSetModifiedTime =
   (
     fd: FileDescriptor,
     dirFlags: List<LookupFlag>,
@@ -1582,17 +1434,11 @@ export let rec pathSetModifiedTime =
     time,
     Wasi._TIME_SET_MTIM
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(timestamp))
-  Memory.decRef(WasmI32.fromGrain(pathSetModifiedTime))
-  ret
 }
 
 /**
@@ -1603,7 +1449,8 @@ export let rec pathSetModifiedTime =
  * @param path: The path to set the time
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathSetModifiedTimeNow =
+@unsafe
+export let pathSetModifiedTimeNow =
   (
     fd: FileDescriptor,
     dirFlags: List<LookupFlag>,
@@ -1627,16 +1474,11 @@ export let rec pathSetModifiedTimeNow =
     0N,
     Wasi._TIME_SET_MTIM_NOW
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(pathSetModifiedTimeNow))
-  ret
 }
 
 /**
@@ -1649,7 +1491,8 @@ export let rec pathSetModifiedTimeNow =
  * @param targetPath: The path to the target of the link
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathLink =
+@unsafe
+export let pathLink =
   (
     sourceFd: FileDescriptor,
     dirFlags: List<LookupFlag>,
@@ -1684,18 +1527,11 @@ export let rec pathLink =
     targetPtr + 8n,
     targetSize
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(sourceFdArg))
-  Memory.decRef(WasmI32.fromGrain(dirFlags))
-  Memory.decRef(WasmI32.fromGrain(sourcePath))
-  Memory.decRef(WasmI32.fromGrain(targetFdArg))
-  Memory.decRef(WasmI32.fromGrain(targetPath))
-  Memory.decRef(WasmI32.fromGrain(pathLink))
-  ret
 }
 
 /**
@@ -1706,7 +1542,8 @@ export let rec pathLink =
  * @param targetPath: The path to the target of the link
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathSymlink =
+@unsafe
+export let pathSymlink =
   (
     fd: FileDescriptor,
     sourcePath: String,
@@ -1728,16 +1565,11 @@ export let rec pathSymlink =
     targetPtr + 8n,
     targetSize
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(sourcePath))
-  Memory.decRef(WasmI32.fromGrain(targetPath))
-  Memory.decRef(WasmI32.fromGrain(pathSymlink))
-  ret
 }
 
 /**
@@ -1747,7 +1579,8 @@ export let rec pathSymlink =
  * @param path: The path of the file to unlink
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathUnlink = (fd: FileDescriptor, path: String) => {
+@unsafe
+export let pathUnlink = (fd: FileDescriptor, path: String) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -1755,15 +1588,11 @@ export let rec pathUnlink = (fd: FileDescriptor, path: String) => {
   let pathSize = WasmI32.load(pathPtr, 4n)
 
   let err = Wasi.path_unlink_file(fd, pathPtr + 8n, pathSize)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(pathUnlink))
-  ret
 }
 
 /**
@@ -1774,12 +1603,8 @@ export let rec pathUnlink = (fd: FileDescriptor, path: String) => {
  * @param size: The number of bytes to read
  * @returns `Ok((contents, numBytes))` of the bytes read and the number of bytes read if successful or `Err(exception)` otherwise
  */
-export let rec pathReadlink =
-  (
-    fd: FileDescriptor,
-    path: String,
-    size: Number,
-  ) => {
+@unsafe
+export let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
   let fdArg = fd
   let sizeArg = size
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
@@ -1795,21 +1620,16 @@ export let rec pathReadlink =
   let nread = Memory.malloc(4n)
 
   let err = Wasi.path_readlink(fd, pathPtr, pathSize + 8n, strPtr, size, nread)
-  let ret = if (err != Wasi._ESUCCESS) {
+  if (err != Wasi._ESUCCESS) {
     Memory.free(grainStrPtr)
     Memory.free(nread)
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
     let read = tagSimpleNumber(WasmI32.load(nread, 0n))
     Memory.free(nread)
 
-    wasmSafeOk((WasmI32.toGrain(grainStrPtr): String, read))
+    Ok((WasmI32.toGrain(grainStrPtr): String, read))
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(sizeArg))
-  Memory.decRef(WasmI32.fromGrain(pathReadlink))
-  ret
 }
 
 /**
@@ -1819,7 +1639,8 @@ export let rec pathReadlink =
  * @param path: The path to the directory to remove
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
+@unsafe
+export let pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -1827,15 +1648,11 @@ export let rec pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
   let pathSize = WasmI32.load(pathPtr, 4n)
 
   let err = Wasi.path_remove_directory(fd, pathPtr + 8n, pathSize)
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(fdArg))
-  Memory.decRef(WasmI32.fromGrain(path))
-  Memory.decRef(WasmI32.fromGrain(pathRemoveDirectory))
-  ret
 }
 
 /**
@@ -1847,7 +1664,8 @@ export let rec pathRemoveDirectory = (fd: FileDescriptor, path: String) => {
  * @param targetPath: The new path of the file
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
-export let rec pathRename =
+@unsafe
+export let pathRename =
   (
     sourceFd: FileDescriptor,
     sourcePath: String,
@@ -1878,15 +1696,9 @@ export let rec pathRename =
     targetPtr + 8n,
     targetSize
   )
-  let ret = if (err != Wasi._ESUCCESS) {
-    wasmSafeErr(Wasi.SystemError(tagSimpleNumber(err)))
+  if (err != Wasi._ESUCCESS) {
+    Err(Wasi.SystemError(tagSimpleNumber(err)))
   } else {
-    wasmSafeOk(void)
+    Ok(void)
   }
-  Memory.decRef(WasmI32.fromGrain(sourceFdArg))
-  Memory.decRef(WasmI32.fromGrain(sourcePath))
-  Memory.decRef(WasmI32.fromGrain(targetFdArg))
-  Memory.decRef(WasmI32.fromGrain(targetPath))
-  Memory.decRef(WasmI32.fromGrain(pathRename))
-  ret
 }

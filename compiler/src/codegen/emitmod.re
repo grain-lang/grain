@@ -22,7 +22,7 @@ let emit_module = ({asm, signature}, outfile) => {
   };
   let source_map_name =
     if (Config.source_map^) {
-      Some(Filename.basename(outfile) ++ ".map");
+      Some(Filepath.String.basename(outfile) ++ ".map");
     } else {
       None;
     };

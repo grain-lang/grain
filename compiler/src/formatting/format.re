@@ -3715,6 +3715,7 @@ let data_print =
     List.map(
       data => {
         let (expt, decl: Parsetree.data_declaration) = data;
+
         let data_comments =
           Comment_utils.get_comments_inside_location(
             ~location=decl.pdata_loc,

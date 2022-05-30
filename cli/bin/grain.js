@@ -14,11 +14,7 @@ v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const program = require("commander");
 const exec = require("./exec.js");
-const compile = require("./compile.js");
 const run = require("./run.js");
-const lsp = require("./lsp.js");
-const doc = require("./doc.js");
-const format = require("./format.js");
 
 const stdlibPath = require("@grain/stdlib");
 
@@ -31,22 +27,7 @@ function num(val) {
 }
 
 function graincVersion() {
-  return exec.grainc("--version", program).toString().trim();
-}
-
-function wrapAction(action, logError = false) {
-  return (...args) => {
-    try {
-      return action(...args);
-    } catch (e) {
-      if (logError) console.error(e);
-      if (program.opts().graceful) {
-        process.exit();
-      } else {
-        process.exit(1);
-      }
-    }
-  };
+  return exec.grainc("--version", program, { stdio: "pipe" }).toString().trim();
 }
 
 class ForwardOption extends program.Option {
@@ -69,19 +50,34 @@ class ForwardOption extends program.Option {
   }
 }
 
+class ProfileOption extends program.Option {
+  // Like ForwardOption, ProfileOption is forwarded to the underlying program
+  // but we convert the flag into a profile flag, i.e. `--release` becomes `--profile=release`
+  forward = true;
+
+  toFlag(opts) {
+    const attribute = this.attributeName();
+    if (opts[attribute]) {
+      return `--profile=${attribute}`;
+    }
+  }
+}
+
+const optionApplicator = (Option) =>
+  function (flags, description, parser, defaultValue) {
+    const option = new Option(flags, description);
+    if (parser) option.argParser(parser);
+    if (typeof defaultValue !== "undefined") option.default(defaultValue);
+    return this.addOption(option);
+  };
+
 // Adds .forwardOption to commands. Similar to Commander's native .option,
 // but will forward the flag to the underlying program.
-program.Command.prototype.forwardOption = function (
-  flags,
-  description,
-  parser,
-  defaultValue
-) {
-  const option = new ForwardOption(flags, description);
-  if (parser) option.argParser(parser);
-  if (typeof defaultValue !== "undefined") option.default(defaultValue);
-  return this.addOption(option);
-};
+program.Command.prototype.forwardOption = optionApplicator(ForwardOption);
+
+// Adds .profileOption to commands. Similar to Commander's native .option,
+// but will convert the flag from the shorthand to the full form.
+program.Command.prototype.profileOption = optionApplicator(ProfileOption);
 
 program
   .option("-v, --version", "output CLI and compiler versions")
@@ -92,7 +88,6 @@ program
   })
   .description("Compile and run Grain programs. 🌾")
   .addOption(new program.Option("-p, --print-output").hideHelp())
-  .option("-g, --graceful", "return a 0 exit code if the program errors")
   .forwardOption(
     "-I, --include-dirs <dirs>",
     "add additional dependency include directories",
@@ -122,6 +117,10 @@ program
   .forwardOption(
     "--elide-type-info",
     "don't include runtime type information used by toString/print"
+  )
+  .profileOption(
+    "--release",
+    "compile using the release profile (production mode)"
   )
   .forwardOption(
     "--experimental-wasm-tail-call",
@@ -171,19 +170,22 @@ program
   // The root command that compiles & runs
   .arguments("<file>")
   .action(function (file, options, program) {
-    run(compile(file, program), options);
+    exec.grainc(file, program);
+    if (options.o) {
+      run(options.o, program.opts());
+    } else {
+      run(file.replace(/\.gr$/, ".gr.wasm"), program.opts());
+    }
   });
 
 program
   .command("compile <file>")
   .description("compile a grain program into wasm")
-  .action(
-    wrapAction(function (file) {
-      // The compile subcommand inherits all behaviors/options of the
-      // top level grain command
-      compile(file, program);
-    })
-  );
+  .action(function (file) {
+    // The compile subcommand inherits all behaviors/options of the
+    // top level grain command
+    exec.grainc(file, program);
+  });
 
 program
   .command("run <file>")
@@ -194,74 +196,28 @@ program
     run(wasmFile, program.opts());
   });
 
-// TODO(#1147): Create a common set of parameters that are passed through to commands
-
 program
   .command("lsp")
   .description("start the Grain LSP server")
-  .forwardOption("--debuglsp", "output lsp debug information to a file")
-  .forwardOption(
-    "-I, --include-dirs <dirs>",
-    "add additional dependency include directories",
-    list,
-    []
-  )
-  .forwardOption(
-    "-S, --stdlib <path>",
-    "override the standard libary with your own",
-    null,
-    stdlibPath
-  )
-  .forwardOption(
-    "--compilation-mode <mode>",
-    "compilation mode (advanced use only)"
-  )
-  .forwardOption(
-    "--elide-type-info",
-    "don't include runtime type information used by toString/print"
-  )
-  .forwardOption(
-    "--experimental-wasm-tail-call",
-    "enables tail-call optimization"
-  )
-  .forwardOption("--no-gc", "turn off reference counting garbage collection")
-  .forwardOption(
-    "--no-bulk-memory",
-    "polyfill WebAssembly bulk memory instructions"
-  )
-  .forwardOption(
-    "--no-pervasives",
-    "don't automatically import the Grain Pervasives module"
-  )
-  .forwardOption("--strict-sequence", "enable strict sequencing")
-  .action(
-    wrapAction(function (options, program) {
-      // The lsp subcommand inherits all options of the
-      // top level grain command
-      lsp(program);
-    })
-  );
+  .action(function (options, program) {
+    exec.lsp(program);
+  });
 
 program
-  .command("doc <file>")
+  .command("doc <file|dir>")
   .description("generate documentation for a grain file")
   .forwardOption(
     "--current-version <version>",
     "provide a version to use as current when generating markdown for `@since` and `@history` attributes"
   )
-  .action(
-    wrapAction(function (file, options, program) {
-      doc(file, program);
-    })
-  );
+  .action(function (file, options, program) {
+    exec.graindoc(file, program);
+  });
 
 program
-  .command("format [file]")
+  .command("format <file|dir>")
   .description("format a grain file")
-  .forwardOption("--in-place", "format in place")
-  .action(
-    wrapAction(function (file, options, program) {
-      format(file, program);
-    })
-  );
+  .action(function (file, options, program) {
+    exec.grainformat(file, program);
+  });
 program.parse(process.argv);

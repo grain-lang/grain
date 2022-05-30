@@ -26,6 +26,8 @@ let derelativize = (~base=?, fname: Fp.firstClass) => {
   };
 };
 
+// All uses of `Filename` from OCaml should be constrained to this file because we need to do
+// normalization on the filepaths those functions produce.
 module String = {
   // This module is converting strings into Fp.t and then back into Strings
   // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
@@ -83,6 +85,44 @@ module String = {
     String.capitalize_ascii(name);
   };
 
+  let normalize_separators = path =>
+    if (Sys.unix) {
+      path;
+    } else {
+      // If we aren't on a Unix-style system, convert `\\` separators to `/`
+      // This is needed because using `Filename` from OCaml stdlib doesn't get along with Fp
+      let windows_sep = Str.regexp("\\");
+      let normal_sep = "/";
+      Str.global_replace(windows_sep, normal_sep, path);
+    };
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let concat = (p1, p2) => {
+    normalize_separators(Filename.concat(p1, p2));
+  };
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let dirname = path => {
+    normalize_separators(Filename.dirname(path));
+  };
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let basename = Filename.basename;
+
+  // TODO: This is poorly named
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let is_relpath = path =>
+    Filename.is_relative(path) && !Filename.is_implicit(path);
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let is_relative = Filename.is_relative;
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let check_suffix = Filename.check_suffix;
+
+  // TODO(#216): We should consider switching to type safe Fp.t where ever filepaths are used
+  let extension = Filename.extension;
+
   // TODO(#216): Turn this into a function that only operates on Fp
   let realpath = path => {
     switch (Fp.testForPath(path)) {
@@ -106,11 +146,12 @@ module String = {
   // TODO(#216): Turn this into a function that only operates on Fp
   let smart_cat = (dir, file) => {
     switch (Fp.absoluteCurrentPlatform(dir)) {
-    | None => Filename.concat(dir, file)
+    | None => concat(dir, file)
     | Some(abspath) =>
-      switch (Fp.relative(file)) {
-      | None => Filename.concat(to_string(abspath), file)
-      | Some(relpath) => to_string(Fp.join(abspath, relpath))
+      switch (Fp.testForPath(file)) {
+      | None => concat(dir, file)
+      | Some(Absolute(path)) => to_string(path)
+      | Some(Relative(relpath)) => to_string(Fp.join(abspath, relpath))
       }
     };
   };
@@ -131,9 +172,6 @@ module String = {
       };
     smart_cat(abs_base_path, unit_name);
   };
-
-  // TODO(#216): Replace this with the `get_cwd` that operates on Fp
-  let get_cwd = () => Sys.getcwd();
 };
 
 module Args = {
@@ -182,10 +220,64 @@ module Args = {
     let cmdliner_converter = (prsr, prntr);
   };
 
+  module ExistingFileOrDirectory = {
+    type t =
+      | File(Fp.t(Fp.absolute))
+      | Directory(Fp.t(Fp.absolute));
+
+    type err =
+      | InvalidPath(string)
+      | NotExists(Fp.t(Fp.absolute))
+      | InvalidFileType(Fp.t(Fp.absolute));
+
+    let query = fname => {
+      switch (from_string(fname)) {
+      | Some(path) =>
+        let abs_path = derelativize(path);
+        switch (Fs.query(abs_path)) {
+        | Some(File(path, _stat)) => Ok(File(path))
+        | Some(Dir(path, _)) => Ok(Directory(path))
+        | Some(Other(path, _, _)) => Error(InvalidFileType(path))
+        | Some(Link(_, realpath, _)) =>
+          Error(InvalidFileType(derelativize(realpath)))
+        | None => Error(NotExists(abs_path))
+        };
+      | None => Error(InvalidPath(fname))
+      };
+    };
+
+    let prsr = fname => {
+      switch (query(fname)) {
+      | Ok(file) => `Ok(file)
+      | Error(InvalidFileType(path)) =>
+        `Error(
+          Format.sprintf(
+            "%s exists but is not a file or directory",
+            to_string(path),
+          ),
+        )
+      | Error(NotExists(path)) =>
+        `Error(Format.sprintf("%s does not exist", to_string(path)))
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      switch (value) {
+      | File(path) => Format.fprintf(formatter, "File: %s", to_string(path))
+      | Directory(path) =>
+        Format.fprintf(formatter, "Directory: %s", to_string(path))
+      };
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
   module MaybeExistingFile = {
     type t =
-      | Exists(Fp.t(Fp.absolute))
-      | NotExists(Fp.t(Fp.absolute));
+      | Exists(ExistingFile.t)
+      | NotExists(ExistingFile.t);
 
     let prsr = fname => {
       switch (ExistingFile.query(fname)) {
@@ -204,6 +296,41 @@ module Args = {
       switch (value) {
       | Exists(path) =>
         Format.fprintf(formatter, "File: %s", to_string(path))
+      | NotExists(path) =>
+        Format.fprintf(formatter, "Path: %s", to_string(path))
+      };
+    };
+
+    let cmdliner_converter = (prsr, prntr);
+  };
+
+  module MaybeExistingFileOrDirectory = {
+    type t =
+      | Exists(ExistingFileOrDirectory.t)
+      | NotExists(Fp.t(Fp.absolute));
+
+    let prsr = fname => {
+      switch (ExistingFileOrDirectory.query(fname)) {
+      | Ok(path) => `Ok(Exists(path))
+      | Error(NotExists(path)) => `Ok(NotExists(path))
+      | Error(InvalidFileType(path)) =>
+        `Error(
+          Format.sprintf(
+            "%s exists but is not a file or directory",
+            to_string(path),
+          ),
+        )
+      | Error(InvalidPath(fname)) =>
+        `Error(Format.sprintf("Invalid path: %s", fname))
+      };
+    };
+
+    let prntr = (formatter, value) => {
+      switch (value) {
+      | Exists(File(path)) =>
+        Format.fprintf(formatter, "File: %s", to_string(path))
+      | Exists(Directory(path)) =>
+        Format.fprintf(formatter, "Directory: %s", to_string(path))
       | NotExists(path) =>
         Format.fprintf(formatter, "Path: %s", to_string(path))
       };
