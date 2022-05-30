@@ -25,7 +25,7 @@ let get_program_string = filename => {
   Buffer.contents(source_buffer);
 };
 
-let compile_parsed = (filename) => {
+let compile_parsed = filename => {
   let filename = Filepath.to_string(filename);
   let program_str = get_program_string(filename);
   switch (Format.parse_source(program_str)) {
@@ -48,8 +48,7 @@ let compile_parsed = (filename) => {
     );
     exit(2);
   | Ok((parsed_program, lines, eol)) => (parsed_program, lines, eol)
-  | Error(InvalidCompilationState) =>
-    failwith("Invalid compilation state")
+  | Error(InvalidCompilationState) => failwith("Invalid compilation state")
   };
 };
 
