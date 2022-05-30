@@ -47,17 +47,16 @@ let process = msg => {
     Trace.set_level(trace_value);
     Reading;
   | Error(msg) =>
-    let error: Protocol.response_error = {
-      code: Protocol.InvalidRequest,
-      message: msg,
-    };
-    Protocol.error(error);
+    Protocol.error({code: InvalidParams, message: msg});
     Reading;
   | _ =>
     // If we don't get initialize as the first event we stop the server
     // this signals to the client to restart
     if (is_initialized^ == false) {
-      Trace.log("Client must send 'initialize' as first event");
+      Protocol.error({
+        code: ServerNotInitialized,
+        message: "Client must send 'initialize' as first event",
+      });
       Break;
     } else {
       Reading;
