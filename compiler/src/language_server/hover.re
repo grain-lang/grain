@@ -55,21 +55,53 @@ let grain_type_code_block = Markdown.code_block(~syntax="grain-type");
 // Used for module hovers
 let grain_code_block = Markdown.code_block(~syntax="grain");
 
-let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, signature) => {
+let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, result) => {
   Protocol.response(
     ~id,
     ResponseResult.to_yojson({
       contents: {
         kind: "markdown",
-        value: signature,
+        value: result,
       },
       range,
     }),
   );
 };
 
+let markdown_join = (a, b) => {
+  // Horizonal rules between code blocks render a little funky
+  // so we manually add linebreaks
+  Printf.sprintf(
+    "%s\n---\n<br><br>\n%s",
+    a,
+    b,
+  );
+};
+
 let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
+};
+
+let print_type = (env, ty) => {
+  let instance = grain_type_code_block(Printtyp.string_of_type_scheme(ty));
+  try({
+    let (path, _, decl) = Ctype.extract_concrete_typedecl(env, ty);
+    if (Path.same(path, Builtin_types.path_void)) {
+      // Avoid showing the declaration for Void
+      raise(Not_found);
+    };
+    markdown_join(
+      grain_code_block(
+        Printtyp.string_of_type_declaration(
+          ~ident=Ident.create(Path.last(path)),
+          decl,
+        ),
+      ),
+      instance,
+    );
+  }) {
+  | Not_found => instance
+  };
 };
 
 let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
@@ -90,24 +122,18 @@ let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
   grain_code_block(String.concat("\n", signatures));
 };
 
-let value_lens = (desc: Types.value_description) => {
-  grain_type_code_block(Printtyp.string_of_type_scheme(desc.val_type));
-};
-
-let expression_lens = (e: Typedtree.expression) => {
-  switch (e.exp_desc) {
-  | TExpRecord(fields) =>
-    let (path, _, decl) =
-      Ctype.extract_concrete_typedecl(e.exp_env, e.exp_type);
-    grain_code_block(
-      Printtyp.string_of_type_declaration(~ident=Path.head(path), decl),
-    );
-  | _ => grain_type_code_block(Printtyp.string_of_type_scheme(e.exp_type))
-  };
+let expression_lens =
+    (e: Typedtree.expression, desc: option(Types.value_description)) => {
+  let ty =
+    switch (desc) {
+    | Some({val_type}) => val_type
+    | None => e.exp_type
+    };
+  print_type(e.exp_env, ty);
 };
 
 let pattern_lens = (p: Typedtree.pattern) => {
-  grain_type_code_block(Printtyp.string_of_type_scheme(p.pat_type));
+  print_type(p.pat_env, p.pat_type);
 };
 
 let type_lens = (ty: Typedtree.core_type) => {
@@ -132,13 +158,11 @@ let process =
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
-    | [Value(loc, desc), ..._] =>
-      send_hover(~id, ~range=loc_to_range(loc), value_lens(desc))
-    | [Expression(exp), ..._] =>
+    | [Expression(exp, desc), ..._] =>
       send_hover(
         ~id,
         ~range=loc_to_range(exp.exp_loc),
-        expression_lens(exp),
+        expression_lens(exp, desc),
       )
     | [Pattern(pat), ..._] =>
       send_hover(~id, ~range=loc_to_range(pat.pat_loc), pattern_lens(pat))
