@@ -47,8 +47,6 @@ let process = msg => {
     Trace.set_level(trace_value);
     Reading;
   | Error(msg) =>
-    prerr_endline(msg);
-    Trace.log(msg);
     let error: Protocol.response_error = {
       code: Protocol.InvalidRequest,
       message: msg,
