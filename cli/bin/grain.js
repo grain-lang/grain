@@ -200,7 +200,7 @@ program
   .command("lsp")
   .description("start the Grain LSP server")
   .action(function (options, program) {
-    exec.lsp(program);
+    exec.grainlsp(program);
   });
 
 program
