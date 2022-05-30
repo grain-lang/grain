@@ -82,12 +82,17 @@ let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
 };
 
+let supressed_types = [Builtin_types.path_void, Builtin_types.path_bool];
+
 let print_type = (env, ty) => {
   let instance = grain_type_code_block(Printtyp.string_of_type_scheme(ty));
   try({
     let (path, _, decl) = Ctype.extract_concrete_typedecl(env, ty);
-    if (Path.same(path, Builtin_types.path_void)) {
-      // Avoid showing the declaration for Void
+    // Avoid showing the declaration for supressed types
+    if (List.exists(
+          supressed_type => Path.same(path, supressed_type),
+          supressed_types,
+        )) {
       raise(Not_found);
     };
     markdown_join(
