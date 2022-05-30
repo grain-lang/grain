@@ -18,7 +18,8 @@ import {
   isBoxedNumber,
   scalbn,
 } from "runtime/numbers"
-import { parseInt } from "runtime/stringUtils"
+import Atoi from "runtime/atoi/parse"
+import Atof from "runtime/atof/parse"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
 import Exception from "runtime/exception"
@@ -890,7 +891,17 @@ export let isInfinite = (x: Number) => {
  *
  * @since v0.4.5
  */
-export parseInt
+export let parseInt = Atoi.parseInt
+
+/**
+ * Parses a string representation of a float into a `Number`
+ *
+ * @param input: The string to parse
+ * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
+ *
+ * @since v0.5.5
+ */
+export let parseFloat = Atof.parseFloat
 
 /**
  * Computes how many times pi has to be subtracted to achieve the required bounds for sin.
