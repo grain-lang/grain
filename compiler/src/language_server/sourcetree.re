@@ -137,8 +137,7 @@ module Make = (Ord: OrderableSegment) => {
 module type Sourcetree = {
   include SegmentTree with type point = Protocol.position;
   type node =
-    | Value(Location.t, Types.value_description)
-    | Expression(Typedtree.expression)
+    | Expression(Typedtree.expression, option(Types.value_description))
     | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
     | Declaration(Typedtree.data_declaration)
@@ -196,8 +195,7 @@ module Sourcetree: Sourcetree = {
   });
 
   type node =
-    | Value(Location.t, Types.value_description)
-    | Expression(Typedtree.expression)
+    | Expression(Typedtree.expression, option(Types.value_description))
     | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
     | Declaration(Typedtree.data_declaration)
@@ -226,6 +224,18 @@ module Sourcetree: Sourcetree = {
     module Iterator =
       TypedtreeIter.MakeIterator({
         include TypedtreeIter.DefaultIteratorArgument;
+        let process_value_description = (id, desc) => {
+          // Never consider special idents when deciding to display generalized
+          // types, i.e. always display instance types for lists
+          Parsetree.(
+            Identifier.(
+              switch (id) {
+              | {txt: IdentName({txt: "[]" | "[...]"})} => None
+              | _ => Some(desc)
+              }
+            )
+          );
+        };
         let enter_expression = exp => {
           Parsetree.(
             Path.(
@@ -240,20 +250,23 @@ module Sourcetree: Sourcetree = {
                     (loc_to_interval(loc), Module(path, loc)),
                     (
                       loc_to_interval(exp.exp_loc),
-                      Value(exp.exp_loc, desc),
+                      Expression(exp, Some(desc)),
                     ),
                     ...segments^,
                   ]
-              | TExpIdent(_, _, desc) =>
+              | TExpIdent(_, id, desc) =>
                 segments :=
                   [
-                    (loc_to_interval(exp.exp_loc), Value(exp.exp_loc, desc)),
+                    (
+                      loc_to_interval(exp.exp_loc),
+                      Expression(exp, process_value_description(id, desc)),
+                    ),
                     ...segments^,
                   ]
               | _ =>
                 segments :=
                   [
-                    (loc_to_interval(exp.exp_loc), Expression(exp)),
+                    (loc_to_interval(exp.exp_loc), Expression(exp, None)),
                     ...segments^,
                   ]
               }
