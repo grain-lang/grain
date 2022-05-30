@@ -51,6 +51,7 @@ describe("numbers", ({test, testSkip}) => {
     "print(987654321987654321987654321t)",
     "987654321987654321987654321\n",
   );
+  assertRun("number_syntax13", "print(17179869184 - 1024)", "17179868160\n");
   // equality checks
   assertRun(
     "nan_equality1",
