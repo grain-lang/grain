@@ -8,15 +8,12 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      upload_url: ${{ steps.release.outputs.upload_url }}
+      releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-      stdlib_upload_url: ${{ steps.release.outputs.stdlib--upload_url }}
-      stdlib_release_created: ${{ steps.release.outputs.stdlib--release_created }}
-      js-runner_upload_url: ${{ steps.release.outputs.js-runner--upload_url }}
-      js-runner_release_created: ${{ steps.release.outputs.js-runner--release_created }}
+      stdlib_tag_name: ${{ steps.release.outputs.stdlib--tag_name }}
+      js-runner_tag_name: ${{ steps.release.outputs.js-runner--tag_name }}
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v2.33.1
+      - uses: GoogleCloudPlatform/release-please-action@v3.2.5
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -24,7 +21,7 @@ jobs:
 
   prepare-artifacts:
     needs: [release-please]
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: ${{ needs.release-please.outputs.releases_created }}
     name: Prepare artifacts
     runs-on: ubuntu-latest
     outputs:
@@ -81,76 +78,68 @@ jobs:
           npm run cli build-pkg -- --target=win-x64,mac-x64,linux-x64
 
       - name: Upload Binary (Windows)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: grain-lang/upload-release-action@v3.0.1
         with:
-          upload_url: ${{ needs.release-please.outputs.upload_url }}
-          asset_path: ./pkg/grain-win.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./pkg/grain-win.exe
           asset_name: grain-win-x64.exe
-          asset_content_type: application/octet-stream
+          tag: ${{ needs.release-please.outputs.tag_name }}
 
       - name: Upload Binary (Mac)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: grain-lang/upload-release-action@v3.0.1
         with:
-          upload_url: ${{ needs.release-please.outputs.upload_url }}
-          asset_path: ./pkg/grain-macos
+          token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./pkg/grain-macos
           asset_name: grain-mac-x64
-          asset_content_type: application/octet-stream
+          tag: ${{ needs.release-please.outputs.tag_name }}
 
       - name: Upload Binary (Linux)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: grain-lang/upload-release-action@v3.0.1
         with:
-          upload_url: ${{ needs.release-please.outputs.upload_url }}
-          asset_path: ./pkg/grain-linux
+          token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./pkg/grain-linux
           asset_name: grain-linux-x64
-          asset_content_type: application/octet-stream
+          tag: ${{ needs.release-please.outputs.tag_name }}
 
       - name: Pack stdlib
-        if: ${{ needs.release-please.outputs.stdlib_release_created }}
+        if: ${{ needs.release-please.outputs.releases_created }}
         working-directory: ./stdlib
         # Runs `npm pack` and assigns the filename to an env var we can use later
+        # `sed` is used to workaround https://github.com/npm/cli/issues/3405
         run: |
-          echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
+          echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename' | sed -r 's/@//g' | sed -r 's/\//-/g')" >> $GITHUB_ENV
 
       - name: Upload stdlib
         id: stdlib-upload
-        if: ${{ needs.release-please.outputs.stdlib_release_created }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ needs.release-please.outputs.releases_created }}
+        uses: grain-lang/upload-release-action@v3.0.1
         with:
-          upload_url: ${{ needs.release-please.outputs.stdlib_upload_url }}
-          asset_path: ./stdlib/${{ env.STDLIB_TAR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./stdlib/${{ env.STDLIB_TAR }}
           asset_name: stdlib.tgz
-          asset_content_type: application/octet-stream
+          tag: ${{ needs.release-please.outputs.stdlib_tag_name }}
 
       - name: Pack js-runner
-        if: ${{ needs.release-please.outputs.js-runner_release_created }}
+        if: ${{ needs.release-please.outputs.releases_created }}
         working-directory: ./js-runner
         # Runs `npm pack` and assigns the filename to an env var we can use later
+        # `sed` is used to workaround https://github.com/npm/cli/issues/3405
         run: |
-          echo "RUNNER_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
+          echo "RUNNER_TAR=$(npm pack --json | jq -r '.[0].filename' | sed -r 's/@//g' | sed -r 's/\//-/g')" >> $GITHUB_ENV
 
       - name: Upload js-runner
         id: js-runner-upload
-        if: ${{ needs.release-please.outputs.js-runner_release_created }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ needs.release-please.outputs.releases_created }}
+        uses: grain-lang/upload-release-action@v3.0.1
         with:
-          upload_url: ${{ needs.release-please.outputs.js-runner_upload_url }}
-          asset_path: ./js-runner/${{ env.RUNNER_TAR }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./js-runner/${{ env.RUNNER_TAR }}
           asset_name: js-runner.tgz
-          asset_content_type: application/octet-stream
+          tag: ${{ needs.release-please.outputs.js-runner_tag_name }}
 
   dispatch-website:
     needs: [release-please, prepare-artifacts]
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: ${{ needs.release-please.outputs.releases_created }}
     name: Dispatch website release
     runs-on: ubuntu-latest
     steps:
@@ -164,7 +153,7 @@ jobs:
 
   dispatch-homebrew:
     needs: [release-please, prepare-artifacts]
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: ${{ needs.release-please.outputs.releases_created }}
     name: Dispatch homebrew release
     runs-on: ubuntu-latest
     steps:
@@ -178,7 +167,7 @@ jobs:
 
   dispatch-docker:
     needs: [release-please, prepare-artifacts]
-    if: ${{ needs.release-please.outputs.release_created }}
+    if: ${{ needs.release-please.outputs.releases_created }}
     name: Dispatch Docker builds
     runs-on: ubuntu-latest
     steps:
@@ -192,7 +181,7 @@ jobs:
 
   npm-release-stdlib:
     needs: [release-please, prepare-artifacts]
-    if: ${{ needs.release-please.outputs.stdlib_release_created }}
+    if: ${{ needs.release-please.outputs.releases_created }}
     name: Publish stdlib to npm registry
     runs-on: ubuntu-latest
     steps:
@@ -210,7 +199,7 @@ jobs:
 
   npm-release-js-runner:
     needs: [release-please, prepare-artifacts]
-    if: ${{ needs.release-please.outputs.js-runner_release_created }}
+    if: ${{ needs.release-please.outputs.releases_created }}
     name: Publish js-runner to npm registry
     runs-on: ubuntu-latest
     steps:
