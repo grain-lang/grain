@@ -1,51 +1,51 @@
 //Provides: caml_ml_open_descriptor_in
 //Requires: caml_global_data,caml_sys_open,caml_raise_sys_error, caml_ml_channels
 //Requires: fs_node_supported, caml_string_of_jsstring
-function caml_ml_open_descriptor_in (fd)  {
-    var data = caml_global_data.fds[fd];
-    if(data.flags.wronly) caml_raise_sys_error("fd "+ fd + " is writeonly");
-    var refill = null;
-    if(fd == 0 && fs_node_supported()){
-      var fs = require('fs');
-      var Buffer = require('buffer').Buffer;
-      refill = function () {
-        var buf = Buffer.alloc(256);
-        // Ref https://gist.github.com/espadrine/172658142820a356e1e0
-        var stdinFd;
-        var needsClose = false;
-        try {
-          stdinFd = fs.openSync('/dev/stdin', 'rs');
-          needsClose = true;
-        } catch(e) {
-          // Opening /dev/stdin can fail (on Windows or in pkg)
-          if (globalThis.process.platform === 'win32') {
-            // On Windows, we need to use the stdin fd
-            stdinFd = process.stdin.fd;
-          } else {
-            // On Linux, we just want to use fd 0
-            stdinFd = 0;
-          }
+function caml_ml_open_descriptor_in(fd) {
+  var data = caml_global_data.fds[fd];
+  if (data.flags.wronly) caml_raise_sys_error("fd " + fd + " is writeonly");
+  var refill = null;
+  if (fd == 0 && fs_node_supported()) {
+    var fs = require("fs");
+    var Buffer = require("buffer").Buffer;
+    refill = function () {
+      var buf = Buffer.alloc(256);
+      // Ref https://gist.github.com/espadrine/172658142820a356e1e0
+      var stdinFd;
+      var needsClose = false;
+      try {
+        stdinFd = fs.openSync("/dev/stdin", "rs");
+        needsClose = true;
+      } catch (e) {
+        // Opening /dev/stdin can fail (on Windows or in pkg)
+        if (globalThis.process.platform === "win32") {
+          // On Windows, we need to use the stdin fd
+          stdinFd = process.stdin.fd;
+        } else {
+          // On Linux, we just want to use fd 0
+          stdinFd = 0;
         }
-        var bytesRead = fs.readSync(fd, buf);
-        if (needsClose) {
-          fs.closeSync(stdinFd);
-        }
-        // Ensures we don't have any trailing, empty data
-        var str = buf.slice(0, bytesRead).toString('utf8');
-        return caml_string_of_jsstring(str);
-      };
-    }
-    var channel = {
-      file:data.file,
-      offset:data.offset,
-      fd:fd,
-      opened:true,
-      out: false,
-      refill:refill
+      }
+      var bytesRead = fs.readSync(fd, buf);
+      if (needsClose) {
+        fs.closeSync(stdinFd);
+      }
+      // Ensures we don't have any trailing, empty data
+      var str = buf.slice(0, bytesRead).toString("utf8");
+      return caml_string_of_jsstring(str);
     };
-    caml_ml_channels[channel.fd]=channel;
-    return channel.fd;
   }
+  var channel = {
+    file: data.file,
+    offset: data.offset,
+    fd: fd,
+    opened: true,
+    out: false,
+    refill: refill,
+  };
+  caml_ml_channels[channel.fd] = channel;
+  return channel.fd;
+}
 
 //Provides: js_print_stdout (const)
 //Requires: caml_utf16_of_utf8
@@ -66,9 +66,8 @@ function js_print_stdout(s) {
   } else {
     // Do not output the last \n if present
     // as console logging display a newline at the end
-    if(s.charCodeAt(s.length - 1) == 10)
-      s = s.substr(0,s.length - 1 );
+    if (s.charCodeAt(s.length - 1) == 10) s = s.substr(0, s.length - 1);
     var v = g.console;
-    v  && v.log && v.log(s);
+    v && v.log && v.log(s);
   }
 }
