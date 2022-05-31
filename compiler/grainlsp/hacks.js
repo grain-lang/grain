@@ -23,6 +23,7 @@ function caml_ml_open_descriptor_in(fd) {
           stdinFd = process.stdin.fd;
         } else {
           // On Linux, we just want to use fd 0
+          // due to this nodejs bug: https://github.com/nodejs/node/issues/42826
           stdinFd = 0;
         }
       }
