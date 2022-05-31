@@ -1486,7 +1486,7 @@ let rec transl_anf_statement =
       let (argsty, retty) =
         get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
       let retty =
-        if (returns_void(desc.tvd_desc.ctyp_type)) {
+        if (returns_void(env, desc.tvd_desc.ctyp_type)) {
           [];
         } else {
           [retty];

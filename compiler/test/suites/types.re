@@ -184,6 +184,24 @@ describe("aliased types", ({test, testSkip}) => {
     |},
     "expression was expected of type %Aliases.Foo = Number",
   );
+  assertRun(
+    "regression_annotated_type_func_1",
+    {|
+      type AddPrinter = (Number, Number) -> Void
+      export let add: AddPrinter = (x, y) => print(x + y)
+      add(4, 4)
+    |},
+    "8\n",
+  );
+  assertRun(
+    "regression_annotated_type_func_2",
+    {|
+      type AddPrinter<a> = (a, a) -> Void
+      export let add: AddPrinter<Number> = (x, y) => print(x + y)
+      add(4, 4)
+    |},
+    "8\n",
+  );
 });
 
 describe("abstract types", ({test}) => {
