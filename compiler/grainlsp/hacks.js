@@ -17,8 +17,14 @@ function caml_ml_open_descriptor_in (fd)  {
           stdinFd = fs.openSync('/dev/stdin', 'rs');
           needsClose = true;
         } catch(e) {
-          // Opening /dev/stdin will fail on Windows so we use the stdin fd
-          stdinFd = process.stdin.fd;
+          // Opening /dev/stdin can fail (on Windows or in pkg)
+          if (globalThis.process.platform === 'win32') {
+            // On Windows, we need to use the stdin fd
+            stdinFd = process.stdin.fd;
+          } else {
+            // On Linux, we just want to use fd 0
+            stdinFd = 0;
+          }
         }
         var bytesRead = fs.readSync(fd, buf);
         if (needsClose) {
