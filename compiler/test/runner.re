@@ -173,9 +173,10 @@ let run = (~num_pages=?, file) => {
 
   let cmd =
     Array.concat([
-      [|"grain"|],
+      [|"grain", "run"|],
       mem_flags,
-      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), "run", file|],
+      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir)|],
+      [|file|],
     ]);
 
   let (code, out, err) = open_process(cmd);
