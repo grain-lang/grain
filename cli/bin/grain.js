@@ -15,6 +15,7 @@ v8.setFlagsFromString("--experimental-wasm-return-call");
 const commander = require("commander");
 const exec = require("./exec.js");
 const run = require("./run.js");
+const pkgJson = require("../package.json");
 
 const stdlibPath = require("@grain/stdlib");
 
@@ -192,17 +193,7 @@ program
   // The default command that compiles & runs
   .command("compile-and-run <file>", { isDefault: true, hidden: true })
   // `--version` should only be available on the default command
-  .option("-v, --version", "output CLI and compiler versions")
-  .on("option:version", function () {
-    const program = this;
-    console.log(`Grain cli ${require("../package.json").version}`);
-    const graincVersion = exec
-      .grainc("--version", program.opts(), program, { stdio: "pipe" })
-      .toString()
-      .trim();
-    console.log(`Grain compiler ${graincVersion}`);
-    process.exit(0);
-  })
+  .version(pkgJson.version, "-v, --version", "output the current version")
   .addOption(new commander.Option("-p, --print-output").hideHelp())
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
