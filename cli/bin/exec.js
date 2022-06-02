@@ -108,18 +108,10 @@ function getGrainlsp() {
 
 const grainlsp = getGrainlsp();
 
-function execGrainlsp(program, execOpts = { stdio: "inherit" }) {
-  const flags = [];
-  // Inherit compiler flags passed to the parent
-  const options = program.parent.options.concat(program.options);
-  const opts = { ...program.parent.opts(), ...program.opts() };
-  options.forEach((option) => {
-    if (!option.forward) return;
-    const flag = option.toFlag(opts);
-    if (flag) flags.push(flag);
-  });
+function execGrainlsp(options, program, execOpts = { stdio: "inherit" }) {
+  const flags = flagsFromOptions(program, options);
 
-  return execSync(`${grainlsp} ${flags.join(" ")} `, execOpts);
+  return execSync(`${grainlsp} ${flags.join(" ")}`, execOpts);
 }
 
 module.exports = {

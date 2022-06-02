@@ -187,70 +187,14 @@ const program = new GrainCommand();
 
 program
   .description("Compile and run Grain programs. 🌾")
-  .addOption(new program.Option("-p, --print-output").hideHelp())
-  .forwardOption(
-    "-I, --include-dirs <dirs>",
-    "add additional dependency include directories",
-    list,
-    []
-  )
-  .forwardOption(
-    "-S, --stdlib <path>",
-    "override the standard libary with your own",
-    null,
-    stdlibPath
-  )
-  .forwardOption(
-    "--initial-memory-pages <size>",
-    "initial number of WebAssembly memory pages",
-    num
-  )
-  .forwardOption(
-    "--maximum-memory-pages <size>",
-    "maximum number of WebAssembly memory pages",
-    num
-  )
-  .forwardOption(
-    "--compilation-mode <mode>",
-    "compilation mode (advanced use only)"
-  )
-  .forwardOption(
-    "--elide-type-info",
-    "don't include runtime type information used by toString/print"
-  )
-  .profileOption(
-    "--release",
-    "compile using the release profile (production mode)"
-  )
-  .forwardOption(
-    "--experimental-wasm-tail-call",
-    "enables tail-call optimization"
-  )
-  .forwardOption("--debug", "compile with debugging information")
-  .forwardOption("--wat", "additionally produce a WebAssembly Text (.wat) file")
-  .forwardOption(
-    "--hide-locs",
-    "hide locations from intermediate trees. Only has an effect with `--verbose`"
-  )
-  .forwardOption("--no-color", "disable colored output")
-  .forwardOption("--no-gc", "turn off reference counting garbage collection")
-  .forwardOption(
-    "--no-bulk-memory",
-    "polyfill WebAssembly bulk memory instructions"
-  )
-  .forwardOption(
-    "--wasi-polyfill <filename>",
-    "path to custom WASI implementation"
-  )
-  .forwardOption(
-    "--use-start-section",
-    "replaces the _start export with a start section during linking"
-  )
-  .forwardOption("--no-link", "disable static linking")
-  .forwardOption(
-    "--no-pervasives",
-    "don't automatically import the Grain Pervasives module"
-  )
+  // Show the default usage without "compile-and-run"
+  .usage("[options] <file>")
+  .addHelpCommand(false)
+  // The default command that compiles & runs
+  .command("compile-and-run <file>", { isDefault: true, hidden: true })
+  // `--version` should only be available on the default command
+  .version(pkgJson.version, "-v, --version", "output the current version")
+  .addOption(new commander.Option("-p, --print-output").hideHelp())
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
     exec.grainc(file, options, program);
