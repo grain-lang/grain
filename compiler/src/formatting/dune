@@ -1,0 +1,4 @@
+(library
+ (name grain_formatting)
+ (public_name grain_formatting)
+ (libraries grain grain_diagnostics grain_parsing grain_utils))

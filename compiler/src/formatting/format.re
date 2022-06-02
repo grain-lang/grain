@@ -37,12 +37,12 @@ let op_precedence = fn =>
   };
 let list_cons = "[...]";
 
-type error =
-  | Illegal_parse(string)
-  | Unsupported_syntax(string)
-  | FormatterError(string);
+exception IllegalParse(string);
+exception FormatterError(string);
 
-exception Error(error);
+type compilation_error =
+  | ParseError(exn)
+  | InvalidCompilationState;
 
 type sugared_list_item =
   | Regular(Parsetree.expression)
@@ -74,7 +74,7 @@ let get_original_code = (location: Location.t, source: array(string)) => {
       text^;
     };
   } else {
-    raise(Error(FormatterError("Requested beyond end of original source")));
+    raise(FormatterError("Requested beyond end of original source"));
   };
 };
 
@@ -1028,11 +1028,7 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
     | _ => [RegularPattern(arg1), SpreadPattern(arg2)]
     }
   | _ =>
-    raise(
-      Error(
-        Illegal_parse("List pattern cons should always have two patterns"),
-      ),
-    )
+    raise(IllegalParse("List pattern cons should always have two patterns"))
   };
 }
 
@@ -1123,9 +1119,7 @@ and resugar_list_inner = (expressions: list(Parsetree.expression)) =>
   | _ =>
     // Grain syntax makes it impossible to construct a list cons without
     // two arguments, but we'll check just to make sure
-    raise(
-      Error(Illegal_parse("List cons should always have two expressions")),
-    )
+    raise(IllegalParse("List cons should always have two expressions"))
   }
 
 and check_for_pattern_pun = (pat: Parsetree.pattern) =>
@@ -1758,8 +1752,7 @@ and print_infix_application =
       rhs,
     ]);
 
-  | _ =>
-    raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
+  | _ => raise(IllegalParse("Formatter error, wrong number of args "))
   };
 }
 
@@ -1880,7 +1873,7 @@ and print_arg_lambda =
       },
     );
 
-  | _ => raise(Error(Illegal_parse("Called on a non-lambda")))
+  | _ => raise(IllegalParse("Called on a non-lambda"))
   };
 }
 
@@ -2030,7 +2023,7 @@ and print_other_application =
   | [first, second] when infixop(function_name) =>
     print_infix_application(~expressions, ~original_source, ~comments, func)
   | _ when infixop(function_name) =>
-    raise(Error(Illegal_parse("Formatter error, wrong number of args ")))
+    raise(IllegalParse("Formatter error, wrong number of args "))
   | _ when function_name == list_cons =>
     resugar_list(~original_source, ~comments, expressions)
   | [first_expr, ..._]
@@ -3137,9 +3130,7 @@ and print_expression =
               switch (expressions) {
               | [] =>
                 raise(
-                  Error(
-                    Illegal_parse("Sugared op needs at least one expression"),
-                  ),
+                  IllegalParse("Sugared op needs at least one expression"),
                 )
               | [expression] =>
                 let expr =
@@ -4137,6 +4128,29 @@ let toplevel_print =
     };
 
   Doc.group(without_comments);
+};
+
+let parse_source = (program_str: string) => {
+  switch (
+    {
+      let lines = String.split_on_char('\n', program_str);
+      let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
+      let compile_state =
+        Compile.compile_string(
+          ~is_root_file=true,
+          ~hook=stop_after_parse,
+          ~name=?None,
+          program_str,
+        );
+
+      (compile_state, lines, eol);
+    }
+  ) {
+  | exception exn => Error(ParseError(exn))
+  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) =>
+    Ok((parsed_program, Array.of_list(lines), eol))
+  | _ => Error(InvalidCompilationState)
+  };
 };
 
 let format_ast =

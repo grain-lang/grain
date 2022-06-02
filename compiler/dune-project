@@ -31,6 +31,18 @@
   (synopsis "Grain formatter"))
 
 (package
+  (name grainlsp)
+  (synopsis "Grain LSP"))
+
+(package
+  (name grain_language_server)
+  (synopsis "Grain Language Server Protocol"))
+
+(package
+ (name grain_formatting)
+ (synopsis "Grain formatting"))
+
+(package
   (name grain_linking)
   (synopsis "The Grain linker"))
 

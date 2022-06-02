@@ -3,6 +3,7 @@ open Grain;
 open Compile;
 open Grain_parsing;
 open Grain_utils;
+open Grain_formatting;
 open Grain_utils.Filepath.Args;
 
 [@deriving cmdliner]
@@ -26,25 +27,9 @@ let get_program_string = filename => {
 
 let compile_parsed = filename => {
   let filename = Filepath.to_string(filename);
-  switch (
-    {
-      let program_str = get_program_string(filename);
-
-      let lines = String.split_on_char('\n', program_str);
-      let eol = Fs_access.determine_eol(List.nth_opt(lines, 0));
-
-      let compile_state =
-        Compile.compile_string(
-          ~is_root_file=true,
-          ~hook=stop_after_parse,
-          ~name=filename,
-          program_str,
-        );
-
-      (compile_state, lines, eol);
-    }
-  ) {
-  | exception exn =>
+  let program_str = get_program_string(filename);
+  switch (Format.parse_source(program_str)) {
+  | Error(ParseError(exn)) =>
     let bt =
       if (Printexc.backtrace_status()) {
         Some(Printexc.get_backtrace());
@@ -62,12 +47,8 @@ let compile_parsed = filename => {
       bt,
     );
     exit(2);
-  | ({cstate_desc: Parsed(parsed_program)}, lines, eol) => (
-      parsed_program,
-      Array.of_list(lines),
-      eol,
-    )
-  | _ => failwith("Invalid compilation state")
+  | Ok((parsed_program, lines, eol)) => (parsed_program, lines, eol)
+  | Error(InvalidCompilationState) => failwith("Invalid compilation state")
   };
 };
 
@@ -78,7 +59,8 @@ let format_code =
       ~original_source: array(string),
       program: Parsetree.parsed_program,
     ) => {
-  let formatted_code = Format.format_ast(~original_source, ~eol, program);
+  let formatted_code =
+    Grain_formatting.Format.format_ast(~original_source, ~eol, program);
 
   let buf = Buffer.create(0);
   Buffer.add_string(buf, formatted_code);

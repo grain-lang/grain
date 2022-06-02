@@ -93,8 +93,30 @@ function execGrainformat(
   );
 }
 
+function getGrainlsp() {
+  const grainlsp = path.join(__dirname, "grainlsp.exe");
+
+  // TODO: Maybe make an installable path & check it?
+  if (process.pkg || !fs.existsSync(grainlsp)) {
+    const node = process.execPath;
+    const grainlsp_js = path.join(__dirname, "grainlsp.js");
+    return `"${node}" ${grainlsp_js}`;
+  }
+
+  return `${grainlsp}`;
+}
+
+const grainlsp = getGrainlsp();
+
+function execGrainlsp(options, program, execOpts = { stdio: "inherit" }) {
+  const flags = flagsFromOptions(program, options);
+
+  return execSync(`${grainlsp} ${flags.join(" ")}`, execOpts);
+}
+
 module.exports = {
   grainc: execGrainc,
   graindoc: execGraindoc,
   grainformat: execGrainformat,
+  grainlsp: execGrainlsp,
 };

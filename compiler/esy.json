@@ -2,9 +2,7 @@
   "name": "@grain/compiler",
   "version": "0.4.6",
   "esy": {
-    "build": [
-      "dune build @native --no-buffer"
-    ],
+    "build": ["dune build @native --no-buffer"],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
@@ -14,14 +12,16 @@
       "GRAINDOC_JS_PATH": "#{self.target_dir / 'default' / 'graindoc' / 'graindoc.bc.js'}",
       "GRAINFORMAT_BIN_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.exe'}",
       "GRAINFORMAT_JS_PATH": "#{self.target_dir / 'default' / 'grainformat' / 'grainformat.bc.js'}",
+      "GRAINLSP_BIN_PATH": "#{self.target_dir / 'default' / 'grainlsp' / 'grainlsp.exe'}",
+      "GRAINLSP_JS_PATH": "#{self.target_dir / 'default' / 'grainlsp' / 'grainlsp.bc.js'}",
       "CLI_BIN_DIR": "#{self.root / '..' / 'cli' / 'bin'}",
       "TEST_EXEC_PATH": "#{self.target_dir / 'default' / 'test' / 'test.exe'}",
       "TEST_JS_PATH": "#{self.target_dir / 'default' / 'test' / 'test.bc.js'}"
     }
   },
   "scripts": {
-    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$CLI_BIN_DIR}",
-    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$CLI_BIN_DIR}",
+    "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
+    "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
     "test": "#{$TEST_EXEC_PATH}",
     "test:js": "node #{$TEST_JS_PATH}",
@@ -38,11 +38,13 @@
     "@opam/fs": "0.0.2",
     "@opam/menhir": "20211125",
     "@opam/ocamlgraph": ">= 2.0.0",
+    "@opam/ppx_deriving": ">= 5.2.1",
     "@opam/ppx_deriving_cmdliner": ">= 0.6.0",
     "@opam/ppx_deriving_yojson": ">= 3.5.2",
     "@opam/ppx_sexp_conv": ">= 0.14.0",
     "@opam/reason": ">= 3.6.2",
     "@opam/sexplib": ">= 0.14.0",
+    "@opam/uri": ">= 4.2.0 < 5.0.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 1.7.0",
     "ocaml": "4.12.0"

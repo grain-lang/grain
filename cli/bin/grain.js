@@ -218,18 +218,9 @@ program
   .action(run);
 
 program
-  .command("lsp <file>")
-  .description("check a grain file for LSP")
-  .action(function (file, options, program) {
-    // The lsp subcommand inherits all options of the
-    // top level grain command
-
-    // call the compiler, passing stdio through so the compiler gets the source code on stdin
-    // and we get the compiler output in stdout
-    // we still take the file name so we have it available
-
-    exec.grainc(`--lsp ${file}`, options, program);
-  });
+  .command("lsp")
+  .description("start the Grain LSP server")
+  .action(exec.grainlsp);
 
 program
   .command("doc <file|dir>")

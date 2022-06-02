@@ -1,4 +1,5 @@
 bin/grainc.bc.js
 bin/graindoc.bc.js
 bin/grainformat.bc.js
+bin/grainlsp.bc.js
 CHANGELOG.md

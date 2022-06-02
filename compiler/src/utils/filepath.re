@@ -34,12 +34,10 @@ module String = {
 
   let derelativize = (~base=?, fname) => {
     let base =
-      Option.bind(base, base =>
-        switch (base) {
-        | None => Some(get_cwd())
-        | Some(path) => Fp.absoluteCurrentPlatform(path)
-        }
-      );
+      switch (base) {
+      | None => Some(get_cwd())
+      | Some(path) => Fp.absoluteCurrentPlatform(path)
+      };
 
     switch (from_string(fname)) {
     | Some(fname) => derelativize(~base?, fname)

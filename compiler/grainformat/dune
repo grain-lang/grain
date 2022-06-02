@@ -1,9 +1,3 @@
-(library
- (name format)
- (public_name grainformat.format)
- (modules format res_doc res_minibuffer debug comment_utils)
- (libraries grain grain_diagnostics grain_parsing grain_utils))
-
 (executable
  (name grainformat)
  (public_name grainformat)
@@ -13,7 +7,7 @@
  (flags
   (:standard
    (:include ./config/flags.sexp)))
- (libraries cmdliner grain grain_utils grain_parsing grainformat.format
+ (libraries cmdliner grain grain_utils grain_parsing grain_formatting
    binaryen dune-build-info)
  (preprocess
   (pps ppx_deriving_cmdliner))
