@@ -2,23 +2,44 @@
   "bump-minor-pre-major": true,
   "bump-patch-for-minor-pre-major": true,
   "plugins": [
-    "node-workspace"
+    {
+      "type": "linked-versions",
+      "groupName": "Grain",
+      "components": ["grain", "cli", "compiler", "js-runner", "stdlib"]
+    }
   ],
   "packages": {
     ".": {
+      "component": "grain",
       "release-type": "node"
     },
     "cli": {
-      "release-type": "node"
+      "component": "cli",
+      "release-type": "node",
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.dependencies['@grain/js-runner']"
+        },
+        {
+          "type": "json",
+          "path": "package.json",
+          "jsonpath": "$.dependencies['@grain/stdlib']"
+        }
+      ]
     },
     "compiler": {
+      "component": "compiler",
       "package-name": "@grain/compiler",
       "release-type": "ocaml"
     },
     "js-runner": {
+      "component": "js-runner",
       "release-type": "node"
     },
     "stdlib": {
+      "component": "stdlib",
       "release-type": "node"
     }
   }

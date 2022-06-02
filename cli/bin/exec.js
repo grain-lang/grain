@@ -2,6 +2,16 @@ const path = require("path");
 const { execSync } = require("child_process");
 const fs = require("fs");
 
+function flagsFromOptions(program, options) {
+  const flags = [];
+  program.options.forEach((option) => {
+    if (!option.forward) return;
+    const flag = option.toFlag(options);
+    if (flag) flags.push(flag);
+  });
+  return flags;
+}
+
 function getGrainc() {
   const grainc = path.join(__dirname, "grainc.exe");
 
@@ -19,16 +29,11 @@ const grainc = getGrainc();
 
 function execGrainc(
   commandOrFile = "",
+  options,
   program,
   execOpts = { stdio: "inherit" }
 ) {
-  const flags = [];
-  const options = program.opts();
-  program.options.forEach((option) => {
-    if (!option.forward) return;
-    const flag = option.toFlag(options);
-    if (flag) flags.push(flag);
-  });
+  const flags = flagsFromOptions(program, options);
 
   return execSync(`${grainc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
@@ -50,18 +55,11 @@ const graindoc = getGraindoc();
 
 function execGraindoc(
   commandOrFile = "",
+  options,
   program,
   execOpts = { stdio: "inherit" }
 ) {
-  const flags = [];
-  // Inherit compiler flags passed to the parent
-  const options = program.parent.options.concat(program.options);
-  const opts = { ...program.parent.opts(), ...program.opts() };
-  options.forEach((option) => {
-    if (!option.forward) return;
-    const flag = option.toFlag(opts);
-    if (flag) flags.push(flag);
-  });
+  const flags = flagsFromOptions(program, options);
 
   return execSync(`${graindoc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
@@ -83,18 +81,11 @@ const grainformat = getGrainformat();
 
 function execGrainformat(
   commandOrFile = "",
+  options,
   program,
   execOpts = { stdio: "inherit" }
 ) {
-  const flags = [];
-  // Inherit compiler flags passed to the parent
-  const options = program.parent.options.concat(program.options);
-  const opts = { ...program.parent.opts(), ...program.opts() };
-  options.forEach((option) => {
-    if (!option.forward) return;
-    const flag = option.toFlag(opts);
-    if (flag) flags.push(flag);
-  });
+  const flags = flagsFromOptions(program, options);
 
   return execSync(
     `${grainformat} ${flags.join(" ")} ${commandOrFile}`,

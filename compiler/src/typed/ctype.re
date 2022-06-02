@@ -3246,17 +3246,8 @@ let nondep_extension_constructor = (env, id, ext) =>
       switch (args) {
       | TConstrSingleton => ReprValue(WasmI32)
       | TConstrTuple(args) =>
-        ReprFunction(
-          List.map(
-            arg =>
-              Type_utils.wasm_repr_of_allocation_type(
-                Type_utils.get_allocation_type(env, arg),
-              ),
-            args,
-          ),
-          [WasmI32],
-          Indirect,
-        )
+        // All native Grain function args are Managed (i32) types.
+        ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Indirect)
       };
 
     clear_hash();

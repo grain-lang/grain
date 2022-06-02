@@ -18,21 +18,21 @@ import Int32 from "int32"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
 
 @unsafe
-let mut _SIZE_OFFSET = 4n
+let _SIZE_OFFSET = 4n
 @unsafe
-let mut _VALUE_OFFSET = 8n
+let _VALUE_OFFSET = 8n
 @unsafe
-let mut _INT8_BYTE_SIZE = 1n
+let _INT8_BYTE_SIZE = 1n
 @unsafe
-let mut _INT16_BYTE_SIZE = 2n
+let _INT16_BYTE_SIZE = 2n
 @unsafe
-let mut _INT32_BYTE_SIZE = 4n
+let _INT32_BYTE_SIZE = 4n
 @unsafe
-let mut _FLOAT32_BYTE_SIZE = 4n
+let _FLOAT32_BYTE_SIZE = 4n
 @unsafe
-let mut _INT64_BYTE_SIZE = 8n
+let _INT64_BYTE_SIZE = 8n
 @unsafe
-let mut _FLOAT64_BYTE_SIZE = 8n
+let _FLOAT64_BYTE_SIZE = 8n
 
 /** Throws an exception if the index specified is out-of-bounds */
 @unsafe
