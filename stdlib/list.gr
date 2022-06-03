@@ -1,8 +1,6 @@
 // Standard library for list functionality
 
-export *
-
-let init = (length, fn) => {
+export let init = (length, fn) => {
   // This method can be further improved by checking the length against a specific size
   // and determining if it can be made tail-recursive, then use List.reverse on it.
   // Which would be the same as OCaml does it in https://github.com/ocaml/ocaml/blob/03839754f46319aa36d9dad56940a6f3c3bcb48a/stdlib/list.ml#L79
@@ -16,7 +14,7 @@ let init = (length, fn) => {
   iter(0, length)
 }
 
-let length = list => {
+export let length = list => {
   let rec iter = (len, list) => {
     match (list) {
       [] => len,
@@ -26,7 +24,7 @@ let length = list => {
   iter(0, list)
 }
 
-let sum = list => {
+export let sum = list => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
@@ -36,7 +34,7 @@ let sum = list => {
   iter(0, list)
 }
 
-let reverse = list => {
+export let reverse = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => acc,
@@ -46,42 +44,42 @@ let reverse = list => {
   iter(list, [])
 }
 
-let rec append = (list1, list2) => {
+export let rec append = (list1, list2) => {
   match (list1) {
     [] => list2,
     [first, ...rest] => [first, ...append(rest, list2)],
   }
 }
 
-let rec contains = (value, list) => {
+export let rec contains = (value, list) => {
   match (list) {
     [] => false,
     [first, ...rest] => first == value || contains(value, rest),
   }
 }
 
-let rec reduce = (fn, acc, list) => {
+export let rec reduce = (fn, acc, list) => {
   match (list) {
     [] => acc,
     [first, ...rest] => reduce(fn, fn(acc, first), rest),
   }
 }
 
-let rec reduceRight = (fn, acc, list) => {
+export let rec reduceRight = (fn, acc, list) => {
   match (list) {
     [] => acc,
     [first, ...rest] => fn(first, reduceRight(fn, acc, rest)),
   }
 }
 
-let rec map = (fn, list) => {
+export let rec map = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => [fn(first), ...map(fn, rest)],
   }
 }
 
-let mapi = (fn, list) => {
+export let mapi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
@@ -91,26 +89,26 @@ let mapi = (fn, list) => {
   iter(fn, list, 0)
 }
 
-let rec flatMap = (fn, list) => {
+export let rec flatMap = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => append(fn(first), flatMap(fn, rest)),
   }
 }
 
-let every = (fn, list) => {
+export let every = (fn, list) => {
   reduce((acc, value) => {
     acc && fn(value)
   }, true, list)
 }
 
-let some = (fn, list) => {
+export let some = (fn, list) => {
   reduce((acc, value) => {
     acc || fn(value)
   }, false, list)
 }
 
-let rec forEach = (fn, list) => {
+export let rec forEach = (fn, list) => {
   match (list) {
     [] => void,
     [first, ...rest] => {
@@ -120,7 +118,7 @@ let rec forEach = (fn, list) => {
   }
 }
 
-let forEachi = (fn, list) => {
+export let forEachi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => void,
@@ -133,7 +131,7 @@ let forEachi = (fn, list) => {
   iter(fn, list, 0)
 }
 
-let rec filter = (fn, list) => {
+export let rec filter = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
@@ -141,7 +139,7 @@ let rec filter = (fn, list) => {
   }
 }
 
-let filteri = (fn, list) => {
+export let filteri = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
@@ -153,7 +151,7 @@ let filteri = (fn, list) => {
   iter(fn, list, 0)
 }
 
-let rec reject = (fn, list) => {
+export let rec reject = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
@@ -161,21 +159,21 @@ let rec reject = (fn, list) => {
   }
 }
 
-let head = list => {
+export let head = list => {
   match (list) {
     [] => None,
     [first, ..._] => Some(first),
   }
 }
 
-let tail = list => {
+export let tail = list => {
   match (list) {
     [] => None,
     [_, ...rest] => Some(rest),
   }
 }
 
-let rec nth = (index, list) => {
+export let rec nth = (index, list) => {
   if (index < 0) {
     None
   } else {
@@ -186,14 +184,14 @@ let rec nth = (index, list) => {
   }
 }
 
-let rec flatten = list => {
+export let rec flatten = list => {
   match (list) {
     [] => [],
     [first, ...rest] => append(first, flatten(rest)),
   }
 }
 
-let rec insert = (value, index, list) => {
+export let rec insert = (value, index, list) => {
   if (index < 0) {
     fail "insert index cannot be a negative number"
   } else {
@@ -206,7 +204,7 @@ let rec insert = (value, index, list) => {
   }
 }
 
-let count = (fn, list) => {
+export let count = (fn, list) => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
@@ -216,7 +214,7 @@ let count = (fn, list) => {
   iter(0, list)
 }
 
-let part = (count, list) => {
+export let part = (count, list) => {
   if (count < 0) {
     fail "part count cannot be a negative number"
   } else {
@@ -234,13 +232,13 @@ let part = (count, list) => {
   }
 }
 
-let rotate = (count, list) => {
+export let rotate = (count, list) => {
   let (beginning, end) = if (count >= 0) part(count, list)
     else part(length(list) + count, list)
   append(end, beginning)
 }
 
-let unique = list => {
+export let unique = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => reverse(acc),
@@ -252,7 +250,7 @@ let unique = list => {
   iter(list, [])
 }
 
-let rec drop = (n, list) => {
+export let rec drop = (n, list) => {
   if (n < 0) {
     fail "number of items to drop cannot be a negative number"
   } else {
@@ -264,14 +262,14 @@ let rec drop = (n, list) => {
   }
 }
 
-let rec dropWhile = (fn, list) => {
+export let rec dropWhile = (fn, list) => {
   match (list) {
     [] => list,
     [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list,
   }
 }
 
-let rec take = (n, list) => {
+export let rec take = (n, list) => {
   if (n < 0) {
     fail "number of items to take cannot be a negative number"
   } else {
@@ -283,21 +281,21 @@ let rec take = (n, list) => {
   }
 }
 
-let rec takeWhile = (p, list) => {
+export let rec takeWhile = (p, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [],
   }
 }
 
-let rec find = (fn, list) => {
+export let rec find = (fn, list) => {
   match (list) {
     [] => None,
     [first, ...rest] => if (fn(first)) Some(first) else find(fn, rest),
   }
 }
 
-let findIndex = (fn, list) => {
+export let findIndex = (fn, list) => {
   let rec findItemIndex = (l, index) => {
     match (l) {
       [] => None,
@@ -308,7 +306,7 @@ let findIndex = (fn, list) => {
   findItemIndex(list, 0)
 }
 
-let product = (a, b) => {
+export let product = (a, b) => {
   let mut list = []
   forEach(aItem => {
     forEach(bItem => {
@@ -318,7 +316,7 @@ let product = (a, b) => {
   reverse(list)
 }
 
-let sub = (start, length, list) => {
+export let sub = (start, length, list) => {
   take(length, drop(start, list))
 }
 
@@ -326,7 +324,7 @@ let sub = (start, length, list) => {
 // @param separator: String - The separator to insert between items in the string
 // @param items: List<String> - The input strings
 // @returns String
-let join = (separator: String, items: List<String>) => {
+export let join = (separator: String, items: List<String>) => {
   let rec iter = (sep, acc, rem) => {
     match (rem) {
       [] => acc,
@@ -354,7 +352,7 @@ let join = (separator: String, items: List<String>) => {
  * @param list2: The list to append
  * @since v0.4.5
  */
-let rec revAppend = (list1, list2) => {
+export let rec revAppend = (list1, list2) => {
   match (list1) {
     [hd, ...tl] => revAppend(tl, [hd, ...list2]),
     [] => list2,
@@ -369,7 +367,7 @@ let rec revAppend = (list1, list2) => {
  * @param list: The list to be sorted
  * @since v0.4.5
  */
-let sort = (comp, list) => {
+export let sort = (comp, list) => {
   let rec merge = (left, right, list) => {
     match ((left, right)) {
       (_, []) => {
