@@ -184,7 +184,7 @@ let eat = (buf: RegExBuf, char: Char) => {
 /**
  * Checks if the given regex buffer is empty
  * @param buf: The buffer to check
- * @returns `false` if the buffer is empty, `true` otherwise.
+ * @returns `false` if the buffer is empty or `true` otherwise.
  */
 let more = (buf: RegExBuf) => {
   unbox(buf.cursor) < Array.length(buf.inputExploded)
@@ -3761,7 +3761,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
  * Determines if the given regular expression has a match in the given string.
  * @param rx: The regular expression to search for
  * @param string: The string to search within
- * @returns `true` if the RegExp matches the string, otherwise `false`
+ * @returns `true` if the RegExp matches the string or `false` otherwise
  *
  * @example assert Regex.isMatch(Result.unwrap(Regex.make("ca+[at]")), "caaat") == true
  *
