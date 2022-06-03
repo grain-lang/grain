@@ -33,7 +33,7 @@ export let make = () => {
  * Checks if the given stack contains no items.
  *
  * @param stack: The stack to check
- * @returns `true` if the stack has no items, and `false` otherwise
+ * @returns `true` if the stack has no items or `false` otherwise
  */
 export let isEmpty = stack => {
   match (stack) {
@@ -43,10 +43,10 @@ export let isEmpty = stack => {
 }
 
 /**
- * Returns `Some(item)` where `item` is the value at the top of the stack, and `None` otherwise.
+ * Provides the value at the top of the stack, if it exists.
  *
  * @param stack: The stack to inspect
- * @returns The value at the top of the stack, if it exists
+ * @returns `Some(value)` containing the value at the top of the stack or `None` otherwise.
  */
 export let peek = stack => {
   match (stack) {
