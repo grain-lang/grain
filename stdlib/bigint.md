@@ -79,7 +79,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : BigInt -> a
+incr : BigInt -> BigInt
 ```
 
 Increments the value by one.
@@ -94,7 +94,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The incremented value|
+|`BigInt`|The incremented value|
 
 ### Bigint.**decr**
 
@@ -104,7 +104,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : BigInt -> a
+decr : BigInt -> BigInt
 ```
 
 Decrements the value by one.
@@ -119,7 +119,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The decremented value|
+|`BigInt`|The decremented value|
 
 ### Bigint.**neg**
 
@@ -179,7 +179,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (BigInt, BigInt) -> a
+add : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the sum of its operands.
@@ -195,7 +195,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The sum of the two operands|
+|`BigInt`|The sum of the two operands|
 
 ### Bigint.**sub**
 
@@ -205,7 +205,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (BigInt, BigInt) -> a
+sub : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the difference of its operands.
@@ -221,7 +221,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The difference of the two operands|
+|`BigInt`|The difference of the two operands|
 
 ### Bigint.**mul**
 
@@ -231,7 +231,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (BigInt, BigInt) -> a
+mul : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the product of its operands.
@@ -247,7 +247,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The product of the two operands|
+|`BigInt`|The product of the two operands|
 
 ### Bigint.**div**
 
@@ -337,7 +337,7 @@ No other changes yet.
 </details>
 
 ```grain
-gcd : (BigInt, BigInt) -> a
+gcd : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the greatest common divisior of the two operands.
@@ -353,7 +353,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|The greatest common divisor of its operands|
+|`BigInt`|The greatest common divisor of its operands|
 
 ## Bitwise operations
 
@@ -608,7 +608,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : BigInt -> a
+lnot : BigInt -> BigInt
 ```
 
 Computes the bitwise NOT of the given value.
@@ -623,7 +623,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|Containing the inverted bits of the given value|
+|`BigInt`|Containing the inverted bits of the given value|
 
 ### Bigint.**land**
 
@@ -633,7 +633,7 @@ No other changes yet.
 </details>
 
 ```grain
-land : (BigInt, BigInt) -> a
+land : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -649,7 +649,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
+|`BigInt`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
 ### Bigint.**lor**
 
@@ -659,7 +659,7 @@ No other changes yet.
 </details>
 
 ```grain
-lor : (BigInt, BigInt) -> a
+lor : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -675,7 +675,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+|`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
 ### Bigint.**lxor**
 
@@ -685,7 +685,7 @@ No other changes yet.
 </details>
 
 ```grain
-lxor : (BigInt, BigInt) -> a
+lxor : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -701,7 +701,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+|`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
 ### Bigint.**clz**
 
