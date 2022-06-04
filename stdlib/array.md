@@ -195,7 +195,7 @@ No other changes yet.
 append : (Array<a>, Array<a>) -> Array<a>
 ```
 
-Creates a new array with the elements the first array, followed by
+Creates a new array with the elements of the first array followed by
 the elements of the second array. This does not modify the arguments.
 
 Parameters:
@@ -329,7 +329,7 @@ Parameters:
 forEachi : (((a, Number) -> Void), Array<a>) -> Void
 ```
 
-Iterates an array, calling an iterator function with each element.
+Iterates an array, calling an iterator function on each element.
 Also passes the index as the second argument to the function.
 
 Parameters:

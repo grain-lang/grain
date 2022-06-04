@@ -171,7 +171,7 @@ export let set = (index, value, array) => {
 }
 
 /**
- * Creates a new array with the elements the first array, followed by
+ * Creates a new array with the elements of the first array followed by
  * the elements of the second array. This does not modify the arguments.
  *
  * @param array1: The array containing elements to appear first
@@ -283,7 +283,7 @@ export let forEach = (fn, array) => {
 }
 
 /**
- * Iterates an array, calling an iterator function with each element.
+ * Iterates an array, calling an iterator function on each element.
  * Also passes the index as the second argument to the function.
  *
  * @param fn: The iterator function to call with each element
