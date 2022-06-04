@@ -1,8 +1,31 @@
-// Standard library for list functionality
+/**
+ * @module List: Utilities for working with lists.
+ *
+ * @example import List from "list"
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `lists`
+ * @history v0.2.0: Renamed to `list`
+ */
 
-export *
+/**
+ * @section Values: Functions for working with the List data type.
+ */
 
-let init = (length, fn) => {
+/**
+ * Creates a new list of the specified length where each element is
+ * initialized with the result of an initializer function. The initializer
+ * is called with the index of each list element.
+ *
+ * @param length: The length of the new list
+ * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
+ * @returns The new list
+ *
+ * @example List.init(5, n => n + 3) // [3, 4, 5, 6, 7]
+ *
+ * @since v0.3.0
+ */
+export let init = (length, fn) => {
   // This method can be further improved by checking the length against a specific size
   // and determining if it can be made tail-recursive, then use List.reverse on it.
   // Which would be the same as OCaml does it in https://github.com/ocaml/ocaml/blob/03839754f46319aa36d9dad56940a6f3c3bcb48a/stdlib/list.ml#L79
@@ -16,7 +39,16 @@ let init = (length, fn) => {
   iter(0, length)
 }
 
-let length = list => {
+/**
+ * Computes the length of the input list.
+ *
+ * @param list: The list to inspect
+ * @returns The number of elements in the list
+ *
+ * @since v0.1.0
+ * @history v0.2.0: Made the function tail-recursive
+ */
+export let length = list => {
   let rec iter = (len, list) => {
     match (list) {
       [] => len,
@@ -26,7 +58,16 @@ let length = list => {
   iter(0, list)
 }
 
-let sum = list => {
+/**
+ * Adds all numbers in the input list.
+ *
+ * @param list: The input list
+ * @returns The combined sum of all values
+ *
+ * @since v0.1.0
+ * @history v0.2.0: Made the function tail-recursive
+ */
+export let sum = list => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
@@ -36,7 +77,15 @@ let sum = list => {
   iter(0, list)
 }
 
-let reverse = list => {
+/**
+ * Creates a new list with all elements in reverse order.
+ *
+ * @param list: The list to reverse
+ * @returns The new list
+ *
+ * @since v0.1.0
+ */
+export let reverse = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => acc,
@@ -46,42 +95,122 @@ let reverse = list => {
   iter(list, [])
 }
 
-let rec append = (list1, list2) => {
+/**
+ * Creates a new list with the elements of the first list followed by
+ * the elements of the second list.
+ *
+ * @param list1: The list containing elements to appear first
+ * @param list2: The list containing elements to appear second
+ * @returns The new list containing elements from `list1` followed by elements from `list2`
+ *
+ * @since v0.1.0
+ */
+export let rec append = (list1, list2) => {
   match (list1) {
     [] => list2,
     [first, ...rest] => [first, ...append(rest, list2)],
   }
 }
 
-let rec contains = (value, list) => {
+/**
+ * Checks if the value is an element of the input list.
+ * Uses the generic `==` structural equality operator.
+ *
+ * @param search: The value to compare
+ * @param list: The list to inspect
+ * @returns `true` if the value exists in the list or `false` otherwise
+ *
+ * @since v0.1.0
+ */
+export let rec contains = (search, list) => {
   match (list) {
     [] => false,
-    [first, ...rest] => first == value || contains(value, rest),
+    [first, ...rest] => first == search || contains(search, rest),
   }
 }
 
-let rec reduce = (fn, acc, list) => {
+/**
+ * Combines all elements of a list using a reducer function,
+ * starting from the "head", or left side, of the list.
+ *
+ * In `List.reduce(fn, initial, list)`, `fn` is called with
+ * an accumulator and each element of the list, and returns
+ * a new accumulator. The final value is the last accumulator
+ * returned. The accumulator starts with value `initial`.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param initial: The initial value to use for the accumulator on the first iteration
+ * @param list: The list to iterate
+ * @returns The final accumulator returned from `fn`
+ *
+ * @example List.reduce((a, b) => a + b, 0, [1, 2, 3]) // 6
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `foldLeft`
+ * @history v0.2.0: Renamed to `reduce`
+ */
+export let rec reduce = (fn, initial, list) => {
   match (list) {
-    [] => acc,
-    [first, ...rest] => reduce(fn, fn(acc, first), rest),
+    [] => initial,
+    [first, ...rest] => reduce(fn, fn(initial, first), rest),
   }
 }
 
-let rec reduceRight = (fn, acc, list) => {
+/**
+ * Combines all elements of a list using a reducer function,
+ * starting from the "end", or right side, of the list.
+ *
+ * In `List.reduceRight(fn, initial, list)`, `fn` is called with
+ * each element of the list and an accumulator, and returns
+ * a new accumulator. The final value is the last accumulator
+ * returned. The accumulator starts with value `initial`.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param initial: The initial value to use for the accumulator on the first iteration
+ * @param list: The list to iterate
+ * @returns The final accumulator returned from `fn`
+ *
+ * @example List.reduceRight((a, b) => b ++ a, "", ["baz", "bar", "foo"]) // "foobarbaz"
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `foldRight`
+ * @history v0.2.0: Renamed to `reduceRight`
+ */
+export let rec reduceRight = (fn, initial, list) => {
   match (list) {
-    [] => acc,
-    [first, ...rest] => fn(first, reduceRight(fn, acc, rest)),
+    [] => initial,
+    [first, ...rest] => fn(first, reduceRight(fn, initial, rest)),
   }
 }
 
-let rec map = (fn, list) => {
+/**
+ * Produces a new list initialized with the results of a mapper function
+ * called on each element of the input list.
+ *
+ * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new list
+ * @param list: The list to iterate
+ * @returns The new list with mapped values
+ *
+ * @since v0.1.0
+ */
+export let rec map = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => [fn(first), ...map(fn, rest)],
   }
 }
 
-let mapi = (fn, list) => {
+/**
+ * Produces a new list initialized with the results of a mapper function
+ * called on each element of the input list and its index.
+ *
+ * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new list
+ * @param list: The list to iterate
+ * @returns The new list with mapped values
+ *
+ * @since v0.1.0
+ */
+export let mapi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
@@ -91,26 +220,66 @@ let mapi = (fn, list) => {
   iter(fn, list, 0)
 }
 
-let rec flatMap = (fn, list) => {
+/**
+ * Produces a new list by calling a function on each element
+ * of the input list. Each iteration produces an intermediate
+ * list, which are all appended to produce a "flattened" list
+ * of all results.
+ *
+ * @param fn: The function to be called on each element, where the value returned will be a list that gets appended to the new list
+ * @param list: The list to iterate
+ * @returns The new list
+ *
+ * @since v0.2.0
+ */
+export let rec flatMap = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => append(fn(first), flatMap(fn, rest)),
   }
 }
 
-let every = (fn, list) => {
+/**
+ * Checks that the given condition is satisfied for all
+ * elements in the input list.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to check
+ * @returns `true` if all elements satify the condition or `false` otherwise
+ *
+ * @since v0.1.0
+ */
+export let every = (fn, list) => {
   reduce((acc, value) => {
     acc && fn(value)
   }, true, list)
 }
 
-let some = (fn, list) => {
+/**
+ * Checks that the given condition is satisfied **at least
+ * once** by an element in the input list.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to iterate
+ * @returns `true` if one or more elements satify the condition or `false` otherwise
+ *
+ * @since v0.1.0
+ */
+export let some = (fn, list) => {
   reduce((acc, value) => {
     acc || fn(value)
   }, false, list)
 }
 
-let rec forEach = (fn, list) => {
+/**
+ * Iterates a list, calling an iterator function on each element.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param list: The list to iterate
+ *
+ * @since v0.1.0
+ */
+export let rec forEach = (fn, list) => {
   match (list) {
     [] => void,
     [first, ...rest] => {
@@ -120,7 +289,16 @@ let rec forEach = (fn, list) => {
   }
 }
 
-let forEachi = (fn, list) => {
+/**
+ * Iterates a list, calling an iterator function on each element.
+ * Also passes the index as the second argument to the function.
+ *
+ * @param fn: The iterator function to call with each element
+ * @param list: The list to iterate
+ *
+ * @since v0.1.0
+ */
+export let forEachi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => void,
@@ -133,7 +311,18 @@ let forEachi = (fn, list) => {
   iter(fn, list, 0)
 }
 
-let rec filter = (fn, list) => {
+/**
+ * Produces a new list by calling a function on each element of
+ * the input list and only including it in the result list if the element satisfies
+ * the condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to iterate
+ * @returns The new list containing elements where `fn` returned `true`
+ *
+ * @since v0.1.0
+ */
+export let rec filter = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
@@ -141,7 +330,18 @@ let rec filter = (fn, list) => {
   }
 }
 
-let filteri = (fn, list) => {
+/**
+ * Produces a new list by calling a function on each element of
+ * the input list and only including it in the result list if the element satisfies
+ * the condition. Also passes the index to the function.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to iterate
+ * @returns The new list containing elements where `fn` returned `true`
+ *
+ * @since v0.3.0
+ */
+export let filteri = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
@@ -153,7 +353,18 @@ let filteri = (fn, list) => {
   iter(fn, list, 0)
 }
 
-let rec reject = (fn, list) => {
+/**
+ * Produces a new list by calling a function on each element of
+ * the input list and excluding it from the result list if the element satisfies
+ * the condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to iterate
+ * @returns The new list containing elements where `fn` returned `false`
+ *
+ * @since v0.1.0
+ */
+export let rec reject = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
@@ -161,21 +372,57 @@ let rec reject = (fn, list) => {
   }
 }
 
-let head = list => {
+/**
+ * Provides `Some(element)` containing the first element, or "head", of
+ * the input list or `None` if the list is empty.
+ *
+ * @param list: The list to access
+ * @returns `Some(firstElement)` if the list has elements or `None` otherwise
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `hd`
+ * @history v0.2.0: Renamed to `head`
+ * @history v0.3.0: Return type converted to `Option` type
+ */
+export let head = list => {
   match (list) {
     [] => None,
     [first, ..._] => Some(first),
   }
 }
 
-let tail = list => {
+/**
+ * Provides `Some(tail)` containing all list items except the first element, or "tail", of
+ * the input list or `None` if the list is empty.
+ *
+ * @param list: The list to access
+ * @returns `Some(tail)` if the list has elements or `None` otherwise
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `tl`
+ * @history v0.2.0: Renamed to `tail`
+ * @history v0.3.0: Return type converted to `Option` type
+ */
+export let tail = list => {
   match (list) {
     [] => None,
     [_, ...rest] => Some(rest),
   }
 }
 
-let rec nth = (index, list) => {
+/**
+ * Provides `Some(element)` containing the element in the list at the specified index
+ * or `None` if the index is out-of-bounds or the list is empty.
+ *
+ * @param index: The index to access
+ * @param list: The list to access
+ * @returns `Some(element)` if the list contains an element at the index or `None` otherwise
+ *
+ * @since v0.1.0
+ * @history v0.1.0: Originally failed for index out-of-bounds or list empty
+ * @history v0.3.0: Return type converted to `Option` type
+ */
+export let rec nth = (index, list) => {
   if (index < 0) {
     None
   } else {
@@ -186,14 +433,35 @@ let rec nth = (index, list) => {
   }
 }
 
-let rec flatten = list => {
+/**
+ * Flattens nested lists.
+ *
+ * @param list: The list to flatten
+ * @returns A new list containing all nested list elements combined
+ *
+ * @example List.flatten([[1, 2], [3, 4]]) // [1, 2, 3, 4]
+ *
+ * @since v0.1.0
+ */
+export let rec flatten = list => {
   match (list) {
     [] => [],
     [first, ...rest] => append(first, flatten(rest)),
   }
 }
 
-let rec insert = (value, index, list) => {
+/**
+ * Inserts a new value into a list at the specified index.
+ * Fails if the index is out-of-bounds.
+ *
+ * @param value: The value to insert
+ * @param index: The index to update
+ * @param list: The list to update
+ * @returns The new list
+ *
+ * @since v0.1.0
+ */
+export let rec insert = (value, index, list) => {
   if (index < 0) {
     fail "insert index cannot be a negative number"
   } else {
@@ -206,7 +474,17 @@ let rec insert = (value, index, list) => {
   }
 }
 
-let count = (fn, list) => {
+/**
+ * Counts the number of elements in a list that satisfy the given condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to iterate
+ * @returns The total number of elements that satisfy the condition
+ *
+ * @since v0.1.0
+ * @history v0.2.0: Made the function tail-recursive
+ */
+export let count = (fn, list) => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
@@ -216,7 +494,17 @@ let count = (fn, list) => {
   iter(0, list)
 }
 
-let part = (count, list) => {
+/**
+ * Split a list into two, with the first list containing the required number of elements.
+ * Fails if the input list doesn't contain at least the required amount of elements.
+ *
+ * @param count: The number of elements required
+ * @param list: The list to split
+ * @returns Two lists where the first contains exactly the required amount of elements and the second contains any remaining elements
+ *
+ * @since v0.1.0
+ */
+export let part = (count, list) => {
   if (count < 0) {
     fail "part count cannot be a negative number"
   } else {
@@ -234,13 +522,40 @@ let part = (count, list) => {
   }
 }
 
-let rotate = (count, list) => {
+/**
+ * Rotates list elements by the specified amount to the left.
+ *
+ * If value is negative, list elements will be rotated by the
+ * specified amount to the right. See examples.
+ *
+ * Fails if the input list doesn't contain at least the required amount of elements.
+ *
+ * @param count: The number of elements to rotate by
+ * @param list: The list to be rotated
+ *
+ * @example List.rotate(2, [1, 2, 3, 4, 5]) // [3, 4, 5, 1, 2]
+ * @example List.rotate(-1, [1, 2, 3, 4, 5]) // [5, 1, 2, 3, 4]
+ *
+ * @since v0.1.0
+ */
+export let rotate = (count, list) => {
   let (beginning, end) = if (count >= 0) part(count, list)
     else part(length(list) + count, list)
   append(end, beginning)
 }
 
-let unique = list => {
+/**
+ * Produces a new list with any duplicates removed.
+ * Uses the generic `==` structural equality operator.
+ *
+ * @param list: The list to filter
+ * @returns The new list with only unique values
+ *
+ * @since v0.2.0
+ * @history v0.1.0: Originally named `uniq`
+ * @history v0.2.0: Renamed to `unique`
+ */
+export let unique = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => reverse(acc),
@@ -252,11 +567,23 @@ let unique = list => {
   iter(list, [])
 }
 
-let rec drop = (n, list) => {
-  if (n < 0) {
+/**
+ * Produces a new list with the specified number of elements removed from
+ * the beginning of the input list.
+ *
+ * Fails if the specified amount is a negative number.
+ *
+ * @param count: The amount of elements to remove
+ * @param list: The input list
+ * @returns The new list without the dropped elements
+ *
+ * @since v0.2.0
+ */
+export let rec drop = (count, list) => {
+  if (count < 0) {
     fail "number of items to drop cannot be a negative number"
   } else {
-    match ((n, list)) {
+    match ((count, list)) {
       (_, []) => [],
       (n, _) when n == 0 => list,
       (n, [first, ...rest]) => drop(n - 1, rest),
@@ -264,18 +591,41 @@ let rec drop = (n, list) => {
   }
 }
 
-let rec dropWhile = (fn, list) => {
+/**
+ * Produces a new list with the elements removed from the beginning
+ * of the input list until they no longer satisfy the given condition.
+ * Stops when the predicate function returns `false`.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The input list
+ * @returns The new list without the dropped elements
+ *
+ * @since v0.2.0
+ */
+export let rec dropWhile = (fn, list) => {
   match (list) {
     [] => list,
     [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list,
   }
 }
 
-let rec take = (n, list) => {
-  if (n < 0) {
+/**
+ * Produces a new list with–at most—the specified amount elements from
+ * the beginning of the input list.
+ *
+ * Fails if the specified amount is a negative number.
+ *
+ * @param count: The amount of elements to keep
+ * @param list: The input list
+ * @returns The new list containing the taken elements
+ *
+ * @since v0.2.0
+ */
+export let rec take = (count, list) => {
+  if (count < 0) {
     fail "number of items to take cannot be a negative number"
   } else {
-    match ((n, list)) {
+    match ((count, list)) {
       (_, []) => list,
       (n, _) when n == 0 => [],
       (n, [first, ...rest]) => [first, ...take(n - 1, rest)],
@@ -283,21 +633,54 @@ let rec take = (n, list) => {
   }
 }
 
-let rec takeWhile = (p, list) => {
+/**
+ * Produces a new list with elements from the beginning of the input list
+ * as long as they satisfy the given condition.
+ * Stops when the predicate function returns `false`.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The input list
+ * @returns The new list containing the taken elements
+ *
+ * @since v0.2.0
+ */
+export let rec takeWhile = (fn, list) => {
   match (list) {
     [] => [],
-    [first, ...rest] => if (p(first)) [first, ...takeWhile(p, rest)] else [],
+    [first, ...rest] => if (fn(first)) [first, ...takeWhile(fn, rest)] else [],
   }
 }
 
-let rec find = (fn, list) => {
+/**
+ * Finds the first element in a list that satifies the given condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to search
+ * @returns `Some(element)` containing the first value found or `None` otherwise
+ *
+ * @since v0.2.0
+ * @history v0.2.0: Originally failed if the list was empty
+ * @history v0.3.0: Return type converted to `Option` type
+ */
+export let rec find = (fn, list) => {
   match (list) {
     [] => None,
     [first, ...rest] => if (fn(first)) Some(first) else find(fn, rest),
   }
 }
 
-let findIndex = (fn, list) => {
+/**
+ * Finds the first index in a list where the element satifies the given condition.
+ *
+ * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+ * @param list: The list to search
+ * @returns `Some(index)` containing the index of the first element found or `None` otherwise
+ *
+ * @since v0.2.0
+ * @history v0.2.0: Originally failed if the list was empty
+ * @history v0.3.0: Return type converted to `Option` type
+ */
+export let findIndex = (fn, list) => {
   let rec findItemIndex = (l, index) => {
     match (l) {
       [] => None,
@@ -308,25 +691,54 @@ let findIndex = (fn, list) => {
   findItemIndex(list, 0)
 }
 
-let product = (a, b) => {
+/**
+ * Combines two lists into a Cartesian product of tuples containing
+ * all ordered pairs `(a, b)`.
+ *
+ * @param list1: The list to provide values for the first tuple element
+ * @param list2: The list to provide values for the second tuple element
+ * @returns The new list containing all pairs of `(a, b)`
+ *
+ * @since v0.2.0
+ */
+export let product = (list1, list2) => {
   let mut list = []
   forEach(aItem => {
     forEach(bItem => {
       list = [(aItem, bItem), ...list]
-    }, b)
-  }, a)
+    }, list2)
+  }, list1)
   reverse(list)
 }
 
-let sub = (start, length, list) => {
+/**
+ * Provides the subset of a list given zero-based start index and amount of elements
+ * to include.
+ *
+ * Fails if the start index or amount of elements are negative numbers.
+ *
+ * @param start: The index of the list where the subset will begin (inclusive)
+ * @param length: The amount of elements to be included in the subset
+ * @param list: The input list
+ * @returns The subset of the list
+ *
+ * @since v0.2.0
+ */
+export let sub = (start, length, list) => {
   take(length, drop(start, list))
 }
 
-// Join the given list of strings with the given separator
-// @param separator: String - The separator to insert between items in the string
-// @param items: List<String> - The input strings
-// @returns String
-let join = (separator: String, items: List<String>) => {
+/**
+ * Combine the given list of strings into one string with the specified
+ * separator inserted between each item.
+ *
+ * @param separator: The separator to insert between elements
+ * @param list: The list to combine
+ * @returns The combined elements with the separator between each
+ *
+ * @since v0.4.0
+ */
+export let join = (separator: String, list: List<String>) => {
   let rec iter = (sep, acc, rem) => {
     match (rem) {
       [] => acc,
@@ -341,7 +753,7 @@ let join = (separator: String, items: List<String>) => {
   }
 
   // Reverse and reduce to take advantage of TCE
-  match (iter(separator, None, reverse(items))) {
+  match (iter(separator, None, reverse(list))) {
     None => "",
     Some(s) => s,
   }
@@ -349,12 +761,12 @@ let join = (separator: String, items: List<String>) => {
 
 /**
  * Reverses the first list and appends the second list to the end.
- * 
+ *
  * @param list1: The list to reverse
  * @param list2: The list to append
  * @since v0.4.5
  */
-let rec revAppend = (list1, list2) => {
+export let rec revAppend = (list1, list2) => {
   match (list1) {
     [hd, ...tl] => revAppend(tl, [hd, ...list2]),
     [] => list2,
@@ -363,13 +775,13 @@ let rec revAppend = (list1, list2) => {
 
 /**
  * Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
- * 
+ *
  * Ordering is calculated using a comparator function which takes two list elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
  * @param comp: The comparator function used to indicate sort order
  * @param list: The list to be sorted
  * @since v0.4.5
  */
-let sort = (comp, list) => {
+export let sort = (comp, list) => {
   let rec merge = (left, right, list) => {
     match ((left, right)) {
       (_, []) => {
