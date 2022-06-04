@@ -159,8 +159,8 @@ No other changes yet.
 append : (List<a>, List<a>) -> List<a>
 ```
 
-Creates a new list with the elements the first list, followed by
-the elements of the second list. This does not modify the arguments.
+Creates a new list with the elements of the first list followed by
+the elements of the second list.
 
 Parameters:
 
@@ -464,7 +464,7 @@ No other changes yet.
 forEachi : (((a, Number) -> b), List<a>) -> Void
 ```
 
-Iterates a list, calling an iterator function with each element.
+Iterates a list, calling an iterator function on each element.
 Also passes the index as the second argument to the function.
 
 Parameters:
@@ -793,10 +793,10 @@ No other changes yet.
 rotate : (Number, List<a>) -> List<a>
 ```
 
-Rotates list elements by the specified amount to the right.
+Rotates list elements by the specified amount to the left.
 
 If value is negative, list elements will be rotated by the
-specified amount to the left. See examples.
+specified amount to the right. See examples.
 
 Fails if the input list doesn't contain at least the required amount of elements.
 
@@ -862,7 +862,7 @@ No other changes yet.
 drop : (Number, List<a>) -> List<a>
 ```
 
-Produces a new list with the specified amount elements removed from
+Produces a new list with the specified number of elements removed from
 the beginning of the input list.
 
 Fails if the specified amount is a negative number.
