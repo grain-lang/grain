@@ -1,5 +1,3 @@
-export *
-
 import Exception from "runtime/exception"
 import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
@@ -26,6 +24,7 @@ import {
   (>>>),
   (>>),
 } from "runtime/numbers"
+import { toString, print, concat as (++) } from "runtime/string"
 
 // Math operations
 export incr
@@ -60,25 +59,23 @@ export (>>)
 // import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
 // Boolean operations
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
+export primitive (!): Bool -> Bool = "@not"
+export primitive (&&): (Bool, Bool) -> Bool = "@and"
+export primitive (||): (Bool, Bool) -> Bool = "@or"
 
 // Box operations
-primitive box: a -> Box<a> = "@box"
-primitive unbox: Box<a> -> a = "@unbox"
+export primitive box: a -> Box<a> = "@box"
+export primitive unbox: Box<a> -> a = "@unbox"
 
 // Exceptions
-exception Failure(String)
-exception InvalidArgument(String)
+export exception Failure(String)
+export exception InvalidArgument(String)
 
 // Other operations
-primitive ignore: a -> Void = "@ignore"
-primitive assert: Bool -> Void = "@assert"
-primitive throw: Exception -> a = "@throw"
-let fail: String -> a = msg => throw Failure(msg)
-
-import { toString, print, concat as (++) } from "runtime/string"
+export primitive ignore: a -> Void = "@ignore"
+export primitive assert: Bool -> Void = "@assert"
+export primitive throw: Exception -> a = "@throw"
+export let fail: String -> a = msg => throw Failure(msg)
 
 // Converts the given value to a string
 export toString
@@ -90,11 +87,11 @@ export (++)
 
 // Checks the given items for structural equality.
 export (==)
-let (!=): (a, a) -> Bool = (x, y) => !(x == y)
+export let (!=): (a, a) -> Bool = (x, y) => !(x == y)
 // Checks the given items for physical equality.
-primitive (is): (a, a) -> Bool = "@is"
+export primitive (is): (a, a) -> Bool = "@is"
 // The opposite of is operator
-let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
+export let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
 
 export enum List<a> {
   [],
@@ -104,27 +101,27 @@ export enum List<a> {
 /**
  * @deprecated This will be removed in a future release of Grain.
  */
-let cons = (a, b) =>
+export let cons = (a, b) =>
   [
     a,
     ...b
   ] // <- workaround for (grain-lang/grain#802) [TODO] fix #802 and delete
-let empty = [] // <- for parity with `cons`, but should be deleted as well
+export let empty = [] // <- for parity with `cons`, but should be deleted as well
 
 // Maybe some data, maybe not!
-enum Option<a> {
+export enum Option<a> {
   Some(a),
   None,
 }
 
 // Maybe some data, maybe an error!
-enum Result<t, e> {
+export enum Result<t, e> {
   Ok(t),
   Err(e),
 }
 
 // Identity function
-let identity = x => x
+export let identity = x => x
 
 // Setup exception printing
 @disableGC
