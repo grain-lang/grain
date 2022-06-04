@@ -23,7 +23,13 @@ let unique_names = ref(Ident.empty);
 
 let ident_name = id =>
   try(Ident.find_same(id, unique_names^)) {
-  | Not_found => Ident.name(id)
+  | Not_found =>
+    let name = Ident.name(id);
+    if (Oprint.parenthesized_ident(name)) {
+      "(" ++ name ++ ")";
+    } else {
+      name;
+    };
   };
 
 let add_unique = id =>
