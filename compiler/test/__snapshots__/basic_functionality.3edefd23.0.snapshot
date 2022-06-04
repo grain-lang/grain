@@ -8,9 +8,9 @@ basic functionality › decr_3
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$decr\" (global $decr_1131 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$decr\" (global $decr_1128 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"decr\" (func $decr_1131 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"decr\" (func $decr_1128 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -28,10 +28,10 @@ basic functionality › decr_3
    (block $cleanup_locals.2 (result i32)
     (local.set $0
      (block $compile_block.1 (result i32)
-      (call $decr_1131
+      (call $decr_1128
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $decr_1131)
+        (global.get $decr_1128)
        )
        (i32.const 1)
       )

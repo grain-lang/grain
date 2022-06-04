@@ -10,13 +10,13 @@ imports › import_some_mixed
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1142 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1140 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $sum_1138 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1139 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1137 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $sum_1135 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1140 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"sum\" (func $sum_1138 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1137 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"sum\" (func $sum_1135 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -39,15 +39,15 @@ imports › import_some_mixed
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $Cons_1140
+          (call $Cons_1137
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $Cons_1140)
+            (global.get $Cons_1137)
            )
            (i32.const 11)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $Empty_1142)
+            (global.get $Empty_1139)
            )
           )
           (call $decRef_0
@@ -60,10 +60,10 @@ imports › import_some_mixed
        (block $do_backpatches.1
        )
       )
-      (call $sum_1138
+      (call $sum_1135
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $sum_1138)
+        (global.get $sum_1135)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)

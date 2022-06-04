@@ -10,11 +10,11 @@ lists › list1_trailing
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $[]_1137 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $[...]_1131 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $[]_1134 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $[...]_1128 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $[...]_1131 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $[...]_1128 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -38,15 +38,15 @@ lists › list1_trailing
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1131
+          (call $[...]_1128
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1131)
+            (global.get $[...]_1128)
            )
            (i32.const 7)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[]_1137)
+            (global.get $[]_1134)
            )
           )
           (call $decRef_0
@@ -63,10 +63,10 @@ lists › list1_trailing
        (local.set $7
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1131
+          (call $[...]_1128
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1131)
+            (global.get $[...]_1128)
            )
            (i32.const 5)
            (call $incRef_0
@@ -84,10 +84,10 @@ lists › list1_trailing
        (block $do_backpatches.3
        )
       )
-      (call $[...]_1131
+      (call $[...]_1128
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $[...]_1131)
+        (global.get $[...]_1128)
        )
        (i32.const 3)
        (call $incRef_0

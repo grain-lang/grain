@@ -9,10 +9,10 @@ imports › import_some_constructor
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1140 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1138 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1137 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1135 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1138 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1135 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -30,15 +30,15 @@ imports › import_some_constructor
    (block $cleanup_locals.2 (result i32)
     (local.set $0
      (block $compile_block.1 (result i32)
-      (call $Cons_1138
+      (call $Cons_1135
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $Cons_1138)
+        (global.get $Cons_1135)
        )
        (i32.const 11)
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $Empty_1140)
+        (global.get $Empty_1137)
        )
       )
      )

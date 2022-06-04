@@ -11,18 +11,18 @@ basic functionality › unsafe_wasm_globals
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F64_VAL\" (global $_F64_VAL_1162 (mut f64)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printF64\" (global $printF64_1161 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F32_VAL\" (global $_F32_VAL_1160 (mut f32)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printF32\" (global $printF32_1159 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I64_VAL\" (global $_I64_VAL_1158 (mut i64)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printI64\" (global $printI64_1157 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I32_VAL\" (global $_I32_VAL_1156 (mut i32)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printI32\" (global $printI32_1155 (mut i32)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printF64\" (func $printF64_1161 (param i32 f64) (result i32)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printF32\" (func $printF32_1159 (param i32 f32) (result i32)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printI64\" (func $printI64_1157 (param i32 i64) (result i32)))
- (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printI32\" (func $printI32_1155 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F64_VAL\" (global $_F64_VAL_1159 (mut f64)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printF64\" (global $printF64_1158 (mut i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F32_VAL\" (global $_F32_VAL_1157 (mut f32)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printF32\" (global $printF32_1156 (mut i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I64_VAL\" (global $_I64_VAL_1155 (mut i64)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printI64\" (global $printI64_1154 (mut i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I32_VAL\" (global $_I32_VAL_1153 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"GRAIN$EXPORT$printI32\" (global $printI32_1152 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printF64\" (func $printF64_1158 (param i32 f64) (result i32)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printF32\" (func $printF32_1156 (param i32 f32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printI64\" (func $printI64_1154 (param i32 i64) (result i32)))
+ (import \"GRAIN$MODULE$runtime/unsafe/printWasm\" \"printI32\" (func $printI32_1152 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -39,26 +39,26 @@ basic functionality › unsafe_wasm_globals
   (return
    (block $compile_block.1 (result i32)
     (drop
-     (call $printI32_1155
-      (global.get $printI32_1155)
-      (global.get $_I32_VAL_1156)
+     (call $printI32_1152
+      (global.get $printI32_1152)
+      (global.get $_I32_VAL_1153)
      )
     )
     (drop
-     (call $printI64_1157
-      (global.get $printI64_1157)
-      (global.get $_I64_VAL_1158)
+     (call $printI64_1154
+      (global.get $printI64_1154)
+      (global.get $_I64_VAL_1155)
      )
     )
     (drop
-     (call $printF32_1159
-      (global.get $printF32_1159)
-      (global.get $_F32_VAL_1160)
+     (call $printF32_1156
+      (global.get $printF32_1156)
+      (global.get $_F32_VAL_1157)
      )
     )
-    (call $printF64_1161
-     (global.get $printF64_1161)
-     (global.get $_F64_VAL_1162)
+    (call $printF64_1158
+     (global.get $printF64_1158)
+     (global.get $_F64_VAL_1159)
     )
    )
   )
