@@ -201,7 +201,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the RegExp matches the string, otherwise `false`|
+|`Bool`|`true` if the RegExp matches the string or `false` otherwise|
 
 Examples:
 

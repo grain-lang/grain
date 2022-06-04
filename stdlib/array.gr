@@ -43,7 +43,7 @@ let initLength = length => {
 }
 
 /**
- * Returns the length of the input array.
+ * Provides the length of the input array.
  *
  * @param array: The array to inspect
  * @returns The number of elements in the array
@@ -105,7 +105,7 @@ export let rec make /*: (Number, a) -> Array<a>*/ =
  * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
  * @returns The new array
  *
- * @example Array.init(5, n => n + 3) // [> 8, 9, 10, 11, 12]
+ * @example Array.init(5, n => n + 3) // [> 3, 4, 5, 6, 7]
  *
  * @since v0.1.0
  */
@@ -171,8 +171,8 @@ export let set = (index, value, array) => {
 }
 
 /**
- * Creates a new array with the items the first array, followed by
- * the items of the second array. This does not modify the arguments.
+ * Creates a new array with the elements of the first array followed by
+ * the elements of the second array. This does not modify the arguments.
  *
  * @param array1: The array containing elements to appear first
  * @param array2: The array containing elements to appear second
@@ -283,7 +283,7 @@ export let forEach = (fn, array) => {
 }
 
 /**
- * Iterates an array, calling an iterator function with each element.
+ * Iterates an array, calling an iterator function on each element.
  * Also passes the index as the second argument to the function.
  *
  * @param fn: The iterator function to call with each element
@@ -403,7 +403,7 @@ export let flatMap = (fn, array) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to check
- * @returns `true` if all elements satify the condition, otherwise `false`
+ * @returns `true` if all elements satify the condition or `false` otherwise
  *
  * @since v0.3.0
  */
@@ -415,11 +415,11 @@ export let every = (fn, array) => {
 
 /**
  * Checks that the given condition is satisfied **at least
- * once** by an item in the input array.
+ * once** by an element in the input array.
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
- * @returns `true` if one or more elements satify the condition, otherwise `false`
+ * @returns `true` if one or more elements satify the condition or `false` otherwise
  *
  * @since v0.3.0
  */
@@ -549,8 +549,8 @@ export let fromList = list => {
  * Uses the generic `==` structural equality operator.
  *
  * @param search: The value to compare
- * @param array: The array to iterate
- * @returns `true` if the value exists in the array, otherwise `false`
+ * @param array: The array to inspect
+ * @returns `true` if the value exists in the array or `false` otherwise
  *
  * @since v0.2.0
  */
@@ -569,7 +569,7 @@ export let contains = (search, array) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
- * @returns `Some(element)` containing the first value found and `None` otherwise
+ * @returns `Some(element)` containing the first value found or `None` otherwise
  *
  * @since v0.2.0
  */
@@ -603,7 +603,7 @@ export let find = (fn, array) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
- * @returns `Some(index)` containing the index of the first element found and `None` otherwise
+ * @returns `Some(index)` containing the index of the first element found or `None` otherwise
  *
  * @since v0.2.0
  */
@@ -917,10 +917,10 @@ export let sort = (comp, array) => {
 }
 
 /**
- * Rotates an array by n elements to the right, in place.
+ * Rotates array elements by the specified amount to the right, in place.
  *
- * If n is negative, the array will be rotated by n elements
- * to the left. See examples.
+ * If value is negative, array elements will be rotated by the
+ * specified amount to the left. See examples.
  *
  * @param n: The number of elements to rotate by
  * @param arr: The array to be rotated

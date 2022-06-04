@@ -36,7 +36,7 @@ No other changes yet.
 length : Array<a> -> Number
 ```
 
-Returns the length of the input array.
+Provides the length of the input array.
 
 Parameters:
 
@@ -114,7 +114,7 @@ Returns:
 Examples:
 
 ```grain
-Array.init(5, n => n + 3) // [> 8, 9, 10, 11, 12]
+Array.init(5, n => n + 3) // [> 3, 4, 5, 6, 7]
 ```
 
 ### Array.**get**
@@ -195,8 +195,8 @@ No other changes yet.
 append : (Array<a>, Array<a>) -> Array<a>
 ```
 
-Creates a new array with the items the first array, followed by
-the items of the second array. This does not modify the arguments.
+Creates a new array with the elements of the first array followed by
+the elements of the second array. This does not modify the arguments.
 
 Parameters:
 
@@ -329,7 +329,7 @@ Parameters:
 forEachi : (((a, Number) -> Void), Array<a>) -> Void
 ```
 
-Iterates an array, calling an iterator function with each element.
+Iterates an array, calling an iterator function on each element.
 Also passes the index as the second argument to the function.
 
 Parameters:
@@ -527,7 +527,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if all elements satify the condition, otherwise `false`|
+|`Bool`|`true` if all elements satify the condition or `false` otherwise|
 
 ### Array.**some**
 
@@ -541,7 +541,7 @@ some : ((a -> Bool), Array<a>) -> Bool
 ```
 
 Checks that the given condition is satisfied **at least
-once** by an item in the input array.
+once** by an element in the input array.
 
 Parameters:
 
@@ -554,7 +554,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if one or more elements satify the condition, otherwise `false`|
+|`Bool`|`true` if one or more elements satify the condition or `false` otherwise|
 
 ### Array.**fill**
 
@@ -693,13 +693,13 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`search`|`a`|The value to compare|
-|`array`|`Array<a>`|The array to iterate|
+|`array`|`Array<a>`|The array to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the value exists in the array, otherwise `false`|
+|`Bool`|`true` if the value exists in the array or `false` otherwise|
 
 ### Array.**find**
 
@@ -725,7 +725,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some(element)` containing the first value found and `None` otherwise|
+|`Option<a>`|`Some(element)` containing the first value found or `None` otherwise|
 
 ### Array.**findIndex**
 
@@ -751,7 +751,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<Number>`|`Some(index)` containing the index of the first element found and `None` otherwise|
+|`Option<Number>`|`Some(index)` containing the index of the first element found or `None` otherwise|
 
 ### Array.**product**
 
@@ -1060,10 +1060,10 @@ No other changes yet.
 rotate : (Number, Array<a>) -> Void
 ```
 
-Rotates an array by n elements to the right, in place.
+Rotates array elements by the specified amount to the right, in place.
 
-If n is negative, the array will be rotated by n elements
-to the left. See examples.
+If value is negative, array elements will be rotated by the
+specified amount to the left. See examples.
 
 Parameters:
 

@@ -56,7 +56,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the stack has no items, and `false` otherwise|
+|`Bool`|`true` if the stack has no items or `false` otherwise|
 
 ### Stack.**peek**
 
@@ -64,7 +64,7 @@ Returns:
 peek : Stack<a> -> Option<a>
 ```
 
-Returns `Some(item)` where `item` is the value at the top of the stack, and `None` otherwise.
+Provides the value at the top of the stack, if it exists.
 
 Parameters:
 
@@ -76,7 +76,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The value at the top of the stack, if it exists|
+|`Option<a>`|`Some(value)` containing the value at the top of the stack or `None` otherwise.|
 
 ### Stack.**push**
 
