@@ -97,25 +97,25 @@ numberEqual : (WasmI32, WasmI32) -> Bool
 ### Numbers.**<**
 
 ```grain
-( < ) : (Number, Number) -> Bool
+(<) : (Number, Number) -> Bool
 ```
 
 ### Numbers.**>**
 
 ```grain
-( > ) : (Number, Number) -> Bool
+(>) : (Number, Number) -> Bool
 ```
 
 ### Numbers.**<=**
 
 ```grain
-( <= ) : (Number, Number) -> Bool
+(<=) : (Number, Number) -> Bool
 ```
 
 ### Numbers.**>=**
 
 ```grain
-( >= ) : (Number, Number) -> Bool
+(>=) : (Number, Number) -> Bool
 ```
 
 ### Numbers.**numberEq**
@@ -133,37 +133,37 @@ lnot : Number -> Number
 ### Numbers.**<<**
 
 ```grain
-( << ) : (Number, Number) -> Number
+(<<) : (Number, Number) -> Number
 ```
 
 ### Numbers.**>>>**
 
 ```grain
-( >>> ) : (Number, Number) -> Number
+(>>>) : (Number, Number) -> Number
 ```
 
 ### Numbers.**&**
 
 ```grain
-( & ) : (Number, Number) -> Number
+(&) : (Number, Number) -> Number
 ```
 
 ### Numbers.**|**
 
 ```grain
-( | ) : (Number, Number) -> Number
+(|) : (Number, Number) -> Number
 ```
 
 ### Numbers.**^**
 
 ```grain
-( ^ ) : (Number, Number) -> Number
+(^) : (Number, Number) -> Number
 ```
 
 ### Numbers.**>>**
 
 ```grain
-( >> ) : (Number, Number) -> Number
+(>>) : (Number, Number) -> Number
 ```
 
 ### Numbers.**coerceNumberToInt32**
@@ -253,31 +253,31 @@ convertInexactToExact : Number -> Number
 ### Numbers.**+**
 
 ```grain
-( + ) : (Number, Number) -> Number
+(+) : (Number, Number) -> Number
 ```
 
 ### Numbers.**-**
 
 ```grain
-( - ) : (Number, Number) -> Number
+(-) : (Number, Number) -> Number
 ```
 
 ### Numbers.*****
 
 ```grain
-( * ) : (Number, Number) -> Number
+(*) : (Number, Number) -> Number
 ```
 
 ### Numbers.**/**
 
 ```grain
-( / ) : (Number, Number) -> Number
+(/) : (Number, Number) -> Number
 ```
 
 ### Numbers.**%**
 
 ```grain
-( % ) : (Number, Number) -> Number
+(%) : (Number, Number) -> Number
 ```
 
 ### Numbers.**incr**
