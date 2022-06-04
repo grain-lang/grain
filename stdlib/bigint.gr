@@ -51,7 +51,7 @@ export toNumber
  */
 @unsafe
 export let incr = (num: BigInt) => {
-  WasmI32.toGrain(BI.incr(WasmI32.fromGrain(num)))
+  WasmI32.toGrain(BI.incr(WasmI32.fromGrain(num))): BigInt
 }
 
 /**
@@ -64,7 +64,7 @@ export let incr = (num: BigInt) => {
  */
 @unsafe
 export let decr = (num: BigInt) => {
-  WasmI32.toGrain(BI.decr(WasmI32.fromGrain(num)))
+  WasmI32.toGrain(BI.decr(WasmI32.fromGrain(num))): BigInt
 }
 
 /**
@@ -104,7 +104,9 @@ export let abs = (num: BigInt) => {
  */
 @unsafe
 export let add = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+  WasmI32.toGrain(
+    BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 /**
@@ -118,7 +120,9 @@ export let add = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 export let sub = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+  WasmI32.toGrain(
+    BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 /**
@@ -132,7 +136,9 @@ export let sub = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 export let mul = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+  WasmI32.toGrain(
+    BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 // For further reading on Truncated vs. Floored division: https://en.wikipedia.org/wiki/Modulo_operation
@@ -201,7 +207,9 @@ export let quotRem = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 export let gcd = (num1: BigInt, num2: BigInt) => {
-  WasmI32.toGrain(BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2)))
+  WasmI32.toGrain(
+    BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ): BigInt
 }
 
 /**
@@ -368,7 +376,7 @@ export let gte = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 export let lnot = (num: BigInt) => {
-  WasmI32.toGrain(BI.bitwiseNot(WasmI32.fromGrain(num)))
+  WasmI32.toGrain(BI.bitwiseNot(WasmI32.fromGrain(num))): BigInt
 }
 
 /**
@@ -384,7 +392,7 @@ export let lnot = (num: BigInt) => {
 export let land = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseAnd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  )
+  ): BigInt
 }
 
 /**
@@ -400,7 +408,7 @@ export let land = (num1: BigInt, num2: BigInt) => {
 export let lor = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseOr(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  )
+  ): BigInt
 }
 
 /**
@@ -416,7 +424,7 @@ export let lor = (num1: BigInt, num2: BigInt) => {
 export let lxor = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseXor(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
-  )
+  ): BigInt
 }
 
 /**
