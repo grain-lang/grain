@@ -96,8 +96,8 @@ export let reverse = list => {
 }
 
 /**
- * Creates a new list with the elements the first list, followed by
- * the elements of the second list. This does not modify the arguments.
+ * Creates a new list with the elements of the first list followed by
+ * the elements of the second list.
  *
  * @param list1: The list containing elements to appear first
  * @param list2: The list containing elements to appear second
@@ -290,7 +290,7 @@ export let rec forEach = (fn, list) => {
 }
 
 /**
- * Iterates a list, calling an iterator function with each element.
+ * Iterates a list, calling an iterator function on each element.
  * Also passes the index as the second argument to the function.
  *
  * @param fn: The iterator function to call with each element
@@ -523,10 +523,10 @@ export let part = (count, list) => {
 }
 
 /**
- * Rotates list elements by the specified amount to the right.
+ * Rotates list elements by the specified amount to the left.
  *
  * If value is negative, list elements will be rotated by the
- * specified amount to the left. See examples.
+ * specified amount to the right. See examples.
  *
  * Fails if the input list doesn't contain at least the required amount of elements.
  *
@@ -568,7 +568,7 @@ export let unique = list => {
 }
 
 /**
- * Produces a new list with the specified amount elements removed from
+ * Produces a new list with the specified number of elements removed from
  * the beginning of the input list.
  *
  * Fails if the specified amount is a negative number.
