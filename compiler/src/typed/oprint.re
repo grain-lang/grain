@@ -50,7 +50,7 @@ let parenthesized_ident = name =>
 
 let value_ident = (ppf, name) =>
   if (parenthesized_ident(name)) {
-    fprintf(ppf, "( %s )", name);
+    fprintf(ppf, "(%s)", name);
   } else {
     pp_print_string(ppf, name);
   };
