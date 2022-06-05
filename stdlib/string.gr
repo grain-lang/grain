@@ -47,9 +47,9 @@ exception MalformedUnicode
  * @param str2: The ending string
  * @returns The combined string
  *
- * @example String.concat("Foo", " Bar") == "FooBar"
+ * @example String.concat("Foo", "Bar") == "FooBar"
  *
- * @since v0.1.0
+ * @since v0.2.0
  */
 export let concat = (++)
 
