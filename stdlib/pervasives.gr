@@ -1,3 +1,11 @@
+/**
+ * @module Pervasives: This module is automatically imported into every Grain program. You can think of it as the global environment. Although it is automatically imported, it can still be imported manually.
+ *
+ * @example import Pervasives from "pervasives"
+ *
+ * @since v0.1.0
+ */
+
 import Exception from "runtime/exception"
 import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
@@ -26,30 +34,378 @@ import {
 } from "runtime/numbers"
 import { toString, print, concat as (++) } from "runtime/string"
 
-// Math operations
-export incr
-export decr
-export (+)
-export (-)
-export (*)
-export (/)
-export (%)
+/**
+ * @section Types: Type declarations included in the Pervasives module.
+ */
 
-// Number comparisons
+/**
+ * The type of Grain lists.
+ *
+ * @example [1, 2, 3]
+ * @example []
+ *
+ * @since v0.1.0
+ */
+export enum List<a> {
+  [],
+  [...](a, List<a>),
+}
+
+/**
+ * Grain's type representing something that may or may not contain data.
+ * Think of this like a better, type-safe "null".
+ *
+ * @since v0.2.0
+ */
+export enum Option<a> {
+  Some(a),
+  None,
+}
+
+/**
+ * Grain's type representing the result of something that might error.
+ *
+ * @since v0.2.0
+ */
+export enum Result<t, e> {
+  Ok(t),
+  Err(e),
+}
+
+/**
+ * @section Boolean operations: Infix functions for working with Boolean values.
+ */
+
+/**
+ * Computes the logical NOT (`!`) of the given operand.
+ * Inverts the given Boolean value.
+ *
+ * @param value: The operand
+ * @returns The inverted value
+ *
+ * @example !true // false
+ * @example !false // true
+ *
+ * @since v0.1.0
+ */
+export primitive (!): Bool -> Bool = "@not"
+
+/**
+ * Computes the logical AND (`&&`) of the given operands.
+ *
+ * If the first operand is `false`, returns `false` without evaluating the second operand.
+ * If the first operand is `true`, returns the value of the second operand.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns The first operand if it is `false` or the value of the second operand otherwise
+ *
+ * @since v0.1.0
+ */
+export primitive (&&): (Bool, Bool) -> Bool = "@and"
+
+/**
+ * Computes the logical OR `||` of the given operands.
+ *
+ * If the first operand is `true`, returns `true` without evaluating the second operand.
+ * If the first operand is `false`, returns the value of the second operand.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns The first operand if it is `true` or the value of the second operand otherwise
+ *
+ * @since v0.1.0
+ */
+export primitive (||): (Bool, Bool) -> Bool = "@or"
+
+/**
+ * @section Comparison operations: Infix functions for comparing values.
+ */
+
+/**
+ * Check that two values are equal. This checks for structural equality,
+ * so it also works for comparing things like tuples and lists.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns `true` if the values are structurally equal or `false` otherwise
+ *
+ * @since v0.1.0
+ */
+export (==)
+
+/**
+ * Check that two values are **not** equal. This checks for structural equality,
+ * so it also works for comparing things like tuples and lists.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns `false` if the values are structurally equal or `true` otherwise
+ *
+ * @since v0.2.0
+ */
+export let (!=): (a, a) -> Bool = (x, y) => !(x == y)
+
+/**
+ * Checks that two values are physically equal.
+ * Use this operator if you don’t need or want structural equality.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns `true` if the values are physically equal or `false` otherwise
+ *
+ * @since v0.1.0
+ */
+export primitive (is): (a, a) -> Bool = "@is"
+
+/**
+ * Checks that two values are **not** physically equal.
+ * Use this operator if you don’t need or want structural equality.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns `false` if the values are physically equal or `true` otherwise
+ *
+ * @since v0.2.0
+ */
+export let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
+
+/**
+ * @section Number comparisons: Infix functions for comparing Number values.
+ */
+
+/**
+ * Checks if the first operand is less than the second operand.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns `true` if the first operand is less than the second operand or `false` otherwise
+ *
+ * @since v0.1.0
+ */
 export (<)
+
+/**
+ * Checks if the first operand is greater than the second operand.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns `true` if the first operand is greater than the second operand or `false` otherwise
+ *
+ * @since v0.1.0
+ */
 export (>)
+
+/**
+ * Checks if the first operand is less than or equal to the second operand.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns `true` if the first operand is less than or equal to the second operand or `false` otherwise
+ *
+ * @since v0.1.0
+ */
 export (<=)
+
+/**
+ * Checks if the first operand is greater than or equal to the second operand.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns `true` if the first operand is greater than or equal to the second operand or `false` otherwise
+ *
+ * @since v0.1.0
+ */
 export (>=)
 
-// Number bit/logical operations
+/**
+ * @section Math operations: Infix functions for working with Number values.
+ */
+
+/**
+ * Computes the sum of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The sum of the two operands
+ *
+ * @since v0.1.0
+ */
+export (+)
+
+/**
+ * Computes the difference of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The difference of the two operands
+ *
+ * @since v0.1.0
+ */
+export (-)
+
+/**
+ * Computes the product of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The product of the two operands
+ *
+ * @since v0.1.0
+ */
+export (*)
+
+/**
+ * Computes the quotient of its operands.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The quotient of the two operands
+ *
+ * @since v0.1.0
+ */
+export (/)
+
+/**
+ * Computes the remainder of the division of the first operand by the second.
+ * The result will have the sign of the second operand.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns The modulus of its operands
+ *
+ * @since v0.1.0
+ */
+export (%)
+
+/**
+ * Increments the value by one.
+ *
+ * @param value: The value to increment
+ * @returns The incremented value
+ *
+ * @since v0.1.0
+ */
+export incr
+
+/**
+ * Decrements the value by one.
+ *
+ * @param value: The value to decrement
+ * @returns The decremented value
+ *
+ * @since v0.1.0
+ */
+export decr
+
+/**
+ * @section String operations: Infix functions for operating on String values.
+ */
+
+/**
+ * Concatenate two strings.
+ *
+ * @param str1: The beginning string
+ * @param str2: The ending string
+ * @returns The combined string
+ *
+ * @example "Foo" ++ "Bar" == "FooBar"
+ *
+ * @since v0.2.0
+ */
+export (++)
+
+/**
+ * @section Bitwise operations: Infix functions for operating on bits of Number values.
+ */
+
+/**
+ * Computes the bitwise NOT of the operand.
+ *
+ * @param value: The operand
+ * @returns Containing the inverted bits of the operand
+ *
+ * @since v0.2.0
+ */
 export lnot
 
+/**
+ * Computes the bitwise AND (`&`) on the given operands.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @since v0.3.0
+ * @history v0.2.0: Originally named `land`
+ * @history v0.3.0: Renamed to `&`
+ */
 export (&)
+
+/**
+ * Computes the bitwise OR (`|`) on the given operands.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
+ *
+ * @since v0.3.0
+ * @history v0.2.0: Originally named `lor`
+ * @history v0.3.0: Renamed to `|`
+ */
 export (|)
+
+/**
+ * Computes the bitwise XOR (`^`) on the given operands.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @since v0.3.0
+ * @history v0.1.0: The `^` operator was originally an alias of `unbox`
+ * @history v0.2.0: Originally named `lxor`
+ * @history v0.3.0: Renamed to `^`
+ */
 export (^)
 
+/**
+ * Shifts the bits of the value left by the given number of bits.
+ *
+ * @param value: The value to shift
+ * @param amount: The number of bits to shift by
+ * @returns The shifted value
+ *
+ * @since v0.3.0
+ * @history v0.2.0: Originally named `lsl`
+ * @history v0.3.0: Renamed to `<<`
+ */
 export (<<)
+
+/**
+ * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+ *
+ * @param value: The value to shift
+ * @param amount: The amount to shift by
+ * @returns The shifted value
+ *
+ * @since v0.3.0
+ * @history v0.2.0: Originally named `lsr`
+ * @history v0.3.0: Renamed to `>>>`
+ */
 export (>>>)
+
+/**
+ * Shifts the bits of the value right by the given number of bits.
+ *
+ * @param value: The value to shift
+ * @param amount: The amount to shift by
+ * @returns The shifted value
+ *
+ * @since v0.3.0
+ * @history v0.2.0: Originally named `asr`
+ * @history v0.3.0: Renamed to `>>`
+ */
 export (>>)
 
 // Number coercions & conversions
@@ -58,70 +414,157 @@ export (>>)
 // import foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
 // import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
-// Boolean operations
-export primitive (!): Bool -> Bool = "@not"
-export primitive (&&): (Bool, Bool) -> Bool = "@and"
-export primitive (||): (Bool, Bool) -> Bool = "@or"
+/**
+ * @section Printing: Functions that deal with printing.
+ */
 
-// Box operations
-export primitive box: a -> Box<a> = "@box"
-export primitive unbox: Box<a> -> a = "@unbox"
+/**
+ * Converts the given operand to a string.
+ * Provides a better representation of data types if those types are exported from the module.
+ *
+ * @param value: The operand
+ * @returns The operand, as a string
+ *
+ * @since v0.1.0
+ */
+export toString
+
+/**
+ * Prints the given operand to the console. Works for any type. Internally, calls `toString`
+ * on the operand, so a better representation of data type will be printed if those types
+ * are exported from the module.
+ *
+ * @param value: The operand
+ *
+ * @since v0.1.0
+ */
+export print
+
+/**
+ * @section Type helpers: Functions that help with typechecking.
+ */
+
+/**
+ * Accepts any value and always returns `void`.
+ *
+ * @param value: The value to ignore
+ *
+ * @since v0.1.0
+ */
+export primitive ignore: a -> Void = "@ignore"
+
+/**
+ * @section Assertions: Functions that raise if conditions are not met.
+ */
+
+/**
+ * Assert that the given Boolean condition is `true`.
+ * Throws an `AssertionError` if the condition is `false`.
+ *
+ * @param condition: The condition to assert
+ *
+ * @example assert 3 > 2
+ * @example assert true
+ *
+ * @since v0.1.0
+ */
+export primitive assert: Bool -> Void = "@assert"
+
+/**
+ * @section Failures: Functions that throw an Exception unconditionally.
+ */
 
 // Exceptions
 export exception Failure(String)
 export exception InvalidArgument(String)
 
-// Other operations
-export primitive ignore: a -> Void = "@ignore"
-export primitive assert: Bool -> Void = "@assert"
+/**
+ * Throw an exception. Currently, exceptions cannot be caught and will crash your program.
+ *
+ * @param exception: The exception to be thrown
+ * @returns Anything and nothing—your program won't continue past a throw
+ *
+ * @since v0.3.0
+ */
 export primitive throw: Exception -> a = "@throw"
-export let fail: String -> a = msg => throw Failure(msg)
-
-// Converts the given value to a string
-export toString
-// Prints the given value to the console.
-export print
-
-// String operations
-export (++)
-
-// Checks the given items for structural equality.
-export (==)
-export let (!=): (a, a) -> Bool = (x, y) => !(x == y)
-// Checks the given items for physical equality.
-export primitive (is): (a, a) -> Bool = "@is"
-// The opposite of is operator
-export let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
-
-export enum List<a> {
-  [],
-  [...](a, List<a>),
-}
 
 /**
+ * Unconditionally throw a `Failure` exception with a message.
+ * Currently, Exceptions cannot be caught and will crash your program.
+ *
+ * @param message: The reason for the failure
+ * @returns Anything and nothing—your program won't continue past a fail expression
+ */
+export let fail: String -> a = msg => throw Failure(msg)
+
+/**
+ * @section Other: Other functions on values.
+ */
+
+/**
+ * Provides the operand untouched.
+ *
+ * @param value: The value to return
+ * @returns The value untouched
+ *
+ * @since v0.2.0
+ */
+export let identity = x => x
+
+/**
+ * @section Box operations: Functions for working with Box values.
+ */
+
+/**
+ * Creates a box containing the given initial value.
+ * Values inside a box can be swapped out with the `:=` operator.
+ * Generally, `let mut` expressions are preferable to using a Box.
+ *
+ * @param initial: The initial value inside the box
+ * @returns The box containing the initial value
+ *
+ * @since v0.1.0
+ */
+export primitive box: a -> Box<a> = "@box"
+
+/**
+ * Retrieves the current value from a box.
+ *
+ * @param box: The box to unwrap
+ * @returns The value inside the box
+ *
+ * @since v0.1.0
+ */
+export primitive unbox: Box<a> -> a = "@unbox"
+
+/**
+ * @section List operations: Functions for working with List values.
+ */
+
+/**
+ * The list spread syntax (`[a, ...b]`) provided as a function.
+ *
+ * @param a: The head of the list
+ * @param b: The tail of the list
+ * @returns The new list
+ *
  * @deprecated This will be removed in a future release of Grain.
+ *
+ * @since v0.4.0
  */
 export let cons = (a, b) =>
   [
     a,
     ...b
   ] // <- workaround for (grain-lang/grain#802) [TODO] fix #802 and delete
+/**
+ * The empty list syntax (`[]`) provided as a value.
+ *
+ * @deprecated This will be removed in a future release of Grain.
+ *
+ * @since v0.4.0
+ */
 export let empty = [] // <- for parity with `cons`, but should be deleted as well
-
-// Maybe some data, maybe not!
-export enum Option<a> {
-  Some(a),
-  None,
-}
-
-// Maybe some data, maybe an error!
-export enum Result<t, e> {
-  Ok(t),
-  Err(e),
-}
-
-// Identity function
-export let identity = x => x
 
 // Setup exception printing
 @disableGC
