@@ -46,7 +46,7 @@ Functions for working with the String data type.
 ### String.**concat**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
 No other changes yet.
 </details>
 
@@ -72,7 +72,7 @@ Returns:
 Examples:
 
 ```grain
-String.concat("Foo", " Bar") == "FooBar"
+String.concat("Foo", "Bar") == "FooBar"
 ```
 
 ### String.**length**

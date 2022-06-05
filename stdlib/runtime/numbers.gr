@@ -1842,6 +1842,8 @@ export let (>>>) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   if (isBigInt(xw32)) {
     let yval = coerceNumberToWasmI32(y)
+    // [NOTE]: For BigInts, shrU is the same as shrS because there
+    //         are an *infinite* number of leading ones
     WasmI32.toGrain(reducedBigInteger(BI.shrS(xw32, yval))): Number
   } else {
     let xval = coerceNumberToWasmI64(x)

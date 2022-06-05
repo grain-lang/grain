@@ -302,9 +302,16 @@ Parameters:
 
 ### Buffer.**addStringSlice**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Now takes the end offset instead of length</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
