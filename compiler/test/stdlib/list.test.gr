@@ -3,11 +3,6 @@ import String from "string"
 
 let list = [1, 2, 3]
 
-// List.sum
-
-assert sum(list) == 6
-assert sum([]) == 0
-
 // List.reverse
 
 assert reverse([]) == []

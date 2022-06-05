@@ -59,25 +59,6 @@ export let length = list => {
 }
 
 /**
- * Adds all numbers in the input list.
- *
- * @param list: The input list
- * @returns The combined sum of all values
- *
- * @since v0.1.0
- * @history v0.2.0: Made the function tail-recursive
- */
-export let sum = list => {
-  let rec iter = (n, list) => {
-    match (list) {
-      [] => n,
-      [first, ...rest] => iter(n + first, rest),
-    }
-  }
-  iter(0, list)
-}
-
-/**
  * Creates a new list with all elements in reverse order.
  *
  * @param list: The list to reverse

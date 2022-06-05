@@ -91,38 +91,6 @@ Returns:
 |----|-----------|
 |`Number`|The number of elements in the list|
 
-### List.**sum**
-
-<details>
-<summary>Added in <code>0.1.0</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.2.0</code></td><td>Made the function tail-recursive</td></tr>
-</tbody>
-</table>
-</details>
-
-```grain
-sum : List<Number> -> Number
-```
-
-Adds all numbers in the input list.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`list`|`List<Number>`|The input list|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The combined sum of all values|
-
 ### List.**reverse**
 
 <details disabled>
