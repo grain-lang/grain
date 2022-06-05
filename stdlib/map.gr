@@ -1,7 +1,7 @@
 /**
  * @module Map: A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
  * @example import Map from "map"
- * 
+ *
  * @since v0.2.0
  */
 import List from "list"
@@ -36,12 +36,10 @@ record Map<k, v> {
  *
  * @param size: The initial storage size of the map
  * @returns An empty map with the given initial storage size
- * 
+ *
  * @since v0.2.0
  */
-
-// TODO: This could take an `eq` function to custom comparisons
-export let makeSized = size => {
+export let makeSized = size => { // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
   { size: 0, buckets }
 }
@@ -50,7 +48,7 @@ export let makeSized = size => {
  * Creates a new, empty map.
  *
  * @returns An empty map
- * 
+ *
  * @since v0.2.0
  */
 export let make = () => {
@@ -129,7 +127,7 @@ let rec replaceInBucket = (key, value, node) => {
  * @param key: The unique key in the map
  * @param value: The value to store
  * @param map: The map to modify
- * 
+ *
  * @since v0.2.0
  */
 export let set = (key, value, map) => {
@@ -173,7 +171,7 @@ let rec valueFromBucket = (key, node) => {
  * @param key: The key to access
  * @param map: The map to access
  * @returns `Some(value)` if the key exists in the map or `None` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let get = (key, map) => {
@@ -203,7 +201,7 @@ let rec nodeInBucket = (key, node) => {
  * @param key: The key to search for
  * @param map: The map to search
  * @returns `true` if the map contains the given key or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let contains = (key, map) => {
@@ -235,7 +233,7 @@ let rec removeInBucket = (key, node) => {
  *
  * @param key: The key to remove
  * @param map: The map to update
- * 
+ *
  * @since v0.2.0
  */
 export let remove = (key, map) => {
@@ -264,7 +262,7 @@ export let remove = (key, map) => {
  * @param key: The unique key in the map
  * @param fn: The updater function
  * @param map: The map to modify
- * 
+ *
  * @since v0.3.0
  */
 export let update = (key, fn, map) => {
@@ -280,7 +278,7 @@ export let update = (key, fn, map) => {
  *
  * @param map: The map to inspect
  * @returns The count of key-value pairs in the map
- * 
+ *
  * @since v0.2.0
  */
 export let size = map => {
@@ -292,7 +290,7 @@ export let size = map => {
  *
  * @param map: The map to inspect
  * @returns `true` if the given map is empty or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let isEmpty = map => {
@@ -303,7 +301,7 @@ export let isEmpty = map => {
  * Resets the map by removing all key-value pairs.
  *
  * @param map: The map to reset
- * 
+ *
  * @since v0.2.0
  */
 export let clear = map => {
@@ -329,7 +327,7 @@ let rec forEachBucket = (fn, node) => {
  *
  * @param fn: The iterator function to call with each key and value
  * @param map: The map to iterate
- * 
+ *
  * @since v0.2.0
  * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
@@ -355,7 +353,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
  * @param init: The initial value to use for the accumulator on the first iteration
  * @param map: The map to iterate
  * @returns The final accumulator returned from `fn`
- * 
+ *
  * @since v0.2.0
  */
 export let reduce = (fn, init, map) => {
@@ -372,7 +370,7 @@ export let reduce = (fn, init, map) => {
  *
  * @param map: The map to enumerate
  * @returns A list containing all keys from the given map
- * 
+ *
  * @since v0.2.0
  */
 export let keys = map => {
@@ -384,7 +382,7 @@ export let keys = map => {
  *
  * @param map: The map to enumerate
  * @returns A list containing all values from the given map
- * 
+ *
  * @since v0.2.0
  */
 export let values = map => {
@@ -396,7 +394,7 @@ export let values = map => {
  *
  * @param map: The map to enumerate
  * @returns A list containing all key-value pairs from the given map
- * 
+ *
  * @since v0.2.0
  */
 export let toList = map => {
@@ -408,7 +406,7 @@ export let toList = map => {
  *
  * @param list: The list to convert
  * @returns A map containing all key-value pairs from the list
- * 
+ *
  * @since v0.2.0
  */
 export let fromList = list => {
@@ -438,7 +436,7 @@ let setInArray = array => {
  *
  * @param map: The map to convert
  * @returns An array containing all key-value pairs from the given map
- * 
+ *
  * @since v0.2.0
  */
 @disableGC
@@ -463,7 +461,7 @@ export let rec toArray = map => {
  *
  * @param array: The array to convert
  * @returns A map containing all key-value pairs from the array
- * 
+ *
  * @since v0.2.0
  */
 export let fromArray = array => {
@@ -480,7 +478,7 @@ export let fromArray = array => {
  *
  * @param fn: The predicate function to indicate which key-value pairs to remove from the map, where returning `false` indicates the key-value pair should be removed
  * @param map: The map to iterate
- * 
+ *
  * @since v0.2.0
  */
 export let filter = (predicate, map) => {
@@ -499,7 +497,7 @@ export let filter = (predicate, map) => {
  *
  * @param fn: The predicate function to indicate which key-value pairs to remove from the map, where returning `true` indicates the key-value pair should be removed
  * @param map: The map to iterate
- * 
+ *
  * @since v0.2.0
  */
 export let reject = (predicate, map) => {
@@ -513,7 +511,7 @@ export let reject = (predicate, map) => {
  *
  * @param map: The map to inspect
  * @returns The internal state of the map
- * 
+ *
  * @since v0.2.0
  */
 export let getInternalStats = map => {
