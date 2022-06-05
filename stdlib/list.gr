@@ -283,7 +283,7 @@ export let rec forEach = (fn, list) => {
   match (list) {
     [] => void,
     [first, ...rest] => {
-      fn(first)
+      fn(first): Void
       forEach(fn, rest)
     },
   }
@@ -303,7 +303,7 @@ export let forEachi = (fn, list) => {
     match (list) {
       [] => void,
       [first, ...rest] => {
-        fn(first, index)
+        fn(first, index): Void
         iter(fn, rest, index + 1)
       },
     }

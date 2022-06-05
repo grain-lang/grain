@@ -441,7 +441,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : ((a -> b), List<a>) -> Void
+forEach : ((a -> Void), List<a>) -> Void
 ```
 
 Iterates a list, calling an iterator function on each element.
@@ -450,7 +450,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The iterator function to call with each element|
+|`fn`|`a -> Void`|The iterator function to call with each element|
 |`list`|`List<a>`|The list to iterate|
 
 ### List.**forEachi**
@@ -461,7 +461,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachi : (((a, Number) -> b), List<a>) -> Void
+forEachi : (((a, Number) -> Void), List<a>) -> Void
 ```
 
 Iterates a list, calling an iterator function on each element.
@@ -471,7 +471,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> b`|The iterator function to call with each element|
+|`fn`|`(a, Number) -> Void`|The iterator function to call with each element|
 |`list`|`List<a>`|The list to iterate|
 
 ### List.**filter**
