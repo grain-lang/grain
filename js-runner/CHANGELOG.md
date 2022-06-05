@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/grain-lang/grain/compare/js-runner-v0.4.0...js-runner-v0.5.0) (2022-06-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **compiler:** Remove decRefIgnoreZeros (#1068)
+
+### Miscellaneous Chores
+
+* **compiler:** Remove decRefIgnoreZeros ([#1068](https://github.com/grain-lang/grain/issues/1068)) ([3ae8eaa](https://github.com/grain-lang/grain/commit/3ae8eaabad4467304c500c2f0cc9c40749d8513b))
+
 ## [0.4.0](https://www.github.com/grain-lang/grain/compare/js-runner-v0.3.0...js-runner-v0.4.0) (2021-09-06)
 
 

@@ -1,5 +1,110 @@
 # Changelog
 
+## [0.5.0](https://github.com/grain-lang/grain/compare/compiler-v0.4.6...compiler-v0.5.0) (2022-06-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **stdlib:** Use explicit exports for Pervasives (#1301)
+* **stdlib:** Remove `sum` function from the List module (#1300)
+* **compiler:** Remove `--lsp` flag from grainc executable
+* **lsp:** Replaced one-off LSP command with persistent LSP server (#1131)
+* **cli:** Show all global options within help for every command (#1285)
+* **cli:** Remove graceful flag & behavior (#1275)
+* **compiler:** Refactor HeapAllocated/StackAllocated into Managed/Unmanaged (#1268)
+* **compiler:** Replace optimization levels with compilation profiles (#1270)
+* **grainfmt:** Replace `--in-place` flag with `-o` flag
+* **grainfmt:** Remove stdin formatting support
+* **compiler:** Arbitrary-Precision Integer Arithmetic (#1167)
+* Switch from yarn to npm (#1226)
+* Drop node 14 support (#1092)
+* **compiler:** Selectively include functions in the global function table (#1183)
+* **compiler:** Add interface for compile module to hide resume
+* **compiler:** Disallow end-of-line before `=>` (#1178)
+* **compiler:** Stack-allocated Chars (#1103)
+* **stdlib:** Align Buffer's `addStringSlice` API with String's `slice` (#1136)
+* **graindoc:** Add `--current-version` flag, required for since/history attributes (#1116)
+* **compiler:** Remove decRefIgnoreZeros (#1068)
+* **compiler:** Add `--memory-base` flag (#1115)
+* **compiler:** Re-implement Grain parser (#1033)
+
+### Features
+
+* **compiler:** Add `--memory-base` flag ([#1115](https://github.com/grain-lang/grain/issues/1115)) ([0680826](https://github.com/grain-lang/grain/commit/068082663c4387c3ab54c052869e9b9a06b87e26))
+* **compiler:** Add `[@unsafe](https://github.com/unsafe)` attribute for low-level code ([#1074](https://github.com/grain-lang/grain/issues/1074)) ([212faca](https://github.com/grain-lang/grain/commit/212faca9a8363002cfc0cb4e3ea293180cbe5b1c))
+* **compiler:** Add warning for calls to IntXX.fromNumber and FloatXX.fromNumber with literal integers/floats ([#1218](https://github.com/grain-lang/grain/issues/1218)) ([2fb86e5](https://github.com/grain-lang/grain/commit/2fb86e538a9d38241d6c149cec1a290817795b4b))
+* **compiler:** Allow function re-exports to use regular call instruction ([#1176](https://github.com/grain-lang/grain/issues/1176)) ([afce3aa](https://github.com/grain-lang/grain/commit/afce3aaa5382cde54b1e8fd9be3d2ee86daedbbb))
+* **compiler:** Arbitrary-Precision Integer Arithmetic ([#1167](https://github.com/grain-lang/grain/issues/1167)) ([6f34de2](https://github.com/grain-lang/grain/commit/6f34de214b28358ea1df553685fa3a19336ddba9))
+* **compiler:** Call known functions across module boundaries ([#1175](https://github.com/grain-lang/grain/issues/1175)) ([b2d7440](https://github.com/grain-lang/grain/commit/b2d744034ec7e0601554531c910e9d0f5451d464))
+* **compiler:** Cleaner wasm output for low-level wasm types ([#1158](https://github.com/grain-lang/grain/issues/1158)) ([88060dd](https://github.com/grain-lang/grain/commit/88060ddb8119e2998d91f4d6770a1cfd101936cf))
+* **compiler:** Consolidate exe & js modes ([fc61950](https://github.com/grain-lang/grain/commit/fc6195013457dd29f78951322bfaf2ae27c1bdd2))
+* **compiler:** Convert `runtime/dataStructures.gr` to primitives ([#1145](https://github.com/grain-lang/grain/issues/1145)) ([2d43b28](https://github.com/grain-lang/grain/commit/2d43b286141df75f6b92300e48d2bc4804014872))
+* **compiler:** Don't close over global values ([#1134](https://github.com/grain-lang/grain/issues/1134)) ([e8caec6](https://github.com/grain-lang/grain/commit/e8caec6c2a5892e955c8827b18d8d436bebe6073))
+* **compiler:** Name globals in wasm output ([#1184](https://github.com/grain-lang/grain/issues/1184)) ([51170e7](https://github.com/grain-lang/grain/commit/51170e7c892680f9c730b7f93cf744ffd6b7c15a))
+* **compiler:** Re-implement Grain parser ([#1033](https://github.com/grain-lang/grain/issues/1033)) ([9dc3c96](https://github.com/grain-lang/grain/commit/9dc3c96f87a0b2affe9db36e1b03360d198f79f1))
+* **compiler:** Reduce closure sizes by utilizing `$self` argument when possible ([#1152](https://github.com/grain-lang/grain/issues/1152)) ([ba6a84c](https://github.com/grain-lang/grain/commit/ba6a84cea191cf3c7932287c29b198001d490146))
+* **compiler:** Refactor exports ([#1244](https://github.com/grain-lang/grain/issues/1244)) ([4637667](https://github.com/grain-lang/grain/commit/4637667cd669c0988cd01c2957534c6a35a3146c))
+* **compiler:** Replace optimization levels with compilation profiles ([#1270](https://github.com/grain-lang/grain/issues/1270)) ([1a27c12](https://github.com/grain-lang/grain/commit/1a27c127e8f0318c21fec7ab358ee8e1ad2378e9))
+* **compiler:** Selectively include functions in the global function table ([#1183](https://github.com/grain-lang/grain/issues/1183)) ([67575f7](https://github.com/grain-lang/grain/commit/67575f712557bc36531f6e40044d1bbfff2454ff))
+* **compiler:** Stack-allocated Chars ([#1103](https://github.com/grain-lang/grain/issues/1103)) ([095385e](https://github.com/grain-lang/grain/commit/095385e7c67bbc7a417a21acaf6f1c498c75ce63))
+* **compiler:** Support pattern aliases ([#1174](https://github.com/grain-lang/grain/issues/1174)) ([9ed093b](https://github.com/grain-lang/grain/commit/9ed093be353895bdde8282ee1681089d5fac68ab))
+* **compiler:** Support pattern matching "or" patterns ([#1173](https://github.com/grain-lang/grain/issues/1173)) ([0fb29c4](https://github.com/grain-lang/grain/commit/0fb29c4016e1b24b9e3b3b640cc9914b921ec376))
+* **compiler:** Upgrade binaryen to 0.15.0 to support Mac M1 arch ([#1151](https://github.com/grain-lang/grain/issues/1151)) ([fc61950](https://github.com/grain-lang/grain/commit/fc6195013457dd29f78951322bfaf2ae27c1bdd2))
+* **compiler:** Use symbol for equals sign ([#1128](https://github.com/grain-lang/grain/issues/1128)) ([3d7fc57](https://github.com/grain-lang/grain/commit/3d7fc5742ad3016d60e14112fdd68de02fc147f1))
+* **graindoc:** Add `--current-version` flag, required for since/history attributes ([#1116](https://github.com/grain-lang/grain/issues/1116)) ([0f681ea](https://github.com/grain-lang/grain/commit/0f681ea140749395f3ce99a460f30778537183ac))
+* **graindoc:** Allow directory input & output ([#1263](https://github.com/grain-lang/grain/issues/1263)) ([d4cb8ab](https://github.com/grain-lang/grain/commit/d4cb8abcb4accafeb3cae0bac77eee9a365e464d))
+* **grainfmt:** Allow directory input & output ([#1274](https://github.com/grain-lang/grain/issues/1274)) ([d3e7a33](https://github.com/grain-lang/grain/commit/d3e7a33b01352a9c2bcc3b17a5b2995451d92221))
+* **grainfmt:** Replace `--in-place` flag with `-o` flag ([d3e7a33](https://github.com/grain-lang/grain/commit/d3e7a33b01352a9c2bcc3b17a5b2995451d92221))
+* **lsp:** Replaced one-off LSP command with persistent LSP server ([#1131](https://github.com/grain-lang/grain/issues/1131)) ([df91849](https://github.com/grain-lang/grain/commit/df91849bd65a729fe4e0b03f51bc6d28017935cb))
+* **stdlib:** Add module for pseudo-random number generation ([#921](https://github.com/grain-lang/grain/issues/921)) ([db1fa4e](https://github.com/grain-lang/grain/commit/db1fa4e491d35bb582beaba12157884647384a77))
+* **stdlib:** Add unsigned versions of Int32/Int64 comparison operations ([#831](https://github.com/grain-lang/grain/issues/831)) ([5f20868](https://github.com/grain-lang/grain/commit/5f20868e7b6e3f52d62c8531d99d1130ca84961e))
+
+
+### Bug Fixes
+
+* **cli:** Ensure parent flags are inherited by the format command ([d3e7a33](https://github.com/grain-lang/grain/commit/d3e7a33b01352a9c2bcc3b17a5b2995451d92221))
+* **cli:** Show all global options within help for every command ([#1285](https://github.com/grain-lang/grain/issues/1285)) ([1357e16](https://github.com/grain-lang/grain/commit/1357e162f7e939db21468186d16e6d720b557a57))
+* **compiler:** Apply correct allocation type to numbers ([#1140](https://github.com/grain-lang/grain/issues/1140)) ([b9e9d59](https://github.com/grain-lang/grain/commit/b9e9d59143f529f7c0ae100b048988e6ba0e8d54))
+* **compiler:** Avoid module aliases of themselves ([df91849](https://github.com/grain-lang/grain/commit/df91849bd65a729fe4e0b03f51bc6d28017935cb))
+* **compiler:** Fix compilation of functions annotated with alias ([#1293](https://github.com/grain-lang/grain/issues/1293)) ([b3e1882](https://github.com/grain-lang/grain/commit/b3e188299be6af22bb64cf5ae9a41afa05e4c16f))
+* **compiler:** fix formatter multiple data bug ([#1282](https://github.com/grain-lang/grain/issues/1282)) ([f6fd962](https://github.com/grain-lang/grain/commit/f6fd96250dbe95d6b6c56d663f6d7f2704b792b3))
+* **compiler:** Iterate over guard clauses in typedTreeIter/typedTreeMap ([#1283](https://github.com/grain-lang/grain/issues/1283)) ([96e8ecb](https://github.com/grain-lang/grain/commit/96e8ecb9e84e54d0640bc775e23e25b93c4dda7c))
+* **compiler:** Move Filename usage to Filepath.String & normalize separators ([584bcad](https://github.com/grain-lang/grain/commit/584bcad942f91d86c9b328e61f34af6e3cfbd050))
+* **compiler:** Preserve all configs when compiling ([#1207](https://github.com/grain-lang/grain/issues/1207)) ([d8ff903](https://github.com/grain-lang/grain/commit/d8ff9037fc3148384d2157f76e4394322ba4ed58))
+* **compiler:** Read custom sections in full ([#1243](https://github.com/grain-lang/grain/issues/1243)) ([f8a0891](https://github.com/grain-lang/grain/commit/f8a0891f253e33153feb2ec20afe6443391a1aa8))
+* **compiler:** Refactor WASI polyfill resolution ([#1261](https://github.com/grain-lang/grain/issues/1261)) ([a39b48f](https://github.com/grain-lang/grain/commit/a39b48ff95f4ef7ce5a4b5454dbc620ae4044c17))
+* **compiler:** Report binop locations properly ([#1271](https://github.com/grain-lang/grain/issues/1271)) ([4b9dd9c](https://github.com/grain-lang/grain/commit/4b9dd9c35969cf86f1d2d9a8013b7f6d347c508e))
+* **compiler:** Report Win32 instead of Cygwin in JS compiler ([#1251](https://github.com/grain-lang/grain/issues/1251)) ([584bcad](https://github.com/grain-lang/grain/commit/584bcad942f91d86c9b328e61f34af6e3cfbd050))
+* **compiler:** Respect stack type when dropping statements ([#1138](https://github.com/grain-lang/grain/issues/1138)) ([5a44e93](https://github.com/grain-lang/grain/commit/5a44e93ab646f1e9998ce6c23245e41c4bf0019a))
+* **compiler:** Supply correct error for unbound record labels ([#1200](https://github.com/grain-lang/grain/issues/1200)) ([86e1bc0](https://github.com/grain-lang/grain/commit/86e1bc0ba099c5b48ba72e98530a634e15f6bb77))
+* **graindoc:** Add parens around infix operators in titles ([#1303](https://github.com/grain-lang/grain/issues/1303)) ([acba9c1](https://github.com/grain-lang/grain/commit/acba9c1757688756c3ca98b22a0a159b8d8f9e7d))
+* **graindoc:** Avoid singletons when building ordered comments ([#1208](https://github.com/grain-lang/grain/issues/1208)) ([3f28e6e](https://github.com/grain-lang/grain/commit/3f28e6e226bbd951aedc6f8783203152919c7d08))
+* **graindoc:** Fix type printing for types and abstract types ([#1238](https://github.com/grain-lang/grain/issues/1238)) ([aea3ea9](https://github.com/grain-lang/grain/commit/aea3ea9f6b72182dfffb8af4c9af83a444fb6a83))
+* **graindoc:** Improve location lookup so re-exports do not crash it ([#1280](https://github.com/grain-lang/grain/issues/1280)) ([6e782ee](https://github.com/grain-lang/grain/commit/6e782ee146e16aefd3b88441de500d82a20508be))
+* **graindoc:** Preserve indentation in Doc comments during trim ([#1119](https://github.com/grain-lang/grain/issues/1119)) ([b8a6d57](https://github.com/grain-lang/grain/commit/b8a6d57cce274bfbc2cc16c5b25215b042d4264c))
+* **graindoc:** Remove spaces between parens and infix idents ([#1302](https://github.com/grain-lang/grain/issues/1302)) ([95e596f](https://github.com/grain-lang/grain/commit/95e596fa3fdae5a8a0e07d76ff8c11eeab99e8d7))
+* **graindoc:** Use value_descriptions and type_declarations defined by the module signature ([#1241](https://github.com/grain-lang/grain/issues/1241)) ([5896242](https://github.com/grain-lang/grain/commit/5896242c324622f3329c144bd2c9642aade9d049))
+* **grainfmt:** Preserve the EOL characters of file ([#1216](https://github.com/grain-lang/grain/issues/1216)) ([ef2835a](https://github.com/grain-lang/grain/commit/ef2835a5608cb1d5de52b280b6d4fd5b563ce725))
+* **grainfmt:** Properly handle if/then/else line breaks ([#1217](https://github.com/grain-lang/grain/issues/1217)) ([93fd3b5](https://github.com/grain-lang/grain/commit/93fd3b5d0a5ccbc11baaab08d0f65ff9ec98aead))
+* **grainfmt:** Remove parens around annotated types ([#1109](https://github.com/grain-lang/grain/issues/1109)) ([0ca66bd](https://github.com/grain-lang/grain/commit/0ca66bd43703826f86ef5b28b49d250af219fb0b))
+* **stdlib:** Align Buffer's `addStringSlice` API with String's `slice` ([#1136](https://github.com/grain-lang/grain/issues/1136)) ([0c7cb82](https://github.com/grain-lang/grain/commit/0c7cb820d49cda74598680cc614c0d893b4d2b40))
+* **stdlib:** Fix float printing in dtoa ([#1165](https://github.com/grain-lang/grain/issues/1165)) ([2987210](https://github.com/grain-lang/grain/commit/2987210648873ab474990ff2b7146a489fecb268))
+* **stdlib:** Use explicit exports for Pervasives ([#1301](https://github.com/grain-lang/grain/issues/1301)) ([bad5897](https://github.com/grain-lang/grain/commit/bad5897062444ec4d4ace805adcd382725b86125))
+
+
+### Miscellaneous Chores
+
+* **cli:** Remove graceful flag & behavior ([#1275](https://github.com/grain-lang/grain/issues/1275)) ([df55898](https://github.com/grain-lang/grain/commit/df5589882d12ed35ba448de44e06f434bcf59b07))
+* **compiler:** Add interface for compile module to hide resume ([d8ff903](https://github.com/grain-lang/grain/commit/d8ff9037fc3148384d2157f76e4394322ba4ed58))
+* **compiler:** Disallow end-of-line before `=>` ([#1178](https://github.com/grain-lang/grain/issues/1178)) ([8261e73](https://github.com/grain-lang/grain/commit/8261e733c9345c690ffc107616512be4eb4c469e))
+* **compiler:** Refactor HeapAllocated/StackAllocated into Managed/Unmanaged ([#1268](https://github.com/grain-lang/grain/issues/1268)) ([1590a37](https://github.com/grain-lang/grain/commit/1590a37ca39e39ee40e0f27986fe8195458c3cb9))
+* **compiler:** Remove `--lsp` flag from grainc executable ([df91849](https://github.com/grain-lang/grain/commit/df91849bd65a729fe4e0b03f51bc6d28017935cb))
+* **compiler:** Remove decRefIgnoreZeros ([#1068](https://github.com/grain-lang/grain/issues/1068)) ([3ae8eaa](https://github.com/grain-lang/grain/commit/3ae8eaabad4467304c500c2f0cc9c40749d8513b))
+* Drop node 14 support ([#1092](https://github.com/grain-lang/grain/issues/1092)) ([ef4358f](https://github.com/grain-lang/grain/commit/ef4358ff7de14a35edf3e971e04513d497fe1574))
+* **grainfmt:** Remove stdin formatting support ([d3e7a33](https://github.com/grain-lang/grain/commit/d3e7a33b01352a9c2bcc3b17a5b2995451d92221))
+* **stdlib:** Remove `sum` function from the List module ([#1300](https://github.com/grain-lang/grain/issues/1300)) ([9101615](https://github.com/grain-lang/grain/commit/9101615688f20310ae32573f93f36cfcf5c69be1))
+* Switch from yarn to npm ([#1226](https://github.com/grain-lang/grain/issues/1226)) ([5ea9274](https://github.com/grain-lang/grain/commit/5ea92743a05fffb4298deda64100a3d7fc2259cb))
+
 ### [0.4.6](https://www.github.com/grain-lang/grain/compare/@grain/compiler-v0.4.5...@grain/compiler-v0.4.6) (2022-01-17)
 
 
