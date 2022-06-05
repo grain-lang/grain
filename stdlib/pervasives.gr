@@ -78,7 +78,7 @@ export enum Result<t, e> {
 
 /**
  * Computes the logical NOT (`!`) of the given operand.
- * Inverts the give Boolean value.
+ * Inverts the given Boolean value.
  *
  * @param value: The operand
  * @returns The inverted value
@@ -98,7 +98,7 @@ export primitive (!): Bool -> Bool = "@not"
  *
  * @param value1: The first operand
  * @param value2: The second operand
- * @returns The first operand if it is `false` or the value of the second operand
+ * @returns The first operand if it is `false` or the value of the second operand otherwise
  *
  * @since v0.1.0
  */
@@ -112,7 +112,7 @@ export primitive (&&): (Bool, Bool) -> Bool = "@and"
  *
  * @param value1: The first operand
  * @param value2: The second operand
- * @returns The first operand if it is `true` or the value of the second operand
+ * @returns The first operand if it is `true` or the value of the second operand otherwise
  *
  * @since v0.1.0
  */
@@ -415,7 +415,7 @@ export (>>)
 // import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
 /**
- * Printing: Functions that deal with printing.
+ * @section Printing: Functions that deal with printing.
  */
 
 /**
@@ -538,7 +538,7 @@ export primitive box: a -> Box<a> = "@box"
 export primitive unbox: Box<a> -> a = "@unbox"
 
 /**
- * List operations: Functions for working with List values.
+ * @section List operations: Functions for working with List values.
  */
 
 /**

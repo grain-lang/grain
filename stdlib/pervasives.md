@@ -67,7 +67,7 @@ No other changes yet.
 ```
 
 Computes the logical NOT (`!`) of the given operand.
-Inverts the give Boolean value.
+Inverts the given Boolean value.
 
 Parameters:
 
@@ -118,7 +118,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|The first operand if it is `false` or the value of the second operand|
+|`Bool`|The first operand if it is `false` or the value of the second operand otherwise|
 
 ### Pervasives.**(||)**
 
@@ -147,7 +147,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|The first operand if it is `true` or the value of the second operand|
+|`Bool`|The first operand if it is `true` or the value of the second operand otherwise|
 
 ## Comparison operations
 
@@ -824,6 +824,10 @@ Returns:
 |----|-----------|
 |`Number`|The shifted value|
 
+## Printing
+
+Functions that deal with printing.
+
 ### Pervasives.**toString**
 
 <details disabled>
@@ -1062,6 +1066,10 @@ Returns:
 |type|description|
 |----|-----------|
 |`a`|The value inside the box|
+
+## List operations
+
+Functions for working with List values.
 
 ### Pervasives.**cons**
 
