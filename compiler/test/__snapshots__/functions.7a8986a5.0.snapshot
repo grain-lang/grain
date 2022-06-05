@@ -19,7 +19,7 @@ functions › app_1
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $lam_lambda_1132 (param $0 i32) (param $1 i32) (result i32)
+ (func $lam_lambda_1129 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -110,7 +110,7 @@ functions › app_1
         )
        )
       )
-      (call $lam_lambda_1132
+      (call $lam_lambda_1129
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
         (local.get $6)

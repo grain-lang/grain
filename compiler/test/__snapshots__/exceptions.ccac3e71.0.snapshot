@@ -13,11 +13,11 @@ exceptions › exception_2
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $Foo_1131 (mut i32) (i32.const 0))
+ (global $Foo_1128 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
- (export \"GRAIN$EXPORT$Foo\" (global $Foo_1131))
+ (export \"GRAIN$EXPORT$Foo\" (global $Foo_1128))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
@@ -63,7 +63,7 @@ exceptions › exception_2
           )
           (i64.store offset=32
            (local.get $0)
-           (i64.const 12884903019)
+           (i64.const 12884903016)
           )
           (i64.store offset=40
            (local.get $0)
@@ -91,7 +91,7 @@ exceptions › exception_2
       )
       (block $compile_block.6 (result i32)
        (block $compile_store.5
-        (global.set $Foo_1131
+        (global.set $Foo_1128
          (tuple.extract 0
           (tuple.make
            (block $allocate_adt.3 (result i32)
@@ -117,7 +117,7 @@ exceptions › exception_2
             )
             (i32.store offset=12
              (local.get $0)
-             (i32.const 2263)
+             (i32.const 2257)
             )
             (i32.store offset=16
              (local.get $0)
@@ -127,7 +127,7 @@ exceptions › exception_2
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $Foo_1131)
+            (global.get $Foo_1128)
            )
           )
          )
@@ -137,7 +137,7 @@ exceptions › exception_2
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $Foo_1131)
+        (global.get $Foo_1128)
        )
       )
      )

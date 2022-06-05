@@ -9,11 +9,11 @@ imports › import_muliple_modules
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1149 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $x_1148 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1147 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Empty\" (global $Empty_1146 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $x_1145 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$Cons\" (global $Cons_1144 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1147 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"Cons\" (func $Cons_1144 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -31,18 +31,18 @@ imports › import_muliple_modules
    (block $cleanup_locals.2 (result i32)
     (local.set $0
      (block $compile_block.1 (result i32)
-      (call $Cons_1147
+      (call $Cons_1144
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $Cons_1147)
+        (global.get $Cons_1144)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $x_1148)
+        (global.get $x_1145)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $Empty_1149)
+        (global.get $Empty_1146)
        )
       )
      )

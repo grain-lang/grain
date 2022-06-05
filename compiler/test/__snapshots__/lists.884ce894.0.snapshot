@@ -10,12 +10,12 @@ lists › list_spread
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $[]_1136 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $[...]_1132 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $[]_1133 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $[...]_1129 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $[...]_1132 (param i32 i32 i32) (result i32)))
- (global $a_1131 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $[...]_1129 (param i32 i32 i32) (result i32)))
+ (global $a_1128 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -39,15 +39,15 @@ lists › list_spread
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1132
+          (call $[...]_1129
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1132)
+            (global.get $[...]_1129)
            )
            (i32.const 9)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[]_1136)
+            (global.get $[]_1133)
            )
           )
           (call $decRef_0
@@ -61,13 +61,13 @@ lists › list_spread
        )
       )
       (block $compile_store.4
-       (global.set $a_1131
+       (global.set $a_1128
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1132
+          (call $[...]_1129
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1132)
+            (global.get $[...]_1129)
            )
            (i32.const 7)
            (call $incRef_0
@@ -77,7 +77,7 @@ lists › list_spread
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $a_1131)
+           (global.get $a_1128)
           )
          )
         )
@@ -89,15 +89,15 @@ lists › list_spread
        (local.set $7
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1132
+          (call $[...]_1129
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1132)
+            (global.get $[...]_1129)
            )
            (i32.const 5)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $a_1131)
+            (global.get $a_1128)
            )
           )
           (call $decRef_0
@@ -110,10 +110,10 @@ lists › list_spread
        (block $do_backpatches.5
        )
       )
-      (call $[...]_1132
+      (call $[...]_1129
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $[...]_1132)
+        (global.get $[...]_1129)
        )
        (i32.const 3)
        (call $incRef_0

@@ -249,9 +249,3 @@ enum Result<t, e> {
 identity : a -> a
 ```
 
-### Pervasives.**setupExceptions**
-
-```grain
-setupExceptions : () -> Void
-```
-

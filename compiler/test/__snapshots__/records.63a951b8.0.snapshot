@@ -13,7 +13,7 @@ records › record_destruct_2
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $bar_1132 (mut i32) (i32.const 0))
+ (global $bar_1129 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -61,7 +61,7 @@ records › record_destruct_2
           )
           (i64.store offset=24
            (local.get $0)
-           (i64.const 68719477867)
+           (i64.const 68719477864)
           )
           (i64.store offset=32
            (local.get $0)
@@ -165,7 +165,7 @@ records › record_destruct_2
             )
             (i32.store offset=8
              (local.get $0)
-             (i32.const 2263)
+             (i32.const 2257)
             )
             (i32.store offset=12
              (local.get $0)
@@ -199,13 +199,13 @@ records › record_destruct_2
         )
        )
        (block $compile_store.10
-        (global.set $bar_1132
+        (global.set $bar_1129
          (tuple.extract 0
           (tuple.make
            (i32.const 0)
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $bar_1132)
+            (global.get $bar_1129)
            )
           )
          )
@@ -237,7 +237,7 @@ records › record_destruct_2
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
          (block $compile_set.13 (result i32)
-          (global.set $bar_1132
+          (global.set $bar_1129
            (tuple.extract 0
             (tuple.make
              (call $incRef_0
@@ -246,7 +246,7 @@ records › record_destruct_2
              )
              (call $decRef_0
               (global.get $GRAIN$EXPORT$decRef_0)
-              (global.get $bar_1132)
+              (global.get $bar_1129)
              )
             )
            )
@@ -257,7 +257,7 @@ records › record_destruct_2
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $bar_1132)
+        (global.get $bar_1129)
        )
       )
      )

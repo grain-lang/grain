@@ -11,11 +11,11 @@ pattern matching › or_match_2
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/equal\" \"GRAIN$EXPORT$equal\" (global $GRAIN$EXPORT$equal_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$Some\" (global $Some_1132 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$Some\" (global $Some_1129 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/equal\" \"equal\" (func $equal_0 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"Some\" (func $Some_1132 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"Some\" (func $Some_1129 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -45,10 +45,10 @@ pattern matching › or_match_2
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $Some_1132
+          (call $Some_1129
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $Some_1132)
+            (global.get $Some_1129)
            )
            (i32.const 11)
           )
