@@ -13,55 +13,55 @@ decr : Number -> Number
 ### Pervasives.**+**
 
 ```grain
-( + ) : (Number, Number) -> Number
+(+) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**-**
 
 ```grain
-( - ) : (Number, Number) -> Number
+(-) : (Number, Number) -> Number
 ```
 
 ### Pervasives.*****
 
 ```grain
-( * ) : (Number, Number) -> Number
+(*) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**/**
 
 ```grain
-( / ) : (Number, Number) -> Number
+(/) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**%**
 
 ```grain
-( % ) : (Number, Number) -> Number
+(%) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**<**
 
 ```grain
-( < ) : (Number, Number) -> Bool
+(<) : (Number, Number) -> Bool
 ```
 
 ### Pervasives.**>**
 
 ```grain
-( > ) : (Number, Number) -> Bool
+(>) : (Number, Number) -> Bool
 ```
 
 ### Pervasives.**<=**
 
 ```grain
-( <= ) : (Number, Number) -> Bool
+(<=) : (Number, Number) -> Bool
 ```
 
 ### Pervasives.**>=**
 
 ```grain
-( >= ) : (Number, Number) -> Bool
+(>=) : (Number, Number) -> Bool
 ```
 
 ### Pervasives.**lnot**
@@ -73,55 +73,55 @@ lnot : Number -> Number
 ### Pervasives.**&**
 
 ```grain
-( & ) : (Number, Number) -> Number
+(&) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**|**
 
 ```grain
-( | ) : (Number, Number) -> Number
+(|) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**^**
 
 ```grain
-( ^ ) : (Number, Number) -> Number
+(^) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**<<**
 
 ```grain
-( << ) : (Number, Number) -> Number
+(<<) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**>>>**
 
 ```grain
-( >>> ) : (Number, Number) -> Number
+(>>>) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**>>**
 
 ```grain
-( >> ) : (Number, Number) -> Number
+(>>) : (Number, Number) -> Number
 ```
 
 ### Pervasives.**!**
 
 ```grain
-( ! ) : Bool -> Bool
+(!) : Bool -> Bool
 ```
 
 ### Pervasives.**&&**
 
 ```grain
-( && ) : (Bool, Bool) -> Bool
+(&&) : (Bool, Bool) -> Bool
 ```
 
 ### Pervasives.**||**
 
 ```grain
-( || ) : (Bool, Bool) -> Bool
+(||) : (Bool, Bool) -> Bool
 ```
 
 ### Pervasives.**box**
@@ -175,19 +175,19 @@ print : a -> Void
 ### Pervasives.**++**
 
 ```grain
-( ++ ) : (String, String) -> String
+(++) : (String, String) -> String
 ```
 
 ### Pervasives.**==**
 
 ```grain
-( == ) : (a, a) -> Bool
+(==) : (a, a) -> Bool
 ```
 
 ### Pervasives.**!=**
 
 ```grain
-( != ) : (a, a) -> Bool
+(!=) : (a, a) -> Bool
 ```
 
 ### Pervasives.**is**
