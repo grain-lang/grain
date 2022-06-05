@@ -33,7 +33,14 @@ let add_unique = id =>
       Ident.add(id, Ident.unique_toplevel_name(id), unique_names^)
   };
 
-let ident = (ppf, id) => pp_print_string(ppf, ident_name(id));
+let ident = (ppf, id) => {
+  let name = ident_name(id);
+  if (Oprint.parenthesized_ident(name)) {
+    fprintf(ppf, "(%s)", name);
+  } else {
+    pp_print_string(ppf, name);
+  };
+};
 
 /* Print a path */
 

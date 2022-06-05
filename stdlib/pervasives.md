@@ -10,55 +10,55 @@ incr : Number -> Number
 decr : Number -> Number
 ```
 
-### Pervasives.**+**
+### Pervasives.**(+)**
 
 ```grain
 (+) : (Number, Number) -> Number
 ```
 
-### Pervasives.**-**
+### Pervasives.**(-)**
 
 ```grain
 (-) : (Number, Number) -> Number
 ```
 
-### Pervasives.*****
+### Pervasives.**(*)**
 
 ```grain
 (*) : (Number, Number) -> Number
 ```
 
-### Pervasives.**/**
+### Pervasives.**(/)**
 
 ```grain
 (/) : (Number, Number) -> Number
 ```
 
-### Pervasives.**%**
+### Pervasives.**(%)**
 
 ```grain
 (%) : (Number, Number) -> Number
 ```
 
-### Pervasives.**<**
+### Pervasives.**(<)**
 
 ```grain
 (<) : (Number, Number) -> Bool
 ```
 
-### Pervasives.**>**
+### Pervasives.**(>)**
 
 ```grain
 (>) : (Number, Number) -> Bool
 ```
 
-### Pervasives.**<=**
+### Pervasives.**(<=)**
 
 ```grain
 (<=) : (Number, Number) -> Bool
 ```
 
-### Pervasives.**>=**
+### Pervasives.**(>=)**
 
 ```grain
 (>=) : (Number, Number) -> Bool
@@ -70,55 +70,55 @@ decr : Number -> Number
 lnot : Number -> Number
 ```
 
-### Pervasives.**&**
+### Pervasives.**(&)**
 
 ```grain
 (&) : (Number, Number) -> Number
 ```
 
-### Pervasives.**|**
+### Pervasives.**(|)**
 
 ```grain
 (|) : (Number, Number) -> Number
 ```
 
-### Pervasives.**^**
+### Pervasives.**(^)**
 
 ```grain
 (^) : (Number, Number) -> Number
 ```
 
-### Pervasives.**<<**
+### Pervasives.**(<<)**
 
 ```grain
 (<<) : (Number, Number) -> Number
 ```
 
-### Pervasives.**>>>**
+### Pervasives.**(>>>)**
 
 ```grain
 (>>>) : (Number, Number) -> Number
 ```
 
-### Pervasives.**>>**
+### Pervasives.**(>>)**
 
 ```grain
 (>>) : (Number, Number) -> Number
 ```
 
-### Pervasives.**!**
+### Pervasives.**(!)**
 
 ```grain
 (!) : Bool -> Bool
 ```
 
-### Pervasives.**&&**
+### Pervasives.**(&&)**
 
 ```grain
 (&&) : (Bool, Bool) -> Bool
 ```
 
-### Pervasives.**||**
+### Pervasives.**(||)**
 
 ```grain
 (||) : (Bool, Bool) -> Bool
@@ -172,19 +172,19 @@ toString : a -> String
 print : a -> Void
 ```
 
-### Pervasives.**++**
+### Pervasives.**(++)**
 
 ```grain
 (++) : (String, String) -> String
 ```
 
-### Pervasives.**==**
+### Pervasives.**(==)**
 
 ```grain
 (==) : (a, a) -> Bool
 ```
 
-### Pervasives.**!=**
+### Pervasives.**(!=)**
 
 ```grain
 (!=) : (a, a) -> Bool
