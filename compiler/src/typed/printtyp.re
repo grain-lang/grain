@@ -23,13 +23,7 @@ let unique_names = ref(Ident.empty);
 
 let ident_name = id =>
   try(Ident.find_same(id, unique_names^)) {
-  | Not_found =>
-    let name = Ident.name(id);
-    if (Oprint.parenthesized_ident(name)) {
-      "(" ++ name ++ ")";
-    } else {
-      name;
-    };
+  | Not_found => Ident.name(id)
   };
 
 let add_unique = id =>
@@ -39,7 +33,14 @@ let add_unique = id =>
       Ident.add(id, Ident.unique_toplevel_name(id), unique_names^)
   };
 
-let ident = (ppf, id) => pp_print_string(ppf, ident_name(id));
+let ident = (ppf, id) => {
+  let name = ident_name(id);
+  if (Oprint.parenthesized_ident(name)) {
+    fprintf(ppf, "(%s)", name);
+  } else {
+    pp_print_string(ppf, name);
+  };
+};
 
 /* Print a path */
 
