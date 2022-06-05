@@ -1137,6 +1137,12 @@ Parameters:
 |`list1`|`List<a>`|The list to reverse|
 |`list2`|`List<a>`|The list to append|
 
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|The new list|
+
 ### List.**sort**
 
 <details disabled>
@@ -1158,4 +1164,10 @@ Parameters:
 |-----|----|-----------|
 |`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
 |`list`|`List<a>`|The list to be sorted|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|The sorted list|
 

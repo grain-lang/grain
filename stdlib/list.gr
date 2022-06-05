@@ -764,6 +764,8 @@ export let join = (separator: String, list: List<String>) => {
  *
  * @param list1: The list to reverse
  * @param list2: The list to append
+ * @returns The new list
+ *
  * @since v0.4.5
  */
 export let rec revAppend = (list1, list2) => {
@@ -779,6 +781,8 @@ export let rec revAppend = (list1, list2) => {
  * Ordering is calculated using a comparator function which takes two list elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
  * @param comp: The comparator function used to indicate sort order
  * @param list: The list to be sorted
+ * @returns The sorted list
+ *
  * @since v0.4.5
  */
 export let sort = (comp, list) => {
