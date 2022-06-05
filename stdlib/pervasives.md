@@ -947,7 +947,7 @@ No other changes yet.
 throw : Exception -> a
 ```
 
-Throw an exception. Currently, Exceptions cannot be caught and will crash your program.
+Throw an exception. Currently, exceptions cannot be caught and will crash your program.
 
 Parameters:
 
@@ -980,7 +980,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`a`|Anything and nothing—your program won't continue past a throw|
+|`a`|Anything and nothing—your program won't continue past a fail expression|
 
 ## Other
 
@@ -1026,9 +1026,9 @@ No other changes yet.
 box : a -> Box<a>
 ```
 
-Creates a box with the same type as the given initial value.
+Creates a box containing the given initial value.
 Values inside a box can be swapped out with the `:=` operator.
-Generally, `let mut` expressions will be preferable to using a Box.
+Generally, `let mut` expressions are preferable to using a Box.
 
 Parameters:
 
@@ -1112,5 +1112,5 @@ No other changes yet.
 empty : List<a>
 ```
 
-The empty list syntax (`[]`) provided as a value;
+The empty list syntax (`[]`) provided as a value.
 
