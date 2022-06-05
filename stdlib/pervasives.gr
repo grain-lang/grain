@@ -479,7 +479,7 @@ export exception Failure(String)
 export exception InvalidArgument(String)
 
 /**
- * Throw an exception. Currently, Exceptions cannot be caught and will crash your program.
+ * Throw an exception. Currently, exceptions cannot be caught and will crash your program.
  *
  * @param exception: The exception to be thrown
  * @returns Anything and nothing—your program won't continue past a throw
@@ -493,7 +493,7 @@ export primitive throw: Exception -> a = "@throw"
  * Currently, Exceptions cannot be caught and will crash your program.
  *
  * @param message: The reason for the failure
- * @returns Anything and nothing—your program won't continue past a throw
+ * @returns Anything and nothing—your program won't continue past a fail expression
  */
 export let fail: String -> a = msg => throw Failure(msg)
 
@@ -516,9 +516,9 @@ export let identity = x => x
  */
 
 /**
- * Creates a box with the same type as the given initial value.
+ * Creates a box containing the given initial value.
  * Values inside a box can be swapped out with the `:=` operator.
- * Generally, `let mut` expressions will be preferable to using a Box.
+ * Generally, `let mut` expressions are preferable to using a Box.
  *
  * @param initial: The initial value inside the box
  * @returns The box containing the initial value
@@ -558,7 +558,7 @@ export let cons = (a, b) =>
     ...b
   ] // <- workaround for (grain-lang/grain#802) [TODO] fix #802 and delete
 /**
- * The empty list syntax (`[]`) provided as a value;
+ * The empty list syntax (`[]`) provided as a value.
  *
  * @deprecated This will be removed in a future release of Grain.
  *
