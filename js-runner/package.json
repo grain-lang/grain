@@ -1,6 +1,6 @@
 {
   "name": "@grain/js-runner",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "The JavaScript runner for the Grain language.",
   "license": "MIT",
   "homepage": "https://grain-lang.org",

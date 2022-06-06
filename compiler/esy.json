@@ -1,8 +1,10 @@
 {
   "name": "@grain/compiler",
-  "version": "0.4.6",
+  "version": "0.5.0",
   "esy": {
-    "build": ["dune build @native --no-buffer"],
+    "build": [
+      "dune build @native --no-buffer"
+    ],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
