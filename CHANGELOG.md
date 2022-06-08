@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.1](https://github.com/grain-lang/grain/compare/grain-v0.5.0...grain-v0.5.1) (2022-06-08)
+
+
+### Bug Fixes
+
+* **compiler:** Properly handle corrupted CMIs ([#1314](https://github.com/grain-lang/grain/issues/1314)) ([7f97410](https://github.com/grain-lang/grain/commit/7f9741016fac55bd63aa74d9bd2fef49dd34d03b))
+
 ## [0.5.0](https://github.com/grain-lang/grain/compare/grain-v0.4.7...grain-v0.5.0) (2022-06-05)
 
 
