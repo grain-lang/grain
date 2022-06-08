@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.1](https://github.com/grain-lang/grain/compare/cli-v0.5.0...cli-v0.5.1) (2022-06-08)
+
+
+### Miscellaneous Chores
+
+* **cli:** Synchronize Grain versions
+
 ## [0.5.0](https://github.com/grain-lang/grain/compare/cli-v0.4.7...cli-v0.5.0) (2022-06-05)
 
 

@@ -1,7 +1,7 @@
 {
   "name": "grain",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "The Grain monorepo.",
   "workspaces": [
     "cli",
