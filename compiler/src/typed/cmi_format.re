@@ -127,6 +127,7 @@ let read_cmi = filename => {
     cmi;
   | None
   | exception End_of_file
+  | exception (Invalid_argument(_))
   | exception (Failure(_)) =>
     close_in(ic);
     raise(Error(Corrupted_interface(filename)));
