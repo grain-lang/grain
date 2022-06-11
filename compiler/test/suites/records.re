@@ -76,8 +76,13 @@ describe("records", ({test, testSkip}) => {
     "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.bar = \"hoo\"; print(a.bar)",
     "hoo\n",
   );
-  assertCompileError(
+  assertRun(
     "record_mut_2",
+    "record Rec {mut foo: Number, bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.foo += 5; print(a.foo)",
+    "9\n",
+  );
+  assertCompileError(
+    "record_mut_3",
     "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.foo = 5; a.foo",
     "The record field foo is not mutable",
   );
