@@ -638,6 +638,7 @@ record_get:
 
 record_set:
   | left_accessor_expr dot simple_id equal expr { Exp.record_set ~loc:(to_loc $loc) $1 $3 $5 }
+  | left_accessor_expr dot simple_id assign_binop_op opt_eols expr { Exp.record_set ~loc:(to_loc $loc) $1 $3 (Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [Exp.record_get ~loc:(to_loc $loc) $1 $3; $6]) }
 
 %inline record_field_value:
   | colon expr {$2}

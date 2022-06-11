@@ -2348,15 +2348,13 @@ and print_expression =
         print_ident(txt),
       ])
     | PExpRecordSet(expression, {txt, _}, expression2) =>
-      Doc.concat([
-        print_expression(~original_source, ~comments, expression),
-        Doc.dot,
-        print_ident(txt),
-        Doc.space,
-        Doc.equal,
-        Doc.space,
-        print_expression(~original_source, ~comments, expression2),
-      ])
+      let left =
+        Doc.concat([
+          print_expression(~original_source, ~comments, expression),
+          Doc.dot,
+          print_ident(txt),
+        ]);
+      print_assignment(~original_source, ~comments, left, expression2);
     | PExpMatch(expression, match_branches) =>
       let arg =
         Doc.concat([
@@ -3100,97 +3098,92 @@ and print_expression =
         print_expression(~original_source, ~comments, expression1),
       ])
     | PExpAssign(expression, expression1) =>
-      switch (expression1.pexp_desc) {
-      | PExpApp(func, expressions) =>
-        let function_name = get_function_name(func);
-
-        let trimmed_operator = String.trim(function_name);
-
-        let left = print_expression(~original_source, ~comments, expression);
-
-        let left_matches_first =
-          switch (expressions) {
-          | [expr, ...remainder] =>
-            print_expression(~original_source, ~comments, expr) == left
-          | _ => false
-          };
-
-        if (left_matches_first) {
-          // +=, -=, *=, /=, and %=
-          switch (trimmed_operator) {
-          | "+"
-          | "-"
-          | "*"
-          | "/"
-          | "%" =>
-            let sugared_op = Doc.text(" " ++ trimmed_operator ++ "= ");
-            Doc.concat([
-              print_expression(~original_source, ~comments, expression),
-              sugared_op,
-              switch (expressions) {
-              | [] =>
-                raise(
-                  IllegalParse("Sugared op needs at least one expression"),
-                )
-              | [expression] =>
-                let expr =
-                  print_expression(~original_source, ~comments, expression);
-                switch (expression.pexp_desc) {
-                | PExpIf(_) =>
-                  Doc.indent(
-                    print_expression(~original_source, ~comments, expression),
-                  )
-                | _ => expr
-                };
-              | [expression1, expression2, ...rest] =>
-                let expr =
-                  print_expression(~original_source, ~comments, expression2);
-                switch (expression2.pexp_desc) {
-                | PExpIf(_) =>
-                  Doc.indent(
-                    print_expression(
-                      ~original_source,
-                      ~comments,
-                      expression2,
-                    ),
-                  )
-                | _ => expr
-                };
-              },
-            ]);
-          | _ =>
-            Doc.concat([
-              print_expression(~original_source, ~comments, expression),
-              Doc.space,
-              Doc.equal,
-              Doc.space,
-              print_expression(~original_source, ~comments, expression1),
-            ])
-          };
-        } else {
-          Doc.concat([
-            print_expression(~original_source, ~comments, expression),
-            Doc.space,
-            Doc.equal,
-            Doc.space,
-            print_expression(~original_source, ~comments, expression1),
-          ]);
-        };
-
-      | _ =>
-        Doc.concat([
-          print_expression(~original_source, ~comments, expression),
-          Doc.space,
-          Doc.equal,
-          Doc.space,
-          print_expression(~original_source, ~comments, expression1),
-        ])
-      }
-
+      let left = print_expression(~original_source, ~comments, expression);
+      print_assignment(~original_source, ~comments, left, expression1);
     | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
 
   expression_doc;
+}
+and print_assignment = (~original_source, ~comments, left, value) => {
+  switch (value.pexp_desc) {
+  | PExpApp(func, expressions) =>
+    let function_name = get_function_name(func);
+
+    let trimmed_operator = String.trim(function_name);
+
+    let left_matches_first =
+      switch (expressions) {
+      | [expr, ...remainder] =>
+        print_expression(~original_source, ~comments, expr) == left
+      | _ => false
+      };
+
+    if (left_matches_first) {
+      // +=, -=, *=, /=, and %=
+      switch (trimmed_operator) {
+      | "+"
+      | "-"
+      | "*"
+      | "/"
+      | "%" =>
+        let sugared_op = Doc.text(" " ++ trimmed_operator ++ "= ");
+        Doc.concat([
+          left,
+          sugared_op,
+          switch (expressions) {
+          | [] =>
+            raise(IllegalParse("Sugared op needs at least one expression"))
+          | [expression] =>
+            let expr =
+              print_expression(~original_source, ~comments, expression);
+            switch (expression.pexp_desc) {
+            | PExpIf(_) =>
+              Doc.indent(
+                print_expression(~original_source, ~comments, expression),
+              )
+            | _ => expr
+            };
+          | [expression1, expression2, ...rest] =>
+            let expr =
+              print_expression(~original_source, ~comments, expression2);
+            switch (expression2.pexp_desc) {
+            | PExpIf(_) =>
+              Doc.indent(
+                print_expression(~original_source, ~comments, expression2),
+              )
+            | _ => expr
+            };
+          },
+        ]);
+      | _ =>
+        Doc.concat([
+          left,
+          Doc.space,
+          Doc.equal,
+          Doc.space,
+          print_expression(~original_source, ~comments, value),
+        ])
+      };
+    } else {
+      Doc.concat([
+        left,
+        Doc.space,
+        Doc.equal,
+        Doc.space,
+        print_expression(~original_source, ~comments, value),
+      ]);
+    };
+
+  | _ =>
+    Doc.concat([
+      left,
+      Doc.space,
+      Doc.equal,
+      Doc.space,
+      print_expression(~original_source, ~comments, value),
+    ])
+  };
 }
 and print_value_bind =
     (
