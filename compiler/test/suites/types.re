@@ -110,6 +110,13 @@ describe("aliased types", ({test, testSkip}) => {
     |},
     "Type String is not compatible with type Number",
   );
+  assertCompileError(
+    "err_type_alias_5",
+    {|
+      type Foo = List<a>
+    |},
+    "Unbound type parameter 'a'",
+  );
   assertRun(
     "import_type_alias_1",
     {|
