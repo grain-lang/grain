@@ -1308,7 +1308,9 @@ and print_pattern =
     | PPatOr(pattern1, pattern2) => (
         Doc.group(
           Doc.concat([
-            print_pattern(~original_source, ~comments, ~next_loc, pattern1),
+            Doc.group(
+              print_pattern(~original_source, ~comments, ~next_loc, pattern1),
+            ),
             Doc.space,
             Doc.text("|"),
             Doc.line,
