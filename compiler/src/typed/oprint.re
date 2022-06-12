@@ -380,6 +380,9 @@ and print_out_type_2 = ppf =>
         print_typlist(print_simple_out_type, ","),
         tyl,
       );
+      if (List.length(tyl) == 1) {
+        pp_print_char(ppf, ',');
+      };
       pp_print_char(ppf, ')');
       pp_close_box(ppf, ());
     }
@@ -646,17 +649,17 @@ and print_out_sig_item = ppf =>
         | Otyp_sum(_) => "enum"
         | Otyp_variant(_, _, _, _) =>
           failwith("NYI: Otyp_variant pretty-printer")
-        | Otyp_abstract => "type"
         | Otyp_open => failwith("NYI: Otyp_open pretty-printer")
         | Otyp_alias(_, _) => failwith("NYI: Otyp_alias pretty-printer")
         | Otyp_arrow(_, _) => failwith("NYI: Otyp_arrow pretty-printer")
         | Otyp_class(_, _, _) => failwith("NYI: Otyp_class pretty-printer")
+        | Otyp_abstract
+        | Otyp_tuple(_)
         | Otyp_constr(_, _) => "type"
         | Otyp_manifest(_, _) =>
           failwith("NYI: Otyp_manifest pretty-printer")
         | Otyp_object(_, _) => failwith("NYI: Otyp_object pretty-printer")
         | Otyp_stuff(_) => failwith("NYI: Otyp_stuff pretty-printer")
-        | Otyp_tuple(_) => failwith("NYI: Otyp_tuple pretty-printer")
         | Otyp_var(_, _) => failwith("NYI: Otyp_var pretty-printer")
         | Otyp_poly(_, _) => failwith("NYI: Otyp_poly pretty-printer")
         | Otyp_module(_, _, _) => failwith("NYI: Otyp_module pretty-printer")
