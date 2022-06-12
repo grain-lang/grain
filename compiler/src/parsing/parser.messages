@@ -6155,6 +6155,318 @@ program: WASMI64 LBRACK WASMI64 RBRACK LBRACK WASMI64 RBRACK EQUAL WHEN
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 221, spurious reduction of production equal -> EQUAL
 ##
+program: BIGINT DOT EOL ID DASHEQ WHEN
+##
+## Ends in an error in state: 680.
+##
+## record_set -> simple_expr DOT eols simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> simple_expr DOT eols simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## simple_expr DOT eols simple_id assign_binop_op
+##
+program: BIGINT DOT EOL ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 682.
+##
+## record_set -> simple_expr DOT eols simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## simple_expr DOT eols simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT DOT ID DASHEQ WHEN
+##
+## Ends in an error in state: 672.
+##
+## record_set -> simple_expr DOT simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> simple_expr DOT simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## simple_expr DOT simple_id assign_binop_op
+##
+program: BIGINT DOT ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 674.
+##
+## record_set -> simple_expr DOT simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## simple_expr DOT simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT DOT ID DOT EOL ID DASHEQ WHEN
+##
+## Ends in an error in state: 656.
+##
+## record_set -> record_get DOT eols simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> record_get DOT eols simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## record_get DOT eols simple_id assign_binop_op
+##
+program: BIGINT DOT ID DOT EOL ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 658.
+##
+## record_set -> record_get DOT eols simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## record_get DOT eols simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT DOT ID DOT ID DASHEQ WHEN
+##
+## Ends in an error in state: 648.
+##
+## record_set -> record_get DOT simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> record_get DOT simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## record_get DOT simple_id assign_binop_op
+##
+program: BIGINT DOT ID DOT ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 650.
+##
+## record_set -> record_get DOT simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## record_get DOT simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LPAREN BIGINT RPAREN DOT EOL ID DASHEQ WHEN
+##
+## Ends in an error in state: 632.
+##
+## record_set -> paren_expr DOT eols simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> paren_expr DOT eols simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## paren_expr DOT eols simple_id assign_binop_op
+##
+program: LPAREN BIGINT RPAREN DOT EOL ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 634.
+##
+## record_set -> paren_expr DOT eols simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## paren_expr DOT eols simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LPAREN BIGINT RPAREN DOT ID DASHEQ WHEN
+##
+## Ends in an error in state: 624.
+##
+## record_set -> paren_expr DOT simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> paren_expr DOT simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## paren_expr DOT simple_id assign_binop_op
+##
+program: LPAREN BIGINT RPAREN DOT ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 626.
+##
+## record_set -> paren_expr DOT simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## paren_expr DOT simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LBRACE BIGINT RBRACE DOT EOL ID DASHEQ WHEN
+##
+## Ends in an error in state: 316.
+##
+## record_set -> braced_expr DOT eols simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> braced_expr DOT eols simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## braced_expr DOT eols simple_id assign_binop_op
+##
+program: LBRACE BIGINT RBRACE DOT EOL ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 318.
+##
+## record_set -> braced_expr DOT eols simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## braced_expr DOT eols simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LBRACE BIGINT RBRACE DOT ID DASHEQ WHEN
+##
+## Ends in an error in state: 308.
+##
+## record_set -> braced_expr DOT simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> braced_expr DOT simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## braced_expr DOT simple_id assign_binop_op
+##
+program: LBRACE BIGINT RBRACE DOT ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 310.
+##
+## record_set -> braced_expr DOT simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## braced_expr DOT simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT LBRACK BIGINT RBRACK DOT EOL ID DASHEQ WHEN
+##
+## Ends in an error in state: 289.
+##
+## record_set -> array_get DOT eols simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> array_get DOT eols simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## array_get DOT eols simple_id assign_binop_op
+##
+program: BIGINT LBRACK BIGINT RBRACK DOT EOL ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 291.
+##
+## record_set -> array_get DOT eols simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## array_get DOT eols simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT LBRACK BIGINT RBRACK DOT ID DASHEQ WHEN
+##
+## Ends in an error in state: 281.
+##
+## record_set -> array_get DOT simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> array_get DOT simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## array_get DOT simple_id assign_binop_op
+##
+program: BIGINT LBRACK BIGINT RBRACK DOT ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 283.
+##
+## record_set -> array_get DOT simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## array_get DOT simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT LPAREN RPAREN DOT EOL ID DASHEQ WHEN
+##
+## Ends in an error in state: 260.
+##
+## record_set -> app_expr DOT eols simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> app_expr DOT eols simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## app_expr DOT eols simple_id assign_binop_op
+##
+program: BIGINT LPAREN RPAREN DOT EOL ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 262.
+##
+## record_set -> app_expr DOT eols simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## app_expr DOT eols simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: BIGINT LPAREN RPAREN DOT ID DASHEQ WHEN
+##
+## Ends in an error in state: 252.
+##
+## record_set -> app_expr DOT simple_id assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## record_set -> app_expr DOT simple_id assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## app_expr DOT simple_id assign_binop_op
+##
+program: BIGINT LPAREN RPAREN DOT ID DASHEQ EOL WHEN
+##
+## Ends in an error in state: 254.
+##
+## record_set -> app_expr DOT simple_id assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+##
+## The known suffix of the stack is as follows:
+## app_expr DOT simple_id assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected an expression to assign.
 
