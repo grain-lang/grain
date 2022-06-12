@@ -1309,7 +1309,9 @@ and print_pattern =
         Doc.group(
           Doc.concat([
             print_pattern(~original_source, ~comments, ~next_loc, pattern1),
-            Doc.text(" | "),
+            Doc.space,
+            Doc.text("|"),
+            Doc.line,
             print_pattern(~original_source, ~comments, ~next_loc, pattern2),
           ]),
         ),
@@ -1320,7 +1322,9 @@ and print_pattern =
         Doc.group(
           Doc.concat([
             print_pattern(~original_source, ~comments, ~next_loc, pattern),
-            Doc.text(" as "),
+            Doc.space,
+            Doc.text("as"),
+            Doc.space,
             Doc.text(loc.txt),
           ]),
         ),

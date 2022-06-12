@@ -21,3 +21,8 @@ match (list) {
 
 
 }
+
+match (list) {
+  [_, alongidentalongident, _] | [_, _, alongidentalongident, _, _] => Some(alongidentalongident),
+  _ => None,
+}
