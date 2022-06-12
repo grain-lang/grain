@@ -1312,7 +1312,9 @@ and print_pattern =
             Doc.space,
             Doc.text("|"),
             Doc.line,
-            print_pattern(~original_source, ~comments, ~next_loc, pattern2),
+            Doc.group(
+              print_pattern(~original_source, ~comments, ~next_loc, pattern2),
+            ),
           ]),
         ),
         false,
