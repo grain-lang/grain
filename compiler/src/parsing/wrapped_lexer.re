@@ -351,7 +351,7 @@ let restore_lexer_positions = state => {
 };
 
 let token = state => {
-  // if-else hack
+  // if-else and or-patterns hack
   let (tok, _, _) as triple = token(state);
   if (tok == EOL) {
     let fst = ((a, _, _)) => a;
@@ -363,7 +363,8 @@ let token = state => {
     };
 
     switch (fst(next_triple^)) {
-    | ELSE => next_triple^
+    | ELSE
+    | PIPE => next_triple^
     | _ =>
       state.queued_tokens =
         List.tl(

@@ -225,6 +225,8 @@ describe("pattern matching", ({test, testSkip}) => {
     "or_match_3",
     "match ([5]) { [a, _] | [_, a, _] | [a] => true, _ => false }",
   );
+  assertSnapshot("or_match_4", {|match (true) { true
+  | false => 3 }|});
   // Aliases
   assertSnapshot("alias_match_1", "match (true) { _ as p => p }");
   assertSnapshot("alias_match_2", "match (true) { a as b => a && b }");
