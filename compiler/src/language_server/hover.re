@@ -159,7 +159,7 @@ let process =
       params: RequestParams.t,
     ) => {
   switch (Hashtbl.find_opt(compiled_code, params.text_document.uri)) {
-  | None => ()
+  | None => send_no_result(~id)
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
