@@ -457,7 +457,13 @@ let globalize_used_variables = (env, fixed) => {
         try(r := [(loc, v, Tbl.find(name, type_variables^)), ...r^]) {
         | Not_found =>
           if (fixed && Btype.is_Tvar(repr(ty))) {
-            raise(Error(loc, env, Unbound_type_variable("'" ++ name)));
+            raise(
+              Error(
+                loc,
+                env,
+                Unbound_type_variable(Printf.sprintf("'%s'", name)),
+              ),
+            );
           };
           let v2 = new_global_var();
           r := [(loc, v, v2), ...r^];
