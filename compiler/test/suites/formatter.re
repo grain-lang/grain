@@ -44,4 +44,5 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("while_loops", "while_loops");
   assertFormatOutput("parens", "parens");
   assertFormatOutput("windows", "windows");
+  assertFormatOutput("patterns", "patterns");
 });

@@ -1305,16 +1305,35 @@ and print_pattern =
         );
       };
 
-    | PPatOr(pattern1, pattern2) =>
-      /* currently unsupported so just replace with the original source */
-      let original_code = get_original_code(pat.ppat_loc, original_source);
+    | PPatOr(pattern1, pattern2) => (
+        Doc.group(
+          Doc.concat([
+            Doc.group(
+              print_pattern(~original_source, ~comments, ~next_loc, pattern1),
+            ),
+            Doc.space,
+            Doc.text("|"),
+            Doc.line,
+            Doc.group(
+              print_pattern(~original_source, ~comments, ~next_loc, pattern2),
+            ),
+          ]),
+        ),
+        false,
+      )
 
-      (Doc.text(original_code), false);
-    | PPatAlias(pattern, loc) =>
-      /* currently unsupported so just replace with the original source */
-      let original_code = get_original_code(pat.ppat_loc, original_source);
-
-      (Doc.text(original_code), false);
+    | PPatAlias(pattern, loc) => (
+        Doc.group(
+          Doc.concat([
+            print_pattern(~original_source, ~comments, ~next_loc, pattern),
+            Doc.space,
+            Doc.text("as"),
+            Doc.space,
+            Doc.text(loc.txt),
+          ]),
+        ),
+        false,
+      )
     };
 
   let (pattern, parens) = printed_pattern;

@@ -1,0 +1,23 @@
+import Option from "option"
+import List from "list"
+
+let user = Some("Bob")
+
+match (user) {
+  Some("Bob" | "Sally" as name) => "VIP " ++ name,
+  Some(name) => "Valued guest " ++ name,
+  None => "Member",
+}
+
+let list = [1, 2, 3]
+match (list) {
+  [_, mid, _] | [_, _, mid, _, _] => Some(mid),
+  _ => None,
+}
+
+match (list) {
+  [_, alongidentalongident123456, _] |
+  [_, _, alongidentalongident123456, _, _] =>
+    Some(alongidentalongident123456),
+  _ => None,
+}
