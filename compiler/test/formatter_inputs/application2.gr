@@ -32,3 +32,5 @@ let makePrettyPrintJSONWriter = String.forEachCodePoint(c => {
   // a
   void
 }, "")
+
+record Foo { mut idx: Number }; let foo = { idx: 1 }; foo.idx += 2
