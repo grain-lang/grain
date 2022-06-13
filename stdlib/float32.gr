@@ -206,3 +206,24 @@ export let nan = {
   )
   WasmI32.toGrain(ptr): Float32
 }
+
+/**
+ * PI represented as a Float32 value.
+ * 
+ * @since v0.5.2
+ */
+export let pi = 3.1415927f
+
+/**
+ * TAU represented as a Float32 value.
+ * 
+ * @since v0.5.2
+ */
+export let tau = 3.1415927f
+
+/**
+ * Eulers Number represented as a Float32 value.
+ * 
+ * @since v0.5.2
+ */
+export let e = 2.7182817f

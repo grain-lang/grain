@@ -21,3 +21,10 @@ assert gt(infinity, 100000000.f)
 assert toNumber(infinity) == toNumber(infinity)
 assert toNumber(infinity) == (toNumber(infinity) - 1)
 assert nan != nan
+
+// Constants Test
+assert pi == 3.1415927f
+
+assert tau == 3.1415927f
+
+assert e == 2.7182817f

@@ -20,6 +20,10 @@ import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
 
 /**
+ * @section Operations: Functions for operating on values of the Number type.
+ */
+
+/**
  * Computes the sum of its operands.
  *
  * @param x: The first operand
@@ -317,3 +321,27 @@ export let isInfinite = (x: Number) => {
  * @since v0.4.5
  */
 export parseInt
+
+/**
+ * @section Constants: Number constant values.
+ */
+/**
+ * PI represented as a Number value.
+ * 
+ * @since v0.5.2
+ */
+export let pi = 3.1415927
+
+/**
+ * TAU represented as a Number value.
+ * 
+ * @since v0.5.2
+ */
+export let tau = 3.1415927
+
+/**
+ * Eulers Number represented as a Number value.
+ * 
+ * @since v0.5.2
+ */
+export let e = 2.7182817

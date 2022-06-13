@@ -313,3 +313,42 @@ nan : Float32
 
 NaN (Not a Number) represented as a Float32 value.
 
+### Float32.**pi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pi : Float32
+```
+
+PI represented as a Float32 value.
+
+### Float32.**tau**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tau : Float32
+```
+
+TAU represented as a Float32 value.
+
+### Float32.**e**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+e : Float32
+```
+
+Eulers Number represented as a Float32 value.
+

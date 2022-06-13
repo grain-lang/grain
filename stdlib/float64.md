@@ -313,3 +313,42 @@ nan : Float64
 
 NaN (Not a Number) represented as a Float64 value.
 
+### Float64.**pi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pi : Float64
+```
+
+PI represented as a Float64 value.
+
+### Float64.**tau**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tau : Float64
+```
+
+TAU represented as a Float64 value.
+
+### Float64.**e**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+e : Float64
+```
+
+Eulers Number represented as a Float64 value.
+
