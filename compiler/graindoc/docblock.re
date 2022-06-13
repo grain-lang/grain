@@ -258,7 +258,7 @@ let to_markdown = (~current_version, docblock) => {
       deprecations,
     );
   };
-  // TODO: Should we fail if more than one `@since` attribute?
+  // TODO(#787): Should we fail if more than one `@since` attribute?
   let since_attr =
     docblock.attributes
     |> List.find_opt(Comments.Attribute.is_since)

@@ -130,7 +130,7 @@ let type_declarations =
 
 let extension_constructors = (~loc, env, ~mark, cxt, subst, id, ext1, ext2) => {
   let mark = mark_positive(mark);
-  // TODO: Enable or remove (#324)
+  // TODO(#324): Enable or remove
   // let ext2 = Subst.extension_constructor(subst, ext2);
   if (Includecore.extension_constructors(~loc, env, ~mark, id, ext1, ext2)) {
     ();

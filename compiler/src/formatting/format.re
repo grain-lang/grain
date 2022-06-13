@@ -1483,7 +1483,7 @@ and print_record =
           switch (fields) {
           | [_one] =>
             // TODO: not needed once we annotate with ::
-            Doc.comma //  append a comma as single argument record look like block {data:val}
+            Doc.comma // append a comma as single argument record look like block {data:val}
           | _ => Doc.nil
           },
         ),

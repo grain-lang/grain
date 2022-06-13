@@ -29,7 +29,7 @@ export function printClosure(c) {
   let closureSize = view[c + 2];
   let closureElts = [];
 
-  // [TODO]: Reenable when this gets ported to AS
+  // TODO: Reenable when this gets ported to AS
   // for (var i = 0; i < closureSize; ++i) {
   //   closureElts.push(print(view[c + i + 3]));
   // }

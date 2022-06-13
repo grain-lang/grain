@@ -302,7 +302,7 @@ module Dependency_graph =
           );
         };
 
-        // TODO: (#597) Propagating the compiler flag information correctly is tricky.
+        // TODO(#597): Propagating the compiler flag information correctly is tricky.
         //        For the moment, from the dependency graph's perspective, we assume that
         //        nothing uses --no-pervasives or --no-gc.
         switch (located) {

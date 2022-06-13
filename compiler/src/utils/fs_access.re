@@ -24,7 +24,7 @@ let determine_eol = line => {
   };
 };
 
-// TODO: (#598) Should be safe for now, but we should harden this against
+// TODO(#598): Should be safe for now, but we should harden this against
 // relative paths by converting everything to absolute paths
 
 let modified_cache = Hashtbl.create(16);
@@ -87,7 +87,7 @@ let rec readdir = dir => {
 };
 
 let ensure_parent_directory_exists = fname => {
-  // TODO: Cleanup once Fp.t is used everywhere
+  // TODO(#216): Cleanup once Fp.t is used everywhere
   let full_path = Filepath.String.derelativize(fname);
   // No longer swallowing the error because we can handle the CWD case
   // thus we should raise if something is actually wrong
