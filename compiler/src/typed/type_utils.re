@@ -2,7 +2,12 @@ open Types;
 
 let rec get_allocation_type = (env, ty) => {
   switch (ty.desc) {
-  | TTyConstr(path, _, _) => Env.find_type(path, env).type_allocation
+  | TTyConstr(path, _, _) =>
+    try(Env.find_type(path, env).type_allocation) {
+    // Types not in the environment come from other modules and are nested in
+    // types we do know about; we treat them as Managed Grain values.
+    | Not_found => Managed
+    }
   | TTySubst(linked)
   | TTyLink(linked) => get_allocation_type(env, linked)
   | TTyVar(_)

@@ -1,0 +1,7 @@
+import Map from "map"
+
+export let apply = (f: Map.Map<String, String> -> Void) => {
+  let map = Map.make()
+  Map.set("foo", "bar", map)
+  f(map)
+}

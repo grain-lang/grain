@@ -71,9 +71,16 @@ describe("exports", ({test}) => {
     "Unbound value secret",
   );
   assertCompileError(
-    "export10",
+    "export11",
     "enum Foo { Bar }; export Bar",
     "Unbound type constructor",
+  );
+  assertSnapshot(
+    "export12",
+    {|
+      import ExposedType from "exposedType"
+      ExposedType.apply((arg) => print("ok"))
+    |},
   );
 
   assertSnapshot("let_rec_export", "export let rec foo = () => 5");
