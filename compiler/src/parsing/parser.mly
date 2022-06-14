@@ -712,3 +712,4 @@ toplevel_stmts:
 
 program:
   | opt_eols toplevel_stmts EOF { make_program $2 }
+  | opt_eols EOF { make_program [] }
