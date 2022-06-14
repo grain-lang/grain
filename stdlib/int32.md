@@ -574,7 +574,7 @@ Returns:
 ### Int32.**ltU**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -626,7 +626,7 @@ Returns:
 ### Int32.**gtU**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -678,7 +678,7 @@ Returns:
 ### Int32.**lteU**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -730,7 +730,7 @@ Returns:
 ### Int32.**gteU**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
