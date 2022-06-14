@@ -18,7 +18,7 @@ describe("comments", ({test}) => {
       comments: [
         Parsetree.Line({
           cmt_content: "Test",
-          cmt_source: "// Test\n",
+          cmt_source: "// Test",
           cmt_loc: Location.dummy_loc,
         }),
       ],
@@ -139,7 +139,7 @@ describe("comments", ({test}) => {
       comments: [
         Parsetree.Shebang({
           cmt_content: "/bin/grain",
-          cmt_source: "#!/bin/grain\n",
+          cmt_source: "#!/bin/grain",
           cmt_loc: Location.dummy_loc,
         }),
       ],

@@ -2,7 +2,7 @@
  (name grain_diagnostics)
  (public_name grain_diagnostics)
  (synopsis "Diagnostic modules for Grain compiler")
- (libraries compiler-libs.common grain_utils grain_typed utf8.lib str
+ (libraries compiler-libs.common grain_utils grain_typed str
    ppx_deriving_yojson.runtime yojson)
  (preprocess
   (pps ppx_deriving_yojson)))

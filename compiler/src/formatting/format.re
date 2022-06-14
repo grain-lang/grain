@@ -59,14 +59,17 @@ let get_original_code = (location: Location.t, source: array(string)) => {
 
   if (Array.length(source) > end_line - 1) {
     if (start_line == end_line) {
-      String.sub(source[start_line - 1], startc, endc - startc);
+      String_utils.Utf8.sub(source[start_line - 1], startc, endc - startc);
     } else {
       let text = ref("");
       for (line in start_line - 1 to end_line - 1) {
         if (line + 1 == start_line) {
-          text := text^ ++ Str.string_after(source[line], startc) ++ "\n";
+          text :=
+            text^
+            ++ String_utils.Utf8.string_after(source[line], startc)
+            ++ "\n";
         } else if (line + 1 == end_line) {
-          text := text^ ++ String.sub(source[line], 0, endc);
+          text := text^ ++ String_utils.Utf8.sub(source[line], 0, endc);
         } else {
           text := text^ ++ source[line] ++ "\n";
         };

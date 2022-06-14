@@ -1,5 +1,3 @@
-(ocamllex lexer)
-
 (menhir
  (modules parser)
  (flags --explain --unused-tokens --strict))
@@ -40,4 +38,4 @@
  (libraries menhirLib compiler-libs.common grain_utils utf8.lib str
    ppx_deriving_yojson.runtime ppx_sexp_conv.runtime-lib sexplib yojson)
  (preprocess
-  (pps ppx_sexp_conv ppx_deriving_yojson)))
+  (pps ppx_sexp_conv ppx_deriving_yojson sedlex.ppx)))

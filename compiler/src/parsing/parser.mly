@@ -23,8 +23,8 @@ module Grain_parsing = struct end
 %token <string> WASMF32
 %token <string> WASMF64
 %token <string> BIGINT
-%token <string> ID
-%token <string> TYPEID
+%token <string> LIDENT
+%token <string> UIDENT
 %token <string> STRING
 %token <string> CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
@@ -241,7 +241,7 @@ pattern:
   | const { Pat.constant ~loc:(to_loc (snd $1)) (fst $1) }
   // Allow rational numbers in patterns
   | dash_op? NUMBER_INT slash_op dash_op? NUMBER_INT { Pat.constant ~loc:(to_loc $sloc) @@ Const.number (PConstNumberRational ((if Option.is_some $1 then "-" ^ $2 else $2), (if Option.is_some $4 then "-" ^ $5 else $5))) }
-  | ID { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
+  | LIDENT { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pat.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | lparen tuple_patterns rparen { Pat.tuple ~loc:(to_loc $loc) $2 }
@@ -284,11 +284,11 @@ data_typ:
 
 typ:
   | data_typ arrow typ { Typ.arrow ~loc:(to_loc $loc) [$1] $3 }
-  | FUN ID arrow typ { Typ.arrow ~loc:(to_loc $loc) [(Typ.var $2)] $4 }
+  | FUN LIDENT arrow typ { Typ.arrow ~loc:(to_loc $loc) [(Typ.var $2)] $4 }
   | FUN lparen typs? rparen arrow typ { Typ.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Typ.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
-  | ID { Typ.var ~loc:(to_loc $loc) $1 }
+  | LIDENT { Typ.var ~loc:(to_loc $loc) $1 }
   | data_typ { $1 }
 
 typs:
@@ -348,8 +348,8 @@ export_stmt:
   | attributes EXPORT STAR export_exception? { Top.export_all ~loc:(to_loc $sloc) ~attributes:$1 (Option.value ~default:[] $4) }
 
 data_constructor:
-  | TYPEID { CDecl.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
-  | TYPEID lparen typs? rparen { CDecl.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Option.value ~default:[] $3) }
+  | UIDENT { CDecl.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
+  | UIDENT lparen typs? rparen { CDecl.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Option.value ~default:[] $3) }
   /* Special support for lists */
   | lbrack rbrack { CDecl.singleton ~loc:(to_loc $loc) (mkstr $loc "[]") }
   | lbrack ELLIPSIS rbrack lparen typs? rparen { CDecl.tuple ~loc:(to_loc $loc) (mkstr $loc "[...]") (Option.value ~default:[] $5) }
@@ -365,15 +365,15 @@ data_labels:
   | lbrace lseparated_nonempty_list(comma, data_label) comma? rbrace { $2 }
 
 id_typ:
-  | ID { Typ.var ~loc:(to_loc $loc) $1 }
+  | LIDENT { Typ.var ~loc:(to_loc $loc) $1 }
 
 id_vec:
   | lcaret lseparated_nonempty_list(comma, id_typ) comma? rcaret {$2}
 
 data_declaration:
-  | TYPE TYPEID id_vec? equal typ { Dat.abstract ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) (Some $5) }
-  | ENUM TYPEID id_vec? data_constructors { Dat.variant ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
-  | RECORD TYPEID id_vec? data_labels { Dat.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
+  | TYPE UIDENT id_vec? equal typ { Dat.abstract ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) (Some $5) }
+  | ENUM UIDENT id_vec? data_constructors { Dat.variant ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
+  | RECORD UIDENT id_vec? data_labels { Dat.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
 prim1_expr:
   | NOT non_assign_expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "!"]) [$2] }
@@ -490,7 +490,7 @@ id:
   | non_modid { (mkid $1) (to_loc $loc) }
 
 simple_id:
-  | ID { (mkid [mkstr $loc $1]) (to_loc $loc) }
+  | LIDENT { (mkid [mkstr $loc $1]) (to_loc $loc) }
 
 type_id:
   | lseparated_nonempty_list(dot, type_id_str) { (mkid $1) (to_loc $loc) }
@@ -513,7 +513,7 @@ block:
 
 lam_expr:
   | FUN lparen patterns? rparen thickarrow expr { Exp.lambda ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
-  | FUN ID thickarrow expr { Exp.lambda ~loc:(to_loc $loc) [Pat.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)] $4 }
+  | FUN LIDENT thickarrow expr { Exp.lambda ~loc:(to_loc $loc) [Pat.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)] $4 }
 
 attribute_argument:
   | STRING { mkstr $loc $1 }
@@ -666,11 +666,11 @@ file_path:
   | STRING { Location.mkloc $1 (to_loc $loc) }
 
 id_str:
-  | ID { Location.mkloc $1 (to_loc $loc) }
+  | LIDENT { Location.mkloc $1 (to_loc $loc) }
   | special_id { $1 }
 
 type_id_str:
-  | TYPEID { Location.mkloc $1 (to_loc $loc) }
+  | UIDENT { Location.mkloc $1 (to_loc $loc) }
 
 any_id_str:
   | id_str { $1 }
