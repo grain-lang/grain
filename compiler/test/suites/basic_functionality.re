@@ -10,6 +10,7 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRunError = makeErrorRunner(test_or_skip);
 
+  assertSnapshot("nil", "");
   assertSnapshot("forty", "let x = 40; x");
   assertSnapshot("neg", "-40");
   assertSnapshot("simple_min", "-1073741824");
