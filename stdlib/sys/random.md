@@ -15,7 +15,7 @@ Functions and constants included in the Sys/Random module.
 ### Random.**randomInt32**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -34,7 +34,7 @@ Returns:
 ### Random.**randomInt64**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 

@@ -263,7 +263,7 @@ Parameters:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Ensured the iterator function return type is always `Void`</td></tr>
+<tr><td><code>0.5.0</code></td><td>Ensured the iterator function return type is always `Void`</td></tr>
 </tbody>
 </table>
 </details>

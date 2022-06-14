@@ -87,6 +87,14 @@ jobs:
         run: |
           grain -v
 
+      # If we have a working grain CLI, we can run grainfmt and graindoc on stdlib
+      - name: Check stdlib docs and formatting
+        if: matrix.os != 'windows-latest'
+        run: |
+          grain doc stdlib -o stdlib --current-version=$(grain -v)
+          grain format stdlib -o stdlib
+          git diff --exit-code --name-only
+
       # This is to test that we didn't actually introduce multivalue
       # which might happen through a binaryen optimization
       - name: Run NEAR smoketest

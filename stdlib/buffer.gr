@@ -83,21 +83,21 @@ let checkIsIndexInBounds = (i, len, buf) => {
 let addInt8help = (value, buffer) => {
   autogrow(_8BIT_LEN, buffer)
   let index = buffer.len
-  buffer.len = buffer.len + _8BIT_LEN
+  buffer.len += _8BIT_LEN
   Bytes.setInt8(index, value, buffer.data)
 }
 
 let addInt16help = (value, buffer) => {
   autogrow(_16BIT_LEN, buffer)
   let index = buffer.len
-  buffer.len = buffer.len + _16BIT_LEN
+  buffer.len += _16BIT_LEN
   Bytes.setInt16(index, value, buffer.data)
 }
 
 let addInt32help = (value, buffer) => {
   autogrow(_32BIT_LEN, buffer)
   let index = buffer.len
-  buffer.len = buffer.len + _32BIT_LEN
+  buffer.len += _32BIT_LEN
   Bytes.setInt32(index, value, buffer.data)
 }
 
@@ -255,7 +255,7 @@ export let addBytes = (bytes, buffer) => {
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(0n, off, len, src, dst)
 
-  buffer.len = buffer.len + bytelen
+  buffer.len += bytelen
 }
 
 /**
@@ -278,7 +278,7 @@ export let addString = (string, buffer) => {
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(0n, off, len, src, dst)
 
-  buffer.len = buffer.len + bytelen
+  buffer.len += bytelen
 }
 
 /**
@@ -318,7 +318,7 @@ export let addStringSlice = (start: Number, end, string, buffer) => {
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(srcOff, dstOff, coerceNumberToWasmI32(bytelen), src, dst)
 
-  buffer.len = buffer.len + bytelen
+  buffer.len += bytelen
 }
 
 /**
@@ -364,7 +364,7 @@ export let addBytesSlice =
   let dst = WasmI32.fromGrain(buffer.data)
   appendBytes(srcOff, dstOff, len, src, dst)
 
-  buffer.len = buffer.len + length
+  buffer.len += length
 }
 
 /**
@@ -588,7 +588,7 @@ export let setFloat32 = (index, value, buffer) => {
 export let addFloat32 = (value, buffer) => {
   autogrow(_32BIT_LEN, buffer)
   let index = buffer.len
-  buffer.len = buffer.len + _32BIT_LEN
+  buffer.len += _32BIT_LEN
   setFloat32(index, value, buffer)
 }
 
@@ -631,7 +631,7 @@ export let setInt64 = (index, value, buffer) => {
 export let addInt64 = (value, buffer) => {
   autogrow(_64BIT_LEN, buffer)
   let index = buffer.len
-  buffer.len = buffer.len + _64BIT_LEN
+  buffer.len += _64BIT_LEN
   setInt64(index, value, buffer)
 }
 
@@ -674,6 +674,6 @@ export let setFloat64 = (index, value, buffer) => {
 export let addFloat64 = (value, buffer) => {
   autogrow(_64BIT_LEN, buffer)
   let index = buffer.len
-  buffer.len = buffer.len + _64BIT_LEN
+  buffer.len += _64BIT_LEN
   setFloat64(index, value, buffer)
 }

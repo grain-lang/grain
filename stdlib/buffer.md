@@ -309,7 +309,7 @@ Parameters:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Now takes the end offset instead of length</td></tr>
+<tr><td><code>0.5.0</code></td><td>Now takes the end offset instead of length</td></tr>
 </tbody>
 </table>
 </details>

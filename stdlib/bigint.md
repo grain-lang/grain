@@ -5,7 +5,7 @@ title: BigInt
 Utilities for working with the BigInt type.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -20,7 +20,7 @@ Functions for converting between Numbers and the BigInt type.
 ### Bigint.**fromNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -45,7 +45,7 @@ Returns:
 ### Bigint.**toNumber**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -74,7 +74,7 @@ Mathematical operations for BigInt values.
 ### Bigint.**incr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -99,7 +99,7 @@ Returns:
 ### Bigint.**decr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -124,7 +124,7 @@ Returns:
 ### Bigint.**neg**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -149,7 +149,7 @@ Returns:
 ### Bigint.**abs**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -174,7 +174,7 @@ Returns:
 ### Bigint.**add**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -200,7 +200,7 @@ Returns:
 ### Bigint.**sub**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -226,7 +226,7 @@ Returns:
 ### Bigint.**mul**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -252,7 +252,7 @@ Returns:
 ### Bigint.**div**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -279,7 +279,7 @@ Returns:
 ### Bigint.**rem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -306,7 +306,7 @@ Returns:
 ### Bigint.**quotRem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -332,7 +332,7 @@ Returns:
 ### Bigint.**gcd**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -362,7 +362,7 @@ Functions for operating on bits of BigInt values.
 ### Bigint.**shl**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -388,7 +388,7 @@ Returns:
 ### Bigint.**shr**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -418,7 +418,7 @@ Functions for comparing BigInt values.
 ### Bigint.**eqz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -443,7 +443,7 @@ Returns:
 ### Bigint.**eq**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -469,7 +469,7 @@ Returns:
 ### Bigint.**ne**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -495,7 +495,7 @@ Returns:
 ### Bigint.**lt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -521,7 +521,7 @@ Returns:
 ### Bigint.**lte**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -547,7 +547,7 @@ Returns:
 ### Bigint.**gt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -573,7 +573,7 @@ Returns:
 ### Bigint.**gte**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -603,7 +603,7 @@ Boolean operations on the bits of BigInt values.
 ### Bigint.**lnot**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -628,7 +628,7 @@ Returns:
 ### Bigint.**land**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -654,7 +654,7 @@ Returns:
 ### Bigint.**lor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -680,7 +680,7 @@ Returns:
 ### Bigint.**lxor**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -706,7 +706,7 @@ Returns:
 ### Bigint.**clz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -732,7 +732,7 @@ Returns:
 ### Bigint.**ctz**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -757,7 +757,7 @@ Returns:
 ### Bigint.**popcnt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
@@ -787,7 +787,7 @@ Other functions on BigInts.
 ### Bigint.**toString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
 </details>
 
