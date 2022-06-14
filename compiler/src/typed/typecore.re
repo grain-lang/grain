@@ -911,7 +911,7 @@ and type_expect_ =
       end_def();
       generalize_structure(funct.exp_type);
     };
-    // TODO: Determine What This Does?
+    // TODO: Determine what this does
     /*let rec lower_args seen ty_fun =
         let ty = expand_head env ty_fun in
         if List.memq ty seen then () else

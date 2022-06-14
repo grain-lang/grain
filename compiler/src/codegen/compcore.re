@@ -9,9 +9,6 @@ open Comp_wasm_prim;
 
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
-// TODO(#85): Should probably be a config variable
-let memory_debugging_enabled = false;
-
 /** Environment */
 
 type codegen_env = {

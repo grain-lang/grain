@@ -556,7 +556,7 @@ export let cons = (a, b) =>
   [
     a,
     ...b
-  ] // TODO(#802): Remove Workarround after 802 is completed
+  ] // TODO(#802): Remove workaround after 802 is completed
 /**
  * The empty list syntax (`[]`) provided as a value.
  *
