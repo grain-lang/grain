@@ -1739,7 +1739,8 @@ let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
 };
 
 let create_char = (wasm_mod, env, char) => {
-  let uchar_int = Grain_utils.String_utils.Utf8.utf_length_at_offset(char, 0);
+  let uchar = List.hd @@ Utf8.decodeUtf8String(char);
+  let uchar_int: int = Utf8__Uchar.toInt(uchar);
   let grain_char = uchar_int lsl 3 lor 0b010;
   Expression.Const.make(wasm_mod, const_int32(grain_char));
 };
