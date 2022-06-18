@@ -358,7 +358,7 @@ let reduceToPiBound = (radians: Number) => {
 }
 
 /**
- * Computes the sine of a number using Chebyshev polynmoials. Requires the input to be bounded to (-pi, pi).
+ * Computes the sine of a number using Chebyshev polynomials. Requires the input to be bounded to (-pi, pi).
  */
 let chebyshevSine = (radians: Number) => {
   let pi_minor = -0.00000008742278
