@@ -399,11 +399,5 @@ export let sin = (radians: Number) => {
  * @since v0.5.2
  */
 export let cos = (radians: Number) => {
-  let quot = reduceToPiBound(radians)
-  let sin = sin(radians)
-  if (quot % 2 == 0) {
-    sqrt(1 - sin * sin)
-  } else {
-    neg(sqrt(1 - sin * sin))
-  }
+  sin(pi / 2 + radians)
 }
