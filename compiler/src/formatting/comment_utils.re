@@ -32,12 +32,12 @@ let rec get_comments_before_location =
     if (cmteline > stmt_start_line) {
       []; // can stop now
     } else if (cmteline < stmt_start_line) {
-      [cmt, ...get_comments_before_location(location, remaining_comments)];
+      [cmt, ...get_comments_before_location(~location, remaining_comments)];
     } else if (cmtechar <= stm_start_char) {
       [
         //  ends on the same line as the stmt starts
         cmt,
-        ...get_comments_before_location(location, remaining_comments),
+        ...get_comments_before_location(~location, remaining_comments),
       ];
     } else {
       [];
@@ -65,7 +65,7 @@ let rec get_comments_inside_location =
     if (cmtsline > stmt_end_line) {
       []; // can stop now
     } else if (cmteline < stmt_start_line) {
-      get_comments_inside_location(location, remaining_comments);
+      get_comments_inside_location(~location, remaining_comments);
     } else if
       // other cases were simple as we are on lines before or after.
       // Now we need to check when the start line or end line match that we also take
@@ -76,12 +76,15 @@ let rec get_comments_inside_location =
       if (cmteline < stmt_end_line
           || cmteline == stmt_end_line
           && cmtechar <= stmt_end_char) {
-        [cmt, ...get_comments_inside_location(location, remaining_comments)];
+        [
+          cmt,
+          ...get_comments_inside_location(~location, remaining_comments),
+        ];
       } else {
-        get_comments_inside_location(location, remaining_comments);
+        get_comments_inside_location(~location, remaining_comments);
       };
     } else {
-      get_comments_inside_location(location, remaining_comments);
+      get_comments_inside_location(~location, remaining_comments);
     };
   };
 };
@@ -478,7 +481,7 @@ let single_line_of_comments = (comments: list(Parsetree.comment)) =>
     Doc.concat([
       Doc.space,
       Doc.join(
-        Doc.space,
+        ~sep=Doc.space,
         List.map(c => {nobreak_comment_to_doc(c)}, comments),
       ),
     ])

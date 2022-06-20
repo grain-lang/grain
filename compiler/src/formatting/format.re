@@ -101,7 +101,7 @@ let print_attributes = attributes =>
   | _ =>
     Doc.concat([
       Doc.join(
-        Doc.space,
+        ~sep=Doc.space,
         List.map(
           ((a: Location.loc(string), args: list(Location.loc(string)))) => {
             switch (args) {
@@ -112,7 +112,7 @@ let print_attributes = attributes =>
                 Doc.text(a.txt),
                 Doc.text("("),
                 Doc.join(
-                  Doc.concat([Doc.comma, Doc.space]),
+                  ~sep=Doc.concat([Doc.comma, Doc.space]),
                   List.map(
                     (b: Location.loc(string)) =>
                       Doc.concat([
@@ -568,7 +568,10 @@ let rec block_item_iterator =
         ]);
 
       let included_comments =
-        Comment_utils.get_comments_inside_location(get_loc(item), comments);
+        Comment_utils.get_comments_inside_location(
+          ~location=get_loc(item),
+          comments,
+        );
 
       let cleaned_comments =
         remove_used_comments(~remove_comments=included_comments, comments);
@@ -735,7 +738,10 @@ let rec item_iterator =
     let leading_comments =
       switch (previous) {
       | None =>
-        Comment_utils.get_comments_before_location(get_loc(item), comments)
+        Comment_utils.get_comments_before_location(
+          ~location=get_loc(item),
+          comments,
+        )
       | Some(_) => []
       };
 
@@ -990,7 +996,7 @@ let rec resugar_list_patterns =
       ~separator=Doc.comma,
       processed_list,
     );
-  let printed_patterns = Doc.join(Doc.line, items);
+  let printed_patterns = Doc.join(~sep=Doc.line, items);
   let printed_patterns_after_bracket =
     Doc.concat([Doc.softLine, printed_patterns]);
 
@@ -1082,7 +1088,7 @@ and resugar_list =
       Doc.indent(
         Doc.concat([
           Doc.softLine,
-          Doc.join(Doc.concat([Doc.comma, Doc.line]), items),
+          Doc.join(~sep=Doc.concat([Doc.comma, Doc.line]), items),
           if (last_item_was_spread^) {
             Doc.nil;
           } else {
@@ -1188,7 +1194,7 @@ and print_record_pattern =
       ~separator=Doc.comma,
       patternlocs,
     );
-  let printed_fields = Doc.join(Doc.line, items);
+  let printed_fields = Doc.join(~sep=Doc.line, items);
 
   let printed_fields_after_brace =
     Doc.concat([
@@ -1341,7 +1347,10 @@ and print_pattern =
   let with_leading = [pattern];
 
   let after_parens_comments =
-    Comment_utils.get_comments_to_end_of_line(pat.ppat_loc, comments);
+    Comment_utils.get_comments_to_end_of_line(
+      ~location=pat.ppat_loc,
+      comments,
+    );
   let after_parens_comments_docs =
     Comment_utils.inbetween_comments_to_docs(
       ~offset=true,
@@ -1452,7 +1461,7 @@ and print_record =
       ~separator=Doc.comma,
       fields,
     );
-  let printed_fields = Doc.join(Doc.line, items);
+  let printed_fields = Doc.join(~sep=Doc.line, items);
 
   let printed_fields_after_brace =
     Doc.concat([
@@ -1504,7 +1513,7 @@ and print_type =
               Doc.concat([
                 Doc.softLine,
                 Doc.join(
-                  Doc.concat([Doc.comma, Doc.line]),
+                  ~sep=Doc.concat([Doc.comma, Doc.line]),
                   List.map(
                     t => print_type(~original_source, ~comments, t),
                     types,
@@ -1531,7 +1540,7 @@ and print_type =
         Doc.concat([
           Doc.softLine,
           Doc.join(
-            Doc.concat([Doc.comma, Doc.line]),
+            ~sep=Doc.concat([Doc.comma, Doc.line]),
             List.map(
               t => print_type(~original_source, ~comments, t),
               parsed_types,
@@ -1575,7 +1584,7 @@ and print_type =
           ~separator=Doc.comma,
           parsedtypes,
         );
-      let printed_types = Doc.join(Doc.line, type_items);
+      let printed_types = Doc.join(~sep=Doc.line, type_items);
       let printed_types_after_angle =
         Doc.concat([
           force_break_if_line_comment(
@@ -1943,7 +1952,7 @@ and print_arguments_with_callback_in_first_position =
       | [] => Doc.nil
       | _ =>
         Doc.join(
-          Doc.concat([Doc.comma, Doc.line]),
+          ~sep=Doc.concat([Doc.comma, Doc.line]),
           List.map(print_arg(~comments, ~original_source), remainder),
         )
       };
@@ -1983,7 +1992,7 @@ and print_arguments_with_callback_in_last_position =
 
     let printed_args =
       Doc.join(
-        Doc.concat([Doc.comma, Doc.line]),
+        ~sep=Doc.concat([Doc.comma, Doc.line]),
         List.map(
           print_arg(~comments, ~original_source),
           Array.to_list(remainderArr),
@@ -2103,7 +2112,7 @@ and print_other_application =
     } else {
       let printed_args =
         Doc.join(
-          Doc.concat([Doc.comma, Doc.line]),
+          ~sep=Doc.concat([Doc.comma, Doc.line]),
           List.map(print_arg(~comments, ~original_source), expressions),
         );
 
@@ -2181,7 +2190,7 @@ and print_patterns =
         ~followed_by_arrow?,
         patterns,
       );
-    Doc.join(Doc.line, items);
+    Doc.join(~sep=Doc.line, items);
   };
 }
 
@@ -2267,7 +2276,7 @@ and print_expression =
           expressions,
         );
 
-      let printed_expr_items = Doc.join(Doc.line, expr_items);
+      let printed_expr_items = Doc.join(~sep=Doc.line, expr_items);
       let printed_expr_items_after_paren =
         Doc.concat([Doc.softLine, printed_expr_items]);
       Doc.group(
@@ -2324,7 +2333,7 @@ and print_expression =
                   ~separator=Doc.softLine,
                   after_bracket_comments,
                 ),
-                Doc.join(Doc.line, items),
+                Doc.join(~sep=Doc.line, items),
               ]),
             ),
             Doc.ifBreaks(Doc.comma, Doc.nil),
@@ -2518,7 +2527,7 @@ and print_expression =
           ~separator=Doc.comma,
           match_branches,
         );
-      let printed_branches = Doc.join(Doc.hardLine, items);
+      let printed_branches = Doc.join(~sep=Doc.hardLine, items);
 
       let printed_branches_after_brace =
         Doc.concat([
@@ -3322,7 +3331,7 @@ and print_value_bind =
           ~separator=Doc.comma,
           vbs,
         );
-      Doc.join(Doc.space, items);
+      Doc.join(~sep=Doc.space, items);
     };
 
   Doc.group(
@@ -3419,7 +3428,7 @@ let rec print_data =
           ~separator=Doc.comma,
           data.pdata_params,
         );
-      let printed_types = Doc.join(Doc.line, items);
+      let printed_types = Doc.join(~sep=Doc.line, items);
       let printed_types_after_angle = printed_types;
       let params = [
         Doc.text("<"),
@@ -3498,7 +3507,7 @@ let rec print_data =
                   ~separator=Doc.comma,
                   parsed_types,
                 );
-              let printed_type_items = Doc.join(Doc.line, type_items);
+              let printed_type_items = Doc.join(~sep=Doc.line, type_items);
 
               let printed_type_items_after_parens =
                 Doc.concat([
@@ -3538,7 +3547,7 @@ let rec print_data =
         ~separator=Doc.comma,
         constr_declarations,
       );
-    let printed_decls = Doc.join(Doc.hardLine, decl_items);
+    let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
 
     let printed_decls_after_brace =
       Doc.concat([
@@ -3582,7 +3591,7 @@ let rec print_data =
               data.pdata_params,
             );
 
-          let printed_data_params = Doc.join(Doc.line, params);
+          let printed_data_params = Doc.join(~sep=Doc.line, params);
 
           let printed_data_params_after_angle =
             Doc.concat([
@@ -3649,7 +3658,7 @@ let rec print_data =
         ~separator=Doc.comma,
         label_declarations,
       );
-    let printed_decls = Doc.join(Doc.hardLine, decl_items);
+    let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
     let printed_decls_after_brace = Doc.concat([Doc.hardLine, printed_decls]);
 
     Doc.group(
@@ -3684,7 +3693,7 @@ let rec print_data =
               ~separator=Doc.comma,
               data.pdata_params,
             );
-          let printed_param_items = Doc.join(Doc.line, param_items);
+          let printed_param_items = Doc.join(~sep=Doc.line, param_items);
           let printed_params_after_angle =
             Doc.concat([
               force_break_if_line_comment(
@@ -3723,7 +3732,7 @@ let data_print =
       datas: list((Parsetree.export_flag, Parsetree.data_declaration)),
     ) => {
   Doc.join(
-    Doc.concat([Doc.comma, Doc.hardLine]),
+    ~sep=Doc.concat([Doc.comma, Doc.hardLine]),
     List.map(
       data => {
         let (expt, decl: Parsetree.data_declaration) = data;
@@ -3900,7 +3909,7 @@ let import_print =
   Doc.group(
     Doc.concat([
       Doc.text("import "),
-      Doc.join(Doc.concat([Doc.comma, Doc.space]), vals),
+      Doc.join(~sep=Doc.concat([Doc.comma, Doc.space]), vals),
       Doc.space,
       Doc.text("from"),
       Doc.space,
@@ -4005,7 +4014,7 @@ let print_primitive_value_description =
     Doc.equal,
     Doc.space,
     Doc.text("\""),
-    Doc.join(Doc.text(","), List.map(p => Doc.text(p), vd.pval_prim)),
+    Doc.join(~sep=Doc.text(","), List.map(p => Doc.text(p), vd.pval_prim)),
     Doc.text("\""),
   ]);
 };
@@ -4082,7 +4091,7 @@ let toplevel_print =
               Doc.concat([
                 Doc.lparen,
                 Doc.join(
-                  Doc.comma,
+                  ~sep=Doc.comma,
                   List.map(
                     t => print_type(~original_source, ~comments, t),
                     parsed_types,
@@ -4108,7 +4117,7 @@ let toplevel_print =
       Doc.concat([
         Doc.text("export "),
         Doc.join(
-          Doc.concat([Doc.comma, Doc.line]),
+          ~sep=Doc.concat([Doc.comma, Doc.line]),
           List.map(print_export_declaration, export_declarations),
         ),
       ])
@@ -4122,7 +4131,7 @@ let toplevel_print =
             Doc.text("except"),
             Doc.space,
             Doc.join(
-              Doc.comma,
+              ~sep=Doc.comma,
               List.map(
                 (excpt: Parsetree.export_except) =>
                   switch (excpt) {
