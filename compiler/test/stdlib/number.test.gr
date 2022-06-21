@@ -6,6 +6,13 @@ import Float32 from "float32"
 import Float64 from "float64"
 import BI from "bigint"
 
+// Constants Test
+assert Number.pi == 3.1415927
+
+assert Number.tau == 3.1415927
+
+assert Number.e == 2.7182817
+// Operations Tests
 // add
 assert Number.add(25, 5) == 30
 // Rational addition tests
@@ -209,10 +216,3 @@ assert Number.sign(BI.toNumber(1t)) == 1
 assert 1 / Number.sign(0.0) == Float64.toNumber(Float64.infinity)
 // TODO(#693): Replace with -Infinity literal when it exists
 assert 1 / Number.sign(-0.0) == Number.neg(Float64.toNumber(Float64.infinity))
-
-// Constants Test
-assert Number.pi == 3.1415927
-
-assert Number.tau == 3.1415927
-
-assert Number.e == 2.7182817

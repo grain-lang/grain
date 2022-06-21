@@ -14,6 +14,61 @@ import {
 } from "runtime/numbers"
 
 /**
+ * @section Constants: Float64 constant values.
+ */
+
+/**
+ * Infinity represented as a Float64 value.
+ * 
+ * @since v0.4.0
+ */
+@unsafe
+export let infinity = {
+  let ptr = newFloat64(
+    WasmF64.reinterpretI64(
+      0b0111111111110000000000000000000000000000000000000000000000000000N
+    )
+  )
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * NaN (Not a Number) represented as a Float64 value.
+ * 
+ * @since v0.4.0
+ */
+@unsafe
+export let nan = {
+  let ptr = newFloat64(
+    WasmF64.reinterpretI64(
+      0b0111111111110000000000000000000000000000000000000000000000000001N
+    )
+  )
+  WasmI32.toGrain(ptr): Float64
+}
+
+/**
+ * PI represented as a Float64 value.
+ * 
+ * @since v0.5.2
+ */
+export let pi = 3.141592653589793d
+
+/**
+ * TAU represented as a Float64 value.
+ * 
+ * @since v0.5.2
+ */
+export let tau = 3.141592653589793d
+
+/**
+ * Eulers Number represented as a Float64 value.
+ * 
+ * @since v0.5.2
+ */
+export let e = 2.718281828459045d
+
+/**
  * @section Conversions: Functions for converting between Numbers and the Float64 type.
  */
 
@@ -176,58 +231,3 @@ export let gte = (x: Float64, y: Float64) => {
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.ge(xv, yv)
 }
-
-/**
- * @section Constants: Float64 constant values.
- */
-
-/**
- * Infinity represented as a Float64 value.
- * 
- * @since v0.4.0
- */
-@unsafe
-export let infinity = {
-  let ptr = newFloat64(
-    WasmF64.reinterpretI64(
-      0b0111111111110000000000000000000000000000000000000000000000000000N
-    )
-  )
-  WasmI32.toGrain(ptr): Float64
-}
-
-/**
- * NaN (Not a Number) represented as a Float64 value.
- * 
- * @since v0.4.0
- */
-@unsafe
-export let nan = {
-  let ptr = newFloat64(
-    WasmF64.reinterpretI64(
-      0b0111111111110000000000000000000000000000000000000000000000000001N
-    )
-  )
-  WasmI32.toGrain(ptr): Float64
-}
-
-/**
- * PI represented as a Float64 value.
- * 
- * @since v0.5.2
- */
-export let pi = 3.141592653589793d
-
-/**
- * TAU represented as a Float64 value.
- * 
- * @since v0.5.2
- */
-export let tau = 3.141592653589793d
-
-/**
- * Eulers Number represented as a Float64 value.
- * 
- * @since v0.5.2
- */
-export let e = 2.718281828459045d

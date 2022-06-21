@@ -13,6 +13,49 @@ No other changes yet.
 import Number from "number"
 ```
 
+## Constants
+
+Number constant values.
+
+### Number.**pi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pi : Number
+```
+
+PI represented as a Number value.
+
+### Number.**tau**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tau : Number
+```
+
+TAU represented as a Number value.
+
+### Number.**e**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+e : Number
+```
+
+Eulers Number represented as a Number value.
+
 ## Operations
 
 Functions for operating on values of the Number type.
@@ -491,47 +534,4 @@ Returns:
 |type|description|
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
-
-## Constants
-
-Number constant values.
-
-### Number.**pi**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
-</details>
-
-```grain
-pi : Number
-```
-
-PI represented as a Number value.
-
-### Number.**tau**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
-</details>
-
-```grain
-tau : Number
-```
-
-TAU represented as a Number value.
-
-### Number.**e**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
-</details>
-
-```grain
-e : Number
-```
-
-Eulers Number represented as a Number value.
 

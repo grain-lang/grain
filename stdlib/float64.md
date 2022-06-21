@@ -13,6 +13,75 @@ No other changes yet.
 import Float64 from "float64"
 ```
 
+## Constants
+
+Float64 constant values.
+
+### Float64.**infinity**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+infinity : Float64
+```
+
+Infinity represented as a Float64 value.
+
+### Float64.**nan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+nan : Float64
+```
+
+NaN (Not a Number) represented as a Float64 value.
+
+### Float64.**pi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pi : Float64
+```
+
+PI represented as a Float64 value.
+
+### Float64.**tau**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tau : Float64
+```
+
+TAU represented as a Float64 value.
+
+### Float64.**e**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+e : Float64
+```
+
+Eulers Number represented as a Float64 value.
+
 ## Conversions
 
 Functions for converting between Numbers and the Float64 type.
@@ -282,73 +351,4 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Constants
-
-Float64 constant values.
-
-### Float64.**infinity**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-infinity : Float64
-```
-
-Infinity represented as a Float64 value.
-
-### Float64.**nan**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-nan : Float64
-```
-
-NaN (Not a Number) represented as a Float64 value.
-
-### Float64.**pi**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
-</details>
-
-```grain
-pi : Float64
-```
-
-PI represented as a Float64 value.
-
-### Float64.**tau**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
-</details>
-
-```grain
-tau : Float64
-```
-
-TAU represented as a Float64 value.
-
-### Float64.**e**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
-</details>
-
-```grain
-e : Float64
-```
-
-Eulers Number represented as a Float64 value.
 
