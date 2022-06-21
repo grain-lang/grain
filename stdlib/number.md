@@ -20,7 +20,7 @@ Number constant values.
 ### Number.**pi**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -33,7 +33,7 @@ Pi represented as a Number value.
 ### Number.**tau**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -46,7 +46,7 @@ Tau represented as a Number value.
 ### Number.**e**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
