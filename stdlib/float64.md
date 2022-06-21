@@ -54,7 +54,7 @@ No other changes yet.
 pi : Float64
 ```
 
-PI represented as a Float64 value.
+Pi represented as a Float64 value.
 
 ### Float64.**tau**
 
@@ -67,7 +67,7 @@ No other changes yet.
 tau : Float64
 ```
 
-TAU represented as a Float64 value.
+Tau represented as a Float64 value.
 
 ### Float64.**e**
 
@@ -80,7 +80,7 @@ No other changes yet.
 e : Float64
 ```
 
-Eulers Number represented as a Float64 value.
+Euler's number represented as a Float64 value.
 
 ## Conversions
 

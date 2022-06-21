@@ -28,7 +28,7 @@ No other changes yet.
 pi : Number
 ```
 
-PI represented as a Number value.
+Pi represented as a Number value.
 
 ### Number.**tau**
 
@@ -41,7 +41,7 @@ No other changes yet.
 tau : Number
 ```
 
-TAU represented as a Number value.
+Tau represented as a Number value.
 
 ### Number.**e**
 
@@ -54,7 +54,7 @@ No other changes yet.
 e : Number
 ```
 
-Eulers Number represented as a Number value.
+Euler's number represented as a Number value.
 
 ## Operations
 

@@ -54,7 +54,7 @@ No other changes yet.
 pi : Float32
 ```
 
-PI represented as a Float32 value.
+Pi represented as a Float32 value.
 
 ### Float32.**tau**
 
@@ -67,7 +67,7 @@ No other changes yet.
 tau : Float32
 ```
 
-TAU represented as a Float32 value.
+Tau represented as a Float32 value.
 
 ### Float32.**e**
 
@@ -80,7 +80,7 @@ No other changes yet.
 e : Float32
 ```
 
-Eulers Number represented as a Float32 value.
+Euler's number represented as a Float32 value.
 
 ## Conversions
 
