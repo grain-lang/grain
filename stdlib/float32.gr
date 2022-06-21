@@ -44,21 +44,21 @@ export let nan = {
 }
 
 /**
- * PI represented as a Float32 value.
+ * Pi represented as a Float32 value.
  * 
  * @since v0.5.2
  */
 export let pi = 3.1415927f
 
 /**
- * TAU represented as a Float32 value.
+ * Tau represented as a Float32 value.
  * 
  * @since v0.5.2
  */
-export let tau = 3.1415927f
+export let tau = 6.2831853f
 
 /**
- * Eulers Number represented as a Float32 value.
+ * Euler's number represented as a Float32 value.
  * 
  * @since v0.5.2
  */

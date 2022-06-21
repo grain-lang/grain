@@ -10,7 +10,7 @@ assert nan != nan
 
 assert pi == 3.1415927f
 
-assert tau == 3.1415927f
+assert tau == 6.2831853f
 
 assert e == 2.7182817f
 // Operations Tests
