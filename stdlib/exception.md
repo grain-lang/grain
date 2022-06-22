@@ -17,7 +17,7 @@ import Exception from "exception"
 
 ## Values
 
-Functions and constants included in the Exception module.
+Functions included in the Exception module.
 
 ### Exception.**registerPrinter**
 
