@@ -13,6 +13,53 @@ No other changes yet.
 import Number from "number"
 ```
 
+## Constants
+
+Number constant values.
+
+### Number.**pi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pi : Number
+```
+
+Pi represented as a Number value.
+
+### Number.**tau**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tau : Number
+```
+
+Tau represented as a Number value.
+
+### Number.**e**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+e : Number
+```
+
+Euler's number represented as a Number value.
+
+## Operations
+
+Functions for operating on values of the Number type.
+
 ### Number.**add**
 
 <details disabled>

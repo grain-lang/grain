@@ -20,6 +20,35 @@ import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
 
 /**
+ * @section Constants: Number constant values.
+ */
+
+/**
+ * Pi represented as a Number value.
+ * 
+ * @since v0.5.2
+ */
+export let pi = 3.141592653589793
+
+/**
+ * Tau represented as a Number value.
+ * 
+ * @since v0.5.2
+ */
+export let tau = 6.283185307179586
+
+/**
+ * Euler's number represented as a Number value.
+ * 
+ * @since v0.5.2
+ */
+export let e = 2.718281828459045
+
+/**
+ * @section Operations: Functions for operating on values of the Number type.
+ */
+
+/**
  * Computes the sum of its operands.
  *
  * @param x: The first operand

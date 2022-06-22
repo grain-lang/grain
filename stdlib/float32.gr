@@ -14,6 +14,56 @@ import {
 } from "runtime/numbers"
 
 /**
+ * @section Constants: Float32 constant values.
+ */
+
+/**
+ * Infinity represented as a Float32 value.
+ * 
+ * @since v0.4.0
+ */
+@unsafe
+export let infinity = {
+  let ptr = newFloat32(
+    WasmF32.reinterpretI32(0b01111111100000000000000000000000n)
+  )
+  WasmI32.toGrain(ptr): Float32
+}
+
+/**
+ * NaN (Not a Number) represented as a Float32 value.
+ * 
+ * @since v0.4.0
+ */
+@unsafe
+export let nan = {
+  let ptr = newFloat32(
+    WasmF32.reinterpretI32(0b01111111100000000000000000000001n)
+  )
+  WasmI32.toGrain(ptr): Float32
+}
+
+/**
+ * Pi represented as a Float32 value.
+ * 
+ * @since v0.5.2
+ */
+export let pi = 3.1415927f
+
+/**
+ * Tau represented as a Float32 value.
+ * 
+ * @since v0.5.2
+ */
+export let tau = 6.2831853f
+
+/**
+ * Euler's number represented as a Float32 value.
+ * 
+ * @since v0.5.2
+ */
+export let e = 2.7182817f
+/**
  * @section Conversions: Functions for converting between Numbers and the Float32 type.
  */
 
@@ -175,34 +225,4 @@ export let gte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
   WasmF32.ge(xv, yv)
-}
-
-/**
- * @section Constants: Float32 constant values.
- */
-
-/**
- * Infinity represented as a Float32 value.
- * 
- * @since v0.4.0
- */
-@unsafe
-export let infinity = {
-  let ptr = newFloat32(
-    WasmF32.reinterpretI32(0b01111111100000000000000000000000n)
-  )
-  WasmI32.toGrain(ptr): Float32
-}
-
-/**
- * NaN (Not a Number) represented as a Float32 value.
- * 
- * @since v0.4.0
- */
-@unsafe
-export let nan = {
-  let ptr = newFloat32(
-    WasmF32.reinterpretI32(0b01111111100000000000000000000001n)
-  )
-  WasmI32.toGrain(ptr): Float32
 }

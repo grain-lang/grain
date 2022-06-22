@@ -6,6 +6,13 @@ import Float32 from "float32"
 import Float64 from "float64"
 import BI from "bigint"
 
+// Constants Test
+assert Number.pi == 3.141592653589793
+
+assert Number.tau == 6.283185307179586
+
+assert Number.e == 2.718281828459045
+// Operations Tests
 // add
 assert Number.add(25, 5) == 30
 // Rational addition tests

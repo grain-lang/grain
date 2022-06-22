@@ -13,6 +13,75 @@ No other changes yet.
 import Float32 from "float32"
 ```
 
+## Constants
+
+Float32 constant values.
+
+### Float32.**infinity**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+infinity : Float32
+```
+
+Infinity represented as a Float32 value.
+
+### Float32.**nan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+nan : Float32
+```
+
+NaN (Not a Number) represented as a Float32 value.
+
+### Float32.**pi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pi : Float32
+```
+
+Pi represented as a Float32 value.
+
+### Float32.**tau**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tau : Float32
+```
+
+Tau represented as a Float32 value.
+
+### Float32.**e**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+e : Float32
+```
+
+Euler's number represented as a Float32 value.
+
 ## Conversions
 
 Functions for converting between Numbers and the Float32 type.
@@ -282,34 +351,4 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Constants
-
-Float32 constant values.
-
-### Float32.**infinity**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-infinity : Float32
-```
-
-Infinity represented as a Float32 value.
-
-### Float32.**nan**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-nan : Float32
-```
-
-NaN (Not a Number) represented as a Float32 value.
 
