@@ -347,8 +347,6 @@ export let isInfinite = (x: Number) => {
  */
 export parseInt
 
-export let pi = 3.1415927
-
 /**
  * Computes how many times pi has to be subtracted to achieve the required bounds for sin.
  */
