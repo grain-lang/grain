@@ -351,12 +351,11 @@ export parseInt
  * Computes how many times pi has to be subtracted to achieve the required bounds for sin.
  */
 let reduceToPiBound = (radians: Number) => {
-  let quot = floor(radians / pi)
-  quot
+  floor(radians / pi)
 }
 
 /**
- * Computes the sine of a number using Chebyshev polynomials. Requires the input to be bounded to (-pi, pi).
+ * Computes the sine of a number using Chebyshev polynomials. Requires the input to be bounded to (-pi, pi). More information on the algorithm can be found here: http://mooooo.ooo/chebyshev-sine-approximation/.
  */
 let chebyshevSine = (radians: Number) => {
   let pi_minor = -0.00000008742278
@@ -371,7 +370,7 @@ let chebyshevSine = (radians: Number) => {
 }
 
 /**
- * Computes the sine of a number (in radians) with Chebyshev polynomials.
+ * Computes the sine of a number (in radians) using Chebyshev polynomials.
  *
  * @param radians: The input in radians
  * @returns The computed sine
@@ -389,7 +388,7 @@ export let sin = (radians: Number) => {
 }
 
 /**
- * Computes the cosine of a number (in radians) with Chebyshev polynomials.
+ * Computes the cosine of a number (in radians) using Chebyshev polynomials.
  *
  * @param radians: The input in radians
  * @returns The computed cosine
