@@ -358,6 +358,34 @@ describe("pattern matching", ({test, testSkip}) => {
     "7\n",
   );
   assertRun(
+    "destructure_mut_tuple",
+    {|
+      let run = () => {
+        let mut (a, b) = (1, 2)
+
+        print(b)
+      }
+
+      run()
+    |},
+    "2\n",
+  );
+  assertRun(
+    "destructure_mut_tuple_closure",
+    {|
+      let run = () => {
+        let mut (a, b) = (1, 2)
+
+        print(b)
+
+        () => b
+      }
+
+      run()
+    |},
+    "2\n",
+  );
+  assertRun(
     "destructure_record",
     {|
       record Rec { a: Number, b: Number }

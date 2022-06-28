@@ -804,7 +804,7 @@ module MatchTreeCompiler = {
           (
             ~loc=Location.dummy_loc,
             ~env=Env.empty,
-            ~mut_boxing=false,
+            ~mut_boxing,
             tree,
             values,
             expr,
@@ -843,6 +843,7 @@ module MatchTreeCompiler = {
         compile_tree_help(
           ~loc,
           ~env,
+          ~mut_boxing,
           true_tree,
           values,
           expr,
@@ -853,6 +854,7 @@ module MatchTreeCompiler = {
         compile_tree_help(
           ~loc,
           ~env,
+          ~mut_boxing,
           false_tree,
           values,
           expr,
@@ -897,6 +899,7 @@ module MatchTreeCompiler = {
         compile_tree_help(
           ~loc,
           ~env,
+          ~mut_boxing,
           true_tree,
           values,
           expr,
@@ -907,6 +910,7 @@ module MatchTreeCompiler = {
         compile_tree_help(
           ~loc,
           ~env,
+          ~mut_boxing,
           false_tree,
           values,
           expr,
@@ -1045,6 +1049,7 @@ module MatchTreeCompiler = {
         compile_tree_help(
           ~loc,
           ~env,
+          ~mut_boxing,
           rest,
           new_values,
           expr,
@@ -1056,6 +1061,7 @@ module MatchTreeCompiler = {
       compile_tree_help(
         ~loc,
         ~env,
+        ~mut_boxing,
         rest_tree,
         swap_list(idx, values),
         expr,
@@ -1075,6 +1081,7 @@ module MatchTreeCompiler = {
         compile_tree_help(
           ~loc,
           ~env,
+          ~mut_boxing,
           base_tree,
           values,
           expr,
@@ -1120,6 +1127,7 @@ module MatchTreeCompiler = {
               compile_tree_help(
                 ~loc,
                 ~env,
+                ~mut_boxing,
                 tree,
                 values,
                 expr,
@@ -1154,7 +1162,7 @@ module MatchTreeCompiler = {
         // Dummy value to be filled in during matching
         let dummy_value = Imm.const(Const_wasmi32(0l));
         if (mut_boxing) {
-          BLet(
+          BLetMut(
             id,
             Comp.prim1(~allocation_type=Managed, BoxBind, dummy_value),
             Nonglobal,
@@ -1203,7 +1211,16 @@ module MatchTreeCompiler = {
     let bind_setup = collect_bindings(branches);
     let {imm_loc: loc, imm_env: env} = expr;
     let (ans, setup) =
-      compile_tree_help(~loc, ~env, tree, [expr], expr, helpI, helpConst);
+      compile_tree_help(
+        ~loc,
+        ~env,
+        ~mut_boxing=false,
+        tree,
+        [expr],
+        expr,
+        helpI,
+        helpConst,
+      );
     let jmp_name = Ident.create("match_dest");
     let setup = bind_setup @ setup @ [BLet(jmp_name, ans, Nonglobal)];
     let switch_branches =
