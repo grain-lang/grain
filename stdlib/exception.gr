@@ -1,11 +1,37 @@
+/**
+ * @module Exception: Utilities for working with the Exception type.
+ *
+ * The Exception type represents an error that has occured during computation.
+ *
+ * @example import Exception from "exception"
+ *
+ * @since 0.3.0
+ */
+
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
 
+/**
+ * @section Values: Functions included in the Exception module.
+ */
+
+/**
+ * Registers an exception printer. When an exception is thrown, all registered
+ * printers are called in order from the most recently registered printer to
+ * the least recently registered printer. The first `Some` value returned is
+ * used as the exception's string value.
+ *
+ * @param printer: The exception printer to register
+ * @since v0.3.0
+ */
 @disableGC
-export let rec registerPrinter = (f: Exception -> Option<String>) => {
+export let rec registerPrinter = (printer: Exception -> Option<String>) => {
+  // This function _must_ be @disableGC because the printer list uses
+  // unsafe types. Not really a memory leak as this list is never collected
+
   // no need to increment refcount on f; we just don't decRef it at the end of the function
-  Exception.printers = WasmI32.fromGrain((f, Exception.printers))
+  Exception.printers = WasmI32.fromGrain((printer, Exception.printers))
   Memory.decRef(WasmI32.fromGrain(registerPrinter))
   void
 }
