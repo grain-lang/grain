@@ -546,7 +546,7 @@ No other changes yet.
 sin : Number -> Number
 ```
 
-Computes the sine of a number (in radians) with Chebyshev polynomials.
+Computes the sine of a number (in radians) using Chebyshev polynomials.
 
 Parameters:
 
@@ -571,7 +571,7 @@ No other changes yet.
 cos : Number -> Number
 ```
 
-Computes the cosine of a number (in radians) with Chebyshev polynomials.
+Computes the cosine of a number (in radians) using Chebyshev polynomials.
 
 Parameters:
 
