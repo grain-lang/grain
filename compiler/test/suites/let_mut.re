@@ -42,6 +42,20 @@ describe("let mut", ({test, testSkip}) => {
     "record Rec {foo: Number, bar: Bool}; {let mut {foo, bar} = {foo: 5, bar: false}; foo = 6; bar = true; print(foo); print(bar)}",
     "6\ntrue\n",
   );
+  assertRun(
+    "let-mut_destructure5",
+    {|
+      let run = () => {
+        let mut a = 1
+        let mut b = 2
+        let mut (x, y) = (a, b)
+        b = 7
+        print(y)
+      }
+      run()
+    |},
+    "2\n",
+  );
   // not-mut let errors
   assertCompileError(
     "let-mut_err1",
