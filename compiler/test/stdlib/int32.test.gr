@@ -64,3 +64,7 @@ assert ne(5l, 55l)
 assert !ne(5l, 5l)
 assert eqz(0l)
 assert !eqz(-42l)
+
+// Regression #1339
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1l)] == 2
