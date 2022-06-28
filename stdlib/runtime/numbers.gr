@@ -2070,42 +2070,48 @@ export let coerceNumberToFloat64 = (x: Number) => {
 
 @unsafe
 export let coerceInt32ToNumber = (x: Int32) => {
-  let x = WasmI32.fromGrain(x)
-  // incRef x to reuse it via WasmI32.toGrain
-  Memory.incRef(x)
-  WasmI32.toGrain(x): Number
+  WasmI32.toGrain(
+    reducedInteger(WasmI64.extendI32S(boxedInt32Number(WasmI32.fromGrain(x))))
+  ): Number
 }
 
 @unsafe
 export let coerceInt64ToNumber = (x: Int64) => {
-  let x = WasmI32.fromGrain(x)
-  // incRef x to reuse it via WasmI32.toGrain
-  Memory.incRef(x)
-  WasmI32.toGrain(x): Number
+  WasmI32.toGrain(
+    reducedInteger(boxedInt64Number(WasmI32.fromGrain(x)))
+  ): Number
 }
 
 @unsafe
 export let coerceBigIntToNumber = (x: BigInt) => {
   let x = WasmI32.fromGrain(x)
-  // incRef x to reuse it via WasmI32.toGrain
+  // reducedBigInteger assumes that the bigint is dead,
+  // but in our case, it is not
   Memory.incRef(x)
-  WasmI32.toGrain(x): Number
+  WasmI32.toGrain(reducedBigInteger(x)): Number
 }
 
 @unsafe
 export let coerceRationalToNumber = (x: Rational) => {
-  let x = WasmI32.fromGrain(x)
-  // incRef x to reuse it via WasmI32.toGrain
-  Memory.incRef(x)
-  WasmI32.toGrain(x): Number
+  if (WasmI32.eq(boxedRationalDenominator(WasmI32.fromGrain(x)), 1n)) {
+    WasmI32.toGrain(
+      reducedInteger(
+        WasmI64.extendI32S(boxedRationalNumerator(WasmI32.fromGrain(x)))
+      )
+    ): Number
+  } else {
+    let x = WasmI32.fromGrain(x)
+    // incRef x to reuse it via WasmI32.toGrain
+    Memory.incRef(x)
+    WasmI32.toGrain(x): Number
+  }
 }
 
 @unsafe
 export let coerceFloat32ToNumber = (x: Float32) => {
-  let x = WasmI32.fromGrain(x)
-  // incRef x to reuse it via WasmI32.toGrain
-  Memory.incRef(x)
-  WasmI32.toGrain(x): Number
+  WasmI32.toGrain(
+    newFloat64(WasmF64.promoteF32(boxedFloat32Number(WasmI32.fromGrain(x))))
+  ): Number
 }
 
 @unsafe

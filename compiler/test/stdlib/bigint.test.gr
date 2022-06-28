@@ -205,6 +205,10 @@ assert eq(
 let (==) = equals
 let (+) = origAdd
 
+// Regression #1339
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1t)] == 2
+
 // Tests generated with https://gist.github.com/peblair/b5a463a03e40bc870a80869eea148b4b
 // BEGIN RANDOMLY GENERATED TESTS
 //print("Running random test suite (30 tests per category)")
