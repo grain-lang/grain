@@ -1,5 +1,18 @@
 # Changelog
 
+### [0.5.2](https://github.com/grain-lang/grain/compare/stdlib-v0.5.1...stdlib-v0.5.2) (2022-06-29)
+
+
+### Features
+
+* **stdlib:** Add number constants to number libraries ([#1331](https://github.com/grain-lang/grain/issues/1331)) ([f640ec2](https://github.com/grain-lang/grain/commit/f640ec20aa507c83c9cde290b911d0adcb4e8254))
+* **stdlib:** Implement Number.sin and Number.cos ([#1343](https://github.com/grain-lang/grain/issues/1343)) ([9357126](https://github.com/grain-lang/grain/commit/93571267b7df53e1cb9f61eaebf8748885e7392c))
+
+
+### Bug Fixes
+
+* **stdlib:** Make toNumber functions respect Number invariants ([#1347](https://github.com/grain-lang/grain/issues/1347)) ([78db882](https://github.com/grain-lang/grain/commit/78db8820cf5667a4d6737c9109f4223c1348b245))
+
 ### [0.5.1](https://github.com/grain-lang/grain/compare/stdlib-v0.5.0...stdlib-v0.5.1) (2022-06-08)
 
 

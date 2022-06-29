@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.2](https://github.com/grain-lang/grain/compare/js-runner-v0.5.1...js-runner-v0.5.2) (2022-06-29)
+
+
+### Miscellaneous Chores
+
+* **js-runner:** Synchronize Grain versions
+
 ### [0.5.1](https://github.com/grain-lang/grain/compare/js-runner-v0.5.0...js-runner-v0.5.1) (2022-06-08)
 
 
