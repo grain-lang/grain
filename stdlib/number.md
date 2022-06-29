@@ -535,3 +535,53 @@ Returns:
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
+### Number.**sin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+sin : Number -> Number
+```
+
+Computes the sine of a number (in radians) using Chebyshev polynomials.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed sine|
+
+### Number.**cos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+cos : Number -> Number
+```
+
+Computes the cosine of a number (in radians) using Chebyshev polynomials.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed cosine|
+

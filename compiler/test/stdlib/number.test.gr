@@ -216,3 +216,14 @@ assert Number.sign(BI.toNumber(1t)) == 1
 assert 1 / Number.sign(0.0) == Float64.toNumber(Float64.infinity)
 // TODO(#693): Replace with -Infinity literal when it exists
 assert 1 / Number.sign(-0.0) == Number.neg(Float64.toNumber(Float64.infinity))
+
+// Number.sin
+assert Number.sin(0.0) == 0
+assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
+assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
+assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
+
+// Number.cos
+assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
+assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
+assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597

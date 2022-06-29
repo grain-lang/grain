@@ -346,3 +346,55 @@ export let isInfinite = (x: Number) => {
  * @since v0.4.5
  */
 export parseInt
+
+/**
+ * Computes how many times pi has to be subtracted to achieve the required bounds for sin.
+ */
+let reduceToPiBound = (radians: Number) => {
+  floor(radians / pi)
+}
+
+/**
+ * Computes the sine of a number using Chebyshev polynomials. Requires the input to be bounded to (-pi, pi). More information on the algorithm can be found here: http://mooooo.ooo/chebyshev-sine-approximation/.
+ */
+let chebyshevSine = (radians: Number) => {
+  let pi_minor = -0.00000008742278
+  let x2 = radians * radians
+  let p11 = 0.00000000013291342
+  let p9 = p11 * x2 + -0.000000023317787
+  let p7 = p9 * x2 + 0.0000025222919
+  let p5 = p7 * x2 + -0.00017350505
+  let p3 = p5 * x2 + 0.0066208798
+  let p1 = p3 * x2 + -0.10132118
+  (radians - pi - pi_minor) * (radians + pi + pi_minor) * p1 * radians
+}
+
+/**
+ * Computes the sine of a number (in radians) using Chebyshev polynomials.
+ *
+ * @param radians: The input in radians
+ * @returns The computed sine
+ *
+ * @since v0.5.2
+ */
+export let sin = (radians: Number) => {
+  let quot = reduceToPiBound(radians)
+  let bounded = radians - pi * quot
+  if (quot % 2 == 0) {
+    chebyshevSine(bounded)
+  } else {
+    neg(chebyshevSine(bounded))
+  }
+}
+
+/**
+ * Computes the cosine of a number (in radians) using Chebyshev polynomials.
+ *
+ * @param radians: The input in radians
+ * @returns The computed cosine
+ *
+ * @since v0.5.2
+ */
+export let cos = (radians: Number) => {
+  sin(pi / 2 + radians)
+}
