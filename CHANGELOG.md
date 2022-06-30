@@ -1,5 +1,27 @@
 # Changelog
 
+### [0.5.2](https://github.com/grain-lang/grain/compare/grain-v0.5.1...grain-v0.5.2) (2022-06-29)
+
+
+### Features
+
+* **compiler:** Allow compilation of empty programs ([#1336](https://github.com/grain-lang/grain/issues/1336)) ([32df14b](https://github.com/grain-lang/grain/commit/32df14b33325c39fd98c452fc2687b788ec35264))
+* **compiler:** Allow newline in or-patterns ([#1323](https://github.com/grain-lang/grain/issues/1323)) ([8fe8247](https://github.com/grain-lang/grain/commit/8fe8247ec6c08e04575b42281716eb34c46af97f))
+* **compiler:** Support record field updating assignment ([#1320](https://github.com/grain-lang/grain/issues/1320)) ([cc5519c](https://github.com/grain-lang/grain/commit/cc5519ce36418623b05d297d577c2325ad9cbc7a))
+* **stdlib:** Add number constants to number libraries ([#1331](https://github.com/grain-lang/grain/issues/1331)) ([f640ec2](https://github.com/grain-lang/grain/commit/f640ec20aa507c83c9cde290b911d0adcb4e8254))
+* **stdlib:** Implement Number.sin and Number.cos ([#1343](https://github.com/grain-lang/grain/issues/1343)) ([9357126](https://github.com/grain-lang/grain/commit/93571267b7df53e1cb9f61eaebf8748885e7392c))
+
+
+### Bug Fixes
+
+* **compiler:** Correct error message for unbound type variables ([#1327](https://github.com/grain-lang/grain/issues/1327)) ([762362a](https://github.com/grain-lang/grain/commit/762362a06e1676540cd33df8200ea2a6b7006a5e))
+* **compiler:** Fix compilation of closure scope mutable destructuring ([#1346](https://github.com/grain-lang/grain/issues/1346)) ([bdcdb3c](https://github.com/grain-lang/grain/commit/bdcdb3c66a9a60fc44956225491c12cc14250009))
+* **compiler:** Properly handle types not imported ([#1329](https://github.com/grain-lang/grain/issues/1329)) ([75bbb93](https://github.com/grain-lang/grain/commit/75bbb9367a43c923fc97b25ea0ed9315190f5702))
+* **compiler:** Support printing tuple types in oprint ([#1324](https://github.com/grain-lang/grain/issues/1324)) ([c1d8907](https://github.com/grain-lang/grain/commit/c1d89076cad153ed4aa02593f628f4d152ff7139))
+* **grainfmt:** Support PPatOr and PPatAlias ([#1322](https://github.com/grain-lang/grain/issues/1322)) ([20050d2](https://github.com/grain-lang/grain/commit/20050d2c975f60ae7ead41c76871562f7636c499))
+* **lsp:** Always respond to hover request ([#1328](https://github.com/grain-lang/grain/issues/1328)) ([fb947b5](https://github.com/grain-lang/grain/commit/fb947b5dc47f306f6399d2b4564fe8f33ffd80b1))
+* **stdlib:** Make toNumber functions respect Number invariants ([#1347](https://github.com/grain-lang/grain/issues/1347)) ([78db882](https://github.com/grain-lang/grain/commit/78db8820cf5667a4d6737c9109f4223c1348b245))
+
 ### [0.5.1](https://github.com/grain-lang/grain/compare/grain-v0.5.0...grain-v0.5.1) (2022-06-08)
 
 
