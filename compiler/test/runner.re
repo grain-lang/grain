@@ -192,14 +192,14 @@ let format = file => {
   (out ++ err, code);
 };
 
-let makeSnapshotRunner = (test, name, prog) => {
-  test(
-    name,
-    ({expect}) => {
-      ignore @@ compile(~hook=stop_after_object_file_emitted, name, prog);
+let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      ignore @@
+      compile(~hook=stop_after_object_file_emitted, ~config_fn?, name, prog);
       expect.file(watfile(name)).toMatchSnapshot();
-    },
-  );
+    })
+  });
 };
 
 let makeSnapshotFileRunner = (test, name, filename) => {

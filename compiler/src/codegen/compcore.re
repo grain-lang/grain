@@ -3624,7 +3624,9 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   };
   List.iteri(compile_export, exports);
   ignore @@ Export.add_function_export(wasm_mod, grain_main, grain_main);
-  ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
+  if (! Config.use_start_section^) {
+    ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
+  };
   ignore @@
   Export.add_global_export(
     wasm_mod,
@@ -3748,17 +3750,20 @@ let compile_main = (wasm_mod, env, prog) => {
       func_loc: Grain_parsing.Location.dummy_loc,
     },
   );
-  Function.add_function(
-    wasm_mod,
-    grain_start,
-    Type.none,
-    Type.none,
-    [||],
-    Expression.Drop.make(
+  if (! Config.use_start_section^) {
+    ignore @@
+    Function.add_function(
       wasm_mod,
-      Expression.Call.make(wasm_mod, grain_main, [], Type.int32),
-    ),
-  );
+      grain_start,
+      Type.none,
+      Type.none,
+      [||],
+      Expression.Drop.make(
+        wasm_mod,
+        Expression.Call.make(wasm_mod, grain_main, [], Type.int32),
+      ),
+    );
+  };
 };
 
 let compile_functions = (wasm_mod, env, {functions} as prog) => {
