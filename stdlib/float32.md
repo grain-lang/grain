@@ -46,7 +46,7 @@ NaN (Not a Number) represented as a Float32 value.
 ### Float32.**pi**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
 No other changes yet.
 </details>
 
@@ -59,7 +59,7 @@ Pi represented as a Float32 value.
 ### Float32.**tau**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
 No other changes yet.
 </details>
 
@@ -72,7 +72,7 @@ Tau represented as a Float32 value.
 ### Float32.**e**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
 No other changes yet.
 </details>
 
