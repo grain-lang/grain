@@ -1,8 +1,13 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
-describe("exports", ({test}) => {
+describe("exports", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
+  let assertStartSectionSnapshot =
+    makeSnapshotRunner(
+      ~config_fn=() => {Grain_utils.Config.use_start_section := true},
+      test,
+    );
   let assertCompileError = makeCompileErrorRunner(test);
   let assertHasExport = (name, prog, export) => {
     test(
@@ -84,6 +89,17 @@ describe("exports", ({test}) => {
   );
 
   assertSnapshot("let_rec_export", "export let rec foo = () => 5");
+
+  assertStartSectionSnapshot(
+    "export_start_function",
+    {|
+      print("init")
+      export let _start = () => {
+        print("starting up")
+      }
+    |},
+  );
+
   assertHasExport(
     "issue_918_annotated_func_export",
     "export let foo: () -> Number = () => 5",
