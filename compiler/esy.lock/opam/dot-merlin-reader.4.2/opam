@@ -11,7 +11,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml" {>= "4.08"}
+  "ocaml" {>= "4.08" & < "5.0.0"}
   "dune" {>= "2.9.0"}
   "yojson" {>= "1.6.0"}
   "ocamlfind" {>= "1.6.0"}

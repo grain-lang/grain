@@ -14,7 +14,7 @@ build: [
 depends: [
   "ocaml" {>= "4.05.0"}
   "dune" {>= "1.0"}
-  "yojson" {>= "1.6.0" & < "2.0.0"}
+  "yojson" {>= "1.6.0"}
   "result"
   "ppx_deriving" {>= "5.1"}
   "ppxlib" {>= "0.14.0" & < "0.26.0"}

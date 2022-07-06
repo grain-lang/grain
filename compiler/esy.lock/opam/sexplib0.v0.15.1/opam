@@ -10,7 +10,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml" {>= "4.04.2"}
+  "ocaml" {>= "4.08"}
   "dune"  {>= "2.0.0"}
 ]
 synopsis: "Library containing the definition of S-expressions and some base converters"
@@ -21,6 +21,6 @@ OCaml's standard library that was developed by Jane Street, the
 largest industrial user of OCaml.
 "
 url {
-src: "https://ocaml.janestreet.com/ocaml-core/v0.15/files/sexplib0-v0.15.0.tar.gz"
-checksum: "sha256=94462c00416403d2778493ac01ced5439bc388a68ac4097208159d62434aefba"
+src: "https://github.com/janestreet/sexplib0/archive/refs/tags/v0.15.1.tar.gz"
+checksum: "md5=ab8fd6273f35a792cad48cbb3024a7f9"
 }

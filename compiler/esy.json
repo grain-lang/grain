@@ -52,17 +52,19 @@
     "ocaml": "4.12.0"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": ">= 3.11.0 < 4.0.0",
+    "@opam/js_of_ocaml-compiler": "*",
     "@opam/ocaml-lsp-server": "1.8.3",
     "@reason-native/rely": "^4.0.0"
   },
   "resolutions": {
+    "@opam/dot-merlin-reader": "4.2",
     "ocaml": "4.12.0",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/utf8": "reasonml/reason-native:utf8.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@reason-native/cli": "reasonml/reason-native:cli.json#0ed854f986256e52e59aeecfa90e9af60f105b15",
-    "@reason-native/rely": "reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15"
+    "@reason-native/rely": "reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/js_of_ocaml-compiler": "ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#e1827f336d420dc92d76068da0d0c34b6311a1c6"
   },
   "installConfig": {
     "pnp": false
