@@ -1833,7 +1833,13 @@ export let (<<) = (x: Number, y: Number) => {
   } else {
     let xval = coerceNumberToWasmI64(x)
     let yval = coerceNumberToWasmI64(y)
-    WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
+    if (WasmI64.leU(WasmI64.clz(xval), yval)) {
+      let xbi = coerceNumberToBigInt(x)
+      let yval = coerceNumberToWasmI32(y)
+      WasmI32.toGrain(reducedBigInteger(BI.shl(xbi, yval))): Number
+    } else {
+      WasmI32.toGrain(reducedInteger(WasmI64.shl(xval, yval))): Number
+    }
   }
 }
 
