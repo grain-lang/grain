@@ -139,26 +139,18 @@ let read_leb128_i32 = (bytesrc): int32 =>
   read_leb128(~signed=true, ~maxbits=32, ~conv=i32_of_u64, bytesrc);
 let read_leb128_i32_input = inchan =>
   read_leb128_i32(() => input_byte(inchan));
-let read_leb128_i32_stream = stream =>
-  read_leb128_i32(() => Stream.next(stream));
 let read_leb128_u32 = (bytesrc): int32 =>
   read_leb128(~signed=false, ~maxbits=32, ~conv=i32_of_u64, bytesrc);
 let read_leb128_u32_input = inchan =>
   read_leb128_u32(() => input_byte(inchan));
-let read_leb128_u32_stream = stream =>
-  read_leb128_u32(() => Stream.next(stream));
 let read_leb128_i64 = (bytesrc): int64 =>
   read_leb128(~signed=true, ~maxbits=64, ~conv=identity, bytesrc);
 let read_leb128_i64_input = inchan =>
   read_leb128_i64(() => input_byte(inchan));
-let read_leb128_i64_stream = stream =>
-  read_leb128_i64(() => Stream.next(stream));
 let read_leb128_u64 = (bytesrc): int64 =>
   read_leb128(~signed=false, ~maxbits=64, ~conv=identity, bytesrc);
 let read_leb128_u64_input = inchan =>
   read_leb128_u64(() => input_byte(inchan));
-let read_leb128_u64_stream = stream =>
-  read_leb128_u64(() => Stream.next(stream));
 
 let read_int32 = inchan => {
   let bytes = Bytes.create(4);

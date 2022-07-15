@@ -31,21 +31,16 @@ let formatter_out_file = name =>
 let formatter_in_file = name =>
   Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
 
-let read_stream = cstream => {
-  let buf = Bytes.create(2048);
-  let i = ref(0);
-  Stream.iter(
-    c => {
-      /* This stream doesn't seem to have an end and causes the runner to hang, so we have an arbitrary cap */
-      if (i^ >= 2048) {
-        failwith("Program output exceeds 2048 characters");
-      };
-      Bytes.set(buf, i^, c);
-      incr(i);
-    },
-    cstream,
-  );
-  Bytes.to_string @@ Bytes.sub(buf, 0, i^);
+let read_channel = channel => {
+  let buf = Buffer.create(2048);
+  try(
+    while (true) {
+      Buffer.add_channel(buf, channel, 2048);
+    }
+  ) {
+  | End_of_file => ()
+  };
+  Buffer.contents(buf);
 };
 
 let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
@@ -134,8 +129,8 @@ let open_process = args => {
       (Unix.WEXITED(-1), true);
     };
 
-  let out = read_stream(Stream.of_channel(stdout));
-  let err = read_stream(Stream.of_channel(stderr));
+  let out = read_channel(stdout);
+  let err = read_channel(stderr);
 
   close_in(stdout);
   close_in(stderr);

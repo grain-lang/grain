@@ -40,19 +40,15 @@ let latest_abi: abi_version;
 
 let read_leb128_i32: (unit => int) => int32;
 let read_leb128_i32_input: in_channel => int32;
-let read_leb128_i32_stream: Stream.t(int) => int32;
 
 let read_leb128_u32: (unit => int) => int32;
 let read_leb128_u32_input: in_channel => int32;
-let read_leb128_u32_stream: Stream.t(int) => int32;
 
 let read_leb128_i64: (unit => int) => int64;
 let read_leb128_i64_input: in_channel => int64;
-let read_leb128_i64_stream: Stream.t(int) => int64;
 
 let read_leb128_u64: (unit => int) => int64;
 let read_leb128_u64_input: in_channel => int64;
-let read_leb128_u64_stream: Stream.t(int) => int64;
 
 let get_wasm_sections: (~reset: bool=?, in_channel) => list(wasm_bin_section);
 
