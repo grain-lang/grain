@@ -360,6 +360,32 @@ export let reduce = (fn, initial, array) => {
 
 /**
  * Combines all elements of an array using a reducer function,
+ * starting from the "end", or right side, of the array.
+ *
+ * In `Array.reduceRight(fn, initial, array)`, `fn` is called with
+ * each element of the array and an accumulator, and returns
+ * a new accumulator. The final value is the last accumulator
+ * returned. The accumulator starts with value `initial`.
+ *
+ * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+ * @param initial: The initial value to use for the accumulator on the first iteration
+ * @param array: The array to iterate
+ * @returns The final accumulator returned from `fn`
+ *
+ * @example Array.reduceRight((a, b) => b ++ a, "", [> "baz", "bar", "foo"]) // "foobarbaz"
+ *
+ * @since v0.5.3
+ */
+export let reduceRight = (fn, initial, array) => {
+  let mut acc = initial
+  for (let mut i = length(array) - 1; i >= 0; i -= 1) {
+    acc = fn(array[i], acc)
+  }
+  acc
+}
+
+/**
+ * Combines all elements of an array using a reducer function,
  * starting from the "head", or left side, of the array.
  *
  * In `Array.reducei(fn, initial, array)`, `fn` is called with
@@ -785,6 +811,35 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
       (array1[n], array2[n])
     })
   }
+}
+
+/**
+ * Produces a new array filled with elements defined by applying a function on
+ * pairs from both given arrays. The first element will contain the result of
+ * applying the function to the first elements of each array, the second element
+ * will contain the result of applying the function to the second elements of
+ * each array, and so on.
+ * 
+ * Calling this function with arrays of different sizes will cause the returned
+ * array to have the length of the smaller array.
+ *
+ * @param fn: The function to apply to pairs of elements
+ * @param array1: The array whose elements will each be passed to the function as the first argument
+ * @param array2: The array whose elements will each be passed to the function as the second argument
+ * @returns The new array containing elements derived from applying the function to pairs of input array elements
+ *
+ * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
+ * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
+ * 
+ * @since v0.5.3
+ */
+export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
+  let len1 = length(array1)
+  let len2 = length(array2)
+  let minLen = if (len1 > len2) len2 else len1
+  init(minLen, index => {
+    fn(array1[index], array2[index])
+  })
 }
 
 /**
