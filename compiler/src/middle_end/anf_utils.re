@@ -161,28 +161,43 @@ let anf_free_vars = anf_free_vars_help(Ident.Set.empty);
 let comp_free_vars = comp_free_vars_help(Ident.Set.empty);
 let imm_free_vars = imm_free_vars_help(Ident.Set.empty);
 
-let tuple_max = ((a1, a2, a3, a4, a5), (b1, b2, b3, b4, b5)) => (
-  max(a1, b1),
-  max(a2, b2),
-  max(a3, b3),
-  max(a4, b4),
-  max(a5, b5),
-);
-let tuple_add = ((a1, a2, a3, a4, a5), (b1, b2, b3, b4, b5)) => (
-  a1 + b1,
-  a2 + b2,
-  a3 + b3,
-  a4 + b4,
-  a5 + b5,
-);
+type stack_size = {
+  stack_size_ptr: int,
+  stack_size_i32: int,
+  stack_size_i64: int,
+  stack_size_f32: int,
+  stack_size_f64: int,
+};
 
-let tuple_zero = (0, 0, 0, 0, 0);
+let stack_size_max = (a, b) => {
+  stack_size_ptr: max(a.stack_size_ptr, b.stack_size_ptr),
+  stack_size_i32: max(a.stack_size_i32, b.stack_size_i32),
+  stack_size_i64: max(a.stack_size_i64, b.stack_size_i64),
+  stack_size_f32: max(a.stack_size_f32, b.stack_size_f32),
+  stack_size_f64: max(a.stack_size_f64, b.stack_size_f64),
+};
+
+let stack_size_add = (a, b) => {
+  stack_size_ptr: a.stack_size_ptr + b.stack_size_ptr,
+  stack_size_i32: a.stack_size_i32 + b.stack_size_i32,
+  stack_size_i64: a.stack_size_i64 + b.stack_size_i64,
+  stack_size_f32: a.stack_size_f32 + b.stack_size_f32,
+  stack_size_f64: a.stack_size_f64 + b.stack_size_f64,
+};
+
+let initial_stack_size = {
+  stack_size_ptr: 0,
+  stack_size_i32: 0,
+  stack_size_i64: 0,
+  stack_size_f32: 0,
+  stack_size_f64: 0,
+};
 
 let rec anf_count_vars = a =>
   switch (a.anf_desc) {
   | AELet(global, recflag, mutflag, binds, body) =>
     let max_binds =
-      List.fold_left(tuple_max, tuple_zero) @@
+      List.fold_left(stack_size_max, initial_stack_size) @@
       List.map(((_, c)) => comp_count_vars(c), binds);
     let rec count_binds = (ptr, i32, i64, f32, f64, binds) => {
       switch (global, binds) {
@@ -197,37 +212,48 @@ let rec anf_count_vars = a =>
         count_binds(ptr, i32, i64, f32 + 1, f64, rest)
       | (_, [(_, {comp_allocation_type: Unmanaged(WasmF64)}), ...rest]) =>
         count_binds(ptr, i32, i64, f32, f64 + 1, rest)
-      | (_, []) => (ptr, i32, i64, f32, f64)
+      | (_, []) => {
+          stack_size_ptr: ptr,
+          stack_size_i32: i32,
+          stack_size_i64: i64,
+          stack_size_f32: f32,
+          stack_size_f64: f64,
+        }
       };
     };
     switch (recflag) {
     | Recursive =>
-      tuple_add(
+      stack_size_add(
         count_binds(0, 0, 0, 0, 0, binds),
-        tuple_max(max_binds, anf_count_vars(body)),
+        stack_size_max(max_binds, anf_count_vars(body)),
       )
     | Nonrecursive =>
-      tuple_max(
+      stack_size_max(
         max_binds,
-        tuple_add(count_binds(0, 0, 0, 0, 0, binds), anf_count_vars(body)),
+        stack_size_add(
+          count_binds(0, 0, 0, 0, 0, binds),
+          anf_count_vars(body),
+        ),
       )
     };
-  | AESeq(hd, tl) => tuple_max(comp_count_vars(hd), anf_count_vars(tl))
+  | AESeq(hd, tl) =>
+    stack_size_max(comp_count_vars(hd), anf_count_vars(tl))
   | AEComp(c) => comp_count_vars(c)
   }
 
 and comp_count_vars = c =>
   switch (c.comp_desc) {
-  | CIf(_, t, f) => tuple_max(anf_count_vars(t), anf_count_vars(f))
+  | CIf(_, t, f) => stack_size_max(anf_count_vars(t), anf_count_vars(f))
   | CFor(c, inc, b) =>
-    let c = Option.fold(~none=tuple_zero, ~some=anf_count_vars, c);
-    let inc = Option.fold(~none=tuple_zero, ~some=anf_count_vars, inc);
+    let c = Option.fold(~none=initial_stack_size, ~some=anf_count_vars, c);
+    let inc =
+      Option.fold(~none=initial_stack_size, ~some=anf_count_vars, inc);
     let b = anf_count_vars(b);
-    tuple_add(c, tuple_add(inc, b));
+    stack_size_add(c, stack_size_add(inc, b));
   | CSwitch(_, bs, _) =>
-    List.fold_left(tuple_max, tuple_zero) @@
+    List.fold_left(stack_size_max, initial_stack_size) @@
     List.map(((_, b)) => anf_count_vars(b), bs)
-  | _ => tuple_zero
+  | _ => initial_stack_size
   };
 
 module ClearLocationsArg: Anf_mapper.MapArgument = {

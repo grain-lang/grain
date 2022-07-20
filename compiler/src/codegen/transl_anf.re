@@ -619,13 +619,13 @@ let compile_lambda =
     };
   let args = List.map(((_, ty)) => ty, new_args);
   let arity = List.length(args);
-  let (
+  let {
     stack_size_ptr,
     stack_size_i32,
     stack_size_i64,
     stack_size_f32,
     stack_size_f64,
-  ) =
+  }: Anf_utils.stack_size =
     Anf_utils.anf_count_vars(body);
   let lam_env = {
     ce_binds: arg_binds,
@@ -1441,13 +1441,13 @@ let transl_anf_program =
 
   set_global_imports(env.ce_binds);
 
-  let (
+  let {
     stack_size_ptr,
     stack_size_i32,
     stack_size_i64,
     stack_size_f32,
     stack_size_f64,
-  ) =
+  }: Anf_utils.stack_size =
     Anf_utils.anf_count_vars(anf_prog.body);
   let main_body_stack_size = {
     stack_size_ptr,
