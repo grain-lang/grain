@@ -427,3 +427,48 @@ export let factorial = input => {
   }
   if (s == 0) result else result * s
 }
+
+/**
+ * Clamps a number to a given range.
+ *
+ * @param min: The minimum value in the range
+ * @param max: The maximum value in the range
+ * @param input: The number to clamp
+ * @returns The clamped number
+ *
+ * @since v0.5.2
+ */
+export let clamp = (min: Number, max: Number, input: Number) => {
+  if (input < min) min else if (input > max) max else input
+}
+
+/**
+ * Linearly interpolates between the starting and ending value by the given amount.
+ *
+ * @param start: The starting value
+ * @param end: The ending value
+ * @param amount: an amount between 0 and 1
+ * @returns The interpolated value
+ *
+ * @since v0.5.2
+ */
+export let lerp = (start: Number, end: Number, amount: Number) => {
+  (end - start) * amount + start
+}
+
+/**
+ * Maps the given number from one range to another.
+ *
+ * @param inMin: The minimum value in the input range
+ * @param outMin: The minimum value in the output range
+ * @param inMax: The maximum value in the input range
+ * @param outMax: The maximum value in the output range
+ * @param current: The number to map
+ * @returns The interpolated value
+ *
+ * @since v0.5.2
+ */
+export let map = (inMin, outMin, inMax, outMax, current) => {
+  let mapped = (current - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
+  clamp(outMin, outMax, mapped)
+}

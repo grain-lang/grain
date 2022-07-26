@@ -635,3 +635,86 @@ Returns:
 |----|-----------|
 |`Number`|The computed factorial|
 
+### Number.**clamp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+clamp : (Number, Number, Number) -> Number
+```
+
+Clamps a number to a given range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`min`|`Number`|The minimum value in the range|
+|`max`|`Number`|The maximum value in the range|
+|`input`|`Number`|The number to clamp|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The clamped number|
+
+### Number.**lerp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+lerp : (Number, Number, Number) -> Number
+```
+
+Linearly interpolates between the starting and ending value by the given amount.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`start`|`Number`|The starting value|
+|`end`|`Number`|The ending value|
+|`amount`|`Number`|an amount between 0 and 1|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The interpolated value|
+
+### Number.**map**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+map : (Number, Number, Number, Number, Number) -> Number
+```
+
+Maps the given number from one range to another.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`inMin`|`Number`|The minimum value in the input range|
+|`outMin`|`Number`|The minimum value in the output range|
+|`inMax`|`Number`|The maximum value in the input range|
+|`outMax`|`Number`|The maximum value in the output range|
+|`current`|`Number`|The number to map|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The interpolated value|
+
