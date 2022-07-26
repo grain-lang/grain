@@ -227,3 +227,17 @@ assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
 assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
+
+// Number.tan
+assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
+assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
+assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
+// Number.factorial
+assert Number.factorial(0) == 1
+assert Number.factorial(1) == 1
+assert Number.factorial(5) == 120
+assert Number.factorial(10) == 3628800
+assert Number.factorial(20) == 2432902008176640000
+assert Number.factorial(-1) == -1
+assert Number.factorial(-5) == -120
+assert Number.factorial(-10) == -3628800

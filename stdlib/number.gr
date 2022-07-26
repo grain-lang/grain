@@ -25,21 +25,21 @@ import Tags from "runtime/unsafe/tags"
 
 /**
  * Pi represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let pi = 3.141592653589793
 
 /**
  * Tau represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let tau = 6.283185307179586
 
 /**
  * Euler's number represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let e = 2.718281828459045
@@ -397,4 +397,33 @@ export let sin = (radians: Number) => {
  */
 export let cos = (radians: Number) => {
   sin(pi / 2 + radians)
+}
+
+/**
+ * Computes the tan of a number (in radians) using Chebyshev polynomials.
+ *
+ * @param radians: The input in radians
+ * @returns The computed tangent
+ *
+ * @since v0.5.2
+ */
+export let tan = (radians: Number) => {
+  sin(radians) / cos(radians)
+}
+
+/**
+ * Computes the factorial of a number.
+ *
+ * @param input: The number to compute the factorial of
+ * @returns The computed factorial
+ *
+ * @since v0.5.2
+ */
+export let factorial = input => {
+  let s = sign(input)
+  let mut result = 1
+  for (let mut n = abs(input); n > 0; n -= 1) {
+    result *= n
+  }
+  if (s == 0) result else result * s
 }

@@ -585,3 +585,53 @@ Returns:
 |----|-----------|
 |`Number`|The computed cosine|
 
+### Number.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : Number -> Number
+```
+
+Computes the tan of a number (in radians) using Chebyshev polynomials.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed tangent|
+
+### Number.**factorial**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+No other changes yet.
+</details>
+
+```grain
+factorial : Number -> Number
+```
+
+Computes the factorial of a number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`input`|`Number`|The number to compute the factorial of|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed factorial|
+
