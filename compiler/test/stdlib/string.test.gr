@@ -81,6 +81,12 @@ assert String.lastIndexOf(emoji, emojis) == None
 assert String.lastIndexOf("aa", "aaa") == Some(1)
 assert String.lastIndexOf("world", "Hello world world") == Some(12)
 
+// charCodeAt tests
+assert String.charCodeAt(0, emojis) == 119
+assert String.charCodeAt(15, emojis) == 128640
+assert String.charCodeAt(16, emojis) == 32
+assert String.charCodeAt(17, emojis) == 116
+
 // charAt tests
 assert String.charAt(0, emojis) == 'w'
 assert String.charAt(15, emojis) == '🚀'
