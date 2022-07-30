@@ -78,6 +78,22 @@ let get_original_code = (location: Location.t, source: array(string)) => {
   };
 };
 
+let is_rational_number = (expr: Parsetree.expression_desc) => {
+  switch (expr) {
+  | PExpConstant(const) =>
+    switch (const) {
+    | PConstNumber(nt) =>
+      switch (nt) {
+      | PConstNumberRational(_, _) => true
+      | _ => false
+      }
+    | _ => false
+    }
+
+  | _ => false
+  };
+};
+
 // Be AWARE!  This is only to be called when you know the comments list is not empty.
 // Moved here in case we want to change the implementation in future
 let get_last_item_in_list = comments =>
@@ -1691,6 +1707,14 @@ and print_infix_application =
       | _ => false
       };
 
+    // wrap rational numbers in params when in an divide infix operation
+    // to ensure correct precedence
+
+    let left_is_rational =
+      function_name == "/" && is_rational_number(first.pexp_desc);
+    let right_is_rational =
+      function_name == "/" && is_rational_number(second.pexp_desc);
+
     let (left_grouping_required, right_grouping_required) =
       switch (first.pexp_desc, second.pexp_desc) {
       | (PExpApp(fn1, _), PExpApp(fn2, _)) =>
@@ -1726,8 +1750,10 @@ and print_infix_application =
       | _ => (false, false)
       };
 
-    let left_needs_parens = left_is_if || left_grouping_required;
-    let right_needs_parens = right_is_if || right_grouping_required;
+    let left_needs_parens =
+      left_is_if || left_is_rational || left_grouping_required;
+    let right_needs_parens =
+      right_is_if || right_is_rational || right_grouping_required;
 
     let wrapped_left =
       if (left_needs_parens) {
