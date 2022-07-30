@@ -15,7 +15,6 @@ module ResponseResult: {
 let process:
   (
     ~id: Protocol.message_id,
-    ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
     ~documents: Hashtbl.t(Protocol.uri, string),
     RequestParams.t
   ) =>

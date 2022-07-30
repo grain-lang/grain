@@ -40,7 +40,6 @@ module ResponseResult = {
 let process =
     (
       ~id: Protocol.message_id,
-      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
       params: RequestParams.t,
     ) => {
@@ -91,15 +90,22 @@ let process =
         )
       }
     | Error(ParseError(_)) =>
-      Protocol.error(
-        ~id,
-        {
-          code: RequestFailed,
-          message:
-            "Unable to parse the document: "
-            ++ Protocol.uri_to_filename(params.text_document.uri),
+      // If we can't parse the code as it's incomplete, just return what we had
+      let range: Protocol.range = {
+        range_start: {
+          line: 0,
+          character: 0,
         },
-      )
+        range_end:
+          // Use Int32.max_int to ensure we fit the entire number in JSON
+          {
+            line: Int32.to_int(Int32.max_int),
+            character: Int32.to_int(Int32.max_int),
+          },
+      };
+
+      let res: ResponseResult.t = Some([{range, newText: compiled_code}]);
+      Protocol.response(~id, ResponseResult.to_yojson(res));
     | Error(InvalidCompilationState) =>
       Protocol.error(
         ~id,
