@@ -11,6 +11,9 @@ permissions:
   id-token: write # Required to auth to AWS
   contents: read # Required for actions/checkout
   packages: write # Required to upload to ghcr
+env:
+  AWS_EC2_INSTANCE_ID: i-0960f9b8de8285aed
+  AWS_REGION: us-east-1
 jobs:
   push_base_image:
     name: Push base Docker image to multiple registries
@@ -30,14 +33,14 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::881972110175:role/github-actions-openid
           role-session-name: cisession
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Start AWS EC2 arm64 instance
         id: instance
         run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.AWS_EC2_INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.AWS_EC2_INSTANCE_ID }}
-          echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ secrets.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
+          aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
 
       - name: Bring in SSH keys
         uses: grain-lang/ssh-agent@v0.5.4
@@ -110,14 +113,14 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::881972110175:role/github-actions-openid
           role-session-name: cisession
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Start AWS EC2 arm64 instance
         id: instance
         run: |
-          aws ec2 start-instances --instance-ids ${{ secrets.AWS_EC2_INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ secrets.AWS_EC2_INSTANCE_ID }}
-          echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ secrets.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
+          aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
 
       - name: Bring in SSH keys
         uses: grain-lang/ssh-agent@v0.5.4
