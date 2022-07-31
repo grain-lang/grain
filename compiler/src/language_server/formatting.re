@@ -90,22 +90,9 @@ let process =
         )
       }
     | Error(ParseError(_)) =>
-      // If we can't parse the code as it's incomplete, just return what we had
-      let range: Protocol.range = {
-        range_start: {
-          line: 0,
-          character: 0,
-        },
-        range_end:
-          // Use Int32.max_int to ensure we fit the entire number in JSON
-          {
-            line: Int32.to_int(Int32.max_int),
-            character: Int32.to_int(Int32.max_int),
-          },
-      };
-
-      let res: ResponseResult.t = Some([{range, newText: compiled_code}]);
-      Protocol.response(~id, ResponseResult.to_yojson(res));
+      // If we can't parse the file we can't format it
+      // return null to signal a response
+      Protocol.null_response(id)
     | Error(InvalidCompilationState) =>
       Protocol.error(
         ~id,
