@@ -97,5 +97,131 @@ describe("utils/string_utils", ({describe}) => {
         "b",
       )
     });
-  })
+  });
+
+  describe("utf8", ({describe}) => {
+    describe("sub", ({test}) => {
+      test("one character sub", ({expect}) => {
+        expect.string(String_utils.Utf8.sub("a💯c", 1, 1)).toEqual("💯")
+      });
+
+      test("two character sub", ({expect}) => {
+        expect.string(String_utils.Utf8.sub("a💯c", 1, 2)).toEqual(
+          "💯c",
+        )
+      });
+
+      test("unicode mix", ({expect}) => {
+        expect.string(
+          String_utils.Utf8.sub("a💯ஹௐఅc🌾🙇🏽‍♂️", 1, 4),
+        ).
+          toEqual(
+          "💯ஹௐఅ",
+        )
+      });
+
+      test(
+        "graphemes consisting of multiple code points are considered multiple code points",
+        ({expect}) => {
+          // 🙇🏽‍♂️, or "man bowing, medium skin tone" is a single grapheme that consists of 5 code points
+          // 🙇, "person bowing"
+          // 🏽, "medium skin tone"
+          // <zero width joiner>
+          // ♂️, "male sign"
+          // <variation selector 16>
+
+          // The sub function subs on code points, not graphemes.
+
+          expect.string(
+            String_utils.Utf8.sub(
+              "a💯ஹௐఅc🌾🙇🏽‍♂️",
+              7,
+              1,
+            ),
+          ).
+            toEqual(
+            "🙇",
+          );
+          expect.string(
+            String_utils.Utf8.sub(
+              "a💯ஹௐఅc🌾🙇🏽‍♂️",
+              8,
+              1,
+            ),
+          ).
+            toEqual(
+            "🏽",
+          );
+          expect.string(
+            String_utils.Utf8.sub(
+              "a💯ஹௐఅc🌾🙇🏽‍♂️",
+              10,
+              2,
+            ),
+          ).
+            toEqual(
+            "♂️",
+          );
+
+          // All together now
+          expect.string(
+            String_utils.Utf8.sub(
+              "a💯ஹௐఅc🌾🙇🏽‍♂️",
+              7,
+              5,
+            ),
+          ).
+            toEqual(
+            "🙇🏽‍♂️",
+          );
+        },
+      );
+    });
+
+    describe("string_after", ({test}) => {
+      test("whole string", ({expect}) => {
+        expect.string(String_utils.Utf8.string_after("a💯c", 0)).toEqual(
+          "a💯c",
+        )
+      });
+
+      test("most of string", ({expect}) => {
+        expect.string(String_utils.Utf8.string_after("a💯c", 1)).toEqual(
+          "💯c",
+        )
+      });
+
+      test("none of string", ({expect}) => {
+        expect.string(String_utils.Utf8.string_after("a💯c", 3)).toEqual(
+          "",
+        )
+      });
+
+      test("unicode mix", ({expect}) => {
+        expect.string(
+          String_utils.Utf8.string_after(
+            "a💯ஹௐఅc🌾🙇🏽‍♂️",
+            3,
+          ),
+        ).
+          toEqual(
+          "ௐఅc🌾🙇🏽‍♂️",
+        )
+      });
+
+      test(
+        "graphemes consisting of multiple code points are considered multiple code points",
+        ({expect}) => {
+        expect.string(
+          String_utils.Utf8.string_after(
+            "a💯ஹௐఅc🌾🙇🏽‍♂️",
+            10,
+          ),
+        ).
+          toEqual(
+          "♂️",
+        )
+      });
+    });
+  });
 });

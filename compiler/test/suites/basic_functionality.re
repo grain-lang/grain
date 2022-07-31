@@ -8,6 +8,7 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertSnapshotFile = makeSnapshotFileRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertParse = makeParseRunner(test);
   let assertRunError = makeErrorRunner(test_or_skip);
 
   assertSnapshot("nil", "");
@@ -201,4 +202,71 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshotFile("toplevel_statements", "toplevelStatements");
   assertSnapshotFile("unsafe_wasm_globals", "unsafeWasmGlobals");
   assertSnapshotFile("pattern_match_unsafe_wasm", "patternMatchUnsafeWasm");
+  /* Unicode support */
+  Grain_parsing.(
+    Ast_helper.(
+      assertParse(
+        "unicode_identifiers",
+        {|
+          enum Caipirinha {
+            Cachaça,
+            Sugar,
+            Lime,
+          }
+
+          let pokémon = "pikachu"
+
+          type Über = Number
+        |},
+        {
+          statements: [
+            Top.data([
+              (
+                Asttypes.Nonexported,
+                Dat.variant(
+                  Location.mknoloc("Caipirinha"),
+                  [],
+                  [
+                    CDecl.singleton(Location.mknoloc("Cachaça")),
+                    CDecl.singleton(Location.mknoloc("Sugar")),
+                    CDecl.singleton(Location.mknoloc("Lime")),
+                  ],
+                ),
+              ),
+            ]),
+            Top.let_(
+              Asttypes.Nonexported,
+              Asttypes.Nonrecursive,
+              Asttypes.Immutable,
+              [
+                Vb.mk(
+                  Pat.var(Location.mknoloc("pokémon")),
+                  Exp.constant(Const.string("pikachu")),
+                ),
+              ],
+            ),
+            Top.data([
+              (
+                Asttypes.Nonexported,
+                Dat.abstract(
+                  Location.mknoloc("Über"),
+                  [],
+                  Some(
+                    Typ.constr(
+                      Location.mknoloc(
+                        Identifier.IdentName(Location.mknoloc("Number")),
+                      ),
+                      [],
+                    ),
+                  ),
+                ),
+              ),
+            ]),
+          ],
+          comments: [],
+          prog_loc: Location.dummy_loc,
+        },
+      )
+    )
+  );
 });

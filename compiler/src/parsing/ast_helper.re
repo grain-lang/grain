@@ -18,6 +18,7 @@
 open Parsetree;
 
 exception SyntaxError(Location.t, string);
+exception BadEncoding(Location.t);
 
 type listitem('a) =
   | ListItem('a)
