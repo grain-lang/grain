@@ -238,9 +238,6 @@ assert Number.factorial(1) == 1
 assert Number.factorial(5) == 120
 assert Number.factorial(10) == 3628800
 assert Number.factorial(20) == 2432902008176640000
-assert Number.factorial(-1) == -1
-assert Number.factorial(-5) == -120
-assert Number.factorial(-10) == -3628800
 // Number.clamp
 assert Number.clamp(0, 5, 0) == 0
 assert Number.clamp(-5, 5, -10) == -5

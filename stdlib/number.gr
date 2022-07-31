@@ -414,18 +414,22 @@ export let tan = (radians: Number) => {
 /**
  * Computes the factorial of a number.
  *
- * @param input: The number to compute the factorial of
+ * @param input: The number to compute the factorial of, Must be a Non negative integer
  * @returns The computed factorial
  *
  * @since v0.5.3
  */
 export let factorial = input => {
-  let s = sign(input)
-  let mut result = 1
-  for (let mut n = abs(input); n > 0; n -= 1) {
-    result *= n
+  // Error If It is Negative, or Not an Integer
+  // TODO: Replace False with !Number.isInteger(input)
+  if (sign(input) is -1 || false) {
+    fail "Factorial Expects A Non Negative Integer Input"
+  } else {
+    // Factorial Helper
+    let rec fact = n => if (n is 0) 1 else n * fact(n - 1)
+    // Perform Factorial
+    fact(input)
   }
-  if (s == 0) result else result * s
 }
 
 /**

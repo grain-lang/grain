@@ -627,7 +627,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`Number`|The number to compute the factorial of|
+|`input`|`Number`|The number to compute the factorial of, Must be a Non negative integer|
 
 Returns:
 
