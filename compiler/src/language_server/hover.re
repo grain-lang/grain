@@ -109,8 +109,8 @@ let print_type = (env, ty) => {
   };
 };
 
-let module_lens = (~program: Typedtree.typed_program, p: Path.t) => {
-  let vals = Modules.get_exports(p, program);
+let module_lens = (~program: Typedtree.typed_program, path: Path.t) => {
+  let vals = Modules.get_exports(~path, program);
   let signatures =
     List.map(
       (v: Modules.export) =>
