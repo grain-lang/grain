@@ -400,12 +400,12 @@ export let cos = (radians: Number) => {
 }
 
 /**
- * Computes the tan of a number (in radians) using Chebyshev polynomials.
+ * Computes the tangent of a number (in radians) using Chebyshev polynomials.
  *
  * @param radians: The input in radians
  * @returns The computed tangent
  *
- * @since v0.5.2
+ * @since v0.5.3
  */
 export let tan = (radians: Number) => {
   sin(radians) / cos(radians)
@@ -417,7 +417,7 @@ export let tan = (radians: Number) => {
  * @param input: The number to compute the factorial of
  * @returns The computed factorial
  *
- * @since v0.5.2
+ * @since v0.5.3
  */
 export let factorial = input => {
   let s = sign(input)
@@ -436,7 +436,7 @@ export let factorial = input => {
  * @param input: The number to clamp
  * @returns The clamped number
  *
- * @since v0.5.2
+ * @since v0.5.3
  */
 export let clamp = (min: Number, max: Number, input: Number) => {
   if (input < min) min else if (input > max) max else input
@@ -447,10 +447,10 @@ export let clamp = (min: Number, max: Number, input: Number) => {
  *
  * @param start: The starting value
  * @param end: The ending value
- * @param amount: an amount between 0 and 1
+ * @param amount: an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200
  * @returns The interpolated value
  *
- * @since v0.5.2
+ * @since v0.5.3
  */
 export let lerp = (start: Number, end: Number, amount: Number) => {
   (end - start) * amount + start
@@ -466,7 +466,7 @@ export let lerp = (start: Number, end: Number, amount: Number) => {
  * @param current: The number to map
  * @returns The interpolated value
  *
- * @since v0.5.2
+ * @since v0.5.3
  */
 export let map = (inMin, outMin, inMax, outMax, current) => {
   let mapped = (current - inMin) * (outMax - outMin) / (inMax - inMin) + outMin

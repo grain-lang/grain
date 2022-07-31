@@ -588,7 +588,7 @@ Returns:
 ### Number.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -596,7 +596,7 @@ No other changes yet.
 tan : Number -> Number
 ```
 
-Computes the tan of a number (in radians) using Chebyshev polynomials.
+Computes the tangent of a number (in radians) using Chebyshev polynomials.
 
 Parameters:
 
@@ -613,7 +613,7 @@ Returns:
 ### Number.**factorial**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -638,7 +638,7 @@ Returns:
 ### Number.**clamp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -665,7 +665,7 @@ Returns:
 ### Number.**lerp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -681,7 +681,7 @@ Parameters:
 |-----|----|-----------|
 |`start`|`Number`|The starting value|
 |`end`|`Number`|The ending value|
-|`amount`|`Number`|an amount between 0 and 1|
+|`amount`|`Number`|an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200|
 
 Returns:
 
@@ -692,7 +692,7 @@ Returns:
 ### Number.**map**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
