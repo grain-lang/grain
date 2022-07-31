@@ -425,6 +425,81 @@ Returns:
 |----|-----------|
 |`Number`|The negated operand|
 
+### Number.**isFloat**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isFloat : Number -> Bool
+```
+
+Checks if a number is a floating point value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|The number to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is a floating point number or `false` otherwise|
+
+### Number.**isInteger**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isInteger : Number -> Bool
+```
+
+Checks if a number is an integer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|The number to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is an integer or `false` otherwise|
+
+### Number.**isRational**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isRational : Number -> Bool
+```
+
+Checks if a number is a non-integer rational value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|The number to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the value is a non-integer rational number or `false` otherwise|
+
 ### Number.**isFinite**
 
 <details disabled>

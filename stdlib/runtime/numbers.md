@@ -10,6 +10,18 @@ isBoxedNumber : WasmI32 -> Bool
 isFloat : WasmI32 -> Bool
 ```
 
+### Numbers.**isInteger**
+
+```grain
+isInteger : WasmI32 -> Bool
+```
+
+### Numbers.**isRational**
+
+```grain
+isRational : WasmI32 -> Bool
+```
+
 ### Numbers.**isNumber**
 
 ```grain
