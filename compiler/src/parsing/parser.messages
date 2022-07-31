@@ -10,7 +10,7 @@ program: ASSERT WHEN
 
 Expected an expression after `assert`.
 
-program: AT ID EOL WHILE
+program: AT LIDENT EOL WHILE
 ##
 ## Ends in an error in state: 412.
 ##
@@ -27,7 +27,7 @@ program: AT ID EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 196, spurious reduction of production attribute -> AT id_str loption(attribute_arguments) eols
 ##
-program: AT ID WHILE
+program: AT LIDENT WHILE
 ##
 ## Ends in an error in state: 186.
 ##
@@ -47,7 +47,7 @@ program: AT WHILE
 ## The known suffix of the stack is as follows:
 ## AT
 ##
-program: AT ID LPAREN RPAREN WHILE
+program: AT LIDENT LPAREN RPAREN WHILE
 ##
 ## Ends in an error in state: 195.
 ##
@@ -60,7 +60,7 @@ program: AT ID LPAREN RPAREN WHILE
 
 Attributes are only allowed on let bindings, data declarations, and foreign statements.
 
-program: AT ID LPAREN STRING COMMA WHILE
+program: AT LIDENT LPAREN STRING COMMA WHILE
 ##
 ## Ends in an error in state: 192.
 ##
@@ -75,7 +75,7 @@ program: AT ID LPAREN STRING COMMA WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 88, spurious reduction of production comma -> COMMA
 ##
-program: AT ID LPAREN WHILE
+program: AT LIDENT LPAREN WHILE
 ##
 ## Ends in an error in state: 187.
 ##
@@ -94,7 +94,7 @@ program: AT ID LPAREN WHILE
 
 Expected a string.
 
-program: AT ID LPAREN STRING WHILE
+program: AT LIDENT LPAREN STRING WHILE
 ##
 ## Ends in an error in state: 190.
 ##
@@ -128,7 +128,7 @@ program: DASH WHILE
 
 Expected a number to follow the minus sign.
 
-program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK LPAREN TYPEID RCARET
+program: ENUM UIDENT LBRACE LBRACK ELLIPSIS RBRACK LPAREN UIDENT RCARET
 ##
 ## Ends in an error in state: 934.
 ##
@@ -141,7 +141,7 @@ program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK LPAREN TYPEID RCARET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -149,7 +149,7 @@ program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK LPAREN TYPEID RCARET
 ## In state 90, spurious reduction of production typs -> lseparated_nonempty_list_inner(comma,typ) option(comma)
 ## In state 112, spurious reduction of production option(typs) -> typs
 ##
-program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK LPAREN WHILE
+program: ENUM UIDENT LBRACE LBRACK ELLIPSIS RBRACK LPAREN WHILE
 ##
 ## Ends in an error in state: 933.
 ##
@@ -164,7 +164,7 @@ program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK LPAREN WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
-program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK WHILE
+program: ENUM UIDENT LBRACE LBRACK ELLIPSIS RBRACK WHILE
 ##
 ## Ends in an error in state: 932.
 ##
@@ -173,7 +173,7 @@ program: ENUM TYPEID LBRACE LBRACK ELLIPSIS RBRACK WHILE
 ## The known suffix of the stack is as follows:
 ## lbrack ELLIPSIS rbrack
 ##
-program: ENUM TYPEID LBRACE LBRACK ELLIPSIS WHILE
+program: ENUM UIDENT LBRACE LBRACK ELLIPSIS WHILE
 ##
 ## Ends in an error in state: 931.
 ##
@@ -182,7 +182,7 @@ program: ENUM TYPEID LBRACE LBRACK ELLIPSIS WHILE
 ## The known suffix of the stack is as follows:
 ## lbrack ELLIPSIS
 ##
-program: ENUM TYPEID LBRACE LBRACK RBRACK WHILE
+program: ENUM UIDENT LBRACE LBRACK RBRACK WHILE
 ##
 ## Ends in an error in state: 926.
 ##
@@ -192,7 +192,7 @@ program: ENUM TYPEID LBRACE LBRACK RBRACK WHILE
 ## The known suffix of the stack is as follows:
 ## lbrace lseparated_nonempty_list_inner(comma,data_constructor)
 ##
-program: ENUM TYPEID LBRACE LBRACK WHILE
+program: ENUM UIDENT LBRACE LBRACK WHILE
 ##
 ## Ends in an error in state: 930.
 ##
@@ -211,7 +211,7 @@ program: ENUM TYPEID LBRACE LBRACK WHILE
 
 Expected a list enum declaration using the syntax `enum List<a> { [], [...](a, List<a>) }`.
 
-program: ENUM TYPEID LBRACE TYPEID COMMA EOL WHILE
+program: ENUM UIDENT LBRACE UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 929.
 ##
@@ -232,20 +232,20 @@ program: ENUM TYPEID LBRACE TYPEID COMMA EOL WHILE
 
 Expected a variant definition or `}` to complete the enum declaration.
 
-program: ENUM TYPEID LBRACE TYPEID LPAREN TYPEID RCARET
+program: ENUM UIDENT LBRACE UIDENT LPAREN UIDENT RCARET
 ##
 ## Ends in an error in state: 924.
 ##
-## data_constructor -> TYPEID lparen option(typs) . rparen [ RBRACE EOL COMMA ]
+## data_constructor -> UIDENT lparen option(typs) . rparen [ RBRACE EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## TYPEID lparen option(typs)
+## UIDENT lparen option(typs)
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -256,14 +256,14 @@ program: ENUM TYPEID LBRACE TYPEID LPAREN TYPEID RCARET
 
 Expected type parameters surrounded by `<`/`>`, a comma followed by more types, a dot followed by an identifier, or `)` to complete the variant definition.
 
-program: ENUM TYPEID LBRACE TYPEID LPAREN WHILE
+program: ENUM UIDENT LBRACE UIDENT LPAREN WHILE
 ##
 ## Ends in an error in state: 923.
 ##
-## data_constructor -> TYPEID lparen . option(typs) rparen [ RBRACE EOL COMMA ]
+## data_constructor -> UIDENT lparen . option(typs) rparen [ RBRACE EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## TYPEID lparen
+## UIDENT lparen
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -274,7 +274,7 @@ program: ENUM TYPEID LBRACE TYPEID LPAREN WHILE
 
 Expected a type or `)` to complete the variant definition.
 
-program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EOL WHILE
+program: ENUM UIDENT LBRACE UIDENT RBRACE COMMA EOL WHILE
 ##
 ## Ends in an error in state: 959.
 ##
@@ -291,7 +291,7 @@ program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
-program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EXPORT WHILE
+program: ENUM UIDENT LBRACE UIDENT RBRACE COMMA EXPORT WHILE
 ##
 ## Ends in an error in state: 960.
 ##
@@ -303,20 +303,20 @@ program: ENUM TYPEID LBRACE TYPEID RBRACE COMMA EXPORT WHILE
 
 Mutually recursive data declarations are separated by commas, but cannot be mixed with other kinds of expressions.
 
-program: ENUM TYPEID LBRACE TYPEID WHILE
+program: ENUM UIDENT LBRACE UIDENT WHILE
 ##
 ## Ends in an error in state: 922.
 ##
-## data_constructor -> TYPEID . [ RBRACE EOL COMMA ]
-## data_constructor -> TYPEID . lparen option(typs) rparen [ RBRACE EOL COMMA ]
+## data_constructor -> UIDENT . [ RBRACE EOL COMMA ]
+## data_constructor -> UIDENT . lparen option(typs) rparen [ RBRACE EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## TYPEID
+## UIDENT
 ##
 
 Expected `(` followed by comma-separated types, a comma followed by more variants, or `}` to complete the enum declaration.
 
-program: ENUM TYPEID LBRACE WHILE
+program: ENUM UIDENT LBRACE WHILE
 ##
 ## Ends in an error in state: 921.
 ##
@@ -334,7 +334,7 @@ program: ENUM TYPEID LBRACE WHILE
 
 Expected a capitalized variant name.
 
-program: ENUM TYPEID LBRACE TYPEID RBRACE WHILE
+program: ENUM UIDENT LBRACE UIDENT RBRACE WHILE
 ##
 ## Ends in an error in state: 958.
 ##
@@ -347,38 +347,38 @@ program: ENUM TYPEID LBRACE TYPEID RBRACE WHILE
 
 Expected a comma followed by more mutually-recursive data declarations or a newline character to complete the current one.
 
-program: ENUM TYPEID LCARET ID RCARET ISNT
+program: ENUM UIDENT LCARET LIDENT RCARET ISNT
 ##
 ## Ends in an error in state: 920.
 ##
-## data_declaration -> ENUM TYPEID option(id_vec) . data_constructors [ SEMI EOL EOF COMMA ]
+## data_declaration -> ENUM UIDENT option(id_vec) . data_constructors [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## ENUM TYPEID option(id_vec)
+## ENUM UIDENT option(id_vec)
 ##
 
 Expected `{` followed by comma-separated variants.
 
-program: ENUM TYPEID WHILE
+program: ENUM UIDENT WHILE
 ##
 ## Ends in an error in state: 919.
 ##
-## data_declaration -> ENUM TYPEID . option(id_vec) data_constructors [ SEMI EOL EOF COMMA ]
+## data_declaration -> ENUM UIDENT . option(id_vec) data_constructors [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## ENUM TYPEID
+## ENUM UIDENT
 ##
 
 Expected type parameters surrounded by angle brackets or `{` followed by comma-separated variants.
 
-program: TYPE TYPEID WHILE
+program: TYPE UIDENT WHILE
 ##
 ## Ends in an error in state: 804.
 ##
-## data_declaration -> TYPE TYPEID . option(id_vec) equal typ [ SEMI EOL EOF COMMA ]
+## data_declaration -> TYPE UIDENT . option(id_vec) equal typ [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## TYPE TYPEID
+## TYPE UIDENT
 ##
 
 Expected type parameters surrounded by angle brackets or `=` followed by a type.
@@ -387,7 +387,7 @@ program: ENUM WHILE
 ##
 ## Ends in an error in state: 918.
 ##
-## data_declaration -> ENUM . TYPEID option(id_vec) data_constructors [ SEMI EOL EOF COMMA ]
+## data_declaration -> ENUM . UIDENT option(id_vec) data_constructors [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## ENUM
@@ -399,7 +399,7 @@ program: TYPE WHILE
 ##
 ## Ends in an error in state: 803.
 ##
-## data_declaration -> TYPE . TYPEID option(id_vec) equal typ [ SEMI EOL EOF COMMA ]
+## data_declaration -> TYPE . UIDENT option(id_vec) equal typ [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## TYPE
@@ -476,7 +476,7 @@ program: EOL WASMI64 THICKARROW
 
 Expected an infix operator to continue the expression or a newline character to terminate it.
 
-program: LBRACE BREAK RBRACE DOT EOL ID EQUAL EOL UNDERSCORE
+program: LBRACE BREAK RBRACE DOT EOL LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 295.
 ##
@@ -493,7 +493,7 @@ program: LBRACE BREAK RBRACE DOT EOL ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: LBRACE BREAK RBRACE DOT ID EQUAL EOL UNDERSCORE
+program: LBRACE BREAK RBRACE DOT LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 291.
 ##
@@ -553,7 +553,7 @@ program: LBRACE BREAK RBRACE LBRACK WASMI64 RBRACK EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: LBRACE TYPEID COLON EOL UNDERSCORE
+program: LBRACE UIDENT COLON EOL UNDERSCORE
 ##
 ## Ends in an error in state: 313.
 ##
@@ -569,7 +569,7 @@ program: LBRACE TYPEID COLON EOL UNDERSCORE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LBRACE TYPEID COLON WHEN
+program: LBRACE UIDENT COLON WHEN
 ##
 ## Ends in an error in state: 213.
 ##
@@ -605,7 +605,7 @@ program: LET WASMI64 EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: LPAREN BREAK RPAREN DOT EOL ID EQUAL EOL UNDERSCORE
+program: LPAREN BREAK RPAREN DOT EOL LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 595.
 ##
@@ -622,7 +622,7 @@ program: LPAREN BREAK RPAREN DOT EOL ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: LPAREN BREAK RPAREN DOT ID EQUAL EOL UNDERSCORE
+program: LPAREN BREAK RPAREN DOT LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 591.
 ##
@@ -848,7 +848,7 @@ program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT EOL WHEN WHEN
 
 Expected an expression.
 
-program: EXCEPTION TYPEID LPAREN TYPEID COMMA EOL WHILE
+program: EXCEPTION UIDENT LPAREN UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 91.
 ##
@@ -866,7 +866,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
-program: EXCEPTION TYPEID LPAREN WHILE
+program: EXCEPTION UIDENT LPAREN WHILE
 ##
 ## Ends in an error in state: 787.
 ##
@@ -907,7 +907,7 @@ program: LET WASMI64 COLON WHILE
 ## The known suffix of the stack is as follows:
 ## pattern COLON
 ##
-program: PRIMITIVE ID COLON EOL WHILE
+program: PRIMITIVE LIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 780.
 ##
@@ -923,7 +923,7 @@ program: PRIMITIVE ID COLON EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: PRIMITIVE ID COLON WHILE
+program: PRIMITIVE LIDENT COLON WHILE
 ##
 ## Ends in an error in state: 776.
 ##
@@ -959,7 +959,7 @@ program: PRIMITIVE THROW COLON WHILE
 ## The known suffix of the stack is as follows:
 ## PRIMITIVE prim COLON
 ##
-program: RECORD TYPEID LBRACE ID COLON EOL WHILE
+program: RECORD UIDENT LBRACE LIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 830.
 ##
@@ -975,7 +975,7 @@ program: RECORD TYPEID LBRACE ID COLON EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: RECORD TYPEID LBRACE ID COLON WHILE
+program: RECORD UIDENT LBRACE LIDENT COLON WHILE
 ##
 ## Ends in an error in state: 828.
 ##
@@ -988,7 +988,7 @@ program: RECORD TYPEID LBRACE ID COLON WHILE
 
 Expected a type.
 
-program: EXCEPTION TYPEID LPAREN TYPEID RCARET
+program: EXCEPTION UIDENT LPAREN UIDENT RCARET
 ##
 ## Ends in an error in state: 788.
 ##
@@ -1001,7 +1001,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID RCARET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -1012,7 +1012,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID RCARET
 
 Expected `)` to complete the exception declaration.
 
-program: EXCEPTION TYPEID LPAREN TYPEID WHEN
+program: EXCEPTION UIDENT LPAREN UIDENT WHEN
 ##
 ## Ends in an error in state: 87.
 ##
@@ -1026,7 +1026,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -1034,7 +1034,7 @@ program: EXCEPTION TYPEID LPAREN TYPEID WHEN
 
 Expected type parameters surrounded by angle brackets or a comma followed by more types.
 
-program: EXCEPTION TYPEID WHILE
+program: EXCEPTION UIDENT WHILE
 ##
 ## Ends in an error in state: 786.
 ##
@@ -1166,7 +1166,7 @@ program: LET WHILE
 
 Expected the keyword `rec`, the keyword `mut`, or a binding pattern, such as an identifier.
 
-program: EXPORT STAR EXCEPT TYPEID COMMA EOL WHILE
+program: EXPORT STAR EXCEPT UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 904.
 ##
@@ -1186,7 +1186,7 @@ program: EXPORT STAR EXCEPT TYPEID COMMA EOL WHILE
 
 Expected an identifier to exclude from the export.
 
-program: EXPORT STAR EXCEPT TYPEID COMMA TYPEID WHILE
+program: EXPORT STAR EXCEPT UIDENT COMMA UIDENT WHILE
 ##
 ## Ends in an error in state: 903.
 ##
@@ -1223,7 +1223,7 @@ program: EXPORT STAR WHILE
 
 Expected the keyword `except` followed by comma-separated identifiers to exclude or a newline character to complete the statement.
 
-program: EXPORT TYPEID AS TYPEID WHILE
+program: EXPORT UIDENT AS UIDENT WHILE
 ##
 ## Ends in an error in state: 952.
 ##
@@ -1236,7 +1236,7 @@ program: EXPORT TYPEID AS TYPEID WHILE
 
 Expected a comma followed by another identifier to export or a newline character to complete the statement.
 
-program: EXPORT TYPEID AS WHILE
+program: EXPORT UIDENT AS WHILE
 ##
 ## Ends in an error in state: 948.
 ##
@@ -1274,7 +1274,7 @@ program: LET NUMBER_INT AS EOL WHILE
 
 Expected an identifier to use as an alias.
 
-program: EXPORT TYPEID COMMA EOL WHILE
+program: EXPORT UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 953.
 ##
@@ -1294,7 +1294,7 @@ program: EXPORT TYPEID COMMA EOL WHILE
 
 Expected another identifier to export.
 
-program: EXPORT TYPEID WHILE
+program: EXPORT UIDENT WHILE
 ##
 ## Ends in an error in state: 947.
 ##
@@ -2378,14 +2378,14 @@ program: FOR WHILE
 
 Expected `(` to set the for loop parameters.
 
-program: FUN ID THICKARROW WHEN
+program: FUN LIDENT THICKARROW WHEN
 ##
 ## Ends in an error in state: 29.
 ##
-## lam_expr -> FUN ID thickarrow . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## lam_expr -> FUN LIDENT thickarrow . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN ID thickarrow
+## FUN LIDENT thickarrow
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -2405,14 +2405,14 @@ program: WHILE LPAREN WASMI64 RPAREN WHILE
 
 Expected an expression or `{` to start a block.
 
-program: FUN ID WHILE
+program: FUN LIDENT WHILE
 ##
 ## Ends in an error in state: 26.
 ##
-## lam_expr -> FUN ID . thickarrow expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## lam_expr -> FUN LIDENT . thickarrow expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN ID
+## FUN LIDENT
 ##
 program: FUN LPAREN RPAREN WHILE
 ##
@@ -2537,7 +2537,7 @@ program: FUN WHILE
 ## Ends in an error in state: 25.
 ##
 ## lam_expr -> FUN . lparen option(patterns) rparen thickarrow expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
-## lam_expr -> FUN . ID thickarrow expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
+## lam_expr -> FUN . LIDENT thickarrow expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ EQEQ EOL EOF ELSE DASH COMMA COLON CARET AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
 ## FUN
@@ -2725,7 +2725,7 @@ program: IF WHILE
 
 Expected `(` followed by a condition expression.
 
-program: IMPORT FOREIGN WASM ID COLON EOL TYPEID AS ID WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON EOL UIDENT AS LIDENT WHILE
 ##
 ## Ends in an error in state: 873.
 ##
@@ -2734,7 +2734,7 @@ program: IMPORT FOREIGN WASM ID COLON EOL TYPEID AS ID WHILE
 ## The known suffix of the stack is as follows:
 ## FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str))
 ##
-program: IMPORT FOREIGN WASM ID COLON TYPEID AS ID WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON UIDENT AS LIDENT WHILE
 ##
 ## Ends in an error in state: 866.
 ##
@@ -2746,7 +2746,7 @@ program: IMPORT FOREIGN WASM ID COLON TYPEID AS ID WHILE
 
 Expected the keyword `from` followed by a file path.
 
-program: IMPORT FOREIGN WASM ID COLON EOL TYPEID FROM WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON EOL UIDENT FROM WHILE
 ##
 ## Ends in an error in state: 874.
 ##
@@ -2755,7 +2755,7 @@ program: IMPORT FOREIGN WASM ID COLON EOL TYPEID FROM WHILE
 ## The known suffix of the stack is as follows:
 ## FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str)) FROM
 ##
-program: IMPORT FOREIGN WASM ID COLON TYPEID FROM WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON UIDENT FROM WHILE
 ##
 ## Ends in an error in state: 867.
 ##
@@ -2764,7 +2764,7 @@ program: IMPORT FOREIGN WASM ID COLON TYPEID FROM WHILE
 ## The known suffix of the stack is as follows:
 ## FOREIGN WASM id_str COLON typ option(as_prefix(id_str)) FROM
 ##
-program: IMPORT TYPEID FROM WHILE
+program: IMPORT UIDENT FROM WHILE
 ##
 ## Ends in an error in state: 878.
 ##
@@ -2776,7 +2776,7 @@ program: IMPORT TYPEID FROM WHILE
 
 Expected a file path surrounded by `”`.
 
-program: IMPORT FOREIGN WASM ID COLON EOL TYPEID WHEN
+program: IMPORT FOREIGN WASM LIDENT COLON EOL UIDENT WHEN
 ##
 ## Ends in an error in state: 872.
 ##
@@ -2789,11 +2789,11 @@ program: IMPORT FOREIGN WASM ID COLON EOL TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
-program: IMPORT FOREIGN WASM ID COLON TYPEID WHEN
+program: IMPORT FOREIGN WASM LIDENT COLON UIDENT WHEN
 ##
 ## Ends in an error in state: 863.
 ##
@@ -2806,14 +2806,14 @@ program: IMPORT FOREIGN WASM ID COLON TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
 
 Expected an alias, like `as foo`, for the foreign value's name or the keyword `from` followed by a file path.
 
-program: IMPORT FOREIGN WASM ID COLON EOL WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 871.
 ##
@@ -2829,7 +2829,7 @@ program: IMPORT FOREIGN WASM ID COLON EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: IMPORT FOREIGN WASM ID COLON WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON WHILE
 ##
 ## Ends in an error in state: 862.
 ##
@@ -2842,7 +2842,7 @@ program: IMPORT FOREIGN WASM ID COLON WHILE
 
 Expected a type for the foreign value.
 
-program: IMPORT FOREIGN WASM ID COLON TYPEID AS WHILE
+program: IMPORT FOREIGN WASM LIDENT COLON UIDENT AS WHILE
 ##
 ## Ends in an error in state: 864.
 ##
@@ -2854,7 +2854,7 @@ program: IMPORT FOREIGN WASM ID COLON TYPEID AS WHILE
 
 Expected an identifier to use as the alias.
 
-program: IMPORT FOREIGN WASM ID WHILE
+program: IMPORT FOREIGN WASM LIDENT WHILE
 ##
 ## Ends in an error in state: 861.
 ##
@@ -2893,7 +2893,7 @@ program: IMPORT FOREIGN WHILE
 
 Expected the keyword `wasm`.
 
-program: IMPORT LBRACE TYPEID AS ID WHILE
+program: IMPORT LBRACE UIDENT AS LIDENT WHILE
 ##
 ## Ends in an error in state: 884.
 ##
@@ -2906,7 +2906,7 @@ program: IMPORT LBRACE TYPEID AS ID WHILE
 
 Expected a comma followed by more imports or `}` to complete the imports block.
 
-program: IMPORT LBRACE TYPEID AS WHILE
+program: IMPORT LBRACE UIDENT AS WHILE
 ##
 ## Ends in an error in state: 888.
 ##
@@ -2918,7 +2918,7 @@ program: IMPORT LBRACE TYPEID AS WHILE
 
 Expected an identifier to use as an alias.
 
-program: IMPORT LBRACE TYPEID COMMA EOL WHILE
+program: IMPORT LBRACE UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 886.
 ##
@@ -2939,7 +2939,7 @@ program: IMPORT LBRACE TYPEID COMMA EOL WHILE
 
 Expected an identifier to import or `}` to complete the imports block.
 
-program: IMPORT LBRACE TYPEID EOL WHILE
+program: IMPORT LBRACE UIDENT EOL WHILE
 ##
 ## Ends in an error in state: 201.
 ##
@@ -2958,7 +2958,7 @@ program: IMPORT LBRACE TYPEID EOL WHILE
 
 Expected `}` to complete the block.
 
-program: IMPORT LBRACE TYPEID THICKARROW
+program: IMPORT LBRACE UIDENT THICKARROW
 ##
 ## Ends in an error in state: 887.
 ##
@@ -2971,7 +2971,7 @@ program: IMPORT LBRACE TYPEID THICKARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ##
 
 Expected an alias like`as foo`, a comma followed by another identifier, or `}` to complete the block.
@@ -3012,7 +3012,7 @@ program: IMPORT LPAREN WHILE
 
 Expected an infix or prefix operator, e.g. `+`, `-`, `!`.
 
-program: IMPORT STAR EXCEPT LBRACE TYPEID COMMA EOL WHILE
+program: IMPORT STAR EXCEPT LBRACE UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 854.
 ##
@@ -3033,7 +3033,7 @@ program: IMPORT STAR EXCEPT LBRACE TYPEID COMMA EOL WHILE
 
 Expected an identifier or `}` to complete the block.
 
-program: IMPORT STAR EXCEPT LBRACE TYPEID THICKARROW
+program: IMPORT STAR EXCEPT LBRACE UIDENT THICKARROW
 ##
 ## Ends in an error in state: 851.
 ##
@@ -3047,7 +3047,7 @@ program: IMPORT STAR EXCEPT LBRACE TYPEID THICKARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 856, spurious reduction of production lseparated_nonempty_list_inner(comma,id) -> id
 ##
 
@@ -3095,7 +3095,7 @@ program: IMPORT STAR WHILE
 
 Expected the keyword `except` followed by comma-separated identifiers surrounded by `{`/`}`, a comma followed by a module name, or the keyword `from` followed by a file path.
 
-program: IMPORT TYPEID COMMA EOL WHILE
+program: IMPORT UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 880.
 ##
@@ -3116,7 +3116,7 @@ program: IMPORT TYPEID COMMA EOL WHILE
 
 Expected another import or the `from` keyword followed by a file path.
 
-program: IMPORT TYPEID THICKARROW
+program: IMPORT UIDENT THICKARROW
 ##
 ## Ends in an error in state: 876.
 ##
@@ -3130,7 +3130,7 @@ program: IMPORT TYPEID THICKARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 896, spurious reduction of production import_shape -> id
 ## In state 897, spurious reduction of production lseparated_nonempty_list_inner(comma,import_shape) -> import_shape
 ##
@@ -3150,7 +3150,7 @@ program: IMPORT WHILE
 
 Expected a module identifier, `*`, a list of comma-separated identifiers surrounded by `{`/`}`, or the `foreign` keyword.
 
-program: LBRACE AT ID RECORD
+program: LBRACE AT LIDENT RECORD
 ##
 ## Ends in an error in state: 328.
 ##
@@ -3415,7 +3415,7 @@ program: LET REC WHILE
 
 Expected the keyword `mut` or a binding pattern, like an identifier.
 
-program: LBRACE TYPEID COLON BREAK COMMA EOL TYPEID COLON BREAK WHILE
+program: LBRACE UIDENT COLON BREAK COMMA EOL UIDENT COLON BREAK WHILE
 ##
 ## Ends in an error in state: 318.
 ##
@@ -3426,7 +3426,7 @@ program: LBRACE TYPEID COLON BREAK COMMA EOL TYPEID COLON BREAK WHILE
 ## The known suffix of the stack is as follows:
 ## non_punned_record_field comma lseparated_nonempty_list_inner(comma,record_field)
 ##
-program: LBRACE TYPEID COLON BREAK WHILE
+program: LBRACE UIDENT COLON BREAK WHILE
 ##
 ## Ends in an error in state: 315.
 ##
@@ -3436,7 +3436,7 @@ program: LBRACE TYPEID COLON BREAK WHILE
 ## The known suffix of the stack is as follows:
 ## non_punned_record_field
 ##
-program: LBRACE TYPEID COMMA EOL TYPEID COLON BREAK WHILE
+program: LBRACE UIDENT COMMA EOL UIDENT COLON BREAK WHILE
 ##
 ## Ends in an error in state: 207.
 ##
@@ -3450,7 +3450,7 @@ program: LBRACE TYPEID COMMA EOL TYPEID COLON BREAK WHILE
 
 Expected a comma followed by more record fields or an immediate `}` to complete the record expression.
 
-program: LBRACE TYPEID COLON BREAK COMMA EOL WHILE
+program: LBRACE UIDENT COLON BREAK COMMA EOL WHILE
 ##
 ## Ends in an error in state: 317.
 ##
@@ -3468,7 +3468,7 @@ program: LBRACE TYPEID COLON BREAK COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
-program: LBRACE TYPEID COMMA EOL WHILE
+program: LBRACE UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 204.
 ##
@@ -3486,7 +3486,7 @@ program: LBRACE TYPEID COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
-program: LBRACE TYPEID COMMA TYPEID COMMA EOL WHILE
+program: LBRACE UIDENT COMMA UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 209.
 ##
@@ -3508,7 +3508,7 @@ program: LBRACE TYPEID COMMA TYPEID COMMA EOL WHILE
 
 Expected more record fields or an immediate `}` to complete the record expression.
 
-program: LBRACE TYPEID COMMA TYPEID THICKARROW
+program: LBRACE UIDENT COMMA UIDENT THICKARROW
 ##
 ## Ends in an error in state: 212.
 ##
@@ -3523,12 +3523,12 @@ program: LBRACE TYPEID COMMA TYPEID THICKARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ##
 
 Expected a colon followed by an expression, a comma followed by more record fields, or an immediate `}` to complete the record.
 
-program: LBRACE TYPEID THICKARROW
+program: LBRACE UIDENT THICKARROW
 ##
 ## Ends in an error in state: 320.
 ##
@@ -3543,7 +3543,7 @@ program: LBRACE TYPEID THICKARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 415, spurious reduction of production id_expr -> id
 ## In state 216, spurious reduction of production simple_expr -> id_expr
 ## In state 41, spurious reduction of production non_assign_expr -> simple_expr
@@ -3794,7 +3794,7 @@ program: LET NUMBER_INT SLASH DASH WHILE
 
 Expected a number.
 
-program: LET LBRACE TYPEID COLON EOL WASMI64 WHILE
+program: LET LBRACE UIDENT COLON EOL WASMI64 WHILE
 ##
 ## Ends in an error in state: 388.
 ##
@@ -3805,7 +3805,7 @@ program: LET LBRACE TYPEID COLON EOL WASMI64 WHILE
 ## The known suffix of the stack is as follows:
 ## id COLON eols pattern
 ##
-program: LET LBRACE TYPEID COLON WASMI64 WHILE
+program: LET LBRACE UIDENT COLON WASMI64 WHILE
 ##
 ## Ends in an error in state: 386.
 ##
@@ -3819,7 +3819,7 @@ program: LET LBRACE TYPEID COLON WASMI64 WHILE
 
 Expected a type annotation, a comma followed by more record field patterns, or `}` to complete the record pattern.
 
-program: LET LBRACE TYPEID COLON EOL WHILE
+program: LET LBRACE UIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 387.
 ##
@@ -3835,7 +3835,7 @@ program: LET LBRACE TYPEID COLON EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LET LBRACE TYPEID COLON WHILE
+program: LET LBRACE UIDENT COLON WHILE
 ##
 ## Ends in an error in state: 385.
 ##
@@ -3917,7 +3917,7 @@ program: LET NUMBER_INT PIPE EOL WHILE
 
 Expected a pattern.
 
-program: LET LBRACE TYPEID THICKARROW
+program: LET LBRACE UIDENT THICKARROW
 ##
 ## Ends in an error in state: 384.
 ##
@@ -3932,7 +3932,7 @@ program: LET LBRACE TYPEID THICKARROW
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 122, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ##
 
 Expected `:` followed by a pattern, a comma followed by another record field pattern, or `}` to complete the record pattern.
@@ -4258,14 +4258,14 @@ program: LET NUMBER_INT WHILE
 
 Expected a type annotation or `=`.
 
-program: LET TYPEID DOT EOL WHILE
+program: LET UIDENT DOT EOL WHILE
 ##
 ## Ends in an error in state: 85.
 ##
-## lseparated_nonempty_list_inner(dot,TYPEID) -> lseparated_nonempty_list_inner(dot,TYPEID) DOT eols . TYPEID [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DOT DASH COMMA COLON CARET AS ARROW AMPAMP AMP ]
+## lseparated_nonempty_list_inner(dot,UIDENT) -> lseparated_nonempty_list_inner(dot,UIDENT) DOT eols . UIDENT [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DOT DASH COMMA COLON CARET AS ARROW AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## lseparated_nonempty_list_inner(dot,TYPEID) DOT eols
+## lseparated_nonempty_list_inner(dot,UIDENT) DOT eols
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -4274,20 +4274,20 @@ program: LET TYPEID DOT EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LET TYPEID DOT WHILE
+program: LET UIDENT DOT WHILE
 ##
 ## Ends in an error in state: 83.
 ##
-## lseparated_nonempty_list_inner(dot,TYPEID) -> lseparated_nonempty_list_inner(dot,TYPEID) DOT . TYPEID [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DOT DASH COMMA COLON CARET AS ARROW AMPAMP AMP ]
-## lseparated_nonempty_list_inner(dot,TYPEID) -> lseparated_nonempty_list_inner(dot,TYPEID) DOT . eols TYPEID [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DOT DASH COMMA COLON CARET AS ARROW AMPAMP AMP ]
+## lseparated_nonempty_list_inner(dot,UIDENT) -> lseparated_nonempty_list_inner(dot,UIDENT) DOT . UIDENT [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DOT DASH COMMA COLON CARET AS ARROW AMPAMP AMP ]
+## lseparated_nonempty_list_inner(dot,UIDENT) -> lseparated_nonempty_list_inner(dot,UIDENT) DOT . eols UIDENT [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DOT DASH COMMA COLON CARET AS ARROW AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## lseparated_nonempty_list_inner(dot,TYPEID) DOT
+## lseparated_nonempty_list_inner(dot,UIDENT) DOT
 ##
 
 Expected a capitalized identifier.
 
-program: LET TYPEID LPAREN WASMI64 RBRACK
+program: LET UIDENT LPAREN WASMI64 RBRACK
 ##
 ## Ends in an error in state: 342.
 ##
@@ -4307,7 +4307,7 @@ program: LET TYPEID LPAREN WASMI64 RBRACK
 
 Expected `)` to complete the variant pattern.
 
-program: LET TYPEID LPAREN WHILE
+program: LET UIDENT LPAREN WHILE
 ##
 ## Ends in an error in state: 340.
 ##
@@ -4566,7 +4566,7 @@ program: LPAREN WASMI64 EOL WHILE
 ##
 ## Ends in an error in state: 106.
 ##
-## rparen -> eols . RPAREN [ WHILE WHEN WASMI64 WASMI32 WASMF64 WASMF32 VOID TYPEID TYPE TRUE THROW THICKARROW STRING STAREQ STAR SLASHEQ SLASH SEMI RPAREN RECORD RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NUMBER_INT NUMBER_FLOAT NOTEQ NOT MATCH LPAREN LET LESSEQ LCARETLCARET LCARET LBRACKRCARET LBRACK LBRACE ISNT IS INT64 INT32 IMPORT IF ID GREATEREQ GETS FUN FROM FOR FLOAT64 FLOAT32 FALSE FAIL EXPORT EQUAL EQEQ EOL EOF ENUM ELSE DOT DASHEQ DASH CONTINUE COMMA COLON CHAR CARET BREAK AT ASSERT AS ARROW AMPAMP AMP ]
+## rparen -> eols . RPAREN [ WHILE WHEN WASMI64 WASMI32 WASMF64 WASMF32 VOID UIDENT TYPE TRUE THROW THICKARROW STRING STAREQ STAR SLASHEQ SLASH SEMI RPAREN RECORD RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NUMBER_INT NUMBER_FLOAT NOTEQ NOT MATCH LPAREN LET LESSEQ LCARETLCARET LCARET LBRACKRCARET LBRACK LBRACE ISNT IS INT64 INT32 IMPORT IF LIDENT GREATEREQ GETS FUN FROM FOR FLOAT64 FLOAT32 FALSE FAIL EXPORT EQUAL EQEQ EOL EOF ENUM ELSE DOT DASHEQ DASH CONTINUE COMMA COLON CHAR CARET BREAK AT ASSERT AS ARROW AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
 ## eols
@@ -4810,7 +4810,7 @@ program: NOT WASMI64 DOT EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: NOT WASMI64 DOT ID DOT EOL WHILE
+program: NOT WASMI64 DOT LIDENT DOT EOL WHILE
 ##
 ## Ends in an error in state: 439.
 ##
@@ -4826,7 +4826,7 @@ program: NOT WASMI64 DOT ID DOT EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: NOT WASMI64 DOT ID DOT WHILE
+program: NOT WASMI64 DOT LIDENT DOT WHILE
 ##
 ## Ends in an error in state: 437.
 ##
@@ -4889,7 +4889,7 @@ program: WASMI64 DOT EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: WASMI64 DOT ID DOT EOL WHILE
+program: WASMI64 DOT LIDENT DOT EOL WHILE
 ##
 ## Ends in an error in state: 609.
 ##
@@ -4906,7 +4906,7 @@ program: WASMI64 DOT ID DOT EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: WASMI64 DOT ID DOT WHILE
+program: WASMI64 DOT LIDENT DOT WHILE
 ##
 ## Ends in an error in state: 605.
 ##
@@ -5047,7 +5047,7 @@ program: NOT LPAREN BREAK RPAREN LBRACK UNDERSCORE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 18, spurious reduction of production lbrack -> LBRACK
 ##
-program: NOT WASMI64 DOT ID LBRACK UNDERSCORE
+program: NOT WASMI64 DOT LIDENT LBRACK UNDERSCORE
 ##
 ## Ends in an error in state: 447.
 ##
@@ -5077,7 +5077,7 @@ program: NOT WASMI64 LBRACK UNDERSCORE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 18, spurious reduction of production lbrack -> LBRACK
 ##
-program: WASMI64 DOT ID LBRACK UNDERSCORE
+program: WASMI64 DOT LIDENT LBRACK UNDERSCORE
 ##
 ## Ends in an error in state: 613.
 ##
@@ -5165,7 +5165,7 @@ program: NOT LPAREN BREAK RPAREN LBRACK WASMI64 THICKARROW
 ## In state 248, spurious reduction of production non_stmt_expr -> annotated_expr
 ## In state 60, spurious reduction of production expr -> non_stmt_expr
 ##
-program: NOT WASMI64 DOT ID LBRACK WASMI64 THICKARROW
+program: NOT WASMI64 DOT LIDENT LBRACK WASMI64 THICKARROW
 ##
 ## Ends in an error in state: 448.
 ##
@@ -5237,7 +5237,7 @@ program: NOT WASMI64 LPAREN RPAREN LBRACK WASMI64 THICKARROW
 ## In state 248, spurious reduction of production non_stmt_expr -> annotated_expr
 ## In state 60, spurious reduction of production expr -> non_stmt_expr
 ##
-program: WASMI64 DOT ID LBRACK WASMI64 THICKARROW
+program: WASMI64 DOT LIDENT LBRACK WASMI64 THICKARROW
 ##
 ## Ends in an error in state: 614.
 ##
@@ -5355,7 +5355,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LBRACK WASMI64 WHILE
 
 Expected `]` to complete the array index expression.
 
-program: PRIMITIVE ID COLON EOL TYPEID EQUAL WHILE
+program: PRIMITIVE LIDENT COLON EOL UIDENT EQUAL WHILE
 ##
 ## Ends in an error in state: 782.
 ##
@@ -5370,7 +5370,7 @@ program: PRIMITIVE ID COLON EOL TYPEID EQUAL WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 221, spurious reduction of production equal -> EQUAL
 ##
-program: PRIMITIVE ID COLON TYPEID EQUAL WHILE
+program: PRIMITIVE LIDENT COLON UIDENT EQUAL WHILE
 ##
 ## Ends in an error in state: 778.
 ##
@@ -5385,7 +5385,7 @@ program: PRIMITIVE ID COLON TYPEID EQUAL WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 221, spurious reduction of production equal -> EQUAL
 ##
-program: PRIMITIVE THROW COLON EOL TYPEID EQUAL WHILE
+program: PRIMITIVE THROW COLON EOL UIDENT EQUAL WHILE
 ##
 ## Ends in an error in state: 773.
 ##
@@ -5400,7 +5400,7 @@ program: PRIMITIVE THROW COLON EOL TYPEID EQUAL WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 221, spurious reduction of production equal -> EQUAL
 ##
-program: PRIMITIVE THROW COLON TYPEID EQUAL WHILE
+program: PRIMITIVE THROW COLON UIDENT EQUAL WHILE
 ##
 ## Ends in an error in state: 769.
 ##
@@ -5418,7 +5418,7 @@ program: PRIMITIVE THROW COLON TYPEID EQUAL WHILE
 
 Expected a string declaring the primitive's internal name.
 
-program: PRIMITIVE ID COLON EOL TYPEID WHEN
+program: PRIMITIVE LIDENT COLON EOL UIDENT WHEN
 ##
 ## Ends in an error in state: 781.
 ##
@@ -5431,11 +5431,11 @@ program: PRIMITIVE ID COLON EOL TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
-program: PRIMITIVE ID COLON TYPEID WHEN
+program: PRIMITIVE LIDENT COLON UIDENT WHEN
 ##
 ## Ends in an error in state: 777.
 ##
@@ -5448,11 +5448,11 @@ program: PRIMITIVE ID COLON TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
-program: PRIMITIVE THROW COLON EOL TYPEID WHEN
+program: PRIMITIVE THROW COLON EOL UIDENT WHEN
 ##
 ## Ends in an error in state: 772.
 ##
@@ -5465,11 +5465,11 @@ program: PRIMITIVE THROW COLON EOL TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
-program: PRIMITIVE THROW COLON TYPEID WHEN
+program: PRIMITIVE THROW COLON UIDENT WHEN
 ##
 ## Ends in an error in state: 768.
 ##
@@ -5482,14 +5482,14 @@ program: PRIMITIVE THROW COLON TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
 
 Expected `=` followed by a string declaring the primitive's internal name.
 
-program: PRIMITIVE ID WHILE
+program: PRIMITIVE LIDENT WHILE
 ##
 ## Ends in an error in state: 775.
 ##
@@ -5527,7 +5527,7 @@ program: PRIMITIVE WHILE
 
 Expected an identifier for the primitive.
 
-program: RECORD TYPEID LBRACE ID COLON ID COMMA EOL WHILE
+program: RECORD UIDENT LBRACE LIDENT COLON LIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 835.
 ##
@@ -5548,7 +5548,7 @@ program: RECORD TYPEID LBRACE ID COLON ID COMMA EOL WHILE
 
 Expected another record field definition or an immediate `}` to complete the record declaration.
 
-program: RECORD TYPEID LBRACE ID COLON ID WHILE
+program: RECORD UIDENT LBRACE LIDENT COLON LIDENT WHILE
 ##
 ## Ends in an error in state: 832.
 ##
@@ -5561,7 +5561,7 @@ program: RECORD TYPEID LBRACE ID COLON ID WHILE
 
 Expected a comma followed by another record field definition or an immediate `}` to complete the record declaration.
 
-program: RECORD TYPEID LBRACE ID WHILE
+program: RECORD UIDENT LBRACE LIDENT WHILE
 ##
 ## Ends in an error in state: 827.
 ##
@@ -5571,7 +5571,7 @@ program: RECORD TYPEID LBRACE ID WHILE
 ## The known suffix of the stack is as follows:
 ## simple_id
 ##
-program: RECORD TYPEID LBRACE MUT ID WHILE
+program: RECORD UIDENT LBRACE MUT LIDENT WHILE
 ##
 ## Ends in an error in state: 822.
 ##
@@ -5584,7 +5584,7 @@ program: RECORD TYPEID LBRACE MUT ID WHILE
 
 Expected `:` followed by a type.
 
-program: RECORD TYPEID LBRACE MUT ID COLON EOL WHILE
+program: RECORD UIDENT LBRACE MUT LIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 825.
 ##
@@ -5600,7 +5600,7 @@ program: RECORD TYPEID LBRACE MUT ID COLON EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: RECORD TYPEID LBRACE MUT ID COLON WHILE
+program: RECORD UIDENT LBRACE MUT LIDENT COLON WHILE
 ##
 ## Ends in an error in state: 823.
 ##
@@ -5626,14 +5626,14 @@ program: WASMI64 COLON LPAREN WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
-program: TYPE TYPEID EQUAL WHILE
+program: TYPE UIDENT EQUAL WHILE
 ##
 ## Ends in an error in state: 806.
 ##
-## data_declaration -> TYPE TYPEID option(id_vec) equal . typ [ SEMI EOL EOF COMMA ]
+## data_declaration -> TYPE UIDENT option(id_vec) equal . typ [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## TYPE TYPEID option(id_vec) equal
+## TYPE UIDENT option(id_vec) equal
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -5644,19 +5644,19 @@ program: TYPE TYPEID EQUAL WHILE
 
 Expected a type.
 
-program: TYPE TYPEID LCARET ID RCARET EQEQ
+program: TYPE UIDENT LCARET LIDENT RCARET EQEQ
 ##
 ## Ends in an error in state: 805.
 ##
-## data_declaration -> TYPE TYPEID option(id_vec) . equal typ [ SEMI EOL EOF COMMA ]
+## data_declaration -> TYPE UIDENT option(id_vec) . equal typ [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## TYPE TYPEID option(id_vec)
+## TYPE UIDENT option(id_vec)
 ##
 
 Expected `=` followed by a type.
 
-program: RECORD TYPEID LBRACE MUT WHILE
+program: RECORD UIDENT LBRACE MUT WHILE
 ##
 ## Ends in an error in state: 821.
 ##
@@ -5669,7 +5669,7 @@ program: RECORD TYPEID LBRACE MUT WHILE
 
 Expected an identifier for the record field.
 
-program: RECORD TYPEID LBRACE WHILE
+program: RECORD UIDENT LBRACE WHILE
 ##
 ## Ends in an error in state: 820.
 ##
@@ -5687,7 +5687,7 @@ program: RECORD TYPEID LBRACE WHILE
 
 Expected a comma-separated list of record field declarations.
 
-program: RECORD TYPEID LCARET ID COMMA EOL WHILE
+program: RECORD UIDENT LCARET LIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 813.
 ##
@@ -5708,7 +5708,7 @@ program: RECORD TYPEID LCARET ID COMMA EOL WHILE
 
 Expected another type variable or `>` to complete the type arguments.
 
-program: RECORD TYPEID LCARET ID COMMA ID WHILE
+program: RECORD UIDENT LCARET LIDENT COMMA LIDENT WHILE
 ##
 ## Ends in an error in state: 810.
 ##
@@ -5721,7 +5721,7 @@ program: RECORD TYPEID LCARET ID COMMA ID WHILE
 
 Expected a comma followed by more type variables or `>` to complete the type arguments.
 
-program: RECORD TYPEID LCARET ID EOL WHILE
+program: RECORD UIDENT LCARET LIDENT EOL WHILE
 ##
 ## Ends in an error in state: 79.
 ##
@@ -5740,19 +5740,19 @@ program: RECORD TYPEID LCARET ID EOL WHILE
 
 Expected `>` to complete the type arguments.
 
-program: RECORD TYPEID LCARET ID RCARET ISNT
+program: RECORD UIDENT LCARET LIDENT RCARET ISNT
 ##
 ## Ends in an error in state: 819.
 ##
-## data_declaration -> RECORD TYPEID option(id_vec) . data_labels [ SEMI EOL EOF COMMA ]
+## data_declaration -> RECORD UIDENT option(id_vec) . data_labels [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## RECORD TYPEID option(id_vec)
+## RECORD UIDENT option(id_vec)
 ##
 
 Expected `{` to list record fields.
 
-program: RECORD TYPEID LCARET TYPEID
+program: RECORD UIDENT LCARET UIDENT
 ##
 ## Ends in an error in state: 808.
 ##
@@ -5770,14 +5770,14 @@ program: RECORD TYPEID LCARET TYPEID
 
 Expected a comma-separated list of type variables.
 
-program: RECORD TYPEID WHILE
+program: RECORD UIDENT WHILE
 ##
 ## Ends in an error in state: 818.
 ##
-## data_declaration -> RECORD TYPEID . option(id_vec) data_labels [ SEMI EOL EOF COMMA ]
+## data_declaration -> RECORD UIDENT . option(id_vec) data_labels [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## RECORD TYPEID
+## RECORD UIDENT
 ##
 
 Expected a comma-separated list of type variables surrounded by `<`/`>`, or `{` to list record fields.
@@ -5786,7 +5786,7 @@ program: RECORD WHILE
 ##
 ## Ends in an error in state: 817.
 ##
-## data_declaration -> RECORD . TYPEID option(id_vec) data_labels [ SEMI EOL EOF COMMA ]
+## data_declaration -> RECORD . UIDENT option(id_vec) data_labels [ SEMI EOL EOF COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## RECORD
@@ -5794,15 +5794,15 @@ program: RECORD WHILE
 
 Expected a capitalized identifier for the record type.
 
-program: TYPEID DOT EOL WHILE
+program: UIDENT DOT EOL WHILE
 ##
 ## Ends in an error in state: 152.
 ##
-## id -> lseparated_nonempty_list_inner(dot,TYPEID) DOT eols . non_modid [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
-## lseparated_nonempty_list_inner(dot,TYPEID) -> lseparated_nonempty_list_inner(dot,TYPEID) DOT eols . TYPEID [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
+## id -> lseparated_nonempty_list_inner(dot,UIDENT) DOT eols . non_modid [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
+## lseparated_nonempty_list_inner(dot,UIDENT) -> lseparated_nonempty_list_inner(dot,UIDENT) DOT eols . UIDENT [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## lseparated_nonempty_list_inner(dot,TYPEID) DOT eols
+## lseparated_nonempty_list_inner(dot,UIDENT) DOT eols
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -5811,22 +5811,22 @@ program: TYPEID DOT EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: TYPEID DOT WHILE
+program: UIDENT DOT WHILE
 ##
 ## Ends in an error in state: 123.
 ##
-## id -> lseparated_nonempty_list_inner(dot,TYPEID) DOT . non_modid [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
-## id -> lseparated_nonempty_list_inner(dot,TYPEID) DOT . eols non_modid [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
-## lseparated_nonempty_list_inner(dot,TYPEID) -> lseparated_nonempty_list_inner(dot,TYPEID) DOT . TYPEID [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
-## lseparated_nonempty_list_inner(dot,TYPEID) -> lseparated_nonempty_list_inner(dot,TYPEID) DOT . eols TYPEID [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
+## id -> lseparated_nonempty_list_inner(dot,UIDENT) DOT . non_modid [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
+## id -> lseparated_nonempty_list_inner(dot,UIDENT) DOT . eols non_modid [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
+## lseparated_nonempty_list_inner(dot,UIDENT) -> lseparated_nonempty_list_inner(dot,UIDENT) DOT . UIDENT [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
+## lseparated_nonempty_list_inner(dot,UIDENT) -> lseparated_nonempty_list_inner(dot,UIDENT) DOT . eols UIDENT [ THICKARROW STAREQ STAR SLASHEQ SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUSEQ PLUS PIPEPIPE PIPE PERCENTEQ PERCENT NOTEQ LPAREN LESSEQ LCARETLCARET LCARET LBRACK ISNT IS GREATEREQ GETS FROM EQUAL EQEQ EOL EOF ELSE DOT DASHEQ DASH COMMA COLON CARET AS AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## lseparated_nonempty_list_inner(dot,TYPEID) DOT
+## lseparated_nonempty_list_inner(dot,UIDENT) DOT
 ##
 
 Expected an identifier.
 
-program: TYPEID EQUAL EOL UNDERSCORE
+program: UIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 224.
 ##
@@ -5843,7 +5843,7 @@ program: TYPEID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: TYPEID STAREQ EOL UNDERSCORE
+program: UIDENT STAREQ EOL UNDERSCORE
 ##
 ## Ends in an error in state: 310.
 ##
@@ -5859,7 +5859,7 @@ program: TYPEID STAREQ EOL UNDERSCORE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: TYPEID STAREQ WHEN
+program: UIDENT STAREQ WHEN
 ##
 ## Ends in an error in state: 308.
 ##
@@ -5869,7 +5869,7 @@ program: TYPEID STAREQ WHEN
 ## The known suffix of the stack is as follows:
 ## id_expr assign_binop_op
 ##
-program: WASMI64 DOT EOL ID EQUAL EOL UNDERSCORE
+program: WASMI64 DOT EOL LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 627.
 ##
@@ -5886,7 +5886,7 @@ program: WASMI64 DOT EOL ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 DOT ID DOT EOL ID EQUAL EOL UNDERSCORE
+program: WASMI64 DOT LIDENT DOT EOL LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 611.
 ##
@@ -5903,7 +5903,7 @@ program: WASMI64 DOT ID DOT EOL ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 DOT ID DOT ID EQUAL EOL UNDERSCORE
+program: WASMI64 DOT LIDENT DOT LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 607.
 ##
@@ -5920,7 +5920,7 @@ program: WASMI64 DOT ID DOT ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 DOT ID EQUAL EOL UNDERSCORE
+program: WASMI64 DOT LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 623.
 ##
@@ -5937,7 +5937,7 @@ program: WASMI64 DOT ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 DOT ID GETS EOL UNDERSCORE
+program: WASMI64 DOT LIDENT GETS EOL UNDERSCORE
 ##
 ## Ends in an error in state: 603.
 ##
@@ -5953,7 +5953,7 @@ program: WASMI64 DOT ID GETS EOL UNDERSCORE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: WASMI64 DOT ID GETS WHEN
+program: WASMI64 DOT LIDENT GETS WHEN
 ##
 ## Ends in an error in state: 45.
 ##
@@ -5963,7 +5963,7 @@ program: WASMI64 DOT ID GETS WHEN
 ## The known suffix of the stack is as follows:
 ## record_get GETS
 ##
-program: WASMI64 DOT ID LBRACK WASMI64 RBRACK EQUAL EOL UNDERSCORE
+program: WASMI64 DOT LIDENT LBRACK WASMI64 RBRACK EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 616.
 ##
@@ -6007,7 +6007,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 LPAREN RPAREN DOT EOL ID EQUAL EOL UNDERSCORE
+program: WASMI64 LPAREN RPAREN DOT EOL LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 255.
 ##
@@ -6024,7 +6024,7 @@ program: WASMI64 LPAREN RPAREN DOT EOL ID EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 LPAREN RPAREN DOT ID EQUAL EOL UNDERSCORE
+program: WASMI64 LPAREN RPAREN DOT LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 251.
 ##
@@ -6084,7 +6084,7 @@ program: WASMI64 LPAREN RPAREN LBRACK WASMI64 RBRACK EQUAL EOL UNDERSCORE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 222, spurious reduction of production equal -> EQUAL eols
 ##
-program: WASMI64 LBRACK WASMI64 RBRACK DOT EOL ID EQUAL WHEN
+program: WASMI64 LBRACK WASMI64 RBRACK DOT EOL LIDENT EQUAL WHEN
 ##
 ## Ends in an error in state: 276.
 ##
@@ -6099,7 +6099,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK DOT EOL ID EQUAL WHEN
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 221, spurious reduction of production equal -> EQUAL
 ##
-program: WASMI64 LBRACK WASMI64 RBRACK DOT ID EQUAL WHEN
+program: WASMI64 LBRACK WASMI64 RBRACK DOT LIDENT EQUAL WHEN
 ##
 ## Ends in an error in state: 272.
 ##
@@ -6155,7 +6155,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LBRACK WASMI64 RBRACK EQUAL WHEN
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 221, spurious reduction of production equal -> EQUAL
 ##
-program: BIGINT DOT EOL ID DASHEQ WHEN
+program: BIGINT DOT EOL LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 680.
 ##
@@ -6165,7 +6165,7 @@ program: BIGINT DOT EOL ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## simple_expr DOT eols simple_id assign_binop_op
 ##
-program: BIGINT DOT EOL ID DASHEQ EOL WHEN
+program: BIGINT DOT EOL LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 682.
 ##
@@ -6181,7 +6181,7 @@ program: BIGINT DOT EOL ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT DOT ID DASHEQ WHEN
+program: BIGINT DOT LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 672.
 ##
@@ -6191,7 +6191,7 @@ program: BIGINT DOT ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## simple_expr DOT simple_id assign_binop_op
 ##
-program: BIGINT DOT ID DASHEQ EOL WHEN
+program: BIGINT DOT LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 674.
 ##
@@ -6207,7 +6207,7 @@ program: BIGINT DOT ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT DOT ID DOT EOL ID DASHEQ WHEN
+program: BIGINT DOT LIDENT DOT EOL LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 656.
 ##
@@ -6217,7 +6217,7 @@ program: BIGINT DOT ID DOT EOL ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## record_get DOT eols simple_id assign_binop_op
 ##
-program: BIGINT DOT ID DOT EOL ID DASHEQ EOL WHEN
+program: BIGINT DOT LIDENT DOT EOL LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 658.
 ##
@@ -6233,7 +6233,7 @@ program: BIGINT DOT ID DOT EOL ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT DOT ID DOT ID DASHEQ WHEN
+program: BIGINT DOT LIDENT DOT LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 648.
 ##
@@ -6243,7 +6243,7 @@ program: BIGINT DOT ID DOT ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## record_get DOT simple_id assign_binop_op
 ##
-program: BIGINT DOT ID DOT ID DASHEQ EOL WHEN
+program: BIGINT DOT LIDENT DOT LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 650.
 ##
@@ -6259,7 +6259,7 @@ program: BIGINT DOT ID DOT ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LPAREN BIGINT RPAREN DOT EOL ID DASHEQ WHEN
+program: LPAREN BIGINT RPAREN DOT EOL LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 632.
 ##
@@ -6269,7 +6269,7 @@ program: LPAREN BIGINT RPAREN DOT EOL ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## paren_expr DOT eols simple_id assign_binop_op
 ##
-program: LPAREN BIGINT RPAREN DOT EOL ID DASHEQ EOL WHEN
+program: LPAREN BIGINT RPAREN DOT EOL LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 634.
 ##
@@ -6285,7 +6285,7 @@ program: LPAREN BIGINT RPAREN DOT EOL ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LPAREN BIGINT RPAREN DOT ID DASHEQ WHEN
+program: LPAREN BIGINT RPAREN DOT LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 624.
 ##
@@ -6295,7 +6295,7 @@ program: LPAREN BIGINT RPAREN DOT ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## paren_expr DOT simple_id assign_binop_op
 ##
-program: LPAREN BIGINT RPAREN DOT ID DASHEQ EOL WHEN
+program: LPAREN BIGINT RPAREN DOT LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 626.
 ##
@@ -6311,7 +6311,7 @@ program: LPAREN BIGINT RPAREN DOT ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LBRACE BIGINT RBRACE DOT EOL ID DASHEQ WHEN
+program: LBRACE BIGINT RBRACE DOT EOL LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 316.
 ##
@@ -6321,7 +6321,7 @@ program: LBRACE BIGINT RBRACE DOT EOL ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## braced_expr DOT eols simple_id assign_binop_op
 ##
-program: LBRACE BIGINT RBRACE DOT EOL ID DASHEQ EOL WHEN
+program: LBRACE BIGINT RBRACE DOT EOL LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 318.
 ##
@@ -6337,7 +6337,7 @@ program: LBRACE BIGINT RBRACE DOT EOL ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LBRACE BIGINT RBRACE DOT ID DASHEQ WHEN
+program: LBRACE BIGINT RBRACE DOT LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 308.
 ##
@@ -6347,7 +6347,7 @@ program: LBRACE BIGINT RBRACE DOT ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## braced_expr DOT simple_id assign_binop_op
 ##
-program: LBRACE BIGINT RBRACE DOT ID DASHEQ EOL WHEN
+program: LBRACE BIGINT RBRACE DOT LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 310.
 ##
@@ -6363,7 +6363,7 @@ program: LBRACE BIGINT RBRACE DOT ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT LBRACK BIGINT RBRACK DOT EOL ID DASHEQ WHEN
+program: BIGINT LBRACK BIGINT RBRACK DOT EOL LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 289.
 ##
@@ -6373,7 +6373,7 @@ program: BIGINT LBRACK BIGINT RBRACK DOT EOL ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## array_get DOT eols simple_id assign_binop_op
 ##
-program: BIGINT LBRACK BIGINT RBRACK DOT EOL ID DASHEQ EOL WHEN
+program: BIGINT LBRACK BIGINT RBRACK DOT EOL LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 291.
 ##
@@ -6389,7 +6389,7 @@ program: BIGINT LBRACK BIGINT RBRACK DOT EOL ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT LBRACK BIGINT RBRACK DOT ID DASHEQ WHEN
+program: BIGINT LBRACK BIGINT RBRACK DOT LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 281.
 ##
@@ -6399,7 +6399,7 @@ program: BIGINT LBRACK BIGINT RBRACK DOT ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## array_get DOT simple_id assign_binop_op
 ##
-program: BIGINT LBRACK BIGINT RBRACK DOT ID DASHEQ EOL WHEN
+program: BIGINT LBRACK BIGINT RBRACK DOT LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 283.
 ##
@@ -6415,7 +6415,7 @@ program: BIGINT LBRACK BIGINT RBRACK DOT ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT LPAREN RPAREN DOT EOL ID DASHEQ WHEN
+program: BIGINT LPAREN RPAREN DOT EOL LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 260.
 ##
@@ -6425,7 +6425,7 @@ program: BIGINT LPAREN RPAREN DOT EOL ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## app_expr DOT eols simple_id assign_binop_op
 ##
-program: BIGINT LPAREN RPAREN DOT EOL ID DASHEQ EOL WHEN
+program: BIGINT LPAREN RPAREN DOT EOL LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 262.
 ##
@@ -6441,7 +6441,7 @@ program: BIGINT LPAREN RPAREN DOT EOL ID DASHEQ EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: BIGINT LPAREN RPAREN DOT ID DASHEQ WHEN
+program: BIGINT LPAREN RPAREN DOT LIDENT DASHEQ WHEN
 ##
 ## Ends in an error in state: 252.
 ##
@@ -6451,7 +6451,7 @@ program: BIGINT LPAREN RPAREN DOT ID DASHEQ WHEN
 ## The known suffix of the stack is as follows:
 ## app_expr DOT simple_id assign_binop_op
 ##
-program: BIGINT LPAREN RPAREN DOT ID DASHEQ EOL WHEN
+program: BIGINT LPAREN RPAREN DOT LIDENT DASHEQ EOL WHEN
 ##
 ## Ends in an error in state: 254.
 ##
@@ -7080,14 +7080,14 @@ program: WASMI64 COLON WHILE
 
 Expected a type to complete the type annotation.
 
-program: WASMI64 COLON FUN ID ARROW EOL WHILE
+program: WASMI64 COLON FUN LIDENT ARROW EOL WHILE
 ##
 ## Ends in an error in state: 71.
 ##
-## typ -> FUN ID arrow . typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
+## typ -> FUN LIDENT arrow . typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN ID arrow
+## FUN LIDENT arrow
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -7117,14 +7117,14 @@ program: WASMI64 COLON FUN LPAREN RPAREN ARROW EOL WHILE
 
 Expected a type for the result of the function type.
 
-program: WASMI64 COLON FUN ID WHILE
+program: WASMI64 COLON FUN LIDENT WHILE
 ##
 ## Ends in an error in state: 68.
 ##
-## typ -> FUN ID . arrow typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
+## typ -> FUN LIDENT . arrow typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
-## FUN ID
+## FUN LIDENT
 ##
 program: WASMI64 COLON FUN LPAREN RPAREN WHILE
 ##
@@ -7139,7 +7139,7 @@ program: WASMI64 COLON FUN LPAREN RPAREN WHILE
 # This error message could never appear, as we only inject the FUN token _because_ there's an arrow
 Expected an arrow (->) followed by a type.
 
-program: WASMI64 COLON FUN LPAREN TYPEID RCARET
+program: WASMI64 COLON FUN LPAREN UIDENT RCARET
 ##
 ## Ends in an error in state: 113.
 ##
@@ -7152,7 +7152,7 @@ program: WASMI64 COLON FUN LPAREN TYPEID RCARET
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -7186,7 +7186,7 @@ program: WASMI64 COLON FUN WHILE
 ##
 ## Ends in an error in state: 67.
 ##
-## typ -> FUN . ID arrow typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
+## typ -> FUN . LIDENT arrow typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
 ## typ -> FUN . lparen option(typs) rparen arrow typ [ WHEN THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PLUSPLUS PLUS PIPEPIPE PIPE PERCENT NOTEQ LESSEQ LCARETLCARET LCARET ISNT IS GREATEREQ FROM EQUAL EQEQ EOL EOF ELSE DASH COMMA COLON CARET AS AMPAMP AMP ]
 ##
 ## The known suffix of the stack is as follows:
@@ -7196,7 +7196,7 @@ program: WASMI64 COLON FUN WHILE
 # This error can't appear as the FUN token wouldn't have been injected.
 Expected an identifier for a single-argument function or a comma-separated list of types surrounded by `(`/`)`.
 
-program: WASMI64 COLON LPAREN TYPEID COMMA EOL TYPEID COMMA EOL WHILE
+program: WASMI64 COLON LPAREN UIDENT COMMA EOL UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 104.
 ##
@@ -7214,7 +7214,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA EOL TYPEID COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
-program: WASMI64 COLON LPAREN TYPEID COMMA TYPEID COMMA EOL WHILE
+program: WASMI64 COLON LPAREN UIDENT COMMA UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 98.
 ##
@@ -7232,7 +7232,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA TYPEID COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ##
-program: WASMI64 COLON LPAREN TYPEID COMMA WHILE
+program: WASMI64 COLON LPAREN UIDENT COMMA WHILE
 ##
 ## Ends in an error in state: 96.
 ##
@@ -7248,7 +7248,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA WHILE
 
 Expected a type or an immediate `)` to complete the tuple type.
 
-program: WASMI64 COLON LPAREN TYPEID COMMA EOL TYPEID WHEN
+program: WASMI64 COLON LPAREN UIDENT COMMA EOL UIDENT WHEN
 ##
 ## Ends in an error in state: 103.
 ##
@@ -7263,12 +7263,12 @@ program: WASMI64 COLON LPAREN TYPEID COMMA EOL TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
 ##
-program: WASMI64 COLON LPAREN TYPEID COMMA TYPEID WHEN
+program: WASMI64 COLON LPAREN UIDENT COMMA UIDENT WHEN
 ##
 ## Ends in an error in state: 97.
 ##
@@ -7283,7 +7283,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -7291,7 +7291,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA TYPEID WHEN
 
 Expected a comma followed by another type or `)` to complete the tuple type.
 
-program: WASMI64 COLON LPAREN TYPEID COMMA EOL WHILE
+program: WASMI64 COLON LPAREN UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 102.
 ##
@@ -7311,7 +7311,7 @@ program: WASMI64 COLON LPAREN TYPEID COMMA EOL WHILE
 
 Expected a comma-separated list of types.
 
-program: WASMI64 COLON LPAREN TYPEID WHEN
+program: WASMI64 COLON LPAREN UIDENT WHEN
 ##
 ## Ends in an error in state: 94.
 ##
@@ -7329,14 +7329,14 @@ program: WASMI64 COLON LPAREN TYPEID WHEN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ##
 
 Expected `)` for a grouped type or a comma followed by more types for a tuple type.
 
-program: WASMI64 COLON TYPEID ARROW EOL WHILE
+program: WASMI64 COLON UIDENT ARROW EOL WHILE
 ##
 ## Ends in an error in state: 100.
 ##
@@ -7356,7 +7356,7 @@ program: WASMI64 COLON TYPEID ARROW EOL WHILE
 
 Expected a type for the result of the function type.
 
-program: WASMI64 COLON TYPEID LCARET EOL WHILE
+program: WASMI64 COLON UIDENT LCARET EOL WHILE
 ##
 ## Ends in an error in state: 75.
 ##
@@ -7376,7 +7376,7 @@ program: WASMI64 COLON TYPEID LCARET EOL WHILE
 
 Expected a comma-separated list of types.
 
-program: WASMI64 COLON TYPEID LCARET TYPEID RPAREN
+program: WASMI64 COLON UIDENT LCARET UIDENT RPAREN
 ##
 ## Ends in an error in state: 76.
 ##
@@ -7389,7 +7389,7 @@ program: WASMI64 COLON TYPEID LCARET TYPEID RPAREN
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,TYPEID)
+## In state 82, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,UIDENT)
 ## In state 72, spurious reduction of production data_typ -> type_id
 ## In state 99, spurious reduction of production typ -> data_typ
 ## In state 81, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
@@ -7399,7 +7399,7 @@ program: WASMI64 COLON TYPEID LCARET TYPEID RPAREN
 
 Expected `>` to complete the type.
 
-program: WASMI64 DOT ID LPAREN COMMA EOL WHILE
+program: WASMI64 DOT LIDENT LPAREN COMMA EOL WHILE
 ##
 ## Ends in an error in state: 442.
 ##
@@ -7417,7 +7417,7 @@ program: WASMI64 DOT ID LPAREN COMMA EOL WHILE
 ## In state 89, spurious reduction of production comma -> COMMA eols
 ## In state 264, spurious reduction of production option(comma) -> comma
 ##
-program: WASMI64 DOT ID LPAREN WASMI64 COMMA RBRACK
+program: WASMI64 DOT LIDENT LPAREN WASMI64 COMMA RBRACK
 ##
 ## Ends in an error in state: 445.
 ##
@@ -7536,7 +7536,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LPAREN WASMI64 COMMA RBRACK
 
 Expected `)` to complete the function call.
 
-program: WASMI64 DOT ID LPAREN UNDERSCORE
+program: WASMI64 DOT LIDENT LPAREN UNDERSCORE
 ##
 ## Ends in an error in state: 441.
 ##
@@ -7603,7 +7603,7 @@ program: WASMI64 LBRACK WASMI64 RBRACK LPAREN WHEN
 
 Expected a comma-separated list of expressions or `)` to complete the function call.
 
-program: WASMI64 DOT ID LPAREN WASMI64 THICKARROW
+program: WASMI64 DOT LIDENT LPAREN WASMI64 THICKARROW
 ##
 ## Ends in an error in state: 444.
 ##
