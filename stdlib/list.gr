@@ -568,8 +568,9 @@ export let unique = list => {
 export let zip = (list1, list2) => {
   let rec zipInner = (list1, list2, acc) => {
     match ((list1, list2)) {
-      ([first1, ...rest1], [first2, ...rest2]) => zipInner(rest1, rest2, [(first1, first2), ...acc]),
-      _ => acc
+      ([first1, ...rest1], [first2, ...rest2]) =>
+        zipInner(rest1, rest2, [(first1, first2), ...acc]),
+      _ => acc,
     }
   }
   reverse(zipInner(list1, list2, []))
@@ -598,8 +599,9 @@ export let zip = (list1, list2) => {
 export let zipWith = (fn, list1, list2) => {
   let rec zipWithInner = (list1, list2, acc) => {
     match ((list1, list2)) {
-      ([first1, ...rest1], [first2, ...rest2]) => zipWithInner(rest1, rest2, [fn(first1, first2), ...acc]),
-      _ => acc
+      ([first1, ...rest1], [first2, ...rest2]) =>
+        zipWithInner(rest1, rest2, [fn(first1, first2), ...acc]),
+      _ => acc,
     }
   }
   reverse(zipWithInner(list1, list2, []))
@@ -614,13 +616,9 @@ export let zipWith = (fn, list1, list2) => {
  * @since v0.5.3
  */
 export let unzip = list => {
-  reduceRight(
-    ((first, second), (firstUnzipped, secondUnzipped)) => {
-      ([first, ...firstUnzipped], [second, ...secondUnzipped])
-    },
-    ([], []),
-    list
-  )
+  reduceRight(((first, second), (firstUnzipped, secondUnzipped)) => {
+    ([first, ...firstUnzipped], [second, ...secondUnzipped])
+  }, ([], []), list)
 }
 
 /**
