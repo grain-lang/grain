@@ -177,6 +177,7 @@ export let indexOf = (search: String, string: String) => {
 export let lastIndexOf = (search: String, string: String) => {
   // The last possible index in the string given the length of the search
   let lastIndex = length(string) - length(search)
+  
   let (>) = WasmI32.gtU
   let (>=) = WasmI32.geU
   let (==) = WasmI32.eq
@@ -184,6 +185,7 @@ export let lastIndexOf = (search: String, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
+  
   let search = WasmI32.fromGrain(search)
   let string = WasmI32.fromGrain(string)
   let searchSize = WasmI32.load(search, 4n)
@@ -211,7 +213,6 @@ export let lastIndexOf = (search: String, string: String) => {
       }
       stringIndex -= 1n
     }
-    // Return The Result
     if (matchIndex == -1n) {
       None
     } else {
