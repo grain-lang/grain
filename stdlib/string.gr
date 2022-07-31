@@ -333,7 +333,7 @@ let _characterAt = (position, string: String) => {
  *
  * @example String.charCodeAt(5, "Hello world") == 32
  *
- * @since v0.5.2
+ * @since v0.5.3
  */
 @unsafe
 export let charCodeAt = (position, string: String) => {
