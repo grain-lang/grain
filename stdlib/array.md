@@ -439,6 +439,45 @@ Examples:
 Array.reduce((a, b) => a + b, 0, [> 1, 2, 3]) // 6
 ```
 
+### Array.**reduceRight**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+reduceRight : (((a, b) -> b), b, Array<a>) -> b
+```
+
+Combines all elements of an array using a reducer function,
+starting from the "end", or right side, of the array.
+
+In `Array.reduceRight(fn, initial, array)`, `fn` is called with
+each element of the array and an accumulator, and returns
+a new accumulator. The final value is the last accumulator
+returned. The accumulator starts with value `initial`.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, b) -> b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`initial`|`b`|The initial value to use for the accumulator on the first iteration|
+|`array`|`Array<a>`|The array to iterate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`b`|The final accumulator returned from `fn`|
+
+Examples:
+
+```grain
+Array.reduceRight((a, b) => b ++ a, "", [> "baz", "bar", "foo"]) // "foobarbaz"
+```
+
 ### Array.**reducei**
 
 <details disabled>
@@ -944,6 +983,50 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
+
+### Array.**zipWith**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+zipWith : (((a, b) -> c), Array<a>, Array<b>) -> Array<c>
+```
+
+Produces a new array filled with elements defined by applying a function on
+pairs from both given arrays. The first element will contain the result of
+applying the function to the first elements of each array, the second element
+will contain the result of applying the function to the second elements of
+each array, and so on.
+
+Calling this function with arrays of different sizes will cause the returned
+array to have the length of the smaller array.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, b) -> c`|The function to apply to pairs of elements|
+|`array1`|`Array<a>`|The array whose elements will each be passed to the function as the first argument|
+|`array2`|`Array<b>`|The array whose elements will each be passed to the function as the second argument|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Array<c>`|The new array containing elements derived from applying the function to pairs of input array elements|
+
+Examples:
+
+```grain
+Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
+```
+
+```grain
+Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
+```
 
 ### Array.**unzip**
 
