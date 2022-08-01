@@ -339,32 +339,34 @@ export let addBytesSlice =
     bytes: Bytes,
     buffer: Buffer,
   ) => {
-  let (-) = WasmI32.sub
-  let (<) = WasmI32.ltS
-  let (>) = WasmI32.gtS
-  let (>=) = WasmI32.geS
+  if (length != 0) {
+    let (-) = WasmI32.sub
+    let (<) = WasmI32.ltS
+    let (>) = WasmI32.gtS
+    let (>=) = WasmI32.geS
 
-  // bounds check start
-  let bytelen = WasmI32.load(WasmI32.fromGrain(bytes), 4n)
-  let srcOff = coerceNumberToWasmI32(start)
-  if (srcOff < 0n || srcOff >= bytelen) {
-    throw Exception.IndexOutOfBounds
+    // bounds check start
+    let bytelen = WasmI32.load(WasmI32.fromGrain(bytes), 4n)
+    let srcOff = coerceNumberToWasmI32(start)
+    if (srcOff < 0n || srcOff >= bytelen) {
+      throw Exception.IndexOutOfBounds
+    }
+
+    // bounds check length
+    let len = coerceNumberToWasmI32(length)
+    if (len < 0n || len > bytelen - srcOff) {
+      throw Exception.IndexOutOfBounds
+    }
+
+    autogrow(length, buffer)
+
+    let dstOff = coerceNumberToWasmI32(buffer.len)
+    let src = WasmI32.fromGrain(bytes)
+    let dst = WasmI32.fromGrain(buffer.data)
+    appendBytes(srcOff, dstOff, len, src, dst)
+
+    buffer.len += length
   }
-
-  // bounds check length
-  let len = coerceNumberToWasmI32(length)
-  if (len < 0n || len > bytelen - srcOff) {
-    throw Exception.IndexOutOfBounds
-  }
-
-  autogrow(length, buffer)
-
-  let dstOff = coerceNumberToWasmI32(buffer.len)
-  let src = WasmI32.fromGrain(bytes)
-  let dst = WasmI32.fromGrain(buffer.data)
-  appendBytes(srcOff, dstOff, len, src, dst)
-
-  buffer.len += length
 }
 
 /**

@@ -268,7 +268,9 @@ Buffer.addString("✨", buf2)
 Buffer.addBuffer(buf1, buf0)
 Buffer.addBuffer(buf2, buf0)
 assert Buffer.toString(buf0) == "✨🍩✨"
-
+let emptyBuffer = Buffer.make(0)
+Buffer.addBuffer(Buffer.make(0), emptyBuffer)
+assert emptyBuffer == Buffer.make(0)
 // addBufferSlice
 let buf0 = Buffer.make(0)
 let buf1 = Buffer.make(0)
