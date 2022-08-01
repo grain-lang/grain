@@ -282,32 +282,33 @@ module Exp = {
   let list = (~loc=?, ~attributes=?, a) => {
     let empty = ident(~loc?, ident_empty);
     let cons = ident(ident_cons);
-    let a = List.rev(a);
-    switch (a) {
-    | [] => empty
-    | [base, ...rest] =>
-      let base =
-        switch (base) {
-        | ListItem(expr) => apply(~attributes?, cons, [expr, empty])
-        | ListSpread(expr, _) => expr
-        };
-      List.fold_left(
-        (acc, expr) => {
-          switch (expr) {
-          | ListItem(expr) => apply(~attributes?, cons, [expr, acc])
-          | ListSpread(_, loc) =>
-            raise(
-              SyntaxError(
-                loc,
-                "A list spread can only appear at the end of a list.",
-              ),
-            )
-          }
-        },
-        base,
-        rest,
-      );
-    };
+    let list =
+      switch (List.rev(a)) {
+      | [] => empty
+      | [base, ...rest] =>
+        let base =
+          switch (base) {
+          | ListItem(expr) => apply(~attributes?, cons, [expr, empty])
+          | ListSpread(expr, _) => expr
+          };
+        List.fold_left(
+          (acc, expr) => {
+            switch (expr) {
+            | ListItem(expr) => apply(~attributes?, cons, [expr, acc])
+            | ListSpread(_, loc) =>
+              raise(
+                SyntaxError(
+                  loc,
+                  "A list spread can only appear at the end of a list.",
+                ),
+              )
+            }
+          },
+          base,
+          rest,
+        );
+      };
+    Option.fold(~none=list, ~some=loc => {...list, pexp_loc: loc}, loc);
   };
   let null = (~loc=?, ~attributes=?, ()) =>
     mk(~loc?, ~attributes?, PExpNull);
