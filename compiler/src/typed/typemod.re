@@ -984,7 +984,7 @@ let type_implementation = prog => {
   let (stritems, sg, finalenv) = type_module(initenv, prog);
   let (statements, env) = stritems;
   let simple_sg = simplify_signature(sg);
-  let filename = sourcefile; // TODO: I think this is okay
+  let filename = sourcefile; // TODO(1396): Don't use filepath as filename
   let coercion =
     Includemod.compunit(
       initenv,
