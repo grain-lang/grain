@@ -283,7 +283,7 @@ let getCodePoint = (ptr: WasmI32) => {
 }
 
 @unsafe
-let _characterAt = (position, string: String) => {
+let charAtHelp = (position, string: String) => {
   if (length(string) <= position || position < 0) {
     fail "Invalid offset: " ++ toString(position)
   }
@@ -325,7 +325,7 @@ let _characterAt = (position, string: String) => {
 }
 
 /**
- * Get the character code at the position in the input string.
+ * Get the Unicode code point at the position in the input string.
  *
  * @param position: The position to check
  * @param string: The string to search
@@ -337,7 +337,7 @@ let _characterAt = (position, string: String) => {
  */
 @unsafe
 export let charCodeAt = (position, string: String) => {
-  tagSimpleNumber(_characterAt(position, string))
+  tagSimpleNumber(charAtHelp(position, string))
 }
 
 /**
@@ -353,7 +353,7 @@ export let charCodeAt = (position, string: String) => {
  */
 @unsafe
 export let charAt = (position, string: String) => {
-  tagChar(_characterAt(position, string))
+  tagChar(charAtHelp(position, string))
 }
 
 @unsafe
