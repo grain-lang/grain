@@ -553,10 +553,7 @@ export primitive unbox: Box<a> -> a = "@unbox"
  * @since v0.4.0
  */
 export let cons = (a, b) =>
-  [
-    a,
-    ...b
-  ] // TODO(#802): Remove workaround after 802 is completed
+  [a, ...b] // TODO(#802): Remove workaround after 802 is completed
 /**
  * The empty list syntax (`[]`) provided as a value.
  *
