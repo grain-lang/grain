@@ -14,14 +14,14 @@ functions › dup_func
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $foo_1132 (mut i32) (i32.const 0))
+ (global $foo_1135 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $foo_1132 (param $0 i32) (result i32)
+ (func $foo_1135 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -62,7 +62,7 @@ functions › dup_func
     (local.set $0
      (block $compile_block.6 (result i32)
       (block $compile_store.5
-       (global.set $foo_1132
+       (global.set $foo_1135
         (tuple.extract 0
          (tuple.make
           (block $allocate_closure.3 (result i32)
@@ -91,21 +91,21 @@ functions › dup_func
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $foo_1132)
+           (global.get $foo_1135)
           )
          )
         )
        )
        (block $do_backpatches.4
         (local.set $0
-         (global.get $foo_1132)
+         (global.get $foo_1135)
         )
        )
       )
-      (call $foo_1132
+      (call $foo_1135
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $foo_1132)
+        (global.get $foo_1135)
        )
       )
      )

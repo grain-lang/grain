@@ -9,9 +9,9 @@ imports › import_with_export_multiple
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$sameExport\" \"GRAIN$EXPORT$foo\" (global $foo_1131 (mut i32)))
+ (import \"GRAIN$MODULE$sameExport\" \"GRAIN$EXPORT$foo\" (global $foo_1134 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$sameExport\" \"foo\" (func $foo_1131 (param i32) (result i32)))
+ (import \"GRAIN$MODULE$sameExport\" \"foo\" (func $foo_1134 (param i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -29,10 +29,10 @@ imports › import_with_export_multiple
    (block $cleanup_locals.2 (result i32)
     (local.set $0
      (block $compile_block.1 (result i32)
-      (call $foo_1131
+      (call $foo_1134
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $foo_1131)
+        (global.get $foo_1134)
        )
       )
      )
