@@ -4,7 +4,7 @@ import * from "float64"
 // smoke test:
 assert gt(infinity, 100000000.d)
 // test infinity-specific semantics:
-assert toNumber(infinity) == (toNumber(infinity) - 1)
+assert toNumber(infinity) == toNumber(infinity) - 1
 assert nan != nan
 
 assert pi == 3.141592653589793d

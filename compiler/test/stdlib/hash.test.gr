@@ -6,7 +6,7 @@ import Array from "array"
 import String from "string"
 import Bytes from "bytes"
 
-let uniq = (list) => {
+let uniq = list => {
   let mut itemsSeen = []
 
   List.reduce((acc, item) => {
@@ -17,9 +17,34 @@ let uniq = (list) => {
 }
 
 let numbers = [
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  10, 20, 30, 40, 50, 60, 70, 80, 90,
-  101, 202, 303, 404, 505, 606, 707, 808, 909
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  20,
+  30,
+  40,
+  50,
+  60,
+  70,
+  80,
+  90,
+  101,
+  202,
+  303,
+  404,
+  505,
+  606,
+  707,
+  808,
+  909,
 ]
 assert uniq(List.map(n => Hash.hash(n), numbers))
 
@@ -31,30 +56,75 @@ assert Hash.hash(100.0d) == Hash.hash(100.0d)
 assert Hash.hash(100L) == Hash.hash(100L)
 assert Hash.hash(2/3) == Hash.hash(2/3)
 
-
 let strings = [
-  "", "f", "fo", "foo", "foo ", "foo b", "foo ba", "foo bar", "foo bar!",
-  "deer", "reed", "read", "dear", "bad", "dab", "fee", "feed", "fed",
-  "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "!", "@", "#", "$", "%"
+  "",
+  "f",
+  "fo",
+  "foo",
+  "foo ",
+  "foo b",
+  "foo ba",
+  "foo bar",
+  "foo bar!",
+  "deer",
+  "reed",
+  "read",
+  "dear",
+  "bad",
+  "dab",
+  "fee",
+  "feed",
+  "fed",
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "!",
+  "@",
+  "#",
+  "$",
+  "%",
 ]
 assert uniq(List.map(n => Hash.hash(n), strings))
 
 assert Hash.hash("") == Hash.hash("")
-assert Hash.hash("grain > ore > wool > lumber > brick") == Hash.hash("grain > ore > wool > lumber > brick")
+assert Hash.hash("grain > ore > wool > lumber > brick") ==
+Hash.hash("grain > ore > wool > lumber > brick")
 
-
-let chars = String.explode("!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼")
+let chars = String.explode(
+  "!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼"
+)
 let charList = Array.toList(chars)
 
 assert uniq(List.map(Hash.hash, charList))
-Array.forEach((c) => assert Hash.hash(c) == Hash.hash(c), chars)
+Array.forEach(c => assert Hash.hash(c) == Hash.hash(c), chars)
 
-enum Variants { A, B, C, D(Number, List<Variants>), E(String) }
+enum Variants {
+  A,
+  B,
+  C,
+  D(Number, List<Variants>),
+  E(String),
+}
 
 let variants = [
-  A, B, C,
-  D(1, []), D(2, []), D(1, [A]), D(1, [B]), D(1, [A, B]),
-  E(""), E("dab"), E("bad")
+  A,
+  B,
+  C,
+  D(1, []),
+  D(2, []),
+  D(1, [A]),
+  D(1, [B]),
+  D(1, [A, B]),
+  E(""),
+  E("dab"),
+  E("bad"),
 ]
 assert uniq(List.map(n => Hash.hash(n), variants))
 
@@ -68,7 +138,7 @@ let tuples = [
   (12, A, "foo"),
   (12, B, "foo"),
   (12, B, "gr"),
-  (12, E("wasm"), "gr")
+  (12, E("wasm"), "gr"),
 ]
 assert uniq(List.map(n => Hash.hash(n), tuples))
 
@@ -78,7 +148,7 @@ assert Hash.hash((0, A, "")) == Hash.hash((0, A, ""))
 record Rec {
   num: Number,
   var: Variants,
-  str: String
+  str: String,
 }
 
 let recs = [
@@ -87,12 +157,14 @@ let recs = [
   { num: 12, var: A, str: "foo" },
   { num: 12, var: B, str: "foo" },
   { num: 12, var: B, str: "gr" },
-  { num: 12, var: E("wasm"), str: "gr" }
+  { num: 12, var: E("wasm"), str: "gr" },
 ]
 assert uniq(List.map(n => Hash.hash(n), recs))
 
-assert Hash.hash({ num: 12, var: E("wasm"), str: "gr" }) == Hash.hash({ num: 12, var: E("wasm"), str: "gr" })
-assert Hash.hash({ num: 0, var: A, str: "" }) == Hash.hash({ num: 0, var: A, str: "" })
+assert Hash.hash({ num: 12, var: E("wasm"), str: "gr" }) ==
+Hash.hash({ num: 12, var: E("wasm"), str: "gr" })
+assert Hash.hash({ num: 0, var: A, str: "" }) ==
+Hash.hash({ num: 0, var: A, str: "" })
 
 assert Hash.hash(Bytes.fromString("foo")) == Hash.hash(Bytes.fromString("foo"))
 assert Hash.hash(Bytes.fromString("foo")) != Hash.hash(Bytes.fromString("bar"))

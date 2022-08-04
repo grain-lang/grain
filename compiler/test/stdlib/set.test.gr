@@ -3,8 +3,16 @@ import List from "list"
 import Array from "array"
 
 // Data types used in multiple tests
-enum Resource { Grain, Sheep, Brick, Wood }
-record ResourceData { name: String, emoji: String }
+enum Resource {
+  Grain,
+  Sheep,
+  Brick,
+  Wood,
+}
+record ResourceData {
+  name: String,
+  emoji: String,
+}
 
 // Set.isEmpty
 
@@ -82,8 +90,8 @@ let emptySet = Set.make()
 
 let filterTestSet = makeTestSet()
 
-Set.filter((key) => fail "Shouldn't be called", emptySet)
-Set.filter((key) => key == Sheep, filterTestSet)
+Set.filter(key => fail "Shouldn't be called", emptySet)
+Set.filter(key => key == Sheep, filterTestSet)
 
 assert !Set.contains(Grain, filterTestSet)
 assert Set.contains(Sheep, filterTestSet)
@@ -93,8 +101,8 @@ assert !Set.contains(Brick, filterTestSet)
 
 let rejectTestSet = makeTestSet()
 
-Set.reject((key) => fail "Shouldn't be called", emptySet)
-Set.reject((key) => key == Sheep, rejectTestSet)
+Set.reject(key => fail "Shouldn't be called", emptySet)
+Set.reject(key => key == Sheep, rejectTestSet)
 
 assert Set.contains(Grain, rejectTestSet)
 assert !Set.contains(Sheep, rejectTestSet)
@@ -116,7 +124,7 @@ let result = Set.reduce((acc, key) => {
     Grain => void,
     Sheep => void,
     Brick => void,
-    _ => fail "Set.reduce() should not contain this value."
+    _ => fail "Set.reduce() should not contain this value.",
   }
   [key, ...acc]
 }, [], reduceTestSet)
@@ -130,17 +138,17 @@ assert List.contains(Brick, result)
 
 let forEachTestSet = makeTestSet()
 
-Set.forEach((key) => fail "Shouldn't be called", emptySet)
+Set.forEach(key => fail "Shouldn't be called", emptySet)
 
 let mut called = 0
 
-Set.forEach((key) => {
+Set.forEach(key => {
   called += 1
   match (key) {
     Grain => void,
     Sheep => void,
     Brick => void,
-    _ => fail "Set.forEach() should not contain this value."
+    _ => fail "Set.forEach() should not contain this value.",
   }
 }, forEachTestSet)
 
@@ -225,25 +233,25 @@ assert Array.contains(4, r)
 // Resizes the map when it grows
 // TODO(#190): Don't use these internals, as they need to change after 190 is fixed
 
-let resize = Set.makeSized(1);
+let resize = Set.makeSized(1)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == (0, 1);
+assert Set.getInternalStats(resize) == (0, 1)
 
-Set.add("🌾", resize);
-Set.add("🐑", resize);
-
-// (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == (2, 1);
-
-Set.add("🧱", resize);
+Set.add("🌾", resize)
+Set.add("🐑", resize)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == (3, 2);
+assert Set.getInternalStats(resize) == (2, 1)
+
+Set.add("🧱", resize)
+
+// (nodeCount, bucketLength)
+assert Set.getInternalStats(resize) == (3, 2)
 
 // Regression tests for https://github.com/grain-lang/grain/issues/497
 
 let largeSet = Set.fromArray(Array.init(128, i => i))
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(largeSet) == (128, 64);
+assert Set.getInternalStats(largeSet) == (128, 64)

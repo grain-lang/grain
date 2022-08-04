@@ -1,396 +1,409 @@
-import Map from "map";
-import List from "list";
-import Array from "array";
+import Map from "map"
+import List from "list"
+import Array from "array"
 
 // Data types used in multiple tests
-enum Resource { Grain, Sheep, Brick, Wood };
-record ResourceData { name: String, emoji: String }
+enum Resource {
+  Grain,
+  Sheep,
+  Brick,
+  Wood,
+}
+record ResourceData {
+  name: String,
+  emoji: String,
+}
 
 // Map.isEmpty()
 
-let e = Map.make();
+let e = Map.make()
 
-assert Map.isEmpty(e);
-Map.set("🌾", "🌾", e);
-assert !Map.isEmpty(e);
+assert Map.isEmpty(e)
+Map.set("🌾", "🌾", e)
+assert !Map.isEmpty(e)
 
 // Map.size()
 
-let s = Map.make();
+let s = Map.make()
 
-Map.set("🌾", 1, s);
-Map.set("🐑", 2, s);
-Map.set("🧱", 3, s);
+Map.set("🌾", 1, s)
+Map.set("🐑", 2, s)
+Map.set("🧱", 3, s)
 
-assert Map.size(s) == 3;
+assert Map.size(s) == 3
 
 // Map.clear()
 
-let c = Map.make();
+let c = Map.make()
 
-Map.set("🌾", 1, c);
-Map.set("🐑", 2, c);
-Map.set("🧱", 3, c);
+Map.set("🌾", 1, c)
+Map.set("🐑", 2, c)
+Map.set("🧱", 3, c)
 
-assert !Map.isEmpty(c);
+assert !Map.isEmpty(c)
 
-assert Map.clear(c) == void;
+assert Map.clear(c) == void
 
-assert Map.isEmpty(c);
+assert Map.isEmpty(c)
 
 // Map.contains()
 
-let h = Map.make();
+let h = Map.make()
 
-Map.set("🌾", 1, h);
-Map.set("🐑", 2, h);
-Map.set("🧱", 3, h);
+Map.set("🌾", 1, h)
+Map.set("🐑", 2, h)
+Map.set("🧱", 3, h)
 
-assert Map.contains("🌾", h);
-assert Map.contains("🐑", h);
-assert Map.contains("🧱", h);
-assert !Map.contains("🌳", h);
+assert Map.contains("🌾", h)
+assert Map.contains("🐑", h)
+assert Map.contains("🧱", h)
+assert !Map.contains("🌳", h)
 
 // Map.set() & Map.get()
 
 // With Number keys
-let nums = Map.make();
+let nums = Map.make()
 
-assert Map.set(1, "🌾", nums) == void;
-assert Map.set(2, "🐑", nums) == void;
-assert Map.set(3, "🧱", nums) == void;
+assert Map.set(1, "🌾", nums) == void
+assert Map.set(2, "🐑", nums) == void
+assert Map.set(3, "🧱", nums) == void
 
-assert Map.get(1, nums) == Some("🌾");
-assert Map.get(2, nums) == Some("🐑");
-assert Map.get(3, nums) == Some("🧱");
-assert Map.get(4, nums) == None;
+assert Map.get(1, nums) == Some("🌾")
+assert Map.get(2, nums) == Some("🐑")
+assert Map.get(3, nums) == Some("🧱")
+assert Map.get(4, nums) == None
 
 // With String keys
-let strs = Map.make();
+let strs = Map.make()
 
-assert Map.set("🌾", 1, strs) == void;
-assert Map.set("🐑", 2, strs) == void;
-assert Map.set("🧱", 3, strs) == void;
+assert Map.set("🌾", 1, strs) == void
+assert Map.set("🐑", 2, strs) == void
+assert Map.set("🧱", 3, strs) == void
 
-assert Map.get("🌾", strs) == Some(1);
-assert Map.get("🐑", strs) == Some(2);
-assert Map.get("🧱", strs) == Some(3);
-assert Map.get("🌳", strs) == None;
+assert Map.get("🌾", strs) == Some(1)
+assert Map.get("🐑", strs) == Some(2)
+assert Map.get("🧱", strs) == Some(3)
+assert Map.get("🌳", strs) == None
 
 // With variant keys
-let vars = Map.make();
+let vars = Map.make()
 
-assert Map.set(Grain, "🌾", vars) == void;
-assert Map.set(Sheep, "🐑", vars) == void;
-assert Map.set(Brick, "🧱", vars) == void;
+assert Map.set(Grain, "🌾", vars) == void
+assert Map.set(Sheep, "🐑", vars) == void
+assert Map.set(Brick, "🧱", vars) == void
 
-assert Map.get(Grain, vars) == Some("🌾");
-assert Map.get(Sheep, vars) == Some("🐑");
-assert Map.get(Brick, vars) == Some("🧱");
-assert Map.get(Wood, vars) == None;
+assert Map.get(Grain, vars) == Some("🌾")
+assert Map.get(Sheep, vars) == Some("🐑")
+assert Map.get(Brick, vars) == Some("🧱")
+assert Map.get(Wood, vars) == None
 
 // With record keys
-let recs = Map.make();
+let recs = Map.make()
 
-assert Map.set({ name: "Grain", emoji: "🌾" }, 1, recs) == void;
-assert Map.set({ name: "Sheep", emoji: "🐑" }, 2, recs) == void;
-assert Map.set({ name: "Brick", emoji: "🧱" }, 3, recs) == void;
+assert Map.set({ name: "Grain", emoji: "🌾" }, 1, recs) == void
+assert Map.set({ name: "Sheep", emoji: "🐑" }, 2, recs) == void
+assert Map.set({ name: "Brick", emoji: "🧱" }, 3, recs) == void
 
-assert Map.get({ name: "Grain", emoji: "🌾" }, recs) == Some(1);
-assert Map.get({ name: "Sheep", emoji: "🐑" }, recs) == Some(2);
-assert Map.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3);
-assert Map.get({ name: "Wood", emoji: "🌳" }, recs) == None;
+assert Map.get({ name: "Grain", emoji: "🌾" }, recs) == Some(1)
+assert Map.get({ name: "Sheep", emoji: "🐑" }, recs) == Some(2)
+assert Map.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3)
+assert Map.get({ name: "Wood", emoji: "🌳" }, recs) == None
 
 // Overwriting data
-let o = Map.make();
+let o = Map.make()
 
-assert Map.set(1, "🐑", o) == void;
-assert Map.set(1, "🌾", o) == void;
+assert Map.set(1, "🐑", o) == void
+assert Map.set(1, "🌾", o) == void
 
-assert Map.get(1, o) == Some("🌾");
+assert Map.get(1, o) == Some("🌾")
 
 // Map.remove()
 
-let r = Map.make();
+let r = Map.make()
 
-Map.set("🌾", 1, r);
-Map.set("🐑", 2, r);
-Map.set("🧱", 3, r);
+Map.set("🌾", 1, r)
+Map.set("🐑", 2, r)
+Map.set("🧱", 3, r)
 
-assert Map.size(r) == 3;
+assert Map.size(r) == 3
 
-assert Map.remove("🐑", r) == void;
+assert Map.remove("🐑", r) == void
 
-assert Map.size(r) == 2;
-assert Map.get("🐑", r) == None;
+assert Map.size(r) == 2
+assert Map.get("🐑", r) == None
 
-assert Map.remove("🌳", r) == void;
+assert Map.remove("🌳", r) == void
 
-assert Map.size(r) == 2;
+assert Map.size(r) == 2
 
-assert Map.remove("🌾", r) == void;
-assert Map.get("🌾", r) == None;
+assert Map.remove("🌾", r) == void
+assert Map.get("🌾", r) == None
 
-assert Map.remove("🧱", r) == void;
-assert Map.get("🧱", r) == None;
+assert Map.remove("🧱", r) == void
+assert Map.get("🧱", r) == None
 
-assert Map.isEmpty(r);
+assert Map.isEmpty(r)
 
 // Map.forEach()
 
-let fe = Map.make();
+let fe = Map.make()
 
-Map.set(Grain, "🌾", fe);
-Map.set(Sheep, "🐑", fe);
-Map.set(Brick, "🧱", fe);
+Map.set(Grain, "🌾", fe)
+Map.set(Sheep, "🐑", fe)
+Map.set(Brick, "🧱", fe)
 
-let mut called = 0;
+let mut called = 0
 
 Map.forEach((key, value) => {
-  called += 1;
+  called += 1
   match (key) {
     Grain => assert value == "🌾",
     Sheep => assert value == "🐑",
     Brick => assert value == "🧱",
-    _ => fail "Map.forEach() should not contain this value."
+    _ => fail "Map.forEach() should not contain this value.",
   }
-}, fe);
+}, fe)
 
-assert called == 3;
+assert called == 3
 
 // Map.reduce()
 
-let r = Map.make();
+let r = Map.make()
 
-Map.set(Grain, 1, r);
-Map.set(Sheep, 2, r);
-Map.set(Brick, 3, r);
+Map.set(Grain, 1, r)
+Map.set(Sheep, 2, r)
+Map.set(Brick, 3, r)
 
-let mut called = 0;
+let mut called = 0
 
 let result = Map.reduce((acc, key, value) => {
-  called += 1;
+  called += 1
   match (key) {
     Grain => assert value == 1,
     Sheep => assert value == 2,
     Brick => assert value == 3,
-    _ => fail "Map.reduce() should not contain this value."
-  };
+    _ => fail "Map.reduce() should not contain this value.",
+  }
   acc + value
-}, 0, r);
+}, 0, r)
 
-assert called == 3;
-assert result == 6;
+assert called == 3
+assert result == 6
 
 // Map.keys() & Map.values();
 
-let kvs = Map.make();
+let kvs = Map.make()
 
-Map.set(Grain, "🌾", kvs);
-Map.set(Sheep, "🐑", kvs);
-Map.set(Brick, "🧱", kvs);
+Map.set(Grain, "🌾", kvs)
+Map.set(Sheep, "🐑", kvs)
+Map.set(Brick, "🧱", kvs)
 
-let keys = Map.keys(kvs);
-
-// No order is guaranteed
-assert List.contains(Grain, keys);
-assert List.contains(Sheep, keys);
-assert List.contains(Brick, keys);
-assert !List.contains(Wood, keys);
-
-let vals = Map.values(kvs);
+let keys = Map.keys(kvs)
 
 // No order is guaranteed
-assert List.contains("🌾", vals);
-assert List.contains("🐑", vals);
-assert List.contains("🧱", vals);
-assert !List.contains("🌳", vals);
+assert List.contains(Grain, keys)
+assert List.contains(Sheep, keys)
+assert List.contains(Brick, keys)
+assert !List.contains(Wood, keys)
+
+let vals = Map.values(kvs)
+
+// No order is guaranteed
+assert List.contains("🌾", vals)
+assert List.contains("🐑", vals)
+assert List.contains("🧱", vals)
+assert !List.contains("🌳", vals)
 
 // Map.toList()
 
-let tl = Map.make();
+let tl = Map.make()
 
-Map.set(Grain, "🌾", tl);
-Map.set(Sheep, "🐑", tl);
-Map.set(Brick, "🧱", tl);
+Map.set(Grain, "🌾", tl)
+Map.set(Sheep, "🐑", tl)
+Map.set(Brick, "🧱", tl)
 
-let lis = Map.toList(tl);
+let lis = Map.toList(tl)
 
 // No order is guaranteed
-assert List.contains((Grain, "🌾"), lis);
-assert List.contains((Sheep, "🐑"), lis);
-assert List.contains((Brick, "🧱"), lis);
-assert !List.contains((Wood, "🌳"), lis);
+assert List.contains((Grain, "🌾"), lis)
+assert List.contains((Sheep, "🐑"), lis)
+assert List.contains((Brick, "🧱"), lis)
+assert !List.contains((Wood, "🌳"), lis)
 
 // Map.fromList()
 
-let fl = Map.fromList([
-  (Grain, "🌾"),
-  (Sheep, "🐑"),
-  (Brick, "🧱")
-]);
+let fl = Map.fromList([(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
 
-assert Map.contains(Grain, fl);
-assert Map.contains(Sheep, fl);
-assert Map.contains(Brick, fl);
-assert !Map.contains(Wood, fl);
+assert Map.contains(Grain, fl)
+assert Map.contains(Sheep, fl)
+assert Map.contains(Brick, fl)
+assert !Map.contains(Wood, fl)
 
 // Map.toArray()
 
-let ta = Map.make();
+let ta = Map.make()
 
-Map.set(Grain, "🌾", ta);
-Map.set(Sheep, "🐑", ta);
-Map.set(Brick, "🧱", ta);
+Map.set(Grain, "🌾", ta)
+Map.set(Sheep, "🐑", ta)
+Map.set(Brick, "🧱", ta)
 
-let arr = Map.toArray(ta);
+let arr = Map.toArray(ta)
 
 // No order is guaranteed
-assert Array.contains((Grain, "🌾"), arr);
-assert Array.contains((Sheep, "🐑"), arr);
-assert Array.contains((Brick, "🧱"), arr);
-assert !Array.contains((Wood, "🌳"), arr);
+assert Array.contains((Grain, "🌾"), arr)
+assert Array.contains((Sheep, "🐑"), arr)
+assert Array.contains((Brick, "🧱"), arr)
+assert !Array.contains((Wood, "🌳"), arr)
 
 // Map.fromArray()
 
-let fa = Map.fromArray([> (Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")]);
+let fa = Map.fromArray([> (Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
 
-assert Map.contains(Grain, fa);
-assert Map.contains(Sheep, fa);
-assert Map.contains(Brick, fa);
-assert !Map.contains(Wood, fa);
+assert Map.contains(Grain, fa)
+assert Map.contains(Sheep, fa)
+assert Map.contains(Brick, fa)
+assert !Map.contains(Wood, fa)
 
 // Resizes the map when it grows
 // TODO(#190): Don't use these internals, as they need to change after 190 is fixed
 
-let resize = Map.makeSized(1);
+let resize = Map.makeSized(1)
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(resize) == (0, 1);
+assert Map.getInternalStats(resize) == (0, 1)
 
-Map.set("🌾", 1, resize);
-Map.set("🐑", 1, resize);
-
-// (nodeCount, bucketLength)
-assert Map.getInternalStats(resize) == (2, 1);
-
-Map.set("🧱", 1, resize);
+Map.set("🌾", 1, resize)
+Map.set("🐑", 1, resize)
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(resize) == (3, 2);
+assert Map.getInternalStats(resize) == (2, 1)
+
+Map.set("🧱", 1, resize)
+
+// (nodeCount, bucketLength)
+assert Map.getInternalStats(resize) == (3, 2)
 
 // Regression tests for https://github.com/grain-lang/grain/issues/497
 
 let largeMap = Map.fromArray(Array.init(128, i => (i, i)))
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(largeMap) == (128, 64);
+assert Map.getInternalStats(largeMap) == (128, 64)
 
 // Map.filter()
 
-let makeFilterTestMap = () => Map.fromList([
-  (Grain, "g"),
-  (Sheep, "s"),
-  (Brick, "b")
-]);
+let makeFilterTestMap = () =>
+  Map.fromList([(Grain, "g"), (Sheep, "s"), (Brick, "b")])
 
-let filterTestMap = makeFilterTestMap();
+let filterTestMap = makeFilterTestMap()
 
-Map.filter((key, value) => key == Sheep, filterTestMap);
+Map.filter((key, value) => key == Sheep, filterTestMap)
 
-assert !Map.contains(Grain, filterTestMap);
-assert Map.contains(Sheep, filterTestMap);
-assert !Map.contains(Brick, filterTestMap);
+assert !Map.contains(Grain, filterTestMap)
+assert Map.contains(Sheep, filterTestMap)
+assert !Map.contains(Brick, filterTestMap)
 
-let filterTestMap = makeFilterTestMap();
+let filterTestMap = makeFilterTestMap()
 
-Map.filter((key, value) => value == "b" || value == "s", filterTestMap);
+Map.filter((key, value) => value == "b" || value == "s", filterTestMap)
 
-assert !Map.contains(Grain, filterTestMap);
-assert Map.contains(Sheep, filterTestMap);
-assert Map.contains(Brick, filterTestMap);
+assert !Map.contains(Grain, filterTestMap)
+assert Map.contains(Sheep, filterTestMap)
+assert Map.contains(Brick, filterTestMap)
 
-let filterTestMap = makeFilterTestMap();
+let filterTestMap = makeFilterTestMap()
 
-Map.filter((key, value) => value == "invalid", filterTestMap);
+Map.filter((key, value) => value == "invalid", filterTestMap)
 
-assert Map.size(filterTestMap) == 0;
+assert Map.size(filterTestMap) == 0
 
-let filterTestMap = makeFilterTestMap();
+let filterTestMap = makeFilterTestMap()
 
-Map.filter((key, value) => true, filterTestMap);
+Map.filter((key, value) => true, filterTestMap)
 
-assert Map.size(filterTestMap) == 3;
+assert Map.size(filterTestMap) == 3
 
 // Regression tests for https://github.com/grain-lang/grain/issues/350
 
 let makeFilterTestMap = () => {
-  let map = Map.make();
-  Map.set(Grain, "g", map);
-  Map.set(Sheep, "s", map);
-  Map.set(Brick, "b", map);
+  let map = Map.make()
+  Map.set(Grain, "g", map)
+  Map.set(Sheep, "s", map)
+  Map.set(Brick, "b", map)
   map
 }
 
-let filterTestMap = makeFilterTestMap();
+let filterTestMap = makeFilterTestMap()
 
-Map.filter((key, value) => key == Sheep, filterTestMap);
+Map.filter((key, value) => key == Sheep, filterTestMap)
 
-assert !Map.contains(Grain, filterTestMap);
-assert Map.contains(Sheep, filterTestMap);
-assert !Map.contains(Brick, filterTestMap);
+assert !Map.contains(Grain, filterTestMap)
+assert Map.contains(Sheep, filterTestMap)
+assert !Map.contains(Brick, filterTestMap)
 
 // Map.reject()
 
-let rejectTestMap = makeFilterTestMap();
+let rejectTestMap = makeFilterTestMap()
 
-Map.reject((key, value) => key == Sheep, rejectTestMap);
+Map.reject((key, value) => key == Sheep, rejectTestMap)
 
-assert Map.contains(Grain, rejectTestMap);
-assert !Map.contains(Sheep, rejectTestMap);
-assert Map.contains(Brick, rejectTestMap);
+assert Map.contains(Grain, rejectTestMap)
+assert !Map.contains(Sheep, rejectTestMap)
+assert Map.contains(Brick, rejectTestMap)
 
-let rejectTestMap = makeFilterTestMap();
+let rejectTestMap = makeFilterTestMap()
 
-Map.reject((key, value) => value == "b" || value == "s", rejectTestMap);
+Map.reject((key, value) => value == "b" || value == "s", rejectTestMap)
 
-assert Map.contains(Grain, rejectTestMap);
-assert !Map.contains(Sheep, rejectTestMap);
-assert !Map.contains(Brick, rejectTestMap);
+assert Map.contains(Grain, rejectTestMap)
+assert !Map.contains(Sheep, rejectTestMap)
+assert !Map.contains(Brick, rejectTestMap)
 
-let rejectTestMap = makeFilterTestMap();
+let rejectTestMap = makeFilterTestMap()
 
-Map.reject((key, value) => true, rejectTestMap);
+Map.reject((key, value) => true, rejectTestMap)
 
-assert Map.size(rejectTestMap) == 0;
+assert Map.size(rejectTestMap) == 0
 
-let rejectTestMap = makeFilterTestMap();
+let rejectTestMap = makeFilterTestMap()
 
-Map.reject((key, value) => false, rejectTestMap);
+Map.reject((key, value) => false, rejectTestMap)
 
-assert Map.size(rejectTestMap) == 3;
+assert Map.size(rejectTestMap) == 3
 
 // Map.update()
 
-let toUpdate = Map.fromList([("a", 1), ("b", 2), ("c", 3)]);
+let toUpdate = Map.fromList([("a", 1), ("b", 2), ("c", 3)])
 
-Map.update("b", (old) => {
-  assert old == Some(2)
-  Some(4)
-}, toUpdate);
+Map.update(
+  "b",
+  old => {
+    assert old == Some(2)
+    Some(4)
+  },
+  toUpdate
+)
 
-assert Map.get("b", toUpdate) == Some(4);
+assert Map.get("b", toUpdate) == Some(4)
 
-Map.update("d", (old) => {
-  assert old == None
-  Some(10)
-}, toUpdate);
+Map.update(
+  "d",
+  old => {
+    assert old == None
+    Some(10)
+  },
+  toUpdate
+)
 
-assert Map.get("d", toUpdate) == Some(10);
+assert Map.get("d", toUpdate) == Some(10)
 
-Map.update("c", (old) => {
-  assert old == Some(3)
-  None
-}, toUpdate);
+Map.update(
+  "c",
+  old => {
+    assert old == Some(3)
+    None
+  },
+  toUpdate
+)
 
-assert Map.contains("c", toUpdate) == false;
+assert Map.contains("c", toUpdate) == false

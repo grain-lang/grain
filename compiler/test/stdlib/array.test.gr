@@ -1,7 +1,7 @@
 import Array from "array"
 import String from "string"
 
-let arr = [> 1, 2, 3,]
+let arr = [> 1, 2, 3]
 
 // Array.get
 
@@ -58,7 +58,7 @@ assert !(Array.copy(arr2) is arr2)
 let arr1 = [> 1, 2, 3]
 let mut sum = 0
 
-let sentinel = (_n) => {
+let sentinel = _n => {
   sum = 42
 }
 
@@ -66,8 +66,8 @@ Array.cycle(sentinel, 3, [>])
 
 assert sum == 0
 
-let addToSum = (n) => {
-  sum = sum + n
+let addToSum = n => {
+  sum += n
 }
 
 Array.cycle(addToSum, 2, arr1)
@@ -76,7 +76,7 @@ assert sum == 12
 
 let arr2 = [> "a", "b", "c"]
 let mut word = ""
-let addToWord = (n) => {
+let addToWord = n => {
   word = word ++ n
 }
 
@@ -98,7 +98,7 @@ assert sum == 0
 let arr1 = [> 1, 2, 3]
 let mut sum = 0
 
-let sentinel = (_n) => {
+let sentinel = _n => {
   sum = 42
 }
 
@@ -106,8 +106,8 @@ Array.forEach(sentinel, [>])
 
 assert sum == 0
 
-let addToSum = (n) => {
-  sum = sum + n
+let addToSum = n => {
+  sum += n
 }
 
 Array.forEach(addToSum, arr1)
@@ -128,7 +128,7 @@ Array.forEachi(sentinel, [>])
 assert sum == 0
 
 let addToSum = (n, i) => {
-  sum = sum + (n * i)
+  sum += n * i
 }
 
 Array.forEachi(addToSum, arr1)
@@ -137,7 +137,7 @@ assert sum == 8
 
 // Array.reverse
 
-assert Array.reverse([> ]) == [> ] // Empty
+assert Array.reverse([>]) == [>] // Empty
 let testArr = [> 1, 2, 3, 4]
 assert Array.reverse(testArr) == [> 4, 3, 2, 1] // array is reversed properly
 assert testArr == [> 1, 2, 3, 4] // original array is not modified
@@ -224,9 +224,10 @@ let arrB = [> 2, 3, 4]
 let arrC = [> 1]
 let arrD = [> 2]
 
-assert Array.product(arrA, arrB) == [>(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)]
-assert Array.product(arrC, arrB) == [>(1,2),(1,3),(1,4)]
-assert Array.product(arrC, arrD) == [>(1,2)]
+assert Array.product(arrA, arrB) ==
+[> (1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)]
+assert Array.product(arrC, arrB) == [> (1, 2), (1, 3), (1, 4)]
+assert Array.product(arrC, arrD) == [> (1, 2)]
 assert Array.product([>], [>]) == [>]
 
 // Array.zip
@@ -234,7 +235,7 @@ assert Array.product([>], [>]) == [>]
 let arrA = [> 1, 2, 3, 4, 5]
 let arrB = [> 5, 4, 3, 2, 1]
 
-assert Array.zip(arrA, arrB) == [>(1,5),(2,4),(3,3),(4,2),(5,1)]
+assert Array.zip(arrA, arrB) == [> (1, 5), (2, 4), (3, 3), (4, 2), (5, 1)]
 
 // Array.zipWith
 
@@ -290,7 +291,7 @@ assert Array.reduceRight((acc, x) => fail "Shouldn't be called", 0, [>]) == 0
 
 // Array.flatMap
 
-assert Array.flatMap(x => [> x, x * 2], arr) == [>1, 2, 2, 4, 3, 6]
+assert Array.flatMap(x => [> x, x * 2], arr) == [> 1, 2, 2, 4, 3, 6]
 assert Array.flatMap(x => fail "Shouldn't be called", [>]) == [>]
 
 // Array.every
@@ -330,7 +331,7 @@ assert Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
 assert Array.join(", ", [>]) == ""
 
 // Array.slice
-let  testChars = [> 'a', 'b', 'c']
+let testChars = [> 'a', 'b', 'c']
 
 assert Array.slice(0, 1, testChars) == [> 'a']
 assert Array.slice(1, Array.length(testChars), testChars) == [> 'b', 'c']
@@ -349,11 +350,11 @@ assert Array.slice(1, 4, [>]) == [>]
 // Array.sort
 // Numbers
 let comp = (left, right) => {
-    match((left, right)) {
-        (left, right) when left > right => 1,
-        (left, right) when left == right => 0,
-        _ => -1
-    }
+  match ((left, right)) {
+    (left, right) when left > right => 1,
+    (left, right) when left == right => 0,
+    _ => -1,
+  }
 }
 let arr = [> 5, 3, 4, 6, 2, 1]
 Array.sort(comp, arr)
@@ -364,18 +365,17 @@ Array.sort(comp, arr)
 assert arr == [>]
 // Strings
 let comp = (left, right) => {
-    match((String.length(left), String.length(right))) {
-        (left, right) when left > right => 1,
-        (left, right) when left == right => 0,
-        _ => -1
-    }
+  match ((String.length(left), String.length(right))) {
+    (left, right) when left > right => 1,
+    (left, right) when left == right => 0,
+    _ => -1,
+  }
 }
 let arr = [> "a", "abcde", "abc", "ab", "abcd", "a"]
 let result = Array.sort(comp, arr)
 assert arr == [> "a", "a", "ab", "abc", "abcd", "abcde"]
 // Returns void
 assert result == void
-
 
 // Array.rotate
 let arr1 = [> 1, 2, 3, 4, 5]
@@ -402,14 +402,14 @@ let arr6 = [> 1, 2, 3, 4, 5]
 Array.rotate(-54, arr6)
 assert arr6 == [> 5, 1, 2, 3, 4]
 
-let arr7 = [> ] : (Array<Number>)
+let arr7 = [>]: Array<Number>
 Array.rotate(1, arr7)
-assert arr7 == [> ]
+assert arr7 == [>]
 
 let arr8 = [> "a", "b", "c"]
 Array.rotate(1, arr8)
 assert arr8 == [> "c", "a", "b"]
 
-let arr9 = [> ]
+let arr9 = [>]
 Array.rotate(1, arr9)
-assert arr9 == [> ]
+assert arr9 == [>]

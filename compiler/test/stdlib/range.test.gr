@@ -43,41 +43,42 @@ assert !Range.inRange(3, exclusiveSameRange)
 // order because we use `...results` to append the lists
 
 let mut results = []
-Range.forEach((idx) => {
-  results = [idx, ...results];
+Range.forEach(idx => {
+  results = [idx, ...results]
 }, inclusiveAscendingRange)
 assert results == [5, 4, 3, 2, 1]
 
 let mut results = []
-Range.forEach((idx) => {
-  results = [idx, ...results];
+Range.forEach(idx => {
+  results = [idx, ...results]
 }, inclusiveDescendingRange)
 assert results == [1, 2, 3, 4, 5]
 
 let mut results = []
-Range.forEach((idx) => {
-  results = [idx, ...results];
+Range.forEach(idx => {
+  results = [idx, ...results]
 }, inclusiveSameRange)
 assert results == [1]
 
 let mut results = []
-Range.forEach((idx) => {
-  results = [idx, ...results];
+Range.forEach(idx => {
+  results = [idx, ...results]
 }, exclusiveAscendingRange)
 assert results == [4, 3, 2, 1]
 
 let mut results = []
-Range.forEach((idx) => {
-  results = [idx, ...results];
+Range.forEach(idx => {
+  results = [idx, ...results]
 }, exclusiveDescendingRange)
 assert results == [2, 3, 4, 5]
 
-Range.forEach((idx) => {
+Range.forEach(idx => {
   fail "Shouldn't be called"
 }, exclusiveSameRange)
 
 assert Range.map(toString, inclusiveAscendingRange) == ["1", "2", "3", "4", "5"]
-assert Range.map(toString, inclusiveDescendingRange) == ["5", "4", "3", "2", "1"]
+assert Range.map(toString, inclusiveDescendingRange) ==
+["5", "4", "3", "2", "1"]
 assert Range.map(toString, inclusiveSameRange) == ["1"]
 assert Range.map(toString, exclusiveAscendingRange) == ["1", "2", "3", "4"]
 assert Range.map(toString, exclusiveDescendingRange) == ["5", "4", "3", "2"]

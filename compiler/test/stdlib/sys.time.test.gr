@@ -1,6 +1,4 @@
-import {
-  lt as (<)
-} from "int64"
+import { lt as (<) } from "int64"
 import Time from "sys/time"
 
 let mt1 = Time.monotonicTime()
@@ -10,7 +8,7 @@ let mt2 = Time.monotonicTime()
 match ((mt1, mt2)) {
   (Ok(x), Ok(y)) => assert x < y,
   (Err(err), _) => throw err,
-  (_, Err(err)) => throw err
+  (_, Err(err)) => throw err,
 }
 
 let pct1 = Time.processCpuTime()
@@ -20,7 +18,7 @@ let pct2 = Time.processCpuTime()
 match ((pct1, pct2)) {
   (Ok(x), Ok(y)) => assert x < y,
   (Err(err), _) => throw err,
-  (_, Err(err)) => throw err
+  (_, Err(err)) => throw err,
 }
 
 let tct1 = Time.threadCpuTime()
@@ -30,7 +28,7 @@ let tct2 = Time.threadCpuTime()
 match ((tct1, tct2)) {
   (Ok(x), Ok(y)) => assert x < y,
   (Err(err), _) => throw err,
-  (_, Err(err)) => throw err
+  (_, Err(err)) => throw err,
 }
 
 let epoch = 0L
