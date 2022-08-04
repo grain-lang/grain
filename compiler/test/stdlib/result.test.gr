@@ -1,4 +1,4 @@
-import Result from "result";
+import Result from "result"
 
 // isOk
 assert Result.isOk(Ok(1)) == true
@@ -13,30 +13,37 @@ assert Result.toOption(Ok(1)) == Some(1)
 assert Result.toOption(Err("Ooops")) == None
 
 // map
-assert Result.map((a) => "some other type", Ok(1)) == Ok("some other type")
-assert Result.map((v) => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
+assert Result.map(a => "some other type", Ok(1)) == Ok("some other type")
+assert Result.map(v => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
 
 // mapErr
-assert Result.mapErr((x) => fail "Shouldn't run", Ok(1)) == Ok(1)
+assert Result.mapErr(x => fail "Shouldn't run", Ok(1)) == Ok(1)
 assert Result.mapErr(incr, Err(1)) == Err(2)
 
 // flatMap
-assert Result.flatMap((a) => Ok("some other type"), Ok(1)) == Ok("some other type")
-assert Result.flatMap((a) => Err("some other type"), Ok(1)) == Err("some other type")
-assert Result.flatMap((x) => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
+assert Result.flatMap(a => Ok("some other type"), Ok(1)) ==
+Ok("some other type")
+assert Result.flatMap(a => Err("some other type"), Ok(1)) ==
+Err("some other type")
+assert Result.flatMap(x => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
 
 // flatMapErr
-assert Result.flatMapErr((x) => fail "Shouldn't run", Ok(1)) == Ok(1)
-assert Result.flatMapErr((x) => Err(incr(x)), Err(1)) == Err(2)
-assert Result.flatMapErr((x) => Ok(incr(x)), Err(1)) == Ok(2)
+assert Result.flatMapErr(x => fail "Shouldn't run", Ok(1)) == Ok(1)
+assert Result.flatMapErr(x => Err(incr(x)), Err(1)) == Err(2)
+assert Result.flatMapErr(x => Ok(incr(x)), Err(1)) == Ok(2)
 
 // mapWithDefault
 assert Result.mapWithDefault(toString, "Nope!", Ok(1)) == "1"
 assert Result.mapWithDefault(toString, "Nope!", Err(1)) == "Nope!"
 
 // mapWithDefaultFn
-assert Result.mapWithDefaultFn(toString, (x) => fail "Shouldn't run", Ok(1)) == "1"
-assert Result.mapWithDefaultFn((x) => fail "Shouldn't run", (x) => "7", Err("Awesome")) == "7"
+assert Result.mapWithDefaultFn(toString, x => fail "Shouldn't run", Ok(1)) ==
+"1"
+assert Result.mapWithDefaultFn(x => fail "Shouldn't run",
+x => "7",
+Err("Awesome")
+) ==
+"7"
 
 // or
 assert Result.or(Ok(1), Ok(2)) == Ok(1)
@@ -51,47 +58,39 @@ assert Result.and(Err(1), Ok(2)) == Err(1)
 assert Result.and(Err(1), Err(2)) == Err(1)
 
 let mut a = 1
-let testMut = (f) => {
-    a = 1
-    f()
+let testMut = f => {
+  a = 1
+  f()
 }
 
 // peek
 testMut(() => {
-    Result.peek(
-       (v) => a = v,
-       (v) => fail "Shouldn't run",
-       Ok(2)
-    )
-    assert a == 2
+  Result.peek(v => a = v, v => fail "Shouldn't run", Ok(2))
+  assert a == 2
 })
 testMut(() => {
-    Result.peek(
-       (v) => fail "Shouldn't run",
-       (v) => a = v,
-       Err(2)
-    )
-    assert a == 2
+  Result.peek(v => fail "Shouldn't run", v => a = v, Err(2))
+  assert a == 2
 })
 
 // peekOk
 testMut(() => {
-    Result.peekOk((v) => a = v, Ok(2))
-    assert a == 2
+  Result.peekOk(v => a = v, Ok(2))
+  assert a == 2
 })
 testMut(() => {
-    Result.peekOk((v) => a = v, Err(2))
-    assert a == 1
+  Result.peekOk(v => a = v, Err(2))
+  assert a == 1
 })
 
 // peekErr
 testMut(() => {
-    Result.peekErr((v) => a = v, Ok(2))
-    assert a == 1
+  Result.peekErr(v => a = v, Ok(2))
+  assert a == 1
 })
 testMut(() => {
-    Result.peekErr((v) => a = v, Err(2))
-    assert a == 2
+  Result.peekErr(v => a = v, Err(2))
+  assert a == 2
 })
 
 // Result.expect
