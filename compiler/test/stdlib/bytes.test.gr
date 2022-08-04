@@ -6,22 +6,18 @@ import String from "string"
 // Bytes.empty
 assert Bytes.empty == Bytes.empty
 
-
 // Bytes.length
 assert Bytes.length(Bytes.empty) == 0
-
 
 // Bytes.make
 let bytes = Bytes.make(64)
 assert Bytes.length(bytes) == 64
-
 
 // Bytes.setInt8, Bytes.getInt8S, Bytes.getInt8U
 let bytes = Bytes.make(1)
 Bytes.setInt8(0, 0x000000ffl, bytes)
 assert Bytes.getInt8S(0, bytes) == 0xffffffffl
 assert Bytes.getInt8U(0, bytes) == 0x000000ffl
-
 
 // Bytes.setInt16, Bytes.getInt16S, Bytes.getInt16U
 let bytes = Bytes.make(8)
@@ -44,43 +40,37 @@ assert Bytes.getInt16U(5, bytes) == 0x00009c00l
 assert Bytes.getInt16S(6, bytes) == 0xffffff9cl
 assert Bytes.getInt16U(6, bytes) == 0x0000ff9cl
 
-
 // Bytes.setInt32, Bytes.getInt32
 let bytes = Bytes.make(4)
 Bytes.setInt32(0, 0x7fffffffl, bytes)
 assert Bytes.getInt32(0, bytes) == 0x7fffffffl
-
 
 // Bytes.setFloat32, Bytes.getFloat32
 let bytes = Bytes.make(4)
 Bytes.setFloat32(0, 42.0f, bytes)
 assert Bytes.getFloat32(0, bytes) == 42.0f
 
-
 // Bytes.setInt64, Bytes.getInt64
 let bytes = Bytes.make(8)
 Bytes.setInt64(0, 0x7fffffffffffffffL, bytes)
 assert Bytes.getInt64(0, bytes) == 0x7fffffffffffffffL
-
 
 // Bytes.setFloat64, Bytes.getFloat64
 let bytes = Bytes.make(8)
 Bytes.setFloat64(0, 42.0d, bytes)
 assert Bytes.getFloat64(0, bytes) == 42.0d
 
-
 // Bytes.copy
 let bytes0 = Bytes.make(8)
 assert Bytes.length(bytes0) == 8
-for (let mut i = 0; i < 8; i+= 1) {
+for (let mut i = 0; i < 8; i += 1) {
   Bytes.setInt8(i, Int32.fromNumber(i), bytes0)
 }
-let bytes1 = Bytes.copy(bytes0);
+let bytes1 = Bytes.copy(bytes0)
 assert Bytes.length(bytes1) == Bytes.length(bytes0)
 for (let mut i = 0; i < 8; i += 1) {
   assert Bytes.getInt8S(i, bytes1) == Bytes.getInt8S(i, bytes0)
 }
-
 
 // Bytes.slice
 let bytes2 = Bytes.slice(0, 8, bytes1)
@@ -99,7 +89,6 @@ for (let mut i = 0; i < Bytes.length(bytes4); i += 1) {
   assert Bytes.getInt8S(i, bytes4) == Bytes.getInt8S(i + 1, bytes2)
 }
 
-
 // Bytes.resize
 let bytes5 = Bytes.resize(0, 0, bytes0)
 assert Bytes.length(bytes5) == Bytes.length(bytes0)
@@ -107,7 +96,7 @@ for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
   assert Bytes.getInt8S(i, bytes5) == Bytes.getInt8S(i, bytes0)
 }
 let bytes5 = Bytes.resize(1, 1, bytes0)
-assert Bytes.length(bytes5) == (Bytes.length(bytes0) + 2)
+assert Bytes.length(bytes5) == Bytes.length(bytes0) + 2
 for (let mut i = 0; i < Bytes.length(bytes0); i += 1) {
   assert Bytes.getInt8S(i + 1, bytes5) == Bytes.getInt8S(i, bytes0)
 }
@@ -134,7 +123,6 @@ for (let mut i = 0; i < Bytes.length(bytes5); i += 1) {
 let bytes5 = Bytes.resize(-4, -4, bytes0)
 assert Bytes.length(bytes5) == 0
 
-
 // Bytes.move
 let srcBytes = Bytes.copy(bytes0)
 let dstBytes = Bytes.make(16)
@@ -150,7 +138,11 @@ let srcBytes = Bytes.make(32)
 let len = Bytes.length(srcBytes)
 let halfLen = len / 2
 for (let mut i = 0; i < len; i += 1) {
-  let value = if (i < halfLen) { 0x01l } else { 0x00l }
+  let value = if (i < halfLen) {
+    0x01l
+  } else {
+    0x00l
+  }
   Bytes.setInt8(i, value, srcBytes)
 }
 Bytes.move(0, halfLen, halfLen, srcBytes, srcBytes)
@@ -158,13 +150,12 @@ for (let mut i = 0; i < len; i += 1) {
   assert Bytes.getInt8U(i, srcBytes) == 0x01l
 }
 
-
 // Bytes.concat
 let bytesA = Bytes.make(16)
 for (let mut i = 0; i < 16; i += 1) {
   Bytes.setInt8(i, 1l, bytesA)
 }
-let bytesB = Bytes.make(16);
+let bytesB = Bytes.make(16)
 for (let mut i = 0; i < 16; i += 1) {
   Bytes.setInt8(i, 2l, bytesB)
 }
@@ -185,16 +176,34 @@ for (let mut i = 0; i < Bytes.length(bytesD); i += 1) {
   }
 }
 
-
 // Bytes.toString
-let xs = [> 0x4cl, 0x65l, 0x74l, 0x27l, 0x73l, 0x20l, 0x67l, 0x65l, 0x74l, 0x20l, 0x74l, 0x68l, 0x69l, 0x73l, 0x20l, 0xf0l, 0x9fl, 0x8dl, 0x9el]
+let xs = [>
+  0x4cl,
+  0x65l,
+  0x74l,
+  0x27l,
+  0x73l,
+  0x20l,
+  0x67l,
+  0x65l,
+  0x74l,
+  0x20l,
+  0x74l,
+  0x68l,
+  0x69l,
+  0x73l,
+  0x20l,
+  0xf0l,
+  0x9fl,
+  0x8dl,
+  0x9el,
+]
 let bytes = Bytes.make(Array.length(xs))
 Array.forEachi((n, i) => {
   Bytes.setInt8(i, n, bytes)
 }, xs)
 let str = Bytes.toString(bytes)
 assert str == "Let's get this 🍞"
-
 
 // Bytes.fromString
 let bytes = Bytes.fromString("Let's get this 🍞")
@@ -204,14 +213,12 @@ Array.forEachi((n, i) => {
 let str = Bytes.toString(bytes)
 assert str == "Let's get this 🍞"
 
-
 // Bytes.fill
 let bytes = Bytes.fromString("🍞🍞🍞🍞🍞🍞🍞🍞")
 Bytes.fill(0xffl, bytes)
 for (let mut i = 0; i < Bytes.length(bytes); i += 1) {
   assert Bytes.getInt8U(i, bytes) == 0xffl
 }
-
 
 // Bytes equality
 let bytesCopy = Bytes.copy(bytes)

@@ -138,13 +138,18 @@ let conv_bigint = s =>
       let accBits = ref(0);
       let results = ref([]);
       for (i in String.length(s) - 1 downto first) {
-        let digit = Int64.of_int(digit_value(s.[i]));
-        acc := Int64.logor(acc^, Int64.shift_left(digit, accBits^));
-        accBits := accBits^ + bits;
-        if (accBits^ >= 64) {
-          results := [acc^, ...results^];
-          accBits := accBits^ - 64;
-          acc := Int64.shift_right_logical(digit, bits - accBits^);
+        switch (s.[i]) {
+        | ('0' .. '9' | 'a' .. 'f' | 'A' .. 'F') as digit =>
+          let digit = Int64.of_int(digit_value(digit));
+          acc := Int64.logor(acc^, Int64.shift_left(digit, accBits^));
+          accBits := accBits^ + bits;
+          if (accBits^ >= 64) {
+            results := [acc^, ...results^];
+            accBits := accBits^ - 64;
+            acc := Int64.shift_right_logical(digit, bits - accBits^);
+          };
+        | '_' => ()
+        | _ => failwith("Impossible: Bad char")
         };
       };
       if (Int64.unsigned_compare(acc^, Int64.zero) > 0) {
@@ -171,21 +176,26 @@ let conv_bigint = s =>
       };
       let get_chunk = ((start_idx, end_idx)) => {
         let result = ref(Int64.zero);
+        let valid_digits = ref(0);
         for (i in start_idx to end_idx - 1) {
-          result :=
-            Int64.add(
-              Int64.mul(result^, Int64.of_int(base)),
-              Int64.of_int(digit_value(s.[i])),
-            );
+          let digit = s.[i];
+          if (digit != '_') {
+            incr(valid_digits);
+            result :=
+              Int64.add(
+                Int64.mul(result^, Int64.of_int(base)),
+                Int64.of_int(digit_value(s.[i])),
+              );
+          };
         };
-        result^;
+        (result^, valid_digits^);
       };
       // factor == 10l ** (places_at_a_time)
-      let factor =
+      let get_factor = num_digits =>
         List.fold_left(
           Int32.mul,
           Int32.one,
-          List.init(places_at_a_time, n => Int32.of_int(base)),
+          List.init(num_digits, n => Int32.of_int(base)),
         );
       let chunks =
         List.map(
@@ -194,10 +204,10 @@ let conv_bigint = s =>
         );
       let result =
         List.fold_left(
-          (acc, chunk) => {
+          (acc, (chunk, num_digits)) => {
             let ret =
               Mini_bigint.unsigned_add_i64(
-                Mini_bigint.unsigned_mul_i32(acc, factor),
+                Mini_bigint.unsigned_mul_i32(acc, get_factor(num_digits)),
                 chunk,
               );
             ret;

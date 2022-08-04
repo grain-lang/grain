@@ -3,14 +3,17 @@ open Lexing;
 open Location;
 
 let apply_filename_to_lexbuf = (name, lexbuf) => {
-  Lexing.set_filename(lexbuf, name);
+  Sedlexing.set_filename(lexbuf, name);
   Location.input_name := name;
 };
 
 // This parse is very fast, but cannot report useful errors.
 // parse_program_for_syntax_error is 2-5x slower, but can provide proper
 // syntax error information.
-let parse_program = Parser_header.parse_program(Parser.program);
+let parse_program =
+  Parser_header.parse_program(
+    MenhirLib.Convert.Simplified.traditional2revised(Parser.program),
+  );
 
 module E = MenhirLib.ErrorReports;
 module L = MenhirLib.LexerUtil;
@@ -35,8 +38,16 @@ let state = checkpoint =>
     0
   };
 
+let extract = (text, (pos1, pos2)) => {
+  Grain_utils.String_utils.Utf8.sub(
+    text,
+    pos1.pos_cnum,
+    pos2.pos_cnum - pos1.pos_cnum,
+  );
+};
+
 let show = (text, positions) =>
-  E.extract(text, positions) |> E.sanitize |> E.compress |> E.shorten(20);
+  extract(text, positions) |> E.sanitize |> E.compress |> E.shorten(20);
 
 let get = (text, checkpoint, i) =>
   switch (I.get(i, env(checkpoint))) {
@@ -72,19 +83,20 @@ let fail = (text, buffer, checkpoint: I.checkpoint(_)) => {
 // This parser is only meant to be invoked when you know a parse error
 // will occur
 let parse_program_for_syntax_error = (~name=?, lexbuf, source) => {
+  Sedlexing.set_position(lexbuf, Location.start_pos);
   Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
   /* Allocate and initialize a lexing buffer. */
   /* Wrap the lexer and lexbuf together into a supplier, that is, a
      function of type [unit -> token * position * position]. */
   let lexer = Wrapped_lexer.init(lexbuf);
-  let supplier =
-    I.lexer_lexbuf_to_supplier(_ => Wrapped_lexer.token(lexer), lexbuf);
+  let supplier = _ => Wrapped_lexer.token(lexer);
   /* Equip the supplier with a two-place buffer that records the positions
      of the last two tokens. This is useful when a syntax error occurs, as
      these are the token just before and just after the error. */
   let (buffer, supplier) = E.wrap_supplier(supplier);
   /* Fetch the parser's initial checkpoint. */
-  let checkpoint = UnitActionsParser.Incremental.program(lexbuf.lex_curr_p);
+  let (initial_pos, _) = Sedlexing.lexing_positions(lexbuf);
+  let checkpoint = UnitActionsParser.Incremental.program(initial_pos);
   /* Run the parser. */
   /* We do not handle [Lexer.Error] because we know that we will not
      encounter a lexical error during this second parsing run. */
@@ -92,10 +104,13 @@ let parse_program_for_syntax_error = (~name=?, lexbuf, source) => {
 };
 
 let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
+  Sedlexing.set_position(lexbuf, Location.start_pos);
   Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
   let lexer = Wrapped_lexer.init(lexbuf);
   let token = _ => Wrapped_lexer.token(lexer);
   try({...parse_program(token, lexbuf), comments: Lexer.consume_comments()}) {
+  | Sedlexing.MalFormed =>
+    raise(Ast_helper.BadEncoding(Location.curr(lexbuf)))
   | Parser.Error =>
     // Fast parse failed, so now we do a slow, thoughtful parse to produce a
     // good error message.
@@ -103,7 +118,7 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
     ignore @@
     parse_program_for_syntax_error(
       ~name?,
-      Lexing.from_string(source),
+      Sedlexing.Utf8.from_string(source),
       source,
     );
     // This should never be hit, but if it does someone will see and report
@@ -113,7 +128,7 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
 
 let scan_for_imports = (~defer_errors=true, filename: string): list(string) => {
   let ic = open_in(filename);
-  let lexbuf = Lexing.from_channel(ic);
+  let lexbuf = Sedlexing.Utf8.from_channel(ic);
   try({
     let source = () => {
       let ic = open_in_bin(filename);
@@ -165,6 +180,8 @@ let print_syntax_error =
   Printf.(
     Location.(
       fun
+      | Ast_helper.BadEncoding(loc) =>
+        Some(errorf(~loc, "Grain programs must be UTF-8 encoded."))
       | Ast_helper.SyntaxError(loc, msg) => {
           Some(errorf(~loc, "%s", msg));
         }

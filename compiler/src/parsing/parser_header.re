@@ -107,7 +107,7 @@ let make_program = statements => {
   fix_blocks({statements, comments: [], prog_loc});
 };
 
-let parse_program = (program, t, lexbuf) => {
+let parse_program = (program, token, lexbuf) => {
   first_loc := Location.curr(lexbuf);
-  program(t, lexbuf);
+  program(token);
 };

@@ -42,6 +42,11 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("number_syntax9", "print(1l)", "1\n");
   assertRun("number_syntax10", "print(1L)", "1\n");
   assertRun(
+    "number_syntax11",
+    "print(9_223_372_036_854_775_808)",
+    "9223372036854775808\n",
+  );
+  assertRun(
     "number_shift_promote",
     "print(5 << 64)",
     "92233720368547758080\n",

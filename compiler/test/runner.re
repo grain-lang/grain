@@ -332,7 +332,7 @@ let parse = (name, lexbuf, source) => {
 };
 
 let parseString = (name, s) => {
-  let lexbuf = Lexing.from_string(s);
+  let lexbuf = Sedlexing.Utf8.from_string(s);
   let source = () => s;
   parse(name, lexbuf, source);
 };

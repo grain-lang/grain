@@ -55,6 +55,6 @@ let optimize_program = (prog: Anftree.anf_program): Anftree.anf_program => {
       pass(n - 1, opt);
     };
 
-  /* TODO: Make 4 a config value */
+  // TODO: Make 4 a config value
   pass(4, prog);
 };

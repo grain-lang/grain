@@ -443,7 +443,7 @@ and expression_desc =
       loc(Identifier.t),
       constructor_description,
       list(expression),
-    ) /* TODO: Decide if needed */
+    ) // TODO: Decide if needed
   | TExpBlock(list(expression))
   | TExpNull
 

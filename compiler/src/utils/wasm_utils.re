@@ -249,7 +249,7 @@ let get_wasm_sections = (~reset=false, inchan) => {
         actual,
       );
     let version_strbuilder = (b, actual) =>
-      /* TODO: This should probably warn, not fail */
+      // TODO: This should probably warn, not fail
       Printf.sprintf(
         "Error reading WebAssembly version. Expected byte 0x%02x; found 0x%02x",
         b,

@@ -11,6 +11,7 @@ import Memory from "runtime/unsafe/memory"
 import Exception from "runtime/exception"
 import Conv from "runtime/unsafe/conv"
 import {
+  untagSimpleNumber,
   tagSimpleNumber,
   tagChar,
   untagChar,
@@ -100,7 +101,7 @@ export let byteLength = (string: String) => {
 }
 
 /**
- * Finds the position of a substring in the input string.
+ * Finds the first position of a substring in the input string.
  *
  * @param search: The substring to find
  * @param string: The string to inspect
@@ -157,6 +158,65 @@ export let indexOf = (search: String, string: String) => {
       None
     } else {
       Some(tagSimpleNumber(result))
+    }
+  }
+}
+
+/**
+ * Finds the last position of a substring in the input string.
+ *
+ * @param search: The substring to find
+ * @param string: The string to inspect
+ * @returns `Some(position)` containing the starting position of the substring if found or `None` otherwise
+ *
+ * @example String.lastIndexOf("world", "Hello world world") == Some(12)
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let lastIndexOf = (search: String, string: String) => {
+  // The last possible index in the string given the length of the search
+  let lastIndex = length(string) - length(search)
+
+  let (>) = WasmI32.gtU
+  let (>=) = WasmI32.geU
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+
+  let search = WasmI32.fromGrain(search)
+  let string = WasmI32.fromGrain(string)
+  let searchSize = WasmI32.load(search, 4n)
+  let stringSize = WasmI32.load(string, 4n)
+  if (searchSize > stringSize) {
+    None
+  } else {
+    let mut matchIndex = -1n
+    let mut stringIndex = untagSimpleNumber(lastIndex)
+    let searchPtr = search + 8n
+    let stringStartPtr = string + 8n
+    for (
+      let mut stringPtr = stringStartPtr + stringSize - searchSize;
+      stringPtr >= stringStartPtr;
+      stringPtr -= 1n
+    ) {
+      let byte = WasmI32.load8U(stringPtr, 0n)
+      if ((byte & 0xC0n) == 0x80n) {
+        // We're not at the start of a codepoint, so move on
+        continue
+      }
+      if (Memory.compare(stringPtr, searchPtr, searchSize) == 0n) {
+        matchIndex = stringIndex
+        break
+      }
+      stringIndex -= 1n
+    }
+    if (matchIndex == -1n) {
+      None
+    } else {
+      Some(tagSimpleNumber(matchIndex))
     }
   }
 }

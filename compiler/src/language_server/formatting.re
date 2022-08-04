@@ -91,15 +91,9 @@ let process =
         )
       }
     | Error(ParseError(_)) =>
-      Protocol.error(
-        ~id,
-        {
-          code: RequestFailed,
-          message:
-            "Unable to parse the document: "
-            ++ Protocol.uri_to_filename(params.text_document.uri),
-        },
-      )
+      // If we can't parse the file we can't format it
+      // return null to signal a response
+      Protocol.empty_response(id)
     | Error(InvalidCompilationState) =>
       Protocol.error(
         ~id,

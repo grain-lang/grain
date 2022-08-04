@@ -13,6 +13,8 @@ import {
   coerceNumberToWasmF64,
   reducedInteger,
   isFloat,
+  isInteger,
+  isRational,
   isBoxedNumber,
 } from "runtime/numbers"
 import { parseInt } from "runtime/stringUtils"
@@ -231,6 +233,45 @@ export let abs = (x: Number) => if (0 > x) x * -1 else x
  * @since v0.4.0
  */
 export let neg = (x: Number) => x * -1
+
+/**
+ * Checks if a number is a floating point value.
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is a floating point number or `false` otherwise
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let isFloat = (x: Number) => {
+  isFloat(WasmI32.fromGrain(x))
+}
+
+/**
+ * Checks if a number is an integer.
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is an integer or `false` otherwise
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let isInteger = (x: Number) => {
+  isInteger(WasmI32.fromGrain(x))
+}
+
+/**
+ * Checks if a number is a non-integer rational value.
+ *
+ * @param x: The number to check
+ * @returns `true` if the value is a non-integer rational number or `false` otherwise
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let isRational = (x: Number) => {
+  isRational(WasmI32.fromGrain(x))
+}
 
 /**
  * Checks if a number is finite.

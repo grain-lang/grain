@@ -4,7 +4,6 @@ let trimString = (str: String, end: Bool) => {
 
   for (; i < charsLength && i > -1; i += offset) {
     let currentChar = chars[i]
-    // TODO: Use unicode whitespace property and unicode line terminator once github issue #661 is completed
     if (
       // Spacing
       currentChar != '\u{0009}' && // Tab

@@ -142,6 +142,30 @@ assert unique([]) == []
 assert unique(list) == list
 assert unique([1, 1, 1, 1]) == [1]
 
+// List.zip
+
+let listA = [1, 2, 3]
+let listB = [4, 5, 6]
+
+assert zip(listA, listB) == [(1, 4), (2, 5), (3, 6)]
+
+let listB = [4, 5]
+
+assert zip(listA, listB) == [(1, 4), (2, 5)]
+
+// List.zipWith
+
+let addFn = (a, b) => a + b
+let listA = [1, 2, 3]
+let listB = [4, 5, 6]
+
+assert zipWith(addFn, listA, listB) == [5, 7, 9]
+
+let multFn = (a, b) => a * b
+let listB = [4, 5]
+assert zipWith(multFn, listA, listB) == [4, 10]
+assert zipWith(addFn, [], listB) == []
+
 // List.drop
 
 assert drop(4, []) == []
@@ -176,9 +200,9 @@ let listB = [2, 3, 4]
 let listC = [1]
 let listD = [2]
 
-assert product(listA, listB) == [(1,2),(1,3),(1,4),(2,2),(2,3),(2,4)]
-assert product(listC, listB) == [(1,2),(1,3),(1,4)]
-assert product(listC, listD) == [(1,2)]
+assert product(listA, listB) == [(1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)]
+assert product(listC, listB) == [(1, 2), (1, 3), (1, 4)]
+assert product(listC, listD) == [(1, 2)]
 assert product([], []) == []
 
 // List.take
@@ -216,23 +240,22 @@ assert init(-10, idx => fail "Shouldn't be called") == []
 assert join(", ", ["a", "b", "c"]) == "a, b, c"
 assert join(", ", []) == ""
 
-
 // List.sort
 let comp = (left, right) => {
-    match((left, right)) {
-        (left, right) when left > right => 1,
-        (left, right) when left == right => 0,
-        _ => -1
-    }
+  match ((left, right)) {
+    (left, right) when left > right => 1,
+    (left, right) when left == right => 0,
+    _ => -1,
+  }
 }
-assert sort(comp, [3,5,2,4,1]) == [1,2,3,4,5]
+assert sort(comp, [3, 5, 2, 4, 1]) == [1, 2, 3, 4, 5]
 assert sort(comp, []) == []
 let comp = (left, right) => {
-    match((String.length(left), String.length(right))) {
-        (left, right) when left > right => 1,
-        (left, right) when left == right => 0,
-        _ => -1
-    }
+  match ((String.length(left), String.length(right))) {
+    (left, right) when left > right => 1,
+    (left, right) when left == right => 0,
+    _ => -1,
+  }
 }
 let list = ["a", "abcde", "abc", "ab", "abcd", "a"]
 assert sort(comp, list) == ["a", "a", "ab", "abc", "abcd", "abcde"]

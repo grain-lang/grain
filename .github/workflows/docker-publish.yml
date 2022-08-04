@@ -7,6 +7,13 @@ on:
       tag:
         description: "The tag of release"
         required: true
+permissions:
+  id-token: write # Required to auth to AWS
+  contents: read # Required for actions/checkout
+  packages: write # Required to upload to ghcr
+env:
+  AWS_EC2_INSTANCE_ID: i-0960f9b8de8285aed
+  AWS_REGION: us-east-1
 jobs:
   push_base_image:
     name: Push base Docker image to multiple registries
@@ -21,6 +28,37 @@ jobs:
         if: ${{ github.event.inputs.tag }}
         run: GITHUB_TAG=${{ github.event.inputs.tag }}; echo ::set-output name=tag::${GITHUB_TAG#grain-}
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          role-to-assume: arn:aws:iam::881972110175:role/github-actions-openid
+          role-session-name: cisession
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Start AWS EC2 arm64 instance
+        id: instance
+        run: |
+          aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
+
+      - name: Bring in SSH keys
+        uses: grain-lang/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.0.0
+
+      - name: Set up remote builder
+        run: |
+          ssh-keyscan -H ${{ steps.instance.outputs.ip }} >> ~/.ssh/known_hosts
+          docker context create node-amd64 --docker host=unix:///var/run/docker.sock
+          docker context create node-arm64 --docker host=ssh://ubuntu@${{ steps.instance.outputs.ip }}
+          docker buildx create --use --name multiarch-builder --platform linux/amd64 node-amd64
+          docker buildx create --append --name multiarch-builder --platform linux/arm64 node-arm64
+          docker buildx inspect --bootstrap
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3.6.0
@@ -34,13 +72,13 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ steps.vars.outputs.tag }}
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2.0.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2.0.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -52,6 +90,8 @@ jobs:
           context: .
           file: Dockerfile
           push: true
+          builder: multiarch-builder
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
@@ -68,6 +108,37 @@ jobs:
         if: ${{ github.event.inputs.tag }}
         run: GITHUB_TAG=${{ github.event.inputs.tag }}; echo ::set-output name=tag::${GITHUB_TAG#grain-}
 
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1.6.1
+        with:
+          role-to-assume: arn:aws:iam::881972110175:role/github-actions-openid
+          role-session-name: cisession
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Start AWS EC2 arm64 instance
+        id: instance
+        run: |
+          aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
+
+      - name: Bring in SSH keys
+        uses: grain-lang/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2.0.0
+
+      - name: Set up remote builder
+        run: |
+          ssh-keyscan -H ${{ steps.instance.outputs.ip }} >> ~/.ssh/known_hosts
+          docker context create node-amd64 --docker host=unix:///var/run/docker.sock
+          docker context create node-arm64 --docker host=ssh://ubuntu@${{ steps.instance.outputs.ip }}
+          docker buildx create --use --name multiarch-builder --platform linux/amd64 node-amd64
+          docker buildx create --append --name multiarch-builder --platform linux/arm64 node-arm64
+          docker buildx inspect --bootstrap
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3.6.0
@@ -83,13 +154,13 @@ jobs:
             type=semver,pattern={{major}}.{{minor}},value=${{ steps.vars.outputs.tag }}
 
       - name: Login to DockerHub
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2.0.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Login to Github Container Registry
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v2.0.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -101,5 +172,7 @@ jobs:
           context: .
           file: Dockerfile-slim
           push: true
+          builder: multiarch-builder
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
