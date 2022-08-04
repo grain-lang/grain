@@ -201,6 +201,38 @@ Examples:
 String.lastIndexOf("world", "Hello world world") == Some(12)
 ```
 
+### String.**charCodeAt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+charCodeAt : (Number, String) -> Number
+```
+
+Get the Unicode code point at the position in the input string.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`position`|`Number`|The position to check|
+|`string`|`String`|The string to search|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The character code at the provided position|
+
+Examples:
+
+```grain
+String.charCodeAt(5, "Hello world") == 32
+```
+
 ### String.**charAt**
 
 <details disabled>
