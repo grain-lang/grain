@@ -131,6 +131,8 @@ let request: unit => result(request_message, string);
 
 let response: (~id: message_id=?, Yojson.Safe.t) => unit;
 
+let empty_response: message_id => unit;
+
 let error: (~id: message_id=?, response_error) => unit;
 
 let notification: (~method: string, Yojson.Safe.t) => unit;

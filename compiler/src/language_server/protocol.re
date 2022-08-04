@@ -221,6 +221,26 @@ let response = (~id=?, result) => {
   flush(stdout);
 };
 
+let empty_response = id => {
+  let response_message = {
+    jsonrpc: version,
+    id: Some(id),
+    result: None,
+    error: None,
+  };
+  let content =
+    Yojson.Safe.to_string(
+      ~std=true,
+      response_message_to_yojson(response_message),
+    );
+  let length = String.length(content);
+
+  let len = string_of_int(length);
+  let msg = header_prefix ++ len ++ sep ++ content;
+  output_string(stdout, msg);
+  flush(stdout);
+};
+
 let error = (~id=?, error) => {
   let response_message = {
     jsonrpc: version,
