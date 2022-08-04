@@ -2982,7 +2982,15 @@ and print_expression =
           ),
           Doc.text(":"),
           Doc.space,
-          print_type(~original_source, ~comments, parsed_type),
+          print_type(
+            ~original_source,
+            ~comments=
+              Comment_utils.get_comments_inside_location(
+                ~location=parsed_type.ptyp_loc,
+                comments,
+              ),
+            parsed_type,
+          ),
         ]),
       );
     | PExpLambda(patterns, expression) =>
