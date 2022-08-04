@@ -794,23 +794,20 @@ export let unique = array => {
  * The first tuple will contain the first item of each array, the second tuple
  * will contain the second item of each array, and so on.
  *
- * Calling this function with arrays of different sizes will throw an error.
- *
  * @param array1: The array to provide values for the first tuple element
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing indexed pairs of `(a, b)`
  *
  * @since v0.4.0
+ * @history v0.5.3: Support zipping arrays of different sizes
  */
 export let zip = (array1: Array<a>, array2: Array<b>) => {
   let len = length(array1)
-  if (len != length(array2)) {
-    fail "arguments to zip must be same length"
-  } else {
-    init(len, n => {
-      (array1[n], array2[n])
-    })
-  }
+  let len2 = length(array2)
+  let len = if (len > len2) len2 else len
+  init(len, n => {
+    (array1[n], array2[n])
+  })
 }
 
 /**
@@ -819,7 +816,7 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  * applying the function to the first elements of each array, the second element
  * will contain the result of applying the function to the second elements of
  * each array, and so on.
- * 
+ *
  * Calling this function with arrays of different sizes will cause the returned
  * array to have the length of the smaller array.
  *
@@ -830,7 +827,7 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  *
  * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
  * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
- * 
+ *
  * @since v0.5.3
  */
 export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {

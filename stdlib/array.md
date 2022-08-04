@@ -956,9 +956,16 @@ Returns:
 
 ### Array.**zip**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Support zipping arrays of different sizes</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -968,8 +975,6 @@ zip : (Array<a>, Array<b>) -> Array<(a, b)>
 Produces a new array filled with tuples of elements from both given arrays.
 The first tuple will contain the first item of each array, the second tuple
 will contain the second item of each array, and so on.
-
-Calling this function with arrays of different sizes will throw an error.
 
 Parameters:
 
