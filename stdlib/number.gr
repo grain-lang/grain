@@ -462,8 +462,7 @@ export let tan = (radians: Number) => {
  */
 export let factorial = input => {
   // Error If It is Negative, or Not an Integer
-  // TODO: Replace False with !Number.isInteger(input)
-  if (sign(input) is -1 || false) {
+  if (sign(input) is -1 || isInteger(input)) {
     fail "Factorial Expects A Non Negative Integer Input"
   } else {
     // Factorial Helper
@@ -499,21 +498,4 @@ export let clamp = (min: Number, max: Number, input: Number) => {
  */
 export let lerp = (start: Number, end: Number, amount: Number) => {
   (end - start) * amount + start
-}
-
-/**
- * Maps the given number from one range to another.
- *
- * @param inMin: The minimum value in the input range
- * @param outMin: The minimum value in the output range
- * @param inMax: The maximum value in the input range
- * @param outMax: The maximum value in the output range
- * @param current: The number to map
- * @returns The interpolated value
- *
- * @since v0.5.3
- */
-export let map = (inMin, outMin, inMax, outMax, current) => {
-  let mapped = (current - inMin) * (outMax - outMin) / (inMax - inMin) + outMin
-  clamp(outMin, outMax, mapped)
 }

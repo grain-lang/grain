@@ -663,7 +663,7 @@ Returns:
 ### Number.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -688,7 +688,7 @@ Returns:
 ### Number.**factorial**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -713,7 +713,7 @@ Returns:
 ### Number.**clamp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -740,7 +740,7 @@ Returns:
 ### Number.**lerp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -757,35 +757,6 @@ Parameters:
 |`start`|`Number`|The starting value|
 |`end`|`Number`|The ending value|
 |`amount`|`Number`|an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Number`|The interpolated value|
-
-### Number.**map**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
-No other changes yet.
-</details>
-
-```grain
-map : (Number, Number, Number, Number, Number) -> Number
-```
-
-Maps the given number from one range to another.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`inMin`|`Number`|The minimum value in the input range|
-|`outMin`|`Number`|The minimum value in the output range|
-|`inMax`|`Number`|The maximum value in the input range|
-|`outMax`|`Number`|The maximum value in the output range|
-|`current`|`Number`|The number to map|
 
 Returns:
 
