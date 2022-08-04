@@ -2062,7 +2062,7 @@ and print_other_application =
     Doc.concat([
       print_expression(~original_source, ~comments, func),
       Doc.space,
-      print_expression(~original_source, ~comments, first_expr),
+      Doc.indent(print_expression(~original_source, ~comments, first_expr)),
     ])
   | [first_expr, ..._] =>
     // standard function application
