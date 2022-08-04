@@ -635,7 +635,7 @@ let numberEqualRationalHelp = (xptr, y) => {
           BI.toFloat32(xNumerator),
           BI.toFloat32(xDenominator)
         )
-        // TODO: (#303) maybe we should have some sort of tolerance?
+        // TODO(#303): maybe we should have some sort of tolerance?
         WasmF32.eq(xAsFloat, yBoxedVal)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -644,7 +644,7 @@ let numberEqualRationalHelp = (xptr, y) => {
           BI.toFloat64(xNumerator),
           BI.toFloat64(xDenominator)
         )
-        // TODO: (#303) maybe we should have some sort of tolerance?
+        // TODO(#303): maybe we should have some sort of tolerance?
         WasmF64.eq(xAsFloat, yBoxedVal)
       },
       _ => {
@@ -686,12 +686,12 @@ let numberEqualFloat64Help = (x, y) => {
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat32Number(y)
-        // TODO: (#303) maybe we should have some sort of tolerance?
+        // TODO(#303): maybe we should have some sort of tolerance?
         WasmF64.eq(x, WasmF64.promoteF32(yBoxedVal))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
-        // TODO: (#303) maybe we should have some sort of tolerance?
+        // TODO(#303): maybe we should have some sort of tolerance?
         WasmF64.eq(x, yBoxedVal)
       },
       _ => {
@@ -873,7 +873,7 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         let xval = WasmF32.convertI32S(xval)
         let result = if (isSub) WasmF32.sub(xval, yBoxedVal)
           else WasmF32.add(xval, yBoxedVal)
-        // TODO: (#304) is this safe?
+        // TODO(#304): is this safe?
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -1083,7 +1083,7 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
         let yBoxedVal = boxedFloat32Number(y)
         let result = if (isSub) WasmF32.sub(xval, yBoxedVal)
           else WasmF32.add(xval, yBoxedVal)
-        // TODO: (#304) this isn't safe enough
+        // TODO(#304): this isn't safe enough
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -1326,7 +1326,7 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let xval = WasmF32.convertI64S(xval)
         let yBoxedVal = boxedFloat32Number(y)
-        // TODO: (#304) is this safe?
+        // TODO(#304): is this safe?
         if (isDivide) {
           newFloat32(WasmF32.div(xval, yBoxedVal))
         } else {
@@ -1407,7 +1407,7 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         // we can only fit rather small bigints (<4 limbs) into an F32
         let xval = BI.toFloat64(x)
         let yBoxedVal = WasmF64.promoteF32(boxedFloat32Number(y))
-        // TODO: (#304) is this safe?
+        // TODO(#304): is this safe?
         if (isDivide) {
           newFloat64(WasmF64.div(xval, yBoxedVal))
         } else {
@@ -1530,7 +1530,7 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         let yDenominator = boxedRationalDenominator(y)
         // (a / b) * (c / d) == (a * c) / (b * d)
         // (a / b) / (c / d) == (a * d) / (b * c)
-        // TODO: (#304) this could maybe be written in a more overflow-proof way
+        // TODO(#304): this could maybe be written in a more overflow-proof way
         let numerator = if (isDivide) BI.mul(xNumerator, yDenominator)
           else BI.mul(xNumerator, yNumerator)
         let denominator = if (isDivide) BI.mul(xDenominator, yNumerator)
@@ -1683,8 +1683,8 @@ let numberMod = (x, y) => {
 /*
  * ===== LESS THAN / GREATER THAN / LESS EQUAL / GREATER EQUAL =====
  * Coerce to float64 and then do comparisons
- * TODO: (#305) Could probably be made more efficient
  */
+// TODO(#305): Could probably be made more efficient
 
 @unsafe
 let cmpBigInt = (x: WasmI32, y: WasmI32) => {
@@ -1721,7 +1721,7 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
   }
 }
 
-// TODO: (#305) is this safe? I think it's safe?
+// TODO(#305): is this safe? I think it's safe?
 @unsafe
 export let (<) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
@@ -1811,7 +1811,7 @@ export let numberEq = (x: Number, y: Number) => {
  * ===== LOGICAL OPERATIONS =====
  * Only valid for int-like numbers. Coerce to i64/bigInt and do operations
  */
-// TODO: (#306) Semantics around when things should stay i32/i64
+// TODO(#306): Semantics around when things should stay i32/i64
 
 @unsafe
 export let lnot = (x: Number) => {

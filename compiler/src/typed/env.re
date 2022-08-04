@@ -2179,7 +2179,7 @@ let add_module_signature =
       env0 |> add_module(mod_ident, mod_type, filename);
     }
   | _ =>
-    let {ps_sig} = find_pers_struct(mod_.pimp_path.txt, mod_.pimp_loc);
+    let {ps_sig} = find_pers_struct(~loc=mod_.pimp_loc, mod_.pimp_path.txt);
     let sign = Lazy.force(ps_sig);
     let sign = Translsig.translate_signature(sign);
     let mod_type = TModSignature(sign);

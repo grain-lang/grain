@@ -549,6 +549,79 @@ export let unique = list => {
 }
 
 /**
+ * Produces a new list filled with tuples of elements from both given lists.
+ * The first tuple will contain the first item of each list, the second tuple
+ * will contain the second item of each list, and so on.
+ * 
+ * Calling this function with lists of different sizes will cause the returned
+ * list to have the length of the smaller list.
+ *
+ * @param list1: The list to provide values for the first tuple element
+ * @param list2: The list to provide values for the second tuple element
+ * @returns The new list containing indexed pairs of `(a, b)`
+ *
+ * @example List.zip([1, 2, 3], [4, 5, 6]) // [(1, 4), (2, 5), (3, 6)]
+ * @example List.zip([1, 2, 3], [4, 5]) // [(1, 4), (2, 5)]
+ * 
+ * @since v0.5.3
+ */
+export let zip = (list1, list2) => {
+  let rec zipInner = (list1, list2, acc) => {
+    match ((list1, list2)) {
+      ([first1, ...rest1], [first2, ...rest2]) =>
+        zipInner(rest1, rest2, [(first1, first2), ...acc]),
+      _ => acc,
+    }
+  }
+  reverse(zipInner(list1, list2, []))
+}
+
+/**
+ * Produces a new list filled with elements defined by applying a function on
+ * pairs from both given lists. The first element will contain the result of
+ * applying the function to the first elements of each list, the second element
+ * will contain the result of applying the function to the second elements of
+ * each list, and so on.
+ * 
+ * Calling this function with lists of different sizes will cause the returned
+ * list to have the length of the smaller list.
+ *
+ * @param fn: The function to apply to pairs of elements
+ * @param list1: The list whose elements will each be passed to the function as the first argument
+ * @param list2: The list whose elements will each be passed to the function as the second argument
+ * @returns The new list containing elements derived from applying the function to pairs of input list elements
+ *
+ * @example List.zipWith((a, b) => a + b, [1, 2, 3], [4, 5, 6]) // [5, 7, 9]
+ * @example List.zipWith((a, b) => a * b, [1, 2, 3], [4, 5]) // [4, 10]
+ * 
+ * @since v0.5.3
+ */
+export let zipWith = (fn, list1, list2) => {
+  let rec zipWithInner = (list1, list2, acc) => {
+    match ((list1, list2)) {
+      ([first1, ...rest1], [first2, ...rest2]) =>
+        zipWithInner(rest1, rest2, [fn(first1, first2), ...acc]),
+      _ => acc,
+    }
+  }
+  reverse(zipWithInner(list1, list2, []))
+}
+
+/**
+ * Produces two lists by splitting apart a list of tuples.
+ *
+ * @param list: The list of tuples to split
+ * @returns An list containing all elements from the first tuple element, and a list containing all elements from the second tuple element
+ *
+ * @since v0.5.3
+ */
+export let unzip = list => {
+  reduceRight(((first, second), (firstUnzipped, secondUnzipped)) => {
+    ([first, ...firstUnzipped], [second, ...secondUnzipped])
+  }, ([], []), list)
+}
+
+/**
  * Produces a new list with the specified number of elements removed from
  * the beginning of the input list.
  *

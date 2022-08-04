@@ -504,8 +504,7 @@ export let reject = (predicate, map) => {
   filter((key, value) => !predicate(key, value), map)
 }
 
-// TODO: Should return a Record type instead of a Tuple
-// Waiting on https://github.com/grain-lang/grain/issues/190
+// TODO(#190): Should return a Record type instead of a Tuple
 /**
  * Provides data representing the internal state state of the map.
  *

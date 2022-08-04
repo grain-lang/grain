@@ -435,7 +435,7 @@ and transl_type_aux = (env, policy, styp) => {
 };
 
 let make_fixed_univars = ty =>
-  /* TODO: Remove */
+  // TODO: Remove
   ();
 
 let globalize_used_variables = (env, fixed) => {

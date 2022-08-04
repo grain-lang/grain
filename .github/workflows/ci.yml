@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           check-latest: true
-          cache: 'npm'
+          cache: "npm"
 
       # Adds `shx` globally for cross-platform shell commands
       - name: Setup environment (All)
@@ -93,6 +93,7 @@ jobs:
         run: |
           grain doc stdlib -o stdlib --current-version=$(grain -v)
           grain format stdlib -o stdlib
+          grain format compiler/test/stdlib -o compiler/test/stdlib
           git diff --exit-code --name-only
 
       # This is to test that we didn't actually introduce multivalue

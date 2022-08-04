@@ -29,10 +29,6 @@ export function printClosure(c) {
   let closureSize = view[c + 2];
   let closureElts = [];
 
-  // [TODO]: Reenable when this gets ported to AS
-  // for (var i = 0; i < closureSize; ++i) {
-  //   closureElts.push(print(view[c + i + 3]));
-  // }
   console.log(
     `<closure@${c}: idx=${idx}, arity=${arity}, size=${closureSize}>`
   );

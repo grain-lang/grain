@@ -9,9 +9,6 @@ open Comp_wasm_prim;
 
 let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 
-/* [TODO] Should probably be a config variable */
-let memory_debugging_enabled = false;
-
 /** Environment */
 
 type codegen_env = {
@@ -1298,7 +1295,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
             ),
             get_arr(),
           ),
-          /* [TODO] decref the old item more efficiently (using a swap slot, most likely) */
+          // TODO: decref the old item more efficiently (using a swap slot, most likely)
           Expression.Tuple_extract.make(
             wasm_mod,
             Expression.Tuple_make.make(
@@ -2375,7 +2372,7 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
 
 let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   let compiled_arg = compile_imm(wasm_mod, env, arg);
-  /* TODO: Overflow checks? */
+  // TODO: Overflow checks?
   switch (p1) {
   | AllocateArray => allocate_uninitialized_array(wasm_mod, env, arg)
   | AllocateTuple => allocate_uninitialized_tuple(wasm_mod, env, arg)
@@ -2482,7 +2479,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       ],
     )
   | Throw =>
-    // [TODO] When we have exception handling, revisit whether there is any GC required here (#813)
+    // TODO(#813): When we have exception handling, revisit whether there is any GC required here
     Expression.Block.make(
       wasm_mod,
       gensym_label("throw"),

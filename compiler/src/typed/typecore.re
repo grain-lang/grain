@@ -911,7 +911,7 @@ and type_expect_ =
       end_def();
       generalize_structure(funct.exp_type);
     };
-    /* TODO: What does this do? */
+    // TODO: Determine what this does
     /*let rec lower_args seen ty_fun =
         let ty = expand_head env ty_fun in
         if List.memq ty seen then () else
@@ -1303,7 +1303,7 @@ and type_function =
       loc,
       caselist,
     );
-  /* TODO: Decide if this should be added to TExpLambda */
+  // TODO: Decide if this should be added to TExpLambda
   /*let param = name_pattern "param" cases in*/
   re({
     exp_desc: TExpLambda(cases, partial),
@@ -2132,7 +2132,7 @@ and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
 };
 
 let check_recursive_bindings = (env, vbs) =>
-  /* TODO: Implement */
+  // TODO: Implement
   ();
 
 /* Typing of toplevel bindings */

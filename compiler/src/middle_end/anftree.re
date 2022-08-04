@@ -360,8 +360,8 @@ and comp_expression_desc =
   | CFloat32(float)
   | CFloat64(float)
 
-/** Compound expressions (possibly let-bound)
-    TODO: better name */
+/** Compound expressions (possibly let-bound) */
+// TODO: better name
 
 [@deriving sexp]
 and anf_expression = {

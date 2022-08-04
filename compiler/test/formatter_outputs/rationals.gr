@@ -1,0 +1,15 @@
+import Int32 from "int32"
+
+let a = Int32.toNumber(3l) * (2/3)
+
+let b = 2/3 + Int32.toNumber(4l)
+
+let c = Int32.toNumber(3l) + 2/3
+
+let x = 3 * (2/3)
+
+let y = 2/3 + 4
+
+let z = 3 + 2/3
+
+assert 4 * (2/3) == 8/3

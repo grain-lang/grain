@@ -89,7 +89,7 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
       if (!Hashtbl.mem(modules, resolved_import)) {
         Hashtbl.add(modules, resolved_import, load_module(resolved_import));
         build_dependency_graph(
-          new_base_dir(resolved_import),
+          ~base_dir=new_base_dir(resolved_import),
           resolved_import,
         );
       };
@@ -103,7 +103,7 @@ let rec build_dependency_graph = (~base_dir, mod_path) => {
       if (!Hashtbl.mem(modules, imported_module)) {
         Hashtbl.add(modules, imported_module, load_module(imported_module));
         build_dependency_graph(
-          new_base_dir(imported_module),
+          ~base_dir=new_base_dir(imported_module),
           imported_module,
         );
       };

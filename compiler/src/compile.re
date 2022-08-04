@@ -117,7 +117,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
         switch (input) {
         | InputString(str) => (
             cs.cstate_filename,
-            Lexing.from_string(str),
+            Sedlexing.Utf8.from_string(str),
             (() => str),
             (() => ()),
           )
@@ -131,7 +131,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
           };
           (
             Some(name),
-            Lexing.from_channel(ic),
+            Sedlexing.Utf8.from_channel(ic),
             source,
             (() => close_in(ic)),
           );
