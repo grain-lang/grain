@@ -69,6 +69,17 @@ assert String.indexOf("🚀", emojis) == Some(15)
 assert String.indexOf(short, short) == Some(0)
 assert String.indexOf(emoji, emojis) == None
 assert String.indexOf("aa", "aaa") == Some(0)
+assert String.indexOf("world", "Hello world world") == Some(6)
+// lastIndexOf tests
+assert String.lastIndexOf(empty, empty) == Some(0)
+assert String.lastIndexOf(empty, short) == Some(3)
+assert String.lastIndexOf(short, fox) == Some(16)
+assert String.lastIndexOf("🚀", emojis) == Some(15)
+assert String.lastIndexOf("🌾", "🌾🌾🌾🌾🌾") == Some(4)
+assert String.lastIndexOf(short, short) == Some(0)
+assert String.lastIndexOf(emoji, emojis) == None
+assert String.lastIndexOf("aa", "aaa") == Some(1)
+assert String.lastIndexOf("world", "Hello world world") == Some(12)
 
 // charAt tests
 assert String.charAt(0, emojis) == 'w'
