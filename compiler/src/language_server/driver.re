@@ -41,7 +41,7 @@ let process = msg => {
     Code_file.DidChange.process(~uri, ~compiled_code, ~documents, params);
     Reading;
   | Formatting(id, params) when is_initialized^ =>
-    Formatting.process(~id, ~documents, params);
+    Formatting.process(~id, ~compiled_code, ~documents, params);
     Reading;
   | SetTrace(trace_value) =>
     Trace.set_level(trace_value);

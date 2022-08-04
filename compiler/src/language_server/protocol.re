@@ -221,7 +221,7 @@ let response = (~id=?, result) => {
   flush(stdout);
 };
 
-let null_response = id => {
+let empty_response = id => {
   let response_message = {
     jsonrpc: version,
     id: Some(id),

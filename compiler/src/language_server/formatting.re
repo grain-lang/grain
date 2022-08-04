@@ -40,6 +40,7 @@ module ResponseResult = {
 let process =
     (
       ~id: Protocol.message_id,
+      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
       ~documents: Hashtbl.t(Protocol.uri, string),
       params: RequestParams.t,
     ) => {
@@ -92,7 +93,7 @@ let process =
     | Error(ParseError(_)) =>
       // If we can't parse the file we can't format it
       // return null to signal a response
-      Protocol.null_response(id)
+      Protocol.empty_response(id)
     | Error(InvalidCompilationState) =>
       Protocol.error(
         ~id,
