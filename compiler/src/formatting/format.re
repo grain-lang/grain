@@ -1703,39 +1703,26 @@ and print_infix_application =
       | _ => false
       };
 
-    let (left_grouping_required, right_grouping_required) =
-      switch (first.pexp_desc, second.pexp_desc) {
-      | (PExpApp(fn1, _), PExpApp(fn2, _)) =>
-        let left_prec = op_precedence(get_function_name(fn1));
-        let right_prec = op_precedence(get_function_name(fn2));
-        let parent_prec = op_precedence(function_name);
+    let parent_prec = op_precedence(function_name);
 
-        // the equality check is needed for the function on the right
-        // as we process from the left by default when the same prededence
+    let left_grouping_required =
+      switch (first.pexp_desc) {
+      | PExpApp(fn1, _) =>
+        op_precedence(get_function_name(fn1)) < parent_prec
+      | PExpConstant(PConstNumber(PConstNumberRational(_, _))) =>
+        op_precedence("/") < parent_prec
+      | _ => false
+      };
 
-        let needed_left = left_prec < parent_prec;
-        let needed_right = right_prec <= parent_prec;
-
-        (needed_left, needed_right);
-
-      | (PExpApp(fn1, _), _) =>
-        let left_prec = op_precedence(get_function_name(fn1));
-        let parent_prec = op_precedence(function_name);
-        if (left_prec < parent_prec) {
-          (true, false);
-        } else {
-          (false, false);
-        };
-      | (_, PExpApp(fn2, _)) =>
-        let parent_prec = op_precedence(function_name);
-        let right_prec = op_precedence(get_function_name(fn2));
-        if (right_prec <= parent_prec) {
-          (false, true);
-        } else {
-          (false, false);
-        };
-
-      | _ => (false, false)
+    let right_grouping_required =
+      // the equality check is needed for the value on the right
+      // as we process from the left by default when the same prededence
+      switch (second.pexp_desc) {
+      | PExpApp(fn1, _) =>
+        op_precedence(get_function_name(fn1)) <= parent_prec
+      | PExpConstant(PConstNumber(PConstNumberRational(_, _))) =>
+        op_precedence("/") <= parent_prec
+      | _ => false
       };
 
     let left_needs_parens = left_is_if || left_grouping_required;
