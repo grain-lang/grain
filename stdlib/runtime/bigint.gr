@@ -126,8 +126,8 @@ let init = (limbs: WasmI32) => {
     // in our multiplication/division algorithms. This means that BigInts
     // are limited to 16+17179869176 bytes, or just over 16GiB.
     throw Exception.InvalidArgument(
-      "Cannot allocate BigInt with >= 2147483648 limbs"
-    )
+        "Cannot allocate BigInt with >= 2147483648 limbs"
+      )
   }
 
   let numtagLen = 4n

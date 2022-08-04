@@ -950,8 +950,8 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
 export let utoa32Buffered = (buf, value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
-    )
+        "toString() radix argument must be between 2 and 36"
+      )
   }
   if (WasmI32.eqz(value)) {
     WasmI32.store8(buf, _CHAR_CODE_0, 0n)
@@ -972,8 +972,8 @@ export let utoa32Buffered = (buf, value, radix) => {
 export let utoa32 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
-    )
+        "toString() radix argument must be between 2 and 36"
+      )
   }
   if (WasmI32.eqz(value)) {
     "0"
@@ -1000,8 +1000,8 @@ export let itoa32 = (value, radix) => {
   let mut value = value
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
-    )
+        "toString() radix argument must be between 2 and 36"
+      )
   }
   let sign = WasmI32.shrU(value, 31n)
 
@@ -1035,8 +1035,8 @@ export let itoa32 = (value, radix) => {
 export let utoa64 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
-    )
+        "toString() radix argument must be between 2 and 36"
+      )
   }
   if (WasmI64.eqz(value)) {
     "0"
@@ -1071,8 +1071,8 @@ export let utoa64 = (value, radix) => {
 export let itoa64 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
-    )
+        "toString() radix argument must be between 2 and 36"
+      )
   }
 
   let mut value = value
