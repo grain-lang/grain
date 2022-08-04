@@ -124,6 +124,30 @@ assert Number.neg(1/2) == -1/2
 assert Number.neg(BI.toNumber(1234t)) == BI.toNumber(-1234t)
 assert Number.neg(BI.toNumber(-1234t)) == BI.toNumber(1234t)
 
+// isFloat
+assert Number.isFloat(0.0)
+assert Number.isFloat(1.5)
+assert Number.isFloat(42.)
+assert Number.isFloat(9e6)
+assert Number.isFloat(0) == false
+assert Number.isFloat(10) == false
+assert Number.isFloat(2/3) == false
+
+// isInteger
+assert Number.isInteger(0)
+assert Number.isInteger(9)
+assert Number.isInteger(2_147_483_648)
+assert Number.isInteger(9_223_372_036_854_775_808)
+assert Number.isInteger(0.0) == false
+assert Number.isInteger(9e6) == false
+assert Number.isInteger(2/3) == false
+
+// isRational
+assert Number.isRational(1/2)
+assert Number.isRational(6/5)
+assert Number.isRational(1) == false
+assert Number.isRational(1.5) == false
+
 // isFinite
 assert Number.isFinite(0.0 / 0.0) == false // NaN
 assert Number.isFinite(1.0 / 0.0) == false // infinity

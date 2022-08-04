@@ -85,6 +85,28 @@ export let isFloat = x => {
 }
 
 @unsafe
+export let isInteger = x => {
+  if (isBoxedNumber(x)) {
+    let tag = WasmI32.load(x, 4n)
+    WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG) ||
+    WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG) ||
+    WasmI32.eq(tag, Tags._GRAIN_BIGINT_BOXED_NUM_TAG)
+  } else {
+    true
+  }
+}
+
+@unsafe
+export let isRational = x => {
+  if (isBoxedNumber(x)) {
+    let tag = WasmI32.load(x, 4n)
+    WasmI32.eq(tag, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG)
+  } else {
+    false
+  }
+}
+
+@unsafe
 let isBigInt = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
