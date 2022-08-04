@@ -487,7 +487,7 @@ enum MergeMode {
 }
 
 let mergeAdjacent = lst => {
-  // see [TODO] below
+  // TODO: see below
   let readyForAccum = (l, mode) => {
     match (l) {
       [] => true,
@@ -512,7 +512,7 @@ let mergeAdjacent = lst => {
       // drop empty elements
       [REEmpty, ...tl] => loop(mode, accum, tl),
       [RELiteralString(""), ...tl] => loop(mode, accum, tl),
-      // [TODO] Clean up with or-patterns (grain-lang/grain#696)
+      // TODO(#696): Clean up with or-patterns
       _ when readyForAccum(l, mode) => {
         match (accum) {
           [] => [],
@@ -592,7 +592,7 @@ REGEX PARSING DEFINITIONS
 
 // Range parsing ("[a-z]")
 
-// [TODO] (#769) When byte-based regexes are supported, we'll need another limit of 255 for those.
+// TODO(#769): When byte-based regexes are supported, we'll need another limit of 255 for those.
 let rangeLimit = 0x10FFFF
 
 // These are snake-cased to avoid confusion with their capitalized counterparts
@@ -1578,7 +1578,7 @@ let rec parseAtom = (buf: RegExBuf) => {
         Err(
           parseErr(buf, "unmatched `" ++ Char.toString(c) ++ "` in pattern", 0)
         ),
-      // [TODO] case-insensitive (#691)
+      // TODO(#691): Enable case-insensitive regular expression matching
       Ok(c) when buf.config.caseSensitive => {
         ignore(next(buf))
         Ok(RELiteral(c))
@@ -3320,7 +3320,7 @@ record RegularExpression {
  * @section Values: Functions for working with regular expressions.
  */
 
-// [TODO] When #661 is resolved, re-add the following pieces of documentation:
+// TODO(#661): re-add the following pieces of documentation:
 /*
  [Under POSIX character classes]
 

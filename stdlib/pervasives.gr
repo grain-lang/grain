@@ -410,7 +410,7 @@ export (>>)
 
 // Number coercions & conversions
 
-// [TODO] (#311) Commented until we nail down semantics
+// TODO(#311): Commented until we nail down semantics
 // import foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
 // import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
@@ -553,10 +553,7 @@ export primitive unbox: Box<a> -> a = "@unbox"
  * @since v0.4.0
  */
 export let cons = (a, b) =>
-  [
-    a,
-    ...b
-  ] // <- workaround for (grain-lang/grain#802) [TODO] fix #802 and delete
+  [a, ...b] // TODO(#802): Remove workaround after 802 is completed
 /**
  * The empty list syntax (`[]`) provided as a value.
  *

@@ -581,7 +581,7 @@ export let fromList = list => {
  * @since v0.2.0
  */
 export let contains = (search, array) => {
-  // TODO: This should use recursion when we can pattern match arrays
+  // TODO(#189): This should be rewritten to use recursion and pattern matching
   let len = length(array)
   let mut found = false
   for (let mut index = 0; !found && index < len; index += 1) {

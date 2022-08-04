@@ -261,8 +261,7 @@ assert Map.contains(Brick, fa);
 assert !Map.contains(Wood, fa);
 
 // Resizes the map when it grows
-// TODO: Don't use these internals, as they need to change
-// after https://github.com/grain-lang/grain/issues/190 is fixed
+// TODO(#190): Don't use these internals, as they need to change after 190 is fixed
 
 let resize = Map.makeSized(1);
 
