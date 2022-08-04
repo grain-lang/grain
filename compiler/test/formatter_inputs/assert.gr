@@ -1,0 +1,3 @@
+assert Option.mapWithDefaultFn(x => String.concat("hello ", x), () => fail "Shouldn't be called",Some("🌾")) =="hello 🌾"
+
+assert 1 == 2
