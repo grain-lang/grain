@@ -276,9 +276,3 @@ assert Number.clamp(-5, 5, 5.5) == 5
 assert Number.lerp(0, 5, 0) == 0
 assert Number.lerp(0, 5, 0.5) == 2.5
 assert Number.lerp(0, 5, 1) == 5
-// Number.map
-assert Number.map(0, 0, 1, 100, 0) == 0
-assert Number.map(0, 0, 1, 100, 0.5) == 50
-assert Number.map(0, 0, 1, 100, 1) == 100
-assert Number.map(0, 0, 1, 100, 150) == 100
-assert Number.map(-5, 0, 0, 100, -2.5) == 50
