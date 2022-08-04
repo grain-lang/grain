@@ -1,5 +1,5 @@
 /**
- * @module PriorityQueue: A mutable binary heap priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+ * @module PriorityQueue: A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
  *
  * @example import PriorityQueue from "priorityqueue"
  *
@@ -68,7 +68,10 @@ let rec siftUp = (i, pq) => {
 
 /**
  * Creates a new priority queue with a given internal storage size and a
- * comparator to use for determining element priority.
+ * comparator function, which is used to determine priority of elements. The
+ * comparator function takes two elements and must return 0 if both share
+ * priority, a positive number if the first has greater priority, and a
+ * negative number if the first has less priority.
  * 
  * @param size: The number of elements to initialize the internal storage array with
  * @param comp: The comparator function used to indicate priority order
@@ -81,12 +84,16 @@ export let makeSized = (size, comp) => {
 }
 
 /**
- * Creates a new priority queue with a comparator to use for determining element priority.
+ * Creates a new priority queue with a comparator function, which is used to
+ * determine priority of elements. The comparator function takes two elements
+ * and must return 0 if both share priority, a positive number if the first
+ * has greater priority, and a negative number if the first has less priority.
  * 
  * @param comp: The comparator function used to indicate priority order
  * @returns An empty priority queue
  * 
- * @example PriorityQueue.make((a, b) => a - b) // creates a min priority queue of numbers
+ * @example PriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+ * @example PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
  *
  * @since v0.5.3
  */
@@ -109,7 +116,7 @@ export let size = pq => {
 /**
  * Returns whether or not the priority queue is empty.
  * 
- * @param pq: The priority queue to find the emptiness of
+ * @param pq: The priority queue to check
  * @returns `true` if the priority queue has no elements and `false` otherwise
  *
  * @since v0.5.3
@@ -144,10 +151,10 @@ export let push = (val, pq) => {
 }
 
 /**
- * Returns the highest-priority element in the priority queue in a `Some`
+ * Returns the highest priority element in the priority queue in a `Some`
  * variant, or `None` if the priority queue is empty.
  * 
- * @param pq: The priority queue to get the highest-priority element of
+ * @param pq: The priority queue to get the highest priority element of
  * @returns The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty
  *
  * @since v0.5.3
@@ -161,10 +168,10 @@ export let peek = pq => {
 }
 
 /**
- * Removes and returns the highest-priority element in the priority queue in a `Some`
+ * Removes and returns the highest priority element in the priority queue in a `Some`
  * variant, or `None` if the priority queue is empty.
  * 
- * @param pq: The priority queue to remove and get the highest-priority element of
+ * @param pq: The priority queue to remove and get the highest priority element of
  * @returns The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty
  *
  * @since v0.5.3
@@ -186,7 +193,7 @@ export let pop = pq => {
 }
 
 /**
- * Clears the priority queue, and returns all of the elements in the priority
+ * Clears the priority queue and returns all of the elements in the priority
  * queue in priority order.
  * 
  * @param pq: The priority queue to drain
@@ -205,8 +212,11 @@ export let drain = pq => {
 }
 
 /**
- * Constructs a new priority queue initialized with the elements in the list, and
- * a custom comparator function used to assign priority.
+ * Constructs a new priority queue initialized with the elements in the list
+ * using a custom comparator function, which is used to determine priority of
+ * elements. The comparator function takes two elements and must return 0 if
+ * both share priority, a positive number if the first has greater priority,
+ * and a negative number if the first has less priority.
  * 
  * @param list: A list of values to initialize the priority queue with
  * @param comp: A comparator function used to assign priority to elements

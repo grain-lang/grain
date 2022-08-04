@@ -2,7 +2,7 @@
 title: PriorityQueue
 ---
 
-A mutable binary heap priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -41,7 +41,10 @@ makeSized : (Number, ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Creates a new priority queue with a given internal storage size and a
-comparator to use for determining element priority.
+comparator function, which is used to determine priority of elements. The
+comparator function takes two elements and must return 0 if both share
+priority, a positive number if the first has greater priority, and a
+negative number if the first has less priority.
 
 Parameters:
 
@@ -67,7 +70,10 @@ No other changes yet.
 make : ((a, a) -> Number) -> PriorityQueue<a>
 ```
 
-Creates a new priority queue with a comparator to use for determining element priority.
+Creates a new priority queue with a comparator function, which is used to
+determine priority of elements. The comparator function takes two elements
+and must return 0 if both share priority, a positive number if the first
+has greater priority, and a negative number if the first has less priority.
 
 Parameters:
 
@@ -84,7 +90,11 @@ Returns:
 Examples:
 
 ```grain
-PriorityQueue.make((a, b) => a - b) // creates a min priority queue of numbers
+PriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+```
+
+```grain
+PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
 ```
 
 ### Priorityqueue.**size**
@@ -129,7 +139,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to find the emptiness of|
+|`pq`|`PriorityQueue<a>`|The priority queue to check|
 
 Returns:
 
@@ -168,14 +178,14 @@ No other changes yet.
 peek : PriorityQueue<a> -> Option<a>
 ```
 
-Returns the highest-priority element in the priority queue in a `Some`
+Returns the highest priority element in the priority queue in a `Some`
 variant, or `None` if the priority queue is empty.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to get the highest-priority element of|
+|`pq`|`PriorityQueue<a>`|The priority queue to get the highest priority element of|
 
 Returns:
 
@@ -194,14 +204,14 @@ No other changes yet.
 pop : PriorityQueue<a> -> Option<a>
 ```
 
-Removes and returns the highest-priority element in the priority queue in a `Some`
+Removes and returns the highest priority element in the priority queue in a `Some`
 variant, or `None` if the priority queue is empty.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to remove and get the highest-priority element of|
+|`pq`|`PriorityQueue<a>`|The priority queue to remove and get the highest priority element of|
 
 Returns:
 
@@ -220,7 +230,7 @@ No other changes yet.
 drain : PriorityQueue<a> -> List<a>
 ```
 
-Clears the priority queue, and returns all of the elements in the priority
+Clears the priority queue and returns all of the elements in the priority
 queue in priority order.
 
 Parameters:
@@ -246,8 +256,11 @@ No other changes yet.
 fromList : (List<a>, ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
-Constructs a new priority queue initialized with the elements in the list, and
-a custom comparator function used to assign priority.
+Constructs a new priority queue initialized with the elements in the list
+using a custom comparator function, which is used to determine priority of
+elements. The comparator function takes two elements and must return 0 if
+both share priority, a positive number if the first has greater priority,
+and a negative number if the first has less priority.
 
 Parameters:
 

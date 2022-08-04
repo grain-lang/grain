@@ -2,6 +2,7 @@ import ImmutablePriorityQueue from "immutablepriorityqueue"
 import List from "list"
 import Array from "array"
 
+// formatter-ignore
 let lotsOfVals = [>
   3, 2, 1, 5, 3, 2, 2, 10, 6, 5,
   6, 4, 9, 10, 10, 5, 9, 6, 1, 3,

@@ -2,7 +2,7 @@
 title: ImmutablePriorityQueue
 ---
 
-An immutable priority queue implemented as a skew binomial queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+An immutable priority queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -40,7 +40,10 @@ No other changes yet.
 make : ((a, a) -> Number) -> ImmutablePriorityQueue<a>
 ```
 
-Creates a new priority queue with a comparator to use for determining element priority.
+Creates a new priority queue with a comparator function, which is used to
+determine priority of elements. The comparator function takes two elements
+and must return 0 if both share priority, a positive number if the first
+has greater priority, and a negative number if the first has less priority.
 
 Parameters:
 
@@ -57,7 +60,11 @@ Returns:
 Examples:
 
 ```grain
-ImmutablePriorityQueue.make((a, b) => a - b) // creates a min priority queue of numbers
+ImmutablePriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+```
+
+```grain
+ImmutablePriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
 ```
 
 ### Immutablepriorityqueue.**size**
@@ -71,7 +78,7 @@ No other changes yet.
 size : ImmutablePriorityQueue<a> -> Number
 ```
 
-Returns the number of elements currently in the priority queue.
+Returns the number of elements in the priority queue.
 
 Parameters:
 
@@ -102,7 +109,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to find the emptiness of|
+|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to check|
 
 Returns:
 
@@ -142,14 +149,14 @@ No other changes yet.
 peek : ImmutablePriorityQueue<a> -> Option<a>
 ```
 
-Returns the highest-priority element in the priority queue in a `Some`
+Returns the highest priority element in the priority queue in a `Some`
 variant, or `None` if the priority queue is empty.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to get the highest-priority element of|
+|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to get the highest priority element of|
 
 Returns:
 
@@ -168,8 +175,9 @@ No other changes yet.
 pop : ImmutablePriorityQueue<a> -> ImmutablePriorityQueue<a>
 ```
 
-Returns a new priority queue without the highest-priority element in the given priority queue
-in a `Some` variant, or `None` if the priority queue is empty.
+Returns a new priority queue without the highest priority element in the
+given priority queue. If the input priority queue is empty, this function will
+return it.
 
 Parameters:
 
@@ -181,7 +189,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`ImmutablePriorityQueue<a>`|A new priority queue without the highest-priority element in the input priority queue|
+|`ImmutablePriorityQueue<a>`|A new priority queue without the highest priority element in the input priority queue|
 
 ### Immutablepriorityqueue.**drain**
 
@@ -219,8 +227,11 @@ No other changes yet.
 fromList : (List<a>, ((a, a) -> Number)) -> ImmutablePriorityQueue<a>
 ```
 
-Constructs a new priority queue initialized with the elements in the list, and
-with a custom comparator function used to assign priority.
+Constructs a new priority queue initialized with the elements in the list
+using a custom comparator function, which is used to determine priority of
+elements. The comparator function takes two elements and must return 0 if
+both share priority, a positive number if the first has greater priority,
+and a negative number if the first has less priority.
 
 Parameters:
 
