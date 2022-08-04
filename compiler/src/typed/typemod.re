@@ -896,7 +896,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   let signatures = List.map(resolve_type_alias, signatures);
 
   let run = () => {
-    /* TODO: Is it really safe to drop the import statements here? */
+    // TODO: Is it really safe to drop the import statements here?
     let stritems = (statements, final_env);
     (stritems, signatures, final_env);
   };
@@ -976,7 +976,7 @@ let get_compilation_mode = () => {
 
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
-  /* TODO: Do we maybe need a fallback here? */
+  // TODO: Do we maybe need a fallback here?
   let modulename =
     Grain_utils.Filepath.String.filename_to_module_name(sourcefile);
   Env.set_unit((modulename, sourcefile, get_compilation_mode()));
@@ -984,7 +984,7 @@ let type_implementation = prog => {
   let (stritems, sg, finalenv) = type_module(initenv, prog);
   let (statements, env) = stritems;
   let simple_sg = simplify_signature(sg);
-  let filename = sourcefile; /* TODO: I think this is okay */
+  let filename = sourcefile; // TODO(1396): Don't use filepath as filename
   let coercion =
     Includemod.compunit(
       initenv,

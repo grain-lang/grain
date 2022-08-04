@@ -454,8 +454,7 @@ export let intersect = (set1, set2) => {
   set
 }
 
-// TODO: Should return a Record type instead of a Tuple
-// Waiting on https://github.com/grain-lang/grain/issues/190
+// TODO(#190): Should return a Record type instead of a Tuple
 /**
  * Provides data representing the internal state state of the set.
  *

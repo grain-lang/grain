@@ -230,7 +230,7 @@ let fits = (w, stack) => {
     | (Flat, IfBreaks({no: flatDoc})) => calculate(indent, mode, flatDoc)
     | (_, Concat(docs)) => calculateConcat(indent, mode, docs)
     | (_, CustomLayout([hd, ..._])) =>
-      /* TODO: if we have nested custom layouts, what we should do here? */
+      // TODO: if we have nested custom layouts, what we should do here?
       calculate(indent, mode, hd)
     | (_, CustomLayout([])) => ()
     }

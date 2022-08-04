@@ -236,6 +236,19 @@ let arrB = [> 5, 4, 3, 2, 1]
 
 assert Array.zip(arrA, arrB) == [>(1,5),(2,4),(3,3),(4,2),(5,1)]
 
+// Array.zipWith
+
+let addFn = (a, b) => a + b
+let arrA = [> 1, 2, 3]
+let arrB = [> 4, 5, 6]
+
+assert Array.zipWith(addFn, arrA, arrB) == [> 5, 7, 9]
+
+let multFn = (a, b) => a * b
+let arrB = [> 4, 5]
+assert Array.zipWith(multFn, arrA, arrB) == [> 4, 10]
+assert Array.zipWith(addFn, [>], arrB) == [>]
+
 // Array.unzip
 
 let arrA = [> 1, 2, 3, 4, 5]
@@ -269,6 +282,11 @@ assert Array.reduce((acc, x) => fail "Shouldn't be called", 0, [>]) == 0
 
 assert Array.reducei((acc, x, i) => acc + x + i, 0, arr) == 9
 assert Array.reducei((acc, x, i) => fail "Shouldn't be called", 0, [>]) == 0
+
+// Array.reduceRight
+
+assert Array.reduceRight((acc, cur) => acc - cur, 0, arr) == 2
+assert Array.reduceRight((acc, x) => fail "Shouldn't be called", 0, [>]) == 0
 
 // Array.flatMap
 

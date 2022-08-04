@@ -22,6 +22,19 @@ type iterator = {
 
 let iter_loc = (sub, {loc, txt}) => sub.location(sub, loc);
 let iter_opt = (sub, opt) => Option.iter(iter_loc(sub), opt);
+let iter_ident = (sub, id) => {
+  open Identifier;
+  iter_loc(sub, id);
+  let rec iter = id => {
+    switch (id) {
+    | IdentName(name) => iter_loc(sub, name)
+    | IdentExternal(id, name) =>
+      iter(id);
+      iter_loc(sub, name);
+    };
+  };
+  iter(id.txt);
+};
 
 module Cnst = {
   let iter = (sub, c) => ();
@@ -38,7 +51,7 @@ module E = {
       attrs,
     );
     switch (desc) {
-    | PExpId(i) => iter_loc(sub, i)
+    | PExpId(i) => iter_ident(sub, i)
     | PExpConstant(c) => sub.constant(sub, c)
     | PExpTuple(es) => List.iter(sub.expr(sub), es)
     | PExpArray(es) => List.iter(sub.expr(sub), es)
@@ -130,7 +143,7 @@ module P = {
       sub.pat(sub, p);
       sub.typ(sub, pt);
     | PPatConstruct(id, pl) =>
-      iter_loc(sub, id);
+      iter_ident(sub, id);
       List.iter(sub.pat(sub), pl);
     | PPatOr(p1, p2) =>
       sub.pat(sub, p1);
@@ -168,6 +181,7 @@ module D = {
         {
           pdata_name: name,
           pdata_params: args,
+          pdata_manifest: manifest,
           pdata_kind: kind,
           pdata_loc: loc,
         },
@@ -175,6 +189,7 @@ module D = {
     sub.location(sub, loc);
     iter_loc(sub, name);
     List.iter(sub.typ(sub), args);
+    Option.iter(sub.typ(sub), manifest);
     switch (kind) {
     | PDataAbstract => ()
     | PDataVariant(cdl) => List.iter(sub.constructor(sub), cdl)
@@ -211,7 +226,7 @@ module T = {
       sub.typ(sub, ret);
     | PTyTuple(ts) => List.iter(sub.typ(sub), ts)
     | PTyConstr(name, ts) =>
-      iter_loc(sub, name);
+      iter_ident(sub, name);
       List.iter(sub.typ(sub), ts);
     | PTyPoly(args, t) =>
       List.iter(iter_loc(sub), args);

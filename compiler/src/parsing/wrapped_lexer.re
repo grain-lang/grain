@@ -40,34 +40,19 @@ type fn_ctx =
   | IgnoreFunctions;
 
 type t = {
-  lexbuf: Lexing.lexbuf,
-  mutable lexbuf_p: (Lexing.position, Lexing.position),
+  lexbuf: Sedlexing.lexbuf,
   mutable queued_tokens: list(positioned(token)),
   mutable queued_exn: option(exn),
   mutable fn_ctx_stack: list(fn_ctx),
 };
 
 let init = lexbuf => {
-  {
-    lexbuf,
-    lexbuf_p: (lexbuf.lex_start_p, lexbuf.lex_curr_p),
-    queued_tokens: [],
-    queued_exn: None,
-    fn_ctx_stack: [],
-  };
+  {lexbuf, queued_tokens: [], queued_exn: None, fn_ctx_stack: []};
 };
-
-let lexbuf = state => state.lexbuf;
 
 let token = state => {
   Lexer.token(state.lexbuf);
 };
-
-let save_triple = (lexbuf, tok) => (
-  tok,
-  lexbuf.Lexing.lex_start_p,
-  lexbuf.Lexing.lex_curr_p,
-);
 
 let fake_triple = (t, (_, pos, _)) => (t, pos, pos);
 
@@ -81,16 +66,15 @@ let inject_fun =
 
 let is_triggering_token =
   fun
-  | THICKARROW
-  | ARROW => true
+  | (THICKARROW, _, _)
+  | (ARROW, _, _) => true
   | _ => false;
 
 let rec lex_fast_forward_step = (state, stop, acc, tok) => {
-  let lexbuf = state.lexbuf;
-  let acc = [save_triple(lexbuf, tok), ...acc];
+  let acc = [tok, ...acc];
   switch (tok, stop) {
-  | _ when tok == stop => acc
-  | (EOF, _) => raise(Lex_fast_forward_failed(acc, None))
+  | ((tok, _, _), _) when tok == stop => acc
+  | ((EOF, _, _), _) => raise(Lex_fast_forward_failed(acc, None))
   | _ => lex_fast_forward(state, stop, acc)
   };
 }
@@ -104,13 +88,10 @@ and lex_fast_forward = (state, stop, acc) =>
 let rec next_non_eol_token = (state, acc) => {
   switch (token(state)) {
   | exception exn => raise(Lex_balanced_failed(acc, Some(exn)))
-  | EOL as tok =>
-    let lexbuf = state.lexbuf;
-    let acc = [save_triple(lexbuf, tok), ...acc];
+  | (EOL, _, _) as tok =>
+    let acc = [tok, ...acc];
     next_non_eol_token(state, acc);
-  | tok =>
-    let lexbuf = state.lexbuf;
-    (save_triple(lexbuf, tok), acc);
+  | tok => (tok, acc)
   };
 };
 
@@ -153,7 +134,7 @@ let rec check_lparen_fn = (state, closing, acc) => {
 }
 
 and check_id_fn = (state, closing, acc) => {
-  let ((tok, _, _), acc') = next_non_eol_token(state, []);
+  let (tok, acc') = next_non_eol_token(state, []);
   let acc =
     if (is_triggering_token(tok)) {
       acc' @ inject_fun(acc);
@@ -164,49 +145,48 @@ and check_id_fn = (state, closing, acc) => {
 }
 
 and lex_balanced_step = (state, closing, acc, tok) => {
-  let lexbuf = state.lexbuf;
-  let acc = [save_triple(lexbuf, tok), ...acc];
+  let acc = [tok, ...acc];
   switch (tok, closing) {
-  | (RPAREN, RPAREN)
-  | (RBRACE, RBRACE)
-  | (RBRACK, RBRACK) =>
+  | ((RPAREN, _, _), RPAREN)
+  | ((RBRACE, _, _), RBRACE)
+  | ((RBRACK, _, _), RBRACK) =>
     pop_fn_ctx(state);
     acc;
-  | (RPAREN | RBRACE | RBRACK | EOF, _) =>
+  | ((RPAREN | RBRACE | RBRACK | EOF, _, _), _) =>
     raise(Lex_balanced_failed(acc, None))
-  | (LBRACK | LBRACKRCARET, _) =>
+  | ((LBRACK | LBRACKRCARET, _, _), _) =>
     lex_balanced(
       state,
       closing,
       lex_balanced(~push=DiscoverFunctions, state, RBRACK, acc),
     )
-  | (LBRACE, _) =>
+  | ((LBRACE, _, _), _) =>
     lex_balanced(
       state,
       closing,
       lex_balanced(~push=DiscoverFunctions, state, RBRACE, acc),
     )
-  | (LPAREN, _) when ignore_fns(state) =>
+  | ((LPAREN, _, _), _) when ignore_fns(state) =>
     lex_balanced(
       state,
       closing,
       lex_balanced(~push=DiscoverFunctions, state, RPAREN, acc),
     )
-  | (LPAREN, _) => check_lparen_fn(state, closing, acc)
-  | (THICKARROW, _) when ignore_fns(state) =>
+  | ((LPAREN, _, _), _) => check_lparen_fn(state, closing, acc)
+  | ((THICKARROW, _, _), _) when ignore_fns(state) =>
     // When in a context where we're not looking for toplevel functions,
     // the thing that appears immediately after an arrow could be a
     // function, so we need to check for that
     let ((tok', _, _) as triple', tokens) = next_non_eol_token(state, []);
     switch (tok') {
     | LPAREN => check_lparen_fn(state, closing, [triple', ...tokens @ acc])
-    | ID(_)
+    | LIDENT(_)
     | UNDERSCORE => check_id_fn(state, closing, [triple', ...tokens @ acc])
     | _ =>
       // Recurse normally
-      lex_balanced_step(state, closing, tokens @ acc, tok')
+      lex_balanced_step(state, closing, tokens @ acc, triple')
     };
-  | (MATCH, _) =>
+  | ((MATCH, _, _), _) =>
     lex_balanced(
       state,
       closing,
@@ -226,7 +206,7 @@ and lex_balanced_step = (state, closing, acc, tok) => {
         ),
       ),
     )
-  | (ID(_) | UNDERSCORE, _) when !ignore_fns(state) =>
+  | ((LIDENT(_) | UNDERSCORE, _, _), _) when !ignore_fns(state) =>
     check_id_fn(state, closing, acc)
   | _ => lex_balanced(state, closing, acc)
   };
@@ -253,7 +233,7 @@ and lookahead_fun = (state, (tok, _, _) as lparen) =>
       state.queued_exn = Some(exn);
       lparen;
     | token =>
-      let tokens = [save_triple(state.lexbuf, token), ...tokens];
+      let tokens = [token, ...tokens];
       if (is_triggering_token(token)) {
         state.queued_tokens = [lparen, ...List.rev(tokens)];
         fake_triple(FUN, lparen);
@@ -299,7 +279,6 @@ and lookahead_match = state => {
 };
 
 let token = state => {
-  let lexbuf = state.lexbuf;
   switch (state.queued_tokens, state.queued_exn) {
   | ([], Some(exn)) =>
     state.queued_exn = None;
@@ -310,44 +289,30 @@ let token = state => {
   | ([(LPAREN, _, _) as lparen], None) => lookahead_fun(state, lparen)
   | ([], None) =>
     switch (token(state)) {
-    | MATCH as tok =>
-      let tok = save_triple(state.lexbuf, tok);
+    | (MATCH, _, _) as tok =>
       lookahead_match(state);
       tok;
-    | LPAREN as tok => lookahead_fun(state, save_triple(state.lexbuf, tok))
-    | (ID(_) | UNDERSCORE) as tok =>
-      let tok = save_triple(lexbuf, tok);
+    | (LPAREN, _, _) as tok => lookahead_fun(state, tok)
+    | (LIDENT(_) | UNDERSCORE, _, _) as tok =>
       switch (token(state)) {
       | exception exn =>
         state.queued_exn = Some(exn);
         tok;
       | tok' =>
         if (is_triggering_token(tok')) {
-          state.queued_tokens = [tok, save_triple(lexbuf, tok')];
+          state.queued_tokens = [tok, tok'];
           fake_triple(FUN, tok);
         } else {
-          state.queued_tokens = [save_triple(lexbuf, tok')];
+          state.queued_tokens = [tok'];
           tok;
         }
-      };
-    | token => save_triple(lexbuf, token)
+      }
+    | token => token
     }
   | ([x, ...xs], _) =>
     state.queued_tokens = xs;
     x;
   };
-};
-
-let save_lexer_positions = state => {
-  state.lexbuf_p = (state.lexbuf.lex_start_p, state.lexbuf.lex_curr_p);
-};
-let set_lexer_positions = (state, lex_start_p, lex_curr_p) => {
-  state.lexbuf.lex_start_p = lex_start_p;
-  state.lexbuf.lex_curr_p = lex_curr_p;
-};
-let restore_lexer_positions = state => {
-  let (lex_start_p, lex_curr_p) = state.lexbuf_p;
-  set_lexer_positions(state, lex_start_p, lex_curr_p);
 };
 
 let token = state => {
@@ -375,14 +340,4 @@ let token = state => {
   } else {
     triple;
   };
-};
-
-let token = state => {
-  // Menhir will read lexer positions to determine token locations
-  // We spoof these locations and reset when we need to lex the next token
-  restore_lexer_positions(state);
-  let (token, start_p, curr_p) = token(state);
-  save_lexer_positions(state);
-  set_lexer_positions(state, start_p, curr_p);
-  token;
 };

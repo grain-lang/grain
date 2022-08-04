@@ -9,7 +9,6 @@ depends: [
   "dune" {>= "1.0"}
   "ounit" {with-test}
   "qtest" {with-test & >= "2.2"}
-  "base-bytes"
 ]
 build: [
   ["dune" "subst"] {dev}

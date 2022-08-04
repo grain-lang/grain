@@ -1,2 +1,8 @@
 (lang dune 2.0)
+
 (profile release)
+
+(env
+ (_
+  (flags
+   (:standard -warn-error -a+6+31))))

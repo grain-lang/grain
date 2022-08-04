@@ -24,6 +24,7 @@ depends: [
   "ocaml-compiler-libs" {>= "v0.11.0"}
   "ppx_derivers" {>= "1.0"}
   "sexplib0" {>= "v0.12"}
+  "sexplib0" {with-test & < "v0.15"}
   "stdlib-shims"
   "ocamlfind" {with-test}
   "re" {with-test & >= "1.9.0"}
@@ -53,10 +54,10 @@ build: [
 dev-repo: "git+https://github.com/ocaml-ppx/ppxlib.git"
 url {
   src:
-    "https://github.com/ocaml-ppx/ppxlib/releases/download/0.25.0/ppxlib-0.25.0.tbz"
+    "https://github.com/ocaml-ppx/ppxlib/releases/download/0.26.0/ppxlib-0.26.0.tbz"
   checksum: [
-    "sha256=2d2f150e7715845dc578d254f705a67600be71c986b7e67e81befda612870bd5"
-    "sha512=464220e3d8c75503824b73393df0b8ad16019acf55b8ecef89f8d464cd6d054e470ce4866b244216c5f7b85a5e8abad908aad212a78b4a132f3092fa785da0de"
+    "sha256=63117b67ea5863935455fe921f88fe333c0530f0483f730313303a93af817efd"
+    "sha512=9cfc9587657d17cdee5483e2a03292f872c42886e512bcc7442652e6418ce74c0135c731d8a68288c7fecae7f1b2defd93fe5acf8edb41e25144a8cec2806227"
   ]
 }
-x-commit-hash: "2fde140076144150d01997d529d451bbcae439c4"
+x-commit-hash: "18b1ad68b59d151d662147661e43b159ac491f68"

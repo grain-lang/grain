@@ -46,4 +46,5 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("windows", "windows");
   assertFormatOutput("patterns", "patterns");
   assertFormatOutput("rationals", "rationals");
+  assertFormatOutput("constraints", "constraints");
 });

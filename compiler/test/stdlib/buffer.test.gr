@@ -189,6 +189,10 @@ Buffer.addBytesSlice(0, 0, bytes, buf)
 assert Buffer.toBytes(buf) == Bytes.empty
 Buffer.addBytesSlice(0, Bytes.length(bytes), bytes, buf)
 assert Buffer.toBytes(buf) == bytes
+let emptyBytes = Bytes.make(0)
+let emptyBuffer = Buffer.make(0)
+Buffer.addBytesSlice(0, 0, emptyBytes, emptyBuffer)
+assert emptyBuffer == Buffer.make(0)
 
 // addString / toString
 let str = "Let's get this 🍞"
@@ -268,7 +272,9 @@ Buffer.addString("✨", buf2)
 Buffer.addBuffer(buf1, buf0)
 Buffer.addBuffer(buf2, buf0)
 assert Buffer.toString(buf0) == "✨🍩✨"
-
+let emptyBuffer = Buffer.make(0)
+Buffer.addBuffer(Buffer.make(0), emptyBuffer)
+assert emptyBuffer == Buffer.make(0)
 // addBufferSlice
 let buf0 = Buffer.make(0)
 let buf1 = Buffer.make(0)

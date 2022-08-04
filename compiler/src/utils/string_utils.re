@@ -98,3 +98,48 @@ let trim_each_line = (~style=FullTrim, str) => {
 
   lines |> List.map(trim_style) |> String.concat("\n");
 };
+
+module Utf8 = {
+  let utf_length_at_offset = (str, offset) => {
+    switch (Char.code(str.[offset])) {
+    | c when c land 0x80 == 0x00 => 1
+    | c when c land 0xF0 == 0xF0 => 4
+    | c when c land 0xE0 == 0xE0 => 3
+    | c => 2
+    };
+  };
+
+  let sub = (str, start_chars, count_chars) => {
+    // compute byte offsets
+    let chars_encountered = ref(0);
+    let offset = ref(0);
+    let start_bytes = ref(0);
+    let count_bytes = ref(0);
+    while (chars_encountered^ < start_chars + count_chars) {
+      offset := offset^ + utf_length_at_offset(str, offset^);
+      incr(chars_encountered);
+      if (start_chars == chars_encountered^) {
+        start_bytes := offset^;
+      };
+      if (start_chars + count_chars == chars_encountered^) {
+        count_bytes := offset^ - start_bytes^;
+      };
+    };
+    String.sub(str, start_bytes^, count_bytes^);
+  };
+
+  let string_after = (str, start_chars) => {
+    // compute byte offset
+    let chars_encountered = ref(0);
+    let offset = ref(0);
+    let start_bytes = ref(0);
+    while (chars_encountered^ < start_chars) {
+      offset := offset^ + utf_length_at_offset(str, offset^);
+      incr(chars_encountered);
+      if (start_chars == chars_encountered^) {
+        start_bytes := offset^;
+      };
+    };
+    String.sub(str, start_bytes^, String.length(str) - start_bytes^);
+  };
+};
