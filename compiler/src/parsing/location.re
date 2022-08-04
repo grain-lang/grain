@@ -155,6 +155,8 @@ let in_file = name => {
   {loc_start: loc, loc_end: loc, loc_ghost: true};
 };
 
+let start_pos = {pos_fname: "", pos_lnum: 1, pos_cnum: 0, pos_bol: 0};
+
 let dummy_loc = {loc_start: dummy_pos, loc_end: dummy_pos, loc_ghost: true};
 
 let sexp_of_t = loc =>
@@ -171,9 +173,12 @@ let t_of_sexp = sexp =>
   };
 
 let curr = lexbuf => {
-  loc_start: lexbuf.lex_start_p,
-  loc_end: lexbuf.lex_curr_p,
-  loc_ghost: false,
+  let (loc_start, loc_end) = Sedlexing.lexing_positions(lexbuf);
+  {loc_start, loc_end, loc_ghost: false};
+};
+
+let of_positions = (loc_start, loc_end) => {
+  {loc_start, loc_end, loc_ghost: false};
 };
 
 let init = (lexbuf, fname) =>

@@ -4,6 +4,10 @@ let newline = "\n"
 
 let data = String.split("\n", "a long string")
 
+"string with emojis 💯💯💯"
+
+let ஹௐఅ = "unicode identifier"
+
 let c = Some('\'')
 
 let d = '\''

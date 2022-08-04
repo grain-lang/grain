@@ -819,6 +819,116 @@ Returns:
 |----|-----------|
 |`List<a>`|The new list with only unique values|
 
+### List.**zip**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+zip : (List<a>, List<b>) -> List<(a, b)>
+```
+
+Produces a new list filled with tuples of elements from both given lists.
+The first tuple will contain the first item of each list, the second tuple
+will contain the second item of each list, and so on.
+
+Calling this function with lists of different sizes will cause the returned
+list to have the length of the smaller list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list1`|`List<a>`|The list to provide values for the first tuple element|
+|`list2`|`List<b>`|The list to provide values for the second tuple element|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<(a, b)>`|The new list containing indexed pairs of `(a, b)`|
+
+Examples:
+
+```grain
+List.zip([1, 2, 3], [4, 5, 6]) // [(1, 4), (2, 5), (3, 6)]
+```
+
+```grain
+List.zip([1, 2, 3], [4, 5]) // [(1, 4), (2, 5)]
+```
+
+### List.**zipWith**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+zipWith : (((a, b) -> c), List<a>, List<b>) -> List<c>
+```
+
+Produces a new list filled with elements defined by applying a function on
+pairs from both given lists. The first element will contain the result of
+applying the function to the first elements of each list, the second element
+will contain the result of applying the function to the second elements of
+each list, and so on.
+
+Calling this function with lists of different sizes will cause the returned
+list to have the length of the smaller list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(a, b) -> c`|The function to apply to pairs of elements|
+|`list1`|`List<a>`|The list whose elements will each be passed to the function as the first argument|
+|`list2`|`List<b>`|The list whose elements will each be passed to the function as the second argument|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<c>`|The new list containing elements derived from applying the function to pairs of input list elements|
+
+Examples:
+
+```grain
+List.zipWith((a, b) => a + b, [1, 2, 3], [4, 5, 6]) // [5, 7, 9]
+```
+
+```grain
+List.zipWith((a, b) => a * b, [1, 2, 3], [4, 5]) // [4, 10]
+```
+
+### List.**unzip**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+unzip : List<(a, b)> -> (List<a>, List<b>)
+```
+
+Produces two lists by splitting apart a list of tuples.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<(a, b)>`|The list of tuples to split|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`(List<a>, List<b>)`|An list containing all elements from the first tuple element, and a list containing all elements from the second tuple element|
+
 ### List.**drop**
 
 <details disabled>

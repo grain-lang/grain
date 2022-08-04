@@ -142,6 +142,30 @@ assert unique([]) == []
 assert unique(list) == list
 assert unique([1, 1, 1, 1]) == [1]
 
+// List.zip
+
+let listA = [1, 2, 3]
+let listB = [4, 5, 6]
+
+assert zip(listA, listB) == [(1, 4), (2, 5), (3, 6)]
+
+let listB = [4, 5]
+
+assert zip(listA, listB) == [(1, 4), (2, 5)]
+
+// List.zipWith
+
+let addFn = (a, b) => a + b
+let listA = [1, 2, 3]
+let listB = [4, 5, 6]
+
+assert zipWith(addFn, listA, listB) == [5, 7, 9]
+
+let multFn = (a, b) => a * b
+let listB = [4, 5]
+assert zipWith(multFn, listA, listB) == [4, 10]
+assert zipWith(addFn, [], listB) == []
+
 // List.drop
 
 assert drop(4, []) == []

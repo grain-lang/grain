@@ -119,21 +119,19 @@ describe("strings", ({test, testSkip}) => {
       prog_loc: mk_loc("string_loc_multi_line", (1, 0, 0), (5, 22, 17)),
     },
   );
-  // With current parsing semantics, the string is reported as byte length
-  // rather than utf8 char length
   assertParseWithLocs(
     "string_loc_single_line_emoji",
     "\"💯\"",
     {
       statements: [
         str(
-          ~loc=mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 6, 0)),
+          ~loc=mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 3, 0)),
           "💯",
         ),
       ],
       comments: [],
       prog_loc:
-        mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 6, 0)),
+        mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 3, 0)),
     },
   );
   assertSnapshot("string1", "\"foo\"");

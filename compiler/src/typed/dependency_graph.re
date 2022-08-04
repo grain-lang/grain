@@ -106,7 +106,7 @@ module Make = (DV: Dependency_value) => {
     do_register(dependency);
   };
 
-  let solve_next_out_of_date = (~stop: option(DV.t)) => {
+  let solve_next_out_of_date = (~stop=?, ()) => {
     let (stop_found, ret) =
       G_topological.fold(
         ((dep, state), acc) => {
@@ -137,10 +137,10 @@ module Make = (DV: Dependency_value) => {
     switch (lookup_filename(filename)) {
     | None => raise(Not_found)
     | Some(vtx) =>
-      let to_compile = ref(solve_next_out_of_date(Some(vtx)));
+      let to_compile = ref(solve_next_out_of_date(~stop=vtx, ()));
       while (Option.is_some(to_compile^)) {
         DV.compile_module(~loc?, Option.get(to_compile^));
-        to_compile := solve_next_out_of_date(Some(vtx));
+        to_compile := solve_next_out_of_date(~stop=vtx, ());
       };
     };
   };

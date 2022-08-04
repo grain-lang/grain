@@ -649,8 +649,7 @@ let rec compile_matrix = mtx =>
       let constants = matrix_head_constants(mtx);
       let equality_type = equality_type(List.hd(constants));
 
-      // TODO: https://github.com/grain-lang/grain/issues/1185
-      // Optimize physical equality checks into a switch.
+      // TODO(#1185): Optimize physical equality checks into a switch.
       // We can also do partial switches on Numbers if some of the
       // patterns are stack-allocated numbers. Addtionally, since we
       // know the types of the non-Number number types, we can make

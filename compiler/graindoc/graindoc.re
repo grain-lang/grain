@@ -86,7 +86,7 @@ let generate_docs =
   let module_comment = Comments.Doc.find_module(comments);
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
-    // TODO: Should we fail if more than one `@module` attribute?
+    // TODO(#787): Should we fail if more than one `@module` attribute?
     let module_attr = attrs |> List.find(Comments.Attribute.is_module);
     switch (module_attr) {
     | Module({attr_name, attr_desc}) =>
@@ -100,7 +100,7 @@ let generate_docs =
     | _ => failwith("Unreachable: Non-`module` attribute can't exist here.")
     };
 
-    // TODO: Should we fail if more than one `@since` attribute?
+    // TODO(#787): Should we fail if more than one `@since` attribute?
     let since_attr =
       attrs
       |> List.find_opt(Comments.Attribute.is_since)
