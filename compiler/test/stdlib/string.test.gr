@@ -195,7 +195,6 @@ let processBytes = b => {
 // Simple cases
 // formatter-ignore
 assert processBytes(String.encode("ab", String.UTF8)) == [> 0x61l, 0x62l]
-
 // formatter-ignore
 assert processBytes(String.encode("ab", String.UTF16_BE)) == [> 0x00l, 0x61l, 0x00l, 0x62l]
 // formatter-ignore
