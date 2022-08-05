@@ -28,7 +28,7 @@ let lotsOfVals = [>
 let numVals = Array.length(lotsOfVals)
 
 let sortedVals = Array.copy(lotsOfVals)
-Array.sort((a, b) => a - b, sortedVals)
+Array.sort(compare, sortedVals)
 
 let mut pq = ImmutablePriorityQueue.make((a, b) => a - b)
 let mut maxPq = ImmutablePriorityQueue.make((a, b) => b - a)
