@@ -896,7 +896,6 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         let xval = WasmF32.convertI32S(xval)
         let result = if (isSub) WasmF32.sub(xval, yBoxedVal)
           else WasmF32.add(xval, yBoxedVal)
-        // TODO(#304): is this safe?
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -994,7 +993,6 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         let yBoxedVal = boxedFloat32Number(y)
         let result = if (isSub) WasmF32.sub(xval, yBoxedVal)
           else WasmF32.add(xval, yBoxedVal)
-        // TODO(#304): this isn't safe enough
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -1106,7 +1104,6 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
         let yBoxedVal = boxedFloat32Number(y)
         let result = if (isSub) WasmF32.sub(xval, yBoxedVal)
           else WasmF32.add(xval, yBoxedVal)
-        // TODO(#304): this isn't safe enough
         newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -1349,7 +1346,6 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let xval = WasmF32.convertI64S(xval)
         let yBoxedVal = boxedFloat32Number(y)
-        // TODO(#304): is this safe?
         if (isDivide) {
           newFloat32(WasmF32.div(xval, yBoxedVal))
         } else {
@@ -1430,7 +1426,6 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         // we can only fit rather small bigints (<4 limbs) into an F32
         let xval = BI.toFloat64(x)
         let yBoxedVal = WasmF64.promoteF32(boxedFloat32Number(y))
-        // TODO(#304): is this safe?
         if (isDivide) {
           newFloat64(WasmF64.div(xval, yBoxedVal))
         } else {
@@ -1553,7 +1548,6 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         let yDenominator = boxedRationalDenominator(y)
         // (a / b) * (c / d) == (a * c) / (b * d)
         // (a / b) / (c / d) == (a * d) / (b * c)
-        // TODO(#304): this could maybe be written in a more overflow-proof way
         let numerator = if (isDivide) BI.mul(xNumerator, yDenominator)
           else BI.mul(xNumerator, yNumerator)
         let denominator = if (isDivide) BI.mul(xDenominator, yNumerator)
