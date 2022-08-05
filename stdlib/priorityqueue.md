@@ -46,11 +46,14 @@ comparator function takes two elements and must return 0 if both share
 priority, a positive number if the first has greater priority, and a
 negative number if the first has less priority.
 
+Generally, you won't need to care about the storage size of your priority
+queue and can use `PriorityQueue.make()` instead.
+
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`Number`|The number of elements to initialize the internal storage array with|
+|`size`|`Number`|The initial storage size of the priority queue|
 |`comp`|`(a, a) -> Number`|The comparator function used to indicate priority order|
 
 Returns:
@@ -108,13 +111,13 @@ No other changes yet.
 size : PriorityQueue<a> -> Number
 ```
 
-Returns the number of elements currently in the priority queue.
+Gets the number of elements in a priority queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to get the size of|
+|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
 
 Returns:
 
@@ -133,7 +136,7 @@ No other changes yet.
 isEmpty : PriorityQueue<a> -> Bool
 ```
 
-Returns whether or not the priority queue is empty.
+Determines if the priority queue contains no elements.
 
 Parameters:
 
@@ -145,7 +148,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the priority queue has no elements and `false` otherwise|
+|`Bool`|`true` if the priority queue is empty and `false` otherwise|
 
 ### Priorityqueue.**push**
 
@@ -165,7 +168,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`val`|`a`|The value to add into the priority queue|
-|`pq`|`PriorityQueue<a>`|The priority queue to add a new element to|
+|`pq`|`PriorityQueue<a>`|The priority queue to update|
 
 ### Priorityqueue.**peek**
 
@@ -178,20 +181,20 @@ No other changes yet.
 peek : PriorityQueue<a> -> Option<a>
 ```
 
-Returns the highest priority element in the priority queue in a `Some`
-variant, or `None` if the priority queue is empty.
+Retrieves the highest priority element in the priority queue. It is not
+removed from the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to get the highest priority element of|
+|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty|
+|`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
 
 ### Priorityqueue.**pop**
 
@@ -204,20 +207,19 @@ No other changes yet.
 pop : PriorityQueue<a> -> Option<a>
 ```
 
-Removes and returns the highest priority element in the priority queue in a `Some`
-variant, or `None` if the priority queue is empty.
+Removes and retrieves the highest priority element in the priority queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`PriorityQueue<a>`|The priority queue to remove and get the highest priority element of|
+|`pq`|`PriorityQueue<a>`|The priority queue to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty|
+|`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
 
 ### Priorityqueue.**drain**
 
@@ -230,7 +232,7 @@ No other changes yet.
 drain : PriorityQueue<a> -> List<a>
 ```
 
-Clears the priority queue and returns all of the elements in the priority
+Clears the priority queue and produces a list of all of the elements in the priority
 queue in priority order.
 
 Parameters:
@@ -266,12 +268,12 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`list`|`List<a>`|A list of values to initialize the priority queue with|
+|`list`|`List<a>`|A list of values used to initialize the priority queue|
 |`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`PriorityQueue<a>`|A priority queue containing the elements in the list|
+|`PriorityQueue<a>`|A priority queue containing the elements from the list|
 

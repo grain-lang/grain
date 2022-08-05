@@ -34,7 +34,13 @@ let swap = (i1, i2, array) => {
   array[i1] = t
 }
 
-let get = (array, i) => Option.unwrap(array[i])
+let get = (array, i) =>
+  Option.expect(
+    "Failure to retrieve element at index " ++
+    toString(i) ++
+    " in PriorityQueue's inner storage array",
+    array[i]
+  )
 
 let rec siftDown = (i, pq) => {
   let leftI = 2 * i + 1
@@ -73,7 +79,10 @@ let rec siftUp = (i, pq) => {
  * priority, a positive number if the first has greater priority, and a
  * negative number if the first has less priority.
  * 
- * @param size: The number of elements to initialize the internal storage array with
+ * Generally, you won't need to care about the storage size of your priority
+ * queue and can use `PriorityQueue.make()` instead.
+ * 
+ * @param size: The initial storage size of the priority queue
  * @param comp: The comparator function used to indicate priority order
  * @returns An empty priority queue
  *
@@ -102,9 +111,9 @@ export let make = comp => {
 }
 
 /**
- * Returns the number of elements currently in the priority queue.
+ * Gets the number of elements in a priority queue.
  * 
- * @param pq: The priority queue to get the size of
+ * @param pq: The priority queue to inspect
  * @returns The number of elements in the priority queue
  *
  * @since v0.5.3
@@ -114,10 +123,10 @@ export let size = pq => {
 }
 
 /**
- * Returns whether or not the priority queue is empty.
+ * Determines if the priority queue contains no elements.
  * 
  * @param pq: The priority queue to check
- * @returns `true` if the priority queue has no elements and `false` otherwise
+ * @returns `true` if the priority queue is empty and `false` otherwise
  *
  * @since v0.5.3
  */
@@ -129,7 +138,7 @@ export let isEmpty = pq => {
  * Adds a new element to the priority queue.
  * 
  * @param val: The value to add into the priority queue
- * @param pq: The priority queue to add a new element to
+ * @param pq: The priority queue to update
  *
  * @since v0.5.3
  */
@@ -151,11 +160,11 @@ export let push = (val, pq) => {
 }
 
 /**
- * Returns the highest priority element in the priority queue in a `Some`
- * variant, or `None` if the priority queue is empty.
+ * Retrieves the highest priority element in the priority queue. It is not
+ * removed from the queue.
  * 
- * @param pq: The priority queue to get the highest priority element of
- * @returns The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty
+ * @param pq: The priority queue to inspect
+ * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
  *
  * @since v0.5.3
  */
@@ -168,11 +177,10 @@ export let peek = pq => {
 }
 
 /**
- * Removes and returns the highest priority element in the priority queue in a `Some`
- * variant, or `None` if the priority queue is empty.
+ * Removes and retrieves the highest priority element in the priority queue.
  * 
- * @param pq: The priority queue to remove and get the highest priority element of
- * @returns The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty
+ * @param pq: The priority queue to inspect
+ * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
  *
  * @since v0.5.3
  */
@@ -193,7 +201,7 @@ export let pop = pq => {
 }
 
 /**
- * Clears the priority queue and returns all of the elements in the priority
+ * Clears the priority queue and produces a list of all of the elements in the priority
  * queue in priority order.
  * 
  * @param pq: The priority queue to drain
@@ -218,9 +226,9 @@ export let drain = pq => {
  * both share priority, a positive number if the first has greater priority,
  * and a negative number if the first has less priority.
  * 
- * @param list: A list of values to initialize the priority queue with
+ * @param list: A list of values used to initialize the priority queue
  * @param comp: A comparator function used to assign priority to elements
- * @returns A priority queue containing the elements in the list
+ * @returns A priority queue containing the elements from the list
  *
  * @since v0.5.3
  */
