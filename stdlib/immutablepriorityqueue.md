@@ -78,13 +78,13 @@ No other changes yet.
 size : ImmutablePriorityQueue<a> -> Number
 ```
 
-Returns the number of elements in the priority queue.
+Gets the number of elements in a priority queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to get the size of|
+|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to inspect|
 
 Returns:
 
@@ -103,7 +103,7 @@ No other changes yet.
 isEmpty : ImmutablePriorityQueue<a> -> Bool
 ```
 
-Returns whether or not the priority queue is empty.
+Determines if the priority queue contains no elements.
 
 Parameters:
 
@@ -115,7 +115,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the priority queue has no elements and `false` otherwise|
+|`Bool`|`true` if the priority queue is empty and `false` otherwise|
 
 ### Immutablepriorityqueue.**push**
 
@@ -123,7 +123,7 @@ Returns:
 push : (a, ImmutablePriorityQueue<a>) -> ImmutablePriorityQueue<a>
 ```
 
-Returns a new priority queue with the given element inserted into the given priority queue.
+Produces a new priority queue by inserting the given element into the given priority queue.
 
 Parameters:
 
@@ -136,7 +136,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`ImmutablePriorityQueue<a>`|A new priority queue with the given element inserted into the given priority queue|
+|`ImmutablePriorityQueue<a>`|A new priority queue with the given element inserted|
 
 ### Immutablepriorityqueue.**peek**
 
@@ -149,20 +149,20 @@ No other changes yet.
 peek : ImmutablePriorityQueue<a> -> Option<a>
 ```
 
-Returns the highest priority element in the priority queue in a `Some`
-variant, or `None` if the priority queue is empty.
+Retrieves the highest priority element in the priority queue. It is not
+removed from the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to get the highest priority element of|
+|`pq`|`ImmutablePriorityQueue<a>`|The priority queue to inspect|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty|
+|`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
 
 ### Immutablepriorityqueue.**pop**
 
@@ -175,7 +175,7 @@ No other changes yet.
 pop : ImmutablePriorityQueue<a> -> ImmutablePriorityQueue<a>
 ```
 
-Returns a new priority queue without the highest priority element in the
+Produces a new priority queue without the highest priority element in the
 given priority queue. If the input priority queue is empty, this function will
 return it.
 
@@ -189,7 +189,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`ImmutablePriorityQueue<a>`|A new priority queue without the highest priority element in the input priority queue|
+|`ImmutablePriorityQueue<a>`|A new priority queue without the highest priority element|
 
 ### Immutablepriorityqueue.**drain**
 
@@ -202,7 +202,7 @@ No other changes yet.
 drain : ImmutablePriorityQueue<a> -> List<a>
 ```
 
-Returns all of the elements in the priority queue in priority order.
+Produces a list of all elements in the priority queue in priority order.
 
 Parameters:
 
@@ -237,12 +237,12 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`list`|`List<a>`|A list of values to initialize the priority queue with|
+|`list`|`List<a>`|A list of values used to initialize the priority queue|
 |`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`ImmutablePriorityQueue<a>`|A priority queue containing the elements in the list|
+|`ImmutablePriorityQueue<a>`|A priority queue containing the elements from the list|
 

@@ -62,9 +62,9 @@ export let make = comp => {
 }
 
 /**
- * Returns the number of elements in the priority queue.
+ * Gets the number of elements in a priority queue.
  * 
- * @param pq: The priority queue to get the size of
+ * @param pq: The priority queue to inspect
  * @returns The number of elements in the priority queue
  *
  * @since v0.5.3
@@ -74,10 +74,10 @@ export let size = pq => {
 }
 
 /**
- * Returns whether or not the priority queue is empty.
+ * Determines if the priority queue contains no elements.
  * 
  * @param pq: The priority queue to check
- * @returns `true` if the priority queue has no elements and `false` otherwise
+ * @returns `true` if the priority queue is empty and `false` otherwise
  *
  * @since v0.5.3
  */
@@ -119,11 +119,11 @@ let skewInsert = (comp, val, pq) => {
 }
 
 /**
- * Returns a new priority queue with the given element inserted into the given priority queue.
+ * Produces a new priority queue by inserting the given element into the given priority queue.
  * 
  * @param val: The value to add into the priority queue
  * @param pq: The priority queue
- * @returns A new priority queue with the given element inserted into the given priority queue
+ * @returns A new priority queue with the given element inserted
  */
 export let push = (val, pq) => {
   let { comp, size, root } = pq
@@ -143,11 +143,11 @@ export let push = (val, pq) => {
 }
 
 /**
- * Returns the highest priority element in the priority queue in a `Some`
- * variant, or `None` if the priority queue is empty.
+ * Retrieves the highest priority element in the priority queue. It is not
+ * removed from the queue.
  * 
- * @param pq: The priority queue to get the highest priority element of
- * @returns The element with the highest priority wrapped in a `Some` variant, or `None` if the priority queue is empty
+ * @param pq: The priority queue to inspect
+ * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
  *
  * @since v0.5.3
  */
@@ -192,8 +192,8 @@ let uniquify = (comp, pq) => {
   }
 }
 
-// step through the trees of two priority queues in increasing rank order, perform-
-// ing a simple link whenever we find two trees of equal rank
+// step through the trees of two priority queues in increasing rank order,
+// performing a simple link whenever we find two trees of equal rank
 let rec mergeUniq = (comp, pq1, pq2) => {
   match ((pq1, pq2)) {
     ([], ts) | (ts, []) => ts,
@@ -266,12 +266,12 @@ let rec findHighestPriority = (comp, pq) => {
 }
 
 /**
- * Returns a new priority queue without the highest priority element in the
+ * Produces a new priority queue without the highest priority element in the
  * given priority queue. If the input priority queue is empty, this function will
  * return it.
  * 
  * @param pq: The priority queue
- * @returns A new priority queue without the highest priority element in the input priority queue
+ * @returns A new priority queue without the highest priority element
  *
  * @since v0.5.3
  */
@@ -297,7 +297,7 @@ export let pop = pq => {
 }
 
 /**
- * Returns all of the elements in the priority queue in priority order.
+ * Produces a list of all elements in the priority queue in priority order.
  * 
  * @param pq: The priority queue to drain
  * @returns A list of all elements in the priority in priority order
@@ -321,9 +321,9 @@ export let drain = pq => {
  * both share priority, a positive number if the first has greater priority,
  * and a negative number if the first has less priority.
  * 
- * @param list: A list of values to initialize the priority queue with
+ * @param list: A list of values used to initialize the priority queue
  * @param comp: A comparator function used to assign priority to elements
- * @returns A priority queue containing the elements in the list
+ * @returns A priority queue containing the elements from the list
  *
  * @since v0.5.3
  */
