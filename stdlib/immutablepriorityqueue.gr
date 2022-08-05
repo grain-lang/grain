@@ -1,0 +1,332 @@
+/**
+ * @module ImmutablePriorityQueue: An immutable priority queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+ *
+ * @example import ImmutablePriorityQueue from "immutablepriorityqueue"
+ *
+ * @since v0.5.3
+ */
+
+import List from "list"
+
+// implementation based on immutable skew binomial queue with global root optimization
+// as described in the paper "Optimal Purely Functional Priority Queues" by Chris Okasaki.
+
+// rank is a stand-in for height of this skew binomial tree
+record Node<a> {
+  val: a,
+  rank: Number,
+  children: List<Node<a>>,
+}
+
+// an optimization over binomial queue that allows keeping track of the root value
+
+// a skew binomial queue is defined as a forest of heap-ordered skew binomial trees
+record PQRoot<a> {
+  rootVal: a,
+  pq: List<Node<a>>,
+}
+
+/**
+ * @section Types: Type declarations included in the ImmutablePriorityQueue module.
+ */
+
+/**
+ * Immutable data structure which maintains a priority order for its elements.
+ */
+record ImmutablePriorityQueue<a> {
+  comp: (a, a) -> Number,
+  size: Number,
+  root: Option<PQRoot<a>>,
+}
+
+/**
+ * @section Values: Functions for working with ImmutablePriorityQueues.
+ */
+
+/**
+ * Creates a new priority queue with a comparator function, which is used to
+ * determine priority of elements. The comparator function takes two elements
+ * and must return 0 if both share priority, a positive number if the first
+ * has greater priority, and a negative number if the first has less priority.
+ * 
+ * @param comp: The comparator function used to indicate priority order
+ * @returns An empty priority queue
+ * 
+ * @example ImmutablePriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+ * @example ImmutablePriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
+ *
+ * @since v0.5.3
+ */
+export let make = comp => {
+  { comp, size: 0, root: None }
+}
+
+/**
+ * Gets the number of elements in a priority queue.
+ * 
+ * @param pq: The priority queue to inspect
+ * @returns The number of elements in the priority queue
+ *
+ * @since v0.5.3
+ */
+export let size = pq => {
+  pq.size
+}
+
+/**
+ * Determines if the priority queue contains no elements.
+ * 
+ * @param pq: The priority queue to check
+ * @returns `true` if the priority queue is empty and `false` otherwise
+ *
+ * @since v0.5.3
+ */
+export let isEmpty = pq => {
+  pq.size == 0
+}
+
+let skewLinkNodes = (comp, newNode, node1, node2) => {
+  // make the two nodes with larger values children of the node with the smallest value
+  if (comp(node1.val, newNode.val) <= 0 && comp(node1.val, node2.val) <= 0) {
+    {
+      val: node1.val,
+      rank: node1.rank + 1,
+      children: [newNode, node2, ...node1.children],
+    }
+  } else if (
+    comp(node2.val, newNode.val) <= 0 && comp(node2.val, node1.val) <= 0
+  ) {
+    {
+      val: node2.val,
+      rank: node2.rank + 1,
+      children: [newNode, node1, ...node2.children],
+    }
+  } else {
+    { val: newNode.val, rank: node1.rank + 1, children: [node1, node2] }
+  }
+}
+
+let skewInsert = (comp, val, pq) => {
+  let newNode = { val, rank: 0, children: [] }
+  match (pq) {
+    // the only time two trees will have the same rank is if they are the
+    // smallest-ranked trees in the queue, in which case we should link
+    // them with the new node
+    [node1, node2, ...rest] when node1.rank == node2.rank =>
+      [skewLinkNodes(comp, newNode, node1, node2), ...rest],
+    _ => [newNode, ...pq],
+  }
+}
+
+/**
+ * Produces a new priority queue by inserting the given element into the given priority queue.
+ * 
+ * @param val: The value to add into the priority queue
+ * @param pq: The priority queue
+ * @returns A new priority queue with the given element inserted
+ */
+export let push = (val, pq) => {
+  let { comp, size, root } = pq
+  match (root) {
+    None => { comp, size: 1, root: Some({ rootVal: val, pq: [] }) },
+    Some({ rootVal, pq }) => {
+      // make the new value the root if it has higher priority than the highest priority value
+      let (morePriorityVal, lessPriorityVal) = if (comp(val, rootVal) <= 0)
+          (val, rootVal) else (rootVal, val)
+
+      let newRoot = Some(
+        { rootVal: morePriorityVal, pq: skewInsert(comp, lessPriorityVal, pq) }
+      )
+      { comp, size: size + 1, root: newRoot }
+    },
+  }
+}
+
+/**
+ * Retrieves the highest priority element in the priority queue. It is not
+ * removed from the queue.
+ * 
+ * @param pq: The priority queue to inspect
+ * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
+ *
+ * @since v0.5.3
+ */
+export let peek = pq => {
+  match (pq.root) {
+    None => None,
+    Some({ rootVal, _ }) => Some(rootVal),
+  }
+}
+
+let linkNodes = (comp, node1, node2) => {
+  // make the node with higher priority the parent of the node with smaller
+  // priority to presere heap-ordering
+  let (morePriority, lessPriority) = if (comp(node1.val, node2.val) <= 0)
+      (node1, node2) else (node2, node1)
+  {
+    val: morePriority.val,
+    rank: morePriority.rank + 1,
+    children: [lessPriority, ...morePriority.children],
+  }
+}
+
+// step through the trees in the priority queue in increasing rank order until we
+// find a missing rank, linking trees of equal rank as we go
+let rec ins = (comp, node, pq) => {
+  match (pq) {
+    [] => [node],
+    [firstNode, ...rest] => {
+      if (node.rank < firstNode.rank) {
+        [node, firstNode, ...rest]
+      } else {
+        ins(comp, linkNodes(comp, node, firstNode), rest)
+      }
+    },
+  }
+}
+
+let uniquify = (comp, pq) => {
+  match (pq) {
+    [] => [],
+    [node, ...rest] => ins(comp, node, rest),
+  }
+}
+
+// step through the trees of two priority queues in increasing rank order,
+// performing a simple link whenever we find two trees of equal rank
+let rec mergeUniq = (comp, pq1, pq2) => {
+  match ((pq1, pq2)) {
+    ([], ts) | (ts, []) => ts,
+    ([node1, ...rest1], [node2, ...rest2]) => {
+      if (node1.rank < node2.rank) {
+        [node1, ...mergeUniq(comp, rest1, pq2)]
+      } else if (node2.rank < node1.rank) {
+        [node2, ...mergeUniq(comp, pq1, rest2)]
+      } else {
+        ins(comp, linkNodes(comp, node1, node2), mergeUniq(comp, rest1, rest2))
+      }
+    },
+  }
+}
+
+let merge = (comp, pq1, pq2) =>
+  mergeUniq(comp, uniquify(comp, pq1), uniquify(comp, pq2))
+
+// splits the node with the minimum value out from the rest of the nodes
+let rec separateHighestPriority = (comp, pq) => {
+  match (pq) {
+    // empty list case should never happen; this is here just to satisfy the compiler
+    [] => fail "getHighestPriority called with empty PQ",
+    [node] => (node, []),
+    [node, ...rest] => {
+      let (currMinNode, currNonMinNodes) = separateHighestPriority(comp, rest)
+      if (comp(node.val, currMinNode.val) <= 0) {
+        (node, rest)
+      } else {
+        (currMinNode, [node, ...currNonMinNodes])
+      }
+    },
+  }
+}
+
+// splits the nodes of rank 0 out from the other nodes
+let rec splitRankZero = (rankZeroVals, nonRankZeroNodes, pq) => {
+  match (pq) {
+    [] => (rankZeroVals, nonRankZeroNodes),
+    [node, ...rest] => {
+      if (node.rank == 0) {
+        splitRankZero([node.val, ...rankZeroVals], nonRankZeroNodes, rest)
+      } else {
+        splitRankZero(rankZeroVals, [node, ...nonRankZeroNodes], rest)
+      }
+    },
+  }
+}
+
+let withoutHighestPriority = (comp, pq) => {
+  // split out the node with the highest priority
+  let (hpNode, nonHpNodes) = separateHighestPriority(comp, pq)
+  // split out the values with nodes of rank 0, which will all be singleton nodes
+  let (rankZeroVals, nonRankZeroNodes) = splitRankZero([], [], hpNode.children)
+
+  let mergedPq = merge(comp, nonHpNodes, nonRankZeroNodes)
+  List.reduce((pq, val) => skewInsert(comp, val, pq), mergedPq, rankZeroVals)
+}
+
+let rec findHighestPriority = (comp, pq) => {
+  match (pq) {
+    // empty list case should never happen; this is here just to satisfy the compiler
+    [] => fail "findHighestPriority with empty PQ",
+    [node] => node.val,
+    [node, ...rest] => {
+      let currMin = findHighestPriority(comp, rest)
+      if (comp(node.val, currMin) <= 0) node.val else currMin
+    },
+  }
+}
+
+/**
+ * Produces a new priority queue without the highest priority element in the
+ * given priority queue. If the input priority queue is empty, this function will
+ * return it.
+ * 
+ * @param pq: The priority queue
+ * @returns A new priority queue without the highest priority element
+ *
+ * @since v0.5.3
+ */
+export let pop = pq => {
+  let pqWithRoot = pq
+  let { comp, size, root } = pq
+  match (root) {
+    None => pq,
+    Some({ pq, rootVal }) => {
+      let newRoot = if (pq == []) {
+        None
+      } else {
+        Some(
+          {
+            rootVal: findHighestPriority(comp, pq),
+            pq: withoutHighestPriority(comp, pq),
+          }
+        )
+      }
+      { comp, size: size - 1, root: newRoot }
+    },
+  }
+}
+
+/**
+ * Produces a list of all elements in the priority queue in priority order.
+ * 
+ * @param pq: The priority queue to drain
+ * @returns A list of all elements in the priority in priority order
+ *
+ * @since v0.5.3
+ */
+export let drain = pq => {
+  let rec drainRec = (acc, pq) => {
+    match (pq.root) {
+      None => acc,
+      Some(root) => drainRec([root.rootVal, ...acc], pop(pq)),
+    }
+  }
+  List.reverse(drainRec([], pq))
+}
+
+/**
+ * Constructs a new priority queue initialized with the elements in the list
+ * using a custom comparator function, which is used to determine priority of
+ * elements. The comparator function takes two elements and must return 0 if
+ * both share priority, a positive number if the first has greater priority,
+ * and a negative number if the first has less priority.
+ * 
+ * @param list: A list of values used to initialize the priority queue
+ * @param comp: A comparator function used to assign priority to elements
+ * @returns A priority queue containing the elements from the list
+ *
+ * @since v0.5.3
+ */
+export let fromList = (list, comp) => {
+  List.reduce((pq, val) => push(val, pq), make(comp), list)
+}

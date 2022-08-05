@@ -1,0 +1,80 @@
+import PriorityQueue from "priorityqueue"
+import List from "list"
+import Array from "array"
+
+// formatter-ignore
+let lotsOfVals = [>
+  3, 2, 1, 5, 3, 2, 2, 10, 6, 5,
+  6, 4, 9, 10, 10, 5, 9, 6, 1, 3,
+  3, 6, 6, 1, 3, 9, 6, 7, 4, 6,
+  5, 4, 4, 8, 6, 4, 1, 2, 3, 8,
+  8, 8, 10, 9, 6, 8, 4, 1, 1, 2,
+  10, 2, 8, 10, 8, 7, 4, 8, 10, 1,
+  3, 10, 4, 1, 6, 9, 6, 7, 8, 7,
+  10, 4, 5, 10, 3, 2, 4, 5, 9, 5,
+  3, 5, 10, 8, 7, 1, 6, 1, 4, 8,
+  3, 5, 7, 2, 4, 2, 4, 5, 10, 6,
+  7, 7, 7, 1, 10, 4, 9, 9, 10, 10,
+  2, 5, 2, 4, 3, 10, 9, 8, 3, 5,
+  7, 10, 9, 7, 8, 9, 3, 7, 7, 1,
+  7, 7, 6, 3, 3, 5, 1, 8, 9, 10,
+  7, 5, 9, 2, 9, 1, 6, 3, 10, 6,
+  10, 2, 6, 2, 9, 3, 3, 2, 4, 1,
+  9, 4, 9, 2, 9, 4, 8, 5, 6, 7,
+  4, 6, 5, 4, 3, 4, 2, 9, 10, 1,
+  10, 4, 4, 6, 3, 1, 9, 10, 2, 2,
+  5, 5, 3, 4, 5, 8, 3, 8, 4, 10
+]
+let numVals = Array.length(lotsOfVals)
+
+let sortedVals = Array.copy(lotsOfVals)
+Array.sort(compare, sortedVals)
+
+let mut pq = PriorityQueue.make((a, b) => a - b)
+let mut maxPq = PriorityQueue.make((a, b) => b - a)
+
+assert PriorityQueue.size(pq) == 0
+assert PriorityQueue.isEmpty(pq)
+assert PriorityQueue.peek(pq) == None
+assert PriorityQueue.drain(pq) == []
+
+assert PriorityQueue.pop(pq) == None
+assert PriorityQueue.size(pq) == 0
+
+for (let mut i = 0; i < numVals; i += 1) {
+  PriorityQueue.push(lotsOfVals[i], pq)
+  PriorityQueue.push(lotsOfVals[i], maxPq)
+  assert PriorityQueue.size(pq) == i + 1
+  assert PriorityQueue.size(maxPq) == i + 1
+}
+
+assert PriorityQueue.size(pq) == numVals
+assert PriorityQueue.size(maxPq) == numVals
+
+for (let mut i = 0; i < numVals; i += 1) {
+  let val = PriorityQueue.peek(pq)
+  assert val == Some(sortedVals[i])
+  let maxVal = PriorityQueue.peek(maxPq)
+  assert maxVal == Some(sortedVals[numVals - i - 1])
+
+  let val = PriorityQueue.pop(pq)
+  assert val == Some(sortedVals[i])
+  let maxVal = PriorityQueue.pop(maxPq)
+  assert maxVal == Some(sortedVals[numVals - i - 1])
+
+  assert PriorityQueue.size(pq) == numVals - i - 1
+  assert PriorityQueue.size(maxPq) == numVals - i - 1
+}
+
+assert PriorityQueue.size(pq) == 0
+assert PriorityQueue.peek(pq) == None
+
+let sortedList = Array.toList(sortedVals)
+assert PriorityQueue.drain(
+  PriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => a - b)
+) ==
+sortedList
+assert PriorityQueue.drain(
+  PriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => b - a)
+) ==
+List.reverse(sortedList)

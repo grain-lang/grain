@@ -110,6 +110,8 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("set.test");
   assertStdlib("regex.test");
   assertStdlib("stack.test");
+  assertStdlib("priorityqueue.test");
+  assertStdlib("immutablepriorityqueue.test");
   assertStdlib("string.test");
   assertStdlib("sys.file.test");
   assertStdlib(~code=5, "sys.process.test");
