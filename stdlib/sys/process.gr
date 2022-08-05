@@ -1,5 +1,5 @@
 /**
- * @module Sys/Process: Utilities for accessing functionality and information about the Grain program's process.
+ * @module Process: Utilities for accessing functionality and information about the Grain program's process.
  *
  * This includes things like accessing environment variables and sending signals.
  *
@@ -25,7 +25,7 @@ import {
 } from "runtime/dataStructures"
 
 /**
- * @section Types: Type declarations included in the Sys/Process module.
+ * @section Types: Type declarations included in the Process module.
  */
 
 /**
@@ -91,7 +91,7 @@ export enum Signal {
 }
 
 /**
- * @section Values: Functions and constants included in the Sys/Process module.
+ * @section Values: Functions and constants included in the Process module.
  */
 
 /**

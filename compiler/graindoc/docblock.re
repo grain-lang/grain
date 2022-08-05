@@ -146,8 +146,13 @@ let lookup_type_expr = (~idx, type_exprs) => {
 };
 
 let for_value_description =
-    (~comments, ~ident: Ident.t, ~loc, vd: Types.value_description) => {
-  let module_name = module_name_of_location(loc);
+    (
+      ~comments,
+      ~loc,
+      ~module_name=module_name_of_location(loc),
+      ~ident: Ident.t,
+      vd: Types.value_description,
+    ) => {
   let name = title_for_api(~module_name, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
@@ -181,8 +186,13 @@ let for_value_description =
 };
 
 let for_type_declaration =
-    (~comments, ~ident: Ident.t, ~loc, td: Types.type_declaration) => {
-  let module_name = module_name_of_location(loc);
+    (
+      ~comments,
+      ~loc,
+      ~module_name=module_name_of_location(loc),
+      ~ident: Ident.t,
+      td: Types.type_declaration,
+    ) => {
   let name = title_for_api(~module_name, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
@@ -201,16 +211,19 @@ let for_signature_item =
     (
       ~comments,
       ~exports: Ident.tbl(Grain_parsing.Location.t),
+      ~module_name=?,
       sig_item: Types.signature_item,
     ) => {
   switch (sig_item) {
   | TSigValue(ident, vd) =>
     let loc = location_for_ident(~exports, ident);
-    let docblock = for_value_description(~comments, ~ident, ~loc, vd);
+    let docblock =
+      for_value_description(~comments, ~module_name?, ~ident, ~loc, vd);
     Some(docblock);
   | TSigType(ident, td, _rec) =>
     let loc = location_for_ident(~exports, ident);
-    let docblock = for_type_declaration(~comments, ~ident, ~loc, td);
+    let docblock =
+      for_type_declaration(~comments, ~module_name?, ~ident, ~loc, td);
     Some(docblock);
   | _ => None
   };
