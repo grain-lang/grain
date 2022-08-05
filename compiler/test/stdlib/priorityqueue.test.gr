@@ -72,7 +72,9 @@ assert PriorityQueue.peek(pq) == None
 let sortedList = Array.toList(sortedVals)
 assert PriorityQueue.drain(
   PriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => a - b)
-) == sortedList
+) ==
+sortedList
 assert PriorityQueue.drain(
   PriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => b - a)
-) == List.reverse(sortedList)
+) ==
+List.reverse(sortedList)
