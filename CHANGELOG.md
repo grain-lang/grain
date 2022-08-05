@@ -1,5 +1,34 @@
 # Changelog
 
+### [0.5.3](https://github.com/grain-lang/grain/compare/grain-v0.5.2...grain-v0.5.3) (2022-08-05)
+
+
+### Features
+
+* Arm64 docker builds ([#1368](https://github.com/grain-lang/grain/issues/1368)) ([5837df6](https://github.com/grain-lang/grain/commit/5837df6f39a35416e23f162b42f2f0a9088e1807))
+* **compiler:** Unicode-aware lexing ([#1342](https://github.com/grain-lang/grain/issues/1342)) ([6dc0dd1](https://github.com/grain-lang/grain/commit/6dc0dd1bc80bbfa9da41f82e9f89569d5f0e6d01))
+* Implement Pervasives.compare ([#1399](https://github.com/grain-lang/grain/issues/1399)) ([ebd87e4](https://github.com/grain-lang/grain/commit/ebd87e4308a8950fd95f060ebc446833b064237c))
+* **stdlib:** Add `charCodeAt` function to String module ([#1376](https://github.com/grain-lang/grain/issues/1376)) ([c3abbc9](https://github.com/grain-lang/grain/commit/c3abbc991c8b05e3de20e670d2bc3e491feebf8a))
+* **stdlib:** Add `lastIndexOf` function to String module ([#1372](https://github.com/grain-lang/grain/issues/1372)) ([b73d9bf](https://github.com/grain-lang/grain/commit/b73d9bf9ff3291b83e6f4263e392395d04dc9995))
+* **stdlib:** Implement `isFloat`, `isInteger` & `isRational` in Number module ([#1393](https://github.com/grain-lang/grain/issues/1393)) ([0af0669](https://github.com/grain-lang/grain/commit/0af066993a2b80e417d2c625b27fd11cb1f1f55f))
+* **stdlib:** Implement List.zip, List.unzip, List.zipWith, Array.reduceRight, Array.zipWith ([#1363](https://github.com/grain-lang/grain/issues/1363)) ([3e7c147](https://github.com/grain-lang/grain/commit/3e7c147fea2d2fb8b7c5a3d6b3eb1453f2861e36))
+* **stdlib:** Implement mutable/immutable priority queues ([#1397](https://github.com/grain-lang/grain/issues/1397)) ([244be1b](https://github.com/grain-lang/grain/commit/244be1b7254caf0b451902ac56413382eb196747))
+* **stdlib:** Marshal ([#1352](https://github.com/grain-lang/grain/issues/1352)) ([d659de2](https://github.com/grain-lang/grain/commit/d659de2d92260f7726164876827c639bfd9d0590))
+
+
+### Bug Fixes
+
+* **compiler:** Allow defining _start when using --use-start-section ([#1349](https://github.com/grain-lang/grain/issues/1349)) ([944f71c](https://github.com/grain-lang/grain/commit/944f71ca8080b8a3228d27893b2fd5b84e4b6189))
+* **compiler:** Apply list location to outer node ([#1387](https://github.com/grain-lang/grain/issues/1387)) ([06e79a8](https://github.com/grain-lang/grain/commit/06e79a80e5e61e5a8654654dfa15310a1bc363ea))
+* **compiler:** Correctly handle underscores in bigint literals ([0af0669](https://github.com/grain-lang/grain/commit/0af066993a2b80e417d2c625b27fd11cb1f1f55f))
+* **graindoc:** Enable printing of arrow types ([#1367](https://github.com/grain-lang/grain/issues/1367)) ([e2b28ab](https://github.com/grain-lang/grain/commit/e2b28ab66ecd9169c27a2680ba5e0fb79e589787))
+* **graindoc:** Use defined module name throughout generated doc ([#1406](https://github.com/grain-lang/grain/issues/1406)) ([c33a777](https://github.com/grain-lang/grain/commit/c33a777a93d5e40a081991db5e6ea61ade4fbabc))
+* **grainfmt:** Format rational numbers with parens when needed for precedence ([#1385](https://github.com/grain-lang/grain/issues/1385)) ([931bb42](https://github.com/grain-lang/grain/commit/931bb42b4a8bc610765d871947f7deaef354511b))
+* **grainfmt:** Use only the correct comments for constraints ([#1388](https://github.com/grain-lang/grain/issues/1388)) ([91d5cdf](https://github.com/grain-lang/grain/commit/91d5cdf63d7be8a68cf613c6ba217c5810cf3920))
+* **grainlsp:** Send empty response if file cannot be formatted ([#1386](https://github.com/grain-lang/grain/issues/1386)) ([38a3f58](https://github.com/grain-lang/grain/commit/38a3f58b5cf4b61654cc07f3fad0b9be10abb983))
+* **stdlib:** Correctly promote numbers to bigints when left-shifting ([#1354](https://github.com/grain-lang/grain/issues/1354)) ([5280e98](https://github.com/grain-lang/grain/commit/5280e98a91a57fae074299fc7bad3c41f69fa2a3))
+* **stdlib:** Prevent addBytesSlice throwing error on empty buffer ([#1394](https://github.com/grain-lang/grain/issues/1394)) ([bdd4be4](https://github.com/grain-lang/grain/commit/bdd4be46730290908b7b939f41679acce7834167))
+
 ### [0.5.2](https://github.com/grain-lang/grain/compare/grain-v0.5.1...grain-v0.5.2) (2022-06-29)
 
 
