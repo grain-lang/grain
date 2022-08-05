@@ -43,6 +43,7 @@ import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import { allocateBytes, newInt32 } from "runtime/dataStructures"
 import Map from "map"
+import Set from "set"
 import Option from "option"
 
 @unsafe
@@ -59,11 +60,11 @@ let isHeapPtr = value =>
 let rec size = (value, acc, valuesSeen, toplevel) => {
   if (isHeapPtr(value)) {
     let asInt32 = toGrain(newInt32(value)): Int32
-    if (Map.contains(asInt32, valuesSeen)) {
-      // We've detected a cycle, and we'll refer the existing instance
+    if (Set.contains(asInt32, valuesSeen)) {
+      // We've detected a cycle, and we'll refer to the existing instance
       acc
     } else {
-      Map.set(asInt32, void, valuesSeen)
+      Set.add(asInt32, valuesSeen)
 
       let acc = if (toplevel) {
         // We'll write a word (and 32 bits of padding) to indicate that this is a heap value
@@ -182,19 +183,8 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
 
 @unsafe
 let size = value => {
-  size(value, 0n, Map.make(), true)
+  size(value, 0n, Set.make(), true)
 }
-
-// if (Map.contains(asInt32, valuesSeen)) {
-//       // Mark that there's a cycle
-//       store(buf, _CYCLE_MARKER, offset)
-//       store(
-//         buf,
-//         load(fromGrain(Option.unwrap(Map.get(asInt32, valuesSeen))), 8n),
-//         offset + 4n
-//       )
-//       offset + 8n
-//     } else {
 
 @unsafe
 let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
@@ -222,15 +212,15 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         let value = load(heapPtr + i, 20n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesSeen)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesSeen))),
-              8n
-            )
-            store(buf, ptr, offset + i + 20n)
-          } else {
-            store(buf, payloadOffset, offset + i + 20n)
-            payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 20n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 20n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
           }
         } else {
           store(buf, value, offset + i + 20n)
@@ -251,15 +241,15 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         let value = load(heapPtr + i, 16n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesSeen)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesSeen))),
-              8n
-            )
-            store(buf, ptr, offset + i + 16n)
-          } else {
-            store(buf, payloadOffset, offset + i + 16n)
-            payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 16n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 16n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
           }
         } else {
           store(buf, value, offset + i + 16n)
@@ -280,15 +270,15 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         let value = load(heapPtr + i, 8n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesSeen)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesSeen))),
-              8n
-            )
-            store(buf, ptr, offset + i + 8n)
-          } else {
-            store(buf, payloadOffset, offset + i + 8n)
-            payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 8n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 8n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
           }
         } else {
           store(buf, value, offset + i + 8n)
@@ -309,15 +299,15 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         let value = load(heapPtr + i, 8n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesSeen)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesSeen))),
-              8n
-            )
-            store(buf, ptr, offset + i + 8n)
-          } else {
-            store(buf, payloadOffset, offset + i + 8n)
-            payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 8n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 8n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
           }
         } else {
           store(buf, value, offset + i + 8n)
@@ -338,15 +328,15 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         let value = load(heapPtr + i, 16n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesSeen)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesSeen))),
-              8n
-            )
-            store(buf, ptr, offset + i + 16n)
-          } else {
-            store(buf, payloadOffset, offset + i + 16n)
-            payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 16n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 16n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
           }
         } else {
           store(buf, value, offset + i + 16n)
@@ -465,7 +455,7 @@ let validateStack = (value, offset) => {
 @unsafe
 let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
   let offsetAsInt32 = toGrain(newInt32(offset)): Int32
-  Map.set(offsetAsInt32, void, valuesChecked)
+  Set.add(offsetAsInt32, valuesChecked)
 
   let valuePtr = buf + offset
   match (load(valuePtr, 0n)) {
@@ -496,7 +486,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         let value = load(valuePtr + i, 20n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesChecked)) {
+          if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
           error = Option.or(
@@ -527,7 +517,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         let value = load(valuePtr + i, 16n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesChecked)) {
+          if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
           error = Option.or(
@@ -558,7 +548,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         let value = load(valuePtr + i, 8n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesChecked)) {
+          if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
           error = Option.or(
@@ -589,7 +579,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         let value = load(valuePtr + i, 8n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesChecked)) {
+          if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
           error = Option.or(
@@ -620,7 +610,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         let value = load(valuePtr + i, 16n)
         if (isHeapPtr(value)) {
           let asInt32 = toGrain(newInt32(value)): Int32
-          if (Map.contains(asInt32, valuesChecked)) {
+          if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
           error = Option.or(
@@ -748,7 +738,7 @@ let validate = (buf, bufSize) => {
   } else {
     let value = load(buf, 0n)
     if (isHeapPtr(value)) {
-      validateHeap(buf, bufSize, value, Map.make())
+      validateHeap(buf, bufSize, value, Set.make())
     } else {
       // Handle non-heap values: booleans, chars, void, etc.
       match (value) {
@@ -800,18 +790,18 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         let subvalue = load(valuePtr + i, 20n)
         if (isHeapPtr(subvalue)) {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
-          if (Map.contains(asInt32, valuesUnmarshaled)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesUnmarshaled))),
-              8n
-            )
-            store(value + i, Memory.incRef(ptr), 20n)
-          } else {
-            store(
-              value + i,
-              unmarshalHeap(buf, subvalue, valuesUnmarshaled),
-              20n
-            )
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 20n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                20n
+              )
+            },
           }
         } else {
           store(value + i, subvalue, 20n)
@@ -835,18 +825,18 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         let subvalue = load(valuePtr + i, 16n)
         if (isHeapPtr(subvalue)) {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
-          if (Map.contains(asInt32, valuesUnmarshaled)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesUnmarshaled))),
-              8n
-            )
-            store(value + i, Memory.incRef(ptr), 16n)
-          } else {
-            store(
-              value + i,
-              unmarshalHeap(buf, subvalue, valuesUnmarshaled),
-              16n
-            )
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 16n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                16n
+              )
+            },
           }
         } else {
           store(value + i, subvalue, 16n)
@@ -870,18 +860,18 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         let subvalue = load(valuePtr + i, 8n)
         if (isHeapPtr(subvalue)) {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
-          if (Map.contains(asInt32, valuesUnmarshaled)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesUnmarshaled))),
-              8n
-            )
-            store(value + i, Memory.incRef(ptr), 8n)
-          } else {
-            store(
-              value + i,
-              unmarshalHeap(buf, subvalue, valuesUnmarshaled),
-              8n
-            )
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 8n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                8n
+              )
+            },
           }
         } else {
           store(value + i, subvalue, 8n)
@@ -905,18 +895,18 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         let subvalue = load(valuePtr + i, 8n)
         if (isHeapPtr(subvalue)) {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
-          if (Map.contains(asInt32, valuesUnmarshaled)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesUnmarshaled))),
-              8n
-            )
-            store(value + i, Memory.incRef(ptr), 8n)
-          } else {
-            store(
-              value + i,
-              unmarshalHeap(buf, subvalue, valuesUnmarshaled),
-              8n
-            )
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 8n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                8n
+              )
+            },
           }
         } else {
           store(value + i, subvalue, 8n)
@@ -940,18 +930,18 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         let subvalue = load(valuePtr + i, 16n)
         if (isHeapPtr(subvalue)) {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
-          if (Map.contains(asInt32, valuesUnmarshaled)) {
-            let ptr = load(
-              fromGrain(Option.unwrap(Map.get(asInt32, valuesUnmarshaled))),
-              8n
-            )
-            store(value + i, Memory.incRef(ptr), 16n)
-          } else {
-            store(
-              value + i,
-              unmarshalHeap(buf, subvalue, valuesUnmarshaled),
-              16n
-            )
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 16n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                16n
+              )
+            },
           }
         } else {
           store(value + i, subvalue, 16n)
