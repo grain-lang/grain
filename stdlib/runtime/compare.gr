@@ -19,12 +19,11 @@ import WasmI64 from "runtime/unsafe/wasmi64"
 import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import { tagSimpleNumber } from "runtime/dataStructures"
+import { isNumber, cmp as numberCompare } from "runtime/numbers"
 
 primitive (!): Bool -> Bool = "@not"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
-
-import { isNumber, cmp as numberCompare } from "runtime/numbers"
 
 @unsafe
 let zero = WasmI32.fromGrain(0)
