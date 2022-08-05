@@ -442,7 +442,7 @@ Array.reduce((a, b) => a + b, 0, [> 1, 2, 3]) // 6
 ### Array.**reduceRight**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -987,7 +987,7 @@ Returns:
 ### Array.**zipWith**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 

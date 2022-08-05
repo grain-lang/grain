@@ -428,7 +428,7 @@ Returns:
 ### Number.**isFloat**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -453,7 +453,7 @@ Returns:
 ### Number.**isInteger**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -478,7 +478,7 @@ Returns:
 ### Number.**isRational**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
