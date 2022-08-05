@@ -5,7 +5,7 @@ title: ImmutablePriorityQueue
 An immutable priority queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -32,7 +32,7 @@ Functions for working with ImmutablePriorityQueues.
 ### ImmutablePriorityQueue.**make**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -70,7 +70,7 @@ ImmutablePriorityQueue.make((a, b) => String.length(b) - String.length(a)) // cr
 ### ImmutablePriorityQueue.**size**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -95,7 +95,7 @@ Returns:
 ### ImmutablePriorityQueue.**isEmpty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -141,7 +141,7 @@ Returns:
 ### ImmutablePriorityQueue.**peek**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -167,7 +167,7 @@ Returns:
 ### ImmutablePriorityQueue.**pop**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -194,7 +194,7 @@ Returns:
 ### ImmutablePriorityQueue.**drain**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -219,7 +219,7 @@ Returns:
 ### ImmutablePriorityQueue.**fromList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 

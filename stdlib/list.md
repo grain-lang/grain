@@ -822,7 +822,7 @@ Returns:
 ### List.**zip**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -863,7 +863,7 @@ List.zip([1, 2, 3], [4, 5]) // [(1, 4), (2, 5)]
 ### List.**zipWith**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -907,7 +907,7 @@ List.zipWith((a, b) => a * b, [1, 2, 3], [4, 5]) // [4, 10]
 ### List.**unzip**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 

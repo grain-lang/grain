@@ -5,7 +5,7 @@ title: PriorityQueue
 A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -32,7 +32,7 @@ Functions for working with PriorityQueues.
 ### PriorityQueue.**makeSized**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -65,7 +65,7 @@ Returns:
 ### PriorityQueue.**make**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -103,7 +103,7 @@ PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a p
 ### PriorityQueue.**size**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -128,7 +128,7 @@ Returns:
 ### PriorityQueue.**isEmpty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -153,7 +153,7 @@ Returns:
 ### PriorityQueue.**push**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -173,7 +173,7 @@ Parameters:
 ### PriorityQueue.**peek**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -199,7 +199,7 @@ Returns:
 ### PriorityQueue.**pop**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -224,7 +224,7 @@ Returns:
 ### PriorityQueue.**drain**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -250,7 +250,7 @@ Returns:
 ### PriorityQueue.**fromList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 

@@ -172,7 +172,7 @@ String.indexOf("world", "Hello world") == Some(6)
 ### String.**lastIndexOf**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -204,7 +204,7 @@ String.lastIndexOf("world", "Hello world world") == Some(12)
 ### String.**charCodeAt**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 

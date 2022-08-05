@@ -5,7 +5,7 @@ title: Marshal
 Utilities for serializing and deserializing Grain data.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -20,7 +20,7 @@ Functions for marshaling and unmarshaling data.
 ### Marshal.**marshal**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
@@ -47,7 +47,7 @@ Returns:
 ### Marshal.**unmarshal**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
 No other changes yet.
 </details>
 
