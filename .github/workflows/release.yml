@@ -19,6 +19,37 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: manifest
 
+  generate-docs:
+    needs: [release-please]
+    # If a release was not created, we are working on the release PR
+    if: ${{ needs.release-please.outputs.releases_created == false }}
+    name: Generate Docs
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the branch that release-please creates (unfortunately hardcoded)
+      - name: Checkout project
+        uses: actions/checkout@v2
+        with:
+          ref: "release-please--branches--main"
+
+      - name: Setup bot user
+        run: |
+          git config --global user.email "bot@grain-lang.org"
+          git config --global user.name "Grain Bot"
+
+      # TODO: We don't have a compiler :(
+
+      - name: Regenerate docs
+        run: |
+          grain doc stdlib -o stdlib --current-version=$(grain -v)
+
+      # This should never be empty (or we seriously messed up)
+      - name: Commit docs
+        run: |
+          git add stdlib
+          git commit -m 'chore(stdlib): Regenerate markdown documentation'
+          git push
+
   prepare-artifacts:
     needs: [release-please]
     if: ${{ needs.release-please.outputs.releases_created }}
