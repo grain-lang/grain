@@ -17,7 +17,7 @@ import ImmutablePriorityQueue from "immutablepriorityqueue"
 
 Type declarations included in the ImmutablePriorityQueue module.
 
-### Immutablepriorityqueue.**ImmutablePriorityQueue**
+### ImmutablePriorityQueue.**ImmutablePriorityQueue**
 
 ```grain
 type ImmutablePriorityQueue<a>
@@ -29,7 +29,7 @@ Immutable data structure which maintains a priority order for its elements.
 
 Functions for working with ImmutablePriorityQueues.
 
-### Immutablepriorityqueue.**make**
+### ImmutablePriorityQueue.**make**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -67,7 +67,7 @@ ImmutablePriorityQueue.make(compare) // creates a min priority queue of numbers 
 ImmutablePriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
 ```
 
-### Immutablepriorityqueue.**size**
+### ImmutablePriorityQueue.**size**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -92,7 +92,7 @@ Returns:
 |----|-----------|
 |`Number`|The number of elements in the priority queue|
 
-### Immutablepriorityqueue.**isEmpty**
+### ImmutablePriorityQueue.**isEmpty**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -117,7 +117,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the priority queue is empty and `false` otherwise|
 
-### Immutablepriorityqueue.**push**
+### ImmutablePriorityQueue.**push**
 
 ```grain
 push : (a, ImmutablePriorityQueue<a>) -> ImmutablePriorityQueue<a>
@@ -138,7 +138,7 @@ Returns:
 |----|-----------|
 |`ImmutablePriorityQueue<a>`|A new priority queue with the given element inserted|
 
-### Immutablepriorityqueue.**peek**
+### ImmutablePriorityQueue.**peek**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -164,7 +164,7 @@ Returns:
 |----|-----------|
 |`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
 
-### Immutablepriorityqueue.**pop**
+### ImmutablePriorityQueue.**pop**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -191,7 +191,7 @@ Returns:
 |----|-----------|
 |`ImmutablePriorityQueue<a>`|A new priority queue without the highest priority element|
 
-### Immutablepriorityqueue.**drain**
+### ImmutablePriorityQueue.**drain**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -216,7 +216,7 @@ Returns:
 |----|-----------|
 |`List<a>`|A list of all elements in the priority in priority order|
 
-### Immutablepriorityqueue.**fromList**
+### ImmutablePriorityQueue.**fromList**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>

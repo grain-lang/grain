@@ -1,5 +1,5 @@
 /**
- * @module Sys/File: Utilities for accessing the filesystem & working with files.
+ * @module File: Utilities for accessing the filesystem & working with files.
  *
  * Many of the functions in this module are not intended to be used directly, but rather for other libraries to be built on top of them.
  *
@@ -36,7 +36,7 @@ import {
 import List from "list"
 
 /**
- * @section Types: Type declarations included in the Sys/File module.
+ * @section Types: Type declarations included in the File module.
  */
 
 /**
@@ -421,7 +421,7 @@ export record DirectoryEntry {
 }
 
 /**
- * @section Values: Functions and constants included in the Sys/File module.
+ * @section Values: Functions and constants included in the File module.
  */
 
 /**

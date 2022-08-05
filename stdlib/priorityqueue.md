@@ -17,7 +17,7 @@ import PriorityQueue from "priorityqueue"
 
 Type declarations included in the PriorityQueue module.
 
-### Priorityqueue.**PriorityQueue**
+### PriorityQueue.**PriorityQueue**
 
 ```grain
 type PriorityQueue<a>
@@ -29,7 +29,7 @@ Mutable data structure which maintains a priority order for its elements.
 
 Functions for working with PriorityQueues.
 
-### Priorityqueue.**makeSized**
+### PriorityQueue.**makeSized**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -62,7 +62,7 @@ Returns:
 |----|-----------|
 |`PriorityQueue<a>`|An empty priority queue|
 
-### Priorityqueue.**make**
+### PriorityQueue.**make**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -100,7 +100,7 @@ PriorityQueue.make(compare) // creates a min priority queue of numbers using the
 PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
 ```
 
-### Priorityqueue.**size**
+### PriorityQueue.**size**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -125,7 +125,7 @@ Returns:
 |----|-----------|
 |`Number`|The number of elements in the priority queue|
 
-### Priorityqueue.**isEmpty**
+### PriorityQueue.**isEmpty**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -150,7 +150,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the priority queue is empty and `false` otherwise|
 
-### Priorityqueue.**push**
+### PriorityQueue.**push**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -170,7 +170,7 @@ Parameters:
 |`val`|`a`|The value to add into the priority queue|
 |`pq`|`PriorityQueue<a>`|The priority queue to update|
 
-### Priorityqueue.**peek**
+### PriorityQueue.**peek**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -196,7 +196,7 @@ Returns:
 |----|-----------|
 |`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
 
-### Priorityqueue.**pop**
+### PriorityQueue.**pop**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -221,7 +221,7 @@ Returns:
 |----|-----------|
 |`Option<a>`|`Some(value)` containing the highest priority element or `None` if the priority queue is empty|
 
-### Priorityqueue.**drain**
+### PriorityQueue.**drain**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -247,7 +247,7 @@ Returns:
 |----|-----------|
 |`List<a>`|A list of all elements in the priority in priority order|
 
-### Priorityqueue.**fromList**
+### PriorityQueue.**fromList**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>

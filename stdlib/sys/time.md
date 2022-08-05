@@ -1,5 +1,5 @@
 ---
-title: Sys/Time
+title: Time
 ---
 
 Access to system clocks.
@@ -10,7 +10,7 @@ import Time from "sys/time"
 
 ## Values
 
-Functions and constants included in the Sys/Time module.
+Functions and constants included in the Time module.
 
 ### Time.**realTime**
 
