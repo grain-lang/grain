@@ -1,0 +1,178 @@
+/* grainc-flags --no-pervasives */
+
+import WasmI32, {
+  eq as (==),
+  ne as (!=),
+  and as (&),
+  xor as (^),
+  or as (|),
+  add as (+),
+  sub as (-),
+  mul as (*),
+  ltS as (<),
+  gtS as (>),
+  remS as (%),
+  shl as (<<),
+  shrU as (>>>),
+} from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+import { tagSimpleNumber } from "runtime/dataStructures"
+import { isNumber, cmp as numberCompare } from "runtime/numbers"
+
+primitive (!): Bool -> Bool = "@not"
+primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+
+@unsafe
+let zero = WasmI32.fromGrain(0)
+
+@unsafe
+let rec heapCompareHelp = (heapTag, xptr, yptr) => {
+  match (heapTag) {
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      // Check if the same constructor variant
+      let xvariant = WasmI32.load(xptr, 12n)
+      let yvariant = WasmI32.load(yptr, 12n)
+      if (xvariant != yvariant) {
+        tagSimpleNumber(xvariant - yvariant)
+      } else {
+        let xarity = WasmI32.load(xptr, 16n)
+        let yarity = WasmI32.load(yptr, 16n)
+
+        let mut result = 0
+
+        let bytes = xarity * 4n
+        for (let mut i = 0n; i < bytes; i += 4n) {
+          let sub = compareHelp(
+            WasmI32.load(xptr + i, 20n),
+            WasmI32.load(yptr + i, 20n)
+          )
+          if (WasmI32.fromGrain(sub) != zero) {
+            result = sub
+            break
+          }
+        }
+
+        result
+      }
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let xlength = WasmI32.load(xptr, 12n)
+      let ylength = WasmI32.load(yptr, 12n)
+
+      let mut result = 0
+
+      let bytes = xlength * 4n
+      for (let mut i = 0n; i < bytes; i += 4n) {
+        let sub = compareHelp(
+          WasmI32.load(xptr + i, 16n),
+          WasmI32.load(yptr + i, 16n)
+        )
+        if (WasmI32.fromGrain(sub) != zero) {
+          result = sub
+          break
+        }
+      }
+
+      result
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+      let xlength = WasmI32.load(xptr, 4n)
+      let ylength = WasmI32.load(yptr, 4n)
+
+      // Check if the same length
+      if (xlength != ylength) {
+        tagSimpleNumber(xlength - ylength)
+      } else {
+        let mut result = 0
+        let bytes = xlength * 4n
+        for (let mut i = 0n; i < bytes; i += 4n) {
+          let sub = compareHelp(
+            WasmI32.load(xptr + i, 8n),
+            WasmI32.load(yptr + i, 8n)
+          )
+          if (WasmI32.fromGrain(sub) != zero) {
+            result = sub
+            break
+          }
+        }
+
+        result
+      }
+    },
+    t when (
+      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+    ) => {
+      let xlength = WasmI32.load(xptr, 4n)
+      let ylength = WasmI32.load(yptr, 4n)
+
+      if (xlength == ylength) {
+        tagSimpleNumber(Memory.compare(xptr + 8n, yptr + 8n, xlength))
+      } else {
+        if (xlength < ylength) {
+          let sub = Memory.compare(xptr + 8n, yptr + 8n, xlength)
+          // The shorter one comes first
+          if (sub == 0n) -1 else tagSimpleNumber(sub)
+        } else {
+          let sub = Memory.compare(xptr + 8n, yptr + 8n, ylength)
+          // The shorter one comes first
+          if (sub == 0n) 1 else tagSimpleNumber(sub)
+        }
+      }
+    },
+    t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let xsize = WasmI32.load(xptr, 4n)
+      let ysize = WasmI32.load(yptr, 4n)
+
+      let mut result = 0
+      let bytes = xsize * 4n
+      for (let mut i = 0n; i < bytes; i += 4n) {
+        let sub = compareHelp(
+          WasmI32.load(xptr + i, 8n),
+          WasmI32.load(yptr + i, 8n)
+        )
+        if (WasmI32.fromGrain(sub) != zero) {
+          result = sub
+          break
+        }
+      }
+
+      result
+    },
+    _ => {
+      // No other implementation
+      tagSimpleNumber(xptr - yptr)
+    },
+  }
+}, compareHelp = (x, y) => {
+  let xtag = x & Tags._GRAIN_GENERIC_TAG_MASK
+  let ytag = y & Tags._GRAIN_GENERIC_TAG_MASK
+  if ((xtag & ytag) != Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
+    // Short circuit for non-pointer values
+    if ((xtag & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE) {
+      // Signed comparisons are necessary for numbers
+      if (x < y) -1 else if (x > y) 1 else 0
+    } else {
+      // Unsigned comparisons are necessary for other stack-allocated values
+      if (WasmI32.ltU(x, y)) -1 else if (WasmI32.gtU(x, y)) 1 else 0
+    }
+  } else if (isNumber(x)) {
+    // Numbers have special comparison rules, e.g. NaN == NaN
+    tagSimpleNumber(numberCompare(x, y, true))
+  } else {
+    // Handle all other heap allocated things
+    // Can short circuit if pointers are the same
+    if (x == y) {
+      0
+    } else {
+      heapCompareHelp(WasmI32.load(x, 0n), x, y)
+    }
+  }
+}
+
+@unsafe
+export let compare = (x: a, y: a) => {
+  compareHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+}

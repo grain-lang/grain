@@ -349,22 +349,15 @@ assert Array.slice(1, 4, [>]) == [>]
 
 // Array.sort
 // Numbers
-let comp = (left, right) => {
-  match ((left, right)) {
-    (left, right) when left > right => 1,
-    (left, right) when left == right => 0,
-    _ => -1,
-  }
-}
 let arr = [> 5, 3, 4, 6, 2, 1]
-Array.sort(comp, arr)
+Array.sort(compare, arr)
 assert arr == [> 1, 2, 3, 4, 5, 6]
 // Empty
 let arr = [>]
-Array.sort(comp, arr)
+Array.sort(compare, arr)
 assert arr == [>]
 // Strings
-let comp = (left, right) => {
+let compareLengths = (left, right) => {
   match ((String.length(left), String.length(right))) {
     (left, right) when left > right => 1,
     (left, right) when left == right => 0,
@@ -372,7 +365,7 @@ let comp = (left, right) => {
   }
 }
 let arr = [> "a", "abcde", "abc", "ab", "abcd", "a"]
-let result = Array.sort(comp, arr)
+let result = Array.sort(compareLengths, arr)
 assert arr == [> "a", "a", "ab", "abc", "abcd", "abcde"]
 // Returns void
 assert result == void

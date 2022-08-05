@@ -106,6 +106,12 @@ coerceNumberToWasmI32 : Number -> WasmI32
 numberEqual : (WasmI32, WasmI32) -> Bool
 ```
 
+### Numbers.**cmp**
+
+```grain
+cmp : (WasmI32, WasmI32, Bool) -> WasmI32
+```
+
 ### Numbers.**(<)**
 
 ```grain
@@ -128,6 +134,12 @@ numberEqual : (WasmI32, WasmI32) -> Bool
 
 ```grain
 (>=) : (Number, Number) -> Bool
+```
+
+### Numbers.**compare**
+
+```grain
+compare : (Number, Number) -> Number
 ```
 
 ### Numbers.**numberEq**

@@ -9,10 +9,10 @@ basic functionality › toplevel_statements
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1135 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1138 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1135 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1138 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -31,46 +31,46 @@ basic functionality › toplevel_statements
     (local.set $0
      (block $compile_block.2 (result i32)
       (drop
-       (call $print_1135
+       (call $print_1138
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1135)
+         (global.get $print_1138)
         )
         (i32.const 3)
        )
       )
       (drop
-       (call $print_1135
+       (call $print_1138
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1135)
+         (global.get $print_1138)
         )
         (i32.const 5)
        )
       )
       (drop
-       (call $print_1135
+       (call $print_1138
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1135)
+         (global.get $print_1138)
         )
         (i32.const 7)
        )
       )
       (drop
-       (call $print_1135
+       (call $print_1138
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1135)
+         (global.get $print_1138)
         )
         (i32.const 9)
        )
       )
       (drop
-       (call $print_1135
+       (call $print_1138
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1135)
+         (global.get $print_1138)
         )
         (i32.const 11)
        )

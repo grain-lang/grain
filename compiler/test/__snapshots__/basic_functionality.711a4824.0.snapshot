@@ -11,19 +11,19 @@ basic functionality › pattern_match_unsafe_wasm
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1140 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1143 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1140 (param i32 i32) (result i32)))
- (global $test_1128 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1143 (param i32 i32) (result i32)))
+ (global $test_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $test_1128 (param $0 i32) (result i32)
+ (func $test_1131 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -72,37 +72,37 @@ basic functionality › pattern_match_unsafe_wasm
      )
     )
     (drop
-     (call $foo_1129
+     (call $foo_1132
       (local.get $7)
       (i32.const 0)
      )
     )
     (drop
-     (call $foo_1129
+     (call $foo_1132
       (local.get $7)
       (i32.const 1)
      )
     )
     (drop
-     (call $foo_1129
+     (call $foo_1132
       (local.get $7)
       (i32.const 5)
      )
     )
     (drop
-     (call $foo_1129
+     (call $foo_1132
       (local.get $7)
       (i32.const 8)
      )
     )
-    (call $foo_1129
+    (call $foo_1132
      (local.get $7)
      (i32.const 42)
     )
    )
   )
  )
- (func $foo_1129 (param $0 i32) (param $1 i32) (result i32)
+ (func $foo_1132 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -354,8 +354,8 @@ basic functionality › pattern_match_unsafe_wasm
                      (block $do_backpatches.39
                      )
                     )
-                    (call $print_1140
-                     (global.get $print_1140)
+                    (call $print_1143
+                     (global.get $print_1143)
                      (local.get $8)
                     )
                    )
@@ -364,8 +364,8 @@ basic functionality › pattern_match_unsafe_wasm
                 )
                 (br $switch.31_outer
                  (block $compile_block.37 (result i32)
-                  (call $print_1140
-                   (global.get $print_1140)
+                  (call $print_1143
+                   (global.get $print_1143)
                    (i32.const 13)
                   )
                  )
@@ -374,8 +374,8 @@ basic functionality › pattern_match_unsafe_wasm
               )
               (br $switch.31_outer
                (block $compile_block.36 (result i32)
-                (call $print_1140
-                 (global.get $print_1140)
+                (call $print_1143
+                 (global.get $print_1143)
                  (i32.const 11)
                 )
                )
@@ -384,8 +384,8 @@ basic functionality › pattern_match_unsafe_wasm
             )
             (br $switch.31_outer
              (block $compile_block.35 (result i32)
-              (call $print_1140
-               (global.get $print_1140)
+              (call $print_1143
+               (global.get $print_1143)
                (i32.const 9)
               )
              )
@@ -394,8 +394,8 @@ basic functionality › pattern_match_unsafe_wasm
           )
           (br $switch.31_outer
            (block $compile_block.34 (result i32)
-            (call $print_1140
-             (global.get $print_1140)
+            (call $print_1143
+             (global.get $print_1143)
              (i32.const 7)
             )
            )
@@ -404,8 +404,8 @@ basic functionality › pattern_match_unsafe_wasm
         )
         (br $switch.31_outer
          (block $compile_block.33 (result i32)
-          (call $print_1140
-           (global.get $print_1140)
+          (call $print_1143
+           (global.get $print_1143)
            (i32.const 5)
           )
          )
@@ -414,8 +414,8 @@ basic functionality › pattern_match_unsafe_wasm
       )
       (br $switch.31_outer
        (block $compile_block.32 (result i32)
-        (call $print_1140
-         (global.get $print_1140)
+        (call $print_1143
+         (global.get $print_1143)
          (i32.const 3)
         )
        )
@@ -437,7 +437,7 @@ basic functionality › pattern_match_unsafe_wasm
     (local.set $0
      (block $compile_block.47 (result i32)
       (block $compile_store.46
-       (global.set $test_1128
+       (global.set $test_1131
         (tuple.extract 0
          (tuple.make
           (block $allocate_closure.44 (result i32)
@@ -466,21 +466,21 @@ basic functionality › pattern_match_unsafe_wasm
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $test_1128)
+           (global.get $test_1131)
           )
          )
         )
        )
        (block $do_backpatches.45
         (local.set $0
-         (global.get $test_1128)
+         (global.get $test_1131)
         )
        )
       )
-      (call $test_1128
+      (call $test_1131
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $test_1128)
+        (global.get $test_1131)
        )
       )
      )

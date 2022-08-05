@@ -11,22 +11,22 @@ enums › enum_recursive_data_definition
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1154 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1157 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1154 (param i32 i32) (result i32)))
- (global $Cons_1133 (mut i32) (i32.const 0))
- (global $forest_1142 (mut i32) (i32.const 0))
- (global $Node_1131 (mut i32) (i32.const 0))
- (global $Nil_1132 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1157 (param i32 i32) (result i32)))
+ (global $Cons_1136 (mut i32) (i32.const 0))
+ (global $forest_1145 (mut i32) (i32.const 0))
+ (global $Node_1134 (mut i32) (i32.const 0))
+ (global $Nil_1135 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $Node_1131 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $Node_1134 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -58,7 +58,7 @@ enums › enum_recursive_data_definition
          )
          (i32.store offset=8
           (local.get $3)
-          (i32.const 2257)
+          (i32.const 2263)
          )
          (i32.store offset=12
           (local.get $3)
@@ -111,7 +111,7 @@ enums › enum_recursive_data_definition
    )
   )
  )
- (func $Cons_1133 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $Cons_1136 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -143,7 +143,7 @@ enums › enum_recursive_data_definition
          )
          (i32.store offset=8
           (local.get $3)
-          (i32.const 2259)
+          (i32.const 2265)
          )
          (i32.store offset=12
           (local.get $3)
@@ -239,7 +239,7 @@ enums › enum_recursive_data_definition
           )
           (i64.store offset=24
            (local.get $0)
-           (i64.const 85899347049)
+           (i64.const 85899347052)
           )
           (i64.store offset=32
            (local.get $0)
@@ -263,7 +263,7 @@ enums › enum_recursive_data_definition
           )
           (i64.store offset=72
            (local.get $0)
-           (i64.const 85899347048)
+           (i64.const 85899347051)
           )
           (i64.store offset=80
            (local.get $0)
@@ -307,7 +307,7 @@ enums › enum_recursive_data_definition
       )
       (block $compile_block.32 (result i32)
        (block $compile_store.11
-        (global.set $Node_1131
+        (global.set $Node_1134
          (tuple.extract 0
           (tuple.make
            (block $allocate_closure.9 (result i32)
@@ -336,19 +336,19 @@ enums › enum_recursive_data_definition
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $Node_1131)
+            (global.get $Node_1134)
            )
           )
          )
         )
         (block $do_backpatches.10
          (local.set $0
-          (global.get $Node_1131)
+          (global.get $Node_1134)
          )
         )
        )
        (block $compile_store.14
-        (global.set $Nil_1132
+        (global.set $Nil_1135
          (tuple.extract 0
           (tuple.make
            (block $allocate_adt.12 (result i32)
@@ -370,7 +370,7 @@ enums › enum_recursive_data_definition
             )
             (i32.store offset=8
              (local.get $0)
-             (i32.const 2259)
+             (i32.const 2265)
             )
             (i32.store offset=12
              (local.get $0)
@@ -384,7 +384,7 @@ enums › enum_recursive_data_definition
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $Nil_1132)
+            (global.get $Nil_1135)
            )
           )
          )
@@ -393,7 +393,7 @@ enums › enum_recursive_data_definition
         )
        )
        (block $compile_store.17
-        (global.set $Cons_1133
+        (global.set $Cons_1136
          (tuple.extract 0
           (tuple.make
            (block $allocate_closure.15 (result i32)
@@ -422,14 +422,14 @@ enums › enum_recursive_data_definition
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $Cons_1133)
+            (global.get $Cons_1136)
            )
           )
          )
         )
         (block $do_backpatches.16
          (local.set $0
-          (global.get $Cons_1133)
+          (global.get $Cons_1136)
          )
         )
        )
@@ -505,10 +505,10 @@ enums › enum_recursive_data_definition
         (local.set $8
          (tuple.extract 0
           (tuple.make
-           (call $Node_1131
+           (call $Node_1134
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Node_1131)
+             (global.get $Node_1134)
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
@@ -516,7 +516,7 @@ enums › enum_recursive_data_definition
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Nil_1132)
+             (global.get $Nil_1135)
             )
            )
            (call $decRef_0
@@ -533,10 +533,10 @@ enums › enum_recursive_data_definition
         (local.set $9
          (tuple.extract 0
           (tuple.make
-           (call $Cons_1133
+           (call $Cons_1136
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Cons_1133)
+             (global.get $Cons_1136)
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
@@ -544,7 +544,7 @@ enums › enum_recursive_data_definition
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Nil_1132)
+             (global.get $Nil_1135)
             )
            )
            (call $decRef_0
@@ -561,10 +561,10 @@ enums › enum_recursive_data_definition
         (local.set $10
          (tuple.extract 0
           (tuple.make
-           (call $Node_1131
+           (call $Node_1134
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Node_1131)
+             (global.get $Node_1134)
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
@@ -586,13 +586,13 @@ enums › enum_recursive_data_definition
         )
        )
        (block $compile_store.31
-        (global.set $forest_1142
+        (global.set $forest_1145
          (tuple.extract 0
           (tuple.make
-           (call $Cons_1133
+           (call $Cons_1136
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Cons_1133)
+             (global.get $Cons_1136)
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
@@ -600,12 +600,12 @@ enums › enum_recursive_data_definition
             )
             (call $incRef_0
              (global.get $GRAIN$EXPORT$incRef_0)
-             (global.get $Nil_1132)
+             (global.get $Nil_1135)
             )
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $forest_1142)
+            (global.get $forest_1145)
            )
           )
          )
@@ -613,14 +613,14 @@ enums › enum_recursive_data_definition
         (block $do_backpatches.30
         )
        )
-       (call $print_1154
+       (call $print_1157
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1154)
+         (global.get $print_1157)
         )
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $forest_1142)
+         (global.get $forest_1145)
         )
        )
       )

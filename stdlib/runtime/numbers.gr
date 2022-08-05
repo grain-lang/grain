@@ -20,6 +20,7 @@ primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive throw: Exception -> a = "@throw"
 
 exception UnknownNumberTag
+exception InvariantViolation
 
 import {
   newRational,
@@ -1703,10 +1704,19 @@ let numberMod = (x, y) => {
 }
 
 /*
- * ===== LESS THAN / GREATER THAN / LESS EQUAL / GREATER EQUAL =====
- * Coerce to float64 and then do comparisons
+ * ===== COMPARISONS =====
+ * Int/int and float/float comparisons are always accurate.
+ * Rational/rational comparisons are approximations with the exception of
+ * equality, which is always accurate.
+ * 
+ * Values compared to floats or rationals are first converted to floats.
+ * 
+ * All comparison operators consider NaN not equal to, less than, or greater
+ * than NaN, with the exception of `compare`, which considers NaN equal to
+ * itself and otherwise smaller than any other float value. This provides a
+ * total order (https://en.wikipedia.org/wiki/Total_order) over all numerical
+ * values, making `compare` suitable for sorting or ordering.
  */
-// TODO(#305): Could probably be made more efficient
 
 @unsafe
 let cmpBigInt = (x: WasmI32, y: WasmI32) => {
@@ -1743,79 +1753,284 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
   }
 }
 
-// TODO(#305): is this safe? I think it's safe?
+@unsafe
+let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
+  let xf = if (is64) {
+    boxedFloat64Number(x)
+  } else {
+    WasmF64.promoteF32(boxedFloat32Number(x))
+  }
+  if (isSimpleNumber(y)) {
+    let yf = WasmF64.convertI32S(untagSimple(y))
+    // special NaN cases
+    if (totalOrdering && WasmF64.ne(xf, xf)) {
+      if (WasmF64.ne(yf, yf)) {
+        0n
+      } else {
+        -1n
+      }
+    } else if (totalOrdering && WasmF64.ne(yf, yf)) {
+      if (WasmF64.ne(xf, xf)) {
+        0n
+      } else {
+        1n
+      }
+    } else {
+      if (WasmF64.lt(xf, yf)) -1n else if (WasmF64.gt(xf, yf)) 1n else 0n
+    }
+  } else {
+    let yBoxedNumberTag = boxedNumberTag(y)
+    if (yBoxedNumberTag == Tags._GRAIN_BIGINT_BOXED_NUM_TAG) {
+      WasmI32.sub(0n, cmpBigInt(y, x))
+    } else {
+      let yf = match (yBoxedNumberTag) {
+        t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+          WasmF64.convertI32S(boxedInt32Number(y))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+          WasmF64.convertI64S(boxedInt64Number(y))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+          throw InvariantViolation
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+          WasmF64.div(
+            BI.toFloat64(boxedRationalNumerator(y)),
+            BI.toFloat64(boxedRationalDenominator(y))
+          )
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+          WasmF64.promoteF32(boxedFloat32Number(y))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+          boxedFloat64Number(y)
+        },
+        _ => {
+          throw UnknownNumberTag
+        },
+      }
+      // special NaN cases
+      if (totalOrdering && WasmF64.ne(xf, xf)) {
+        if (WasmF64.ne(yf, yf)) {
+          0n
+        } else {
+          -1n
+        }
+      } else if (totalOrdering && WasmF64.ne(yf, yf)) {
+        if (WasmF64.ne(xf, xf)) {
+          0n
+        } else {
+          1n
+        }
+      } else {
+        if (WasmF64.lt(xf, yf)) -1n else if (WasmF64.gt(xf, yf)) 1n else 0n
+      }
+    }
+  }
+}
+
+@unsafe
+let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
+  let xi = if (is64) {
+    boxedInt64Number(x)
+  } else {
+    WasmI64.extendI32S(boxedInt32Number(x))
+  }
+  if (isSimpleNumber(y)) {
+    let yi = WasmI64.extendI32S(untagSimple(y))
+    if (WasmI64.ltS(xi, yi)) -1n else if (WasmI64.gtS(xi, yi)) 1n else 0n
+  } else {
+    let yBoxedNumberTag = boxedNumberTag(y)
+    match (yBoxedNumberTag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        let yi = WasmI64.extendI32S(boxedInt32Number(y))
+        if (WasmI64.ltS(xi, yi)) -1n else if (WasmI64.gtS(xi, yi)) 1n else 0n
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let yi = boxedInt64Number(y)
+        if (WasmI64.ltS(xi, yi)) -1n else if (WasmI64.gtS(xi, yi)) 1n else 0n
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpBigInt(y, x))
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+        // Rationals and ints are never considered equal
+        if (
+          WasmF64.lt(
+            WasmF64.convertI64S(xi),
+            WasmF64.div(
+              BI.toFloat64(boxedRationalNumerator(y)),
+              BI.toFloat64(boxedRationalDenominator(y))
+            )
+          )
+        ) -1n else 1n
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpFloat(y, x, false, totalOrdering))
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpFloat(y, x, true, totalOrdering))
+      },
+      _ => {
+        throw UnknownNumberTag
+      },
+    }
+  }
+}
+
+@unsafe
+let cmpRational = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
+  if (isSimpleNumber(y)) {
+    let xf = WasmF64.div(
+      BI.toFloat64(boxedRationalNumerator(x)),
+      BI.toFloat64(boxedRationalDenominator(x))
+    )
+    // Rationals and ints are never considered equal
+    if (WasmF64.lt(xf, WasmF64.convertI32S(untagSimple(y)))) -1n else 1n
+  } else {
+    let yBoxedNumberTag = boxedNumberTag(y)
+    match (yBoxedNumberTag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpSmallInt(y, x, false, totalOrdering))
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpSmallInt(y, x, true, totalOrdering))
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpBigInt(y, x))
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+        // Comparing rationals efficiently is an open problem
+        // Producing a definitive answer is quite expensive, so if the two
+        // values are not strictly equal we approximate an answer
+
+        let xNumerator = boxedRationalNumerator(x)
+        let xDenominator = boxedRationalDenominator(x)
+        let yNumerator = boxedRationalNumerator(y)
+        let yDenominator = boxedRationalDenominator(y)
+
+        if (
+          BI.cmp(xNumerator, yNumerator) == 0n &&
+          BI.cmp(xDenominator, yDenominator) == 0n
+        ) {
+          0n
+        } else {
+          let xf = WasmF64.div(
+            BI.toFloat64(xNumerator),
+            BI.toFloat64(xDenominator)
+          )
+          let yf = WasmF64.div(
+            BI.toFloat64(yNumerator),
+            BI.toFloat64(yDenominator)
+          )
+          if (WasmF64.lt(xf, yf)) -1n else 1n
+        }
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpFloat(y, x, false, totalOrdering))
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        WasmI32.sub(0n, cmpFloat(y, x, true, totalOrdering))
+      },
+      _ => {
+        throw UnknownNumberTag
+      },
+    }
+  }
+}
+
+@unsafe
+export let cmp = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
+  if (isSimpleNumber(x)) {
+    if (isSimpleNumber(y)) {
+      if (WasmI32.ltS(x, y)) -1n else if (WasmI32.gtS(x, y)) 1n else 0n
+    } else {
+      let yBoxedNumberTag = boxedNumberTag(y)
+      match (yBoxedNumberTag) {
+        t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+          WasmI32.sub(0n, cmpSmallInt(y, x, false, totalOrdering))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+          WasmI32.sub(0n, cmpSmallInt(y, x, true, totalOrdering))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+          WasmI32.sub(0n, cmpBigInt(y, x))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+          WasmI32.sub(0n, cmpRational(y, x, totalOrdering))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+          WasmI32.sub(0n, cmpFloat(y, x, false, totalOrdering))
+        },
+        t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+          WasmI32.sub(0n, cmpFloat(y, x, true, totalOrdering))
+        },
+        _ => {
+          throw UnknownNumberTag
+        },
+      }
+    }
+  } else {
+    let xBoxedNumberTag = boxedNumberTag(x)
+    match (xBoxedNumberTag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        cmpSmallInt(x, y, false, totalOrdering)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        cmpSmallInt(x, y, true, totalOrdering)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        cmpBigInt(x, y)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+        cmpRational(x, y, totalOrdering)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
+        cmpFloat(x, y, false, totalOrdering)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        cmpFloat(x, y, true, totalOrdering)
+      },
+      _ => {
+        throw UnknownNumberTag
+      },
+    }
+  }
+}
+
 @unsafe
 export let (<) = (x: Number, y: Number) => {
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
-  if (isBigInt(xw32)) {
-    WasmI32.ltS(cmpBigInt(xw32, yw32), 0n)
-  } else if (isBigInt(yw32)) {
-    WasmI32.geS(cmpBigInt(yw32, xw32), 0n)
-  } else {
-    let xval = coerceNumberToWasmF64(x)
-    let yval = coerceNumberToWasmF64(y)
-    WasmF64.lt(xval, yval)
-  }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  WasmI32.ltS(cmp(x, y, false), 0n)
 }
 
 @unsafe
 export let (>) = (x: Number, y: Number) => {
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
-  if (isBigInt(xw32)) {
-    WasmI32.gtS(cmpBigInt(xw32, yw32), 0n)
-  } else if (isBigInt(yw32)) {
-    WasmI32.leS(cmpBigInt(yw32, xw32), 0n)
-  } else {
-    let xval = coerceNumberToWasmF64(x)
-    let yval = coerceNumberToWasmF64(y)
-    WasmF64.gt(xval, yval)
-  }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  WasmI32.gtS(cmp(x, y, false), 0n)
 }
 
 @unsafe
 export let (<=) = (x: Number, y: Number) => {
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
-  if (isBigInt(xw32)) {
-    WasmI32.leS(cmpBigInt(xw32, yw32), 0n)
-  } else if (isBigInt(yw32)) {
-    WasmI32.geS(cmpBigInt(yw32, xw32), 0n)
-  } else {
-    // Equality is finicky, so delegate
-    let xval = coerceNumberToWasmF64(x)
-    let yval = coerceNumberToWasmF64(y)
-    if (WasmF64.lt(xval, yval)) {
-      true
-    } else {
-      let x = WasmI32.fromGrain(x)
-      let y = WasmI32.fromGrain(y)
-      numberEqual(x, y)
-    }
-  }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  WasmI32.leS(cmp(x, y, false), 0n)
 }
 
 @unsafe
 export let (>=) = (x: Number, y: Number) => {
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
-  if (isBigInt(xw32)) {
-    WasmI32.leS(cmpBigInt(xw32, yw32), 0n)
-  } else if (isBigInt(yw32)) {
-    WasmI32.geS(cmpBigInt(yw32, xw32), 0n)
-  } else {
-    // Equality is finicky, so delegate
-    let xval = coerceNumberToWasmF64(x)
-    let yval = coerceNumberToWasmF64(y)
-    if (WasmF64.gt(xval, yval)) {
-      true
-    } else {
-      let x = WasmI32.fromGrain(x)
-      let y = WasmI32.fromGrain(y)
-      numberEqual(x, y)
-    }
-  }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  WasmI32.geS(cmp(x, y, false), 0n)
+}
+
+@unsafe
+export let compare = (x: Number, y: Number) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  WasmI32.toGrain(tagSimple(cmp(x, y, true))): Number
 }
 
 /*

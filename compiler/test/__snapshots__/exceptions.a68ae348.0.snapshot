@@ -14,18 +14,18 @@ exceptions › exception_4
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $Bar_1130 (mut i32) (i32.const 0))
- (global $Foo_1128 (mut i32) (i32.const 0))
+ (global $Bar_1133 (mut i32) (i32.const 0))
+ (global $Foo_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
- (export \"GRAIN$EXPORT$Bar\" (global $Bar_1130))
- (export \"Foo\" (func $Foo_1128))
- (export \"GRAIN$EXPORT$Foo\" (global $Foo_1128))
+ (export \"GRAIN$EXPORT$Bar\" (global $Bar_1133))
+ (export \"Foo\" (func $Foo_1131))
+ (export \"GRAIN$EXPORT$Foo\" (global $Foo_1131))
  (export \"_gmain\" (func $_gmain))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $Foo_1128 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $Foo_1131 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -61,7 +61,7 @@ exceptions › exception_4
          )
          (i32.store offset=12
           (local.get $3)
-          (i32.const 2257)
+          (i32.const 2263)
          )
          (i32.store offset=16
           (local.get $3)
@@ -143,7 +143,7 @@ exceptions › exception_4
           )
           (i64.store offset=32
            (local.get $0)
-           (i64.const 12884903016)
+           (i64.const 12884903019)
           )
           (i64.store offset=40
            (local.get $0)
@@ -151,7 +151,7 @@ exceptions › exception_4
           )
           (i64.store offset=48
            (local.get $0)
-           (i64.const 4853313044500)
+           (i64.const 4866197946388)
           )
           (i64.store offset=56
            (local.get $0)
@@ -183,7 +183,7 @@ exceptions › exception_4
       )
       (block $compile_block.12 (result i32)
        (block $compile_store.8
-        (global.set $Foo_1128
+        (global.set $Foo_1131
          (tuple.extract 0
           (tuple.make
            (block $allocate_closure.6 (result i32)
@@ -212,19 +212,19 @@ exceptions › exception_4
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $Foo_1128)
+            (global.get $Foo_1131)
            )
           )
          )
         )
         (block $do_backpatches.7
          (local.set $0
-          (global.get $Foo_1128)
+          (global.get $Foo_1131)
          )
         )
        )
        (block $compile_store.11
-        (global.set $Bar_1130
+        (global.set $Bar_1133
          (tuple.extract 0
           (tuple.make
            (block $allocate_adt.9 (result i32)
@@ -250,7 +250,7 @@ exceptions › exception_4
             )
             (i32.store offset=12
              (local.get $0)
-             (i32.const 2261)
+             (i32.const 2267)
             )
             (i32.store offset=16
              (local.get $0)
@@ -260,7 +260,7 @@ exceptions › exception_4
            )
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
-            (global.get $Bar_1130)
+            (global.get $Bar_1133)
            )
           )
          )
@@ -270,7 +270,7 @@ exceptions › exception_4
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $Bar_1130)
+        (global.get $Bar_1133)
        )
       )
      )

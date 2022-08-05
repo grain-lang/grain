@@ -10,11 +10,11 @@ basic functionality › comp19
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $[]_1133 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $[...]_1129 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[]\" (global $[]_1136 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$[...]\" (global $[...]_1132 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $[...]_1129 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"[...]\" (func $[...]_1132 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -40,15 +40,15 @@ basic functionality › comp19
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1129
+          (call $[...]_1132
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1129)
+            (global.get $[...]_1132)
            )
            (i32.const 5)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[]_1133)
+            (global.get $[]_1136)
            )
           )
           (call $decRef_0
@@ -65,10 +65,10 @@ basic functionality › comp19
        (local.set $7
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1129
+          (call $[...]_1132
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1129)
+            (global.get $[...]_1132)
            )
            (i32.const 3)
            (call $incRef_0
@@ -90,15 +90,15 @@ basic functionality › comp19
        (local.set $8
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1129
+          (call $[...]_1132
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1129)
+            (global.get $[...]_1132)
            )
            (i32.const 5)
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[]_1133)
+            (global.get $[]_1136)
            )
           )
           (call $decRef_0
@@ -115,10 +115,10 @@ basic functionality › comp19
        (local.set $9
         (tuple.extract 0
          (tuple.make
-          (call $[...]_1129
+          (call $[...]_1132
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $[...]_1129)
+            (global.get $[...]_1132)
            )
            (i32.const 3)
            (call $incRef_0

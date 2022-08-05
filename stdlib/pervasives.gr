@@ -11,6 +11,7 @@ import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
 
 import { equal as (==) } from "runtime/equal"
+import { compare } from "runtime/compare"
 
 import {
   incr,
@@ -217,6 +218,19 @@ export (<=)
  * @since v0.1.0
  */
 export (>=)
+
+/**
+ * Compares the first argument to the second argument and produces an integer result.
+ * Provides a consistent ordering over all types and is suitable for sorting and other kinds of ordering.
+ * `compare` treats `NaN` differently than the other comparison operators in that it considers `NaN` equal to itself and smaller than any other number.
+ *
+ * @param num1: The first operand
+ * @param num2: The second operand
+ * @returns A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise
+ *
+ * @since v0.5.3
+ */
+export compare
 
 /**
  * @section Math operations: Infix functions for working with Number values.

@@ -8,7 +8,7 @@ imports › import_all_except_multiple
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$z\" (global $z_1137 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$z\" (global $z_1140 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
@@ -29,7 +29,7 @@ imports › import_all_except_multiple
      (block $compile_block.1 (result i32)
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $z_1137)
+       (global.get $z_1140)
       )
      )
     )
