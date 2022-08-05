@@ -100,6 +100,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("int64.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
+  assertStdlib("marshal.test");
   assertStdlib("number.test");
   assertStdlib("option.test");
   assertStdlib("queue.test");
