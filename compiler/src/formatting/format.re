@@ -4199,18 +4199,24 @@ let format_ast =
     print_attributes(attributes);
   };
 
-  let top_level_stmts =
-    block_item_iterator(
-      ~previous=TopOfFile,
-      ~get_loc,
-      ~print_item,
-      ~comments=cleaned_comments,
-      ~print_attribute=get_attributes,
-      ~original_source,
-      parsed_program.statements,
-    );
+  // special case where we have no code, we still format the comments
 
-  let final_doc = Doc.concat([top_level_stmts, Doc.hardLine]);
+  let final_doc =
+    switch (parsed_program.statements) {
+    | [] => Comment_utils.new_comments_to_docs(cleaned_comments)
+    | _ =>
+      let top_level_stmts =
+        block_item_iterator(
+          ~previous=TopOfFile,
+          ~get_loc,
+          ~print_item,
+          ~comments=cleaned_comments,
+          ~print_attribute=get_attributes,
+          ~original_source,
+          parsed_program.statements,
+        );
+      Doc.concat([top_level_stmts, Doc.hardLine]);
+    };
 
   Doc.toString(~width=80, ~eol, final_doc);
 };
