@@ -13,21 +13,6 @@ No other changes yet.
 import Range from "range"
 ```
 
-## Types
-
-Type declarations included in the Range module.
-
-### Range.**Range**
-
-```grain
-enum Range {
-  Inclusive(Number, Number),
-  Exclusive(Number, Number),
-}
-```
-
-Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
-
 ## Values
 
 Functions and constants included in the Range module.
@@ -61,11 +46,11 @@ Returns:
 Examples:
 
 ```grain
-Range.inRange(1, Range.Inclusive(0, 2)) == true
+Range.inRange(1, InclusiveRange(0, 2)) == true
 ```
 
 ```grain
-Range.inRange(10, Range.Inclusive(0, 2)) == false
+Range.inRange(10, InclusiveRange(0, 2)) == false
 ```
 
 ### Range.**forEach**
@@ -91,7 +76,7 @@ Parameters:
 Examples:
 
 ```grain
-Range.forEach(val => print(val), Range.Exclusive(0, 2))
+Range.forEach(val => print(val), ExclusiveRange(0, 2))
 ```
 
 ### Range.**map**
@@ -123,6 +108,6 @@ Returns:
 Examples:
 
 ```grain
-Range.map(val => val * 2, Range.Inclusive(0, 2)) == [0, 2, 4]
+Range.map(val => val * 2, InclusiveRange(0, 2)) == [0, 2, 4]
 ```
 

@@ -1,11 +1,11 @@
 import Range from "range"
 
-let inclusiveAscendingRange = Range.Inclusive(1, 5)
-let inclusiveDescendingRange = Range.Inclusive(5, 1)
-let inclusiveSameRange = Range.Inclusive(1, 1)
-let exclusiveAscendingRange = Range.Exclusive(1, 5)
-let exclusiveDescendingRange = Range.Exclusive(5, 1)
-let exclusiveSameRange = Range.Exclusive(1, 1)
+let inclusiveAscendingRange = InclusiveRange(1, 5)
+let inclusiveDescendingRange = InclusiveRange(5, 1)
+let inclusiveSameRange = InclusiveRange(1, 1)
+let exclusiveAscendingRange = ExclusiveRange(1, 5)
+let exclusiveDescendingRange = ExclusiveRange(5, 1)
+let exclusiveSameRange = ExclusiveRange(1, 1)
 
 // Range.inRange
 assert Range.inRange(1, inclusiveAscendingRange)

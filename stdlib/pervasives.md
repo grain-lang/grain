@@ -51,6 +51,22 @@ enum Result<t, e> {
 
 Grain's type representing the result of something that might error.
 
+### Pervasives.**Range**
+
+```grain
+enum Range {
+  InclusiveRange(Number, Number),
+  ExclusiveRange(Number, Number),
+}
+```
+
+Grain's type representing Ranges of numbers.
+
+Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
+
+ @since v0.3.0
+ @history v0.6.0: Moved from `range` to `pervasives`
+
 ## Boolean operations
 
 Infix functions for working with Boolean values.
