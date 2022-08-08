@@ -14,12 +14,11 @@ import WasmI32, {
 } from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Tags from "runtime/unsafe/tags"
+import { isNumber, numberEqual } from "runtime/numbers"
 
 primitive (!): Bool -> Bool = "@not"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
-
-import { isNumber, numberEqual } from "runtime/numbers"
 
 @unsafe
 let cycleMarker = 0x80000000n

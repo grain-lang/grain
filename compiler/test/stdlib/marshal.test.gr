@@ -1,0 +1,87 @@
+import * from "marshal"
+import Bytes from "bytes"
+import Result from "result"
+
+let roundtripOk = value => unmarshal(marshal(value)) == Ok(value)
+
+assert roundtripOk(void)
+assert roundtripOk(true)
+assert roundtripOk(42)
+assert roundtripOk(42l)
+assert roundtripOk(42L)
+assert roundtripOk(42.)
+assert roundtripOk(42.f)
+assert roundtripOk(42.d)
+assert roundtripOk(1/3)
+assert roundtripOk('c')
+assert roundtripOk("unicode string 💯🌾🙏🏽")
+assert roundtripOk(Bytes.fromString("unicode string 💯🌾🙏🏽"))
+assert roundtripOk((14, false, "hi"))
+assert roundtripOk([> 1, 2, 3])
+assert roundtripOk([> 1l, 2l, 3l])
+assert roundtripOk([1, 2, 3])
+assert roundtripOk([1l, 2l, 3l])
+
+enum Foo<a> {
+  Bar,
+  Baz(a),
+  Qux(String, a),
+  Quux(Foo<a>),
+}
+
+assert roundtripOk(Bar)
+assert roundtripOk(Baz("baz"))
+assert roundtripOk(Qux("qux", 42l))
+assert roundtripOk(Quux(Qux("qux", 42l)))
+
+record Bing<a> {
+  bang: Void,
+  bop: a,
+  swish: (
+    String,
+    a
+  ),
+  pow: Foo<Int32>,
+}
+
+assert roundtripOk(
+  { bang: void, bop: "bee", swish: ("bit", "but"), pow: Quux(Qux("qux", 42l)) }
+)
+
+let make5 = () => "five"
+
+let closureTest = () => {
+  let val = make5()
+  let foo = () => val
+  assert Result.unwrap(unmarshal(marshal(foo)))() == "five"
+}
+
+closureTest()
+
+record Cyclic {
+  mut self: List<Cyclic>,
+}
+
+let cyclic = { self: [], }
+cyclic.self = [cyclic, cyclic, cyclic]
+
+assert roundtripOk(cyclic)
+
+assert Result.isErr(unmarshal(Bytes.empty))
+
+let truncatedString = Bytes.slice(0, 16, marshal("beep boop bop"))
+assert Result.isErr(unmarshal(truncatedString))
+
+let truncatedRecord = Bytes.slice(
+  0,
+  64,
+  marshal(
+    {
+      bang: void,
+      bop: "bee",
+      swish: ("bit", "but"),
+      pow: Quux(Qux("qux", 42l)),
+    }
+  )
+)
+assert Result.isErr(unmarshal(truncatedRecord))

@@ -1,0 +1,63 @@
+// compare
+
+// Number comparisons are tested thoroughly by other tests
+assert compare(0, 1) < 0
+assert compare(0, 0) == 0
+assert compare(1, 0) > 0
+// Specific NaN and Infinity tests
+assert compare(1 / 0.0, 987654321) > 0
+assert compare(1 / 0.0, 987654321.) > 0
+assert compare(0.0 / 0.0, -1 / 0.0) < 0
+assert compare(0.0 / 0.0, 987654321.) < 0
+assert compare(0.0 / 0.0, 987654321) < 0
+assert compare(0.0 / 0.0, 0) < 0
+// Booleans
+assert compare(false, true) < 0
+assert compare(true, false) > 0
+assert compare(true, true) == 0
+// Void
+assert compare(void, void) == 0
+// Chars
+assert compare('a', 'c') < 0
+assert compare('d', 'c') > 0
+assert compare('d', 'd') == 0
+assert compare('🌾', '🙂') < 0
+assert compare('💯', '🌾') > 0
+// Strings
+assert compare("", "") == 0
+assert compare("", "abc") < 0
+assert compare("abc", "def") < 0
+assert compare("abc", "d") < 0
+assert compare("ab", "abc") < 0
+assert compare("abc", "abc") == 0
+assert compare("abc", "ab") > 0
+// Tuples
+assert compare((1, 2), (3, 4)) < 0
+assert compare((1, 2), (1, 4)) < 0
+assert compare((1, 2), (1, 2)) == 0
+assert compare(('d', 2), ('c', 2)) > 0
+// Arrays
+assert compare([>], [>]) == 0
+assert compare([>], [> 1]) < 0
+assert compare([> 1, 2], [> 3, 4]) < 0
+assert compare([> 1, 2], [> 1, 4]) < 0
+assert compare([> 1, 2], [> 1, 2]) == 0
+// Enums
+enum Comparable {
+  A,
+  B(Bool),
+  C,
+}
+assert compare(A, A) == 0
+assert compare(B(true), B(true)) == 0
+assert compare(A, B(true)) < 0
+assert compare(C, B(true)) > 0
+assert compare(B(false), B(true)) < 0
+// Records
+record Comparable2 {
+  a: Number,
+  b: Bool,
+  c: Void,
+}
+assert compare({ a: 1, b: true, c: void }, { a: 1, b: true, c: void }) == 0
+assert compare({ a: 1, b: true, c: void }, { a: 1, b: false, c: void }) > 0

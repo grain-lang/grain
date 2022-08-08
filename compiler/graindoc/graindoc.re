@@ -84,12 +84,14 @@ let generate_docs =
 
   let buf = Buffer.create(0);
   let module_comment = Comments.Doc.find_module(comments);
+  let module_name = ref(None);
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
     // TODO(#787): Should we fail if more than one `@module` attribute?
     let module_attr = attrs |> List.find(Comments.Attribute.is_module);
     switch (module_attr) {
     | Module({attr_name, attr_desc}) =>
+      module_name := Some(attr_name);
       Buffer.add_string(buf, Markdown.frontmatter([("title", attr_name)]));
       Buffer.add_string(buf, Markdown.paragraph(attr_desc));
       switch (desc) {
@@ -156,8 +158,15 @@ let generate_docs =
   | None => ()
   };
 
+  let module_name = module_name^;
   let add_docblock = sig_item => {
-    let docblock = Docblock.for_signature_item(~comments, ~exports, sig_item);
+    let docblock =
+      Docblock.for_signature_item(
+        ~comments,
+        ~exports,
+        ~module_name?,
+        sig_item,
+      );
     switch (docblock) {
     | Some(docblock) =>
       Buffer.add_buffer(

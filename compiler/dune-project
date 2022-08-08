@@ -1,6 +1,6 @@
 (lang dune 2.3)
 (name grain)
-(version 0.5.2)
+(version 0.5.3)
 (using menhir 2.0)
 
 ; Flip this to `true` when we want to generate opam files again

@@ -13,10 +13,10 @@ tuples › nested_tup_3
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $b_1131 (mut i32) (i32.const 0))
- (global $a_1130 (mut i32) (i32.const 0))
- (global $y_1129 (mut i32) (i32.const 0))
- (global $x_1128 (mut i32) (i32.const 0))
+ (global $b_1134 (mut i32) (i32.const 0))
+ (global $a_1133 (mut i32) (i32.const 0))
+ (global $y_1132 (mut i32) (i32.const 0))
+ (global $x_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -163,13 +163,13 @@ tuples › nested_tup_3
        )
       )
       (block $compile_store.11
-       (global.set $x_1128
+       (global.set $x_1131
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $x_1128)
+           (global.get $x_1131)
           )
          )
         )
@@ -178,13 +178,13 @@ tuples › nested_tup_3
        )
       )
       (block $compile_store.13
-       (global.set $y_1129
+       (global.set $y_1132
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $y_1129)
+           (global.get $y_1132)
           )
          )
         )
@@ -236,7 +236,7 @@ tuples › nested_tup_3
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.18 (result i32)
-         (global.set $y_1129
+         (global.set $y_1132
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -245,7 +245,7 @@ tuples › nested_tup_3
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $y_1129)
+             (global.get $y_1132)
             )
            )
           )
@@ -258,7 +258,7 @@ tuples › nested_tup_3
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.19 (result i32)
-         (global.set $x_1128
+         (global.set $x_1131
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -267,7 +267,7 @@ tuples › nested_tup_3
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $x_1128)
+             (global.get $x_1131)
             )
            )
           )
@@ -282,7 +282,7 @@ tuples › nested_tup_3
          (tuple.make
           (call $incRef_0
            (global.get $GRAIN$EXPORT$incRef_0)
-           (global.get $y_1129)
+           (global.get $y_1132)
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
@@ -295,13 +295,13 @@ tuples › nested_tup_3
        )
       )
       (block $compile_store.23
-       (global.set $a_1130
+       (global.set $a_1133
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $a_1130)
+           (global.get $a_1133)
           )
          )
         )
@@ -310,13 +310,13 @@ tuples › nested_tup_3
        )
       )
       (block $compile_store.25
-       (global.set $b_1131
+       (global.set $b_1134
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1131)
+           (global.get $b_1134)
           )
          )
         )
@@ -368,7 +368,7 @@ tuples › nested_tup_3
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.30 (result i32)
-         (global.set $b_1131
+         (global.set $b_1134
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -377,7 +377,7 @@ tuples › nested_tup_3
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $b_1131)
+             (global.get $b_1134)
             )
            )
           )
@@ -390,7 +390,7 @@ tuples › nested_tup_3
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.31 (result i32)
-         (global.set $a_1130
+         (global.set $a_1133
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -399,7 +399,7 @@ tuples › nested_tup_3
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $a_1130)
+             (global.get $a_1133)
             )
            )
           )
@@ -410,7 +410,7 @@ tuples › nested_tup_3
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $a_1130)
+       (global.get $a_1133)
       )
      )
     )

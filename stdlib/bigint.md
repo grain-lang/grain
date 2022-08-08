@@ -17,7 +17,7 @@ import BigInt from "bigint"
 
 Functions for converting between Numbers and the BigInt type.
 
-### Bigint.**fromNumber**
+### BigInt.**fromNumber**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -42,7 +42,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The Number represented as a BigInt|
 
-### Bigint.**toNumber**
+### BigInt.**toNumber**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -71,7 +71,7 @@ Returns:
 
 Mathematical operations for BigInt values.
 
-### Bigint.**incr**
+### BigInt.**incr**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -96,7 +96,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The incremented value|
 
-### Bigint.**decr**
+### BigInt.**decr**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -121,7 +121,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The decremented value|
 
-### Bigint.**neg**
+### BigInt.**neg**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -146,7 +146,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The negated operand|
 
-### Bigint.**abs**
+### BigInt.**abs**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -171,7 +171,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The operand's absolute value|
 
-### Bigint.**add**
+### BigInt.**add**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -197,7 +197,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The sum of the two operands|
 
-### Bigint.**sub**
+### BigInt.**sub**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -223,7 +223,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The difference of the two operands|
 
-### Bigint.**mul**
+### BigInt.**mul**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -249,7 +249,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The product of the two operands|
 
-### Bigint.**div**
+### BigInt.**div**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -276,7 +276,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The quotient of its operands|
 
-### Bigint.**rem**
+### BigInt.**rem**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -303,7 +303,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The remainder of its operands|
 
-### Bigint.**quotRem**
+### BigInt.**quotRem**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -329,7 +329,7 @@ Returns:
 |----|-----------|
 |`(BigInt, BigInt)`|The quotient and remainder of its operands|
 
-### Bigint.**gcd**
+### BigInt.**gcd**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -359,7 +359,7 @@ Returns:
 
 Functions for operating on bits of BigInt values.
 
-### Bigint.**shl**
+### BigInt.**shl**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -385,7 +385,7 @@ Returns:
 |----|-----------|
 |`BigInt`|The shifted value|
 
-### Bigint.**shr**
+### BigInt.**shr**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -415,7 +415,7 @@ Returns:
 
 Functions for comparing BigInt values.
 
-### Bigint.**eqz**
+### BigInt.**eqz**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -440,7 +440,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### Bigint.**eq**
+### BigInt.**eq**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -466,7 +466,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### Bigint.**ne**
+### BigInt.**ne**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -492,7 +492,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
-### Bigint.**lt**
+### BigInt.**lt**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -518,7 +518,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Bigint.**lte**
+### BigInt.**lte**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -544,7 +544,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Bigint.**gt**
+### BigInt.**gt**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -570,7 +570,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Bigint.**gte**
+### BigInt.**gte**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -600,7 +600,7 @@ Returns:
 
 Boolean operations on the bits of BigInt values.
 
-### Bigint.**lnot**
+### BigInt.**lnot**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -625,7 +625,7 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing the inverted bits of the given value|
 
-### Bigint.**land**
+### BigInt.**land**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -651,7 +651,7 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### Bigint.**lor**
+### BigInt.**lor**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -677,7 +677,7 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### Bigint.**lxor**
+### BigInt.**lxor**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -703,7 +703,7 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
-### Bigint.**clz**
+### BigInt.**clz**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -729,7 +729,7 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of leading zeros|
 
-### Bigint.**ctz**
+### BigInt.**ctz**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -754,7 +754,7 @@ Returns:
 |----|-----------|
 |`Int64`|The amount of trailing zeros|
 
-### Bigint.**popcnt**
+### BigInt.**popcnt**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -784,7 +784,7 @@ Returns:
 
 Other functions on BigInts.
 
-### Bigint.**toString**
+### BigInt.**toString**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>

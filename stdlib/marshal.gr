@@ -1,0 +1,1058 @@
+/**
+ * @module Marshal: Utilities for serializing and deserializing Grain data.
+ *
+ * @example import Marshal from "marshal"
+ *
+ * @since v0.5.3
+ */
+
+/*
+  SERIALIZED BINARY FORMAT
+
+  Grain stack-allocated values are serialized as-is. Heap-allocated values are
+  largely serialized the same as their in-memory representation, with the
+  exception that pointers are offsets into the byte sequence rather than
+  pointers into memory. Structures are kept 8-byte aligned to be consistent
+  with Grain's in-memory representation. The order in which these structures
+  appear in the byte sequence is not significant.
+
+  The first 32-bit value in the byte sequence is either a stack-allocated value
+  or a "pointer" to a heap-allocated value.
+*/
+
+/**
+ * @section Values: Functions for marshaling and unmarshaling data.
+ */
+
+import WasmI32, {
+  add as (+),
+  mul as (*),
+  and as (&),
+  eq as (==),
+  ne as (!=),
+  gtU as (>),
+  ltU as (<),
+  leU as (<=),
+  load,
+  store,
+  fromGrain,
+  toGrain,
+} from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import Tags from "runtime/unsafe/tags"
+import { allocateBytes, newInt32 } from "runtime/dataStructures"
+import Map from "map"
+import Set from "set"
+import Option from "option"
+
+@unsafe
+let roundTo8 = n => {
+  n + 7n & 0xfffffff8n
+}
+
+@unsafe
+let isHeapPtr = value =>
+  (value & Tags._GRAIN_GENERIC_TAG_MASK) ==
+  Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
+
+@unsafe
+let rec size = (value, acc, valuesSeen, toplevel) => {
+  if (isHeapPtr(value)) {
+    let asInt32 = toGrain(newInt32(value)): Int32
+    if (Set.contains(asInt32, valuesSeen)) {
+      // We've detected a cycle, and we'll refer to the existing instance
+      acc
+    } else {
+      Set.add(asInt32, valuesSeen)
+
+      let acc = if (toplevel) {
+        // We'll write a word (and 32 bits of padding) to indicate that this is a heap value
+        acc + 8n
+      } else {
+        acc
+      }
+      let heapPtr = value
+      match (load(heapPtr, 0n)) {
+        t when (
+          t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+        ) => {
+          acc + roundTo8(8n + load(heapPtr, 4n))
+        },
+        t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+          let arity = load(heapPtr, 16n)
+
+          let mut acc = acc + roundTo8(20n + arity * 4n)
+
+          let a = arity * 4n
+          for (let mut i = 0n; i < a; i += 4n) {
+            acc = size(load(heapPtr + i, 20n), acc, valuesSeen, false)
+          }
+
+          acc
+        },
+        t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+          let arity = load(heapPtr, 12n)
+
+          let mut acc = acc + roundTo8(16n + arity * 4n)
+
+          let a = arity * 4n
+          for (let mut i = 0n; i < a; i += 4n) {
+            acc = size(load(heapPtr + i, 16n), acc, valuesSeen, false)
+          }
+
+          acc
+        },
+        t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+          let arity = load(heapPtr, 4n)
+
+          let mut acc = acc + roundTo8(8n + arity * 4n)
+
+          let a = arity * 4n
+          for (let mut i = 0n; i < a; i += 4n) {
+            acc = size(load(heapPtr + i, 8n), acc, valuesSeen, false)
+          }
+
+          acc
+        },
+        t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+          let arity = load(heapPtr, 4n)
+
+          let mut acc = acc + roundTo8(8n + arity * 4n)
+
+          let l = arity * 4n
+          for (let mut i = 0n; i < l; i += 4n) {
+            acc = size(load(heapPtr + i, 8n), acc, valuesSeen, false)
+          }
+
+          acc
+        },
+        t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+          let arity = load(heapPtr, 12n)
+
+          let mut acc = acc + roundTo8(16n + arity * 4n)
+
+          let a = arity * 4n
+          for (let mut i = 0n; i < a; i += 4n) {
+            acc = size(load(heapPtr + i, 16n), acc, valuesSeen, false)
+          }
+
+          acc
+        },
+        t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+          let tag = load(heapPtr, 4n)
+          match (tag) {
+            t when (
+              t == Tags._GRAIN_INT32_BOXED_NUM_TAG ||
+              t == Tags._GRAIN_INT64_BOXED_NUM_TAG ||
+              t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG ||
+              t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG
+            ) => {
+              // The 32-bit values only take 12 bytes of memory, but we report 16
+              // for alignment
+              acc + 16n
+            },
+            t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+              acc + 16n + load(heapPtr, 8n) * 8n
+            },
+            t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+              acc +
+              16n +
+              size(load(value, 8n), 0n, valuesSeen, false) +
+              size(load(value, 12n), 0n, valuesSeen, false)
+            },
+            _ => {
+              fail "Unknown number type"
+            },
+          }
+        },
+        _ => {
+          fail "Unknown heap type"
+        },
+      }
+    }
+  } else {
+    // Handle non-heap values: booleans, chars, void, etc.
+    if (toplevel) {
+      acc + 4n
+    } else {
+      acc
+    }
+  }
+}
+
+@unsafe
+let size = value => {
+  size(value, 0n, Set.make(), true)
+}
+
+@unsafe
+let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
+  let asInt32 = toGrain(newInt32(heapPtr)): Int32
+  let offsetAsInt32 = toGrain(newInt32(offset)): Int32
+  Map.set(asInt32, offsetAsInt32, valuesSeen)
+
+  match (load(heapPtr, 0n)) {
+    t when (
+      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+    ) => {
+      let size = 8n + load(heapPtr, 4n)
+      Memory.copy(buf + offset, heapPtr, size)
+      roundTo8(offset + size)
+    },
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 20n)
+
+      let arity = load(heapPtr, 16n)
+
+      let mut payloadOffset = roundTo8(offset + 20n + arity * 4n)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let value = load(heapPtr + i, 20n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 20n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 20n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
+          }
+        } else {
+          store(buf, value, offset + i + 20n)
+        }
+      }
+
+      payloadOffset
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 16n)
+
+      let arity = load(heapPtr, 12n)
+
+      let mut payloadOffset = roundTo8(offset + 16n + arity * 4n)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let value = load(heapPtr + i, 16n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 16n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 16n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
+          }
+        } else {
+          store(buf, value, offset + i + 16n)
+        }
+      }
+
+      payloadOffset
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 8n)
+
+      let arity = load(heapPtr, 4n)
+
+      let mut payloadOffset = roundTo8(offset + 8n + arity * 4n)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let value = load(heapPtr + i, 8n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 8n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 8n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
+          }
+        } else {
+          store(buf, value, offset + i + 8n)
+        }
+      }
+
+      payloadOffset
+    },
+    t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 8n)
+
+      let arity = load(heapPtr, 4n)
+
+      let mut payloadOffset = roundTo8(offset + 8n + arity * 4n)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let value = load(heapPtr + i, 8n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 8n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 8n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
+          }
+        } else {
+          store(buf, value, offset + i + 8n)
+        }
+      }
+
+      payloadOffset
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 16n)
+
+      let arity = load(heapPtr, 12n)
+
+      let mut payloadOffset = roundTo8(offset + 16n + arity * 4n)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let value = load(heapPtr + i, 16n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          match (Map.get(asInt32, valuesSeen)) {
+            Some(value) => {
+              let ptr = load(fromGrain(value), 8n)
+              store(buf, ptr, offset + i + 16n)
+            },
+            None => {
+              store(buf, payloadOffset, offset + i + 16n)
+              payloadOffset = marshalHeap(value, buf, payloadOffset, valuesSeen)
+            },
+          }
+        } else {
+          store(buf, value, offset + i + 16n)
+        }
+      }
+
+      payloadOffset
+    },
+    t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+      let tag = load(heapPtr, 4n)
+      match (tag) {
+        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
+          Memory.copy(buf + offset, heapPtr, 12n)
+          offset + 16n
+        },
+        t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+          Memory.copy(buf + offset, heapPtr, 16n)
+          offset + 16n
+        },
+        t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+          let size = 16n + load(heapPtr, 8n) * 8n
+          Memory.copy(buf + offset, heapPtr, size)
+          offset + size
+        },
+        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
+          Memory.copy(buf + offset, heapPtr, 12n)
+          offset + 16n
+        },
+        t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+          Memory.copy(buf + offset, heapPtr, 16n)
+          offset + 16n
+        },
+        t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+          Memory.copy(buf + offset, heapPtr, 8n)
+          let mut payloadOffset = offset + 16n
+          store(buf, payloadOffset, offset + 8n)
+          payloadOffset = marshalHeap(
+            load(heapPtr, 8n),
+            buf,
+            payloadOffset,
+            valuesSeen
+          )
+          store(buf, payloadOffset, offset + 12n)
+          payloadOffset = marshalHeap(
+            load(heapPtr, 12n),
+            buf,
+            payloadOffset,
+            valuesSeen
+          )
+          payloadOffset
+        },
+        _ => {
+          fail "Unknown number type"
+        },
+      }
+    },
+    _ => {
+      fail "Unknown heap type"
+    },
+  }
+}
+
+@unsafe
+let marshal = (value, buf) => {
+  if (isHeapPtr(value)) {
+    store(buf, 8n, 0n)
+    marshalHeap(value, buf, 8n, Map.make())
+  } else {
+    // Handle non-heap values: booleans, numbers, chars, void, etc.
+    store(buf, value, 0n)
+    4n
+  }
+}
+
+/**
+ * Serialize a value into a byte-based representation suitable for transmission
+ * across a network or disk storage. The byte-based representation can be
+ * deserialized at a later time to restore the value.
+ *
+ * @param value: The value to serialize
+ * @returns A byte-based representation of the value
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let marshal = value => {
+  let valuePtr = fromGrain(value)
+  let buf = allocateBytes(size(valuePtr))
+  marshal(valuePtr, buf + 8n)
+  toGrain(buf): Bytes
+}
+
+@unsafe
+let reportError = (message, offset) => {
+  Some(message ++ " at offset " ++ toString(toGrain(newInt32(offset))))
+}
+
+// When Grain has exception handling, validation could potentially occur during
+// unmarshaling.
+
+@unsafe
+let validateStack = (value, offset) => {
+  match (value) {
+    _ when (
+      value == fromGrain(true) ||
+      value == fromGrain(false) ||
+      value == fromGrain(void) ||
+      (value & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE ||
+      (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_CHAR_TAG_TYPE
+    ) =>
+      None,
+    _ => reportError("Unknown value", offset),
+  }
+}
+
+@unsafe
+let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
+  let offsetAsInt32 = toGrain(newInt32(offset)): Int32
+  Set.add(offsetAsInt32, valuesChecked)
+
+  let valuePtr = buf + offset
+  match (load(valuePtr, 0n)) {
+    t when (
+      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+    ) => {
+      let size = 8n + load(valuePtr, 4n)
+      if (offset + size > bufSize) {
+        reportError("String/Bytes length exceeds buffer size", offset)
+      } else {
+        None
+      }
+    },
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = load(valuePtr, 16n)
+      let size = 20n + arity * 4n
+
+      let mut error = if (offset + size > bufSize) {
+        reportError("Enum payload size exceeds buffer size", offset)
+      } else {
+        None
+      }
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        if (Option.isSome(error)) break
+
+        let value = load(valuePtr + i, 20n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          if (Set.contains(asInt32, valuesChecked)) {
+            continue
+          }
+          error = Option.or(
+            error,
+            validateHeap(buf, bufSize, value, valuesChecked)
+          )
+        } else {
+          error = Option.or(error, validateStack(value, offset))
+        }
+      }
+
+      error
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = load(valuePtr, 12n)
+      let size = 16n + arity * 4n
+
+      let mut error = if (offset + size > bufSize) {
+        reportError("Record payload size exceeds buffer size", offset)
+      } else {
+        None
+      }
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        if (Option.isSome(error)) break
+
+        let value = load(valuePtr + i, 16n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          if (Set.contains(asInt32, valuesChecked)) {
+            continue
+          }
+          error = Option.or(
+            error,
+            validateHeap(buf, bufSize, value, valuesChecked)
+          )
+        } else {
+          error = Option.or(error, validateStack(value, offset))
+        }
+      }
+
+      error
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+      let arity = load(valuePtr, 4n)
+      let size = 8n + arity * 4n
+
+      let mut error = if (offset + size > bufSize) {
+        reportError("Array payload size exceeds buffer size", offset)
+      } else {
+        None
+      }
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        if (Option.isSome(error)) break
+
+        let value = load(valuePtr + i, 8n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          if (Set.contains(asInt32, valuesChecked)) {
+            continue
+          }
+          error = Option.or(
+            error,
+            validateHeap(buf, bufSize, value, valuesChecked)
+          )
+        } else {
+          error = Option.or(error, validateStack(value, offset))
+        }
+      }
+
+      error
+    },
+    t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let arity = load(valuePtr, 4n)
+      let size = 8n + arity * 4n
+
+      let mut error = if (offset + size > bufSize) {
+        reportError("Tuple payload size exceeds buffer size", offset)
+      } else {
+        None
+      }
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        if (Option.isSome(error)) break
+
+        let value = load(valuePtr + i, 8n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          if (Set.contains(asInt32, valuesChecked)) {
+            continue
+          }
+          error = Option.or(
+            error,
+            validateHeap(buf, bufSize, value, valuesChecked)
+          )
+        } else {
+          error = Option.or(error, validateStack(value, offset))
+        }
+      }
+
+      error
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = load(valuePtr, 12n)
+      let size = 16n + arity * 4n
+
+      let mut error = if (offset + size > bufSize) {
+        reportError("Closure payload size exceeds buffer size", offset)
+      } else {
+        None
+      }
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        if (Option.isSome(error)) break
+
+        let value = load(valuePtr + i, 16n)
+        if (isHeapPtr(value)) {
+          let asInt32 = toGrain(newInt32(value)): Int32
+          if (Set.contains(asInt32, valuesChecked)) {
+            continue
+          }
+          error = Option.or(
+            error,
+            validateHeap(buf, bufSize, value, valuesChecked)
+          )
+        } else {
+          error = Option.or(error, validateStack(value, offset))
+        }
+      }
+
+      error
+    },
+    t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+      let tag = load(valuePtr, 4n)
+      match (tag) {
+        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
+          if (offset + 12n > bufSize) {
+            reportError(
+              "Not enough bytes remaining in buffer for Int32/Number",
+              offset
+            )
+          } else {
+            None
+          }
+        },
+        t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+          if (offset + 16n > bufSize) {
+            reportError(
+              "Not enough bytes remaining in buffer for Int64/Number",
+              offset
+            )
+          } else {
+            None
+          }
+        },
+        t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+          let size = 16n + load(valuePtr, 8n) * 8n
+          if (offset + size > bufSize) {
+            reportError("BigInt/Number payload size exeeds buffer size", offset)
+          } else {
+            None
+          }
+        },
+        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
+          if (offset + 12n > bufSize) {
+            reportError(
+              "Not enough bytes remaining in buffer for Float32/Number",
+              offset
+            )
+          } else {
+            None
+          }
+        },
+        t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+          if (offset + 16n > bufSize) {
+            reportError(
+              "Not enough bytes remaining in buffer for Float64/Number",
+              offset
+            )
+          } else {
+            None
+          }
+        },
+        t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+          if (offset + 16n > bufSize) {
+            reportError(
+              "Not enough bytes remaining in buffer for Rational/Number",
+              offset
+            )
+          } else {
+            let numeratorOffset = load(valuePtr, 8n)
+            let denominatorOffset = load(valuePtr, 12n)
+            let error = Option.or(
+              validateHeap(buf, bufSize, numeratorOffset, valuesChecked),
+              validateHeap(buf, bufSize, denominatorOffset, valuesChecked)
+            )
+            if (Option.isNone(error)) {
+              let numeratorError = if (
+                load(buf, numeratorOffset) != Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+                load(buf, numeratorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+              ) {
+                reportError(
+                  "Rational/Number numerator was not in the expected format",
+                  offset
+                )
+              } else {
+                None
+              }
+              let denominatorError = if (
+                load(buf, denominatorOffset) !=
+                Tags._GRAIN_BOXED_NUM_HEAP_TAG &&
+                load(buf, denominatorOffset + 4n) !=
+                Tags._GRAIN_BIGINT_BOXED_NUM_TAG
+              ) {
+                reportError(
+                  "Rational/Number denominator was not in the expected format",
+                  offset
+                )
+              } else {
+                None
+              }
+              Option.or(numeratorError, denominatorError)
+            } else {
+              error
+            }
+          }
+        },
+        _ => {
+          None
+        },
+      }
+    },
+    _ => {
+      None
+    },
+  }
+}
+
+@unsafe
+let validate = (buf, bufSize) => {
+  if (bufSize < 4n) {
+    reportError("No bytes remaining in buffer", 0n)
+  } else {
+    let value = load(buf, 0n)
+    if (isHeapPtr(value)) {
+      validateHeap(buf, bufSize, value, Set.make())
+    } else {
+      // Handle non-heap values: booleans, chars, void, etc.
+      match (value) {
+        _ when (
+          value == fromGrain(true) ||
+          value == fromGrain(false) ||
+          value == fromGrain(void) ||
+          (value & Tags._GRAIN_NUMBER_TAG_MASK) ==
+          Tags._GRAIN_NUMBER_TAG_TYPE ||
+          (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_CHAR_TAG_TYPE
+        ) =>
+          None,
+        _ => reportError("Unknown value", 0n),
+      }
+    }
+  }
+}
+
+@unsafe
+let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
+  let offsetAsInt32 = toGrain(newInt32(offset)): Int32
+
+  let valuePtr = buf + offset
+  match (load(valuePtr, 0n)) {
+    t when (
+      t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
+    ) => {
+      let size = 8n + load(valuePtr, 4n)
+      let value = Memory.malloc(size)
+      Memory.copy(value, valuePtr, size)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      value
+    },
+    t when t == Tags._GRAIN_ADT_HEAP_TAG => {
+      let arity = load(valuePtr, 16n)
+      let size = 20n + arity * 4n
+
+      let value = Memory.malloc(size)
+      Memory.copy(value, valuePtr, 20n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let subvalue = load(valuePtr + i, 20n)
+        if (isHeapPtr(subvalue)) {
+          let asInt32 = toGrain(newInt32(subvalue)): Int32
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 20n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                20n
+              )
+            },
+          }
+        } else {
+          store(value + i, subvalue, 20n)
+        }
+      }
+
+      value
+    },
+    t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
+      let arity = load(valuePtr, 12n)
+      let size = 16n + arity * 4n
+
+      let value = Memory.malloc(size)
+      Memory.copy(value, valuePtr, 16n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let subvalue = load(valuePtr + i, 16n)
+        if (isHeapPtr(subvalue)) {
+          let asInt32 = toGrain(newInt32(subvalue)): Int32
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 16n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                16n
+              )
+            },
+          }
+        } else {
+          store(value + i, subvalue, 16n)
+        }
+      }
+
+      value
+    },
+    t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
+      let arity = load(valuePtr, 4n)
+      let size = 8n + arity * 4n
+
+      let value = Memory.malloc(size)
+      Memory.copy(value, valuePtr, 8n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let subvalue = load(valuePtr + i, 8n)
+        if (isHeapPtr(subvalue)) {
+          let asInt32 = toGrain(newInt32(subvalue)): Int32
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 8n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                8n
+              )
+            },
+          }
+        } else {
+          store(value + i, subvalue, 8n)
+        }
+      }
+
+      value
+    },
+    t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
+      let arity = load(valuePtr, 4n)
+      let size = 8n + arity * 4n
+
+      let value = Memory.malloc(size)
+      Memory.copy(value, valuePtr, 8n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let subvalue = load(valuePtr + i, 8n)
+        if (isHeapPtr(subvalue)) {
+          let asInt32 = toGrain(newInt32(subvalue)): Int32
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 8n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                8n
+              )
+            },
+          }
+        } else {
+          store(value + i, subvalue, 8n)
+        }
+      }
+
+      value
+    },
+    t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
+      let arity = load(valuePtr, 12n)
+      let size = 16n + arity * 4n
+
+      let value = Memory.malloc(size)
+      Memory.copy(value, valuePtr, 16n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      let a = arity * 4n
+      for (let mut i = 0n; i < a; i += 4n) {
+        let subvalue = load(valuePtr + i, 16n)
+        if (isHeapPtr(subvalue)) {
+          let asInt32 = toGrain(newInt32(subvalue)): Int32
+          match (Map.get(asInt32, valuesUnmarshaled)) {
+            Some(ptr) => {
+              let ptr = load(fromGrain(ptr), 8n)
+              store(value + i, Memory.incRef(ptr), 16n)
+            },
+            None => {
+              store(
+                value + i,
+                unmarshalHeap(buf, subvalue, valuesUnmarshaled),
+                16n
+              )
+            },
+          }
+        } else {
+          store(value + i, subvalue, 16n)
+        }
+      }
+
+      value
+    },
+    t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
+      let tag = load(valuePtr, 4n)
+      match (tag) {
+        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
+          let value = Memory.malloc(12n)
+          Memory.copy(value, valuePtr, 12n)
+
+          let asInt32 = toGrain(newInt32(value)): Int32
+          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+          value
+        },
+        t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
+          let value = Memory.malloc(16n)
+          Memory.copy(value, valuePtr, 16n)
+
+          let asInt32 = toGrain(newInt32(value)): Int32
+          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+          value
+        },
+        t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+          let size = 16n + load(valuePtr, 8n) * 8n
+          let value = Memory.malloc(size)
+          Memory.copy(value, valuePtr, size)
+
+          let asInt32 = toGrain(newInt32(value)): Int32
+          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+          value
+        },
+        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
+          let value = Memory.malloc(12n)
+          Memory.copy(value, valuePtr, 12n)
+
+          let asInt32 = toGrain(newInt32(value)): Int32
+          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+          value
+        },
+        t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
+          let value = Memory.malloc(16n)
+          Memory.copy(value, valuePtr, 16n)
+
+          let asInt32 = toGrain(newInt32(value)): Int32
+          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+          value
+        },
+        t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+          let value = Memory.malloc(16n)
+          Memory.copy(value, valuePtr, 8n)
+
+          let asInt32 = toGrain(newInt32(value)): Int32
+          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+          let num = unmarshalHeap(buf, load(valuePtr, 8n), valuesUnmarshaled)
+          store(value, num, 8n)
+          let denom = unmarshalHeap(buf, load(valuePtr, 12n), valuesUnmarshaled)
+          store(value, denom, 12n)
+          value
+        },
+        _ => {
+          fail "Unknown number type"
+        },
+      }
+    },
+    _ => {
+      fail "Unknown heap type"
+    },
+  }
+}
+
+@unsafe
+let unmarshal = buf => {
+  let value = load(buf, 0n)
+  if (isHeapPtr(value)) {
+    unmarshalHeap(buf, value, Map.make())
+  } else {
+    // Non-heap values: booleans, numbers, chars, void, etc.
+    value
+  }
+}
+
+/**
+ * Deserialize the byte-based representation of a value back into an in-memory
+ * value. This operation is not type-safe, and it is recommended that a type
+ * annotation is used to declare the type of the unmarshaled value. While
+ * attempts to unmarshal bad data will fail, this operation is still generally
+ * unsafe and great care should be taken to ensure that the data being
+ * unmarshaled corresponds to the expected type.
+ *
+ * @param bytes: The data to deserialize
+ * @returns An in-memory value
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let unmarshal = (bytes: Bytes) => {
+  let buf = fromGrain(bytes) + 8n
+  let bufSize = load(fromGrain(bytes), 4n)
+  match (validate(buf, bufSize)) {
+    Some(error) => Err(error),
+    None => Ok(toGrain(unmarshal(buf))),
+  }
+}

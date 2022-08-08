@@ -100,14 +100,18 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("int64.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
+  assertStdlib("marshal.test");
   assertStdlib("number.test");
   assertStdlib("option.test");
+  assertStdlib("pervasives.test");
   assertStdlib("queue.test");
   assertStdlib("range.test");
   assertStdlib("result.test");
   assertStdlib("set.test");
   assertStdlib("regex.test");
   assertStdlib("stack.test");
+  assertStdlib("priorityqueue.test");
+  assertStdlib("immutablepriorityqueue.test");
   assertStdlib("string.test");
   assertStdlib("sys.file.test");
   assertStdlib(~code=5, "sys.process.test");

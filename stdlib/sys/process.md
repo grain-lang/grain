@@ -1,5 +1,5 @@
 ---
-title: Sys/Process
+title: Process
 ---
 
 Utilities for accessing functionality and information about the Grain program's process.
@@ -12,7 +12,7 @@ import Process from "sys/process"
 
 ## Types
 
-Type declarations included in the Sys/Process module.
+Type declarations included in the Process module.
 
 ### Process.**Signal**
 
@@ -55,7 +55,7 @@ Signals that can be sent to the host system.
 
 ## Values
 
-Functions and constants included in the Sys/Process module.
+Functions and constants included in the Process module.
 
 ### Process.**argv**
 

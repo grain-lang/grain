@@ -1,0 +1,241 @@
+/**
+ * @module PriorityQueue: A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+ *
+ * @example import PriorityQueue from "priorityqueue"
+ *
+ * @since v0.5.3
+ */
+
+import Array from "array"
+import List from "list"
+import Number from "number"
+import Option from "option"
+
+/**
+ * @section Types: Type declarations included in the PriorityQueue module.
+ */
+
+/**
+ * Mutable data structure which maintains a priority order for its elements.
+ */
+record PriorityQueue<a> {
+  mut size: Number,
+  mut array: Array<Option<a>>,
+  comp: (a, a) -> Number,
+}
+
+/**
+ * @section Values: Functions for working with PriorityQueues.
+ */
+
+let swap = (i1, i2, array) => {
+  let t = array[i2]
+  array[i2] = array[i1]
+  array[i1] = t
+}
+
+let get = (array, i) =>
+  Option.expect(
+    "Impossible: " ++
+    toString(i) ++
+    " in PriorityQueue's inner storage array is None",
+    array[i]
+  )
+
+let rec siftDown = (i, pq) => {
+  let leftI = 2 * i + 1
+  let rightI = 2 * i + 2
+
+  // we want to find the smaller child from the current tree node to sift down to
+  let mut swapWithI = i
+  if (leftI < pq.size && pq.comp(get(pq.array, leftI), get(pq.array, i)) < 0) {
+    swapWithI = leftI
+  }
+  if (
+    rightI < pq.size &&
+    pq.comp(get(pq.array, rightI), get(pq.array, swapWithI)) < 0
+  ) {
+    swapWithI = rightI
+  }
+  if (swapWithI != i) {
+    swap(i, swapWithI, pq.array)
+    siftDown(swapWithI, pq)
+  }
+}
+
+let rec siftUp = (i, pq) => {
+  let parentI = Number.trunc((i - 1) / 2)
+  // we should only sift up if the element is smaller than its parent
+  if (i > 0 && pq.comp(get(pq.array, i), get(pq.array, parentI)) < 0) {
+    swap(i, parentI, pq.array)
+    siftUp(parentI, pq)
+  }
+}
+
+/**
+ * Creates a new priority queue with a given internal storage size and a
+ * comparator function, which is used to determine priority of elements. The
+ * comparator function takes two elements and must return 0 if both share
+ * priority, a positive number if the first has greater priority, and a
+ * negative number if the first has less priority.
+ * 
+ * Generally, you won't need to care about the storage size of your priority
+ * queue and can use `PriorityQueue.make()` instead.
+ * 
+ * @param size: The initial storage size of the priority queue
+ * @param comp: The comparator function used to indicate priority order
+ * @returns An empty priority queue
+ *
+ * @since v0.5.3
+ */
+export let makeSized = (size, comp) => {
+  { size: 0, array: Array.make(size, None), comp }
+}
+
+/**
+ * Creates a new priority queue with a comparator function, which is used to
+ * determine priority of elements. The comparator function takes two elements
+ * and must return 0 if both share priority, a positive number if the first
+ * has greater priority, and a negative number if the first has less priority.
+ * 
+ * @param comp: The comparator function used to indicate priority order
+ * @returns An empty priority queue
+ * 
+ * @example PriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
+ * @example PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
+ *
+ * @since v0.5.3
+ */
+export let make = comp => {
+  makeSized(16, comp)
+}
+
+/**
+ * Gets the number of elements in a priority queue.
+ * 
+ * @param pq: The priority queue to inspect
+ * @returns The number of elements in the priority queue
+ *
+ * @since v0.5.3
+ */
+export let size = pq => {
+  pq.size
+}
+
+/**
+ * Determines if the priority queue contains no elements.
+ * 
+ * @param pq: The priority queue to check
+ * @returns `true` if the priority queue is empty and `false` otherwise
+ *
+ * @since v0.5.3
+ */
+export let isEmpty = pq => {
+  pq.size == 0
+}
+
+/**
+ * Adds a new element to the priority queue.
+ * 
+ * @param val: The value to add into the priority queue
+ * @param pq: The priority queue to update
+ *
+ * @since v0.5.3
+ */
+export let push = (val, pq) => {
+  let arrLen = Array.length(pq.array)
+  // double size of internal array if out of space
+  if (pq.size == arrLen) {
+    let oldArr = pq.array
+    pq.array = Array.make(arrLen * 2, None)
+    Array.forEachi((val, i) => {
+      pq.array[i] = val
+    }, oldArr)
+  }
+  pq.array[pq.size] = Some(val)
+  pq.size += 1
+  // reorder heap to ensure that binary heap property of parent nodes having
+  // larger values than their children is upheld
+  siftUp(pq.size - 1, pq)
+}
+
+/**
+ * Retrieves the highest priority element in the priority queue. It is not
+ * removed from the queue.
+ * 
+ * @param pq: The priority queue to inspect
+ * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
+ *
+ * @since v0.5.3
+ */
+export let peek = pq => {
+  if (pq.size == 0) {
+    None
+  } else {
+    pq.array[0]
+  }
+}
+
+/**
+ * Removes and retrieves the highest priority element in the priority queue.
+ * 
+ * @param pq: The priority queue to inspect
+ * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
+ *
+ * @since v0.5.3
+ */
+export let pop = pq => {
+  if (pq.size == 0) {
+    None
+  } else {
+    let root = pq.array[0]
+
+    pq.array[0] = pq.array[pq.size - 1]
+    pq.array[pq.size - 1] = None
+    pq.size -= 1
+    // reorder heap to ensure that binary heap property of parent nodes having
+    // larger values than their children is upheld
+    siftDown(0, pq)
+    root
+  }
+}
+
+/**
+ * Clears the priority queue and produces a list of all of the elements in the priority
+ * queue in priority order.
+ * 
+ * @param pq: The priority queue to drain
+ * @returns A list of all elements in the priority in priority order
+ *
+ * @since v0.5.3
+ */
+export let drain = pq => {
+  let rec drainRec = acc => {
+    match (pop(pq)) {
+      Some(val) => drainRec([val, ...acc]),
+      None => acc,
+    }
+  }
+  List.reverse(drainRec([]))
+}
+
+/**
+ * Constructs a new priority queue initialized with the elements in the list
+ * using a custom comparator function, which is used to determine priority of
+ * elements. The comparator function takes two elements and must return 0 if
+ * both share priority, a positive number if the first has greater priority,
+ * and a negative number if the first has less priority.
+ * 
+ * @param list: A list of values used to initialize the priority queue
+ * @param comp: A comparator function used to assign priority to elements
+ * @returns A priority queue containing the elements from the list
+ *
+ * @since v0.5.3
+ */
+export let fromList = (list, comp) => {
+  let heap = makeSized(List.length(list), comp)
+  List.forEach(val => {
+    push(val, heap)
+  }, list)
+  heap
+}

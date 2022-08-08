@@ -1,5 +1,5 @@
 ---
-title: Sys/Random
+title: Random
 ---
 
 System access to random values.
@@ -10,7 +10,7 @@ import Random from "sys/random"
 
 ## Values
 
-Functions and constants included in the Sys/Random module.
+Functions and constants included in the Random module.
 
 ### Random.**randomInt32**
 

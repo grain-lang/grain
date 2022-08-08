@@ -281,19 +281,9 @@ let getCodePoint = (ptr: WasmI32) => {
   }
   result
 }
-/**
- * Get the character at the position in the input string.
- *
- * @param position: The position to check
- * @param string: The string to search
- * @returns The character at the provided position
- *
- * @example String.charAt(5, "Hello world") == ' '
- *
- * @since v0.4.0
- */
+
 @unsafe
-export let charAt = (position, string: String) => {
+let charAtHelp = (position, string: String) => {
   if (length(string) <= position || position < 0) {
     fail "Invalid offset: " ++ toString(position)
   }
@@ -309,10 +299,10 @@ export let charAt = (position, string: String) => {
   let mut ptr = string + 8n
   let end = ptr + size
   let mut counter = 0n
-  let mut result = WasmI32.toGrain(0n): Char
+  let mut result = 0n
   while (ptr < end) {
     if (counter == position) {
-      result = tagChar(getCodePoint(ptr))
+      result = getCodePoint(ptr)
       break
     }
     let byte = WasmI32.load8U(ptr, 0n)
@@ -332,6 +322,38 @@ export let charAt = (position, string: String) => {
     fail "charAt: should be impossible (please report)"
   }
   result
+}
+
+/**
+ * Get the Unicode code point at the position in the input string.
+ *
+ * @param position: The position to check
+ * @param string: The string to search
+ * @returns The character code at the provided position
+ *
+ * @example String.charCodeAt(5, "Hello world") == 32
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let charCodeAt = (position, string: String) => {
+  tagSimpleNumber(charAtHelp(position, string))
+}
+
+/**
+ * Get the character at the position in the input string.
+ *
+ * @param position: The position to check
+ * @param string: The string to search
+ * @returns The character at the provided position
+ *
+ * @example String.charAt(5, "Hello world") == ' '
+ *
+ * @since v0.4.0
+ */
+@unsafe
+export let charAt = (position, string: String) => {
+  tagChar(charAtHelp(position, string))
 }
 
 @unsafe

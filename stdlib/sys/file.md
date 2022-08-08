@@ -1,5 +1,5 @@
 ---
-title: Sys/File
+title: File
 ---
 
 Utilities for accessing the filesystem & working with files.
@@ -12,7 +12,7 @@ import File from "sys/file"
 
 ## Types
 
-Type declarations included in the Sys/File module.
+Type declarations included in the File module.
 
 ### File.**FileDescriptor**
 
@@ -173,7 +173,7 @@ An entry in a directory.
 
 ## Values
 
-Functions and constants included in the Sys/File module.
+Functions and constants included in the File module.
 
 ### File.**stdin**
 
