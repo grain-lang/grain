@@ -24,7 +24,7 @@
   an expression or pattern, but this only works for very simple expressions or
   patterns.)
 
-  We handle this case by allowing the lexer to do a lookahead. It if encounters
+  We handle this case by allowing the lexer to do a lookahead. If it encounters
   an open paren (or a single identifier) it will scan ahead and check if an
   arrow appears on the other side. If this is the case, the lexer will first
   report a phantom `FUN` token. This signals to the parser that the upcoming
