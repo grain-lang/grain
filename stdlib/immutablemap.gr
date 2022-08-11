@@ -7,6 +7,7 @@
 
 import List from "list"
 import Array from "array"
+import Option from "option"
 
 // implementation based on the paper "Implementing Sets Efficiently in a
 // Functional Language" by Stephen Adams
@@ -76,7 +77,17 @@ export let size = map => {
  * @since v0.5.4
  */
 export let isEmpty = map => {
-  size(map) == 0
+  match (map) {
+    Empty => true,
+    Tree(_) => false
+  }
+}
+
+let unwrapTree = node => {
+  match (node) {
+    Empty => fail "Impossible: ImmutableMap unwrapTree got an empty tree node",
+    Tree(tree) => tree
+  }
 }
 
 // helper function for creating a tree node with correct size from
@@ -86,18 +97,18 @@ let makeNode = (key, val, left, right) => {
 }
 
 // note: see Figure 1 of paper referenced above for visual illustration of
-// the below rotations
+// the rotations below
 
 // node rotation moving the left subtree of the right node to the left side
 let singleL = (key, val, left, right) => {
-  let Tree({ key: rKey, val: rVal, left: rl, right: rr, _ }) = right
+  let { key: rKey, val: rVal, left: rl, right: rr, _ } = unwrapTree(right)
   makeNode(rKey, rVal, makeNode(key, val, left, rl), rr)
 }
 
 // node rotation moving left child of right tree to the root
 let doubleL = (key, val, left, right) => {
-  let Tree({ key: rKey, val: rVal, left: rl, right: rr, _ }) = right
-  let Tree({ key: rlKey, val: rlVal, left: rll, right: rlr, _ }) = rl
+  let { key: rKey, val: rVal, left: rl, right: rr, _ } = unwrapTree(right)
+  let { key: rlKey, val: rlVal, left: rll, right: rlr, _ } = unwrapTree(rl)
   makeNode(
     rlKey,
     rlVal,
@@ -108,14 +119,14 @@ let doubleL = (key, val, left, right) => {
 
 // node rotation moving the right subtree of the left node to the right side
 let singleR = (key, val, left, right) => {
-  let Tree({ key: lKey, val: lVal, left: ll, right: lr, _ }) = left
+  let { key: lKey, val: lVal, left: ll, right: lr, _ } = unwrapTree(left)
   makeNode(lKey, lVal, ll, makeNode(key, val, lr, right))
 }
 
 // node rotation moving right child of left tree to the root
 let doubleR = (key, val, left, right) => {
-  let Tree({ key: lKey, val: lVal, left: ll, right: lr, _ }) = left
-  let Tree({ key: lrKey, val: lrVal, left: lrl, right: lrr, _ }) = lr
+  let { key: lKey, val: lVal, left: ll, right: lr, _ } = unwrapTree(left)
+  let { key: lrKey, val: lrVal, left: lrl, right: lrr, _ } = unwrapTree(lr)
   makeNode(
     lrKey,
     lrVal,
@@ -205,7 +216,7 @@ export let rec get = (key, map) => {
  * @since v0.5.4
  */
 export let rec contains = (key, map) => {
-  get(key, map) != None
+  Option.isSome(get(key, map))
 }
 
 // removes the minimum element from a tree

@@ -75,7 +75,17 @@ export let size = set => {
  * @since v0.5.4
  */
 export let isEmpty = set => {
-  size(set) == 0
+  match (set) {
+    Empty => true,
+    Tree(_) => false
+  }
+}
+
+let unwrapTree = node => {
+  match (node) {
+    Empty => fail "Impossible: ImmutableSet unwrapTree got an empty tree node",
+    Tree(tree) => tree
+  }
 }
 
 // helper function for creating a tree node with correct size from
@@ -85,31 +95,31 @@ let makeNode = (key, left, right) => {
 }
 
 // note: see Figure 1 of paper referenced above for visual illustration of
-// the below rotations
+// the rotations below
 
 // node rotation moving the left subtree of the right node to the left side
 let singleL = (key, left, right) => {
-  let Tree({ key: rKey, left: rl, right: rr, _ }) = right
+  let { key: rKey, left: rl, right: rr, _ } = unwrapTree(right)
   makeNode(rKey, makeNode(key, left, rl), rr)
 }
 
 // node rotation moving left child of right tree to the root
 let doubleL = (key, left, right) => {
-  let Tree({ key: rKey, left: rl, right: rr, _ }) = right
-  let Tree({ key: rlKey, left: rll, right: rlr, _ }) = rl
+  let { key: rKey, left: rl, right: rr, _ } = unwrapTree(right)
+  let { key: rlKey, left: rll, right: rlr, _ } = unwrapTree(rl)
   makeNode(rlKey, makeNode(key, left, rll), makeNode(rKey, rlr, rr))
 }
 
 // node rotation moving the right subtree of the left node to the right side
 let singleR = (key, left, right) => {
-  let Tree({ key: lKey, left: ll, right: lr, _ }) = left
+  let { key: lKey, left: ll, right: lr, _ } = unwrapTree(left)
   makeNode(lKey, ll, makeNode(key, lr, right))
 }
 
 // node rotation moving right child of left tree to the root
 let doubleR = (key, left, right) => {
-  let Tree({ key: lKey, left: ll, right: lr, _ }) = left
-  let Tree({ key: lrKey, left: lrl, right: lrr, _ }) = lr
+  let { key: lKey, left: ll, right: lr, _ } = unwrapTree(left)
+  let { key: lrKey, left: lrl, right: lrr, _ } = unwrapTree(lr)
   makeNode(lrKey, makeNode(lKey, ll, lrl), makeNode(key, lrr, right))
 }
 
