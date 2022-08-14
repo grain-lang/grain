@@ -12,43 +12,33 @@ module Grain_parsing = struct end
 %}
 
 
-%token <string> NUMBER_INT
-%token <string> NUMBER_FLOAT
-%token <string> INT32
-%token <string> INT64
-%token <string> FLOAT32
-%token <string> FLOAT64
-%token <string> WASMI32
-%token <string> WASMI64
-%token <string> WASMF32
-%token <string> WASMF64
-%token <string> BIGINT
-%token <string> LIDENT
-%token <string> UIDENT
-%token <string> STRING
-%token <string> CHAR
+%token <string> NUMBER_INT NUMBER_FLOAT
+%token <string> INT32 INT64 FLOAT32 FLOAT64 BIGINT
+%token <string> WASMI32 WASMI64 WASMF32 WASMF64
+%token <string> LIDENT UIDENT
+%token <string> STRING CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
-%token LCARETLCARET RCARETRCARET RCARETRCARETRCARET
-%token CARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW
-%token IS ISNT EQEQ LESSEQ GREATEREQ
-%token NOTEQ EQUAL GETS
+%token EQUAL GETS
 %token UNDERSCORE
 %token COLON DOT ELLIPSIS
 
 %token ASSERT FAIL EXCEPTION THROW
 
-%token PLUS PLUSPLUS DASH STAR SLASH PERCENT
-%token PLUSEQ DASHEQ STAREQ SLASHEQ PERCENTEQ
 %token TRUE FALSE VOID
 
 %token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK
-%token AMPAMP PIPEPIPE NOT AT
-%token AMP PIPE
+%token AT
+
+%token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
+%token <string> INFIX_80 INFIX_90 INFIX_100 INFIX_110 INFIX_120
+%token <string> PREFIX_150
+%token <string> INFIX_ASSIGNMENT_10
 
 %token ENUM RECORD TYPE IMPORT EXPORT FOREIGN WASM PRIMITIVE
-%token EXCEPT FROM
+%token EXCEPT FROM STAR
+%token SLASH DASH PIPE
 %token EOL EOF
 
 // reserved tokens
@@ -62,16 +52,16 @@ module Grain_parsing = struct end
 %nonassoc _below_infix
 
 %left AS
-%left PIPEPIPE
-%left AMPAMP
-%left PIPE
-%left CARET
-%left AMP
-%left EQEQ NOTEQ IS ISNT
-%left LCARET LESSEQ RCARET GREATEREQ
-%left LCARETLCARET
-%left PLUS DASH PLUSPLUS
-%left STAR SLASH PERCENT
+%left INFIX_30
+%left INFIX_40
+%left INFIX_50 PIPE
+%left INFIX_60
+%left INFIX_70
+%left INFIX_80
+%left INFIX_90 LCARET RCARET
+%left INFIX_100
+%left INFIX_110 DASH
+%left INFIX_120 STAR SLASH
 
 %right SEMI EOL COMMA DOT COLON
 
@@ -120,6 +110,17 @@ module Grain_parsing = struct end
 // List helpers. These will parse a left-associated list.
 // Solves the shift/reduce conflicts you get from Menhir's
 // built-in lists.
+
+lnonempty_list_inner(X):
+  | lnonempty_list_inner(X) X { $2::$1 }
+  | X { [$1] }
+
+%inline lnonempty_list(X):
+  | lnonempty_list_inner(X) { List.rev $1 }
+
+%inline llist(X):
+  | { [] }
+  | lnonempty_list(X) { $1 }
 
 lseparated_nonempty_list_inner(sep, X):
   | lseparated_nonempty_list_inner(sep, X) sep X { $3::$1 }
@@ -194,17 +195,17 @@ equal:
 
 const:
   // Rational literals are a special case of the division binop_expr.
-  | dash_op? NUMBER_INT { Const.number (PConstNumberInt (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | dash_op? NUMBER_FLOAT { Const.number (PConstNumberFloat (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
-  | dash_op? INT32 { Const.int32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? INT64 { Const.int64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? FLOAT32 { Const.float32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? FLOAT64 { Const.float64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? WASMI32 { Const.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? WASMI64 { Const.wasmi64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? WASMF32 { Const.wasmf32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? WASMF64 { Const.wasmf64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
-  | dash_op? BIGINT { Const.bigint (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? NUMBER_INT { Const.number (PConstNumberInt (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
+  | DASH? NUMBER_FLOAT { Const.number (PConstNumberFloat (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
+  | DASH? INT32 { Const.int32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? INT64 { Const.int64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? FLOAT32 { Const.float32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? FLOAT64 { Const.float64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? WASMI32 { Const.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? WASMI64 { Const.wasmi64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? WASMF32 { Const.wasmf32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? WASMF64 { Const.wasmf64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? BIGINT { Const.bigint (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | TRUE { Const.bool true, $loc }
   | FALSE { Const.bool false, $loc }
   | VOID { Const.void, $loc }
@@ -240,7 +241,7 @@ pattern:
   | UNDERSCORE { Pat.any ~loc:(to_loc $loc) () }
   | const { Pat.constant ~loc:(to_loc (snd $1)) (fst $1) }
   // Allow rational numbers in patterns
-  | dash_op? NUMBER_INT slash_op dash_op? NUMBER_INT { Pat.constant ~loc:(to_loc $sloc) @@ Const.number (PConstNumberRational ((if Option.is_some $1 then "-" ^ $2 else $2), (if Option.is_some $4 then "-" ^ $5 else $5))) }
+  | DASH? NUMBER_INT SLASH DASH? NUMBER_INT { Pat.constant ~loc:(to_loc $sloc) @@ Const.number (PConstNumberRational ((if Option.is_some $1 then "-" ^ $2 else $2), (if Option.is_some $4 then "-" ^ $5 else $5))) }
   | LIDENT { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
   | special_id { Pat.var ~loc:(to_loc $loc) $1 }
   | primitive_ { Pat.var ~loc:(to_loc $loc) (mkstr $loc $1) }
@@ -253,7 +254,7 @@ pattern:
   | type_id { Pat.construct ~loc:(to_loc $loc) $1 [] }
   | lbrack rbrack { Pat.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item_pat) comma? rbrack { Pat.list ~loc:(to_loc $loc) $2 }
-  | pattern pipe_op opt_eols pattern %prec PIPE { Pat.or_ ~loc:(to_loc $loc) $1 $4 }
+  | pattern PIPE opt_eols pattern %prec PIPE { Pat.or_ ~loc:(to_loc $loc) $1 $4 }
   | pattern AS opt_eols id_str { Pat.alias ~loc:(to_loc $loc) $1 $4 }
 
 list_item_pat:
@@ -376,7 +377,7 @@ data_declaration:
   | RECORD UIDENT id_vec? data_labels { Dat.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
 prim1_expr:
-  | NOT non_assign_expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "!"]) [$2] }
+  | prefix_op non_assign_expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [$2] }
 
 paren_expr:
   | lparen expr rparen { $2 }
@@ -385,87 +386,26 @@ app_expr:
   | left_accessor_expr lparen lseparated_list(comma, expr) comma? rparen { Exp.apply ~loc:(to_loc $loc) $1 $3 }
 
 // These are all inlined to carry over their precedence.
-%inline plus_op:
-  | PLUS { "+" }
-%inline plusplus_op:
-  | PLUSPLUS { "++" }
-%inline dash_op:
-  | DASH { "-" }
-%inline star_op:
-  | STAR { "*" }
-%inline slash_op:
-  | SLASH { "/" }
-%inline percent_op:
-  | PERCENT { "%" }
-%inline is_op:
-  | IS { "is" }
-%inline isnt_op:
-  | ISNT { "isnt" }
-%inline eqeq_op:
-  | EQEQ { "==" }
-%inline noteq_op:
-  | NOTEQ { "!=" }
-%inline caret_op:
-  | CARET { "^" }
-%inline lcaret_op:
-  | LCARET { "<" }
-%inline llcaret_op:
-  | LCARETLCARET { "<<" }
-%inline rcaret_op:
-  | RCARET { ">" }
-%inline rrcaret_op:
-  | RCARET RCARET { ">>" }
-%inline rrrcaret_op:
-  | RCARET RCARET RCARET { ">>>" }
-%inline lesseq_op:
-  | LESSEQ { "<=" }
-%inline greatereq_op:
-  | GREATEREQ { ">=" }
-%inline amp_op:
-  | AMP { "&" }
-%inline ampamp_op:
-  | AMPAMP { "&&" }
-%inline pipe_op:
-  | PIPE { "|" }
-%inline pipepipe_op:
-  | PIPEPIPE { "||" }
-%inline pluseq_op:
-  | PLUSEQ { "+" }
-%inline dasheq_op:
-  | DASHEQ { "-" }
-%inline stareq_op:
-  | STAREQ { "*" }
-%inline slasheq_op:
-  | SLASHEQ { "/" }
-%inline percenteq_op:
-  | PERCENTEQ { "%" }
-
 %inline infix_op:
-  | plus_op
-  | dash_op
-  | star_op
-  | slash_op
-  | percent_op
-  | is_op
-  | isnt_op
-  | eqeq_op
-  | plusplus_op
-  | noteq_op
-  | caret_op
-  | lcaret_op
-  | llcaret_op
-  | rcaret_op
-  | rrcaret_op
-  | rrrcaret_op
-  | lesseq_op
-  | greatereq_op
-  | amp_op
-  | ampamp_op
-  | pipe_op
-  | pipepipe_op {$1}
+  | INFIX_30
+  | INFIX_40
+  | INFIX_50
+  | INFIX_60
+  | INFIX_70
+  | INFIX_80
+  | INFIX_90
+  | INFIX_100
+  | INFIX_110
+  | INFIX_120 {$1}
+  | STAR { "*" }
+  | SLASH { "/" }
+  | DASH { "-" }
+  | PIPE { "|" }
+  | LCARET { "<" }
+  | llist(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
 
-prefix_op:
-  | NOT { "!" }
+%inline prefix_op:
+  | PREFIX_150 {$1}
 
 primitive_:
   | ASSERT { "assert" }
@@ -581,11 +521,7 @@ stmt_expr:
   | BREAK { Exp.break ~loc:(to_loc $loc) () }
 
 assign_binop_op:
-  | pluseq_op
-  | dasheq_op
-  | stareq_op
-  | slasheq_op
-  | percenteq_op { mkstr $loc $1 }
+  | INFIX_ASSIGNMENT_10 { mkstr $loc $1 }
 
 assign_expr:
   | left_accessor_expr GETS opt_eols expr { Exp.box_assign ~loc:(to_loc $loc) $1 $4 }

@@ -1,6 +1,12 @@
 # Grain's Operator Precedence
 
-This table shows which operators take precedence over other operators, and can be used as a reference when parsing.
+This table shows which operators take precedence over other operators, and can be used as a reference when parsing. 
+
+Grain also allows the definition of custom infix operators. Custom operators in Grain must be prefixed by one of the operators in the table below. Its precedence is defined by its prefix.
+
+In addition to these prefixes, the parser accepts the characters `$&*/+-=><^|!?%:.` for use in the names of custom operators.
+
+It should be noted that `/*` and `//` are disallowed as operators as they denote comments.
 
 | Precedence | Operator type | Associativity | Operators |
 |-|-|-|-|
