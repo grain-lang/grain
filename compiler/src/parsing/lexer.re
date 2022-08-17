@@ -267,7 +267,8 @@ let rec token = lexbuf => {
   | "]" => positioned(RBRACK)
   | "<" => positioned(LCARET)
   /* We do not lex >> or >>> as a single token as type vectors can contain
-     these, e.g. List<Option<a>> */
+     these, e.g. List<Option<a>>. An operator like `>>>>` is lexed as four
+     seperate tokens and the parser sorts it out. */
   | ">" => positioned(RCARET)
   /* The order of these is somewhat important and is why they are
      not sorted by precedence */
