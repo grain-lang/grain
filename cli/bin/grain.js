@@ -118,6 +118,7 @@ class GrainCommand extends commander.Command {
       "maximum number of WebAssembly memory pages",
       num
     );
+    cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
     cmd.forwardOption(
       "--compilation-mode <mode>",
       "compilation mode (advanced use only)"
