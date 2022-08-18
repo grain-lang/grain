@@ -104,7 +104,7 @@ class GrainCommand extends commander.Command {
     );
     cmd.forwardOption(
       "-S, --stdlib <path>",
-      "override the standard libary with your own",
+      "override the standard library with your own",
       null,
       stdlibPath
     );
