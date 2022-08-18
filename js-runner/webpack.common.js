@@ -19,6 +19,38 @@ const common = {
   },
 };
 
+const browserEsmConfig = merge(common, {
+  entry: "./src/index.js",
+  output: {
+    filename: "grain-runner-browser.mjs",
+    libraryTarget: "module",
+  },
+  experiments: {
+    outputModule: true,
+  },
+  resolve: {
+    fallback: {
+      crypto: require.resolve("crypto-browserify"),
+      fs: false,
+      path: require.resolve("path-browserify"),
+      stream: require.resolve("stream-browserify"),
+      tty: require.resolve("tty-browserify"),
+      url: require.resolve("url/"),
+      util: require.resolve("util/"),
+    },
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      wasiBindings: "@wasmer/wasi/lib/bindings/browser",
+      process: [require.resolve("process/browser")],
+      Buffer: [require.resolve("buffer/"), "Buffer"],
+    }),
+    new webpack.DefinePlugin({
+      __RUNNER_BROWSER: JSON.stringify(true),
+    }),
+  ],
+});
+
 const browserConfig = merge(common, {
   entry: "./src/index.js",
   output: {
@@ -69,4 +101,4 @@ const nodeConfig = merge(common, {
   ],
 });
 
-module.exports = [browserConfig, nodeConfig];
+module.exports = [browserConfig, browserEsmConfig, nodeConfig];
