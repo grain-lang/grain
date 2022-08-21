@@ -16,7 +16,7 @@ module Grain_parsing = struct end
 %token <string> INT32 INT64 FLOAT32 FLOAT64 BIGINT
 %token <string> WASMI32 WASMI64 WASMF32 WASMF64
 %token <string> LIDENT UIDENT
-%token <string> STRING CHAR
+%token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW
@@ -210,6 +210,7 @@ const:
   | FALSE { Constant.bool false, $loc }
   | VOID { Constant.void, $loc }
   | STRING { Constant.string $1, $loc }
+  | BYTES { Constant.bytes $1, $loc }
   | CHAR { Constant.char $1, $loc }
 
 expr:

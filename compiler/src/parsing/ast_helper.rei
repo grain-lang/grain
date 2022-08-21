@@ -33,6 +33,7 @@ type str = loc(string);
 type loc = Location.t;
 
 module Constant: {
+  let bytes: string => constant;
   let string: string => constant;
   let char: string => constant;
   let number: number_type => constant;
