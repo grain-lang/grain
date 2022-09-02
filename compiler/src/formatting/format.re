@@ -3644,17 +3644,22 @@ let rec print_data =
       ]);
     };
 
-     let pre_brace_comments = [];  // We can't determine from AST if comment comens before or after brace
-          
+    let pre_brace_comments = []; // We can't determine from AST if comment comens before or after brace
 
-    let remaining_comments = remove_used_comments(~remove_comments=pre_brace_comments, comments);
+    let remaining_comments =
+      remove_used_comments(~remove_comments=pre_brace_comments, comments);
 
     let after_brace_comments =
-      Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, remaining_comments);
+      Comment_utils.get_after_brace_comments(
+        ~loc=data.pdata_loc,
+        remaining_comments,
+      );
 
-   
     let cleaned_comments =
-      remove_used_comments(~remove_comments=after_brace_comments, remaining_comments);
+      remove_used_comments(
+        ~remove_comments=after_brace_comments,
+        remaining_comments,
+      );
     let decl_items =
       item_iterator(
         ~get_loc,
@@ -3663,7 +3668,7 @@ let rec print_data =
         ~separator=Doc.comma,
         label_declarations,
       );
-    let printed_decls =  Doc.join(~sep=Doc.hardLine, decl_items);
+    let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
     let printed_decls_after_brace = Doc.concat([Doc.hardLine, printed_decls]);
 
     Doc.group(
@@ -3679,7 +3684,7 @@ let rec print_data =
             print_type(~original_source, ~comments, t);
           };
 
-          let param_items = 
+          let param_items =
             item_iterator(
               ~get_loc,
               ~print_item,

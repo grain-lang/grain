@@ -293,7 +293,6 @@ let get_after_brace_comments =
     ) => {
   let (_, startline, startc, _) = Locations.get_raw_pos_info(loc.loc_start);
 
-
   let cmts = get_comments_on_line(startline, comments);
   switch (cmts) {
   | [] => cmts
