@@ -25,6 +25,6 @@ It should be noted that `/*` and `//` are disallowed as operators as they denote
 | 60 | Bitwise XOR | left-to-right | `… ^ …` |
 | 50 | Bitwise OR | left-to-right | `… \| …` |
 | 40 | Logical AND | left-to-right | `… && …` |
-| 30 | Logical OR | left-to-right | `… \|\| …` |
+| 30 | Logical OR<br>Coalesing (NYI) | left-to-right | `… \|\| …`<br>`… ?? …` |
 | 20 | Ternary Conditional | right-to-left | NYI |
 | 10 | Assignment | right-to-left | `… = …`<br>`… := …`<br>`… += …`<br>`… -= …`<br>`… *= …`<br>`… /= …`<br>`… %= …` |

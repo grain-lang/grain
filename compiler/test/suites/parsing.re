@@ -74,6 +74,8 @@ describe("parsing", ({test, testSkip}) => {
     "**//**",
     "**",
     // verify that common fan favorites work
+    "??",
+    "???",
     "+.",
     "-.",
     "*.",

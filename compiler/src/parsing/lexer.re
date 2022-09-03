@@ -298,7 +298,7 @@ let rec token = lexbuf => {
     positioned(INFIX_40(Sedlexing.Utf8.lexeme(lexbuf)))
   | ("&", operator_chars) =>
     positioned(INFIX_70(Sedlexing.Utf8.lexeme(lexbuf)))
-  | ("||", operator_chars) =>
+  | ("||" | "??", operator_chars) =>
     positioned(INFIX_30(Sedlexing.Utf8.lexeme(lexbuf)))
   | ("|", operator_chars) =>
     positioned(INFIX_50(Sedlexing.Utf8.lexeme(lexbuf)))
