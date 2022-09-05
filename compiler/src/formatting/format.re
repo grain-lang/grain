@@ -1072,17 +1072,85 @@ and resugar_list =
         | Regular(e) =>
           last_item_was_spread := false;
 
-          Doc.group(print_expression(~original_source, ~comments, e));
+          // do we have any comments on this line?
+          // If so, we break the whole list
+
+          let (_, item_line, item_char, _) =
+            Locations.get_raw_pos_info(e.pexp_loc.loc_end);
+
+          let end_line_comments =
+            Comment_utils.get_comments_on_line_end(
+              ~line=item_line,
+              ~char=item_char,
+              comments,
+            );
+
+          (
+            print_expression(~original_source, ~comments, e),
+            end_line_comments,
+          );
+
         | Spread(e) =>
           last_item_was_spread := true;
-          Doc.group(
+
+          (
             Doc.concat([
               Doc.text("..."),
               print_expression(~original_source, ~comments, e),
             ]),
+            [],
           );
         },
       processed_list,
+    );
+
+  // We have to compose this list by hand because of the complexity of if a list item
+  // is followed by a comment, the comma must come before the comment.
+  // It also impacts how we force a new line for a line ending comment at the end of a list
+  // without introducing an extra blank line when bringing the indentation back in again
+
+  let last_line_breaks_for_comments = ref(false);
+  let items_length = List.length(items);
+  let list_items =
+    Doc.concat(
+      List.mapi(
+        (i, pair) => {
+          let (item, item_comments) = pair;
+
+          let final_item = items_length - 1 == i;
+
+          let comment_doc =
+            switch (item_comments) {
+            | [] =>
+              last_line_breaks_for_comments := false;
+              if (final_item) {
+                Doc.nil;
+              } else {
+                Doc.concat([Doc.comma, Doc.line]);
+              };
+            | _ =>
+              let trailing_comments =
+                List.map(
+                  (cmt: Parsetree.comment) =>
+                    Doc.concat([
+                      Doc.space,
+                      Comment_utils.nobreak_comment_to_doc(cmt),
+                    ]),
+                  item_comments,
+                );
+
+              last_line_breaks_for_comments := true;
+              Doc.concat([
+                Doc.comma,
+                Doc.concat(trailing_comments),
+                if (final_item) {Doc.nil} else {Doc.hardLine},
+              ]);
+            };
+
+          Doc.concat([item, comment_doc]);
+        },
+        items,
+      ),
     );
 
   Doc.group(
@@ -1091,15 +1159,19 @@ and resugar_list =
       Doc.indent(
         Doc.concat([
           Doc.softLine,
-          Doc.join(~sep=Doc.concat([Doc.comma, Doc.line]), items),
-          if (last_item_was_spread^) {
+          list_items,
+          if (last_item_was_spread^ || last_line_breaks_for_comments^) {
             Doc.nil;
           } else {
             Doc.ifBreaks(Doc.comma, Doc.nil);
           },
         ]),
       ),
-      Doc.softLine,
+      if (last_line_breaks_for_comments^) {
+        Doc.hardLine;
+      } else {
+        Doc.softLine;
+      },
       Doc.rbracket,
     ]),
   );
