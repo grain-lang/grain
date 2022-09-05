@@ -1072,7 +1072,7 @@ and resugar_list =
         | Regular(e) =>
           last_item_was_spread := false;
 
-          // do we have any comments on this line?
+          // Do we have any comments on this line?
           // If so, we break the whole list
 
           let (_, item_line, item_char, _) =
