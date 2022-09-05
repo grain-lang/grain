@@ -3644,7 +3644,7 @@ let rec print_data =
       ]);
     };
 
-    let pre_brace_comments = []; // We can't determine from AST if comment comens before or after brace
+    let pre_brace_comments = []; // We can't determine from AST if comment comes before or after brace
 
     let remaining_comments =
       remove_used_comments(~remove_comments=pre_brace_comments, comments);
