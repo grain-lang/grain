@@ -50,6 +50,12 @@ let test3 = [
   1, // comm
 ]
 
+let recs = [
+  { num: 1, var: A, str: "" },
+  { num: 1, var: A, str: "foo" }, // A comment
+  { num: 1, var: A, str: "bar" },
+]
+
 let cons = (a, b) =>
   [
     a,

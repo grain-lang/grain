@@ -1086,7 +1086,15 @@ and resugar_list =
             );
 
           (
-            print_expression(~original_source, ~comments, e),
+            print_expression(
+              ~original_source,
+              ~comments=
+                Comment_utils.get_comments_inside_location(
+                  ~location=e.pexp_loc,
+                  comments,
+                ),
+              e,
+            ),
             end_line_comments,
           );
 
@@ -1096,7 +1104,15 @@ and resugar_list =
           (
             Doc.concat([
               Doc.text("..."),
-              print_expression(~original_source, ~comments, e),
+              print_expression(
+                ~original_source,
+                ~comments=
+                  Comment_utils.get_comments_inside_location(
+                    ~location=e.pexp_loc,
+                    comments,
+                  ),
+                e,
+              ),
             ]),
             [],
           );
@@ -1147,7 +1163,7 @@ and resugar_list =
               ]);
             };
 
-          Doc.concat([item, comment_doc]);
+          Doc.concat([Doc.group(item), comment_doc]);
         },
         items,
       ),
