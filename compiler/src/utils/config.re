@@ -391,7 +391,7 @@ let profile =
   opt(
     ~doc="Set a compilation profile.",
     ~names=["profile"],
-    ~conv=Cmdliner.Arg.enum([("release", Some(Release))]),
+    ~conv=option_conv(Cmdliner.Arg.enum([("release", Release)])),
     None,
   );
 
