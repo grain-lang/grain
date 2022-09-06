@@ -1069,14 +1069,13 @@ and resugar_list =
 
   let items =
     List.mapi(
-      (index,item) =>
+      (index, item) =>
         switch (item) {
         | Regular(e) =>
           last_item_was_spread := false;
 
           // Do we have any comments on this line?
           // If so, we break the whole list
-
 
           // we might have a list list [1, 2 // comment
           //                            3]
@@ -1085,29 +1084,26 @@ and resugar_list =
           //  2, //comment
           //  3]
 
-         
-
           let end_line_comments =
-            if (index < list_length -2) {
-               let next_item = List.nth(processed_list,index+1);
-               Comment_utils.get_comments_between_locations(
-              ~loc1=e.pexp_loc,
-              ~loc2=switch(next_item) {
-                | Regular(e)
-                | Spread(e) => e.pexp_loc
-              },
-              comments,
-            )
-
+            if (index < list_length - 2) {
+              let next_item = List.nth(processed_list, index + 1);
+              Comment_utils.get_comments_between_locations(
+                ~loc1=e.pexp_loc,
+                ~loc2=
+                  switch (next_item) {
+                  | Regular(e)
+                  | Spread(e) => e.pexp_loc
+                  },
+                comments,
+              );
             } else {
-
               let (_, item_line, item_char, _) =
-            Locations.get_raw_pos_info(e.pexp_loc.loc_end);
-            Comment_utils.get_comments_on_line_end(
-              ~line=item_line,
-              ~char=item_char,
-              comments,
-            )
+                Locations.get_raw_pos_info(e.pexp_loc.loc_end);
+              Comment_utils.get_comments_on_line_end(
+                ~line=item_line,
+                ~char=item_char,
+                comments,
+              );
             };
 
           (
