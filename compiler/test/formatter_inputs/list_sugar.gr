@@ -44,6 +44,8 @@ let test3 = [ 1, // comm
             
              ]
 
+
+
 let recs = [
     { num: 1, var:   A, str: "" },
 
@@ -51,5 +53,8 @@ let recs = [
   { num: 1, var: A, str: "foo" },  // A comment
       { num: 1, var: A, str: "bar" },
 ]
+
+let t = [ 1, /*inline*/ 2, // comment
+        3]
 
 let cons = (a, b) => [a, ...b] // <-  some long comment some long comment some long comment some long comment

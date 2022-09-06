@@ -56,6 +56,12 @@ let recs = [
   { num: 1, var: A, str: "bar" },
 ]
 
+let t = [
+  1, /*inline*/
+  2, // comment
+  3,
+]
+
 let cons = (a, b) =>
   [
     a,
