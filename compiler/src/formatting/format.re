@@ -1149,10 +1149,8 @@ and resugar_list =
   let last_line_breaks_for_comments = ref(false);
   let items_length = List.length(items);
   let list_items =
-    Doc.concat(
       List.mapi(
-        (i, pair) => {
-          let (item, item_comments) = pair;
+        (i, (item, item_comments)) => {
 
           let final_item = items_length - 1 == i;
 
@@ -1187,7 +1185,7 @@ and resugar_list =
           Doc.concat([Doc.group(item), comment_doc]);
         },
         items,
-      ),
+      
     );
 
   Doc.group(
@@ -1196,7 +1194,7 @@ and resugar_list =
       Doc.indent(
         Doc.concat([
           Doc.softLine,
-          list_items,
+          Doc.concat(list_items),
           if (last_item_was_spread^ || last_line_breaks_for_comments^) {
             Doc.nil;
           } else {
