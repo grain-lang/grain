@@ -1455,7 +1455,7 @@ and print_record =
     switch (fields) {
     | [field, ..._] =>
       let (ident, expr) = field;
-    
+
       Comment_utils.get_after_brace_comments(
         ~loc=recloc,
         ~first=ident.loc,
