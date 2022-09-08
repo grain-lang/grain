@@ -1149,43 +1149,41 @@ and resugar_list =
   let last_line_breaks_for_comments = ref(false);
   let items_length = List.length(items);
   let list_items =
-      List.mapi(
-        (i, (item, item_comments)) => {
+    List.mapi(
+      (i, (item, item_comments)) => {
+        let final_item = items_length - 1 == i;
 
-          let final_item = items_length - 1 == i;
-
-          let comment_doc =
-            switch (item_comments) {
-            | [] =>
-              last_line_breaks_for_comments := false;
-              if (final_item) {
-                Doc.nil;
-              } else {
-                Doc.concat([Doc.comma, Doc.line]);
-              };
-            | _ =>
-              let trailing_comments =
-                List.map(
-                  (cmt: Parsetree.comment) =>
-                    Doc.concat([
-                      Doc.space,
-                      Comment_utils.nobreak_comment_to_doc(cmt),
-                    ]),
-                  item_comments,
-                );
-
-              last_line_breaks_for_comments := true;
-              Doc.concat([
-                Doc.comma,
-                Doc.concat(trailing_comments),
-                if (final_item) {Doc.nil} else {Doc.hardLine},
-              ]);
+        let comment_doc =
+          switch (item_comments) {
+          | [] =>
+            last_line_breaks_for_comments := false;
+            if (final_item) {
+              Doc.nil;
+            } else {
+              Doc.concat([Doc.comma, Doc.line]);
             };
+          | _ =>
+            let trailing_comments =
+              List.map(
+                (cmt: Parsetree.comment) =>
+                  Doc.concat([
+                    Doc.space,
+                    Comment_utils.nobreak_comment_to_doc(cmt),
+                  ]),
+                item_comments,
+              );
 
-          Doc.concat([Doc.group(item), comment_doc]);
-        },
-        items,
-      
+            last_line_breaks_for_comments := true;
+            Doc.concat([
+              Doc.comma,
+              Doc.concat(trailing_comments),
+              if (final_item) {Doc.nil} else {Doc.hardLine},
+            ]);
+          };
+
+        Doc.concat([Doc.group(item), comment_doc]);
+      },
+      items,
     );
 
   Doc.group(
