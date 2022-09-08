@@ -1462,7 +1462,7 @@ and print_record =
         comments,
       );
 
-    | _ => Comment_utils.get_after_brace_comments(~loc=recloc, comments) // let s = {}  is not legal syntax, but should it be, we can use all the comments
+    | _ => Comment_utils.get_after_brace_comments(~loc=recloc, comments) // let s = {}  is not legal syntax, but we can use all the comments
     };
 
   let cleaned_comments =
