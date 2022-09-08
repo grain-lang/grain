@@ -8,33 +8,40 @@ module Doc = Res_doc;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
-let op_precedence = fn =>
-  switch (fn) {
-  | "*"
-  | "/"
-  | "%" => 120
-  | "+"
-  | "-"
-  | "++" => 110
-  | "<<"
-  | ">>"
-  | ">>>" => 100
-  | "<"
-  | "<="
-  | ">"
-  | ">=" => 90
-  | "=="
-  | "!="
-  | "is"
-  | "isnt" => 80
-  | "&" => 70
-  | "^" => 60
-  | "|" => 50
-  | "&&" => 40
-  | "||" => 30
-  | "_" => 10
-  | _ => 9999
+let op_precedence = fn => {
+  let op_precedence = fn =>
+    switch (fn) {
+    | '*'
+    | '/'
+    | '%' => 120
+    | '+'
+    | '-' => 110
+    | '<'
+    | '>' => 90
+    | '&' => 70
+    | '^' => 60
+    | '|' => 50
+    | '_' => 10
+    | _ => 9999
+    };
+  if (String.length(fn) > 1) {
+    switch (String.sub(fn, 0, 2)) {
+    | "++" => 110
+    | "<<"
+    | ">>" => 100
+    | "=="
+    | "!="
+    | "is" => 80
+    | "&&" => 40
+    | "||" => 30
+    | _ => op_precedence(fn.[0])
+    };
+  } else if (String.length(fn) > 0) {
+    op_precedence(fn.[0]);
+  } else {
+    9999;
   };
+};
 let list_cons = "[...]";
 
 exception IllegalParse(string);
@@ -184,37 +191,31 @@ let add_parens = (doc: Doc.t) =>
   ]);
 
 let infixop = (op: string) => {
-  switch (op) {
-  | "+"
-  | "-"
-  | "*"
-  | "/"
-  | "%"
-  | "is"
-  | "isnt"
-  | "=="
-  | "++"
-  | "!="
-  | "^"
-  | "<"
-  | "<<"
-  | ">"
-  | ">>"
-  | ">>>"
-  | "<="
-  | ">="
-  | "&"
-  | "&&"
-  | "|"
-  | "||" => true
+  switch (op.[0]) {
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '='
+  | '^'
+  | '<'
+  | '>'
+  | '&'
+  | '|' => true
+  | _ when op == "is" => true
+  | _ when op == "isnt" => true
+  | _ when op == "!=" => true
   | _ => false
+  | exception _ => false
   };
 };
 
 let prefixop = (op: string) => {
-  switch (op) {
-  | "!" => true
+  switch (op.[0]) {
+  | '!' => true
   | _ => false
+  | exception _ => false
   };
 };
 
