@@ -77,14 +77,14 @@ export let size = set => {
 export let isEmpty = set => {
   match (set) {
     Empty => true,
-    Tree(_) => false
+    Tree(_) => false,
   }
 }
 
 let unwrapTree = node => {
   match (node) {
     Empty => fail "Impossible: ImmutableSet unwrapTree got an empty tree node",
-    Tree(tree) => tree
+    Tree(tree) => tree,
   }
 }
 

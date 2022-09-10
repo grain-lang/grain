@@ -79,14 +79,14 @@ export let size = map => {
 export let isEmpty = map => {
   match (map) {
     Empty => true,
-    Tree(_) => false
+    Tree(_) => false,
   }
 }
 
 let unwrapTree = node => {
   match (node) {
     Empty => fail "Impossible: ImmutableMap unwrapTree got an empty tree node",
-    Tree(tree) => tree
+    Tree(tree) => tree,
   }
 }
 
