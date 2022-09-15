@@ -1453,7 +1453,19 @@ and print_record =
   };
 
   let after_brace_comments =
-    Comment_utils.get_after_brace_comments(~loc=recloc, comments);
+    switch (fields) {
+    | [field, ..._] =>
+      let (ident, expr) = field;
+
+      Comment_utils.get_after_brace_comments(
+        ~loc=recloc,
+        ~first=ident.loc,
+        comments,
+      );
+
+    | _ => Comment_utils.get_after_brace_comments(~loc=recloc, comments) // let s = {}  is not legal syntax, but we can use all the comments
+    };
+
   let cleaned_comments =
     remove_used_comments(~remove_comments=after_brace_comments, comments);
 
