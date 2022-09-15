@@ -3742,11 +3742,26 @@ let data_print =
       ~comments: list(Parsetree.comment),
       datas: list((Parsetree.export_flag, Parsetree.data_declaration)),
     ) => {
+  let previous_data: ref(option(Parsetree.data_declaration)) = ref(None);
   Doc.join(
     ~sep=Doc.concat([Doc.comma, Doc.hardLine]),
     List.map(
       data => {
         let (expt, decl: Parsetree.data_declaration) = data;
+
+        let leading_comments =
+          switch (previous_data^) {
+          | None => []
+          | Some(prev) =>
+            Comment_utils.get_comments_between_locations(
+              ~loc1=prev.pdata_loc,
+              ~loc2=decl.pdata_loc,
+              comments,
+            )
+          };
+
+        let leading_comment_docs =
+          Comment_utils.new_comments_to_docs(leading_comments);
 
         let data_comments =
           Comment_utils.get_comments_inside_location(
@@ -3754,7 +3769,10 @@ let data_print =
             comments,
           );
 
+        previous_data := Some(decl);
+
         Doc.concat([
+          leading_comment_docs,
           switch ((expt: Asttypes.export_flag)) {
           | Nonexported => Doc.nil
           | Exported => Doc.text("export ")
