@@ -8,33 +8,40 @@ module Doc = Res_doc;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
-let op_precedence = fn =>
-  switch (fn) {
-  | "*"
-  | "/"
-  | "%" => 120
-  | "+"
-  | "-"
-  | "++" => 110
-  | "<<"
-  | ">>"
-  | ">>>" => 100
-  | "<"
-  | "<="
-  | ">"
-  | ">=" => 90
-  | "=="
-  | "!="
-  | "is"
-  | "isnt" => 80
-  | "&" => 70
-  | "^" => 60
-  | "|" => 50
-  | "&&" => 40
-  | "||" => 30
-  | "_" => 10
-  | _ => 9999
+let op_precedence = fn => {
+  let op_precedence = fn =>
+    switch (fn) {
+    | '*'
+    | '/'
+    | '%' => 120
+    | '+'
+    | '-' => 110
+    | '<'
+    | '>' => 90
+    | '&' => 70
+    | '^' => 60
+    | '|' => 50
+    | '_' => 10
+    | _ => 9999
+    };
+  if (String.length(fn) > 1) {
+    switch (String.sub(fn, 0, 2)) {
+    | "++" => 110
+    | "<<"
+    | ">>" => 100
+    | "=="
+    | "!="
+    | "is" => 80
+    | "&&" => 40
+    | "||" => 30
+    | _ => op_precedence(fn.[0])
+    };
+  } else if (String.length(fn) > 0) {
+    op_precedence(fn.[0]);
+  } else {
+    9999;
   };
+};
 let list_cons = "[...]";
 
 exception IllegalParse(string);
@@ -184,37 +191,31 @@ let add_parens = (doc: Doc.t) =>
   ]);
 
 let infixop = (op: string) => {
-  switch (op) {
-  | "+"
-  | "-"
-  | "*"
-  | "/"
-  | "%"
-  | "is"
-  | "isnt"
-  | "=="
-  | "++"
-  | "!="
-  | "^"
-  | "<"
-  | "<<"
-  | ">"
-  | ">>"
-  | ">>>"
-  | "<="
-  | ">="
-  | "&"
-  | "&&"
-  | "|"
-  | "||" => true
+  switch (op.[0]) {
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '='
+  | '^'
+  | '<'
+  | '>'
+  | '&'
+  | '|' => true
+  | _ when op == "is" => true
+  | _ when op == "isnt" => true
+  | _ when op == "!=" => true
   | _ => false
+  | exception _ => false
   };
 };
 
 let prefixop = (op: string) => {
-  switch (op) {
-  | "!" => true
+  switch (op.[0]) {
+  | '!' => true
   | _ => false
+  | exception _ => false
   };
 };
 
@@ -1452,7 +1453,19 @@ and print_record =
   };
 
   let after_brace_comments =
-    Comment_utils.get_after_brace_comments(~loc=recloc, comments);
+    switch (fields) {
+    | [field, ..._] =>
+      let (ident, expr) = field;
+
+      Comment_utils.get_after_brace_comments(
+        ~loc=recloc,
+        ~first=ident.loc,
+        comments,
+      );
+
+    | _ => Comment_utils.get_after_brace_comments(~loc=recloc, comments) // let s = {}  is not legal syntax, but we can use all the comments
+    };
+
   let cleaned_comments =
     remove_used_comments(~remove_comments=after_brace_comments, comments);
 
@@ -4204,14 +4217,6 @@ let format_ast =
     toplevel_print(~original_source, ~comments, stmt);
   };
 
-  let leading_comments = [];
-
-  let cleaned_comments =
-    remove_used_comments(
-      ~remove_comments=leading_comments,
-      parsed_program.comments,
-    );
-
   let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
     let attributes = stmt.ptop_attributes;
     print_attributes(attributes);
@@ -4221,14 +4226,14 @@ let format_ast =
 
   let final_doc =
     switch (parsed_program.statements) {
-    | [] => Comment_utils.new_comments_to_docs(cleaned_comments)
+    | [] => Comment_utils.new_comments_to_docs(parsed_program.comments)
     | _ =>
       let top_level_stmts =
         block_item_iterator(
           ~previous=TopOfFile,
           ~get_loc,
           ~print_item,
-          ~comments=cleaned_comments,
+          ~comments=parsed_program.comments,
           ~print_attribute=get_attributes,
           ~original_source,
           parsed_program.statements,

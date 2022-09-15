@@ -1,0 +1,15 @@
+import Result from "result"
+
+let (>>=) = (a, b) => Result.flatMap(b, a)
+
+let add = b => a => Ok(a + b)
+let div = b => a => {
+  if (b == 0) {
+    Err("Division by zero!")
+  } else {
+    Ok(a / b)
+  }
+}
+
+print(Ok(1) >>= add(5) >>= div(2))
+print(Ok(1) >>= add(5) >>= div(0))

@@ -118,6 +118,33 @@ let lident = [%sedlex.regexp?
   (Sub(xid_start, lu) | '_', Star(xid_continue))
 ];
 
+let operator_char = [%sedlex.regexp?
+  '$' | '&' | '*' | '/' | '+' | '-' | '=' | '>' | '<' | '^' | '|' | '!' | '?' |
+  '%' |
+  ':' |
+  '.'
+];
+let operator_chars = [%sedlex.regexp? Star(operator_char)];
+
+// We make sure that `>` operators contain at least one non-`>` char to not
+// confuse them for `>>>` chains at the end of types, e.g. `List<Option<Box<a>>>`
+let rcaret_operator_char = [%sedlex.regexp? Sub(operator_char, '>')];
+let rcaret_operator_chars = [%sedlex.regexp?
+  (operator_chars, rcaret_operator_char, operator_chars)
+];
+
+// Similarly, we do this for `<` even though it's a simpler case
+let lcaret_operator_char = [%sedlex.regexp? Sub(operator_char, '<')];
+let lcaret_operator_chars = [%sedlex.regexp?
+  (operator_chars, lcaret_operator_char, operator_chars)
+];
+
+// Infix operators are not allowed to start with `//` or `/*` as they
+// indicate comments
+let slash_operator_chars = [%sedlex.regexp?
+  (Sub(operator_char, '/' | '*'), operator_chars)
+];
+
 // Tabs and space separators (https://www.compart.com/en/unicode/category/Zs)
 let blank = [%sedlex.regexp? Plus(zs | '\t')];
 
@@ -203,6 +230,10 @@ let rec token = lexbuf => {
   | "export" => positioned(EXPORT)
   | "except" => positioned(EXCEPT)
   | "from" => positioned(FROM)
+  | "*" => positioned(STAR)
+  | "/" => positioned(SLASH)
+  | "|" => positioned(PIPE)
+  | "-" => positioned(DASH)
   | "->" => positioned(ARROW)
   | "=>" => positioned(THICKARROW)
   | "type" => positioned(TYPE)
@@ -223,9 +254,6 @@ let rec token = lexbuf => {
   | "::" => positioned(COLONCOLON)
   | ":=" => positioned(GETS)
   | ":" => positioned(COLON)
-  | "is" => positioned(IS)
-  | "isnt" => positioned(ISNT)
-  | "==" => positioned(EQEQ)
   | "=" => positioned(EQUAL)
   | "," => positioned(COMMA)
   | ";" => positioned(SEMI)
@@ -237,32 +265,44 @@ let rec token = lexbuf => {
   | "[" => positioned(LBRACK)
   | "[>" => positioned(LBRACKRCARET)
   | "]" => positioned(RBRACK)
-  | "^" => positioned(CARET)
   | "<" => positioned(LCARET)
-  | "<<" => positioned(LCARETLCARET)
   /* We do not lex >> or >>> as a single token as type vectors can contain
-     these, e.g. List<Option<a>> */
+     these, e.g. List<Option<a>>. An operator like `>>>>` is lexed as four
+     seperate tokens and the parser sorts it out. */
   | ">" => positioned(RCARET)
-  | "^" => positioned(CARET)
-  | "++" => positioned(PLUSPLUS)
-  | "+" => positioned(PLUS)
-  | "-" => positioned(DASH)
-  | "*" => positioned(STAR)
-  | "/" => positioned(SLASH)
-  | "%" => positioned(PERCENT)
-  | "+=" => positioned(PLUSEQ)
-  | "-=" => positioned(DASHEQ)
-  | "*=" => positioned(STAREQ)
-  | "/=" => positioned(SLASHEQ)
-  | "%=" => positioned(PERCENTEQ)
-  | "<=" => positioned(LESSEQ)
-  | ">=" => positioned(GREATEREQ)
-  | "&" => positioned(AMP)
-  | "&&" => positioned(AMPAMP)
-  | "|" => positioned(PIPE)
-  | "||" => positioned(PIPEPIPE)
-  | "!" => positioned(NOT)
-  | "!=" => positioned(NOTEQ)
+  /* The order of these is somewhat important and is why they are
+     not sorted by precedence */
+  | "+="
+  | "-="
+  | "*="
+  | "/="
+  | "%=" =>
+    positioned(INFIX_ASSIGNMENT_10(Sedlexing.Utf8.sub_lexeme(lexbuf, 0, 1)))
+  | ("==" | "!=", operator_chars)
+  | "is"
+  | "isnt" => positioned(INFIX_80(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("<<", operator_chars)
+  | (">>", rcaret_operator_chars) =>
+    positioned(INFIX_100(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("<", lcaret_operator_chars)
+  | (">", rcaret_operator_chars) =>
+    positioned(INFIX_90(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("^", operator_chars) =>
+    positioned(INFIX_60(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("+" | "-", operator_chars) =>
+    positioned(INFIX_110(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("*" | "%", operator_chars)
+  | ("/", slash_operator_chars) =>
+    positioned(INFIX_120(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("&&", operator_chars) =>
+    positioned(INFIX_40(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("&", operator_chars) =>
+    positioned(INFIX_70(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("||" | "??", operator_chars) =>
+    positioned(INFIX_30(Sedlexing.Utf8.lexeme(lexbuf)))
+  | ("|", operator_chars) =>
+    positioned(INFIX_50(Sedlexing.Utf8.lexeme(lexbuf)))
+  | "!" => positioned(PREFIX_150(Sedlexing.Utf8.lexeme(lexbuf)))
   | "@" => positioned(AT)
   | '"' =>
     let (start_p, _) = Sedlexing.lexing_positions(lexbuf);
