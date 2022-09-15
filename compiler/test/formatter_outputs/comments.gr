@@ -5,6 +5,10 @@
 
 let myfun = (/* a */ x, /*post*/ y) => 10
 
+/**
+ * Then a doc
+ */
+// Then a line
 let myfun1 = (/* a */ x, y) => 10
 
 let myfun2 = (x, /*post*/ y) => 10

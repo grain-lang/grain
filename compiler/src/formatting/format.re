@@ -4187,14 +4187,6 @@ let format_ast =
     toplevel_print(~original_source, ~comments, stmt);
   };
 
-  let leading_comments = [];
-
-  let cleaned_comments =
-    remove_used_comments(
-      ~remove_comments=leading_comments,
-      parsed_program.comments,
-    );
-
   let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
     let attributes = stmt.ptop_attributes;
     print_attributes(attributes);
@@ -4204,14 +4196,14 @@ let format_ast =
 
   let final_doc =
     switch (parsed_program.statements) {
-    | [] => Comment_utils.new_comments_to_docs(cleaned_comments)
+    | [] => Comment_utils.new_comments_to_docs(parsed_program.comments)
     | _ =>
       let top_level_stmts =
         block_item_iterator(
           ~previous=TopOfFile,
           ~get_loc,
           ~print_item,
-          ~comments=cleaned_comments,
+          ~comments=parsed_program.comments,
           ~print_attribute=get_attributes,
           ~original_source,
           parsed_program.statements,
