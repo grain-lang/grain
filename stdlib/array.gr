@@ -48,7 +48,7 @@ let initLength = length => {
  * @param array: The array to inspect
  * @returns The number of elements in the array
  *
- * @example let array = [> 10, 20, 30, 40, 50]; print(Array.length(array)); // prints 5
+ * @example Array.length([> 1, 2, 3, 4, 5]) == 5
  * @since v0.1.0
  */
 @disableGC
