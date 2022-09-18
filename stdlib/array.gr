@@ -146,7 +146,7 @@ export let rec init /*: (Number, Number -> a) -> Array<a>*/ =
  * @param index: The index to access
  * @param array: The array to access
  * @returns The element from the array
- * @example let array = [> 10, 20, 30, 40, 50]; print(Array.get(1,array)) // prints 20
+ * @example Array.get([> 1, 2, 3, 4, 5]) == 2
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
