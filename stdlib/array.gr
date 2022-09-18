@@ -203,7 +203,7 @@ export let append = (array1, array2) => {
  *
  * @param arrays: A list containing all arrays to combine
  * @returns The new array
- * @example let array1 = [>10, 20]; let array2 =[>30, 40, 50]; let combined = Array.concat([array1,array2]); print(combined) // prints [> 10, 20, 30, 40, 50]
+ * @example Array.concat([[> 1, 2], [> 3, 4], [> 5, 6]]) == [> 1, 2, 3, 4, 5, 6]
  *
  * @since v0.1.0
  */
