@@ -180,8 +180,7 @@ export let set = (index, value, array) => {
  * @param array1: The array containing elements to appear first
  * @param array2: The array containing elements to appear second
  * @returns The new array containing elements from `array1` followed by elements from `array2`
- * @example let array1 = [> 10, 20]; let array2 =[>30, 40, 50]; let combined = Array.append(array1,array2); print(combined) // prints [> 10, 20, 30, 40, 50]
- // prints [> 10, 22, 30, 40, 50]
+ * @example Array.append([> 1, 2], [> 3, 4, 5]) == [> 1, 2, 3, 4, 5]
  *
  * @since v0.1.0
  */
