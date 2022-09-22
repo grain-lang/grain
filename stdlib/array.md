@@ -50,6 +50,12 @@ Returns:
 |----|-----------|
 |`Number`|The number of elements in the array|
 
+Examples:
+
+```grain
+Array.length([> 1, 2, 3, 4, 5]) == 5
+```
+
 ### Array.**make**
 
 <details disabled>
@@ -153,6 +159,12 @@ Returns:
 |----|-----------|
 |`a`|The element from the array|
 
+Examples:
+
+```grain
+Array.get(1,[> 1, 2, 3, 4, 5]) == 2
+```
+
 ### Array.**set**
 
 <details>
@@ -184,6 +196,12 @@ Parameters:
 |`value`|`a`|The value to store|
 |`array`|`Array<a>`|The array to update|
 
+Examples:
+
+```grain
+Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
+```
+
 ### Array.**append**
 
 <details disabled>
@@ -211,6 +229,12 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing elements from `array1` followed by elements from `array2`|
 
+Examples:
+
+```grain
+Array.append([> 1, 2], [> 3, 4, 5]) == [> 1, 2, 3, 4, 5]
+```
+
 ### Array.**concat**
 
 <details disabled>
@@ -236,6 +260,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The new array|
+
+Examples:
+
+```grain
+Array.concat([[> 1, 2], [> 3, 4], [> 5, 6]]) == [> 1, 2, 3, 4, 5, 6]
+```
 
 ### Array.**copy**
 
