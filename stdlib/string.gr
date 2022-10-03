@@ -872,6 +872,156 @@ export let endsWith = (search: String, string: String) => {
   }
 }
 
+/**
+ * Replaces the first appearance of the search pattern in the string with the replacement value.
+ *
+ * @param searchPattern: The string to replace
+ * @param replacement: The string to replace with
+ * @param string: The string to replace on
+ * @returns A new string with the search pattern replaced
+ *
+ * @example String.replaceFirst("Hello", "Hi", "Hello World Hello") == "Hi World Hello"
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let replaceFirst =
+  (
+    searchPattern: String,
+    replacement: String,
+    string: String,
+  ) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+
+  let mut patternPtr = WasmI32.fromGrain(searchPattern)
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut replacementPtr = WasmI32.fromGrain(replacement)
+
+  let patternLen = WasmI32.load(patternPtr, 4n)
+  let stringLen = WasmI32.load(stringPtr, 4n)
+  let replacementLen = WasmI32.load(replacementPtr, 4n)
+
+  patternPtr += 8n
+  stringPtr += 8n
+  replacementPtr += 8n
+  // Bail if search str is longer then the string
+  if (stringLen < patternLen) {
+    string
+  } else {
+    let str = allocateString(stringLen - patternLen + replacementLen)
+    let mut strPtr = str + 8n
+    let mut startOffset = 0n
+    let mut strOffset = 0n
+    let mut found = false
+    // Search for an instance of the string
+    for (let mut i = 0n; i < stringLen; i += 1n) {
+      // check for match
+      if (Memory.compare(stringPtr + i, patternPtr, patternLen) == 0n) {
+        // Create A Copy of the string
+        Memory.copy(strPtr + startOffset, stringPtr, i)
+        startOffset += i
+        strOffset += i
+        Memory.copy(strPtr + startOffset, replacementPtr, replacementLen)
+        startOffset += patternLen
+        strOffset += replacementLen
+        Memory.copy(
+          strPtr + strOffset,
+          stringPtr + startOffset,
+          stringLen - startOffset
+        )
+        found = true
+        break // break on first match
+      }
+    }
+    if (!found) {
+      string
+    } else {
+      WasmI32.toGrain(str): String
+    }
+  }
+}
+
+/**
+ * Replaces the last appearance of the search pattern in the string with the replacement value.
+ *
+ * @param searchPattern: The string to replace
+ * @param replacement: The string to replace with
+ * @param string: The string to replace on
+ * @returns A new string with the search pattern replaced
+ *
+ * @example String.replaceLast("Hello", "Hi", "Hello World Hello") == "Hello World Hi"
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let replaceLast =
+  (
+    searchPattern: String,
+    replacement: String,
+    string: String,
+  ) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+
+  let mut patternPtr = WasmI32.fromGrain(searchPattern)
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut replacementPtr = WasmI32.fromGrain(replacement)
+
+  let patternLen = WasmI32.load(patternPtr, 4n)
+  let stringLen = WasmI32.load(stringPtr, 4n)
+  let replacementLen = WasmI32.load(replacementPtr, 4n)
+
+  patternPtr += 8n
+  stringPtr += 8n
+  replacementPtr += 8n
+  // Bail if search str is longer then the string
+  if (stringLen < patternLen) {
+    string
+  } else {
+    let strLen = stringLen - patternLen + replacementLen
+    let str = allocateString(strLen)
+    let mut strPtr = str + 7n + strLen + patternLen
+    let mut found = false
+    // Search for an instance of the string
+    let stringEndPtr = stringPtr + stringLen - 1n
+    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+      // check for match
+      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+        Memory.copy(
+          strPtr,
+          i + patternLen,
+          stringEndPtr - i + 1n + patternLen
+        ) // copy last part of string
+        Memory.copy(
+          strPtr - replacementLen,
+          replacementPtr,
+          replacementLen
+        ) // Replace replacement
+        Memory.copy(
+          str + 8n,
+          stringPtr,
+          i - stringPtr
+        ) // copy first part of string
+        found = true
+        break
+      }
+      strPtr -= 1n
+    }
+    if (!found) {
+      string
+    } else {
+      WasmI32.toGrain(str): String
+    }
+  }
+}
+
 // String->Byte encoding and helper functions:
 
 // these are globals to avoid memory leaks
