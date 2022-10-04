@@ -904,43 +904,41 @@ export let replaceFirst =
   let patternLen = WasmI32.load(patternPtr, 4n)
   let stringLen = WasmI32.load(stringPtr, 4n)
   let replacementLen = WasmI32.load(replacementPtr, 4n)
-
-  patternPtr += 8n
-  stringPtr += 8n
-  replacementPtr += 8n
   // Bail if search str is longer then the string
   if (stringLen < patternLen) {
     string
   } else {
-    let str = allocateString(stringLen - patternLen + replacementLen)
-    let mut strPtr = str + 8n
-    let mut startOffset = 0n
-    let mut strOffset = 0n
+    patternPtr += 8n
+    stringPtr += 8n
+    replacementPtr += 8n
+
     let mut found = false
     // Search for an instance of the string
-    for (let mut i = 0n; i < stringLen; i += 1n) {
+    let mut foundIndex = -1n
+    let stringEndPtr = stringPtr + stringLen - patternLen + 1n
+    for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
       // check for match
-      if (Memory.compare(stringPtr + i, patternPtr, patternLen) == 0n) {
-        // Create A Copy of the string
-        Memory.copy(strPtr + startOffset, stringPtr, i)
-        startOffset += i
-        strOffset += i
-        Memory.copy(strPtr + startOffset, replacementPtr, replacementLen)
-        startOffset += patternLen
-        strOffset += replacementLen
-        Memory.copy(
-          strPtr + strOffset,
-          stringPtr + startOffset,
-          stringLen - startOffset
-        )
+      foundIndex += 1n
+      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
         found = true
-        break // break on first match
+        break
       }
     }
-    if (!found) {
-      string
-    } else {
+    if (found) {
+      // Allocate The String
+      let str = allocateString(stringLen - patternLen + replacementLen)
+      let strPtr = str + 8n
+      Memory.copy(strPtr, stringPtr, foundIndex)
+      Memory.copy(strPtr + foundIndex, replacementPtr, replacementLen)
+      Memory.copy(
+        strPtr + foundIndex + replacementLen,
+        stringPtr + foundIndex + patternLen,
+        stringLen - foundIndex
+      )
+      // Copy over the str
       WasmI32.toGrain(str): String
+    } else {
+      string
     }
   }
 }
@@ -978,46 +976,41 @@ export let replaceLast =
   let stringLen = WasmI32.load(stringPtr, 4n)
   let replacementLen = WasmI32.load(replacementPtr, 4n)
 
-  patternPtr += 8n
-  stringPtr += 8n
-  replacementPtr += 8n
   // Bail if search str is longer then the string
   if (stringLen < patternLen) {
     string
   } else {
-    let strLen = stringLen - patternLen + replacementLen
-    let str = allocateString(strLen)
-    let mut strPtr = str + 7n + strLen + patternLen
+    patternPtr += 8n
+    stringPtr += 8n
+    replacementPtr += 8n
+
     let mut found = false
     // Search for an instance of the string
-    let stringEndPtr = stringPtr + stringLen - 1n
+    let stringEndPtr = stringPtr + stringLen - patternLen
+    let mut foundIndex = stringLen - patternLen + 1n
     for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
       // check for match
+      foundIndex -= 1n
       if (Memory.compare(i, patternPtr, patternLen) == 0n) {
-        Memory.copy(
-          strPtr,
-          i + patternLen,
-          stringEndPtr - i + 1n + patternLen
-        ) // copy last part of string
-        Memory.copy(
-          strPtr - replacementLen,
-          replacementPtr,
-          replacementLen
-        ) // Replace replacement
-        Memory.copy(
-          str + 8n,
-          stringPtr,
-          i - stringPtr
-        ) // copy first part of string
         found = true
         break
       }
-      strPtr -= 1n
     }
-    if (!found) {
-      string
-    } else {
+    if (found) {
+      // Allocate The String
+      let str = allocateString(stringLen - patternLen + replacementLen)
+      let strPtr = str + 8n
+      Memory.copy(strPtr, stringPtr, foundIndex)
+      Memory.copy(strPtr + foundIndex, replacementPtr, replacementLen)
+      Memory.copy(
+        strPtr + foundIndex + replacementLen,
+        stringPtr + foundIndex + patternLen,
+        stringLen - foundIndex
+      )
+      // Copy over the str
       WasmI32.toGrain(str): String
+    } else {
+      string
     }
   }
 }
