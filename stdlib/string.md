@@ -514,6 +514,105 @@ Examples:
 String.endsWith("world", "Hello world") == true
 ```
 
+### String.**replaceFirst**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+replaceFirst : (String, String, String) -> String
+```
+
+Replaces the first appearance of the search pattern in the string with the replacement value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`searchPattern`|`String`|The string to replace|
+|`replacement`|`String`|The string to replace with|
+|`string`|`String`|The string to replace on|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A new string with the search pattern replaced|
+
+Examples:
+
+```grain
+String.replaceFirst("Hello", "Hi", "Hello World Hello") == "Hi World Hello"
+```
+
+### String.**replaceLast**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+replaceLast : (String, String, String) -> String
+```
+
+Replaces the last appearance of the search pattern in the string with the replacement value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`searchPattern`|`String`|The string to replace|
+|`replacement`|`String`|The string to replace with|
+|`string`|`String`|The string to replace on|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A new string with the search pattern replaced|
+
+Examples:
+
+```grain
+String.replaceLast("Hello", "Hi", "Hello World Hello") == "Hello World Hi"
+```
+
+### String.**replaceAll**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+replaceAll : (String, String, String) -> String
+```
+
+Replaces every appearance of the search pattern in the string with the replacement value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`searchPattern`|`String`|The string to replace|
+|`replacement`|`String`|The string to replace with|
+|`string`|`String`|The string to replace on|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A new string with the search pattern replaced|
+
+Examples:
+
+```grain
+String.replaceAll("Hello", "Hi", "Hello World Hello") == "Hi World Hi"
+```
+
 ### String.**encodeAt**
 
 <details disabled>

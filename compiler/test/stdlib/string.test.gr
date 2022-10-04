@@ -211,6 +211,17 @@ assert String.replaceLast("Hello", "Hi", "Hel") == "Hel"
 assert String.replaceLast("🌾", "Grain", "Hello") == "Hello"
 assert String.replaceLast("🌾", "Hello", "Hello Grain") == "Hello Grain"
 assert String.replaceLast("Hello", "🌾", "Hello Grain") == "🌾 Grain"
+// Replace All
+assert String.replaceAll("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
+assert String.replaceAll("Hello", "Hi", "Hello World") == "Hi World"
+assert String.replaceAll("Hello", "Hi", "Hey World Hello") == "Hey World Hi"
+assert String.replaceAll("Hello", "Hi", "Hello Hello") == "Hi Hi"
+assert String.replaceAll("Hello", "Hi", "Hello") == "Hi"
+assert String.replaceAll("Hello", "Hi", "World") == "World"
+assert String.replaceAll("Hello", "Hi", "Hel") == "Hel"
+assert String.replaceAll("🌾", "Grain", "Hello") == "Hello"
+assert String.replaceAll("🌾", "Hello", "Hello Grain") == "Hello Grain"
+assert String.replaceAll("Hello", "🌾", "Hello Grain") == "🌾 Grain"
 
 let processBytes = b => {
   let ret = Array.make(Bytes.length(b), 0l)

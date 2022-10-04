@@ -1015,6 +1015,105 @@ export let replaceLast =
   }
 }
 
+/**
+ * Replaces every appearance of the search pattern in the string with the replacement value.
+ *
+ * @param searchPattern: The string to replace
+ * @param replacement: The string to replace with
+ * @param string: The string to replace on
+ * @returns A new string with the search pattern replaced
+ *
+ * @example String.replaceAll("Hello", "Hi", "Hello World Hello") == "Hi World Hi"
+ *
+ * @since v0.5.3
+ */
+@unsafe
+export let replaceAll =
+  (
+    searchPattern: String,
+    replacement: String,
+    string: String,
+  ) => {
+  let (*) = WasmI32.mul
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+  let (>>) = WasmI32.shrS
+
+  let mut patternPtr = WasmI32.fromGrain(searchPattern)
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut replacementPtr = WasmI32.fromGrain(replacement)
+
+  let patternLen = WasmI32.load(patternPtr, 4n)
+  let stringLen = WasmI32.load(stringPtr, 4n)
+  let replacementLen = WasmI32.load(replacementPtr, 4n)
+
+  // Bail if search str is longer then the string
+  if (stringLen < patternLen) {
+    string
+  } else {
+    patternPtr += 8n
+    stringPtr += 8n
+    replacementPtr += 8n
+
+    let mut found = false
+    // Search for an instance of the string
+    let stringEndPtr = stringPtr + stringLen - patternLen
+    let mut foundIndex = stringLen - patternLen + 1n
+    let mut foundIndexes = []
+    let mut foundCount = 0n
+    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+      // check for match
+      foundIndex -= 1n
+      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+        found = true
+        foundCount += 1n
+        foundIndexes = [tagSimpleNumber(foundIndex), ...foundIndexes]
+      }
+    }
+    if (found) {
+      // Allocate The String
+      let str = allocateString(
+        stringLen - (patternLen - replacementLen) * foundCount
+      )
+      let mut strPtr = str + 8n
+      // Loop through the list
+      let ptr = WasmI32.fromGrain(foundIndexes)
+      let mut cur = ptr
+      let mut lastIndex = 0n
+      while (true) {
+        let variantId = WasmI32.load(cur, 12n) >> 1n // tagged number
+        if (variantId == 0n) {
+          break
+        } else {
+          let index = untagSimpleNumber(
+            WasmI32.toGrain(WasmI32.load(cur, 20n)): Number
+          )
+          // Copy The Stuff Before
+          Memory.copy(strPtr, stringPtr + lastIndex, index - lastIndex)
+          // Increment Pointers
+          strPtr += index - lastIndex
+          // Copy the stuff after
+          Memory.copy(strPtr, replacementPtr, replacementLen)
+          // Increment Pointers
+          strPtr += replacementLen
+          lastIndex = index + patternLen
+          // Go to next spot in list
+          cur = WasmI32.load(cur, 24n)
+        }
+      }
+      // Copy Remaining String
+      Memory.copy(strPtr, stringPtr + lastIndex, stringLen - lastIndex)
+      // Return String
+      WasmI32.toGrain(str): String
+    } else {
+      string
+    }
+  }
+}
+
 // String->Byte encoding and helper functions:
 
 // these are globals to avoid memory leaks
