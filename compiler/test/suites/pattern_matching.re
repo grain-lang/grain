@@ -25,7 +25,11 @@ describe("pattern matching", ({test, testSkip}) => {
   );
   assertSnapshot(
     "tuple_match_3",
-    {|match ((1, "boop", false)) { (a, b, c) => (a, b, c) }|},
+    {|
+      match ((1, "boop", false)) {
+        (a, b, c) => (a, b, c)
+      }
+    |},
   );
   assertSnapshot(
     "tuple_match_deep",
@@ -60,14 +64,18 @@ describe("pattern matching", ({test, testSkip}) => {
     "record_match_1",
     {|
       record Rec {foo: Number, bar: String, baz: Bool}
-      match ({foo: 4, bar: "boo", baz: true}) { { foo, _ } => foo }
+      match ({foo: 4, bar: "boo", baz: true}) {
+        { foo, _ } => foo
+      }
     |},
   );
   assertSnapshot(
     "record_match_2",
     {|
       record Rec {foo: Number, bar: String, baz: Bool}
-      match ({foo: 4, bar: "boo", baz: true}) { { bar, _ } => bar }
+      match ({foo: 4, bar: "boo", baz: true}) {
+        { bar, _ } => bar
+      }
     |},
   );
   assertSnapshot(
@@ -221,15 +229,35 @@ describe("pattern matching", ({test, testSkip}) => {
   );
   assertSnapshot(
     "constant_match_2",
-    {|match (("foo", 5, false)) { ("bar", 5, false) => false, ("foo", _, true) => false, ("foo", _, false) => true, _ => false }|},
+    {|
+      match (("foo", 5, false)) {
+        ("bar", 5, false) => false,
+        ("foo", _, true) => false,
+        ("foo", _, false) => true,
+        _ => false
+      }
+    |},
   );
   assertSnapshot(
     "constant_match_3",
-    {|match ("foo") { "foo" when false => false, "foo" when true => true, _ => false }|},
+    {|
+      match ("foo") {
+        "foo" when false => false,
+        "foo" when true => true,
+        _ => false
+      }
+    |},
   );
   assertSnapshot(
     "constant_match_4",
-    {|match (("foo", 5)) { ("foo", n) when n == 7 => false, ("foo", 9) when true => false, ("foo", n) when n == 5 => true, _ => false }|},
+    {|
+      match (("foo", 5)) {
+        ("foo", n) when n == 7 => false,
+        ("foo", 9) when true => false,
+        ("foo", n) when n == 5 => true,
+        _ => false
+      }
+    |},
   );
   // Or patterns
   assertSnapshot("or_match_1", "match (true) { true | false => 3 }");
@@ -241,8 +269,14 @@ describe("pattern matching", ({test, testSkip}) => {
     "or_match_3",
     "match ([5]) { [a, _] | [_, a, _] | [a] => true, _ => false }",
   );
-  assertSnapshot("or_match_4", {|match (true) { true
-  | false => 3 }|});
+  assertSnapshot(
+    "or_match_4",
+    {|
+      match (true) {
+        true | false => 3
+      }
+    |},
+  );
   // Aliases
   assertSnapshot("alias_match_1", "match (true) { _ as p => p }");
   assertSnapshot("alias_match_2", "match (true) { a as b => a && b }");
