@@ -479,14 +479,6 @@ let strict_sequence =
 /* For now, leave this as true */
 let safe_string = ref(true);
 
-let parser_debug_level =
-  opt(
-    ~names=["parser-debug-level"],
-    ~conv=Cmdliner.Arg.int,
-    ~doc="Debugging level for parser output",
-    0,
-  );
-
 let debug =
   toggle_flag(
     ~names=["debug"],
