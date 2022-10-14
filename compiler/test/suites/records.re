@@ -21,7 +21,10 @@ describe("records", ({test, testSkip}) => {
   );
   assertRun(
     "record_multiple",
-    "export record Rec {foo: Number, bar: String, baz: Bool}; print({foo: 4, bar: \"boo\", baz: true})",
+    {|
+      export record Rec {foo: Number, bar: String, baz: Bool}
+      print({foo: 4, bar: "boo", baz: true})
+    |},
     "{\n  foo: 4,\n  bar: \"boo\",\n  baz: true\n}\n",
   );
   assertSnapshot(
@@ -48,7 +51,10 @@ describe("records", ({test, testSkip}) => {
   );
   assertCompileError(
     "record_err_3",
-    "let foo = \"\"; foo.charAt(0)",
+    {|
+      let foo = ""
+      foo.charAt(0)
+    |},
     "Unbound record label charAt",
   );
   assertRun(
@@ -73,27 +79,50 @@ describe("records", ({test, testSkip}) => {
   /* mutable record fields */
   assertRun(
     "record_mut_1",
-    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.bar = \"hoo\"; print(a.bar)",
+    {|
+      record Rec {foo: Number, mut bar: String, baz: Bool}
+      let a = {foo: 4, bar: "boo", baz: true}
+      a.bar = "hoo"
+      print(a.bar)
+    |},
     "hoo\n",
   );
   assertRun(
     "record_mut_2",
-    "record Rec {mut foo: Number, bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.foo += 5; print(a.foo)",
+    {|
+      record Rec {mut foo: Number, bar: String, baz: Bool}
+      let a = {foo: 4, bar: "boo", baz: true}
+      a.foo += 5
+      print(a.foo)
+    |},
     "9\n",
   );
   assertCompileError(
     "record_mut_3",
-    "record Rec {foo: Number, mut bar: String, baz: Bool}; let a = {foo: 4, bar: \"boo\", baz: true}; a.foo = 5; a.foo",
+    {|
+      record Rec {foo: Number, mut bar: String, baz: Bool}
+      let a = {foo: 4, bar: "boo", baz: true}
+      a.foo = 5
+      a.foo
+    |},
     "The record field foo is not mutable",
   );
   /* record destructured assignment */
   assertSnapshot(
     "record_destruct_1",
-    "record Rec {foo: Number, bar: String, baz: Bool}; let { foo, _ } = {foo: 4, bar: \"boo\", baz: true}; foo",
+    {|
+      record Rec {foo: Number, bar: String, baz: Bool}
+      let { foo, _ } = {foo: 4, bar: "boo", baz: true}
+      foo
+    |},
   );
   assertSnapshot(
     "record_destruct_2",
-    "record Rec {foo: Number, bar: String, baz: Bool}; let { bar, _ } = {foo: 4, bar: \"boo\", baz: true}; bar",
+    {|
+      record Rec {foo: Number, bar: String, baz: Bool}
+      let { bar, _ } = {foo: 4, bar: "boo", baz: true}
+      bar
+    |},
   );
   assertSnapshot(
     "record_destruct_3",
@@ -131,15 +160,24 @@ describe("records", ({test, testSkip}) => {
   );
   assertSnapshot(
     "record_multiple_fields_definition_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true}",
+    {|
+      export record Rec {foo: Number, bar: String, baz: Bool,}
+      {foo: 4, bar: "boo", baz: true}
+    |},
   );
   assertSnapshot(
     "record_multiple_fields_value_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true,}",
+    {|
+      export record Rec {foo: Number, bar: String, baz: Bool}
+      {foo: 4, bar: "boo", baz: true,}
+    |},
   );
   assertSnapshot(
     "record_multiple_fields_both_trailing",
-    "export record Rec {foo: Number, bar: String, baz: Bool,}; {foo: 4, bar: \"boo\", baz: true,}",
+    {|
+      export record Rec {foo: Number, bar: String, baz: Bool,}
+      {foo: 4, bar: "boo", baz: true,}
+    |},
   );
   assertSnapshot(
     "record_pun_trailing",

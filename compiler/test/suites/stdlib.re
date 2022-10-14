@@ -14,72 +14,174 @@ describe("stdlib", ({test, testSkip}) => {
   assertSnapshot("stdlib_cons", "[1, 2, 3]");
   assertSnapshot(
     "stdlib_equal_1",
-    "import * from \"list\"; (1, 2) is (1, 2)",
+    {|
+      import * from "list"
+      (1, 2) is (1, 2)
+    |},
   );
   assertSnapshot(
     "stdlib_equal_2",
-    "import * from \"pervasives\"; (1, 2) == (1, 2)",
+    {|
+      import * from "pervasives"
+      (1, 2) == (1, 2)
+    |},
   );
   assertSnapshot(
     "stdlib_equal_3",
-    "import * from \"list\"; [1, 2, 3] == [1, 2, 3]",
+    {|
+      import * from "list"
+      [1, 2, 3] == [1, 2, 3]
+    |},
   );
-  assertSnapshot("stdlib_equal_4", "import * from \"list\"; 1 == 1");
-  assertSnapshot("stdlib_equal_5", "import * from \"list\"; 1 == 2");
-  assertSnapshot("stdlib_equal_6", "import * from \"list\"; true == true");
-  assertSnapshot("stdlib_equal_7", "import * from \"list\"; true == false");
-  assertSnapshot("stdlib_equal_8", "import * from \"list\"; [>] == [>]");
-  assertSnapshot("stdlib_equal_9", "import * from \"list\"; [>] == [> 1]");
-  assertSnapshot("stdlib_equal_10", "import * from \"list\"; [> 1] == [> 1]");
+  assertSnapshot(
+    "stdlib_equal_4",
+    {|
+      import * from "list"
+      1 == 1
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_5",
+    {|
+      import * from "list"
+      1 == 2
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_6",
+    {|
+      import * from "list"
+      true == true
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_7",
+    {|
+      import * from "list"
+      true == false
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_8",
+    {|
+      import * from "list"
+      [>] == [>]
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_9",
+    {|
+      import * from "list"
+      [>] == [> 1]
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_10",
+    {|
+      import * from "list"
+      [> 1] == [> 1]
+    |},
+  );
   assertSnapshot(
     "stdlib_equal_11",
-    "import * from \"list\"; [> 1, 2] == [> 1]",
+    {|
+      import * from "list"
+      [> 1, 2] == [> 1]
+    |},
   );
   assertSnapshot(
     "stdlib_equal_12",
-    "import * from \"list\"; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
+    {|
+      import * from "list"
+      [> 1, 2, 3, 4] == [> 1, 2, 3, 4]
+    |},
   );
-  assertSnapshot("stdlib_equal_13", "import * from \"list\"; \"\" == \"\"");
-  assertSnapshot("stdlib_equal_14", "import * from \"list\"; \" \" == \"\"");
-  assertSnapshot("stdlib_equal_15", "import * from \"list\"; \"f\" == \"\"");
+  assertSnapshot(
+    "stdlib_equal_13",
+    {|
+      import * from "list"
+      "" == ""
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_14",
+    {|
+      import * from "list"
+      " " == ""
+    |},
+  );
+  assertSnapshot(
+    "stdlib_equal_15",
+    {|
+      import * from "list"
+      "f" == ""
+    |},
+  );
   assertSnapshot(
     "stdlib_equal_16",
-    "import * from \"list\"; \"foo\" == \"foo\"",
+    {|
+      import * from "list"
+      "foo" == "foo"
+    |},
   );
   assertSnapshot(
     "stdlib_equal_17",
-    "import * from \"list\"; \"foo 😂\" == \"foo 😂\"",
+    {|
+      import * from "list"
+      "foo 😂" == "foo 😂"
+    |},
   );
   assertSnapshot(
     "stdlib_equal_18",
-    "import * from \"list\"; \"foo 😂\" == \"foo 🙄\"",
+    {|
+      import * from "list"
+      "foo 😂" == "foo 🙄"
+    |},
   );
   assertSnapshot(
     "stdlib_equal_19",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: true}",
+    {|
+      record Rec {foo: Number, bar: String, baz: Bool}
+      {foo: 4, bar: "boo", baz: true} == {foo: 4, bar: "boo", baz: true}
+    |},
   );
   assertSnapshot(
     "stdlib_equal_20",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"bar\", baz: true}",
+    {|
+      record Rec {foo: Number, bar: String, baz: Bool}
+      {foo: 4, bar: "boo", baz: true} == {foo: 4, bar: "bar", baz: true}
+    |},
   );
   assertSnapshot(
     "stdlib_equal_21",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 78, bar: \"boo\", baz: true}",
+    {|
+      record Rec {foo: Number, bar: String, baz: Bool}
+      {foo: 4, bar: "boo", baz: true} == {foo: 78, bar: "boo", baz: true}
+    |},
   );
   assertSnapshot(
     "stdlib_equal_22",
-    "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: false}",
+    {|
+      record Rec {foo: Number, bar: String, baz: Bool}
+      {foo: 4, bar: "boo", baz: true} == {foo: 4, bar: "boo", baz: false}
+    |},
   );
   assertFileRun("recursive_equal_box", "recursive-equal-box", "OK\n");
   assertFileRun("recursive_equal_mut", "recursive-equal-mut", "OK\n");
   assertCompileError(
     "stdlib_length_err",
-    "import * from \"list\"; length(true)",
+    {|
+      import * from "list"
+      length(true)
+    |},
     "This expression has type Bool but",
   );
   assertCompileError(
     "stdlib_reverse_err",
-    "import * from \"list\"; reverse(1)",
+    {|
+      import * from "list"
+      reverse(1)
+    |},
     "This expression has type Number but",
   );
   // logging to the stdout file descriptor

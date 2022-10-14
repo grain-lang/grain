@@ -84,7 +84,15 @@ describe("garbage collection", ({test, testSkip}) => {
   assertRunGC(
     "gc3",
     1024,
-    "let foo = (s: String) => void\nlet printBool = (b: Bool) => foo(if (b) \"true\" else \"false\")\n\nlet b = true\nfor (let mut i=0; i<100000; i += 1) {\n  printBool(true)\n}",
+    {|
+      let foo = (s: String) => void
+      let printBool = (b: Bool) => foo(if (b) "true" else "false")
+
+      let b = true
+      for (let mut i=0; i<100000; i += 1) {
+        printBool(true)
+      }
+    |},
   );
   assertFileRunGC(
     "fib_gc_err",

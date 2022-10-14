@@ -14,7 +14,11 @@ describe("print", ({test, testSkip}) => {
   );
   assertRun(
     "elided_type_info_2",
-    "/* grainc-flags --elide-type-info */ record Foo { foo: String }; print({ foo: \"foo\" })",
+    {|
+      /* grainc-flags --elide-type-info */
+      record Foo { foo: String }
+      print({ foo: "foo" })
+    |},
     "<record value>\n",
   );
   assertRun(
@@ -34,7 +38,13 @@ describe("print", ({test, testSkip}) => {
   );
   assertRun(
     "print_issue892_1",
-    "import List from \"list\"\nlet a = [1, 2]\nlet b = List.reverse(a)\nprint(a)\nprint(b)\n",
+    {|
+      import List from "list"
+      let a = [1, 2]
+      let b = List.reverse(a)
+      print(a)
+      print(b)
+    |},
     "[1, 2]\n[2, 1]\n",
   );
   assertRun(

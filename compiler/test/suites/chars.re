@@ -48,12 +48,18 @@ describe("chars", ({test, testSkip}) => {
   assertRun("char_eq2", "print('🌾' == '💯')", "false\n");
   assertRun(
     "char_eq3",
-    "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '🌾')",
+    {|
+      import Char from "char"
+      print(Char.fromCode(0x1F33E) == '🌾')
+    |},
     "true\n",
   );
   assertRun(
     "char_eq4",
-    "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '💯')",
+    {|
+      import Char from "char"
+      print(Char.fromCode(0x1F33E) == '💯')
+    |},
     "false\n",
   );
   assertRun("char_toString_escape1", {|print(('\\',))|}, "('\\\\',)\n");

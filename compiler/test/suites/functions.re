@@ -81,8 +81,14 @@ describe("functions", ({test, testSkip}) => {
     ",
     "Calzone(Peppers, WholeWheat)\n",
   );
-  assertSnapshot("lam_destructure_1", "((_) => 5)(\"foo\")");
-  assertSnapshot("lam_destructure_2", "let foo = (_) => 5; foo(\"foo\")");
+  assertSnapshot("lam_destructure_1", {|((_) => 5)("foo")|});
+  assertSnapshot(
+    "lam_destructure_2",
+    {|
+      let foo = (_) => 5
+      foo("foo")
+    |},
+  );
   assertSnapshot(
     "lam_destructure_3",
     "(((a, b, c)) => a + b + c)((1, 2, 3))",
@@ -153,7 +159,13 @@ describe("functions", ({test, testSkip}) => {
     "let rec may only be used with recursive function definitions",
   );
   assertCompileError("nonfunction_1", "let x = 5; x(3)", "type");
-  assertSnapshot("lambda_pat_any", "let x = (_) => 5; x(\"foo\")");
+  assertSnapshot(
+    "lambda_pat_any",
+    {|
+      let x = (_) => 5
+      x("foo")
+    |},
+  );
   assertCompileError(
     "unknown_attribute",
     "@unknown let x = () => 5",

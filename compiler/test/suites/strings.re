@@ -39,12 +39,12 @@ describe("strings", ({test, testSkip}) => {
     Top.expr(~loc?) @@ Exp.constant(~loc?, Const.string(s));
   assertParse(
     "string_parse_dqs1",
-    "\"foo\"",
+    {|"foo"|},
     {statements: [str("foo")], comments: [], prog_loc: Location.dummy_loc},
   );
   assertParse(
     "string_parse_dqs2",
-    "\"bar\\nbaz\"",
+    {|"bar\nbaz"|},
     {
       statements: [str("bar\nbaz")],
       comments: [],
@@ -53,7 +53,7 @@ describe("strings", ({test, testSkip}) => {
   );
   assertParse(
     "string_parse_sqs1",
-    "\"foobar\"",
+    {|"foobar"|},
     {
       statements: [str("foobar")],
       comments: [],
@@ -62,38 +62,38 @@ describe("strings", ({test, testSkip}) => {
   );
   assertParse(
     "string_parse_sqs2",
-    "\"bar\\u{41}\"",
+    {|"bar\u{41}"|},
     {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
   );
   assertParse(
     "string_parse_sqs3",
-    "\"bar\\x41\"",
+    {|"bar\x41"|},
     {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
   );
   assertParse(
     "string_parse_sqs4",
-    "\"bar\\101\"",
+    {|"bar\101"|},
     {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
   );
   assertParse(
     "string_parse_sqs5",
-    "\"bar\\u0041\"",
+    {|"bar\u0041"|},
     {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
   );
   assertParse(
     "string_parse_emoji_escape",
-    "\"😂\"",
+    {|"😂"|},
     {statements: [str("😂")], comments: [], prog_loc: Location.dummy_loc},
   );
   assertParse(
     "string_parse_emoji_literal",
-    "\"💯\"",
+    {|"💯"|},
     {statements: [str("💯")], comments: [], prog_loc: Location.dummy_loc},
   );
   /* String parse locations */
   assertParseWithLocs(
     "string_loc_single_line",
-    "\"foo\"",
+    {|"foo"|},
     {
       statements: [
         str(
@@ -107,7 +107,11 @@ describe("strings", ({test, testSkip}) => {
   );
   assertParseWithLocs(
     "string_loc_multi_line",
-    "\"foo\nbar\nbaz\nqux\nquux\"",
+    {|"foo
+bar
+baz
+qux
+quux"|},
     {
       statements: [
         str(
@@ -121,7 +125,7 @@ describe("strings", ({test, testSkip}) => {
   );
   assertParseWithLocs(
     "string_loc_single_line_emoji",
-    "\"💯\"",
+    {|"💯"|},
     {
       statements: [
         str(
@@ -134,10 +138,10 @@ describe("strings", ({test, testSkip}) => {
         mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 3, 0)),
     },
   );
-  assertSnapshot("string1", "\"foo\"");
-  assertSnapshot("string2", "\"💯\"");
-  assertSnapshot("string3", "\"making my way downtown, walking fast\"");
-  assertSnapshot("concat", "\"foo\" ++ \"bar\"");
+  assertSnapshot("string1", {|"foo"|});
+  assertSnapshot("string2", {|"💯"|});
+  assertSnapshot("string3", {|"making my way downtown, walking fast"|});
+  assertSnapshot("concat", {|"foo" ++ "bar"|});
   assertRun(
     "toString_escape1",
     {|print(("foo\\bar",))|},
@@ -186,22 +190,25 @@ bar",))|},
   );
   assertCompileError(
     "string_err",
-    "let x = \"hello\"; x + \", world\"",
+    {|
+      let x = "hello"
+      x + ", world"
+    |},
     "type",
   );
   assertCompileError(
     "unicode_err1",
-    "let x = \"\\u{d800}\"",
+    {|let x = "\u{d800}"|},
     "Illegal unicode code point",
   );
   assertCompileError(
     "unicode_err2",
-    "let x = \"\\u{dfff}\"",
+    {|let x = "\u{dfff}"|},
     "Illegal unicode code point",
   );
   assertCompileError(
     "unicode_err3",
-    "let x = \"\\u{110000}\"",
+    {|let x = "\u{110000}"|},
     "Illegal unicode code point",
   );
   assertRun(

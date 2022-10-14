@@ -27,13 +27,20 @@ describe("exceptions", ({test, testSkip}) => {
   );
   assertRunError(
     "throw_exception_2",
-    "exception HorribleError(String, Bool, Number); let _ = throw HorribleError(\"oh no\", false, 1/3)",
+    {|
+      exception HorribleError(String, Bool, Number)
+      let _ = throw HorribleError("oh no", false, 1/3)
+    |},
     "HorribleError\\(\"oh no\", false, 1/3\\)",
   );
   assertRunError(
     ~check_exists=false,
     "throw_exception_3",
-    "exception HorribleError(String, Bool, Number); let _ = throw HorribleError(\"oh no\", false, 1/3); print(\"shouldn't be printed\")",
+    {|
+      exception HorribleError(String, Bool, Number)
+      let _ = throw HorribleError("oh no", false, 1/3)
+      print("shouldn't be printed")
+    |},
     "shouldn't be printed",
   );
   assertRunError(

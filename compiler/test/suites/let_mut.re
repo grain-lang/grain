@@ -24,12 +24,30 @@ describe("let mut", ({test, testSkip}) => {
   // let mut destructure tests
   assertRun(
     "let-mut_destructure1",
-    "let mut (x, y, z) = (5, false, \"foo\"); x = 6; y = true; z = \"bar\"; print(x); print(y); print(z)",
+    {|
+      let mut (x, y, z) = (5, false, "foo")
+      x = 6
+      y = true
+      z = "bar"
+      print(x)
+      print(y)
+      print(z)
+    |},
     "6\ntrue\nbar\n",
   );
   assertRun(
     "let-mut_destructure2",
-    "{let mut (x, y, z) = (5, false, \"foo\"); x = 6; y = true; z = \"bar\"; print(x); print(y); print(z)}",
+    {|
+      {
+        let mut (x, y, z) = (5, false, "foo")
+        x = 6
+        y = true
+        z = "bar"
+        print(x)
+        print(y)
+        print(z)
+      }
+    |},
     "6\ntrue\nbar\n",
   );
   assertRun(
@@ -99,7 +117,13 @@ describe("let mut", ({test, testSkip}) => {
   /* Exported let mut */
   assertRun(
     "let-mut_export1",
-    "import { x } from \"letMutExport\"; print(x); x = 5; x = 6; print(x)",
+    {|
+      import { x } from "letMutExport"
+      print(x)
+      x = 5
+      x = 6
+      print(x)
+    |},
     "3\n6\n",
   );
   /* unsafe let mut in a loop */

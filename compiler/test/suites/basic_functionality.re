@@ -135,7 +135,7 @@ describe("basic functionality", ({test, testSkip}) => {
     "let x = true; if (x < 4) {3} else {5}",
     "type",
   );
-  assertSnapshot("void", "{\"foo\";}");
+  assertSnapshot("void", {|{"foo";}|});
   assertCompileError("arith1", "2 + true", "type");
   assertCompileError("arith2", "true + 4", "type");
   assertCompileError("arith3", "false - 5", "type");
@@ -193,10 +193,10 @@ describe("basic functionality", ({test, testSkip}) => {
     "AssertionError: Assertion failed in assert4, line 1",
   );
   /* Failures */
-  assertRunError("fail1", "ignore(fail \"boo\")", "Failure: boo");
+  assertRunError("fail1", {|ignore(fail "boo")|}, "Failure: boo");
   assertRunError(
     "fail2",
-    "if (false) { 3 } else { fail \"boo\" }",
+    {|if (false) { 3 } else { fail "boo" }|},
     "Failure: boo",
   );
   assertSnapshotFile("toplevel_statements", "toplevelStatements");
