@@ -88,3 +88,6 @@ assert ImmutablePriorityQueue.drain(
   ImmutablePriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => b - a)
 ) ==
 List.reverse(sortedList)
+
+assert ImmutablePriorityQueue.fromList(Array.toList(lotsOfVals), compare) ==
+ImmutablePriorityQueue.fromArray(lotsOfVals, compare)

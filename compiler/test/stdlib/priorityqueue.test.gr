@@ -78,3 +78,6 @@ assert PriorityQueue.drain(
   PriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => b - a)
 ) ==
 List.reverse(sortedList)
+
+assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare) ==
+PriorityQueue.fromArray(lotsOfVals, compare)
