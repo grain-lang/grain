@@ -426,6 +426,8 @@ assert String.trimStart("test") == "test"
 assert String.trimStart("") == ""
 assert String.trimStart("  ") == ""
 assert String.trimStart("  🌾🌾") == "🌾🌾"
+assert String.trimStart("\uFeFF") == ""
+assert String.trimStart("\uFeFFf") == "f"
 // Sting.trimEnd
 assert String.trimEnd("test   t") == "test   t"
 assert String.trimEnd("test   ") == "test"

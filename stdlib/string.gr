@@ -1869,9 +1869,12 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
 
 @unsafe
 let trimString = (str: String, end: Bool) => {
+  let (>>>) = WasmI32.shrU
   let (+) = WasmI32.add
+  let (*) = WasmI32.mul
   let (-) = WasmI32.sub
   let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
   let (!=) = WasmI32.ne
 
   let mut stringPtr = WasmI32.fromGrain(str)
@@ -1884,20 +1887,26 @@ let trimString = (str: String, end: Bool) => {
   }
   let mut count = 0n
   for (; i < charsLength; i += offset) {
-    // Get The Character
+    // Get The Byte
     let byte = WasmI32.load8U(stringPtr, i)
     // TODO: Use unicode whitespace property and unicode line terminator once github issue #661 is completed
+    // Check Multi-Byte Characters
+    if (byte == 0xEFn && WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn) {
+      i += offset * 2n
+      count += 3n
+      continue
+    }
     if (
+      byte != 0x20n && // Space
+      byte != 0x0Dn && // LF
+      byte != 0x0An && // CR
       byte != 0x09n && // Tab
       byte != 0x0Bn && // LINE TABULATION
       byte != 0x0Cn && // FORM FEED (FF)
-      byte != 0x20n && // Space
-      byte != 0xA0n && // No Break Space
-      byte != 0xFEFFn && // ZERO WIDTH NO-BREAK SPACE
-      // Line Terminators
-      byte != 0x0Dn && // LF
-      byte != 0x0An // CR
-    ) break
+      byte != 0xA0n // No Break Space
+    ) {
+      break
+    }
     // Add to count
     count += 1n
   }
