@@ -1,0 +1,411 @@
+/**
+ * @module Path: Utilities for working with system paths. This module treats paths purely as a data representation and does not provide functionality for interacting with the file system.
+ * 
+ * This module explicitly encodes the difference between absolute and relative paths as part of the type.
+ *
+ * Paths in this module abide by a special POSIX-like representation/grammar
+ * rather than one defined by a specific operating system. The rules are as
+ * follows:
+ * 
+ * - Path separators are denoted by `/`; occurrences of `\` will be treated as part of a path segment
+ * - The root of an absolute path is denoted by a `/` prefix for POSIX roots or `<driveLabel>:/` for Windows roots
+ * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
+ * - Literal `/` characters can be included as part of a path segment if they are escaped by a preceding backslash
+ * 
+ * @example import Path from "path"
+ * 
+ * @since v0.5.4
+ */
+import String from "string"
+import List from "list"
+import Option from "option"
+
+// this module is mostly a port of https://www.npmjs.com/package/@reason-native/fp
+// with some modifications
+
+enum Token {
+  Slash,
+  Dot,
+  Dotdot,
+  DriveTok(String),
+  Text(String),
+}
+
+/**
+ * @section Types: Type declarations included in the Path module.
+ */
+
+/**
+ * Represents an absolute path's anchor point.
+ */
+export enum AbsoluteRoot {
+  Root,
+  Drive(String),
+}
+
+// Rel Number represents number of directories up from base point
+enum BasePath<a> {
+  Rel(Number),
+  Abs(AbsoluteRoot),
+}
+
+// NOTE dummy record names put here just to distinguish the two. These could be
+// replaced with opaque types if they get added to the language
+/**
+ * Opaque type representing a relative path.
+ */
+record Relative {
+  _rel: Void,
+}
+
+/**
+ * Opaque type representing an absolute path.
+ */
+record Absolute {
+  _abs: Void,
+}
+
+/**
+ * Represents a platform-specific path encoding scheme.
+ */
+export enum PathEncoding {
+  Windows,
+  Posix,
+}
+
+/**
+ * Opaque type representing a system path.
+ */
+type Path<a> = (BasePath<a>, List<String>)
+
+/**
+ * Represents possible errors for the `relativeTo` operation.
+ */
+export enum RelativizationError {
+  DifferentRoots,
+  ImpossibleRelativization,
+}
+
+/**
+ * @section Values: Functions for working with Paths.
+ */
+
+let makeToken = str => {
+  let len = String.length(str)
+  match (str) {
+    "." => Dot,
+    ".." => Dotdot,
+    _ when len >= 2 && String.charAt(len - 1, str) == ':' =>
+      DriveTok(String.slice(0, len - 1, str)),
+    _ => Text(str),
+  }
+}
+
+let rec parseNextToken = (path: Path<a>, nextToken) => {
+  let (base, subs) = path
+  match (nextToken) {
+    Slash | Dot => path,
+    DriveTok(label) => (base, [label ++ ":", ...subs]),
+    Text(str) => (base, [str, ...subs]),
+    Dotdot => {
+      match (path) {
+        (base, [_, ...rest]) => (base, rest),
+        (Rel(upDirs), []) => (Rel(upDirs + 1), []),
+        (Abs(_), []) => path,
+      }
+    },
+  }
+}
+
+// splits a path on forward slashes
+let lexPath = pathStr => {
+  let pathStr = String.trim(pathStr)
+  let len = String.length(pathStr)
+  let mut revTokens = []
+  let mut segBeginI = 0
+  for (let mut i = 0; i < len; i += 1) {
+    if (String.charAt(i, pathStr) == '/') {
+      if (segBeginI != i) {
+        let tok = makeToken(String.slice(segBeginI, i, pathStr))
+        revTokens = [tok, ...revTokens]
+      }
+      revTokens = [Slash, ...revTokens]
+      segBeginI = i + 1
+    }
+  }
+  if (segBeginI < len) {
+    let lastPart = String.slice(segBeginI, len, pathStr)
+    revTokens = [makeToken(lastPart), ...revTokens]
+  }
+  List.reverse(revTokens)
+}
+
+/**
+ * Constructs a new absolute `Path` from a string representing an absolute
+ * path, using the special path grammar defined in the `Path` module.
+ * 
+ * @param pathStr: A string representing an absolute path
+ * @returns A `Some` variant containing the absolute path if it is successfully parsed or `None` otherwise
+ * 
+ * @since v0.5.4
+ */
+export let absolute = pathStr => {
+  match (lexPath(pathStr)) {
+    [] => None,
+    [first, ...rest] => {
+      let first = match (first) {
+        Slash => Some((Abs(Root), [])),
+        DriveTok(label) => Some((Abs(Drive(label)), [])),
+        _ => None,
+      }
+
+      Option.map(first => List.reduce(parseNextToken, first, rest), first)
+    },
+  }: Option<Path<Absolute>>
+}
+
+/**
+ * Constructs a new relative `Path` from a string representing an relative
+ * path, using the special path grammar defined in the `Path` module.
+ * 
+ * @param pathStr: A string representing an relative path
+ * @returns A `Some` variant containing the relative path if it is successfully parsed or `None` otherwise
+ * 
+ * @since v0.5.4
+ */
+export let relative = pathStr => {
+  let (first, rest) = match (lexPath(pathStr)) {
+    [] => (Dot, []),
+    [first, ...rest] => (first, rest),
+  }
+
+  let first = match (first) {
+    Dot => Some((Rel(0), [])),
+    Dotdot => Some((Rel(1), [])),
+    Text(str) => Some((Rel(0), [str])),
+    _ => None,
+  }: Option<Path<Relative>>
+
+  Option.map(first => List.reduce(parseNextToken, first, rest), first)
+}
+
+/**
+ * Converts the given `Path` into a string, using the specified path encoding.
+ * 
+ * @param path: The `Path` to convert to a string
+ * @param encoding: The `PathEncoding` to use to represent the path as a string
+ * @returns A string representing the given path
+ * 
+ * @example Path.toString(myPath, Path.Windows)
+ * 
+ * @since v0.5.4
+ */
+export let toString = (path: Path<a>, encoding) => {
+  let (base, lst) = path
+  let segs = List.reverse(lst)
+  let segs = match (base) {
+    Abs(absFrom) => {
+      let prefix = match (absFrom) {
+        Root => "",
+        Drive(label) => label ++ ":",
+      }
+      let segs = if (segs == []) [""] else segs
+      [prefix, ...segs]
+    },
+    Rel(upDirs) => {
+      let goUp = List.init(upDirs, (_) => "..")
+      if (goUp != []) List.append(goUp, segs) else [".", ...segs]
+    },
+  }
+  let sep = match (encoding) {
+    Windows => "\\",
+    Posix => "/",
+  }
+  List.join(sep, segs)
+}
+
+/**
+ * Creates a new path from a path with a relative path segment appended to it.
+ * 
+ * @param path: The base path to append the segment to
+ * @param toAppend: The relative path to append
+ * @returns A new path with the `toAppend` path appended to the `path`
+ * 
+ * @since v0.5.4
+ */
+export let rec append = (path: Path<a>, toAppend: Path<Relative>) =>
+  match (toAppend) {
+    (Rel(up2), s2) =>
+      match (path) {
+        (Rel(up1), []) => (Rel(up1 + up2), s2),
+        (Abs(_) as d, []) => (d, s2),
+        (d, [_, ...rest] as s1) => {
+          if (up2 > 0) append((d, rest), (Rel(up2 - 1), s2))
+          else (d, List.append(s2, s1))
+        },
+      },
+    (Abs(_), _) => fail "Impossible: relative path encoded as absolute path",
+  }: Path<a>
+
+/**
+ * Appends a string representing a relative path segment to the given path.
+ * 
+ * @param path: Path to append to
+ * @param toAppend: Path portion to append, as a string
+ * @returns A new path with the segment appended to it
+ * 
+ * @since v0.5.4
+ */
+export let appendString = (path, toAppend) => {
+  let pathToAppend = relative(toAppend)
+  Option.map(toAppend => append(path, toAppend), pathToAppend)
+}
+
+enum DirsUp {
+  Zero,
+  Positive,
+}
+
+let dirsUp = x => if (x == 0) Zero else Positive
+
+// helper function for relativizing paths; handles the correct number of
+// directories to "go up" from one path to another
+let rec relativizeDepth = ((up1, s1), (up2, s2)) =>
+  match ((dirsUp(up1), dirsUp(up2), s1, s2)) {
+    (Zero, Zero, [hd1, ...tl1], [hd2, ...tl2]) when hd1 == hd2 =>
+      relativizeDepth((0, tl1), (0, tl2)),
+    (Zero, Zero, [], _) => Ok((up2, s2)),
+    (Zero, Zero, _, _) => Ok((List.length(s1), s2)),
+    (Positive, Positive, _, _) => relativizeDepth((up1 - 1, s1), (up2 - 1, s2)),
+    (Zero, Positive, _, _) => Ok((List.length(s1) + up2, s2)),
+    (Positive, Zero, _, _) => Err(ImpossibleRelativization),
+  }
+
+/**
+ * Attempts to construct a new relative path which will lead to the destination
+ * path from the source path. If the source and destination are both absolute
+ * paths but are on different roots, `Err(Path.DifferentRoots)` will be
+ * returned, and if the route to the destination cannot be concretely
+ * determined from the source, `Err(Path.ImpossibleRelativization)` will be
+ * returned.
+ * 
+ * @param source: The source path to find a path from
+ * @param dest: The destination path to find the path to
+ * @returns An `Ok` variant containing the relative path if successfully parsed or `Err` otherwise
+ * 
+ * @example // relativeTo(/usr, /usr/bin) => ./bin
+ * @example // relativeTo(/home/me, /home/me) => .
+ * @example // relativeTo(/usr/bin, /etc) => ../../etc
+ * @example // relativeTo(.., ../../thing) => ../thing
+ * @example // relativeTo(/usr/bin, C:/Users) => Err(DifferentRoots)
+ * @example // relativeTo(../here, ./there) => Err(ImpossibleRelativization)
+ * 
+ * @since v0.5.4
+ */
+export let relativeTo = (source: Path<a>, dest: Path<a>) => {
+  let result = match ((source, dest)) {
+    ((Abs(r1), s1), (Abs(r2), s2)) =>
+      if (r1 != r2) Err(DifferentRoots)
+      else relativizeDepth((0, List.reverse(s1)), (0, List.reverse(s2))),
+    ((Rel(up1), s1), (Rel(up2), s2)) =>
+      relativizeDepth((up1, List.reverse(s1)), (up2, List.reverse(s2))),
+    _ => fail "",
+  }
+
+  match (result) {
+    Ok((depth, segs)) => Ok((Rel(depth), List.reverse(segs))),
+    Err(err) => Err(err),
+  }: Result<Path<Relative>, RelativizationError>
+}
+
+/**
+ * Returns the path corresponding to the parent directory of the given path.
+ * 
+ * @param path: The path to get the parent of
+ * @returns A path corresponding to the parent directory of the given path
+ * 
+ * @since v0.5.4
+ */
+export let parent = (path: Path<a>) =>
+  match (path) {
+    (base, [_, ...rest]) => (base, rest),
+    (Rel(upDirs), []) => (Rel(upDirs + 1), []),
+    (Abs(_) as base, []) => (base, []),
+  }: Path<a>
+
+/**
+ * Returns the base name (named final segment) of a path.
+ * 
+ * @param path: The path to get the name of
+ * @returns A `Some` variant containing the name of the path, or `None` if the path does not have one
+ * 
+ * @example Path.name(Option.unwrap(Path.relative("./dir/file.txt"))) // Some("file.txt")
+ * @example Path.name(Option.unwrap(Path.relative(".."))) // None
+ * 
+ * @since v0.5.4
+ */
+export let name = (path: Path<a>) =>
+  match (path) {
+    (_, [first, ..._]) => Some(first),
+    _ => None,
+  }
+
+/**
+ * Returns the name of the path without the extension.
+ * 
+ * @param path: The path to get the stem of
+ * @returns A `Some` variant containing the stem of the path, or `None` if the path does not have one
+ * 
+ * @since v0.5.4
+ */
+export let stem = (path: Path<a>) =>
+  match (path) {
+    (_, [name, ..._]) => {
+      match (String.lastIndexOf(".", name)) {
+        Some(dotI) => {
+          let len = String.length(name)
+          if (dotI > 0 && dotI < len - 1) Some(String.slice(0, dotI, name))
+          else Some(name)
+        },
+        None => Some(name),
+      }
+    },
+    _ => None,
+  }
+
+/**
+ * Returns the extension on the name of the path.
+ * 
+ * @param path: The path to get the extension of
+ * @returns A `Some` variant containing the extension of the path, or `None` if the path does not have one
+ * 
+ * @since v0.5.4
+ */
+export let extension = (path: Path<a>) =>
+  match (path) {
+    (_, [name, ..._]) => {
+      match (String.lastIndexOf(".", name)) {
+        Some(dotI) => {
+          let len = String.length(name)
+          if (dotI > 0 && dotI < len - 1) Some(String.slice(dotI, len, name))
+          else None
+        },
+        None => None,
+      }
+    },
+    _ => None,
+  }
+
+/**
+ * Returns the root of the absolute path.
+ * 
+ * @param path: The absolute path to get the root of
+ * @returns The root of the path
+ * 
+ * @since v0.5.4
+ */
+export let root = (path: Path<Absolute>) =>
+  match (path) {
+    (Abs(root), _) => root,
+    _ => fail "Impossible: malformed absolute path data",
+  }

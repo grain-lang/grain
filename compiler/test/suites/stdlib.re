@@ -103,6 +103,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("marshal.test");
   assertStdlib("number.test");
   assertStdlib("option.test");
+  assertStdlib("path.test");
   assertStdlib("pervasives.test");
   assertStdlib("queue.test");
   assertStdlib("range.test");
