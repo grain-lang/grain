@@ -849,3 +849,28 @@ Returns:
 |----|-----------|
 |`Number`|The factorial of the given value|
 
+### Number.**toRadian**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toRadian : Number -> Number
+```
+
+Converts a radian value to degrees.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`degrees`|`Number`|Converts the given Degrees value to radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The degree equivalent|
+

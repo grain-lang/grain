@@ -993,3 +993,13 @@ export let rec factorial = n => {
   ) fail "Cannot compute the factorial of a negative non-integer"
   else gamma(n + 1)
 }
+
+/**
+ * Converts a radian value to degrees.
+ *
+ * @param degrees: Converts the given Degrees value to radians
+ * @returns The degree equivalent
+ *
+ * @since v0.5.3
+ */
+export let toRadian = degrees => degrees * (pi / 180)
