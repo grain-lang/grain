@@ -327,3 +327,16 @@ assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
 assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
 assert Number.isNaN(Number.tan(Number.infinity))
 assert Number.isNaN(Number.tan(Number.nan))
+
+// Number.Gamma
+assert Number.gamma(10.5) == 1133278.3889487908
+assert Number.gamma(10) == 362880
+assert Number.gamma(1) == 1
+assert Number.gamma(0.5) == 1.7724538509055164
+assert Number.gamma(0) == Number.infinity
+assert Number.gamma(-0.5) == -3.544908144938388
+assert Number.gamma(-1) == Number.infinity
+assert Number.gamma(-10) == Number.infinity
+assert Number.gamma(-10.5) == -2.6401221505732836e-7
+assert Number.isNaN(Number.gamma(Number.infinity))
+assert Number.isNaN(Number.gamma(Number.nan))
