@@ -320,3 +320,10 @@ assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
 assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
+
+// Number.tan
+assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
+assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
+assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
+assert Number.isNaN(Number.tan(Number.infinity))
+assert Number.isNaN(Number.tan(Number.nan))

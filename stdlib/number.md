@@ -737,3 +737,28 @@ Returns:
 |----|-----------|
 |`Number`|The computed cosine|
 
+### Number.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : Number -> Number
+```
+
+Computes the tangent of a number (in radians) using Chebyshev polynomials.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed tangent|
+
