@@ -914,3 +914,19 @@ export let cos = (radians: Number) => {
     sin(pi / 2 + radians)
   }
 }
+
+/**
+ * Computes the tangent of a number (in radians) using Chebyshev polynomials.
+ *
+ * @param radians: The input in radians
+ * @returns The computed tangent
+ *
+ * @since v0.5.3
+ */
+export let tan = (radians: Number) => {
+  if (isNaN(radians) || isInfinite(radians)) {
+    nan
+  } else {
+    sin(radians) / cos(radians)
+  }
+}
