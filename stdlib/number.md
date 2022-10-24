@@ -190,6 +190,32 @@ Returns:
 |----|-----------|
 |`Number`|The quotient of the two operands|
 
+### Number.**pow**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pow : (Number, Number) -> Number
+```
+
+Computes the base raised to the given power
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Number`|The base number|
+|`power`|`Number`|The power to raise the base to|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The base raised to the given power|
+
 ### Number.**sqrt**
 
 <details disabled>

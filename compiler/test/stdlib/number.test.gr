@@ -72,6 +72,56 @@ assert Number.div(25, 5) == 5
   assert 2/3 / 4.0 == 0.16666666666666666
   assert 4.0 / (2/3) == 6.0
 }
+// Pow
+assert Number.isNaN(Number.pow(-8.06684839057968084, 4.53566256067686879))
+assert Number.pow(4.34523984933830487, -8.88799136300345083) ==
+0.00000213471188255872853
+assert Number.isNaN(Number.pow(-8.38143342755524934, -2.76360733737958819))
+assert Number.isNaN(Number.pow(-6.53167358191348413, 4.56753527684274374))
+assert Number.pow(9.26705696697258574, 4.81139208435979615) ==
+44909.2994151296589
+assert Number.isNaN(Number.pow(-6.45004555606023633, 0.662071792337673881))
+assert Number.pow(7.85889025304169664, 0.0521545267500622481) ==
+1.11351774134586523
+assert Number.isNaN(Number.pow(-0.792054511984895959, 7.67640268511753998))
+assert Number.pow(0.615702673197924044, 2.01190257903248026) ==
+0.376907735213801831
+assert Number.isNaN(Number.pow(-0.558758682360915193, 0.0322398306026380407))
+assert Number.isNaN(Number.pow(0.0, Number.nan))
+assert Number.pow(0.0, Number.infinity) == 0.0
+assert Number.pow(0.0, 3.0) == 0.0
+assert Number.pow(0.0, 2.0) == 0.0
+assert Number.pow(0.0, 1.0) == 0.0
+assert Number.pow(0.0, 0.5) == 0.0
+assert Number.pow(0.0, 0.0) == 1.0
+assert Number.pow(0.0, -0.0) == 1.0
+assert Number.pow(0.0, -0.5) == Number.infinity
+assert Number.pow(0.0, -1.0) == Number.infinity
+assert Number.pow(0.0, -2.0) == Number.infinity
+assert Number.pow(0.0, -3.0) == Number.infinity
+assert Number.pow(0.0, -4.0) == Number.infinity
+assert Number.pow(0.0, Number.infinity * -1) == Number.infinity
+assert Number.isNaN(Number.pow(-0.0, Number.nan))
+assert Number.pow(-0.0, Number.infinity) == 0.0
+assert Number.pow(-0.0, 3.0) == -0.0
+assert Number.pow(-0.0, 2.0) == 0.0
+assert Number.pow(-0.0, 1.0) == -0.0
+assert Number.pow(-0.0, 0.5) == 0.0
+assert Number.pow(-0.0, 0.0) == 1.0
+assert Number.pow(-0.0, -0.0) == 1.0
+assert Number.pow(-0.0, -0.5) == Number.infinity
+assert Number.pow(-0.0, -1.0) == Number.infinity * -1
+assert Number.pow(-0.0, -2.0) == Number.infinity
+assert Number.pow(-0.0, -3.0) == Number.infinity * -1
+assert Number.pow(-0.0, -4.0) == Number.infinity
+assert Number.pow(-0.0, Number.infinity * -1) == Number.infinity
+assert Number.pow(Number.nan, 0.0) == 1.0
+assert Number.pow(Number.infinity, 0.0) == 1.0
+assert Number.pow(Number.infinity * -1, 0.0) == 1.0
+assert Number.pow(1.0, 0.0) == 1.0
+assert Number.pow(-1.0, 0.0) == 1.0
+assert Number.pow(-0.5, 0.0) == 1.0
+assert Number.pow(Number.nan, -0.0) == 1.0
 // sqrt
 assert Number.sqrt(25) == 5
 assert Number.sqrt(25.0) == 5.0

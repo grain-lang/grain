@@ -322,3 +322,9 @@ decr : Number -> Number
 isBigInt : a -> Bool
 ```
 
+### Numbers.**scalbn**
+
+```grain
+scalbn : (WasmF64, WasmI32) -> WasmF64
+```
+
