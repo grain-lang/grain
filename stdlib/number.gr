@@ -26,22 +26,36 @@ import Tags from "runtime/unsafe/tags"
  */
 
 /**
+ * NaN represented as a Number value.
+ *
+ * @since v0.5.3
+ */
+export let nan = 0.0 / 0.0
+
+/**
+ * Infinity represented as a Number value.
+ *
+ * @since v0.5.3
+ */
+export let infinity = 1.0 / 0.0
+
+/**
  * Pi represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let pi = 3.141592653589793
 
 /**
  * Tau represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let tau = 6.283185307179586
 
 /**
  * Euler's number represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let e = 2.718281828459045

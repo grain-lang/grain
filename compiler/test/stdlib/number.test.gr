@@ -7,6 +7,10 @@ import Float64 from "float64"
 import BI from "bigint"
 
 // Constants Test
+assert Number.nan != Number.nan
+
+assert Number.infinity == 1.0 / 0.0
+
 assert Number.pi == 3.141592653589793
 
 assert Number.tau == 6.283185307179586
