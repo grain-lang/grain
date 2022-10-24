@@ -96,6 +96,7 @@ assert Number.sqrt(9266609011276477657) == 3044110545.180066
 assert Number.sqrt(infinity) == infinity
 assert Number.isNaN(Number.sqrt(nan))
 // min
+assert Number.min(5, 5) == 5
 assert Number.min(5, 6) == 5
 assert Number.min(6, 5) == 5
 assert Number.min(1/2, 1/4) == 1/4
@@ -104,7 +105,9 @@ assert Number.min(355894508425808343204914141312, 6) == 6
 assert Number.min(infinity, 10) == 10
 assert Number.isNaN(Number.min(nan, 10))
 assert Number.isNaN(Number.min(nan, infinity))
+
 // max
+assert Number.max(5, 5) == 5
 assert Number.max(6, 5) == 6
 assert Number.max(5, 6) == 6
 assert Number.max(1/2, 1/4) == 1/2
@@ -113,8 +116,9 @@ assert Number.max(BI.toNumber(1234t), BI.toNumber(12t)) == BI.toNumber(1234t)
 assert Number.max(355894508425808343204914141312, 6) ==
 355894508425808343204914141312
 assert Number.max(infinity, 10) == infinity
-assert Number.isNaN(Number.max(nan, 10))
-assert Number.isNaN(Number.max(nan, infinity))
+assert Number.max(nan, 10) == 10
+assert Number.max(nan, infinity) == infinity
+
 // ceil
 assert Number.ceil(-25.5) == -25
 assert Number.ceil(25.5) == 26

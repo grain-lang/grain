@@ -146,9 +146,7 @@ export let sign = x => {
  * @since v0.4.0
  * @history v0.5.3: Handle NaN properly
  */
-export let min = (x: Number, y: Number) => {
-  if (y != y || x != x) nan else if (y > x) x else y
-}
+export let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
 
 /**
  * Returns the larger of its operands.
@@ -160,9 +158,7 @@ export let min = (x: Number, y: Number) => {
  * @since v0.4.0
  * @history v0.5.3: Handle NaN properly
  */
-export let max = (x: Number, y: Number) => {
-  if (y != y || x != x) nan else if (x > y) x else y
-}
+export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
 
 /**
  * Rounds its operand up to the next largest integer.
