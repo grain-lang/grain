@@ -818,3 +818,9 @@ Returns:
 |----|-----------|
 |`Number`|The computed tangent|
 
+### Number.**gamma**
+
+```grain
+gamma : Number -> Number
+```
+

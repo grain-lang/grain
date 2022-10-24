@@ -930,3 +930,51 @@ export let tan = (radians: Number) => {
     sin(radians) / cos(radians)
   }
 }
+
+/**
+ * Computes the gamma function of a value using
+ *
+ * @param n: The value to compute the gamma of
+ * @returns The gamma of the given value
+ *
+ * @since v0.5.3
+ */
+// Math.gamma implemented using the stirling's approximation
+// https://en.wikipedia.org/wiki/Lanczos_approximation
+export let rec gamma = z => {
+  if (isInteger(z) && z > 0) {
+    let mut output = 1
+    for (let mut i = 1; i < z; i += 1) {
+      output *= i
+    }
+    output
+  } else {
+    let mut z = z
+    let g = 7
+    let c = [>
+      0.99999999999980993,
+      676.5203681218851,
+      -1259.1392167224028,
+      771.32342877765313,
+      -176.61502916214059,
+      12.507343278686905,
+      -0.13857109526572012,
+      9.9843695780195716e-6,
+      1.5056327351493116e-7,
+    ]
+    let mut output = 0
+    if (z < 0.5) {
+      output = pi / (sin(pi * z) * gamma(1 - z))
+    } else {
+      z -= 1
+      let mut x = c[0]
+      for (let mut i = 1; i < g + 2; i += 1) {
+        x += c[i] / (z + i)
+      }
+
+      let t = z + g + 0.5
+      output = sqrt(2 * pi) * pow(t, z + 0.5) * exp(t * -1) * x
+    }
+    if (abs(output) == infinity) infinity else output
+  }
+}
