@@ -27,21 +27,21 @@ import Tags from "runtime/unsafe/tags"
 
 /**
  * Pi represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let pi = 3.141592653589793
 
 /**
  * Tau represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let tau = 6.283185307179586
 
 /**
  * Euler's number represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let e = 2.718281828459045
@@ -231,8 +231,9 @@ export let abs = (x: Number) => if (0 > x) x * -1 else x
  * @returns The negated operand
  *
  * @since v0.4.0
+ * @history v0.5.3: Make this function always return a negative
  */
-export let neg = (x: Number) => x * -1
+export let neg = (x: Number) => if (x > 0) x * -1 else x
 
 /**
  * Checks if a number is a floating point value.

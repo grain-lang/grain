@@ -118,11 +118,11 @@ assert Number.abs(-25.5) == 25.5
 assert Number.abs(25.5) == 25.5
 assert Number.abs(-1/2) == 1/2
 // neg
-assert Number.neg(-25.5) == 25.5
+assert Number.neg(-25.5) == -25.5
 assert Number.neg(25.5) == -25.5
 assert Number.neg(1/2) == -1/2
 assert Number.neg(BI.toNumber(1234t)) == BI.toNumber(-1234t)
-assert Number.neg(BI.toNumber(-1234t)) == BI.toNumber(1234t)
+assert Number.neg(BI.toNumber(-1234t)) == BI.toNumber(-1234t)
 
 // isFloat
 assert Number.isFloat(0.0)

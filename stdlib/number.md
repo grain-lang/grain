@@ -402,9 +402,16 @@ Returns:
 
 ### Number.**neg**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.3</code></td><td>Make this function always return a negative</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
