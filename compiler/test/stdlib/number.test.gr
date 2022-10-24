@@ -340,3 +340,14 @@ assert Number.gamma(-10) == Number.infinity
 assert Number.gamma(-10.5) == -2.6401221505732836e-7
 assert Number.isNaN(Number.gamma(Number.infinity))
 assert Number.isNaN(Number.gamma(Number.nan))
+
+// Number.Factorial
+assert Number.factorial(10) == 3628800
+assert Number.factorial(5) == 120
+assert Number.factorial(0) == 1
+assert Number.factorial(-5) == -120
+assert Number.factorial(-10) == -3628800
+assert Number.factorial(10.5) == 11899423.083962297
+assert Number.factorial(0.5) == 0.886226925452759
+assert Number.isNaN(Number.factorial(Number.infinity))
+assert Number.isNaN(Number.factorial(Number.nan))

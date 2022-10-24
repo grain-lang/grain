@@ -938,3 +938,18 @@ export let rec gamma = z => {
     if (abs(output) == infinity) infinity else output
   }
 }
+
+/**
+ * Computes the factorial of a given number
+ *
+ * @param n: The value to compute the factorial of
+ * @returns The factorial of the given value
+ *
+ * @since v0.5.3
+ */
+export let rec factorial = n => {
+  if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
+    !isInteger(n) && n < 0
+  ) fail "Cannot compute the factorial of a negative non-integer"
+  else gamma(n + 1)
+}

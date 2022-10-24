@@ -768,3 +768,28 @@ Returns:
 gamma : Number -> Number
 ```
 
+### Number.**factorial**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+factorial : Number -> Number
+```
+
+Computes the factorial of a given number
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The value to compute the factorial of|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The factorial of the given value|
+
