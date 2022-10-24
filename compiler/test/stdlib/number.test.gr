@@ -351,3 +351,10 @@ assert Number.factorial(10.5) == 11899423.083962297
 assert Number.factorial(0.5) == 0.886226925452759
 assert Number.isNaN(Number.factorial(Number.infinity))
 assert Number.isNaN(Number.factorial(Number.nan))
+
+// Number.toRadian
+assert Number.toRadian(0) == 0
+assert Number.toRadian(30) == Number.pi / 6
+assert Number.toRadian(-30) == Number.pi / -6
+assert Number.toRadian(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.toRadian(Number.nan))
