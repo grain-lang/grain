@@ -122,6 +122,16 @@ assert Number.pow(1.0, 0.0) == 1.0
 assert Number.pow(-1.0, 0.0) == 1.0
 assert Number.pow(-0.5, 0.0) == 1.0
 assert Number.pow(Number.nan, -0.0) == 1.0
+// Exp
+assert Number.exp(1) == 2.718281828459045
+assert Number.exp(10) == 22026.465794806703
+assert Number.exp(0) == 1
+assert Number.exp(-1) == 0.36787944117144236
+assert Number.exp(-10) == 0.000045399929762484875
+assert Number.exp(0.5) == 1.6487212707001283
+assert Number.exp(-0.5) == 0.6065306597126334
+assert Number.exp(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.exp(Number.nan))
 // sqrt
 assert Number.sqrt(25) == 5
 assert Number.sqrt(25.0) == 5.0

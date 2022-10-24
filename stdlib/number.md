@@ -216,6 +216,31 @@ Returns:
 |----|-----------|
 |`Number`|The base raised to the given power|
 
+### Number.**exp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+exp : Number -> Number
+```
+
+Computes `Number.e` to raised to the given power
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`power`|`Number`|The power to raise the `Number.e` to|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|`Number.e` raised to the given power|
+
 ### Number.**sqrt**
 
 <details disabled>

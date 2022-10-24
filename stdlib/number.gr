@@ -520,6 +520,16 @@ export let pow = (base, power) => {
 }
 
 /**
+ * Computes `Number.e` to raised to the given power
+ *
+ * @param power: The power to raise the `Number.e` to
+ * @returns `Number.e` raised to the given power
+ *
+ * @since v0.5.3
+ */
+export let exp = power => pow(e, power)
+
+/**
  * Computes the square root of its operand.
  *
  * @param x: The number to square root
