@@ -358,3 +358,10 @@ assert Number.toRadian(30) == Number.pi / 6
 assert Number.toRadian(-30) == Number.pi / -6
 assert Number.toRadian(Number.infinity) == Number.infinity
 assert Number.isNaN(Number.toRadian(Number.nan))
+
+// Number.toDegree
+assert Number.toDegree(0) == 0
+assert Number.toDegree(Number.pi) == 180
+assert Number.toDegree(Number.pi * -1) == -180
+assert Number.toDegree(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.toDegree(Number.nan))

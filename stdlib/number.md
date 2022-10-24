@@ -818,3 +818,28 @@ Returns:
 |----|-----------|
 |`Number`|The degree equivalent|
 
+### Number.**toDegree**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toDegree : Number -> Number
+```
+
+Converts a degree value to radians.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|Converts the given radian value to degrees|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The radian equivalent|
+

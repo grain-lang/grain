@@ -963,3 +963,13 @@ export let rec factorial = n => {
  * @since v0.5.3
  */
 export let toRadian = degrees => degrees * (pi / 180)
+
+/**
+ * Converts a degree value to radians.
+ *
+ * @param radians: Converts the given radian value to degrees
+ * @returns The radian equivalent
+ *
+ * @since v0.5.3
+ */
+export let toDegree = radians => radians * (180 / pi)
