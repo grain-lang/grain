@@ -1703,7 +1703,6 @@ and print_type =
         Doc.concat([
           print_ident(ident),
           Doc.text("<"),
-          //  Comment_utils.single_line_of_comments(after_angle_comments),
           Doc.indent(Doc.group(printed_types_after_angle)),
           Doc.softLine,
           Doc.text(">"),
