@@ -908,7 +908,6 @@ let rec item_iterator =
             itemdoc,
             Doc.ifBreaks(
               if (trailing_separator) {separator} else {Doc.nil},
-              // Doc.text("space"),
               Doc.nil,
             ),
             trailing_cmts,
@@ -3766,17 +3765,6 @@ let rec print_data =
 
     let after_brace_comments =
       Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments);
-    // switch (label_declarations) {
-    // | [] =>
-    //   Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments)
-    // | [first, ...rem] =>
-    //  Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments)
-    //   // Comment_utils.get_comments_enclosed_and_before_location(
-    //   //   ~loc1=data.pdata_name.loc,
-    //   //   ~loc2=first.pld_loc,
-    //   //   comments,
-    //   // )
-    // };
 
     let cleaned_comments =
       remove_used_comments(~remove_comments=after_brace_comments, comments);
