@@ -104,7 +104,8 @@ let prim0_type =
   | AllocateInt64
   | AllocateFloat32
   | AllocateFloat64
-  | AllocateRational => Builtin_types.type_wasmi32;
+  | AllocateRational => Builtin_types.type_wasmi32
+  | Unreachable => newvar(~name="a", ());
 
 let prim1_type =
   fun

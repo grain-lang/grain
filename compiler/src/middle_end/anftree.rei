@@ -163,7 +163,8 @@ type prim0 =
     | AllocateInt64
     | AllocateFloat32
     | AllocateFloat64
-    | AllocateRational;
+    | AllocateRational
+    | Unreachable;
 
 type prim1 =
   Parsetree.prim1 =
