@@ -442,6 +442,7 @@ and expression_desc =
     )
   | TExpContinue
   | TExpBreak
+  | TExpReturn(option(expression))
   | TExpLambda(list(match_branch), partial)
   | TExpApp(expression, list(expression))
   | TExpConstruct(

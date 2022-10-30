@@ -553,6 +553,18 @@ let rec transl_imm =
       Imm.const(Const_void),
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
+  | TExpReturn(value) =>
+    let (value_comp, value_setup) =
+      switch (value) {
+      | Some(value) =>
+        let (value_comp, value_setup) = transl_comp_expression(value);
+        (Some(value_comp), value_setup);
+      | None => (None, [])
+      };
+    (
+      Imm.const(Const_void),
+      value_setup @ [BSeq(Comp.return(~loc, ~env, value_comp))],
+    );
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})},
       _,

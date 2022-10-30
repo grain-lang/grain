@@ -108,6 +108,7 @@ module E = {
       sub.expr(sub, b);
     | PExpContinue
     | PExpBreak => ()
+    | PExpReturn(e) => Option.iter(sub.expr(sub), e)
     | PExpConstraint(e, t) =>
       sub.expr(sub, e);
       sub.typ(sub, t);

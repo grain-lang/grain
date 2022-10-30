@@ -3473,6 +3473,23 @@ and print_expression_inner =
       ]);
     | PExpContinue => Doc.text("continue")
     | PExpBreak => Doc.text("break")
+    | PExpReturn(expr) =>
+      Doc.concat([
+        Doc.text("return"),
+        switch (expr) {
+        | Some(expr) =>
+          Doc.concat([
+            Doc.space,
+            print_expression(
+              ~expression_parent=GenericExpression,
+              ~original_source,
+              ~comments,
+              expr,
+            ),
+          ])
+        | None => Doc.nil
+        },
+      ])
     | PExpConstraint(expression, parsed_type) =>
       let comments_in_expression =
         Comment_utils.get_comments_inside_location(

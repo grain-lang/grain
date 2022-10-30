@@ -263,6 +263,14 @@ module Comp: {
   let break:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, unit) =>
     comp_expression;
+  let return:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      option(comp_expression)
+    ) =>
+    comp_expression;
   let switch_:
     (
       ~loc: loc=?,
