@@ -8,9 +8,14 @@ describe("early return", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
+  let assertSnapshot = makeSnapshotRunner(test);
 
   assertRun("early_return1", "let fun = () => return 5; print(fun())", "5\n");
   assertFileRun("early_return2", "earlyReturn", "Some(4)\nNone\n");
+  assertSnapshot(
+    "early_return3",
+    "export let foo = () => { if (1 == 0) return true; return false }",
+  );
 
   assertCompileError(
     "early_return_err1",
