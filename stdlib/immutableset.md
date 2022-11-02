@@ -13,11 +13,21 @@ No other changes yet.
 import ImmutableSet from "immutableset"
 ```
 
+## Types
+
+Type declarations included in the ImmutableSet module.
+
+### ImmutableSet.**ImmutableSet**
+
+```grain
+type ImmutableSet<a>
+```
+
 ## Values
 
-Functions for working with ImmutableSets.
+Functions and constants for working with ImmutableSets.
 
-### ImmutableSet.**make**
+### ImmutableSet.**empty**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -25,16 +35,10 @@ No other changes yet.
 </details>
 
 ```grain
-make : () -> ImmutableSet<a>
+empty : ImmutableSet<a>
 ```
 
-Creates a new, empty set.
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`ImmutableSet<a>`|An empty set|
+An empty set
 
 ### ImmutableSet.**size**
 
@@ -105,7 +109,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`key`|`a`|The value to add|
-|`set`|`ImmutableSet<a>`|The set to add to|
+|`set`|`ImmutableSet<a>`|The base set|
 
 Returns:
 
@@ -158,7 +162,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`key`|`a`|The value to exclude|
-|`set`|`ImmutableSet<a>`|The set to exclude the value from|
+|`set`|`ImmutableSet<a>`|The set to exclude from|
 
 Returns:
 
@@ -174,7 +178,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : ((a -> b), ImmutableSet<a>) -> Void
+forEach : ((a -> Void), ImmutableSet<a>) -> Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -183,7 +187,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The iterator function to call with each element|
+|`fn`|`a -> Void`|The iterator function to call with each element|
 |`set`|`ImmutableSet<a>`|The set to iterate|
 
 ### ImmutableSet.**reduce**

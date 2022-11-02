@@ -17,13 +17,16 @@ record Node<a> {
   left: ImmutableSet<a>,
   right: ImmutableSet<a>,
 },
+/**
+ * @section Types: Type declarations included in the ImmutableSet module.
+ */
 enum ImmutableSet<a> {
   Empty,
   Tree(Node<a>),
 }
 
 /**
- * @section Values: Functions for working with ImmutableSets.
+ * @section Values: Functions and constants for working with ImmutableSets.
  */
 
 // semi-arbitrary value chosen for algorithm for determining when to balance
@@ -32,15 +35,11 @@ enum ImmutableSet<a> {
 let weight = 4
 
 /**
- * Creates a new, empty set.
- *
- * @returns An empty set
+ * An empty set
  * 
  * @since v0.5.4
  */
-export let make = () => {
-  Empty
-}
+export let empty = Empty
 
 // returns the minimum value in a tree
 let rec min = node => {
@@ -131,12 +130,12 @@ let balancedNode = (key, left, right) => {
   } else if (size(right) > weight * size(left)) {
     // if the right tree is too much larger than the left then move part of
     // the right tree to the left side
-    let Tree({ left: rl, right: rr, _ }) = right
+    let { left: rl, right: rr, _ } = unwrapTree(right)
     if (size(rl) < size(rr)) singleL else doubleL
   } else if (size(left) > weight * size(right)) {
     // if the left tree is too much larger than the right then move part of
     // the left tree to the right side
-    let Tree({ left: ll, right: lr, _ }) = left
+    let { left: ll, right: lr, _ } = unwrapTree(left)
     if (size(lr) < size(ll)) singleR else doubleR
   } else {
     // if neither tree is too much larger than the other then simply create
@@ -152,7 +151,7 @@ let balancedNode = (key, left, right) => {
  * already exists, the new set will have the same elements as the input set.
  *
  * @param key: The value to add
- * @param set: The set to add to
+ * @param set: The base set
  * @returns A new set containing the new element
  * 
  * @since v0.5.4
@@ -217,7 +216,7 @@ let removeInner = (left, right) => {
  * the set, the set will be returned unmodified.
  *
  * @param key: The value to exclude
- * @param set: The set to exclude the value from
+ * @param set: The set to exclude from
  * @returns A new set without the excluded element
  * 
  * @since v0.5.4
@@ -249,7 +248,7 @@ export let forEach = (fn, set) => {
       Empty => void,
       Tree({ key, left, right, _ }) => {
         forEachInner(left)
-        fn(key)
+        fn(key): Void
         forEachInner(right)
       },
     }
@@ -451,7 +450,7 @@ export let rec intersect = (set1, set2) => {
  * @since v0.5.4
  */
 export let fromList = list => {
-  List.reduce((set, key) => add(key, set), make(), list)
+  List.reduce((set, key) => add(key, set), empty, list)
 }
 
 /**
@@ -483,7 +482,7 @@ export let toList = set => {
  * @since v0.5.4
  */
 export let fromArray = array => {
-  Array.reduce((set, key) => add(key, set), make(), array)
+  Array.reduce((set, key) => add(key, set), empty, array)
 }
 
 /**

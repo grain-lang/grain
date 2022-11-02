@@ -16,7 +16,7 @@ record ResourceData {
 
 // ImmutableSet.isEmpty
 
-let mut e = ImmutableSet.make()
+let mut e = ImmutableSet.empty
 
 assert ImmutableSet.isEmpty(e)
 e = ImmutableSet.remove("🌾", e)
@@ -42,7 +42,7 @@ assert !ImmutableSet.contains("🌳", h)
 
 // ImmutableSet.add
 
-let mut vars = ImmutableSet.make()
+let mut vars = ImmutableSet.empty
 
 vars = ImmutableSet.add(Grain, vars)
 vars = ImmutableSet.add(Sheep, vars)
@@ -50,7 +50,7 @@ vars = ImmutableSet.add(Grain, vars)
 
 assert ImmutableSet.size(vars) == 2
 
-let mut recs = ImmutableSet.make()
+let mut recs = ImmutableSet.empty
 
 recs = ImmutableSet.add({ name: "Grain", emoji: "🌾" }, recs)
 recs = ImmutableSet.add({ name: "Sheep", emoji: "🐑" }, recs)
@@ -81,7 +81,7 @@ assert ImmutableSet.isEmpty(r)
 
 let makeTestSet = () => ImmutableSet.fromList([Grain, Sheep, Brick])
 
-let emptySet = ImmutableSet.make()
+let emptySet = ImmutableSet.empty
 
 let mut filterTestSet = makeTestSet()
 

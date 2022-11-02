@@ -13,11 +13,21 @@ No other changes yet.
 import ImmutableMap from "immutablemap"
 ```
 
+## Types
+
+Type declarations included in the ImmutableMap module.
+
+### ImmutableMap.**ImmutableMap**
+
+```grain
+type ImmutableMap<k, v>
+```
+
 ## Values
 
-Functions for working with ImmutableMaps.
+Functions and constants for working with ImmutableMaps.
 
-### ImmutableMap.**make**
+### ImmutableMap.**empty**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -25,16 +35,10 @@ No other changes yet.
 </details>
 
 ```grain
-make : () -> ImmutableMap<a, b>
+empty : ImmutableMap<a, b>
 ```
 
-Creates a new, empty map.
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`ImmutableMap<a, b>`|An empty map|
+An empty map
 
 ### ImmutableMap.**size**
 
@@ -105,7 +109,7 @@ Parameters:
 |-----|----|-----------|
 |`key`|`a`|The unique key in the map|
 |`value`|`b`|The value to store|
-|`map`|`ImmutableMap<a, b>`|The map to modify|
+|`map`|`ImmutableMap<a, b>`|The base map|
 
 Returns:
 
@@ -206,7 +210,7 @@ update :
 
 Produces a new map by calling an updater function that receives the
 previously stored value as an `Option` and returns the new value to be
-stored as an `Option`. If the key didn't exist previously, the new value
+stored as an `Option`. If the key didn't exist previously, the value
 will be `None`. If `None` is returned from the updater function, the
 key-value pair is excluded.
 
@@ -216,7 +220,7 @@ Parameters:
 |-----|----|-----------|
 |`key`|`a`|The unique key in the map|
 |`fn`|`Option<b> -> Option<b>`|The updater function|
-|`map`|`ImmutableMap<a, b>`|The map to modify|
+|`map`|`ImmutableMap<a, b>`|The base map|
 
 Returns:
 
@@ -232,7 +236,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : (((a, b) -> c), ImmutableMap<a, b>) -> Void
+forEach : (((a, b) -> Void), ImmutableMap<a, b>) -> Void
 ```
 
 Iterates the map, calling an iterator function with each key and value.
@@ -241,7 +245,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The iterator function to call with each key and value|
+|`fn`|`(a, b) -> Void`|The iterator function to call with each key and value|
 |`map`|`ImmutableMap<a, b>`|The map to iterate|
 
 ### ImmutableMap.**reduce**

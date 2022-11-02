@@ -29,7 +29,7 @@ let recordKeys = ImmutableMap.fromList(
 
 // ImmutableMap.isEmpty()
 
-let mut e = ImmutableMap.make()
+let mut e = ImmutableMap.empty
 
 assert ImmutableMap.isEmpty(e)
 e = ImmutableMap.remove("🌾", e)
@@ -86,7 +86,7 @@ assert ImmutableMap.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3)
 assert ImmutableMap.get({ name: "Wood", emoji: "🌳" }, recs) == None
 
 // Overwriting data
-let mut o = ImmutableMap.make()
+let mut o = ImmutableMap.empty
 
 o = ImmutableMap.set(1, "🐑", o)
 o = ImmutableMap.set(1, "🌾", o)
@@ -136,7 +136,7 @@ assert called == 3
 
 // ImmutableMap.reduce()
 
-let mut r = ImmutableMap.make()
+let mut r = ImmutableMap.empty
 
 r = ImmutableMap.set(Grain, 1, r)
 r = ImmutableMap.set(Sheep, 2, r)
