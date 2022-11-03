@@ -2671,6 +2671,7 @@ and print_expression =
               let guard_doc =
                 Doc.group(
                   print_expression(
+                    ~in_conditional=true,
                     ~original_source,
                     ~comments=branch_guard_comments,
                     guard,

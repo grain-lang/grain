@@ -121,10 +121,10 @@ let withConfig = (buf: RegExBuf, config: RegExParserConfig) => {
 
 let parseErr = (buf: RegExBuf, msg: String, posShift) => {
   "Invalid Regular Expression: " ++
-  msg ++
-  " (position " ++
-  toString(unbox(buf.cursor) + posShift) ++
-  ")"
+    msg ++
+    " (position " ++
+    toString(unbox(buf.cursor) + posShift) ++
+    ")"
 }
 
 let next = (buf: RegExBuf) => {
@@ -170,10 +170,10 @@ let eat = (buf: RegExBuf, char: Char) => {
         parseErr(
           buf,
           "Expected character '" ++
-          Char.toString(char) ++
-          ", but found character '" ++
-          Char.toString(ret) ++
-          "'",
+            Char.toString(char) ++
+            ", but found character '" ++
+            Char.toString(ret) ++
+            "'",
           0
         )
       )
@@ -903,8 +903,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
                       Err(e) =>
                         Err(
                           "Invalid Regular Expression: illegal alphebetic escape (position " ++
-                          toString(curPos) ++
-                          ")"
+                            toString(curPos) ++
+                            ")"
                         ),
                       Ok(range1) => {
                         match (rangeAddCaseAware(rng, spanFrom, buf.config)) {
@@ -1540,10 +1540,10 @@ let rec parseAtom = (buf: RegExBuf) => {
                   parseErr(
                     buf,
                     "Unrecognized property name in `\\" ++
-                    pC ++
-                    "`: `" ++
-                    s ++
-                    "`",
+                      pC ++
+                      "`: `" ++
+                      s ++
+                      "`",
                     0
                   )
                 ),
@@ -1922,7 +1922,7 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
     REAlts(a, b) => isAnchored(a) && isAnchored(b),
     REConditional(_, rx1, rx2, _, _, _) =>
       isAnchored(rx1) &&
-      Option.mapWithDefault(isAnchored, false, rx2),
+        Option.mapWithDefault(isAnchored, false, rx2),
     REGroup(rx, _) => isAnchored(rx),
     RECut(rx, _, _, _) => isAnchored(rx),
     _ => false,
@@ -2305,10 +2305,10 @@ let charMatcher = (toMatch, next_m) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => toMatch == c,
+        }
     }
   ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
@@ -2326,10 +2326,10 @@ let charTailMatcher = toMatch =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => toMatch == c,
+        }
     }
   ) Some(pos + 1) else None
 }
@@ -2382,13 +2382,13 @@ let stringMatcher = (toMatch, len, next_m) =>
   if (
     {
       pos + len <= limit &&
-      subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len
-      )
+        subArraysEqual(
+          buf.matchInputExploded,
+          pos,
+          String.explode(toMatch),
+          0,
+          len
+        )
     }
   ) next_m(buf, pos + len, start, limit, end, state, stack) else None
 }
@@ -2406,13 +2406,13 @@ let stringTailMatcher = (toMatch, len) =>
   if (
     {
       pos + len <= limit &&
-      subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len
-      )
+        subArraysEqual(
+          buf.matchInputExploded,
+          pos,
+          String.explode(toMatch),
+          0,
+          len
+        )
     }
   ) Some(pos + len) else None
 }
@@ -2513,10 +2513,10 @@ let rangeMatcher = (rng: CharRange, next_m) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => rangeContains(rng, Char.code(c)),
+        }
     }
   ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
@@ -2534,10 +2534,10 @@ let rangeTailMatcher = (rng: CharRange) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => rangeContains(rng, Char.code(c)),
+        }
     }
   ) Some(pos + 1) else None
 }
@@ -2636,7 +2636,7 @@ let isWordChar = c => {
 
 let isWordBoundary = (buf, pos, start, limit, end) => {
   !((pos == start || !isWordChar(matchBufChar(buf, pos - 1))) ==
-  (pos == end || !isWordChar(matchBufChar(buf, pos))))
+    (pos == end || !isWordChar(matchBufChar(buf, pos))))
 }
 
 let wordBoundaryMatcher = next_m =>

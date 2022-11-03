@@ -216,12 +216,12 @@ let setFlag = (ptr, flag, value) => {
   WasmI32.store(
     ptr,
     WasmI32.load(ptr, 12n) & !flag |
-    flag *
-    (if (WasmI32.eqz(value)) {
-      0n
-    } else {
-      1n
-    }),
+      flag *
+        (if (WasmI32.eqz(value)) {
+          0n
+        } else {
+          1n
+        }),
     12n
   )
 }
@@ -1827,10 +1827,10 @@ let baseCaseDivRem = (a: WasmI32, b: WasmI32, result: WasmI32) => {
   let n = getHalfSize(b)
   let m = getHalfSize(a) - n
   let qsize = (if (WasmI32.eqz(WasmI32.and(m + 1n, 1n))) {
-        m + 1n
-      } else {
-        m + 2n
-      }) >>
+    m + 1n
+  } else {
+    m + 2n
+  }) >>
     1n
   let mut q = init(qsize)
   let mut a = 0n

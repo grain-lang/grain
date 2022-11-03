@@ -728,16 +728,16 @@ export let decimalCount32 = value => {
       1n + (if (WasmI32.geU(value, 10n)) 1n else 0n)
     } else {
       3n +
-      (if (WasmI32.geU(value, 10000n)) 1n else 0n) +
-      (if (WasmI32.geU(value, 1000n)) 1n else 0n)
+        (if (WasmI32.geU(value, 10000n)) 1n else 0n) +
+        (if (WasmI32.geU(value, 1000n)) 1n else 0n)
     }
   } else {
     if (WasmI32.ltU(value, 10000000n)) {
       6n + (if (WasmI32.geU(value, 1000000n)) 1n else 0n)
     } else {
       8n +
-      (if (WasmI32.geU(value, 1000000000n)) 1n else 0n) +
-      (if (WasmI32.geU(value, 100000000n)) 1n else 0n)
+        (if (WasmI32.geU(value, 1000000000n)) 1n else 0n) +
+        (if (WasmI32.geU(value, 100000000n)) 1n else 0n)
     }
   }
 }
@@ -749,20 +749,20 @@ let decimalCount64High = value => {
   if (WasmI64.ltU(value, 1000000000000000N)) {
     if (WasmI64.ltU(value, 1000000000000N)) {
       10n +
-      (if (WasmI64.geU(value, 100000000000N)) 1n else 0n) +
-      (if (WasmI64.geU(value, 10000000000N)) 1n else 0n)
+        (if (WasmI64.geU(value, 100000000000N)) 1n else 0n) +
+        (if (WasmI64.geU(value, 10000000000N)) 1n else 0n)
     } else {
       13n +
-      (if (WasmI64.geU(value, 100000000000000N)) 1n else 0n) +
-      (if (WasmI64.geU(value, 10000000000000N)) 1n else 0n)
+        (if (WasmI64.geU(value, 100000000000000N)) 1n else 0n) +
+        (if (WasmI64.geU(value, 10000000000000N)) 1n else 0n)
     }
   } else {
     if (WasmI64.ltU(value, 100000000000000000N)) {
       16n + (if (WasmI64.geU(value, 10000000000000000N)) 1n else 0n)
     } else {
       18n +
-      (if (WasmI64.geU(value, 0x8AC7230489E80000N)) 1n else 0n) +
-      (if (WasmI64.geU(value, 1000000000000000000N)) 1n else 0n)
+        (if (WasmI64.geU(value, 0x8AC7230489E80000N)) 1n else 0n) +
+        (if (WasmI64.geU(value, 1000000000000000000N)) 1n else 0n)
     }
   }
 }
@@ -774,7 +774,7 @@ let ulog_base = (num, base) => {
       63n - WasmI32.wrapI64(WasmI64.clz(num)),
       31n - WasmI32.clz(base)
     ) +
-    1n
+      1n
   } else {
     let b64 = WasmI64.extendI32U(base)
     let mut b = b64

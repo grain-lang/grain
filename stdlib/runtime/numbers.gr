@@ -79,7 +79,7 @@ export let isFloat = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
     WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) ||
-    WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
+      WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
   } else {
     false
   }
@@ -90,8 +90,8 @@ export let isInteger = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
     WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG) ||
-    WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG) ||
-    WasmI32.eq(tag, Tags._GRAIN_BIGINT_BOXED_NUM_TAG)
+      WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG) ||
+      WasmI32.eq(tag, Tags._GRAIN_BIGINT_BOXED_NUM_TAG)
   } else {
     true
   }
@@ -518,13 +518,13 @@ let isIntegerF64 = value => {
 @unsafe
 let isSafeIntegerF32 = value => {
   WasmF32.le(WasmF32.abs(value), _F32_MAX_SAFE_INTEGER) &&
-  WasmF32.eq(WasmF32.trunc(value), value)
+    WasmF32.eq(WasmF32.trunc(value), value)
 }
 
 @unsafe
 let isSafeIntegerF64 = value => {
   WasmF64.le(WasmF64.abs(value), _F64_MAX_SAFE_INTEGER) &&
-  WasmF64.eq(WasmF64.trunc(value), value)
+    WasmF64.eq(WasmF64.trunc(value), value)
 }
 
 /** Number-aware equality checking
@@ -564,12 +564,12 @@ let numberEqualSimpleHelp = (x, y) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat32Number(y)
         isSafeIntegerF32(yBoxedVal) &&
-        WasmF32.eq(WasmF32.convertI32S(xval), yBoxedVal)
+          WasmF32.eq(WasmF32.convertI32S(xval), yBoxedVal)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
         isSafeIntegerF64(yBoxedVal) &&
-        WasmF64.eq(WasmF64.convertI32S(xval), yBoxedVal)
+          WasmF64.eq(WasmF64.convertI32S(xval), yBoxedVal)
       },
       _ => {
         throw UnknownNumberTag
@@ -606,12 +606,12 @@ let numberEqualInt64Help = (xBoxedVal, y) => {
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat32Number(y)
         isSafeIntegerF32(yBoxedVal) &&
-        WasmI64.eq(xBoxedVal, WasmI64.truncF32S(yBoxedVal))
+          WasmI64.eq(xBoxedVal, WasmI64.truncF32S(yBoxedVal))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
         isSafeIntegerF64(yBoxedVal) &&
-        WasmI64.eq(xBoxedVal, WasmI64.truncF64S(yBoxedVal))
+          WasmI64.eq(xBoxedVal, WasmI64.truncF64S(yBoxedVal))
       },
       _ => {
         throw UnknownNumberTag
