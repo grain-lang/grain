@@ -110,20 +110,20 @@ assert String.reverse("even") == "neve"
 assert String.reverse("odd") == "ddo"
 assert String.reverse("olleH") == "Hello"
 assert String.reverse(emojis) ==
-String.implode(Array.reverse(String.explode(emojis)))
+  String.implode(Array.reverse(String.explode(emojis)))
 
 // split tests
 assert String.split(empty, empty) == [>]
 assert String.split(empty, short) == [> "f", "o", "x"]
 assert String.split(" ", fox) ==
-[> "The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog."]
+  [> "The", "quick", "brown", "fox", "jumps", "over", "the", "lazy", "dog."]
 assert String.split("brown fox", fox) ==
-[> "The quick ", " jumps over the lazy dog."]
+  [> "The quick ", " jumps over the lazy dog."]
 assert String.split("🚀 ", emojis) ==
-[>
-  "we found a path",
-  "to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈",
-]
+  [>
+    "we found a path",
+    "to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈",
+  ]
 assert String.split(" ", " foo bar baz ") == [> "", "foo", "bar", "baz", ""]
 
 // slice tests
@@ -249,23 +249,23 @@ assert processBytes(String.encode(emojis, String.UTF32_LE)) == [> 0x77l, 0x00l, 
 // round-trip tests
 assert String.decode(String.encode("foo", String.UTF8), String.UTF8) == "foo"
 assert String.decode(String.encode("foo", String.UTF16_BE), String.UTF16_BE) ==
-"foo"
+  "foo"
 assert String.decode(String.encode("foo", String.UTF16_LE), String.UTF16_LE) ==
-"foo"
+  "foo"
 assert String.decode(String.encode("foo", String.UTF32_BE), String.UTF32_BE) ==
-"foo"
+  "foo"
 assert String.decode(String.encode("foo", String.UTF32_LE), String.UTF32_LE) ==
-"foo"
+  "foo"
 
 assert String.decode(String.encode(emojis, String.UTF8), String.UTF8) == emojis
 assert String.decode(String.encode(emojis, String.UTF16_BE), String.UTF16_BE) ==
-emojis
+  emojis
 assert String.decode(String.encode(emojis, String.UTF16_LE), String.UTF16_LE) ==
-emojis
+  emojis
 assert String.decode(String.encode(emojis, String.UTF32_BE), String.UTF32_BE) ==
-emojis
+  emojis
 assert String.decode(String.encode(emojis, String.UTF32_LE), String.UTF32_LE) ==
-emojis
+  emojis
 
 // decodeRange
 // 51 is chosen to stress-test these functions, since it's not an aligned offset
@@ -275,35 +275,35 @@ assert String.decodeRange(
   51,
   98
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51),
   String.UTF16_LE,
   51,
   164
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAt(emojis, String.UTF16_BE, Bytes.make(500), 51),
   String.UTF16_BE,
   51,
   164
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAt(emojis, String.UTF32_LE, Bytes.make(500), 51),
   String.UTF32_LE,
   51,
   296
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAt(emojis, String.UTF32_BE, Bytes.make(500), 51),
   String.UTF32_BE,
   51,
   296
 ) ==
-emojis
+  emojis
 
 // keepBom should be no-op, since there is no BOM
 assert String.decodeRangeKeepBom(
@@ -312,35 +312,35 @@ assert String.decodeRangeKeepBom(
   51,
   98
 ) ==
-emojis
+  emojis
 assert String.decodeRangeKeepBom(
   String.encodeAt(emojis, String.UTF16_LE, Bytes.make(500), 51),
   String.UTF16_LE,
   51,
   164
 ) ==
-emojis
+  emojis
 assert String.decodeRangeKeepBom(
   String.encodeAt(emojis, String.UTF16_BE, Bytes.make(500), 51),
   String.UTF16_BE,
   51,
   164
 ) ==
-emojis
+  emojis
 assert String.decodeRangeKeepBom(
   String.encodeAt(emojis, String.UTF32_LE, Bytes.make(500), 51),
   String.UTF32_LE,
   51,
   296
 ) ==
-emojis
+  emojis
 assert String.decodeRangeKeepBom(
   String.encodeAt(emojis, String.UTF32_BE, Bytes.make(500), 51),
   String.UTF32_BE,
   51,
   296
 ) ==
-emojis
+  emojis
 // but, when we include it, it should preserve it:
 assert String.decodeRangeKeepBom(
   String.encodeAtWithBom(emojis, String.UTF16_LE, Bytes.make(500), 51),
@@ -348,7 +348,7 @@ assert String.decodeRangeKeepBom(
   51,
   166
 ) !=
-emojis
+  emojis
 // BOM-skipping should be default:
 assert String.decodeRange(
   String.encodeAtWithBom(emojis, String.UTF8, Bytes.make(500), 51),
@@ -356,41 +356,41 @@ assert String.decodeRange(
   51,
   101
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAtWithBom(emojis, String.UTF16_LE, Bytes.make(500), 51),
   String.UTF16_LE,
   51,
   166
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAtWithBom(emojis, String.UTF16_BE, Bytes.make(500), 51),
   String.UTF16_BE,
   51,
   166
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAtWithBom(emojis, String.UTF32_BE, Bytes.make(500), 51),
   String.UTF32_BE,
   51,
   300
 ) ==
-emojis
+  emojis
 assert String.decodeRange(
   String.encodeAtWithBom(emojis, String.UTF32_LE, Bytes.make(500), 51),
   String.UTF32_LE,
   51,
   300
 ) ==
-emojis
+  emojis
 
 // BOM stripping
 assert String.decode(String.encode(emojis, String.UTF32_LE), String.UTF32_LE) ==
-emojis
+  emojis
 assert String.decode(String.encode(emojis, String.UTF32_BE), String.UTF32_BE) ==
-emojis
+  emojis
 
 // Tests for (#786)
 let bytes = Bytes.make(2)
@@ -414,7 +414,7 @@ assert String.decode(bytes, String.UTF16_LE) == "¢"
     tmp = [(codePoint, idx), ...tmp]
   }, emojis)
   assert Array.reverse(Array.fromList(tmp)) ==
-  Array.mapi((c, i) => (c, i), codes)
+    Array.mapi((c, i) => (c, i), codes)
 }
 
 // String.trimStart
