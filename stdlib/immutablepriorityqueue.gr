@@ -41,8 +41,18 @@ record ImmutablePriorityQueue<a> {
 }
 
 /**
- * @section Values: Functions for working with ImmutablePriorityQueues.
+ * @section Values: Functions and constants for working with ImmutablePriorityQueues.
  */
+
+/**
+ * An empty priority queue with the default `compare` comparator.
+ * 
+ * @since v0.5.4
+ */
+export let empty = {
+  let empty = { comp: compare, size: 0, root: None }
+  empty
+}
 
 /**
  * Creates a new priority queue with a comparator function, which is used to
