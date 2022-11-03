@@ -157,6 +157,20 @@ let force_break_if_line_comment =
   };
 };
 
+let break_parent_if_line_comment =
+    (~separator, comments: list(Parsetree.comment)) => {
+  switch (comments) {
+  | [] => separator
+  | _ =>
+    let last_comment = get_last_item_in_list(comments);
+
+    switch (last_comment) {
+    | Line(_) => Doc.breakParent
+    | _ => separator
+    };
+  };
+};
+
 let item_separator = (~this_line: int, ~line_above: int, break_separator) =>
   if (this_line - line_above > 1) {
     Doc.concat([break_separator, Doc.hardLine]);
@@ -1735,6 +1749,7 @@ and print_type =
 
 and print_application =
     (
+      ~in_conditional: option(bool)=?,
       ~expressions: list(Parsetree.expression),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
@@ -1744,14 +1759,27 @@ and print_application =
 
   switch (expressions) {
   | [first, second] when infixop(function_name) =>
-    print_infix_application(~expressions, ~original_source, ~comments, func)
+    print_infix_application(
+      ~in_conditional?,
+      ~expressions,
+      ~original_source,
+      ~comments,
+      func,
+    )
   | _ =>
-    print_other_application(~expressions, ~original_source, ~comments, func)
+    print_other_application(
+      ~in_conditional?,
+      ~expressions,
+      ~original_source,
+      ~comments,
+      func,
+    )
   };
 }
 
 and print_infix_application =
     (
+      ~in_conditional: option(bool)=?,
       ~expressions: list(Parsetree.expression),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
@@ -1759,10 +1787,14 @@ and print_infix_application =
     ) => {
   let function_name = get_function_name(func);
 
+  let in_cond =
+    switch (in_conditional) {
+    | None => false
+    | Some(inn) => inn
+    };
+
   switch (expressions) {
   | [first, second] =>
-    let left_expr = print_expression(~original_source, ~comments, first);
-
     let next_comments =
       Comment_utils.get_comments_between_locations(
         ~loc1=first.pexp_loc,
@@ -1784,31 +1816,6 @@ and print_infix_application =
     let line_comment_docs =
       Comment_utils.single_line_of_comments(line_comments);
 
-    let right_expr = print_expression(~original_source, ~comments, second);
-
-    let left_is_leaf =
-      switch (first.pexp_desc) {
-      | PExpApp(fn, expr) =>
-        let child_name = get_function_name(fn);
-        let this_prec = op_precedence(child_name);
-        let parent_prec = op_precedence(function_name);
-
-        this_prec < parent_prec || child_name != function_name;
-      | _ => true
-      };
-    let right_is_leaf =
-      switch (second.pexp_desc) {
-      | PExpApp(fn, expr) =>
-        let child_name = get_function_name(fn);
-        let this_prec = op_precedence(child_name);
-        let parent_prec = op_precedence(function_name);
-
-        this_prec < parent_prec || child_name != function_name;
-      | _ => true
-      };
-
-    // wrap if in parens
-
     let left_is_if =
       switch (first.pexp_desc) {
       | PExpIf(_) => true
@@ -1822,6 +1829,24 @@ and print_infix_application =
       };
 
     let parent_prec = op_precedence(function_name);
+    let left_is_leaf =
+      switch (first.pexp_desc) {
+      | PExpApp(fn, expr) =>
+        let child_name = get_function_name(fn);
+        let this_prec = op_precedence(child_name);
+
+        this_prec < parent_prec || child_name != function_name;
+      | _ => true
+      };
+    let right_is_leaf =
+      switch (second.pexp_desc) {
+      | PExpApp(fn, expr) =>
+        let child_name = get_function_name(fn);
+        let this_prec = op_precedence(child_name);
+
+        this_prec < parent_prec || child_name != function_name;
+      | _ => true
+      };
 
     let left_grouping_required =
       switch (first.pexp_desc) {
@@ -1846,46 +1871,90 @@ and print_infix_application =
     let left_needs_parens = left_is_if || left_grouping_required;
     let right_needs_parens = right_is_if || right_grouping_required;
 
-    let wrapped_left =
+    let lhs =
       if (left_needs_parens) {
-        if (Doc.willBreak(right_expr)) {
-          Doc.concat([Doc.lparen, left_expr, Doc.rparen]);
-        } else {
-          Doc.concat([Doc.lparen, Doc.indent(left_expr), Doc.rparen]);
-        };
+        Doc.concat([
+          Doc.lparen,
+          Doc.concat([
+            print_expression(
+              ~in_conditional=false,
+              ~original_source,
+              ~comments,
+              first,
+            ),
+          ]),
+          Doc.rparen,
+        ]);
       } else {
-        left_expr;
+        print_expression(
+          ~in_conditional=in_cond,
+          ~original_source,
+          ~comments,
+          first,
+        );
       };
 
-    let wrapped_right =
+    let rhs_expr =
       if (right_needs_parens) {
-        if (Doc.willBreak(right_expr)) {
-          Doc.concat([Doc.lparen, right_expr, Doc.rparen]);
-        } else {
-          Doc.concat([Doc.lparen, Doc.indent(right_expr), Doc.rparen]);
-        };
+        Doc.concat([
+          Doc.lparen,
+          Doc.concat([
+            print_expression(
+              ~in_conditional=false,
+              ~original_source,
+              ~comments,
+              second,
+            ),
+          ]),
+          Doc.rparen,
+        ]);
       } else {
-        right_expr;
-      };
-
-    let lhs = left_is_leaf ? Doc.group(wrapped_left) : wrapped_left;
-    let rhs = right_is_leaf ? Doc.group(wrapped_right) : wrapped_right;
-
-    let trailing_line_comments =
-      if (line_comment_docs == Doc.nil) {
-        Doc.line;
-      } else {
-        Doc.concat([Doc.nil, line_comment_docs, Doc.line]);
+        Doc.concat([
+          print_expression(
+            ~in_conditional=in_cond,
+            ~original_source,
+            ~comments,
+            second,
+          ),
+        ]);
       };
 
     Doc.concat([
-      lhs,
+      if (left_is_leaf) {
+        Doc.group(lhs);
+      } else {
+        lhs;
+      },
       Doc.space,
       Doc.text(function_name),
-      trailing_line_comments,
+      line_comment_docs,
+      if (after_comments_docs == Doc.nil) {
+        Doc.nil;
+      } else {
+        force_break_if_line_comment(~separator=Doc.nil, line_comments);
+      },
       after_comments_docs,
-      force_break_if_line_comment(~separator=Doc.nil, after_comments),
-      rhs,
+      if (!in_cond) {
+        Doc.indent(
+          Doc.concat([
+            Doc.line,
+            if (right_is_leaf) {
+              Doc.group(rhs_expr);
+            } else {
+              rhs_expr;
+            },
+          ]),
+        );
+      } else {
+        Doc.concat([
+          Doc.line,
+          if (right_is_leaf) {
+            Doc.group(rhs_expr);
+          } else {
+            rhs_expr;
+          },
+        ]);
+      },
     ]);
 
   | _ => raise(IllegalParse("Formatter error, wrong number of args "))
@@ -2123,6 +2192,7 @@ and print_arguments_with_callback_in_last_position =
 
 and print_other_application =
     (
+      ~in_conditional: option(bool)=?,
       ~expressions: list(Parsetree.expression),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
@@ -2139,25 +2209,52 @@ and print_other_application =
         Doc.concat([
           Doc.text(function_name),
           Doc.lparen,
-          Doc.group(print_expression(~original_source, ~comments, first)),
+          Doc.group(
+            print_expression(
+              ~in_conditional?,
+              ~original_source,
+              ~comments,
+              first,
+            ),
+          ),
           Doc.rparen,
         ]);
       } else {
         Doc.concat([
           Doc.text(function_name),
-          Doc.group(print_expression(~original_source, ~comments, first)),
+          Doc.group(
+            print_expression(
+              ~in_conditional?,
+              ~original_source,
+              ~comments,
+              first,
+            ),
+          ),
         ]);
       };
 
     | _ =>
       Doc.concat([
         Doc.text(function_name),
-        Doc.group(print_expression(~original_source, ~comments, first)),
+        Doc.group(
+          print_expression(
+            ~in_conditional?,
+            ~original_source,
+            ~comments,
+            first,
+          ),
+        ),
       ])
     }
 
   | [first, second] when infixop(function_name) =>
-    print_infix_application(~expressions, ~original_source, ~comments, func)
+    print_infix_application(
+      ~in_conditional?,
+      ~expressions,
+      ~original_source,
+      ~comments,
+      func,
+    )
   | _ when infixop(function_name) =>
     raise(IllegalParse("Formatter error, wrong number of args "))
   | _ when function_name == list_cons =>
@@ -2238,7 +2335,7 @@ and print_other_application =
   | [] =>
     Doc.group(
       Doc.concat([
-        print_expression(~original_source, ~comments, func),
+        print_expression(~in_conditional?, ~original_source, ~comments, func),
         Doc.lparen,
         Doc.softLine,
         Doc.rparen,
@@ -2345,6 +2442,7 @@ and paren_wrap_patterns =
 }
 and print_expression =
     (
+      ~in_conditional: option(bool)=?,
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
       expr: Parsetree.expression,
@@ -2454,7 +2552,7 @@ and print_expression =
       Doc.concat([
         print_expression(~original_source, ~comments, expression1),
         Doc.lbracket,
-        print_expression(~original_source, ~comments, expression2),
+        Doc.group(print_expression(~original_source, ~comments, expression2)),
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
@@ -2462,7 +2560,7 @@ and print_expression =
         Doc.concat([
           print_expression(~original_source, ~comments, expression1),
           Doc.lbracket,
-          print_expression(~original_source, ~comments, expression2),
+          Doc.group(print_expression(~original_source, ~comments, expression2)),
           Doc.rbracket,
           Doc.space,
           Doc.text("="),
@@ -2862,11 +2960,11 @@ and print_expression =
           ])
         | _ =>
           Doc.concat([
-            if (true_is_block) {Doc.space} else {Doc.line},
-            Doc.text("else"),
             if (true_is_block) {
               false_made_block := true;
               Doc.concat([
+                Doc.space,
+                Doc.text("else"),
                 Doc.space,
                 Doc.lbrace,
                 // no comments to add here as original was single line
@@ -2885,6 +2983,8 @@ and print_expression =
               ]);
             } else {
               Doc.concat([
+                Doc.line,
+                Doc.text("else"),
                 Doc.space,
                 print_expression(
                   ~original_source,
@@ -2917,6 +3017,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
+                        ~in_conditional=true,
                         ~original_source,
                         ~comments=commentsInCondition,
                         condition,
@@ -2968,6 +3069,7 @@ and print_expression =
               Doc.concat([
                 Doc.softLine,
                 print_expression(
+                  ~in_conditional=true,
                   ~original_source,
                   ~comments=comments_in_expression,
                   expression,
@@ -3013,6 +3115,7 @@ and print_expression =
                 | Some(expr) =>
                   Doc.group(
                     print_expression(
+                      ~in_conditional=true,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
@@ -3029,6 +3132,7 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
+                        ~in_conditional=true,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3046,6 +3150,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
+                        ~in_conditional=true,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3173,7 +3278,13 @@ and print_expression =
       };
 
     | PExpApp(func, expressions) =>
-      print_application(~expressions, ~original_source, ~comments, func)
+      print_application(
+        ~in_conditional?,
+        ~expressions,
+        ~original_source,
+        ~comments,
+        func,
+      )
     | PExpBlock(expressions) =>
       switch (expressions) {
       | [] =>
@@ -3391,14 +3502,7 @@ and print_value_bind =
 
         let expression =
           switch (vb.pvb_expr.pexp_desc) {
-          | PExpApp(fn, _) =>
-            let function_name = get_function_name(fn);
-
-            if (infixop(function_name)) {
-              Doc.indent(Doc.concat([printed]));
-            } else {
-              printed;
-            };
+          | PExpApp(fn, _) => printed
 
           | PExpIf(_) =>
             if (Doc.willBreak(printed)) {
