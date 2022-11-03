@@ -220,6 +220,29 @@ export let drain = pq => {
 }
 
 /**
+ * Constructs a new priority queue initialized with the elements in the array
+ * using a custom comparator function, which is used to determine priority of
+ * elements. The comparator function takes two elements and must return 0 if
+ * both share priority, a positive number if the first has greater priority,
+ * and a negative number if the first has less priority.
+ * 
+ * @param array: An array of values used to initialize the priority queue
+ * @param comp: A comparator function used to assign priority to elements
+ * @returns A priority queue containing the elements from the array
+ *
+ * @since v0.5.4
+ */
+export let fromArray = (array, comp) => {
+  let size = Array.length(array)
+  let array = Array.map(x => Some(x), array)
+  let heap = { size, array, comp }
+  for (let mut i = size - 1; i >= 0; i -= 1) {
+    siftDown(i, heap)
+  }
+  heap
+}
+
+/**
  * Constructs a new priority queue initialized with the elements in the list
  * using a custom comparator function, which is used to determine priority of
  * elements. The comparator function takes two elements and must return 0 if
@@ -233,9 +256,6 @@ export let drain = pq => {
  * @since v0.5.3
  */
 export let fromList = (list, comp) => {
-  let heap = makeSized(List.length(list), comp)
-  List.forEach(val => {
-    push(val, heap)
-  }, list)
-  heap
+  let array = Array.fromList(list)
+  fromArray(array, comp)
 }
