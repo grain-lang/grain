@@ -8,33 +8,40 @@ module Doc = Res_doc;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
-let op_precedence = fn =>
-  switch (fn) {
-  | "*"
-  | "/"
-  | "%" => 120
-  | "+"
-  | "-"
-  | "++" => 110
-  | "<<"
-  | ">>"
-  | ">>>" => 100
-  | "<"
-  | "<="
-  | ">"
-  | ">=" => 90
-  | "=="
-  | "!="
-  | "is"
-  | "isnt" => 80
-  | "&" => 70
-  | "^" => 60
-  | "|" => 50
-  | "&&" => 40
-  | "||" => 30
-  | "_" => 10
-  | _ => 9999
+let op_precedence = fn => {
+  let op_precedence = fn =>
+    switch (fn) {
+    | '*'
+    | '/'
+    | '%' => 120
+    | '+'
+    | '-' => 110
+    | '<'
+    | '>' => 90
+    | '&' => 70
+    | '^' => 60
+    | '|' => 50
+    | '_' => 10
+    | _ => 9999
+    };
+  if (String.length(fn) > 1) {
+    switch (String.sub(fn, 0, 2)) {
+    | "++" => 110
+    | "<<"
+    | ">>" => 100
+    | "=="
+    | "!="
+    | "is" => 80
+    | "&&" => 40
+    | "||" => 30
+    | _ => op_precedence(fn.[0])
+    };
+  } else if (String.length(fn) > 0) {
+    op_precedence(fn.[0]);
+  } else {
+    9999;
   };
+};
 let list_cons = "[...]";
 
 exception IllegalParse(string);
@@ -184,37 +191,31 @@ let add_parens = (doc: Doc.t) =>
   ]);
 
 let infixop = (op: string) => {
-  switch (op) {
-  | "+"
-  | "-"
-  | "*"
-  | "/"
-  | "%"
-  | "is"
-  | "isnt"
-  | "=="
-  | "++"
-  | "!="
-  | "^"
-  | "<"
-  | "<<"
-  | ">"
-  | ">>"
-  | ">>>"
-  | "<="
-  | ">="
-  | "&"
-  | "&&"
-  | "|"
-  | "||" => true
+  switch (op.[0]) {
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '='
+  | '^'
+  | '<'
+  | '>'
+  | '&'
+  | '|' => true
+  | _ when op == "is" => true
+  | _ when op == "isnt" => true
+  | _ when op == "!=" => true
   | _ => false
+  | exception _ => false
   };
 };
 
 let prefixop = (op: string) => {
-  switch (op) {
-  | "!" => true
+  switch (op.[0]) {
+  | '!' => true
   | _ => false
+  | exception _ => false
   };
 };
 
@@ -1065,24 +1066,125 @@ and resugar_list =
 
   let last_item_was_spread = ref(false);
 
+  let list_length = List.length(processed_list);
+
   let items =
-    List.map(
-      i =>
-        switch (i) {
+    List.mapi(
+      (index, item) =>
+        switch (item) {
         | Regular(e) =>
           last_item_was_spread := false;
 
-          Doc.group(print_expression(~original_source, ~comments, e));
+          // Do we have any comments on this line?
+          // If so, we break the whole list
+
+          // we might have a list list [1, 2 // comment
+          //                            3]
+          // so need to use the comment after the last item
+          // [1,
+          //  2, //comment
+          //  3]
+
+          let end_line_comments =
+            if (index < list_length - 2) {
+              let next_item = List.nth(processed_list, index + 1);
+              Comment_utils.get_comments_between_locations(
+                ~loc1=e.pexp_loc,
+                ~loc2=
+                  switch (next_item) {
+                  | Regular(e)
+                  | Spread(e) => e.pexp_loc
+                  },
+                comments,
+              );
+            } else {
+              let (_, item_line, item_char, _) =
+                Locations.get_raw_pos_info(e.pexp_loc.loc_end);
+              Comment_utils.get_comments_on_line_end(
+                ~line=item_line,
+                ~char=item_char,
+                comments,
+              );
+            };
+
+          (
+            print_expression(
+              ~original_source,
+              ~comments=
+                Comment_utils.get_comments_inside_location(
+                  ~location=e.pexp_loc,
+                  comments,
+                ),
+              e,
+            ),
+            end_line_comments,
+          );
+
         | Spread(e) =>
           last_item_was_spread := true;
-          Doc.group(
+
+          (
             Doc.concat([
               Doc.text("..."),
-              print_expression(~original_source, ~comments, e),
+              print_expression(
+                ~original_source,
+                ~comments=
+                  Comment_utils.get_comments_inside_location(
+                    ~location=e.pexp_loc,
+                    comments,
+                  ),
+                e,
+              ),
             ]),
+            [],
           );
         },
       processed_list,
+    );
+
+  // We have to compose this list by hand because of the complexity of if a list item
+  // is followed by a comment, the comma must come before the comment.
+  // It also impacts how we force a new line for a line ending comment at the end of a list
+  // without introducing an extra blank line when bringing the indentation back in again
+
+  let last_line_breaks_for_comments = ref(false);
+  let items_length = List.length(items);
+  let list_items =
+    List.mapi(
+      (i, (item, item_comments)) => {
+        let final_item = items_length - 1 == i;
+
+        let comment_doc =
+          switch (item_comments) {
+          | [] =>
+            last_line_breaks_for_comments := false;
+            if (final_item) {
+              Doc.nil;
+            } else {
+              Doc.concat([Doc.comma, Doc.line]);
+            };
+          | _ =>
+            let trailing_comments =
+              List.map(
+                (cmt: Parsetree.comment) =>
+                  Doc.concat([
+                    Doc.space,
+                    Comment_utils.nobreak_comment_to_doc(cmt),
+                  ]),
+                item_comments,
+              );
+
+            last_line_breaks_for_comments := true;
+            Doc.concat([
+              Doc.comma,
+              Doc.concat(trailing_comments),
+              if (final_item) {Doc.nil} else {Doc.hardLine},
+            ]);
+          };
+
+        Doc.concat([Doc.group(item), comment_doc]);
+      },
+      items,
     );
 
   Doc.group(
@@ -1091,15 +1193,19 @@ and resugar_list =
       Doc.indent(
         Doc.concat([
           Doc.softLine,
-          Doc.join(~sep=Doc.concat([Doc.comma, Doc.line]), items),
-          if (last_item_was_spread^) {
+          Doc.concat(list_items),
+          if (last_item_was_spread^ || last_line_breaks_for_comments^) {
             Doc.nil;
           } else {
             Doc.ifBreaks(Doc.comma, Doc.nil);
           },
         ]),
       ),
-      Doc.softLine,
+      if (last_line_breaks_for_comments^) {
+        Doc.hardLine;
+      } else {
+        Doc.softLine;
+      },
       Doc.rbracket,
     ]),
   );
@@ -1452,7 +1558,19 @@ and print_record =
   };
 
   let after_brace_comments =
-    Comment_utils.get_after_brace_comments(~loc=recloc, comments);
+    switch (fields) {
+    | [field, ..._] =>
+      let (ident, expr) = field;
+
+      Comment_utils.get_after_brace_comments(
+        ~loc=recloc,
+        ~first=ident.loc,
+        comments,
+      );
+
+    | _ => Comment_utils.get_after_brace_comments(~loc=recloc, comments) // let s = {}  is not legal syntax, but we can use all the comments
+    };
+
   let cleaned_comments =
     remove_used_comments(~remove_comments=after_brace_comments, comments);
 
@@ -2336,7 +2454,9 @@ and print_expression =
       Doc.concat([
         print_expression(~original_source, ~comments, expression1),
         Doc.lbracket,
-        print_expression(~original_source, ~comments, expression2),
+        Doc.group(
+          print_expression(~original_source, ~comments, expression2),
+        ),
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
@@ -2344,7 +2464,9 @@ and print_expression =
         Doc.concat([
           print_expression(~original_source, ~comments, expression1),
           Doc.lbracket,
-          print_expression(~original_source, ~comments, expression2),
+          Doc.group(
+            print_expression(~original_source, ~comments, expression2),
+          ),
           Doc.rbracket,
           Doc.space,
           Doc.text("="),
@@ -3730,11 +3852,26 @@ let data_print =
       ~comments: list(Parsetree.comment),
       datas: list((Parsetree.export_flag, Parsetree.data_declaration)),
     ) => {
+  let previous_data: ref(option(Parsetree.data_declaration)) = ref(None);
   Doc.join(
     ~sep=Doc.concat([Doc.comma, Doc.hardLine]),
     List.map(
       data => {
         let (expt, decl: Parsetree.data_declaration) = data;
+
+        let leading_comments =
+          switch (previous_data^) {
+          | None => []
+          | Some(prev) =>
+            Comment_utils.get_comments_between_locations(
+              ~loc1=prev.pdata_loc,
+              ~loc2=decl.pdata_loc,
+              comments,
+            )
+          };
+
+        let leading_comment_docs =
+          Comment_utils.new_comments_to_docs(leading_comments);
 
         let data_comments =
           Comment_utils.get_comments_inside_location(
@@ -3742,7 +3879,10 @@ let data_print =
             comments,
           );
 
+        previous_data := Some(decl);
+
         Doc.concat([
+          leading_comment_docs,
           switch ((expt: Asttypes.export_flag)) {
           | Nonexported => Doc.nil
           | Exported => Doc.text("export ")
@@ -4187,14 +4327,6 @@ let format_ast =
     toplevel_print(~original_source, ~comments, stmt);
   };
 
-  let leading_comments = [];
-
-  let cleaned_comments =
-    remove_used_comments(
-      ~remove_comments=leading_comments,
-      parsed_program.comments,
-    );
-
   let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
     let attributes = stmt.ptop_attributes;
     print_attributes(attributes);
@@ -4204,14 +4336,14 @@ let format_ast =
 
   let final_doc =
     switch (parsed_program.statements) {
-    | [] => Comment_utils.new_comments_to_docs(cleaned_comments)
+    | [] => Comment_utils.new_comments_to_docs(parsed_program.comments)
     | _ =>
       let top_level_stmts =
         block_item_iterator(
           ~previous=TopOfFile,
           ~get_loc,
           ~print_item,
-          ~comments=cleaned_comments,
+          ~comments=parsed_program.comments,
           ~print_attribute=get_attributes,
           ~original_source,
           parsed_program.statements,

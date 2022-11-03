@@ -521,7 +521,8 @@ let rec new_comments_inner =
 
       | 1 => [
           switch (prev_cmt) {
-          | Line(_) => Doc.nil
+          | Line(_)
+          | Doc(_) => Doc.nil
           | _ => Doc.hardLine
           },
           comment_to_doc(cmt),

@@ -66,9 +66,10 @@ let decref_closure_ident = Ident.create_persistent("GRAIN$EXPORT$decRef");
 
 /* Exceptions */
 let exception_mod = "GRAIN$MODULE$runtime/exception";
-let print_exception_ident = Ident.create_persistent("printException");
-let print_exception_closure_ident =
-  Ident.create_persistent("GRAIN$EXPORT$printException");
+let panic_with_exception_ident =
+  Ident.create_persistent("panicWithException");
+let panic_with_exception_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$panicWithException");
 let assertion_error_ident = Ident.create_persistent("AssertionError");
 let assertion_error_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$AssertionError");
@@ -109,9 +110,9 @@ let required_global_imports = [
     mimp_used: false,
   },
   {
-    mimp_id: print_exception_closure_ident,
+    mimp_id: panic_with_exception_closure_ident,
     mimp_mod: exception_mod,
-    mimp_name: Ident.name(print_exception_closure_ident),
+    mimp_name: Ident.name(panic_with_exception_closure_ident),
     mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -190,9 +191,9 @@ let runtime_global_imports =
 
 let required_function_imports = [
   {
-    mimp_id: print_exception_ident,
+    mimp_id: panic_with_exception_ident,
     mimp_mod: exception_mod,
-    mimp_name: Ident.name(print_exception_ident),
+    mimp_name: Ident.name(panic_with_exception_ident),
     mimp_type:
       MFuncImport(
         [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
@@ -346,18 +347,21 @@ let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
 
 let get_grain_imported_name = (mod_, name) => Ident.unique_name(name);
 
-let call_exception_printer = (wasm_mod, env, args) => {
+let call_panic_handler = (wasm_mod, env, args) => {
   let args = [
     Expression.Global_get.make(
       wasm_mod,
-      get_wasm_imported_name(exception_mod, print_exception_closure_ident),
+      get_wasm_imported_name(
+        exception_mod,
+        panic_with_exception_closure_ident,
+      ),
       Type.int32,
     ),
     ...args,
   ];
   Expression.Call.make(
     wasm_mod,
-    get_wasm_imported_name(exception_mod, print_exception_ident),
+    get_wasm_imported_name(exception_mod, panic_with_exception_ident),
     args,
     Type.int32,
   );
@@ -1028,17 +1032,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
         Type.int32,
       );
     };
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("call_error_handler"),
-    [
-      Expression.Drop.make(
-        wasm_mod,
-        call_exception_printer(wasm_mod, env, [err]),
-      ),
-      Expression.Unreachable.make(wasm_mod),
-    ],
-  );
+  call_panic_handler(wasm_mod, env, [err]);
 };
 
 let error_if_true = (wasm_mod, env, cond, err, args) =>
@@ -2367,6 +2361,7 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
     allocate_number_uninitialized(wasm_mod, env, BoxedFloat64)
   | AllocateRational =>
     allocate_number_uninitialized(wasm_mod, env, BoxedRational)
+  | Unreachable => Expression.Unreachable.make(wasm_mod)
   };
 };
 
@@ -2486,7 +2481,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       [
         Expression.Drop.make(
           wasm_mod,
-          call_exception_printer(wasm_mod, env, [compiled_arg]),
+          call_panic_handler(wasm_mod, env, [compiled_arg]),
         ),
         Expression.Unreachable.make(wasm_mod),
       ],

@@ -29,6 +29,7 @@
     "parser:interpret": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret",
     "parser:interpret-error": "esy b menhir src/parsing/parser.mly --unused-tokens --interpret-error",
     "parser:list-errors": "esy b menhir src/parsing/parser.mly --unused-tokens --list-errors > src/parsing/parser.messages.generated",
+    "parser:update-errors": "esy b menhir src/parsing/parser.mly --unused-tokens --update-errors src/parsing/parser.messages > src/parsing/parser.messages.generated && cp src/parsing/parser.messages.generated src/parsing/parser.messages",
     "parser:check-errors": "npm run parser:list-errors && esy b menhir src/parsing/parser.mly --unused-tokens --compare-errors src/parsing/parser.messages.generated --compare-errors src/parsing/parser.messages",
     "import-dependencies": "esy import-dependencies _export",
     "export-dependencies": "esy export-dependencies",

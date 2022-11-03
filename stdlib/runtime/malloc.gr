@@ -28,8 +28,6 @@ primitive (!): Bool -> Bool = "@not"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 
-primitive throw: Exception -> a = "@throw"
-
 primitive heapBase: WasmI32 = "@heap.base"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
@@ -221,7 +219,7 @@ let morecore = (nbytes: WasmI32) => {
 
   // If there was an error, fail
   if (cp == -1n) {
-    throw Exception.OutOfMemory
+    Exception.panic("OutOfMemory: Maximum memory size exceeded")
   } else {
     // Set the size of the new block to the amount the
     // heap was grown.

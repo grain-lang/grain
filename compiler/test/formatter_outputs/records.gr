@@ -85,3 +85,28 @@ let { // a comment 2
   longlonglongnamenamename2,
   longlonglongnamenamename3,
 } = x
+
+let { // a comment 3
+  l1,
+  l2,
+  l3,
+} = x
+
+let s = {
+  num: 1,
+  var: A, // end line comment
+  str: "",
+}
+
+let s = {
+  num: 1,
+  var: A, // end line comment
+  str: "",
+}
+
+let s = { // comment 1
+  // comment 2
+  num: 1,
+  var: A, // end line comment
+  str: "",
+}

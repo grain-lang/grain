@@ -48,6 +48,7 @@ let initLength = length => {
  * @param array: The array to inspect
  * @returns The number of elements in the array
  *
+ * @example Array.length([> 1, 2, 3, 4, 5]) == 5
  * @since v0.1.0
  */
 @disableGC
@@ -145,6 +146,7 @@ export let rec init /*: (Number, Number -> a) -> Array<a>*/ =
  * @param index: The index to access
  * @param array: The array to access
  * @returns The element from the array
+ * @example Array.get(1,[> 1, 2, 3, 4, 5]) == 2
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
@@ -162,6 +164,7 @@ export let get = (index, array) => {
  * @param index: The index to update
  * @param value: The value to store
  * @param array: The array to update
+ * @example Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
@@ -177,6 +180,7 @@ export let set = (index, value, array) => {
  * @param array1: The array containing elements to appear first
  * @param array2: The array containing elements to appear second
  * @returns The new array containing elements from `array1` followed by elements from `array2`
+ * @example Array.append([> 1, 2], [> 3, 4, 5]) == [> 1, 2, 3, 4, 5]
  *
  * @since v0.1.0
  */
@@ -199,6 +203,7 @@ export let append = (array1, array2) => {
  *
  * @param arrays: A list containing all arrays to combine
  * @returns The new array
+ * @example Array.concat([[> 1, 2], [> 3, 4], [> 5, 6]]) == [> 1, 2, 3, 4, 5, 6]
  *
  * @since v0.1.0
  */
