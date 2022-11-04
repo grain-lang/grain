@@ -81,11 +81,9 @@ assert ImmutableSet.isEmpty(r)
 
 let makeTestSet = () => ImmutableSet.fromList([Grain, Sheep, Brick])
 
-let emptySet = ImmutableSet.empty
-
 let mut filterTestSet = makeTestSet()
 
-ImmutableSet.filter(key => fail "Shouldn't be called", emptySet)
+ImmutableSet.filter(key => fail "Shouldn't be called", ImmutableSet.empty)
 filterTestSet = ImmutableSet.filter(key => key == Sheep, filterTestSet)
 
 assert !ImmutableSet.contains(Grain, filterTestSet)
@@ -96,7 +94,7 @@ assert !ImmutableSet.contains(Brick, filterTestSet)
 
 let mut rejectTestSet = makeTestSet()
 
-ImmutableSet.reject(key => fail "Shouldn't be called", emptySet)
+ImmutableSet.reject(key => fail "Shouldn't be called", ImmutableSet.empty)
 rejectTestSet = ImmutableSet.reject(key => key == Sheep, rejectTestSet)
 
 assert ImmutableSet.contains(Grain, rejectTestSet)
@@ -109,7 +107,7 @@ let reduceTestSet = ImmutableSet.fromList([1, 3, 2, 5, 4])
 
 let result = ImmutableSet.reduce((acc, key) => fail "Shouldn't be called",
 0,
-emptySet
+ImmutableSet.empty
 )
 
 assert result == 0
@@ -128,7 +126,7 @@ assert result == [5, 4, 3, 2, 1]
 
 let forEachTestSet = makeTestSet()
 
-ImmutableSet.forEach(key => fail "Shouldn't be called", emptySet)
+ImmutableSet.forEach(key => fail "Shouldn't be called", ImmutableSet.empty)
 
 let mut called = 0
 
