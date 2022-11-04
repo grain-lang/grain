@@ -3358,9 +3358,9 @@ and print_value_bind =
     | Mutable => Doc.text("mut ")
     };
 
-  let value_bindings =
+  let formatted_items =
     switch (vbs) {
-    | [] => Doc.nil
+    | [] => []
     | [first, ...rem] =>
       let get_loc = (vb: Parsetree.value_binding) => vb.pvb_loc;
       let print_item = (~comments, vb: Parsetree.value_binding) => {
@@ -3443,16 +3443,16 @@ and print_value_bind =
         ]);
       };
 
-      let items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments,
-          ~separator=Doc.comma,
-          vbs,
-        );
-      Doc.join(~sep=Doc.space, items);
+      item_iterator(
+        ~get_loc,
+        ~print_item,
+        ~comments,
+        ~separator=Doc.comma,
+        vbs,
+      );
     };
+
+  let value_bindings = Doc.join(~sep=Doc.line, formatted_items);
 
   Doc.group(
     Doc.concat([
