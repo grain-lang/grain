@@ -6,10 +6,11 @@ import Float32 from "float32"
 import Float64 from "float64"
 import BI from "bigint"
 
-// Constants
-let infinity = 1.0 / 0.0
-let nan = 0.0 / 0.0
 // Constants Test
+assert Number.nan != Number.nan
+
+assert Number.infinity == 1.0 / 0.0
+
 assert Number.pi == 3.141592653589793
 
 assert Number.tau == 6.283185307179586
@@ -18,10 +19,10 @@ assert Number.e == 2.718281828459045
 // Operations Tests
 // add
 assert Number.add(25, 5) == 30
-assert Number.add(infinity, 10) == infinity
-assert Number.add(infinity, infinity) == infinity
-assert Number.isNaN(Number.add(infinity, nan))
-assert Number.isNaN(Number.add(nan, nan))
+assert Number.add(Number.infinity, 10) == Number.infinity
+assert Number.add(Number.infinity, Number.infinity) == Number.infinity
+assert Number.isNaN(Number.add(Number.infinity, Number.nan))
+assert Number.isNaN(Number.add(Number.nan, Number.nan))
 // Rational addition tests
 {
   let (+) = Number.add
@@ -35,10 +36,10 @@ assert Number.isNaN(Number.add(nan, nan))
 }
 // sub
 assert Number.sub(25, 5) == 20
-assert Number.sub(infinity, 10) == infinity
-assert Number.isNaN(Number.sub(infinity, infinity))
-assert Number.isNaN(Number.sub(infinity, nan))
-assert Number.isNaN(Number.sub(nan, nan))
+assert Number.sub(Number.infinity, 10) == Number.infinity
+assert Number.isNaN(Number.sub(Number.infinity, Number.infinity))
+assert Number.isNaN(Number.sub(Number.infinity, Number.nan))
+assert Number.isNaN(Number.sub(Number.nan, Number.nan))
 // Rational subtraction tests
 {
   let (-) = Number.sub
@@ -53,10 +54,10 @@ assert Number.isNaN(Number.sub(nan, nan))
 }
 // mul
 assert Number.mul(5, 5) == 25
-assert Number.mul(infinity, 10) == infinity
-assert Number.mul(infinity, infinity) == infinity
-assert Number.isNaN(Number.mul(infinity, nan))
-assert Number.isNaN(Number.mul(nan, nan))
+assert Number.mul(Number.infinity, 10) == Number.infinity
+assert Number.mul(Number.infinity, Number.infinity) == Number.infinity
+assert Number.isNaN(Number.mul(Number.infinity, Number.nan))
+assert Number.isNaN(Number.mul(Number.nan, Number.nan))
 // Rational mul tests
 {
   let (*) = Number.mul
@@ -71,10 +72,10 @@ assert Number.isNaN(Number.mul(nan, nan))
 }
 // div
 assert Number.div(25, 5) == 5
-assert Number.div(infinity, 10) == infinity
-assert Number.isNaN(Number.div(infinity, infinity))
-assert Number.isNaN(Number.div(infinity, nan))
-assert Number.isNaN(Number.div(nan, nan))
+assert Number.div(Number.infinity, 10) == Number.infinity
+assert Number.isNaN(Number.div(Number.infinity, Number.infinity))
+assert Number.isNaN(Number.div(Number.infinity, Number.nan))
+assert Number.isNaN(Number.div(Number.nan, Number.nan))
 // Rational div tests
 {
   let (/) = Number.div
@@ -93,8 +94,8 @@ assert Number.sqrt(25.0) == 5.0
 assert Number.sqrt(35) == 5.916079783099616
 assert Number.sqrt(2/4) == 0.7071067811865476
 assert Number.sqrt(9266609011276477657) == 3044110545.180066
-assert Number.sqrt(infinity) == infinity
-assert Number.isNaN(Number.sqrt(nan))
+assert Number.sqrt(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.sqrt(Number.nan))
 // min
 assert Number.min(5, 5) == 5
 assert Number.min(5, 6) == 5
@@ -102,9 +103,9 @@ assert Number.min(6, 5) == 5
 assert Number.min(1/2, 1/4) == 1/4
 assert Number.min(0.5, 0.25) == 0.25
 assert Number.min(355894508425808343204914141312, 6) == 6
-assert Number.min(infinity, 10) == 10
-assert Number.isNaN(Number.min(nan, 10))
-assert Number.isNaN(Number.min(nan, infinity))
+assert Number.min(Number.infinity, 10) == 10
+assert Number.isNaN(Number.min(Number.nan, 10))
+assert Number.isNaN(Number.min(Number.nan, Number.infinity))
 
 // max
 assert Number.max(5, 5) == 5
@@ -115,9 +116,9 @@ assert Number.max(0.5, 0.25) == 0.5
 assert Number.max(BI.toNumber(1234t), BI.toNumber(12t)) == BI.toNumber(1234t)
 assert Number.max(355894508425808343204914141312, 6) ==
 355894508425808343204914141312
-assert Number.max(infinity, 10) == infinity
-assert Number.max(nan, 10) == 10
-assert Number.max(nan, infinity) == infinity
+assert Number.max(Number.infinity, 10) == Number.infinity
+assert Number.max(Number.nan, 10) == 10
+assert Number.max(Number.nan, Number.infinity) == Number.infinity
 
 // ceil
 assert Number.ceil(-25.5) == -25
@@ -125,24 +126,24 @@ assert Number.ceil(25.5) == 26
 assert Number.ceil(25) == 25
 assert Number.ceil(22/7) == 4
 assert Number.ceil(BI.toNumber(1234t)) == BI.toNumber(1234t)
-assert Number.isNaN(Number.ceil(nan))
-assert Number.ceil(infinity) == infinity
+assert Number.isNaN(Number.ceil(Number.nan))
+assert Number.ceil(Number.infinity) == Number.infinity
 // floor
 assert Number.floor(-25.5) == -26
 assert Number.floor(25.5) == 25
 assert Number.floor(25) == 25
 assert Number.floor(22/7) == 3
 assert Number.floor(BI.toNumber(1234t)) == BI.toNumber(1234t)
-assert Number.isNaN(Number.floor(nan))
-assert Number.floor(infinity) == infinity
+assert Number.isNaN(Number.floor(Number.nan))
+assert Number.floor(Number.infinity) == Number.infinity
 // trunc
 assert Number.trunc(-25.5) == -25
 assert Number.trunc(25.5) == 25
 assert Number.trunc(25) == 25
 assert Number.trunc(22/7) == 3
 assert Number.trunc(BI.toNumber(1234t)) == BI.toNumber(1234t)
-assert Number.isNaN(Number.trunc(nan))
-assert Number.trunc(infinity) == infinity
+assert Number.isNaN(Number.trunc(Number.nan))
+assert Number.trunc(Number.infinity) == Number.infinity
 // round
 assert Number.round(-25.5) == -26
 assert Number.round(-25.25) == -25
@@ -150,22 +151,22 @@ assert Number.round(25.25) == 25
 assert Number.round(25.5) == 26
 assert Number.round(22/7) == 3
 assert Number.round(BI.toNumber(1234t)) == BI.toNumber(1234t)
-assert Number.isNaN(Number.round(nan))
-assert Number.round(infinity) == infinity
+assert Number.isNaN(Number.round(Number.nan))
+assert Number.round(Number.infinity) == Number.infinity
 // abs
 assert Number.abs(-25.5) == 25.5
 assert Number.abs(25.5) == 25.5
 assert Number.abs(-1/2) == 1/2
-assert Number.isNaN(Number.abs(nan))
-assert Number.abs(infinity) == infinity
+assert Number.isNaN(Number.abs(Number.nan))
+assert Number.abs(Number.infinity) == Number.infinity
 // neg
 assert Number.neg(-25.5) == 25.5
 assert Number.neg(25.5) == -25.5
 assert Number.neg(1/2) == -1/2
 assert Number.neg(BI.toNumber(1234t)) == BI.toNumber(-1234t)
 assert Number.neg(BI.toNumber(-1234t)) == BI.toNumber(1234t)
-assert Number.isNaN(Number.neg(nan))
-assert Number.neg(infinity) == infinity * -1
+assert Number.isNaN(Number.neg(Number.nan))
+assert Number.neg(Number.infinity) == Number.infinity * -1
 
 // isFloat
 assert Number.isFloat(0.0)
@@ -175,8 +176,8 @@ assert Number.isFloat(9e6)
 assert Number.isFloat(0) == false
 assert Number.isFloat(10) == false
 assert Number.isFloat(2/3) == false
-assert Number.isFloat(infinity) == true
-assert Number.isFloat(nan) == true
+assert Number.isFloat(Number.infinity) == true
+assert Number.isFloat(Number.nan) == true
 // isInteger
 assert Number.isInteger(0)
 assert Number.isInteger(9)
@@ -185,20 +186,20 @@ assert Number.isInteger(9_223_372_036_854_775_808)
 assert Number.isInteger(0.0) == false
 assert Number.isInteger(9e6) == false
 assert Number.isInteger(2/3) == false
-assert Number.isInteger(infinity) == false
-assert Number.isInteger(nan) == false
+assert Number.isInteger(Number.infinity) == false
+assert Number.isInteger(Number.nan) == false
 
 // isRational
 assert Number.isRational(1/2)
 assert Number.isRational(6/5)
 assert Number.isRational(1) == false
 assert Number.isRational(1.5) == false
-assert Number.isRational(infinity) == false
-assert Number.isRational(nan) == false
+assert Number.isRational(Number.infinity) == false
+assert Number.isRational(Number.nan) == false
 
 // isFinite
-assert Number.isFinite(nan) == false // NaN
-assert Number.isFinite(infinity) == false // infinity
+assert Number.isFinite(Number.nan) == false // NaN
+assert Number.isFinite(Number.infinity) == false // infinity
 assert Number.isFinite(-1.0 / 0.0) == false // -infinity
 assert Number.isFinite(1)
 assert Number.isFinite(1.0)
@@ -213,7 +214,7 @@ assert Number.isFinite(-1/2)
 assert Number.isFinite(BI.toNumber(-141435902485091384901384t))
 
 // isNaN
-assert Number.isNaN(nan)
+assert Number.isNaN(Number.nan)
 assert Number.isNaN(1) == false
 assert Number.isNaN(1.0) == false
 assert Number.isNaN(0) == false
@@ -224,14 +225,14 @@ assert Number.isNaN(25.76) == false
 assert Number.isNaN(-25.00) == false
 assert Number.isNaN(1/2) == false
 assert Number.isNaN(-1/2) == false
-assert Number.isNaN(infinity) == false // infinity
+assert Number.isNaN(Number.infinity) == false // infinity
 assert Number.isNaN(-1.0 / 0.0) == false // -infinity
 assert Number.isNaN(BI.toNumber(1t)) == false
 
 // isInfinite
-assert Number.isInfinite(infinity) // infinity
+assert Number.isInfinite(Number.infinity) // infinity
 assert Number.isInfinite(-1.0 / 0.0) // -infinity
-assert Number.isInfinite(nan) == false // NaN
+assert Number.isInfinite(Number.nan) == false // NaN
 assert Number.isInfinite(1) == false
 assert Number.isInfinite(1.0) == false
 assert Number.isInfinite(0) == false
@@ -299,12 +300,12 @@ assert Number.sin(0.0) == 0
 assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
 assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
 assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
-assert Number.isNaN(Number.sin(infinity))
-assert Number.isNaN(Number.sin(nan))
+assert Number.isNaN(Number.sin(Number.infinity))
+assert Number.isNaN(Number.sin(Number.nan))
 
 // Number.cos
 assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
-assert Number.isNaN(Number.cos(infinity))
-assert Number.isNaN(Number.cos(nan))
+assert Number.isNaN(Number.cos(Number.infinity))
+assert Number.isNaN(Number.cos(Number.nan))

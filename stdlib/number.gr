@@ -21,13 +21,23 @@ import { parseInt } from "runtime/stringUtils"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
 
-// Constants
-let infinity = 1.0 / 0.0
-let nan = 0.0 / 0.0
-
 /**
  * @section Constants: Number constant values.
  */
+
+/**
+ * NaN represented as a Number value.
+ *
+ * @since v0.5.4
+ */
+export let nan = 0.0 / 0.0
+
+/**
+ * Infinity represented as a Number value.
+ *
+ * @since v0.5.4
+ */
+export let infinity = 1.0 / 0.0
 
 /**
  * Pi represented as a Number value.
