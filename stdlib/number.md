@@ -232,7 +232,7 @@ Number.sign(0) == 0
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN properly</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -265,7 +265,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN properly</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -298,7 +298,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -330,7 +330,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -362,7 +362,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -394,7 +394,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -661,7 +661,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN and Infinity</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity</td></tr>
 </tbody>
 </table>
 </details>
@@ -693,7 +693,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.3</code></td><td>Handle NaN and Infinity</td></tr>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity</td></tr>
 </tbody>
 </table>
 </details>
