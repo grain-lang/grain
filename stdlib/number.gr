@@ -144,7 +144,7 @@ export let sign = x => {
  * @returns The smaller of the two operands
  *
  * @since v0.4.0
- * @history v0.5.3: Handle NaN properly
+ * @history v0.5.4: Handle NaN properly
  */
 export let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
 
@@ -156,7 +156,7 @@ export let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
  * @returns The larger of the two operands
  *
  * @since v0.4.0
- * @history v0.5.3: Handle NaN properly
+ * @history v0.5.4: Handle NaN properly
  */
 export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
 
@@ -167,11 +167,13 @@ export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
  * @returns The next largest integer of the operand
  *
  * @since v0.4.0
- * @history v0.5.3: Handle NaN and Infinity properly
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let ceil = (x: Number) => {
-  if (x != x) nan else if (x == infinity) {
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
     infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
@@ -187,11 +189,13 @@ export let ceil = (x: Number) => {
  * @returns The previous integer of the operand
  *
  * @since v0.4.0
- * @history v0.5.3: Handle NaN and Infinity properly
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let floor = (x: Number) => {
-  if (x != x) nan else if (x == infinity) {
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
     infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
@@ -207,11 +211,13 @@ export let floor = (x: Number) => {
  * @returns The integer part of the operand
  *
  * @since v0.4.0
- * @history v0.5.3: Handle NaN and Infinity properly
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let trunc = (x: Number) => {
-  if (x != x) nan else if (x == infinity) {
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
     infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
@@ -227,11 +233,13 @@ export let trunc = (x: Number) => {
  * @returns The nearest integer to the operand
  *
  * @since v0.4.0
- * @history v0.5.3: Handle NaN and Infinity properly
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let round = (x: Number) => {
-  if (x != x) nan else if (x == infinity) {
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
     infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
@@ -443,7 +451,7 @@ let chebyshevSine = (radians: Number) => {
  * @returns The computed sine
  *
  * @since v0.5.2
- * @history v0.5.3: Handle NaN and Infinity
+ * @history v0.5.4: Handle NaN and Infinity
  */
 export let sin = (radians: Number) => {
   if (isNaN(radians) || isInfinite(radians)) {
@@ -466,7 +474,7 @@ export let sin = (radians: Number) => {
  * @returns The computed cosine
  *
  * @since v0.5.2
- * @history v0.5.3: Handle NaN and Infinity
+ * @history v0.5.4: Handle NaN and Infinity
  */
 export let cos = (radians: Number) => {
   if (isNaN(radians) || isInfinite(radians)) {
