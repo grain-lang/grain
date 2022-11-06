@@ -193,7 +193,7 @@ Returns:
 ### Number.**pow**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -796,7 +796,7 @@ Returns:
 ### Number.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -827,7 +827,7 @@ gamma : Number -> Number
 ### Number.**factorial**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -852,7 +852,7 @@ Returns:
 ### Number.**toRadian**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -877,7 +877,7 @@ Returns:
 ### Number.**toDegree**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
