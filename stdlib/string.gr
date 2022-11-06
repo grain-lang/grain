@@ -882,7 +882,7 @@ export let endsWith = (search: String, string: String) => {
  *
  * @example String.replaceFirst("Hello", "Hi", "Hello World Hello") == "Hi World Hello"
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 @unsafe
 export let replaceFirst =
@@ -953,7 +953,7 @@ export let replaceFirst =
  *
  * @example String.replaceLast("Hello", "Hi", "Hello World Hello") == "Hello World Hi"
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 @unsafe
 export let replaceLast =
@@ -1025,7 +1025,7 @@ export let replaceLast =
  *
  * @example String.replaceAll("Hello", "Hi", "Hello World Hello") == "Hi World Hi"
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 @unsafe
 export let replaceAll =

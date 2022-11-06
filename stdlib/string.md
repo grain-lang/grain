@@ -517,7 +517,7 @@ String.endsWith("world", "Hello world") == true
 ### String.**replaceFirst**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -550,7 +550,7 @@ String.replaceFirst("Hello", "Hi", "Hello World Hello") == "Hi World Hello"
 ### String.**replaceLast**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -583,7 +583,7 @@ String.replaceLast("Hello", "Hi", "Hello World Hello") == "Hello World Hi"
 ### String.**replaceAll**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
