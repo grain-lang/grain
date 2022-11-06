@@ -997,7 +997,7 @@ export let replaceLast =
       }
     }
     if (found) {
-      // Allocate The String
+      // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
       let strPtr = str + 8n
       Memory.copy(strPtr, stringPtr, foundIndex)
@@ -1079,19 +1079,16 @@ export let replaceAll =
         stringLen - (patternLen - replacementLen) * foundCount
       )
       let mut strPtr = str + 8n
-      // Loop Through The list
       let mut lastIndex = 0n
       while (true) {
         match (foundIndexes) {
           [idx, ...rest] => {
             let index = untagSimpleNumber(idx)
-            // Copy The Stuff Before
+            // Copy the part before
             Memory.copy(strPtr, stringPtr + lastIndex, index - lastIndex)
-            // Increment Pointers
             strPtr += index - lastIndex
-            // Copy the stuff after
+            // Copy the part after
             Memory.copy(strPtr, replacementPtr, replacementLen)
-            // Increment Pointers
             strPtr += replacementLen
             lastIndex = index + patternLen
             foundIndexes = rest
@@ -1099,9 +1096,8 @@ export let replaceAll =
           [] => break,
         }
       }
-      // Copy Remaining String
+      // Copy remaining string
       Memory.copy(strPtr, stringPtr + lastIndex, stringLen - lastIndex)
-      // Return String
       WasmI32.toGrain(str): String
     } else {
       string
