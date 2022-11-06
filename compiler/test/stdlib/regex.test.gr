@@ -10,6 +10,8 @@ import {
   findAllRange,
   replace,
   replaceAll,
+  split,
+  splitAll,
   MatchResult,
 } from "regex"
 
@@ -765,3 +767,19 @@ assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$`") == "bazbazfoo"
 assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$'") == "bazfoofoo"
 // https://github.com/grain-lang/grain/issues/1431
 assert replaceAll(unwrapResult(make("^.")), "asdf", "-") == "-sdf"
+
+// Regex.split
+assert split(unwrapResult(make(",")), "a,b,c,d") == ["a", "b,c,d"]
+assert split(unwrapResult(make("\n|\r")), "a\nb\nc\rd\n\re") ==
+["a", "b\nc\rd\n\re"]
+assert split(unwrapResult(make(".")), "abcd") == ["", "bcd"]
+assert split(unwrapResult(make("d$")), "abcd") == ["abc", ""]
+assert split(unwrapResult(make("b(ar)")), "foo bar") == ["foo ", ""]
+
+// Regex.splitAll
+assert splitAll(unwrapResult(make(",")), "a,b,c,d") == ["a", "b", "c", "d"]
+assert splitAll(unwrapResult(make("\n|\r")), "a\nb\nc\rd\n\re") ==
+["a", "b", "c", "d", "", "e"]
+assert splitAll(unwrapResult(make(".")), "abcd") == ["", "", "", "", ""]
+assert splitAll(unwrapResult(make("d$")), "abcd") == ["abc", ""]
+assert splitAll(unwrapResult(make("b(ar)")), "foo bar") == ["foo ", ""]
