@@ -454,7 +454,7 @@ let chebyshevSine = (radians: Number) => {
  * @history v0.5.4: Handle NaN and Infinity
  */
 export let sin = (radians: Number) => {
-  if (isNaN(radians) || isInfinite(radians)) {
+  if (radians != radians || radians == infinity) {
     nan
   } else {
     let quot = reduceToPiBound(radians)
@@ -477,7 +477,7 @@ export let sin = (radians: Number) => {
  * @history v0.5.4: Handle NaN and Infinity
  */
 export let cos = (radians: Number) => {
-  if (isNaN(radians) || isInfinite(radians)) {
+  if (radians != radians || radians == infinity) {
     nan
   } else {
     sin(pi / 2 + radians)
