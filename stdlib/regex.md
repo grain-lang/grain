@@ -447,3 +447,67 @@ Examples:
 assert Regex.replaceAll(Result.unwrap(Regex.make("o")), "skoot", "r") == "skrrt"
 ```
 
+### Regex.**split**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+split : (RegularExpression, String) -> List<String>
+```
+
+Splits the given string at the first match for the given regular expression.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`rx`|`RegularExpression`|The regular expression to search for|
+|`str`|`String`|The string to search|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<String>`|A List of the split segments|
+
+Examples:
+
+```grain
+assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
+```
+
+### Regex.**splitAll**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+splitAll : (RegularExpression, String) -> List<String>
+```
+
+Splits the given string at every match for the given regular expression.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`rx`|`RegularExpression`|The regular expression to search for|
+|`str`|`String`|The string to split|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<String>`|A List of the split segments|
+
+Examples:
+
+```grain
+assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b", "c" ]
+```
+
