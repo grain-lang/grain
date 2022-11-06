@@ -29,14 +29,14 @@ import Tags from "runtime/unsafe/tags"
 /**
  * NaN represented as a Number value.
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let nan = 0.0 / 0.0
 
 /**
  * Infinity represented as a Number value.
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let infinity = 1.0 / 0.0
 
@@ -125,7 +125,7 @@ export let div = (/)
  * @param power: The power to raise the base to
  * @returns The base raised to the given power
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 @unsafe
 export let pow = (base, power) => {
@@ -918,7 +918,7 @@ export let cos = (radians: Number) => {
  * @param radians: The input in radians
  * @returns The computed tangent
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let tan = (radians: Number) => {
   if (isNaN(radians) || isInfinite(radians)) {
@@ -934,7 +934,7 @@ export let tan = (radians: Number) => {
  * @param n: The value to compute the gamma of
  * @returns The gamma of the given value
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 // Math.gamma implemented using the stirling's approximation
 // https://en.wikipedia.org/wiki/Lanczos_approximation
@@ -982,7 +982,7 @@ export let rec gamma = z => {
  * @param n: The value to compute the factorial of
  * @returns The factorial of the given value
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let rec factorial = n => {
   if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
@@ -997,7 +997,7 @@ export let rec factorial = n => {
  * @param degrees: Converts the given Degrees value to radians
  * @returns The degree equivalent
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let toRadian = degrees => degrees * (pi / 180)
 
@@ -1007,6 +1007,6 @@ export let toRadian = degrees => degrees * (pi / 180)
  * @param radians: Converts the given radian value to degrees
  * @returns The radian equivalent
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let toDegree = radians => radians * (180 / pi)
