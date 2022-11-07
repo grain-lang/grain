@@ -252,8 +252,6 @@ let rec token = lexbuf => {
   | "try" => positioned(TRY)
   | "throw" => positioned(THROW)
   | "catch" => positioned(CATCH)
-  | "async" => positioned(ASYNC)
-  | "await" => positioned(AWAIT)
   | "module" => positioned(MODULE)
   | "macro" => positioned(MACRO)
   | "yield" => positioned(YIELD)
