@@ -199,7 +199,7 @@ assert String.replaceFirst("Hello", "Hi", "World") == "World"
 assert String.replaceFirst("Hello", "Hi", "Hel") == "Hel"
 assert String.replaceFirst("🌾", "Grain", "Hello") == "Hello"
 assert String.replaceFirst("🌾", "Hello", "Hello Grain") == "Hello Grain"
-assert String.replaceFirst("Hello", "🌾", "Hello Grain") == "🌾 Grain"
+assert String.replaceFirst("Grain", "🌾", "Hello Grain") == "Hello 🌾"
 // Replace Last
 assert String.replaceLast("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
 assert String.replaceLast("Hello", "Hi", "Hello World") == "Hi World"
