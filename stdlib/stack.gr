@@ -35,7 +35,7 @@ export let empty = {
  *
  * @returns An empty stack
  * 
- * @deprecated This will be removed in a future release of Grain.
+ * @deprecated This will be removed in the v0.6.0 release of Grain.
  */
 export let make = () => {
   { data: [], }

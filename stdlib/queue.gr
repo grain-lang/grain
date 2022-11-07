@@ -33,7 +33,7 @@ export let empty = {
  * 
  * @returns An empty queue
  * 
- * @deprecated This will be removed in a future release of Grain.
+ * @deprecated This will be removed in the v0.6.0 release of Grain.
  * 
  * @since v0.2.0
  */
