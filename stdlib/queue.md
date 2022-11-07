@@ -42,7 +42,7 @@ An empty queue.
 
 ### Queue.**make**
 
-> **Deprecated:** This will be removed in a future release of Grain.
+> **Deprecated:** This will be removed in the v0.6.0 release of Grain.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>

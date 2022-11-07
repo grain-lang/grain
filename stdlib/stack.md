@@ -39,7 +39,7 @@ An empty stack.
 
 ### Stack.**make**
 
-> **Deprecated:** This will be removed in a future release of Grain.
+> **Deprecated:** This will be removed in the v0.6.0 release of Grain.
 
 ```grain
 make : () -> Stack<a>
