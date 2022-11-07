@@ -17,6 +17,32 @@ import Number from "number"
 
 Number constant values.
 
+### Number.**nan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+nan : Number
+```
+
+NaN represented as a Number value.
+
+### Number.**infinity**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+infinity : Number
+```
+
+Infinity represented as a Number value.
+
 ### Number.**pi**
 
 <details disabled>
@@ -225,9 +251,16 @@ Number.sign(0) == 0
 
 ### Number.**min**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN properly</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -251,9 +284,16 @@ Returns:
 
 ### Number.**max**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN properly</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -277,9 +317,16 @@ Returns:
 
 ### Number.**ceil**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -302,9 +349,16 @@ Returns:
 
 ### Number.**floor**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -327,9 +381,16 @@ Returns:
 
 ### Number.**trunc**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -352,9 +413,16 @@ Returns:
 
 ### Number.**round**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -612,9 +680,16 @@ Returns:
 
 ### Number.**sin**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -637,9 +712,16 @@ Returns:
 
 ### Number.**cos**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.5.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Handle NaN and Infinity</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
