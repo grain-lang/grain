@@ -544,7 +544,7 @@ Returns:
 Examples:
 
 ```grain
-assert String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
+String.replaceFirst("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
 ```
 
 ### String.**replaceLast**
@@ -577,7 +577,7 @@ Returns:
 Examples:
 
 ```grain
-assert String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
+String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
 ```
 
 ### String.**replaceAll**
@@ -610,7 +610,7 @@ Returns:
 Examples:
 
 ```grain
-assert String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
+String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
 ```
 
 ### String.**encodeAt**

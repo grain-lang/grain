@@ -880,7 +880,7 @@ export let endsWith = (search: String, string: String) => {
  * @param string: The string to change
  * @returns A new string with the first occurrence of the search pattern replaced
  *
- * @example assert String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
+ * @example String.replaceFirst("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
  *
  * @since v0.5.4
  */
@@ -951,7 +951,7 @@ export let replaceFirst =
  * @param string: The string to change
  * @returns A new string with the last occurrence of the search pattern replaced
  *
- * @example assert String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
+ * @example String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
  *
  * @since v0.5.4
  */
@@ -1023,7 +1023,7 @@ export let replaceLast =
  * @param string: The string to change
  * @returns A new string with each occurrence of the search pattern replaced
  *
- * @example assert String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
+ * @example String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
  *
  * @since v0.5.4
  */
