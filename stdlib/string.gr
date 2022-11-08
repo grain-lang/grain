@@ -1868,7 +1868,7 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
 }
 
 @unsafe
-let trimString = (str: String, end: Bool) => {
+let trimString = (str: String, fromEnd: Bool) => {
   let (>>>) = WasmI32.shrU
   let (+) = WasmI32.add
   let (*) = WasmI32.mul
@@ -1881,38 +1881,38 @@ let trimString = (str: String, end: Bool) => {
   let byteLength = WasmI32.load(stringPtr, 4n)
   stringPtr += 8n
   let mut i = 0n, offset = 1n
-  if (end) {
+  if (fromEnd) {
     i = byteLength - 1n
     offset = -1n
   }
   let mut count = 0n
   for (; i < byteLength; i += offset) {
-    // Get The Byte, May not be a full codepoint as grain uses utf-16
+    // Get The Byte, May not be a full codepoint as grain uses utf-8, a codepoint may be 1-4 bytes
     let byte = WasmI32.load8U(stringPtr, i)
-    // TODO: Use unicode whitespace property and unicode line terminator once github issue #661 is completed
-    // Check For The BOM
-    if (offset == 1n) {
-      // We need to check for the start character if we are going backwards
+    // TODO(#661): Use unicode whitespace property and unicode line terminator
+    // Handle The BOM Character which is a full codepoint, The Bytes are 0xEF,0xBB,0xBF
+    if (!fromEnd) {
       if (
-        byte == 0xEFn && WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn
+        byte == 0xEFn && // Check for the BOM identifier at the beginning of the codepoint
+        // Check for the full BOM codepoint, This is revered because wasm is little-endian
+        WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn
       ) {
         // We need to increment i in the direction of the loop
         i += 2n
         // The count is incremented by 3 because that is the length of the BOM
         count += 3n
-        // We want to skip checking the single bytes
         continue
       }
     } else {
-      // We need to check for the end character if we are going backwards
       if (
-        byte == 0xBFn && WasmI32.load(stringPtr, i - 3n) >>> 8n == 0xBFBBEFn
+        byte == 0xBFn && // Check for the BOM identifier at the end of the codepoint
+        // Check for the full BOM codepoint, This is revered because wasm is little-endian
+        WasmI32.load(stringPtr, i - 3n) >>> 8n == 0xBFBBEFn
       ) {
         // We need to decrement i in the direction of the loop
         i -= 2n
         // The count is incremented by 3 because that is the length of the BOM
         count += 3n
-        // We want to skip checking the single bytes
         continue
       }
     }
@@ -1927,7 +1927,6 @@ let trimString = (str: String, end: Bool) => {
     ) {
       break
     }
-    // Add to count
     count += 1n
   }
   let str = allocateString(byteLength - count)
@@ -1937,7 +1936,6 @@ let trimString = (str: String, end: Bool) => {
   } else {
     Memory.copy(str + 8n, stringPtr + count, byteLength - count)
   }
-  // Return string
   WasmI32.toGrain(str): String
 }
 /**
