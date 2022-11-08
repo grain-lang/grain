@@ -1,6 +1,6 @@
 let g = 7, // g represents the precision desired, p is the values of p[i] to plug into Lanczos' formula
-p = 8, // another comment
-q = 32
+  p = 8, // another comment
+  q = 32
 
 let myFunction2 = x => {
   let inter = x + 1

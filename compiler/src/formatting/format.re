@@ -3452,7 +3452,28 @@ and print_value_bind =
       );
     };
 
-  let value_bindings = Doc.join(~sep=Doc.line, formatted_items);
+  let value_bindings =
+    List.mapi(
+      (index, doc) => {
+        let item =
+          if (index > 0) {
+            Doc.concat([Doc.line, doc]);
+          } else {
+            doc;
+          };
+        let vb = List.nth(vbs, index);
+        switch (vb.pvb_expr.pexp_desc) {
+        | PExpLambda(fn, _) => item
+        | _ =>
+          if (index > 0) {
+            Doc.indent(item);
+          } else {
+            item;
+          }
+        };
+      },
+      formatted_items,
+    );
 
   Doc.group(
     Doc.concat([
@@ -3461,7 +3482,7 @@ and print_value_bind =
       Doc.space,
       recursive,
       mutble,
-      value_bindings,
+      Doc.concat(value_bindings),
     ]),
   );
 };
