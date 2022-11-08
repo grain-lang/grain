@@ -532,19 +532,19 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`searchPattern`|`String`|The string to replace|
-|`replacement`|`String`|The string to replace with|
-|`string`|`String`|The string to replace on|
+|`replacement`|`String`|The replacement|
+|`string`|`String`|The string to change|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|A new string with the search pattern replaced|
+|`String`|A new string with the first occurrence of the search pattern replaced|
 
 Examples:
 
 ```grain
-String.replaceFirst("Hello", "Hi", "Hello World Hello") == "Hi World Hello"
+assert String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
 ```
 
 ### String.**replaceLast**
@@ -565,19 +565,19 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`searchPattern`|`String`|The string to replace|
-|`replacement`|`String`|The string to replace with|
-|`string`|`String`|The string to replace on|
+|`replacement`|`String`|The replacement|
+|`string`|`String`|The string to change|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|A new string with the search pattern replaced|
+|`String`|A new string with the last occurrence of the search pattern replaced|
 
 Examples:
 
 ```grain
-String.replaceLast("Hello", "Hi", "Hello World Hello") == "Hello World Hi"
+assert String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
 ```
 
 ### String.**replaceAll**
@@ -598,19 +598,19 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`searchPattern`|`String`|The string to replace|
-|`replacement`|`String`|The string to replace with|
-|`string`|`String`|The string to replace on|
+|`replacement`|`String`|The replacement|
+|`string`|`String`|The string to change|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`String`|A new string with the search pattern replaced|
+|`String`|A new string with each occurrence of the search pattern replaced|
 
 Examples:
 
 ```grain
-String.replaceAll("Hello", "Hi", "Hello World Hello") == "Hi World Hi"
+assert String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
 ```
 
 ### String.**encodeAt**
