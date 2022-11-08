@@ -2454,7 +2454,9 @@ and print_expression =
       Doc.concat([
         print_expression(~original_source, ~comments, expression1),
         Doc.lbracket,
-        print_expression(~original_source, ~comments, expression2),
+        Doc.group(
+          print_expression(~original_source, ~comments, expression2),
+        ),
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
@@ -2462,7 +2464,9 @@ and print_expression =
         Doc.concat([
           print_expression(~original_source, ~comments, expression1),
           Doc.lbracket,
-          print_expression(~original_source, ~comments, expression2),
+          Doc.group(
+            print_expression(~original_source, ~comments, expression2),
+          ),
           Doc.rbracket,
           Doc.space,
           Doc.text("="),

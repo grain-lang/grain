@@ -7,6 +7,7 @@
  */
 
 import List from "list"
+import Array from "array"
 
 // implementation based on immutable skew binomial queue with global root optimization
 // as described in the paper "Optimal Purely Functional Priority Queues" by Chris Okasaki.
@@ -329,4 +330,21 @@ export let drain = pq => {
  */
 export let fromList = (list, comp) => {
   List.reduce((pq, val) => push(val, pq), make(comp), list)
+}
+
+/**
+ * Constructs a new priority queue initialized with the elements in the array
+ * using a custom comparator function, which is used to determine priority of
+ * elements. The comparator function takes two elements and must return 0 if
+ * both share priority, a positive number if the first has greater priority,
+ * and a negative number if the first has less priority.
+ * 
+ * @param array: An array of values used to initialize the priority queue
+ * @param comp: A comparator function used to assign priority to elements
+ * @returns A priority queue containing the elements from the array
+ *
+ * @since v0.5.4
+ */
+export let fromArray = (array, comp) => {
+  Array.reduce((pq, val) => push(val, pq), make(comp), array)
 }

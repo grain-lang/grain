@@ -763,3 +763,5 @@ assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "&$1\\$&$99=") ==
 assert replaceAll(unwrapResult(make("p")), "apple", "$0$.0") == "ap0p0le"
 assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$`") == "bazbazfoo"
 assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$'") == "bazfoofoo"
+// https://github.com/grain-lang/grain/issues/1431
+assert replaceAll(unwrapResult(make("^.")), "asdf", "-") == "-sdf"

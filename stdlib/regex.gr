@@ -3954,11 +3954,12 @@ let regexReplaceHelp =
   let mut out = []
   let rec loop = searchPos => {
     let state = Array.make(rx.reNumGroups, None)
+    let inStart = max(0, searchPos - rx.reMaxLookbehind)
     let poss = searchMatch(
       rx,
       buf,
       searchPos,
-      searchPos,
+      inStart,
       Array.length(buf.matchInputExploded),
       state
     )

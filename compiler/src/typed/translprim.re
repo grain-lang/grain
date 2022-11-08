@@ -76,6 +76,7 @@ let prim_map =
       ("@ignore", Primitive1(Ignore)),
       ("@assert", Primitive1(Assert)),
       ("@throw", Primitive1(Throw)),
+      ("@unreachable", Primitive0(Unreachable)),
       ("@is", Primitive2(Is)),
       ("@eq", Primitive2(Eq)),
       ("@and", Primitive2(And)),
@@ -1507,7 +1508,8 @@ let transl_prim = (env, desc) => {
     | Primitive0(
         (
           AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
-          AllocateRational
+          AllocateRational |
+          Unreachable
         ) as p,
       ) => (
         Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.prim0(~loc, p)),
