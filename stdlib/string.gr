@@ -1887,31 +1887,26 @@ let trimString = (str: String, fromEnd: Bool) => {
   }
   let mut count = 0n
   for (; i < byteLength; i += offset) {
-    // Get The Byte, May not be a full codepoint as grain uses utf-8, a codepoint may be 1-4 bytes
+    // Get the byte, not necessarily a full UTF-8 codepoint
     let byte = WasmI32.load8U(stringPtr, i)
     // TODO(#661): Use unicode whitespace property and unicode line terminator
-    // Handle The BOM Character which is a full codepoint, The Bytes are 0xEF,0xBB,0xBF
     if (!fromEnd) {
       if (
-        byte == 0xEFn && // Check for the BOM identifier at the beginning of the codepoint
-        // Check for the full BOM codepoint, This is revered because wasm is little-endian
+        byte == 0xEFn && // Check for the first BOM byte
+        // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
         WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn
       ) {
-        // We need to increment i in the direction of the loop
         i += 2n
-        // The count is incremented by 3 because that is the length of the BOM
         count += 3n
         continue
       }
     } else {
       if (
-        byte == 0xBFn && // Check for the BOM identifier at the end of the codepoint
-        // Check for the full BOM codepoint, This is revered because wasm is little-endian
+        byte == 0xBFn && // Check for the last BOM byte
+        // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
         WasmI32.load(stringPtr, i - 3n) >>> 8n == 0xBFBBEFn
       ) {
-        // We need to decrement i in the direction of the loop
         i -= 2n
-        // The count is incremented by 3 because that is the length of the BOM
         count += 3n
         continue
       }
