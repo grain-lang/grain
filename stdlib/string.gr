@@ -872,6 +872,239 @@ export let endsWith = (search: String, string: String) => {
   }
 }
 
+/**
+ * Replaces the first appearance of the search pattern in the string with the replacement value.
+ *
+ * @param searchPattern: The string to replace
+ * @param replacement: The replacement
+ * @param string: The string to change
+ * @returns A new string with the first occurrence of the search pattern replaced
+ *
+ * @example String.replaceFirst("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
+ *
+ * @since v0.5.4
+ */
+@unsafe
+export let replaceFirst =
+  (
+    searchPattern: String,
+    replacement: String,
+    string: String,
+  ) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+
+  let mut patternPtr = WasmI32.fromGrain(searchPattern)
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut replacementPtr = WasmI32.fromGrain(replacement)
+
+  let patternLen = WasmI32.load(patternPtr, 4n)
+  let stringLen = WasmI32.load(stringPtr, 4n)
+  let replacementLen = WasmI32.load(replacementPtr, 4n)
+  // Bail if search str is longer than the string
+  if (stringLen < patternLen) {
+    string
+  } else {
+    patternPtr += 8n
+    stringPtr += 8n
+    replacementPtr += 8n
+
+    let mut found = false
+    // Search for an instance of the string
+    let mut foundIndex = -1n
+    let stringEndPtr = stringPtr + stringLen - patternLen + 1n
+    for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
+      // check for match
+      foundIndex += 1n
+      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+        found = true
+        break
+      }
+    }
+    if (found) {
+      // Create the new string
+      let str = allocateString(stringLen - patternLen + replacementLen)
+      let strPtr = str + 8n
+      Memory.copy(strPtr, stringPtr, foundIndex)
+      Memory.copy(strPtr + foundIndex, replacementPtr, replacementLen)
+      Memory.copy(
+        strPtr + foundIndex + replacementLen,
+        stringPtr + foundIndex + patternLen,
+        stringLen - foundIndex
+      )
+      // Copy over the str
+      WasmI32.toGrain(str): String
+    } else {
+      string
+    }
+  }
+}
+
+/**
+ * Replaces the last appearance of the search pattern in the string with the replacement value.
+ *
+ * @param searchPattern: The string to replace
+ * @param replacement: The replacement
+ * @param string: The string to change
+ * @returns A new string with the last occurrence of the search pattern replaced
+ *
+ * @example String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
+ *
+ * @since v0.5.4
+ */
+@unsafe
+export let replaceLast =
+  (
+    searchPattern: String,
+    replacement: String,
+    string: String,
+  ) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+
+  let mut patternPtr = WasmI32.fromGrain(searchPattern)
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut replacementPtr = WasmI32.fromGrain(replacement)
+
+  let patternLen = WasmI32.load(patternPtr, 4n)
+  let stringLen = WasmI32.load(stringPtr, 4n)
+  let replacementLen = WasmI32.load(replacementPtr, 4n)
+
+  // Bail if search str is longer than the string
+  if (stringLen < patternLen) {
+    string
+  } else {
+    patternPtr += 8n
+    stringPtr += 8n
+    replacementPtr += 8n
+
+    let mut found = false
+    // Search for an instance of the string
+    let stringEndPtr = stringPtr + stringLen - patternLen
+    let mut foundIndex = stringLen - patternLen + 1n
+    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+      // check for match
+      foundIndex -= 1n
+      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+        found = true
+        break
+      }
+    }
+    if (found) {
+      // Create the new string
+      let str = allocateString(stringLen - patternLen + replacementLen)
+      let strPtr = str + 8n
+      Memory.copy(strPtr, stringPtr, foundIndex)
+      Memory.copy(strPtr + foundIndex, replacementPtr, replacementLen)
+      Memory.copy(
+        strPtr + foundIndex + replacementLen,
+        stringPtr + foundIndex + patternLen,
+        stringLen - foundIndex
+      )
+      // Copy over the str
+      WasmI32.toGrain(str): String
+    } else {
+      string
+    }
+  }
+}
+
+/**
+ * Replaces every appearance of the search pattern in the string with the replacement value.
+ *
+ * @param searchPattern: The string to replace
+ * @param replacement: The replacement
+ * @param string: The string to change
+ * @returns A new string with each occurrence of the search pattern replaced
+ *
+ * @example String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
+ *
+ * @since v0.5.4
+ */
+@unsafe
+export let replaceAll =
+  (
+    searchPattern: String,
+    replacement: String,
+    string: String,
+  ) => {
+  let (*) = WasmI32.mul
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtU
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+  let (>>) = WasmI32.shrS
+
+  let mut patternPtr = WasmI32.fromGrain(searchPattern)
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let mut replacementPtr = WasmI32.fromGrain(replacement)
+
+  let patternLen = WasmI32.load(patternPtr, 4n)
+  let stringLen = WasmI32.load(stringPtr, 4n)
+  let replacementLen = WasmI32.load(replacementPtr, 4n)
+
+  // Bail if search str is longer than the string
+  if (stringLen < patternLen) {
+    string
+  } else {
+    patternPtr += 8n
+    stringPtr += 8n
+    replacementPtr += 8n
+
+    let mut found = false
+    // Search for an instance of the string
+    let stringEndPtr = stringPtr + stringLen - patternLen
+    let mut foundIndex = stringLen - patternLen + 1n
+    let mut foundIndexes = []
+    let mut foundCount = 0n
+    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+      // check for match
+      foundIndex -= 1n
+      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
+        found = true
+        foundCount += 1n
+        foundIndexes = [tagSimpleNumber(foundIndex), ...foundIndexes]
+      }
+    }
+    if (found) {
+      // Create the new string
+      let str = allocateString(
+        stringLen - (patternLen - replacementLen) * foundCount
+      )
+      let mut strPtr = str + 8n
+      let mut lastIndex = 0n
+      while (true) {
+        match (foundIndexes) {
+          [idx, ...rest] => {
+            let index = untagSimpleNumber(idx)
+            // Copy the part before
+            Memory.copy(strPtr, stringPtr + lastIndex, index - lastIndex)
+            strPtr += index - lastIndex
+            // Copy the part after
+            Memory.copy(strPtr, replacementPtr, replacementLen)
+            strPtr += replacementLen
+            lastIndex = index + patternLen
+            foundIndexes = rest
+          },
+          [] => break,
+        }
+      }
+      // Copy remaining string
+      Memory.copy(strPtr, stringPtr + lastIndex, stringLen - lastIndex)
+      WasmI32.toGrain(str): String
+    } else {
+      string
+    }
+  }
+}
+
 // String->Byte encoding and helper functions:
 
 // these are globals to avoid memory leaks

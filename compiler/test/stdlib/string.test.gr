@@ -189,6 +189,52 @@ assert String.endsWith(emojis, emojis)
 assert !String.endsWith("bluefox", short)
 assert !String.endsWith("q", emoji)
 assert !String.endsWith("LAZY DOG.", fox)
+// Replace First
+assert String.replaceFirst("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
+assert String.replaceFirst("Hello", "Hi", "Hello World") == "Hi World"
+assert String.replaceFirst("Hello", "Hi", "Hey World Hello") == "Hey World Hi"
+assert String.replaceFirst("Hello", "Hi", "Hello Hello") == "Hi Hello"
+assert String.replaceFirst("Hello", "Hi", "Hello") == "Hi"
+assert String.replaceFirst("Hello", "Hi", "World") == "World"
+assert String.replaceFirst("Hello", "Hi", "Hel") == "Hel"
+assert String.replaceFirst("🌾", "Grain", "Hello") == "Hello"
+assert String.replaceFirst("🌾", "Hello", "Hello Grain") == "Hello Grain"
+assert String.replaceFirst("Grain", "🌾", "Hello Grain") == "Hello 🌾"
+assert String.replaceFirst("ello", "i", "Hello Grain") == "Hi Grain"
+assert String.replaceFirst("i", "ello", "Hi Grain") == "Hello Grain"
+assert String.replaceFirst("🌾", "🚀", "🚀🚀🚀🌾🌾🌾") ==
+"🚀🚀🚀🚀🌾🌾"
+// Replace Last
+assert String.replaceLast("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
+assert String.replaceLast("Hello", "Hi", "Hello World") == "Hi World"
+assert String.replaceLast("Hello", "Hi", "Hey World Hello") == "Hey World Hi"
+assert String.replaceLast("Hello", "Hi", "Hello Hello") == "Hello Hi"
+assert String.replaceLast("Hello", "Hi", "Hello") == "Hi"
+assert String.replaceLast("Hello", "Hi", "World") == "World"
+assert String.replaceLast("Hello", "Hi", "Hel") == "Hel"
+assert String.replaceLast("🌾", "Grain", "Hello") == "Hello"
+assert String.replaceLast("🌾", "Hello", "Hello Grain") == "Hello Grain"
+assert String.replaceLast("Grain", "🌾", "Hello Grain") == "Hello 🌾"
+assert String.replaceLast("ello", "i", "Grain Hello") == "Grain Hi"
+assert String.replaceLast("i", "ello", "Grain Hi") == "Grain Hello"
+assert String.replaceLast("🚀", "🌾", "🚀🚀🚀🌾🌾🌾") ==
+"🚀🚀🌾🌾🌾🌾"
+// Replace All
+assert String.replaceAll("Hello", "Hi", "Hey Hello World") == "Hey Hi World"
+assert String.replaceAll("Hello", "Hi", "Hello World") == "Hi World"
+assert String.replaceAll("Hello", "Hi", "Hey World Hello") == "Hey World Hi"
+assert String.replaceAll("Hello", "Hi", "Hello Hello") == "Hi Hi"
+assert String.replaceAll("Hello", "Hi", "Hello") == "Hi"
+assert String.replaceAll("Hello", "Hi", "World") == "World"
+assert String.replaceAll("Hello", "Hi", "Hel") == "Hel"
+assert String.replaceAll("🌾", "Grain", "Hello") == "Hello"
+assert String.replaceAll("🌾", "Hello", "Hello Grain") == "Hello Grain"
+assert String.replaceAll("Grain", "🌾", "Hello Grain") == "Hello 🌾"
+assert String.replaceAll("🚀", "🌾", "🚀🚀🚀🌾🌾🌾") ==
+"🌾🌾🌾🌾🌾🌾"
+assert String.replaceAll("/", "\/", "/test/test/test/") ==
+"\/test\/test\/test\/"
+assert String.replaceAll(",", "|", "test,test,test") == "test|test|test"
 
 let processBytes = b => {
   let ret = Array.make(Bytes.length(b), 0l)
