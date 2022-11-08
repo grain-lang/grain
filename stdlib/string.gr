@@ -2100,30 +2100,71 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
   void
 }
 
-let trimString = (str: String, end: Bool) => {
-  let chars = explode(str), charsLength = length(str)
-  let mut i = 0, offset = 1
-  if (end) {
-    i = charsLength - 1
-    offset = -1
+@unsafe
+let trimString = (str: String, fromEnd: Bool) => {
+  let (>>>) = WasmI32.shrU
+  let (+) = WasmI32.add
+  let (*) = WasmI32.mul
+  let (-) = WasmI32.sub
+  let (<) = WasmI32.ltU
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+
+  let mut stringPtr = WasmI32.fromGrain(str)
+  let byteLength = WasmI32.load(stringPtr, 4n)
+  stringPtr += 8n
+  let mut i = 0n, offset = 1n
+  if (fromEnd) {
+    i = byteLength - 1n
+    offset = -1n
   }
-  for (; i < charsLength && i > -1; i += offset) {
-    let currentChar = chars[i]
-    // TODO: Use unicode whitespace property and unicode line terminator once github issue #661 is completed
+  let mut count = 0n
+  for (; i < byteLength; i += offset) {
+    // Get the byte, not necessarily a full UTF-8 codepoint
+    let byte = WasmI32.load8U(stringPtr, i)
+    // TODO(#661): Use unicode whitespace property and unicode line terminator
+    if (!fromEnd) {
+      if (
+        byte == 0xEFn && // Check for the first BOM byte
+        // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
+        WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn
+      ) {
+        i += 2n
+        count += 3n
+        continue
+      }
+    } else {
+      if (
+        byte == 0xBFn && // Check for the last BOM byte
+        // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
+        WasmI32.load(stringPtr, i - 3n) >>> 8n == 0xBFBBEFn
+      ) {
+        i -= 2n
+        count += 3n
+        continue
+      }
+    }
     if (
-      // Spacing
-      currentChar != '\u{0009}' && // Tab
-      currentChar != '\u{000B}' && // LINE TABULATION
-      currentChar != '\u{000C}' && // FORM FEED (FF)
-      currentChar != '\u{0020}' && // Space
-      currentChar != '\u{00A0}' && // No Break Space
-      currentChar != '\u{FEFF}' && // ZERO WIDTH NO-BREAK SPACE
-      // Line Terminators
-      currentChar != '\n' && // LF
-      currentChar != '\r' // CR
-    ) break
+      byte != 0x20n && // Space
+      byte != 0x0Dn && // LF
+      byte != 0x0An && // CR
+      byte != 0x09n && // Tab
+      byte != 0x0Bn && // LINE TABULATION
+      byte != 0x0Cn && // FORM FEED (FF)
+      byte != 0xA0n // No Break Space
+    ) {
+      break
+    }
+    count += 1n
   }
-  if (end) slice(0, i + 1, str) else slice(i, charsLength, str)
+  let str = allocateString(byteLength - count)
+  // Copy the string
+  if (fromEnd) {
+    Memory.copy(str + 8n, stringPtr, byteLength - count)
+  } else {
+    Memory.copy(str + 8n, stringPtr + count, byteLength - count)
+  }
+  WasmI32.toGrain(str): String
 }
 /**
  * Trims the beginning of a string—removing any leading whitespace characters.
