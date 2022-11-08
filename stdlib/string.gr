@@ -1926,7 +1926,7 @@ let trimString = (str: String, fromEnd: Bool) => {
   }
   let str = allocateString(byteLength - count)
   // Copy the string
-  if (end) {
+  if (fromEnd) {
     Memory.copy(str + 8n, stringPtr, byteLength - count)
   } else {
     Memory.copy(str + 8n, stringPtr + count, byteLength - count)
