@@ -27,7 +27,20 @@ Immutable data structure which maintains a priority order for its elements.
 
 ## Values
 
-Functions for working with ImmutablePriorityQueues.
+Functions and constants for working with ImmutablePriorityQueues.
+
+### ImmutablePriorityQueue.**empty**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+empty : ImmutablePriorityQueue<a>
+```
+
+An empty priority queue with the default `compare` comparator.
 
 ### ImmutablePriorityQueue.**make**
 
