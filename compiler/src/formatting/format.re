@@ -2086,7 +2086,15 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   switch (arg.pexp_desc) {
   | PExpLambda(patterns, expression) =>
     print_arg_lambda(~comments, ~original_source, arg)
-  | _ => Doc.group(print_expression(~in_conditional=true,~original_source, ~comments, arg))
+  | _ =>
+    Doc.group(
+      print_expression(
+        ~in_conditional=true,
+        ~original_source,
+        ~comments,
+        arg,
+      ),
+    )
   };
 }
 
