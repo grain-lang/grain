@@ -170,10 +170,10 @@ let eat = (buf: RegExBuf, char: Char) => {
         parseErr(
           buf,
           "Expected character '" ++
-          Char.toString(char) ++
-          ", but found character '" ++
-          Char.toString(ret) ++
-          "'",
+            Char.toString(char) ++
+            ", but found character '" ++
+            Char.toString(ret) ++
+            "'",
           0
         )
       )
@@ -903,8 +903,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
                       Err(e) =>
                         Err(
                           "Invalid Regular Expression: illegal alphebetic escape (position " ++
-                          toString(curPos) ++
-                          ")"
+                            toString(curPos) ++
+                            ")"
                         ),
                       Ok(range1) => {
                         match (rangeAddCaseAware(rng, spanFrom, buf.config)) {
@@ -1540,10 +1540,10 @@ let rec parseAtom = (buf: RegExBuf) => {
                   parseErr(
                     buf,
                     "Unrecognized property name in `\\" ++
-                    pC ++
-                    "`: `" ++
-                    s ++
-                    "`",
+                      pC ++
+                      "`: `" ++
+                      s ++
+                      "`",
                     0
                   )
                 ),
