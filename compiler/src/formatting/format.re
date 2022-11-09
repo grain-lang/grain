@@ -1123,6 +1123,7 @@ and resugar_list =
 
           (
             print_expression(
+              ~supress_indent=false,
               ~original_source,
               ~comments=
                 Comment_utils.get_comments_inside_location(
@@ -1141,6 +1142,7 @@ and resugar_list =
             Doc.concat([
               Doc.text("..."),
               print_expression(
+                ~supress_indent=false,
                 ~original_source,
                 ~comments=
                   Comment_utils.get_comments_inside_location(
@@ -1553,7 +1555,13 @@ and print_record =
     let (locidentifier, expr) = field;
     let ident = locidentifier.txt;
     let printed_ident = print_ident(ident);
-    let printed_expr = print_expression(~original_source, ~comments, expr);
+    let printed_expr =
+      print_expression(
+        ~supress_indent=false,
+        ~original_source,
+        ~comments,
+        expr,
+      );
     let punned_expr = check_for_pun(expr);
 
     let pun =
@@ -1749,7 +1757,7 @@ and print_type =
 
 and print_application =
     (
-      ~in_conditional: option(bool)=?,
+      ~supress_indent: bool,
       ~expressions: list(Parsetree.expression),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
@@ -1760,7 +1768,7 @@ and print_application =
   switch (expressions) {
   | [first, second] when infixop(function_name) =>
     print_infix_application(
-      ~in_conditional?,
+      ~supress_indent,
       ~expressions,
       ~original_source,
       ~comments,
@@ -1768,7 +1776,7 @@ and print_application =
     )
   | _ =>
     print_other_application(
-      ~in_conditional?,
+      ~supress_indent,
       ~expressions,
       ~original_source,
       ~comments,
@@ -1779,19 +1787,13 @@ and print_application =
 
 and print_infix_application =
     (
-      ~in_conditional: option(bool)=?,
+      ~supress_indent: bool,
       ~expressions: list(Parsetree.expression),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
       func: Parsetree.expression,
     ) => {
   let function_name = get_function_name(func);
-
-  let in_cond =
-    switch (in_conditional) {
-    | None => false
-    | Some(inn) => inn
-    };
 
   switch (expressions) {
   | [first, second] =>
@@ -1877,7 +1879,7 @@ and print_infix_application =
           Doc.lparen,
           Doc.concat([
             print_expression(
-              ~in_conditional=false,
+              ~supress_indent=false,
               ~original_source,
               ~comments,
               first,
@@ -1886,12 +1888,7 @@ and print_infix_application =
           Doc.rparen,
         ]);
       } else {
-        print_expression(
-          ~in_conditional=in_cond,
-          ~original_source,
-          ~comments,
-          first,
-        );
+        print_expression(~supress_indent, ~original_source, ~comments, first);
       };
 
     let rhs_expr =
@@ -1900,7 +1897,7 @@ and print_infix_application =
           Doc.lparen,
           Doc.concat([
             print_expression(
-              ~in_conditional=false,
+              ~supress_indent=false,
               ~original_source,
               ~comments,
               second,
@@ -1911,7 +1908,7 @@ and print_infix_application =
       } else {
         Doc.concat([
           print_expression(
-            ~in_conditional=in_cond,
+            ~supress_indent,
             ~original_source,
             ~comments,
             second,
@@ -1934,7 +1931,7 @@ and print_infix_application =
         force_break_if_line_comment(~separator=Doc.nil, line_comments);
       },
       after_comments_docs,
-      if (!in_cond) {
+      if (!supress_indent) {
         Doc.indent(
           Doc.concat([
             Doc.line,
@@ -2013,7 +2010,14 @@ and print_arg_lambda =
               expr.pexp_loc;
             };
             let print_item = (~comments, expr: Parsetree.expression) => {
-              Doc.group(print_expression(~original_source, ~comments, expr));
+              Doc.group(
+                print_expression(
+                  ~supress_indent=false,
+                  ~original_source,
+                  ~comments,
+                  expr,
+                ),
+              );
             };
             let after_brace_comments =
               Comment_utils.get_after_brace_comments(
@@ -2055,6 +2059,7 @@ and print_arg_lambda =
         let body =
           Doc.group(
             print_expression(
+              ~supress_indent=false,
               ~original_source,
               ~comments=comments_in_expression,
               expression,
@@ -2089,7 +2094,7 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   | _ =>
     Doc.group(
       print_expression(
-        ~in_conditional=true,
+        ~supress_indent=false,
         ~original_source,
         ~comments,
         arg,
@@ -2200,7 +2205,7 @@ and print_arguments_with_callback_in_last_position =
 
 and print_other_application =
     (
-      ~in_conditional: option(bool)=?,
+      ~supress_indent: bool,
       ~expressions: list(Parsetree.expression),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
@@ -2219,7 +2224,7 @@ and print_other_application =
           Doc.lparen,
           Doc.group(
             print_expression(
-              ~in_conditional?,
+              ~supress_indent,
               ~original_source,
               ~comments,
               first,
@@ -2232,7 +2237,7 @@ and print_other_application =
           Doc.text(function_name),
           Doc.group(
             print_expression(
-              ~in_conditional?,
+              ~supress_indent,
               ~original_source,
               ~comments,
               first,
@@ -2246,7 +2251,7 @@ and print_other_application =
         Doc.text(function_name),
         Doc.group(
           print_expression(
-            ~in_conditional?,
+            ~supress_indent,
             ~original_source,
             ~comments,
             first,
@@ -2257,7 +2262,7 @@ and print_other_application =
 
   | [first, second] when infixop(function_name) =>
     print_infix_application(
-      ~in_conditional?,
+      ~supress_indent,
       ~expressions,
       ~original_source,
       ~comments,
@@ -2270,9 +2275,19 @@ and print_other_application =
   | [first_expr, ..._]
       when Array.exists(fn => function_name == fn, exception_primitives) =>
     Doc.concat([
-      print_expression(~original_source, ~comments, func),
+      print_expression(
+        ~supress_indent=false,
+        ~original_source,
+        ~comments,
+        func,
+      ),
       Doc.space,
-      print_expression(~original_source, ~comments, first_expr),
+      print_expression(
+        ~supress_indent=false,
+        ~original_source,
+        ~comments,
+        first_expr,
+      ),
     ])
   | [first_expr, ..._] =>
     // standard function application
@@ -2304,7 +2319,12 @@ and print_other_application =
           expressions,
         );
       Doc.concat([
-        print_expression(~original_source, ~comments, func),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          func,
+        ),
         Doc.lparen,
         printed_args,
         Doc.rparen,
@@ -2317,7 +2337,12 @@ and print_other_application =
           expressions,
         );
       Doc.concat([
-        print_expression(~original_source, ~comments, func),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          func,
+        ),
         Doc.lparen,
         printed_args,
         Doc.rparen,
@@ -2331,7 +2356,12 @@ and print_other_application =
 
       Doc.group(
         Doc.concat([
-          print_expression(~original_source, ~comments, func),
+          print_expression(
+            ~supress_indent=false,
+            ~original_source,
+            ~comments,
+            func,
+          ),
           Doc.lparen,
           Doc.indent(Doc.concat([Doc.softLine, printed_args])),
           Doc.softLine,
@@ -2343,7 +2373,7 @@ and print_other_application =
   | [] =>
     Doc.group(
       Doc.concat([
-        print_expression(~in_conditional?, ~original_source, ~comments, func),
+        print_expression(~supress_indent, ~original_source, ~comments, func),
         Doc.lparen,
         Doc.softLine,
         Doc.rparen,
@@ -2450,7 +2480,7 @@ and paren_wrap_patterns =
 }
 and print_expression =
     (
-      ~in_conditional: option(bool)=?,
+      ~supress_indent: bool,
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
       expr: Parsetree.expression,
@@ -2474,7 +2504,12 @@ and print_expression =
         e.pexp_loc;
       };
       let print_item = (~comments, e: Parsetree.expression) => {
-        print_expression(~original_source, ~comments, e);
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          e,
+        );
       };
 
       let after_paren_comments =
@@ -2515,7 +2550,12 @@ and print_expression =
         e.pexp_loc;
       };
       let print_item = (~comments, e: Parsetree.expression) => {
-        print_expression(~original_source, ~comments, e);
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          e,
+        );
       };
 
       let after_bracket_comments =
@@ -2558,20 +2598,40 @@ and print_expression =
       );
     | PExpArrayGet(expression1, expression2) =>
       Doc.concat([
-        print_expression(~original_source, ~comments, expression1),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          expression1,
+        ),
         Doc.lbracket,
         Doc.group(
-          print_expression(~original_source, ~comments, expression2),
+          print_expression(
+            ~supress_indent=false,
+            ~original_source,
+            ~comments,
+            expression2,
+          ),
         ),
         Doc.rbracket,
       ])
     | PExpArraySet(expression1, expression2, expression3) =>
       Doc.group(
         Doc.concat([
-          print_expression(~original_source, ~comments, expression1),
+          print_expression(
+            ~supress_indent=false,
+            ~original_source,
+            ~comments,
+            expression1,
+          ),
           Doc.lbracket,
           Doc.group(
-            print_expression(~original_source, ~comments, expression2),
+            print_expression(
+              ~supress_indent=false,
+              ~original_source,
+              ~comments,
+              expression2,
+            ),
           ),
           Doc.rbracket,
           Doc.space,
@@ -2579,7 +2639,12 @@ and print_expression =
           Doc.indent(
             Doc.concat([
               Doc.space,
-              print_expression(~original_source, ~comments, expression3),
+              print_expression(
+                ~supress_indent=false,
+                ~original_source,
+                ~comments,
+                expression3,
+              ),
             ]),
           ),
         ]),
@@ -2589,14 +2654,24 @@ and print_expression =
       print_record(~fields=record, ~original_source, ~comments, expr.pexp_loc)
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
-        print_expression(~original_source, ~comments, expression),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          expression,
+        ),
         Doc.dot,
         print_ident(txt),
       ])
     | PExpRecordSet(expression, {txt, _}, expression2) =>
       let left =
         Doc.concat([
-          print_expression(~original_source, ~comments, expression),
+          print_expression(
+            ~supress_indent=false,
+            ~original_source,
+            ~comments,
+            expression,
+          ),
           Doc.dot,
           print_ident(txt),
         ]);
@@ -2606,7 +2681,12 @@ and print_expression =
         Doc.concat([
           Doc.lparen,
           Doc.group(
-            print_expression(~original_source, ~comments, expression),
+            print_expression(
+              ~supress_indent=false,
+              ~original_source,
+              ~comments,
+              expression,
+            ),
           ),
           Doc.rparen,
         ]);
@@ -2652,6 +2732,7 @@ and print_expression =
                   Doc.concat([
                     Doc.space,
                     print_expression(
+                      ~supress_indent=false,
                       ~original_source,
                       ~comments=branch_comments,
                       branch.pmb_body,
@@ -2662,6 +2743,7 @@ and print_expression =
                     Doc.concat([
                       Doc.line,
                       print_expression(
+                        ~supress_indent=false,
                         ~original_source,
                         ~comments=branch_comments,
                         branch.pmb_body,
@@ -2679,7 +2761,7 @@ and print_expression =
               let guard_doc =
                 Doc.group(
                   print_expression(
-                    ~in_conditional=true,
+                    ~supress_indent=true,
                     ~original_source,
                     ~comments=branch_guard_comments,
                     guard,
@@ -2706,6 +2788,7 @@ and print_expression =
                     Doc.space,
                     Doc.group(
                       print_expression(
+                        ~supress_indent=false,
                         ~original_source,
                         ~comments=branch_comments,
                         branch.pmb_body,
@@ -2719,6 +2802,7 @@ and print_expression =
                       Doc.line,
                       Doc.group(
                         print_expression(
+                          ~supress_indent=false,
                           ~original_source,
                           ~comments=branch_comments,
                           branch.pmb_body,
@@ -2859,6 +2943,7 @@ and print_expression =
           Doc.concat([
             Doc.space,
             print_expression(
+              ~supress_indent=false,
               ~original_source,
               ~comments=comments_in_true_statement,
               true_expr,
@@ -2876,6 +2961,7 @@ and print_expression =
                 Doc.concat([
                   Doc.hardLine,
                   print_expression(
+                    ~supress_indent=false,
                     ~original_source,
                     ~comments=comments_in_true_statement,
                     true_expr,
@@ -2893,6 +2979,7 @@ and print_expression =
                 Doc.concat([
                   Doc.softLine,
                   print_expression(
+                    ~supress_indent=false,
                     ~original_source,
                     ~comments=comments_in_true_statement,
                     true_expr,
@@ -2907,6 +2994,7 @@ and print_expression =
               Doc.concat([
                 Doc.line,
                 print_expression(
+                  ~supress_indent=false,
                   ~original_source,
                   ~comments=comments_in_true_statement,
                   true_expr,
@@ -2933,6 +3021,7 @@ and print_expression =
               Doc.text("else"),
               Doc.space,
               print_expression(
+                ~supress_indent=false,
                 ~original_source,
                 ~comments=comments_in_false_statement,
                 false_expr,
@@ -2951,6 +3040,7 @@ and print_expression =
                   Doc.concat([
                     Doc.softLine,
                     print_expression(
+                      ~supress_indent=false,
                       ~original_source,
                       ~comments=comments_in_false_statement,
                       false_expr,
@@ -2964,6 +3054,7 @@ and print_expression =
               Doc.concat([
                 Doc.space,
                 print_expression(
+                  ~supress_indent=false,
                   ~original_source,
                   ~comments=comments_in_false_statement,
                   false_expr,
@@ -2985,6 +3076,7 @@ and print_expression =
                   Doc.concat([
                     Doc.hardLine,
                     print_expression(
+                      ~supress_indent=false,
                       ~original_source,
                       ~comments=comments_in_false_statement,
                       false_expr,
@@ -3000,6 +3092,7 @@ and print_expression =
                 Doc.text("else"),
                 Doc.space,
                 print_expression(
+                  ~supress_indent=false,
                   ~original_source,
                   ~comments=comments_in_false_statement,
                   false_expr,
@@ -3030,7 +3123,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
-                        ~in_conditional=true,
+                        ~supress_indent=true,
                         ~original_source,
                         ~comments=commentsInCondition,
                         condition,
@@ -3082,7 +3175,7 @@ and print_expression =
               Doc.concat([
                 Doc.softLine,
                 print_expression(
-                  ~in_conditional=true,
+                  ~supress_indent=true,
                   ~original_source,
                   ~comments=comments_in_expression,
                   expression,
@@ -3096,6 +3189,7 @@ and print_expression =
         Doc.space,
         Doc.group(
           print_expression(
+            ~supress_indent=false,
             ~original_source,
             ~comments=comments_in_expression_1,
             expression1,
@@ -3128,7 +3222,7 @@ and print_expression =
                 | Some(expr) =>
                   Doc.group(
                     print_expression(
-                      ~in_conditional=true,
+                      ~supress_indent=true,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
@@ -3145,7 +3239,7 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
-                        ~in_conditional=true,
+                        ~supress_indent=true,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3163,7 +3257,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
-                        ~in_conditional=true,
+                        ~supress_indent=true,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3181,6 +3275,7 @@ and print_expression =
         Doc.space,
         Doc.group(
           print_expression(
+            ~supress_indent=false,
             ~original_source,
             ~comments=comments_in_expression4,
             expression4,
@@ -3199,6 +3294,7 @@ and print_expression =
       Doc.group(
         Doc.concat([
           print_expression(
+            ~supress_indent=false,
             ~original_source,
             ~comments=comments_in_expression,
             expression,
@@ -3248,6 +3344,7 @@ and print_expression =
             Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
           ),
           print_expression(
+            ~supress_indent=false,
             ~original_source,
             ~comments=comments_in_expression,
             expression,
@@ -3256,6 +3353,7 @@ and print_expression =
       | PExpIf(_) =>
         let out =
           print_expression(
+            ~supress_indent=false,
             ~original_source,
             ~comments=comments_in_expression,
             expression,
@@ -3281,6 +3379,7 @@ and print_expression =
             Doc.concat([
               Doc.line,
               print_expression(
+                ~supress_indent=false,
                 ~original_source,
                 ~comments=comments_in_expression,
                 expression,
@@ -3292,7 +3391,7 @@ and print_expression =
 
     | PExpApp(func, expressions) =>
       print_application(
-        ~in_conditional?,
+        ~supress_indent,
         ~expressions,
         ~original_source,
         ~comments,
@@ -3313,7 +3412,14 @@ and print_expression =
         };
 
         let print_item = (~comments, expr: Parsetree.expression) => {
-          Doc.group(print_expression(~original_source, ~comments, expr));
+          Doc.group(
+            print_expression(
+              ~supress_indent=false,
+              ~original_source,
+              ~comments,
+              expr,
+            ),
+          );
         };
 
         let after_brace_comments =
@@ -3359,14 +3465,30 @@ and print_expression =
 
     | PExpBoxAssign(expression, expression1) =>
       Doc.concat([
-        print_expression(~original_source, ~comments, expression),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          expression,
+        ),
         Doc.space,
         Doc.text(":="),
         Doc.space,
-        print_expression(~original_source, ~comments, expression1),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          expression1,
+        ),
       ])
     | PExpAssign(expression, expression1) =>
-      let left = print_expression(~original_source, ~comments, expression);
+      let left =
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          expression,
+        );
       print_assignment(~original_source, ~comments, left, expression1);
     | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
@@ -3383,7 +3505,13 @@ and print_assignment = (~original_source, ~comments, left, value) => {
     let left_matches_first =
       switch (expressions) {
       | [expr, ...remainder] =>
-        print_expression(~original_source, ~comments, expr) == left
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          expr,
+        )
+        == left
       | _ => false
       };
 
@@ -3404,21 +3532,41 @@ and print_assignment = (~original_source, ~comments, left, value) => {
             raise(IllegalParse("Sugared op needs at least one expression"))
           | [expression] =>
             let expr =
-              print_expression(~original_source, ~comments, expression);
+              print_expression(
+                ~supress_indent=false,
+                ~original_source,
+                ~comments,
+                expression,
+              );
             switch (expression.pexp_desc) {
             | PExpIf(_) =>
               Doc.indent(
-                print_expression(~original_source, ~comments, expression),
+                print_expression(
+                  ~supress_indent=false,
+                  ~original_source,
+                  ~comments,
+                  expression,
+                ),
               )
             | _ => expr
             };
           | [expression1, expression2, ...rest] =>
             let expr =
-              print_expression(~original_source, ~comments, expression2);
+              print_expression(
+                ~supress_indent=false,
+                ~original_source,
+                ~comments,
+                expression2,
+              );
             switch (expression2.pexp_desc) {
             | PExpIf(_) =>
               Doc.indent(
-                print_expression(~original_source, ~comments, expression2),
+                print_expression(
+                  ~supress_indent=false,
+                  ~original_source,
+                  ~comments,
+                  expression2,
+                ),
               )
             | _ => expr
             };
@@ -3430,7 +3578,12 @@ and print_assignment = (~original_source, ~comments, left, value) => {
           Doc.space,
           Doc.equal,
           Doc.space,
-          print_expression(~original_source, ~comments, value),
+          print_expression(
+            ~supress_indent=false,
+            ~original_source,
+            ~comments,
+            value,
+          ),
         ])
       };
     } else {
@@ -3439,7 +3592,12 @@ and print_assignment = (~original_source, ~comments, left, value) => {
         Doc.space,
         Doc.equal,
         Doc.space,
-        print_expression(~original_source, ~comments, value),
+        print_expression(
+          ~supress_indent=false,
+          ~original_source,
+          ~comments,
+          value,
+        ),
       ]);
     };
 
@@ -3449,7 +3607,12 @@ and print_assignment = (~original_source, ~comments, left, value) => {
       Doc.space,
       Doc.equal,
       Doc.space,
-      print_expression(~original_source, ~comments, value),
+      print_expression(
+        ~supress_indent=false,
+        ~original_source,
+        ~comments,
+        value,
+      ),
     ])
   };
 }
@@ -3508,6 +3671,7 @@ and print_value_bind =
           );
         let printed =
           print_expression(
+            ~supress_indent=false,
             ~original_source,
             ~comments=expr_comments,
             vb.pvb_expr,
@@ -4323,7 +4487,12 @@ let toplevel_print =
         value_bindings,
       )
     | PTopExpr(expression) =>
-      print_expression(~original_source, ~comments, expression)
+      print_expression(
+        ~supress_indent=false,
+        ~original_source,
+        ~comments,
+        expression,
+      )
     | PTopException(export_flag, type_exception) =>
       let export =
         switch (export_flag) {
