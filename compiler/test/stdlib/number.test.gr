@@ -88,6 +88,31 @@ assert Number.isNaN(Number.div(Number.nan, Number.nan))
   assert 2/3 / 4.0 == 0.16666666666666666
   assert 4.0 / (2/3) == 6.0
 }
+// Number.Pow Tests Are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
+/*
+  libc-test is licensed under the following standard MIT license:
+  Copyright © 2005-2013 libc-test AUTHORS
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  Portions of this software is derived from software authored by
+  third parties:
+  math tests use numbers under BSD and GPL licenses see src/math/ucb/*
+  and src/math/crlibm/* for details
+*/
 // Pow
 assert Number.isNaN(Number.pow(-8.06684839057968084, 4.53566256067686879))
 assert Number.pow(4.34523984933830487, -8.88799136300345083) ==
@@ -138,6 +163,45 @@ assert Number.pow(1.0, 0.0) == 1.0
 assert Number.pow(-1.0, 0.0) == 1.0
 assert Number.pow(-0.5, 0.0) == 1.0
 assert Number.pow(Number.nan, -0.0) == 1.0
+assert Number.pow(1, 1) == 1
+assert Number.pow(2, 1) == 2
+assert Number.pow(300, 1) == 300
+assert Number.pow(-1, 1) == -1
+assert Number.pow(-2, 1) == -2
+assert Number.pow(-300, 1) == -300
+assert Number.pow(0, 1) == 0
+assert Number.pow(1, 0) == 1
+assert Number.pow(0, 0) == 1
+assert Number.pow(1, 5) == 1
+assert Number.pow(5, 5) == 3125
+assert Number.pow(-5, 5) == -3125
+assert Number.pow(5, 6) == 15625
+assert Number.pow(-5, 6) == 15625
+assert Number.pow(1.0, 1) == 1.0
+assert Number.pow(2, 1.0) == 2.0
+assert Number.pow(300.0, 1) == 300.0
+assert Number.pow(-1, 1.0) == -1.0
+assert Number.pow(-2.0, 1) == -2.0
+assert Number.pow(-300, 1.0) == -300.0
+assert Number.pow(0.0, 1) == 0.0
+assert Number.pow(1, 0.0) == 1.0
+assert Number.pow(0.0, 0) == 1.0
+assert Number.pow(1, 5.0) == 1.0
+assert Number.pow(5.0, 5) == 3125.0
+assert Number.pow(-1.0, 1) == -1.0
+assert Number.pow(-4.0, 3) == -64.0
+assert Number.pow(-4, 3.0) == -64.0
+assert Number.pow(-5, 5.0) == -3125.0
+assert Number.pow(5.0, 6) == 15625.0
+assert Number.pow(-5, 6.0) == 15625.0
+assert Number.pow(1/2, 1) == 1/2
+assert Number.pow(1/2, 2) == 1/4
+assert Number.pow(2, 1/2) == 1.4142135623730952
+assert Number.pow(4, 1/2) == 2
+assert Number.pow(4, -1/2) == 0.5
+print(Number.pow(9223372036854775809, 9223372036854775809))
+assert Number.pow(9223372036854775809, 9223372036854775809) ==
+85070591730234615884290395931651604481
 // Exp
 assert Number.exp(1) == 2.718281828459045
 assert Number.exp(10) == 22026.465794806703
@@ -377,7 +441,7 @@ assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
 assert Number.isNaN(Number.tan(Number.infinity))
 assert Number.isNaN(Number.tan(Number.nan))
 
-// Number.Gamma
+// Number.gamma
 assert Number.gamma(10.5) == 1133278.3889487908
 assert Number.gamma(10) == 362880
 assert Number.gamma(1) == 1

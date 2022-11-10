@@ -329,8 +329,8 @@ export let pow = (base, power) => {
                 let d = WasmF64.sub(x, x)
                 foundOutput = true
                 output = d / d
-              }
-            } else if (yisint == 1n) s = -1.0W
+              } else if (yisint == 1n) s = -1.0W
+            }
             if (foundOutput) {
               WasmI32.toGrain(newFloat64(output)): Number
             } else {
@@ -349,10 +349,11 @@ export let pow = (base, power) => {
                 if (!foundOutput) {
                   if (ix < 0x3FEFFFFFn) {
                     foundOutput = true
-                    if (hy < 0n) output = s * huge * huge
-                    else output = s *
-                    tiny *
-                    tiny
+                    if (hy < 0n) {
+                      output = s * huge * huge
+                    } else {
+                      output = s * tiny * tiny
+                    }
                   } else if (ix > 0x3FF00000n) {
                     foundOutput = true
                     if (hy > 0n) {
@@ -968,6 +969,8 @@ export let tan = (radians: Number) => {
   }
 }
 
+// Math.gamma implemented using the stirling's approximation
+// https://en.wikipedia.org/wiki/Lanczos_approximation
 /**
  * Computes the gamma function of a value using
  *
@@ -976,8 +979,6 @@ export let tan = (radians: Number) => {
  *
  * @since v0.5.4
  */
-// Math.gamma implemented using the stirling's approximation
-// https://en.wikipedia.org/wiki/Lanczos_approximation
 export let rec gamma = z => {
   if (isInteger(z) && z > 0) {
     let mut output = 1

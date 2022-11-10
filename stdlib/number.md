@@ -820,9 +820,28 @@ Returns:
 
 ### Number.**gamma**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 gamma : Number -> Number
 ```
+
+Computes the gamma function of a value using
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The value to compute the gamma of|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The gamma of the given value|
 
 ### Number.**factorial**
 
