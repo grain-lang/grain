@@ -100,6 +100,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("int64.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
+  assertStdlib("immutablemap.test");
   assertStdlib("marshal.test");
   assertStdlib("number.test");
   assertStdlib("option.test");
@@ -108,6 +109,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("range.test");
   assertStdlib("result.test");
   assertStdlib("set.test");
+  assertStdlib("immutableset.test");
   assertStdlib("regex.test");
   assertStdlib("stack.test");
   assertStdlib("priorityqueue.test");

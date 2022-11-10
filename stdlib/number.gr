@@ -26,22 +26,36 @@ import Tags from "runtime/unsafe/tags"
  */
 
 /**
+ * NaN represented as a Number value.
+ *
+ * @since v0.5.4
+ */
+export let nan = 0.0 / 0.0
+
+/**
+ * Infinity represented as a Number value.
+ *
+ * @since v0.5.4
+ */
+export let infinity = 1.0 / 0.0
+
+/**
  * Pi represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let pi = 3.141592653589793
 
 /**
  * Tau represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let tau = 6.283185307179586
 
 /**
  * Euler's number represented as a Number value.
- * 
+ *
  * @since v0.5.2
  */
 export let e = 2.718281828459045
@@ -140,8 +154,9 @@ export let sign = x => {
  * @returns The smaller of the two operands
  *
  * @since v0.4.0
+ * @history v0.5.4: Handle NaN properly
  */
-export let min = (x: Number, y: Number) => if (y > x) x else y
+export let min = (x: Number, y: Number) => if (compare(x, y) < 0) x else y
 
 /**
  * Returns the larger of its operands.
@@ -151,8 +166,9 @@ export let min = (x: Number, y: Number) => if (y > x) x else y
  * @returns The larger of the two operands
  *
  * @since v0.4.0
+ * @history v0.5.4: Handle NaN properly
  */
-export let max = (x: Number, y: Number) => if (x > y) x else y
+export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
 
 /**
  * Rounds its operand up to the next largest integer.
@@ -161,12 +177,19 @@ export let max = (x: Number, y: Number) => if (x > y) x else y
  * @returns The next largest integer of the operand
  *
  * @since v0.4.0
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let ceil = (x: Number) => {
-  let xval = coerceNumberToWasmF64(x)
-  let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
-  WasmI32.toGrain(reducedInteger(ceiling)): Number
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
+    infinity
+  } else {
+    let xval = coerceNumberToWasmF64(x)
+    let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
+    WasmI32.toGrain(reducedInteger(ceiling)): Number
+  }
 }
 
 /**
@@ -176,12 +199,19 @@ export let ceil = (x: Number) => {
  * @returns The previous integer of the operand
  *
  * @since v0.4.0
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let floor = (x: Number) => {
-  let xval = coerceNumberToWasmF64(x)
-  let floored = WasmI64.truncF64S(WasmF64.floor(xval))
-  WasmI32.toGrain(reducedInteger(floored)): Number
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
+    infinity
+  } else {
+    let xval = coerceNumberToWasmF64(x)
+    let floored = WasmI64.truncF64S(WasmF64.floor(xval))
+    WasmI32.toGrain(reducedInteger(floored)): Number
+  }
 }
 
 /**
@@ -191,12 +221,19 @@ export let floor = (x: Number) => {
  * @returns The integer part of the operand
  *
  * @since v0.4.0
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let trunc = (x: Number) => {
-  let xval = coerceNumberToWasmF64(x)
-  let trunced = WasmI64.truncF64S(xval)
-  WasmI32.toGrain(reducedInteger(trunced)): Number
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
+    infinity
+  } else {
+    let xval = coerceNumberToWasmF64(x)
+    let trunced = WasmI64.truncF64S(xval)
+    WasmI32.toGrain(reducedInteger(trunced)): Number
+  }
 }
 
 /**
@@ -206,12 +243,19 @@ export let trunc = (x: Number) => {
  * @returns The nearest integer to the operand
  *
  * @since v0.4.0
+ * @history v0.5.4: Handle NaN and Infinity properly
  */
 @unsafe
 export let round = (x: Number) => {
-  let xval = coerceNumberToWasmF64(x)
-  let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
-  WasmI32.toGrain(reducedInteger(rounded)): Number
+  if (x != x) {
+    nan
+  } else if (x == infinity) {
+    infinity
+  } else {
+    let xval = coerceNumberToWasmF64(x)
+    let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
+    WasmI32.toGrain(reducedInteger(rounded)): Number
+  }
 }
 
 /**
@@ -417,14 +461,19 @@ let chebyshevSine = (radians: Number) => {
  * @returns The computed sine
  *
  * @since v0.5.2
+ * @history v0.5.4: Handle NaN and Infinity
  */
 export let sin = (radians: Number) => {
-  let quot = reduceToPiBound(radians)
-  let bounded = radians - pi * quot
-  if (quot % 2 == 0) {
-    chebyshevSine(bounded)
+  if (radians != radians || radians == infinity) {
+    nan
   } else {
-    neg(chebyshevSine(bounded))
+    let quot = reduceToPiBound(radians)
+    let bounded = radians - pi * quot
+    if (quot % 2 == 0) {
+      chebyshevSine(bounded)
+    } else {
+      neg(chebyshevSine(bounded))
+    }
   }
 }
 
@@ -435,7 +484,12 @@ export let sin = (radians: Number) => {
  * @returns The computed cosine
  *
  * @since v0.5.2
+ * @history v0.5.4: Handle NaN and Infinity
  */
 export let cos = (radians: Number) => {
-  sin(pi / 2 + radians)
+  if (radians != radians || radians == infinity) {
+    nan
+  } else {
+    sin(pi / 2 + radians)
+  }
 }
