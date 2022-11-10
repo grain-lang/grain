@@ -133,32 +133,13 @@ export let pow = (base, power) => {
     isInteger(WasmI32.fromGrain(base)) && isInteger(WasmI32.fromGrain(power))
   ) {
     // Redefine Vars As Mutable
-    let mut base = base
+    let mut y = 1
     let mut power = power
-    // Calculate Power
-    if (base == 0 && power < 0) {
-      infinity
-    } else {
-      if (power < 0) {
-        base = 1 / base
-        power *= -1
-      }
-      if (power == 0) {
-        1
-      } else {
-        let mut y = 1
-        while (power > 1) {
-          if (isInteger(WasmI32.fromGrain(power / 2))) {
-            power /= 2
-          } else {
-            y = base * y
-            power = (power - 1) / 2
-          }
-          base *= base
-        }
-        base * y
-      }
+    while (power > 0) {
+      y = base * y
+      power -= 1
     }
+    y
   } else {
     // TODO(#553): Refactor Once we have early return
     // https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
@@ -194,7 +175,7 @@ export let pow = (base, power) => {
         output = x
       } else if (y == 0.0W) {
         foundOutput = true
-        output = 1.0W
+        output = nan
       }
     }
     // Actual Calculations
@@ -565,8 +546,9 @@ export let pow = (base, power) => {
  *
  * @since v0.5.3
  */
-export let exp = power => pow(e, power)
-
+export let exp = power => {
+  if (power == 0) 1 else pow(e, power)
+}
 /**
  * Computes the square root of its operand.
  *
@@ -1003,6 +985,9 @@ export let rec gamma = z => {
     let mut output = 0
     if (z < 0.5) {
       output = pi / (sin(pi * z) * gamma(1 - z))
+    } else if (z == 0.5) {
+      // Handle this case separately because it is out of the domain of Number.pow when calculating
+      output = 1.7724538509055164
     } else {
       z -= 1
       let mut x = c[0]

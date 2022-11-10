@@ -134,8 +134,8 @@ assert Number.pow(0.0, 3.0) == 0.0
 assert Number.pow(0.0, 2.0) == 0.0
 assert Number.pow(0.0, 1.0) == 0.0
 assert Number.pow(0.0, 0.5) == 0.0
-assert Number.pow(0.0, 0.0) == 1.0
-assert Number.pow(0.0, -0.0) == 1.0
+assert Number.isNaN(Number.pow(0.0, 0.0))
+assert Number.isNaN(Number.pow(0.0, -0.0))
 assert Number.pow(0.0, -0.5) == Number.infinity
 assert Number.pow(0.0, -1.0) == Number.infinity
 assert Number.pow(0.0, -2.0) == Number.infinity
@@ -148,21 +148,21 @@ assert Number.pow(-0.0, 3.0) == -0.0
 assert Number.pow(-0.0, 2.0) == 0.0
 assert Number.pow(-0.0, 1.0) == -0.0
 assert Number.pow(-0.0, 0.5) == 0.0
-assert Number.pow(-0.0, 0.0) == 1.0
-assert Number.pow(-0.0, -0.0) == 1.0
+assert Number.isNaN(Number.pow(-0.0, 0.0))
+assert Number.isNaN(Number.pow(-0.0, -0.0))
 assert Number.pow(-0.0, -0.5) == Number.infinity
 assert Number.pow(-0.0, -1.0) == Number.infinity * -1
 assert Number.pow(-0.0, -2.0) == Number.infinity
 assert Number.pow(-0.0, -3.0) == Number.infinity * -1
 assert Number.pow(-0.0, -4.0) == Number.infinity
 assert Number.pow(-0.0, Number.infinity * -1) == Number.infinity
-assert Number.pow(Number.nan, 0.0) == 1.0
-assert Number.pow(Number.infinity, 0.0) == 1.0
-assert Number.pow(Number.infinity * -1, 0.0) == 1.0
-assert Number.pow(1.0, 0.0) == 1.0
-assert Number.pow(-1.0, 0.0) == 1.0
-assert Number.pow(-0.5, 0.0) == 1.0
-assert Number.pow(Number.nan, -0.0) == 1.0
+assert Number.isNaN(Number.pow(Number.nan, 0.0))
+assert Number.isNaN(Number.pow(Number.infinity, 0.0))
+assert Number.isNaN(Number.pow(Number.infinity * -1, 0.0))
+assert Number.isNaN(Number.pow(1.0, 0.0))
+assert Number.isNaN(Number.pow(-1.0, 0.0))
+assert Number.isNaN(Number.pow(-0.5, 0.0))
+assert Number.isNaN(Number.pow(Number.nan, -0.0))
 assert Number.pow(1, 1) == 1
 assert Number.pow(2, 1) == 2
 assert Number.pow(300, 1) == 300
@@ -184,8 +184,8 @@ assert Number.pow(-1, 1.0) == -1.0
 assert Number.pow(-2.0, 1) == -2.0
 assert Number.pow(-300, 1.0) == -300.0
 assert Number.pow(0.0, 1) == 0.0
-assert Number.pow(1, 0.0) == 1.0
-assert Number.pow(0.0, 0) == 1.0
+assert Number.isNaN(Number.pow(1, 0.0))
+assert Number.isNaN(Number.pow(0.0, 0))
 assert Number.pow(1, 5.0) == 1.0
 assert Number.pow(5.0, 5) == 3125.0
 assert Number.pow(-1.0, 1) == -1.0
@@ -199,9 +199,6 @@ assert Number.pow(1/2, 2) == 1/4
 assert Number.pow(2, 1/2) == 1.4142135623730952
 assert Number.pow(4, 1/2) == 2
 assert Number.pow(4, -1/2) == 0.5
-print(Number.pow(9223372036854775809, 9223372036854775809))
-assert Number.pow(9223372036854775809, 9223372036854775809) ==
-85070591730234615884290395931651604481
 // Exp
 assert Number.exp(1) == 2.718281828459045
 assert Number.exp(10) == 22026.465794806703
