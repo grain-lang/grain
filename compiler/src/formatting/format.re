@@ -3703,7 +3703,7 @@ and print_value_bind =
           | _ => Doc.concat([Doc.space, printed])
           };
 
-        let expression_group = Doc.group(expression);
+        let expression_group = expression; // Doc.group(expression);
 
         let pattern_comments =
           Comment_utils.get_comments_enclosed_and_before_location(
