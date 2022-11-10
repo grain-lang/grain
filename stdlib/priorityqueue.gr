@@ -37,8 +37,8 @@ let swap = (i1, i2, array) => {
 let get = (array, i) =>
   Option.expect(
     "Impossible: " ++
-      toString(i) ++
-      " in PriorityQueue's inner storage array is None",
+    toString(i) ++
+    " in PriorityQueue's inner storage array is None",
     array[i]
   )
 

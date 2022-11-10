@@ -170,10 +170,10 @@ let eat = (buf: RegExBuf, char: Char) => {
         parseErr(
           buf,
           "Expected character '" ++
-            Char.toString(char) ++
-            ", but found character '" ++
-            Char.toString(ret) ++
-            "'",
+          Char.toString(char) ++
+          ", but found character '" ++
+          Char.toString(ret) ++
+          "'",
           0
         )
       )
@@ -908,8 +908,8 @@ parseRangeRest =
                       Err(e) =>
                         Err(
                           "Invalid Regular Expression: illegal alphebetic escape (position " ++
-                            toString(curPos) ++
-                            ")"
+                          toString(curPos) ++
+                          ")"
                         ),
                       Ok(range1) => {
                         match (rangeAddCaseAware(rng, spanFrom, buf.config)) {
@@ -1551,10 +1551,10 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                   parseErr(
                     buf,
                     "Unrecognized property name in `\\" ++
-                      pC ++
-                      "`: `" ++
-                      s ++
-                      "`",
+                    pC ++
+                    "`: `" ++
+                    s ++
+                    "`",
                     0
                   )
                 ),
@@ -3690,10 +3690,12 @@ let makeMatchResult = (origString, start, end, state) => {
 // Helpers for user-facing match functionality
 
 let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
-  let state = if (rx.reReferences) Array.make(rx.reNumGroups, None)
+  let state =
+    if (rx.reReferences) Array.make(rx.reNumGroups, None)
     else Array.make(0, None)
-  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+  let toWrap =
+    if (startOffset == 0 && endOffset == String.length(string)) string
+    else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
@@ -3705,8 +3707,9 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
     []
   } else {
     let state = Array.make(rx.reNumGroups, None)
-    let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-        string else String.slice(startOffset, endOffset, string)
+    let toWrap =
+      if (startOffset == 0 && endOffset == String.length(string)) string
+      else String.slice(startOffset, endOffset, string)
     let buf = makeMatchBuffer(toWrap)
     match (searchMatch(
       rx,
@@ -3744,8 +3747,9 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
 
 let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
-  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+  let toWrap =
+    if (startOffset == 0 && endOffset == String.length(string)) string
+    else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   match (searchMatch(
     rx,

@@ -520,8 +520,8 @@ export let part = (count, list) => {
  * @since v0.1.0
  */
 export let rotate = (count, list) => {
-  let (beginning, end) = if (count >= 0) part(count, list)
-    else part(length(list) + count, list)
+  let (beginning, end) =
+    if (count >= 0) part(count, list) else part(length(list) + count, list)
   append(end, beginning)
 }
 

@@ -2104,7 +2104,7 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   | _ =>
     Doc.group(
       print_expression(
-        ~expression_parent=GenericExpression,
+        ~expression_parent=ConditionalExpression,
         ~original_source,
         ~comments,
         arg,
@@ -3694,16 +3694,13 @@ and print_value_bind =
 
         let expression =
           switch (vb.pvb_expr.pexp_desc) {
-          | PExpApp(fn, _) => printed
-
           | PExpIf(_) =>
             if (Doc.willBreak(printed)) {
-              printed;
+              Doc.concat([Doc.space, printed]);
             } else {
-              Doc.indent(printed);
+              Doc.indent(Doc.concat([Doc.line, printed]));
             }
-
-          | _ => printed
+          | _ => Doc.concat([Doc.space, printed])
           };
 
         let expression_group = Doc.group(expression);
@@ -3730,7 +3727,7 @@ and print_value_bind =
           | _ => Doc.nil
           },
           Doc.equal,
-          Doc.space,
+          //  Doc.space,
           expression_group,
         ]);
       };

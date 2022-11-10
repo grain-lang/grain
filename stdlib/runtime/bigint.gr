@@ -216,12 +216,12 @@ let setFlag = (ptr, flag, value) => {
   WasmI32.store(
     ptr,
     WasmI32.load(ptr, 12n) & !flag |
-      flag *
-        (if (WasmI32.eqz(value)) {
-          0n
-        } else {
-          1n
-        }),
+    flag *
+    (if (WasmI32.eqz(value)) {
+      0n
+    } else {
+      1n
+    }),
     12n
   )
 }
