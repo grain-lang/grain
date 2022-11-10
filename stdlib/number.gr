@@ -133,13 +133,27 @@ export let pow = (base, power) => {
     isInteger(WasmI32.fromGrain(base)) && isInteger(WasmI32.fromGrain(power))
   ) {
     // Redefine Vars As Mutable
-    let mut y = 1
+    let mut base = base
     let mut power = power
-    while (power > 0) {
-      y = base * y
-      power -= 1
+    // Calculate Power
+    if (base == 0 && power < 0) {
+      infinity
+    } else {
+      if (power < 0) {
+        base = 1 / base
+        power *= -1
+      }
+      if (power == 0) {
+        1
+      } else {
+        let mut y = 1
+        while (power > 0) {
+          y = base * y
+          power -= 1
+        }
+        y
+      }
     }
-    y
   } else {
     // TODO(#553): Refactor Once we have early return
     // https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
