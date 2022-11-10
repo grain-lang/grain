@@ -24,7 +24,14 @@ let myFunction4 = () => {
 }
 
 let rotate = (count, list) => {
-  let (beginning, end) = if (count >= 0) part(count, list)
-    else part(length(list) + count, list)
+  let (beginning, end) =
+    if (count >= 0) part(count, list) else part(length(list) + count, list)
   append(end, beginning)
 }
+
+let qsize = (if (WasmI32.eqz(WasmI32.and(m + 1n, 1n))) {
+    m + 1n
+  } else {
+    m + 2n
+  }) >>
+  1n

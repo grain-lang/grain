@@ -121,10 +121,10 @@ let withConfig = (buf: RegExBuf, config: RegExParserConfig) => {
 
 let parseErr = (buf: RegExBuf, msg: String, posShift) => {
   "Invalid Regular Expression: " ++
-  msg ++
-  " (position " ++
-  toString(unbox(buf.cursor) + posShift) ++
-  ")"
+    msg ++
+    " (position " ++
+    toString(unbox(buf.cursor) + posShift) ++
+    ")"
 }
 
 let next = (buf: RegExBuf) => {
@@ -1940,7 +1940,7 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
     REAlts(a, b) => isAnchored(a) && isAnchored(b),
     REConditional(_, rx1, rx2, _, _, _) =>
       isAnchored(rx1) &&
-      Option.mapWithDefault(isAnchored, false, rx2),
+        Option.mapWithDefault(isAnchored, false, rx2),
     REGroup(rx, _) => isAnchored(rx),
     RECut(rx, _, _, _) => isAnchored(rx),
     _ => false,
@@ -2323,10 +2323,10 @@ let charMatcher = (toMatch, next_m) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => toMatch == c,
+        }
     }
   ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
@@ -2344,10 +2344,10 @@ let charTailMatcher = toMatch =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => toMatch == c,
+        }
     }
   ) Some(pos + 1) else None
 }
@@ -2400,13 +2400,13 @@ let stringMatcher = (toMatch, len, next_m) =>
   if (
     {
       pos + len <= limit &&
-      subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len
-      )
+        subArraysEqual(
+          buf.matchInputExploded,
+          pos,
+          String.explode(toMatch),
+          0,
+          len
+        )
     }
   ) next_m(buf, pos + len, start, limit, end, state, stack) else None
 }
@@ -2424,13 +2424,13 @@ let stringTailMatcher = (toMatch, len) =>
   if (
     {
       pos + len <= limit &&
-      subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len
-      )
+        subArraysEqual(
+          buf.matchInputExploded,
+          pos,
+          String.explode(toMatch),
+          0,
+          len
+        )
     }
   ) Some(pos + len) else None
 }
@@ -2531,10 +2531,10 @@ let rangeMatcher = (rng: CharRange, next_m) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => rangeContains(rng, Char.code(c)),
+        }
     }
   ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
@@ -2552,10 +2552,10 @@ let rangeTailMatcher = (rng: CharRange) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => rangeContains(rng, Char.code(c)),
+        }
     }
   ) Some(pos + 1) else None
 }
@@ -2654,7 +2654,7 @@ let isWordChar = c => {
 
 let isWordBoundary = (buf, pos, start, limit, end) => {
   !((pos == start || !isWordChar(matchBufChar(buf, pos - 1))) ==
-  (pos == end || !isWordChar(matchBufChar(buf, pos))))
+    (pos == end || !isWordChar(matchBufChar(buf, pos))))
 }
 
 let wordBoundaryMatcher = next_m =>
@@ -3690,10 +3690,12 @@ let makeMatchResult = (origString, start, end, state) => {
 // Helpers for user-facing match functionality
 
 let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
-  let state = if (rx.reReferences) Array.make(rx.reNumGroups, None)
+  let state =
+    if (rx.reReferences) Array.make(rx.reNumGroups, None)
     else Array.make(0, None)
-  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+  let toWrap =
+    if (startOffset == 0 && endOffset == String.length(string)) string
+    else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
@@ -3705,8 +3707,9 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
     []
   } else {
     let state = Array.make(rx.reNumGroups, None)
-    let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-        string else String.slice(startOffset, endOffset, string)
+    let toWrap =
+      if (startOffset == 0 && endOffset == String.length(string)) string
+      else String.slice(startOffset, endOffset, string)
     let buf = makeMatchBuffer(toWrap)
     match (searchMatch(
       rx,
@@ -3744,8 +3747,9 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
 
 let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
-  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+  let toWrap =
+    if (startOffset == 0 && endOffset == String.length(string)) string
+    else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   match (searchMatch(
     rx,

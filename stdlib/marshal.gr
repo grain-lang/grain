@@ -54,7 +54,7 @@ let roundTo8 = n => {
 @unsafe
 let isHeapPtr = value =>
   (value & Tags._GRAIN_GENERIC_TAG_MASK) ==
-  Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
+    Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
 
 @unsafe
 let rec size = (value, acc, valuesSeen, toplevel) => {
@@ -157,9 +157,9 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
             },
             t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
               acc +
-              16n +
-              size(load(value, 8n), 0n, valuesSeen, false) +
-              size(load(value, 12n), 0n, valuesSeen, false)
+                16n +
+                size(load(value, 8n), 0n, valuesSeen, false) +
+                size(load(value, 12n), 0n, valuesSeen, false)
             },
             _ => {
               fail "Unknown number type"
