@@ -199,7 +199,7 @@ assert Number.pow(1/2, 2) == 1/4
 assert Number.pow(2, 1/2) == 1.4142135623730952
 assert Number.pow(4, 1/2) == 2
 assert Number.pow(4, -1/2) == 0.5
-// Exp
+// Exp - These may differ from other languages as other languages use an approximation
 assert Number.exp(1) == 2.718281828459045
 assert Number.exp(10) == 22026.465794806703
 assert Number.exp(0) == 1

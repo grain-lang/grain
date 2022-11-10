@@ -139,19 +139,16 @@ export let pow = (base, power) => {
     if (base == 0 && power < 0) {
       infinity
     } else {
-      if (power < 0) {
-        base = 1 / base
-        power *= -1
-      }
       if (power == 0) {
         1
       } else {
         let mut y = 1
-        while (power > 0) {
+        let mut z = if (power < 0) power * -1 else power
+        while (z > 0) {
           y = base * y
-          power -= 1
+          z -= 1
         }
-        y
+        if (power < 0) 1 / y else y
       }
     }
   } else {
@@ -561,6 +558,7 @@ export let pow = (base, power) => {
  * @since v0.5.3
  */
 export let exp = power => {
+  // TODO: Consider using a more efficient approximation
   if (power == 0) 1 else pow(e, power)
 }
 /**
