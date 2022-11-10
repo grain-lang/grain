@@ -1940,7 +1940,8 @@ and print_infix_application =
         force_break_if_line_comment(~separator=Doc.nil, line_comments);
       },
       after_comments_docs,
-      if (expression_parent == ConditionalExpression) {
+      switch (expression_parent) {
+      | ConditionalExpression =>
         Doc.concat([
           Doc.line,
           if (right_is_leaf) {
@@ -1948,8 +1949,8 @@ and print_infix_application =
           } else {
             rhs_expr;
           },
-        ]);
-      } else {
+        ])
+      | _ =>
         Doc.indent(
           Doc.concat([
             Doc.line,
@@ -1959,7 +1960,7 @@ and print_infix_application =
               rhs_expr;
             },
           ]),
-        );
+        )
       },
     ]);
 
