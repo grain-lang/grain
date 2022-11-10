@@ -54,6 +54,9 @@ assert Number.isNaN(Number.sub(Number.nan, Number.nan))
 }
 // mul
 assert Number.mul(5, 5) == 25
+assert Number.mul(9223372036854775809, 5) == 46116860184273879045
+assert Number.mul(9223372036854775809, 9223372036854775809) ==
+  85070591730234615884290395931651604481
 assert Number.mul(Number.infinity, 10) == Number.infinity
 assert Number.mul(Number.infinity, Number.infinity) == Number.infinity
 assert Number.isNaN(Number.mul(Number.infinity, Number.nan))
@@ -72,6 +75,8 @@ assert Number.isNaN(Number.mul(Number.nan, Number.nan))
 }
 // div
 assert Number.div(25, 5) == 5
+assert Number.div(9223372036854775809, 9) == 1024819115206086201
+assert Number.div(9223372036854775809, 9223372036854775809) == 1
 assert Number.div(Number.infinity, 10) == Number.infinity
 assert Number.isNaN(Number.div(Number.infinity, Number.infinity))
 assert Number.isNaN(Number.div(Number.infinity, Number.nan))

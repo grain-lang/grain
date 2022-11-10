@@ -1424,6 +1424,13 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         Memory.decRef(yBig)
         ret
       },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        if (isDivide) {
+          reducedBigInteger(BI.div(x, y))
+        } else {
+          reducedBigInteger(BI.mul(x, y))
+        }
+      },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         let yNumerator = boxedRationalNumerator(y)
         let yDenominator = boxedRationalDenominator(y)
