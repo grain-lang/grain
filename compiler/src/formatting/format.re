@@ -8,7 +8,8 @@ module Doc = Res_doc;
 
 type expression_parent_type =
   | ConditionalExpression
-  | GenericExpression;
+  | GenericExpression
+  | InfixOperation;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
@@ -1877,18 +1878,23 @@ and print_infix_application =
     let left_needs_parens = left_is_if || left_grouping_required;
     let right_needs_parens = right_is_if || right_grouping_required;
 
+    let l1 =
+      print_expression(
+        ~expression_parent=GenericExpression,
+        ~original_source,
+        ~comments,
+        first,
+      );
+
     let lhs =
       if (left_needs_parens) {
         Doc.concat([
           Doc.lparen,
-          Doc.concat([
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ]),
+          if (Doc.willBreak(l1)) {
+            Doc.indent(l1);
+          } else {
+            l1;
+          },
           Doc.rparen,
         ]);
       } else {
@@ -2956,7 +2962,7 @@ and print_expression =
         switch (true_expr.pexp_desc) {
         | PExpBlock(expressions) =>
           Doc.concat([
-            Doc.space,
+            Doc.space, // FIX me this needs to indent
             print_expression(
               ~expression_parent=GenericExpression,
               ~original_source,
