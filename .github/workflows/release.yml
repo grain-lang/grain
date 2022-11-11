@@ -6,7 +6,7 @@ on:
 jobs:
   release-please:
     name: Create Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -23,7 +23,7 @@ jobs:
     needs: [release-please]
     if: ${{ needs.release-please.outputs.releases_created }}
     name: Prepare artifacts
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     outputs:
       stdlib_download_url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
       js-runner_download_url: ${{ steps.js-runner-upload.outputs.browser_download_url }}
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: "16"
           check-latest: true
-          cache: 'npm'
+          cache: "npm"
 
       - name: Setup environment
         run: |
@@ -141,7 +141,7 @@ jobs:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.releases_created }}
     name: Dispatch website release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: grain-lang/workflow-dispatch-action@v1.0.0
         with:
@@ -155,7 +155,7 @@ jobs:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.releases_created }}
     name: Dispatch homebrew release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: grain-lang/workflow-dispatch-action@v1.0.0
         with:
@@ -169,7 +169,7 @@ jobs:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.releases_created }}
     name: Dispatch Docker builds
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: grain-lang/workflow-dispatch-action@v1.0.0
         with:
@@ -183,7 +183,7 @@ jobs:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.releases_created }}
     name: Publish stdlib to npm registry
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Setup NodeJS
         uses: actions/setup-node@v3.1.1
@@ -201,7 +201,7 @@ jobs:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.releases_created }}
     name: Publish js-runner to npm registry
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Setup NodeJS
         uses: actions/setup-node@v3.1.1

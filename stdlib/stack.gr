@@ -21,9 +21,21 @@ record Stack<a> {
  */
 
 /**
+ * An empty stack.
+ * 
+ * @since v0.5.4
+ */
+export let empty = {
+  let empty = { data: [], }
+  empty
+}
+
+/**
  * Creates a new stack.
  *
  * @returns An empty stack
+ * 
+ * @deprecated This will be removed in the v0.6.0 release of Grain.
  */
 export let make = () => {
   { data: [], }

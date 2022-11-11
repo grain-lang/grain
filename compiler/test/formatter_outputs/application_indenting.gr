@@ -2,7 +2,7 @@ let flagsToWasmVal = (flag, i) => {
   let riiiiiiightsInheriting = Module64.load(structPtr, 16n)
   (riiiiiiightsInheriting &
     1N << Module64.extendI32U(Module32.fromGrain(i) >> 1n)) >
-  0N
+    0N
 }
 
 let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
@@ -23,3 +23,6 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
   }
   Module32.store8(lastp, digit, 0n)
 }
+
+assert Hash.hash("grain > ore > wool > lumber > brick") ==
+  Hash.hash("grain > ore > wool > lumber > brick")

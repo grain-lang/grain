@@ -15,13 +15,26 @@ record Queue<a> {
 }
 
 /**
- * @section Values: Functions for working with queues.
+ * @section Values: Functions and constants for working with queues.
  */
+
+/**
+ * An empty queue.
+ * 
+ * @since v0.5.4
+ */
+export let empty = {
+  let empty = { forwards: [], backwards: [] }
+  empty
+}
 
 /**
  * Creates an empty queue.
  * 
  * @returns An empty queue
+ * 
+ * @deprecated This will be removed in the v0.6.0 release of Grain.
+ * 
  * @since v0.2.0
  */
 export let make = () => {

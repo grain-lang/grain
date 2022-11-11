@@ -41,8 +41,18 @@ record ImmutablePriorityQueue<a> {
 }
 
 /**
- * @section Values: Functions for working with ImmutablePriorityQueues.
+ * @section Values: Functions and constants for working with ImmutablePriorityQueues.
  */
+
+/**
+ * An empty priority queue with the default `compare` comparator.
+ * 
+ * @since v0.5.4
+ */
+export let empty = {
+  let empty = { comp: compare, size: 0, root: None }
+  empty
+}
 
 /**
  * Creates a new priority queue with a comparator function, which is used to
@@ -132,8 +142,8 @@ export let push = (val, pq) => {
     None => { comp, size: 1, root: Some({ rootVal: val, pq: [] }) },
     Some({ rootVal, pq }) => {
       // make the new value the root if it has higher priority than the highest priority value
-      let (morePriorityVal, lessPriorityVal) = if (comp(val, rootVal) <= 0)
-          (val, rootVal) else (rootVal, val)
+      let (morePriorityVal, lessPriorityVal) =
+        if (comp(val, rootVal) <= 0) (val, rootVal) else (rootVal, val)
 
       let newRoot = Some(
         { rootVal: morePriorityVal, pq: skewInsert(comp, lessPriorityVal, pq) }
@@ -162,8 +172,8 @@ export let peek = pq => {
 let linkNodes = (comp, node1, node2) => {
   // make the node with higher priority the parent of the node with smaller
   // priority to presere heap-ordering
-  let (morePriority, lessPriority) = if (comp(node1.val, node2.val) <= 0)
-      (node1, node2) else (node2, node1)
+  let (morePriority, lessPriority) =
+    if (comp(node1.val, node2.val) <= 0) (node1, node2) else (node2, node1)
   {
     val: morePriority.val,
     rank: morePriority.rank + 1,

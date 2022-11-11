@@ -22,9 +22,9 @@ assert Result.mapErr(incr, Err(1)) == Err(2)
 
 // flatMap
 assert Result.flatMap(a => Ok("some other type"), Ok(1)) ==
-Ok("some other type")
+  Ok("some other type")
 assert Result.flatMap(a => Err("some other type"), Ok(1)) ==
-Err("some other type")
+  Err("some other type")
 assert Result.flatMap(x => fail "Shouldn't run", Err("Ooops")) == Err("Ooops")
 
 // flatMapErr
@@ -38,12 +38,12 @@ assert Result.mapWithDefault(toString, "Nope!", Err(1)) == "Nope!"
 
 // mapWithDefaultFn
 assert Result.mapWithDefaultFn(toString, x => fail "Shouldn't run", Ok(1)) ==
-"1"
+  "1"
 assert Result.mapWithDefaultFn(x => fail "Shouldn't run",
 x => "7",
 Err("Awesome")
 ) ==
-"7"
+  "7"
 
 // or
 assert Result.or(Ok(1), Ok(2)) == Ok(1)
