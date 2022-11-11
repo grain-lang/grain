@@ -140,7 +140,7 @@ export let pow = (base, power) => {
     if (base == 0 && power < 0) {
       infinity
     } else {
-      if (power == 0) {
+      if (power == 0 || base == 1) {
         1
       } else {
         let mut y = 1
