@@ -129,6 +129,7 @@ export let div = (/)
  */
 @unsafe
 export let pow = (base, power) => {
+  // TODO(#1476): Move This Into runtime/numbers.gr, Requires Refactoring The int^int case
   if (
     isInteger(WasmI32.fromGrain(base)) && isInteger(WasmI32.fromGrain(power))
   ) {
@@ -974,7 +975,9 @@ export let tan = (radians: Number) => {
  * @since v0.5.4
  */
 export let rec gamma = z => {
-  if (isInteger(z) && z > 0) {
+  if (z == 0) {
+    fail "Gamma of 0 is undefined"
+  } else if (isInteger(z) && z > 0) {
     let mut output = 1
     for (let mut i = 1; i < z; i += 1) {
       output *= i
@@ -999,7 +1002,7 @@ export let rec gamma = z => {
       output = pi / (sin(pi * z) * gamma(1 - z))
     } else if (z == 0.5) {
       // Handle this case separately because it is out of the domain of Number.pow when calculating
-      output = 1.7724538509055164
+      output = 1.7724538509055159
     } else {
       z -= 1
       let mut x = c[0]
