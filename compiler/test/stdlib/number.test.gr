@@ -456,6 +456,7 @@ assert Number.isNaN(Number.cos(Number.nan))
 assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
 assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
 assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
+assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
 assert Number.isNaN(Number.tan(Number.infinity))
 assert Number.isNaN(Number.tan(Number.nan))
 
@@ -490,6 +491,11 @@ assert Number.isNaN(Number.factorial(Number.nan))
 assert Number.toRadian(0) == 0
 assert Number.toRadian(30) == Number.pi / 6
 assert Number.toRadian(-30) == Number.pi / -6
+assert Number.toRadian(-30) == Number.pi / -6
+assert Number.toRadian(1/2) == 0.008726646259971648
+assert Number.toRadian(-1/2) == -0.008726646259971648
+assert Number.toRadian(1/4) == 0.004363323129985824
+assert Number.toRadian(9223372036854775809) == 160978210179491630.0
 assert Number.toRadian(Number.infinity) == Number.infinity
 assert Number.isNaN(Number.toRadian(Number.nan))
 
@@ -498,4 +504,8 @@ assert Number.toDegree(0) == 0
 assert Number.toDegree(Number.pi) == 180
 assert Number.toDegree(Number.pi * -1) == -180
 assert Number.toDegree(Number.infinity) == Number.infinity
+assert Number.toDegree(0.008726646259971648) == 1/2
+assert Number.toDegree(-0.008726646259971648) == -1/2
+assert Number.toDegree(0.004363323129985824) == 1/4
+assert Number.toDegree(160978210179491630.0) == 9223372036854775809
 assert Number.isNaN(Number.toDegree(Number.nan))
