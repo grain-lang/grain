@@ -89,6 +89,7 @@ describe("stdlib", ({test, testSkip}) => {
     "enterthevoid\n",
   );
   assertStdlib("array.test");
+  assertStdlib("immutablearray.test");
   assertStdlib("bigint.test");
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
