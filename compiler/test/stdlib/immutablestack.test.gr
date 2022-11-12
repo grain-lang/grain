@@ -1,0 +1,33 @@
+import Stack from "immutablestack"
+
+// 1 <- 2 <- 3
+let sampleStack = Stack.push(3, Stack.push(2, Stack.push(1, Stack.empty)))
+
+// Stack.isEmpty
+
+assert Stack.isEmpty(Stack.empty)
+assert !Stack.isEmpty(sampleStack)
+
+// Stack.peek
+
+assert Stack.peek(Stack.empty) == None
+assert Stack.peek(sampleStack) == Some(3)
+
+// Stack.push
+
+assert Stack.peek(Stack.push(1, Stack.empty)) == Some(1)
+assert Stack.peek(Stack.push(4, sampleStack)) == Some(4)
+
+// Stack.pop
+
+assert Stack.isEmpty(Stack.pop(Stack.empty))
+assert Stack.isEmpty(Stack.pop(Stack.push(1, Stack.empty)))
+assert Stack.isEmpty(Stack.pop(Stack.pop(Stack.pop(sampleStack))))
+assert Stack.peek(Stack.pop(sampleStack)) == Some(2)
+assert Stack.peek(Stack.pop(Stack.push(4, Stack.pop(sampleStack)))) == Some(2)
+
+// Stack.size
+
+assert Stack.size(Stack.empty) == 0
+assert Stack.size(sampleStack) == 3
+assert Stack.size(Stack.pop(Stack.pop(sampleStack))) == 1

@@ -1,36 +1,118 @@
 module QueueTest
 
 include "queue"
+from Queue use { Mutable as MutQ, Immutable as ImmQ }
+include "list"
 
-let empty = Queue.make()
+// Mutable queue tests
+
+let empty = MutQ.make()
+assert MutQ.isEmpty(empty)
+assert MutQ.size(empty) == 0
+assert MutQ.peek(empty) == None
+assert MutQ.pop(empty) == None
+assert MutQ.size(empty) == 0
+
+let queue = MutQ.make()
+MutQ.push(1, queue)
+MutQ.push(2, queue)
+MutQ.push(3, queue)
+
+assert !MutQ.isEmpty(queue)
+assert MutQ.size(queue) == 3
+assert MutQ.peek(queue) == Some(1)
+
+assert MutQ.pop(queue) == Some(1)
+assert MutQ.peek(queue) == Some(2)
+assert MutQ.size(queue) == 2
+
+MutQ.push(4, queue)
+assert MutQ.size(queue) == 3
+assert MutQ.peek(queue) == Some(2)
+let copy = MutQ.copy(queue)
+MutQ.pop(copy)
+assert MutQ.size(copy) == 2
+assert MutQ.size(queue) == 3
+MutQ.clear(queue)
+assert MutQ.size(queue) == 0
+assert MutQ.peek(queue) == None
+
+// test that expansion works
+let queue = MutQ.makeSized(3)
+MutQ.push(0, queue)
+MutQ.push(1, queue)
+MutQ.push(2, queue)
+MutQ.push(3, queue)
+assert MutQ.pop(queue) == Some(0)
+assert MutQ.pop(queue) == Some(1)
+assert MutQ.pop(queue) == Some(2)
+assert MutQ.pop(queue) == Some(3)
+assert MutQ.pop(queue) == None
+
+// test that the "circular" behavior of the circular queue works as expected
+let queue = MutQ.makeSized(4)
+let push = x => () => MutQ.push(x, queue)
+let pop = () => ignore(MutQ.pop(queue))
+let actions = [
+  push(1),
+  push(2),
+  push(3),
+  push(4),
+  pop,
+  pop,
+  pop,
+  push(5),
+  push(6),
+  pop,
+  pop,
+  push(7),
+  push(8),
+  push(9),
+]
+List.forEach(action => action(), actions)
+
+assert MutQ.size(queue) == 4
+assert MutQ.peek(queue) == Some(6)
+
+MutQ.push(10, queue)
+assert MutQ.size(queue) == 5
+assert MutQ.pop(queue) == Some(6)
+assert MutQ.pop(queue) == Some(7)
+assert MutQ.pop(queue) == Some(8)
+assert MutQ.pop(queue) == Some(9)
+assert MutQ.pop(queue) == Some(10)
+assert MutQ.pop(queue) == None
+
+// Immutable queue tests
+
 // 1 <- 2 <- 3
-let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, empty)))
+let sampleQueue = ImmQ.push(3, ImmQ.push(2, ImmQ.push(1, ImmQ.empty)))
 
-// Queue.isEmpty
+// ImmQ.isEmpty
 
-assert Queue.isEmpty(empty)
-assert !Queue.isEmpty(sampleQueue)
+assert ImmQ.isEmpty(ImmQ.empty)
+assert !ImmQ.isEmpty(sampleQueue)
 
-// Queue.peek
+// ImmQ.peek
 
-assert Queue.peek(empty) == None
-assert Queue.peek(sampleQueue) == Some(1)
+assert ImmQ.peek(ImmQ.empty) == None
+assert ImmQ.peek(sampleQueue) == Some(1)
 
-// Queue.push
+// ImmQ.push
 
-assert Queue.peek(Queue.push(1, empty)) == Some(1)
-assert Queue.peek(Queue.push(4, sampleQueue)) == Some(1)
+assert ImmQ.peek(ImmQ.push(1, ImmQ.empty)) == Some(1)
+assert ImmQ.peek(ImmQ.push(4, sampleQueue)) == Some(1)
 
-// Queue.pop
+// ImmQ.pop
 
-assert Queue.isEmpty(Queue.pop(empty))
-assert Queue.isEmpty(Queue.pop(Queue.push(1, empty)))
-assert Queue.isEmpty(Queue.pop(Queue.pop(Queue.pop(sampleQueue))))
-assert Queue.peek(Queue.pop(sampleQueue)) == Some(2)
-assert Queue.peek(Queue.pop(Queue.push(4, Queue.pop(sampleQueue)))) == Some(3)
+assert ImmQ.isEmpty(ImmQ.pop(ImmQ.empty))
+assert ImmQ.isEmpty(ImmQ.pop(ImmQ.push(1, ImmQ.empty)))
+assert ImmQ.isEmpty(ImmQ.pop(ImmQ.pop(ImmQ.pop(sampleQueue))))
+assert ImmQ.peek(ImmQ.pop(sampleQueue)) == Some(2)
+assert ImmQ.peek(ImmQ.pop(ImmQ.push(4, ImmQ.pop(sampleQueue)))) == Some(3)
 
-// Queue.size
+// ImmQ.size
 
-assert Queue.size(empty) == 0
-assert Queue.size(sampleQueue) == 3
-assert Queue.size(Queue.pop(Queue.pop(sampleQueue))) == 1
+assert ImmQ.size(ImmQ.empty) == 0
+assert ImmQ.size(sampleQueue) == 3
+assert ImmQ.size(ImmQ.pop(ImmQ.pop(sampleQueue))) == 1
