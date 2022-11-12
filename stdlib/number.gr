@@ -21,6 +21,7 @@ import {
 import { parseInt } from "runtime/stringUtils"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
+import Exception from "runtime/Exception"
 
 /**
  * @section Constants: Number constant values.
@@ -981,7 +982,7 @@ export let tan = (radians: Number) => {
  */
 export let rec gamma = z => {
   if (z == 0) {
-    fail "Gamma of 0 is undefined"
+    throw Exception.InvalidArgument("Gamma of 0 is undefined")
   } else if (isInteger(z) && z > 0) {
     let mut output = 1
     for (let mut i = 1; i < z; i += 1) {
@@ -1034,8 +1035,13 @@ export let rec gamma = z => {
 export let rec factorial = n => {
   if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
     !isInteger(n) && n < 0
-  ) fail "Cannot compute the factorial of a negative non-integer"
-  else gamma(n + 1)
+  ) {
+    throw Exception.InvalidArgument(
+      "Cannot compute the factorial of a negative non-integer"
+    )
+  } else {
+    gamma(n + 1)
+  }
 }
 
 /**
