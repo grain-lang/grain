@@ -93,7 +93,7 @@ assert Number.isNaN(Number.div(Number.nan, Number.nan))
   assert 2/3 / 4.0 == 0.16666666666666666
   assert 4.0 / (2/3) == 6.0
 }
-// Number.Pow Tests Are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
+// Number.pow tests are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
 /*
   libc-test is licensed under the following standard MIT license:
   Copyright © 2005-2013 libc-test AUTHORS
@@ -118,7 +118,7 @@ assert Number.isNaN(Number.div(Number.nan, Number.nan))
   math tests use numbers under BSD and GPL licenses see src/math/ucb/*
   and src/math/crlibm/* for details
 */
-// Pow
+// pow
 assert Number.isNaN(Number.pow(-8.06684839057968084, 4.53566256067686879))
 assert Number.pow(4.34523984933830487, -8.88799136300345083) ==
 0.00000213471188255872853
@@ -209,8 +209,8 @@ assert Number.pow(9223372036854775809, 2) ==
 assert Number.pow(9223372036854775809, 0.5) == 3037000499.97605
 assert Number.pow(9223372036854775809.0, 0.5) == 3037000499.97605
 assert Number.pow(9223372036854775809, 0) == 1
-// TODO(#1168): Refactor This once rationals are fixed
-let denom = 85070591730234615884290395931651604481
+// TODO(#1168): Use rational literal
+let denom = 85070591730234615 / u / 40705786884290395931651604481
 assert Number.pow(9223372036854775809, -2) ==
 1 / denom // 1.1754943508222875e-38
 assert Number.pow(9223372036854775809, 1/5) == 6208.375056426594
@@ -219,8 +219,7 @@ assert Number.pow(10223372036854775809, 10) ==
 12472159440978016923768615307032788210916694000775261660538874886865415760948494778813645195039710006678013364969179502650466497057008288260604039903029954443675868581729857084924132550246401
 assert Number.pow(1, 9223372036854775809) == 1
 assert Number.pow(2.0, 9223372036854775809) == Number.infinity
-// Exp - These may differ from other languages as other languages use an approximation
-// Note: Currently exp will run for a very long time if you use a bigint as such there are no tests
+// exp
 assert Number.exp(1) == 2.718281828459045
 assert Number.exp(10) == 22026.465794806703
 assert Number.exp(0) == 1
@@ -230,6 +229,7 @@ assert Number.exp(0.5) == 1.6487212707001283
 assert Number.exp(-0.5) == 0.6065306597126334
 assert Number.exp(1/2) == 1.6487212707001283
 assert Number.exp(-1/2) == 0.6065306597126334
+assert Number.exp(9223372036854775809) == Number.infinity
 assert Number.exp(Number.infinity) == Number.infinity
 assert Number.isNaN(Number.exp(Number.nan))
 // sqrt
@@ -439,7 +439,7 @@ assert 1 / Number.sign(0.0) == Float64.toNumber(Float64.infinity)
 // TODO(#693): Replace with -Infinity literal when it exists
 assert 1 / Number.sign(-0.0) == Number.neg(Float64.toNumber(Float64.infinity))
 
-// Number.sin - These Test A Range As Grain Uses An Approximation Of Sin
+// Number.sin - These test a range as we approximate sin
 assert Number.sin(0.0) == 0
 assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
 assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
@@ -447,14 +447,14 @@ assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
 assert Number.isNaN(Number.sin(Number.infinity))
 assert Number.isNaN(Number.sin(Number.nan))
 
-// Number.cos - These Test A Range As Grain Uses An Approximation Of Sin
+// Number.cos - These test a range as we approximate sin
 assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
 assert Number.isNaN(Number.cos(Number.infinity))
 assert Number.isNaN(Number.cos(Number.nan))
 
-// Number.tan - These Test A Range As Grain Uses An Approximation Of Sin
+// Number.tan - These test a range as we approximate sin
 assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
 assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
 assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
@@ -462,8 +462,8 @@ assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
 assert Number.isNaN(Number.tan(Number.infinity))
 assert Number.isNaN(Number.tan(Number.nan))
 
-// Number.gamma - These may differ from other languages as other languages use a different approximation
-// Note: Currently gamma will run for a very long time if you use a bigint as such there are no tests
+// Number.gamma
+// Note: Currently gamma will overflow the memory when using a bigint as such there are no tests for this
 assert Number.gamma(10.5) < 1133278.3889488 &&
 Number.gamma(10.5) > 1133278.3889487
 assert Number.gamma(10) == 362880
@@ -490,24 +490,24 @@ assert Number.isNaN(Number.factorial(Number.infinity))
 assert Number.isNaN(Number.factorial(Number.nan))
 
 // Number.toRadian
-assert Number.toRadian(0) == 0
-assert Number.toRadian(30) == Number.pi / 6
-assert Number.toRadian(-30) == Number.pi / -6
-assert Number.toRadian(-30) == Number.pi / -6
-assert Number.toRadian(1/2) == 0.008726646259971648
-assert Number.toRadian(-1/2) == -0.008726646259971648
-assert Number.toRadian(1/4) == 0.004363323129985824
-assert Number.toRadian(9223372036854775809) == 160978210179491630.0
-assert Number.toRadian(Number.infinity) == Number.infinity
-assert Number.isNaN(Number.toRadian(Number.nan))
+assert Number.toRadians(0) == 0
+assert Number.toRadians(Number.pi) == 180
+assert Number.toRadians(Number.pi * -1) == -180
+assert Number.toRadians(Number.infinity) == Number.infinity
+assert Number.toRadians(0.008726646259971648) == 1/2
+assert Number.toRadians(-0.008726646259971648) == -1/2
+assert Number.toRadians(0.004363323129985824) == 1/4
+assert Number.toRadians(160978210179491630.0) == 9223372036854775809
+assert Number.isNaN(Number.toRadians(Number.nan))
 
 // Number.toDegree
-assert Number.toDegree(0) == 0
-assert Number.toDegree(Number.pi) == 180
-assert Number.toDegree(Number.pi * -1) == -180
-assert Number.toDegree(Number.infinity) == Number.infinity
-assert Number.toDegree(0.008726646259971648) == 1/2
-assert Number.toDegree(-0.008726646259971648) == -1/2
-assert Number.toDegree(0.004363323129985824) == 1/4
-assert Number.toDegree(160978210179491630.0) == 9223372036854775809
-assert Number.isNaN(Number.toDegree(Number.nan))
+assert Number.toDegrees(0) == 0
+assert Number.toDegrees(30) == Number.pi / 6
+assert Number.toDegrees(-30) == Number.pi / -6
+assert Number.toDegrees(-30) == Number.pi / -6
+assert Number.toDegrees(1/2) == 0.008726646259971648
+assert Number.toDegrees(-1/2) == -0.008726646259971648
+assert Number.toDegrees(1/4) == 0.004363323129985824
+assert Number.toDegrees(9223372036854775809) == 160978210179491630.0
+assert Number.toDegrees(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.toDegrees(Number.nan))

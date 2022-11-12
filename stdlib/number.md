@@ -835,7 +835,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`n`|`Number`|The value to compute the gamma of|
+|`z`|`Number`|The value to compute the gamma of|
 
 Returns:
 
@@ -868,7 +868,7 @@ Returns:
 |----|-----------|
 |`Number`|The factorial of the given value|
 
-### Number.**toRadian**
+### Number.**toRadians**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -876,10 +876,10 @@ No other changes yet.
 </details>
 
 ```grain
-toRadian : Number -> Number
+toRadians : Number -> Number
 ```
 
-Converts a radian value to degrees.
+Converts degrees to radians.
 
 Parameters:
 
@@ -891,9 +891,9 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The degree equivalent|
+|`Number`|The value in radians|
 
-### Number.**toDegree**
+### Number.**toDegrees**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -901,10 +901,10 @@ No other changes yet.
 </details>
 
 ```grain
-toDegree : Number -> Number
+toDegrees : Number -> Number
 ```
 
-Converts a degree value to radians.
+Converts radians to degrees.
 
 Parameters:
 
@@ -916,5 +916,5 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The radian equivalent|
+|`Number`|The value in degrees|
 
