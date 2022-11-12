@@ -21,7 +21,7 @@ import {
 import { parseInt } from "runtime/stringUtils"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
-import Exception from "runtime/Exception"
+import Exception from "runtime/exception"
 
 /**
  * @section Constants: Number constant values.
