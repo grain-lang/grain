@@ -320,7 +320,15 @@ export let pow = (base, power) => {
             if (foundOutput) {
               WasmI32.toGrain(newFloat64(output)): Number
             } else {
-              let mut t1 = 0.0W, t2 = 0.0W, p_h = 0.0W, p_l = 0.0W, r = 0.0W, t = 0.0W, u = 0.0W, v = 0.0W, w = 0.0W
+              let mut t1 = 0.0W,
+                t2 = 0.0W,
+                p_h = 0.0W,
+                p_l = 0.0W,
+                r = 0.0W,
+                t = 0.0W,
+                u = 0.0W,
+                v = 0.0W,
+                w = 0.0W
               let mut j = 0n, n = 0n
               if (iy > 0x41E00000n) {
                 if (iy > 0x43F00000n) {
@@ -362,7 +370,12 @@ export let pow = (base, power) => {
                   }
                 }
               } else {
-                let mut ss = 0.0W, s2 = 0.0W, s_h = 0.0W, s_l = 0.0W, t_h = 0.0W, t_l = 0.0W
+                let mut ss = 0.0W,
+                  s2 = 0.0W,
+                  s_h = 0.0W,
+                  s_l = 0.0W,
+                  t_h = 0.0W,
+                  t_l = 0.0W
                 n = 0n
                 if (ix < 0x00100000n) {
                   let (>>) = WasmI64.shrU
