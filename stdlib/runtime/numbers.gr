@@ -2500,6 +2500,15 @@ export let isBigInt = x => {
  * is preserved.
  * ====================================================
  */
+/**
+ * Multiplies a floating-point number by an integral power of 2
+ *
+ * @param x: The floating-point value
+ * @param n: The Integer exponent
+ * @returns The result of x * 2^n
+ *
+ * @since v0.5.4
+ */
 @unsafe
 export let scalbn = (x, n) => {
   let (>) = WasmI32.gtS

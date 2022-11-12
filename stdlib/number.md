@@ -201,14 +201,14 @@ No other changes yet.
 pow : (Number, Number) -> Number
 ```
 
-Computes the base raised to the given power
+Computes the exponentiation of the given base and power.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`base`|`Number`|The base number|
-|`power`|`Number`|The power to raise the base to|
+|`power`|`Number`|The exponent number|
 
 Returns:
 
@@ -219,7 +219,7 @@ Returns:
 ### Number.**exp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.3</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -227,7 +227,7 @@ No other changes yet.
 exp : Number -> Number
 ```
 
-Computes `Number.e` to raised to the given power
+Computes the exponentiation of Euler's number to the given power.
 
 Parameters:
 
@@ -239,7 +239,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|`Number.e` raised to the given power|
+|`Number`|The `Number.e` value raised to the given power|
 
 ### Number.**sqrt**
 
@@ -829,7 +829,7 @@ No other changes yet.
 gamma : Number -> Number
 ```
 
-Computes the gamma function of a value using
+Computes the gamma function of a value using Lanczos approximation.
 
 Parameters:
 
@@ -854,13 +854,14 @@ No other changes yet.
 factorial : Number -> Number
 ```
 
-Computes the factorial of a given number
+Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
+Fails if the input is a negative number.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`n`|`Number`|The value to compute the factorial of|
+|`n`|`Number`|The value to factorialize|
 
 Returns:
 

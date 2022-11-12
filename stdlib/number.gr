@@ -133,10 +133,10 @@ let rec expBySquaring = (y, x, n) => {
  * ====================================================
  */
 /**
- * Computes the base raised to the given power
+ * Computes the exponentiation of the given base and power.
  *
  * @param base: The base number
- * @param power: The power to raise the base to
+ * @param power: The exponent number
  * @returns The base raised to the given power
  *
  * @since v0.5.4
@@ -557,12 +557,12 @@ export let pow = (base, power) => {
 }
 
 /**
- * Computes `Number.e` to raised to the given power
+ * Computes the exponentiation of Euler's number to the given power.
  *
  * @param power: The power to raise the `Number.e` to
- * @returns `Number.e` raised to the given power
+ * @returns The `Number.e` value raised to the given power
  *
- * @since v0.5.3
+ * @since v0.5.4
  */
 export let exp = power => {
   if (power == 0) 1 else pow(e, power)
@@ -969,10 +969,10 @@ export let tan = (radians: Number) => {
   }
 }
 
-// Math.gamma implemented using the stirling's approximation
+// Math.gamma implemented using the Lanczos approximation
 // https://en.wikipedia.org/wiki/Lanczos_approximation
 /**
- * Computes the gamma function of a value using
+ * Computes the gamma function of a value using Lanczos approximation.
  *
  * @param z: The value to compute the gamma of
  * @returns The gamma of the given value
@@ -1023,9 +1023,10 @@ export let rec gamma = z => {
 }
 
 /**
- * Computes the factorial of a given number
+ * Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
+ * Fails if the input is a negative number.
  *
- * @param n: The value to compute the factorial of
+ * @param n: The value to factorialize
  * @returns The factorial of the given value
  *
  * @since v0.5.4
