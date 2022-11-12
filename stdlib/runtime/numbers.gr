@@ -2521,7 +2521,6 @@ export let scalbn = (x, n) => {
   let const_0x1p1023 = 8.98847e+307W
   let const_0x1p_1022 = 2.22507e-308W
   let const_0x1p53 = 9.0072e+15W
-  // Untag X and n
   let mut n = n
   let mut y = x
   if (n > 1023n) {
