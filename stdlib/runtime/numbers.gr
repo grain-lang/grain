@@ -1732,9 +1732,9 @@ let numberMod = (x, y) => {
  * Int/int and float/float comparisons are always accurate.
  * Rational/rational comparisons are approximations with the exception of
  * equality, which is always accurate.
- * 
+ *
  * Values compared to floats or rationals are first converted to floats.
- * 
+ *
  * All comparison operators consider NaN not equal to, less than, or greater
  * than NaN, with the exception of `compare`, which considers NaN equal to
  * itself and otherwise smaller than any other float value. This provides a
@@ -2488,4 +2488,58 @@ export let decr = x => {
 export let isBigInt = x => {
   let x = WasmI32.fromGrain(x)
   isBigInt(x)
+}
+
+// Scalbn is based on https://git.musl-libc.org/cgit/musl/tree/src/math/scalbn.c
+/*
+ * ====================================================
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
+ */
+/**
+ * Multiplies a floating-point number by an integral power of 2.
+ *
+ * @param x: The floating-point value
+ * @param n: The Integer exponent
+ * @returns The result of x * 2^n
+ *
+ * @since v0.5.4
+ */
+@unsafe
+export let scalbn = (x, n) => {
+  let (>) = WasmI32.gtS
+  let (<) = WasmI32.ltS
+  let (*) = WasmF64.mul
+  let (-) = WasmI32.sub
+  let (+) = WasmI32.add
+  let (<<) = WasmI64.shl
+  // Constants
+  let const_0x1p1023 = 8.98847e+307W
+  let const_0x1p_1022 = 2.22507e-308W
+  let const_0x1p53 = 9.0072e+15W
+  let mut n = n
+  let mut y = x
+  if (n > 1023n) {
+    y *= const_0x1p1023
+    n -= 1023n
+    if (n > 1023n) {
+      y *= const_0x1p1023
+      n -= 1023n
+      if (n > 1023n) n = 1023n
+    } else if (n < -1023n) {
+      /* make sure final n < -53 to avoid double rounding in the subnormal range */
+      y *= const_0x1p_1022 * const_0x1p53
+      n += 1022n - 53n
+      if (n < -1022n) {
+        y *= const_0x1p_1022 * const_0x1p53
+        n += 1022n - 53n
+        if (n < -1022n) n = -1022n
+      }
+    }
+  }
+  y * WasmF64.reinterpretI64(WasmI64.extendI32S(0x3FFn + n) << 52N)
 }

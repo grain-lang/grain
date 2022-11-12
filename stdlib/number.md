@@ -190,6 +190,57 @@ Returns:
 |----|-----------|
 |`Number`|The quotient of the two operands|
 
+### Number.**pow**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+pow : (Number, Number) -> Number
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Number`|The base number|
+|`power`|`Number`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The base raised to the given power|
+
+### Number.**exp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+exp : Number -> Number
+```
+
+Computes the exponentiation of Euler's number to the given power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`power`|`Number`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The `Number.e` value raised to the given power|
+
 ### Number.**sqrt**
 
 <details disabled>
@@ -741,4 +792,131 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The computed cosine|
+
+### Number.**tan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+tan : Number -> Number
+```
+
+Computes the tangent of a number (in radians) using Chebyshev polynomials.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The input in radians|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The computed tangent|
+
+### Number.**gamma**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+gamma : Number -> Number
+```
+
+Computes the gamma function of a value using Lanczos approximation.
+Fails when the given value is zero.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`z`|`Number`|The value to interpolate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The gamma of the given value|
+
+### Number.**factorial**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+factorial : Number -> Number
+```
+
+Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
+Fails if the input is a negative number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`n`|`Number`|The value to factorialize|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The factorial of the given value|
+
+### Number.**toRadians**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toRadians : Number -> Number
+```
+
+Converts degrees to radians.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`degrees`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The value in radians|
+
+### Number.**toDegrees**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toDegrees : Number -> Number
+```
+
+Converts radians to degrees.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`radians`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The value in degrees|
 

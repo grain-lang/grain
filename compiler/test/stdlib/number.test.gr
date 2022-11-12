@@ -93,6 +93,145 @@ assert Number.isNaN(Number.div(Number.nan, Number.nan))
   assert 2/3 / 4.0 == 0.16666666666666666
   assert 4.0 / (2/3) == 6.0
 }
+// Number.pow tests are based on test cases from libc-test: http://nsz.repo.hu/git/?p=libc-test
+/*
+  libc-test is licensed under the following standard MIT license:
+  Copyright © 2005-2013 libc-test AUTHORS
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+  The above copyright notice and this permission notice shall be
+  included in all copies or substantial portions of the Software.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  Portions of this software is derived from software authored by
+  third parties:
+  math tests use numbers under BSD and GPL licenses see src/math/ucb/*
+  and src/math/crlibm/* for details
+*/
+// pow
+assert Number.isNaN(Number.pow(-8.06684839057968084, 4.53566256067686879))
+assert Number.pow(4.34523984933830487, -8.88799136300345083) ==
+  0.00000213471188255872853
+assert Number.isNaN(Number.pow(-8.38143342755524934, -2.76360733737958819))
+assert Number.isNaN(Number.pow(-6.53167358191348413, 4.56753527684274374))
+assert Number.pow(9.26705696697258574, 4.81139208435979615) ==
+  44909.2994151296589
+assert Number.isNaN(Number.pow(-6.45004555606023633, 0.662071792337673881))
+assert Number.pow(7.85889025304169664, 0.0521545267500622481) ==
+  1.11351774134586523
+assert Number.isNaN(Number.pow(-0.792054511984895959, 7.67640268511753998))
+assert Number.pow(0.615702673197924044, 2.01190257903248026) ==
+  0.376907735213801831
+assert Number.isNaN(Number.pow(-0.558758682360915193, 0.0322398306026380407))
+assert Number.isNaN(Number.pow(0.0, Number.nan))
+assert Number.pow(0.0, Number.infinity) == 0.0
+assert Number.pow(0.0, 3.0) == 0.0
+assert Number.pow(0.0, 2.0) == 0.0
+assert Number.pow(0.0, 1.0) == 0.0
+assert Number.pow(0.0, 0.5) == 0.0
+assert Number.isNaN(Number.pow(0.0, 0.0))
+assert Number.isNaN(Number.pow(0.0, -0.0))
+assert Number.pow(0.0, -0.5) == Number.infinity
+assert Number.pow(0.0, -1.0) == Number.infinity
+assert Number.pow(0.0, -2.0) == Number.infinity
+assert Number.pow(0.0, -3.0) == Number.infinity
+assert Number.pow(0.0, -4.0) == Number.infinity
+assert Number.pow(0.0, Number.infinity * -1) == Number.infinity
+assert Number.isNaN(Number.pow(-0.0, Number.nan))
+assert Number.pow(-0.0, Number.infinity) == 0.0
+assert Number.pow(-0.0, 3.0) == -0.0
+assert Number.pow(-0.0, 2.0) == 0.0
+assert Number.pow(-0.0, 1.0) == -0.0
+assert Number.pow(-0.0, 0.5) == 0.0
+assert Number.isNaN(Number.pow(-0.0, 0.0))
+assert Number.isNaN(Number.pow(-0.0, -0.0))
+assert Number.pow(-0.0, -0.5) == Number.infinity
+assert Number.pow(-0.0, -1.0) == Number.infinity * -1
+assert Number.pow(-0.0, -2.0) == Number.infinity
+assert Number.pow(-0.0, -3.0) == Number.infinity * -1
+assert Number.pow(-0.0, -4.0) == Number.infinity
+assert Number.pow(-0.0, Number.infinity * -1) == Number.infinity
+assert Number.isNaN(Number.pow(Number.nan, 0.0))
+assert Number.isNaN(Number.pow(Number.infinity, 0.0))
+assert Number.isNaN(Number.pow(Number.infinity * -1, 0.0))
+assert Number.isNaN(Number.pow(1.0, 0.0))
+assert Number.isNaN(Number.pow(-1.0, 0.0))
+assert Number.isNaN(Number.pow(-0.5, 0.0))
+assert Number.isNaN(Number.pow(Number.nan, -0.0))
+assert Number.pow(1, 1) == 1
+assert Number.pow(2, 1) == 2
+assert Number.pow(300, 1) == 300
+assert Number.pow(-1, 1) == -1
+assert Number.pow(-2, 1) == -2
+assert Number.pow(-300, 1) == -300
+assert Number.pow(0, 1) == 0
+assert Number.pow(1, 0) == 1
+assert Number.pow(0, 0) == 1
+assert Number.pow(1, 5) == 1
+assert Number.pow(5, 5) == 3125
+assert Number.pow(-5, 5) == -3125
+assert Number.pow(5, 6) == 15625
+assert Number.pow(-5, 6) == 15625
+assert Number.pow(1.0, 1) == 1.0
+assert Number.pow(2, 1.0) == 2.0
+assert Number.pow(300.0, 1) == 300.0
+assert Number.pow(-1, 1.0) == -1.0
+assert Number.pow(-2.0, 1) == -2.0
+assert Number.pow(-300, 1.0) == -300.0
+assert Number.pow(0.0, 1) == 0.0
+assert Number.isNaN(Number.pow(1, 0.0))
+assert Number.isNaN(Number.pow(0.0, 0))
+assert Number.pow(1, 5.0) == 1.0
+assert Number.pow(5.0, 5) == 3125.0
+assert Number.pow(-1.0, 1) == -1.0
+assert Number.pow(-4.0, 3) == -64.0
+assert Number.pow(-4, 3.0) == -64.0
+assert Number.pow(-5, 5.0) == -3125.0
+assert Number.pow(5.0, 6) == 15625.0
+assert Number.pow(-5, 6.0) == 15625.0
+assert Number.pow(1/2, 1) == 1/2
+assert Number.pow(1/2, 2) == 1/4
+assert Number.pow(2, 1/2) == 1.4142135623730952
+assert Number.pow(4, 1/2) == 2
+assert Number.pow(4, -1/2) == 0.5
+assert Number.pow(9223372036854775809, 2) ==
+  85070591730234615884290395931651604481
+assert Number.pow(9223372036854775809, 0.5) == 3037000499.97605
+assert Number.pow(9223372036854775809.0, 0.5) == 3037000499.97605
+assert Number.pow(9223372036854775809, 0) == 1
+// TODO(#1168): Use rational literal
+let denom = 85070591730234615884290395931651604481
+assert Number.pow(9223372036854775809, -2) ==
+  1 / denom // 1.1754943508222875e-38
+assert Number.pow(9223372036854775809, 1/5) == 6208.375056426594
+assert Number.pow(9223372036854775809, 2/3) == 4398046511103.9927
+assert Number.pow(10223372036854775809, 10) ==
+  12472159440978016923768615307032788210916694000775261660538874886865415760948494778813645195039710006678013364969179502650466497057008288260604039903029954443675868581729857084924132550246401
+assert Number.pow(1, 9223372036854775809) == 1
+assert Number.pow(2.0, 9223372036854775809) == Number.infinity
+// exp
+assert Number.exp(1) == 2.718281828459045
+assert Number.exp(10) == 22026.465794806703
+assert Number.exp(0) == 1
+assert Number.exp(-1) == 0.36787944117144236
+assert Number.exp(-10) == 0.000045399929762484875
+assert Number.exp(0.5) == 1.6487212707001283
+assert Number.exp(-0.5) == 0.6065306597126334
+assert Number.exp(1/2) == 1.6487212707001283
+assert Number.exp(-1/2) == 0.6065306597126334
+assert Number.exp(9223372036854775809) == Number.infinity
+assert Number.exp(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.exp(Number.nan))
 // sqrt
 assert Number.sqrt(25) == 5
 assert Number.sqrt(25.0) == 5.0
@@ -300,17 +439,87 @@ assert 1 / Number.sign(0.0) == Float64.toNumber(Float64.infinity)
 // TODO(#693): Replace with -Infinity literal when it exists
 assert 1 / Number.sign(-0.0) == Number.neg(Float64.toNumber(Float64.infinity))
 
-// Number.sin
+// Number.sin - These test a range as we approximate sin
 assert Number.sin(0.0) == 0
 assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
 assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
 assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
+assert Number.sin(1/2) > 0.4794 && Number.sin(1/2) < 0.4795
+// TODO(#1478): Update this test when sin is unbounded
+assert Number.sin(9223372036854775809) == 0.0
 assert Number.isNaN(Number.sin(Number.infinity))
 assert Number.isNaN(Number.sin(Number.nan))
 
-// Number.cos
+// Number.cos - These test a range as we approximate sin
 assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
+assert Number.cos(1/2) > 0.8775 && Number.cos(1/2) < 0.8776
+// TODO(#1478): Update this test when sin is unbounded
+assert Number.cos(9223372036854775809) == 0.0
 assert Number.isNaN(Number.cos(Number.infinity))
 assert Number.isNaN(Number.cos(Number.nan))
+
+// Number.tan - These test a range as we approximate sin
+assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
+assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
+assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
+assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
+// TODO(#1478): Update this test when sin is unbounded
+assert Number.isNaN(Number.tan(9223372036854775809))
+assert Number.isNaN(Number.tan(Number.infinity))
+assert Number.isNaN(Number.tan(Number.nan))
+
+// Number.gamma
+// Note: Currently gamma will overflow the memory when using a bigint as such there are no tests for this
+assert Number.gamma(10.5) < 1133278.3889488 &&
+  Number.gamma(10.5) > 1133278.3889487
+assert Number.gamma(10) == 362880
+assert Number.gamma(1) == 1
+assert Number.gamma(0.5) == 1.7724538509055159
+assert Number.gamma(-0.5) < -3.544907 && Number.gamma(-0.5) > -3.544909
+assert Number.gamma(-1) == Number.infinity
+assert Number.gamma(-10) == Number.infinity
+assert Number.gamma(0.2) > 4.59084 && Number.gamma(0.2) < 4.59085
+assert Number.gamma(1/5) > 4.59084 && Number.gamma(1/5) < 4.59085
+assert Number.gamma(1/2) == 1.7724538509055159
+assert Number.isNaN(Number.gamma(Number.infinity))
+assert Number.isNaN(Number.gamma(Number.nan))
+
+// Number.factorial
+// Note: Currently factorial will overflow the memory when using a bigint as such there are no tests for this
+assert Number.factorial(10) == 3628800
+assert Number.factorial(5) == 120
+assert Number.factorial(0) == 1
+assert Number.factorial(-5) == -120
+assert Number.factorial(-10) == -3628800
+assert Number.factorial(10.5) == 11899423.083962297
+assert Number.factorial(0.5) == 0.886226925452759
+assert Number.factorial(1/2) == 0.886226925452759
+assert Number.isNaN(Number.factorial(Number.infinity))
+assert Number.isNaN(Number.factorial(Number.nan))
+
+// Number.toDegrees
+assert Number.toDegrees(0) == 0
+assert Number.toDegrees(Number.pi) == 180
+assert Number.toDegrees(Number.pi * -1) == -180
+assert Number.toDegrees(Number.infinity) == Number.infinity
+assert Number.toDegrees(0.008726646259971648) == 1/2
+assert Number.toDegrees(-0.008726646259971648) == -1/2
+assert Number.toDegrees(0.004363323129985824) == 1/4
+assert Number.toDegrees(160978210179491630.0) == 9223372036854775809
+assert Number.toDegrees(1/2) == 28.64788975654116
+assert Number.toDegrees(1/4) == 14.32394487827058
+assert Number.isNaN(Number.toDegrees(Number.nan))
+
+// Number.toRadians
+assert Number.toRadians(0) == 0
+assert Number.toRadians(30) == Number.pi / 6
+assert Number.toRadians(-30) == Number.pi / -6
+assert Number.toRadians(-30) == Number.pi / -6
+assert Number.toRadians(1/2) == 0.008726646259971648
+assert Number.toRadians(-1/2) == -0.008726646259971648
+assert Number.toRadians(1/4) == 0.004363323129985824
+assert Number.toRadians(9223372036854775809) == 160978210179491630.0
+assert Number.toRadians(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.toRadians(Number.nan))

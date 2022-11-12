@@ -16,10 +16,12 @@ import {
   isInteger,
   isRational,
   isBoxedNumber,
+  scalbn,
 } from "runtime/numbers"
 import { parseInt } from "runtime/stringUtils"
 import { newFloat64, newInt64 } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
+import Exception from "runtime/exception"
 
 /**
  * @section Constants: Number constant values.
@@ -108,6 +110,464 @@ export let mul = (*)
  */
 export let div = (/)
 
+// Exponentiation by squaring https://en.wikipedia.org/wiki/Exponentiation_by_squaring special path for int^int
+let rec expBySquaring = (y, x, n) => {
+  if (n == 0) {
+    1
+  } else if (n == 1) {
+    x * y
+  } else if (n % 2 == 0) {
+    expBySquaring(y, x * x, n / 2)
+  } else {
+    expBySquaring(x * y, x * x, (n - 1) / 2)
+  }
+}
+
+// Math.pow is largely based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
+/*
+ * ====================================================
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ * ====================================================
+ */
+/**
+ * Computes the exponentiation of the given base and power.
+ *
+ * @param base: The base number
+ * @param power: The exponent number
+ * @returns The base raised to the given power
+ *
+ * @since v0.5.4
+ */
+@unsafe
+export let pow = (base, power) => {
+  // TODO(#1476): Move this into runtime/numbers.gr
+  if (base == 1 && power != 0) {
+    1
+  } else if (
+    isInteger(WasmI32.fromGrain(base)) && isInteger(WasmI32.fromGrain(power))
+  ) {
+    if (power < 0) expBySquaring(1, 1 / base, power * -1)
+    else expBySquaring(1, base, power)
+  } else {
+    // TODO(#553): Refactor once we have early return
+    // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
+    let (==) = WasmF64.eq
+    let (!=) = WasmF64.ne
+    let (<=) = WasmF64.le
+    let (/) = WasmF64.div
+    let (*) = WasmF64.mul
+    let (+) = WasmF64.add
+    // Constants
+    let infinity = 1.0W / 0.0W
+    let nan = 0.0W / 0.0W
+    let x = coerceNumberToWasmF64(base)
+    let y = coerceNumberToWasmF64(power)
+    let mut foundOutput = false, output = 0.0W
+    // Fast paths
+    if (WasmF64.abs(y) <= 2.0W) {
+      if (y == 2.0W) {
+        foundOutput = true
+        output = x * x
+      } else if (y == 0.5W) {
+        foundOutput = true
+        if (x != infinity) output = WasmF64.abs(WasmF64.sqrt(x))
+        else output = infinity
+      } else if (y == -1.0W) {
+        foundOutput = true
+        output = 1.0W / x
+      } else if (y == 1.0W) {
+        foundOutput = true
+        output = x
+      } else if (y == 0.0W) {
+        foundOutput = true
+        output = nan
+      }
+    }
+    // Full calculation
+    if (foundOutput) {
+      WasmI32.toGrain(newFloat64(output)): Number
+    } else {
+      let dp_h1 = WasmF64.reinterpretI64(0x3FE2B80340000000N)
+      let dp_l1 = WasmF64.reinterpretI64(0x3E4CFDEB43CFD006N)
+      let two53 = WasmF64.reinterpretI64(0x4340000000000000N)
+      let huge = WasmF64.reinterpretI64(0x7E37E43C8800759CN)
+      let tiny = WasmF64.reinterpretI64(0x01A56E1FC2F8F359N)
+      let l1 = WasmF64.reinterpretI64(0x3FE3333333333303N)
+      let l2 = WasmF64.reinterpretI64(0x3FDB6DB6DB6FABFFN)
+      let l3 = WasmF64.reinterpretI64(0x3FD55555518F264DN)
+      let l4 = WasmF64.reinterpretI64(0x3FD17460A91D4101N)
+      let l5 = WasmF64.reinterpretI64(0x3FCD864A93C9DB65N)
+      let l6 = WasmF64.reinterpretI64(0x3FCA7E284A454EEFN)
+      let p1 = WasmF64.reinterpretI64(0x3FC555555555553EN)
+      let p2 = WasmF64.reinterpretI64(0xBF66C16C16BEBD93N)
+      let p3 = WasmF64.reinterpretI64(0x3F11566AAF25DE2CN)
+      let p4 = WasmF64.reinterpretI64(0xBEBBBD41C5D26BF1N)
+      let p5 = WasmF64.reinterpretI64(0x3E66376972BEA4D0N)
+      let lg2 = WasmF64.reinterpretI64(0x3FE62E42FEFA39EFN)
+      let lg2_h = WasmF64.reinterpretI64(0x3FE62E4300000000N)
+      let lg2_l = WasmF64.reinterpretI64(0xBE205C610CA86C39N)
+      let ovt = WasmF64.reinterpretI64(0x3C971547652B82FEN)
+      let cp = WasmF64.reinterpretI64(0x3FEEC709DC3A03FDN)
+      let cp_h = WasmF64.reinterpretI64(0x3FEEC709E0000000N)
+      let cp_l = WasmF64.reinterpretI64(0xBE3E2FE0145B01F5N)
+      let ivln2 = WasmF64.reinterpretI64(0x3FF71547652B82FEN)
+      let ivln2_h = WasmF64.reinterpretI64(0x3FF7154760000000N)
+      let ivln2_l = WasmF64.reinterpretI64(0x3E54AE0BF85DDF44N)
+      let inv3 = WasmF64.reinterpretI64(0x3FD5555555555555N)
+      let (==) = WasmI32.eq
+      let (!=) = WasmI32.ne
+      let (>=) = WasmI32.geS
+      let (<=) = WasmI32.leS
+      let (&) = WasmI32.and
+      let (|) = WasmI32.or
+      let (>) = WasmI32.gtS
+      let (<) = WasmI32.ltS
+      let (<<) = WasmI32.shl
+      let (>>) = WasmI32.shrS
+      let (-) = WasmI32.sub
+      let (+) = WasmI32.add
+      let u_ = WasmI64.reinterpretF64(x)
+      let hx = WasmI32.wrapI64(WasmI64.shrS(u_, 32N))
+      let lx = WasmI32.wrapI64(u_)
+      let u_ = WasmI64.reinterpretF64(y)
+      let hy = WasmI32.wrapI64(WasmI64.shrS(u_, 32N))
+      let ly = WasmI32.wrapI64(u_)
+      let mut ix = hx & 0x7FFFFFFFn
+      let iy = hy & 0x7FFFFFFFn
+      if ((iy | ly) == 0n) { // x**0 = 1, even if x is NaN
+        1 // return 1
+      } else if (
+        // Either Argument is Nan
+        ix > 0x7FF00000n ||
+        ix == 0x7FF00000n && lx != 0n ||
+        iy > 0x7FF00000n ||
+        iy == 0x7FF00000n && ly != 0n
+      ) {
+        WasmI32.toGrain(newFloat64(WasmF64.add(x, y))): Number
+      } else {
+        let mut yisint = 0n
+        let mut k = 0n
+        if (hx < 0n) {
+          if (iy >= 0x43400000n) {
+            yisint = 2n
+          } else if (iy >= 0x3FF00000n) {
+            k = (iy >> 20n) - 0x3FFn
+            let mut offset = 0n
+            let mut _ly = 0n
+            if (k > 20n) {
+              offset = 52n - k
+              _ly = ly
+            } else {
+              offset = 20n - k
+              _ly = iy
+            }
+            let jj = _ly >> offset
+            if (jj << offset == _ly) yisint = 2n - (jj & 1n)
+          }
+        }
+        if (ly == 0n) {
+          if (iy == 0x7FF00000n) { // y is +- inf
+            foundOutput = true
+            if ((ix - 0x3FF00000n | lx) == 0n) { // C: (-1)**+-inf is 1, JS: NaN
+              output = nan
+            } else if (ix >= 0x3FF00000n) { // (|x|>1)**+-inf = inf,0
+              if (hy >= 0n) output = y else output = 0.0W
+            } else { // (|x|<1)**+-inf = 0,inf
+              if (hy >= 0n) output = 0.0W else output = y * -1.0W
+            }
+          } else if (iy == 0x3FF00000n) {
+            foundOutput = true
+            if (hy >= 0n) output = x else output = 1.0W / x
+          } else if (hy == 0x3FE00000n) {
+            foundOutput = true
+            output = x * x
+          } else if (hy == 0x3FE00000n) {
+            if (hx >= 0n) {
+              foundOutput = true
+              output = WasmF64.sqrt(x)
+            }
+          }
+        }
+        if (foundOutput) {
+          WasmI32.toGrain(newFloat64(output)): Number
+        } else {
+          let mut ax = WasmF64.abs(x)
+          let mut z = 0.0W
+          if (
+            lx == 0n && (ix == 0n || ix == 0x7FF00000n || ix == 0x3FF00000n)
+          ) {
+            z = ax
+            if (hy < 0n) z = 1.0W / z
+            if (hx < 0n) {
+              if ((ix - 0x3FF00000n | yisint) == 0n) {
+                let d = WasmF64.sub(z, z)
+                z = d / d
+              } else if (yisint == 1n) z *= -1.0W
+            }
+            WasmI32.toGrain(newFloat64(z)): Number
+          } else {
+            let mut s = 1.0W
+            if (hx < 0n) {
+              if (yisint == 0n) {
+                let d = WasmF64.sub(x, x)
+                foundOutput = true
+                output = d / d
+              } else if (yisint == 1n) s = -1.0W
+            }
+            if (foundOutput) {
+              WasmI32.toGrain(newFloat64(output)): Number
+            } else {
+              let mut t1 = 0.0W,
+                t2 = 0.0W,
+                p_h = 0.0W,
+                p_l = 0.0W,
+                r = 0.0W,
+                t = 0.0W,
+                u = 0.0W,
+                v = 0.0W,
+                w = 0.0W
+              let mut j = 0n, n = 0n
+              if (iy > 0x41E00000n) {
+                if (iy > 0x43F00000n) {
+                  if (ix <= 0x3FEFFFFFn) {
+                    foundOutput = true
+                    if (hy < 0n) output = huge * huge else output = tiny * tiny
+                  } else if (ix >= 0x3FF00000n) {
+                    foundOutput = true
+                    if (hy > 0n) output = huge * huge else output = tiny * tiny
+                  }
+                }
+                if (!foundOutput) {
+                  if (ix < 0x3FEFFFFFn) {
+                    foundOutput = true
+                    if (hy < 0n) {
+                      output = s * huge * huge
+                    } else {
+                      output = s * tiny * tiny
+                    }
+                  } else if (ix > 0x3FF00000n) {
+                    foundOutput = true
+                    if (hy > 0n) {
+                      output = s * huge * huge
+                    } else {
+                      output = s * tiny * tiny
+                    }
+                  } else {
+                    let (-) = WasmF64.sub
+                    let (&) = WasmI64.and
+                    t = ax - 1.0W
+                    w = t * t * (0.5W - t * (inv3 - t * 0.25W))
+                    u = ivln2_h * t
+                    v = t * ivln2_l - w * ivln2
+                    t1 = WasmF64.add(u, v)
+                    t1 = WasmF64.reinterpretI64(
+                      WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
+                    )
+                    t2 = v - (t1 - u)
+                  }
+                }
+              } else {
+                let mut ss = 0.0W,
+                  s2 = 0.0W,
+                  s_h = 0.0W,
+                  s_l = 0.0W,
+                  t_h = 0.0W,
+                  t_l = 0.0W
+                n = 0n
+                if (ix < 0x00100000n) {
+                  let (>>) = WasmI64.shrU
+                  ax *= two53
+                  n -= 53n
+                  ix = WasmI32.wrapI64(WasmI64.reinterpretF64(ax) >> 32N)
+                }
+                n += (ix >> 20n) - 0x3FFn
+                j = ix & 0x000FFFFFn
+                ix = j | 0x3FF00000n
+                if (j <= 0x3988En) {
+                  k = 0n
+                } else if (j < 0xBB67An) {
+                  k = 1n
+                } else {
+                  k = 0n
+                  n += 1n
+                  ix -= 0x00100000n
+                }
+                let (&) = WasmI64.and
+                let (|) = WasmI64.or
+                let (<<) = WasmI64.shl
+                ax = WasmF64.reinterpretI64(
+                  WasmI64.reinterpretF64(ax) & 0xFFFFFFFFN |
+                  WasmI64.extendI32S(ix) << 32N
+                )
+                let bp = if (k != 0n) 1.5W else 1.0W
+                u = WasmF64.sub(ax, bp)
+                v = 1.0W / WasmF64.add(ax, bp)
+                ss = u * v
+                s_h = ss
+                s_h = WasmF64.reinterpretI64(
+                  WasmI64.reinterpretF64(s_h) & 0xFFFFFFFF00000000N
+                )
+                t_h = WasmF64.reinterpretI64(
+                  WasmI64.shl(
+                    WasmI64.extendI32S(
+                      WasmI32.or(WasmI32.shrS(ix, 1n), 0x20000000n) +
+                      0x00080000n +
+                      WasmI32.shl(k, 18n)
+                    ),
+                    32N
+                  )
+                )
+                let (-) = WasmF64.sub
+                let (+) = WasmF64.add
+                t_l = ax - (t_h - bp)
+                s_l = v * (u - s_h * t_h - s_h * t_l)
+                s2 = ss * ss
+                //formatter-ignore
+                r = s2 * s2 * (l1 + s2 * (l2 + s2 * (l3 + s2 * (l4 + s2 * (l5 + s2 * l6)))))
+                r += s_l * (s_h + ss)
+                s2 = s_h * s_h
+                t_h = 3.0W + s2 + r
+                t_h = WasmF64.reinterpretI64(
+                  WasmI64.reinterpretF64(t_h) & 0xFFFFFFFF00000000N
+                )
+                t_l = r - (t_h - 3.0W - s2)
+                u = s_h * t_h
+                v = s_l * t_h + t_l * ss
+                p_h = u + v
+                p_h = WasmF64.reinterpretI64(
+                  WasmI64.reinterpretF64(p_h) & 0xFFFFFFFF00000000N
+                )
+                p_l = v - (p_h - u)
+                let z_h = cp_h * p_h
+                let dp_l = if (k != 0n) dp_l1 else 0.0W
+                let z_l = cp_l * p_h + p_l * cp + dp_l
+                t = WasmF64.convertI32S(n)
+                let dp_h = if (k != 0n) dp_h1 else 0.0W
+                t1 = z_h + z_l + dp_h + t
+                t1 = WasmF64.reinterpretI64(
+                  WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
+                )
+                t2 = z_l - (t1 - t - dp_h - z_h)
+              }
+              if (foundOutput) {
+                WasmI32.toGrain(newFloat64(output)): Number
+              } else {
+                let (>) = WasmF64.gt
+                let (&) = WasmI64.and
+                let (-) = WasmF64.sub
+                let (+) = WasmF64.add
+                let (>>) = WasmI64.shrS
+                let y1 = WasmF64.reinterpretI64(
+                  WasmI64.reinterpretF64(y) & 0xFFFFFFFF00000000N
+                )
+                p_l = (y - y1) * t1 + y * t2
+                p_h = y1 * t1
+                z = p_l + p_h
+                let u_ = WasmI64.reinterpretF64(z)
+                let j = WasmI32.wrapI64(u_ >> 32N)
+                let i = WasmI32.wrapI64(u_)
+                if (j >= 0x40900000n) {
+                  if ((WasmI32.sub(j, 0x40900000n) | i) != 0n) {
+                    foundOutput = true
+                    output = s * huge * huge
+                  } else if (p_l + ovt > z - p_h) {
+                    foundOutput = true
+                    output = s * huge * huge
+                  }
+                } else if (WasmI32.and(j, 0x7FFFFFFFn) >= 0x4090CC00n) {
+                  if (WasmI32.sub(j, 0xC090CC00n | i) != 0n) {
+                    foundOutput = true
+                    output = s * tiny * tiny
+                  } else if (WasmF64.le(p_l, z - p_h)) {
+                    foundOutput = true
+                    output = s * tiny * tiny
+                  }
+                }
+                if (foundOutput) {
+                  WasmI32.toGrain(newFloat64(output)): Number
+                } else {
+                  let (&) = WasmI32.and
+                  let (>>) = WasmI32.shrS
+                  let (-) = WasmI32.sub
+                  let (+) = WasmI32.add
+                  let (>) = WasmI32.gtS
+                  let (*) = WasmI32.mul
+                  let i = j & 0x7FFFFFFFn
+                  k = (i >> 20n) - 0x3FFn
+                  n = 0n
+                  if (i > 0x3FE00000n) {
+                    n = j + (0x00100000n >> k + 1n)
+                    k = ((n & 0x7FFFFFFFn) >> 20n) - 0x3FFn
+                    t = 0.0W
+                    t = WasmF64.reinterpretI64(
+                      WasmI64.shl(
+                        WasmI64.extendI32S(
+                          n & WasmI32.xor(0x000FFFFFn >> k, -1n)
+                        ),
+                        32N
+                      )
+                    )
+                    n = (n & 0x000FFFFFn | 0x00100000n) >> 20n - k
+                    if (j < 0n) n *= -1n
+                    p_h = WasmF64.sub(p_h, t)
+                  }
+                  let (&) = WasmI64.and
+                  let (|) = WasmI64.or
+                  let (*) = WasmF64.mul
+                  let (-) = WasmF64.sub
+                  let (+) = WasmF64.add
+                  t = WasmF64.add(p_l, p_h)
+                  t = WasmF64.reinterpretI64(
+                    WasmI64.reinterpretF64(t) & 0xFFFFFFFF00000000N
+                  )
+                  u = t * lg2_h
+                  v = (p_l - (t - p_h)) * lg2 + t * lg2_l
+                  z = u + v
+                  w = v - (z - u)
+                  t = z * z
+                  t1 = z - t * (p1 + t * (p2 + t * (p3 + t * (p4 + t * p5))))
+                  r = z * t1 / (t1 - 2.0W) - (w + z * w)
+                  z = 1.0W - (r - z)
+                  let j = WasmI32.add(
+                    WasmI32.wrapI64(
+                      WasmI64.shrS(WasmI64.reinterpretF64(z), 32N)
+                    ),
+                    WasmI32.shl(n, 20n)
+                  )
+                  if (WasmI32.shrS(j, 20n) <= 0n) {
+                    z = scalbn(z, n)
+                  } else {
+                    z = WasmF64.reinterpretI64(
+                      WasmI64.reinterpretF64(z) & 0xFFFFFFFFN |
+                      WasmI64.shl(WasmI64.extendI32S(j), 32N)
+                    )
+                  }
+                  WasmI32.toGrain(newFloat64(s * z)): Number
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Computes the exponentiation of Euler's number to the given power.
+ *
+ * @param power: The exponent number
+ * @returns The `Number.e` value raised to the given power
+ *
+ * @since v0.5.4
+ */
+export let exp = power => {
+  if (power == 0) 1 else pow(e, power)
+}
 /**
  * Computes the square root of its operand.
  *
@@ -493,3 +953,114 @@ export let cos = (radians: Number) => {
     sin(pi / 2 + radians)
   }
 }
+
+/**
+ * Computes the tangent of a number (in radians) using Chebyshev polynomials.
+ *
+ * @param radians: The input in radians
+ * @returns The computed tangent
+ *
+ * @since v0.5.4
+ */
+export let tan = (radians: Number) => {
+  if (isNaN(radians) || isInfinite(radians)) {
+    nan
+  } else {
+    sin(radians) / cos(radians)
+  }
+}
+
+// Math.gamma implemented using the Lanczos approximation
+// https://en.wikipedia.org/wiki/Lanczos_approximation
+/**
+ * Computes the gamma function of a value using Lanczos approximation.
+ * Fails when the given value is zero.
+ *
+ * @param z: The value to interpolate
+ * @returns The gamma of the given value
+ *
+ * @since v0.5.4
+ */
+export let rec gamma = z => {
+  if (z == 0) {
+    throw Exception.InvalidArgument("Gamma of 0 is undefined")
+  } else if (isInteger(z) && z > 0) {
+    let mut output = 1
+    for (let mut i = 1; i < z; i += 1) {
+      output *= i
+    }
+    output
+  } else {
+    let mut z = z
+    let g = 7
+    let c = [>
+      0.99999999999980993,
+      676.5203681218851,
+      -1259.1392167224028,
+      771.32342877765313,
+      -176.61502916214059,
+      12.507343278686905,
+      -0.13857109526572012,
+      9.9843695780195716e-6,
+      1.5056327351493116e-7,
+    ]
+    let mut output = 0
+    if (z < 0.5) {
+      output = pi / (sin(pi * z) * gamma(1 - z))
+    } else if (z == 0.5) {
+      // Handle this case separately because it is out of the domain of Number.pow when calculating
+      output = 1.7724538509055159
+    } else {
+      z -= 1
+      let mut x = c[0]
+      for (let mut i = 1; i < g + 2; i += 1) {
+        x += c[i] / (z + i)
+      }
+
+      let t = z + g + 0.5
+      output = sqrt(2 * pi) * pow(t, z + 0.5) * exp(t * -1) * x
+    }
+    if (abs(output) == infinity) infinity else output
+  }
+}
+
+/**
+ * Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
+ * Fails if the input is a negative number.
+ *
+ * @param n: The value to factorialize
+ * @returns The factorial of the given value
+ *
+ * @since v0.5.4
+ */
+export let rec factorial = n => {
+  if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
+    !isInteger(n) && n < 0
+  ) {
+    throw Exception.InvalidArgument(
+      "Cannot compute the factorial of a negative non-integer"
+    )
+  } else {
+    gamma(n + 1)
+  }
+}
+
+/**
+ * Converts degrees to radians.
+ *
+ * @param degrees: The value to convert
+ * @returns The value in radians
+ *
+ * @since v0.5.4
+ */
+export let toRadians = degrees => degrees * (pi / 180)
+
+/**
+ * Converts radians to degrees.
+ *
+ * @param radians: The value to convert
+ * @returns The value in degrees
+ *
+ * @since v0.5.4
+ */
+export let toDegrees = radians => radians * (180 / pi)
