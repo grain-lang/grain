@@ -56,7 +56,7 @@ assert Number.isNaN(Number.sub(Number.nan, Number.nan))
 assert Number.mul(5, 5) == 25
 assert Number.mul(9223372036854775809, 5) == 46116860184273879045
 assert Number.mul(9223372036854775809, 9223372036854775809) ==
-85070591730234615884290395931651604481
+  85070591730234615884290395931651604481
 assert Number.mul(Number.infinity, 10) == Number.infinity
 assert Number.mul(Number.infinity, Number.infinity) == Number.infinity
 assert Number.isNaN(Number.mul(Number.infinity, Number.nan))
@@ -121,17 +121,17 @@ assert Number.isNaN(Number.div(Number.nan, Number.nan))
 // pow
 assert Number.isNaN(Number.pow(-8.06684839057968084, 4.53566256067686879))
 assert Number.pow(4.34523984933830487, -8.88799136300345083) ==
-0.00000213471188255872853
+  0.00000213471188255872853
 assert Number.isNaN(Number.pow(-8.38143342755524934, -2.76360733737958819))
 assert Number.isNaN(Number.pow(-6.53167358191348413, 4.56753527684274374))
 assert Number.pow(9.26705696697258574, 4.81139208435979615) ==
-44909.2994151296589
+  44909.2994151296589
 assert Number.isNaN(Number.pow(-6.45004555606023633, 0.662071792337673881))
 assert Number.pow(7.85889025304169664, 0.0521545267500622481) ==
-1.11351774134586523
+  1.11351774134586523
 assert Number.isNaN(Number.pow(-0.792054511984895959, 7.67640268511753998))
 assert Number.pow(0.615702673197924044, 2.01190257903248026) ==
-0.376907735213801831
+  0.376907735213801831
 assert Number.isNaN(Number.pow(-0.558758682360915193, 0.0322398306026380407))
 assert Number.isNaN(Number.pow(0.0, Number.nan))
 assert Number.pow(0.0, Number.infinity) == 0.0
@@ -205,18 +205,18 @@ assert Number.pow(2, 1/2) == 1.4142135623730952
 assert Number.pow(4, 1/2) == 2
 assert Number.pow(4, -1/2) == 0.5
 assert Number.pow(9223372036854775809, 2) ==
-85070591730234615884290395931651604481
+  85070591730234615884290395931651604481
 assert Number.pow(9223372036854775809, 0.5) == 3037000499.97605
 assert Number.pow(9223372036854775809.0, 0.5) == 3037000499.97605
 assert Number.pow(9223372036854775809, 0) == 1
 // TODO(#1168): Use rational literal
 let denom = 85070591730234615884290395931651604481
 assert Number.pow(9223372036854775809, -2) ==
-1 / denom // 1.1754943508222875e-38
+  1 / denom // 1.1754943508222875e-38
 assert Number.pow(9223372036854775809, 1/5) == 6208.375056426594
 assert Number.pow(9223372036854775809, 2/3) == 4398046511103.9927
 assert Number.pow(10223372036854775809, 10) ==
-12472159440978016923768615307032788210916694000775261660538874886865415760948494778813645195039710006678013364969179502650466497057008288260604039903029954443675868581729857084924132550246401
+  12472159440978016923768615307032788210916694000775261660538874886865415760948494778813645195039710006678013364969179502650466497057008288260604039903029954443675868581729857084924132550246401
 assert Number.pow(1, 9223372036854775809) == 1
 assert Number.pow(2.0, 9223372036854775809) == Number.infinity
 // exp
@@ -259,7 +259,7 @@ assert Number.max(1/2, 1/4) == 1/2
 assert Number.max(0.5, 0.25) == 0.5
 assert Number.max(BI.toNumber(1234t), BI.toNumber(12t)) == BI.toNumber(1234t)
 assert Number.max(355894508425808343204914141312, 6) ==
-355894508425808343204914141312
+  355894508425808343204914141312
 assert Number.max(Number.infinity, 10) == Number.infinity
 assert Number.max(Number.nan, 10) == 10
 assert Number.max(Number.nan, Number.infinity) == Number.infinity
@@ -397,15 +397,15 @@ assert Number.parseInt("-42", 10) == Ok(-42)
 assert Number.parseInt("-042", 10) == Ok(-42)
 assert Number.parseInt("-_0___42___", 10) == Ok(-42)
 assert Number.parseInt("1073741823", 10) ==
-Ok(1073741823) // grain simple number max
+  Ok(1073741823) // grain simple number max
 assert Number.parseInt("-1073741824", 10) ==
-Ok(-1073741824) // grain simple number min
+  Ok(-1073741824) // grain simple number min
 assert Number.parseInt("2147483647", 10) == Ok(2147483647) // i32 max
 assert Number.parseInt("-2147483648", 10) == Ok(-2147483648) // i32 min
 assert Number.parseInt("9223372036854775807", 10) ==
-Ok(9223372036854775807) // i64 max
+  Ok(9223372036854775807) // i64 max
 assert Number.parseInt("-9223372036854775808", 10) ==
-Ok(-9223372036854775808) // i64 min
+  Ok(-9223372036854775808) // i64 min
 assert Number.parseInt("0xabcdef", 10) == Ok(0xabcdef)
 assert Number.parseInt("0Xabcdef", 10) == Ok(0xabcdef)
 assert Number.parseInt("abcdef", 16) == Ok(0xabcdef)
@@ -465,7 +465,7 @@ assert Number.isNaN(Number.tan(Number.nan))
 // Number.gamma
 // Note: Currently gamma will overflow the memory when using a bigint as such there are no tests for this
 assert Number.gamma(10.5) < 1133278.3889488 &&
-Number.gamma(10.5) > 1133278.3889487
+  Number.gamma(10.5) > 1133278.3889487
 assert Number.gamma(10) == 362880
 assert Number.gamma(1) == 1
 assert Number.gamma(0.5) == 1.7724538509055159
