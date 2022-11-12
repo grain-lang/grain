@@ -445,7 +445,7 @@ assert Number.sin(1) > 0.84147 && Number.sin(1) < 0.84148
 assert Number.sin(-1) < -0.84147 && Number.sin(-1) > -0.84148
 assert Number.sin(20) > 0.91294 && Number.sin(20) < 0.91295
 assert Number.sin(1/2) > 0.4794 && Number.sin(1/2) < 0.4795
-// TODO(#1478): Correct this test
+// TODO(#1478): Update this test when sin is unbounded
 assert Number.sin(9223372036854775809) == 0.0
 assert Number.isNaN(Number.sin(Number.infinity))
 assert Number.isNaN(Number.sin(Number.nan))
@@ -455,7 +455,7 @@ assert Number.cos(1) > 0.5403 && Number.cos(1) < 0.5404
 assert Number.cos(-1) > 0.5403 && Number.cos(-1) < 0.5404
 assert Number.cos(15) < -0.7596 && Number.cos(15) > -0.7597
 assert Number.cos(1/2) > 0.8775 && Number.cos(1/2) < 0.8776
-// TODO(#1478): Correct this test
+// TODO(#1478): Update this test when sin is unbounded
 assert Number.cos(9223372036854775809) == 0.0
 assert Number.isNaN(Number.cos(Number.infinity))
 assert Number.isNaN(Number.cos(Number.nan))
@@ -465,7 +465,7 @@ assert Number.tan(1) > 1.5574 && Number.tan(1) < 1.5575
 assert Number.tan(-1) > -1.5575 && Number.tan(-1) < -1.5574
 assert Number.tan(15) < -0.8559 && Number.tan(15) > -0.8560
 assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
-// TODO(#1478): Correct this test
+// TODO(#1478): Update this test when sin is unbounded
 assert Number.isNaN(Number.tan(9223372036854775809))
 assert Number.isNaN(Number.tan(Number.infinity))
 assert Number.isNaN(Number.tan(Number.nan))
@@ -499,27 +499,27 @@ assert Number.factorial(1/2) == 0.886226925452759
 assert Number.isNaN(Number.factorial(Number.infinity))
 assert Number.isNaN(Number.factorial(Number.nan))
 
-// Number.toRadians
-assert Number.toRadians(0) == 0
-assert Number.toRadians(Number.pi) == 180
-assert Number.toRadians(Number.pi * -1) == -180
-assert Number.toRadians(Number.infinity) == Number.infinity
-assert Number.toRadians(0.008726646259971648) == 1/2
-assert Number.toRadians(-0.008726646259971648) == -1/2
-assert Number.toRadians(0.004363323129985824) == 1/4
-assert Number.toRadians(160978210179491630.0) == 9223372036854775809
-assert Number.toRadians(1/2) == 28.64788975654116
-assert Number.toRadians(1/4) == 14.32394487827058
-assert Number.isNaN(Number.toRadians(Number.nan))
-
 // Number.toDegrees
 assert Number.toDegrees(0) == 0
-assert Number.toDegrees(30) == Number.pi / 6
-assert Number.toDegrees(-30) == Number.pi / -6
-assert Number.toDegrees(-30) == Number.pi / -6
-assert Number.toDegrees(1/2) == 0.008726646259971648
-assert Number.toDegrees(-1/2) == -0.008726646259971648
-assert Number.toDegrees(1/4) == 0.004363323129985824
-assert Number.toDegrees(9223372036854775809) == 160978210179491630.0
+assert Number.toDegrees(Number.pi) == 180
+assert Number.toDegrees(Number.pi * -1) == -180
 assert Number.toDegrees(Number.infinity) == Number.infinity
+assert Number.toDegrees(0.008726646259971648) == 1/2
+assert Number.toDegrees(-0.008726646259971648) == -1/2
+assert Number.toDegrees(0.004363323129985824) == 1/4
+assert Number.toDegrees(160978210179491630.0) == 9223372036854775809
+assert Number.toDegrees(1/2) == 28.64788975654116
+assert Number.toDegrees(1/4) == 14.32394487827058
 assert Number.isNaN(Number.toDegrees(Number.nan))
+
+// Number.toRadians
+assert Number.toRadians(0) == 0
+assert Number.toRadians(30) == Number.pi / 6
+assert Number.toRadians(-30) == Number.pi / -6
+assert Number.toRadians(-30) == Number.pi / -6
+assert Number.toRadians(1/2) == 0.008726646259971648
+assert Number.toRadians(-1/2) == -0.008726646259971648
+assert Number.toRadians(1/4) == 0.004363323129985824
+assert Number.toRadians(9223372036854775809) == 160978210179491630.0
+assert Number.toRadians(Number.infinity) == Number.infinity
+assert Number.isNaN(Number.toRadians(Number.nan))

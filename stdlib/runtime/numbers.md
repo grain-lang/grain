@@ -333,7 +333,7 @@ No other changes yet.
 scalbn : (WasmF64, WasmI32) -> WasmF64
 ```
 
-Multiplies a floating-point number by an integral power of 2
+Multiplies a floating-point number by an integral power of 2.
 
 Parameters:
 

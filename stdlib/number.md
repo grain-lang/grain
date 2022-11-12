@@ -233,7 +233,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`power`|`Number`|The power to raise the `Number.e` to|
+|`power`|`Number`|The exponent number|
 
 Returns:
 
@@ -830,12 +830,13 @@ gamma : Number -> Number
 ```
 
 Computes the gamma function of a value using Lanczos approximation.
+Fails when the given value is zero.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`z`|`Number`|The value to compute the gamma of|
+|`z`|`Number`|The value to interpolate|
 
 Returns:
 

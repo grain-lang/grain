@@ -560,7 +560,7 @@ export let pow = (base, power) => {
 /**
  * Computes the exponentiation of Euler's number to the given power.
  *
- * @param power: The power to raise the `Number.e` to
+ * @param power: The exponent number
  * @returns The `Number.e` value raised to the given power
  *
  * @since v0.5.4
@@ -974,8 +974,9 @@ export let tan = (radians: Number) => {
 // https://en.wikipedia.org/wiki/Lanczos_approximation
 /**
  * Computes the gamma function of a value using Lanczos approximation.
+ * Fails when the given value is zero.
  *
- * @param z: The value to compute the gamma of
+ * @param z: The value to interpolate
  * @returns The gamma of the given value
  *
  * @since v0.5.4
@@ -1052,7 +1053,7 @@ export let rec factorial = n => {
  *
  * @since v0.5.4
  */
-export let toRadians = degrees => degrees * (180 / pi)
+export let toRadians = degrees => degrees * (pi / 180)
 
 /**
  * Converts radians to degrees.
@@ -1062,4 +1063,4 @@ export let toRadians = degrees => degrees * (180 / pi)
  *
  * @since v0.5.4
  */
-export let toDegrees = radians => radians * (pi / 180)
+export let toDegrees = radians => radians * (180 / pi)

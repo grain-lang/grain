@@ -2501,7 +2501,7 @@ export let isBigInt = x => {
  * ====================================================
  */
 /**
- * Multiplies a floating-point number by an integral power of 2
+ * Multiplies a floating-point number by an integral power of 2.
  *
  * @param x: The floating-point value
  * @param n: The Integer exponent
