@@ -885,7 +885,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`degrees`|`Number`|Converts the given Degrees value to radians|
+|`degrees`|`Number`|The value to convert|
 
 Returns:
 
@@ -910,7 +910,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`radians`|`Number`|Converts the given radian value to degrees|
+|`radians`|`Number`|The value to convert|
 
 Returns:
 

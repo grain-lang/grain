@@ -109,7 +109,7 @@ export let mul = (*)
  */
 export let div = (/)
 
-// Exponentiation By Squaring https://en.wikipedia.org/wiki/Exponentiation_by_squaring fast path for int^int
+// Exponentiation by squaring https://en.wikipedia.org/wiki/Exponentiation_by_squaring special path for int^int
 let rec expBySquaring = (y, x, n) => {
   if (n == 0) {
     1
@@ -143,7 +143,7 @@ let rec expBySquaring = (y, x, n) => {
  */
 @unsafe
 export let pow = (base, power) => {
-  // TODO(#1476): Move This Into runtime/numbers.gr
+  // TODO(#1476): Move this into runtime/numbers.gr
   if (base == 1 && power != 0) {
     1
   } else if (
@@ -320,15 +320,7 @@ export let pow = (base, power) => {
             if (foundOutput) {
               WasmI32.toGrain(newFloat64(output)): Number
             } else {
-              let mut t1 = 0.0W,
-                t2 = 0.0W,
-                p_h = 0.0W,
-                p_l = 0.0W,
-                r = 0.0W,
-                t = 0.0W,
-                u = 0.0W,
-                v = 0.0W,
-                w = 0.0W
+              let mut t1 = 0.0W, t2 = 0.0W, p_h = 0.0W, p_l = 0.0W, r = 0.0W, t = 0.0W, u = 0.0W, v = 0.0W, w = 0.0W
               let mut j = 0n, n = 0n
               if (iy > 0x41E00000n) {
                 if (iy > 0x43F00000n) {
@@ -370,12 +362,7 @@ export let pow = (base, power) => {
                   }
                 }
               } else {
-                let mut ss = 0.0W,
-                  s2 = 0.0W,
-                  s_h = 0.0W,
-                  s_l = 0.0W,
-                  t_h = 0.0W,
-                  t_l = 0.0W
+                let mut ss = 0.0W, s2 = 0.0W, s_h = 0.0W, s_l = 0.0W, t_h = 0.0W, t_l = 0.0W
                 n = 0n
                 if (ix < 0x00100000n) {
                   let (>>) = WasmI64.shrU
@@ -1040,7 +1027,7 @@ export let rec factorial = n => {
 /**
  * Converts degrees to radians.
  *
- * @param degrees: Converts the given Degrees value to radians
+ * @param degrees: The value to convert
  * @returns The value in radians
  *
  * @since v0.5.4
@@ -1050,7 +1037,7 @@ export let toRadians = degrees => degrees * (180 / pi)
 /**
  * Converts radians to degrees.
  *
- * @param radians: Converts the given radian value to degrees
+ * @param radians: The value to convert
  * @returns The value in degrees
  *
  * @since v0.5.4
