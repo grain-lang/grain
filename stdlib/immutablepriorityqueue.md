@@ -32,7 +32,7 @@ Functions and constants for working with ImmutablePriorityQueues.
 ### ImmutablePriorityQueue.**empty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -262,7 +262,7 @@ Returns:
 ### ImmutablePriorityQueue.**fromArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 

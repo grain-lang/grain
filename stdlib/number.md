@@ -20,7 +20,7 @@ Number constant values.
 ### Number.**nan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -33,7 +33,7 @@ NaN represented as a Number value.
 ### Number.**infinity**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -193,7 +193,7 @@ Returns:
 ### Number.**pow**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -219,7 +219,7 @@ Returns:
 ### Number.**exp**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -309,7 +309,7 @@ Number.sign(0) == 0
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN properly</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -342,7 +342,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN properly</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -375,7 +375,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -407,7 +407,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -439,7 +439,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -471,7 +471,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN and Infinity properly</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity properly</td></tr>
 </tbody>
 </table>
 </details>
@@ -738,7 +738,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN and Infinity</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity</td></tr>
 </tbody>
 </table>
 </details>
@@ -770,7 +770,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Handle NaN and Infinity</td></tr>
+<tr><td><code>0.5.4</code></td><td>Handle NaN and Infinity</td></tr>
 </tbody>
 </table>
 </details>
@@ -796,7 +796,7 @@ Returns:
 ### Number.**tan**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -821,7 +821,7 @@ Returns:
 ### Number.**gamma**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -847,7 +847,7 @@ Returns:
 ### Number.**factorial**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -873,7 +873,7 @@ Returns:
 ### Number.**toRadians**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -898,7 +898,7 @@ Returns:
 ### Number.**toDegrees**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 

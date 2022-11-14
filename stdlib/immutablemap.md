@@ -5,7 +5,7 @@ title: ImmutableMap
 An ImmutableMap holds key-value pairs. Any value may be used as a key or value. Operations on an ImmutableMap do not mutate the map's internal state.
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -30,7 +30,7 @@ Functions and constants for working with ImmutableMaps.
 ### ImmutableMap.**empty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -43,7 +43,7 @@ An empty map
 ### ImmutableMap.**size**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -68,7 +68,7 @@ Returns:
 ### ImmutableMap.**isEmpty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -93,7 +93,7 @@ Returns:
 ### ImmutableMap.**set**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -120,7 +120,7 @@ Returns:
 ### ImmutableMap.**get**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -146,7 +146,7 @@ Returns:
 ### ImmutableMap.**contains**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -172,7 +172,7 @@ Returns:
 ### ImmutableMap.**remove**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -199,7 +199,7 @@ Returns:
 ### ImmutableMap.**update**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -231,7 +231,7 @@ Returns:
 ### ImmutableMap.**forEach**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -251,7 +251,7 @@ Parameters:
 ### ImmutableMap.**reduce**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -278,7 +278,7 @@ Returns:
 ### ImmutableMap.**keys**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -303,7 +303,7 @@ Returns:
 ### ImmutableMap.**values**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -328,7 +328,7 @@ Returns:
 ### ImmutableMap.**filter**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -354,7 +354,7 @@ Returns:
 ### ImmutableMap.**reject**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -380,7 +380,7 @@ Returns:
 ### ImmutableMap.**fromList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -405,7 +405,7 @@ Returns:
 ### ImmutableMap.**toList**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -430,7 +430,7 @@ Returns:
 ### ImmutableMap.**fromArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -455,7 +455,7 @@ Returns:
 ### ImmutableMap.**toArray**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
