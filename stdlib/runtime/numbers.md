@@ -325,7 +325,7 @@ isBigInt : a -> Bool
 ### Numbers.**scalbn**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 

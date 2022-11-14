@@ -27,7 +27,7 @@ Functions and constants included in the Stack module.
 ### Stack.**empty**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
