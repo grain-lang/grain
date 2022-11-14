@@ -4105,6 +4105,9 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
 /**
  * Splits the given string at the first match for the given regular expression.
  *
+ * If the regex match contains capture groups, the content of the groups
+ * will be inserted into the output array.
+ *
  * @param rx: The regular expression to match
  * @param str: The string to split
  * @returns A list of the split segments
@@ -4120,13 +4123,16 @@ export let split = (rx: RegularExpression, str: String) => {
 /**
  * Splits the given string at every match for the given regular expression.
  *
+ * If the regex match contains capture groups, the content of the groups
+ * will be inserted into the output array.
+ *
  * @param rx: The regular expression to match
  * @param str: The string to split
  * @returns A list of the split segments
  *
  * @example assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b", "c" ]
  *
- * @since v0.5.4
+ * @since v0.5.5
  */
 export let splitAll = (rx: RegularExpression, str: String) => {
   regexSplitHelp(rx, str, true)

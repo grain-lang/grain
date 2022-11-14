@@ -775,6 +775,8 @@ assert split(unwrapResult(make("\n|\r")), "a\nb\nc\rd\n\re") ==
 assert split(unwrapResult(make(".")), "abcd") == ["", "bcd"]
 assert split(unwrapResult(make("d$")), "abcd") == ["abc", ""]
 assert split(unwrapResult(make("b(ar)")), "foo bar") == ["foo ", "ar", ""]
+assert split(unwrapResult(make("b(ar)")), "foo bar bar") ==
+  ["foo ", "ar", " bar"]
 
 // Regex.splitAll
 assert splitAll(unwrapResult(make(",")), "a,b,c,d") == ["a", "b", "c", "d"]
@@ -784,3 +786,8 @@ assert splitAll(unwrapResult(make(".")), "abcd") == ["", "", "", "", ""]
 assert splitAll(unwrapResult(make("d$")), "abcd") == ["abc", ""]
 assert splitAll(unwrapResult(make("b(ar)(ar)")), "foo barar test") ==
   ["foo ", "ar", "ar", " test"]
+assert splitAll(
+  unwrapResult(make("b(ar)(ar)")),
+  "foo barar test barar test2"
+) ==
+  ["foo ", "ar", "ar", " test ", "ar", "ar", " test2"]

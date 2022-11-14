@@ -460,6 +460,9 @@ split : (RegularExpression, String) -> List<String>
 
 Splits the given string at the first match for the given regular expression.
 
+If the regex match contains capture groups, the content of the groups
+will be inserted into the output array.
+
 Parameters:
 
 |param|type|description|
@@ -482,7 +485,7 @@ assert Regex.split(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
 ### Regex.**splitAll**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
@@ -491,6 +494,9 @@ splitAll : (RegularExpression, String) -> List<String>
 ```
 
 Splits the given string at every match for the given regular expression.
+
+If the regex match contains capture groups, the content of the groups
+will be inserted into the output array.
 
 Parameters:
 
