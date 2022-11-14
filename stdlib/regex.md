@@ -464,25 +464,25 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
-|`str`|`String`|The string to search|
+|`rx`|`RegularExpression`|The regular expression to match|
+|`str`|`String`|The string to split|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`List<String>`|A List of the split segments|
+|`List<String>`|A list of the split segments|
 
 Examples:
 
 ```grain
-assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
+assert Regex.split(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
 ```
 
 ### Regex.**splitAll**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
 No other changes yet.
 </details>
 
@@ -496,14 +496,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`rx`|`RegularExpression`|The regular expression to search for|
+|`rx`|`RegularExpression`|The regular expression to match|
 |`str`|`String`|The string to split|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`List<String>`|A List of the split segments|
+|`List<String>`|A list of the split segments|
 
 Examples:
 

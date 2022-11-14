@@ -4068,54 +4068,50 @@ export let replaceAll =
 }
 
 let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
-  let buf = makeMatchBuffer(str)
-  let rec loop = searchPos => {
-    let state = Array.make(rx.reNumGroups, None)
-    let inStart = max(0, searchPos - rx.reMaxLookbehind)
-    let poss = searchMatch(
-      rx,
-      buf,
-      searchPos,
-      inStart,
-      Array.length(buf.matchInputExploded),
-      state
-    )
-    let recur = (start, end) => {
-      if (end == searchPos) {
-        if (searchPos == String.length(str)) {
-          []
-        } else {
-          [String.slice(searchPos, searchPos + 1, str), ...loop(searchPos + 1)]
-        }
-      } else {
-        loop(end)
-      }
-    }
-    match (poss) {
-      None =>
-        if (searchPos == 0) [str]
-        else [String.slice(searchPos, String.length(str), str)],
-      Some((start, end)) =>
-        [
-          String.slice(searchPos, start, str),
-          ...if (all) recur(start, end)
-          else [String.slice(end, String.length(str), str)]
-        ],
+  // Get List Of Matches
+  let regexMatches = if (all) {
+    findAll(rx, str)
+  } else {
+    match (find(rx, str)) {
+      None => [],
+      Some(m) => [m],
     }
   }
-  loop(0)
+  // Perform Replacements
+  let mut out = []
+  let mut currentLocation = 0
+  List.forEach(regexMatch => {
+    let locations = regexMatch.allGroupPositions()
+    Array.forEachi((pos, i) => {
+      match (pos) {
+        Some((start, end)) => {
+          if (i == 0) {
+            // This gets rid match
+            out = [String.slice(currentLocation, start, str), ...out]
+          } else {
+            // This adds the groups back in
+            out = [String.slice(start, end, str), ...out]
+          }
+          currentLocation = end
+        },
+        None => void,
+      }
+    }, locations)
+  }, regexMatches)
+  out = [String.slice(currentLocation, String.length(str), str), ...out]
+  List.reverse(out)
 }
 
 /**
  * Splits the given string at the first match for the given regular expression.
  *
- * @param rx: The regular expression to search for
- * @param str: The string to search
- * @returns A List of the split segments
+ * @param rx: The regular expression to match
+ * @param str: The string to split
+ * @returns A list of the split segments
  *
- * @example assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
+ * @example assert Regex.split(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
  *
- * @since v0.5.4
+ * @since v0.5.5
  */
 export let split = (rx: RegularExpression, str: String) => {
   regexSplitHelp(rx, str, false)
@@ -4124,9 +4120,9 @@ export let split = (rx: RegularExpression, str: String) => {
 /**
  * Splits the given string at every match for the given regular expression.
  *
- * @param rx: The regular expression to search for
+ * @param rx: The regular expression to match
  * @param str: The string to split
- * @returns A List of the split segments
+ * @returns A list of the split segments
  *
  * @example assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b", "c" ]
  *
