@@ -460,7 +460,7 @@ split : (RegularExpression, String) -> List<String>
 
 Splits the given string at the first match for the given regular expression.
 
-If the regex match contains capture groups, the content of the groups
+If the regex pattern contains capture groups, the content of the groups
 will be included in the output list.
 
 Parameters:
@@ -495,7 +495,7 @@ splitAll : (RegularExpression, String) -> List<String>
 
 Splits the given string at every match for the given regular expression.
 
-If the regex match contains capture groups, the content of the groups
+If the regex pattern contains capture groups, the content of the groups
 will be included in the output list.
 
 Parameters:

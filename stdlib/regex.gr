@@ -4086,7 +4086,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
       match (pos) {
         Some((start, end)) => {
           if (i == 0) {
-            // This gets rid match
+            // Add the string between this match and the last match
             out = [String.slice(currentLocation, start, str), ...out]
           } else {
             // This adds the groups back in
@@ -4105,7 +4105,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
 /**
  * Splits the given string at the first match for the given regular expression.
  *
- * If the regex match contains capture groups, the content of the groups
+ * If the regex pattern contains capture groups, the content of the groups
  * will be included in the output list.
  *
  * @param rx: The regular expression to match
@@ -4123,7 +4123,7 @@ export let split = (rx: RegularExpression, str: String) => {
 /**
  * Splits the given string at every match for the given regular expression.
  *
- * If the regex match contains capture groups, the content of the groups
+ * If the regex pattern contains capture groups, the content of the groups
  * will be included in the output list.
  *
  * @param rx: The regular expression to match
