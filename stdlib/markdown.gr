@@ -1,0 +1,6109 @@
+import Bytes from "bytes"
+import Option from "option"
+import List from "list"
+import Char from "char"
+import Int32 from "int32"
+
+/// The number of characters that form a tab stop.
+///
+/// This relates to the number of whitespace characters needed to form certain
+/// constructs in markdown, most notable the whitespace required to form
+/// [code (indented)][code_indented].
+///
+/// [code_indented]: crate::construct::code_indented
+let tab_size = 4
+
+/// The number of characters allowed in a protocol of an [autolink][].
+///
+/// The protocol part is the `xxx` in `<xxx://example.com>`.
+/// 32 characters is fine, 33 is too many.
+///
+/// [autolink]: crate::construct::autolink
+let autolink_scheme_size_max = 32;
+
+
+record Location {
+  /// List, where each index is a line number (0-based), and each value is
+  /// the byte index *after* where the line ends.
+  mut indices: List<Number>,
+}
+
+/// Place in the document.
+///
+/// The interface for the location in the document comes from unist
+/// [`Point`](https://github.com/syntax-tree/unist#point).
+record Point {
+  /// 1-indexed line number.
+  mut line: Number,
+  /// 1-indexed column number.
+  ///
+  /// This is increased up to a tab stop for tabs.
+  /// Some editors count tabs as 1 character, so this position is not the
+  /// same as editors.
+  mut column: Number,
+  /// 0-indexed position in the document.
+  ///
+  /// Also an `index` into `bytes`.
+  mut index: Number,
+  /// Virtual step on the same `index`.
+  mut vs: Number,
+}
+
+/// Get an index for the given `bytes`.
+///
+/// Port of <https://github.com/vfile/vfile-location/blob/main/index.js>
+let make_location = (bytes: Bytes) => {
+  let mut index = 0
+  let mut location_index = { indices: [], }
+
+  while (index < Bytes.length(bytes)) {
+    if (Bytes.slice(index, 1, bytes) == Bytes.fromString("\r")) {
+      if (
+        index + 1 < Bytes.length(bytes) &&
+        Bytes.slice(index + 1, 1, bytes) == Bytes.fromString("\n")
+      ) {
+        location_index.indices = [index + 2, ...location_index.indices]
+        index += 1
+      } else {
+        location_index.indices = [index + 1, ...location_index.indices]
+      }
+    } else if (Bytes.slice(index, 1, bytes) == Bytes.fromString("\n")) {
+      location_index.indices = [index + 1, ...location_index.indices]
+    }
+
+    index += 1
+  }
+
+  location_index.indices = List.reverse([index + 1, ...location_index.indices])
+  location_index
+}
+
+enum Signal {
+  /// A syntax error.
+  ///
+  /// `markdown-rs` will crash with error message `String`, and convert the
+  /// `usize` (byte offset into `&str` passed to `MdxExpressionParse` or
+  /// `MdxEsmParse`) to where it happened in the whole document.
+  ///
+  /// ## Examples
+  ///
+  /// ```rust ignore
+  /// Signal::Error("Unexpected `\"`, expected identifier".into(), 1)
+  /// ```
+  Error(String, Number),
+  /// An error at the end of the (partial?) expression.
+  ///
+  /// `markdown-rs` will either crash with error message `String` if it
+  /// doesn’t have any more text, or it will try again later when more text
+  /// is available.
+  ///
+  /// ## Examples
+  ///
+  /// ```rust ignore
+  /// Signal::Eof("Unexpected end of file in string literal".into())
+  /// ```
+  Eof(String),
+  /// Done, successfully.
+  ///
+  /// `markdown-rs` knows that this is the end of a valid expression/esm and
+  /// continues with markdown.
+  ///
+  /// ## Examples
+  ///
+  /// ```rust ignore
+  /// Signal::Ok
+  /// ```
+  Ok,
+}
+
+enum ExpressionKind {
+  /// Kind of expressions in prose.
+  ///
+  /// ```mdx
+  /// > | # {Math.PI}
+  ///       ^^^^^^^^^
+  ///   |
+  /// > | {Math.PI}
+  ///     ^^^^^^^^^
+  /// ```
+  Expression,
+  /// Kind of expressions as attributes.
+  ///
+  /// ```mdx
+  /// > | <a {...b}>
+  ///        ^^^^^^
+  /// ```
+  AttributeExpression,
+  /// Kind of expressions as attribute values.
+  ///
+  /// ```mdx
+  /// > | <a b={c}>
+  ///          ^^^
+  /// ```
+  AttributeValueExpression,
+}
+
+type MdxExpressionParse = (String, ExpressionKind) -> Signal
+type MdxEsmParse = String -> Signal
+
+record Constructs {
+  /// Attention.
+  ///
+  /// ```markdown
+  /// > | a *b* c **d**.
+  ///       ^^^   ^^^^^
+  /// ```
+  attention: Bool,
+  /// Autolink.
+  ///
+  /// ```markdown
+  /// > | a <https://example.com> b <user@example.org>.
+  ///       ^^^^^^^^^^^^^^^^^^^^^   ^^^^^^^^^^^^^^^^^^
+  /// ```
+  autolink: Bool,
+  /// Block quote.
+  ///
+  /// ```markdown
+  /// > | > a
+  ///     ^^^
+  /// ```
+  block_quote: Bool,
+  /// Character escape.
+  ///
+  /// ```markdown
+  /// > | a \* b
+  ///       ^^
+  /// ```
+  character_escape: Bool,
+  /// Character reference.
+  ///
+  /// ```markdown
+  /// > | a &amp; b
+  ///       ^^^^^
+  /// ```
+  character_reference: Bool,
+  /// Code (indented).
+  ///
+  /// ```markdown
+  /// > |     a
+  ///     ^^^^^
+  /// ```
+  code_indented: Bool,
+  /// Code (fenced).
+  ///
+  /// ```markdown
+  /// > | ~~~js
+  ///     ^^^^^
+  /// > | console.log(1)
+  ///     ^^^^^^^^^^^^^^
+  /// > | ~~~
+  ///     ^^^
+  /// ```
+  code_fenced: Bool,
+  /// Code (text).
+  ///
+  /// ```markdown
+  /// > | a `b` c
+  ///       ^^^
+  /// ```
+  code_text: Bool,
+  /// Definition.
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///     ^^^^^^^^^^
+  /// ```
+  definition: Bool,
+  /// Frontmatter.
+  ///
+  /// ````markdown
+  /// > | ---
+  ///     ^^^
+  /// > | title: Neptune
+  ///     ^^^^^^^^^^^^^^
+  /// > | ---
+  ///     ^^^
+  /// ````
+  frontmatter: Bool,
+  /// GFM: autolink literal.
+  ///
+  /// ```markdown
+  /// > | https://example.com
+  ///     ^^^^^^^^^^^^^^^^^^^
+  /// ```
+  gfm_autolink_literal: Bool,
+  /// GFM: footnote definition.
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///     ^^^^^^^
+  /// ```
+  gfm_footnote_definition: Bool,
+  /// GFM: footnote label start.
+  ///
+  /// ```markdown
+  /// > | a[^b]
+  ///      ^^
+  /// ```
+  gfm_label_start_footnote: Bool,
+  ///
+  /// ```markdown
+  /// > | a ~b~ c.
+  ///       ^^^
+  /// ```
+  gfm_strikethrough: Bool,
+  /// GFM: table.
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///     ^^^^^
+  /// > | | - |
+  ///     ^^^^^
+  /// > | | b |
+  ///     ^^^^^
+  /// ```
+  gfm_table: Bool,
+  /// GFM: task list item.
+  ///
+  /// ```markdown
+  /// > | * [x] y.
+  ///       ^^^
+  /// ```
+  gfm_task_list_item: Bool,
+  /// Hard break (escape).
+  ///
+  /// ```markdown
+  /// > | a\
+  ///      ^
+  ///   | b
+  /// ```
+  hard_break_escape: Bool,
+  /// Hard break (trailing).
+  ///
+  /// ```markdown
+  /// > | a␠␠
+  ///      ^^
+  ///   | b
+  /// ```
+  hard_break_trailing: Bool,
+  /// Heading (atx).
+  ///
+  /// ```markdown
+  /// > | # a
+  ///     ^^^
+  /// ```
+  heading_atx: Bool,
+  /// Heading (setext).
+  ///
+  /// ```markdown
+  /// > | a
+  ///     ^^
+  /// > | ==
+  ///     ^^
+  /// ```
+  heading_setext: Bool,
+  /// HTML (flow).
+  ///
+  /// ```markdown
+  /// > | <div>
+  ///     ^^^^^
+  /// ```
+  html_flow: Bool,
+  /// HTML (text).
+  ///
+  /// ```markdown
+  /// > | a <b> c
+  ///       ^^^
+  /// ```
+  html_text: Bool,
+  /// Label start (image).
+  ///
+  /// ```markdown
+  /// > | a ![b](c) d
+  ///       ^^
+  /// ```
+  label_start_image: Bool,
+  /// Label start (link).
+  ///
+  /// ```markdown
+  /// > | a [b](c) d
+  ///       ^
+  /// ```
+  label_start_link: Bool,
+  /// Label end.
+  ///
+  /// ```markdown
+  /// > | a [b](c) d
+  ///         ^^^^
+  /// ```
+  label_end: Bool,
+  /// List items.
+  ///
+  /// ```markdown
+  /// > | * a
+  ///     ^^^
+  /// ```
+  list_item: Bool,
+  /// Math (flow).
+  ///
+  /// ```markdown
+  /// > | $$
+  ///     ^^
+  /// > | \frac{1}{2}
+  ///     ^^^^^^^^^^^
+  /// > | $$
+  ///     ^^
+  /// ```
+  math_flow: Bool,
+  /// Math (text).
+  ///
+  /// ```markdown
+  /// > | a $b$ c
+  ///       ^^^
+  /// ```
+  math_text: Bool,
+  /// MDX: ESM.
+  ///
+  /// ```markdown
+  /// > | import a from 'b'
+  ///     ^^^^^^^^^^^^^^^^^
+  /// ```
+  ///
+  /// > 👉 **Note**: to support ESM, you *must* pass
+  /// > [`mdx_esm_parse`][MdxEsmParse] in [`ParseOptions`][] too.
+  /// > Otherwise, ESM is treated as normal markdown.
+  mdx_esm: Bool,
+  /// MDX: expression (flow).
+  ///
+  /// ```markdown
+  /// > | {Math.PI}
+  ///     ^^^^^^^^^
+  /// ```
+  ///
+  /// > 👉 **Note**: You *can* pass
+  /// > [`mdx_expression_parse`][MdxExpressionParse] in [`ParseOptions`][]
+  /// > too, to parse expressions according to a certain grammar (typically,
+  /// > a programming language).
+  /// > Otherwise, expressions are parsed with a basic algorithm that only
+  /// > cares about braces.
+  mdx_expression_flow: Bool,
+  /// MDX: expression (text).
+  ///
+  /// ```markdown
+  /// > | a {Math.PI} c
+  ///       ^^^^^^^^^
+  /// ```
+  ///
+  /// > 👉 **Note**: You *can* pass
+  /// > [`mdx_expression_parse`][MdxExpressionParse] in [`ParseOptions`][]
+  /// > too, to parse expressions according to a certain grammar (typically,
+  /// > a programming language).
+  /// > Otherwise, expressions are parsed with a basic algorithm that only
+  /// > cares about braces.
+  mdx_expression_text: Bool,
+  /// MDX: JSX (flow).
+  ///
+  /// ```markdown
+  /// > | <Component />
+  ///     ^^^^^^^^^^^^^
+  /// ```
+  ///
+  /// > 👉 **Note**: You *must* pass `html_flow: false` to use this,
+  /// > as it’s preferred when on over `mdx_jsx_flow`.
+  ///
+  /// > 👉 **Note**: You *can* pass
+  /// > [`mdx_expression_parse`][MdxExpressionParse] in [`ParseOptions`][]
+  /// > too, to parse expressions in JSX according to a certain grammar
+  /// > (typically, a programming language).
+  /// > Otherwise, expressions are parsed with a basic algorithm that only
+  /// > cares about braces.
+  mdx_jsx_flow: Bool,
+  /// MDX: JSX (text).
+  ///
+  /// ```markdown
+  /// > | a <Component /> c
+  ///       ^^^^^^^^^^^^^
+  /// ```
+  ///
+  /// > 👉 **Note**: You *must* pass `html_text: false` to use this,
+  /// > as it’s preferred when on over `mdx_jsx_text`.
+  ///
+  /// > 👉 **Note**: You *can* pass
+  /// > [`mdx_expression_parse`][MdxExpressionParse] in [`ParseOptions`][]
+  /// > too, to parse expressions in JSX according to a certain grammar
+  /// > (typically, a programming language).
+  /// > Otherwise, expressions are parsed with a basic algorithm that only
+  /// > cares about braces.
+  mdx_jsx_text: Bool,
+  /// Thematic break.
+  ///
+  /// ```markdown
+  /// > | ***
+  ///     ^^^
+  /// ```
+  thematic_break: Bool,
+}
+
+record ParseOptions {
+  // Note: when adding fields, don’t forget to add them to `fmt::Debug` below.
+  /// Which constructs to enable and disable.
+  ///
+  /// The default is to follow `CommonMark`.
+  ///
+  /// ## Examples
+  ///
+  /// ```
+  /// use markdown::{to_html, to_html_with_options, Constructs, Options, ParseOptions};
+  /// # fn main() -> Result<(), String> {
+  ///
+  /// // `markdown-rs` follows CommonMark by default:
+  /// assert_eq!(
+  ///     to_html("    indented code?"),
+  ///     "<pre><code>indented code?\n</code></pre>"
+  /// );
+  ///
+  /// // Pass `constructs` to choose what to enable and disable:
+  /// assert_eq!(
+  ///     to_html_with_options(
+  ///         "    indented code?",
+  ///         &Options {
+  ///             parse: ParseOptions {
+  ///               constructs: Constructs {
+  ///                 code_indented: false,
+  ///                 ..Constructs::default()
+  ///               },
+  ///               ..ParseOptions::default()
+  ///             },
+  ///             ..Options::default()
+  ///         }
+  ///     )?,
+  ///     "<p>indented code?</p>"
+  /// );
+  /// # Ok(())
+  /// # }
+  /// ```
+  constructs: Constructs,
+
+  /// Whether to support GFM strikethrough with a single tilde
+  ///
+  /// This option does nothing if `gfm_strikethrough` is not turned on in
+  /// `constructs`.
+  /// This option does not affect strikethrough with double tildes.
+  ///
+  /// The default is `true`, which follows how markdown on `github.com`
+  /// works, as strikethrough with single tildes is supported.
+  /// Pass `false`, to follow the GFM spec more strictly, by not allowing
+  /// strikethrough with single tildes.
+  ///
+  /// ## Examples
+  ///
+  /// ```
+  /// use markdown::{to_html_with_options, Constructs, Options, ParseOptions};
+  /// # fn main() -> Result<(), String> {
+  ///
+  /// // `markdown-rs` supports single tildes by default:
+  /// assert_eq!(
+  ///     to_html_with_options(
+  ///         "~a~",
+  ///         &Options {
+  ///             parse: ParseOptions {
+  ///               constructs: Constructs::gfm(),
+  ///               ..ParseOptions::default()
+  ///             },
+  ///             ..Options::default()
+  ///         }
+  ///     )?,
+  ///     "<p><del>a</del></p>"
+  /// );
+  ///
+  /// // Pass `gfm_strikethrough_single_tilde: false` to turn that off:
+  /// assert_eq!(
+  ///     to_html_with_options(
+  ///         "~a~",
+  ///         &Options {
+  ///             parse: ParseOptions {
+  ///               constructs: Constructs::gfm(),
+  ///               gfm_strikethrough_single_tilde: false,
+  ///               ..ParseOptions::default()
+  ///             },
+  ///             ..Options::default()
+  ///         }
+  ///     )?,
+  ///     "<p>~a~</p>"
+  /// );
+  /// # Ok(())
+  /// # }
+  /// ```
+  gfm_strikethrough_single_tilde: Bool,
+
+  /// Whether to support math (text) with a single dollar
+  ///
+  /// This option does nothing if `math_text` is not turned on in
+  /// `constructs`.
+  /// This option does not affect math (text) with two or more dollars.
+  ///
+  /// The default is `true`, which is more close to how code (text) and
+  /// Pandoc work, as it allows math with a single dollar to form.
+  /// However, single dollars can interfere with “normal” dollars in text.
+  /// Pass `false`, to only allow math (text) to form when two or more
+  /// dollars are used.
+  ///
+  /// ## Examples
+  ///
+  /// ```
+  /// use markdown::{to_html_with_options, Constructs, Options, ParseOptions};
+  /// # fn main() -> Result<(), String> {
+  ///
+  /// // `markdown-rs` supports single dollars by default:
+  /// assert_eq!(
+  ///     to_html_with_options(
+  ///         "$a$",
+  ///         &Options {
+  ///             parse: ParseOptions {
+  ///               constructs: Constructs {
+  ///                 math_text: true,
+  ///                 ..Constructs::default()
+  ///               },
+  ///               ..ParseOptions::default()
+  ///             },
+  ///             ..Options::default()
+  ///         }
+  ///     )?,
+  ///     "<p><code class=\"language-math math-inline\">a</code></p>"
+  /// );
+  ///
+  /// // Pass `math_text_single_dollar: false` to turn that off:
+  /// assert_eq!(
+  ///     to_html_with_options(
+  ///         "$a$",
+  ///         &Options {
+  ///             parse: ParseOptions {
+  ///               constructs: Constructs {
+  ///                 math_text: true,
+  ///                 ..Constructs::default()
+  ///               },
+  ///               math_text_single_dollar: false,
+  ///               ..ParseOptions::default()
+  ///             },
+  ///             ..Options::default()
+  ///         }
+  ///     )?,
+  ///     "<p>$a$</p>"
+  /// );
+  /// # Ok(())
+  /// # }
+  /// ```
+  math_text_single_dollar: Bool,
+
+  /// Function to parse expressions with.
+  ///
+  /// This function can be used to add support for arbitrary programming
+  /// languages within expressions.
+  ///
+  /// It only makes sense to pass this when compiling to a syntax tree
+  /// with [`to_mdast()`][crate::to_mdast()].
+  ///
+  /// For an example that adds support for JavaScript with SWC, see
+  /// `tests/test_utils/mod.rs`.
+  mdx_expression_parse: Option<MdxExpressionParse>,
+
+  /// Function to parse ESM with.
+  ///
+  /// This function can be used to add support for arbitrary programming
+  /// languages within ESM blocks, however, the keywords (`export`,
+  /// `import`) are currently hardcoded JavaScript-specific.
+  ///
+  /// > 👉 **Note**: please raise an issue if you’re interested in working on
+  /// > MDX that is aware of, say, Rust, or other programming languages.
+  ///
+  /// It only makes sense to pass this when compiling to a syntax tree
+  /// with [`to_mdast()`][crate::to_mdast()].
+  ///
+  /// For an example that adds support for JavaScript with SWC, see
+  /// `tests/test_utils/mod.rs`.
+  mdx_esm_parse: Option<MdxEsmParse>,
+  // Note: when adding fields, don’t forget to add them to `fmt::Debug` below.
+}
+
+record ParseState {
+  /// Configuration.
+  location: Option<Location>,
+  /// Configuration.
+  options: ParseOptions,
+  /// List of chars.
+  bytes: Bytes,
+  /// Set of defined definition identifiers.
+  definitions: List<String>,
+  /// Set of defined GFM footnote definition identifiers.
+  gfm_footnote_definitions: List<String>,
+}
+
+/// Semantic label of a span.
+enum EventName {
+  /// Attention sequence.
+  ///
+  /// > 👉 **Note**: this is used while parsing but compiled away.
+  AttentionSequence,
+  /// Whole autolink.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`AutolinkEmail`][Name::AutolinkEmail],
+  ///     [`AutolinkMarker`][Name::AutolinkMarker],
+  ///     [`AutolinkProtocol`][Name::AutolinkProtocol]
+  /// *   **Construct**:
+  ///     [`autolink`][crate::construct::autolink]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <https://example.com> and <admin@example.com>
+  ///     ^^^^^^^^^^^^^^^^^^^^^     ^^^^^^^^^^^^^^^^^^^
+  /// ```
+  Autolink,
+  /// Email autolink w/o markers.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Autolink`][Name::Autolink]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`autolink`][crate::construct::autolink]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <admin@example.com>
+  ///      ^^^^^^^^^^^^^^^^^
+  /// ```
+  AutolinkEmail,
+  /// Marker of an autolink.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Autolink`][Name::Autolink]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`autolink`][crate::construct::autolink]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <https://example.com>
+  ///     ^                   ^
+  /// ```
+  AutolinkMarker,
+  /// Protocol autolink w/o markers.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Autolink`][Name::Autolink]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`autolink`][crate::construct::autolink]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <https://example.com>
+  ///      ^^^^^^^^^^^^^^^^^^^
+  /// ```
+  AutolinkProtocol,
+  /// Line ending preceded only by whitespace or nothing at all.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`blank_line`][crate::construct::blank_line]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ␠␠␊
+  ///       ^
+  /// ```
+  BlankLineEnding,
+  /// Whole block quote.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [document content][crate::construct::document]
+  /// *   **Content model**:
+  ///     [`BlockQuotePrefix`][Name::BlockQuotePrefix],
+  ///     [flow content][crate::construct::flow]
+  /// *   **Construct**:
+  ///     [`block_quote`][crate::construct::block_quote]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | > a
+  ///     ^^^
+  /// > | b
+  ///     ^
+  /// ```
+  BlockQuote,
+  /// Block quote marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`BlockQuotePrefix`][Name::BlockQuotePrefix]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`block_quote`][crate::construct::block_quote]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | > a
+  ///     ^
+  ///   | b
+  /// ```
+  BlockQuoteMarker,
+  /// Block quote prefix.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`BlockQuote`][Name::BlockQuote]
+  /// *   **Content model**:
+  ///     [`BlockQuoteMarker`][Name::BlockQuoteMarker],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`block_quote`][crate::construct::block_quote]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | > a
+  ///     ^^
+  ///   | b
+  /// ```
+  BlockQuotePrefix,
+  /// Byte order mark.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     optional first event
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`document`][crate::construct::document]
+  ByteOrderMark,
+  /// Whole character escape.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [string content][crate::construct::string] or
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`CharacterEscapeMarker`][Name::CharacterEscapeMarker],
+  ///     [`CharacterEscapeValue`][Name::CharacterEscapeValue]
+  /// *   **Construct**:
+  ///     [`character_escape`][crate::construct::character_escape]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a \- b
+  ///       ^^
+  /// ```
+  CharacterEscape,
+  /// Character escape marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterEscape`][Name::CharacterEscape]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_escape`][crate::construct::character_escape]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a \- b
+  ///       ^
+  /// ```
+  CharacterEscapeMarker,
+  /// Character escape value.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterEscape`][Name::CharacterEscape]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_escape`][crate::construct::character_escape]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a \- b
+  ///        ^
+  /// ```
+  CharacterEscapeValue,
+  /// Whole character reference.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [string content][crate::construct::string] or
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`CharacterReferenceMarker`][Name::CharacterReferenceMarker],
+  ///     [`CharacterReferenceMarkerHexadecimal`][Name::CharacterReferenceMarkerHexadecimal],
+  ///     [`CharacterReferenceMarkerNumeric`][Name::CharacterReferenceMarkerNumeric],
+  ///     [`CharacterReferenceMarkerSemi`][Name::CharacterReferenceMarkerSemi],
+  ///     [`CharacterReferenceValue`][Name::CharacterReferenceValue]
+  /// *   **Construct**:
+  ///     [`character_reference`][crate::construct::character_reference]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a &amp; b &#8800; c &#x1D306; d
+  ///       ^^^^^   ^^^^^^^   ^^^^^^^^^
+  /// ```
+  CharacterReference,
+  /// Character reference opening marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterReference`][Name::CharacterReference]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_reference`][crate::construct::character_reference]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a &amp; b &#8800; c &#x1D306; d
+  ///       ^       ^         ^
+  /// ```
+  CharacterReferenceMarker,
+  /// Character reference hexadecimal numeric marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterReference`][Name::CharacterReference]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_reference`][crate::construct::character_reference]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a &amp; b &#8800; c &#x1D306; d
+  ///                           ^
+  /// ```
+  CharacterReferenceMarkerHexadecimal,
+  /// Character reference numeric marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterReference`][Name::CharacterReference]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_reference`][crate::construct::character_reference]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a &amp; b &#8800; c &#x1D306; d
+  ///                ^         ^
+  /// ```
+  CharacterReferenceMarkerNumeric,
+  /// Character reference closing marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterReference`][Name::CharacterReference]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_reference`][crate::construct::character_reference]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a &amp; b &#8800; c &#x1D306; d
+  ///           ^         ^           ^
+  /// ```
+  CharacterReferenceMarkerSemi,
+  /// Character reference value.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CharacterReference`][Name::CharacterReference]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`character_reference`][crate::construct::character_reference]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a &amp; b &#8800; c &#x1D306; d
+  ///        ^^^      ^^^^       ^^^^^
+  /// ```
+  CharacterReferenceValue,
+  /// Whole code (fenced).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`CodeFencedFence`][Name::CodeFencedFence],
+  ///     [`CodeFlowChunk`][Name::CodeFlowChunk],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ````markdown
+  /// > | ```js
+  ///     ^^^^^
+  /// > | console.log(1)
+  ///     ^^^^^^^^^^^^^^
+  /// > | ```
+  ///     ^^^
+  /// ````
+  CodeFenced,
+  /// A code (fenced) fence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeFenced`][Name::CodeFenced]
+  /// *   **Content model**:
+  ///     [`CodeFencedFenceInfo`][Name::CodeFencedFenceInfo],
+  ///     [`CodeFencedFenceMeta`][Name::CodeFencedFenceMeta],
+  ///     [`CodeFencedFenceSequence`][Name::CodeFencedFenceSequence],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ````markdown
+  /// > | ```js
+  ///     ^^^^^
+  ///   | console.log(1)
+  /// > | ```
+  ///     ^^^
+  /// ````
+  CodeFencedFence,
+  /// A code (fenced) fence info word.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeFencedFence`][Name::CodeFencedFence]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ````markdown
+  /// > | ```js
+  ///        ^^
+  ///   | console.log(1)
+  ///   | ```
+  /// ````
+  CodeFencedFenceInfo,
+  /// A code (fenced) fence meta string.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeFencedFence`][Name::CodeFencedFence]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ````markdown
+  /// > | ```js highlight="1"
+  ///           ^^^^^^^^^^^^^
+  ///   | console.log(1)
+  ///   | ```
+  /// ````
+  CodeFencedFenceMeta,
+  /// A code (fenced) fence sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeFencedFenceSequence`][Name::CodeFencedFenceSequence]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ````markdown
+  /// > | ```js
+  ///     ^^^
+  ///   | console.log(1)
+  /// > | ```
+  ///     ^^^
+  /// ````
+  CodeFencedFenceSequence,
+  /// A code (fenced, indented) chunk.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeFenced`][Name::CodeFenced],
+  ///     [`CodeIndented`][Name::CodeIndented]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow],
+  ///     [`code_indented`][crate::construct::code_indented]
+  ///
+  /// ## Example
+  ///
+  /// ````markdown
+  ///   | ```js
+  /// > | console.log(1)
+  ///     ^^^^^^^^^^^^^^
+  ///   | ```
+  /// ````
+  ///
+  /// ```markdown
+  /// > | ␠␠␠␠console.log(1)
+  ///         ^^^^^^^^^^^^^^
+  /// ```
+  CodeFlowChunk,
+  /// Whole code (indented).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`CodeFlowChunk`][Name::CodeFlowChunk],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// ␠␠␠␠console.log(1)
+  /// ^^^^^^^^^^^^^^^^^^
+  /// ```
+  CodeIndented,
+  /// Whole code (text).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`CodeTextData`][Name::CodeTextData],
+  ///     [`CodeTextSequence`][Name::CodeTextSequence],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`raw_text`][crate::construct::raw_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a `b` c
+  ///       ^^^
+  /// ```
+  CodeText,
+  /// Code (text) data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeText`][Name::CodeText]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_text`][crate::construct::raw_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a `b` c
+  ///        ^
+  /// ```
+  CodeTextData,
+  /// Code (text) sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`CodeText`][Name::CodeText]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_text`][crate::construct::raw_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a `b` c
+  ///       ^ ^
+  /// ```
+  CodeTextSequence,
+  /// Content.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [content][crate::construct::content]
+  /// *   **Construct**:
+  ///     [`content`][crate::construct::content]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b
+  ///     ^^^^^^
+  /// > | c.
+  ///     ^^
+  /// ```
+  Content,
+  /// Data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [string content][crate::construct::string],
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`data`][crate::construct::partial_data]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | aa *bb* cc
+  ///     ^^^ ^^ ^^^
+  /// ```
+  Data,
+  /// Whole definition.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`DefinitionMarker`][Name::DefinitionMarker],
+  ///     [`DefinitionLabel`][Name::DefinitionLabel],
+  ///     [`DefinitionDestination`][Name::DefinitionDestination],
+  ///     [`DefinitionTitle`][Name::DefinitionTitle],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`definition`][crate::construct::definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///     ^^^^^^^^^^
+  /// ```
+  Definition,
+  /// Whole definition destination.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Definition`][Name::Definition]
+  /// *   **Content model**:
+  ///     [`DefinitionDestinationLiteral`][Name::DefinitionDestinationLiteral],
+  ///     [`DefinitionDestinationRaw`][Name::DefinitionDestinationRaw]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///          ^
+  /// > | [a]: <b> "c"
+  ///          ^^^
+  /// ```
+  DefinitionDestination,
+  /// Definition destination literal.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionDestination`][Name::DefinitionDestination]
+  /// *   **Content model**:
+  ///     [`DefinitionDestinationLiteralMarker`][Name::DefinitionDestinationLiteralMarker],
+  ///     [`DefinitionDestinationString`][Name::DefinitionDestinationString]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: <b> "c"
+  ///          ^^^
+  /// ```
+  DefinitionDestinationLiteral,
+  /// Definition destination literal marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionDestinationLiteral`][Name::DefinitionDestinationLiteral]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: <b> "c"
+  ///          ^ ^
+  /// ```
+  DefinitionDestinationLiteralMarker,
+  /// Definition destination raw.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionDestination`][Name::DefinitionDestination]
+  /// *   **Content model**:
+  ///     [`DefinitionDestinationString`][Name::DefinitionDestinationString]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///          ^
+  /// ```
+  DefinitionDestinationRaw,
+  /// Definition destination data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionDestinationLiteral`][Name::DefinitionDestinationLiteral],
+  ///     [`DefinitionDestinationRaw`][Name::DefinitionDestinationRaw]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///          ^
+  /// > | [a]: <b> "c"
+  ///           ^
+  /// ```
+  DefinitionDestinationString,
+  /// Whole definition label.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Definition`][Name::Definition]
+  /// *   **Content model**:
+  ///     [`DefinitionLabelMarker`][Name::DefinitionLabelMarker],
+  ///     [`DefinitionLabelString`][Name::DefinitionLabelString],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`label`][crate::construct::partial_label]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///     ^^^
+  /// ```
+  DefinitionLabel,
+  /// Definition label marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionLabel`][Name::DefinitionLabel]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`label`][crate::construct::partial_label]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///     ^ ^
+  /// ```
+  DefinitionLabelMarker,
+  /// Definition label data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionLabel`][Name::DefinitionLabel]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`label`][crate::construct::partial_label]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///      ^
+  /// ```
+  DefinitionLabelString,
+  /// Definition marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Definition`][Name::Definition],
+  ///     [`GfmFootnoteDefinition`][Name::GfmFootnoteDefinition]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`definition`][crate::construct::definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///        ^
+  /// ```
+  DefinitionMarker,
+  /// Whole definition title.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Definition`][Name::Definition]
+  /// *   **Content model**:
+  ///     [`DefinitionTitleMarker`][Name::DefinitionTitleMarker],
+  ///     [`DefinitionTitleString`][Name::DefinitionTitleString],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`title`][crate::construct::partial_title]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///            ^^^
+  /// ```
+  DefinitionTitle,
+  /// Definition title marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionTitle`][Name::DefinitionTitle]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`title`][crate::construct::partial_title]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///            ^ ^
+  /// ```
+  DefinitionTitleMarker,
+  /// Definition title data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`DefinitionTitle`][Name::DefinitionTitle]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`title`][crate::construct::partial_title]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [a]: b "c"
+  ///             ^
+  /// ```
+  DefinitionTitleString,
+  /// Emphasis.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`EmphasisSequence`][Name::EmphasisSequence],
+  ///     [`EmphasisText`][Name::EmphasisText]
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | *a*
+  ///     ^^^
+  /// ```
+  Emphasis,
+  /// Emphasis sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Emphasis`][Name::Emphasis]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | *a*
+  ///     ^ ^
+  /// ```
+  EmphasisSequence,
+  /// Emphasis text.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Emphasis`][Name::Emphasis]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | *a*
+  ///      ^
+  /// ```
+  EmphasisText,
+  /// Whole frontmatter.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [document content][crate::construct::document]
+  /// *   **Content model**:
+  ///     [`FrontmatterFence`][Name::FrontmatterFence],
+  ///     [`FrontmatterChunk`][Name::FrontmatterChunk],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`frontmatter`][crate::construct::frontmatter]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ---
+  ///     ^^^
+  /// > | title: Neptune
+  ///     ^^^^^^^^^^^^^^
+  /// > | ---
+  ///     ^^^
+  /// ```
+  Frontmatter,
+  /// Frontmatter chunk.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Frontmatter`][Name::Frontmatter]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`frontmatter`][crate::construct::frontmatter]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | ---
+  /// > | title: Neptune
+  ///     ^^^^^^^^^^^^^^
+  ///   | ---
+  /// ```
+  FrontmatterChunk,
+  /// Frontmatter fence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Frontmatter`][Name::Frontmatter]
+  /// *   **Content model**:
+  ///     [`FrontmatterSequence`][Name::FrontmatterSequence],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`frontmatter`][crate::construct::frontmatter]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ---
+  ///     ^^^
+  ///   | title: Neptune
+  /// > | ---
+  ///     ^^^
+  /// ```
+  FrontmatterFence,
+  /// Frontmatter sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`FrontmatterFence`][Name::FrontmatterFence]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`frontmatter`][crate::construct::frontmatter]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ---
+  ///     ^^^
+  ///   | title: Neptune
+  /// > | ---
+  ///     ^^^
+  /// ```
+  FrontmatterSequence,
+  /// GFM extension: email autolink.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void.
+  /// *   **Construct**:
+  ///     [`gfm_autolink_literal`][crate::construct::gfm_autolink_literal]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | context@example.com
+  ///     ^^^^^^^^^^^^^^^^^^^
+  /// ```
+  GfmAutolinkLiteralEmail,
+  /// GFM extension: email autolink w/ explicit `mailto`.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void.
+  /// *   **Construct**:
+  ///     [`gfm_autolink_literal`][crate::construct::gfm_autolink_literal]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | mailto:context@example.com
+  ///     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  /// ```
+  GfmAutolinkLiteralMailto,
+  /// GFM extension: autolink w/ protocol.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void.
+  /// *   **Construct**:
+  ///     [`gfm_autolink_literal`][crate::construct::gfm_autolink_literal]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | https://example.com
+  ///     ^^^^^^^^^^^^^^^^^^^
+  /// ```
+  GfmAutolinkLiteralProtocol,
+  /// GFM extension: autolink w/ www.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void.
+  /// *   **Construct**:
+  ///     [`gfm_autolink_literal`][crate::construct::gfm_autolink_literal]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | www.example.com
+  ///     ^^^^^^^^^^^^^^^
+  /// ```
+  GfmAutolinkLiteralWww,
+  /// GFM extension: email autolink w/ explicit `xmpp`.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void.
+  /// *   **Construct**:
+  ///     [`gfm_autolink_literal`][crate::construct::gfm_autolink_literal]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | mailto:a@b.c/d
+  ///     ^^^^^^^^^^^^^^
+  /// ```
+  GfmAutolinkLiteralXmpp,
+  /// GFM extension: whole footnote call.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`Label`][Name::Label]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [^b] c
+  ///       ^^^^
+  /// ```
+  GfmFootnoteCall,
+  /// GFM extension: label start (footnote).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Label`][Name::Label]
+  /// *   **Content model**:
+  ///     [`GfmFootnoteCallMarker`][Name::GfmFootnoteCallMarker],
+  ///     [`LabelMarker`][Name::LabelMarker]
+  /// *   **Construct**:
+  ///     [`gfm_label_start_footnote`][crate::construct::gfm_label_start_footnote]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [^b] c
+  ///       ^^
+  /// ```
+  GfmFootnoteCallLabel,
+  /// GFM extension: label start (footnote) marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmFootnoteCallLabel`][Name::GfmFootnoteCallLabel]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_label_start_footnote`][crate::construct::gfm_label_start_footnote]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [^b] c
+  ///        ^
+  /// ```
+  GfmFootnoteCallMarker,
+  /// GFM extension: whole footnote definition.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [document content][crate::construct::document]
+  /// *   **Content model**:
+  ///     [`GfmFootnoteDefinitionPrefix`][Name::GfmFootnoteDefinitionPrefix],
+  ///     [document content][crate::construct::flow]
+  /// *   **Construct**:
+  ///     [`gfm_footnote_definition`][crate::construct::gfm_footnote_definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///     ^^^^^^^
+  /// ```
+  GfmFootnoteDefinition,
+  /// GFM extension: footnote definition prefix.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmFootnoteDefinition`][Name::GfmFootnoteDefinition]
+  /// *   **Content model**:
+  ///     [`DefinitionMarker`][Name::DefinitionMarker],
+  ///     [`GfmFootnoteDefinitionLabel`][Name::GfmFootnoteDefinitionLabel],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`gfm_footnote_definition`][crate::construct::gfm_footnote_definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///     ^^^^^^
+  /// ```
+  GfmFootnoteDefinitionPrefix,
+  /// GFM extension: footnote definition label.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmFootnoteDefinitionPrefix`][Name::GfmFootnoteDefinitionPrefix]
+  /// *   **Content model**:
+  ///     [`GfmFootnoteDefinitionLabelMarker`][Name::GfmFootnoteDefinitionLabelMarker],
+  ///     [`GfmFootnoteDefinitionLabelString`][Name::GfmFootnoteDefinitionLabelString],
+  ///     [`GfmFootnoteDefinitionMarker`][Name::GfmFootnoteDefinitionMarker]
+  /// *   **Construct**:
+  ///     [`gfm_footnote_definition`][crate::construct::gfm_footnote_definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///     ^^^^
+  /// ```
+  GfmFootnoteDefinitionLabel,
+  /// GFM extension: footnote definition label marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmFootnoteDefinitionLabel`][Name::GfmFootnoteDefinitionLabel]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_footnote_definition`][crate::construct::gfm_footnote_definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///     ^  ^
+  GfmFootnoteDefinitionLabelMarker,
+  /// GFM extension: footnote definition label string.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmFootnoteDefinitionLabel`][Name::GfmFootnoteDefinitionLabel]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`gfm_footnote_definition`][crate::construct::gfm_footnote_definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///       ^
+  GfmFootnoteDefinitionLabelString,
+  /// GFM extension: footnote definition marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmFootnoteDefinitionLabel`][Name::GfmFootnoteDefinitionLabel]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_footnote_definition`][crate::construct::gfm_footnote_definition]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | [^a]: b
+  ///      ^
+  GfmFootnoteDefinitionMarker,
+  /// GFM extension: Strikethrough.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`GfmStrikethroughSequence`][Name::GfmStrikethroughSequence],
+  ///     [`GfmStrikethroughText`][Name::GfmStrikethroughText]
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ~a~
+  ///     ^^^
+  /// ```
+  GfmStrikethrough,
+  /// GFM extension: Strikethrough sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmStrikethrough`][Name::GfmStrikethrough]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ~a~
+  ///     ^ ^
+  /// ```
+  GfmStrikethroughSequence,
+  /// GFM extension: Strikethrough text.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmStrikethrough`][Name::GfmStrikethrough]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ~a~
+  ///      ^
+  /// ```
+  GfmStrikethroughText,
+  /// GFM extension: Table.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`GfmTableBody`][Name::GfmTableBody],
+  ///     [`GfmTableHead`][Name::GfmTableHead],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///     ^^^^^
+  /// > | | - |
+  ///     ^^^^^
+  /// > | | b |
+  ///     ^^^^^
+  /// ```
+  GfmTable,
+  /// GFM extension: Table body.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTable`][Name::GfmTable]
+  /// *   **Content model**:
+  ///     [`GfmTableRow`][Name::GfmTableRow],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | | a |
+  ///   | | - |
+  /// > | | b |
+  ///     ^^^^^
+  /// ```
+  GfmTableBody,
+  /// GFM extension: Table cell.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableRow`][Name::GfmTableRow]
+  /// *   **Content model**:
+  ///     [`GfmTableCellDivider`][Name::GfmTableCellDivider],
+  ///     [`GfmTableCellText`][Name::GfmTableCellText],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///     ^^^^^
+  ///   | | - |
+  /// > | | b |
+  ///     ^^^^^
+  /// ```
+  GfmTableCell,
+  /// GFM extension: Table cell text.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableCell`][Name::GfmTableCell]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///       ^
+  ///   | | - |
+  /// > | | b |
+  ///       ^
+  /// ```
+  GfmTableCellText,
+  /// GFM extension: Table cell divider.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableCell`][Name::GfmTableCell]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///     ^   ^
+  /// > | | - |
+  ///     ^   ^
+  /// > | | b |
+  ///     ^   ^
+  /// ```
+  GfmTableCellDivider,
+  /// GFM extension: Table delimiter row.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableHead`][Name::GfmTableHead]
+  /// *   **Content model**:
+  ///     [`GfmTableDelimiterCell`][Name::GfmTableDelimiterCell]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | | a |
+  /// > | | - |
+  ///     ^^^^^
+  ///   | | b |
+  /// ```
+  GfmTableDelimiterRow,
+  /// GFM extension: Table delimiter alignment marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableDelimiterCellValue`][Name::GfmTableDelimiterCellValue]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | | a  |
+  /// > | | :- |
+  ///       ^
+  ///   | | b  |
+  /// ```
+  GfmTableDelimiterMarker,
+  /// GFM extension: Table delimiter cell.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableDelimiterRow`][Name::GfmTableDelimiterRow]
+  /// *   **Content model**:
+  ///     [`GfmTableCellDivider`][Name::GfmTableCellDivider],
+  ///     [`GfmTableDelimiterCellValue`][Name::GfmTableDelimiterCellValue],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | | a |
+  /// > | | - |
+  ///     ^^^^^
+  ///   | | b |
+  /// ```
+  GfmTableDelimiterCell,
+  /// GFM extension: Table delimiter cell alignment.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableDelimiterCell`][Name::GfmTableDelimiterCell]
+  /// *   **Content model**:
+  ///     [`GfmTableDelimiterMarker`][Name::GfmTableDelimiterMarker],
+  ///     [`GfmTableDelimiterFiller`][Name::GfmTableDelimiterFiller]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | | a |
+  /// > | | - |
+  ///       ^
+  ///   | | b |
+  /// ```
+  GfmTableDelimiterCellValue,
+  /// GFM extension: Table delimiter filler.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableDelimiterCellValue`][Name::GfmTableDelimiterCellValue]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | | a |
+  /// > | | - |
+  ///       ^
+  ///   | | b |
+  /// ```
+  GfmTableDelimiterFiller,
+  /// GFM extension: Table head.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTable`][Name::GfmTable]
+  /// *   **Content model**:
+  ///     [`GfmTableRow`][Name::GfmTableRow],
+  ///     [`GfmTableDelimiterRow`][Name::GfmTableDelimiterRow],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///     ^^^^^
+  /// > | | - |
+  ///     ^^^^^
+  ///   | | b |
+  /// ```
+  GfmTableHead,
+  /// GFM extension: Table row.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTableBody`][Name::GfmTableBody],
+  ///     [`GfmTableHead`][Name::GfmTableHead]
+  /// *   **Content model**:
+  ///     [`GfmTableCell`][Name::GfmTableCell]
+  /// *   **Construct**:
+  ///     [`gfm_table`][crate::construct::gfm_table]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | | a |
+  ///     ^^^^^
+  ///   | | - |
+  /// > | | b |
+  ///     ^^^^^
+  /// ```
+  GfmTableRow,
+  /// GFM extension: task list item check.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`GfmTaskListItemMarker`][Name::GfmTaskListItemMarker],
+  ///     [`GfmTaskListItemValueChecked`][Name::GfmTaskListItemValueChecked],
+  ///     [`GfmTaskListItemValueUnchecked`][Name::GfmTaskListItemValueUnchecked]
+  /// *   **Construct**:
+  ///     [`gfm_task_list_item_check`][crate::construct::gfm_task_list_item_check]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * [x] y.
+  ///       ^^^
+  /// ```
+  GfmTaskListItemCheck,
+  /// GFM extension: task list item check marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTaskListItemCheck`][Name::GfmTaskListItemCheck]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_task_list_item_check`][crate::construct::gfm_task_list_item_check]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * [x] y.
+  ///       ^ ^
+  /// ```
+  GfmTaskListItemMarker,
+  /// GFM extension: task list item value: checked.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTaskListItemCheck`][Name::GfmTaskListItemCheck]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_task_list_item_check`][crate::construct::gfm_task_list_item_check]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * [x] y.
+  ///        ^
+  /// ```
+  GfmTaskListItemValueChecked,
+  /// GFM extension: task list item value: unchecked.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`GfmTaskListItemCheck`][Name::GfmTaskListItemCheck]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`gfm_task_list_item_check`][crate::construct::gfm_task_list_item_check]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * [ ] z.
+  ///        ^
+  /// ```
+  GfmTaskListItemValueUnchecked,
+  /// Whole hard break (escape).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`hard_break_escape`][crate::construct::hard_break_escape]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a\␊
+  ///      ^
+  /// > | b
+  /// ```
+  HardBreakEscape,
+  /// Whole hard break (trailing).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`whitespace`][crate::construct::partial_whitespace]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a␠␠␊
+  ///      ^^
+  /// > | b
+  /// ```
+  HardBreakTrailing,
+  /// Whole heading (atx).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`HeadingAtxSequence`][Name::HeadingAtxSequence],
+  ///     [`HeadingAtxText`][Name::HeadingAtxText],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`heading_atx`][crate::construct::heading_atx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | # alpha
+  ///     ^^^^^^^
+  /// ```
+  HeadingAtx,
+  /// Heading (atx) sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HeadingAtx`][Name::HeadingAtx]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`heading_atx`][crate::construct::heading_atx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | # alpha
+  ///     ^
+  /// ```
+  HeadingAtxSequence,
+  /// Heading (atx) data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HeadingAtx`][Name::HeadingAtx]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`heading_atx`][crate::construct::heading_atx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | # alpha
+  ///       ^^^^^
+  /// ```
+  HeadingAtxText,
+  /// Whole heading (setext).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`HeadingSetextText`][Name::HeadingSetextText],
+  ///     [`HeadingSetextUnderline`][Name::HeadingSetextUnderline],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`heading_setext`][crate::construct::heading_setext]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | alpha
+  ///     ^^^^^
+  /// > | =====
+  ///     ^^^^^
+  /// ```
+  HeadingSetext,
+  /// Heading (setext) data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HeadingSetext`][Name::HeadingSetext]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`heading_setext`][crate::construct::heading_setext]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | alpha
+  ///     ^^^^^
+  ///   | =====
+  /// ```
+  HeadingSetextText,
+  /// Heading (setext) underline.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HeadingSetext`][Name::HeadingSetext]
+  /// *   **Content model**:
+  ///     [`HeadingSetextUnderlineSequence`][Name::HeadingSetextUnderlineSequence],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`heading_setext`][crate::construct::heading_setext]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | alpha
+  /// > | =====
+  ///     ^^^^^
+  /// ```
+  HeadingSetextUnderline,
+  /// Heading (setext) underline sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HeadingSetext`][Name::HeadingSetext]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`heading_setext`][crate::construct::heading_setext]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | alpha
+  /// > | =====
+  ///     ^^^^^
+  /// ```
+  HeadingSetextUnderlineSequence,
+  /// Whole html (flow).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`HtmlFlowData`][Name::HtmlFlowData],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`html_flow`][crate::construct::html_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <div>
+  ///     ^^^^^
+  /// ```
+  HtmlFlow,
+  /// HTML (flow) data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HtmlFlow`][Name::HtmlFlow]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`html_flow`][crate::construct::html_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <div>
+  ///     ^^^^^
+  /// ```
+  HtmlFlowData,
+  /// Whole html (text).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`HtmlTextData`][Name::HtmlTextData],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`html_text`][crate::construct::html_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b> c
+  ///       ^^^
+  /// ```
+  HtmlText,
+  /// HTML (text) data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`HtmlText`][Name::HtmlText]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`html_text`][crate::construct::html_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b> c
+  ///       ^^^
+  /// ```
+  HtmlTextData,
+  /// Image.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`Label`][Name::Label],
+  ///     [`Resource`][Name::Resource],
+  ///     [`Reference`][Name::Reference]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b] c
+  ///       ^^^^
+  /// > | a ![b][c] d
+  ///       ^^^^^^^
+  /// > | a ![b](c) d
+  ///       ^^^^^^^
+  /// ```
+  Image,
+  /// Label.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Image`][Name::Image],
+  ///     [`Link`][Name::Link]
+  /// *   **Content model**:
+  ///     [`LabelImage`][Name::LabelImage],
+  ///     [`LabelLink`][Name::LabelLink],
+  ///     [`LabelEnd`][Name::LabelEnd],
+  ///     [`LabelText`][Name::LabelText]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [b] c
+  ///       ^^^
+  /// > | a ![b][c] d
+  ///       ^^^^
+  /// > | a [b](c) d
+  ///       ^^^
+  /// ```
+  Label,
+  /// Label end.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Label`][Name::Label]
+  /// *   **Content model**:
+  ///     [`LabelMarker`][Name::LabelMarker]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c) d
+  ///          ^
+  /// > | a [b](c) d
+  ///         ^
+  /// ```
+  LabelEnd,
+  /// Label start (image).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Label`][Name::Label]
+  /// *   **Content model**:
+  ///     [`LabelImageMarker`][Name::LabelImageMarker],
+  ///     [`LabelMarker`][Name::LabelMarker]
+  /// *   **Construct**:
+  ///     [`label_start_image`][crate::construct::label_start_image]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c) d
+  ///       ^^
+  /// ```
+  LabelImage,
+  /// Label start (image) marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`LabelImage`][Name::LabelImage]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`label_start_image`][crate::construct::label_start_image]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c) d
+  ///       ^
+  /// ```
+  LabelImageMarker,
+  /// Label start (link).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Label`][Name::Label]
+  /// *   **Content model**:
+  ///     [`LabelMarker`][Name::LabelMarker]
+  /// *   **Construct**:
+  ///     [`label_start_link`][crate::construct::label_start_link]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [b](c) d
+  ///       ^
+  /// ```
+  LabelLink,
+  /// Label marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`LabelImage`][Name::LabelImage],
+  ///     [`LabelLink`][Name::LabelLink],
+  ///     [`LabelEnd`][Name::LabelEnd]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`label_start_image`][crate::construct::label_start_image],
+  ///     [`label_start_link`][crate::construct::label_start_link],
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c) d
+  ///        ^ ^
+  /// > | a [b](c) d
+  ///       ^ ^
+  /// ```
+  LabelMarker,
+  /// Label text.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Label`][Name::Label]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [b] c
+  ///        ^
+  /// > | a ![b][c] d
+  ///         ^
+  /// > | a [b](c) d
+  ///        ^
+  /// ```
+  LabelText,
+  /// Line ending.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     basically everywhere
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     n/a
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a␊
+  ///      ^
+  ///   | b
+  /// ```
+  LineEnding,
+  /// Link.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`Label`][Name::Label],
+  ///     [`Resource`][Name::Resource],
+  ///     [`Reference`][Name::Reference]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a [b] c
+  ///       ^^^
+  /// > | a [b][c] d
+  ///       ^^^^^^
+  /// > | a [b](c) d
+  ///       ^^^^^^
+  /// ```
+  Link,
+  /// List item.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ListOrdered`][Name::ListOrdered],
+  ///     [`ListUnordered`][Name::ListUnordered]
+  /// *   **Content model**:
+  ///     [`ListItemPrefix`][Name::ListItemPrefix],
+  ///     [flow content][crate::construct::flow]
+  /// *   **Construct**:
+  ///     [`list item`][crate::construct::list_item]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * a
+  ///     ^^^
+  /// > | 1. b
+  ///     ^^^^
+  /// ```
+  ListItem,
+  /// List item (marker).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ListItemPrefix`][Name::ListItemPrefix]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`list item`][crate::construct::list_item]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * a
+  ///     ^
+  /// > | 1. b
+  ///      ^
+  /// ```
+  ListItemMarker,
+  /// List item (prefix).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ListItem`][Name::ListItem]
+  /// *   **Content model**:
+  ///     [`ListItemMarker`][Name::ListItemMarker],
+  ///     [`ListItemValue`][Name::ListItemValue],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`list item`][crate::construct::list_item]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * a
+  ///     ^^
+  /// > |   b
+  ///     ^^
+  /// ```
+  ListItemPrefix,
+  /// List item (value).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ListItemPrefix`][Name::ListItemPrefix]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`list item`][crate::construct::list_item]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | 1. b
+  ///     ^
+  /// ```
+  ListItemValue,
+  /// List (ordered).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [document content][crate::construct::document]
+  /// *   **Content model**:
+  ///     [`BlankLineEnding`][Name::BlankLineEnding],
+  ///     [`BlockQuotePrefix`][Name::BlockQuotePrefix],
+  ///     [`ListItem`][Name::ListItem],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`list item`][crate::construct::list_item]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | 1. a
+  ///     ^^^^
+  /// > | 2. b
+  ///     ^^^^
+  /// ```
+  ListOrdered,
+  /// List (unordered).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [document content][crate::construct::document]
+  /// *   **Content model**:
+  ///     [`BlankLineEnding`][Name::BlankLineEnding],
+  ///     [`BlockQuotePrefix`][Name::BlockQuotePrefix],
+  ///     [`ListItem`][Name::ListItem],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`list item`][crate::construct::list_item]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * a
+  ///     ^^^
+  /// > | * b
+  ///     ^^^
+  /// ```
+  ListUnordered,
+  /// Whole math (flow).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`MathFlowFence`][Name::MathFlowFence],
+  ///     [`MathFlowChunk`][Name::MathFlowChunk],
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | $$
+  ///     ^^
+  /// > | \frac{1}{2}
+  ///     ^^^^^^^^^^^
+  /// > | $$
+  ///     ^^
+  /// ```
+  MathFlow,
+  /// A math (flow) fence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MathFlow`][Name::MathFlow]
+  /// *   **Content model**:
+  ///     [`MathFlowFenceMeta`][Name::MathFlowFenceMeta],
+  ///     [`MathFlowFenceSequence`][Name::MathFlowFenceSequence],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | $$
+  ///     ^^
+  ///   | \frac{1}{2}
+  /// > | $$
+  ///     ^^
+  /// ```
+  MathFlowFence,
+  /// A math (flow) fence meta string.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MathFlowFence`][Name::MathFlowFence]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | $$alpha bravo
+  ///       ^^^^^^^^^^^
+  ///   | \frac{1}{2}
+  ///   | $$
+  /// ```
+  MathFlowFenceMeta,
+  /// A math (flow) fence sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MathFlowFenceSequence`][Name::MathFlowFenceSequence]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | $$
+  ///     ^^
+  ///   | \frac{1}{2}
+  /// > | $$
+  ///     ^^
+  /// ```
+  MathFlowFenceSequence,
+  /// A math (flow) chunk.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MathFlow`][Name::MathFlow]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_flow`][crate::construct::raw_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  ///   | $$
+  /// > | \frac{1}{2}
+  ///     ^^^^^^^^^^^
+  ///   | $$
+  /// ```
+  MathFlowChunk,
+  /// Whole math (text).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`MathTextData`][Name::MathTextData],
+  ///     [`MathTextSequence`][Name::MathTextSequence],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`raw_text`][crate::construct::raw_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a $b$ c
+  ///       ^^^
+  /// ```
+  MathText,
+  /// Math (text) data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MathText`][Name::MathText]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_text`][crate::construct::raw_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a `b` c
+  ///        ^
+  /// ```
+  MathTextData,
+  /// Math (text) sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MathText`][Name::MathText]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`raw_text`][crate::construct::raw_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a $b$ c
+  ///       ^ ^
+  /// ```
+  MathTextSequence,
+  /// MDX extension: ESM.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     void
+  ///     [`MdxEsmData`][Name::MdxEsmData],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`mdx_esm`][crate::construct::mdx_esm]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | import a from 'b'
+  ///     ^^^^^^^^^^^^^^^^^
+  /// ```
+  MdxEsm,
+  /// MDX extension: ESM data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxEsm`][Name::MdxEsm]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`mdx_esm`][crate::construct::mdx_esm]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | import a from 'b'
+  ///     ^^^^^^^^^^^^^^^^^
+  /// ```
+  MdxEsmData,
+  /// MDX extension: expression marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxFlowExpression`][Name::MdxFlowExpression],
+  ///     [`MdxTextExpression`][Name::MdxTextExpression],
+  ///     [`MdxJsxTagAttributeExpression`][Name::MdxJsxTagAttributeExpression],
+  ///     [`MdxJsxTagAttributeValueExpression`][Name::MdxJsxTagAttributeValueExpression]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_expression`][crate::construct::partial_mdx_expression]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | {Math.PI}
+  ///     ^       ^
+  /// ```
+  MdxExpressionMarker,
+  /// MDX extension: expression data.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxFlowExpression`][Name::MdxFlowExpression],
+  ///     [`MdxTextExpression`][Name::MdxTextExpression],
+  ///     [`MdxJsxTagAttributeExpression`][Name::MdxJsxTagAttributeExpression],
+  ///     [`MdxJsxTagAttributeValueExpression`][Name::MdxJsxTagAttributeValueExpression]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_expression`][crate::construct::partial_mdx_expression]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | {Math.PI}
+  ///      ^^^^^^^
+  /// ```
+  MdxExpressionData,
+  /// MDX extension: expression (flow).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab],
+  ///     [`MdxExpressionMarker`][Name::MdxExpressionMarker],
+  ///     [`MdxExpressionData`][Name::MdxExpressionData]
+  /// *   **Construct**:
+  ///     [`mdx_expression_flow`][crate::construct::mdx_expression_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | {Math.PI}
+  ///     ^^^^^^^^^
+  /// ```
+  MdxFlowExpression,
+  /// MDX extension: expression (text).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab],
+  ///     [`MdxExpressionMarker`][Name::MdxExpressionMarker],
+  ///     [`MdxExpressionData`][Name::MdxExpressionData]
+  /// *   **Construct**:
+  ///     [`mdx_expression_text`][crate::construct::mdx_expression_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a {Math.PI} b
+  ///       ^^^^^^^^^
+  /// ```
+  MdxTextExpression,
+  /// MDX extension: JSX (flow).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`MdxJsxEsWhitespace`][Name::MdxJsxEsWhitespace],
+  ///     [`MdxJsxTagMarker`][Name::MdxJsxTagMarker],
+  ///     [`MdxJsxTagClosingMarker`][Name::MdxJsxTagClosingMarker],
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName],
+  ///     [`MdxJsxTagAttribute`][Name::MdxJsxTagAttribute],
+  ///     [`MdxJsxTagAttributeExpression`][Name::MdxJsxTagAttributeExpression],
+  ///     [`MdxJsxTagSelfClosingMarker`][Name::MdxJsxTagSelfClosingMarker]
+  /// *   **Construct**:
+  ///     [`mdx_jsx_flow`][crate::construct::mdx_jsx_flow]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | <B />
+  ///     ^^^^^
+  /// ```
+  MdxJsxFlowTag,
+  /// MDX extension: JSX (text).
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`MdxJsxEsWhitespace`][Name::MdxJsxEsWhitespace],
+  ///     [`MdxJsxTagMarker`][Name::MdxJsxTagMarker],
+  ///     [`MdxJsxTagClosingMarker`][Name::MdxJsxTagClosingMarker],
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName],
+  ///     [`MdxJsxTagAttribute`][Name::MdxJsxTagAttribute],
+  ///     [`MdxJsxTagAttributeExpression`][Name::MdxJsxTagAttributeExpression],
+  ///     [`MdxJsxTagSelfClosingMarker`][Name::MdxJsxTagSelfClosingMarker]
+  /// *   **Construct**:
+  ///     [`mdx_jsx_text`][crate::construct::mdx_jsx_text]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <B /> c
+  ///       ^^^^^
+  /// ```
+  MdxJsxTextTag,
+  /// MDX extension: JSX: ECMAScript whitespace.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag],
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName],
+  ///     [`MdxJsxTagAttribute`][Name::MdxJsxTagAttribute],
+  ///     [`MdxJsxTagAttributeName`][Name::MdxJsxTagAttributeName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <B /> c
+  ///         ^
+  /// ```
+  MdxJsxEsWhitespace,
+  /// MDX extension: JSX: tag marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <B /> c
+  ///       ^   ^
+  /// ```
+  MdxJsxTagMarker,
+  /// MDX extension: JSX: closing tag marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a </B> c
+  ///        ^
+  /// ```
+  MdxJsxTagClosingMarker,
+  /// MDX extension: JSX: tag name.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`MdxJsxEsWhitespace`][Name::MdxJsxEsWhitespace],
+  ///     [`MdxJsxTagNamePrimary`][Name::MdxJsxTagNamePrimary],
+  ///     [`MdxJsxTagNameMember`][Name::MdxJsxTagNameMember],
+  ///     [`MdxJsxTagNameMemberMarker`][Name::MdxJsxTagNameMemberMarker],
+  ///     [`MdxJsxTagNamePrefixMarker`][Name::MdxJsxTagNamePrefixMarker],
+  ///     [`MdxJsxTagNameLocal`][Name::MdxJsxTagNameLocal]
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b> c
+  ///        ^
+  /// > | a <b:c> d
+  ///        ^^^
+  /// > | a <b.c> d
+  ///        ^^^
+  /// ```
+  MdxJsxTagName,
+  /// MDX extension: JSX: primary tag name.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b> c
+  ///        ^
+  /// > | a <b:c> d
+  ///        ^
+  /// > | a <b.c> d
+  ///        ^
+  /// ```
+  MdxJsxTagNamePrimary,
+  /// MDX extension: JSX: tag name member marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b.c> d
+  ///         ^
+  /// ```
+  MdxJsxTagNameMemberMarker,
+  /// MDX extension: JSX: tag name prefix marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b:c> d
+  ///         ^
+  /// ```
+  MdxJsxTagNamePrefixMarker,
+  /// MDX extension: JSX: tag name member.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b.c> d
+  ///          ^
+  /// ```
+  MdxJsxTagNameMember,
+  /// MDX extension: JSX: tag name local.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagName`][Name::MdxJsxTagName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b:c> d
+  ///          ^
+  /// ```
+  MdxJsxTagNameLocal,
+  /// MDX extension: JSX: attribute.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`MdxJsxEsWhitespace`][Name::MdxJsxEsWhitespace],
+  ///     [`MdxJsxTagAttributeName`][Name::MdxJsxTagAttributeName],
+  ///     [`MdxJsxTagAttributeInitializerMarker`][Name::MdxJsxTagAttributeInitializerMarker],
+  ///     [`MdxJsxTagAttributeValueLiteral`][Name::MdxJsxTagAttributeValueLiteral],
+  ///     [`MdxJsxTagAttributeValueExpression`][Name::MdxJsxTagAttributeValueExpression]
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c> d
+  ///          ^
+  /// > | a <b c="d"> e
+  ///          ^^^^^
+  /// > | a <b c={d}> e
+  ///          ^^^^^
+  /// ```
+  MdxJsxTagAttribute,
+  /// MDX extension: JSX tag attribute expression.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab],
+  ///     [`MdxExpressionMarker`][Name::MdxExpressionMarker],
+  ///     [`MdxExpressionData`][Name::MdxExpressionData]
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b {Math.PI} /> c
+  ///          ^^^^^^^^^
+  /// ```
+  MdxJsxTagAttributeExpression,
+  /// MDX extension: JSX: attribute name.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttribute`][Name::MdxJsxTagAttribute]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`MdxJsxEsWhitespace`][Name::MdxJsxEsWhitespace],
+  ///     [`MdxJsxTagAttributePrimaryName`][Name::MdxJsxTagAttributePrimaryName],
+  ///     [`MdxJsxTagAttributeNamePrefixMarker`][Name::MdxJsxTagAttributeNamePrefixMarker],
+  ///     [`MdxJsxTagAttributeNameLocal`][Name::MdxJsxTagAttributeNameLocal]
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c> d
+  ///          ^
+  /// > | a <b c:d="e"> f
+  ///          ^^^
+  /// ```
+  MdxJsxTagAttributeName,
+  /// MDX extension: JSX: primary attribute name.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttributeName`][Name::MdxJsxTagAttributeName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c> d
+  ///          ^
+  /// > | a <b c:d="e"> f
+  ///          ^
+  /// ```
+  MdxJsxTagAttributePrimaryName,
+  /// MDX extension: JSX: attribute name prefix marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttributeName`][Name::MdxJsxTagAttributeName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c:d="e"> f
+  ///           ^
+  /// ```
+  MdxJsxTagAttributeNamePrefixMarker,
+  /// MDX extension: JSX: local attribute name.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttributeName`][Name::MdxJsxTagAttributeName]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c:d="e"> f
+  ///            ^
+  /// ```
+  MdxJsxTagAttributeNameLocal,
+  /// MDX extension: JSX: attribute initializer marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttribute`][Name::MdxJsxTagAttribute]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c="d"> e
+  ///           ^
+  /// ```
+  MdxJsxTagAttributeInitializerMarker,
+  /// MDX extension: JSX tag attribute value expression.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab],
+  ///     [`MdxExpressionMarker`][Name::MdxExpressionMarker],
+  ///     [`MdxExpressionData`][Name::MdxExpressionData]
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c={Math.PI} /> d
+  ///            ^^^^^^^^^
+  /// ```
+  MdxJsxTagAttributeValueExpression,
+  /// MDX extension: JSX: attribute value literal.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttribute`][Name::MdxJsxTagAttribute]
+  /// *   **Content model**:
+  ///     [`LineEnding`][Name::LineEnding],
+  ///     [`MdxJsxEsWhitespace`][Name::MdxJsxEsWhitespace],
+  ///     [`MdxJsxTagAttributeValueLiteralMarker`][Name::MdxJsxTagAttributeValueLiteralMarker],
+  ///     [`MdxJsxTagAttributeValueLiteralValue`][Name::MdxJsxTagAttributeValueLiteralValue]
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c="d"> e
+  ///            ^^^
+  /// ```
+  MdxJsxTagAttributeValueLiteral,
+  /// MDX extension: JSX: attribute value literal marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttributeValueLiteral`][Name::MdxJsxTagAttributeValueLiteral]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c="d"> e
+  ///            ^ ^
+  /// ```
+  MdxJsxTagAttributeValueLiteralMarker,
+  /// MDX extension: JSX: attribute value literal value.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxTagAttributeValueLiteral`][Name::MdxJsxTagAttributeValueLiteral]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b c="d"> e
+  ///             ^
+  /// ```
+  MdxJsxTagAttributeValueLiteralValue,
+  /// MDX extension: JSX: self-closing tag marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`MdxJsxFlowTag`][Name::MdxJsxFlowTag],
+  ///     [`MdxJsxTextTag`][Name::MdxJsxTextTag]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`partial_mdx_jsx`][crate::construct::partial_mdx_jsx]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a <b /> c
+  ///          ^
+  /// ```
+  MdxJsxTagSelfClosingMarker,
+  /// Paragraph.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [content][crate::construct::content]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`paragraph`][crate::construct::paragraph]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a b
+  ///     ^^^
+  /// > | c.
+  ///     ^^
+  /// ```
+  Paragraph,
+  /// Reference.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Image`][Name::Image],
+  ///     [`Link`][Name::Link]
+  /// *   **Content model**:
+  ///     [`ReferenceMarker`][Name::ReferenceMarker],
+  ///     [`ReferenceString`][Name::ReferenceString]
+  /// *   **Construct**:
+  ///     [`label`][crate::construct::partial_label]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b][c] d
+  ///           ^^^
+  /// ```
+  Reference,
+  /// Reference marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Reference`][Name::Reference]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`label`][crate::construct::partial_label]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b][c] d
+  ///           ^ ^
+  /// ```
+  ReferenceMarker,
+  /// Reference string.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Reference`][Name::Reference]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`label`][crate::construct::partial_label]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b][c] d
+  ///            ^
+  /// ```
+  ReferenceString,
+  /// Resource.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Image`][Name::Image],
+  ///     [`Link`][Name::Link]
+  /// *   **Content model**:
+  ///     [`ResourceMarker`][Name::ResourceMarker],
+  ///     [`ResourceDestination`][Name::ResourceDestination],
+  ///     [`ResourceTitle`][Name::ResourceTitle],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab],
+  ///     [`LineEnding`][Name::LineEnding]
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c "d") e
+  ///           ^^^^^^^
+  /// > | a [b](c) d
+  ///          ^^^
+  /// ```
+  Resource,
+  /// Resource destination.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Resource`][Name::Resource]
+  /// *   **Content model**:
+  ///     [`ResourceDestinationLiteral`][Name::ResourceDestinationLiteral],
+  ///     [`ResourceDestinationRaw`][Name::ResourceDestinationRaw]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c "d") e
+  ///            ^
+  /// ```
+  ResourceDestination,
+  /// Resource destination literal.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ResourceDestination`][Name::ResourceDestination]
+  /// *   **Content model**:
+  ///     [`ResourceDestinationLiteralMarker`][Name::ResourceDestinationLiteralMarker],
+  ///     [`ResourceDestinationString`][Name::ResourceDestinationString]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](<c> "d") e
+  ///            ^^^
+  /// ```
+  ResourceDestinationLiteral,
+  /// Resource destination literal marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ResourceDestinationLiteral`][Name::ResourceDestinationLiteral]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](<c> "d") e
+  ///            ^ ^
+  /// ```
+  ResourceDestinationLiteralMarker,
+  /// Resource destination raw.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ResourceDestination`][Name::ResourceDestination]
+  /// *   **Content model**:
+  ///     [`ResourceDestinationString`][Name::ResourceDestinationString]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c "d") e
+  ///            ^
+  /// ```
+  ResourceDestinationRaw,
+  /// Resource destination raw.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ResourceDestinationLiteral`][Name::ResourceDestinationLiteral],
+  ///     [`ResourceDestinationRaw`][Name::ResourceDestinationRaw]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`destination`][crate::construct::partial_destination]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](<c> "d") e
+  ///             ^
+  /// > | a ![b](c "d") e
+  ///            ^
+  /// ```
+  ResourceDestinationString,
+  /// Resource marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Resource`][Name::Resource]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`label_end`][crate::construct::label_end]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](c "d") e
+  ///           ^     ^
+  /// ```
+  ResourceMarker,
+  /// Resource title.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Resource`][Name::Resource]
+  /// *   **Content model**:
+  ///     [`ResourceTitleMarker`][Name::ResourceTitleMarker],
+  ///     [`ResourceTitleString`][Name::ResourceTitleString]
+  /// *   **Construct**:
+  ///     [`title`][crate::construct::partial_title]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](<c> "d") e
+  ///                ^^^
+  /// ```
+  ResourceTitle,
+  /// Resource title marker.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ResourceTitle`][Name::ResourceTitle]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`title`][crate::construct::partial_title]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](<c> "d") e
+  ///                ^ ^
+  /// ```
+  ResourceTitleMarker,
+  /// Resource title string.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ResourceTitle`][Name::ResourceTitle]
+  /// *   **Content model**:
+  ///     [string content][crate::construct::string]
+  /// *   **Construct**:
+  ///     [`title`][crate::construct::partial_title]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | a ![b](<c> "d") e
+  ///                 ^
+  /// ```
+  ResourceTitleString,
+  /// SpaceOrTab.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     basically everywhere
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     n/a
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | ␠* * *␠
+  ///     ^ ^ ^ ^
+  /// ```
+  SpaceOrTab,
+  /// Strong.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [text content][crate::construct::text]
+  /// *   **Content model**:
+  ///     [`StrongSequence`][Name::StrongSequence],
+  ///     [`StrongText`][Name::StrongText]
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | **a**
+  ///     ^^^^^
+  /// ```
+  Strong,
+  /// Strong sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Strong`][Name::Strong]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | **a**
+  ///     ^^ ^^
+  /// ```
+  StrongSequence,
+  /// Strong text.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`Strong`][Name::Strong]
+  /// *   **Content model**:
+  ///     [text content][crate::construct::text]
+  /// *   **Construct**:
+  ///     [`attention`][crate::construct::attention]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | **a**
+  ///       ^
+  /// ```
+  StrongText,
+  /// Whole thematic break.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [flow content][crate::construct::flow]
+  /// *   **Content model**:
+  ///     [`ThematicBreakSequence`][Name::ThematicBreakSequence],
+  ///     [`SpaceOrTab`][Name::SpaceOrTab]
+  /// *   **Construct**:
+  ///     [`thematic_break`][crate::construct::thematic_break]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * * *
+  ///     ^^^^^
+  /// ```
+  ThematicBreak,
+  /// Thematic break sequence.
+  ///
+  /// ## Info
+  ///
+  /// *   **Context**:
+  ///     [`ThematicBreak`][Name::ThematicBreak]
+  /// *   **Content model**:
+  ///     void
+  /// *   **Construct**:
+  ///     [`thematic_break`][crate::construct::thematic_break]
+  ///
+  /// ## Example
+  ///
+  /// ```markdown
+  /// > | * * *
+  ///     ^ ^ ^
+  /// ```
+  ThematicBreakSequence,
+}
+
+/// Names of states to move to.
+enum StateName {
+  AttentionStart,
+  AttentionInside,
+  AutolinkStart,
+  AutolinkOpen,
+  AutolinkSchemeOrEmailAtext,
+  AutolinkSchemeInsideOrEmailAtext,
+  AutolinkUrlInside,
+  AutolinkEmailAtSignOrDot,
+  AutolinkEmailAtext,
+  AutolinkEmailValue,
+  AutolinkEmailLabel,
+  BlankLineStart,
+  BlankLineAfter,
+  BlockQuoteStart,
+  BlockQuoteContStart,
+  BlockQuoteContBefore,
+  BlockQuoteContAfter,
+  BomStart,
+  BomInside,
+  CharacterEscapeStart,
+  CharacterEscapeInside,
+  CharacterReferenceStart,
+  CharacterReferenceOpen,
+  CharacterReferenceNumeric,
+  CharacterReferenceValue,
+  CodeIndentedStart,
+  CodeIndentedAtBreak,
+  CodeIndentedAfter,
+  CodeIndentedFurtherStart,
+  CodeIndentedInside,
+  CodeIndentedFurtherBegin,
+  CodeIndentedFurtherAfter,
+  ContentChunkStart,
+  ContentChunkInside,
+  ContentDefinitionBefore,
+  ContentDefinitionAfter,
+  DataStart,
+  DataInside,
+  DataAtBreak,
+  DefinitionStart,
+  DefinitionBefore,
+  DefinitionLabelAfter,
+  DefinitionLabelNok,
+  DefinitionMarkerAfter,
+  DefinitionDestinationBefore,
+  DefinitionDestinationAfter,
+  DefinitionDestinationMissing,
+  DefinitionTitleBefore,
+  DefinitionAfter,
+  DefinitionAfterWhitespace,
+  DefinitionTitleBeforeMarker,
+  DefinitionTitleAfter,
+  DefinitionTitleAfterOptionalWhitespace,
+  DestinationStart,
+  DestinationEnclosedBefore,
+  DestinationEnclosed,
+  DestinationEnclosedEscape,
+  DestinationRaw,
+  DestinationRawEscape,
+  DocumentStart,
+  DocumentBeforeFrontmatter,
+  DocumentContainerExistingBefore,
+  DocumentContainerExistingAfter,
+  DocumentContainerNewBefore,
+  DocumentContainerNewBeforeNotBlockQuote,
+  DocumentContainerNewBeforeNotList,
+  DocumentContainerNewBeforeNotGfmFootnoteDefinition,
+  DocumentContainerNewAfter,
+  DocumentContainersAfter,
+  DocumentFlowInside,
+  DocumentFlowEnd,
+  FlowStart,
+  FlowBeforeGfmTable,
+  FlowBeforeCodeIndented,
+  FlowBeforeRaw,
+  FlowBeforeHtml,
+  FlowBeforeMdxExpression,
+  FlowBeforeMdxJsx,
+  FlowBeforeHeadingAtx,
+  FlowBeforeHeadingSetext,
+  FlowBeforeThematicBreak,
+  FlowAfter,
+  FlowBlankLineBefore,
+  FlowBlankLineAfter,
+  FlowBeforeContent,
+  FrontmatterStart,
+  FrontmatterOpenSequence,
+  FrontmatterOpenAfter,
+  FrontmatterAfter,
+  FrontmatterContentStart,
+  FrontmatterContentInside,
+  FrontmatterContentEnd,
+  FrontmatterCloseStart,
+  FrontmatterCloseSequence,
+  FrontmatterCloseAfter,
+  GfmAutolinkLiteralProtocolStart,
+  GfmAutolinkLiteralProtocolAfter,
+  GfmAutolinkLiteralProtocolPrefixInside,
+  GfmAutolinkLiteralProtocolSlashesInside,
+  GfmAutolinkLiteralWwwStart,
+  GfmAutolinkLiteralWwwAfter,
+  GfmAutolinkLiteralWwwPrefixInside,
+  GfmAutolinkLiteralWwwPrefixAfter,
+  GfmAutolinkLiteralDomainInside,
+  GfmAutolinkLiteralDomainAtPunctuation,
+  GfmAutolinkLiteralDomainAfter,
+  GfmAutolinkLiteralPathInside,
+  GfmAutolinkLiteralPathAtPunctuation,
+  GfmAutolinkLiteralPathAfter,
+  GfmAutolinkLiteralTrail,
+  GfmAutolinkLiteralTrailCharRefInside,
+  GfmAutolinkLiteralTrailCharRefStart,
+  GfmAutolinkLiteralTrailBracketAfter,
+  GfmFootnoteDefinitionStart,
+  GfmFootnoteDefinitionLabelBefore,
+  GfmFootnoteDefinitionLabelAtMarker,
+  GfmFootnoteDefinitionLabelInside,
+  GfmFootnoteDefinitionLabelEscape,
+  GfmFootnoteDefinitionLabelAfter,
+  GfmFootnoteDefinitionWhitespaceAfter,
+  GfmFootnoteDefinitionContStart,
+  GfmFootnoteDefinitionContBlank,
+  GfmFootnoteDefinitionContFilled,
+  GfmLabelStartFootnoteStart,
+  GfmLabelStartFootnoteOpen,
+  GfmTaskListItemCheckStart,
+  GfmTaskListItemCheckInside,
+  GfmTaskListItemCheckClose,
+  GfmTaskListItemCheckAfter,
+  GfmTaskListItemCheckAfterSpaceOrTab,
+  GfmTableStart,
+  GfmTableHeadRowBefore,
+  GfmTableHeadRowStart,
+  GfmTableHeadRowBreak,
+  GfmTableHeadRowData,
+  GfmTableHeadRowEscape,
+  GfmTableHeadDelimiterStart,
+  GfmTableHeadDelimiterBefore,
+  GfmTableHeadDelimiterCellBefore,
+  GfmTableHeadDelimiterValueBefore,
+  GfmTableHeadDelimiterLeftAlignmentAfter,
+  GfmTableHeadDelimiterFiller,
+  GfmTableHeadDelimiterRightAlignmentAfter,
+  GfmTableHeadDelimiterCellAfter,
+  GfmTableHeadDelimiterNok,
+  GfmTableBodyRowStart,
+  GfmTableBodyRowBreak,
+  GfmTableBodyRowData,
+  GfmTableBodyRowEscape,
+  HardBreakEscapeStart,
+  HardBreakEscapeAfter,
+  HeadingAtxStart,
+  HeadingAtxBefore,
+  HeadingAtxSequenceOpen,
+  HeadingAtxAtBreak,
+  HeadingAtxSequenceFurther,
+  HeadingAtxData,
+  HeadingSetextStart,
+  HeadingSetextBefore,
+  HeadingSetextInside,
+  HeadingSetextAfter,
+  HtmlFlowStart,
+  HtmlFlowBefore,
+  HtmlFlowOpen,
+  HtmlFlowDeclarationOpen,
+  HtmlFlowCommentOpenInside,
+  HtmlFlowCdataOpenInside,
+  HtmlFlowTagCloseStart,
+  HtmlFlowTagName,
+  HtmlFlowBasicSelfClosing,
+  HtmlFlowCompleteClosingTagAfter,
+  HtmlFlowCompleteEnd,
+  HtmlFlowCompleteAttributeNameBefore,
+  HtmlFlowCompleteAttributeName,
+  HtmlFlowCompleteAttributeNameAfter,
+  HtmlFlowCompleteAttributeValueBefore,
+  HtmlFlowCompleteAttributeValueQuoted,
+  HtmlFlowCompleteAttributeValueQuotedAfter,
+  HtmlFlowCompleteAttributeValueUnquoted,
+  HtmlFlowCompleteAfter,
+  HtmlFlowBlankLineBefore,
+  HtmlFlowContinuation,
+  HtmlFlowContinuationDeclarationInside,
+  HtmlFlowContinuationAfter,
+  HtmlFlowContinuationStart,
+  HtmlFlowContinuationBefore,
+  HtmlFlowContinuationCommentInside,
+  HtmlFlowContinuationRawTagOpen,
+  HtmlFlowContinuationRawEndTag,
+  HtmlFlowContinuationClose,
+  HtmlFlowContinuationCdataInside,
+  HtmlFlowContinuationStartNonLazy,
+  HtmlTextStart,
+  HtmlTextOpen,
+  HtmlTextDeclarationOpen,
+  HtmlTextTagCloseStart,
+  HtmlTextTagClose,
+  HtmlTextTagCloseBetween,
+  HtmlTextTagOpen,
+  HtmlTextTagOpenBetween,
+  HtmlTextTagOpenAttributeName,
+  HtmlTextTagOpenAttributeNameAfter,
+  HtmlTextTagOpenAttributeValueBefore,
+  HtmlTextTagOpenAttributeValueQuoted,
+  HtmlTextTagOpenAttributeValueQuotedAfter,
+  HtmlTextTagOpenAttributeValueUnquoted,
+  HtmlTextCdata,
+  HtmlTextCdataOpenInside,
+  HtmlTextCdataClose,
+  HtmlTextCdataEnd,
+  HtmlTextCommentOpenInside,
+  HtmlTextCommentStart,
+  HtmlTextCommentStartDash,
+  HtmlTextComment,
+  HtmlTextCommentClose,
+  HtmlTextDeclaration,
+  HtmlTextEnd,
+  HtmlTextInstruction,
+  HtmlTextInstructionClose,
+  HtmlTextLineEndingBefore,
+  HtmlTextLineEndingAfter,
+  HtmlTextLineEndingAfterPrefix,
+  LabelStart,
+  LabelAtBreak,
+  LabelEolAfter,
+  LabelEscape,
+  LabelInside,
+  LabelNok,
+  LabelEndStart,
+  LabelEndAfter,
+  LabelEndResourceStart,
+  LabelEndResourceBefore,
+  LabelEndResourceOpen,
+  LabelEndResourceDestinationAfter,
+  LabelEndResourceDestinationMissing,
+  LabelEndResourceBetween,
+  LabelEndResourceTitleAfter,
+  LabelEndResourceEnd,
+  LabelEndOk,
+  LabelEndNok,
+  LabelEndReferenceFull,
+  LabelEndReferenceFullAfter,
+  LabelEndReferenceNotFull,
+  LabelEndReferenceCollapsed,
+  LabelEndReferenceCollapsedOpen,
+  LabelStartImageStart,
+  LabelStartImageOpen,
+  LabelStartImageAfter,
+  LabelStartLinkStart,
+  ListItemStart,
+  ListItemBefore,
+  ListItemBeforeOrdered,
+  ListItemBeforeUnordered,
+  ListItemValue,
+  ListItemMarker,
+  ListItemMarkerAfter,
+  ListItemAfter,
+  ListItemMarkerAfterFilled,
+  ListItemWhitespace,
+  ListItemPrefixOther,
+  ListItemWhitespaceAfter,
+  ListItemContStart,
+  ListItemContBlank,
+  ListItemContFilled,
+  MdxEsmStart,
+  MdxEsmWord,
+  MdxEsmInside,
+  MdxEsmLineStart,
+  MdxEsmBlankLineBefore,
+  MdxEsmContinuationStart,
+  MdxEsmAtEnd,
+  MdxExpressionTextStart,
+  MdxExpressionTextAfter,
+  MdxExpressionFlowStart,
+  MdxExpressionFlowBefore,
+  MdxExpressionFlowAfter,
+  MdxExpressionFlowEnd,
+  MdxExpressionStart,
+  MdxExpressionBefore,
+  MdxExpressionInside,
+  MdxExpressionEolAfter,
+  MdxJsxFlowStart,
+  MdxJsxFlowBefore,
+  MdxJsxFlowAfter,
+  MdxJsxFlowEnd,
+  MdxJsxFlowNok,
+  MdxJsxTextStart,
+  MdxJsxTextAfter,
+  MdxJsxTextNok,
+  MdxJsxEsWhitespaceStart,
+  MdxJsxEsWhitespaceInside,
+  MdxJsxEsWhitespaceEolAfter,
+  MdxJsxStart,
+  MdxJsxStartAfter,
+  MdxJsxNameBefore,
+  MdxJsxClosingTagNameBefore,
+  MdxJsxTagEnd,
+  MdxJsxPrimaryName,
+  MdxJsxPrimaryNameAfter,
+  MdxJsxMemberNameBefore,
+  MdxJsxMemberName,
+  MdxJsxMemberNameAfter,
+  MdxJsxLocalNameBefore,
+  MdxJsxLocalName,
+  MdxJsxLocalNameAfter,
+  MdxJsxAttributeBefore,
+  MdxJsxSelfClosing,
+  MdxJsxAttributeExpressionAfter,
+  MdxJsxAttributePrimaryName,
+  MdxJsxAttributePrimaryNameAfter,
+  MdxJsxAttributeLocalNameBefore,
+  MdxJsxAttributeLocalName,
+  MdxJsxAttributeLocalNameAfter,
+  MdxJsxAttributeValueBefore,
+  MdxJsxAttributeValueQuotedStart,
+  MdxJsxAttributeValueQuoted,
+  MdxJsxAttributeValueExpressionAfter,
+  NonLazyContinuationStart,
+  NonLazyContinuationAfter,
+  ParagraphStart,
+  ParagraphLineStart,
+  ParagraphInside,
+  RawFlowStart,
+  RawFlowBeforeSequenceOpen,
+  RawFlowSequenceOpen,
+  RawFlowInfoBefore,
+  RawFlowInfo,
+  RawFlowMetaBefore,
+  RawFlowMeta,
+  RawFlowAtNonLazyBreak,
+  RawFlowCloseStart,
+  RawFlowBeforeSequenceClose,
+  RawFlowSequenceClose,
+  RawFlowAfterSequenceClose,
+  RawFlowContentBefore,
+  RawFlowContentStart,
+  RawFlowBeforeContentChunk,
+  RawFlowContentChunk,
+  RawFlowAfter,
+  RawTextStart,
+  RawTextSequenceOpen,
+  RawTextBetween,
+  RawTextData,
+  RawTextSequenceClose,
+  SpaceOrTabStart,
+  SpaceOrTabInside,
+  SpaceOrTabAfter,
+  SpaceOrTabEolStart,
+  SpaceOrTabEolAfterFirst,
+  SpaceOrTabEolAfterEol,
+  SpaceOrTabEolAtEol,
+  SpaceOrTabEolAfterMore,
+  StringStart,
+  StringBefore,
+  StringBeforeData,
+  TextStart,
+  TextBefore,
+  TextBeforeHtml,
+  TextBeforeMdxJsx,
+  TextBeforeHardBreakEscape,
+  TextBeforeLabelStartLink,
+  TextBeforeData,
+  ThematicBreakStart,
+  ThematicBreakBefore,
+  ThematicBreakSequence,
+  ThematicBreakAtBreak,
+  TitleStart,
+  TitleBegin,
+  TitleAfterEol,
+  TitleAtBreak,
+  TitleEscape,
+  TitleInside,
+  TitleNok,
+}
+
+/// Result of a state.
+enum State {
+  /// Syntax error.
+  ///
+  /// Only used by MDX.
+  Error(String),
+  /// Move to [`Name`][] next.
+  Next(StateName),
+  /// Retry in [`Name`][].
+  Retry(StateName),
+  /// The state is successful.
+  Ok,
+  /// The state is not successful.
+  Nok,
+}
+
+/// Different kinds of attempts.
+enum AttemptKind {
+  /// Discard what was tokenized when unsuccessful.
+  Attempt,
+  /// Discard always.
+  Check,
+}
+
+/// The internal state of a tokenizer.
+///
+/// Not to be confused with states from the state machine, this instead is all
+/// the information on where we currently are and what’s going on.
+record Progress {
+  /// Length of `events`.
+  ///
+  /// It’s not allowed to remove events, so reverting will just pop stuff off.
+  events_len: Number,
+  /// Length of the stack.
+  ///
+  /// It’s not allowed to decrease the stack in an attempt.
+  stack_len: Number,
+  /// Previous code.
+  previous: Option<Number>,
+  /// Current code.
+  current: Option<Number>,
+  /// Current place in the file.
+  point: Point,
+}
+
+/// How to handle [`State::Ok`][] or [`State::Nok`][].
+record Attempt {
+  /// Where to go to when successful.
+  ok: State,
+  /// Where to go to when unsuccessful.
+  nok: State,
+  /// Kind of attempt.
+  kind: AttemptKind,
+  /// If needed, the progress to revert to.
+  ///
+  /// It is not needed to discard an [`AttemptKind::Attempt`] that has a
+  /// `nok` of [`State::Nok`][], because that means it is used in *another*
+  /// attempt, which will receive that `Nok`, and has to handle it.
+  progress: Option<Progress>,
+}
+
+/// Event kinds.
+enum Kind {
+  /// The start of something.
+  Enter,
+  /// The end of something.
+  Exit,
+}
+
+/// Embedded content type.
+enum Content {
+  /// Represents [flow content][crate::construct::flow].
+  Flow,
+  /// Represents [content][crate::construct::content].
+  Content,
+  /// Represents [string content][crate::construct::string].
+  String,
+  /// Represents [text content][crate::construct::text].
+  Text,
+}
+
+/// Link to another event.
+record Link {
+  /// Previous event.
+  previous: Option<Number>,
+  /// Next event.
+  next: Option<Number>,
+  /// Content type.
+  content: Content,
+}
+
+/// Something semantic happening somewhere.
+record Event {
+  /// Kind of event.
+  kind: Kind,
+  /// Name of event.
+  name: EventName,
+  /// Place where this happens.
+  point: Point,
+  /// Link to another event.
+  link: Option<Link>,
+}
+
+/// Tracks a bunch of edits.
+record EditMap {
+  /// Record of changes.
+  map: List<(Number, Number, List<Event>)>,
+}
+
+let make_editmap = () => { map: [], }
+
+/// Names of resolvers.
+enum ResolveName {
+  /// Resolve labels.
+  ///
+  /// Labels are parsed as starts and ends, and when they match, merged
+  /// together to form media (links and images), and otherwise turned into
+  /// data.
+  ResolveLabel,
+  /// Resolve attention.
+  ///
+  /// Attention sequences are parsed and finally matched together to form
+  /// attention (emphasis and strong) based on which characters they contain,
+  /// and what occurs before and after each sequence.
+  /// Otherwise they are turned into data.
+  ResolveAttention,
+  /// Resolve GFM tables.
+  ///
+  /// The table head, and later each row, are all parsed separately.
+  /// Resolving groups everything together, and groups cells.
+  ResolveGfmTable,
+  /// Resolve heading (atx).
+  ///
+  /// Heading (atx) contains further sequences and data.
+  /// At the end, a final sequence is kept that way, while the rest is merged
+  /// with the data.
+  ResolveHeadingAtx,
+  /// Resolve heading (setext).
+  ///
+  /// Heading (setext) is parsed as an underline that is preceded by content,
+  /// both will form the whole construct.
+  ResolveHeadingSetext,
+  /// Resolve list item.
+  ///
+  /// List items are parsed on their own.
+  /// They are wrapped into ordered or unordered lists based on whether items
+  /// with the same marker occur next to each other.
+  ResolveListItem,
+  /// Resolve content.
+  ///
+  /// Content is parsed as single lines, as what remains if other flow
+  /// constructs don’t match.
+  /// But, when they occur next to each other, they need to be merged.
+  ResolveContent,
+  /// Resolve data.
+  ///
+  /// Data is parsed as many small bits, due to many punctuation characters
+  /// potentially starting something in particularly text content.
+  /// It helps performance to merge them together if those markers did not
+  /// match anything and hence they occur next to each other.
+  ResolveData,
+  /// Resolve whitespace in `string`.
+  ResolveString,
+  /// Resolve whitespace in `text`.
+  ResolveText,
+}
+
+/// Containers.
+///
+/// Containers are found when tokenizing
+/// [document content][crate::construct::document].
+/// They parse a portion at the start of one or more lines.
+/// The rest of those lines is a different content type (specifically, flow),
+/// which they “contain”.
+enum Container {
+  /// [Block quote][crate::construct::block_quote].
+  BlockQuote,
+  /// [List item][crate::construct::list_item].
+  ListItem,
+  /// [GFM: Footnote definition][crate::construct::gfm_footnote_definition].
+  GfmFootnoteDefinition,
+}
+
+/// Info used to tokenize a container.
+///
+/// Practically, these fields are only used for list items.
+record ContainerState {
+  /// Kind.
+  kind: Container,
+  /// Whether the first line was blank.
+  blank_initial: Bool,
+  /// Size.
+  size: Number,
+}
+
+/// Label start kind.
+enum LabelKind {
+  /// Label (image) start.
+  ///
+  /// ```markdown
+  /// > | a ![b] c
+  ///       ^^
+  /// ```
+  ///
+  /// Construct: [Label start (image)][crate::construct::label_start_image].
+  Image,
+  /// Label (image) link.
+  ///
+  /// ```markdown
+  /// > | a [b] c
+  ///       ^
+  /// ```
+  ///
+  /// Construct: [Label start (link)][crate::construct::label_start_link].
+  Link,
+  /// GFM: Label (footnote) link.
+  ///
+  /// ```markdown
+  /// > | a [^b] c
+  ///       ^^
+  /// ```
+  ///
+  /// Construct: [GFM: Label start (footnote)][crate::construct::gfm_label_start_footnote].
+  GfmFootnote,
+  /// GFM: Label (footnote) link, not matching a footnote definition, so
+  /// handled as a label (link) start.
+  ///
+  /// ```markdown
+  /// > | a [^b](c) d
+  ///       ^^
+  /// ```
+  ///
+  /// Construct: [Label end][crate::construct::label_end].
+  GfmUndefinedFootnote,
+}
+
+/// Label start, looking for an end.
+record LabelStart {
+  /// Kind of start.
+  kind: LabelKind,
+  /// Indices of where the label starts and ends in `events`.
+  start: (
+    Number,
+    Number
+  ),
+  /// A boolean used internally to figure out if a (link) label start can’t
+  /// be used anymore (because it would contain another link).
+  /// That link start is still looking for a balanced closing bracket though,
+  /// so we can’t remove it just yet.
+  inactive: Bool,
+}
+
+/// Valid label.
+record Label {
+  kind: LabelKind,
+  /// Indices of label start.
+  start: (
+    Number,
+    Number
+  ),
+  /// Indices of label end.
+  end: (
+    Number,
+    Number
+  ),
+}
+
+/// A lot of shared fields used to tokenize things.
+record TokenizeState {
+  // Couple complex fields used to tokenize the document.
+  /// Tokenizer, used to tokenize flow in document.
+  document_child: Option<Tokenizer>,
+  /// State, used to tokenize containers.
+  document_child_state: Option<State>,
+  /// Stack of currently active containers.
+  document_container_stack: List<ContainerState>,
+  /// How many active containers continued.
+  document_continued: Number,
+  /// Index of last `data`.
+  document_data_index: Option<Number>,
+  /// Container exits by line number.
+  document_exits: List<Option<List<Event>>>,
+  /// Whether the previous flow was a paragraph or a definition.
+  document_lazy_accepting_before: Bool,
+  /// Whether this is the first paragraph (potentially after definitions) in
+  /// a list item.
+  /// Used for GFM task list items.
+  document_at_first_paragraph_of_list_item: Bool,
+
+  // Couple of very frequent settings for parsing whitespace.
+  space_or_tab_eol_content: Option<Content>,
+  space_or_tab_eol_connect: Bool,
+  space_or_tab_eol_ok: Bool,
+  space_or_tab_connect: Bool,
+  space_or_tab_content: Option<Content>,
+  space_or_tab_min: Number,
+  space_or_tab_max: Number,
+  space_or_tab_size: Number,
+  space_or_tab_token: EventName,
+
+  // Couple of media related fields.
+  /// List of usable label starts.
+  ///
+  /// Used when tokenizing [text content][crate::construct::text].
+  label_starts: List<LabelStart>,
+  /// List of unusable label starts.
+  ///
+  /// Used when tokenizing [text content][crate::construct::text].
+  label_starts_loose: List<LabelStart>,
+  /// Stack of images and links.
+  ///
+  /// Used when tokenizing [text content][crate::construct::text].
+  labels: List<Label>,
+
+  /// List of defined definition identifiers.
+  definitions: List<String>,
+  /// List of defined GFM footnote definition identifiers.
+  gfm_footnote_definitions: List<String>,
+
+  // Last error message provided at an EOF of an expression.
+  mdx_last_parse_error: Option<String>,
+
+  /// Whether to connect events.
+  connect: Bool,
+  /// Marker.
+  mut marker: Number,
+  /// Secondary marker.
+  marker_b: Number,
+  /// Several markers.
+  markers: List<Number>,
+  /// Whether something was seen.
+  seen: Bool,
+  /// Size.
+  mut size: Number,
+  /// Secondary size.
+  size_b: Number,
+  /// Tertiary size.
+  size_c: Number,
+  /// Index.
+  start: Number,
+  /// Index.
+  end: Number,
+  /// Slot for an event name.
+  token_1: EventName,
+  /// Slot for an event name.
+  token_2: EventName,
+  /// Slot for an event name.
+  token_3: EventName,
+  /// Slot for an event name.
+  token_4: EventName,
+  /// Slot for an event name.
+  token_5: EventName,
+  /// Slot for an event name.
+  token_6: EventName,
+},
+/// A tokenizer itself.
+record Tokenizer {
+  /// Jump between line endings.
+  mut column_start: List<(Number, Number)>,
+  // First line where this tokenizer starts.
+  first_line: Number,
+  /// Current point after the last line ending (excluding jump).
+  mut line_start: Point,
+  /// Track whether the current byte is already consumed (`true`) or expected
+  /// to be consumed (`false`).
+  ///
+  /// Tracked to make sure everything’s valid.
+  mut consumed: Bool,
+  /// Stack of how to handle attempts.
+  attempts: List<Attempt>,
+  /// Current byte.
+  mut current: Option<Number>,
+  /// Previous byte.
+  mut previous: Option<Number>,
+  /// Current relative and absolute place in the file.
+  mut point: Point,
+  /// Semantic labels.
+  mut events: List<Event>,
+  /// Hierarchy of semantic labels.
+  ///
+  /// Tracked to make sure everything’s valid.
+  mut stack: List<EventName>,
+  /// Edit map, to batch changes.
+  map: EditMap,
+  /// List of resolvers.
+  mut resolvers: List<ResolveName>,
+  /// Shared parsing state across tokenizers.
+  parse_state: ParseState,
+  /// A lot of shared fields used to tokenize things.
+  tokenize_state: TokenizeState,
+  /// Whether we would be interrupting something.
+  ///
+  /// Used when tokenizing [flow content][crate::construct::flow].
+  interrupt: Bool,
+  /// Whether containers cannot “pierce” into the current construct.
+  ///
+  /// Used when tokenizing [document content][crate::construct::document].
+  concrete: Bool,
+  /// Whether this row is piercing into the current construct with more
+  /// containers.
+  ///
+  /// Used when tokenizing [document content][crate::construct::document].
+  pierce: Bool,
+  /// Whether this line is lazy: there are less containers than before.
+  lazy: Bool,
+}
+
+let make_tokenizer = (point: Point, parse_state: ParseState) => {
+  {
+    previous: None,
+    current: None,
+    // To do: reserve size when feeding?
+    column_start: [],
+    first_line: point.line,
+    line_start: point,
+    consumed: true,
+    attempts: [],
+    point,
+    stack: [],
+    events: [],
+    parse_state,
+    tokenize_state: {
+      connect: false,
+      document_container_stack: [],
+      document_exits: [],
+      document_continued: 0,
+      document_lazy_accepting_before: false,
+      document_data_index: None,
+      document_child_state: None,
+      document_child: None,
+      document_at_first_paragraph_of_list_item: false,
+      definitions: [],
+      gfm_footnote_definitions: [],
+      mdx_last_parse_error: None,
+      end: 0,
+      label_starts: [],
+      label_starts_loose: [],
+      marker: 0,
+      marker_b: 0,
+      markers: [],
+      labels: [],
+      seen: false,
+      size: 0,
+      size_b: 0,
+      size_c: 0,
+      space_or_tab_eol_content: None,
+      space_or_tab_eol_connect: false,
+      space_or_tab_eol_ok: false,
+      space_or_tab_connect: false,
+      space_or_tab_content: None,
+      space_or_tab_min: 0,
+      space_or_tab_max: 0,
+      space_or_tab_size: 0,
+      space_or_tab_token: SpaceOrTab,
+      start: 0,
+      token_1: Data,
+      token_2: Data,
+      token_3: Data,
+      token_4: Data,
+      token_5: Data,
+      token_6: Data,
+    },
+    map: make_editmap(),
+    interrupt: false,
+    pierce: false,
+    concrete: false,
+    lazy: false,
+    resolvers: [],
+  }
+}
+
+/// How to handle a byte.
+enum ByteAction {
+  /// This is a normal byte.
+  ///
+  /// Includes replaced bytes.
+  Normal(Number),
+  /// This byte must be ignored.
+  Ignore,
+  /// This is a new byte.
+  Insert(Number),
+}
+
+/// Figure out how to handle a byte.
+let byte_action = (bytes: Bytes, point: Point) => {
+  if (point.index < Bytes.length(bytes)) {
+    let byte = Bytes.slice(point.index, 1, bytes)
+
+    if (byte == Bytes.fromString("\r")) {
+      // CRLF.
+      if (
+        point.index < Bytes.length(bytes) - 1 &&
+        Bytes.slice(point.index + 1, 1, bytes) == Bytes.fromString("\n")
+      ) {
+        Ignore
+      } else { // CR.
+        Normal(Char.code('\n'))
+      }
+    } else if (byte == Bytes.fromString("\t")) {
+      let remainder = point.column % tab_size
+      let vs = if (remainder == 0) {
+        0
+      } else {
+        tab_size - remainder
+      }
+
+      // On the tab itself, first send it.
+      if (point.vs == 0) {
+        if (vs == 0) {
+          Normal(Int32.toNumber(Bytes.getInt8U(0, byte)))
+        } else {
+          Insert(Int32.toNumber(Bytes.getInt8U(0, byte)))
+        }
+      } else if (vs == 0) {
+        Normal(Char.code(' '))
+      } else {
+        Insert(Char.code(' '))
+      }
+    } else {
+      Normal(Int32.toNumber(Bytes.getInt8U(0, byte)))
+    }
+  } else {
+    fail "out of bounds"
+  }
+}
+
+/// Increment the current positional info if we’re right after a line
+/// ending, which has a skip defined.
+let rec account_for_potential_skip = (self: Tokenizer) => {
+  let at = self.point.line - self.first_line
+
+  if (self.point.column == 1 && at != List.length(self.column_start)) {
+    // TODO: List.nth is expensive and error prone
+    move_to(self, Option.unwrap(List.nth(at, self.column_start)))
+  }
+},
+/// Move to the next (virtual) byte.
+move_one = (self: Tokenizer) => {
+  match (byte_action(self.parse_state.bytes, self.point)) {
+    Ignore => {
+      self.point.index += 1
+    },
+    Insert(byte) => {
+      self.previous = Some(byte)
+      self.point.column += 1
+      self.point.vs += 1
+    },
+    Normal(byte) => {
+      self.previous = Some(byte)
+      self.point.vs = 0
+      self.point.index += 1
+
+      if (byte == Char.code('\n')) {
+        self.point.line += 1
+        self.point.column = 1
+
+        if (
+          self.point.line - self.first_line + 1 > List.length(self.column_start)
+        ) {
+          // TODO: Reverse is expensive
+          self.column_start = List.reverse(
+            [(self.point.index, self.point.vs), ...self.column_start]
+          )
+        }
+
+        self.line_start = self.point
+
+        account_for_potential_skip(self)
+        // print("position: after eol: `{:?}`", self.point);
+      } else {
+        self.point.column += 1
+      }
+    },
+  }
+},
+/// Move (virtual) bytes.
+move_to = (self: Tokenizer, (to_index, to_vs): (Number, Number)) => {
+  while (
+    self.point.index < to_index ||
+    self.point.index == to_index && self.point.vs < to_vs
+  ) {
+    move_one(self)
+  }
+}
+
+/// Move back past ignored bytes.
+let move_point_back = (tokenizer: Tokenizer, point: Point) => {
+  while (point.index > 0) {
+    point.index -= 1
+    let action = byte_action(tokenizer.parse_state.bytes, point)
+    match (action) {
+      Ignore => {
+        point.index += 1
+        break
+      },
+      _ => void,
+    }
+  }
+}
+
+/// Enter.
+let enter_impl =
+  (
+    tokenizer: Tokenizer,
+    name: EventName,
+    link: Option<Link>,
+  ) => {
+  let mut point = tokenizer.point
+  move_point_back(tokenizer, point)
+
+  // log::debug!("enter:   `{:?}`", name);
+  tokenizer.stack = [name, ...tokenizer.stack]
+  tokenizer.events = [{ kind: Enter, name, point, link }, ...tokenizer.events]
+}
+let enter = (tokenizer: Tokenizer, name: EventName) =>
+  enter_impl(tokenizer, name, None)
+
+/// Consume the current byte.
+/// Each state function is expected to call this to signal that this code is
+/// used, or call a next function.
+let consume = (self: Tokenizer) => {
+  // debug_assert!(!self.consumed, "expected code to *not* have been consumed: this might be because `State::Retry(x)` instead of `State::Next(x)` was returned");
+  move_one(self)
+
+  self.previous = self.current
+  // While we’re not at eof, it is at least better to not have the
+  // same current code as `previous` *and* `current`.
+  self.current = None
+  // Mark as consumed.
+  self.consumed = true
+}
+
+/// Mark the end of a semantic label.
+let exit = (self: Tokenizer, name: EventName) => {
+  let current = List.head(self.stack)
+
+  // debug_assert_eq!(current, name, "expected exit event to match current event");
+
+  let previous = List.head(self.events)
+  let mut point = self.point
+
+  // debug_assert!(
+  //     current != previous.name
+  //         || previous.point.index != point.index
+  //         || previous.point.vs != point.vs,
+  //     "expected non-empty event"
+  // );
+
+  // if VOID_EVENTS.iter().any(|d| d == &name) {
+  //     debug_assert!(
+  //         current == previous.name,
+  //         "expected event to be void, instead of including something"
+  //     );
+  // }
+
+  // A bit weird, but if we exit right after a line ending, we *don’t* want to consider
+  // potential skips.
+  match (self.previous) {
+    Some(byte) when byte == Char.code('\n') => point = self.line_start,
+    _ => move_point_back(self, point),
+  }
+
+  // log::debug!("exit:    `{:?}`", name);
+  let event = { kind: Exit, name, point, link: None }
+  self.events = [event, ...self.events]
+}
+
+/// Register a resolver.
+let register_resolver = (self: Tokenizer, name: ResolveName) => {
+  if (!List.contains(name, self.resolvers)) {
+    self.resolvers = [name, ...self.resolvers]
+  }
+}
+
+/// At start of attention.
+///
+/// ```markdown
+/// > | **
+///     ^
+/// ```
+let construct_attention_start = (tokenizer: Tokenizer) => {
+  // Emphasis/strong:
+  let has_emphasis = tokenizer.parse_state.options.constructs.attention &&
+    match (tokenizer.current) {
+      Some(byte) when byte == Char.code('*') || byte == Char.code('_') => true,
+      _ => false,
+    }
+  // GFM strikethrough:
+  let has_strikethrough = tokenizer.parse_state.options.constructs.gfm_strikethrough &&
+    match (tokenizer.current) {
+      Some(byte) when byte == Char.code('~') => true,
+      _ => false,
+    }
+  if (has_emphasis || has_strikethrough) {
+    tokenizer.tokenize_state.marker = Option.unwrap(tokenizer.current)
+    enter(tokenizer, AttentionSequence)
+    Retry(AttentionInside)
+  } else {
+    Nok
+  }
+}
+
+/// In sequence.
+///
+/// ```markdown
+/// > | **
+///     ^^
+/// ```
+let construct_attention_inside = (tokenizer: Tokenizer) => {
+  if (tokenizer.current == Some(tokenizer.tokenize_state.marker)) {
+    consume(tokenizer)
+    Next(AttentionInside)
+  } else {
+    exit(tokenizer, AttentionSequence)
+    register_resolver(tokenizer, ResolveAttention)
+    tokenizer.tokenize_state.marker = 0
+    Ok
+  }
+}
+
+/// Start of autolink.
+///
+/// ```markdown
+/// > | a<https://example.com>b
+///      ^
+/// > | a<user@example.com>b
+///      ^
+/// ```
+let construct_autolink_start = (tokenizer: Tokenizer) => {
+  if (
+    tokenizer.parse_state.options.constructs.autolink &&
+    tokenizer.current == Some(Char.code('<'))
+  ) {
+    enter(tokenizer, Autolink)
+    enter(tokenizer, AutolinkMarker)
+    consume(tokenizer)
+    exit(tokenizer, AutolinkMarker)
+    enter(tokenizer, AutolinkProtocol)
+    Next(AutolinkOpen)
+  } else {
+    Nok
+  }
+}
+
+/// After `<`, at protocol or atext.
+///
+/// ```markdown
+/// > | a<https://example.com>b
+///       ^
+/// > | a<user@example.com>b
+///       ^
+/// ```
+let construct_autolink_open = (tokenizer: Tokenizer) => {
+    match (tokenizer.current) {
+        // ASCII alphabetic.
+        Some(byte) when (
+            byte == Char.code('A') ||
+            byte == Char.code('B') ||
+            byte == Char.code('C') ||
+            byte == Char.code('D') ||
+            byte == Char.code('E') ||
+            byte == Char.code('F') ||
+            byte == Char.code('G') ||
+            byte == Char.code('H') ||
+            byte == Char.code('I') ||
+            byte == Char.code('J') ||
+            byte == Char.code('K') ||
+            byte == Char.code('L') ||
+            byte == Char.code('M') ||
+            byte == Char.code('N') ||
+            byte == Char.code('O') ||
+            byte == Char.code('P') ||
+            byte == Char.code('Q') ||
+            byte == Char.code('R') ||
+            byte == Char.code('S') ||
+            byte == Char.code('T') ||
+            byte == Char.code('U') ||
+            byte == Char.code('V') ||
+            byte == Char.code('W') ||
+            byte == Char.code('X') ||
+            byte == Char.code('Y') ||
+            byte == Char.code('Z') ||
+            byte == Char.code('a') ||
+            byte == Char.code('b') ||
+            byte == Char.code('c') ||
+            byte == Char.code('d') ||
+            byte == Char.code('e') ||
+            byte == Char.code('f') ||
+            byte == Char.code('g') ||
+            byte == Char.code('h') ||
+            byte == Char.code('i') ||
+            byte == Char.code('j') ||
+            byte == Char.code('k') ||
+            byte == Char.code('l') ||
+            byte == Char.code('m') ||
+            byte == Char.code('n') ||
+            byte == Char.code('o') ||
+            byte == Char.code('p') ||
+            byte == Char.code('q') ||
+            byte == Char.code('r') ||
+            byte == Char.code('s') ||
+            byte == Char.code('t') ||
+            byte == Char.code('u') ||
+            byte == Char.code('v') ||
+            byte == Char.code('w') ||
+            byte == Char.code('x') ||
+            byte == Char.code('y') ||
+            byte == Char.code('z')
+        ) => {
+            consume(tokenizer);
+            Next(AutolinkSchemeOrEmailAtext)
+        },
+        _ => Retry(AutolinkEmailAtext),
+    }
+}
+
+/// At second byte of protocol or atext.
+///
+/// ```markdown
+/// > | a<https://example.com>b
+///        ^
+/// > | a<user@example.com>b
+///        ^
+/// ```
+let construct_autolink_scheme_or_email_atext = (tokenizer: Tokenizer) => {
+    match (tokenizer.current) {
+        // ASCII alphanumeric and `+`, `-`, and `.`.
+        Some(byte) when (
+            byte == Char.code('+') ||
+            byte == Char.code('-') ||
+            byte == Char.code('.') ||
+            byte == Char.code('0') ||
+            byte == Char.code('1') ||
+            byte == Char.code('2') ||
+            byte == Char.code('3') ||
+            byte == Char.code('4') ||
+            byte == Char.code('5') ||
+            byte == Char.code('6') ||
+            byte == Char.code('7') ||
+            byte == Char.code('8') ||
+            byte == Char.code('9') ||
+            byte == Char.code('A') ||
+            byte == Char.code('B') ||
+            byte == Char.code('C') ||
+            byte == Char.code('D') ||
+            byte == Char.code('E') ||
+            byte == Char.code('F') ||
+            byte == Char.code('G') ||
+            byte == Char.code('H') ||
+            byte == Char.code('I') ||
+            byte == Char.code('J') ||
+            byte == Char.code('K') ||
+            byte == Char.code('L') ||
+            byte == Char.code('M') ||
+            byte == Char.code('N') ||
+            byte == Char.code('O') ||
+            byte == Char.code('P') ||
+            byte == Char.code('Q') ||
+            byte == Char.code('R') ||
+            byte == Char.code('S') ||
+            byte == Char.code('T') ||
+            byte == Char.code('U') ||
+            byte == Char.code('V') ||
+            byte == Char.code('W') ||
+            byte == Char.code('X') ||
+            byte == Char.code('Y') ||
+            byte == Char.code('Z') ||
+            byte == Char.code('a') ||
+            byte == Char.code('b') ||
+            byte == Char.code('c') ||
+            byte == Char.code('d') ||
+            byte == Char.code('e') ||
+            byte == Char.code('f') ||
+            byte == Char.code('g') ||
+            byte == Char.code('h') ||
+            byte == Char.code('i') ||
+            byte == Char.code('j') ||
+            byte == Char.code('k') ||
+            byte == Char.code('l') ||
+            byte == Char.code('m') ||
+            byte == Char.code('n') ||
+            byte == Char.code('o') ||
+            byte == Char.code('p') ||
+            byte == Char.code('q') ||
+            byte == Char.code('r') ||
+            byte == Char.code('s') ||
+            byte == Char.code('t') ||
+            byte == Char.code('u') ||
+            byte == Char.code('v') ||
+            byte == Char.code('w') ||
+            byte == Char.code('x') ||
+            byte == Char.code('y') ||
+            byte == Char.code('z')
+        ) => {
+            // Count the previous alphabetical from `open` too.
+            tokenizer.tokenize_state.size = 1;
+            Retry(AutolinkSchemeInsideOrEmailAtext)
+        },
+        _ => Retry(AutolinkEmailAtext),
+    }
+}
+
+/// In ambiguous protocol or atext.
+///
+/// ```markdown
+/// > | a<https://example.com>b
+///        ^
+/// > | a<user@example.com>b
+///        ^
+/// ```
+let construct_autolink_scheme_inside_or_email_atext = (tokenizer: Tokenizer) => {
+    match (tokenizer.current) {
+        Some(byte) when byte == Char.code(':') => {
+            consume(tokenizer);
+            tokenizer.tokenize_state.size = 0;
+            Next(AutolinkUrlInside)
+        },
+        // ASCII alphanumeric and `+`, `-`, and `.`.
+        Some(byte) when (
+            byte == Char.code('+') ||
+            byte == Char.code('-') ||
+            byte == Char.code('.') ||
+            byte == Char.code('0') ||
+            byte == Char.code('1') ||
+            byte == Char.code('2') ||
+            byte == Char.code('3') ||
+            byte == Char.code('4') ||
+            byte == Char.code('5') ||
+            byte == Char.code('6') ||
+            byte == Char.code('7') ||
+            byte == Char.code('8') ||
+            byte == Char.code('9') ||
+            byte == Char.code('A') ||
+            byte == Char.code('B') ||
+            byte == Char.code('C') ||
+            byte == Char.code('D') ||
+            byte == Char.code('E') ||
+            byte == Char.code('F') ||
+            byte == Char.code('G') ||
+            byte == Char.code('H') ||
+            byte == Char.code('I') ||
+            byte == Char.code('J') ||
+            byte == Char.code('K') ||
+            byte == Char.code('L') ||
+            byte == Char.code('M') ||
+            byte == Char.code('N') ||
+            byte == Char.code('O') ||
+            byte == Char.code('P') ||
+            byte == Char.code('Q') ||
+            byte == Char.code('R') ||
+            byte == Char.code('S') ||
+            byte == Char.code('T') ||
+            byte == Char.code('U') ||
+            byte == Char.code('V') ||
+            byte == Char.code('W') ||
+            byte == Char.code('X') ||
+            byte == Char.code('Y') ||
+            byte == Char.code('Z') ||
+            byte == Char.code('a') ||
+            byte == Char.code('b') ||
+            byte == Char.code('c') ||
+            byte == Char.code('d') ||
+            byte == Char.code('e') ||
+            byte == Char.code('f') ||
+            byte == Char.code('g') ||
+            byte == Char.code('h') ||
+            byte == Char.code('i') ||
+            byte == Char.code('j') ||
+            byte == Char.code('k') ||
+            byte == Char.code('l') ||
+            byte == Char.code('m') ||
+            byte == Char.code('n') ||
+            byte == Char.code('o') ||
+            byte == Char.code('p') ||
+            byte == Char.code('q') ||
+            byte == Char.code('r') ||
+            byte == Char.code('s') ||
+            byte == Char.code('t') ||
+            byte == Char.code('u') ||
+            byte == Char.code('v') ||
+            byte == Char.code('w') ||
+            byte == Char.code('x') ||
+            byte == Char.code('y') ||
+            byte == Char.code('z')
+        ) && tokenizer.tokenize_state.size < autolink_scheme_size_max => {
+            tokenizer.tokenize_state.size += 1;
+            consume(tokenizer);
+            Next(AutolinkSchemeInsideOrEmailAtext)
+        },
+        _ => {
+            tokenizer.tokenize_state.size = 0;
+            Retry(AutolinkEmailAtext)
+        }
+    }
+}
+
+/// After protocol, in URL.
+///
+/// ```markdown
+/// > | a<https://example.com>b
+///             ^
+/// ```
+let construct_autolink_url_inside = (tokenizer: Tokenizer) => {
+    match (tokenizer.current) {
+        Some(byte) when byte == Char.code('>') => {
+            exit(tokenizer, AutolinkProtocol);
+            enter(tokenizer, AutolinkMarker);
+            consume(tokenizer);
+            exit(tokenizer, AutolinkMarker);
+            exit(tokenizer, Autolink);
+            Ok
+        },
+        // ASCII control, space, or `<`.
+        Some(byte) when (
+            byte == 0x00 ||
+            byte == 0x01 ||
+            byte == 0x02 ||
+            byte == 0x03 ||
+            byte == 0x04 ||
+            byte == 0x05 ||
+            byte == 0x06 ||
+            byte == 0x07 ||
+            byte == 0x08 ||
+            byte == 0x09 ||
+            byte == 0x0A ||
+            byte == 0x0B ||
+            byte == 0x0C ||
+            byte == 0x0D ||
+            byte == 0x0E ||
+            byte == 0x0F ||
+            byte == 0x10 ||
+            byte == 0x11 ||
+            byte == 0x12 ||
+            byte == 0x13 ||
+            byte == 0x14 ||
+            byte == 0x15 ||
+            byte == 0x16 ||
+            byte == 0x17 ||
+            byte == 0x18 ||
+            byte == 0x19 ||
+            byte == 0x1A ||
+            byte == 0x1B ||
+            byte == 0x1C ||
+            byte == 0x1D ||
+            byte == 0x1E ||
+            byte == 0x1F ||
+            byte == Char.code(' ') ||
+            byte == Char.code('<') ||
+            byte == 0x7F
+        ) => Nok,
+        None => Nok,
+        Some(_) => {
+            consume(tokenizer);
+            Next(AutolinkUrlInside)
+        }
+    }
+}
+
+
+/// Call the corresponding state for a state name.
+let call = (tokenizer: Tokenizer, name: StateName) => {
+  let func = match (name) {
+    AttentionStart => construct_attention_start,
+    AttentionInside => construct_attention_inside,
+    AutolinkStart => construct_autolink_start,
+    AutolinkOpen => construct_autolink_open,
+    AutolinkSchemeOrEmailAtext => construct_autolink_scheme_or_email_atext,
+    AutolinkSchemeInsideOrEmailAtext =>
+      construct_autolink_scheme_inside_or_email_atext,
+    AutolinkUrlInside => construct_autolink_url_inside,
+    AutolinkEmailAtSignOrDot => construct_autolink_email_at_sign_or_dot,
+    AutolinkEmailAtext => construct_autolink_email_atext,
+    AutolinkEmailValue => construct_autolink_email_value,
+    AutolinkEmailLabel => construct_autolink_email_label,
+    BlankLineStart => construct_blank_line_start,
+    BlankLineAfter => construct_blank_line_after,
+    BlockQuoteStart => construct_block_quote_start,
+    BlockQuoteContStart => construct_block_quote_cont_start,
+    BlockQuoteContBefore => construct_block_quote_cont_before,
+    BlockQuoteContAfter => construct_block_quote_cont_after,
+    BomStart => construct_partial_bom_start,
+    BomInside => construct_partial_bom_inside,
+    CharacterEscapeStart => construct_character_escape_start,
+    CharacterEscapeInside => construct_character_escape_inside,
+    CharacterReferenceStart => construct_character_reference_start,
+    CharacterReferenceOpen => construct_character_reference_open,
+    CharacterReferenceNumeric => construct_character_reference_numeric,
+    CharacterReferenceValue => construct_character_reference_value,
+    CodeIndentedStart => construct_code_indented_start,
+    CodeIndentedAtBreak => construct_code_indented_at_break,
+    CodeIndentedAfter => construct_code_indented_after,
+    CodeIndentedFurtherStart => construct_code_indented_further_start,
+    CodeIndentedInside => construct_code_indented_inside,
+    CodeIndentedFurtherBegin => construct_code_indented_further_begin,
+    CodeIndentedFurtherAfter => construct_code_indented_further_after,
+    ContentChunkStart => construct_content_chunk_start,
+    ContentChunkInside => construct_content_chunk_inside,
+    ContentDefinitionBefore => construct_content_definition_before,
+    ContentDefinitionAfter => construct_content_definition_after,
+    DataStart => construct_partial_data_start,
+    DataInside => construct_partial_data_inside,
+    DataAtBreak => construct_partial_data_at_break,
+    DefinitionStart => construct_definition_start,
+    DefinitionBefore => construct_definition_before,
+    DefinitionLabelAfter => construct_definition_label_after,
+    DefinitionLabelNok => construct_definition_label_nok,
+    DefinitionMarkerAfter => construct_definition_marker_after,
+    DefinitionDestinationBefore => construct_definition_destination_before,
+    DefinitionDestinationAfter => construct_definition_destination_after,
+    DefinitionDestinationMissing => construct_definition_destination_missing,
+    DefinitionTitleBefore => construct_definition_title_before,
+    DefinitionAfter => construct_definition_after,
+    DefinitionAfterWhitespace => construct_definition_after_whitespace,
+    DefinitionTitleBeforeMarker => construct_definition_title_before_marker,
+    DefinitionTitleAfter => construct_definition_title_after,
+    DefinitionTitleAfterOptionalWhitespace =>
+      construct_definition_title_after_optional_whitespace,
+    DestinationStart => construct_partial_destination_start,
+    DestinationEnclosedBefore => construct_partial_destination_enclosed_before,
+    DestinationEnclosed => construct_partial_destination_enclosed,
+    DestinationEnclosedEscape => construct_partial_destination_enclosed_escape,
+    DestinationRaw => construct_partial_destination_raw,
+    DestinationRawEscape => construct_partial_destination_raw_escape,
+    DocumentStart => construct_document_start,
+    DocumentBeforeFrontmatter => construct_document_before_frontmatter,
+    DocumentContainerExistingBefore =>
+      construct_document_container_existing_before,
+    DocumentContainerExistingAfter =>
+      construct_document_container_existing_after,
+    DocumentContainerNewBefore => construct_document_container_new_before,
+    DocumentContainerNewBeforeNotBlockQuote =>
+      construct_document_container_new_before_not_block_quote,
+    DocumentContainerNewBeforeNotList =>
+      construct_document_container_new_before_not_list,
+    DocumentContainerNewBeforeNotGfmFootnoteDefinition =>
+      construct_document_container_new_before_not_footnote_definition,
+    DocumentContainerNewAfter => construct_document_container_new_after,
+    DocumentContainersAfter => construct_document_containers_after,
+    DocumentFlowEnd => construct_document_flow_end,
+    DocumentFlowInside => construct_document_flow_inside,
+    FlowStart => construct_flow_start,
+    FlowBeforeGfmTable => construct_flow_before_gfm_table,
+    FlowBeforeCodeIndented => construct_flow_before_code_indented,
+    FlowBeforeRaw => construct_flow_before_raw,
+    FlowBeforeHtml => construct_flow_before_html,
+    FlowBeforeMdxExpression => construct_flow_before_mdx_expression,
+    FlowBeforeMdxJsx => construct_flow_before_mdx_jsx,
+    FlowBeforeHeadingAtx => construct_flow_before_heading_atx,
+    FlowBeforeHeadingSetext => construct_flow_before_heading_setext,
+    FlowBeforeThematicBreak => construct_flow_before_thematic_break,
+    FlowAfter => construct_flow_after,
+    FlowBlankLineBefore => construct_flow_blank_line_before,
+    FlowBlankLineAfter => construct_flow_blank_line_after,
+    FlowBeforeContent => construct_flow_before_content,
+    FrontmatterStart => construct_frontmatter_start,
+    FrontmatterOpenSequence => construct_frontmatter_open_sequence,
+    FrontmatterOpenAfter => construct_frontmatter_open_after,
+    FrontmatterAfter => construct_frontmatter_after,
+    FrontmatterContentStart => construct_frontmatter_content_start,
+    FrontmatterContentInside => construct_frontmatter_content_inside,
+    FrontmatterContentEnd => construct_frontmatter_content_end,
+    FrontmatterCloseStart => construct_frontmatter_close_start,
+    FrontmatterCloseSequence => construct_frontmatter_close_sequence,
+    FrontmatterCloseAfter => construct_frontmatter_close_after,
+    GfmAutolinkLiteralProtocolStart =>
+      construct_gfm_autolink_literal_protocol_start,
+    GfmAutolinkLiteralProtocolAfter =>
+      construct_gfm_autolink_literal_protocol_after,
+    GfmAutolinkLiteralProtocolPrefixInside =>
+      construct_gfm_autolink_literal_protocol_prefix_inside,
+    GfmAutolinkLiteralProtocolSlashesInside =>
+      construct_gfm_autolink_literal_protocol_slashes_inside,
+    GfmAutolinkLiteralWwwAfter => construct_gfm_autolink_literal_www_after,
+    GfmAutolinkLiteralWwwStart => construct_gfm_autolink_literal_www_start,
+    GfmAutolinkLiteralWwwPrefixInside =>
+      construct_gfm_autolink_literal_www_prefix_inside,
+    GfmAutolinkLiteralWwwPrefixAfter =>
+      construct_gfm_autolink_literal_www_prefix_after,
+    GfmAutolinkLiteralDomainInside =>
+      construct_gfm_autolink_literal_domain_inside,
+    GfmAutolinkLiteralDomainAtPunctuation =>
+      construct_gfm_autolink_literal_domain_at_punctuation,
+    GfmAutolinkLiteralDomainAfter =>
+      construct_gfm_autolink_literal_domain_after,
+    GfmAutolinkLiteralPathInside => construct_gfm_autolink_literal_path_inside,
+    GfmAutolinkLiteralPathAtPunctuation =>
+      construct_gfm_autolink_literal_path_at_punctuation,
+    GfmAutolinkLiteralPathAfter => construct_gfm_autolink_literal_path_after,
+    GfmAutolinkLiteralTrail => construct_gfm_autolink_literal_trail,
+    GfmAutolinkLiteralTrailCharRefStart =>
+      construct_gfm_autolink_literal_trail_char_ref_start,
+    GfmAutolinkLiteralTrailCharRefInside =>
+      construct_gfm_autolink_literal_trail_char_ref_inside,
+    GfmAutolinkLiteralTrailBracketAfter =>
+      construct_gfm_autolink_literal_trail_bracket_after,
+    GfmFootnoteDefinitionStart => construct_gfm_footnote_definition_start,
+    GfmFootnoteDefinitionLabelBefore =>
+      construct_gfm_footnote_definition_label_before,
+    GfmFootnoteDefinitionLabelAtMarker =>
+      construct_gfm_footnote_definition_label_at_marker,
+    GfmFootnoteDefinitionLabelInside =>
+      construct_gfm_footnote_definition_label_inside,
+    GfmFootnoteDefinitionLabelEscape =>
+      construct_gfm_footnote_definition_label_escape,
+    GfmFootnoteDefinitionLabelAfter =>
+      construct_gfm_footnote_definition_label_after,
+    GfmFootnoteDefinitionWhitespaceAfter =>
+      construct_gfm_footnote_definition_whitespace_after,
+    GfmFootnoteDefinitionContStart =>
+      construct_gfm_footnote_definition_cont_start,
+    GfmFootnoteDefinitionContBlank =>
+      construct_gfm_footnote_definition_cont_blank,
+    GfmFootnoteDefinitionContFilled =>
+      construct_gfm_footnote_definition_cont_filled,
+    GfmLabelStartFootnoteStart => construct_gfm_label_start_footnote_start,
+    GfmLabelStartFootnoteOpen => construct_gfm_label_start_footnote_open,
+    GfmTableStart => construct_gfm_table_start,
+    GfmTableHeadRowBefore => construct_gfm_table_head_row_before,
+    GfmTableHeadRowStart => construct_gfm_table_head_row_start,
+    GfmTableHeadRowBreak => construct_gfm_table_head_row_break,
+    GfmTableHeadRowData => construct_gfm_table_head_row_data,
+    GfmTableHeadRowEscape => construct_gfm_table_head_row_escape,
+    GfmTableHeadDelimiterStart => construct_gfm_table_head_delimiter_start,
+    GfmTableHeadDelimiterBefore => construct_gfm_table_head_delimiter_before,
+    GfmTableHeadDelimiterCellBefore =>
+      construct_gfm_table_head_delimiter_cell_before,
+    GfmTableHeadDelimiterValueBefore =>
+      construct_gfm_table_head_delimiter_value_before,
+    GfmTableHeadDelimiterLeftAlignmentAfter =>
+      construct_gfm_table_head_delimiter_left_alignment_after,
+    GfmTableHeadDelimiterFiller => construct_gfm_table_head_delimiter_filler,
+    GfmTableHeadDelimiterRightAlignmentAfter =>
+      construct_gfm_table_head_delimiter_right_alignment_after,
+    GfmTableHeadDelimiterCellAfter =>
+      construct_gfm_table_head_delimiter_cell_after,
+    GfmTableHeadDelimiterNok => construct_gfm_table_head_delimiter_nok,
+    GfmTableBodyRowStart => construct_gfm_table_body_row_start,
+    GfmTableBodyRowBreak => construct_gfm_table_body_row_break,
+    GfmTableBodyRowData => construct_gfm_table_body_row_data,
+    GfmTableBodyRowEscape => construct_gfm_table_body_row_escape,
+    GfmTaskListItemCheckStart => construct_gfm_task_list_item_check_start,
+    GfmTaskListItemCheckInside => construct_gfm_task_list_item_check_inside,
+    GfmTaskListItemCheckClose => construct_gfm_task_list_item_check_close,
+    GfmTaskListItemCheckAfter => construct_gfm_task_list_item_check_after,
+    GfmTaskListItemCheckAfterSpaceOrTab =>
+      construct_gfm_task_list_item_check_after_space_or_tab,
+    HardBreakEscapeStart => construct_hard_break_escape_start,
+    HardBreakEscapeAfter => construct_hard_break_escape_after,
+    HeadingAtxStart => construct_heading_atx_start,
+    HeadingAtxBefore => construct_heading_atx_before,
+    HeadingAtxSequenceOpen => construct_heading_atx_sequence_open,
+    HeadingAtxAtBreak => construct_heading_atx_at_break,
+    HeadingAtxSequenceFurther => construct_heading_atx_sequence_further,
+    HeadingAtxData => construct_heading_atx_data,
+    HeadingSetextStart => construct_heading_setext_start,
+    HeadingSetextBefore => construct_heading_setext_before,
+    HeadingSetextInside => construct_heading_setext_inside,
+    HeadingSetextAfter => construct_heading_setext_after,
+    HtmlFlowStart => construct_html_flow_start,
+    HtmlFlowBefore => construct_html_flow_before,
+    HtmlFlowOpen => construct_html_flow_open,
+    HtmlFlowDeclarationOpen => construct_html_flow_declaration_open,
+    HtmlFlowCommentOpenInside => construct_html_flow_comment_open_inside,
+    HtmlFlowCdataOpenInside => construct_html_flow_cdata_open_inside,
+    HtmlFlowTagCloseStart => construct_html_flow_tag_close_start,
+    HtmlFlowTagName => construct_html_flow_tag_name,
+    HtmlFlowBasicSelfClosing => construct_html_flow_basic_self_closing,
+    HtmlFlowCompleteClosingTagAfter =>
+      construct_html_flow_complete_closing_tag_after,
+    HtmlFlowCompleteEnd => construct_html_flow_complete_end,
+    HtmlFlowCompleteAttributeNameBefore =>
+      construct_html_flow_complete_attribute_name_before,
+    HtmlFlowCompleteAttributeName =>
+      construct_html_flow_complete_attribute_name,
+    HtmlFlowCompleteAttributeNameAfter =>
+      construct_html_flow_complete_attribute_name_after,
+    HtmlFlowCompleteAttributeValueBefore =>
+      construct_html_flow_complete_attribute_value_before,
+    HtmlFlowCompleteAttributeValueQuoted =>
+      construct_html_flow_complete_attribute_value_quoted,
+    HtmlFlowCompleteAttributeValueQuotedAfter =>
+      construct_html_flow_complete_attribute_value_quoted_after,
+    HtmlFlowCompleteAttributeValueUnquoted =>
+      construct_html_flow_complete_attribute_value_unquoted,
+    HtmlFlowCompleteAfter => construct_html_flow_complete_after,
+    HtmlFlowBlankLineBefore => construct_html_flow_blank_line_before,
+    HtmlFlowContinuation => construct_html_flow_continuation,
+    HtmlFlowContinuationDeclarationInside =>
+      construct_html_flow_continuation_declaration_inside,
+    HtmlFlowContinuationAfter => construct_html_flow_continuation_after,
+    HtmlFlowContinuationStart => construct_html_flow_continuation_start,
+    HtmlFlowContinuationBefore => construct_html_flow_continuation_before,
+    HtmlFlowContinuationCommentInside =>
+      construct_html_flow_continuation_comment_inside,
+    HtmlFlowContinuationRawTagOpen =>
+      construct_html_flow_continuation_raw_tag_open,
+    HtmlFlowContinuationRawEndTag =>
+      construct_html_flow_continuation_raw_end_tag,
+    HtmlFlowContinuationClose => construct_html_flow_continuation_close,
+    HtmlFlowContinuationCdataInside =>
+      construct_html_flow_continuation_cdata_inside,
+    HtmlFlowContinuationStartNonLazy =>
+      construct_html_flow_continuation_start_non_lazy,
+    HtmlTextStart => construct_html_text_start,
+    HtmlTextOpen => construct_html_text_open,
+    HtmlTextDeclarationOpen => construct_html_text_declaration_open,
+    HtmlTextTagCloseStart => construct_html_text_tag_close_start,
+    HtmlTextTagClose => construct_html_text_tag_close,
+    HtmlTextTagCloseBetween => construct_html_text_tag_close_between,
+    HtmlTextTagOpen => construct_html_text_tag_open,
+    HtmlTextTagOpenBetween => construct_html_text_tag_open_between,
+    HtmlTextTagOpenAttributeName => construct_html_text_tag_open_attribute_name,
+    HtmlTextTagOpenAttributeNameAfter =>
+      construct_html_text_tag_open_attribute_name_after,
+    HtmlTextTagOpenAttributeValueBefore =>
+      construct_html_text_tag_open_attribute_value_before,
+    HtmlTextTagOpenAttributeValueQuoted =>
+      construct_html_text_tag_open_attribute_value_quoted,
+    HtmlTextTagOpenAttributeValueQuotedAfter =>
+      construct_html_text_tag_open_attribute_value_quoted_after,
+    HtmlTextTagOpenAttributeValueUnquoted =>
+      construct_html_text_tag_open_attribute_value_unquoted,
+    HtmlTextCdata => construct_html_text_cdata,
+    HtmlTextCdataOpenInside => construct_html_text_cdata_open_inside,
+    HtmlTextCdataClose => construct_html_text_cdata_close,
+    HtmlTextCdataEnd => construct_html_text_cdata_end,
+    HtmlTextCommentOpenInside => construct_html_text_comment_open_inside,
+    HtmlTextCommentStart => construct_html_text_comment_start,
+    HtmlTextCommentStartDash => construct_html_text_comment_start_dash,
+    HtmlTextComment => construct_html_text_comment,
+    HtmlTextCommentClose => construct_html_text_comment_close,
+    HtmlTextDeclaration => construct_html_text_declaration,
+    HtmlTextEnd => construct_html_text_end,
+    HtmlTextInstruction => construct_html_text_instruction,
+    HtmlTextInstructionClose => construct_html_text_instruction_close,
+    HtmlTextLineEndingBefore => construct_html_text_line_ending_before,
+    HtmlTextLineEndingAfter => construct_html_text_line_ending_after,
+    HtmlTextLineEndingAfterPrefix =>
+      construct_html_text_line_ending_after_prefix,
+    LabelStart => construct_partial_label_start,
+    LabelAtBreak => construct_partial_label_at_break,
+    LabelEolAfter => construct_partial_label_eol_after,
+    LabelEscape => construct_partial_label_escape,
+    LabelInside => construct_partial_label_inside,
+    LabelNok => construct_partial_label_nok,
+    LabelEndStart => construct_label_end_start,
+    LabelEndAfter => construct_label_end_after,
+    LabelEndResourceStart => construct_label_end_resource_start,
+    LabelEndResourceBefore => construct_label_end_resource_before,
+    LabelEndResourceOpen => construct_label_end_resource_open,
+    LabelEndResourceDestinationAfter =>
+      construct_label_end_resource_destination_after,
+    LabelEndResourceDestinationMissing =>
+      construct_label_end_resource_destination_missing,
+    LabelEndResourceBetween => construct_label_end_resource_between,
+    LabelEndResourceTitleAfter => construct_label_end_resource_title_after,
+    LabelEndResourceEnd => construct_label_end_resource_end,
+    LabelEndOk => construct_label_end_ok,
+    LabelEndNok => construct_label_end_nok,
+    LabelEndReferenceFull => construct_label_end_reference_full,
+    LabelEndReferenceFullAfter => construct_label_end_reference_full_after,
+    LabelEndReferenceNotFull => construct_label_end_reference_not_full,
+    LabelEndReferenceCollapsed => construct_label_end_reference_collapsed,
+    LabelEndReferenceCollapsedOpen =>
+      construct_label_end_reference_collapsed_open,
+    LabelStartImageStart => construct_label_start_image_start,
+    LabelStartImageOpen => construct_label_start_image_open,
+    LabelStartImageAfter => construct_label_start_image_after,
+    LabelStartLinkStart => construct_label_start_link_start,
+    ListItemStart => construct_list_item_start,
+    ListItemBefore => construct_list_item_before,
+    ListItemBeforeOrdered => construct_list_item_before_ordered,
+    ListItemBeforeUnordered => construct_list_item_before_unordered,
+    ListItemValue => construct_list_item_value,
+    ListItemMarker => construct_list_item_marker,
+    ListItemMarkerAfter => construct_list_item_marker_after,
+    ListItemAfter => construct_list_item_after,
+    ListItemMarkerAfterFilled => construct_list_item_marker_after_filled,
+    ListItemWhitespace => construct_list_item_whitespace,
+    ListItemWhitespaceAfter => construct_list_item_whitespace_after,
+    ListItemPrefixOther => construct_list_item_prefix_other,
+    ListItemContStart => construct_list_item_cont_start,
+    ListItemContBlank => construct_list_item_cont_blank,
+    ListItemContFilled => construct_list_item_cont_filled,
+    MdxEsmStart => construct_mdx_esm_start,
+    MdxEsmWord => construct_mdx_esm_word,
+    MdxEsmInside => construct_mdx_esm_inside,
+    MdxEsmLineStart => construct_mdx_esm_line_start,
+    MdxEsmBlankLineBefore => construct_mdx_esm_blank_line_before,
+    MdxEsmContinuationStart => construct_mdx_esm_continuation_start,
+    MdxEsmAtEnd => construct_mdx_esm_at_end,
+    MdxExpressionStart => construct_partial_mdx_expression_start,
+    MdxExpressionBefore => construct_partial_mdx_expression_before,
+    MdxExpressionInside => construct_partial_mdx_expression_inside,
+    MdxExpressionEolAfter => construct_partial_mdx_expression_eol_after,
+    MdxExpressionFlowStart => construct_mdx_expression_flow_start,
+    MdxExpressionFlowBefore => construct_mdx_expression_flow_before,
+    MdxExpressionFlowAfter => construct_mdx_expression_flow_after,
+    MdxExpressionFlowEnd => construct_mdx_expression_flow_end,
+    MdxExpressionTextStart => construct_mdx_expression_text_start,
+    MdxExpressionTextAfter => construct_mdx_expression_text_after,
+    MdxJsxFlowStart => construct_mdx_jsx_flow_start,
+    MdxJsxFlowBefore => construct_mdx_jsx_flow_before,
+    MdxJsxFlowAfter => construct_mdx_jsx_flow_after,
+    MdxJsxFlowEnd => construct_mdx_jsx_flow_end,
+    MdxJsxFlowNok => construct_mdx_jsx_flow_nok,
+    MdxJsxTextStart => construct_mdx_jsx_text_start,
+    MdxJsxTextAfter => construct_mdx_jsx_text_after,
+    MdxJsxTextNok => construct_mdx_jsx_text_nok,
+    MdxJsxStart => construct_partial_mdx_jsx_start,
+    MdxJsxStartAfter => construct_partial_mdx_jsx_start_after,
+    MdxJsxNameBefore => construct_partial_mdx_jsx_name_before,
+    MdxJsxClosingTagNameBefore =>
+      construct_partial_mdx_jsx_closing_tag_name_before,
+    MdxJsxTagEnd => construct_partial_mdx_jsx_tag_end,
+    MdxJsxPrimaryName => construct_partial_mdx_jsx_primary_name,
+    MdxJsxPrimaryNameAfter => construct_partial_mdx_jsx_primary_name_after,
+    MdxJsxMemberNameBefore => construct_partial_mdx_jsx_member_name_before,
+    MdxJsxMemberName => construct_partial_mdx_jsx_member_name,
+    MdxJsxMemberNameAfter => construct_partial_mdx_jsx_member_name_after,
+    MdxJsxLocalNameBefore => construct_partial_mdx_jsx_local_name_before,
+    MdxJsxLocalName => construct_partial_mdx_jsx_local_name,
+    MdxJsxLocalNameAfter => construct_partial_mdx_jsx_local_name_after,
+    MdxJsxAttributeBefore => construct_partial_mdx_jsx_attribute_before,
+    MdxJsxSelfClosing => construct_partial_mdx_jsx_self_closing,
+    MdxJsxAttributeExpressionAfter =>
+      construct_partial_mdx_jsx_attribute_expression_after,
+    MdxJsxAttributePrimaryName =>
+      construct_partial_mdx_jsx_attribute_primary_name,
+    MdxJsxAttributePrimaryNameAfter =>
+      construct_partial_mdx_jsx_attribute_primary_name_after,
+    MdxJsxAttributeLocalNameBefore =>
+      construct_partial_mdx_jsx_attribute_local_name_before,
+    MdxJsxAttributeLocalName => construct_partial_mdx_jsx_attribute_local_name,
+    MdxJsxAttributeLocalNameAfter =>
+      construct_partial_mdx_jsx_attribute_local_name_after,
+    MdxJsxAttributeValueBefore =>
+      construct_partial_mdx_jsx_attribute_value_before,
+    MdxJsxAttributeValueQuotedStart =>
+      construct_partial_mdx_jsx_attribute_value_quoted_start,
+    MdxJsxAttributeValueQuoted =>
+      construct_partial_mdx_jsx_attribute_value_quoted,
+    MdxJsxAttributeValueExpressionAfter =>
+      construct_partial_mdx_jsx_attribute_value_expression_after,
+    MdxJsxEsWhitespaceStart => construct_partial_mdx_jsx_es_whitespace_start,
+    MdxJsxEsWhitespaceInside => construct_partial_mdx_jsx_es_whitespace_inside,
+    MdxJsxEsWhitespaceEolAfter =>
+      construct_partial_mdx_jsx_es_whitespace_eol_after,
+    NonLazyContinuationStart => construct_partial_non_lazy_continuation_start,
+    NonLazyContinuationAfter => construct_partial_non_lazy_continuation_after,
+    ParagraphStart => construct_paragraph_start,
+    ParagraphLineStart => construct_paragraph_line_start,
+    ParagraphInside => construct_paragraph_inside,
+    RawFlowStart => construct_raw_flow_start,
+    RawFlowBeforeSequenceOpen => construct_raw_flow_before_sequence_open,
+    RawFlowSequenceOpen => construct_raw_flow_sequence_open,
+    RawFlowInfoBefore => construct_raw_flow_info_before,
+    RawFlowInfo => construct_raw_flow_info,
+    RawFlowMetaBefore => construct_raw_flow_meta_before,
+    RawFlowMeta => construct_raw_flow_meta,
+    RawFlowAtNonLazyBreak => construct_raw_flow_at_non_lazy_break,
+    RawFlowCloseStart => construct_raw_flow_close_start,
+    RawFlowBeforeSequenceClose => construct_raw_flow_before_sequence_close,
+    RawFlowSequenceClose => construct_raw_flow_sequence_close,
+    RawFlowAfterSequenceClose => construct_raw_flow_sequence_close_after,
+    RawFlowContentBefore => construct_raw_flow_content_before,
+    RawFlowContentStart => construct_raw_flow_content_start,
+    RawFlowBeforeContentChunk => construct_raw_flow_before_content_chunk,
+    RawFlowContentChunk => construct_raw_flow_content_chunk,
+    RawFlowAfter => construct_raw_flow_after,
+    RawTextStart => construct_raw_text_start,
+    RawTextSequenceOpen => construct_raw_text_sequence_open,
+    RawTextBetween => construct_raw_text_between,
+    RawTextData => construct_raw_text_data,
+    RawTextSequenceClose => construct_raw_text_sequence_close,
+    SpaceOrTabStart => construct_partial_space_or_tab_start,
+    SpaceOrTabInside => construct_partial_space_or_tab_inside,
+    SpaceOrTabAfter => construct_partial_space_or_tab_after,
+    SpaceOrTabEolStart => construct_partial_space_or_tab_eol_start,
+    SpaceOrTabEolAfterFirst => construct_partial_space_or_tab_eol_after_first,
+    SpaceOrTabEolAfterEol => construct_partial_space_or_tab_eol_after_eol,
+    SpaceOrTabEolAtEol => construct_partial_space_or_tab_eol_at_eol,
+    SpaceOrTabEolAfterMore => construct_partial_space_or_tab_eol_after_more,
+    StringStart => construct_string_start,
+    StringBefore => construct_string_before,
+    StringBeforeData => construct_string_before_data,
+    TextStart => construct_text_start,
+    TextBefore => construct_text_before,
+    TextBeforeHtml => construct_text_before_html,
+    TextBeforeMdxJsx => construct_text_before_mdx_jsx,
+    TextBeforeHardBreakEscape => construct_text_before_hard_break_escape,
+    TextBeforeLabelStartLink => construct_text_before_label_start_link,
+    TextBeforeData => construct_text_before_data,
+    ThematicBreakStart => construct_thematic_break_start,
+    ThematicBreakBefore => construct_thematic_break_before,
+    ThematicBreakSequence => construct_thematic_break_sequence,
+    ThematicBreakAtBreak => construct_thematic_break_at_break,
+    TitleStart => construct_partial_title_start,
+    TitleBegin => construct_partial_title_begin,
+    TitleAfterEol => construct_partial_title_after_eol,
+    TitleAtBreak => construct_partial_title_at_break,
+    TitleEscape => construct_partial_title_escape,
+    TitleInside => construct_partial_title_inside,
+    TitleNok => construct_partial_title_nok,
+  }
+
+  func(tokenizer)
+}
+
+/// Prepare for a next byte to get consumed.
+let expect = (self: Tokenizer, byte: Option<Number>) => {
+  // debug_assert!(self.consumed, "expected previous byte to be consumed");
+  self.consumed = false
+  self.current = byte
+}
+
+/// Apply tokenizer progress.
+let free = (self: Tokenizer, previous: Progress) => {
+  self.previous = previous.previous
+  self.current = previous.current
+  self.point = previous.point
+  // debug_assert!(
+  //     self.events.len() >= previous.events_len,
+  //     "expected to restore less events than before"
+  // );
+  self.events = List.drop(previous.events_len, self.events)
+  // debug_assert!(
+  //     self.stack.len() >= previous.stack_len,
+  //     "expected to restore less stack items than before"
+  // );
+  self.stack = List.drop(previous.stack_len, self.stack)
+}
+
+/// Run the tokenizer.
+let push_impl =
+  (
+    tokenizer: Tokenizer,
+    (
+      from0, from1,
+    ): (
+      Number,
+      Number
+    ),
+    (
+      to0, to1,
+    ): (
+      Number,
+      Number
+    ),
+    state: State,
+    flush: Bool,
+  ) => {
+  if (
+    from0 > tokenizer.point.index ||
+    from0 == tokenizer.point.index && from1 >= tokenizer.point.vs
+  ) {
+    fail "cannot move backwards"
+  }
+
+  let mut state = state
+
+  move_to(tokenizer, (from0, from1))
+
+  while (true) {
+    match (state) {
+      Error(_) => break,
+      Ok | Nok => {
+        // if (let Some(attempt) = tokenizer.attempts.pop() {
+        match (tokenizer.attempts) {
+          [attempt, ...rest] => {
+            if (attempt.kind == Check || state == Nok) {
+              match (attempt.progress) {
+                Some(progress) => free(tokenizer, progress),
+                None => void,
+              }
+            }
+
+            tokenizer.consumed = true
+
+            let next = if (state == Ok) {
+              attempt.ok
+            } else {
+              attempt.nok
+            }
+
+            // print("attempt: `{:?}` -> `{:?}`", state, next);
+            state = next
+          },
+          _ => break,
+        }
+      },
+      Next(name) => {
+        let mut action = None
+        if (
+          tokenizer.point.index < to0 ||
+          tokenizer.point.index == to0 && tokenizer.point.vs < to1
+        ) {
+          action = Some(
+            byte_action(tokenizer.parse_state.bytes, tokenizer.point)
+          )
+        } else if (flush) {
+          action = None
+        } else {
+          break
+        }
+
+        match (action) {
+          Some(Ignore) => move_one(tokenizer),
+          _ => {
+            let byte = match (action) {
+              Some(Insert(byte) | Normal(byte)) => Some(byte),
+              _ => None,
+            }
+
+            // print("feed:    {} to {:?}", format_byte_opt(byte), name);
+            expect(tokenizer, byte)
+            state = call(tokenizer, name)
+          },
+        }
+      },
+      Retry(name) => {
+        // print("retry:   `{:?}`", name);
+        state = call(tokenizer, name)
+      },
+    }
+  }
+
+  tokenizer.consumed = true
+
+  // if (flush) {
+  //     debug_assert!(matches!(state, State::Ok | State::Error(_)), "must be ok");
+  // } else {
+  //     debug_assert!(
+  //         matches!(state, State::Next(_) | State::Error(_)),
+  //         "must have a next state"
+  //     );
+  // }
+
+  state
+}
+
+let parse = (value: String, options: ParseOptions) => {
+  let bytes = Bytes.fromString(value)
+
+  let location = if (
+    Option.isSome(options.mdx_esm_parse) ||
+    Option.isSome(options.mdx_expression_parse)
+  ) {
+    Some(make_location(bytes))
+  } else {
+    None
+  }
+
+  let parseState = {
+    options,
+    bytes,
+    location,
+    definitions: [],
+    gfm_footnote_definitions: [],
+  }
+
+  let start = { line: 1, column: 1, index: 0, vs: 0 }
+
+  let tokenizer = make_tokenizer(start, parseState)
+
+  let state = push_impl(
+    tokenizer,
+    (0, 0),
+    (parse_state.bytes.len(), 0),
+    Next(DocumentStart)
+  )
+}
+
+// print(
+//   parse(
+//     "# hello
+//     World",
+//     {
+//       constructs: {
+//         autolink: true,
+//         attention: true,
+//         block_quote: true,
+//         character_escape: true,
+//         character_reference: true,
+//         code_indented: true,
+//         code_fenced: true,
+//         code_text: true,
+//         definition: true,
+//         frontmatter: true,
+//         gfm_autolink_literal: true,
+//         gfm_footnote_definition: true,
+//         gfm_label_start_footnote: true,
+//         gfm_strikethrough: true,
+//         gfm_table: true,
+//         gfm_task_list_item: true,
+//         hard_break_escape: true,
+//         hard_break_trailing: true,
+//         heading_atx: true,
+//         heading_setext: true,
+//         html_flow: true,
+//         html_text: true,
+//         label_start_image: true,
+//         label_start_link: true,
+//         label_end: true,
+//         list_item: true,
+//         math_flow: true,
+//         math_text: true,
+//         mdx_esm: true,
+//         mdx_expression_flow: true,
+//         mdx_expression_text: true,
+//         mdx_jsx_flow: true,
+//         mdx_jsx_text: true,
+//         thematic_break: true,
+//       },
+//       gfm_strikethrough_single_tilde: true,
+//       math_text_single_dollar: true,
+//       mdx_expression_parse: None,
+//       mdx_esm_parse: Some((str: String) => Ok),
+//     }
+//   )
+// )
