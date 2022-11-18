@@ -1877,16 +1877,15 @@ and print_infix_application =
     let left_needs_parens = left_is_if || left_grouping_required;
     let right_needs_parens = right_is_if || right_grouping_required;
 
-    let l1 =
-      print_expression(
-        ~expression_parent=GenericExpression,
-        ~original_source,
-        ~comments,
-        first,
-      );
-
     let lhs =
       if (left_needs_parens) {
+        let l1 =
+          print_expression(
+            ~expression_parent=GenericExpression,
+            ~original_source,
+            ~comments,
+            first,
+          );
         Doc.concat([
           Doc.lparen,
           if (Doc.willBreak(l1)) {
