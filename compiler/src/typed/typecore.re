@@ -1991,6 +1991,20 @@ and type_let =
       )
       pat_list
       (List.map2 (fun (attrs, _) e -> attrs, e) spatl exp_list);*/
+  List.iter2(
+    (pat, (attrs, exp)) => {
+      ignore(
+        check_partial(
+          env,
+          pat.pat_type,
+          pat.pat_loc,
+          [{mb_pat: pat, mb_body: exp, mb_guard: None, mb_loc: pat.pat_loc}],
+        ),
+      )
+    },
+    pat_list,
+    List.map2(((attrs, _), e) => (attrs, e), spatl, exp_list),
+  );
   end_def();
   let mutable_let = mut_flag == Mutable;
   List.iter2(
