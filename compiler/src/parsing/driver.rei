@@ -4,4 +4,5 @@ let parse:
   (~name: string=?, Sedlexing.lexbuf, unit => string) =>
   Parsetree.parsed_program;
 
-let scan_for_imports: (~defer_errors: bool=?, string) => list(string);
+let scan_for_imports:
+  (~defer_errors: bool=?, string) => list(Location.loc(string));
