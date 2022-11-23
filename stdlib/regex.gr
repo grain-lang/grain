@@ -4092,7 +4092,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
             // This adds the groups back in
             out = [String.slice(start, end, str), ...out]
           }
-          currentLocation = end
+          if (end > currentLocation) currentLocation = end
         },
         None => void,
       }

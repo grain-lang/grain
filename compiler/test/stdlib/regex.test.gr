@@ -780,7 +780,11 @@ assert split(unwrapResult(make("b(ar)")), "foo bar bar") ==
   ["foo ", "ar", " bar"]
 assert split(unwrapResult(make("b(ar)b(az)")), "foo barbaz bar") ==
   ["foo ", "ar", "az", " bar"]
-
+assert split(unwrapResult(make("b((a)r)")), "bar") == ["", "ar", "a", ""]
+assert split(unwrapResult(make("b(((((a))))r)")), "bar") ==
+  ["", "ar", "a", "a", "a", "a", ""]
+assert split(unwrapResult(make("b(((((a))))r)")), "bar bar") ==
+  ["", "ar", "a", "a", "a", "a", " bar"]
 // Regex.splitAll
 assert splitAll(unwrapResult(make(",")), "a,b,c,d") == ["a", "b", "c", "d"]
 assert splitAll(unwrapResult(make("|")), "a,b,c,d") == ["a,b,c,d"]
@@ -795,3 +799,8 @@ assert splitAll(
   "foo barar test barar test2"
 ) ==
   ["foo ", "ar", "ar", " test ", "ar", "ar", " test2"]
+assert splitAll(unwrapResult(make("b((a)r)")), "bar") == ["", "ar", "a", ""]
+assert splitAll(unwrapResult(make("b(((((a))))r)")), "bar") ==
+  ["", "ar", "a", "a", "a", "a", ""]
+assert splitAll(unwrapResult(make("b(((((a))))r)")), "bar bar") ==
+  ["", "ar", "a", "a", "a", "a", " ", "ar", "a", "a", "a", "a", ""]
