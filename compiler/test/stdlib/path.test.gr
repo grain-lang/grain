@@ -4,41 +4,107 @@ import Option from "option"
 import List from "list"
 
 // test that a variety of properties hold for valid relative/absolute paths
+record RelTestData {
+  pathStr: String,
+  expParent: String,
+  expStr: String,
+  expName: Option<String>,
+  expStem: Option<String>,
+  expExt: Option<String>,
+}
+
 let relTests = [
-  (
-    "./dir/file.txt",
-    "./dir",
-    "./dir/file.txt",
-    Some("file.txt"),
-    Some("file"),
-    Some(".txt"),
-  ),
-  ("file", ".", "./file", Some("file"), Some("file"), None),
-  ("dir/../../", "../..", "..", None, None, None),
-  (".git", ".", "./.git", Some(".git"), Some(".git"), None),
-  (".", "..", ".", None, None, None),
-  ("..", "../..", "..", None, None, None),
-  ("../../file", "../..", "../../file", Some("file"), Some("file"), None),
-  ("./", "..", ".", None, None, None),
-  (
-    "dir//file.txt///",
-    "dir",
-    "./dir/file.txt",
-    Some("file.txt"),
-    Some("file"),
-    Some(".txt"),
-  ),
-  (
-    ".\\dir\\file.txt",
-    ".",
-    "./.\\dir\\file.txt",
-    Some(".\\dir\\file.txt"),
-    Some(".\\dir\\file"),
-    Some(".txt"),
-  ),
+  {
+    pathStr: "./dir/file.txt",
+    expParent: "./dir",
+    expStr: "./dir/file.txt",
+    expName: Some("file.txt"),
+    expStem: Some("file"),
+    expExt: Some(".txt"),
+  },
+  {
+    pathStr: "file",
+    expParent: ".",
+    expStr: "./file",
+    expName: Some("file"),
+    expStem: Some("file"),
+    expExt: None,
+  },
+  {
+    pathStr: "dir/../../",
+    expParent: "../..",
+    expStr: "..",
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: ".git",
+    expParent: ".",
+    expStr: "./.git",
+    expName: Some(".git"),
+    expStem: Some(".git"),
+    expExt: None,
+  },
+  {
+    pathStr: "a.tar.gz",
+    expParent: ".",
+    expStr: "./a.tar.gz",
+    expName: Some("a.tar.gz"),
+    expStem: Some("a.tar"),
+    expExt: Some(".gz"),
+  },
+  {
+    pathStr: ".",
+    expParent: "..",
+    expStr: ".",
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "..",
+    expParent: "../..",
+    expStr: "..",
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "../../file",
+    expParent: "../..",
+    expStr: "../../file",
+    expName: Some("file"),
+    expStem: Some("file"),
+    expExt: None,
+  },
+  {
+    pathStr: "./",
+    expParent: "..",
+    expStr: ".",
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "dir//file.txt///",
+    expParent: "dir",
+    expStr: "./dir/file.txt",
+    expName: Some("file.txt"),
+    expStem: Some("file"),
+    expExt: Some(".txt"),
+  },
+  {
+    pathStr: ".\\dir\\file.txt",
+    expParent: ".",
+    expStr: "./.\\dir\\file.txt",
+    expName: Some(".\\dir\\file.txt"),
+    expStem: Some(".\\dir\\file"),
+    expExt: Some(".txt"),
+  },
 ]
 
-List.forEach(((pathStr, expParent, expStr, expName, expStem, expExt)) => {
+List.forEach(({ pathStr, expParent, expStr, expName, expStem, expExt }) => {
   let path = Option.unwrap(Path.relative(pathStr))
   assert Path.toString(path, Path.Posix) == expStr
   assert Option.unwrap(Path.relative(expParent)) == Path.parent(path)
@@ -47,37 +113,100 @@ List.forEach(((pathStr, expParent, expStr, expName, expStem, expExt)) => {
   assert expExt == Path.extension(path)
 }, relTests)
 
+record AbsTestData {
+  pathStr: String,
+  expParent: String,
+  expStr: String,
+  expRoot: Path.AbsoluteRoot,
+  expName: Option<String>,
+  expStem: Option<String>,
+  expExt: Option<String>,
+}
+
 let absTests = [
-  ("/usr/bin", "/usr", "/usr/bin", Path.Root, Some("bin"), Some("bin"), None),
-  ("/bin", "/", "/bin", Path.Root, Some("bin"), Some("bin"), None),
-  ("/bin/dir/..", "/", "/bin", Path.Root, Some("bin"), Some("bin"), None),
-  ("/../..", "/", "/", Path.Root, None, None, None),
-  ("/", "/", "/", Path.Root, None, None, None),
-  ("C:/", "C:/", "C:/", Path.Drive("C"), None, None, None),
-  ("C:/.././..", "C:/", "C:/", Path.Drive("C"), None, None, None),
-  (
-    "C:/Users/me.txt",
-    "C:/Users",
-    "C:/Users/me.txt",
-    Path.Drive("C"),
-    Some("me.txt"),
-    Some("me"),
-    Some(".txt"),
-  ),
-  (
-    "label:/me",
-    "label:/",
-    "label:/me",
-    Path.Drive("label"),
-    Some("me"),
-    Some("me"),
-    None,
-  ),
+  {
+    pathStr: "/usr/bin",
+    expParent: "/usr",
+    expStr: "/usr/bin",
+    expRoot: Path.Root,
+    expName: Some("bin"),
+    expStem: Some("bin"),
+    expExt: None,
+  },
+  {
+    pathStr: "/bin",
+    expParent: "/",
+    expStr: "/bin",
+    expRoot: Path.Root,
+    expName: Some("bin"),
+    expStem: Some("bin"),
+    expExt: None,
+  },
+  {
+    pathStr: "/bin/dir/..",
+    expParent: "/",
+    expStr: "/bin",
+    expRoot: Path.Root,
+    expName: Some("bin"),
+    expStem: Some("bin"),
+    expExt: None,
+  },
+  {
+    pathStr: "/../..",
+    expParent: "/",
+    expStr: "/",
+    expRoot: Path.Root,
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "/",
+    expParent: "/",
+    expStr: "/",
+    expRoot: Path.Root,
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "C:/",
+    expParent: "C:/",
+    expStr: "C:/",
+    expRoot: Path.Drive('C'),
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "C:/.././..",
+    expParent: "C:/",
+    expStr: "C:/",
+    expRoot: Path.Drive('C'),
+    expName: None,
+    expStem: None,
+    expExt: None,
+  },
+  {
+    pathStr: "C:/Users/me.txt",
+    expParent: "C:/Users",
+    expStr: "C:/Users/me.txt",
+    expRoot: Path.Drive('C'),
+    expName: Some("me.txt"),
+    expStem: Some("me"),
+    expExt: Some(".txt"),
+  },
 ]
 
-List.forEach(((
-  pathStr, expParent, expStr, expRoot, expName, expStem, expExt,
-)) => {
+List.forEach(({
+  pathStr,
+  expParent,
+  expStr,
+  expRoot,
+  expName,
+  expStem,
+  expExt,
+}) => {
   let path = Option.unwrap(Path.absolute(pathStr))
   assert Path.toString(path, Path.Posix) == expStr
   assert Option.unwrap(Path.absolute(expParent)) == Path.parent(path)
@@ -94,14 +223,24 @@ assert Path.absolute("./file.txt") == None
 assert Path.absolute("file.txt") == None
 assert Path.absolute("../..") == None
 
+record AppendTestData {
+  base: String,
+  toAppend: String,
+  final: String,
+}
+
 // test appending onto relative and absolute paths
 let appendRelTests = [
-  ("dir", "inner", "dir/inner"),
-  ("./dir/inner", "./innerer/file.txt", "dir/inner/innerer/file.txt"),
-  (".", ".././../", "../.."),
+  { base: "dir", toAppend: "inner", final: "dir/inner" },
+  {
+    base: "./dir/inner",
+    toAppend: "./innerer/file.txt",
+    final: "dir/inner/innerer/file.txt",
+  },
+  { base: ".", toAppend: ".././../", final: "../.." },
 ]
 
-List.forEach(((base, toAppend, final)) => {
+List.forEach(({ base, toAppend, final }) => {
   let path = Option.unwrap(Path.relative(base))
   let finalPath = Option.unwrap(Path.relative(final))
   let appendStr = Option.unwrap(Path.appendString(path, toAppend))
@@ -111,13 +250,13 @@ List.forEach(((base, toAppend, final)) => {
 }, appendRelTests)
 
 let appendAbsTests = [
-  ("/usr", "./bin", "/usr/bin"),
-  ("/usr", "../bin", "/bin"),
-  ("/", "../..", "/"),
-  ("C:/", "../..", "C:/"),
+  { base: "/usr", toAppend: "./bin", final: "/usr/bin" },
+  { base: "/usr", toAppend: "../bin", final: "/bin" },
+  { base: "/", toAppend: "../..", final: "/" },
+  { base: "C:/", toAppend: "../..", final: "C:/" },
 ]
 
-List.forEach(((base, toAppend, final)) => {
+List.forEach(({ base, toAppend, final }) => {
   let path = Option.unwrap(Path.absolute(base))
   let finalPath = Option.unwrap(Path.absolute(final))
   let appendStr = Option.unwrap(Path.appendString(path, toAppend))
@@ -126,32 +265,37 @@ List.forEach(((base, toAppend, final)) => {
   assert appendPath == finalPath
 }, appendAbsTests)
 
+record RelativeToTestData {
+  source: String,
+  dest: String,
+  result: Result<Path.Path<Path.Relative>, Path.RelativizationError>,
+}
 // test the relativeTo function
 let valid = path => Ok(Option.unwrap(Path.relative(path)))
 let relativeToRelTests = [
-  ("./dir", "./dir/inner", valid("./inner")),
-  ("./dir", ".", valid("..")),
-  (".", ".", valid(".")),
-  ("..", "../../other", valid("../other")),
-  ("..", ".", Err(Path.ImpossibleRelativization)),
+  { source: "./dir", dest: "./dir/inner", result: valid("./inner") },
+  { source: "./dir", dest: ".", result: valid("..") },
+  { source: ".", dest: ".", result: valid(".") },
+  { source: "..", dest: "../../other", result: valid("../other") },
+  { source: "..", dest: ".", result: Err(Path.ImpossibleRelativization) },
 ]
 
-List.forEach(((source, dest, result)) => {
+List.forEach(({ source, dest, result }) => {
   let source = Option.unwrap(Path.relative(source))
   let dest = Option.unwrap(Path.relative(dest))
   assert Path.relativeTo(source, dest) == result
 }, relativeToRelTests)
 
 let relativeToAbsTests = [
-  ("/usr", "/usr/bin", valid("./bin")),
-  ("/", "/", valid(".")),
-  ("/usr/bin", "/usr/bin", valid(".")),
-  ("/usr/bin", "/", valid("../..")),
-  ("/usr/bin", "/home/me", valid("../../home/me")),
-  ("/bin", "C:/Users", Err(Path.DifferentRoots)),
+  { source: "/usr", dest: "/usr/bin", result: valid("./bin") },
+  { source: "/", dest: "/", result: valid(".") },
+  { source: "/usr/bin", dest: "/usr/bin", result: valid(".") },
+  { source: "/usr/bin", dest: "/", result: valid("../..") },
+  { source: "/usr/bin", dest: "/home/me", result: valid("../../home/me") },
+  { source: "/bin", dest: "C:/Users", result: Err(Path.DifferentRoots) },
 ]
 
-List.forEach(((source, dest, result)) => {
+List.forEach(({ source, dest, result }) => {
   let source = Option.unwrap(Path.absolute(source))
   let dest = Option.unwrap(Path.absolute(dest))
   assert Path.relativeTo(source, dest) == result

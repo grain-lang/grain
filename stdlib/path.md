@@ -33,7 +33,7 @@ Type declarations included in the Path module.
 ```grain
 enum AbsoluteRoot {
   Root,
-  Drive(String),
+  Drive(Char),
 }
 ```
 
