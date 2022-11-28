@@ -233,6 +233,7 @@ export let rec flatMap = (fn, list) => {
 export let rec every = (fn, list) => {
   match (list) {
     [] => true,
+    // The short-circuiting of `&&` makes this tail-recursive
     [first, ...rest] => fn(first) && every(fn, rest),
   }
 }
@@ -250,6 +251,7 @@ export let rec every = (fn, list) => {
 export let rec some = (fn, list) => {
   match (list) {
     [] => false,
+    // The short-circuiting of `||` makes this tail-recursive
     [first, ...rest] => fn(first) || some(fn, rest),
   }
 }
