@@ -3973,7 +3973,6 @@ let regexReplaceHelp =
     all: Bool,
   ) => {
   let buf = makeMatchBuffer(toSearch)
-  let mut out = []
   let rec loop = searchPos => {
     let state = Array.make(rx.reNumGroups, None)
     let inStart = max(0, searchPos - rx.reMaxLookbehind)
@@ -4066,4 +4065,75 @@ export let replaceAll =
     replacement: String,
   ) => {
   regexReplaceHelp(rx, toSearch, replacement, true)
+}
+
+let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
+  // Get list of matches
+  let regexMatches = if (all) {
+    findAll(rx, str)
+  } else {
+    match (find(rx, str)) {
+      None => [],
+      Some(m) => [m],
+    }
+  }
+  // Perform replacements
+  let mut out = []
+  let mut currentLocation = 0
+  List.forEach(regexMatch => {
+    let locations = regexMatch.allGroupPositions()
+    Array.forEachi((pos, i) => {
+      match (pos) {
+        Some((start, end)) => {
+          if (i == 0) {
+            // Add the string between this match and the last match
+            out = [String.slice(currentLocation, start, str), ...out]
+          } else {
+            // This adds the groups back in
+            out = [String.slice(start, end, str), ...out]
+          }
+          if (end > currentLocation) currentLocation = end
+        },
+        None => void,
+      }
+    }, locations)
+  }, regexMatches)
+  out = [String.slice(currentLocation, String.length(str), str), ...out]
+  List.reverse(out)
+}
+
+/**
+ * Splits the given string at the first match for the given regular expression.
+ *
+ * If the regex pattern contains capture groups, the content of the groups
+ * will be included in the output list.
+ *
+ * @param rx: The regular expression to match
+ * @param str: The string to split
+ * @returns A list of the split segments
+ *
+ * @example assert Regex.split(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
+ *
+ * @since v0.5.5
+ */
+export let split = (rx: RegularExpression, str: String) => {
+  regexSplitHelp(rx, str, false)
+}
+
+/**
+ * Splits the given string at every match for the given regular expression.
+ *
+ * If the regex pattern contains capture groups, the content of the groups
+ * will be included in the output list.
+ *
+ * @param rx: The regular expression to match
+ * @param str: The string to split
+ * @returns A list of the split segments
+ *
+ * @example assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b", "c" ]
+ *
+ * @since v0.5.5
+ */
+export let splitAll = (rx: RegularExpression, str: String) => {
+  regexSplitHelp(rx, str, true)
 }
