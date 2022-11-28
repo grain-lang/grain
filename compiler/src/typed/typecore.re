@@ -1980,17 +1980,7 @@ and type_let =
         (fun () ->
            Location.prerr_warning pvb_pat.ppat_loc Warnings.Unused_rec_flag
         )
-    end;
-    List.iter2
-      (fun pat (attrs, exp) ->
-         Builtin_attributes.warning_scope ~ppwarning:false attrs
-           (fun () ->
-              ignore(check_partial env pat.pat_type pat.pat_loc
-                       [case pat exp])
-           )
-      )
-      pat_list
-      (List.map2 (fun (attrs, _) e -> attrs, e) spatl exp_list);*/
+    end;*/
   List.iter2(
     (pat, (attrs, exp)) => {
       ignore(
