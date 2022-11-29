@@ -3747,7 +3747,6 @@ and print_value_bind =
         ]);
       };
 
-      //let items =
       item_iterator(
         ~get_loc,
         ~print_item,
@@ -3756,8 +3755,6 @@ and print_value_bind =
         ~iterated_item=Iterated_Value_Bindings,
         vbs,
       );
-    //();
-    //Doc.join(~sep=Doc.space, items);
     };
 
   let value_bindings =
