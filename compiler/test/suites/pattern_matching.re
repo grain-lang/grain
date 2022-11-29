@@ -299,6 +299,11 @@ describe("pattern matching", ({test, testSkip}) => {
       "true\n(However, some guarded clause may match this value.)",
     ),
   );
+  assertWarning(
+    "let_exhaustiveness",
+    "let a = None\nlet Some(b) = a",
+    Warnings.PartialMatch("None"),
+  );
   assertCompileError(
     "newline_before_arrow",
     {|
