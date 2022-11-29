@@ -230,10 +230,12 @@ export let rec flatMap = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let every = (fn, list) => {
-  reduce((acc, value) => {
-    acc && fn(value)
-  }, true, list)
+export let rec every = (fn, list) => {
+  match (list) {
+    [] => true,
+    // The short-circuiting of `&&` makes this tail-recursive
+    [first, ...rest] => fn(first) && every(fn, rest),
+  }
 }
 
 /**
@@ -246,10 +248,12 @@ export let every = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let some = (fn, list) => {
-  reduce((acc, value) => {
-    acc || fn(value)
-  }, false, list)
+export let rec some = (fn, list) => {
+  match (list) {
+    [] => false,
+    // The short-circuiting of `||` makes this tail-recursive
+    [first, ...rest] => fn(first) || some(fn, rest),
+  }
 }
 
 /**

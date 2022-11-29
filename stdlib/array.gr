@@ -425,7 +425,19 @@ export let reducei = (fn, initial, array) => {
  * @since v0.3.0
  */
 export let flatMap = (fn, array) => {
-  reduce((result, value) => append(result, fn(value)), [>], array)
+  let nested = map(fn, array)
+  let arrLen = reduce((acc, arr) => acc + length(arr), 0, nested)
+  let mut outerI = 0
+  let mut innerI = 0
+  init(arrLen, i => {
+    if (innerI >= length(nested[outerI])) {
+      innerI = 0
+      outerI += 1
+    }
+    let res = nested[outerI][innerI]
+    innerI += 1
+    res
+  })
 }
 
 /**
@@ -439,9 +451,12 @@ export let flatMap = (fn, array) => {
  * @since v0.3.0
  */
 export let every = (fn, array) => {
-  reduce((acc, value) => {
-    acc && fn(value)
-  }, true, array)
+  let len = length(array)
+  let mut all = true
+  for (let mut index = 0; all && index < len; index += 1) {
+    all = fn(array[index])
+  }
+  all
 }
 
 /**
@@ -455,9 +470,12 @@ export let every = (fn, array) => {
  * @since v0.3.0
  */
 export let some = (fn, array) => {
-  reduce((acc, value) => {
-    acc || fn(value)
-  }, false, array)
+  let len = length(array)
+  let mut found = false
+  for (let mut index = 0; !found && index < len; index += 1) {
+    found = fn(array[index])
+  }
+  found
 }
 
 /**
