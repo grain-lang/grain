@@ -3767,7 +3767,6 @@ let rec print_data =
         Doc.lbrace,
         Comment_utils.single_line_of_comments(after_brace_comments),
         Doc.indent(printed_decls_after_brace),
-        //  Doc.ifBreaks(Doc.comma, Doc.nil),
         Doc.hardLine,
         Doc.rbrace,
       ]),
