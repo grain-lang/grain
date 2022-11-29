@@ -47,6 +47,20 @@ let diagnostic_severity_of_yojson = json =>
     }
   });
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#location
+[@deriving yojson]
+type location = {
+  uri,
+  range,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
+[@deriving yojson]
+type diagnostic_related_information = {
+  location,
+  message: string,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnostic
 [@deriving yojson]
 type diagnostic = {
@@ -54,6 +68,8 @@ type diagnostic = {
   range,
   severity: diagnostic_severity,
   message: string,
+  [@key "relatedInformation"]
+  related_information: list(diagnostic_related_information),
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#command
@@ -282,4 +298,8 @@ let notification = (~method, params) => {
 
 let uri_to_filename = (uri: uri): string => {
   Uri.path(uri);
+};
+
+let filename_to_uri = (filename: string): uri => {
+  Uri.of_string(filename);
 };

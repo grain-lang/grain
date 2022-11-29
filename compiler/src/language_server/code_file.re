@@ -39,7 +39,12 @@ let warning_to_diagnostic =
     },
   };
 
-  {range, severity: Warning, message: Grain_utils.Warnings.message(warn)};
+  {
+    range,
+    severity: Warning,
+    message: Grain_utils.Warnings.message(warn),
+    related_information: [],
+  };
 };
 
 let compile_source = (uri, source) => {
@@ -57,7 +62,7 @@ let compile_source = (uri, source) => {
   | exception exn =>
     switch (Grain_parsing.Location.error_of_exn(exn)) {
     | Some(`Ok(e)) =>
-      let (_, line, startchar) =
+      let (file, line, startchar) =
         Grain_parsing.Location.get_pos_info(e.loc.loc_start);
       let (_, endline, endchar) =
         Grain_parsing.Location.get_pos_info(e.loc.loc_end);
@@ -65,22 +70,65 @@ let compile_source = (uri, source) => {
       let startchar = startchar < 0 ? 0 : startchar;
       let endchar = endchar < 0 ? 0 : endchar;
 
-      let range: Protocol.range = {
-        range_start: {
-          line: line - 1,
-          character: startchar,
-        },
-        range_end: {
-          line: endline - 1,
-          character: endchar,
-        },
-      };
+      let error: Protocol.diagnostic =
+        if (filename == file) {
+          let source_range: Protocol.range = {
+            range_start: {
+              line: line - 1,
+              character: startchar,
+            },
+            range_end: {
+              line: endline - 1,
+              character: endchar,
+            },
+          };
 
-      {
-        program: None,
-        error: Some({range, severity: Error, message: e.msg}),
-        warnings: [],
-      };
+          {
+            range: source_range,
+            severity: Error,
+            message: e.msg,
+            related_information: [],
+          };
+        } else {
+          let source_range: Protocol.range = {
+            range_start: {
+              line: 0,
+              character: 0,
+            },
+            range_end: {
+              line: 0,
+              character: 1,
+            },
+          };
+
+          let file_range: Protocol.range = {
+            range_start: {
+              line: line - 1,
+              character: startchar,
+            },
+            range_end: {
+              line: endline - 1,
+              character: endchar,
+            },
+          };
+
+          {
+            range: source_range,
+            severity: Error,
+            message: "Failed to compile " ++ file,
+            related_information: [
+              {
+                location: {
+                  uri: Protocol.filename_to_uri(file),
+                  range: file_range,
+                },
+                message: e.msg,
+              },
+            ],
+          };
+        };
+
+      {program: None, error: Some(error), warnings: []};
     | _ =>
       let range: Protocol.range = {
         range_start: {
@@ -89,13 +137,19 @@ let compile_source = (uri, source) => {
         },
         range_end: {
           line: 0,
-          character: 0,
+          character: 1,
         },
       };
 
       {
         program: None,
-        error: Some({range, severity: Error, message: "Unable to parse"}),
+        error:
+          Some({
+            range,
+            severity: Error,
+            message: "Unable to parse",
+            related_information: [],
+          }),
         warnings: [],
       };
     }
@@ -112,7 +166,7 @@ let compile_source = (uri, source) => {
       },
       range_end: {
         line: 0,
-        character: 0,
+        character: 1,
       },
     };
 
@@ -123,6 +177,7 @@ let compile_source = (uri, source) => {
           range,
           severity: Error,
           message: "Compilation failed with an internal error",
+          related_information: [],
         }),
       warnings: [],
     };
