@@ -247,6 +247,36 @@ Returns:
 |----|-----------|
 |`List<a>`|A list of all elements in the priority in priority order|
 
+### PriorityQueue.**fromArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromArray : (Array<a>, ((a, a) -> Number)) -> PriorityQueue<a>
+```
+
+Constructs a new priority queue initialized with the elements in the array
+using a custom comparator function, which is used to determine priority of
+elements. The comparator function takes two elements and must return 0 if
+both share priority, a positive number if the first has greater priority,
+and a negative number if the first has less priority.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`array`|`Array<a>`|An array of values used to initialize the priority queue|
+|`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`PriorityQueue<a>`|A priority queue containing the elements from the array|
+
 ### PriorityQueue.**fromList**
 
 <details disabled>

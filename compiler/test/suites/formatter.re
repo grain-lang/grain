@@ -50,4 +50,7 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("only_comments", "only_comments");
   assertFormatOutput("data_docs", "data_docs");
   assertFormatOutput("custom_operators", "custom_operators");
+  assertFormatOutput("binops", "binops");
+  assertFormatOutput("binop_perf", "binop_perf");
+  assertFormatOutput("chained", "chained");
 });

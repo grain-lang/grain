@@ -95,7 +95,7 @@ assert uniq(List.map(n => Hash.hash(n), strings))
 
 assert Hash.hash("") == Hash.hash("")
 assert Hash.hash("grain > ore > wool > lumber > brick") ==
-Hash.hash("grain > ore > wool > lumber > brick")
+  Hash.hash("grain > ore > wool > lumber > brick")
 
 let chars = String.explode(
   "!@#$%^&*()1234567890-qwertyuiop🌾💯🔥😈😤💪🏼"
@@ -162,9 +162,9 @@ let recs = [
 assert uniq(List.map(n => Hash.hash(n), recs))
 
 assert Hash.hash({ num: 12, var: E("wasm"), str: "gr" }) ==
-Hash.hash({ num: 12, var: E("wasm"), str: "gr" })
+  Hash.hash({ num: 12, var: E("wasm"), str: "gr" })
 assert Hash.hash({ num: 0, var: A, str: "" }) ==
-Hash.hash({ num: 0, var: A, str: "" })
+  Hash.hash({ num: 0, var: A, str: "" })
 
 assert Hash.hash(Bytes.fromString("foo")) == Hash.hash(Bytes.fromString("foo"))
 assert Hash.hash(Bytes.fromString("foo")) != Hash.hash(Bytes.fromString("bar"))

@@ -97,7 +97,7 @@ let allocation_type_of_wasm_repr = repr => {
 };
 
 let repr_of_type = (env, ty) =>
-  if (is_function(ty)) {
+  if (is_function(Ctype.full_expand(env, ty))) {
     let (args, ret) = get_fn_allocation_type(env, ty);
     let args = List.map(wasm_repr_of_allocation_type, args);
     let rets =

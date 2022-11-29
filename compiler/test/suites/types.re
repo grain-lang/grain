@@ -211,8 +211,12 @@ describe("aliased types", ({test, testSkip}) => {
   );
 });
 
-describe("abstract types", ({test}) => {
+describe("abstract types", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
 
   assertCompileError(
     "type_abstract_1",
@@ -224,5 +228,14 @@ describe("abstract types", ({test}) => {
     // TODO: This will be a type error when we support fully abstract types
     // "expected of type
     //      Foo",
+  );
+
+  assertRun(
+    "regression_annotated_func_export",
+    {|
+      import A from "funcAliasExport"
+      print(A.function())
+    |},
+    "abc\n",
   );
 });
