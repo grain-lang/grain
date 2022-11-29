@@ -5,6 +5,8 @@
 
 let myfun = (/* a */ x /*post*/, y) => 10
 
+let myfun1a /*special*/ = (x /*lead*/, y /*follow*/) => x + 5
+
 /**
  * Then a doc
  */
