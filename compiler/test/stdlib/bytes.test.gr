@@ -196,7 +196,7 @@ let xs = [>
   0xf0l,
   0x9fl,
   0x8dl,
-  0x9el,
+  0x9el,,
 ]
 let bytes = Bytes.make(Array.length(xs))
 Array.forEachi((n, i) => {
