@@ -896,7 +896,6 @@ let rec item_iterator =
           ~get_loc: 'a => Location.t,
           ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
           ~comments: list(Parsetree.comment),
-          ~separator,
           ~followed_by_arrow: option(bool)=?,
           ~iterated_item: iterator_item_type,
           items: list('a),
@@ -920,16 +919,14 @@ let rec item_iterator =
     | IteratedValueBindings => false
     };
 
-  let number_items = List.length(items);
+  let separator = Doc.comma;
 
-  if (number_items < 1) {
-    []; // nothing to do
-  } else {
+  switch (items) {
+  | [] => []
+  | [first_item, ...rest] =>
     // special case for the first item, we look for leading comments
     // for all others, we look at the comments that come after them as that has the
     // impact on where to place comments and separators
-
-    let first_item = List.hd(items);
 
     let leading_comments =
       Comment_utils.get_comments_before_location(
@@ -947,6 +944,8 @@ let rec item_iterator =
           ]),
         )
       };
+
+    let number_items = List.length(items);
 
     List.mapi(
       (index, item) => {
@@ -1045,7 +1044,6 @@ let rec resugar_list_patterns =
       ~get_loc,
       ~print_item,
       ~comments,
-      ~separator=Doc.comma,
       ~iterated_item=IteratedListPattern,
       processed_list,
     );
@@ -1351,7 +1349,6 @@ and print_record_pattern =
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
-      ~separator=Doc.comma,
       ~iterated_item=IteratedRecordPattern,
       patternlocs,
     );
@@ -1637,7 +1634,6 @@ and print_record =
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
-      ~separator=Doc.comma,
       ~iterated_item=IteratedRecord,
       fields,
     );
@@ -1761,7 +1757,6 @@ and print_type =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
           ~iterated_item=IteratedTypeConstructor,
           parsedtypes,
         );
@@ -2481,7 +2476,6 @@ and print_patterns =
         ~get_loc,
         ~print_item,
         ~comments=comments_in_scope,
-        ~separator=Doc.comma,
         ~followed_by_arrow?,
         ~iterated_item=IteratedPatterns,
         patterns,
@@ -2574,7 +2568,6 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
           ~iterated_item=IteratedTupleExpression,
           expressions,
         );
@@ -2624,7 +2617,6 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
           ~iterated_item=IteratedArrayExpression,
           expressions,
         );
@@ -2882,7 +2874,6 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
           ~iterated_item=IteratedMatchItem,
           match_branches,
         );
@@ -3773,7 +3764,6 @@ and print_value_bind =
         ~get_loc,
         ~print_item,
         ~comments,
-        ~separator=Doc.comma,
         ~iterated_item=IteratedValueBindings,
         vbs,
       );
@@ -3904,7 +3894,6 @@ let rec print_data =
           ~get_loc,
           ~print_item,
           ~comments=type_comments,
-          ~separator=Doc.comma,
           ~iterated_item=IteratedTypeItems,
           data.pdata_params,
         );
@@ -3984,7 +3973,6 @@ let rec print_data =
                   ~get_loc,
                   ~print_item,
                   ~comments=cleaned_comments,
-                  ~separator=Doc.comma,
                   ~iterated_item=IteratedTupleConstructor,
                   parsed_types,
                 );
@@ -4025,7 +4013,6 @@ let rec print_data =
         ~get_loc,
         ~print_item,
         ~comments=cleaned_comments,
-        ~separator=Doc.comma,
         ~iterated_item=IteratedDataDeclarations,
         constr_declarations,
       );
@@ -4069,7 +4056,6 @@ let rec print_data =
               ~get_loc,
               ~print_item,
               ~comments=cleaned_comments,
-              ~separator=Doc.comma,
               ~iterated_item=IteratedEnum,
               data.pdata_params,
             );
@@ -4139,7 +4125,6 @@ let rec print_data =
         ~get_loc,
         ~print_item,
         ~comments=cleaned_comments,
-        ~separator=Doc.comma,
         ~iterated_item=IteratedRecordLabels,
         label_declarations,
       );
@@ -4175,7 +4160,6 @@ let rec print_data =
               ~get_loc,
               ~print_item,
               ~comments=cleaned_comments,
-              ~separator=Doc.comma,
               ~iterated_item=IteratedRecordData,
               data.pdata_params,
             );
