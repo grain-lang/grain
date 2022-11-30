@@ -10,22 +10,22 @@ type Foo1<a, b> = String // Test comment
 
 type Foo2< // Test comment
   a,
-  b,
+  b
 > = String
 
 type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<
   a,
-  b,
+  b
 > = String
 
 type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<
   a, // Test comment
-  b,
+  b
 > = String
 
 type Foo3<
   a, // Test comment
-  b,
+  b
 > = String
 
 type Foo4<a /* Test comment */, b> = String
@@ -71,7 +71,7 @@ type Foo<
   af,
   ag,
   ah,
-  ai,
+  ai
 > = String
 
 type Bar<
@@ -108,7 +108,7 @@ type Bar<
   af,
   ag,
   ah,
-  ai,
+  ai
 > = Foo<
   a,
   b,
@@ -148,7 +148,7 @@ type Bar<
 
 type Foo< // opener
   a, /* Test comment */
-  b, /* second test comment */
+  b /* second test comment */
 > = String //trailer
 
 type Foo2 =
