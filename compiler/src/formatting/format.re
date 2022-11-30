@@ -906,13 +906,13 @@ let rec item_iterator =
     | IteratedDataDeclarations
     | IteratedMatchItem
     | IteratedRecordPattern
-    | IteratedTypeConstructor
     | IteratedTupleExpression
     | IteratedArrayExpression
     | IteratedRecord
     | IteratedEnum
     | IteratedRecordData
     | IteratedRecordLabels => true
+    | IteratedTypeConstructor
     | IteratedTypeItems
     | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
     | IteratedTupleConstructor

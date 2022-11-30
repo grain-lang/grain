@@ -90,7 +90,7 @@ export enum Test {
       String,
       String,
       String,
-      String,
+      String
     >
   ),
 }

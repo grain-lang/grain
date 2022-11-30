@@ -60,7 +60,7 @@ let preExistingObjectsWithRefCountMismatch = Map.make(): Map.Map<
     Number,
     Number,
     Number
-  ),
+  )
 >
 
 let preEmatch = Map.make(): Map.Map<Number, (Number, Number, Number, Number)>
@@ -81,5 +81,5 @@ let preExistingObjectsWithRefCountMismatch2 = Map.make(): Map.Map<
     Number,
     Number,
     Number
-  ),
+  )
 >
