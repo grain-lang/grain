@@ -817,55 +817,67 @@ let mix_comments_and_separator =
     (~item_location: Location.t, ~separator, comments) => {
   let separated = ref(false);
 
-  let (_, prev_line, _, _) =
-    Locations.get_raw_pos_info(item_location.loc_end);
-  let previous_line = ref(prev_line);
+  let next_comment = ref(None);
+
+  let force_break_for_comment = (comment, acc) =>
+    switch ((comment: Parsetree.comment)) {
+    | Line(_) =>
+      separated := true;
+      [
+        separator,
+        Doc.space,
+        Comment_utils.nobreak_comment_to_doc(comment),
+        Doc.breakParent, // forces the lines to break, and so make this line comment force a new line
+        ...acc,
+      ];
+
+    | _ => [Doc.space, Comment_utils.comment_to_doc(comment), ...acc]
+    };
 
   let items =
-    List.fold_left(
-      (acc, comment: Parsetree.comment) => {
-        let (_, comment_line, _, _) =
+    List.fold_right(
+      (comment: Parsetree.comment, acc) => {
+        let (_, this_comment_line, _, _) =
           Locations.get_raw_pos_info(
             Locations.get_comment_loc(comment).loc_start,
           );
-        let lower_line = comment_line > previous_line^;
 
-        let (_, prev_line, _, _) =
-          Locations.get_raw_pos_info(
-            Locations.get_comment_loc(comment).loc_end,
-          );
-        previous_line := prev_line;
-        // if comment is on a lower line, break and write it on the next line
-        if (lower_line) {
-          List.append(
-            acc,
-            [Doc.hardLine, Comment_utils.nobreak_comment_to_doc(comment)],
-          );
-        } else {
-          switch (comment) {
-          | Line(_) =>
-            separated := true;
+        switch (next_comment^) {
+        | None =>
+          let (_, code_line, _, _) =
+            Locations.get_raw_pos_info(item_location.loc_end);
 
-            List.append(
-              acc,
-              [
-                separator,
-                Doc.space,
-                Comment_utils.nobreak_comment_to_doc(comment),
-                Doc.breakParent // forces the lines to break, and so make this line comment force a new line
-              ],
+          if (this_comment_line > code_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            force_break_for_comment(comment, acc);
+          };
+
+        | Some(next) =>
+          let (_, next_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(next).loc_end,
             );
 
-          | _ =>
-            List.append(
-              acc,
-              [Doc.space, Comment_utils.comment_to_doc(comment)],
-            )
+          next_comment := Some(comment);
+
+          if (this_comment_line < next_comment_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            force_break_for_comment(comment, acc);
           };
         };
       },
-      [],
       comments,
+      [],
     );
 
   if (separated^) {
