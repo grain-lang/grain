@@ -909,11 +909,11 @@ let rec item_iterator =
     | IteratedTupleExpression
     | IteratedArrayExpression
     | IteratedRecord
-    | IteratedEnum
     | IteratedRecordData
     | IteratedRecordLabels => true
-    | IteratedTypeConstructor
     | IteratedTypeItems
+    | IteratedEnum
+    | IteratedTypeConstructor
     | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
     | IteratedTupleConstructor
     | IteratedValueBindings => false

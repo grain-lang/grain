@@ -26,7 +26,7 @@ export enum Shape<
   z,
   aa,
   bb,
-  cc,
+  cc
 > {
   Shape(
     a,
