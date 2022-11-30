@@ -6,6 +6,22 @@ open Grain_diagnostics;
 
 module Doc = Res_doc;
 
+type iterator_item_type =
+  | IteratedListPattern
+  | IteratedRecordPattern
+  | IteratedRecord
+  | IteratedTypeConstructor
+  | IteratedPatterns
+  | IteratedMatchItem
+  | IteratedDataDeclarations
+  | IteratedRecordLabels
+  | IteratedTupleExpression
+  | IteratedArrayExpression
+  | IteratedTypeItems
+  | IteratedTupleConstructor
+  | IteratedEnum
+  | IteratedRecordData
+  | IteratedValueBindings;
 type expression_parent_type =
   | ConditionalExpression
   | GenericExpression;
@@ -744,238 +760,251 @@ let rec block_item_iterator =
   };
 };
 
+let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
+  let next_comment = ref(None);
+
+  let items =
+    List.fold_right(
+      (comment: Parsetree.comment, acc) => {
+        let (_, this_comment_line, _, _) =
+          Locations.get_raw_pos_info(
+            Locations.get_comment_loc(comment).loc_start,
+          );
+
+        switch (next_comment^) {
+        | None =>
+          let (_, code_line, _, _) =
+            Locations.get_raw_pos_info(itemloc.loc_end);
+          if (this_comment_line > code_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+          };
+        | Some(next) =>
+          let (_, next_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(next).loc_end,
+            );
+
+          next_comment := Some(comment);
+
+          if (this_comment_line <= next_comment_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+          };
+        };
+      },
+      comments,
+      [],
+    );
+
+  switch (items) {
+  | [] => Doc.nil
+  | items => Doc.concat([Doc.space, ...items])
+  };
+};
+
+let mix_comments_and_separator =
+    (~item_location: Location.t, ~separator, comments) => {
+  let separated = ref(false);
+
+  let next_comment = ref(None);
+
+  let force_break_for_comment = (comment, acc) =>
+    switch ((comment: Parsetree.comment)) {
+    | Line(_) =>
+      separated := true;
+      [
+        separator,
+        Doc.space,
+        Comment_utils.nobreak_comment_to_doc(comment),
+        Doc.breakParent, // forces the lines to break, and so make this line comment force a new line
+        ...acc,
+      ];
+
+    | _ => [Doc.space, Comment_utils.comment_to_doc(comment), ...acc]
+    };
+
+  let items =
+    List.fold_right(
+      (comment: Parsetree.comment, acc) => {
+        let (_, this_comment_line, _, _) =
+          Locations.get_raw_pos_info(
+            Locations.get_comment_loc(comment).loc_start,
+          );
+
+        switch (next_comment^) {
+        | None =>
+          let (_, code_line, _, _) =
+            Locations.get_raw_pos_info(item_location.loc_end);
+
+          if (this_comment_line > code_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            force_break_for_comment(comment, acc);
+          };
+
+        | Some(next) =>
+          let (_, next_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(next).loc_end,
+            );
+
+          next_comment := Some(comment);
+
+          if (this_comment_line < next_comment_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            force_break_for_comment(comment, acc);
+          };
+        };
+      },
+      comments,
+      [],
+    );
+
+  if (separated^) {
+    Doc.concat(items);
+  } else {
+    Doc.ifBreaks(
+      Doc.concat([separator, Doc.concat(items)]),
+      Doc.concat([Doc.concat(items), separator]),
+    );
+  };
+};
+
 let rec item_iterator =
         (
           ~previous: option(Location.t)=?,
           ~get_loc: 'a => Location.t,
           ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
           ~comments: list(Parsetree.comment),
-          ~separator,
           ~followed_by_arrow: option(bool)=?,
+          ~iterated_item: iterator_item_type,
           items: list('a),
         ) => {
+  let trailing_separator =
+    switch (iterated_item) {
+    | IteratedListPattern
+    | IteratedDataDeclarations
+    | IteratedMatchItem
+    | IteratedRecordPattern
+    | IteratedTupleExpression
+    | IteratedArrayExpression
+    | IteratedRecord
+    | IteratedRecordData
+    | IteratedRecordLabels => true
+    | IteratedTypeItems
+    | IteratedEnum
+    | IteratedTypeConstructor
+    | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
+    | IteratedTupleConstructor
+    | IteratedValueBindings => false
+    };
+
+  let separator = Doc.comma;
+
   switch (items) {
   | [] => []
-  | [item, ...remainder] =>
-    let leading_comments =
-      switch (previous) {
-      | None =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
-      | Some(_) => []
-      };
+  | [first_item, ...rest] =>
+    // special case for the first item, we look for leading comments
+    // for all others, we look at the comments that come after them as that has the
+    // impact on where to place comments and separators
 
-    let item_comments =
-      Comment_utils.get_comments_inside_location(
-        ~location=get_loc(item),
+    let leading_comments =
+      Comment_utils.get_comments_before_location(
+        ~location=get_loc(first_item),
         comments,
       );
+    let leading_comments_docs =
+      switch (leading_comments) {
+      | [] => Doc.nil
+      | _ =>
+        Doc.group(
+          Doc.concat([
+            Comment_utils.new_comments_to_docs(leading_comments),
+            Doc.ifBreaks(Doc.nil, Doc.space),
+          ]),
+        )
+      };
 
-    let this_loc = get_loc(item);
-    let (_, this_line, this_char, _) =
-      Locations.get_raw_pos_info(this_loc.loc_start);
+    let number_items = List.length(items);
 
-    switch (remainder) {
-    | [following, ...rem] =>
-      let trailing_comments =
-        Comment_utils.get_comments_between_locations(
-          ~loc1=get_loc(item),
-          ~loc2=get_loc(following),
-          comments,
-        );
+    List.mapi(
+      (index, item) => {
+        let itemdoc =
+          print_item(
+            ~comments=
+              Comment_utils.get_comments_inside_location(
+                ~location=get_loc(item),
+                comments,
+              ),
+            item,
+          );
 
-      let bcb =
-        before_comments_break(
-          ~previous=PreviousItem(get_loc(item)),
-          ~this_line,
-          trailing_comments,
-        );
-
-      let after_comments_break =
-        switch (trailing_comments) {
-        | [] => Doc.nil
-        | in_comments =>
-          let last_comment = get_last_item_in_list(in_comments);
-
-          switch (last_comment) {
-          | Line(_) => Doc.breakParent
-          | _ => Doc.nil
+        let trailing_comments =
+          if (index == number_items - 1) {
+            Comment_utils.get_comments_after_location(
+              ~location=get_loc(item),
+              comments,
+            );
+          } else {
+            let next_item = List.nth(items, index + 1);
+            Comment_utils.get_comments_between_locations(
+              ~loc1=get_loc(item),
+              ~loc2=get_loc(next_item),
+              comments,
+            );
           };
+
+        let cmts =
+          if (index == number_items - 1) {
+            // last item
+            Doc.concat([
+              Doc.ifBreaks(
+                if (trailing_separator) {separator} else {Doc.nil},
+                Doc.nil,
+              ),
+              print_trailing_comments(
+                ~separator,
+                ~itemloc=get_loc(item),
+                trailing_comments,
+              ),
+            ]);
+          } else {
+            mix_comments_and_separator(
+              ~item_location=get_loc(item),
+              ~separator,
+              trailing_comments,
+            );
+          };
+
+        // we only have leading comments for the first item
+        if (index == 0) {
+          Doc.concat([leading_comments_docs, itemdoc, cmts]);
+        } else {
+          Doc.concat([itemdoc, cmts]);
         };
-
-      let this_item =
-        switch (leading_comments, trailing_comments) {
-        | ([leading, ..._], [trailing, ..._]) =>
-          let last_comment = get_last_item_in_list(leading_comments);
-
-          let filler =
-            switch (last_comment) {
-            | Line(_) => Doc.nil
-            | _ => Doc.space
-            };
-          Doc.concat([
-            Comment_utils.new_comments_to_docs(leading_comments),
-            filler,
-            print_item(~comments=item_comments, item),
-            separator,
-            bcb,
-            Comment_utils.block_trailing_comments_docs(trailing_comments),
-            after_comments_break,
-          ]);
-        | ([leading, ..._], []) =>
-          let last_comment = get_last_item_in_list(leading_comments);
-
-          let filler =
-            switch (last_comment) {
-            | Line(_) => Doc.nil
-            | _ => Doc.space
-            };
-          Doc.concat([
-            Comment_utils.new_comments_to_docs(leading_comments),
-            filler,
-            print_item(~comments=item_comments, item),
-            separator,
-          ]);
-
-        | ([], [trailing, ..._]) =>
-          Doc.concat([
-            print_item(~comments=item_comments, item),
-            separator,
-            bcb,
-            Comment_utils.block_trailing_comments_docs(trailing_comments),
-            after_comments_break,
-          ])
-
-        | ([], []) =>
-          Doc.concat([print_item(~comments=item_comments, item), separator])
-        };
-
-      [
-        this_item,
-        ...item_iterator(
-             ~previous=get_loc(item),
-             ~get_loc,
-             ~print_item,
-             ~comments,
-             ~separator,
-             ~followed_by_arrow?,
-             remainder,
-           ),
-      ];
-
-    | [] =>
-      let comments_without_item_comments =
-        remove_used_comments(~remove_comments=item_comments, comments);
-      let trailing_comments =
-        Comment_utils.get_comments_after_location(
-          ~location=get_loc(item),
-          comments,
-        );
-
-      let bcb =
-        before_comments_break(
-          ~previous=PreviousItem(get_loc(item)),
-          ~this_line,
-          trailing_comments,
-        );
-      let this_item =
-        switch (leading_comments, trailing_comments) {
-        | ([leading, ..._], [trailing, ..._]) =>
-          let last_comment = get_last_item_in_list(leading_comments);
-
-          let filler =
-            switch (last_comment) {
-            | Line(_) => Doc.nil
-            | _ => Doc.space
-            };
-          Doc.concat([
-            Comment_utils.new_comments_to_docs(leading_comments),
-            filler,
-            print_item(~comments=item_comments, item),
-            switch (followed_by_arrow) {
-            | Some(true) =>
-              switch (trailing) {
-              | Line(cmt)
-              | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
-              | _ =>
-                Doc.concat([
-                  bcb,
-                  Comment_utils.block_trailing_comments_docs(
-                    trailing_comments,
-                  ),
-                ])
-              }
-            | _ =>
-              Doc.lineSuffix(
-                Doc.concat([
-                  bcb,
-                  Comment_utils.block_trailing_comments_docs(
-                    trailing_comments,
-                  ),
-                ]),
-              )
-            },
-          ]);
-
-        | ([leading, ..._], []) =>
-          let last_comment = get_last_item_in_list(leading_comments);
-
-          let filler =
-            switch (last_comment) {
-            | Line(_) => Doc.nil
-            | _ => Doc.space
-            };
-          Doc.concat([
-            Comment_utils.new_comments_to_docs(leading_comments),
-            filler,
-            print_item(item, ~comments=item_comments),
-          ]);
-
-        | ([], [trailing, ..._]) =>
-          Doc.concat([
-            print_item(~comments=item_comments, item),
-            switch (followed_by_arrow) {
-            | Some(true) =>
-              switch (trailing) {
-              | Line(cmt)
-              | Shebang(cmt) => Doc.concat([bcb, Doc.text(cmt.cmt_source)])
-              | _ =>
-                Doc.concat([
-                  bcb,
-                  Comment_utils.block_trailing_comments_docs(
-                    trailing_comments,
-                  ),
-                ])
-              }
-            | _ =>
-              Doc.lineSuffix(
-                Doc.concat([
-                  bcb,
-                  Comment_utils.block_trailing_comments_docs(
-                    trailing_comments,
-                  ),
-                ]),
-              )
-            },
-          ])
-
-        | ([], []) => print_item(~comments=item_comments, item)
-        };
-      [
-        this_item,
-        ...item_iterator(
-             ~previous=get_loc(item),
-             ~get_loc,
-             ~print_item,
-             ~comments=comments_without_item_comments,
-             ~separator,
-             ~followed_by_arrow?,
-             remainder,
-           ),
-      ];
-    };
+      },
+      items,
+    );
   };
 };
 
@@ -1015,7 +1044,7 @@ let rec resugar_list_patterns =
       ~get_loc,
       ~print_item,
       ~comments,
-      ~separator=Doc.comma,
+      ~iterated_item=IteratedListPattern,
       processed_list,
     );
   let printed_patterns = Doc.join(~sep=Doc.line, items);
@@ -1320,7 +1349,7 @@ and print_record_pattern =
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
-      ~separator=Doc.comma,
+      ~iterated_item=IteratedRecordPattern,
       patternlocs,
     );
   let printed_fields = Doc.join(~sep=Doc.line, items);
@@ -1335,7 +1364,6 @@ and print_record_pattern =
     Doc.lbrace,
     Comment_utils.single_line_of_comments(after_brace_comments),
     Doc.indent(Doc.concat([printed_fields_after_brace, close])),
-    Doc.ifBreaks(Doc.comma, Doc.nil),
     Doc.line,
     Doc.rbrace,
   ]);
@@ -1605,7 +1633,7 @@ and print_record =
       ~get_loc,
       ~print_item,
       ~comments=cleaned_comments,
-      ~separator=Doc.comma,
+      ~iterated_item=IteratedRecord,
       fields,
     );
   let printed_fields = Doc.join(~sep=Doc.line, items);
@@ -1623,7 +1651,7 @@ and print_record =
       Doc.concat([
         printed_fields_after_brace,
         Doc.ifBreaks(
-          Doc.comma,
+          Doc.nil,
           switch (fields) {
           | [_one] =>
             // TODO: not needed once we annotate with ::
@@ -1728,7 +1756,7 @@ and print_type =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
+          ~iterated_item=IteratedTypeConstructor,
           parsedtypes,
         );
       let printed_types = Doc.join(~sep=Doc.line, type_items);
@@ -1745,7 +1773,6 @@ and print_type =
         Doc.concat([
           print_ident(ident),
           Doc.text("<"),
-          Comment_utils.single_line_of_comments(after_angle_comments),
           Doc.indent(Doc.group(printed_types_after_angle)),
           Doc.softLine,
           Doc.text(">"),
@@ -2448,8 +2475,8 @@ and print_patterns =
         ~get_loc,
         ~print_item,
         ~comments=comments_in_scope,
-        ~separator=Doc.comma,
         ~followed_by_arrow?,
+        ~iterated_item=IteratedPatterns,
         patterns,
       );
     Doc.join(~sep=Doc.line, items);
@@ -2540,7 +2567,7 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
+          ~iterated_item=IteratedTupleExpression,
           expressions,
         );
 
@@ -2553,7 +2580,7 @@ and print_expression =
           Comment_utils.single_line_of_comments(after_paren_comments),
           Doc.indent(printed_expr_items_after_paren),
           Doc.ifBreaks(
-            Doc.comma,
+            Doc.nil,
             switch (expressions) {
             | [_one] => Doc.comma
             | _ => Doc.nil
@@ -2589,7 +2616,7 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
+          ~iterated_item=IteratedArrayExpression,
           expressions,
         );
       Doc.group(
@@ -2609,7 +2636,6 @@ and print_expression =
                 Doc.join(~sep=Doc.line, items),
               ]),
             ),
-            Doc.ifBreaks(Doc.comma, Doc.nil),
             Doc.softLine,
             Doc.rbracket,
           ])
@@ -2846,7 +2872,7 @@ and print_expression =
           ~get_loc,
           ~print_item,
           ~comments=cleaned_comments,
-          ~separator=Doc.comma,
+          ~iterated_item=IteratedMatchItem,
           match_branches,
         );
       let printed_branches = Doc.join(~sep=Doc.hardLine, items);
@@ -2869,7 +2895,6 @@ and print_expression =
           Doc.lbrace,
           Comment_utils.single_line_of_comments(after_brace_comments),
           Doc.indent(printed_branches_after_brace),
-          Doc.ifBreaks(Doc.comma, Doc.nil),
           Doc.line,
           Doc.rbrace,
         ]),
@@ -3737,7 +3762,7 @@ and print_value_bind =
         ~get_loc,
         ~print_item,
         ~comments,
-        ~separator=Doc.comma,
+        ~iterated_item=IteratedValueBindings,
         vbs,
       );
     };
@@ -3791,24 +3816,27 @@ let rec print_data =
       print_type(~original_source, ~comments, t);
     };
 
-    // handle weird comment position after the equals
-    let after_brace_comments =
+    let after_angle_cmts =
       switch (data.pdata_params) {
+      | [hd, ...rem] =>
+        Comment_utils.get_comments_before_location(
+          ~location=get_loc(hd),
+          comments,
+        )
       | [] =>
-        Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments)
-      | [first, ...rem] =>
-        Comment_utils.get_comments_enclosed_and_before_location(
-          ~loc1=data.pdata_name.loc,
-          ~loc2=first.ptyp_loc,
+        Comment_utils.get_comments_to_end_of_line(
+          ~location=nameloc.loc,
           comments,
         )
       };
 
-    let remaining_comments =
-      List.filter(c => !List.mem(c, after_brace_comments), comments);
-
     switch (data.pdata_params) {
     | [] =>
+      let type_comments =
+        switch (after_angle_cmts) {
+        | [] => Doc.nil
+        | cmts => Comment_utils.single_line_of_comments(cmts)
+        };
       Doc.concat([
         Doc.text("type"),
         Doc.space,
@@ -3820,68 +3848,76 @@ let rec print_data =
               Doc.concat([
                 Doc.space,
                 Doc.equal,
-                Doc.ifBreaks(
-                  Comment_utils.single_line_of_comments(after_brace_comments),
-                  Doc.nil,
-                ),
                 Doc.indent(
                   Doc.concat([
                     Doc.line,
                     print_type(~original_source, ~comments, manifest),
+                    type_comments,
                   ]),
-                ),
-                Doc.ifBreaks(
-                  Doc.nil,
-                  Comment_utils.single_line_of_comments(after_brace_comments),
                 ),
               ])
             | None => Doc.nil
             },
           ]),
         ),
-      ])
+      ]);
 
     | [hd, ...rem] =>
       let after_angle_comments =
-        Comment_utils.get_after_brace_comments(
-          ~first=hd.ptyp_loc,
-          ~loc=nameloc.loc,
-          comments,
-        );
-      let cleaned_comments =
-        remove_used_comments(~remove_comments=after_angle_comments, comments);
+        switch (after_angle_cmts) {
+        | [] => Doc.softLine
+        | cmts =>
+          Doc.concat([
+            Doc.space,
+            Comment_utils.new_comments_to_docs(cmts),
+            Doc.ifBreaks(Doc.nil, Doc.space),
+          ])
+        };
+      let type_comments =
+        switch (data.pdata_manifest) {
+        | None => comments
+        | Some(manifest) =>
+          let tcomments =
+            Comment_utils.get_comments_between_locs(
+              ~begin_loc=nameloc.loc,
+              ~end_loc=manifest.ptyp_loc,
+              comments,
+            );
+
+          remove_used_comments(~remove_comments=after_angle_cmts, tcomments);
+        };
 
       let items =
         item_iterator(
           ~get_loc,
           ~print_item,
-          ~comments=cleaned_comments,
-          ~separator=Doc.comma,
+          ~comments=type_comments,
+          ~iterated_item=IteratedTypeItems,
           data.pdata_params,
         );
       let printed_types = Doc.join(~sep=Doc.line, items);
       let printed_types_after_angle = printed_types;
       let params = [
         Doc.text("<"),
-        Comment_utils.single_line_of_comments(after_angle_comments),
         Doc.indent(
-          Doc.concat([
-            force_break_if_line_comment(
-              ~separator=Doc.softLine,
-              after_angle_comments,
-            ),
-            printed_types_after_angle,
-          ]),
+          Doc.concat([after_angle_comments, printed_types_after_angle]),
         ),
         Doc.softLine,
         Doc.text(">"),
       ];
+
       Doc.concat([
         Doc.text("type"),
         Doc.space,
         Doc.group(Doc.concat([Doc.text(data.pdata_name.txt), ...params])),
         switch (data.pdata_manifest) {
         | Some(manifest) =>
+          let manifest_comments =
+            Comment_utils.get_comments_inside_location(
+              ~location=manifest.ptyp_loc,
+              comments,
+            );
+
           Doc.group(
             Doc.concat([
               Doc.space,
@@ -3889,11 +3925,11 @@ let rec print_data =
               Doc.space,
               print_type(
                 ~original_source,
-                ~comments=remaining_comments,
+                ~comments=manifest_comments,
                 manifest,
               ),
             ]),
-          )
+          );
         | None => Doc.nil
         },
       ]);
@@ -3935,7 +3971,7 @@ let rec print_data =
                   ~get_loc,
                   ~print_item,
                   ~comments=cleaned_comments,
-                  ~separator=Doc.comma,
+                  ~iterated_item=IteratedTupleConstructor,
                   parsed_types,
                 );
               let printed_type_items = Doc.join(~sep=Doc.line, type_items);
@@ -3975,7 +4011,7 @@ let rec print_data =
         ~get_loc,
         ~print_item,
         ~comments=cleaned_comments,
-        ~separator=Doc.comma,
+        ~iterated_item=IteratedDataDeclarations,
         constr_declarations,
       );
     let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
@@ -4018,7 +4054,7 @@ let rec print_data =
               ~get_loc,
               ~print_item,
               ~comments=cleaned_comments,
-              ~separator=Doc.comma,
+              ~iterated_item=IteratedEnum,
               data.pdata_params,
             );
 
@@ -4051,7 +4087,6 @@ let rec print_data =
         Doc.lbrace,
         Comment_utils.single_line_of_comments(after_brace_comments),
         Doc.indent(printed_decls_after_brace),
-        Doc.ifBreaks(Doc.comma, Doc.nil),
         Doc.hardLine,
         Doc.rbrace,
       ]),
@@ -4079,14 +4114,16 @@ let rec print_data =
 
     let after_brace_comments =
       Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments);
+
     let cleaned_comments =
       remove_used_comments(~remove_comments=after_brace_comments, comments);
+
     let decl_items =
       item_iterator(
         ~get_loc,
         ~print_item,
         ~comments=cleaned_comments,
-        ~separator=Doc.comma,
+        ~iterated_item=IteratedRecordLabels,
         label_declarations,
       );
     let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
@@ -4121,7 +4158,7 @@ let rec print_data =
               ~get_loc,
               ~print_item,
               ~comments=cleaned_comments,
-              ~separator=Doc.comma,
+              ~iterated_item=IteratedRecordData,
               data.pdata_params,
             );
           let printed_param_items = Doc.join(~sep=Doc.line, param_items);
@@ -4148,7 +4185,6 @@ let rec print_data =
           Doc.lbrace,
           Comment_utils.single_line_of_comments(after_brace_comments),
           Doc.indent(printed_decls_after_brace),
-          Doc.ifBreaks(Doc.comma, Doc.nil),
           Doc.hardLine,
           Doc.rbrace,
         ]),

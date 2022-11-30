@@ -458,7 +458,10 @@ enum ParsedRegularExpression {
   ), // regex, n-start, num-n, needs-backtrack
   REReference(Number, Bool), // n, case-sensitive
   RERange(RERange),
-  REUnicodeCategories(List<UnicodeCategory>, Bool), // symlist, true=match/false=does-not-match
+  REUnicodeCategories(
+    List<UnicodeCategory>,
+    Bool
+  ), // symlist, true=match/false=does-not-match
 }
 
 let needsBacktrack = (rx: ParsedRegularExpression) => {
@@ -3626,7 +3629,7 @@ export record MatchResult {
   /**
    * Returns the contents of the given group
    */
-   group: Number -> Option<String>,
+  group: Number -> Option<String>,
   /**
    * Returns the position of the given group
    */
