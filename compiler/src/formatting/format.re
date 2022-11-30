@@ -905,17 +905,17 @@ let rec item_iterator =
     | IteratedListPattern
     | IteratedDataDeclarations
     | IteratedMatchItem
-    | IteratedRecordLabels => true
     | IteratedRecordPattern
-    | IteratedRecord
     | IteratedTypeConstructor
-    | IteratedPatterns
+    | IteratedTypeItems
     | IteratedTupleExpression
     | IteratedArrayExpression
-    | IteratedTypeItems
-    | IteratedTupleConstructor
+    | IteratedRecord
     | IteratedEnum
     | IteratedRecordData
+    | IteratedRecordLabels => true
+    | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
+    | IteratedTupleConstructor
     | IteratedValueBindings => false
     };
 
@@ -1364,7 +1364,6 @@ and print_record_pattern =
     Doc.lbrace,
     Comment_utils.single_line_of_comments(after_brace_comments),
     Doc.indent(Doc.concat([printed_fields_after_brace, close])),
-    Doc.ifBreaks(Doc.comma, Doc.nil),
     Doc.line,
     Doc.rbrace,
   ]);
@@ -1652,7 +1651,7 @@ and print_record =
       Doc.concat([
         printed_fields_after_brace,
         Doc.ifBreaks(
-          Doc.comma,
+          Doc.nil,
           switch (fields) {
           | [_one] =>
             // TODO: not needed once we annotate with ::
@@ -2581,7 +2580,7 @@ and print_expression =
           Comment_utils.single_line_of_comments(after_paren_comments),
           Doc.indent(printed_expr_items_after_paren),
           Doc.ifBreaks(
-            Doc.comma,
+            Doc.nil,
             switch (expressions) {
             | [_one] => Doc.comma
             | _ => Doc.nil
