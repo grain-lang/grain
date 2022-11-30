@@ -122,7 +122,7 @@ assert String.split("brown fox", fox) ==
 assert String.split("🚀 ", emojis) ==
   [>
     "we found a path",
-    "to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈",,
+    "to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈",
   ]
 assert String.split(" ", " foo bar baz ") == [> "", "foo", "bar", "baz", ""]
 

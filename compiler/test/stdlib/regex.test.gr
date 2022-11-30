@@ -258,7 +258,7 @@ assert testRegex("(((((((((a)))))))))", "a") ==
           Some("a"),
           Some("a"),
           Some("a"),
-          Some("a"),,
+          Some("a"),
         ],
       )
     )
@@ -456,7 +456,7 @@ assert testRegex("((((((((((a))))))))))", "a") ==
           Some("a"),
           Some("a"),
           Some("a"),
-          Some("a"),,
+          Some("a"),
         ],
       )
     )
@@ -476,7 +476,7 @@ assert testRegex("((((((((((a))))))))))\\10", "aa") ==
           Some("a"),
           Some("a"),
           Some("a"),
-          Some("a"),,
+          Some("a"),
         ],
       )
     )
@@ -498,7 +498,7 @@ assert testRegex("(((((((((a)))))))))", "a") ==
           Some("a"),
           Some("a"),
           Some("a"),
-          Some("a"),,
+          Some("a"),
         ],
       )
     )

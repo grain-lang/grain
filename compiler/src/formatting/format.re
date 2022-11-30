@@ -2636,7 +2636,6 @@ and print_expression =
                 Doc.join(~sep=Doc.line, items),
               ]),
             ),
-            Doc.ifBreaks(Doc.comma, Doc.nil),
             Doc.softLine,
             Doc.rbracket,
           ])
