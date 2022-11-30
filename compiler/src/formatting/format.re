@@ -761,46 +761,56 @@ let rec block_item_iterator =
 };
 
 let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
-  let previous = ref(None);
+  let next_comment = ref(None);
 
   let items =
-    List.fold_left(
-      (acc, item: Parsetree.comment) => {
-        let (_, this_line, _, _) =
+    List.fold_right(
+      (comment: Parsetree.comment, acc) => {
+        let (_, this_comment_line, _, _) =
           Locations.get_raw_pos_info(
-            Locations.get_comment_loc(item).loc_start,
+            Locations.get_comment_loc(comment).loc_start,
           );
-        let on_lower_line =
-          switch (previous^) {
-          | None =>
-            let (_, prev_line, _, _) =
-              Locations.get_raw_pos_info(itemloc.loc_end);
-            this_line > prev_line;
-          | Some(prev) =>
-            let (_, prev_line, _, _) =
-              Locations.get_raw_pos_info(
-                Locations.get_comment_loc(prev).loc_end,
-              );
-            this_line > prev_line;
+
+        switch (next_comment^) {
+        | None =>
+          let (_, code_line, _, _) =
+            Locations.get_raw_pos_info(itemloc.loc_end);
+          if (this_comment_line > code_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
           };
-        previous := Some(item);
-        // if comment is on different line, break and write it on the next line
-        if (on_lower_line) {
-          List.append(
-            acc,
-            [Doc.hardLine, Comment_utils.nobreak_comment_to_doc(item)],
-          );
-        } else {
-          List.append(
-            acc,
-            [Doc.space, Comment_utils.nobreak_comment_to_doc(item)],
-          );
+        | Some(next) =>
+          let (_, next_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(next).loc_end,
+            );
+
+          next_comment := Some(comment);
+
+          if (this_comment_line <= next_comment_line) {
+            [
+              Doc.hardLine,
+              Comment_utils.nobreak_comment_to_doc(comment),
+              ...acc,
+            ];
+          } else {
+            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+          };
         };
       },
-      [],
       comments,
+      [],
     );
-  Doc.concat(items);
+
+  switch (items) {
+  | [] => Doc.nil
+  | items => Doc.concat([Doc.space, ...items])
+  };
 };
 
 let mix_comments_and_separator =
