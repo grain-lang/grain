@@ -7,21 +7,21 @@ open Grain_diagnostics;
 module Doc = Res_doc;
 
 type iterator_item_type =
-  | Iterated_List_Pattern
-  | Iterated_Record_Pattern
-  | Iterated_Record
-  | Iterated_Type_Constructor
-  | Iterated_Patterns
-  | Iterated_Match_Item
-  | Iterated_Data_Declarations
-  | Iterated_Record_Labels
-  | Iterated_Tuple_Expression
-  | Iterated_Array_Expression
-  | Iterated_Type_Items
-  | Iterated_Tuple_Constructor
-  | Iterated_Enum
-  | Iterated_Record_Data
-  | Iterated_Value_Bindings;
+  | IteratedListPattern
+  | IteratedRecordPattern
+  | IteratedRecord
+  | IteratedTypeConstructor
+  | IteratedPatterns
+  | IteratedMatchItem
+  | IteratedDataDeclarations
+  | IteratedRecordLabels
+  | IteratedTupleExpression
+  | IteratedArrayExpression
+  | IteratedTypeItems
+  | IteratedTupleConstructor
+  | IteratedEnum
+  | IteratedRecordData
+  | IteratedValueBindings;
 type expression_parent_type =
   | ConditionalExpression
   | GenericExpression;
@@ -881,21 +881,21 @@ let rec item_iterator =
         ) => {
   let trailing_separator =
     switch (iterated_item) {
-    | Iterated_List_Pattern
-    | Iterated_Data_Declarations
-    | Iterated_Match_Item
-    | Iterated_Record_Labels => true
-    | Iterated_Record_Pattern
-    | Iterated_Record
-    | Iterated_Type_Constructor
-    | Iterated_Patterns
-    | Iterated_Tuple_Expression
-    | Iterated_Array_Expression
-    | Iterated_Type_Items
-    | Iterated_Tuple_Constructor
-    | Iterated_Enum
-    | Iterated_Record_Data
-    | Iterated_Value_Bindings => false
+    | IteratedListPattern
+    | IteratedDataDeclarations
+    | IteratedMatchItem
+    | IteratedRecordLabels => true
+    | IteratedRecordPattern
+    | IteratedRecord
+    | IteratedTypeConstructor
+    | IteratedPatterns
+    | IteratedTupleExpression
+    | IteratedArrayExpression
+    | IteratedTypeItems
+    | IteratedTupleConstructor
+    | IteratedEnum
+    | IteratedRecordData
+    | IteratedValueBindings => false
     };
 
   let number_items = List.length(items);
@@ -1024,7 +1024,7 @@ let rec resugar_list_patterns =
       ~print_item,
       ~comments,
       ~separator=Doc.comma,
-      ~iterated_item=Iterated_List_Pattern,
+      ~iterated_item=IteratedListPattern,
       processed_list,
     );
   let printed_patterns = Doc.join(~sep=Doc.line, items);
@@ -1330,7 +1330,7 @@ and print_record_pattern =
       ~print_item,
       ~comments=cleaned_comments,
       ~separator=Doc.comma,
-      ~iterated_item=Iterated_Record_Pattern,
+      ~iterated_item=IteratedRecordPattern,
       patternlocs,
     );
   let printed_fields = Doc.join(~sep=Doc.line, items);
@@ -1616,7 +1616,7 @@ and print_record =
       ~print_item,
       ~comments=cleaned_comments,
       ~separator=Doc.comma,
-      ~iterated_item=Iterated_Record,
+      ~iterated_item=IteratedRecord,
       fields,
     );
   let printed_fields = Doc.join(~sep=Doc.line, items);
@@ -1740,7 +1740,7 @@ and print_type =
           ~print_item,
           ~comments=cleaned_comments,
           ~separator=Doc.comma,
-          ~iterated_item=Iterated_Type_Constructor,
+          ~iterated_item=IteratedTypeConstructor,
           parsedtypes,
         );
       let printed_types = Doc.join(~sep=Doc.line, type_items);
@@ -2461,7 +2461,7 @@ and print_patterns =
         ~comments=comments_in_scope,
         ~separator=Doc.comma,
         ~followed_by_arrow?,
-        ~iterated_item=Iterated_Patterns,
+        ~iterated_item=IteratedPatterns,
         patterns,
       );
     Doc.join(~sep=Doc.line, items);
@@ -2553,7 +2553,7 @@ and print_expression =
           ~print_item,
           ~comments=cleaned_comments,
           ~separator=Doc.comma,
-          ~iterated_item=Iterated_Tuple_Expression,
+          ~iterated_item=IteratedTupleExpression,
           expressions,
         );
 
@@ -2603,7 +2603,7 @@ and print_expression =
           ~print_item,
           ~comments=cleaned_comments,
           ~separator=Doc.comma,
-          ~iterated_item=Iterated_Array_Expression,
+          ~iterated_item=IteratedArrayExpression,
           expressions,
         );
       Doc.group(
@@ -2861,7 +2861,7 @@ and print_expression =
           ~print_item,
           ~comments=cleaned_comments,
           ~separator=Doc.comma,
-          ~iterated_item=Iterated_Match_Item,
+          ~iterated_item=IteratedMatchItem,
           match_branches,
         );
       let printed_branches = Doc.join(~sep=Doc.hardLine, items);
@@ -3752,7 +3752,7 @@ and print_value_bind =
         ~print_item,
         ~comments,
         ~separator=Doc.comma,
-        ~iterated_item=Iterated_Value_Bindings,
+        ~iterated_item=IteratedValueBindings,
         vbs,
       );
     };
@@ -3883,7 +3883,7 @@ let rec print_data =
           ~print_item,
           ~comments=type_comments,
           ~separator=Doc.comma,
-          ~iterated_item=Iterated_Type_Items,
+          ~iterated_item=IteratedTypeItems,
           data.pdata_params,
         );
       let printed_types = Doc.join(~sep=Doc.line, items);
@@ -3963,7 +3963,7 @@ let rec print_data =
                   ~print_item,
                   ~comments=cleaned_comments,
                   ~separator=Doc.comma,
-                  ~iterated_item=Iterated_Tuple_Constructor,
+                  ~iterated_item=IteratedTupleConstructor,
                   parsed_types,
                 );
               let printed_type_items = Doc.join(~sep=Doc.line, type_items);
@@ -4004,7 +4004,7 @@ let rec print_data =
         ~print_item,
         ~comments=cleaned_comments,
         ~separator=Doc.comma,
-        ~iterated_item=Iterated_Data_Declarations,
+        ~iterated_item=IteratedDataDeclarations,
         constr_declarations,
       );
     let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
@@ -4048,7 +4048,7 @@ let rec print_data =
               ~print_item,
               ~comments=cleaned_comments,
               ~separator=Doc.comma,
-              ~iterated_item=Iterated_Enum,
+              ~iterated_item=IteratedEnum,
               data.pdata_params,
             );
 
@@ -4118,7 +4118,7 @@ let rec print_data =
         ~print_item,
         ~comments=cleaned_comments,
         ~separator=Doc.comma,
-        ~iterated_item=Iterated_Record_Labels,
+        ~iterated_item=IteratedRecordLabels,
         label_declarations,
       );
     let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
@@ -4154,7 +4154,7 @@ let rec print_data =
               ~print_item,
               ~comments=cleaned_comments,
               ~separator=Doc.comma,
-              ~iterated_item=Iterated_Record_Data,
+              ~iterated_item=IteratedRecordData,
               data.pdata_params,
             );
           let printed_param_items = Doc.join(~sep=Doc.line, param_items);
