@@ -64,11 +64,7 @@ export let length = array => {
  * @since v0.1.0
  */
 @unsafe
-export let make /*: (Number, a) -> Array<a>*/ =
-  (
-    length: Number,
-    item: a,
-  ) => {
+export let make /*: (Number, a) -> Array<a>*/ = (length: Number, item: a) => {
   let lengthArg = length
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
