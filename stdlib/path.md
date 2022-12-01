@@ -89,7 +89,8 @@ Represents an error that can occur when appending paths.
 enum AncestryStatus {
   Descendant,
   Ancestor,
-  Neither,
+  Self,
+  NoLineage,
 }
 ```
 

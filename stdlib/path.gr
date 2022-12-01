@@ -64,30 +64,18 @@ enum DirsUp {
   Positive,
 }
 
-// /**
-//  * Opaque type representing a relative path.
-//  */
 record Relative {
   _rel: Void,
 }
 
-// /**
-//  * Opaque type representing an absolute path.
-//  */
 record Absolute {
   _abs: Void,
 }
 
-// /**
-//  * Opaque type representing a path referencing a file.
-//  */
 record File {
   _file: Void,
 }
 
-// /**
-//  * Opaque type representing an path referencing a directory.
-//  */
 record Directory {
   _directory: Void,
 }
@@ -108,10 +96,6 @@ enum Base {
   Rel(Number),
   Abs(AbsoluteRoot),
 },
-// /**
-//  * Opaque type representing a system path, parameterized on
-//  * `Relative` or `Absolute` and `File` or `Directory`
-//  */
 type PathInfo = (Base, FileType, List<String>),
 enum TBase<a> {
   TBase(Base),
@@ -171,7 +155,8 @@ export enum AppendError {
 export enum AncestryStatus {
   Descendant,
   Ancestor,
-  Neither,
+  Self,
+  NoLineage,
 }
 
 /**
@@ -304,39 +289,11 @@ let toPath = (path: PathInfo) => {
 
 // TODO expose these functions once module system added
 
-// /**
-//  * Constructs a new absolute file `Path` from a string representing an absolute
-//  * path, using the special path grammar defined by this module.
-//  *
-//  * @param pathStr: A string representing an absolute path
-//  * @returns `Some(path)` containing the absolute file path if it is successfully parsed or `None` otherwise
-//  *
-//  * @example Path.absoluteFile("/usr/bin/bash")
-//  * @example Path.absoluteFile("C:/Users/me/file.txt")
-//  * @example Path.absoluteFile("C:\\Users\\me\\file.txt") == None // backslashes are not treated as path separators
-//  * @example Path.absoluteFile("/Users/me/dir/") == None // trailing slashes not allowed
-//  * @example Path.absoluteFile("./file.txt") == None // this is a relative path
-//  *
-//  * @since v0.5.5
-//  */
 let absoluteFile = pathStr => {
   let pathOpt = parseAbs(pathStr, File)
   Option.map(toTyped, pathOpt): Option<TypedPath<Absolute, File>>
 }
 
-// /**
-//  * Constructs a new absolute directory `Path` from a string representing an absolute
-//  * path, using the special path grammar defined by this module.
-//  *
-//  * @param pathStr: A string representing an absolute path
-//  * @returns `Some(path)` containing the absolute directory path if it is successfully parsed or `None` otherwise
-//  *
-//  * @example Path.absoluteDir("/usr/bin")
-//  * @example Path.absoluteDir("/Users/me/") // trailing slashes ok
-//  * @example Path.absoluteDir("./dir") == None // this is a relative path
-//  *
-//  * @since v0.5.5
-//  */
 let absoluteDir = pathStr => {
   let pathOpt = parseAbs(pathStr, Dir)
   Option.map(toTyped, pathOpt): Option<TypedPath<Absolute, Directory>>
@@ -362,37 +319,11 @@ let parseRel = (pathStr, fileType) => {
   }
 }
 
-// /**
-//  * Constructs a new relative file `Path` from a string representing a relative
-//  * path, using the special path grammar defined by this module.
-//  *
-//  * @param pathStr: A string representing a relative path
-//  * @returns `Some(path)` containing the relative file path if it is successfully parsed or `None` otherwise
-//  *
-//  * @example Path.relativeFile("./dir/file.txt")
-//  * @example Path.relativeFile("/usr/bin/script.sh") == None // this is an absolute path
-//  * @example Path.relativeFile("./abc/") == None // trailing slash not allowed
-//  *
-//  * @since v0.5.5
-//  */
 let relativeFile = pathStr => {
   let pathOpt = parseRel(pathStr, File)
   Option.map(toTyped, pathOpt): Option<TypedPath<Relative, File>>
 }
 
-// /**
-//  * Constructs a new relative directory `Path` from a string representing a relative
-//  * path, using the special path grammar defined by this module.
-//  *
-//  * @param pathStr: A string representing a relative path
-//  * @returns `Some(path)` containing the relative directory path if it is successfully parsed or `None` otherwise
-//  *
-//  * @example Path.relativeDir("dir")
-//  * @example Path.relativeDir("./dir/") // trailing slashes ok
-//  * @example Path.relativeDir("/usr/bin") == None // this is an absolute path
-//  *
-//  * @since v0.5.5
-//  */
 let relativeDir = pathStr => {
   // parseRel(pathStr, Dir)//: Option<TypedPath<Relative, Directory>>
   let pathOpt = parseRel(pathStr, Dir)
@@ -510,24 +441,6 @@ export let toString = (path, separator) => {
   toString(pathInfo(path), separator)
 }
 
-// /**
-//  * Wraps a path with its corresponding concrete path type, in order to allow
-//  * dynamically checking the path type.
-//  *
-//  * @param path: The path to wrap
-//  * @returns The path wrapped with a unifying `enum`
-//  *
-//  * @since v0.5.5
-//  */
-// export let wrapWithType = (path: Path<a, b>) => {
-//   match (path) {
-//     (Abs(_), File, _) as p => AbsoluteFile(p),
-//     (Abs(_), Dir, _) as p => AbsoluteDir(p),
-//     (Rel(_), File, _) as p => RelativeFile(p),
-//     (Rel(_), Dir, _) as p => RelativeDir(p),
-//   }
-// }
-
 // should only be used on relative path appended to directory path
 let rec append = (path: PathInfo, toAppend: PathInfo) =>
   match (toAppend) {
@@ -636,9 +549,10 @@ export let relativeTo = (source, dest) => {
 
 let rec segsAncestry = (baseSegs, pathSegs) =>
   match ((baseSegs, pathSegs)) {
+    ([], []) => Self,
     ([], _) => Descendant,
     (_, []) => Ancestor,
-    ([first1, ..._], [first2, ..._]) when first1 != first2 => Neither,
+    ([first1, ..._], [first2, ..._]) when first1 != first2 => NoLineage,
     ([_, ...rest1], [_, ...rest2]) => segsAncestry(rest1, rest2),
   }
 
