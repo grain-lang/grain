@@ -882,7 +882,6 @@ gamma : Number -> Number
 ```
 
 Computes the gamma function of a value using Lanczos approximation.
-Fails when the given value is zero.
 
 Parameters:
 
@@ -895,6 +894,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The gamma of the given value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When the given value is zero.
 
 ### Number.**factorial**
 
