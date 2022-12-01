@@ -13,7 +13,6 @@ import Memory from "runtime/unsafe/memory"
 import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
 import Exception from "runtime/exception"
 import { coerceNumberToWasmI32 } from "runtime/numbers"
-// import PrintWasm from "runtime/unsafe/printWasm"
 
 /**
  * @section Values: Functions for working with the Array data type.
