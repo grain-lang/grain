@@ -1,7 +1,7 @@
 import WasmF64 from "runtime/unsafe/wasmf64"
 import Conv from "runtime/unsafe/conv"
 
-@disableGC
+@unsafe
 let test = () => {
   // unary tests
   assert WasmF64.eq(WasmF64.neg(-1.23W), 1.23W)
