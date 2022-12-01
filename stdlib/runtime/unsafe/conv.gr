@@ -5,7 +5,7 @@ import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
 import Tags from "runtime/unsafe/tags"
 
-@disableGC
+@unsafe
 export let toInt32 = n => {
   let ptr = Memory.malloc(12n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
@@ -15,13 +15,13 @@ export let toInt32 = n => {
   WasmI32.toGrain(ptr): Int32
 }
 
-@disableGC
+@unsafe
 export let fromInt32 = (n: Int32) => {
   let ptr = WasmI32.fromGrain(n)
   WasmI32.load(ptr, 8n)
 }
 
-@disableGC
+@unsafe
 export let toInt64 = n => {
   let ptr = Memory.malloc(16n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
@@ -31,13 +31,13 @@ export let toInt64 = n => {
   WasmI32.toGrain(ptr): Int64
 }
 
-@disableGC
+@unsafe
 export let fromInt64 = (n: Int64) => {
   let ptr = WasmI32.fromGrain(n)
   WasmI64.load(ptr, 8n)
 }
 
-@disableGC
+@unsafe
 export let toFloat32 = n => {
   let ptr = Memory.malloc(12n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
@@ -47,13 +47,13 @@ export let toFloat32 = n => {
   WasmI32.toGrain(ptr): Float32
 }
 
-@disableGC
+@unsafe
 export let fromFloat32 = (n: Float32) => {
   let ptr = WasmI32.fromGrain(n)
   WasmF32.load(ptr, 8n)
 }
 
-@disableGC
+@unsafe
 export let toFloat64 = n => {
   let ptr = Memory.malloc(16n)
   WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
@@ -63,7 +63,7 @@ export let toFloat64 = n => {
   WasmI32.toGrain(ptr): Float64
 }
 
-@disableGC
+@unsafe
 export let fromFloat64 = (n: Float64) => {
   let ptr = WasmI32.fromGrain(n)
   WasmF64.load(ptr, 8n)
@@ -72,13 +72,10 @@ export let fromFloat64 = (n: Float64) => {
 /**
  * Converts a WasmI32 value to Number.
  * 
- * This function is meant to be called from a `@disableGC` context without
- * need to call incRef on the function.
- * 
  * @param n: The WasmI32 to convert
  * @returns The value converted to either a simple or a 32 bit heap allocated number.
  */
-@disableGC
+@unsafe
 export let wasmI32ToNumber = (n: WasmI32) => {
   // Follows a little optimization. Instead of testing if n is range of allowed
   // non heap allocated simple numbers (-1073741824n..1073741823n), actually
