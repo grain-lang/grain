@@ -4112,11 +4112,22 @@ let rec print_data =
       ]);
     };
 
+    let pre_brace_comments = []; // We can't determine from AST if comment comes before or after brace
+
+    let remaining_comments =
+      remove_used_comments(~remove_comments=pre_brace_comments, comments);
+
     let after_brace_comments =
-      Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments);
+      Comment_utils.get_after_brace_comments(
+        ~loc=data.pdata_loc,
+        remaining_comments,
+      );
 
     let cleaned_comments =
-      remove_used_comments(~remove_comments=after_brace_comments, comments);
+      remove_used_comments(
+        ~remove_comments=after_brace_comments,
+        remaining_comments,
+      );
 
     let decl_items =
       item_iterator(
@@ -4142,22 +4153,11 @@ let rec print_data =
             print_type(~original_source, ~comments, t);
           };
 
-          let after_angle_comments =
-            Comment_utils.get_after_brace_comments(
-              ~loc=get_loc(first),
-              comments,
-            );
-          let cleaned_comments =
-            remove_used_comments(
-              ~remove_comments=after_angle_comments,
-              comments,
-            );
-
           let param_items =
             item_iterator(
               ~get_loc,
               ~print_item,
-              ~comments=cleaned_comments,
+              ~comments=[],
               ~iterated_item=IteratedRecordData,
               data.pdata_params,
             );
@@ -4166,14 +4166,14 @@ let rec print_data =
             Doc.concat([
               force_break_if_line_comment(
                 ~separator=Doc.softLine,
-                after_angle_comments,
+                pre_brace_comments,
               ),
               printed_param_items,
             ]);
           Doc.group(
             Doc.concat([
               Doc.text("<"),
-              Comment_utils.single_line_of_comments(after_angle_comments),
+              Comment_utils.single_line_of_comments(pre_brace_comments),
               Doc.indent(printed_params_after_angle),
               Doc.softLine,
               Doc.text(">"),
