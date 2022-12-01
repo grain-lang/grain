@@ -419,9 +419,15 @@ export let fromList = list => {
 }
 
 let setInArray = array => {
-  @unsafe
+  // this must be @disableGC because the array is unitialized, and ordinary
+  // array assignments would attempt to GC unitialized array data
+  @disableGC
   let rec iter = (i, key, value) => {
     array[i] = (key, value)
+    // no decRef on key and value, since they are stored in array
+    Memory.decRef(WasmI32.fromGrain(iter))
+    Memory.incRef(WasmI32.fromGrain((+)))
+    Memory.incRef(WasmI32.fromGrain(i))
     i + 1
   }
   iter
@@ -435,12 +441,20 @@ let setInArray = array => {
  *
  * @since v0.2.0
  */
-@unsafe
-export let toArray = map => {
+@disableGC
+export let rec toArray = map => {
   let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
   let array = WasmI32.toGrain(allocateArray(length)): Array<a>
+  Memory.incRef(WasmI32.fromGrain(setInArray))
+  Memory.incRef(WasmI32.fromGrain(array))
   let setInArray = setInArray(array)
+  Memory.incRef(WasmI32.fromGrain(reduce))
+  Memory.incRef(WasmI32.fromGrain(setInArray))
+  Memory.incRef(WasmI32.fromGrain(map))
   reduce(setInArray, 0, map)
+  Memory.decRef(WasmI32.fromGrain(setInArray))
+  Memory.decRef(WasmI32.fromGrain(map))
+  Memory.decRef(WasmI32.fromGrain(toArray))
   array
 }
 
