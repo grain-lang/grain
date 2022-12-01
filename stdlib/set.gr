@@ -2,7 +2,7 @@
  * @module Set: A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
  * @example import Set from "set"
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 import List from "list"
 import Array from "array"
@@ -33,7 +33,7 @@ record Set<k> {
  * @param size: The initial storage size of the set
  * @returns An empty set with the given initial storage size
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let makeSized = size => {
   let buckets = Array.make(size, None)
@@ -44,7 +44,7 @@ export let makeSized = size => {
  *
  * @returns An empty set
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let make = () => {
   makeSized(16)
@@ -121,7 +121,7 @@ let rec nodeInBucket = (key, node) => {
  * @param key: The value to add
  * @param set: The set to update
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let add = (key, set) => {
   let buckets = set.buckets
@@ -154,7 +154,7 @@ export let add = (key, set) => {
  * @param set: The set to search
  * @returns `true` if the set contains the given value or `false` otherwise
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let contains = (key, set) => {
   let buckets = set.buckets
@@ -186,7 +186,7 @@ let rec removeInBucket = (key, node) => {
  * @param key: The value to remove
  * @param set: The set to update
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let remove = (key, set) => {
   let buckets = set.buckets
@@ -214,7 +214,7 @@ export let remove = (key, set) => {
  * @param set: The set to inspect
  * @returns The count of elements in the set
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let size = set => {
   set.size
@@ -226,7 +226,7 @@ export let size = set => {
  * @param set: The set to inspect
  * @returns `true` if the given set is empty or `false` otherwise
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let isEmpty = set => {
   size(set) == 0
@@ -237,7 +237,7 @@ export let isEmpty = set => {
  *
  * @param set: The set to reset
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let clear = set => {
   set.size = 0
@@ -263,7 +263,7 @@ let rec forEachBucket = (fn, node) => {
  * @param fn: The iterator function to call with each element
  * @param set: The set to iterate
  * 
- * @since 0.3.0
+ * @since v0.3.0
  * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
 export let forEach = (fn, set) => {
@@ -288,7 +288,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
  * @param set: The set to iterate
  * @returns The final accumulator returned from `fn`
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let reduce = (fn, init, set) => {
   let buckets = set.buckets
@@ -305,10 +305,10 @@ export let reduce = (fn, init, set) => {
  * @param fn: The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed
  * @param set: The set to iterate
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
-export let filter = (predicate, set) => {
-  let keysToRemove = reduce((list, key) => if (!predicate(key)) {
+export let filter = (fn, set) => {
+  let keysToRemove = reduce((list, key) => if (!fn(key)) {
     [key, ...list]
   } else {
     list
@@ -324,10 +324,10 @@ export let filter = (predicate, set) => {
  * @param fn: The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed
  * @param set: The set to iterate
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
-export let reject = (predicate, set) => {
-  filter(key => !predicate(key), set)
+export let reject = (fn, set) => {
+  filter(key => !fn(key), set)
 }
 
 /**
@@ -336,7 +336,7 @@ export let reject = (predicate, set) => {
  * @param set: The set to convert
  * @returns A list containing all set values
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let toList = set => {
   reduce((list, key) => [key, ...list], [], set)
@@ -348,7 +348,7 @@ export let toList = set => {
  * @param list: The list to convert
  * @returns A set containing all list values
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let fromList = list => {
   let set = make()
@@ -364,7 +364,7 @@ export let fromList = list => {
  * @param set: The set to convert
  * @returns An array containing all set values
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let toArray = set => {
   Array.fromList(toList(set))
@@ -376,7 +376,7 @@ export let toArray = set => {
  * @param array: The array to convert
  * @returns A set containing all array values
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let fromArray = array => {
   let set = make()
@@ -393,7 +393,7 @@ export let fromArray = array => {
  * @param set2: The second set to combine
  * @returns A set containing all elements of both sets
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let union = (set1, set2) => {
   let set = make()
@@ -413,7 +413,7 @@ export let union = (set1, set2) => {
  * @param set2: The second set to combine
  * @returns A set containing only unshared elements from both sets
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let diff = (set1, set2) => {
   let set = make()
@@ -437,7 +437,7 @@ export let diff = (set1, set2) => {
  * @param set2: The second set to combine
  * @returns A set containing only shared elements from both sets
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let intersect = (set1, set2) => {
   let set = make()
@@ -461,7 +461,7 @@ export let intersect = (set1, set2) => {
  * @param set: The set to inspect
  * @returns The internal state of the set
  * 
- * @since 0.3.0
+ * @since v0.3.0
  */
 export let getInternalStats = set => {
   (set.size, Array.length(set.buckets))

@@ -1980,17 +1980,21 @@ and type_let =
         (fun () ->
            Location.prerr_warning pvb_pat.ppat_loc Warnings.Unused_rec_flag
         )
-    end;
-    List.iter2
-      (fun pat (attrs, exp) ->
-         Builtin_attributes.warning_scope ~ppwarning:false attrs
-           (fun () ->
-              ignore(check_partial env pat.pat_type pat.pat_loc
-                       [case pat exp])
-           )
+    end;*/
+  List.iter2(
+    (pat, (attrs, exp)) => {
+      ignore(
+        check_partial(
+          env,
+          pat.pat_type,
+          pat.pat_loc,
+          [{mb_pat: pat, mb_body: exp, mb_guard: None, mb_loc: pat.pat_loc}],
+        ),
       )
-      pat_list
-      (List.map2 (fun (attrs, _) e -> attrs, e) spatl exp_list);*/
+    },
+    pat_list,
+    List.map2(((attrs, _), e) => (attrs, e), spatl, exp_list),
+  );
   end_def();
   let mutable_let = mut_flag == Mutable;
   List.iter2(

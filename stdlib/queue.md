@@ -25,9 +25,24 @@ type Queue<a>
 
 ## Values
 
-Functions for working with queues.
+Functions and constants for working with queues.
+
+### Queue.**empty**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+No other changes yet.
+</details>
+
+```grain
+empty : Queue<a>
+```
+
+An empty queue.
 
 ### Queue.**make**
+
+> **Deprecated:** This will be removed in the v0.6.0 release of Grain.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>

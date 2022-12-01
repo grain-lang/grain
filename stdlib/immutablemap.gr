@@ -1,0 +1,493 @@
+/**
+ * @module ImmutableMap: An ImmutableMap holds key-value pairs. Any value may be used as a key or value. Operations on an ImmutableMap do not mutate the map's internal state.
+ * @example import ImmutableMap from "immutablemap"
+ *
+ * @since v0.5.4
+ */
+
+import List from "list"
+import Array from "array"
+import Option from "option"
+
+// implementation based on the paper "Implementing Sets Efficiently in a
+// Functional Language" by Stephen Adams
+record Node<k, v> {
+  key: k,
+  val: v,
+  size: Number,
+  left: ImmutableMap<k, v>,
+  right: ImmutableMap<k, v>,
+},
+/**
+ * @section Types: Type declarations included in the ImmutableMap module.
+ */
+enum ImmutableMap<k, v> {
+  Empty,
+  Tree(Node<k, v>),
+}
+
+/**
+ * @section Values: Functions and constants for working with ImmutableMaps.
+ */
+
+// semi-arbitrary value chosen for algorithm for determining when to balance
+// trees; no tree can have a left subtree containing this number of times
+// more elements than its right subtree or vice versa
+let weight = 4
+
+/**
+ * An empty map
+ *
+ * @since v0.5.4
+ */
+export let empty = Empty
+
+// returns the key-value pair of the minimum key in a tree
+let rec min = node => {
+  match (node) {
+    Tree({ key, val, left: Empty, _ }) => (key, val),
+    Tree({ left, _ }) => min(left),
+    Empty => fail "Impossible: min of empty element in ImmutableMap",
+  }
+}
+
+/**
+ * Provides the count of key-value pairs stored within the map.
+ *
+ * @param map: The map to inspect
+ * @returns The count of key-value pairs in the map
+ *
+ * @since v0.5.4
+ */
+export let size = map => {
+  match (map) {
+    Empty => 0,
+    Tree({ size, _ }) => size,
+  }
+}
+
+/**
+ * Determines if the map contains no key-value pairs.
+ *
+ * @param map: The map to inspect
+ * @returns `true` if the given map is empty or `false` otherwise
+ *
+ * @since v0.5.4
+ */
+export let isEmpty = map => {
+  match (map) {
+    Empty => true,
+    Tree(_) => false,
+  }
+}
+
+let unwrapTree = node => {
+  match (node) {
+    Empty => fail "Impossible: ImmutableMap unwrapTree got an empty tree node",
+    Tree(tree) => tree,
+  }
+}
+
+// helper function for creating a tree node with correct size from
+// two balanced trees
+let makeNode = (key, val, left, right) => {
+  Tree({ key, val, size: 1 + size(left) + size(right), left, right })
+}
+
+// note: see Figure 1 of paper referenced above for visual illustration of
+// the rotations below
+
+// node rotation moving the left subtree of the right node to the left side
+let singleL = (key, val, left, right) => {
+  let { key: rKey, val: rVal, left: rl, right: rr, _ } = unwrapTree(right)
+  makeNode(rKey, rVal, makeNode(key, val, left, rl), rr)
+}
+
+// node rotation moving left child of right tree to the root
+let doubleL = (key, val, left, right) => {
+  let { key: rKey, val: rVal, left: rl, right: rr, _ } = unwrapTree(right)
+  let { key: rlKey, val: rlVal, left: rll, right: rlr, _ } = unwrapTree(rl)
+  makeNode(
+    rlKey,
+    rlVal,
+    makeNode(key, val, left, rll),
+    makeNode(rKey, rVal, rlr, rr)
+  )
+}
+
+// node rotation moving the right subtree of the left node to the right side
+let singleR = (key, val, left, right) => {
+  let { key: lKey, val: lVal, left: ll, right: lr, _ } = unwrapTree(left)
+  makeNode(lKey, lVal, ll, makeNode(key, val, lr, right))
+}
+
+// node rotation moving right child of left tree to the root
+let doubleR = (key, val, left, right) => {
+  let { key: lKey, val: lVal, left: ll, right: lr, _ } = unwrapTree(left)
+  let { key: lrKey, val: lrVal, left: lrl, right: lrr, _ } = unwrapTree(lr)
+  makeNode(
+    lrKey,
+    lrVal,
+    makeNode(lKey, lVal, ll, lrl),
+    makeNode(key, val, lrr, right)
+  )
+}
+
+// creates a new node after either the left or right trees have just had an
+// element inserted or removed from them, maintaining balance in the tree
+let balancedNode = (key, val, left, right) => {
+  let makeNodeFn = if (size(left) + size(right) < 2) {
+    makeNode
+  } else if (size(right) > weight * size(left)) {
+    // if the right tree is too much larger than the left then move part of
+    // the right tree to the left side
+    let { left: rl, right: rr, _ } = unwrapTree(right)
+    if (size(rl) < size(rr)) singleL else doubleL
+  } else if (size(left) > weight * size(right)) {
+    // if the left tree is too much larger than the right then move part of
+    // the left tree to the right side
+    let { left: ll, right: lr, _ } = unwrapTree(left)
+    if (size(lr) < size(ll)) singleR else doubleR
+  } else {
+    // if neither tree is too much larger than the other then simply create
+    // a new node
+    makeNode
+  }
+
+  makeNodeFn(key, val, left, right)
+}
+
+/**
+ * Produces a new map containing a new key-value pair. If the key already exists in the map, the value is replaced.
+ *
+ * @param key: The unique key in the map
+ * @param value: The value to store
+ * @param map: The base map
+ * @returns A new map containing the new key-value pair
+ *
+ * @since v0.5.4
+ */
+export let rec set = (key, val, map) => {
+  match (map) {
+    Empty => Tree({ key, val, size: 1, left: Empty, right: Empty }),
+    Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
+      match (compare(key, nodeKey)) {
+        cmp when cmp < 0 =>
+          balancedNode(nodeKey, nodeVal, set(key, val, left), right),
+        cmp when cmp > 0 =>
+          balancedNode(nodeKey, nodeVal, left, set(key, val, right)),
+        _ => makeNode(key, val, left, right),
+      }
+    },
+  }
+}
+
+/**
+ * Retrieves the value for the given key.
+ *
+ * @param key: The key to access
+ * @param map: The map to access
+ * @returns `Some(value)` if the key exists in the map or `None` otherwise
+ *
+ * @since v0.5.4
+ */
+export let rec get = (key, map) => {
+  match (map) {
+    Empty => None,
+    Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
+      match (compare(key, nodeKey)) {
+        cmp when cmp < 0 => get(key, left),
+        cmp when cmp > 0 => get(key, right),
+        _ => Some(nodeVal),
+      }
+    },
+  }
+}
+
+/**
+ * Determines if the map contains the given key. In such a case, it will always contain a value for the given key.
+ *
+ * @param key: The key to search for
+ * @param map: The map to search
+ * @returns `true` if the map contains the given key or `false` otherwise
+ *
+ * @since v0.5.4
+ */
+export let rec contains = (key, map) => {
+  Option.isSome(get(key, map))
+}
+
+// removes the minimum element from a tree
+let rec removeMin = node => {
+  match (node) {
+    Tree({ left: Empty, right, _ }) => right,
+    Tree({ key, val, left, right, _ }) =>
+      balancedNode(key, val, removeMin(left), right),
+    _ => fail "Impossible: ImmutableMap removeMin on empty node",
+  }
+}
+
+// helper function for removing a node by creating a new node containing the
+// removed node's left and right subtrees
+let removeInner = (left, right) => {
+  match ((left, right)) {
+    (Empty, node) | (node, Empty) => node,
+    (left, right) => {
+      let (minKey, minVal) = min(right)
+      balancedNode(minKey, minVal, left, removeMin(right))
+    },
+  }
+}
+
+/**
+ * Produces a new map without the key-value pair corresponding to the given
+ * key. If the key doesn't exist in the map, the map will be returned unmodified.
+ *
+ * @param key: The key to exclude
+ * @param map: The map to exclude from
+ * @returns A new map without the given key
+ *
+ * @since v0.5.4
+ */
+export let rec remove = (key, map) => {
+  match (map) {
+    Empty => Empty,
+    Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
+      match (compare(key, nodeKey)) {
+        cmp when cmp < 0 =>
+          balancedNode(nodeKey, nodeVal, remove(key, left), right),
+        cmp when cmp > 0 =>
+          balancedNode(nodeKey, nodeVal, left, remove(key, right)),
+        _ => removeInner(left, right),
+      }
+    },
+  }
+}
+
+/**
+ * Produces a new map by calling an updater function that receives the
+ * previously stored value as an `Option` and returns the new value to be
+ * stored as an `Option`. If the key didn't exist previously, the value
+ * will be `None`. If `None` is returned from the updater function, the
+ * key-value pair is excluded.
+ *
+ * @param key: The unique key in the map
+ * @param fn: The updater function
+ * @param map: The base map
+ * @returns A new map with the value at the given key modified according to the function's output
+ *
+ * @since v0.5.4
+ */
+export let update = (key, fn, map) => {
+  let val = get(key, map)
+  match (fn(val)) {
+    Some(next) => set(key, next, map),
+    None => remove(key, map),
+  }
+}
+
+/**
+ * Iterates the map, calling an iterator function with each key and value.
+ *
+ * @param fn: The iterator function to call with each key and value
+ * @param map: The map to iterate
+ *
+ * @since v0.5.4
+ */
+export let forEach = (fn, map) => {
+  let rec forEachInner = node => {
+    match (node) {
+      Empty => void,
+      Tree({ key, val, left, right, _ }) => {
+        forEachInner(left)
+        fn(key, val): Void
+        forEachInner(right)
+      },
+    }
+  }
+  forEachInner(map)
+}
+
+/**
+ * Combines all key-value pairs of a map using a reducer function.
+ *
+ * @param fn: The reducer function to call on each key and value, where the value returned will be the next accumulator value
+ * @param init: The initial value to use for the accumulator on the first iteration
+ * @param map: The map to iterate
+ * @returns The final accumulator returned from `fn`
+ *
+ * @since v0.5.4
+ */
+export let reduce = (fn, init, map) => {
+  let rec reduceInner = (acc, node) => {
+    match (node) {
+      Empty => acc,
+      Tree({ key, val, left, right, _ }) => {
+        let newAcc = fn(reduceInner(acc, left), key, val)
+        reduceInner(newAcc, right)
+      },
+    }
+  }
+  reduceInner(init, map)
+}
+
+// joins two trees with a value, preserving the BST property of left children
+// being less the node and right children being greater than the node
+let rec concat3 = (key, val, left, right) => {
+  match ((left, right)) {
+    (Empty, node) | (node, Empty) => set(key, val, node),
+    (Tree(left) as leftOpt, Tree(right) as rightOpt) => {
+      if (weight * left.size < right.size) {
+        balancedNode(
+          right.key,
+          right.val,
+          concat3(key, val, leftOpt, right.left),
+          right.right
+        )
+      } else if (weight * right.size < left.size) {
+        balancedNode(
+          left.key,
+          left.val,
+          left.left,
+          concat3(key, val, left.right, rightOpt)
+        )
+      } else {
+        makeNode(key, val, leftOpt, rightOpt)
+      }
+    },
+  }
+}
+
+// concatenates two trees of arbitrary size
+let concat = (node1, node2) => {
+  match (node2) {
+    Empty => node1,
+    _ => {
+      let (minKey, minVal) = min(node2)
+      concat3(minKey, minVal, node1, removeMin(node2))
+    },
+  }
+}
+
+let reduceRight = (fn, init, map) => {
+  let rec reduceInner = (acc, node) => {
+    match (node) {
+      Empty => acc,
+      Tree({ key, val, left, right, _ }) => {
+        let newAcc = fn(reduceInner(acc, right), key, val)
+        reduceInner(newAcc, left)
+      },
+    }
+  }
+  reduceInner(init, map)
+}
+
+/**
+ * Enumerates all keys in the given map.
+ *
+ * @param map: The map to enumerate
+ * @returns A list containing all keys from the given map
+ *
+ * @since v0.5.4
+ */
+export let keys = map => {
+  reduceRight((list, key, _) => [key, ...list], [], map)
+}
+
+/**
+ * Enumerates all values in the given map.
+ *
+ * @param map: The map to enumerate
+ * @returns A list containing all values from the given map
+ *
+ * @since v0.5.4
+ */
+export let values = map => {
+  reduceRight((list, _, value) => [value, ...list], [], map)
+}
+
+/**
+ * Produces a new map excluding the key-value pairs where a predicate function returns `false`.
+ *
+ * @param fn: The predicate function to indicate which key-value pairs to exclude from the map, where returning `false` indicates the key-value pair should be excluded
+ * @param map: The map to iterate
+ * @returns A new map excluding the key-value pairs not fulfilling the predicate
+ *
+ * @since v0.5.4
+ */
+export let filter = (fn, map) => {
+  let rec filterInner = node => {
+    match (node) {
+      Empty => Empty,
+      Tree({ key, val, left, right, _ }) => {
+        if (fn(key, val)) {
+          concat3(key, val, filterInner(left), filterInner(right))
+        } else {
+          concat(filterInner(left), filterInner(right))
+        }
+      },
+    }
+  }
+  filterInner(map)
+}
+
+/**
+ * Produces a new map excluding the key-value pairs where a predicate function returns `true`.
+ *
+ * @param fn: The predicate function to indicate which key-value pairs to exclude from the map, where returning `true` indicates the key-value pair should be excluded
+ * @param map: The map to iterate
+ * @returns A new map excluding the key-value pairs fulfilling the predicate
+ *
+ * @since v0.5.4
+ */
+export let reject = (fn, map) => {
+  filter((key, val) => !fn(key, val), map)
+}
+
+/**
+ * Creates a map from a list.
+ *
+ * @param list: The list to convert
+ * @returns A map containing all key-value pairs from the list
+ *
+ * @since v0.5.4
+ */
+export let fromList = list => {
+  List.reduce((map, (key, val)) => set(key, val, map), empty, list)
+}
+
+/**
+ * Enumerates all key-value pairs in the given map.
+ *
+ * @param map: The map to enumerate
+ * @returns A list containing all key-value pairs from the given map
+ *
+ * @since v0.5.4
+ */
+export let toList = map => {
+  reduceRight((list, key, val) => [(key, val), ...list], [], map)
+}
+
+/**
+ * Creates a map from an array.
+ *
+ * @param array: The array to convert
+ * @returns A map containing all key-value pairs from the array
+ *
+ * @since v0.5.4
+ */
+export let fromArray = array => {
+  Array.reduce((map, (key, val)) => set(key, val, map), empty, array)
+}
+
+/**
+ * Converts a map into an array of its key-value pairs.
+ *
+ * @param map: The map to convert
+ * @returns An array containing all key-value pairs from the given map
+ *
+ * @since v0.5.4
+ */
+export let toArray = map => {
+  Array.fromList(toList(map))
+}

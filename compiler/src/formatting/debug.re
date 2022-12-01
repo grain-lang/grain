@@ -22,7 +22,7 @@ let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
       );
     };
   } else {
-    "";
+    Printf.sprintf("Empty loc? %s %d:%d,%d\n", msg, line, startchar, endchar);
   };
 };
 

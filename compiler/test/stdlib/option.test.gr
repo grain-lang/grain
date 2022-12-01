@@ -46,7 +46,7 @@ assert Option.unwrapWithDefault("🐑", None) == "🐑"
 
 assert Option.map(x => x * 2, Some(2)) == Some(4)
 assert Option.map(x => String.concat("hello ", x), Some("🌾")) ==
-Some("hello 🌾")
+  Some("hello 🌾")
 assert Option.map(x => fail "Shouldn't be called", None) == None
 
 // Option.mapWithDefault
@@ -56,10 +56,10 @@ assert Option.mapWithDefault(x => String.concat("hello ", x),
 "🐑",
 Some("🌾")
 ) ==
-"hello 🌾"
+  "hello 🌾"
 assert Option.mapWithDefault(x => x * 2, 1, None) == 1
 assert Option.mapWithDefault(x => String.concat("hello ", x), "🐑", None) ==
-"🐑"
+  "🐑"
 
 // Option.mapWithDefaultFn
 
@@ -67,28 +67,28 @@ assert Option.mapWithDefaultFn(x => x * 2,
 () => fail "Shouldn't be called",
 Some(2)
 ) ==
-4
+  4
 assert Option.mapWithDefaultFn(x => String.concat("hello ", x),
 () => fail "Shouldn't be called",
 Some("🌾")
 ) ==
-"hello 🌾"
+  "hello 🌾"
 assert Option.mapWithDefaultFn(x => fail "Shouldn't be called",
 () => 1,
 None
 ) ==
-1
+  1
 assert Option.mapWithDefaultFn(x => fail "Shouldn't be called",
 () => "🐑",
 None
 ) ==
-"🐑"
+  "🐑"
 
 // Option.flatMap
 
 assert Option.flatMap(x => Some(x * 2), Some(2)) == Some(4)
 assert Option.flatMap(x => Some(String.concat("hello ", x)), Some("🌾")) ==
-Some("hello 🌾")
+  Some("hello 🌾")
 assert Option.flatMap(x => None, Some("🌾")) == None
 assert Option.flatMap(x => fail "Shouldn't be called", None) == None
 
@@ -109,14 +109,14 @@ assert Option.zip(None, Some("🌾")) == None
 
 assert Option.zipWith((a, b) => a + b, Some(1), Some(2)) == Some(3)
 assert Option.zipWith((a, b) => (a, b), Some(1), Some("🌾")) ==
-Some((1, "🌾"))
+  Some((1, "🌾"))
 assert Option.zipWith((a, b) => fail "Shouldn't be called", Some(1), None) ==
-None
+  None
 assert Option.zipWith((a, b) => fail "Shouldn't be called",
 None,
 Some("🌾")
 ) ==
-None
+  None
 
 // Option.flatten
 

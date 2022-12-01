@@ -9,6 +9,7 @@ describe("imports", ({test, testSkip}) => {
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertFileRun = makeFileRunner(test_or_skip);
+  let assertFileCompileError = makeFileCompileErrorRunner(test_or_skip);
   let assertFileSnapshot = makeSnapshotFileRunner(test);
 
   /* import * tests */
@@ -212,4 +213,9 @@ describe("imports", ({test, testSkip}) => {
     "import TList, { Empty } from \"tlists\"; let foo : TList.TList<String> = Empty; foo",
   );
   assertFileRun("relative_import_linking", "relativeImportLinking", "2\n2\n");
+  assertFileCompileError(
+    "import_broken",
+    "brokenImports/main",
+    "./broken.gr\", line 2, characters 16-23",
+  );
 });

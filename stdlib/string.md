@@ -514,6 +514,105 @@ Examples:
 String.endsWith("world", "Hello world") == true
 ```
 
+### String.**replaceFirst**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+No other changes yet.
+</details>
+
+```grain
+replaceFirst : (String, String, String) -> String
+```
+
+Replaces the first appearance of the search pattern in the string with the replacement value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`searchPattern`|`String`|The string to replace|
+|`replacement`|`String`|The replacement|
+|`string`|`String`|The string to change|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A new string with the first occurrence of the search pattern replaced|
+
+Examples:
+
+```grain
+String.replaceFirst("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌾"
+```
+
+### String.**replaceLast**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+No other changes yet.
+</details>
+
+```grain
+replaceLast : (String, String, String) -> String
+```
+
+Replaces the last appearance of the search pattern in the string with the replacement value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`searchPattern`|`String`|The string to replace|
+|`replacement`|`String`|The replacement|
+|`string`|`String`|The string to change|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A new string with the last occurrence of the search pattern replaced|
+
+Examples:
+
+```grain
+String.replaceLast("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌾🌎"
+```
+
+### String.**replaceAll**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+No other changes yet.
+</details>
+
+```grain
+replaceAll : (String, String, String) -> String
+```
+
+Replaces every appearance of the search pattern in the string with the replacement value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`searchPattern`|`String`|The string to replace|
+|`replacement`|`String`|The replacement|
+|`string`|`String`|The string to change|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A new string with each occurrence of the search pattern replaced|
+
+Examples:
+
+```grain
+String.replaceAll("🌾", "🌎", "Hello 🌾🌾") == "Hello 🌎🌎"
+```
+
 ### String.**encodeAt**
 
 <details disabled>

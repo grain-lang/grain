@@ -1,0 +1,197 @@
+import ImmutableSet from "immutableset"
+import List from "list"
+import Array from "array"
+
+// Data types used in multiple tests
+enum Resource {
+  Grain,
+  Sheep,
+  Brick,
+  Wood,
+}
+record ResourceData {
+  name: String,
+  emoji: String,
+}
+
+// ImmutableSet.isEmpty
+
+let mut e = ImmutableSet.empty
+
+assert ImmutableSet.isEmpty(e)
+e = ImmutableSet.remove("🌾", e)
+assert ImmutableSet.isEmpty(e)
+let newE = ImmutableSet.add("🌾", e)
+assert !ImmutableSet.isEmpty(newE)
+assert ImmutableSet.isEmpty(e)
+
+// ImmutableSet.size
+
+let s = ImmutableSet.fromList(["🌾", "🐑", "🧱"])
+
+assert ImmutableSet.size(s) == 3
+
+// ImmutableSet.contains
+
+let h = ImmutableSet.fromList(["🌾", "🐑", "🧱"])
+
+assert ImmutableSet.contains("🌾", h)
+assert ImmutableSet.contains("🐑", h)
+assert ImmutableSet.contains("🧱", h)
+assert !ImmutableSet.contains("🌳", h)
+
+// ImmutableSet.add
+
+let mut vars = ImmutableSet.empty
+
+vars = ImmutableSet.add(Grain, vars)
+vars = ImmutableSet.add(Sheep, vars)
+vars = ImmutableSet.add(Grain, vars)
+
+assert ImmutableSet.size(vars) == 2
+
+let mut recs = ImmutableSet.empty
+
+recs = ImmutableSet.add({ name: "Grain", emoji: "🌾" }, recs)
+recs = ImmutableSet.add({ name: "Sheep", emoji: "🐑" }, recs)
+recs = ImmutableSet.add({ name: "Brick", emoji: "🧱" }, recs)
+recs = ImmutableSet.add({ name: "Grain", emoji: "🌾" }, recs)
+recs = ImmutableSet.add({ name: "Sheep", emoji: "🐑" }, recs)
+recs = ImmutableSet.add({ name: "Brick", emoji: "🧱" }, recs)
+
+assert ImmutableSet.size(recs) == 3
+
+// ImmutableSet.remove
+
+let mut r = ImmutableSet.fromList(["🌾", "🐑", "🧱"])
+
+assert ImmutableSet.size(r) == 3
+
+r = ImmutableSet.remove("🌾", r)
+
+assert ImmutableSet.size(r) == 2
+assert !ImmutableSet.contains("🌾", r)
+
+r = ImmutableSet.remove("🐑", r)
+r = ImmutableSet.remove("🧱", r)
+
+assert ImmutableSet.isEmpty(r)
+
+// ImmutableSet.filter
+
+let makeTestSet = () => ImmutableSet.fromList([Grain, Sheep, Brick])
+
+let mut filterTestSet = makeTestSet()
+
+ImmutableSet.filter(key => fail "Shouldn't be called", ImmutableSet.empty)
+filterTestSet = ImmutableSet.filter(key => key == Sheep, filterTestSet)
+
+assert !ImmutableSet.contains(Grain, filterTestSet)
+assert ImmutableSet.contains(Sheep, filterTestSet)
+assert !ImmutableSet.contains(Brick, filterTestSet)
+
+// ImmutableSet.reject
+
+let mut rejectTestSet = makeTestSet()
+
+ImmutableSet.reject(key => fail "Shouldn't be called", ImmutableSet.empty)
+rejectTestSet = ImmutableSet.reject(key => key == Sheep, rejectTestSet)
+
+assert ImmutableSet.contains(Grain, rejectTestSet)
+assert !ImmutableSet.contains(Sheep, rejectTestSet)
+assert ImmutableSet.contains(Brick, rejectTestSet)
+
+// ImmutableSet.reduce
+
+let reduceTestSet = ImmutableSet.fromList([1, 3, 2, 5, 4])
+
+let result = ImmutableSet.reduce((acc, key) => fail "Shouldn't be called",
+0,
+ImmutableSet.empty
+)
+
+assert result == 0
+
+let mut called = 0
+
+let result = ImmutableSet.reduce((acc, key) => {
+  called += 1
+  [key, ...acc]
+}, [], reduceTestSet)
+
+assert called == 5
+assert result == [5, 4, 3, 2, 1]
+
+// ImmutableSet.forEach
+
+let forEachTestSet = makeTestSet()
+
+ImmutableSet.forEach(key => fail "Shouldn't be called", ImmutableSet.empty)
+
+let mut called = 0
+
+ImmutableSet.forEach(key => {
+  called += 1
+  match (key) {
+    Grain => void,
+    Sheep => void,
+    Brick => void,
+    _ => fail "ImmutableSet.forEach() should not contain this value.",
+  }
+}, forEachTestSet)
+
+assert called == 3
+
+// ImmutableSet.diff
+
+let d = ImmutableSet.fromList([0, 1, 2, 3, 4, 5, 6])
+let e = ImmutableSet.fromList([4, 2, 1, 3, 0, -2, -1, -3])
+
+let diffSet = ImmutableSet.diff(d, e)
+
+assert ImmutableSet.size(diffSet) == 5
+assert [-3, -2, -1, 5, 6] == ImmutableSet.toList(diffSet)
+
+// ImmutableSet.union
+
+let unionSet = ImmutableSet.union(d, e)
+
+assert ImmutableSet.size(unionSet) == 10
+assert [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6] == ImmutableSet.toList(unionSet)
+
+// ImmutableSet.intersect
+
+let intersectSet = ImmutableSet.intersect(d, e)
+
+assert ImmutableSet.size(intersectSet) == 5
+assert [0, 1, 2, 3, 4] == ImmutableSet.toList(intersectSet)
+
+// ImmutableSet.fromList
+
+let k = ImmutableSet.fromList([1, 1, 1])
+
+assert ImmutableSet.size(k) == 1
+assert ImmutableSet.contains(1, k)
+
+// ImmutableSet.toList
+
+let o = ImmutableSet.fromList([0, 2, 1, 3, 0, 4, 2])
+
+let l = ImmutableSet.toList(o)
+
+assert l == [0, 1, 2, 3, 4]
+
+// ImmutableSet.fromArray
+
+let q = ImmutableSet.fromArray([> 0, 0, 0])
+
+assert ImmutableSet.size(q) == 1
+assert ImmutableSet.contains(0, q)
+
+// ImmutableSet.toArray
+
+let p = ImmutableSet.fromArray([> 0, 1, 2, 3, 4, 3, 2, 1, 0])
+
+let r = ImmutableSet.toArray(p)
+
+assert r == [> 0, 1, 2, 3, 4]

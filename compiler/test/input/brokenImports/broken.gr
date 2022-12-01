@@ -1,0 +1,4 @@
+import Number from "number"
+import Foo from "./foo"
+
+export let min = Number.min

@@ -33,12 +33,27 @@ type diagnostic_severity =
   | Information
   | Hint;
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#location
+[@deriving yojson]
+type location = {
+  uri,
+  range,
+};
+
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
+[@deriving yojson]
+type diagnostic_related_information = {
+  location,
+  message: string,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnostic
 [@deriving yojson]
 type diagnostic = {
   range,
   severity: diagnostic_severity,
   message: string,
+  related_information: list(diagnostic_related_information),
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#command
@@ -138,3 +153,4 @@ let error: (~id: message_id=?, response_error) => unit;
 let notification: (~method: string, Yojson.Safe.t) => unit;
 
 let uri_to_filename: uri => string;
+let filename_to_uri: string => uri;
