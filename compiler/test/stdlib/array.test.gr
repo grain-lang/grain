@@ -93,7 +93,6 @@ assert sum == 0
 Array.cycle(sentinel, -42, arr1)
 
 assert sum == 0
-
 // Array.forEach
 
 let arr1 = [> 1, 2, 3]
@@ -149,6 +148,7 @@ assert Array.toList([>]) == []
 assert Array.toList([> 1, 2, 3]) == [1, 2, 3]
 
 // Array.fromList
+
 assert Array.fromList([]) == [>]
 assert Array.fromList([1, 2, 3]) == [> 1, 2, 3]
 
