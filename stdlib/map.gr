@@ -427,9 +427,9 @@ export let fromList = list => {
  * @since v0.2.0
  */
 @unsafe
-export let toArray = map => {
+export let toArray: Map<a, b> -> Array<(a, b)> = map => {
   let length = untagSimpleNumber(map.size)
-  let array = WasmI32.toGrain(allocateArray(length)): Array<a>
+  let array = WasmI32.toGrain(allocateArray(length))
   @unsafe
   let reducer = (i, key, value) => {
     // Assign the values into the array.
