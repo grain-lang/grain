@@ -1,18 +1,17 @@
-import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF32 from "runtime/unsafe/wasmf32"
 import WasmF64 from "runtime/unsafe/wasmf64"
-import Tags from "runtime/unsafe/tags"
+import {
+  newInt32,
+  newInt64,
+  newFloat32,
+  newFloat64,
+} from "runtime/dataStructures"
 
 @unsafe
 export let toInt32 = n => {
-  let ptr = Memory.malloc(12n)
-  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
-  WasmI32.store(ptr, Tags._GRAIN_INT32_BOXED_NUM_TAG, 4n)
-  WasmI32.store(ptr, n, 8n)
-
-  WasmI32.toGrain(ptr): Int32
+  WasmI32.toGrain(newInt32(n)): Int32
 }
 
 @unsafe
@@ -23,12 +22,7 @@ export let fromInt32 = (n: Int32) => {
 
 @unsafe
 export let toInt64 = n => {
-  let ptr = Memory.malloc(16n)
-  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
-  WasmI32.store(ptr, Tags._GRAIN_INT64_BOXED_NUM_TAG, 4n)
-  WasmI64.store(ptr, n, 8n)
-
-  WasmI32.toGrain(ptr): Int64
+  WasmI32.toGrain(newInt64(n)): Int64
 }
 
 @unsafe
@@ -39,12 +33,7 @@ export let fromInt64 = (n: Int64) => {
 
 @unsafe
 export let toFloat32 = n => {
-  let ptr = Memory.malloc(12n)
-  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
-  WasmI32.store(ptr, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG, 4n)
-  WasmF32.store(ptr, n, 8n)
-
-  WasmI32.toGrain(ptr): Float32
+  WasmI32.toGrain(newFloat32(n)): Float32
 }
 
 @unsafe
@@ -55,12 +44,7 @@ export let fromFloat32 = (n: Float32) => {
 
 @unsafe
 export let toFloat64 = n => {
-  let ptr = Memory.malloc(16n)
-  WasmI32.store(ptr, Tags._GRAIN_BOXED_NUM_HEAP_TAG, 0n)
-  WasmI32.store(ptr, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG, 4n)
-  WasmF64.store(ptr, n, 8n)
-
-  WasmI32.toGrain(ptr): Float64
+  WasmI32.toGrain(newFloat64(n)): Float64
 }
 
 @unsafe
@@ -103,8 +87,7 @@ export let wasmI32ToNumber = (n: WasmI32) => {
     // If it did overflow, then the value differs and we need to discard it and
     // allocate the number on the heap. A boxed 32 bit number actually is the
     // same thing as an Int32. It only needs to be cast into Number.
-    let asInt32 = toInt32(n)
-    WasmI32.toGrain(WasmI32.fromGrain(asInt32)): Number
+    WasmI32.toGrain(newInt32(n)): Number
   }
   result
 }
