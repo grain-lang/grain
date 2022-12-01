@@ -14,7 +14,7 @@ Paths in this module abide by a special POSIX-like representation/grammar
 rather than one defined by a specific operating system. The rules are as
 follows:
 
-- Path separators are denoted by `/`; occurrences of `\` will be treated as part of a path segment
+- Path separators are denoted by `/` for POSIX-like paths and additionally `\` for Windows paths
 - Absolute paths may be rooted either at the POSIX-like root `/` or at Windows-like drive roots like `C:/`
 - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
 - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
@@ -51,10 +51,10 @@ type Path
 
 Represents a system path.
 
-### Path.**Separator**
+### Path.**Platform**
 
 ```grain
-enum Separator {
+enum Platform {
   Windows,
   Posix,
 }
@@ -94,7 +94,7 @@ enum AncestryStatus {
 }
 ```
 
-Represents the status of an ancestry check between two paths
+Represents the status of an ancestry check between two paths.
 
 ### Path.**IncompatibilityError**
 
@@ -134,21 +134,20 @@ No other changes yet.
 fromString : String -> Path
 ```
 
-Parses a path string into a path wrapped with the path's type. If the path
-type is known in advance, the specialized parsing functions (`relativeDir`,
-`absoluteFile`, etc) should be used instead.
+Parses a path string into a `Path`. Paths will be parsed as file paths
+rather than directory paths if there is ambiguity.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pathStr`|`String`|The path string to parse|
+|`pathStr`|`String`|The string to parse as a path|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Path`|`Some(wrappedPath)` if the path is successfully parsed or `None` otherwise|
+|`Path`|The path wrapped with details encoded within the type|
 
 Examples:
 
@@ -162,6 +161,44 @@ fromString("file.txt") // a relative Path referencing the file ./file.txt
 
 ```grain
 fromString(".") // a relative Path referencing the current directory
+```
+
+### Path.**fromPlatformString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromPlatformString : (String, Platform) -> Path
+```
+
+Parses a path string into a `Path` using the path separators appropriate to
+the given platform. Paths will be parsed as file paths rather than directory
+paths if there is ambiguity.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`pathStr`|`String`|The path string to parse|
+|`platform`|`Platform`|The platform whose path separators should be used for parsing|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Path`|`Some(wrappedPath)` if the path is successfully parsed or `None` otherwise|
+
+Examples:
+
+```grain
+fromPlatformString("/bin/", Posix) // an absolute Path referencing the directory /bin/
+```
+
+```grain
+fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
 ```
 
 ### Path.**isDirectory**
@@ -237,10 +274,10 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (Path, Separator) -> String
+toString : Path -> String
 ```
 
-Converts the given `Path` into a string, using the specified path separator.
+Converts the given `Path` into a string, using the POSIX path separator.
 A trailing slash is added to directory paths.
 
 Parameters:
@@ -248,7 +285,6 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`path`|`Path`|The path to convert to a string|
-|`separator`|`Separator`|The `Separator` to use to represent the path as a string|
 
 Returns:
 
@@ -259,11 +295,49 @@ Returns:
 Examples:
 
 ```grain
-toString(fromString("dir/"), Posix) == "./dir/"
+toString(fromString("/file.txt")) == "/file.txt"
 ```
 
 ```grain
-toString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
+toString(fromString("dir/")) == "./dir/"
+```
+
+### Path.**toPlatformString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toPlatformString : (Path, Platform) -> String
+```
+
+Converts the given `Path` into a string, using the canonical path separator
+appropriate to the given platform. A trailing slash is added to directory
+paths.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`Path`|The path to convert to a string|
+|`platform`|`Platform`|The `Platform` to use to represent the path as a string|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A string representing the given path|
+
+Examples:
+
+```grain
+toPlatformString(fromString("dir/"), Posix) == "./dir/"
+```
+
+```grain
+toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
 ```
 
 ### Path.**append**
@@ -290,7 +364,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Path, AppendError>`|`Ok(path)` combining the base and appended paths, or `Err(err)` if the paths are incompatible for being appended|
+|`Result<Path, AppendError>`|`Ok(path)` combining the base and appended paths or `Err(err)` if the paths are incompatible|
 
 Examples:
 
@@ -389,7 +463,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<AncestryStatus, IncompatibilityError>`|`Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible, or `Err(err)` if they are incompatible|
+|`Result<AncestryStatus, IncompatibilityError>`|`Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible or `Err(err)` if they are incompatible|
 
 Examples:
 
@@ -502,7 +576,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<String, PathOperationError>`|`Ok(path)` containing the stem of the file path, or `Err(err)` if the path is a directory path|
+|`Result<String, PathOperationError>`|`Ok(path)` containing the stem of the file path or `Err(err)` if the path is a directory path|
 
 Examples:
 
@@ -512,6 +586,10 @@ stem(fromString("file.txt")) == Ok("file")
 
 ```grain
 stem(fromString(".gitignore")) == Ok(".gitignore")
+```
+
+```grain
+stem(fromString(".a.tar.gz")) == Ok(".a")
 ```
 
 ```grain
@@ -554,6 +632,10 @@ extension(fromString(".gitignore")) == Ok("")
 ```
 
 ```grain
+extension(fromString(".a.tar.gz")) == Ok(".tar.gz")
+```
+
+```grain
 extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take extension of a file path
 ```
 
@@ -568,7 +650,7 @@ No other changes yet.
 root : Path -> Result<AbsoluteRoot, PathOperationError>
 ```
 
-Retrieves the root of the absolute path
+Retrieves the root of the absolute path.
 
 Parameters:
 
@@ -580,7 +662,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<AbsoluteRoot, PathOperationError>`|`Ok(root)` containing the root of the path, or `Err(err)` if the path is a relative path|
+|`Result<AbsoluteRoot, PathOperationError>`|`Ok(root)` containing the root of the path or `Err(err)` if the path is a relative path|
 
 Examples:
 

@@ -3,27 +3,6 @@ import Result from "result"
 import Option from "option"
 import List from "list"
 
-// let relFile = x =>
-//   Option.expect(
-//     "Expected " ++ x ++ " to be relative file",
-//     Path.relativeFile(x)
-//   )
-// let relDir = x =>
-//   Option.expect(
-//     "Expected " ++ x ++ " to be relative directory",
-//     Path.relativeDir(x)
-//   )
-// let absFile = x =>
-//   Option.expect(
-//     "Expected " ++ x ++ " to be absolute file",
-//     Path.absoluteFile(x)
-//   )
-// let absDir = x =>
-//   Option.expect(
-//     "Expected " ++ x ++ " to be absolute directory",
-//     Path.absoluteDir(x)
-//   )
-
 let fs = Path.fromString
 
 // test that a variety of properties hold for valid relative/absolute paths
@@ -46,11 +25,11 @@ let parseFileTests = [
     expExt: ".txt",
   },
   {
-    pathStr: "file",
+    pathStr: "f",
     expParent: ".",
-    expStr: "./file",
-    expName: Some("file"),
-    expStem: "file",
+    expStr: "./f",
+    expName: Some("f"),
+    expStem: "f",
     expExt: "",
   },
   {
@@ -58,8 +37,16 @@ let parseFileTests = [
     expParent: ".",
     expStr: "./a.tar.gz",
     expName: Some("a.tar.gz"),
-    expStem: "a.tar",
-    expExt: ".gz",
+    expStem: "a",
+    expExt: ".tar.gz",
+  },
+  {
+    pathStr: ".gulprc.babel.js",
+    expParent: ".",
+    expStr: "./.gulprc.babel.js",
+    expName: Some(".gulprc.babel.js"),
+    expStem: ".gulprc",
+    expExt: ".babel.js",
   },
   {
     pathStr: "../../file",
@@ -105,7 +92,7 @@ let parseFileTests = [
 
 List.forEach(({ pathStr, expParent, expStr, expName, expStem, expExt }) => {
   let path = fs(pathStr)
-  assert Path.toString(path, Path.Posix) == expStr
+  assert Path.toString(path) == expStr
   assert fs(expParent) == Path.parent(path)
   assert expName == Path.basename(path)
   assert Ok(expStem) == Path.stem(path)
@@ -145,10 +132,27 @@ let parseDirTests = [
 
 List.forEach(({ pathStr, expParent, expStr, expName }: ParseDirTestData) => {
   let path = fs(pathStr)
-  assert Path.toString(path, Path.Posix) == expStr
+  assert Path.toString(path) == expStr
   assert fs(expParent) == Path.parent(path)
   assert expName == Path.basename(path)
 }, parseDirTests)
+
+// miscellaneous parsing tests
+assert fs("") == fs(".")
+assert fs(".") == fs("./")
+assert fs("dir") != fs("dir/")
+assert Path.toPlatformString(fs("C:/Users/me/"), Path.Windows) ==
+"C:\\Users\\me\\"
+assert Path.toPlatformString(
+  Path.fromPlatformString("C:\\Users/me\\", Path.Windows),
+  Path.Windows
+) ==
+"C:\\Users\\me\\"
+assert Path.toPlatformString(
+  Path.fromPlatformString(".\\dir/me\\", Path.Windows),
+  Path.Posix
+) ==
+"./dir/me/"
 
 assert Path.stem(fs("dir/")) == Err(Path.IncompatiblePathType)
 assert Path.extension(fs("dir/")) == Err(Path.IncompatiblePathType)
@@ -178,19 +182,6 @@ assert Path.root(fs("/dir/")) == Ok(Path.Root)
 assert Path.root(fs("C:/dir/")) == Ok(Path.Drive('C'))
 assert Path.root(fs("c:/dir/")) == Ok(Path.Drive('c'))
 assert Path.root(fs("file")) == Err(Path.IncompatiblePathType)
-
-// test invalidly trying to construct paths
-// assert Path.relativeFile("./dir/") == None
-// assert Path.relativeFile("./dir/.") == None
-// assert Path.relativeFile("..") == None
-// assert Path.relativeDir("/usr/bin") == None
-// assert Path.relativeDir("C:/Users/me") == None
-// assert Path.absoluteDir("C:\\Users\\me") == None
-// assert Path.absoluteFile("/usr/file.txt/") == None
-// assert Path.absoluteFile("/usr/..") == None
-// assert Path.absoluteFile("./file.txt") == None
-// assert Path.absoluteFile("file.txt") == None
-// assert Path.absoluteDir("../..") == None
 
 record AppendTestData {
   base: String,
@@ -278,9 +269,3 @@ assert Path.ancestry(fs("../dir1"), fs("./dir2")) == Ok(Path.NoLineage)
 assert Path.ancestry(fs("./dir1"), fs("../../dir2")) == Ok(Path.NoLineage)
 assert Path.ancestry(fs("./dir1"), fs("/dir2")) == Err(Path.DifferentBases)
 assert Path.ancestry(fs("C:/dir1"), fs("/dir2")) == Err(Path.DifferentRoots)
-
-// miscellaneous tests
-assert Path.toString(fs("C:/Users/me/"), Path.Windows) == "C:\\Users\\me\\"
-assert fs("") == fs(".")
-assert fs(".") == fs("./")
-assert fs("dir") != fs("dir/")
