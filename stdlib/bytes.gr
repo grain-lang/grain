@@ -361,7 +361,7 @@ export let getInt8S = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let rec getInt8U = (index: Number, bytes: Bytes) => {
+export let getInt8U = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -381,7 +381,7 @@ export let rec getInt8U = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let rec setInt8 = (index: Number, value: Int32, bytes: Bytes) => {
+export let setInt8 = (index: Number, value: Int32, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -601,7 +601,7 @@ export let getFloat64 = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let rec setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
+export let setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)

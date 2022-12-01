@@ -66,7 +66,7 @@ let autogrow = (len, buf) => {
 
 /* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
 @unsafe
-let rec appendBytes = (srcOff, dstOff, len, src, dst) => {
+let appendBytes = (srcOff, dstOff, len, src, dst) => {
   let (+) = WasmI32.add
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
 }

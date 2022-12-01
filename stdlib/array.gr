@@ -46,7 +46,7 @@ let checkLength = length => {
  * @since v0.1.0
  */
 @unsafe
-export let rec length = array => {
+export let length = array => {
   let ptr = WasmI32.fromGrain(array: Array<a>)
   tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
 }
@@ -65,7 +65,7 @@ export let rec length = array => {
  * @since v0.1.0
  */
 @unsafe
-export let rec make /*: (Number, a) -> Array<a>*/ =
+export let make /*: (Number, a) -> Array<a>*/ =
   (
     length: Number,
     item: a,
@@ -99,7 +99,7 @@ export let rec make /*: (Number, a) -> Array<a>*/ =
  * @since v0.1.0
  */
 @unsafe
-export let rec init /*: (Number, Number -> a) -> Array<a>*/ =
+export let init /*: (Number, Number -> a) -> Array<a>*/ =
   (
     length: Number,
     fn: Number -> a,

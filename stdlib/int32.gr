@@ -397,7 +397,7 @@ export let lt = (x: Int32, y: Int32) => {
  * @since v0.5.0
  */
 @unsafe
-export let rec ltU = (x: Int32, y: Int32) => {
+export let ltU = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.ltU(xv, yv)
@@ -429,7 +429,7 @@ export let gt = (x: Int32, y: Int32) => {
  * @since v0.5.0
  */
 @unsafe
-export let rec gtU = (x: Int32, y: Int32) => {
+export let gtU = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.gtU(xv, yv)
@@ -461,7 +461,7 @@ export let lte = (x: Int32, y: Int32) => {
  * @since v0.5.0
  */
 @unsafe
-export let rec lteU = (x: Int32, y: Int32) => {
+export let lteU = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.leU(xv, yv)
@@ -493,7 +493,7 @@ export let gte = (x: Int32, y: Int32) => {
  * @since v0.5.0
  */
 @unsafe
-export let rec gteU = (x: Int32, y: Int32) => {
+export let gteU = (x: Int32, y: Int32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.geU(xv, yv)

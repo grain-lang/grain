@@ -786,7 +786,7 @@ let _SIZES = [>
 ]
 
 @unsafe
-export let rec bigIntToString = (num: WasmI32, base: WasmI32) => {
+export let bigIntToString = (num: WasmI32, base: WasmI32) => {
   let getDigit = n =>
     WasmI32.load8U(WasmI32.add(WasmI32.fromGrain(_DIGITS), n), 8n)
   if (WasmI32.ltS(base, 2n) || WasmI32.gtS(base, 32n)) {
