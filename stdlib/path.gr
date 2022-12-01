@@ -1,5 +1,8 @@
 /**
- * @module Path: Utilities for working with system paths. This module treats paths purely as a data representation and does not provide functionality for interacting with the file system.
+ * @module Path: Utilities for working with system paths.
+ * 
+ * This module treats paths purely as a data representation and does not
+ * provide functionality for interacting with the file system.
  * 
  * This module explicitly encodes whether a path is absolute or relative, and
  * whether it refers to a file or a directory, as part of the `Path` type.
@@ -20,9 +23,10 @@
 import String from "string"
 import List from "list"
 import Option from "option"
+import Result from "result"
 import Char from "char"
 
-// this module is mostly a port of https://www.npmjs.com/package/@reason-native/fp
+// this module is mostly a port of https://github.com/reasonml/reason-native/blob/a0ddab6ab25237961e32d8732b0a222ec2372d4a/src/fp/Fp.re
 // with some modifications; reason-native license:
 
 // MIT License
@@ -55,6 +59,64 @@ enum Token {
   Text(String),
 }
 
+enum DirsUp {
+  Zero,
+  Positive,
+}
+
+// /**
+//  * Opaque type representing a relative path.
+//  */
+record Relative {
+  _rel: Void,
+}
+
+// /**
+//  * Opaque type representing an absolute path.
+//  */
+record Absolute {
+  _abs: Void,
+}
+
+// /**
+//  * Opaque type representing a path referencing a file.
+//  */
+record File {
+  _file: Void,
+}
+
+// /**
+//  * Opaque type representing an path referencing a directory.
+//  */
+record Directory {
+  _directory: Void,
+}
+
+enum FileType {
+  File,
+  Dir,
+}
+
+// hack to be able to concretely distinguish TypedPath from PathInfo and
+// enforce TypedPath's type parameters
+enum TFileType<a> {
+  TFileType(FileType),
+}
+
+// Rel Number represents number of directories up from base point
+enum Base {
+  Rel(Number),
+  Abs(AbsoluteRoot),
+},
+// /**
+//  * Opaque type representing a system path, parameterized on
+//  * `Relative` or `Absolute` and `File` or `Directory`
+//  */
+type PathInfo = (Base, FileType, List<String>),
+enum TBase<a> {
+  TBase(Base),
+},
+type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
  * @section Types: Type declarations included in the Path module.
  */
@@ -67,78 +129,65 @@ export enum AbsoluteRoot {
   Drive(Char),
 }
 
-// Rel Number represents number of directories up from base point
-enum BasePath<a> {
-  Rel(Number),
-  Abs(AbsoluteRoot),
-}
-
-enum FileType<a> {
-  File,
-  Dir,
-}
-
-// NOTE dummy record names put here just to distinguish the two. These could be
+// Dummy record names put here just to distinguish the two. These could be
 // replaced with opaque types if they get added to the language
-/**
- * Opaque type representing a relative path.
- */
-record Relative {
-  _rel: Void,
-}
 
 /**
- * Opaque type representing an absolute path.
+ * Represents a system path.
  */
-record Absolute {
-  _abs: Void,
-}
-
-/**
- * Opaque type representing an path referencing a file.
- */
-record File {
-  _file: Void,
-}
-
-/**
- * Opaque type representing an path referencing a directory.
- */
-record Directory {
-  _directory: Void,
-}
-
-/**
- * Opaque type representing a system path, parameterized on
- * (relative|absolute, file|directory).
- */
-type Path<a, b> = (BasePath<a>, FileType<b>, List<String>)
-
-/**
- * Wraps each possibile path type to a variant; can be used to dynamically
- * determine the type of the path wrapped in cases where it is needed. It is
- * recommended to only make use of this type in cases where it is unavoidable.
- */
-export enum PathWithType {
-  AbsoluteFile(Path<Absolute, File>),
-  AbsoluteDir(Path<Absolute, Directory>),
-  RelativeFile(Path<Relative, File>),
-  RelativeDir(Path<Relative, Directory>),
+enum Path {
+  AbsoluteFile(TypedPath<Absolute, File>),
+  AbsoluteDir(TypedPath<Absolute, Directory>),
+  RelativeFile(TypedPath<Relative, File>),
+  RelativeDir(TypedPath<Relative, Directory>),
 }
 
 /**
  * Represents a platform-specific path encoding scheme.
  */
-export enum PathEncoding {
+export enum Separator {
   Windows,
   Posix,
+}
+
+/**
+ * Represents an error that can occur when finding a property of a path.
+ */
+export enum PathOperationError {
+  IncompatiblePathType,
+}
+
+/**
+ * Represents an error that can occur when appending paths.
+ */
+export enum AppendError {
+  AppendToFile,
+  AppendAbsolute,
+}
+
+/**
+ * Represents the status of an ancestry check between two paths
+ */
+export enum AncestryStatus {
+  Descendant,
+  Ancestor,
+  Neither,
+}
+
+/**
+ * Represents an error that can occur when the types of paths are incompatible
+ * for an operation.
+ */
+export enum IncompatibilityError {
+  DifferentRoots,
+  DifferentBases,
 }
 
 /**
  * Represents possible errors for the `relativeTo` operation.
  */
 export enum RelativizationError {
-  DifferentRoots,
+  Incompatible(IncompatibilityError),
   ImpossibleRelativization,
 }
 
@@ -147,17 +196,16 @@ export enum RelativizationError {
  */
 
 let makeToken = str => {
-  let len = String.length(str)
   match (str) {
     "." => Dot,
     ".." => Dotdot,
-    _ when len == 2 && String.charAt(1, str) == ':' =>
+    _ when String.length(str) == 2 && String.charAt(1, str) == ':' =>
       DriveTok(String.charAt(0, str)),
     _ => Text(str),
   }
 }
 
-let rec parseNextToken = (path: Path<a, b>, nextToken) => {
+let parseNextToken = (path: PathInfo, nextToken) => {
   let (base, ft, subs) = path
   match (nextToken) {
     Slash | Dot => path,
@@ -175,7 +223,6 @@ let rec parseNextToken = (path: Path<a, b>, nextToken) => {
 
 // splits a path on forward slashes
 let lexPath = pathStr => {
-  let pathStr = String.trim(pathStr)
   let len = String.length(pathStr)
   let mut revTokens = []
   let mut segBeginI = 0
@@ -196,8 +243,12 @@ let lexPath = pathStr => {
   List.reverse(revTokens)
 }
 
-let illegalTrailingSlash = (fileType, tokens) => {
-  fileType == File && List.head(List.reverse(tokens)) == Some(Slash)
+let isFilePath = tokens => {
+  let revTokens = List.reverse(tokens)
+  match (revTokens) {
+    [Dot | Dotdot | Slash, ..._] => false,
+    _ => true,
+  }
 }
 
 let parseAbs = (pathStr, fileType) => {
@@ -205,347 +256,219 @@ let parseAbs = (pathStr, fileType) => {
     [] => None,
     tokens => {
       let [first, ...rest] = tokens
-      let init = if (illegalTrailingSlash(fileType, tokens)) {
+      if (fileType == File && !isFilePath(tokens)) {
         None
       } else {
-        match (first) {
+        let init = match (first) {
           Slash => Some((Abs(Root), fileType, [])),
           DriveTok(label) => Some((Abs(Drive(label)), fileType, [])),
           _ => None,
         }
+        Option.map(init => List.reduce(parseNextToken, init, rest), init)
       }
-
-      Option.map(init => List.reduce(parseNextToken, init, rest), init)
     },
   }
 }
 
-/**
- * Constructs a new absolute file `Path` from a string representing an absolute
- * path, using the special path grammar defined by this module.
- * 
- * @param pathStr: A string representing an absolute path
- * @returns A `Some` variant containing the absolute file path if it is successfully parsed or `None` otherwise
- * 
- * @example Path.absoluteFile("/usr/bin/bash")
- * @example Path.absoluteFile("C:/Users/me/file.txt")
- * @example Path.absoluteFile("C:\\Users\\me\\file.txt") == None // backslashes are not treated as path separators
- * @example Path.absoluteFile("/Users/me/dir/") == None // trailing slashes not allowed
- * @example Path.absoluteFile("./file.txt") == None // this is a relative path
- * 
- * @since v0.5.5
- */
-export let absoluteFile = pathStr => {
-  parseAbs(pathStr, File): Option<Path<Absolute, File>>
+// utility functions to translate path types
+
+let toTyped = (pathInfo: PathInfo) => {
+  let (base, fileType, subs) = pathInfo
+  (TBase(base), TFileType(fileType), subs): TypedPath<a, b>
 }
 
-/**
- * Constructs a new absolute directory `Path` from a string representing an absolute
- * path, using the special path grammar defined by this module.
- * 
- * @param pathStr: A string representing an absolute path
- * @returns A `Some` variant containing the absolute directory path if it is successfully parsed or `None` otherwise
- * 
- * @example Path.absoluteDir("/usr/bin")
- * @example Path.absoluteDir("/Users/me/") // trailing slashes ok
- * @example Path.absoluteDir("./dir") == None // this is a relative path
- * 
- * @since v0.5.5
- */
-export let absoluteDir = pathStr => {
-  parseAbs(pathStr, Dir): Option<Path<Absolute, Directory>>
+let toUntyped = (typedPath: TypedPath<a, b>) => {
+  let (base, fileType, subs) = typedPath
+  let TBase(base) = base
+  let TFileType(fileType) = fileType
+  (base, fileType, subs): PathInfo
+}
+
+let pathInfo = (path: Path) => {
+  match (path) {
+    AbsoluteDir(x) => toUntyped(x),
+    AbsoluteFile(x) => toUntyped(x),
+    RelativeDir(x) => toUntyped(x),
+    RelativeFile(x) => toUntyped(x),
+  }
+}
+
+let toPath = (path: PathInfo) => {
+  match (path) {
+    (Abs(_), File, _) as p => AbsoluteFile(toTyped(p)),
+    (Abs(_), Dir, _) as p => AbsoluteDir(toTyped(p)),
+    (Rel(_), File, _) as p => RelativeFile(toTyped(p)),
+    (Rel(_), Dir, _) as p => RelativeDir(toTyped(p)),
+  }
+}
+
+// TODO expose these functions once module system added
+
+// /**
+//  * Constructs a new absolute file `Path` from a string representing an absolute
+//  * path, using the special path grammar defined by this module.
+//  *
+//  * @param pathStr: A string representing an absolute path
+//  * @returns `Some(path)` containing the absolute file path if it is successfully parsed or `None` otherwise
+//  *
+//  * @example Path.absoluteFile("/usr/bin/bash")
+//  * @example Path.absoluteFile("C:/Users/me/file.txt")
+//  * @example Path.absoluteFile("C:\\Users\\me\\file.txt") == None // backslashes are not treated as path separators
+//  * @example Path.absoluteFile("/Users/me/dir/") == None // trailing slashes not allowed
+//  * @example Path.absoluteFile("./file.txt") == None // this is a relative path
+//  *
+//  * @since v0.5.5
+//  */
+let absoluteFile = pathStr => {
+  let pathOpt = parseAbs(pathStr, File)
+  Option.map(toTyped, pathOpt): Option<TypedPath<Absolute, File>>
+}
+
+// /**
+//  * Constructs a new absolute directory `Path` from a string representing an absolute
+//  * path, using the special path grammar defined by this module.
+//  *
+//  * @param pathStr: A string representing an absolute path
+//  * @returns `Some(path)` containing the absolute directory path if it is successfully parsed or `None` otherwise
+//  *
+//  * @example Path.absoluteDir("/usr/bin")
+//  * @example Path.absoluteDir("/Users/me/") // trailing slashes ok
+//  * @example Path.absoluteDir("./dir") == None // this is a relative path
+//  *
+//  * @since v0.5.5
+//  */
+let absoluteDir = pathStr => {
+  let pathOpt = parseAbs(pathStr, Dir)
+  Option.map(toTyped, pathOpt): Option<TypedPath<Absolute, Directory>>
 }
 
 let parseRel = (pathStr, fileType) => {
-  let (first, rest) = match (lexPath(pathStr)) {
-    [] => (Dot, []),
-    [first, ...rest] => (first, rest),
+  let tokens = match (lexPath(pathStr)) {
+    [] => [Dot],
+    tokens => tokens,
   }
+  let [first, ...rest] = tokens
 
-  let init = if (illegalTrailingSlash(fileType, [first, ...rest])) {
+  if (fileType == File && !isFilePath(tokens)) {
     None
   } else {
-    match (first) {
+    let init = match (first) {
       Dot => Some((Rel(0), fileType, [])),
       Dotdot => Some((Rel(1), fileType, [])),
       Text(str) => Some((Rel(0), fileType, [str])),
       _ => None,
     }
-  }
-
-  Option.map(init => List.reduce(parseNextToken, init, rest), init)
-}
-
-/**
- * Constructs a new relative file `Path` from a string representing an relative
- * path, using the special path grammar defined by this module.
- * 
- * @param pathStr: A string representing an relative path
- * @returns A `Some` variant containing the relative file path if it is successfully parsed or `None` otherwise
- * 
- * @example Path.relativeFile("./dir/file.txt")
- * @example Path.relativeFile("/usr/bin/script.sh") == None // this is an absolute path
- * @example Path.relativeFile("./abc/") == None // trailing slash not allowed
- * 
- * @since v0.5.5
- */
-export let relativeFile = pathStr => {
-  parseRel(pathStr, File): Option<Path<Relative, File>>
-}
-
-/**
- * Constructs a new relative directory `Path` from a string representing an relative
- * path, using the special path grammar defined by this module.
- * 
- * @param pathStr: A string representing an relative path
- * @returns A `Some` variant containing the relative directory path if it is successfully parsed or `None` otherwise
- * 
- * @example Path.relativeDir("dir")
- * @example Path.relativeDir("./dir/") // trailing slashes ok
- * @example Path.relativeDir("/usr/bin") == None // this is an absolute path
- * 
- * @since v0.5.5
- */
-export let relativeDir = pathStr => {
-  parseRel(pathStr, Dir): Option<Path<Relative, Directory>>
-}
-
-/**
- * Wraps a path with its corresponding concrete path type, in order to allow
- * dynamically checking the path type.
- * 
- * @param path: The path to wrap
- * @returns A `PathWithType` wrapping the path with its type
- * 
- * @since v0.5.5
- */
-export let wrapWithType = (path: Path<a, b>) => {
-  match (path) {
-    (Abs(_), File, _) as p => AbsoluteFile(p),
-    (Abs(_), Dir, _) as p => AbsoluteDir(p),
-    (Rel(_), File, _) as p => RelativeFile(p),
-    (Rel(_), Dir, _) as p => RelativeDir(p),
+    Option.map(init => List.reduce(parseNextToken, init, rest), init)
   }
 }
 
-/**
- * Creates a new path from a path with a relative path segment appended to it.
- * 
- * @param path: The base path to append the segment to
- * @param toAppend: The relative path to append
- * @returns A new path with the `toAppend` path appended to the `path`
- * 
- * @since v0.5.5
- */
-export let rec append =
-  (
-    path: Path<a, Directory>,
-    toAppend: Path<Relative, b>,
-  ) =>
-  match (toAppend) {
-    (Rel(up2), fileType, s2) =>
-      match (path) {
-        (Rel(up1), _, []) => (Rel(up1 + up2), fileType, s2),
-        (Abs(_) as d, _, []) => (d, fileType, s2),
-        (d, pft, [_, ...rest] as s1) => {
-          if (up2 > 0) append((d, pft, rest), (Rel(up2 - 1), fileType, s2))
-          else (d, fileType, List.append(s2, s1))
-        },
-      },
-    (Abs(_), _, _) => fail "Impossible: relative path encoded as absolute path",
-  }: Path<a, b>
-
-enum DirsUp {
-  Zero,
-  Positive,
+// /**
+//  * Constructs a new relative file `Path` from a string representing a relative
+//  * path, using the special path grammar defined by this module.
+//  *
+//  * @param pathStr: A string representing a relative path
+//  * @returns `Some(path)` containing the relative file path if it is successfully parsed or `None` otherwise
+//  *
+//  * @example Path.relativeFile("./dir/file.txt")
+//  * @example Path.relativeFile("/usr/bin/script.sh") == None // this is an absolute path
+//  * @example Path.relativeFile("./abc/") == None // trailing slash not allowed
+//  *
+//  * @since v0.5.5
+//  */
+let relativeFile = pathStr => {
+  let pathOpt = parseRel(pathStr, File)
+  Option.map(toTyped, pathOpt): Option<TypedPath<Relative, File>>
 }
 
-let dirsUp = x => if (x == 0) Zero else Positive
-
-// helper function for relativizing paths; handles the correct number of
-// directories to "go up" from one path to another
-let rec relativizeDepth = ((up1, s1), (up2, s2)) =>
-  match ((dirsUp(up1), dirsUp(up2), s1, s2)) {
-    (Zero, Zero, [hd1, ...tl1], [hd2, ...tl2]) when hd1 == hd2 =>
-      relativizeDepth((0, tl1), (0, tl2)),
-    (Zero, Zero, [], _) => Ok((up2, s2)),
-    (Zero, Zero, _, _) => Ok((List.length(s1), s2)),
-    (Positive, Positive, _, _) => relativizeDepth((up1 - 1, s1), (up2 - 1, s2)),
-    (Zero, Positive, _, _) => Ok((List.length(s1) + up2, s2)),
-    (Positive, Zero, _, _) => Err(ImpossibleRelativization),
-  }
-
-/**
- * Attempts to construct a new relative path which will lead to the destination
- * path from the source path. If the source and destination are both absolute
- * paths but are on different roots, `Err(Path.DifferentRoots)` will be
- * returned, and if the route to the destination cannot be concretely
- * determined from the source, `Err(Path.ImpossibleRelativization)` will be
- * returned.
- * 
- * @param source: The source path to find a path from
- * @param dest: The destination path to find the path to
- * @returns An `Ok` variant containing the relative path if successfully parsed or `Err` otherwise
- * 
- * @example // relativeTo(/usr, /usr/bin) => ./bin
- * @example // relativeTo(/home/me, /home/me) => .
- * @example // relativeTo(/usr/bin, /etc) => ../../etc
- * @example // relativeTo(.., ../../thing) => ../thing
- * @example // relativeTo(/usr/bin, C:/Users) => Err(DifferentRoots)
- * @example // relativeTo(../here, ./there) => Err(ImpossibleRelativization)
- * 
- * @since v0.5.5
- */
-export let relativeTo = (source: Path<a, b>, dest: Path<a, c>) => {
-  let result = match ((source, dest)) {
-    ((Abs(r1), _, s1), (Abs(r2), _, s2)) =>
-      if (r1 != r2) Err(DifferentRoots)
-      else relativizeDepth((0, List.reverse(s1)), (0, List.reverse(s2))),
-    ((Rel(up1), _, s1), (Rel(up2), _, s2)) =>
-      relativizeDepth((up1, List.reverse(s1)), (up2, List.reverse(s2))),
-    _ => fail "",
-  }
-
-  let (_, fileType, _) = dest
-  match (result) {
-    Ok((depth, segs)) => Ok((Rel(depth), fileType, List.reverse(segs))),
-    Err(err) => Err(err),
-  }: Result<Path<Relative, c>, RelativizationError>
-}
-
-let rec segsDescendantOf = (baseSegs, pathSegs) =>
-  match ((baseSegs, pathSegs)) {
-    ([], _) => true,
-    (_, []) => false,
-    ([f1, ...r1], [f2, ...r2]) => f1 == f2 && segsDescendantOf(r1, r2),
-  }
-
-/**
- * Determines if a path is a descendant of another path.
- * 
- * @param base: The path to consider as the possible ancestor path
- * @param path: The path to consider as the possible descendant path
- * @returns `true` if the second path is a descendant of the first path and `false` otherwise
- * 
- * @example // isDescendantOf(/usr, /usr/bin/bash) == true
- * @example // isDescendantOf(/usr, /etc) == false
- * @example // isDescendantOf(../dir1, ./dir2) == false
- * 
- * @since v0.5.5
- */
-export let isDescendantOf = (base: Path<a, Directory>, path: Path<a, c>) => {
-  let (b1, _, s1) = base
-  let (b2, _, s2) = path
-  b1 == b2 && segsDescendantOf(List.reverse(s1), List.reverse(s2))
+// /**
+//  * Constructs a new relative directory `Path` from a string representing a relative
+//  * path, using the special path grammar defined by this module.
+//  *
+//  * @param pathStr: A string representing a relative path
+//  * @returns `Some(path)` containing the relative directory path if it is successfully parsed or `None` otherwise
+//  *
+//  * @example Path.relativeDir("dir")
+//  * @example Path.relativeDir("./dir/") // trailing slashes ok
+//  * @example Path.relativeDir("/usr/bin") == None // this is an absolute path
+//  *
+//  * @since v0.5.5
+//  */
+let relativeDir = pathStr => {
+  // parseRel(pathStr, Dir)//: Option<TypedPath<Relative, Directory>>
+  let pathOpt = parseRel(pathStr, Dir)
+  Option.map(toTyped, pathOpt): Option<TypedPath<Relative, Directory>>
 }
 
 /**
- * Returns the path corresponding to the parent directory of the given path.
+ * Parses a path string into a path wrapped with the path's type. If the path
+ * type is known in advance, the specialized parsing functions (`relativeDir`,
+ * `absoluteFile`, etc) should be used instead.
  * 
- * @param path: The path to get the parent of
- * @returns A path corresponding to the parent directory of the given path
+ * @param pathStr: The path string to parse
+ * @returns `Some(wrappedPath)` if the path is successfully parsed or `None` otherwise
  * 
- * @since v0.5.5
- */
-export let parent = (path: Path<a, b>) =>
-  match (path) {
-    (base, _, [_, ...rest]) => (base, Dir, rest),
-    (Rel(upDirs), _, []) => (Rel(upDirs + 1), Dir, []),
-    (Abs(_) as base, _, []) => (base, Dir, []),
-  }: Path<a, Directory>
-
-/**
- * Returns the base name (named final segment) of a path.
- * 
- * @param path: The path to get the name of
- * @returns A `Some` variant containing the name of the path, or `None` if the path does not have one
- * 
- * @example Path.name(Option.unwrap(Path.relativeFile("./dir/file.txt"))) // Some("file.txt")
- * @example Path.name(Option.unwrap(Path.relativeDir(".."))) // None
+ * @example fromString("/bin/") // an absolute Path referencing the directory /bin/
+ * @example fromString("file.txt") // a relative Path referencing the file ./file.txt
+ * @example fromString(".") // a relative Path referencing the current directory
  * 
  * @since v0.5.5
  */
-export let name = (path: Path<a, b>) =>
-  match (path) {
-    (_, _, [name, ..._]) => Some(name),
-    _ => None,
+export let fromString = pathStr => {
+  let tokens = match (lexPath(pathStr)) {
+    // will cause empty strings to get parsed as relative directory '.'
+    [] => [Dot],
+    tokens => tokens,
   }
-
-/**
- * Returns the name of the file path without the extension.
- * 
- * @param path: The path to get the stem of
- * @returns A `Some` variant containing the stem of the file path, or `None` if the path does not have one
- * 
- * @since v0.5.5
- */
-export let stem = (path: Path<a, File>) =>
-  match (path) {
-    (_, _, [name, ..._]) => {
-      match (String.lastIndexOf(".", name)) {
-        Some(dotI) => {
-          let len = String.length(name)
-          if (dotI > 0 && dotI < len - 1) Some(String.slice(0, dotI, name))
-          else Some(name)
-        },
-        None => Some(name),
-      }
-    },
-    _ => None,
+  let isAbs = match (tokens) {
+    [Slash | DriveTok(_), ..._] => true,
+    _ => false,
   }
+  let isDir = !isFilePath(tokens)
 
-/**
- * Returns the extension on the name of the file path.
- * 
- * @param path: The path to get the extension of
- * @returns A `Some` variant containing the extension of the file path, or `None` if the path does not have one
- * 
- * @since v0.5.5
- */
-export let extension = (path: Path<a, File>) =>
-  match (path) {
-    (_, _, [name, ..._]) => {
-      match (String.lastIndexOf(".", name)) {
-        Some(dotI) => {
-          let len = String.length(name)
-          if (dotI > 0 && dotI < len - 1) Some(String.slice(dotI, len, name))
-          else None
-        },
-        None => None,
-      }
-    },
-    _ => None,
+  match ((isAbs, isDir)) {
+    (true, true) => AbsoluteDir(Option.unwrap(absoluteDir(pathStr))),
+    (true, false) => AbsoluteFile(Option.unwrap(absoluteFile(pathStr))),
+    (false, true) => RelativeDir(Option.unwrap(relativeDir(pathStr))),
+    (false, false) => RelativeFile(Option.unwrap(relativeFile(pathStr))),
   }
+}
 
 /**
- * Returns the root of the absolute path.
+ * Determines whether the path is a directory path.
  * 
- * @param path: The absolute path to get the root of
- * @returns The root of the path
+ * @param path: The path to inspect
+ * @returns `true` if the path is a directory path or `false` otherwise
+ * 
+ * @example isDirectory(fromString("file.txt")) == false
+ * @example isDirectory(fromString("/bin/")) == true
  * 
  * @since v0.5.5
  */
-export let root = (path: Path<Absolute, b>) =>
-  match (path) {
-    (Abs(root), _, _) => root,
-    _ => fail "Impossible: malformed absolute path data",
+export let isDirectory = path => {
+  let (_, fileType, _) = pathInfo(path)
+  fileType == Dir
+}
+
+/**
+ * Determines whether the path is an absolute path.
+ * 
+ * @param path: The path to inspect
+ * @returns `true` if the path is absolute or `false` otherwise
+ * 
+ * @example isAbsolute(fromString("/Users/me")) == true
+ * @example isAbsolute(fromString("./file.txt")) == false
+ */
+export let isAbsolute = path => {
+  let (base, _, _) = pathInfo(path)
+  match (base) {
+    Abs(_) => true,
+    _ => false,
   }
+}
 
-/**
- * Converts the given `Path` into a string, using the specified path encoding.
- * A trailing slash is added to directory paths.
- * 
- * @param path: The `Path` to convert to a string
- * @param encoding: The `PathEncoding` to use to represent the path as a string
- * @returns A string representing the given path
- * 
- * @example Path.toString(myPath, Path.Windows)
- * 
- * @since v0.5.5
- */
-export let toString = (path: Path<a, b>, encoding) => {
+let toString = (path, separator) => {
   let (base, fileType, revSegs) = path
-  let sep = match (encoding) {
+  let sep = match (separator) {
     Windows => "\\",
     Posix => "/",
   }
@@ -568,4 +491,325 @@ export let toString = (path: Path<a, b>, encoding) => {
     Dir => List.append(segs, [""]),
   }
   List.join(sep, segs)
+}
+
+/**
+ * Converts the given `Path` into a string, using the specified path separator.
+ * A trailing slash is added to directory paths.
+ * 
+ * @param path: The path to convert to a string
+ * @param separator: The `Separator` to use to represent the path as a string
+ * @returns A string representing the given path
+ * 
+ * @example toString(fromString("dir/"), Posix) == "./dir/"
+ * @example toString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
+ * 
+ * @since v0.5.5
+ */
+export let toString = (path, separator) => {
+  toString(pathInfo(path), separator)
+}
+
+// /**
+//  * Wraps a path with its corresponding concrete path type, in order to allow
+//  * dynamically checking the path type.
+//  *
+//  * @param path: The path to wrap
+//  * @returns The path wrapped with a unifying `enum`
+//  *
+//  * @since v0.5.5
+//  */
+// export let wrapWithType = (path: Path<a, b>) => {
+//   match (path) {
+//     (Abs(_), File, _) as p => AbsoluteFile(p),
+//     (Abs(_), Dir, _) as p => AbsoluteDir(p),
+//     (Rel(_), File, _) as p => RelativeFile(p),
+//     (Rel(_), Dir, _) as p => RelativeDir(p),
+//   }
+// }
+
+// should only be used on relative path appended to directory path
+let rec append = (path: PathInfo, toAppend: PathInfo) =>
+  match (toAppend) {
+    (Rel(up2), fileType, s2) =>
+      match (path) {
+        (Rel(up1), _, []) => (Rel(up1 + up2), fileType, s2),
+        (Abs(_) as d, _, []) => (d, fileType, s2),
+        (d, pft, [_, ...rest] as s1) => {
+          if (up2 > 0) append((d, pft, rest), (Rel(up2 - 1), fileType, s2))
+          else (d, fileType, List.append(s2, s1))
+        },
+      },
+    (Abs(_), _, _) => fail "Impossible: relative path encoded as absolute path",
+  }: PathInfo
+
+/**
+ * Creates a new path by appending a relative path segment to a directory path.
+ * 
+ * @param path: The base path
+ * @param toAppend: The relative path to append
+ * @returns `Ok(path)` combining the base and appended paths, or `Err(err)` if the paths are incompatible for being appended
+ * 
+ * @example append(fromString("./dir/"), fromString("file.txt")) == Ok(fromString("./dir/file.txt"))
+ * @example append(fromString("a.txt"), fromString("b.sh")) == Err(AppendToFile) // cannot append to file path
+ * @example append(fromString("./dir/"), fromString("/dir2")) == Err(AppendAbsolute) // cannot append an absolute path
+ * 
+ * @since v0.5.5
+ */
+export let append = (path: Path, toAppend: Path) => {
+  match ((pathInfo(path), pathInfo(toAppend))) {
+    ((_, File, _), _) => Err(AppendToFile),
+    (_, (Abs(_), _, _)) => Err(AppendAbsolute),
+    (pathInfo1, pathInfo2) => Ok(toPath(append(pathInfo1, pathInfo2))),
+  }
+}
+
+let dirsUp = x => if (x == 0) Zero else Positive
+
+// helper function for relativizing paths; handles the correct number of
+// directories to "go up" from one path to another
+let rec relativizeDepth = ((up1, s1), (up2, s2)) =>
+  match ((dirsUp(up1), dirsUp(up2), s1, s2)) {
+    (Zero, Zero, [hd1, ...tl1], [hd2, ...tl2]) when hd1 == hd2 =>
+      relativizeDepth((0, tl1), (0, tl2)),
+    (Zero, Zero, [], _) => Ok((up2, s2)),
+    (Zero, Zero, _, _) => Ok((List.length(s1), s2)),
+    (Positive, Positive, _, _) => relativizeDepth((up1 - 1, s1), (up2 - 1, s2)),
+    (Zero, Positive, _, _) => Ok((List.length(s1) + up2, s2)),
+    (Positive, Zero, _, _) => Err(ImpossibleRelativization),
+  }
+
+let relativeTo = (source: PathInfo, dest: PathInfo) => {
+  // first branch handles special case of two identical file paths; to return
+  // '../<name>' instead of '.' (a directory path) because the result file type
+  // is expected to be the same as the second arg
+  let result = match ((source, dest)) {
+    ((_, File, [name, ..._]), _) when source == dest => Ok((1, [name])),
+    ((Abs(r1), _, s1), (Abs(r2), _, s2)) =>
+      if (r1 != r2) Err(Incompatible(DifferentRoots))
+      else relativizeDepth((0, List.reverse(s1)), (0, List.reverse(s2))),
+    ((Rel(up1), _, s1), (Rel(up2), _, s2)) =>
+      relativizeDepth((up1, List.reverse(s1)), (up2, List.reverse(s2))),
+    _ => fail "Impossible: paths should have both been absolute or relative",
+  }
+
+  let (_, fileType, _) = dest
+  match (result) {
+    Ok((depth, segs)) => Ok((Rel(depth), fileType, List.reverse(segs))),
+    Err(err) => Err(err),
+  }: Result<PathInfo, RelativizationError>
+}
+
+/**
+ * Attempts to construct a new relative path which will lead to the destination
+ * path from the source path.
+ * 
+ * If the source and destination are incompatible in their bases, the result
+ * will be `Err(IncompatibilityError)`.
+ *
+ * If the route to the destination cannot be concretely determined from the
+ * source, the result will be `Err(ImpossibleRelativization)`.
+ * 
+ * @param source: The source path
+ * @param dest: The destination path to resolve
+ * @returns `Ok(path)` containing the relative path if successfully resolved or `Err(err)` otherwise
+ * 
+ * @example relativeTo(fromString("/usr"), fromString("/usr/bin")) == Ok(fromString("./bin"))
+ * @example relativeTo(fromString("/home/me"), fromString("/home/me")) == Ok(fromString("."))
+ * @example relativeTo(fromString("/file.txt"), fromString("/etc/")) == Ok(fromString("../etc/"))
+ * @example relativeTo(fromString(".."), fromString("../../thing")) Ok(fromString("../thing"))
+ * @example relativeTo(fromString("/usr/bin"), fromString("C:/Users")) == Err(Incompatible(DifferentRoots))
+ * @example relativeTo(fromString("../here"), fromString("./there")) == Err(ImpossibleRelativization)
+ * 
+ * @since v0.5.5
+ */
+export let relativeTo = (source, dest) => {
+  let pathInfo1 = pathInfo(source)
+  let (base1, _, _) = pathInfo1
+  let pathInfo2 = pathInfo(dest)
+  let (base2, _, _) = pathInfo2
+  match ((base1, base2)) {
+    (Abs(_), Rel(_)) | (Abs(_), Rel(_)) => Err(Incompatible(DifferentBases)),
+    _ => Result.map(toPath, relativeTo(pathInfo1, pathInfo2)),
+  }
+}
+
+let rec segsAncestry = (baseSegs, pathSegs) =>
+  match ((baseSegs, pathSegs)) {
+    ([], _) => Descendant,
+    (_, []) => Ancestor,
+    ([first1, ..._], [first2, ..._]) when first1 != first2 => Neither,
+    ([_, ...rest1], [_, ...rest2]) => segsAncestry(rest1, rest2),
+  }
+
+// should be used on paths with same absolute/relativeness
+let ancestry = (base: PathInfo, path: PathInfo) => {
+  let (b1, _, s1) = base
+  let (b2, _, s2) = path
+  match ((b1, b2)) {
+    (Abs(d1), Abs(d2)) when d1 != d2 => Err(DifferentRoots),
+    _ => Ok(segsAncestry(List.reverse(s1), List.reverse(s2))),
+  }
+}
+
+/**
+ * Determines the relative ancestry betwen two paths.
+ * 
+ * @param base: The first path to consider
+ * @param path: The second path to consider
+ * @returns `Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible, or `Err(err)` if they are incompatible
+ * 
+ * @example ancestry(fromString("/usr"), fromString("/usr/bin/bash")) == Ok(Ancestor)
+ * @example ancestry(fromString("/Users/me"), fromString("/Users")) == Ok(Descendant)
+ * @example ancestry(fromString("/usr"), fromString("/etc")) == Ok(Neither)
+ * @example ancestry(fromString("C:/dir1"), fromString("/dir2")) == Err(DifferentRoots)
+ * 
+ * @since v0.5.5
+ */
+export let ancestry = (path1: Path, path2: Path) => {
+  let pathInfo1 = pathInfo(path1)
+  let (base1, _, _) = pathInfo1
+  let pathInfo2 = pathInfo(path2)
+  let (base2, _, _) = pathInfo2
+  match ((base1, base2)) {
+    (Rel(_), Abs(_)) | (Abs(_), Rel(_)) => Err(DifferentBases),
+    _ => ancestry(pathInfo1, pathInfo2),
+  }
+}
+
+let parent = (path: PathInfo) =>
+  match (path) {
+    (base, _, [_, ...rest]) => (base, Dir, rest),
+    (Rel(upDirs), _, []) => (Rel(upDirs + 1), Dir, []),
+    (Abs(_) as base, _, []) => (base, Dir, []),
+  }: PathInfo
+
+/**
+ * Retrieves the path corresponding to the parent directory of the given path.
+ * 
+ * @param path: The path to inspect
+ * @returns A path corresponding to the parent directory of the given path
+ * 
+ * @example parent(fromString("./dir/inner")) == fromString("./dir/")
+ * @example parent(fromString("/")) == fromString("/")
+ * 
+ * @since v0.5.5
+ */
+export let parent = (path: Path) => {
+  toPath(parent(pathInfo(path)))
+}
+
+let basename = (path: PathInfo) =>
+  match (path) {
+    (_, _, [name, ..._]) => Some(name),
+    _ => None,
+  }
+
+/**
+ * Retrieves the basename (named final segment) of a path.
+ * 
+ * @param path: The path to inspect
+ * @returns `Some(path)` containing the basename of the path, or `None` if the path does not have one
+ * 
+ * @example basename(fromString("./dir/file.txt")) == Some("file.txt")
+ * @example basename(fromString(".."))) == None
+ * 
+ * @since v0.5.5
+ */
+export let basename = (path: Path) => {
+  basename(pathInfo(path))
+}
+
+// should only be used on file paths
+let stem = (path: PathInfo) =>
+  match (path) {
+    (_, _, [name, ..._]) => {
+      match (String.lastIndexOf(".", name)) {
+        Some(dotI) => {
+          let len = String.length(name)
+          if (dotI > 0 && dotI < len - 1) String.slice(0, dotI, name) else name
+        },
+        None => name,
+      }
+    },
+    _ => "",
+  }
+
+/**
+ * Retrieves the basename of a file path without the extension.
+ * 
+ * @param path: The path to inspect
+ * @returns `Ok(path)` containing the stem of the file path, or `Err(err)` if the path is a directory path
+ * 
+ * @example stem(fromString("file.txt")) == Ok("file")
+ * @example stem(fromString(".gitignore")) == Ok(".gitignore")
+ * @example stem(fromString("/dir/")) == Err(IncompatiblePathType) // can only take stem of a file path
+ * 
+ * @since v0.5.5
+ */
+export let stem = (path: Path) => {
+  match (pathInfo(path)) {
+    (_, Dir, _) => Err(IncompatiblePathType),
+    pathInfo => Ok(stem(pathInfo)),
+  }
+}
+
+// should only be used on file paths
+let extension = (path: PathInfo) =>
+  match (path) {
+    (_, _, [name, ..._]) => {
+      match (String.lastIndexOf(".", name)) {
+        Some(dotI) => {
+          let len = String.length(name)
+          if (dotI > 0 && dotI < len - 1) String.slice(dotI, len, name) else ""
+        },
+        None => "",
+      }
+    },
+    _ => "",
+  }
+
+/**
+ * Retrieves the extension on the basename of a file path.
+ * 
+ * @param path: The path to inspect
+ * @returns `Ok(path)` containing the extension of the file path, or `Err(err)` if the path is a directory path
+ * 
+ * @example extension(fromString("file.txt")) == Ok(".txt")
+ * @example extension(fromString(".gitignore")) == Ok("")
+ * @example extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take extension of a file path
+ * 
+ * @since v0.5.5
+ */
+export let extension = (path: Path) => {
+  match (pathInfo(path)) {
+    (_, Dir, _) => Err(IncompatiblePathType),
+    pathInfo => Ok(extension(pathInfo)),
+  }
+}
+
+// should only be used on absolute paths
+let root = (path: PathInfo) =>
+  match (path) {
+    (Abs(root), _, _) => root,
+    _ => fail "Impossible: malformed absolute path data",
+  }
+
+/**
+ * Retrieves the root of the absolute path
+ * 
+ * @param path: The path to inspect
+ * @returns `Ok(root)` containing the root of the path, or `Err(err)` if the path is a relative path
+ * 
+ * @example root(fromString("C:/Users/me/")) == Ok(Drive('C'))
+ * @example root(fromString("/home/me/")) == Ok(Root)
+ * @example root(fromString("./file.txt")) == Err(IncompatiblePathType)
+ * 
+ * @since v0.5.5
+ */
+export let root = (path: Path) => {
+  match (pathInfo(path)) {
+    (Rel(_), _, _) => Err(IncompatiblePathType),
+    pathInfo => Ok(root(pathInfo)),
+  }
 }
