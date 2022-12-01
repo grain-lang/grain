@@ -58,6 +58,9 @@ export let length = array => {
  * @param item: The value to store at each index
  * @returns The new array
  *
+ * @throws InvalidArgument(String): When `length` is not an integer
+ * @throws InvalidArgument(String): When `length` is negative
+ *
  * @example Array.make(5, "foo") // [> "foo", "foo", "foo", "foo", "foo"]
  *
  * @since v0.1.0
@@ -87,6 +90,9 @@ export let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
  * @param length: The length of the new array
  * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
  * @returns The new array
+ *
+ * @throws InvalidArgument(String): When `length` is not an integer
+ * @throws InvalidArgument(String): When `length` is negative
  *
  * @example Array.init(5, n => n + 3) // [> 3, 4, 5, 6, 7]
  *
@@ -796,11 +802,11 @@ export let unique = array => {
  * The first tuple will contain the first item of each array, the second tuple
  * will contain the second item of each array, and so on.
  *
- * Calling this function with arrays of different sizes will throw an error.
- *
  * @param array1: The array to provide values for the first tuple element
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing indexed pairs of `(a, b)`
+ *
+ * @throws Failure(String): When the arrays have different sizes
  *
  * @since v0.4.0
  */

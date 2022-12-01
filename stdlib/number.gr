@@ -1048,10 +1048,11 @@ export let tan = (radians: Number) => {
 // https://en.wikipedia.org/wiki/Lanczos_approximation
 /**
  * Computes the gamma function of a value using Lanczos approximation.
- * Fails when the given value is zero.
  *
  * @param z: The value to interpolate
  * @returns The gamma of the given value
+ *
+ * @throws InvalidArgument(String): When the given value is zero.
  *
  * @since v0.5.4
  */
