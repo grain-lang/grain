@@ -324,17 +324,16 @@ let rangeAddCaseAware = (rng: CharRange, c, config) => {
 
 let rangeAddSpanCaseAware = (rng: CharRange, fromC, toC, config) => {
   if (config.caseSensitive) {
-    Ok(rangeAddSpan(rng, fromC, toC))
-  } else {
-    let mut ret = Ok(rng)
-    for (let mut i = fromC; i <= toC; i += 1) {
-      match (ret) {
-        Ok(x) => ret = rangeAddCaseAware(x, Some(i), config),
-        Err(e) => break,
-      }
-    }
-    ret
+    return Ok(rangeAddSpan(rng, fromC, toC))
   }
+  let mut ret = Ok(rng)
+  for (let mut i = fromC; i <= toC; i += 1) {
+    match (ret) {
+      Ok(x) => ret = rangeAddCaseAware(x, Some(i), config),
+      Err(e) => break,
+    }
+  }
+  return ret
 }
 
 /*
@@ -2377,17 +2376,14 @@ let subArraysEqual = (arr1, start1, arr2, start2, length) => {
   if (
     Array.length(arr1) - start1 < length || Array.length(arr2) - start2 < length
   ) {
-    false
-  } else {
-    let mut result = true
-    for (let mut i = 0; i < length; i += 1) {
-      if (arr1[start1 + i] != arr2[start2 + i]) {
-        result = false
-        break
-      }
-    }
-    result
+    return false
   }
+  for (let mut i = 0; i < length; i += 1) {
+    if (arr1[start1 + i] != arr2[start2 + i]) {
+      return false
+    }
+  }
+  return true
 }
 
 let stringMatcher = (toMatch, len, next_m) =>

@@ -240,15 +240,12 @@ let getCodePoint = (ptr: WasmI32) => {
 
   let mut offset = 0n
 
-  let mut result = 0n
-
   while (true) {
     let byte = WasmI32.load8U(ptr + offset, 0n)
     offset += 1n
     if (bytesNeeded == 0n) {
       if (byte >= 0x00n && byte <= 0x7Fn) {
-        result = byte
-        break
+        return byte
       } else if (byte >= 0xC2n && byte <= 0xDFn) {
         bytesNeeded = 1n
         codePoint = byte & 0x1Fn
@@ -275,11 +272,10 @@ let getCodePoint = (ptr: WasmI32) => {
     codePoint = codePoint << 6n | byte & 0x3Fn
     bytesSeen += 1n
     if (bytesSeen == bytesNeeded) {
-      result = codePoint
-      break
+      return codePoint
     }
   }
-  result
+  return 0n
 }
 
 @unsafe

@@ -25,10 +25,9 @@ let getClockTime = (clockid, precision) => {
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    Ok(WasmI32.toGrain(int64Ptr): Int64)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  return Ok(WasmI32.toGrain(int64Ptr): Int64)
 }
 
 /**

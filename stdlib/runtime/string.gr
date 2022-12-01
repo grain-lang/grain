@@ -55,21 +55,19 @@ let findTypeMetadata = typeId => {
   let mut metadataPtr = WasmI32.load(_RUNTIME_TYPE_METADATA_PTR, 0n)
   let mut modData = -1n
   let mut modTypesCount = 0n
-  let mut typeData = -1n
-  while (metadataPtr != 0n && typeData == -1n) {
+  while (metadataPtr != 0n) {
     modData = metadataPtr + 12n
     modTypesCount = WasmI32.load(metadataPtr, 8n)
     for (let mut i = 0n; i < modTypesCount; i += 1n) {
       if (WasmI32.load(modData, 4n) == typeId) {
-        typeData = modData
-        break
+        return modData
       }
       modData += WasmI32.load(modData, 0n)
     }
     metadataPtr = WasmI32.load(metadataPtr, 0n)
   }
 
-  typeData
+  return -1n
 }
 
 @unsafe
@@ -90,42 +88,38 @@ let getVariantName = variant => {
   match (typeId) {
     id when id == _OPTION_ID => {
       if (variantId == 0n) {
-        Memory.incRef(WasmI32.fromGrain(_SOME))
+        return Memory.incRef(WasmI32.fromGrain(_SOME))
       } else {
-        Memory.incRef(WasmI32.fromGrain(_NONE))
+        return Memory.incRef(WasmI32.fromGrain(_NONE))
       }
     },
     id when id == _RESULT_ID => {
       if (variantId == 0n) {
-        Memory.incRef(WasmI32.fromGrain(_OK))
+        return Memory.incRef(WasmI32.fromGrain(_OK))
       } else {
-        Memory.incRef(WasmI32.fromGrain(_ERR))
+        return Memory.incRef(WasmI32.fromGrain(_ERR))
       }
     },
     _ => {
       let mut block = findTypeMetadata(typeId)
 
-      if (block == -1n) {
-        -1n
-      } else {
-        let sectionLength = WasmI32.load(block, 0n)
-        block += 8n
+      if (block == -1n) return -1n
 
-        let end = block + sectionLength
-        let mut result = -1n
-        while (block < end) {
-          if (WasmI32.load(block, 4n) == variantId) {
-            let length = WasmI32.load(block, 8n)
-            let str = allocateString(length)
-            Memory.copy(str + 8n, block + 12n, length)
-            result = str
-            break
-          }
-          block += WasmI32.load(block, 0n)
+      let sectionLength = WasmI32.load(block, 0n)
+      block += 8n
+
+      let end = block + sectionLength
+      while (block < end) {
+        if (WasmI32.load(block, 4n) == variantId) {
+          let length = WasmI32.load(block, 8n)
+          let str = allocateString(length)
+          Memory.copy(str + 8n, block + 12n, length)
+          return str
         }
-
-        result
+        block += WasmI32.load(block, 0n)
       }
+
+      return -1n
     },
   }
 }
@@ -137,26 +131,23 @@ let getRecordFieldNames = record_ => {
 
   let mut fields = findTypeMetadata(typeId)
 
-  if (fields == -1n) {
-    -1n
-  } else {
-    fields += 8n
+  if (fields == -1n) return -1n
+  fields += 8n
 
-    let fieldArray = allocateArray(arity)
+  let fieldArray = allocateArray(arity)
 
-    let mut fieldOffset = 0n
-    for (let mut i = 0n; i < arity; i += 1n) {
-      let fieldLength = WasmI32.load(fields + fieldOffset, 4n)
-      let fieldName = allocateString(fieldLength)
-      Memory.incRef(fieldName)
-      Memory.copy(fieldName + 8n, fields + fieldOffset + 8n, fieldLength)
-      WasmI32.store(fieldArray + i * 4n, fieldName, 8n)
+  let mut fieldOffset = 0n
+  for (let mut i = 0n; i < arity; i += 1n) {
+    let fieldLength = WasmI32.load(fields + fieldOffset, 4n)
+    let fieldName = allocateString(fieldLength)
+    Memory.incRef(fieldName)
+    Memory.copy(fieldName + 8n, fields + fieldOffset + 8n, fieldLength)
+    WasmI32.store(fieldArray + i * 4n, fieldName, 8n)
 
-      fieldOffset += WasmI32.load(fields + fieldOffset, 0n)
-    }
-
-    fieldArray
+    fieldOffset += WasmI32.load(fields + fieldOffset, 0n)
   }
+
+  return fieldArray
 }
 
 @unsafe
