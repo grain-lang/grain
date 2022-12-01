@@ -87,12 +87,37 @@ let generate_docs =
   let module_name = ref(None);
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
+    let deprecations =
+      attrs
+      |> List.filter(Comments.Attribute.is_deprecated)
+      |> List.map((attr: Comments.Attribute.t) => {
+           switch (attr) {
+           | Deprecated({attr_desc}) => attr_desc
+           | _ =>
+             failwith(
+               "Unreachable: Non-`deprecated` attribute can't exist here.",
+             )
+           }
+         });
+
     // TODO(#787): Should we fail if more than one `@module` attribute?
     let module_attr = attrs |> List.find(Comments.Attribute.is_module);
     switch (module_attr) {
     | Module({attr_name, attr_desc}) =>
       module_name := Some(attr_name);
       Buffer.add_string(buf, Markdown.frontmatter([("title", attr_name)]));
+      if (List.length(deprecations) > 0) {
+        List.iter(
+          msg =>
+            Buffer.add_string(
+              buf,
+              Markdown.blockquote(
+                Markdown.bold("Deprecated:") ++ " " ++ msg,
+              ),
+            ),
+          deprecations,
+        );
+      };
       Buffer.add_string(buf, Markdown.paragraph(attr_desc));
       switch (desc) {
       // Guard isn't be needed because we turn an empty string into None during extraction
