@@ -2,6 +2,8 @@
  * @module Queue: An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
  * @example import Queue from "queue"
  * @since v0.2.0
+ *
+ * @deprecated This module will be renamed to ImmutableQueue in the v0.6.0 release of Grain.
  */
 import List from "list"
 
@@ -20,7 +22,7 @@ record Queue<a> {
 
 /**
  * An empty queue.
- * 
+ *
  * @since v0.5.4
  */
 export let empty = {
@@ -30,11 +32,11 @@ export let empty = {
 
 /**
  * Creates an empty queue.
- * 
+ *
  * @returns An empty queue
- * 
+ *
  * @deprecated This will be removed in the v0.6.0 release of Grain.
- * 
+ *
  * @since v0.2.0
  */
 export let make = () => {
@@ -43,7 +45,7 @@ export let make = () => {
 
 /**
  * Checks if the given queue contains any values.
- * 
+ *
  * @param queue: The queue to check
  * @returns `true` if the given queue is empty or `false` otherwise
  *
@@ -58,7 +60,7 @@ export let isEmpty = queue => {
 
 /**
  * Returns the value at the beginning of the queue. It is not removed from the queue.
- * 
+ *
  * @param queue: The queue to inspect
  * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
  *
@@ -76,7 +78,7 @@ export let peek = queue => {
 
 /**
  * Adds a value to the end of the queue.
- * 
+ *
  * @param value: The value to append
  * @param queue: The queue to update
  * @returns An updated queue
@@ -95,7 +97,7 @@ export let push = (value, queue) => {
 
 /**
  * Dequeues the next value in the queue.
- * 
+ *
  * @param queue: The queue to change
  * @returns An updated queue
  *
@@ -119,7 +121,7 @@ export let pop = queue => {
 
 /**
  * Get the number of values in a queue.
- * 
+ *
  * @param queue: The queue to inspect
  * @returns The number of values in the queue
  *

@@ -2,6 +2,8 @@
 title: Queue
 ---
 
+> **Deprecated:** This module will be renamed to ImmutableQueue in the v0.6.0 release of Grain.
+
 An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
 
 <details disabled>

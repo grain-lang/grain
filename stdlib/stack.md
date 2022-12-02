@@ -2,6 +2,8 @@
 title: Stack
 ---
 
+> **Deprecated:** This module will be renamed to ImmutableStack in the v0.6.0 release of Grain.
+
 An immutable stack implementation. A stack is a LIFO (last-in-first-out) data structure where new values are added, retrieved, and removed from the end.
 
 ```grain

@@ -1,6 +1,8 @@
 /**
  * @module Stack: An immutable stack implementation. A stack is a LIFO (last-in-first-out) data structure where new values are added, retrieved, and removed from the end.
  * @example import Stack from "stack"
+ *
+ * @deprecated This module will be renamed to ImmutableStack in the v0.6.0 release of Grain.
  */
 
 import List from "list"
@@ -22,7 +24,7 @@ record Stack<a> {
 
 /**
  * An empty stack.
- * 
+ *
  * @since v0.5.4
  */
 export let empty = {
@@ -34,7 +36,7 @@ export let empty = {
  * Creates a new stack.
  *
  * @returns An empty stack
- * 
+ *
  * @deprecated This will be removed in the v0.6.0 release of Grain.
  */
 export let make = () => {
