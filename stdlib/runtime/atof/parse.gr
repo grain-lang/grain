@@ -7,6 +7,7 @@ import WasmF64 from "runtime/unsafe/wasmf64"
 import { newInt32, newInt64, newFloat64 } from "runtime/dataStructures"
 
 import {
+  _CHAR_CODE_UNDERSCORE,
   _CHAR_CODE_PLUS,
   _CHAR_CODE_MINUS,
   _CHAR_CODE_DOT,
@@ -89,11 +90,14 @@ let parseScientificExponent = (ptr: WasmI32, offset: WasmI32, len: WasmI32) => {
   } else {
     // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
     while (offset < len) {
-      let digit = WasmI32.load8U(ptr, offset) - 0x30n
+      let char = WasmI32.load8U(ptr, offset)
+      let digit = char - 0x30n
       if (digit >= 0n && digit < 10n) {
         if (WasmI32.ltS(exponent, 0x10000n)) {
           exponent = WasmI32.add(digit, WasmI32.mul(10n, exponent))
         }
+        offset += 1n
+      } else if (char == _CHAR_CODE_UNDERSCORE) {
         offset += 1n
       } else {
         break
@@ -150,7 +154,8 @@ let parseFloatToParts = (string: String) => {
 
       // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
       while (i < len) {
-        let digit = WasmI32.load8U(ptr, i) - _CHAR_CODE_0
+        let char = WasmI32.load8U(ptr, i)
+        let digit = char - _CHAR_CODE_0
         if (digit >= 0n && digit < 10n) {
           mantissa = WasmI64.add(
             WasmI64.mul(mantissa, 10N),
@@ -158,12 +163,14 @@ let parseFloatToParts = (string: String) => {
           )
           numDigits += 1n
           i += 1n
+        } else if (char == _CHAR_CODE_UNDERSCORE) {
+          i += 1n
         } else {
           break
         }
       }
 
-      let intEnd = ptr + i
+      let digitsBeforeDecimal = numDigits
 
       // Handle the dot
       match (WasmI32.load8U(ptr, i)) {
@@ -179,24 +186,28 @@ let parseFloatToParts = (string: String) => {
                 WasmI64.mul(mantissa, 100000000N)
               )
               i += 8n
+              numDigitsAfterDot += 8n
             } else {
               break
             }
           }
           // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
           while (i < len) {
-            let digit = WasmI32.load8U(ptr, i) - _CHAR_CODE_0
+            let char = WasmI32.load8U(ptr, i)
+            let digit = char - _CHAR_CODE_0
             if (digit >= 0n && digit < 10n) {
               mantissa = WasmI64.add(
                 WasmI64.extendI32U(digit),
                 WasmI64.mul(mantissa, 10N)
               )
               i += 1n
+              numDigitsAfterDot += 1n
+            } else if (char == _CHAR_CODE_UNDERSCORE) {
+              i += 1n
             } else {
               break
             }
           }
-          numDigitsAfterDot = i - dotStartIndex
           exponent = 0n - numDigitsAfterDot
         },
         _ => void,
@@ -250,11 +261,15 @@ let parseFloatToParts = (string: String) => {
                         n
                       }
                     i += 1n
+                  } else if (c == _CHAR_CODE_UNDERSCORE) {
+                    continue
                   } else {
                     break
                   }
                 }
 
+                // Attempt to parse 19 digits, the most that can fit in an i64
+                let mut digitsParsed = 0n
                 if (WasmI32.gtS(numDigits, 0n)) {
                   manyDigits = true
                   mantissa = 0N
@@ -262,12 +277,16 @@ let parseFloatToParts = (string: String) => {
                   let mut i = 0n
                   while (WasmI64.ltU(mantissa, _MIN_19DIGIT_INT)) {
                     if (i < len) {
-                      let digit = WasmI32.load8U(ptr, i) - _CHAR_CODE_0
-                      if (digit < 10n) {
+                      let char = WasmI32.load8U(ptr, i)
+                      let digit = char - _CHAR_CODE_0
+                      if (digit >= 0n && digit < 10n) {
                         mantissa = WasmI64.add(
                           WasmI64.mul(mantissa, 10N),
                           WasmI64.extendI32U(digit)
                         )
+                        i += 1n
+                        digitsParsed += 1n
+                      } else if (char == _CHAR_CODE_UNDERSCORE) {
                         i += 1n
                       } else {
                         break
@@ -278,7 +297,7 @@ let parseFloatToParts = (string: String) => {
                   }
 
                   exponent = if (WasmI64.geU(mantissa, _MIN_19DIGIT_INT)) {
-                    intEnd - (ptr + i)
+                    digitsBeforeDecimal - digitsParsed
                   } else {
                     // From Rust: https://github.com/Alexhuszagh/rust/blob/8752b403695a8830913571f0fd5ebfcf1483db37/library/core/src/num/dec2flt/parse.rs#L179-L184
                     // the next byte must be present and be '.'
@@ -288,15 +307,19 @@ let parseFloatToParts = (string: String) => {
                     // than 19 digits. That means we must have a decimal
                     // point, and at least 1 fractional digit.
                     i += 1n
-                    let before = ptr + i
+                    let mut fractionalDigitsParsed = 0n
                     while (WasmI64.ltU(mantissa, _MIN_19DIGIT_INT)) {
                       if (i < len) {
-                        let digit = WasmI32.load8U(ptr, i) - _CHAR_CODE_0
+                        let char = WasmI32.load8U(ptr, i)
+                        let digit = char - _CHAR_CODE_0
                         if (digit < 10n) {
                           mantissa = WasmI64.add(
                             WasmI64.mul(mantissa, 10N),
                             WasmI64.extendI32U(digit)
                           )
+                          i += 1n
+                          fractionalDigitsParsed += 1n
+                        } else if (char == _CHAR_CODE_UNDERSCORE) {
                           i += 1n
                         } else {
                           break
@@ -305,7 +328,7 @@ let parseFloatToParts = (string: String) => {
                         break
                       }
                     }
-                    0n - (ptr + i - before)
+                    0n - fractionalDigitsParsed
                   }
                   // Add back the explicit part
                   exponent += exponentNumber

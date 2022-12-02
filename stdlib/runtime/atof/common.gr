@@ -52,6 +52,8 @@ export let _SMALLEST_POWER_OF_FIVE = -342N
 export let _LARGEST_POWER_OF_FIVE = 308N
 
 @unsafe
+export let _CHAR_CODE_UNDERSCORE = 0x5fn
+@unsafe
 export let _CHAR_CODE_PLUS = 0x2Bn
 @unsafe
 export let _CHAR_CODE_MINUS = 0x2Dn

@@ -552,6 +552,19 @@ assert Number.parseFloat("1090544144181609348671888949248") ==
 // slightly above, rounds up
 assert Number.parseFloat("1090544144181609348835077142190") ==
   Ok(1.0905441441816094e+30)
+// underscores
+assert Number.parseFloat("1__") == Ok(1.)
+assert Number.parseFloat("1_e2_3_") == Ok(1e+23)
+assert Number.parseFloat("100_000_000_000_000_000_000_000") == Ok(1e+23)
+assert Number.parseFloat("1_2345_6700") == Ok(1.234567e+08)
+assert Number.parseFloat("625e-3__") == Ok(0.625)
+assert Number.parseFloat("0_0e+0_12__3___4____567890123456789") == Ok(0.)
+assert Number.parseFloat("1_e400_000") == Ok(Number.infinity)
+assert Number.parseFloat("-1_e400_000") == Ok(Number.neg(Number.infinity))
+assert Number.parseFloat(
+  "1.000_000_000_000_000_111_022_302_462_515_654_042_363_166_809_082_031_250_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_000_1"
+) ==
+  Ok(1.0000000000000002)
 
 // parseInt
 assert Number.parseInt("42", 10) == Ok(42)

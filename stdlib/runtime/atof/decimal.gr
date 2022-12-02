@@ -9,6 +9,7 @@ import Memory from "runtime/unsafe/memory"
 import { newInt32, allocateBytes } from "runtime/dataStructures"
 
 import {
+  _CHAR_CODE_UNDERSCORE,
   _CHAR_CODE_PLUS,
   _CHAR_CODE_MINUS,
   _CHAR_CODE_0,
@@ -502,16 +503,19 @@ export let parseDecimal = (s: String) => {
   let start = i
   while (i < len) {
     let c = WasmI32.load8U(s + i, 8n)
-    if (c == _CHAR_CODE_0) {
+    if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
       i += 1n
     } else {
       break
     }
   }
   while (i < len) {
-    let digit = WasmI32.load8U(s + i, 8n) - _CHAR_CODE_0
+    let char = WasmI32.load8U(s + i, 8n)
+    let digit = char - _CHAR_CODE_0
     if (digit >= 0n && digit < 10n) {
       tryAddDigit(d, digit)
+      i += 1n
+    } else if (char == _CHAR_CODE_UNDERSCORE) {
       i += 1n
     } else {
       break
@@ -520,20 +524,19 @@ export let parseDecimal = (s: String) => {
   let c = WasmI32.load8U(s + i, 8n)
   if (c == _CHAR_CODE_DOT) {
     i += 1n
-    let first = i
-    // Skip leading zeros.
     let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+    let numDigitsBeforeDecimal = numDigits
+    // Skip leading zeros.
     if (numDigits == 0n) {
       while (i < len) {
         let c = WasmI32.load8U(s + i, 8n)
-        if (c == _CHAR_CODE_0) {
+        if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
           i += 1n
         } else {
           break
         }
       }
     }
-    let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
     while (len - i >= 8n && numDigits + 8n < _MAX_DIGITS) {
       let v = WasmI64.load(s + i, 0n)
       if (!is8Digits(v)) {
@@ -549,15 +552,21 @@ export let parseDecimal = (s: String) => {
     }
     d.numDigits = WasmI32.toGrain(newInt32(numDigits))
     while (i < len) {
-      let digit = WasmI32.load8U(s + i, 8n) - _CHAR_CODE_0
+      let char = WasmI32.load8U(s + i, 8n)
+      let digit = char - _CHAR_CODE_0
       if (digit >= 0n && digit < 10n) {
         tryAddDigit(d, digit)
+        i += 1n
+      } else if (char == _CHAR_CODE_UNDERSCORE) {
         i += 1n
       } else {
         break
       }
     }
-    d.decimalPoint = WasmI32.toGrain(newInt32(len - i - (len - first)))
+    numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+    d.decimalPoint = WasmI32.toGrain(
+      newInt32(numDigitsBeforeDecimal - numDigits)
+    )
   }
   let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
   if (numDigits != 0n) {
@@ -567,6 +576,8 @@ export let parseDecimal = (s: String) => {
       let c = WasmI32.load8U(s + i, 8n)
       if (c == _CHAR_CODE_0) {
         nTrailingZeros += 1n
+      } else if (c == _CHAR_CODE_UNDERSCORE) {
+        continue
       } else if (c != _CHAR_CODE_DOT) {
         break
       }
@@ -595,11 +606,14 @@ export let parseDecimal = (s: String) => {
     }
     let mut expNum = 0n
     while (i < len) {
-      let digit = WasmI32.load8U(s + i, 8n) - _CHAR_CODE_0
+      let char = WasmI32.load8U(s + i, 8n)
+      let digit = char - _CHAR_CODE_0
       if (digit >= 0n && digit < 10n) {
         if (expNum < 0x10000n) {
           expNum = 10n * expNum + digit
         }
+        i += 1n
+      } else if (char == _CHAR_CODE_UNDERSCORE) {
         i += 1n
       } else {
         break
