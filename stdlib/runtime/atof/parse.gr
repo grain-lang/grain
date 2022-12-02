@@ -299,7 +299,7 @@ let parseFloatToParts = (string: String) => {
                   exponent = if (WasmI64.geU(mantissa, _MIN_19DIGIT_INT)) {
                     digitsBeforeDecimal - digitsParsed
                   } else {
-                    // From Rust: https://github.com/Alexhuszagh/rust/blob/8752b403695a8830913571f0fd5ebfcf1483db37/library/core/src/num/dec2flt/parse.rs#L179-L184
+                    // From Rust: https://github.com/rust-lang/rust/blob/e960b5e7749e95c6a6b2fdec7250a48105664efb/library/core/src/num/dec2flt/parse.rs#L179
                     // the next byte must be present and be '.'
                     // We know this is true because we had more than 19
                     // digits previously, so we overflowed a 64-bit integer,
