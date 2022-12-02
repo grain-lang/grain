@@ -14,7 +14,7 @@ Paths in this module abide by a special POSIX-like representation/grammar
 rather than one defined by a specific operating system. The rules are as
 follows:
 
-- Path separators are denoted by `/` for POSIX-like paths and additionally `\` for Windows paths
+- Path separators are denoted by `/` for POSIX-like paths
 - Absolute paths may be rooted either at the POSIX-like root `/` or at Windows-like drive roots like `C:/`
 - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
 - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
@@ -175,21 +175,22 @@ fromPlatformString : (String, Platform) -> Path
 ```
 
 Parses a path string into a `Path` using the path separators appropriate to
-the given platform. Paths will be parsed as file paths rather than directory
-paths if there is ambiguity.
+the given platform (`/` for `Posix` and either `/` or `\` for `Windows`).
+Paths will be parsed as file paths rather than directory paths if there is
+ambiguity.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`pathStr`|`String`|The path string to parse|
+|`pathStr`|`String`|The string to parse as a path|
 |`platform`|`Platform`|The platform whose path separators should be used for parsing|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Path`|`Some(wrappedPath)` if the path is successfully parsed or `None` otherwise|
+|`Path`|The path wrapped with details encoded within the type|
 
 Examples:
 
@@ -199,6 +200,80 @@ fromPlatformString("/bin/", Posix) // an absolute Path referencing the directory
 
 ```grain
 fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
+```
+
+### Path.**toString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toString : Path -> String
+```
+
+Converts the given `Path` into a string, using the POSIX path separator.
+A trailing slash is added to directory paths.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`Path`|The path to convert to a string|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A string representing the given path|
+
+Examples:
+
+```grain
+toString(fromString("/file.txt")) == "/file.txt"
+```
+
+```grain
+toString(fromString("dir/")) == "./dir/"
+```
+
+### Path.**toPlatformString**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toPlatformString : (Path, Platform) -> String
+```
+
+Converts the given `Path` into a string, using the canonical path separator
+appropriate to the given platform (`/` for `Posix` and `\` for `Windows`).
+A trailing slash is added to directory paths.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`Path`|The path to convert to a string|
+|`platform`|`Platform`|The `Platform` to use to represent the path as a string|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|A string representing the given path|
+
+Examples:
+
+```grain
+toPlatformString(fromString("dir/"), Posix) == "./dir/"
+```
+
+```grain
+toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
 ```
 
 ### Path.**isDirectory**
@@ -264,80 +339,6 @@ isAbsolute(fromString("/Users/me")) == true
 
 ```grain
 isAbsolute(fromString("./file.txt")) == false
-```
-
-### Path.**toString**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-toString : Path -> String
-```
-
-Converts the given `Path` into a string, using the POSIX path separator.
-A trailing slash is added to directory paths.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to convert to a string|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`String`|A string representing the given path|
-
-Examples:
-
-```grain
-toString(fromString("/file.txt")) == "/file.txt"
-```
-
-```grain
-toString(fromString("dir/")) == "./dir/"
-```
-
-### Path.**toPlatformString**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-toPlatformString : (Path, Platform) -> String
-```
-
-Converts the given `Path` into a string, using the canonical path separator
-appropriate to the given platform. A trailing slash is added to directory
-paths.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`path`|`Path`|The path to convert to a string|
-|`platform`|`Platform`|The `Platform` to use to represent the path as a string|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`String`|A string representing the given path|
-
-Examples:
-
-```grain
-toPlatformString(fromString("dir/"), Posix) == "./dir/"
-```
-
-```grain
-toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
 ```
 
 ### Path.**append**

@@ -11,7 +11,7 @@
  * rather than one defined by a specific operating system. The rules are as
  * follows:
  * 
- * - Path separators are denoted by `/` for POSIX-like paths and additionally `\` for Windows paths
+ * - Path separators are denoted by `/` for POSIX-like paths
  * - Absolute paths may be rooted either at the POSIX-like root `/` or at Windows-like drive roots like `C:/`
  * - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
  * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
@@ -89,8 +89,8 @@ enum FileType {
 
 // hack to be able to concretely distinguish TypedPath from PathInfo and
 // enforce TypedPath's type parameters
-enum TFileType<a> {
-  TFileType(FileType),
+record TFileType<a> {
+  fileType: FileType,
 }
 
 // Rel Number represents number of directories up from base point
@@ -99,8 +99,8 @@ enum Base {
   Abs(AbsoluteRoot),
 },
 type PathInfo = (Base, FileType, List<String>),
-enum TBase<a> {
-  TBase(Base),
+record TBase<a> {
+  base: Base,
 },
 type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
@@ -261,13 +261,13 @@ let parseAbs = (pathStr, fileType, platform) => {
 
 let toTyped = (pathInfo: PathInfo) => {
   let (base, fileType, subs) = pathInfo
-  (TBase(base), TFileType(fileType), subs): TypedPath<a, b>
+  ({ base, }, { fileType, }, subs): TypedPath<a, b>
 }
 
 let toUntyped = (typedPath: TypedPath<a, b>) => {
   let (base, fileType, subs) = typedPath
-  let TBase(base) = base
-  let TFileType(fileType) = fileType
+  let { base } = base
+  let { fileType } = fileType
   (base, fileType, subs): PathInfo
 }
 
@@ -289,7 +289,7 @@ let toPath = (path: PathInfo) => {
   }
 }
 
-// TODO expose these functions once module system added
+// TODO(#1496): expose these functions once module system added
 
 let absoluteFile = (pathStr, platform) => {
   let pathOpt = parseAbs(pathStr, File, platform)
@@ -331,7 +331,7 @@ let relativeDir = (pathStr, platform) => {
   Option.map(toTyped, pathOpt): Option<TypedPath<Relative, Directory>>
 }
 
-// TODO reuse this and the other helper functions for the typed implementations
+// TODO(#1496): reuse this and the other helper functions for the typed implementations
 let fromStringHelper = (pathStr, platform) => {
   let tokens = match (lexPath(pathStr, platform)) {
     // will cause empty strings to get parsed as relative directory '.'
@@ -380,12 +380,13 @@ export let fromString = pathStr => {
 
 /**
  * Parses a path string into a `Path` using the path separators appropriate to
- * the given platform. Paths will be parsed as file paths rather than directory
- * paths if there is ambiguity.
+ * the given platform (`/` for `Posix` and either `/` or `\` for `Windows`).
+ * Paths will be parsed as file paths rather than directory paths if there is
+ * ambiguity.
  * 
- * @param pathStr: The path string to parse
+ * @param pathStr: The string to parse as a path
  * @param platform: The platform whose path separators should be used for parsing
- * @returns `Some(wrappedPath)` if the path is successfully parsed or `None` otherwise
+ * @returns The path wrapped with details encoded within the type
  * 
  * @example fromPlatformString("/bin/", Posix) // an absolute Path referencing the directory /bin/
  * @example fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
@@ -394,39 +395,6 @@ export let fromString = pathStr => {
  */
 export let fromPlatformString = (pathStr, platform) => {
   fromStringHelper(pathStr, platform)
-}
-
-/**
- * Determines whether the path is a directory path.
- * 
- * @param path: The path to inspect
- * @returns `true` if the path is a directory path or `false` otherwise
- * 
- * @example isDirectory(fromString("file.txt")) == false
- * @example isDirectory(fromString("/bin/")) == true
- * 
- * @since v0.5.5
- */
-export let isDirectory = path => {
-  let (_, fileType, _) = pathInfo(path)
-  fileType == Dir
-}
-
-/**
- * Determines whether the path is an absolute path.
- * 
- * @param path: The path to inspect
- * @returns `true` if the path is absolute or `false` otherwise
- * 
- * @example isAbsolute(fromString("/Users/me")) == true
- * @example isAbsolute(fromString("./file.txt")) == false
- */
-export let isAbsolute = path => {
-  let (base, _, _) = pathInfo(path)
-  match (base) {
-    Abs(_) => true,
-    _ => false,
-  }
 }
 
 let toStringHelper = (path, platform) => {
@@ -474,8 +442,8 @@ export let toString = path => {
 
 /**
  * Converts the given `Path` into a string, using the canonical path separator
- * appropriate to the given platform. A trailing slash is added to directory
- * paths.
+ * appropriate to the given platform (`/` for `Posix` and `\` for `Windows`).
+ * A trailing slash is added to directory paths.
  * 
  * @param path: The path to convert to a string
  * @param platform: The `Platform` to use to represent the path as a string
@@ -488,6 +456,39 @@ export let toString = path => {
  */
 export let toPlatformString = (path, platform) => {
   toStringHelper(pathInfo(path), platform)
+}
+
+/**
+ * Determines whether the path is a directory path.
+ * 
+ * @param path: The path to inspect
+ * @returns `true` if the path is a directory path or `false` otherwise
+ * 
+ * @example isDirectory(fromString("file.txt")) == false
+ * @example isDirectory(fromString("/bin/")) == true
+ * 
+ * @since v0.5.5
+ */
+export let isDirectory = path => {
+  let (_, fileType, _) = pathInfo(path)
+  fileType == Dir
+}
+
+/**
+ * Determines whether the path is an absolute path.
+ * 
+ * @param path: The path to inspect
+ * @returns `true` if the path is absolute or `false` otherwise
+ * 
+ * @example isAbsolute(fromString("/Users/me")) == true
+ * @example isAbsolute(fromString("./file.txt")) == false
+ */
+export let isAbsolute = path => {
+  let (base, _, _) = pathInfo(path)
+  match (base) {
+    Abs(_) => true,
+    _ => false,
+  }
 }
 
 // should only be used on relative path appended to directory path
