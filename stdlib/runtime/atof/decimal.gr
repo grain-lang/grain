@@ -94,7 +94,7 @@ let trim = d => {
   let (==) = WasmI32.eq
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
-  // All of the following calls to `trim` are fine because:
+  // Calls to `trim` in this module are fine because:
   //
   //  1. `parseDecimal` sets `numDigits` to a max of `_MAX_DIGITS`.
   //  2. `rightShift` sets `numDigits` to `writeIndex`, which is bounded by `numDigits`.
