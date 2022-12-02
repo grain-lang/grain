@@ -2220,7 +2220,7 @@ export let (>>) = (x: Number, y: Number) => {
 //         we will fail if attempting to coerce to an int!
 
 @unsafe
-export let rec coerceNumberToInt32 = (x: Number) => {
+export let coerceNumberToInt32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
     !isSimpleNumber(x) &&
@@ -2239,7 +2239,7 @@ export let rec coerceNumberToInt32 = (x: Number) => {
 }
 
 @unsafe
-export let rec coerceNumberToInt64 = (x: Number) => {
+export let coerceNumberToInt64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
     !isSimpleNumber(x) &&
@@ -2257,7 +2257,7 @@ export let rec coerceNumberToInt64 = (x: Number) => {
 }
 
 @unsafe
-export let rec coerceNumberToBigInt = (x: Number) => {
+export let coerceNumberToBigInt = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (isBigInt(x)) {
     // avoid extra malloc and prevent x from being freed

@@ -9,7 +9,7 @@ import Array from "array"
 import { hash } from "hash"
 import Memory from "runtime/unsafe/memory"
 import WasmI32 from "runtime/unsafe/wasmi32"
-import { allocateArray } from "runtime/dataStructures"
+import { allocateArray, untagSimpleNumber } from "runtime/dataStructures"
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record Bucket<k, v> {
@@ -418,19 +418,6 @@ export let fromList = list => {
   map
 }
 
-let setInArray = array => {
-  @disableGC
-  let rec iter = (i, key, value) => {
-    array[i] = (key, value)
-    // no decRef on key and value, since they are stored in array
-    Memory.decRef(WasmI32.fromGrain(iter))
-    Memory.incRef(WasmI32.fromGrain((+)))
-    Memory.incRef(WasmI32.fromGrain(i))
-    i + 1
-  }
-  iter
-}
-
 /**
  * Converts a map into an array of its key-value pairs.
  *
@@ -439,20 +426,24 @@ let setInArray = array => {
  *
  * @since v0.2.0
  */
-@disableGC
-export let rec toArray = map => {
-  let length = WasmI32.shrS(WasmI32.fromGrain(map.size), 1n)
-  let array = WasmI32.toGrain(allocateArray(length)): Array<a>
-  Memory.incRef(WasmI32.fromGrain(setInArray))
-  Memory.incRef(WasmI32.fromGrain(array))
-  let setInArray = setInArray(array)
-  Memory.incRef(WasmI32.fromGrain(reduce))
-  Memory.incRef(WasmI32.fromGrain(setInArray))
-  Memory.incRef(WasmI32.fromGrain(map))
-  reduce(setInArray, 0, map)
-  Memory.decRef(WasmI32.fromGrain(setInArray))
-  Memory.decRef(WasmI32.fromGrain(map))
-  Memory.decRef(WasmI32.fromGrain(toArray))
+@unsafe
+export let toArray: Map<a, b> -> Array<(a, b)> = map => {
+  let length = untagSimpleNumber(map.size)
+  let array = WasmI32.toGrain(allocateArray(length))
+  @unsafe
+  let reducer = (i, key, value) => {
+    // Assign the values into the array.
+    // We store them directly to prevent GC on uninitialized array data.
+    let array = WasmI32.fromGrain(array)
+    let item = (key, value)
+    WasmI32.store(
+      WasmI32.add(array, WasmI32.mul(untagSimpleNumber(i), 4n)),
+      Memory.incRef(WasmI32.fromGrain(item)),
+      8n
+    )
+    i + 1
+  }
+  reduce(reducer, 0, map)
   array
 }
 

@@ -208,6 +208,6 @@ equalHelp = (x, y) => {
 }
 
 @unsafe
-export let rec equal = (x: a, y: a) => {
+export let equal = (x: a, y: a) => {
   equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
 }

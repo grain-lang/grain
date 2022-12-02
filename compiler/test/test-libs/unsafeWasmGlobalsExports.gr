@@ -1,8 +1,8 @@
-@disableGC
+@unsafe
 export let _I32_VAL = 42n
-@disableGC
+@unsafe
 export let _I64_VAL = 42N
-@disableGC
+@unsafe
 export let _F32_VAL = 42.w
-@disableGC
+@unsafe
 export let _F64_VAL = 42.W

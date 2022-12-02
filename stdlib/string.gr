@@ -221,7 +221,7 @@ export let lastIndexOf = (search: String, string: String) => {
   }
 }
 
-@disableGC
+@unsafe
 let getCodePoint = (ptr: WasmI32) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
   let (+) = WasmI32.add
