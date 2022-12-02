@@ -50,7 +50,6 @@ export let length = array => {
   tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
 }
 
-// [FIXME] (#793) Type annotation breaks compiler
 /**
  * Creates a new array of the specified length with each element being
  * initialized with the given value.
@@ -64,7 +63,7 @@ export let length = array => {
  * @since v0.1.0
  */
 @unsafe
-export let make /*: (Number, a) -> Array<a>*/ = (length: Number, item: a) => {
+export let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
   let lengthArg = length
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
@@ -94,7 +93,7 @@ export let make /*: (Number, a) -> Array<a>*/ = (length: Number, item: a) => {
  * @since v0.1.0
  */
 @unsafe
-export let init /*: (Number, Number -> a) -> Array<a>*/ =
+export let init: (Number, Number -> a) -> Array<a> =
   (
     length: Number,
     fn: Number -> a,
@@ -822,7 +821,7 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  * applying the function to the first elements of each array, the second element
  * will contain the result of applying the function to the second elements of
  * each array, and so on.
- * 
+ *
  * Calling this function with arrays of different sizes will cause the returned
  * array to have the length of the smaller array.
  *
@@ -833,7 +832,7 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  *
  * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
  * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
- * 
+ *
  * @since v0.5.3
  */
 export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
