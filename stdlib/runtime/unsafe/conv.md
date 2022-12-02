@@ -54,9 +54,6 @@ wasmI32ToNumber : WasmI32 -> Number
 
 Converts a WasmI32 value to Number.
 
-This function is meant to be called from a `@disableGC` context without
-need to call incRef on the function.
-
 Parameters:
 
 |param|type|description|

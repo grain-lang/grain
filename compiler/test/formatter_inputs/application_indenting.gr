@@ -24,3 +24,5 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
   }
   Module32.store8(lastp, digit, 0n)
 }
+
+assert Hash.hash("grain > ore > wool > lumber > brick") == Hash.hash("grain > ore > wool > lumber > brick")

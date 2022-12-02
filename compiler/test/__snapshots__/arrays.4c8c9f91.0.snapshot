@@ -7,7 +7,7 @@ arrays › array_access2
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$printException\" (global $GRAIN$EXPORT$printException_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$panicWithException\" (global $GRAIN$EXPORT$panicWithException_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$IndexOutOfBounds\" (global $GRAIN$EXPORT$IndexOutOfBounds_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
@@ -15,7 +15,7 @@ arrays › array_access2
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/exception\" \"printException\" (func $printException_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/exception\" \"panicWithException\" (func $panicWithException_0 (param i32 i32) (result i32)))
  (global $x_1131 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
@@ -31,9 +31,9 @@ arrays › array_access2
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.8 (result i32)
+   (block $cleanup_locals.6 (result i32)
     (local.set $0
-     (block $compile_block.7 (result i32)
+     (block $compile_block.5 (result i32)
       (block $compile_store.3
        (global.set $x_1131
         (tuple.extract 0
@@ -76,7 +76,7 @@ arrays › array_access2
        (block $do_backpatches.2
        )
       )
-      (block $MArrayGet.6 (result i32)
+      (block $MArrayGet.4 (result i32)
        (local.set $1
         (i32.shr_s
          (i32.const 3)
@@ -97,14 +97,9 @@ arrays › array_access2
          (local.get $1)
         )
         (drop
-         (block $call_error_handler.5
-          (drop
-           (call $printException_0
-            (global.get $GRAIN$EXPORT$printException_0)
-            (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
-           )
-          )
-          (unreachable)
+         (call $panicWithException_0
+          (global.get $GRAIN$EXPORT$panicWithException_0)
+          (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
          )
         )
        )
@@ -116,14 +111,9 @@ arrays › array_access2
          (local.get $1)
         )
         (drop
-         (block $call_error_handler.4
-          (drop
-           (call $printException_0
-            (global.get $GRAIN$EXPORT$printException_0)
-            (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
-           )
-          )
-          (unreachable)
+         (call $panicWithException_0
+          (global.get $GRAIN$EXPORT$panicWithException_0)
+          (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
          )
         )
        )

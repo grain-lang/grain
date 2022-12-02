@@ -295,6 +295,24 @@ let makeFileRunner =
   });
 };
 
+let makeFileCompileErrorRunner = (test, name, filename, expected) => {
+  test(
+    name,
+    ({expect}) => {
+      let error =
+        try({
+          let infile = grainfile(filename);
+          let outfile = wasmfile(name);
+          ignore @@ compile_file(infile, outfile);
+          "";
+        }) {
+        | exn => Printexc.to_string(exn)
+        };
+      expect.string(error).toMatch(expected);
+    },
+  );
+};
+
 let makeFileErrorRunner = (test, name, filename, expected) => {
   test(
     name,

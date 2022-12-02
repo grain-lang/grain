@@ -578,7 +578,7 @@ export let cons = (a, b) =>
 export let empty = [] // <- for parity with `cons`, but should be deleted as well
 
 // Setup exception printing
-@disableGC
+@unsafe
 let rec setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {
     match (e) {
@@ -589,8 +589,6 @@ let rec setupExceptions = () => {
   })
 
   Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
-  Memory.decRef(WasmI32.fromGrain(setupExceptions))
-  void
 }
 
 setupExceptions()

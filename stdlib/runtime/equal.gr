@@ -189,7 +189,8 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
       xptr == yptr
     },
   }
-}, equalHelp = (x, y) => {
+},
+equalHelp = (x, y) => {
   if (
     (x & Tags._GRAIN_GENERIC_TAG_MASK) != 0n &&
     (y & Tags._GRAIN_GENERIC_TAG_MASK) != 0n
@@ -207,6 +208,6 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
 }
 
 @unsafe
-export let rec equal = (x: a, y: a) => {
+export let equal = (x: a, y: a) => {
   equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
 }

@@ -24,7 +24,22 @@ Stacks are immutable data structures that store their data in a List.
 
 Functions and constants included in the Stack module.
 
+### Stack.**empty**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.4</code></summary>
+No other changes yet.
+</details>
+
+```grain
+empty : Stack<a>
+```
+
+An empty stack.
+
 ### Stack.**make**
+
+> **Deprecated:** This will be removed in the v0.6.0 release of Grain.
 
 ```grain
 make : () -> Stack<a>

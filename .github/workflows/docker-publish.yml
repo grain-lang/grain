@@ -17,7 +17,7 @@ env:
 jobs:
   push_base_image:
     name: Push base Docker image to multiple registries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -97,7 +97,7 @@ jobs:
 
   push_slim_image:
     name: Push slim Docker image to multiple registries
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2

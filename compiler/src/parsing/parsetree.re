@@ -308,7 +308,8 @@ type prim0 =
   | AllocateInt64
   | AllocateFloat32
   | AllocateFloat64
-  | AllocateRational;
+  | AllocateRational
+  | Unreachable;
 
 /** Single-argument operators */
 [@deriving (sexp, yojson)]

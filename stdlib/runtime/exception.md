@@ -22,9 +22,15 @@ dangerouslyRegisterBasePrinter : a -> Void
 dangerouslyRegisterPrinter : a -> Void
 ```
 
-### Exception.**printException**
+### Exception.**panic**
 
 ```grain
-printException : Exception -> Void
+panic : String -> a
+```
+
+### Exception.**panicWithException**
+
+```grain
+panicWithException : Exception -> a
 ```
 

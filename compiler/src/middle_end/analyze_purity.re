@@ -48,6 +48,7 @@ let rec analyze_comp_expression =
         AllocateRational,
       ) =>
       true
+    | CPrim0(Unreachable) => false
     | CPrim1(
         AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
         NewInt32 |

@@ -121,10 +121,10 @@ let withConfig = (buf: RegExBuf, config: RegExParserConfig) => {
 
 let parseErr = (buf: RegExBuf, msg: String, posShift) => {
   "Invalid Regular Expression: " ++
-  msg ++
-  " (position " ++
-  toString(unbox(buf.cursor) + posShift) ++
-  ")"
+    msg ++
+    " (position " ++
+    toString(unbox(buf.cursor) + posShift) ++
+    ")"
 }
 
 let next = (buf: RegExBuf) => {
@@ -241,7 +241,8 @@ let rec rangeAdd = (rng: CharRange, v: CharRangeElt) => {
     _ when rangeContains(rng, v) => rng,
     _ => rangeUnion(rng, [(v, v)]),
   }
-}, rangeUnion = (rng1, rng2) => {
+},
+rangeUnion = (rng1, rng2) => {
   match ((rng1, rng2)) {
     ([], _) => rng2,
     (_, []) => rng1,
@@ -457,7 +458,10 @@ enum ParsedRegularExpression {
   ), // regex, n-start, num-n, needs-backtrack
   REReference(Number, Bool), // n, case-sensitive
   RERange(RERange),
-  REUnicodeCategories(List<UnicodeCategory>, Bool), // symlist, true=match/false=does-not-match
+  REUnicodeCategories(
+    List<UnicodeCategory>,
+    Bool
+  ), // symlist, true=match/false=does-not-match
 }
 
 let needsBacktrack = (rx: ParsedRegularExpression) => {
@@ -636,7 +640,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
       Ok(_) => parseRange(buf),
     }
   }
-}, parseRange = (buf: RegExBuf) => {
+},
+parseRange = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing closing `]`", 0))
   } else {
@@ -659,7 +664,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
       Ok(_) => parseRangeRest(buf, [], None, None),
     }
   }
-}, parseClass = (buf: RegExBuf) => {
+},
+parseClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(
       "no chars"
@@ -694,7 +700,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
       Ok(c) => Err("unknown class: " ++ toString(c)),
     }
   }
-}, parsePosixCharClass = (buf: RegExBuf) => {
+},
+parsePosixCharClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing POSIX character class after `[`", 0))
   } else {
@@ -810,7 +817,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
         ),
     }
   }
-}, parseRangeRest =
+},
+parseRangeRest =
   (
     buf: RegExBuf,
     rng: CharRange,
@@ -962,7 +970,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
       },
     }
   }
-}, parseRangeRestSpan =
+},
+parseRangeRestSpan =
   (
     buf: RegExBuf,
     c,
@@ -1213,7 +1222,8 @@ let rec parseAtom = (buf: RegExBuf) => {
         _ => parseLiteral(buf),
       },
   }
-}, parseLook = (buf: RegExBuf) => {
+},
+parseLook = (buf: RegExBuf) => {
   let preNumGroups = unbox(buf.config.groupNumber)
   let spanNumGroups = () => unbox(buf.config.groupNumber) - preNumGroups
   // (isMatch, isAhead)
@@ -1279,7 +1289,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       }
     },
   }
-}, parseTest = (buf: RegExBuf) => {
+},
+parseTest = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected test", 0))
   } else {
@@ -1316,7 +1327,8 @@ let rec parseAtom = (buf: RegExBuf) => {
         ),
     }
   }
-}, parseInteger = (buf: RegExBuf, n) => {
+},
+parseInteger = (buf: RegExBuf, n) => {
   if (!more(buf)) {
     Ok(n)
   } else {
@@ -1331,7 +1343,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       Ok(_) => Ok(n),
     }
   }
-}, parseMode = (buf: RegExBuf) => {
+},
+parseMode = (buf: RegExBuf) => {
   let processState = ((cs, ml)) => {
     let withCs = match (cs) {
       None => buf.config,
@@ -1390,7 +1403,8 @@ let rec parseAtom = (buf: RegExBuf) => {
     }
   }
   help((None, None))
-}, parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
+},
+parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected unicode category", 0))
   } else {
@@ -1558,7 +1572,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       Ok(_) => Err(parseErr(buf, "Expected `{` after `\\" ++ pC ++ "`", 0)),
     }
   }
-}, parseLiteral = (buf: RegExBuf) => {
+},
+parseLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected literal", 0))
   } else {
@@ -1592,7 +1607,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       },
     }
   }
-}, parseBackslashLiteral = (buf: RegExBuf) => {
+},
+parseBackslashLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     // Special case: EOS after backslash matches null
     Err(parseErr(buf, "Expected to find escaped value after backslash", 0))
@@ -1655,7 +1671,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       },
     }
   }
-}, parseNonGreedy = (buf: RegExBuf) => {
+},
+parseNonGreedy = (buf: RegExBuf) => {
   let checkNotNested = res => {
     if (!more(buf)) {
       res
@@ -1681,7 +1698,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       Ok(_) => checkNotNested(Ok(false)),
     }
   }
-}, parsePCE = (buf: RegExBuf) => {
+},
+parsePCE = (buf: RegExBuf) => {
   match (parseAtom(buf)) {
     Err(e) => Err(e),
     Ok(atom) => {
@@ -1775,7 +1793,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       }
     },
   }
-}, parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
+},
+parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
   if (!more(buf)) {
     Ok([])
   } else {
@@ -1801,7 +1820,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       },
     }
   }
-}, parseRegex = (buf: RegExBuf) => {
+},
+parseRegex = (buf: RegExBuf) => {
   if (!more(buf)) {
     Ok(REEmpty)
   } else {
@@ -1836,7 +1856,8 @@ let rec parseAtom = (buf: RegExBuf) => {
       },
     }
   }
-}, parseRegexNonEmpty = (buf: RegExBuf) => {
+},
+parseRegexNonEmpty = (buf: RegExBuf) => {
   match (parsePCEs(buf, false)) {
     Err(e) => Err(e),
     Ok(pces) => {
@@ -1922,7 +1943,7 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
     REAlts(a, b) => isAnchored(a) && isAnchored(b),
     REConditional(_, rx1, rx2, _, _, _) =>
       isAnchored(rx1) &&
-      Option.mapWithDefault(isAnchored, false, rx2),
+        Option.mapWithDefault(isAnchored, false, rx2),
     REGroup(rx, _) => isAnchored(rx),
     RECut(rx, _, _, _) => isAnchored(rx),
     _ => false,
@@ -2305,10 +2326,10 @@ let charMatcher = (toMatch, next_m) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => toMatch == c,
+        }
     }
   ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
@@ -2326,10 +2347,10 @@ let charTailMatcher = toMatch =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => toMatch == c,
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => toMatch == c,
+        }
     }
   ) Some(pos + 1) else None
 }
@@ -2382,13 +2403,13 @@ let stringMatcher = (toMatch, len, next_m) =>
   if (
     {
       pos + len <= limit &&
-      subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len
-      )
+        subArraysEqual(
+          buf.matchInputExploded,
+          pos,
+          String.explode(toMatch),
+          0,
+          len
+        )
     }
   ) next_m(buf, pos + len, start, limit, end, state, stack) else None
 }
@@ -2406,13 +2427,13 @@ let stringTailMatcher = (toMatch, len) =>
   if (
     {
       pos + len <= limit &&
-      subArraysEqual(
-        buf.matchInputExploded,
-        pos,
-        String.explode(toMatch),
-        0,
-        len
-      )
+        subArraysEqual(
+          buf.matchInputExploded,
+          pos,
+          String.explode(toMatch),
+          0,
+          len
+        )
     }
   ) Some(pos + len) else None
 }
@@ -2513,10 +2534,10 @@ let rangeMatcher = (rng: CharRange, next_m) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => rangeContains(rng, Char.code(c)),
+        }
     }
   ) next_m(buf, pos + 1, start, limit, end, state, stack) else None
 }
@@ -2534,10 +2555,10 @@ let rangeTailMatcher = (rng: CharRange) =>
   if (
     {
       pos < limit &&
-      match (matchBufChar(buf, pos)) {
-        Err(_) => false,
-        Ok(c) => rangeContains(rng, Char.code(c)),
-      }
+        match (matchBufChar(buf, pos)) {
+          Err(_) => false,
+          Ok(c) => rangeContains(rng, Char.code(c)),
+        }
     }
   ) Some(pos + 1) else None
 }
@@ -2636,7 +2657,7 @@ let isWordChar = c => {
 
 let isWordBoundary = (buf, pos, start, limit, end) => {
   !((pos == start || !isWordChar(matchBufChar(buf, pos - 1))) ==
-  (pos == end || !isWordChar(matchBufChar(buf, pos))))
+    (pos == end || !isWordChar(matchBufChar(buf, pos))))
 }
 
 let wordBoundaryMatcher = next_m =>
@@ -3608,7 +3629,7 @@ export record MatchResult {
   /**
    * Returns the contents of the given group
    */
-   group: Number -> Option<String>,
+  group: Number -> Option<String>,
   /**
    * Returns the position of the given group
    */
@@ -3672,10 +3693,12 @@ let makeMatchResult = (origString, start, end, state) => {
 // Helpers for user-facing match functionality
 
 let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
-  let state = if (rx.reReferences) Array.make(rx.reNumGroups, None)
+  let state =
+    if (rx.reReferences) Array.make(rx.reNumGroups, None)
     else Array.make(0, None)
-  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+  let toWrap =
+    if (startOffset == 0 && endOffset == String.length(string)) string
+    else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
@@ -3687,8 +3710,9 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
     []
   } else {
     let state = Array.make(rx.reNumGroups, None)
-    let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-        string else String.slice(startOffset, endOffset, string)
+    let toWrap =
+      if (startOffset == 0 && endOffset == String.length(string)) string
+      else String.slice(startOffset, endOffset, string)
     let buf = makeMatchBuffer(toWrap)
     match (searchMatch(
       rx,
@@ -3726,8 +3750,9 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
 
 let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
-  let toWrap = if (startOffset == 0 && endOffset == String.length(string))
-      string else String.slice(startOffset, endOffset, string)
+  let toWrap =
+    if (startOffset == 0 && endOffset == String.length(string)) string
+    else String.slice(startOffset, endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   match (searchMatch(
     rx,
@@ -3951,7 +3976,6 @@ let regexReplaceHelp =
     all: Bool,
   ) => {
   let buf = makeMatchBuffer(toSearch)
-  let mut out = []
   let rec loop = searchPos => {
     let state = Array.make(rx.reNumGroups, None)
     let inStart = max(0, searchPos - rx.reMaxLookbehind)
@@ -4044,4 +4068,75 @@ export let replaceAll =
     replacement: String,
   ) => {
   regexReplaceHelp(rx, toSearch, replacement, true)
+}
+
+let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
+  // Get list of matches
+  let regexMatches = if (all) {
+    findAll(rx, str)
+  } else {
+    match (find(rx, str)) {
+      None => [],
+      Some(m) => [m],
+    }
+  }
+  // Perform replacements
+  let mut out = []
+  let mut currentLocation = 0
+  List.forEach(regexMatch => {
+    let locations = regexMatch.allGroupPositions()
+    Array.forEachi((pos, i) => {
+      match (pos) {
+        Some((start, end)) => {
+          if (i == 0) {
+            // Add the string between this match and the last match
+            out = [String.slice(currentLocation, start, str), ...out]
+          } else {
+            // This adds the groups back in
+            out = [String.slice(start, end, str), ...out]
+          }
+          if (end > currentLocation) currentLocation = end
+        },
+        None => void,
+      }
+    }, locations)
+  }, regexMatches)
+  out = [String.slice(currentLocation, String.length(str), str), ...out]
+  List.reverse(out)
+}
+
+/**
+ * Splits the given string at the first match for the given regular expression.
+ *
+ * If the regex pattern contains capture groups, the content of the groups
+ * will be included in the output list.
+ *
+ * @param rx: The regular expression to match
+ * @param str: The string to split
+ * @returns A list of the split segments
+ *
+ * @example assert Regex.split(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b,c" ]
+ *
+ * @since v0.5.5
+ */
+export let split = (rx: RegularExpression, str: String) => {
+  regexSplitHelp(rx, str, false)
+}
+
+/**
+ * Splits the given string at every match for the given regular expression.
+ *
+ * If the regex pattern contains capture groups, the content of the groups
+ * will be included in the output list.
+ *
+ * @param rx: The regular expression to match
+ * @param str: The string to split
+ * @returns A list of the split segments
+ *
+ * @example assert Regex.splitAll(Result.unwrap(Regex.make(",")), "a,b,c") == [ "a", "b", "c" ]
+ *
+ * @since v0.5.5
+ */
+export let splitAll = (rx: RegularExpression, str: String) => {
+  regexSplitHelp(rx, str, true)
 }

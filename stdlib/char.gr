@@ -47,8 +47,8 @@ export let max = 0x10FFFF
  */
 export let isValid = charCode => {
   charCode >= min &&
-  (charCode <= 0xD7FF || charCode >= 0xE000) &&
-  charCode <= max
+    (charCode <= 0xD7FF || charCode >= 0xE000) &&
+    charCode <= max
 }
 
 /**

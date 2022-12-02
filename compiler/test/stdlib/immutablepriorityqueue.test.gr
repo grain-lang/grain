@@ -2,6 +2,8 @@ import ImmutablePriorityQueue from "immutablepriorityqueue"
 import List from "list"
 import Array from "array"
 
+assert ImmutablePriorityQueue.make(compare) == ImmutablePriorityQueue.empty
+
 // formatter-ignore
 let lotsOfVals = [>
   3, 2, 1, 5, 3, 2, 2, 10, 6, 5,
@@ -83,8 +85,11 @@ assert ImmutablePriorityQueue.drain(maxPqWithAll) == List.reverse(sortedList)
 assert ImmutablePriorityQueue.drain(
   ImmutablePriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => a - b)
 ) ==
-sortedList
+  sortedList
 assert ImmutablePriorityQueue.drain(
   ImmutablePriorityQueue.fromList(Array.toList(lotsOfVals), (a, b) => b - a)
 ) ==
-List.reverse(sortedList)
+  List.reverse(sortedList)
+
+assert ImmutablePriorityQueue.fromList(Array.toList(lotsOfVals), compare) ==
+  ImmutablePriorityQueue.fromArray(lotsOfVals, compare)

@@ -550,7 +550,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : ((a -> Array<b>), Array<a>) -> Array<b>
+flatMap : ((b -> Array<a>), Array<b>) -> Array<a>
 ```
 
 Produces a new array by calling a function on each element
@@ -562,14 +562,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Array<b>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
-|`array`|`Array<a>`|The array to iterate|
+|`fn`|`b -> Array<a>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
+|`array`|`Array<b>`|The array to iterate|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Array<b>`|The new array|
+|`Array<a>`|The new array|
 
 ### Array.**every**
 

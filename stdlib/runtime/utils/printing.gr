@@ -12,12 +12,12 @@ import foreign wasm fd_write: (
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 @unsafe
-export let rec numberToString = (n: WasmI64) => {
+export let numberToString = (n: WasmI64) => {
   NumberUtils.itoa64(n, 10n)
 }
 
 @unsafe
-export let rec printNumber = (n: WasmI64) => {
+export let printNumber = (n: WasmI64) => {
   // like print(), but `s` should be a Grain string
   let (+) = WasmI32.add
   let s = numberToString(n)
@@ -40,7 +40,7 @@ export let rec printNumber = (n: WasmI64) => {
 }
 
 @unsafe
-export let rec printString = (s: String) => {
+export let printString = (s: String) => {
   // like print(), but `s` should be a Grain string
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(s)

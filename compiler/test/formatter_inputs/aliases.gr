@@ -10,10 +10,10 @@ a
 type Foo<a,
   b> = String
 
-type Foo<a,
+type Foo1<a,
   b> = String // Test comment
 
-type Foo< // Test comment
+type Foo2< // Test comment
 a, b
 > = String
 
@@ -23,13 +23,13 @@ type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType
 type AReallyReallyReallyReallyReallyReallyReallyReallyReallyLongLineBreakingType<a, // Test comment
   b> = String
 
-type Foo<a, // Test comment
+type Foo3<a, // Test comment
   b> = String
 
-type Foo<a, /* Test comment */ b> = String
+type Foo4<a, /* Test comment */ b> = String
 
 // Test comment
-type Foo = String
+type Foo5 = String
 
 /* Test comment */ type Foo = String
 
@@ -43,3 +43,6 @@ type Foo< // opener
   a, /* Test comment */ 
   b /* second test comment */
   > = String //trailer
+
+type Foo2 =  // comment
+  VeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLongVeryVeryLong

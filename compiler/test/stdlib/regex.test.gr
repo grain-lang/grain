@@ -10,6 +10,8 @@ import {
   findAllRange,
   replace,
   replaceAll,
+  split,
+  splitAll,
   MatchResult,
 } from "regex"
 
@@ -79,7 +81,7 @@ assert testRegex("ca{2,}t", "catcaat") == Ok(Some(("caat", [>])))
 assert testRegex("ca{,2}t", "caaatcat") == Ok(Some(("cat", [>])))
 assert testRegex("ca{1,2}t", "caaatcat") == Ok(Some(("cat", [>])))
 assert testRegex("(c*)(a*)", "caat") ==
-Ok(Some(("caa", [> Some("c"), Some("aa")])))
+  Ok(Some(("caa", [> Some("c"), Some("aa")])))
 assert testRegex("[^ca]", "caat") == Ok(Some(("t", [>])))
 assert testRegex(".(.).", "cat") == Ok(Some(("cat", [> Some("a")])))
 assert testRegex("^a|^c", "cat") == Ok(Some(("c", [>])))
@@ -198,7 +200,7 @@ assert testRegex("a\\(*b", "ab") == Ok(Some(("ab", [>])))
 assert testRegex("a\\\\b", "a\\b") == Ok(Some(("a\\b", [>])))
 assert testRegex("((a))", "abc") == Ok(Some(("a", [> Some("a"), Some("a")])))
 assert testRegex("(a)b(c)", "abc") ==
-Ok(Some(("abc", [> Some("a"), Some("c")])))
+  Ok(Some(("abc", [> Some("a"), Some("c")])))
 assert testRegex("a+b+c", "aabbabc") == Ok(Some(("abc", [>])))
 assert testRegex("(a+|b)*", "ab") == Ok(Some(("ab", [> Some("b")])))
 assert testRegex("(a+|b)+", "ab") == Ok(Some(("ab", [> Some("b")])))
@@ -221,64 +223,64 @@ assert testRegex("(a|b)c*d", "abcd") == Ok(Some(("bcd", [> Some("b")])))
 assert testRegex("(ab|ab*)bc", "abc") == Ok(Some(("abc", [> Some("a")])))
 assert testRegex("a([bc]*)c*", "abc") == Ok(Some(("abc", [> Some("bc")])))
 assert testRegex("a([bc]*)(c*d)", "abcd") ==
-Ok(Some(("abcd", [> Some("bc"), Some("d")])))
+  Ok(Some(("abcd", [> Some("bc"), Some("d")])))
 assert testRegex("a([bc]+)(c*d)", "abcd") ==
-Ok(Some(("abcd", [> Some("bc"), Some("d")])))
+  Ok(Some(("abcd", [> Some("bc"), Some("d")])))
 assert testRegex("a([bc]*)(c+d)", "abcd") ==
-Ok(Some(("abcd", [> Some("b"), Some("cd")])))
+  Ok(Some(("abcd", [> Some("b"), Some("cd")])))
 assert testRegex("a[bcd]*dcdcde", "adcdcde") == Ok(Some(("adcdcde", [>])))
 assert testRegex("a[bcd]+dcdcde", "adcdcde") == Ok(None)
 
 assert testRegex("(ab|a)b*c", "abc") == Ok(Some(("abc", [> Some("ab")])))
 assert testRegex("((a)(b)c)(d)", "abcd") ==
-Ok(Some(("abcd", [> Some("abc"), Some("a"), Some("b"), Some("d")])))
+  Ok(Some(("abcd", [> Some("abc"), Some("a"), Some("b"), Some("d")])))
 assert testRegex("[a-zA-Z_][a-zA-Z0-9_]*", "alpha") == Ok(Some(("alpha", [>])))
 assert testRegex("^a(bc+|b[eh])g|.h$", "abh") == Ok(Some(("bh", [> None])))
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "effgz") ==
-Ok(Some(("effgz", [> Some("effgz"), None])))
+  Ok(Some(("effgz", [> Some("effgz"), None])))
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "ij") ==
-Ok(Some(("ij", [> Some("ij"), Some("j")])))
+  Ok(Some(("ij", [> Some("ij"), Some("j")])))
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "effg") == Ok(None)
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "bcdd") == Ok(None)
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "reffgz") ==
-Ok(Some(("effgz", [> Some("effgz"), None])))
+  Ok(Some(("effgz", [> Some("effgz"), None])))
 assert testRegex("(((((((((a)))))))))", "a") ==
-Ok(
-  Some(
-    (
-      "a",
-      [>
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-      ],
+  Ok(
+    Some(
+      (
+        "a",
+        [>
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+        ],
+      )
     )
   )
-)
 assert testRegex("multiple words of text", "uh-uh") == Ok(None)
 assert testRegex("multiple words", "multiple words, yeah") ==
-Ok(Some(("multiple words", [>])))
+  Ok(Some(("multiple words", [>])))
 assert testRegex("(.*)c(.*)", "abcde") ==
-Ok(Some(("abcde", [> Some("ab"), Some("de")])))
+  Ok(Some(("abcde", [> Some("ab"), Some("de")])))
 assert testRegex("\\((.*), (.*)\\)", "(a, b)") ==
-Ok(Some(("(a, b)", [> Some("a"), Some("b")])))
+  Ok(Some(("(a, b)", [> Some("a"), Some("b")])))
 assert testRegex("[k]", "ab") == Ok(None)
 assert testRegex("a[-]?c", "ac") == Ok(Some(("ac", [>])))
 assert testRegex("(abc)\\1", "abcabc") == Ok(Some(("abcabc", [> Some("abc")])))
 assert testRegex("([a-c]*)\\1", "abcabc") ==
-Ok(Some(("abcabc", [> Some("abc")])))
+  Ok(Some(("abcabc", [> Some("abc")])))
 assert testRegex("^(.+)?B", "AB") == Ok(Some(("AB", [> Some("A")])))
 assert testRegex("(a+).\\1$", "aaaaa") == Ok(Some(("aaaaa", [> Some("aa")])))
 assert testRegex("^(a+).\\1$", "aaaa") == Ok(None)
 assert testRegex("(abc)\\1", "abcabc") == Ok(Some(("abcabc", [> Some("abc")])))
 assert testRegex("([a-c]+)\\1", "abcabc") ==
-Ok(Some(("abcabc", [> Some("abc")])))
+  Ok(Some(("abcabc", [> Some("abc")])))
 assert testRegex("(a)\\1", "aa") == Ok(Some(("aa", [> Some("a")])))
 assert testRegex("(a+)\\1", "aa") == Ok(Some(("aa", [> Some("a")])))
 assert testRegex("(a+)+\\1", "aa") == Ok(Some(("aa", [> Some("a")])))
@@ -288,26 +290,26 @@ assert testRegex("(aa|a)a\\1$", "aaa") == Ok(Some(("aaa", [> Some("a")])))
 assert testRegex("(a|aa)a\\1$", "aaa") == Ok(Some(("aaa", [> Some("a")])))
 assert testRegex("(a+)a\\1$", "aaa") == Ok(Some(("aaa", [> Some("a")])))
 assert testRegex("([abc]*)\\1", "abcabc") ==
-Ok(Some(("abcabc", [> Some("abc")])))
+  Ok(Some(("abcabc", [> Some("abc")])))
 assert testRegex("(a)(b)c|ab", "ab") == Ok(Some(("ab", [> None, None])))
 assert testRegex("(a)+x", "aaax") == Ok(Some(("aaax", [> Some("a")])))
 assert testRegex("([ac])+x", "aacx") == Ok(Some(("aacx", [> Some("c")])))
 assert testRegex("([^/]*/)*sub1/", "d:msgs/tdir/sub1/trial/away.cpp") ==
-Ok(Some(("d:msgs/tdir/sub1/", [> Some("tdir/")])))
+  Ok(Some(("d:msgs/tdir/sub1/", [> Some("tdir/")])))
 assert testRegex(
   "([^.]*)\\.([^:]*):[T ]+(.*)",
   "track1.title:TBlah blah blah"
 ) ==
-Ok(
-  Some(
-    (
-      "track1.title:TBlah blah blah",
-      [> Some("track1"), Some("title"), Some("Blah blah blah")],
+  Ok(
+    Some(
+      (
+        "track1.title:TBlah blah blah",
+        [> Some("track1"), Some("title"), Some("Blah blah blah")],
+      )
     )
   )
-)
 assert testRegex("([^N]*N)+", "abNNxyzN") ==
-Ok(Some(("abNNxyzN", [> Some("xyzN")])))
+  Ok(Some(("abNNxyzN", [> Some("xyzN")])))
 assert testRegex("([^N]*N)+", "abNNxyz") == Ok(Some(("abNN", [> Some("N")])))
 assert testRegex("([abc]*)x", "abcx") == Ok(Some(("abcx", [> Some("abc")])))
 assert testRegex("([abc]*)x", "abc") == Ok(None)
@@ -389,7 +391,7 @@ assert Result.isErr(testRegex("abc)", "-"))
 assert Result.isErr(testRegex("(abc", "-"))
 assert testRegex("((a))", "abc") == Ok(Some(("a", [> Some("a"), Some("a")])))
 assert testRegex("(a)b(c)", "abc") ==
-Ok(Some(("abc", [> Some("a"), Some("c")])))
+  Ok(Some(("abc", [> Some("a"), Some("c")])))
 assert testRegex("a+b+c", "aabbabc") == Ok(Some(("abc", [>])))
 assert testRegex("a{1,}b{1,}c", "aabbabc") == Ok(Some(("abc", [>])))
 assert Result.isErr(testRegex("a**", "-"))
@@ -419,100 +421,100 @@ assert testRegex("(a|b)c*d", "abcd") == Ok(Some(("bcd", [> Some("b")])))
 assert testRegex("(ab|ab*)bc", "abc") == Ok(Some(("abc", [> Some("a")])))
 assert testRegex("a([bc]*)c*", "abc") == Ok(Some(("abc", [> Some("bc")])))
 assert testRegex("a([bc]*)(c*d)", "abcd") ==
-Ok(Some(("abcd", [> Some("bc"), Some("d")])))
+  Ok(Some(("abcd", [> Some("bc"), Some("d")])))
 assert testRegex("a([bc]+)(c*d)", "abcd") ==
-Ok(Some(("abcd", [> Some("bc"), Some("d")])))
+  Ok(Some(("abcd", [> Some("bc"), Some("d")])))
 assert testRegex("a([bc]*)(c+d)", "abcd") ==
-Ok(Some(("abcd", [> Some("b"), Some("cd")])))
+  Ok(Some(("abcd", [> Some("b"), Some("cd")])))
 assert testRegex("a[bcd]*dcdcde", "adcdcde") == Ok(Some(("adcdcde", [>])))
 assert testRegex("a[bcd]+dcdcde", "adcdcde") == Ok(None)
 assert testRegex("(ab|a)b*c", "abc") == Ok(Some(("abc", [> Some("ab")])))
 assert testRegex("((a)(b)c)(d)", "abcd") ==
-Ok(Some(("abcd", [> Some("abc"), Some("a"), Some("b"), Some("d")])))
+  Ok(Some(("abcd", [> Some("abc"), Some("a"), Some("b"), Some("d")])))
 assert testRegex("[a-zA-Z_][a-zA-Z0-9_]*", "alpha") == Ok(Some(("alpha", [>])))
 assert testRegex("^a(bc+|b[eh])g|.h$", "abh") == Ok(Some(("bh", [> None])))
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "effgz") ==
-Ok(Some(("effgz", [> Some("effgz"), None])))
+  Ok(Some(("effgz", [> Some("effgz"), None])))
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "ij") ==
-Ok(Some(("ij", [> Some("ij"), Some("j")])))
+  Ok(Some(("ij", [> Some("ij"), Some("j")])))
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "effg") == Ok(None)
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "bcdd") == Ok(None)
 assert testRegex("(bc+d$|ef*g.|h?i(j|k))", "reffgz") ==
-Ok(Some(("effgz", [> Some("effgz"), None])))
+  Ok(Some(("effgz", [> Some("effgz"), None])))
 assert testRegex("((((((((((a))))))))))", "a") ==
-Ok(
-  Some(
-    (
-      "a",
-      [>
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-      ],
+  Ok(
+    Some(
+      (
+        "a",
+        [>
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+        ],
+      )
     )
   )
-)
 assert testRegex("((((((((((a))))))))))\\10", "aa") ==
-Ok(
-  Some(
-    (
-      "aa",
-      [>
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-      ],
+  Ok(
+    Some(
+      (
+        "aa",
+        [>
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+        ],
+      )
     )
   )
-)
 assert Result.isErr(testRegex("((((((((((a))))))))))\\41", ""))
 // NYI (case-insensitive):
 // assert Result.isErr(testRegex("(?i:((((((((((a))))))))))\\41)", ""))
 assert testRegex("(((((((((a)))))))))", "a") ==
-Ok(
-  Some(
-    (
-      "a",
-      [>
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-        Some("a"),
-      ],
+  Ok(
+    Some(
+      (
+        "a",
+        [>
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+          Some("a"),
+        ],
+      )
     )
   )
-)
 assert testRegex("multiple words of text", "uh-uh") == Ok(None)
 assert testRegex("multiple words", "multiple words, yeah") ==
-Ok(Some(("multiple words", [>])))
+  Ok(Some(("multiple words", [>])))
 assert testRegex("(.*)c(.*)", "abcde") ==
-Ok(Some(("abcde", [> Some("ab"), Some("de")])))
+  Ok(Some(("abcde", [> Some("ab"), Some("de")])))
 assert testRegex("\\((.*), (.*)\\)", "(a, b)") ==
-Ok(Some(("(a, b)", [> Some("a"), Some("b")])))
+  Ok(Some(("(a, b)", [> Some("a"), Some("b")])))
 assert testRegex("[k]", "ab") == Ok(None)
 assert testRegex("a[-]?c", "ac") == Ok(Some(("ac", [>])))
 assert testRegex("(abc)\\1", "abcabc") == Ok(Some(("abcabc", [> Some("abc")])))
 assert testRegex("([a-c]*)\\1", "abcabc") ==
-Ok(Some(("abcabc", [> Some("abc")])))
+  Ok(Some(("abcabc", [> Some("abc")])))
 // NYI (case-insensitive):
 // assert testRegex("(?i:abc)", "ABC") == Ok(Some(("ABC", [> ])))
 // assert testRegex("(?i:abc)", "XBC") == Ok(None)
@@ -649,14 +651,14 @@ assert testRegex("a(?:b|c|d)(.)", "ace") == Ok(Some(("ace", [> Some("e")])))
 assert testRegex("a(?:b|c|d)*(.)", "ace") == Ok(Some(("ace", [> Some("e")])))
 assert testRegex("a(?:b|c|d)+?(.)", "ace") == Ok(Some(("ace", [> Some("e")])))
 assert testRegex("a(?:b|(c|e){1,2}?|d)+?(.)", "ace") ==
-Ok(Some(("ace", [> Some("c"), Some("e")])))
+  Ok(Some(("ace", [> Some("c"), Some("e")])))
 assert testRegex("^(.+)?B", "AB") == Ok(Some(("AB", [> Some("A")])))
 assert testRegex("(?<!-):(.*?)(?<!-):", "a:bc-:de:f") ==
-Ok(Some((":bc-:de:", [> Some("bc-:de")])))
+  Ok(Some((":bc-:de:", [> Some("bc-:de")])))
 assert testRegex("(?<!\\\\):(.*?)(?<!\\\\):", "a:bc\\:de:f") ==
-Ok(Some((":bc\\:de:", [> Some("bc\\:de")])))
+  Ok(Some((":bc\\:de:", [> Some("bc\\:de")])))
 assert testRegex("(?<!\\?)'(.*?)(?<!\\?)'", "a'bc?'de'f") ==
-Ok(Some(("'bc?'de'", [> Some("bc?'de")])))
+  Ok(Some(("'bc?'de'", [> Some("bc?'de")])))
 assert testRegex("^abc", "jkl\nabc\nxyz") == Ok(None)
 assert testRegex("(?m:^abc)", "jkl\nabc\nxyz") == Ok(Some(("abc", [>])))
 assert testRegex("(?m:abc$)", "jkl\nxyzabc\n123") == Ok(Some(("abc", [>])))
@@ -669,11 +671,11 @@ assert testRegex("\\D+", "1234abc5678") == Ok(Some(("abc", [>])))
 assert testRegex("[\\D]+", "1234abc5678") == Ok(Some(("abc", [>])))
 assert testRegex("[\\da-fA-F]+", "123abc") == Ok(Some(("123abc", [>])))
 assert testRegex("([\\s]*)([\\S]*)([\\s]*)", " testing!1972") ==
-Ok(Some((" testing!1972", [> Some(" "), Some("testing!1972"), Some("")])))
+  Ok(Some((" testing!1972", [> Some(" "), Some("testing!1972"), Some("")])))
 assert testRegex("(\\s*)(\\S*)(\\s*)", " testing!1972") ==
-Ok(Some((" testing!1972", [> Some(" "), Some("testing!1972"), Some("")])))
+  Ok(Some((" testing!1972", [> Some(" "), Some("testing!1972"), Some("")])))
 assert testRegex("(([a-z]+):)?([a-z]+)$", "smil") ==
-Ok(Some(("smil", [> None, None, Some("smil")])))
+  Ok(Some(("smil", [> None, None, Some("smil")])))
 // We handle this the same as Racket (returning None instead of an error); is that a mistake?
 // This isn't a well-defined regexp, so maybe we should error in the parser...
 // assert Result.isErr(testRegex("((.)\\1+)", ""))
@@ -683,13 +685,13 @@ assert testRegex("(?m:.*d)", "abc\nabd") == Ok(Some(("abd", [>])))
 assert Result.isErr(testRegex("(", ""))
 assert testRegex("(x?)?", "x") == Ok(Some(("x", [> Some("x")])))
 assert testRegex("(?<!abc)(d.f)", "abcdefdof") ==
-Ok(Some(("dof", [> Some("dof")])))
+  Ok(Some(("dof", [> Some("dof")])))
 assert testRegex("[\\w-]+", "laser_beam") == Ok(Some(("laser_beam", [>])))
 assert testRegex(".*?\\S *:", "xx:") == Ok(Some(("xx:", [>])))
 assert testRegex("a[ ]*?\\ (\\d+).*", "a   10") ==
-Ok(Some(("a   10", [> Some("10")])))
+  Ok(Some(("a   10", [> Some("10")])))
 assert testRegex("a[ ]*?\\ (\\d+).*", "a    10") ==
-Ok(Some(("a    10", [> Some("10")])))
+  Ok(Some(("a    10", [> Some("10")])))
 // NYI (case-insensitive):
 // assert testRegex("(?i:M+)", "MMM") == Ok(Some(("MMM", [> ])))
 // assert testRegex("(?i:m+)", "MMM") == Ok(Some(("MMM", [> ])))
@@ -697,34 +699,34 @@ Ok(Some(("a    10", [> Some("10")])))
 // assert testRegex("(?i:[m]+)", "MMM") == Ok(Some(("MMM", [> ])))
 assert Result.isErr(testRegex("^*", ""))
 assert testRegex("\"(?:\\\\\"|[^\"])*?\"", "\"\\\"\"") ==
-Ok(Some(("\"\\\"\"", [>])))
+  Ok(Some(("\"\\\"\"", [>])))
 assert testRegex("(?m:^.*?$)", "one\ntwo\nthree\n") == Ok(Some(("one", [>])))
 assert testRegex("a[^>]*?b", "a>b") == Ok(None)
 assert testRegex("^a*?$", "foo") == Ok(None)
 assert testRegex("^((a)c)?(ab)$", "ab") ==
-Ok(Some(("ab", [> None, None, Some("ab")])))
+  Ok(Some(("ab", [> None, None, Some("ab")])))
 assert testRegex("^([ab]*?)(?=(b)?)c", "abc") ==
-Ok(Some(("abc", [> Some("ab"), None])))
+  Ok(Some(("abc", [> Some("ab"), None])))
 assert testRegex("^([ab]*?)(?!(b))c", "abc") ==
-Ok(Some(("abc", [> Some("ab"), None])))
+  Ok(Some(("abc", [> Some("ab"), None])))
 assert testRegex("^([ab]*?)(?<!(a))c", "abc") ==
-Ok(Some(("abc", [> Some("ab"), None])))
+  Ok(Some(("abc", [> Some("ab"), None])))
 
 // Delimited versions
 assert testRegex("(-[0-9]*)+", "a-12--345b") ==
-Ok(Some(("-12--345", [> Some("-345")])))
+  Ok(Some(("-12--345", [> Some("-345")])))
 assert testRegexRange("(-[0-9]*)+", "a-12--345b", 2, 10) ==
-Ok(Some(("--345", [> Some("-345")])))
+  Ok(Some(("--345", [> Some("-345")])))
 assert testRegexRange("(-[0-9]*)+", "a-12--345b", 2, 8) ==
-Ok(Some(("--34", [> Some("-34")])))
+  Ok(Some(("--34", [> Some("-34")])))
 
 // Positions
 assert testRegexPositions("(-[0-9]*)+", "a-12--345b") ==
-Ok(Some(((1, 9), [> Some((5, 9))])))
+  Ok(Some(((1, 9), [> Some((5, 9))])))
 assert testRegexPositionsRange("(-[0-9]*)+", "a-12--345b", 2, 10) ==
-Ok(Some(((4, 9), [> Some((5, 9))])))
+  Ok(Some(((4, 9), [> Some((5, 9))])))
 assert testRegexPositionsRange("(-[0-9]*)+", "a-12--345b", 2, 8) ==
-Ok(Some(((4, 8), [> Some((5, 8))])))
+  Ok(Some(((4, 8), [> Some((5, 8))])))
 
 let unwrapResult = r => {
   match (r) {
@@ -736,32 +738,69 @@ let unwrapResult = r => {
 // Replacement tests (mostly testing replacement string syntax)
 assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza$1") == "foo bazaar"
 assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza$1_$1") ==
-"foo bazaar_ar"
+  "foo bazaar_ar"
 assert replace(unwrapResult(make("b(ar)")), "foo bar", "baza$2") == "foo baza"
 assert replace(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1$$") ==
-"foo bazaar$ bar"
+  "foo bazaar$ bar"
 
 // *All variants
 assert List.map(mr => flattenResult(mr), findAll(
   unwrapResult(make("x.")),
   "12x4x6"
 )) ==
-[("x4", [>]), ("x6", [>])]
+  [("x4", [>]), ("x6", [>])]
 assert List.map(mr => flattenResultPositions(mr), findAll(
   unwrapResult(make("x.")),
   "12x4x6"
 )) ==
-[((2, 4), [>]), ((4, 6), [>])]
+  [((2, 4), [>]), ((4, 6), [>])]
 
 assert replaceAll(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1") ==
-"foo bazaar bazaar"
+  "foo bazaar bazaar"
 assert replaceAll(unwrapResult(make("mi")), "mi casa", "su") == "su casa"
 assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "&") == "x&cy&z"
 assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "\\") == "x\\cy\\z"
 assert replaceAll(unwrapResult(make("a(.)")), "xabcyawz", "&$1\\$&$99=") ==
-"x&b\\ab=cy&w\\aw=z"
+  "x&b\\ab=cy&w\\aw=z"
 assert replaceAll(unwrapResult(make("p")), "apple", "$0$.0") == "ap0p0le"
 assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$`") == "bazbazfoo"
 assert replaceAll(unwrapResult(make("b(ar)")), "bazbarfoo", "$'") == "bazfoofoo"
 // https://github.com/grain-lang/grain/issues/1431
 assert replaceAll(unwrapResult(make("^.")), "asdf", "-") == "-sdf"
+
+// Regex.split
+assert split(unwrapResult(make(",")), "a,b,c,d") == ["a", "b,c,d"]
+assert split(unwrapResult(make("|")), "a,b,c,d") == ["a,b,c,d"]
+assert split(unwrapResult(make("\n|\r")), "a\nb\nc\rd\n\re") ==
+  ["a", "b\nc\rd\n\re"]
+assert split(unwrapResult(make(".")), "abcd") == ["", "bcd"]
+assert split(unwrapResult(make("d$")), "abcd") == ["abc", ""]
+assert split(unwrapResult(make("b(ar)")), "foo bar") == ["foo ", "ar", ""]
+assert split(unwrapResult(make("b(ar)")), "foo bar bar") ==
+  ["foo ", "ar", " bar"]
+assert split(unwrapResult(make("b(ar)b(az)")), "foo barbaz bar") ==
+  ["foo ", "ar", "az", " bar"]
+assert split(unwrapResult(make("b((a)r)")), "bar") == ["", "ar", "a", ""]
+assert split(unwrapResult(make("b(((((a))))r)")), "bar") ==
+  ["", "ar", "a", "a", "a", "a", ""]
+assert split(unwrapResult(make("b(((((a))))r)")), "bar bar") ==
+  ["", "ar", "a", "a", "a", "a", " bar"]
+// Regex.splitAll
+assert splitAll(unwrapResult(make(",")), "a,b,c,d") == ["a", "b", "c", "d"]
+assert splitAll(unwrapResult(make("|")), "a,b,c,d") == ["a,b,c,d"]
+assert splitAll(unwrapResult(make("\n|\r")), "a\nb\nc\rd\n\re") ==
+  ["a", "b", "c", "d", "", "e"]
+assert splitAll(unwrapResult(make(".")), "abcd") == ["", "", "", "", ""]
+assert splitAll(unwrapResult(make("d$")), "abcd") == ["abc", ""]
+assert splitAll(unwrapResult(make("b(ar)(ar)")), "foo barar test") ==
+  ["foo ", "ar", "ar", " test"]
+assert splitAll(
+  unwrapResult(make("b(ar)(ar)")),
+  "foo barar test barar test2"
+) ==
+  ["foo ", "ar", "ar", " test ", "ar", "ar", " test2"]
+assert splitAll(unwrapResult(make("b((a)r)")), "bar") == ["", "ar", "a", ""]
+assert splitAll(unwrapResult(make("b(((((a))))r)")), "bar") ==
+  ["", "ar", "a", "a", "a", "a", ""]
+assert splitAll(unwrapResult(make("b(((((a))))r)")), "bar bar") ==
+  ["", "ar", "a", "a", "a", "a", " ", "ar", "a", "a", "a", "a", ""]
