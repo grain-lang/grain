@@ -241,8 +241,8 @@ let isFilePath = tokens => {
 let parseAbs = (pathStr, fileType, platform) => {
   match (lexPath(pathStr, platform)) {
     [] => None,
-    tokens => {
-      let [first, ...rest] = tokens
+    [first, ...rest] => {
+      let tokens = [first, ...rest]
       if (fileType == File && !isFilePath(tokens)) {
         None
       } else {
