@@ -5,7 +5,7 @@ primitive heapBase: WasmI32 = "@heap.base"
 primitive heapStart: WasmI32 = "@heap.start"
 primitive typeMetadata: WasmI32 = "@heap.type_metadata"
 
-@disableGC
+@unsafe
 let doTest = () => {
   assert WasmI32.eq(heapBase, 0x110000n)
   assert WasmI32.eq(heapStart, 0x110010n)

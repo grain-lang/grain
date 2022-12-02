@@ -18,7 +18,7 @@ import BI from "runtime/bigint"
 import { reducedInteger } from "runtime/numbers"
 
 @unsafe
-export let rec parseInt = (string: String, radix: Number) => {
+export let parseInt = (string: String, radix: Number) => {
   let _CHAR_0 = 0x30n
   let _CHAR_B = 0x42n
   let _CHAR_b = 0x62n

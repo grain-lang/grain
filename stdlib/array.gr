@@ -12,34 +12,27 @@ import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
 import Exception from "runtime/exception"
+import { coerceNumberToWasmI32 } from "runtime/numbers"
 
 /**
  * @section Values: Functions for working with the Array data type.
  */
 
-@disableGC
-let mut _ARRAY_LENGTH_OFFSET = 1n
-@disableGC
-let mut _ARRAY_START_OFFSET = 1n
+@unsafe
+let mut _ARRAY_LENGTH_OFFSET = 4n
+@unsafe
+let mut _ARRAY_START_OFFSET = 8n
 
-@disableGC
-let initPtr = () => {
-  _ARRAY_LENGTH_OFFSET = 4n
-  _ARRAY_START_OFFSET = 8n
-}
-initPtr()
-
-@disableGC
-let initLength = length => {
-  let length = WasmI32.fromGrain(length)
-  if (WasmI32.eqz(WasmI32.and(length, 1n))) {
+@unsafe
+let checkLength = length => {
+  let ptr = WasmI32.fromGrain(length)
+  if (WasmI32.eqz(WasmI32.and(ptr, 1n))) {
     throw Exception.InvalidArgument("Length argument must be an integer")
   }
-  let length = WasmI32.shrS(length, 1n)
-  if (WasmI32.ltS(length, 0n)) {
+  let len = WasmI32.shrS(ptr, 1n)
+  if (WasmI32.ltS(len, 0n)) {
     throw Exception.InvalidArgument("Length argument must be non-negative")
   }
-  length
 }
 
 /**
@@ -51,13 +44,10 @@ let initLength = length => {
  * @example Array.length([> 1, 2, 3, 4, 5]) == 5
  * @since v0.1.0
  */
-@disableGC
-export let rec length = array => {
+@unsafe
+export let length = array => {
   let ptr = WasmI32.fromGrain(array: Array<a>)
-  let ret = tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
-  Memory.decRef(ptr)
-  Memory.decRef(WasmI32.fromGrain(length))
-  ret
+  tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
 }
 
 // [FIXME] (#793) Type annotation breaks compiler
@@ -73,14 +63,11 @@ export let rec length = array => {
  *
  * @since v0.1.0
  */
-@disableGC
-export let rec make /*: (Number, a) -> Array<a>*/ =
-  (
-    length: Number,
-    item: a,
-  ) => {
+@unsafe
+export let make /*: (Number, a) -> Array<a>*/ = (length: Number, item: a) => {
   let lengthArg = length
-  let length = initLength(length)
+  checkLength(length)
+  let length = coerceNumberToWasmI32(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
@@ -90,11 +77,7 @@ export let rec make /*: (Number, a) -> Array<a>*/ =
       _ARRAY_START_OFFSET
     )
   }
-  let ret = WasmI32.toGrain(array): Array<a>
-  Memory.decRef(WasmI32.fromGrain(lengthArg))
-  Memory.decRef(WasmI32.fromGrain(item))
-  Memory.decRef(WasmI32.fromGrain(make))
-  ret
+  WasmI32.toGrain(array): Array<a>
 }
 
 /**
@@ -110,30 +93,27 @@ export let rec make /*: (Number, a) -> Array<a>*/ =
  *
  * @since v0.1.0
  */
-@disableGC
-export let rec init /*: (Number, Number -> a) -> Array<a>*/ =
+@unsafe
+export let init /*: (Number, Number -> a) -> Array<a>*/ =
   (
     length: Number,
     fn: Number -> a,
   ) => {
-  let length = initLength(length)
+  checkLength(length)
+  let length = coerceNumberToWasmI32(length)
   let byteLength = WasmI32.mul(length, 4n)
   let array = allocateArray(length)
   let mut index = 0n
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
-    Memory.incRef(WasmI32.fromGrain(fn))
     // [FIXME] This line fails the array/map test suite (#815)
-    //assert !WasmI32.eqz(WasmI32.and(WasmI32.fromGrain(index), 1n)) // must be a simple int for next line to be correct
+    // assert !WasmI32.eqz(WasmI32.and(WasmI32.fromGrain(index), 1n)) // must be a simple int for next line to be correct
     WasmI32.store(
       WasmI32.add(array, i),
-      WasmI32.fromGrain(fn(tagSimpleNumber(index))),
+      Memory.incRef(WasmI32.fromGrain(fn(tagSimpleNumber(index)))),
       _ARRAY_START_OFFSET
     )
-    //WasmI32.store(WasmI32.add(array, i), WasmI32.fromGrain(4), _ARRAY_START_OFFSET)
     index = WasmI32.add(index, 1n)
   }
-  Memory.decRef(WasmI32.fromGrain(fn))
-  Memory.decRef(WasmI32.fromGrain(init))
   WasmI32.toGrain(array): Array<a>
 }
 

@@ -1,8 +1,7 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Conv from "runtime/unsafe/conv"
-import Memory from "runtime/unsafe/memory"
 
-@disableGC
+@unsafe
 let test = () => {
   // unary tests
   assert WasmI32.eq(WasmI32.clz(0xfffffffn), 4n)
@@ -68,35 +67,26 @@ let test = () => {
   assert WasmI32.eq(WasmI32.fromGrain(true), 0xfffffffen)
   assert WasmI32.toGrain(0xfffffffen): Bool
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.toInt32(45n) == 45l
 
   assert WasmI32.eq(Conv.fromInt32(45l), 45n)
 
   // within range of simple numbers
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(45n) == 45
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(0n) == 0
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(-1073741824n) == -1073741824
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(1073741823n) == 1073741823
 
   // heap allocated
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(-1073741825n) == -1073741825
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(1073741824n) == 1073741824
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(-2147483648n) == -2147483648
 
-  Memory.incRef(WasmI32.fromGrain((==)))
   assert Conv.wasmI32ToNumber(2147483647n) == 2147483647
 }
 

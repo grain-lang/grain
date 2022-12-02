@@ -1,7 +1,7 @@
 import WasmI64 from "runtime/unsafe/wasmi64"
 import Conv from "runtime/unsafe/conv"
 
-@disableGC
+@unsafe
 let test = () => {
   // unary tests
   assert WasmI64.eq(WasmI64.clz(0xfffffffN), 36N)

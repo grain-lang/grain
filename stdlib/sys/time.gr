@@ -38,7 +38,7 @@ let getClockTime = (clockid, precision) => {
  * @returns `Ok(time)` of the current time if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let rec realTime = () => {
+export let realTime = () => {
   getClockTime(Wasi._CLOCK_REALTIME, 1000N)
 }
 
@@ -51,7 +51,7 @@ export let rec realTime = () => {
  * @returns `Ok(time)` of the current time if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let rec monotonicTime = () => {
+export let monotonicTime = () => {
   getClockTime(Wasi._CLOCK_MONOTONIC, 1N)
 }
 
@@ -61,7 +61,7 @@ export let rec monotonicTime = () => {
  * @returns `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let rec processCpuTime = () => {
+export let processCpuTime = () => {
   getClockTime(Wasi._CLOCK_PROCESS_CPUTIME, 1N)
 }
 
@@ -71,6 +71,6 @@ export let rec processCpuTime = () => {
  * @returns `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let rec threadCpuTime = () => {
+export let threadCpuTime = () => {
   getClockTime(Wasi._CLOCK_THREAD_CPUTIME, 1N)
 }

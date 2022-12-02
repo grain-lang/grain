@@ -1,6 +1,6 @@
-@disableGC
+@unsafe
 let test = () => {
-  @disableGC
+  @unsafe
   let foo = (val) => {
     match (val) {
       1n => print(1),
