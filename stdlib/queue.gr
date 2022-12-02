@@ -3,7 +3,7 @@
  * @example import Queue from "queue"
  * @since v0.2.0
  *
- * @deprecated This will be renamed to ImmutableQueue in the v0.6.0 release of Grain.
+ * @deprecated This module will be renamed to ImmutableQueue in the v0.6.0 release of Grain.
  */
 import List from "list"
 
