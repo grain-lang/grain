@@ -142,17 +142,17 @@ assert fs("") == fs(".")
 assert fs(".") == fs("./")
 assert fs("dir") != fs("dir/")
 assert Path.toPlatformString(fs("C:/Users/me/"), Path.Windows) ==
-"C:\\Users\\me\\"
+  "C:\\Users\\me\\"
 assert Path.toPlatformString(
   Path.fromPlatformString("C:\\Users/me\\", Path.Windows),
   Path.Windows
 ) ==
-"C:\\Users\\me\\"
+  "C:\\Users\\me\\"
 assert Path.toPlatformString(
   Path.fromPlatformString(".\\dir/me\\", Path.Windows),
   Path.Posix
 ) ==
-"./dir/me/"
+  "./dir/me/"
 
 assert Path.stem(fs("dir/")) == Err(Path.IncompatiblePathType)
 assert Path.extension(fs("dir/")) == Err(Path.IncompatiblePathType)
