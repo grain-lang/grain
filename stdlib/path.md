@@ -43,10 +43,56 @@ enum AbsoluteRoot {
 
 Represents an absolute path's anchor point.
 
+### Path.**Relative**
+
+```grain
+type Relative
+```
+
+Represents a relative path.
+
+### Path.**Absolute**
+
+```grain
+type Absolute
+```
+
+Represents an absolute path.
+
+### Path.**File**
+
+```grain
+type File
+```
+
+Represents a path referencing a file.
+
+### Path.**Directory**
+
+```grain
+type Directory
+```
+
+Represents a path referencing a directory.
+
+### Path.**TypedPath**
+
+```grain
+type TypedPath<a, b>
+```
+
+Represents a path typed on (`Absolute` or `Relative`) and (`File` or
+`Directory`)
+
 ### Path.**Path**
 
 ```grain
-type Path
+enum Path {
+  AbsoluteFile(TypedPath<Absolute, File>),
+  AbsoluteDir(TypedPath<Absolute, Directory>),
+  RelativeFile(TypedPath<Relative, File>),
+  RelativeDir(TypedPath<Relative, Directory>),
+}
 ```
 
 Represents a system path.
@@ -213,7 +259,7 @@ No other changes yet.
 toString : Path -> String
 ```
 
-Converts the given `Path` into a string, using the POSIX path separator.
+Converts the given `Path` into a string, using the `/` path separator.
 A trailing slash is added to directory paths.
 
 Parameters:
@@ -542,7 +588,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<String>`|`Some(path)` containing the basename of the path, or `None` if the path does not have one|
+|`Option<String>`|`Some(path)` containing the basename of the path or `None` if the path does not have one|
 
 Examples:
 
@@ -620,7 +666,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<String, PathOperationError>`|`Ok(path)` containing the extension of the file path, or `Err(err)` if the path is a directory path|
+|`Result<String, PathOperationError>`|`Ok(path)` containing the extension of the file path or `Err(err)` if the path is a directory path|
 
 Examples:
 
