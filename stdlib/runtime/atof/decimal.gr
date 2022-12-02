@@ -2,6 +2,32 @@
 
 // This module was based on Rust's dec2flt
 // https://github.com/rust-lang/rust/blob/1cbc45942d5c0f6eb5d94e3b10762ba541958035/library/core/src/num/dec2flt/decimal.rs
+// Rust's MIT license is provided below:
+/*
+ * Permission is hereby granted, free of charge, to any
+ * person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the
+ * Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice
+ * shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+ * SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+*/
 
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
@@ -24,44 +50,46 @@ primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive (!): Bool -> Bool = "@not"
 
 export record Decimal {
-  /// The number of significant digits in the decimal.
+  // The number of significant digits in the decimal.
   mut numDigits: Int32,
-  /// The offset of the decimal point in the significant digits.
+  // The offset of the decimal point in the significant digits.
   mut decimalPoint: Int32,
-  /// If the number of significant digits stored in the decimal is truncated.
+  // If the number of significant digits stored in the decimal is truncated.
   mut truncated: Bool,
-  /// Buffer of the raw digits, in the range [0, 9].
+  // Buffer of the raw digits, in the range [0, 9].
   digits: Bytes,
 }
 
-/// The maximum number of digits required to unambiguously round a float.
-///
-/// For a double-precision IEEE 754 float, this required 767 digits,
-/// so we store the max digits + 1.
-///
-/// We can exactly represent a float in radix `b` from radix 2 if
-/// `b` is divisible by 2. This function calculates the exact number of
-/// digits required to exactly represent that float.
-///
-/// According to the "Handbook of Floating Point Arithmetic",
-/// for IEEE754, with emin being the min exponent, p2 being the
-/// precision, and b being the radix, the number of digits follows as:
-///
-/// `−emin + p2 + ⌊(emin + 1) log(2, b) − log(1 − 2^(−p2), b)⌋`
-///
-/// For f32, this follows as:
-///     emin = -126
-///     p2 = 24
-///
-/// For f64, this follows as:
-///     emin = -1022
-///     p2 = 53
-///
-/// In Python:
-///     `-emin + p2 + math.floor((emin+ 1)*math.log(2, b)-math.log(1-2**(-p2), b))`
+/*
+ * The maximum number of digits required to unambiguously round a float.
+ *
+ * For a double-precision IEEE 754 float, this required 767 digits,
+ * so we store the max digits + 1.
+ *
+ * We can exactly represent a float in radix `b` from radix 2 if
+ * `b` is divisible by 2. This function calculates the exact number of
+ * digits required to exactly represent that float.
+ *
+ * According to the "Handbook of Floating Point Arithmetic",
+ * for IEEE754, with emin being the min exponent, p2 being the
+ * precision, and b being the radix, the number of digits follows as:
+ *
+ * `−emin + p2 + ⌊(emin + 1) log(2, b) − log(1 − 2^(−p2), b)⌋`
+ *
+ * For f32, this follows as:
+ *     emin = -126
+ *     p2 = 24
+ *
+ * For f64, this follows as:
+ *     emin = -1022
+ *     p2 = 53
+ *
+ * In Python:
+ *     `-emin + p2 + math.floor((emin+ 1)*math.log(2, b)-math.log(1-2**(-p2), b))`
+*/
 @unsafe
 let _MAX_DIGITS = 768n
-/// The max digits that can be exactly represented in a 64-bit integer.
+// The max digits that can be exactly represented in a 64-bit integer.
 @unsafe
 let _MAX_DIGITS_WITHOUT_OVERFLOW = 19n
 @unsafe
@@ -75,7 +103,7 @@ let new = () => {
   { numDigits: 0l, decimalPoint: 0l, truncated: false, digits }
 }
 
-/// Append a digit to the buffer.
+// Append a digit to the buffer.
 @unsafe
 export let tryAddDigit = (d, digit) => {
   let (+) = WasmI32.add
@@ -87,7 +115,7 @@ export let tryAddDigit = (d, digit) => {
   d.numDigits = WasmI32.toGrain(newInt32(WasmI32.add(numDigits, 1n)))
 }
 
-/// Trim trailing zeros from the buffer.
+// Trim trailing zeros from the buffer.
 @unsafe
 let trim = d => {
   let (!=) = WasmI32.ne
@@ -330,7 +358,7 @@ let numberOfDigitsDecimalLeftShift = (d, shift) => {
   numNewDigits
 }
 
-/// Computes decimal * 2^shift.
+// Computes decimal * 2^shift.
 @unsafe
 export let leftShift = (d, shift) => {
   let (+) = WasmI32.add
@@ -395,7 +423,7 @@ export let leftShift = (d, shift) => {
   }
 }
 
-/// Computes decimal * 2^-shift.
+// Computes decimal * 2^-shift.
 @unsafe
 export let rightShift = (d, shift) => {
   let (+) = WasmI32.add
@@ -477,7 +505,7 @@ export let rightShift = (d, shift) => {
   }
 }
 
-/// Parse a big integer representation of the float as a decimal.
+// Parse a big integer representation of the float as a decimal.
 @unsafe
 export let parseDecimal = (s: String) => {
   let (+) = WasmI32.add
