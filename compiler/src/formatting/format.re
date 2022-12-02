@@ -2928,11 +2928,9 @@ and print_expression =
         );
 
       let last_comment_different_line =
-        if (cond_trailing_comment == []) {
-          false;
-        } else {
-          let first = List.hd(cond_trailing_comment);
-
+        switch (cond_trailing_comment) {
+        | [] => false
+        | [first, ...rest] =>
           let (_, first_comment_line, _, _) =
             Locations.get_raw_pos_info(
               Locations.get_comment_loc(first).loc_start,
