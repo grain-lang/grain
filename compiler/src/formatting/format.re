@@ -29,30 +29,34 @@ type expression_parent_type =
 let exception_primitives = [|"throw", "fail", "assert"|];
 
 let is_maths_op = fn =>
-  switch (fn) {
-  | "*"
-  | "/"
-  | "%"
-  | "+"
-  | "-"
-  | "<"
-  | ">"
-  | "&"
-  | "^"
-  | "|" => true
+  switch (fn.[0]) {
+  | '*'
+  | '/'
+  | '%'
+  | '+'
+  | '-'
+  | '<'
+  | '>'
+  | '&'
+  | '^'
+  | '|' => true
   | _ => false
   };
 
 let is_logic_op = fn =>
-  switch (fn) {
-  | "<="
-  | ">="
-  | "=="
-  | "!="
-  | "is"
-  | "&&"
-  | "||" => true
-  | _ => false
+  if (String.length(fn) > 1) {
+    switch (String.sub(fn, 0, 2)) {
+    | "<="
+    | ">="
+    | "=="
+    | "!="
+    | "is"
+    | "&&"
+    | "||" => true
+    | _ => false
+    };
+  } else {
+    false;
   };
 
 let op_precedence = fn => {
