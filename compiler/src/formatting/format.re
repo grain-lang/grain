@@ -2927,6 +2927,36 @@ and print_expression =
           comments,
         );
 
+      let last_comment_different_line =
+        switch (cond_trailing_comment) {
+        | [] => false
+        | [first, ...rest] =>
+          let (_, first_comment_line, _, _) =
+            Locations.get_raw_pos_info(
+              Locations.get_comment_loc(first).loc_start,
+            );
+
+          let (_, condition_line, _, _) =
+            Locations.get_raw_pos_info(condition.pexp_loc.loc_end);
+
+          first_comment_line > condition_line;
+        };
+
+      let same_line_comments =
+        last_comment_different_line ? [] : cond_trailing_comment;
+      let later_line_comments =
+        last_comment_different_line ? cond_trailing_comment : [];
+
+      let print_later_comments = (~default, later_line_comments) =>
+        switch (later_line_comments) {
+        | [] => default
+        | cmts =>
+          Doc.concat([
+            Doc.line,
+            Comment_utils.new_comments_to_docs(later_line_comments),
+          ])
+        };
+
       let true_trailing_comment =
         Comment_utils.get_comments_between_locs(
           ~begin_loc=true_expr.pexp_loc,
@@ -3017,7 +3047,7 @@ and print_expression =
             ]);
           } else if (true_is_if) {
             Doc.concat([
-              Doc.space,
+              print_later_comments(~default=Doc.space, later_line_comments),
               Doc.lparen,
               Doc.indent(
                 Doc.concat([
@@ -3036,7 +3066,7 @@ and print_expression =
           } else {
             Doc.indent(
               Doc.concat([
-                Doc.line,
+                print_later_comments(~default=Doc.line, later_line_comments),
                 print_expression(
                   ~expression_parent=GenericExpression,
                   ~original_source,
@@ -3146,6 +3176,47 @@ and print_expression =
           ])
         };
 
+      let inner =
+        Doc.concat([
+          Doc.softLine,
+          Comment_utils.inbetween_comments_to_docs(
+            ~offset=false,
+            cond_leading_comment,
+          ),
+          switch (cond_leading_comment) {
+          | [] => Doc.nil
+          | _ => Doc.ifBreaks(Doc.nil, Doc.space)
+          },
+          Doc.group(
+            print_expression(
+              ~expression_parent=ConditionalExpression,
+              ~original_source,
+              ~comments=commentsInCondition,
+              condition,
+            ),
+          ),
+          switch (same_line_comments) {
+          | [] => Doc.nil
+          | _ =>
+            Doc.concat([
+              Doc.concat(
+                List.mapi(
+                  (index, c) =>
+                    Doc.concat([
+                      Doc.space,
+                      Comment_utils.nobreak_comment_to_doc(c),
+                      switch (c) {
+                      | Line(_) => Doc.breakParent
+                      | _ => Doc.nil
+                      },
+                    ]),
+                  same_line_comments,
+                ),
+              ),
+            ])
+          },
+        ]);
+
       Doc.concat([
         Doc.group(
           Doc.concat([
@@ -3154,37 +3225,7 @@ and print_expression =
             Doc.group(
               Doc.concat([
                 Doc.lparen,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.softLine,
-                    Comment_utils.inbetween_comments_to_docs(
-                      ~offset=false,
-                      cond_leading_comment,
-                    ),
-                    switch (cond_leading_comment) {
-                    | [] => Doc.nil
-                    | _ => Doc.ifBreaks(Doc.nil, Doc.space)
-                    },
-                    Doc.group(
-                      print_expression(
-                        ~expression_parent=ConditionalExpression,
-                        ~original_source,
-                        ~comments=commentsInCondition,
-                        condition,
-                      ),
-                    ),
-                    if (cond_trailing_comment == []) {
-                      Doc.nil;
-                    } else {
-                      Doc.concat([
-                        Doc.space,
-                        Comment_utils.block_trailing_comments_docs(
-                          cond_trailing_comment,
-                        ),
-                      ]);
-                    },
-                  ]),
-                ),
+                Doc.indent(inner),
                 Doc.softLine,
                 Doc.rparen,
               ]),
