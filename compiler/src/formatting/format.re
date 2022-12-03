@@ -45,6 +45,8 @@ let is_maths_op = fn =>
 
 let is_logic_op = fn =>
   switch (fn) {
+  | "<="
+  | ">="
   | "=="
   | "!="
   | "is"

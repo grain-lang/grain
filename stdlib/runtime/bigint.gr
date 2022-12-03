@@ -1339,7 +1339,7 @@ export let shl = (num: WasmI32, places: WasmI32) => {
   let (&) = WasmI64.and
   let a = places / 32n
   let b = places % 32n
-  let mask = (1N << WasmI64.extendI32U(b)) - 1N << 64N - WasmI64.extendI32U(b)
+  let mask = ((1N << WasmI64.extendI32U(b)) - 1N) << 64N - WasmI64.extendI32U(b)
   let result = init(numLimbs + a)
   setFlag(result, _IS_NEGATIVE, getFlag(num, _IS_NEGATIVE))
   let numHalfLimbs = WasmI32.shl(numLimbs, 1n)
@@ -1350,7 +1350,7 @@ export let shl = (num: WasmI32, places: WasmI32) => {
     setHalfLimb(
       result,
       i + a,
-      WasmI32.wrapI64(acc << WasmI64.extendI32U(b) >> 32N)
+      WasmI32.wrapI64((acc << WasmI64.extendI32U(b)) >> 32N)
     )
   }
   let (>) = WasmI64.gtU

@@ -1277,7 +1277,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
         wp_w_frc = WasmI64.mul(
           wp_w_frc,
           WasmI64.extendI32U(
-            WasmI32.load(get_POWERS10() + (0n - kappa << 2n), 0n)
+            WasmI32.load(get_POWERS10() + ((0n - kappa) << 2n), 0n)
           )
         )
         grisuRound(buffer, len, delta, p2, one_frc, wp_w_frc)
