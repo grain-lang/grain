@@ -740,7 +740,8 @@ No other changes yet.
 parseFloat : String -> Result<Number, String>
 ```
 
-Parses a string representation of a float into a `Number`
+Parses a string representation of a float into a `Number`. Underscores that appear
+in numeric portions of the input are ignored.
 
 Parameters:
 
