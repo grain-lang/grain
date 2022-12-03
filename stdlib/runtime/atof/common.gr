@@ -32,12 +32,9 @@
 import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 import WasmF64 from "runtime/unsafe/wasmf64"
-import {
-  get_POWERS10,
-  get_F64_POWERS10_FAST_PATH,
-  get_POWERS5,
-} from "runtime/numberUtils"
 import { newInt32, newInt64, newFloat64 } from "runtime/dataStructures"
+import { get_POWERS10 } from "runtime/numberUtils"
+import { get_F64_POWERS10_FAST_PATH, get_POWERS5 } from "./table"
 
 primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"

@@ -10,18 +10,6 @@ _MAX_DOUBLE_LENGTH : WasmI32
 get_POWERS10 : () -> WasmI32
 ```
 
-### NumberUtils.**get_F64_POWERS10_FAST_PATH**
-
-```grain
-get_F64_POWERS10_FAST_PATH : () -> WasmI32
-```
-
-### NumberUtils.**get_POWERS5**
-
-```grain
-get_POWERS5 : () -> WasmI32
-```
-
 ### NumberUtils.**get_HEX_DIGITS**
 
 ```grain

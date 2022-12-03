@@ -33,7 +33,7 @@ import WasmI32 from "runtime/unsafe/wasmi32"
 import WasmI64 from "runtime/unsafe/wasmi64"
 
 import { newInt32, newInt64, newFloat64 } from "runtime/dataStructures"
-import { get_POWERS5 } from "runtime/numberUtils"
+import { get_POWERS5 } from "./table"
 
 import {
   _SMALLEST_POWER_OF_FIVE,
