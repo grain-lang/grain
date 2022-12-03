@@ -28,6 +28,31 @@ type expression_parent_type =
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
+let is_maths_op = fn =>
+  switch (fn) {
+  | "*"
+  | "/"
+  | "%"
+  | "+"
+  | "-"
+  | "<"
+  | ">"
+  | "&"
+  | "^"
+  | "|" => true
+  | _ => false
+  };
+
+let is_logic_op = fn =>
+  switch (fn) {
+  | "=="
+  | "!="
+  | "is"
+  | "&&"
+  | "||" => true
+  | _ => false
+  };
+
 let op_precedence = fn => {
   let op_precedence = fn =>
     switch (fn) {
@@ -1871,6 +1896,7 @@ and print_infix_application =
         this_prec < parent_prec || child_name != function_name;
       | _ => true
       };
+
     let right_is_leaf =
       switch (second.pexp_desc) {
       | PExpApp(fn, expr) =>
@@ -1901,7 +1927,24 @@ and print_infix_application =
       | _ => false
       };
 
-    let left_needs_parens = left_is_if || left_grouping_required;
+    // put parens around different operators for clarity.
+    // Except math operations as this makes them look ugly
+    // and logic operations
+    let left_is_different_op =
+      switch (first.pexp_desc) {
+      | PExpApp(fn1, _) =>
+        let fn = get_function_name(fn1);
+        if (infixop(fn)) {
+          (!is_maths_op(function_name) && !is_logic_op(function_name))
+          && fn != function_name;
+        } else {
+          false;
+        };
+      | _ => false
+      };
+
+    let left_needs_parens =
+      left_is_if || left_grouping_required || left_is_different_op;
     let right_needs_parens = right_is_if || right_grouping_required;
 
     let lhs =
