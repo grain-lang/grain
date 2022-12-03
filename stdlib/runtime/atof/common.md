@@ -91,6 +91,12 @@ _SMALLEST_POWER_OF_FIVE : WasmI64
 _LARGEST_POWER_OF_FIVE : WasmI64
 ```
 
+### Common.**_CHAR_CODE_UNDERSCORE**
+
+```grain
+_CHAR_CODE_UNDERSCORE : WasmI32
+```
+
 ### Common.**_CHAR_CODE_PLUS**
 
 ```grain
