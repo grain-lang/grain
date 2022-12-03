@@ -601,7 +601,7 @@ export let parseDecimal = (s: String) => {
     // Ignore the trailing zeros if there are any
     let mut nTrailingZeros = 0n
     for (let mut j = len - 1n; j >= len - i; j -= 1n) {
-      let c = WasmI32.load8U(s + i, 8n)
+      let c = WasmI32.load8U(s + j, 8n)
       if (c == _CHAR_CODE_0) {
         nTrailingZeros += 1n
       } else if (c == _CHAR_CODE_UNDERSCORE) {
