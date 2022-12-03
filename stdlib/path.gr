@@ -75,7 +75,7 @@ record TFileType<a> {
   fileType: FileType,
 }
 
-// Rel Number represents number of directories up from base point
+// Rel(Number) represents the number of directories up from the base point
 enum Base {
   Rel(Number),
   Abs(AbsoluteRoot),
