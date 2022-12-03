@@ -28,19 +28,17 @@ type expression_parent_type =
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
-let is_maths_op = fn =>
-  switch (fn.[0]) {
-  | '*'
-  | '/'
-  | '%'
-  | '+'
-  | '-'
-  | '<'
-  | '>'
-  | '&'
-  | '^'
-  | '|' => true
-  | _ => false
+let is_shift_or_concat_op = fn =>
+  if (String.length(fn) > 1) {
+    switch (String.sub(fn, 0, 2)) {
+    | "<<"
+    | ">>"
+    | "++"
+    | "||" => true
+    | _ => false
+    };
+  } else {
+    false;
   };
 
 let is_logic_op = fn =>
@@ -53,6 +51,26 @@ let is_logic_op = fn =>
     | "is"
     | "&&"
     | "||" => true
+    | _ => false
+    };
+  } else {
+    false;
+  };
+let is_math_op = fn =>
+  if (is_logic_op(fn) || is_shift_or_concat_op(fn)) {
+    false;
+  } else if (String.length(fn) > 0) {
+    switch (fn.[0]) {
+    | '*'
+    | '/'
+    | '%'
+    | '+'
+    | '-'
+    | '<'
+    | '>'
+    | '&'
+    | '^'
+    | '|' => true
     | _ => false
     };
   } else {
@@ -1941,7 +1959,7 @@ and print_infix_application =
       | PExpApp(fn1, _) =>
         let fn = get_function_name(fn1);
         if (infixop(fn)) {
-          (!is_maths_op(function_name) && !is_logic_op(function_name))
+          (!is_math_op(function_name) && !is_logic_op(function_name))
           && fn != function_name;
         } else {
           false;
