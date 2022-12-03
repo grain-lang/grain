@@ -186,4 +186,34 @@ describe("parsing", ({test, testSkip}) => {
       prog_loc: Location.dummy_loc,
     },
   );
+  assertParse(
+    "regression_issue_1473",
+    "a << b >> c",
+    {
+      statements: [
+        Top.expr(
+          Exp.apply(
+            Exp.ident(
+              Location.mknoloc(
+                Identifier.IdentName(Location.mknoloc(">>")),
+              ),
+            ),
+            [
+              Exp.apply(
+                Exp.ident(
+                  Location.mknoloc(
+                    Identifier.IdentName(Location.mknoloc("<<")),
+                  ),
+                ),
+                [a, b],
+              ),
+              c,
+            ],
+          ),
+        ),
+      ],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
 });
