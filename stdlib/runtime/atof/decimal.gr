@@ -1,0 +1,663 @@
+/* grainc-flags --no-pervasives */
+
+// This module was based on Rust's dec2flt
+// https://github.com/rust-lang/rust/blob/1cbc45942d5c0f6eb5d94e3b10762ba541958035/library/core/src/num/dec2flt/decimal.rs
+// Rust's MIT license is provided below:
+/*
+ * Permission is hereby granted, free of charge, to any
+ * person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the
+ * Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice
+ * shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+ * SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+*/
+
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import { newInt32, allocateBytes } from "runtime/dataStructures"
+
+import {
+  _CHAR_CODE_UNDERSCORE,
+  _CHAR_CODE_PLUS,
+  _CHAR_CODE_MINUS,
+  _CHAR_CODE_0,
+  _CHAR_CODE_E,
+  _CHAR_CODE_e,
+  _CHAR_CODE_DOT,
+  is8Digits,
+} from "./common"
+
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive (!): Bool -> Bool = "@not"
+
+export record Decimal {
+  // The number of significant digits in the decimal.
+  mut numDigits: Int32,
+  // The offset of the decimal point in the significant digits.
+  mut decimalPoint: Int32,
+  // If the number of significant digits stored in the decimal is truncated.
+  mut truncated: Bool,
+  // Buffer of the raw digits, in the range [0, 9].
+  digits: Bytes,
+}
+
+/*
+ * The maximum number of digits required to unambiguously round a float.
+ *
+ * For a double-precision IEEE 754 float, this required 767 digits,
+ * so we store the max digits + 1.
+ *
+ * We can exactly represent a float in radix `b` from radix 2 if
+ * `b` is divisible by 2. This function calculates the exact number of
+ * digits required to exactly represent that float.
+ *
+ * According to the "Handbook of Floating Point Arithmetic",
+ * for IEEE754, with emin being the min exponent, p2 being the
+ * precision, and b being the radix, the number of digits follows as:
+ *
+ * `−emin + p2 + ⌊(emin + 1) log(2, b) − log(1 − 2^(−p2), b)⌋`
+ *
+ * For f32, this follows as:
+ *     emin = -126
+ *     p2 = 24
+ *
+ * For f64, this follows as:
+ *     emin = -1022
+ *     p2 = 53
+ *
+ * In Python:
+ *     `-emin + p2 + math.floor((emin+ 1)*math.log(2, b)-math.log(1-2**(-p2), b))`
+*/
+@unsafe
+let _MAX_DIGITS = 768n
+// The max digits that can be exactly represented in a 64-bit integer.
+@unsafe
+let _MAX_DIGITS_WITHOUT_OVERFLOW = 19n
+@unsafe
+export let _DECIMAL_POINT_RANGE = 2047n
+
+@unsafe
+let new = () => {
+  let digits = allocateBytes(_MAX_DIGITS)
+  Memory.fill(WasmI32.add(digits, 8n), 0n, _MAX_DIGITS)
+  let digits = WasmI32.toGrain(digits)
+  { numDigits: 0l, decimalPoint: 0l, truncated: false, digits }
+}
+
+// Append a digit to the buffer.
+@unsafe
+export let tryAddDigit = (d, digit) => {
+  let (+) = WasmI32.add
+  let numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  if (WasmI32.ltU(numDigits, _MAX_DIGITS)) {
+    let digits = WasmI32.fromGrain(d.digits)
+    WasmI32.store8(digits + numDigits, digit, 8n)
+  }
+  d.numDigits = WasmI32.toGrain(newInt32(WasmI32.add(numDigits, 1n)))
+}
+
+// Trim trailing zeros from the buffer.
+@unsafe
+let trim = d => {
+  let (!=) = WasmI32.ne
+  let (==) = WasmI32.eq
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  // Calls to `trim` in this module are fine because:
+  //
+  //  1. `parseDecimal` sets `numDigits` to a max of `_MAX_DIGITS`.
+  //  2. `rightShift` sets `numDigits` to `writeIndex`, which is bounded by `numDigits`.
+  //  3. `leftShift` `numDigits` to a max of `_MAX_DIGITS`.
+  //
+  // Trim is only called in `rightShift` and `leftShift`.
+  let digits = WasmI32.fromGrain(d.digits)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  while (
+    numDigits != 0n &&
+    WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
+  ) {
+    numDigits -= 1n
+  }
+  d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+}
+
+@unsafe
+export let round = d => {
+  let (!=) = WasmI32.ne
+  let (==) = WasmI32.eq
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (>) = WasmI32.gtS
+  let (>=) = WasmI32.geS
+  let (<) = WasmI32.ltS
+  let (&) = WasmI32.and
+  let digits = WasmI32.fromGrain(d.digits)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+  if (numDigits == 0n || decimalPoint < 0n) {
+    0N
+  } else if (decimalPoint > 18n) {
+    0xFFFF_FFFF_FFFF_FFFF_N
+  } else {
+    let dp = decimalPoint
+    let mut n = 0_N
+    for (let mut i = 0n; i < dp; i += 1n) {
+      n = WasmI64.mul(n, 10N)
+      if (i < numDigits) {
+        n = WasmI64.add(n, WasmI64.extendI32U(WasmI32.load8U(digits + i, 8n)))
+      }
+    }
+    let mut roundUp = false
+    if (dp < numDigits) {
+      let dpDigit = WasmI32.load8U(digits + dp, 8n)
+      roundUp = dpDigit >= 5n
+      if (dpDigit == 5n && dp + 1n == numDigits) {
+        roundUp = d.truncated ||
+          dp != 0n && (1n & WasmI32.load8U(digits + dp - 1n, 8n)) != 0n
+      }
+    }
+    if (roundUp) {
+      n = WasmI64.add(n, 1N)
+    }
+    n
+  }
+}
+
+@unsafe
+let mut _TABLE = -1n
+
+@unsafe
+export let get_TABLE = () => {
+  let (==) = WasmI32.eq
+  if (_TABLE == -1n) {
+    _TABLE = Memory.malloc(130n)
+    WasmI32.store16(_TABLE, 0x0000n, 0n)
+    WasmI32.store16(_TABLE, 0x0800n, 2n)
+    WasmI32.store16(_TABLE, 0x0801n, 4n)
+    WasmI32.store16(_TABLE, 0x0803n, 6n)
+    WasmI32.store16(_TABLE, 0x1006n, 8n)
+    WasmI32.store16(_TABLE, 0x1009n, 10n)
+    WasmI32.store16(_TABLE, 0x100Dn, 12n)
+    WasmI32.store16(_TABLE, 0x1812n, 14n)
+    WasmI32.store16(_TABLE, 0x1817n, 16n)
+    WasmI32.store16(_TABLE, 0x181Dn, 18n)
+    WasmI32.store16(_TABLE, 0x2024n, 20n)
+    WasmI32.store16(_TABLE, 0x202Bn, 22n)
+    WasmI32.store16(_TABLE, 0x2033n, 24n)
+    WasmI32.store16(_TABLE, 0x203Cn, 26n)
+    WasmI32.store16(_TABLE, 0x2846n, 28n)
+    WasmI32.store16(_TABLE, 0x2850n, 30n)
+    WasmI32.store16(_TABLE, 0x285Bn, 32n)
+    WasmI32.store16(_TABLE, 0x3067n, 34n)
+    WasmI32.store16(_TABLE, 0x3073n, 36n)
+    WasmI32.store16(_TABLE, 0x3080n, 38n)
+    WasmI32.store16(_TABLE, 0x388En, 40n)
+    WasmI32.store16(_TABLE, 0x389Cn, 42n)
+    WasmI32.store16(_TABLE, 0x38ABn, 44n)
+    WasmI32.store16(_TABLE, 0x38BBn, 46n)
+    WasmI32.store16(_TABLE, 0x40CCn, 48n)
+    WasmI32.store16(_TABLE, 0x40DDn, 50n)
+    WasmI32.store16(_TABLE, 0x40EFn, 52n)
+    WasmI32.store16(_TABLE, 0x4902n, 54n)
+    WasmI32.store16(_TABLE, 0x4915n, 56n)
+    WasmI32.store16(_TABLE, 0x4929n, 58n)
+    WasmI32.store16(_TABLE, 0x513En, 60n)
+    WasmI32.store16(_TABLE, 0x5153n, 62n)
+    WasmI32.store16(_TABLE, 0x5169n, 64n)
+    WasmI32.store16(_TABLE, 0x5180n, 66n)
+    WasmI32.store16(_TABLE, 0x5998n, 68n)
+    WasmI32.store16(_TABLE, 0x59B0n, 70n)
+    WasmI32.store16(_TABLE, 0x59C9n, 72n)
+    WasmI32.store16(_TABLE, 0x61E3n, 74n)
+    WasmI32.store16(_TABLE, 0x61FDn, 76n)
+    WasmI32.store16(_TABLE, 0x6218n, 78n)
+    WasmI32.store16(_TABLE, 0x6A34n, 80n)
+    WasmI32.store16(_TABLE, 0x6A50n, 82n)
+    WasmI32.store16(_TABLE, 0x6A6Dn, 84n)
+    WasmI32.store16(_TABLE, 0x6A8Bn, 86n)
+    WasmI32.store16(_TABLE, 0x72AAn, 88n)
+    WasmI32.store16(_TABLE, 0x72C9n, 90n)
+    WasmI32.store16(_TABLE, 0x72E9n, 92n)
+    WasmI32.store16(_TABLE, 0x7B0An, 94n)
+    WasmI32.store16(_TABLE, 0x7B2Bn, 96n)
+    WasmI32.store16(_TABLE, 0x7B4Dn, 98n)
+    WasmI32.store16(_TABLE, 0x8370n, 100n)
+    WasmI32.store16(_TABLE, 0x8393n, 102n)
+    WasmI32.store16(_TABLE, 0x83B7n, 104n)
+    WasmI32.store16(_TABLE, 0x83DCn, 106n)
+    WasmI32.store16(_TABLE, 0x8C02n, 108n)
+    WasmI32.store16(_TABLE, 0x8C28n, 110n)
+    WasmI32.store16(_TABLE, 0x8C4Fn, 112n)
+    WasmI32.store16(_TABLE, 0x9477n, 114n)
+    WasmI32.store16(_TABLE, 0x949Fn, 116n)
+    WasmI32.store16(_TABLE, 0x94C8n, 118n)
+    WasmI32.store16(_TABLE, 0x9CF2n, 120n)
+    WasmI32.store16(_TABLE, 0x051Cn, 122n)
+    WasmI32.store16(_TABLE, 0x051Cn, 124n)
+    WasmI32.store16(_TABLE, 0x051Cn, 126n)
+    WasmI32.store16(_TABLE, 0x051Cn, 128n)
+  }
+  _TABLE
+}
+
+@unsafe
+let mut _TABLE_POW5 = -1n
+
+@unsafe
+export let get_TABLE_POW5 = () => {
+  let (==) = WasmI32.eq
+  // formatter-ignore
+  if (_TABLE_POW5 == -1n) {
+    _TABLE_POW5 = Memory.malloc(0x051Cn)
+    WasmI32.store8(_TABLE_POW5, 5n, 0n); WasmI32.store8(_TABLE_POW5, 2n, 1n); WasmI32.store8(_TABLE_POW5, 5n, 2n); WasmI32.store8(_TABLE_POW5, 1n, 3n); WasmI32.store8(_TABLE_POW5, 2n, 4n); WasmI32.store8(_TABLE_POW5, 5n, 5n); WasmI32.store8(_TABLE_POW5, 6n, 6n); WasmI32.store8(_TABLE_POW5, 2n, 7n); WasmI32.store8(_TABLE_POW5, 5n, 8n); WasmI32.store8(_TABLE_POW5, 3n, 9n); WasmI32.store8(_TABLE_POW5, 1n, 10n); WasmI32.store8(_TABLE_POW5, 2n, 11n); WasmI32.store8(_TABLE_POW5, 5n, 12n); WasmI32.store8(_TABLE_POW5, 1n, 13n); WasmI32.store8(_TABLE_POW5, 5n, 14n); WasmI32.store8(_TABLE_POW5, 6n, 15n); WasmI32.store8(_TABLE_POW5, 2n, 16n); WasmI32.store8(_TABLE_POW5, 5n, 17n); WasmI32.store8(_TABLE_POW5, 7n, 18n); WasmI32.store8(_TABLE_POW5, 8n, 19n); WasmI32.store8(_TABLE_POW5, 1n, 20n); WasmI32.store8(_TABLE_POW5, 2n, 21n); WasmI32.store8(_TABLE_POW5, 5n, 22n); WasmI32.store8(_TABLE_POW5, 3n, 23n); WasmI32.store8(_TABLE_POW5, 9n, 24n); WasmI32.store8(_TABLE_POW5, 0n, 25n); WasmI32.store8(_TABLE_POW5, 6n, 26n); WasmI32.store8(_TABLE_POW5, 2n, 27n); WasmI32.store8(_TABLE_POW5, 5n, 28n); WasmI32.store8(_TABLE_POW5, 1n, 29n);
+    WasmI32.store8(_TABLE_POW5, 9n, 30n); WasmI32.store8(_TABLE_POW5, 5n, 31n); WasmI32.store8(_TABLE_POW5, 3n, 32n); WasmI32.store8(_TABLE_POW5, 1n, 33n); WasmI32.store8(_TABLE_POW5, 2n, 34n); WasmI32.store8(_TABLE_POW5, 5n, 35n); WasmI32.store8(_TABLE_POW5, 9n, 36n); WasmI32.store8(_TABLE_POW5, 7n, 37n); WasmI32.store8(_TABLE_POW5, 6n, 38n); WasmI32.store8(_TABLE_POW5, 5n, 39n); WasmI32.store8(_TABLE_POW5, 6n, 40n); WasmI32.store8(_TABLE_POW5, 2n, 41n); WasmI32.store8(_TABLE_POW5, 5n, 42n); WasmI32.store8(_TABLE_POW5, 4n, 43n); WasmI32.store8(_TABLE_POW5, 8n, 44n); WasmI32.store8(_TABLE_POW5, 8n, 45n); WasmI32.store8(_TABLE_POW5, 2n, 46n); WasmI32.store8(_TABLE_POW5, 8n, 47n); WasmI32.store8(_TABLE_POW5, 1n, 48n); WasmI32.store8(_TABLE_POW5, 2n, 49n); WasmI32.store8(_TABLE_POW5, 5n, 50n); WasmI32.store8(_TABLE_POW5, 2n, 51n); WasmI32.store8(_TABLE_POW5, 4n, 52n); WasmI32.store8(_TABLE_POW5, 4n, 53n); WasmI32.store8(_TABLE_POW5, 1n, 54n); WasmI32.store8(_TABLE_POW5, 4n, 55n); WasmI32.store8(_TABLE_POW5, 0n, 56n); WasmI32.store8(_TABLE_POW5, 6n, 57n); WasmI32.store8(_TABLE_POW5, 2n, 58n); WasmI32.store8(_TABLE_POW5, 5n, 59n);
+    WasmI32.store8(_TABLE_POW5, 1n, 60n); WasmI32.store8(_TABLE_POW5, 2n, 61n); WasmI32.store8(_TABLE_POW5, 2n, 62n); WasmI32.store8(_TABLE_POW5, 0n, 63n); WasmI32.store8(_TABLE_POW5, 7n, 64n); WasmI32.store8(_TABLE_POW5, 0n, 65n); WasmI32.store8(_TABLE_POW5, 3n, 66n); WasmI32.store8(_TABLE_POW5, 1n, 67n); WasmI32.store8(_TABLE_POW5, 2n, 68n); WasmI32.store8(_TABLE_POW5, 5n, 69n); WasmI32.store8(_TABLE_POW5, 6n, 70n); WasmI32.store8(_TABLE_POW5, 1n, 71n); WasmI32.store8(_TABLE_POW5, 0n, 72n); WasmI32.store8(_TABLE_POW5, 3n, 73n); WasmI32.store8(_TABLE_POW5, 5n, 74n); WasmI32.store8(_TABLE_POW5, 1n, 75n); WasmI32.store8(_TABLE_POW5, 5n, 76n); WasmI32.store8(_TABLE_POW5, 6n, 77n); WasmI32.store8(_TABLE_POW5, 2n, 78n); WasmI32.store8(_TABLE_POW5, 5n, 79n); WasmI32.store8(_TABLE_POW5, 3n, 80n); WasmI32.store8(_TABLE_POW5, 0n, 81n); WasmI32.store8(_TABLE_POW5, 5n, 82n); WasmI32.store8(_TABLE_POW5, 1n, 83n); WasmI32.store8(_TABLE_POW5, 7n, 84n); WasmI32.store8(_TABLE_POW5, 5n, 85n); WasmI32.store8(_TABLE_POW5, 7n, 86n); WasmI32.store8(_TABLE_POW5, 8n, 87n); WasmI32.store8(_TABLE_POW5, 1n, 88n); WasmI32.store8(_TABLE_POW5, 2n, 89n);
+    WasmI32.store8(_TABLE_POW5, 5n, 90n); WasmI32.store8(_TABLE_POW5, 1n, 91n); WasmI32.store8(_TABLE_POW5, 5n, 92n); WasmI32.store8(_TABLE_POW5, 2n, 93n); WasmI32.store8(_TABLE_POW5, 5n, 94n); WasmI32.store8(_TABLE_POW5, 8n, 95n); WasmI32.store8(_TABLE_POW5, 7n, 96n); WasmI32.store8(_TABLE_POW5, 8n, 97n); WasmI32.store8(_TABLE_POW5, 9n, 98n); WasmI32.store8(_TABLE_POW5, 0n, 99n); WasmI32.store8(_TABLE_POW5, 6n, 100n); WasmI32.store8(_TABLE_POW5, 2n, 101n); WasmI32.store8(_TABLE_POW5, 5n, 102n); WasmI32.store8(_TABLE_POW5, 7n, 103n); WasmI32.store8(_TABLE_POW5, 6n, 104n); WasmI32.store8(_TABLE_POW5, 2n, 105n); WasmI32.store8(_TABLE_POW5, 9n, 106n); WasmI32.store8(_TABLE_POW5, 3n, 107n); WasmI32.store8(_TABLE_POW5, 9n, 108n); WasmI32.store8(_TABLE_POW5, 4n, 109n); WasmI32.store8(_TABLE_POW5, 5n, 110n); WasmI32.store8(_TABLE_POW5, 3n, 111n); WasmI32.store8(_TABLE_POW5, 1n, 112n); WasmI32.store8(_TABLE_POW5, 2n, 113n); WasmI32.store8(_TABLE_POW5, 5n, 114n); WasmI32.store8(_TABLE_POW5, 3n, 115n); WasmI32.store8(_TABLE_POW5, 8n, 116n); WasmI32.store8(_TABLE_POW5, 1n, 117n); WasmI32.store8(_TABLE_POW5, 4n, 118n); WasmI32.store8(_TABLE_POW5, 6n, 119n);
+    WasmI32.store8(_TABLE_POW5, 9n, 120n); WasmI32.store8(_TABLE_POW5, 7n, 121n); WasmI32.store8(_TABLE_POW5, 2n, 122n); WasmI32.store8(_TABLE_POW5, 6n, 123n); WasmI32.store8(_TABLE_POW5, 5n, 124n); WasmI32.store8(_TABLE_POW5, 6n, 125n); WasmI32.store8(_TABLE_POW5, 2n, 126n); WasmI32.store8(_TABLE_POW5, 5n, 127n); WasmI32.store8(_TABLE_POW5, 1n, 128n); WasmI32.store8(_TABLE_POW5, 9n, 129n); WasmI32.store8(_TABLE_POW5, 0n, 130n); WasmI32.store8(_TABLE_POW5, 7n, 131n); WasmI32.store8(_TABLE_POW5, 3n, 132n); WasmI32.store8(_TABLE_POW5, 4n, 133n); WasmI32.store8(_TABLE_POW5, 8n, 134n); WasmI32.store8(_TABLE_POW5, 6n, 135n); WasmI32.store8(_TABLE_POW5, 3n, 136n); WasmI32.store8(_TABLE_POW5, 2n, 137n); WasmI32.store8(_TABLE_POW5, 8n, 138n); WasmI32.store8(_TABLE_POW5, 1n, 139n); WasmI32.store8(_TABLE_POW5, 2n, 140n); WasmI32.store8(_TABLE_POW5, 5n, 141n); WasmI32.store8(_TABLE_POW5, 9n, 142n); WasmI32.store8(_TABLE_POW5, 5n, 143n); WasmI32.store8(_TABLE_POW5, 3n, 144n); WasmI32.store8(_TABLE_POW5, 6n, 145n); WasmI32.store8(_TABLE_POW5, 7n, 146n); WasmI32.store8(_TABLE_POW5, 4n, 147n); WasmI32.store8(_TABLE_POW5, 3n, 148n); WasmI32.store8(_TABLE_POW5, 1n, 149n);
+    WasmI32.store8(_TABLE_POW5, 6n, 150n); WasmI32.store8(_TABLE_POW5, 4n, 151n); WasmI32.store8(_TABLE_POW5, 0n, 152n); WasmI32.store8(_TABLE_POW5, 6n, 153n); WasmI32.store8(_TABLE_POW5, 2n, 154n); WasmI32.store8(_TABLE_POW5, 5n, 155n); WasmI32.store8(_TABLE_POW5, 4n, 156n); WasmI32.store8(_TABLE_POW5, 7n, 157n); WasmI32.store8(_TABLE_POW5, 6n, 158n); WasmI32.store8(_TABLE_POW5, 8n, 159n); WasmI32.store8(_TABLE_POW5, 3n, 160n); WasmI32.store8(_TABLE_POW5, 7n, 161n); WasmI32.store8(_TABLE_POW5, 1n, 162n); WasmI32.store8(_TABLE_POW5, 5n, 163n); WasmI32.store8(_TABLE_POW5, 8n, 164n); WasmI32.store8(_TABLE_POW5, 2n, 165n); WasmI32.store8(_TABLE_POW5, 0n, 166n); WasmI32.store8(_TABLE_POW5, 3n, 167n); WasmI32.store8(_TABLE_POW5, 1n, 168n); WasmI32.store8(_TABLE_POW5, 2n, 169n); WasmI32.store8(_TABLE_POW5, 5n, 170n); WasmI32.store8(_TABLE_POW5, 2n, 171n); WasmI32.store8(_TABLE_POW5, 3n, 172n); WasmI32.store8(_TABLE_POW5, 8n, 173n); WasmI32.store8(_TABLE_POW5, 4n, 174n); WasmI32.store8(_TABLE_POW5, 1n, 175n); WasmI32.store8(_TABLE_POW5, 8n, 176n); WasmI32.store8(_TABLE_POW5, 5n, 177n); WasmI32.store8(_TABLE_POW5, 7n, 178n); WasmI32.store8(_TABLE_POW5, 9n, 179n);
+    WasmI32.store8(_TABLE_POW5, 1n, 180n); WasmI32.store8(_TABLE_POW5, 0n, 181n); WasmI32.store8(_TABLE_POW5, 1n, 182n); WasmI32.store8(_TABLE_POW5, 5n, 183n); WasmI32.store8(_TABLE_POW5, 6n, 184n); WasmI32.store8(_TABLE_POW5, 2n, 185n); WasmI32.store8(_TABLE_POW5, 5n, 186n); WasmI32.store8(_TABLE_POW5, 1n, 187n); WasmI32.store8(_TABLE_POW5, 1n, 188n); WasmI32.store8(_TABLE_POW5, 9n, 189n); WasmI32.store8(_TABLE_POW5, 2n, 190n); WasmI32.store8(_TABLE_POW5, 0n, 191n); WasmI32.store8(_TABLE_POW5, 9n, 192n); WasmI32.store8(_TABLE_POW5, 2n, 193n); WasmI32.store8(_TABLE_POW5, 8n, 194n); WasmI32.store8(_TABLE_POW5, 9n, 195n); WasmI32.store8(_TABLE_POW5, 5n, 196n); WasmI32.store8(_TABLE_POW5, 5n, 197n); WasmI32.store8(_TABLE_POW5, 0n, 198n); WasmI32.store8(_TABLE_POW5, 7n, 199n); WasmI32.store8(_TABLE_POW5, 8n, 200n); WasmI32.store8(_TABLE_POW5, 1n, 201n); WasmI32.store8(_TABLE_POW5, 2n, 202n); WasmI32.store8(_TABLE_POW5, 5n, 203n); WasmI32.store8(_TABLE_POW5, 5n, 204n); WasmI32.store8(_TABLE_POW5, 9n, 205n); WasmI32.store8(_TABLE_POW5, 6n, 206n); WasmI32.store8(_TABLE_POW5, 0n, 207n); WasmI32.store8(_TABLE_POW5, 4n, 208n); WasmI32.store8(_TABLE_POW5, 6n, 209n);
+    WasmI32.store8(_TABLE_POW5, 4n, 210n); WasmI32.store8(_TABLE_POW5, 4n, 211n); WasmI32.store8(_TABLE_POW5, 7n, 212n); WasmI32.store8(_TABLE_POW5, 7n, 213n); WasmI32.store8(_TABLE_POW5, 5n, 214n); WasmI32.store8(_TABLE_POW5, 3n, 215n); WasmI32.store8(_TABLE_POW5, 9n, 216n); WasmI32.store8(_TABLE_POW5, 0n, 217n); WasmI32.store8(_TABLE_POW5, 6n, 218n); WasmI32.store8(_TABLE_POW5, 2n, 219n); WasmI32.store8(_TABLE_POW5, 5n, 220n); WasmI32.store8(_TABLE_POW5, 2n, 221n); WasmI32.store8(_TABLE_POW5, 9n, 222n); WasmI32.store8(_TABLE_POW5, 8n, 223n); WasmI32.store8(_TABLE_POW5, 0n, 224n); WasmI32.store8(_TABLE_POW5, 2n, 225n); WasmI32.store8(_TABLE_POW5, 3n, 226n); WasmI32.store8(_TABLE_POW5, 2n, 227n); WasmI32.store8(_TABLE_POW5, 2n, 228n); WasmI32.store8(_TABLE_POW5, 3n, 229n); WasmI32.store8(_TABLE_POW5, 8n, 230n); WasmI32.store8(_TABLE_POW5, 7n, 231n); WasmI32.store8(_TABLE_POW5, 6n, 232n); WasmI32.store8(_TABLE_POW5, 9n, 233n); WasmI32.store8(_TABLE_POW5, 5n, 234n); WasmI32.store8(_TABLE_POW5, 3n, 235n); WasmI32.store8(_TABLE_POW5, 1n, 236n); WasmI32.store8(_TABLE_POW5, 2n, 237n); WasmI32.store8(_TABLE_POW5, 5n, 238n); WasmI32.store8(_TABLE_POW5, 1n, 239n);
+    WasmI32.store8(_TABLE_POW5, 4n, 240n); WasmI32.store8(_TABLE_POW5, 9n, 241n); WasmI32.store8(_TABLE_POW5, 0n, 242n); WasmI32.store8(_TABLE_POW5, 1n, 243n); WasmI32.store8(_TABLE_POW5, 1n, 244n); WasmI32.store8(_TABLE_POW5, 6n, 245n); WasmI32.store8(_TABLE_POW5, 1n, 246n); WasmI32.store8(_TABLE_POW5, 1n, 247n); WasmI32.store8(_TABLE_POW5, 9n, 248n); WasmI32.store8(_TABLE_POW5, 3n, 249n); WasmI32.store8(_TABLE_POW5, 8n, 250n); WasmI32.store8(_TABLE_POW5, 4n, 251n); WasmI32.store8(_TABLE_POW5, 7n, 252n); WasmI32.store8(_TABLE_POW5, 6n, 253n); WasmI32.store8(_TABLE_POW5, 5n, 254n); WasmI32.store8(_TABLE_POW5, 6n, 255n); WasmI32.store8(_TABLE_POW5, 2n, 256n); WasmI32.store8(_TABLE_POW5, 5n, 257n); WasmI32.store8(_TABLE_POW5, 7n, 258n); WasmI32.store8(_TABLE_POW5, 4n, 259n); WasmI32.store8(_TABLE_POW5, 5n, 260n); WasmI32.store8(_TABLE_POW5, 0n, 261n); WasmI32.store8(_TABLE_POW5, 5n, 262n); WasmI32.store8(_TABLE_POW5, 8n, 263n); WasmI32.store8(_TABLE_POW5, 0n, 264n); WasmI32.store8(_TABLE_POW5, 5n, 265n); WasmI32.store8(_TABLE_POW5, 9n, 266n); WasmI32.store8(_TABLE_POW5, 6n, 267n); WasmI32.store8(_TABLE_POW5, 9n, 268n); WasmI32.store8(_TABLE_POW5, 2n, 269n);
+    WasmI32.store8(_TABLE_POW5, 3n, 270n); WasmI32.store8(_TABLE_POW5, 8n, 271n); WasmI32.store8(_TABLE_POW5, 2n, 272n); WasmI32.store8(_TABLE_POW5, 8n, 273n); WasmI32.store8(_TABLE_POW5, 1n, 274n); WasmI32.store8(_TABLE_POW5, 2n, 275n); WasmI32.store8(_TABLE_POW5, 5n, 276n); WasmI32.store8(_TABLE_POW5, 3n, 277n); WasmI32.store8(_TABLE_POW5, 7n, 278n); WasmI32.store8(_TABLE_POW5, 2n, 279n); WasmI32.store8(_TABLE_POW5, 5n, 280n); WasmI32.store8(_TABLE_POW5, 2n, 281n); WasmI32.store8(_TABLE_POW5, 9n, 282n); WasmI32.store8(_TABLE_POW5, 0n, 283n); WasmI32.store8(_TABLE_POW5, 2n, 284n); WasmI32.store8(_TABLE_POW5, 9n, 285n); WasmI32.store8(_TABLE_POW5, 8n, 286n); WasmI32.store8(_TABLE_POW5, 4n, 287n); WasmI32.store8(_TABLE_POW5, 6n, 288n); WasmI32.store8(_TABLE_POW5, 1n, 289n); WasmI32.store8(_TABLE_POW5, 9n, 290n); WasmI32.store8(_TABLE_POW5, 1n, 291n); WasmI32.store8(_TABLE_POW5, 4n, 292n); WasmI32.store8(_TABLE_POW5, 0n, 293n); WasmI32.store8(_TABLE_POW5, 6n, 294n); WasmI32.store8(_TABLE_POW5, 2n, 295n); WasmI32.store8(_TABLE_POW5, 5n, 296n); WasmI32.store8(_TABLE_POW5, 1n, 297n); WasmI32.store8(_TABLE_POW5, 8n, 298n); WasmI32.store8(_TABLE_POW5, 6n, 299n);
+    WasmI32.store8(_TABLE_POW5, 2n, 300n); WasmI32.store8(_TABLE_POW5, 6n, 301n); WasmI32.store8(_TABLE_POW5, 4n, 302n); WasmI32.store8(_TABLE_POW5, 5n, 303n); WasmI32.store8(_TABLE_POW5, 1n, 304n); WasmI32.store8(_TABLE_POW5, 4n, 305n); WasmI32.store8(_TABLE_POW5, 9n, 306n); WasmI32.store8(_TABLE_POW5, 2n, 307n); WasmI32.store8(_TABLE_POW5, 3n, 308n); WasmI32.store8(_TABLE_POW5, 0n, 309n); WasmI32.store8(_TABLE_POW5, 9n, 310n); WasmI32.store8(_TABLE_POW5, 5n, 311n); WasmI32.store8(_TABLE_POW5, 7n, 312n); WasmI32.store8(_TABLE_POW5, 0n, 313n); WasmI32.store8(_TABLE_POW5, 3n, 314n); WasmI32.store8(_TABLE_POW5, 1n, 315n); WasmI32.store8(_TABLE_POW5, 2n, 316n); WasmI32.store8(_TABLE_POW5, 5n, 317n); WasmI32.store8(_TABLE_POW5, 9n, 318n); WasmI32.store8(_TABLE_POW5, 3n, 319n); WasmI32.store8(_TABLE_POW5, 1n, 320n); WasmI32.store8(_TABLE_POW5, 3n, 321n); WasmI32.store8(_TABLE_POW5, 2n, 322n); WasmI32.store8(_TABLE_POW5, 2n, 323n); WasmI32.store8(_TABLE_POW5, 5n, 324n); WasmI32.store8(_TABLE_POW5, 7n, 325n); WasmI32.store8(_TABLE_POW5, 4n, 326n); WasmI32.store8(_TABLE_POW5, 6n, 327n); WasmI32.store8(_TABLE_POW5, 1n, 328n); WasmI32.store8(_TABLE_POW5, 5n, 329n);
+    WasmI32.store8(_TABLE_POW5, 4n, 330n); WasmI32.store8(_TABLE_POW5, 7n, 331n); WasmI32.store8(_TABLE_POW5, 8n, 332n); WasmI32.store8(_TABLE_POW5, 5n, 333n); WasmI32.store8(_TABLE_POW5, 1n, 334n); WasmI32.store8(_TABLE_POW5, 5n, 335n); WasmI32.store8(_TABLE_POW5, 6n, 336n); WasmI32.store8(_TABLE_POW5, 2n, 337n); WasmI32.store8(_TABLE_POW5, 5n, 338n); WasmI32.store8(_TABLE_POW5, 4n, 339n); WasmI32.store8(_TABLE_POW5, 6n, 340n); WasmI32.store8(_TABLE_POW5, 5n, 341n); WasmI32.store8(_TABLE_POW5, 6n, 342n); WasmI32.store8(_TABLE_POW5, 6n, 343n); WasmI32.store8(_TABLE_POW5, 1n, 344n); WasmI32.store8(_TABLE_POW5, 2n, 345n); WasmI32.store8(_TABLE_POW5, 8n, 346n); WasmI32.store8(_TABLE_POW5, 7n, 347n); WasmI32.store8(_TABLE_POW5, 3n, 348n); WasmI32.store8(_TABLE_POW5, 0n, 349n); WasmI32.store8(_TABLE_POW5, 7n, 350n); WasmI32.store8(_TABLE_POW5, 7n, 351n); WasmI32.store8(_TABLE_POW5, 3n, 352n); WasmI32.store8(_TABLE_POW5, 9n, 353n); WasmI32.store8(_TABLE_POW5, 2n, 354n); WasmI32.store8(_TABLE_POW5, 5n, 355n); WasmI32.store8(_TABLE_POW5, 7n, 356n); WasmI32.store8(_TABLE_POW5, 8n, 357n); WasmI32.store8(_TABLE_POW5, 1n, 358n); WasmI32.store8(_TABLE_POW5, 2n, 359n);
+    WasmI32.store8(_TABLE_POW5, 5n, 360n); WasmI32.store8(_TABLE_POW5, 2n, 361n); WasmI32.store8(_TABLE_POW5, 3n, 362n); WasmI32.store8(_TABLE_POW5, 2n, 363n); WasmI32.store8(_TABLE_POW5, 8n, 364n); WasmI32.store8(_TABLE_POW5, 3n, 365n); WasmI32.store8(_TABLE_POW5, 0n, 366n); WasmI32.store8(_TABLE_POW5, 6n, 367n); WasmI32.store8(_TABLE_POW5, 4n, 368n); WasmI32.store8(_TABLE_POW5, 3n, 369n); WasmI32.store8(_TABLE_POW5, 6n, 370n); WasmI32.store8(_TABLE_POW5, 5n, 371n); WasmI32.store8(_TABLE_POW5, 3n, 372n); WasmI32.store8(_TABLE_POW5, 8n, 373n); WasmI32.store8(_TABLE_POW5, 6n, 374n); WasmI32.store8(_TABLE_POW5, 9n, 375n); WasmI32.store8(_TABLE_POW5, 6n, 376n); WasmI32.store8(_TABLE_POW5, 2n, 377n); WasmI32.store8(_TABLE_POW5, 8n, 378n); WasmI32.store8(_TABLE_POW5, 9n, 379n); WasmI32.store8(_TABLE_POW5, 0n, 380n); WasmI32.store8(_TABLE_POW5, 6n, 381n); WasmI32.store8(_TABLE_POW5, 2n, 382n); WasmI32.store8(_TABLE_POW5, 5n, 383n); WasmI32.store8(_TABLE_POW5, 1n, 384n); WasmI32.store8(_TABLE_POW5, 1n, 385n); WasmI32.store8(_TABLE_POW5, 6n, 386n); WasmI32.store8(_TABLE_POW5, 4n, 387n); WasmI32.store8(_TABLE_POW5, 1n, 388n); WasmI32.store8(_TABLE_POW5, 5n, 389n);
+    WasmI32.store8(_TABLE_POW5, 3n, 390n); WasmI32.store8(_TABLE_POW5, 2n, 391n); WasmI32.store8(_TABLE_POW5, 1n, 392n); WasmI32.store8(_TABLE_POW5, 8n, 393n); WasmI32.store8(_TABLE_POW5, 2n, 394n); WasmI32.store8(_TABLE_POW5, 6n, 395n); WasmI32.store8(_TABLE_POW5, 9n, 396n); WasmI32.store8(_TABLE_POW5, 3n, 397n); WasmI32.store8(_TABLE_POW5, 4n, 398n); WasmI32.store8(_TABLE_POW5, 8n, 399n); WasmI32.store8(_TABLE_POW5, 1n, 400n); WasmI32.store8(_TABLE_POW5, 4n, 401n); WasmI32.store8(_TABLE_POW5, 4n, 402n); WasmI32.store8(_TABLE_POW5, 5n, 403n); WasmI32.store8(_TABLE_POW5, 3n, 404n); WasmI32.store8(_TABLE_POW5, 1n, 405n); WasmI32.store8(_TABLE_POW5, 2n, 406n); WasmI32.store8(_TABLE_POW5, 5n, 407n); WasmI32.store8(_TABLE_POW5, 5n, 408n); WasmI32.store8(_TABLE_POW5, 8n, 409n); WasmI32.store8(_TABLE_POW5, 2n, 410n); WasmI32.store8(_TABLE_POW5, 0n, 411n); WasmI32.store8(_TABLE_POW5, 7n, 412n); WasmI32.store8(_TABLE_POW5, 6n, 413n); WasmI32.store8(_TABLE_POW5, 6n, 414n); WasmI32.store8(_TABLE_POW5, 0n, 415n); WasmI32.store8(_TABLE_POW5, 9n, 416n); WasmI32.store8(_TABLE_POW5, 1n, 417n); WasmI32.store8(_TABLE_POW5, 3n, 418n); WasmI32.store8(_TABLE_POW5, 4n, 419n);
+    WasmI32.store8(_TABLE_POW5, 6n, 420n); WasmI32.store8(_TABLE_POW5, 7n, 421n); WasmI32.store8(_TABLE_POW5, 4n, 422n); WasmI32.store8(_TABLE_POW5, 0n, 423n); WasmI32.store8(_TABLE_POW5, 7n, 424n); WasmI32.store8(_TABLE_POW5, 2n, 425n); WasmI32.store8(_TABLE_POW5, 2n, 426n); WasmI32.store8(_TABLE_POW5, 6n, 427n); WasmI32.store8(_TABLE_POW5, 5n, 428n); WasmI32.store8(_TABLE_POW5, 6n, 429n); WasmI32.store8(_TABLE_POW5, 2n, 430n); WasmI32.store8(_TABLE_POW5, 5n, 431n); WasmI32.store8(_TABLE_POW5, 2n, 432n); WasmI32.store8(_TABLE_POW5, 9n, 433n); WasmI32.store8(_TABLE_POW5, 1n, 434n); WasmI32.store8(_TABLE_POW5, 0n, 435n); WasmI32.store8(_TABLE_POW5, 3n, 436n); WasmI32.store8(_TABLE_POW5, 8n, 437n); WasmI32.store8(_TABLE_POW5, 3n, 438n); WasmI32.store8(_TABLE_POW5, 0n, 439n); WasmI32.store8(_TABLE_POW5, 4n, 440n); WasmI32.store8(_TABLE_POW5, 5n, 441n); WasmI32.store8(_TABLE_POW5, 6n, 442n); WasmI32.store8(_TABLE_POW5, 7n, 443n); WasmI32.store8(_TABLE_POW5, 3n, 444n); WasmI32.store8(_TABLE_POW5, 3n, 445n); WasmI32.store8(_TABLE_POW5, 7n, 446n); WasmI32.store8(_TABLE_POW5, 0n, 447n); WasmI32.store8(_TABLE_POW5, 3n, 448n); WasmI32.store8(_TABLE_POW5, 6n, 449n);
+    WasmI32.store8(_TABLE_POW5, 1n, 450n); WasmI32.store8(_TABLE_POW5, 3n, 451n); WasmI32.store8(_TABLE_POW5, 2n, 452n); WasmI32.store8(_TABLE_POW5, 8n, 453n); WasmI32.store8(_TABLE_POW5, 1n, 454n); WasmI32.store8(_TABLE_POW5, 2n, 455n); WasmI32.store8(_TABLE_POW5, 5n, 456n); WasmI32.store8(_TABLE_POW5, 1n, 457n); WasmI32.store8(_TABLE_POW5, 4n, 458n); WasmI32.store8(_TABLE_POW5, 5n, 459n); WasmI32.store8(_TABLE_POW5, 5n, 460n); WasmI32.store8(_TABLE_POW5, 1n, 461n); WasmI32.store8(_TABLE_POW5, 9n, 462n); WasmI32.store8(_TABLE_POW5, 1n, 463n); WasmI32.store8(_TABLE_POW5, 5n, 464n); WasmI32.store8(_TABLE_POW5, 2n, 465n); WasmI32.store8(_TABLE_POW5, 2n, 466n); WasmI32.store8(_TABLE_POW5, 8n, 467n); WasmI32.store8(_TABLE_POW5, 3n, 468n); WasmI32.store8(_TABLE_POW5, 6n, 469n); WasmI32.store8(_TABLE_POW5, 6n, 470n); WasmI32.store8(_TABLE_POW5, 8n, 471n); WasmI32.store8(_TABLE_POW5, 5n, 472n); WasmI32.store8(_TABLE_POW5, 1n, 473n); WasmI32.store8(_TABLE_POW5, 8n, 474n); WasmI32.store8(_TABLE_POW5, 0n, 475n); WasmI32.store8(_TABLE_POW5, 6n, 476n); WasmI32.store8(_TABLE_POW5, 6n, 477n); WasmI32.store8(_TABLE_POW5, 4n, 478n); WasmI32.store8(_TABLE_POW5, 0n, 479n);
+    WasmI32.store8(_TABLE_POW5, 6n, 480n); WasmI32.store8(_TABLE_POW5, 2n, 481n); WasmI32.store8(_TABLE_POW5, 5n, 482n); WasmI32.store8(_TABLE_POW5, 7n, 483n); WasmI32.store8(_TABLE_POW5, 2n, 484n); WasmI32.store8(_TABLE_POW5, 7n, 485n); WasmI32.store8(_TABLE_POW5, 5n, 486n); WasmI32.store8(_TABLE_POW5, 9n, 487n); WasmI32.store8(_TABLE_POW5, 5n, 488n); WasmI32.store8(_TABLE_POW5, 7n, 489n); WasmI32.store8(_TABLE_POW5, 6n, 490n); WasmI32.store8(_TABLE_POW5, 1n, 491n); WasmI32.store8(_TABLE_POW5, 4n, 492n); WasmI32.store8(_TABLE_POW5, 1n, 493n); WasmI32.store8(_TABLE_POW5, 8n, 494n); WasmI32.store8(_TABLE_POW5, 3n, 495n); WasmI32.store8(_TABLE_POW5, 4n, 496n); WasmI32.store8(_TABLE_POW5, 2n, 497n); WasmI32.store8(_TABLE_POW5, 5n, 498n); WasmI32.store8(_TABLE_POW5, 9n, 499n); WasmI32.store8(_TABLE_POW5, 0n, 500n); WasmI32.store8(_TABLE_POW5, 3n, 501n); WasmI32.store8(_TABLE_POW5, 3n, 502n); WasmI32.store8(_TABLE_POW5, 2n, 503n); WasmI32.store8(_TABLE_POW5, 0n, 504n); WasmI32.store8(_TABLE_POW5, 3n, 505n); WasmI32.store8(_TABLE_POW5, 1n, 506n); WasmI32.store8(_TABLE_POW5, 2n, 507n); WasmI32.store8(_TABLE_POW5, 5n, 508n); WasmI32.store8(_TABLE_POW5, 3n, 509n);
+    WasmI32.store8(_TABLE_POW5, 6n, 510n); WasmI32.store8(_TABLE_POW5, 3n, 511n); WasmI32.store8(_TABLE_POW5, 7n, 512n); WasmI32.store8(_TABLE_POW5, 9n, 513n); WasmI32.store8(_TABLE_POW5, 7n, 514n); WasmI32.store8(_TABLE_POW5, 8n, 515n); WasmI32.store8(_TABLE_POW5, 8n, 516n); WasmI32.store8(_TABLE_POW5, 0n, 517n); WasmI32.store8(_TABLE_POW5, 7n, 518n); WasmI32.store8(_TABLE_POW5, 0n, 519n); WasmI32.store8(_TABLE_POW5, 9n, 520n); WasmI32.store8(_TABLE_POW5, 1n, 521n); WasmI32.store8(_TABLE_POW5, 7n, 522n); WasmI32.store8(_TABLE_POW5, 1n, 523n); WasmI32.store8(_TABLE_POW5, 2n, 524n); WasmI32.store8(_TABLE_POW5, 9n, 525n); WasmI32.store8(_TABLE_POW5, 5n, 526n); WasmI32.store8(_TABLE_POW5, 1n, 527n); WasmI32.store8(_TABLE_POW5, 6n, 528n); WasmI32.store8(_TABLE_POW5, 6n, 529n); WasmI32.store8(_TABLE_POW5, 0n, 530n); WasmI32.store8(_TABLE_POW5, 1n, 531n); WasmI32.store8(_TABLE_POW5, 5n, 532n); WasmI32.store8(_TABLE_POW5, 6n, 533n); WasmI32.store8(_TABLE_POW5, 2n, 534n); WasmI32.store8(_TABLE_POW5, 5n, 535n); WasmI32.store8(_TABLE_POW5, 1n, 536n); WasmI32.store8(_TABLE_POW5, 8n, 537n); WasmI32.store8(_TABLE_POW5, 1n, 538n); WasmI32.store8(_TABLE_POW5, 8n, 539n);
+    WasmI32.store8(_TABLE_POW5, 9n, 540n); WasmI32.store8(_TABLE_POW5, 8n, 541n); WasmI32.store8(_TABLE_POW5, 9n, 542n); WasmI32.store8(_TABLE_POW5, 4n, 543n); WasmI32.store8(_TABLE_POW5, 0n, 544n); WasmI32.store8(_TABLE_POW5, 3n, 545n); WasmI32.store8(_TABLE_POW5, 5n, 546n); WasmI32.store8(_TABLE_POW5, 4n, 547n); WasmI32.store8(_TABLE_POW5, 5n, 548n); WasmI32.store8(_TABLE_POW5, 8n, 549n); WasmI32.store8(_TABLE_POW5, 5n, 550n); WasmI32.store8(_TABLE_POW5, 6n, 551n); WasmI32.store8(_TABLE_POW5, 4n, 552n); WasmI32.store8(_TABLE_POW5, 7n, 553n); WasmI32.store8(_TABLE_POW5, 5n, 554n); WasmI32.store8(_TABLE_POW5, 8n, 555n); WasmI32.store8(_TABLE_POW5, 3n, 556n); WasmI32.store8(_TABLE_POW5, 0n, 557n); WasmI32.store8(_TABLE_POW5, 0n, 558n); WasmI32.store8(_TABLE_POW5, 7n, 559n); WasmI32.store8(_TABLE_POW5, 8n, 560n); WasmI32.store8(_TABLE_POW5, 1n, 561n); WasmI32.store8(_TABLE_POW5, 2n, 562n); WasmI32.store8(_TABLE_POW5, 5n, 563n); WasmI32.store8(_TABLE_POW5, 9n, 564n); WasmI32.store8(_TABLE_POW5, 0n, 565n); WasmI32.store8(_TABLE_POW5, 9n, 566n); WasmI32.store8(_TABLE_POW5, 4n, 567n); WasmI32.store8(_TABLE_POW5, 9n, 568n); WasmI32.store8(_TABLE_POW5, 4n, 569n);
+    WasmI32.store8(_TABLE_POW5, 7n, 570n); WasmI32.store8(_TABLE_POW5, 0n, 571n); WasmI32.store8(_TABLE_POW5, 1n, 572n); WasmI32.store8(_TABLE_POW5, 7n, 573n); WasmI32.store8(_TABLE_POW5, 7n, 574n); WasmI32.store8(_TABLE_POW5, 2n, 575n); WasmI32.store8(_TABLE_POW5, 9n, 576n); WasmI32.store8(_TABLE_POW5, 2n, 577n); WasmI32.store8(_TABLE_POW5, 8n, 578n); WasmI32.store8(_TABLE_POW5, 2n, 579n); WasmI32.store8(_TABLE_POW5, 3n, 580n); WasmI32.store8(_TABLE_POW5, 7n, 581n); WasmI32.store8(_TABLE_POW5, 9n, 582n); WasmI32.store8(_TABLE_POW5, 1n, 583n); WasmI32.store8(_TABLE_POW5, 5n, 584n); WasmI32.store8(_TABLE_POW5, 0n, 585n); WasmI32.store8(_TABLE_POW5, 3n, 586n); WasmI32.store8(_TABLE_POW5, 9n, 587n); WasmI32.store8(_TABLE_POW5, 0n, 588n); WasmI32.store8(_TABLE_POW5, 6n, 589n); WasmI32.store8(_TABLE_POW5, 2n, 590n); WasmI32.store8(_TABLE_POW5, 5n, 591n); WasmI32.store8(_TABLE_POW5, 4n, 592n); WasmI32.store8(_TABLE_POW5, 5n, 593n); WasmI32.store8(_TABLE_POW5, 4n, 594n); WasmI32.store8(_TABLE_POW5, 7n, 595n); WasmI32.store8(_TABLE_POW5, 4n, 596n); WasmI32.store8(_TABLE_POW5, 7n, 597n); WasmI32.store8(_TABLE_POW5, 3n, 598n); WasmI32.store8(_TABLE_POW5, 5n, 599n);
+    WasmI32.store8(_TABLE_POW5, 0n, 600n); WasmI32.store8(_TABLE_POW5, 8n, 601n); WasmI32.store8(_TABLE_POW5, 8n, 602n); WasmI32.store8(_TABLE_POW5, 6n, 603n); WasmI32.store8(_TABLE_POW5, 4n, 604n); WasmI32.store8(_TABLE_POW5, 6n, 605n); WasmI32.store8(_TABLE_POW5, 4n, 606n); WasmI32.store8(_TABLE_POW5, 1n, 607n); WasmI32.store8(_TABLE_POW5, 1n, 608n); WasmI32.store8(_TABLE_POW5, 8n, 609n); WasmI32.store8(_TABLE_POW5, 9n, 610n); WasmI32.store8(_TABLE_POW5, 5n, 611n); WasmI32.store8(_TABLE_POW5, 7n, 612n); WasmI32.store8(_TABLE_POW5, 5n, 613n); WasmI32.store8(_TABLE_POW5, 1n, 614n); WasmI32.store8(_TABLE_POW5, 9n, 615n); WasmI32.store8(_TABLE_POW5, 5n, 616n); WasmI32.store8(_TABLE_POW5, 3n, 617n); WasmI32.store8(_TABLE_POW5, 1n, 618n); WasmI32.store8(_TABLE_POW5, 2n, 619n); WasmI32.store8(_TABLE_POW5, 5n, 620n); WasmI32.store8(_TABLE_POW5, 2n, 621n); WasmI32.store8(_TABLE_POW5, 2n, 622n); WasmI32.store8(_TABLE_POW5, 7n, 623n); WasmI32.store8(_TABLE_POW5, 3n, 624n); WasmI32.store8(_TABLE_POW5, 7n, 625n); WasmI32.store8(_TABLE_POW5, 3n, 626n); WasmI32.store8(_TABLE_POW5, 6n, 627n); WasmI32.store8(_TABLE_POW5, 7n, 628n); WasmI32.store8(_TABLE_POW5, 5n, 629n);
+    WasmI32.store8(_TABLE_POW5, 4n, 630n); WasmI32.store8(_TABLE_POW5, 4n, 631n); WasmI32.store8(_TABLE_POW5, 3n, 632n); WasmI32.store8(_TABLE_POW5, 2n, 633n); WasmI32.store8(_TABLE_POW5, 3n, 634n); WasmI32.store8(_TABLE_POW5, 2n, 635n); WasmI32.store8(_TABLE_POW5, 0n, 636n); WasmI32.store8(_TABLE_POW5, 5n, 637n); WasmI32.store8(_TABLE_POW5, 9n, 638n); WasmI32.store8(_TABLE_POW5, 4n, 639n); WasmI32.store8(_TABLE_POW5, 7n, 640n); WasmI32.store8(_TABLE_POW5, 8n, 641n); WasmI32.store8(_TABLE_POW5, 7n, 642n); WasmI32.store8(_TABLE_POW5, 5n, 643n); WasmI32.store8(_TABLE_POW5, 9n, 644n); WasmI32.store8(_TABLE_POW5, 7n, 645n); WasmI32.store8(_TABLE_POW5, 6n, 646n); WasmI32.store8(_TABLE_POW5, 5n, 647n); WasmI32.store8(_TABLE_POW5, 6n, 648n); WasmI32.store8(_TABLE_POW5, 2n, 649n); WasmI32.store8(_TABLE_POW5, 5n, 650n); WasmI32.store8(_TABLE_POW5, 1n, 651n); WasmI32.store8(_TABLE_POW5, 1n, 652n); WasmI32.store8(_TABLE_POW5, 3n, 653n); WasmI32.store8(_TABLE_POW5, 6n, 654n); WasmI32.store8(_TABLE_POW5, 8n, 655n); WasmI32.store8(_TABLE_POW5, 6n, 656n); WasmI32.store8(_TABLE_POW5, 8n, 657n); WasmI32.store8(_TABLE_POW5, 3n, 658n); WasmI32.store8(_TABLE_POW5, 7n, 659n);
+    WasmI32.store8(_TABLE_POW5, 7n, 660n); WasmI32.store8(_TABLE_POW5, 2n, 661n); WasmI32.store8(_TABLE_POW5, 1n, 662n); WasmI32.store8(_TABLE_POW5, 6n, 663n); WasmI32.store8(_TABLE_POW5, 1n, 664n); WasmI32.store8(_TABLE_POW5, 6n, 665n); WasmI32.store8(_TABLE_POW5, 0n, 666n); WasmI32.store8(_TABLE_POW5, 2n, 667n); WasmI32.store8(_TABLE_POW5, 9n, 668n); WasmI32.store8(_TABLE_POW5, 7n, 669n); WasmI32.store8(_TABLE_POW5, 3n, 670n); WasmI32.store8(_TABLE_POW5, 9n, 671n); WasmI32.store8(_TABLE_POW5, 3n, 672n); WasmI32.store8(_TABLE_POW5, 7n, 673n); WasmI32.store8(_TABLE_POW5, 9n, 674n); WasmI32.store8(_TABLE_POW5, 8n, 675n); WasmI32.store8(_TABLE_POW5, 8n, 676n); WasmI32.store8(_TABLE_POW5, 2n, 677n); WasmI32.store8(_TABLE_POW5, 8n, 678n); WasmI32.store8(_TABLE_POW5, 1n, 679n); WasmI32.store8(_TABLE_POW5, 2n, 680n); WasmI32.store8(_TABLE_POW5, 5n, 681n); WasmI32.store8(_TABLE_POW5, 5n, 682n); WasmI32.store8(_TABLE_POW5, 6n, 683n); WasmI32.store8(_TABLE_POW5, 8n, 684n); WasmI32.store8(_TABLE_POW5, 4n, 685n); WasmI32.store8(_TABLE_POW5, 3n, 686n); WasmI32.store8(_TABLE_POW5, 4n, 687n); WasmI32.store8(_TABLE_POW5, 1n, 688n); WasmI32.store8(_TABLE_POW5, 8n, 689n);
+    WasmI32.store8(_TABLE_POW5, 8n, 690n); WasmI32.store8(_TABLE_POW5, 6n, 691n); WasmI32.store8(_TABLE_POW5, 0n, 692n); WasmI32.store8(_TABLE_POW5, 8n, 693n); WasmI32.store8(_TABLE_POW5, 0n, 694n); WasmI32.store8(_TABLE_POW5, 8n, 695n); WasmI32.store8(_TABLE_POW5, 0n, 696n); WasmI32.store8(_TABLE_POW5, 1n, 697n); WasmI32.store8(_TABLE_POW5, 4n, 698n); WasmI32.store8(_TABLE_POW5, 8n, 699n); WasmI32.store8(_TABLE_POW5, 6n, 700n); WasmI32.store8(_TABLE_POW5, 9n, 701n); WasmI32.store8(_TABLE_POW5, 6n, 702n); WasmI32.store8(_TABLE_POW5, 8n, 703n); WasmI32.store8(_TABLE_POW5, 9n, 704n); WasmI32.store8(_TABLE_POW5, 9n, 705n); WasmI32.store8(_TABLE_POW5, 4n, 706n); WasmI32.store8(_TABLE_POW5, 1n, 707n); WasmI32.store8(_TABLE_POW5, 4n, 708n); WasmI32.store8(_TABLE_POW5, 0n, 709n); WasmI32.store8(_TABLE_POW5, 6n, 710n); WasmI32.store8(_TABLE_POW5, 2n, 711n); WasmI32.store8(_TABLE_POW5, 5n, 712n); WasmI32.store8(_TABLE_POW5, 2n, 713n); WasmI32.store8(_TABLE_POW5, 8n, 714n); WasmI32.store8(_TABLE_POW5, 4n, 715n); WasmI32.store8(_TABLE_POW5, 2n, 716n); WasmI32.store8(_TABLE_POW5, 1n, 717n); WasmI32.store8(_TABLE_POW5, 7n, 718n); WasmI32.store8(_TABLE_POW5, 0n, 719n);
+    WasmI32.store8(_TABLE_POW5, 9n, 720n); WasmI32.store8(_TABLE_POW5, 4n, 721n); WasmI32.store8(_TABLE_POW5, 3n, 722n); WasmI32.store8(_TABLE_POW5, 0n, 723n); WasmI32.store8(_TABLE_POW5, 4n, 724n); WasmI32.store8(_TABLE_POW5, 0n, 725n); WasmI32.store8(_TABLE_POW5, 4n, 726n); WasmI32.store8(_TABLE_POW5, 0n, 727n); WasmI32.store8(_TABLE_POW5, 0n, 728n); WasmI32.store8(_TABLE_POW5, 7n, 729n); WasmI32.store8(_TABLE_POW5, 4n, 730n); WasmI32.store8(_TABLE_POW5, 3n, 731n); WasmI32.store8(_TABLE_POW5, 4n, 732n); WasmI32.store8(_TABLE_POW5, 8n, 733n); WasmI32.store8(_TABLE_POW5, 4n, 734n); WasmI32.store8(_TABLE_POW5, 4n, 735n); WasmI32.store8(_TABLE_POW5, 9n, 736n); WasmI32.store8(_TABLE_POW5, 7n, 737n); WasmI32.store8(_TABLE_POW5, 0n, 738n); WasmI32.store8(_TABLE_POW5, 7n, 739n); WasmI32.store8(_TABLE_POW5, 0n, 740n); WasmI32.store8(_TABLE_POW5, 3n, 741n); WasmI32.store8(_TABLE_POW5, 1n, 742n); WasmI32.store8(_TABLE_POW5, 2n, 743n); WasmI32.store8(_TABLE_POW5, 5n, 744n); WasmI32.store8(_TABLE_POW5, 1n, 745n); WasmI32.store8(_TABLE_POW5, 4n, 746n); WasmI32.store8(_TABLE_POW5, 2n, 747n); WasmI32.store8(_TABLE_POW5, 1n, 748n); WasmI32.store8(_TABLE_POW5, 0n, 749n);
+    WasmI32.store8(_TABLE_POW5, 8n, 750n); WasmI32.store8(_TABLE_POW5, 5n, 751n); WasmI32.store8(_TABLE_POW5, 4n, 752n); WasmI32.store8(_TABLE_POW5, 7n, 753n); WasmI32.store8(_TABLE_POW5, 1n, 754n); WasmI32.store8(_TABLE_POW5, 5n, 755n); WasmI32.store8(_TABLE_POW5, 2n, 756n); WasmI32.store8(_TABLE_POW5, 0n, 757n); WasmI32.store8(_TABLE_POW5, 2n, 758n); WasmI32.store8(_TABLE_POW5, 0n, 759n); WasmI32.store8(_TABLE_POW5, 0n, 760n); WasmI32.store8(_TABLE_POW5, 3n, 761n); WasmI32.store8(_TABLE_POW5, 7n, 762n); WasmI32.store8(_TABLE_POW5, 1n, 763n); WasmI32.store8(_TABLE_POW5, 7n, 764n); WasmI32.store8(_TABLE_POW5, 4n, 765n); WasmI32.store8(_TABLE_POW5, 2n, 766n); WasmI32.store8(_TABLE_POW5, 2n, 767n); WasmI32.store8(_TABLE_POW5, 4n, 768n); WasmI32.store8(_TABLE_POW5, 8n, 769n); WasmI32.store8(_TABLE_POW5, 5n, 770n); WasmI32.store8(_TABLE_POW5, 3n, 771n); WasmI32.store8(_TABLE_POW5, 5n, 772n); WasmI32.store8(_TABLE_POW5, 1n, 773n); WasmI32.store8(_TABLE_POW5, 5n, 774n); WasmI32.store8(_TABLE_POW5, 6n, 775n); WasmI32.store8(_TABLE_POW5, 2n, 776n); WasmI32.store8(_TABLE_POW5, 5n, 777n); WasmI32.store8(_TABLE_POW5, 7n, 778n); WasmI32.store8(_TABLE_POW5, 1n, 779n);
+    WasmI32.store8(_TABLE_POW5, 0n, 780n); WasmI32.store8(_TABLE_POW5, 5n, 781n); WasmI32.store8(_TABLE_POW5, 4n, 782n); WasmI32.store8(_TABLE_POW5, 2n, 783n); WasmI32.store8(_TABLE_POW5, 7n, 784n); WasmI32.store8(_TABLE_POW5, 3n, 785n); WasmI32.store8(_TABLE_POW5, 5n, 786n); WasmI32.store8(_TABLE_POW5, 7n, 787n); WasmI32.store8(_TABLE_POW5, 6n, 788n); WasmI32.store8(_TABLE_POW5, 0n, 789n); WasmI32.store8(_TABLE_POW5, 1n, 790n); WasmI32.store8(_TABLE_POW5, 0n, 791n); WasmI32.store8(_TABLE_POW5, 0n, 792n); WasmI32.store8(_TABLE_POW5, 1n, 793n); WasmI32.store8(_TABLE_POW5, 8n, 794n); WasmI32.store8(_TABLE_POW5, 5n, 795n); WasmI32.store8(_TABLE_POW5, 8n, 796n); WasmI32.store8(_TABLE_POW5, 7n, 797n); WasmI32.store8(_TABLE_POW5, 1n, 798n); WasmI32.store8(_TABLE_POW5, 1n, 799n); WasmI32.store8(_TABLE_POW5, 2n, 800n); WasmI32.store8(_TABLE_POW5, 4n, 801n); WasmI32.store8(_TABLE_POW5, 2n, 802n); WasmI32.store8(_TABLE_POW5, 6n, 803n); WasmI32.store8(_TABLE_POW5, 7n, 804n); WasmI32.store8(_TABLE_POW5, 5n, 805n); WasmI32.store8(_TABLE_POW5, 7n, 806n); WasmI32.store8(_TABLE_POW5, 8n, 807n); WasmI32.store8(_TABLE_POW5, 1n, 808n); WasmI32.store8(_TABLE_POW5, 2n, 809n);
+    WasmI32.store8(_TABLE_POW5, 5n, 810n); WasmI32.store8(_TABLE_POW5, 3n, 811n); WasmI32.store8(_TABLE_POW5, 5n, 812n); WasmI32.store8(_TABLE_POW5, 5n, 813n); WasmI32.store8(_TABLE_POW5, 2n, 814n); WasmI32.store8(_TABLE_POW5, 7n, 815n); WasmI32.store8(_TABLE_POW5, 1n, 816n); WasmI32.store8(_TABLE_POW5, 3n, 817n); WasmI32.store8(_TABLE_POW5, 6n, 818n); WasmI32.store8(_TABLE_POW5, 7n, 819n); WasmI32.store8(_TABLE_POW5, 8n, 820n); WasmI32.store8(_TABLE_POW5, 8n, 821n); WasmI32.store8(_TABLE_POW5, 0n, 822n); WasmI32.store8(_TABLE_POW5, 0n, 823n); WasmI32.store8(_TABLE_POW5, 5n, 824n); WasmI32.store8(_TABLE_POW5, 0n, 825n); WasmI32.store8(_TABLE_POW5, 0n, 826n); WasmI32.store8(_TABLE_POW5, 9n, 827n); WasmI32.store8(_TABLE_POW5, 2n, 828n); WasmI32.store8(_TABLE_POW5, 9n, 829n); WasmI32.store8(_TABLE_POW5, 3n, 830n); WasmI32.store8(_TABLE_POW5, 5n, 831n); WasmI32.store8(_TABLE_POW5, 5n, 832n); WasmI32.store8(_TABLE_POW5, 6n, 833n); WasmI32.store8(_TABLE_POW5, 2n, 834n); WasmI32.store8(_TABLE_POW5, 1n, 835n); WasmI32.store8(_TABLE_POW5, 3n, 836n); WasmI32.store8(_TABLE_POW5, 3n, 837n); WasmI32.store8(_TABLE_POW5, 7n, 838n); WasmI32.store8(_TABLE_POW5, 8n, 839n);
+    WasmI32.store8(_TABLE_POW5, 9n, 840n); WasmI32.store8(_TABLE_POW5, 0n, 841n); WasmI32.store8(_TABLE_POW5, 6n, 842n); WasmI32.store8(_TABLE_POW5, 2n, 843n); WasmI32.store8(_TABLE_POW5, 5n, 844n); WasmI32.store8(_TABLE_POW5, 1n, 845n); WasmI32.store8(_TABLE_POW5, 7n, 846n); WasmI32.store8(_TABLE_POW5, 7n, 847n); WasmI32.store8(_TABLE_POW5, 6n, 848n); WasmI32.store8(_TABLE_POW5, 3n, 849n); WasmI32.store8(_TABLE_POW5, 5n, 850n); WasmI32.store8(_TABLE_POW5, 6n, 851n); WasmI32.store8(_TABLE_POW5, 8n, 852n); WasmI32.store8(_TABLE_POW5, 3n, 853n); WasmI32.store8(_TABLE_POW5, 9n, 854n); WasmI32.store8(_TABLE_POW5, 4n, 855n); WasmI32.store8(_TABLE_POW5, 0n, 856n); WasmI32.store8(_TABLE_POW5, 0n, 857n); WasmI32.store8(_TABLE_POW5, 2n, 858n); WasmI32.store8(_TABLE_POW5, 5n, 859n); WasmI32.store8(_TABLE_POW5, 0n, 860n); WasmI32.store8(_TABLE_POW5, 4n, 861n); WasmI32.store8(_TABLE_POW5, 6n, 862n); WasmI32.store8(_TABLE_POW5, 4n, 863n); WasmI32.store8(_TABLE_POW5, 6n, 864n); WasmI32.store8(_TABLE_POW5, 7n, 865n); WasmI32.store8(_TABLE_POW5, 7n, 866n); WasmI32.store8(_TABLE_POW5, 8n, 867n); WasmI32.store8(_TABLE_POW5, 1n, 868n); WasmI32.store8(_TABLE_POW5, 0n, 869n);
+    WasmI32.store8(_TABLE_POW5, 6n, 870n); WasmI32.store8(_TABLE_POW5, 6n, 871n); WasmI32.store8(_TABLE_POW5, 8n, 872n); WasmI32.store8(_TABLE_POW5, 9n, 873n); WasmI32.store8(_TABLE_POW5, 4n, 874n); WasmI32.store8(_TABLE_POW5, 5n, 875n); WasmI32.store8(_TABLE_POW5, 3n, 876n); WasmI32.store8(_TABLE_POW5, 1n, 877n); WasmI32.store8(_TABLE_POW5, 2n, 878n); WasmI32.store8(_TABLE_POW5, 5n, 879n); WasmI32.store8(_TABLE_POW5, 8n, 880n); WasmI32.store8(_TABLE_POW5, 8n, 881n); WasmI32.store8(_TABLE_POW5, 8n, 882n); WasmI32.store8(_TABLE_POW5, 1n, 883n); WasmI32.store8(_TABLE_POW5, 7n, 884n); WasmI32.store8(_TABLE_POW5, 8n, 885n); WasmI32.store8(_TABLE_POW5, 4n, 886n); WasmI32.store8(_TABLE_POW5, 1n, 887n); WasmI32.store8(_TABLE_POW5, 9n, 888n); WasmI32.store8(_TABLE_POW5, 7n, 889n); WasmI32.store8(_TABLE_POW5, 0n, 890n); WasmI32.store8(_TABLE_POW5, 0n, 891n); WasmI32.store8(_TABLE_POW5, 1n, 892n); WasmI32.store8(_TABLE_POW5, 2n, 893n); WasmI32.store8(_TABLE_POW5, 5n, 894n); WasmI32.store8(_TABLE_POW5, 2n, 895n); WasmI32.store8(_TABLE_POW5, 3n, 896n); WasmI32.store8(_TABLE_POW5, 2n, 897n); WasmI32.store8(_TABLE_POW5, 3n, 898n); WasmI32.store8(_TABLE_POW5, 3n, 899n);
+    WasmI32.store8(_TABLE_POW5, 8n, 900n); WasmI32.store8(_TABLE_POW5, 9n, 901n); WasmI32.store8(_TABLE_POW5, 0n, 902n); WasmI32.store8(_TABLE_POW5, 5n, 903n); WasmI32.store8(_TABLE_POW5, 3n, 904n); WasmI32.store8(_TABLE_POW5, 3n, 905n); WasmI32.store8(_TABLE_POW5, 4n, 906n); WasmI32.store8(_TABLE_POW5, 4n, 907n); WasmI32.store8(_TABLE_POW5, 7n, 908n); WasmI32.store8(_TABLE_POW5, 2n, 909n); WasmI32.store8(_TABLE_POW5, 6n, 910n); WasmI32.store8(_TABLE_POW5, 5n, 911n); WasmI32.store8(_TABLE_POW5, 6n, 912n); WasmI32.store8(_TABLE_POW5, 2n, 913n); WasmI32.store8(_TABLE_POW5, 5n, 914n); WasmI32.store8(_TABLE_POW5, 4n, 915n); WasmI32.store8(_TABLE_POW5, 4n, 916n); WasmI32.store8(_TABLE_POW5, 4n, 917n); WasmI32.store8(_TABLE_POW5, 0n, 918n); WasmI32.store8(_TABLE_POW5, 8n, 919n); WasmI32.store8(_TABLE_POW5, 9n, 920n); WasmI32.store8(_TABLE_POW5, 2n, 921n); WasmI32.store8(_TABLE_POW5, 0n, 922n); WasmI32.store8(_TABLE_POW5, 9n, 923n); WasmI32.store8(_TABLE_POW5, 8n, 924n); WasmI32.store8(_TABLE_POW5, 5n, 925n); WasmI32.store8(_TABLE_POW5, 0n, 926n); WasmI32.store8(_TABLE_POW5, 0n, 927n); WasmI32.store8(_TABLE_POW5, 6n, 928n); WasmI32.store8(_TABLE_POW5, 2n, 929n);
+    WasmI32.store8(_TABLE_POW5, 6n, 930n); WasmI32.store8(_TABLE_POW5, 1n, 931n); WasmI32.store8(_TABLE_POW5, 6n, 932n); WasmI32.store8(_TABLE_POW5, 1n, 933n); WasmI32.store8(_TABLE_POW5, 6n, 934n); WasmI32.store8(_TABLE_POW5, 9n, 935n); WasmI32.store8(_TABLE_POW5, 4n, 936n); WasmI32.store8(_TABLE_POW5, 5n, 937n); WasmI32.store8(_TABLE_POW5, 2n, 938n); WasmI32.store8(_TABLE_POW5, 6n, 939n); WasmI32.store8(_TABLE_POW5, 6n, 940n); WasmI32.store8(_TABLE_POW5, 7n, 941n); WasmI32.store8(_TABLE_POW5, 2n, 942n); WasmI32.store8(_TABLE_POW5, 3n, 943n); WasmI32.store8(_TABLE_POW5, 6n, 944n); WasmI32.store8(_TABLE_POW5, 3n, 945n); WasmI32.store8(_TABLE_POW5, 2n, 946n); WasmI32.store8(_TABLE_POW5, 8n, 947n); WasmI32.store8(_TABLE_POW5, 1n, 948n); WasmI32.store8(_TABLE_POW5, 2n, 949n); WasmI32.store8(_TABLE_POW5, 5n, 950n); WasmI32.store8(_TABLE_POW5, 2n, 951n); WasmI32.store8(_TABLE_POW5, 2n, 952n); WasmI32.store8(_TABLE_POW5, 2n, 953n); WasmI32.store8(_TABLE_POW5, 0n, 954n); WasmI32.store8(_TABLE_POW5, 4n, 955n); WasmI32.store8(_TABLE_POW5, 4n, 956n); WasmI32.store8(_TABLE_POW5, 6n, 957n); WasmI32.store8(_TABLE_POW5, 0n, 958n); WasmI32.store8(_TABLE_POW5, 4n, 959n);
+    WasmI32.store8(_TABLE_POW5, 9n, 960n); WasmI32.store8(_TABLE_POW5, 2n, 961n); WasmI32.store8(_TABLE_POW5, 5n, 962n); WasmI32.store8(_TABLE_POW5, 0n, 963n); WasmI32.store8(_TABLE_POW5, 3n, 964n); WasmI32.store8(_TABLE_POW5, 1n, 965n); WasmI32.store8(_TABLE_POW5, 3n, 966n); WasmI32.store8(_TABLE_POW5, 0n, 967n); WasmI32.store8(_TABLE_POW5, 8n, 968n); WasmI32.store8(_TABLE_POW5, 0n, 969n); WasmI32.store8(_TABLE_POW5, 8n, 970n); WasmI32.store8(_TABLE_POW5, 4n, 971n); WasmI32.store8(_TABLE_POW5, 7n, 972n); WasmI32.store8(_TABLE_POW5, 2n, 973n); WasmI32.store8(_TABLE_POW5, 6n, 974n); WasmI32.store8(_TABLE_POW5, 3n, 975n); WasmI32.store8(_TABLE_POW5, 3n, 976n); WasmI32.store8(_TABLE_POW5, 3n, 977n); WasmI32.store8(_TABLE_POW5, 6n, 978n); WasmI32.store8(_TABLE_POW5, 1n, 979n); WasmI32.store8(_TABLE_POW5, 8n, 980n); WasmI32.store8(_TABLE_POW5, 1n, 981n); WasmI32.store8(_TABLE_POW5, 6n, 982n); WasmI32.store8(_TABLE_POW5, 4n, 983n); WasmI32.store8(_TABLE_POW5, 0n, 984n); WasmI32.store8(_TABLE_POW5, 6n, 985n); WasmI32.store8(_TABLE_POW5, 2n, 986n); WasmI32.store8(_TABLE_POW5, 5n, 987n); WasmI32.store8(_TABLE_POW5, 1n, 988n); WasmI32.store8(_TABLE_POW5, 1n, 989n);
+    WasmI32.store8(_TABLE_POW5, 1n, 990n); WasmI32.store8(_TABLE_POW5, 0n, 991n); WasmI32.store8(_TABLE_POW5, 2n, 992n); WasmI32.store8(_TABLE_POW5, 2n, 993n); WasmI32.store8(_TABLE_POW5, 3n, 994n); WasmI32.store8(_TABLE_POW5, 0n, 995n); WasmI32.store8(_TABLE_POW5, 2n, 996n); WasmI32.store8(_TABLE_POW5, 4n, 997n); WasmI32.store8(_TABLE_POW5, 6n, 998n); WasmI32.store8(_TABLE_POW5, 2n, 999n); WasmI32.store8(_TABLE_POW5, 5n, 1000n); WasmI32.store8(_TABLE_POW5, 1n, 1001n); WasmI32.store8(_TABLE_POW5, 5n, 1002n); WasmI32.store8(_TABLE_POW5, 6n, 1003n); WasmI32.store8(_TABLE_POW5, 5n, 1004n); WasmI32.store8(_TABLE_POW5, 4n, 1005n); WasmI32.store8(_TABLE_POW5, 0n, 1006n); WasmI32.store8(_TABLE_POW5, 4n, 1007n); WasmI32.store8(_TABLE_POW5, 2n, 1008n); WasmI32.store8(_TABLE_POW5, 3n, 1009n); WasmI32.store8(_TABLE_POW5, 6n, 1010n); WasmI32.store8(_TABLE_POW5, 3n, 1011n); WasmI32.store8(_TABLE_POW5, 1n, 1012n); WasmI32.store8(_TABLE_POW5, 6n, 1013n); WasmI32.store8(_TABLE_POW5, 6n, 1014n); WasmI32.store8(_TABLE_POW5, 8n, 1015n); WasmI32.store8(_TABLE_POW5, 0n, 1016n); WasmI32.store8(_TABLE_POW5, 9n, 1017n); WasmI32.store8(_TABLE_POW5, 0n, 1018n); WasmI32.store8(_TABLE_POW5, 8n, 1019n);
+    WasmI32.store8(_TABLE_POW5, 2n, 1020n); WasmI32.store8(_TABLE_POW5, 0n, 1021n); WasmI32.store8(_TABLE_POW5, 3n, 1022n); WasmI32.store8(_TABLE_POW5, 1n, 1023n); WasmI32.store8(_TABLE_POW5, 2n, 1024n); WasmI32.store8(_TABLE_POW5, 5n, 1025n); WasmI32.store8(_TABLE_POW5, 5n, 1026n); WasmI32.store8(_TABLE_POW5, 5n, 1027n); WasmI32.store8(_TABLE_POW5, 5n, 1028n); WasmI32.store8(_TABLE_POW5, 1n, 1029n); WasmI32.store8(_TABLE_POW5, 1n, 1030n); WasmI32.store8(_TABLE_POW5, 1n, 1031n); WasmI32.store8(_TABLE_POW5, 5n, 1032n); WasmI32.store8(_TABLE_POW5, 1n, 1033n); WasmI32.store8(_TABLE_POW5, 2n, 1034n); WasmI32.store8(_TABLE_POW5, 3n, 1035n); WasmI32.store8(_TABLE_POW5, 1n, 1036n); WasmI32.store8(_TABLE_POW5, 2n, 1037n); WasmI32.store8(_TABLE_POW5, 5n, 1038n); WasmI32.store8(_TABLE_POW5, 7n, 1039n); WasmI32.store8(_TABLE_POW5, 8n, 1040n); WasmI32.store8(_TABLE_POW5, 2n, 1041n); WasmI32.store8(_TABLE_POW5, 7n, 1042n); WasmI32.store8(_TABLE_POW5, 0n, 1043n); WasmI32.store8(_TABLE_POW5, 2n, 1044n); WasmI32.store8(_TABLE_POW5, 1n, 1045n); WasmI32.store8(_TABLE_POW5, 1n, 1046n); WasmI32.store8(_TABLE_POW5, 8n, 1047n); WasmI32.store8(_TABLE_POW5, 1n, 1048n); WasmI32.store8(_TABLE_POW5, 5n, 1049n);
+    WasmI32.store8(_TABLE_POW5, 8n, 1050n); WasmI32.store8(_TABLE_POW5, 3n, 1051n); WasmI32.store8(_TABLE_POW5, 4n, 1052n); WasmI32.store8(_TABLE_POW5, 0n, 1053n); WasmI32.store8(_TABLE_POW5, 4n, 1054n); WasmI32.store8(_TABLE_POW5, 5n, 1055n); WasmI32.store8(_TABLE_POW5, 4n, 1056n); WasmI32.store8(_TABLE_POW5, 1n, 1057n); WasmI32.store8(_TABLE_POW5, 0n, 1058n); WasmI32.store8(_TABLE_POW5, 1n, 1059n); WasmI32.store8(_TABLE_POW5, 5n, 1060n); WasmI32.store8(_TABLE_POW5, 6n, 1061n); WasmI32.store8(_TABLE_POW5, 2n, 1062n); WasmI32.store8(_TABLE_POW5, 5n, 1063n); WasmI32.store8(_TABLE_POW5, 2n, 1064n); WasmI32.store8(_TABLE_POW5, 7n, 1065n); WasmI32.store8(_TABLE_POW5, 7n, 1066n); WasmI32.store8(_TABLE_POW5, 5n, 1067n); WasmI32.store8(_TABLE_POW5, 5n, 1068n); WasmI32.store8(_TABLE_POW5, 5n, 1069n); WasmI32.store8(_TABLE_POW5, 7n, 1070n); WasmI32.store8(_TABLE_POW5, 5n, 1071n); WasmI32.store8(_TABLE_POW5, 6n, 1072n); WasmI32.store8(_TABLE_POW5, 1n, 1073n); WasmI32.store8(_TABLE_POW5, 5n, 1074n); WasmI32.store8(_TABLE_POW5, 6n, 1075n); WasmI32.store8(_TABLE_POW5, 2n, 1076n); WasmI32.store8(_TABLE_POW5, 8n, 1077n); WasmI32.store8(_TABLE_POW5, 9n, 1078n); WasmI32.store8(_TABLE_POW5, 1n, 1079n);
+    WasmI32.store8(_TABLE_POW5, 3n, 1080n); WasmI32.store8(_TABLE_POW5, 5n, 1081n); WasmI32.store8(_TABLE_POW5, 1n, 1082n); WasmI32.store8(_TABLE_POW5, 0n, 1083n); WasmI32.store8(_TABLE_POW5, 5n, 1084n); WasmI32.store8(_TABLE_POW5, 9n, 1085n); WasmI32.store8(_TABLE_POW5, 0n, 1086n); WasmI32.store8(_TABLE_POW5, 7n, 1087n); WasmI32.store8(_TABLE_POW5, 9n, 1088n); WasmI32.store8(_TABLE_POW5, 1n, 1089n); WasmI32.store8(_TABLE_POW5, 7n, 1090n); WasmI32.store8(_TABLE_POW5, 0n, 1091n); WasmI32.store8(_TABLE_POW5, 2n, 1092n); WasmI32.store8(_TABLE_POW5, 2n, 1093n); WasmI32.store8(_TABLE_POW5, 7n, 1094n); WasmI32.store8(_TABLE_POW5, 0n, 1095n); WasmI32.store8(_TABLE_POW5, 5n, 1096n); WasmI32.store8(_TABLE_POW5, 0n, 1097n); WasmI32.store8(_TABLE_POW5, 7n, 1098n); WasmI32.store8(_TABLE_POW5, 8n, 1099n); WasmI32.store8(_TABLE_POW5, 1n, 1100n); WasmI32.store8(_TABLE_POW5, 2n, 1101n); WasmI32.store8(_TABLE_POW5, 5n, 1102n); WasmI32.store8(_TABLE_POW5, 1n, 1103n); WasmI32.store8(_TABLE_POW5, 3n, 1104n); WasmI32.store8(_TABLE_POW5, 8n, 1105n); WasmI32.store8(_TABLE_POW5, 7n, 1106n); WasmI32.store8(_TABLE_POW5, 7n, 1107n); WasmI32.store8(_TABLE_POW5, 7n, 1108n); WasmI32.store8(_TABLE_POW5, 8n, 1109n);
+    WasmI32.store8(_TABLE_POW5, 7n, 1110n); WasmI32.store8(_TABLE_POW5, 8n, 1111n); WasmI32.store8(_TABLE_POW5, 0n, 1112n); WasmI32.store8(_TABLE_POW5, 7n, 1113n); WasmI32.store8(_TABLE_POW5, 8n, 1114n); WasmI32.store8(_TABLE_POW5, 1n, 1115n); WasmI32.store8(_TABLE_POW5, 4n, 1116n); WasmI32.store8(_TABLE_POW5, 4n, 1117n); WasmI32.store8(_TABLE_POW5, 5n, 1118n); WasmI32.store8(_TABLE_POW5, 6n, 1119n); WasmI32.store8(_TABLE_POW5, 7n, 1120n); WasmI32.store8(_TABLE_POW5, 5n, 1121n); WasmI32.store8(_TABLE_POW5, 5n, 1122n); WasmI32.store8(_TABLE_POW5, 2n, 1123n); WasmI32.store8(_TABLE_POW5, 9n, 1124n); WasmI32.store8(_TABLE_POW5, 5n, 1125n); WasmI32.store8(_TABLE_POW5, 3n, 1126n); WasmI32.store8(_TABLE_POW5, 9n, 1127n); WasmI32.store8(_TABLE_POW5, 5n, 1128n); WasmI32.store8(_TABLE_POW5, 8n, 1129n); WasmI32.store8(_TABLE_POW5, 5n, 1130n); WasmI32.store8(_TABLE_POW5, 1n, 1131n); WasmI32.store8(_TABLE_POW5, 1n, 1132n); WasmI32.store8(_TABLE_POW5, 3n, 1133n); WasmI32.store8(_TABLE_POW5, 5n, 1134n); WasmI32.store8(_TABLE_POW5, 2n, 1135n); WasmI32.store8(_TABLE_POW5, 5n, 1136n); WasmI32.store8(_TABLE_POW5, 3n, 1137n); WasmI32.store8(_TABLE_POW5, 9n, 1138n); WasmI32.store8(_TABLE_POW5, 0n, 1139n);
+    WasmI32.store8(_TABLE_POW5, 6n, 1140n); WasmI32.store8(_TABLE_POW5, 2n, 1141n); WasmI32.store8(_TABLE_POW5, 5n, 1142n); WasmI32.store8(_TABLE_POW5, 6n, 1143n); WasmI32.store8(_TABLE_POW5, 9n, 1144n); WasmI32.store8(_TABLE_POW5, 3n, 1145n); WasmI32.store8(_TABLE_POW5, 8n, 1146n); WasmI32.store8(_TABLE_POW5, 8n, 1147n); WasmI32.store8(_TABLE_POW5, 9n, 1148n); WasmI32.store8(_TABLE_POW5, 3n, 1149n); WasmI32.store8(_TABLE_POW5, 9n, 1150n); WasmI32.store8(_TABLE_POW5, 0n, 1151n); WasmI32.store8(_TABLE_POW5, 3n, 1152n); WasmI32.store8(_TABLE_POW5, 9n, 1153n); WasmI32.store8(_TABLE_POW5, 0n, 1154n); WasmI32.store8(_TABLE_POW5, 7n, 1155n); WasmI32.store8(_TABLE_POW5, 2n, 1156n); WasmI32.store8(_TABLE_POW5, 2n, 1157n); WasmI32.store8(_TABLE_POW5, 8n, 1158n); WasmI32.store8(_TABLE_POW5, 3n, 1159n); WasmI32.store8(_TABLE_POW5, 7n, 1160n); WasmI32.store8(_TABLE_POW5, 7n, 1161n); WasmI32.store8(_TABLE_POW5, 6n, 1162n); WasmI32.store8(_TABLE_POW5, 4n, 1163n); WasmI32.store8(_TABLE_POW5, 7n, 1164n); WasmI32.store8(_TABLE_POW5, 6n, 1165n); WasmI32.store8(_TABLE_POW5, 9n, 1166n); WasmI32.store8(_TABLE_POW5, 7n, 1167n); WasmI32.store8(_TABLE_POW5, 9n, 1168n); WasmI32.store8(_TABLE_POW5, 2n, 1169n);
+    WasmI32.store8(_TABLE_POW5, 5n, 1170n); WasmI32.store8(_TABLE_POW5, 5n, 1171n); WasmI32.store8(_TABLE_POW5, 6n, 1172n); WasmI32.store8(_TABLE_POW5, 7n, 1173n); WasmI32.store8(_TABLE_POW5, 6n, 1174n); WasmI32.store8(_TABLE_POW5, 2n, 1175n); WasmI32.store8(_TABLE_POW5, 6n, 1176n); WasmI32.store8(_TABLE_POW5, 9n, 1177n); WasmI32.store8(_TABLE_POW5, 5n, 1178n); WasmI32.store8(_TABLE_POW5, 3n, 1179n); WasmI32.store8(_TABLE_POW5, 1n, 1180n); WasmI32.store8(_TABLE_POW5, 2n, 1181n); WasmI32.store8(_TABLE_POW5, 5n, 1182n); WasmI32.store8(_TABLE_POW5, 3n, 1183n); WasmI32.store8(_TABLE_POW5, 4n, 1184n); WasmI32.store8(_TABLE_POW5, 6n, 1185n); WasmI32.store8(_TABLE_POW5, 9n, 1186n); WasmI32.store8(_TABLE_POW5, 4n, 1187n); WasmI32.store8(_TABLE_POW5, 4n, 1188n); WasmI32.store8(_TABLE_POW5, 6n, 1189n); WasmI32.store8(_TABLE_POW5, 9n, 1190n); WasmI32.store8(_TABLE_POW5, 5n, 1191n); WasmI32.store8(_TABLE_POW5, 1n, 1192n); WasmI32.store8(_TABLE_POW5, 9n, 1193n); WasmI32.store8(_TABLE_POW5, 5n, 1194n); WasmI32.store8(_TABLE_POW5, 3n, 1195n); WasmI32.store8(_TABLE_POW5, 6n, 1196n); WasmI32.store8(_TABLE_POW5, 1n, 1197n); WasmI32.store8(_TABLE_POW5, 4n, 1198n); WasmI32.store8(_TABLE_POW5, 1n, 1199n);
+    WasmI32.store8(_TABLE_POW5, 8n, 1200n); WasmI32.store8(_TABLE_POW5, 8n, 1201n); WasmI32.store8(_TABLE_POW5, 8n, 1202n); WasmI32.store8(_TABLE_POW5, 2n, 1203n); WasmI32.store8(_TABLE_POW5, 3n, 1204n); WasmI32.store8(_TABLE_POW5, 8n, 1205n); WasmI32.store8(_TABLE_POW5, 4n, 1206n); WasmI32.store8(_TABLE_POW5, 8n, 1207n); WasmI32.store8(_TABLE_POW5, 9n, 1208n); WasmI32.store8(_TABLE_POW5, 6n, 1209n); WasmI32.store8(_TABLE_POW5, 2n, 1210n); WasmI32.store8(_TABLE_POW5, 7n, 1211n); WasmI32.store8(_TABLE_POW5, 8n, 1212n); WasmI32.store8(_TABLE_POW5, 3n, 1213n); WasmI32.store8(_TABLE_POW5, 8n, 1214n); WasmI32.store8(_TABLE_POW5, 1n, 1215n); WasmI32.store8(_TABLE_POW5, 3n, 1216n); WasmI32.store8(_TABLE_POW5, 4n, 1217n); WasmI32.store8(_TABLE_POW5, 7n, 1218n); WasmI32.store8(_TABLE_POW5, 6n, 1219n); WasmI32.store8(_TABLE_POW5, 5n, 1220n); WasmI32.store8(_TABLE_POW5, 6n, 1221n); WasmI32.store8(_TABLE_POW5, 2n, 1222n); WasmI32.store8(_TABLE_POW5, 5n, 1223n); WasmI32.store8(_TABLE_POW5, 1n, 1224n); WasmI32.store8(_TABLE_POW5, 7n, 1225n); WasmI32.store8(_TABLE_POW5, 3n, 1226n); WasmI32.store8(_TABLE_POW5, 4n, 1227n); WasmI32.store8(_TABLE_POW5, 7n, 1228n); WasmI32.store8(_TABLE_POW5, 2n, 1229n);
+    WasmI32.store8(_TABLE_POW5, 3n, 1230n); WasmI32.store8(_TABLE_POW5, 4n, 1231n); WasmI32.store8(_TABLE_POW5, 7n, 1232n); WasmI32.store8(_TABLE_POW5, 5n, 1233n); WasmI32.store8(_TABLE_POW5, 9n, 1234n); WasmI32.store8(_TABLE_POW5, 7n, 1235n); WasmI32.store8(_TABLE_POW5, 6n, 1236n); WasmI32.store8(_TABLE_POW5, 8n, 1237n); WasmI32.store8(_TABLE_POW5, 0n, 1238n); WasmI32.store8(_TABLE_POW5, 7n, 1239n); WasmI32.store8(_TABLE_POW5, 0n, 1240n); WasmI32.store8(_TABLE_POW5, 9n, 1241n); WasmI32.store8(_TABLE_POW5, 4n, 1242n); WasmI32.store8(_TABLE_POW5, 4n, 1243n); WasmI32.store8(_TABLE_POW5, 1n, 1244n); WasmI32.store8(_TABLE_POW5, 1n, 1245n); WasmI32.store8(_TABLE_POW5, 9n, 1246n); WasmI32.store8(_TABLE_POW5, 2n, 1247n); WasmI32.store8(_TABLE_POW5, 4n, 1248n); WasmI32.store8(_TABLE_POW5, 4n, 1249n); WasmI32.store8(_TABLE_POW5, 8n, 1250n); WasmI32.store8(_TABLE_POW5, 1n, 1251n); WasmI32.store8(_TABLE_POW5, 3n, 1252n); WasmI32.store8(_TABLE_POW5, 9n, 1253n); WasmI32.store8(_TABLE_POW5, 1n, 1254n); WasmI32.store8(_TABLE_POW5, 9n, 1255n); WasmI32.store8(_TABLE_POW5, 0n, 1256n); WasmI32.store8(_TABLE_POW5, 6n, 1257n); WasmI32.store8(_TABLE_POW5, 7n, 1258n); WasmI32.store8(_TABLE_POW5, 3n, 1259n);
+    WasmI32.store8(_TABLE_POW5, 8n, 1260n); WasmI32.store8(_TABLE_POW5, 2n, 1261n); WasmI32.store8(_TABLE_POW5, 8n, 1262n); WasmI32.store8(_TABLE_POW5, 1n, 1263n); WasmI32.store8(_TABLE_POW5, 2n, 1264n); WasmI32.store8(_TABLE_POW5, 5n, 1265n); WasmI32.store8(_TABLE_POW5, 8n, 1266n); WasmI32.store8(_TABLE_POW5, 6n, 1267n); WasmI32.store8(_TABLE_POW5, 7n, 1268n); WasmI32.store8(_TABLE_POW5, 3n, 1269n); WasmI32.store8(_TABLE_POW5, 6n, 1270n); WasmI32.store8(_TABLE_POW5, 1n, 1271n); WasmI32.store8(_TABLE_POW5, 7n, 1272n); WasmI32.store8(_TABLE_POW5, 3n, 1273n); WasmI32.store8(_TABLE_POW5, 7n, 1274n); WasmI32.store8(_TABLE_POW5, 9n, 1275n); WasmI32.store8(_TABLE_POW5, 8n, 1276n); WasmI32.store8(_TABLE_POW5, 8n, 1277n); WasmI32.store8(_TABLE_POW5, 4n, 1278n); WasmI32.store8(_TABLE_POW5, 0n, 1279n); WasmI32.store8(_TABLE_POW5, 3n, 1280n); WasmI32.store8(_TABLE_POW5, 5n, 1281n); WasmI32.store8(_TABLE_POW5, 4n, 1282n); WasmI32.store8(_TABLE_POW5, 7n, 1283n); WasmI32.store8(_TABLE_POW5, 2n, 1284n); WasmI32.store8(_TABLE_POW5, 0n, 1285n); WasmI32.store8(_TABLE_POW5, 5n, 1286n); WasmI32.store8(_TABLE_POW5, 9n, 1287n); WasmI32.store8(_TABLE_POW5, 6n, 1288n); WasmI32.store8(_TABLE_POW5, 2n, 1289n);
+    WasmI32.store8(_TABLE_POW5, 2n, 1290n); WasmI32.store8(_TABLE_POW5, 4n, 1291n); WasmI32.store8(_TABLE_POW5, 0n, 1292n); WasmI32.store8(_TABLE_POW5, 6n, 1293n); WasmI32.store8(_TABLE_POW5, 9n, 1294n); WasmI32.store8(_TABLE_POW5, 5n, 1295n); WasmI32.store8(_TABLE_POW5, 9n, 1296n); WasmI32.store8(_TABLE_POW5, 5n, 1297n); WasmI32.store8(_TABLE_POW5, 3n, 1298n); WasmI32.store8(_TABLE_POW5, 3n, 1299n); WasmI32.store8(_TABLE_POW5, 6n, 1300n); WasmI32.store8(_TABLE_POW5, 9n, 1301n); WasmI32.store8(_TABLE_POW5, 1n, 1302n); WasmI32.store8(_TABLE_POW5, 4n, 1303n); WasmI32.store8(_TABLE_POW5, 0n, 1304n); WasmI32.store8(_TABLE_POW5, 6n, 1305n); WasmI32.store8(_TABLE_POW5, 2n, 1306n); WasmI32.store8(_TABLE_POW5, 5n, 1307n);
+  }
+  _TABLE_POW5
+}
+
+@unsafe
+let numberOfDigitsDecimalLeftShift = (d, shift) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltU
+  let (>=) = WasmI32.geU
+  let (>>) = WasmI32.shrU
+  let (<<) = WasmI32.shl
+  let (==) = WasmI32.eq
+
+  let table = get_TABLE()
+  let tablePow5 = get_TABLE_POW5()
+
+  let digits = WasmI32.fromGrain(d.digits)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+
+  let shift = (shift & 63n) << 1n
+  let x_a = WasmI32.load16U(table + shift, 0n)
+  let x_b = WasmI32.load16U(table + shift, 2n)
+  let mut numNewDigits = x_a >> 11n
+  let pow5_a = 0x7FFn & x_a
+  let pow5_b = 0x7FFn & x_b
+  let offset = pow5_a
+  for (let mut i = 0n; i < pow5_b - pow5_a; i += 1n) {
+    let p5 = WasmI32.load8U(tablePow5 + offset + i, 0n)
+    if (i >= numDigits) {
+      numNewDigits -= 1n
+      break
+    } else if (WasmI32.load8U(digits + i, 8n) == p5) {
+      continue
+    } else if (WasmI32.load8U(digits + i, 8n) < p5) {
+      numNewDigits -= 1n
+      break
+    } else {
+      numNewDigits = numNewDigits
+      break
+    }
+  }
+  numNewDigits
+}
+
+// Computes decimal * 2^shift.
+@unsafe
+export let leftShift = (d, shift) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltS
+  let (>) = WasmI32.gtS
+  let (>=) = WasmI32.geS
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+
+  let (*) = WasmI64.mul
+  let (/) = WasmI64.divU
+  let (<<) = WasmI64.shl
+
+  let digits = WasmI32.fromGrain(d.digits)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+
+  if (numDigits != 0n) {
+    let numNewDigits = numberOfDigitsDecimalLeftShift(d, shift)
+    let mut readIndex = numDigits
+    let mut writeIndex = numDigits + numNewDigits
+    let mut n = 0N
+    while (readIndex != 0n) {
+      readIndex -= 1n
+      writeIndex -= 1n
+      n = WasmI64.add(
+        n,
+        WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n)) <<
+        WasmI64.extendI32U(shift)
+      )
+      let quotient = n / 10N
+      let remainder = WasmI64.sub(n, 10N * quotient)
+      if (writeIndex < _MAX_DIGITS) {
+        WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(remainder), 8n)
+      } else if (WasmI64.gtS(remainder, 0N)) {
+        d.truncated = true
+      }
+      n = quotient
+    }
+    while (WasmI64.gtS(n, 0N)) {
+      writeIndex -= 1n
+      let quotient = n / 10N
+      let remainder = WasmI64.sub(n, 10N * quotient)
+      if (writeIndex < _MAX_DIGITS) {
+        WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(remainder), 8n)
+      } else if (WasmI64.gtS(remainder, 0N)) {
+        d.truncated = true
+      }
+      n = quotient
+    }
+    numDigits += numNewDigits
+    if (numDigits > _MAX_DIGITS) {
+      numDigits = _MAX_DIGITS
+    }
+    decimalPoint += numNewDigits
+
+    d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+    d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+    trim(d)
+  }
+}
+
+// Computes decimal * 2^-shift.
+@unsafe
+export let rightShift = (d, shift) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltS
+  let (>) = WasmI32.gtS
+  let (>=) = WasmI32.geS
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+
+  let (<<) = WasmI64.shl
+  let (>>) = WasmI64.shrU
+  let (*) = WasmI64.mul
+
+  let digits = WasmI32.fromGrain(d.digits)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+
+  let mut readIndex = 0n
+  let mut writeIndex = 0n
+  let mut n = 0N
+  let mut done = false
+  while (WasmI64.eqz(n >> WasmI64.extendI32U(shift))) {
+    if (readIndex < numDigits) {
+      n = WasmI64.add(
+        10N * n,
+        WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n))
+      )
+      readIndex += 1n
+    } else if (WasmI64.eqz(n)) {
+      done = true
+      break
+    } else {
+      while (WasmI64.eqz(n >> WasmI64.extendI32U(shift))) {
+        n *= 10N
+        readIndex += 1n
+      }
+      break
+    }
+  }
+  if (!done) {
+    decimalPoint -= readIndex - 1n
+    if (decimalPoint < 0n - _DECIMAL_POINT_RANGE) {
+      numDigits = 0n
+      decimalPoint = 0n
+      d.truncated = false
+
+      d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+      d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+    } else {
+      let mask = WasmI64.sub(1N << WasmI64.extendI32U(shift), 1N)
+      while (readIndex < numDigits) {
+        let newDigit = n >> WasmI64.extendI32U(shift)
+        n = WasmI64.add(
+          10N * WasmI64.and(n, mask),
+          WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n))
+        )
+        readIndex += 1n
+        WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(newDigit), 8n)
+        writeIndex += 1n
+      }
+      while (WasmI64.gtU(n, 0N)) {
+        let newDigit = n >> WasmI64.extendI32U(shift)
+        n = 10N * WasmI64.and(n, mask)
+        if (writeIndex < _MAX_DIGITS) {
+          WasmI32.store8(digits + writeIndex, WasmI32.wrapI64(newDigit), 8n)
+          writeIndex += 1n
+        } else if (WasmI64.gtS(newDigit, 0N)) {
+          d.truncated = true
+        }
+      }
+      numDigits = writeIndex
+
+      d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+      d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+      trim(d)
+    }
+  }
+}
+
+// Parse a big integer representation of the float as a decimal.
+@unsafe
+export let parseDecimal = (s: String) => {
+  let (+) = WasmI32.add
+  let (*) = WasmI32.mul
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltS
+  let (>) = WasmI32.gtS
+  let (>=) = WasmI32.geS
+  let (==) = WasmI32.eq
+  let (!=) = WasmI32.ne
+
+  let d = new()
+  let s = WasmI32.fromGrain(s)
+  let digits = WasmI32.fromGrain(d.digits)
+  let len = WasmI32.load(s, 4n)
+  let mut i = 0n
+  let c = WasmI32.load8U(s + i, 8n)
+  if (c == _CHAR_CODE_PLUS || c == _CHAR_CODE_MINUS) {
+    // Ignore any sign as that is handled by the consuming function
+    i += 1n
+  }
+  let start = i
+  while (i < len) {
+    let c = WasmI32.load8U(s + i, 8n)
+    if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
+      i += 1n
+    } else {
+      break
+    }
+  }
+  while (i < len) {
+    let char = WasmI32.load8U(s + i, 8n)
+    let digit = char - _CHAR_CODE_0
+    if (digit >= 0n && digit < 10n) {
+      tryAddDigit(d, digit)
+      i += 1n
+    } else if (char == _CHAR_CODE_UNDERSCORE) {
+      i += 1n
+    } else {
+      break
+    }
+  }
+  let c = WasmI32.load8U(s + i, 8n)
+  if (c == _CHAR_CODE_DOT) {
+    i += 1n
+    let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+    let numDigitsBeforeDecimal = numDigits
+    // Skip leading zeros.
+    if (numDigits == 0n) {
+      while (i < len) {
+        let c = WasmI32.load8U(s + i, 8n)
+        if (c == _CHAR_CODE_0 || c == _CHAR_CODE_UNDERSCORE) {
+          i += 1n
+        } else {
+          break
+        }
+      }
+    }
+    while (len - i >= 8n && numDigits + 8n < _MAX_DIGITS) {
+      let v = WasmI64.load(s + i, 0n)
+      if (!is8Digits(v)) {
+        break
+      }
+      WasmI64.store(
+        digits + numDigits,
+        WasmI64.sub(v, 0x3030_3030_3030_3030N),
+        8n
+      )
+      numDigits += 8n
+      i += 8n
+    }
+    d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+    while (i < len) {
+      let char = WasmI32.load8U(s + i, 8n)
+      let digit = char - _CHAR_CODE_0
+      if (digit >= 0n && digit < 10n) {
+        tryAddDigit(d, digit)
+        i += 1n
+      } else if (char == _CHAR_CODE_UNDERSCORE) {
+        i += 1n
+      } else {
+        break
+      }
+    }
+    numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+    d.decimalPoint = WasmI32.toGrain(
+      newInt32(numDigitsBeforeDecimal - numDigits)
+    )
+  }
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  if (numDigits != 0n) {
+    // Ignore the trailing zeros if there are any
+    let mut nTrailingZeros = 0n
+    for (let mut j = len - 1n; j >= len - i; j -= 1n) {
+      let c = WasmI32.load8U(s + j, 8n)
+      if (c == _CHAR_CODE_0) {
+        nTrailingZeros += 1n
+      } else if (c == _CHAR_CODE_UNDERSCORE) {
+        continue
+      } else if (c != _CHAR_CODE_DOT) {
+        break
+      }
+    }
+    let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+    decimalPoint += nTrailingZeros
+    numDigits -= nTrailingZeros
+    decimalPoint += numDigits
+    if (numDigits > _MAX_DIGITS) {
+      d.truncated = true
+      numDigits = _MAX_DIGITS
+    }
+    d.numDigits = WasmI32.toGrain(newInt32(numDigits))
+    d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+  }
+  let c = WasmI32.load8U(s + i, 8n)
+  if (c == _CHAR_CODE_e || c == _CHAR_CODE_E) {
+    i += 1n
+    let mut negExp = false
+    let c = WasmI32.load8U(s + i, 8n)
+    if (c == _CHAR_CODE_MINUS) {
+      negExp = true
+      i += 1n
+    } else if (c == _CHAR_CODE_PLUS) {
+      i += 1n
+    }
+    let mut expNum = 0n
+    while (i < len) {
+      let char = WasmI32.load8U(s + i, 8n)
+      let digit = char - _CHAR_CODE_0
+      if (digit >= 0n && digit < 10n) {
+        if (expNum < 0x10000n) {
+          expNum = 10n * expNum + digit
+        }
+        i += 1n
+      } else if (char == _CHAR_CODE_UNDERSCORE) {
+        i += 1n
+      } else {
+        break
+      }
+    }
+    let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+    decimalPoint += if (negExp) {
+        0n - expNum
+      } else {
+        expNum
+      }
+    d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
+  }
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  for (let mut i = numDigits; i < _MAX_DIGITS_WITHOUT_OVERFLOW; i += 1n) {
+    WasmI32.store8(digits + i, 0n, 8n)
+  }
+  d
+}

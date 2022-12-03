@@ -1,0 +1,238 @@
+// This module was based on Rust's dec2flt
+// https://github.com/rust-lang/rust/blob/1cbc45942d5c0f6eb5d94e3b10762ba541958035/library/core/src/num/dec2flt/slow.rs
+// Rust's MIT license is provided below:
+/*
+ * Permission is hereby granted, free of charge, to any
+ * person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the
+ * Software without restriction, including without
+ * limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software
+ * is furnished to do so, subject to the following
+ * conditions:
+ * 
+ * The above copyright notice and this permission notice
+ * shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+ * SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+ * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+*/
+
+//! Slow, fallback algorithm for cases the Eisel-Lemire algorithm cannot round.
+
+import WasmI32 from "runtime/unsafe/wasmi32"
+import WasmI64 from "runtime/unsafe/wasmi64"
+import Memory from "runtime/unsafe/memory"
+import { newInt32, newInt64 } from "runtime/dataStructures"
+
+import {
+  BiasedFp,
+  fpZero,
+  fpInf,
+  fpErr,
+  _MINIMUM_EXPONENT,
+  _INFINITE_POWER,
+  _MANTISSA_EXPLICIT_BITS_32,
+  _MANTISSA_EXPLICIT_BITS_64,
+} from "./common"
+import Decimal, { parseDecimal, _DECIMAL_POINT_RANGE } from "./decimal"
+
+@unsafe
+let _MAX_SHIFT = 60n
+@unsafe
+let _NUM_POWERS = 19n
+@unsafe
+let mut _POWERS = -1n
+
+@unsafe
+let get_POWERS = () => {
+  let (==) = WasmI32.eq
+  if (_POWERS == -1n) {
+    _POWERS = Memory.malloc(130n)
+    WasmI32.store8(_POWERS, 0n, 0n)
+    WasmI32.store8(_POWERS, 3n, 1n)
+    WasmI32.store8(_POWERS, 6n, 2n)
+    WasmI32.store8(_POWERS, 9n, 3n)
+    WasmI32.store8(_POWERS, 13n, 4n)
+    WasmI32.store8(_POWERS, 16n, 5n)
+    WasmI32.store8(_POWERS, 19n, 6n)
+    WasmI32.store8(_POWERS, 23n, 7n)
+    WasmI32.store8(_POWERS, 26n, 8n)
+    WasmI32.store8(_POWERS, 29n, 9n)
+    WasmI32.store8(_POWERS, 33n, 10n)
+    WasmI32.store8(_POWERS, 36n, 11n)
+    WasmI32.store8(_POWERS, 39n, 12n)
+    WasmI32.store8(_POWERS, 43n, 13n)
+    WasmI32.store8(_POWERS, 46n, 14n)
+    WasmI32.store8(_POWERS, 49n, 15n)
+    WasmI32.store8(_POWERS, 53n, 16n)
+    WasmI32.store8(_POWERS, 56n, 17n)
+    WasmI32.store8(_POWERS, 59n, 18n)
+  }
+  _POWERS
+}
+
+@unsafe
+let getShift = n => {
+  if (WasmI32.ltS(n, _NUM_POWERS)) {
+    WasmI32.load8U(get_POWERS(), n)
+  } else {
+    _MAX_SHIFT
+  }
+}
+
+/*
+ * Parse the significant digits and biased, binary exponent of a float.
+ *
+ * This is a fallback algorithm that uses a big-integer representation
+ * of the float, and therefore is considerably slower than faster
+ * approximations. However, it will always determine how to round
+ * the significant digits to the nearest machine float, allowing
+ * use to handle near half-way cases.
+ *
+ * Near half-way cases are halfway between two consecutive machine floats.
+ * For example, the float `16777217.0` has a bitwise representation of
+ * `100000000000000000000000 1`. Rounding to a single-precision float,
+ * the trailing `1` is truncated. Using round-nearest, tie-even, any
+ * value above `16777217.0` must be rounded up to `16777218.0`, while
+ * any value before or equal to `16777217.0` must be rounded down
+ * to `16777216.0`. These near-halfway conversions therefore may require
+ * a large number of digits to unambiguously determine how to round.
+ *
+ * The algorithms described here are based on "Processing Long Numbers Quickly",
+ * available here: <https://arxiv.org/pdf/2101.11408.pdf#section.11>.
+*/
+@unsafe
+export let parseLongMantissa = (s: String) => {
+  let (+) = WasmI32.add
+  let (-) = WasmI32.sub
+  let (&) = WasmI32.and
+  let (<) = WasmI32.ltS
+  let (>) = WasmI32.gtS
+  let (>=) = WasmI32.geS
+  let (<=) = WasmI32.leS
+  let (>>) = WasmI32.shrU
+  let (<<) = WasmI32.shl
+  let (==) = WasmI32.eq
+
+  let mut d = parseDecimal(s)
+  let digits = WasmI32.fromGrain(d.digits)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
+  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+
+  // Short-circuit if the value can only be a literal 0 or infinity.
+  if (numDigits == 0n || decimalPoint < -324n) {
+    fpZero()
+  } else if (decimalPoint >= 310n) {
+    fpInf()
+  } else {
+    let mut exp2 = 0n
+    // Shift right toward (1/2 ... 1].
+    let mut done = false
+    while (decimalPoint > 0n) {
+      let n = decimalPoint
+      let shift = getShift(n)
+      Decimal.rightShift(d, shift)
+      decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+      if (decimalPoint < 0n - _DECIMAL_POINT_RANGE) {
+        done = true
+        break
+      }
+      exp2 += shift
+    }
+    if (done) {
+      fpZero()
+    } else {
+      // Shift left toward (1/2 ... 1].
+      let mut done = false
+      while (decimalPoint <= 0n) {
+        let shift = if (decimalPoint == 0n) {
+          match (WasmI32.load8U(digits, 8n)) {
+            digit when digit >= 5n => {
+              break
+              // Align types
+              0n
+            },
+            0n | 1n => 2n,
+            _ => 1n,
+          }
+        } else {
+          getShift(0n - decimalPoint)
+        }
+        Decimal.leftShift(d, shift)
+        decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+        if (decimalPoint > _DECIMAL_POINT_RANGE) {
+          done = true
+          break
+        }
+        exp2 -= shift
+      }
+      if (done) {
+        fpInf()
+      } else {
+        // We are now in the range [1/2 ... 1] but the binary format uses [1 ... 2].
+        exp2 -= 1n
+        while (_MINIMUM_EXPONENT + 1n > exp2) {
+          let mut n = _MINIMUM_EXPONENT + 1n - exp2
+          if (n > _MAX_SHIFT) {
+            n = _MAX_SHIFT
+          }
+          Decimal.rightShift(d, n)
+          exp2 += n
+        }
+        if (exp2 - _MINIMUM_EXPONENT >= _INFINITE_POWER) {
+          fpInf()
+        } else {
+          // Shift the decimal to the hidden bit, and then round the value
+          // to get the high mantissa+1 bits.
+          Decimal.leftShift(d, _MANTISSA_EXPLICIT_BITS_32 + 1n)
+          let mut mantissa = Decimal.round(d)
+          let mut done = false
+          if (
+            WasmI64.geU(
+              mantissa,
+              WasmI64.shl(1N, WasmI64.add(_MANTISSA_EXPLICIT_BITS_64, 1N))
+            )
+          ) {
+            // Rounding up overflowed to the carry bit, need to
+            // shift back to the hidden bit.
+            Decimal.rightShift(d, 1n)
+            exp2 += 1n
+            mantissa = Decimal.round(d)
+            if (exp2 - _MINIMUM_EXPONENT >= _INFINITE_POWER) {
+              done = true
+            }
+          }
+          if (done) {
+            fpInf()
+          } else {
+            let mut power2 = exp2 - _MINIMUM_EXPONENT
+            if (
+              WasmI64.ltU(mantissa, WasmI64.shl(1N, _MANTISSA_EXPLICIT_BITS_64))
+            ) {
+              power2 -= 1n
+            }
+            // Zero out all the bits above the explicit mantissa bits.
+            mantissa = WasmI64.and(
+              mantissa,
+              WasmI64.sub(WasmI64.shl(1N, _MANTISSA_EXPLICIT_BITS_64), 1N)
+            )
+            {
+              f: WasmI32.toGrain(newInt64(mantissa)): Int64,
+              e: WasmI32.toGrain(newInt32(power2)): Int32,
+            }
+          }
+        }
+      }
+    }
+  }
+}

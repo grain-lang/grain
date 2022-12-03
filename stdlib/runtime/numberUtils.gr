@@ -46,7 +46,7 @@ let _I32_MAX = 0xffffffffN
 let mut _POWERS10 = -1n
 
 @unsafe
-let get_POWERS10 = () => {
+export let get_POWERS10 = () => {
   if (_POWERS10 == -1n) {
     _POWERS10 = Memory.malloc(40n)
     WasmI32.store(_POWERS10, 1n, 0n)

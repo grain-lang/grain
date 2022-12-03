@@ -729,6 +729,32 @@ Returns:
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
+### Number.**parseFloat**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+parseFloat : String -> Result<Number, String>
+```
+
+Parses a string representation of a float into a `Number`. Underscores that appear
+in numeric portions of the input are ignored.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`input`|`String`|The string to parse|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+
 ### Number.**sin**
 
 <details>

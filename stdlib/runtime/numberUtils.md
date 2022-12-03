@@ -4,6 +4,12 @@
 _MAX_DOUBLE_LENGTH : WasmI32
 ```
 
+### NumberUtils.**get_POWERS10**
+
+```grain
+get_POWERS10 : () -> WasmI32
+```
+
 ### NumberUtils.**get_HEX_DIGITS**
 
 ```grain
