@@ -232,6 +232,7 @@ annotated_expr:
 
 binop_expr:
   | non_stmt_expr infix_op opt_eols non_stmt_expr { Exp.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
+  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Exp.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
 
 ellipsis_prefix(X):
   | ELLIPSIS X {$2}
@@ -385,6 +386,9 @@ paren_expr:
 app_expr:
   | left_accessor_expr lparen lseparated_list(comma, expr) comma? rparen { Exp.apply ~loc:(to_loc $loc) $1 $3 }
 
+rcaret_rcaret_op:
+  | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
+
 // These are all inlined to carry over their precedence.
 %inline infix_op:
   | INFIX_30
@@ -402,7 +406,7 @@ app_expr:
   | DASH { "-" }
   | PIPE { "|" }
   | LCARET { "<" }
-  | llist(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
+  | RCARET { ">" }
 
 %inline prefix_op:
   | PREFIX_150 {$1}
@@ -413,7 +417,7 @@ primitive_:
   | FAIL { "fail" }
 
 special_op:
-  | infix_op | prefix_op {$1}
+  | infix_op | rcaret_rcaret_op | prefix_op {$1}
 
 %inline special_id:
   | lparen special_op rparen { mkstr $loc($2) $2 }

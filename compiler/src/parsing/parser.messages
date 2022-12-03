@@ -6969,14 +6969,21 @@ program: BIGINT RCARET RCARET EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LPAREN INFIX_100 WHILE
+program: BIGINT RCARET RCARET RPAREN
 ##
-## Ends in an error in state: 150.
+## Ends in an error in state: 65.
 ##
-## id_str -> lparen special_op . rparen [ WHEN TYPE THICKARROW STAR SLASH SEMI RPAREN RECORD RCARET RBRACK RBRACE PIPE LPAREN LET LCARET LBRACK INFIX_ASSIGNMENT_10 INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 IMPORT GETS FROM EXPORT EQUAL EOL EOF ENUM ELSE DOT DASH COMMA COLON AT AS ]
+## binop_expr -> non_stmt_expr rcaret_rcaret_op . non_stmt_expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+## binop_expr -> non_stmt_expr rcaret_rcaret_op . eols non_stmt_expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
 ##
 ## The known suffix of the stack is as follows:
-## lparen special_op
+## non_stmt_expr rcaret_rcaret_op
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 70, spurious reduction of production rcaret_rcaret_op -> lnonempty_list_inner(RCARET) RCARET
 ##
 program: LPAREN RCARET WHILE
 ##
