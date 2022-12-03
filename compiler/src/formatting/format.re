@@ -1951,9 +1951,8 @@ and print_infix_application =
       | _ => false
       };
 
-    // put parens around different operators for clarity.
-    // Except math operations as this makes them look ugly
-    // and logic operations
+    // Put parens around different operators for clarity, except
+    // math and logic operations where precedence is well-known
     let left_is_different_op =
       switch (first.pexp_desc) {
       | PExpApp(fn1, _) =>
