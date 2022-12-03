@@ -1,0 +1,271 @@
+import Path from "path"
+import Result from "result"
+import Option from "option"
+import List from "list"
+
+let fs = Path.fromString
+
+// test that a variety of properties hold for valid relative/absolute paths
+record ParseFileTestData {
+  pathStr: String,
+  expParent: String,
+  expStr: String,
+  expName: Option<String>,
+  expStem: String,
+  expExt: String,
+}
+
+let parseFileTests = [
+  {
+    pathStr: "./dir/file.txt",
+    expParent: "./dir/",
+    expStr: "./dir/file.txt",
+    expName: Some("file.txt"),
+    expStem: "file",
+    expExt: ".txt",
+  },
+  {
+    pathStr: "f",
+    expParent: ".",
+    expStr: "./f",
+    expName: Some("f"),
+    expStem: "f",
+    expExt: "",
+  },
+  {
+    pathStr: "a.tar.gz",
+    expParent: ".",
+    expStr: "./a.tar.gz",
+    expName: Some("a.tar.gz"),
+    expStem: "a",
+    expExt: ".tar.gz",
+  },
+  {
+    pathStr: ".gulprc.babel.js",
+    expParent: ".",
+    expStr: "./.gulprc.babel.js",
+    expName: Some(".gulprc.babel.js"),
+    expStem: ".gulprc",
+    expExt: ".babel.js",
+  },
+  {
+    pathStr: "../../file",
+    expParent: "../..",
+    expStr: "../../file",
+    expName: Some("file"),
+    expStem: "file",
+    expExt: "",
+  },
+  {
+    pathStr: ".\\dir\\file.txt",
+    expParent: ".",
+    expStr: "./.\\dir\\file.txt",
+    expName: Some(".\\dir\\file.txt"),
+    expStem: ".\\dir\\file",
+    expExt: ".txt",
+  },
+  {
+    pathStr: "/dir/file.txt",
+    expParent: "/dir/",
+    expStr: "/dir/file.txt",
+    expName: Some("file.txt"),
+    expStem: "file",
+    expExt: ".txt",
+  },
+  {
+    pathStr: "/dir/../file",
+    expParent: "/",
+    expStr: "/file",
+    expName: Some("file"),
+    expStem: "file",
+    expExt: "",
+  },
+  {
+    pathStr: "C:/Users/me.txt",
+    expParent: "C:/Users/",
+    expStr: "C:/Users/me.txt",
+    expName: Some("me.txt"),
+    expStem: "me",
+    expExt: ".txt",
+  },
+]
+
+List.forEach(({ pathStr, expParent, expStr, expName, expStem, expExt }) => {
+  let path = fs(pathStr)
+  assert Path.toString(path) == expStr
+  assert fs(expParent) == Path.parent(path)
+  assert expName == Path.basename(path)
+  assert Ok(expStem) == Path.stem(path)
+  assert Ok(expExt) == Path.extension(path)
+}, parseFileTests)
+
+record ParseDirTestData {
+  pathStr: String,
+  expParent: String,
+  expStr: String,
+  expName: Option<String>,
+}
+
+let parseDirTests = [
+  { pathStr: "dir/../../", expParent: "../..", expStr: "../", expName: None },
+  {
+    pathStr: ".git/",
+    expParent: ".",
+    expStr: "./.git/",
+    expName: Some(".git"),
+  },
+  { pathStr: ".", expParent: "..", expStr: "./", expName: None },
+  { pathStr: ".////", expParent: "..", expStr: "./", expName: None },
+  { pathStr: "../", expParent: "../..", expStr: "../", expName: None },
+  { pathStr: "", expParent: "..", expStr: "./", expName: None },
+  { pathStr: "/../..", expParent: "/", expStr: "/", expName: None },
+  { pathStr: "/", expParent: "/", expStr: "/", expName: None },
+  {
+    pathStr: "/bin/dir/..",
+    expParent: "/",
+    expStr: "/bin/",
+    expName: Some("bin"),
+  },
+  { pathStr: "C:/", expParent: "C:/", expStr: "C:/", expName: None },
+  { pathStr: "c:/.././..", expParent: "c:/", expStr: "c:/", expName: None },
+]
+
+List.forEach(({ pathStr, expParent, expStr, expName }: ParseDirTestData) => {
+  let path = fs(pathStr)
+  assert Path.toString(path) == expStr
+  assert fs(expParent) == Path.parent(path)
+  assert expName == Path.basename(path)
+}, parseDirTests)
+
+// miscellaneous parsing tests
+assert fs("") == fs(".")
+assert fs(".") == fs("./")
+assert fs("dir") != fs("dir/")
+assert Path.toPlatformString(fs("C:/Users/me/"), Path.Windows) ==
+  "C:\\Users\\me\\"
+assert Path.toPlatformString(
+  Path.fromPlatformString("C:\\Users/me\\", Path.Windows),
+  Path.Windows
+) ==
+  "C:\\Users\\me\\"
+assert Path.toPlatformString(
+  Path.fromPlatformString(".\\dir/me\\", Path.Windows),
+  Path.Posix
+) ==
+  "./dir/me/"
+
+assert Path.stem(fs("dir/")) == Err(Path.IncompatiblePathType)
+assert Path.extension(fs("dir/")) == Err(Path.IncompatiblePathType)
+
+// tests properties about the types of paths
+
+record PathTypeTest {
+  pathStr: String,
+  isDir: Bool,
+  isAbs: Bool,
+}
+
+let pathTypeTests = [
+  { pathStr: "/", isDir: true, isAbs: true },
+  { pathStr: "/file", isDir: false, isAbs: true },
+  { pathStr: ".", isDir: true, isAbs: false },
+  { pathStr: "./file", isDir: false, isAbs: false },
+]
+
+List.forEach(({ pathStr, isDir, isAbs }) => {
+  let path = fs(pathStr)
+  assert isDir == Path.isDirectory(path)
+  assert isAbs == Path.isAbsolute(path)
+}, pathTypeTests)
+
+assert Path.root(fs("/dir/")) == Ok(Path.Root)
+assert Path.root(fs("C:/dir/")) == Ok(Path.Drive('C'))
+assert Path.root(fs("c:/dir/")) == Ok(Path.Drive('c'))
+assert Path.root(fs("file")) == Err(Path.IncompatiblePathType)
+
+record AppendTestData {
+  base: String,
+  toAppend: String,
+  final: String,
+}
+
+// test appending onto relative and absolute paths
+let appendTests = [
+  { base: "dir/", toAppend: "inner", final: "dir/inner" },
+  { base: "dir /", toAppend: " inner", final: "dir / inner" },
+  { base: "./dir/", toAppend: "../../other", final: "../other" },
+  { base: ".", toAppend: ".././../", final: "../.." },
+  { base: "dir/", toAppend: "f.txt", final: "dir/f.txt" },
+  { base: "./dir/", toAppend: "../../script", final: "../script" },
+  { base: ".", toAppend: ".././../file", final: "../../file" },
+  { base: "/usr/", toAppend: "./bin/", final: "/usr/bin/" },
+  { base: "/usr/", toAppend: "../bin/", final: "/bin/" },
+  { base: "/", toAppend: "../..", final: "/" },
+  { base: "C:/", toAppend: "../..", final: "C:/" },
+  { base: "/etc/", toAppend: "./f.txt", final: "/etc/f.txt" },
+  { base: "/usr/", toAppend: "../../file", final: "/file" },
+]
+
+List.forEach(({ base, toAppend, final }) => {
+  let path = fs(base)
+  let expPath = fs(final)
+  let append = Path.append(path, fs(toAppend))
+  assert append == Ok(expPath)
+}, appendTests)
+
+Path.append(fs("file"), fs("f")) == Err(Path.AppendToFile)
+Path.append(fs("/d/"), fs("/f")) == Err(Path.AppendAbsolute)
+
+record RelativeToDirTestData {
+  source: String,
+  dest: String,
+  result: Result<Path.Path, Path.RelativizationError>,
+}
+
+// test the relativeTo function
+let valid = path => Ok(fs(path))
+let relativeToTests = [
+  { source: "./dir", dest: ".", result: valid("..") },
+  { source: ".", dest: ".", result: valid(".") },
+  { source: "..", dest: ".", result: Err(Path.ImpossibleRelativization) },
+  { source: "/", dest: "/", result: valid(".") },
+  { source: "/usr/bin", dest: "/usr/bin", result: valid("../bin") },
+  {
+    source: "/bin",
+    dest: "C:/Users",
+    result: Err(Path.Incompatible(Path.DifferentRoots)),
+  },
+  { source: "./dir", dest: "./dir/inner", result: valid("./inner") },
+  { source: "..", dest: "../../other", result: valid("../other") },
+  { source: "..", dest: "./f", result: Err(Path.ImpossibleRelativization) },
+  { source: "/bin", dest: "/bin/f", result: valid("./f") },
+  { source: "/a/b", dest: "/c/d.txt", result: valid("../../c/d.txt") },
+  {
+    source: "/bin",
+    dest: "C:/a.txt",
+    result: Err(Path.Incompatible(Path.DifferentRoots)),
+  },
+  {
+    source: "/bin",
+    dest: "./a.txt",
+    result: Err(Path.Incompatible(Path.DifferentBases)),
+  },
+]
+
+List.forEach(({ source, dest, result }) => {
+  let source = fs(source)
+  let dest = fs(dest)
+  assert Path.relativeTo(source, dest) == result
+}, relativeToTests)
+
+// ancestry tests
+assert Path.ancestry(fs("/usr"), fs("/usr/bin/../sbin")) == Ok(Path.Descendant)
+assert Path.ancestry(fs("dir"), fs("dir/inner/file.txt")) == Ok(Path.Descendant)
+assert Path.ancestry(fs("/usr/bin"), fs("/usr")) == Ok(Path.Ancestor)
+assert Path.ancestry(fs("/usr"), fs("/usr")) == Ok(Path.Self)
+assert Path.ancestry(fs("/usr/"), fs("/usr")) == Ok(Path.Self)
+assert Path.ancestry(fs("/usr"), fs("/etc")) == Ok(Path.NoLineage)
+assert Path.ancestry(fs("../dir1"), fs("./dir2")) == Ok(Path.NoLineage)
+assert Path.ancestry(fs("./dir1"), fs("../../dir2")) == Ok(Path.NoLineage)
+assert Path.ancestry(fs("./dir1"), fs("/dir2")) == Err(Path.DifferentBases)
+assert Path.ancestry(fs("C:/dir1"), fs("/dir2")) == Err(Path.DifferentRoots)
