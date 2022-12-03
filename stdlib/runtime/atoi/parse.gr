@@ -31,7 +31,7 @@ export let parseInt = (string: String, radix: Number) => {
   let _CHAR_a = 0x61n
 
   let _CHAR_UNDERSCORE = 0x5fn
-  let _CHAR_CODE_MINUS = 0x2dn
+  let _CHAR_MINUS = 0x2dn
 
   let _INT_MIN = -9223372036854775808N
 
@@ -61,7 +61,7 @@ export let parseInt = (string: String, radix: Number) => {
 
     // Check for a sign
     let mut negative = false
-    if (char == _CHAR_CODE_MINUS) {
+    if (char == _CHAR_MINUS) {
       negative = true
       offset += 1n
       limit = _INT_MIN
