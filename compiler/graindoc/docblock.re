@@ -246,7 +246,7 @@ let signature_item_in_range =
   };
 };
 
-// Used for joining multiple `@throws` annotations with the exact same name
+// Used for joining multiple `@throws` annotations with the exact same type
 module StringMap = Map.Make(String);
 
 let to_markdown = (~current_version, docblock) => {

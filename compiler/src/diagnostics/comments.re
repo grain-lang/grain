@@ -151,7 +151,6 @@ module Attribute = {
     if (Str.string_match(re, content, 0)) {
       let attr_type = Str.matched_group(1, content);
       let attr_desc = Str.matched_group(2, content);
-      // Name and Type are conflated for exceptions
       Throws({attr_type: Some(attr_type), attr_desc});
     } else {
       raise(
