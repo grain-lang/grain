@@ -156,7 +156,11 @@ export let parseLongMantissa = (s: String) => {
       let mut done = false
       while (decimalPoint <= 0n) {
         let shift = if (decimalPoint == 0n) {
-          match (WasmI32.load8U(digits, 8n)) {
+          match (WasmI32.load8U(
+            digits,
+            8n
+            // Align types
+          )) {
             digit when digit >= 5n => {
               break
               // Align types

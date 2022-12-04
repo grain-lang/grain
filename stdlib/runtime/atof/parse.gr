@@ -150,7 +150,29 @@ let parseFloatToParts = (string: String) => {
   let (!=) = WasmI32.ne
 
   let ptr = WasmI32.fromGrain(string)
-  match (WasmI32.load(ptr, 4n)) {
+  match (WasmI32.load(
+    ptr,
+    4n
+    // Invalid string
+    // Continue to parse the string
+    // Parse the optional leading sign
+    // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
+    // Handle the dot
+    // Parse chunks of 8 digits
+    // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
+    // 10^19 fits in uint64
+    // Parse scientific notation
+    // Check to see if we need to truncate
+    // Attempt to parse 19 digits, the most that can fit in an i64
+    // From Rust: https://github.com/rust-lang/rust/blob/e960b5e7749e95c6a6b2fdec7250a48105664efb/library/core/src/num/dec2flt/parse.rs#L179
+    // the next byte must be present and be '.'
+    // We know this is true because we had more than 19
+    // digits previously, so we overflowed a 64-bit integer,
+    // but parsing only the integral digits produced less
+    // than 19 digits. That means we must have a decimal
+    // point, and at least 1 fractional digit.
+    // Add back the explicit part
+  )) {
     // Invalid string
     0n => Err("Invalid string"),
     // Continue to parse the string
@@ -199,7 +221,12 @@ let parseFloatToParts = (string: String) => {
       let digitsBeforeDecimal = numDigits
 
       // Handle the dot
-      match (WasmI32.load8U(ptr, i)) {
+      match (WasmI32.load8U(
+        ptr,
+        i
+        // Parse chunks of 8 digits
+        // Parse digits '0'-'9' until we hit a non-digit byte or reach the end of the string
+      )) {
         c when c == _CHAR_CODE_DOT => {
           i += 1n
           let dotStartIndex = i
@@ -396,7 +423,13 @@ let parseInfNan = s => {
   let (==) = WasmI32.eq
 
   let ptr = WasmI32.fromGrain(s)
-  match (WasmI32.load(ptr, 4n)) {
+  match (WasmI32.load(
+    ptr,
+    4n
+    // Invalid string
+    // Continue to parse
+    // Parse the optional leading sign
+  )) {
     // Invalid string
     0n => Err("Invalid string"),
     // Continue to parse
@@ -517,7 +550,19 @@ export let isFastPath =
 export let parseFloat = (string: String) => {
   let (!=) = WasmI32.ne
 
-  match (parseFloatToParts(string)) {
+  match (parseFloatToParts(
+    string
+    // normal fast path
+    // disguised fast path
+    // Check if fast path worked
+    // From Rust:
+    // If significant digits were truncated, then we can have rounding error
+    // only if `mantissa + 1` produces a different result. We also avoid
+    // redundantly using the Eisel-Lemire algorithm if it was unable to
+    // correctly round on the first pass.
+    // Unable to correctly round the float using the Eisel-Lemire algorithm.
+    // Fallback to a slower, but always correct algorithm.
+  )) {
     Ok((exponent, mantissa, negative, manyDigits)) => {
       let exponent = WasmI32.load(WasmI32.fromGrain(exponent), 8n)
       let mantissa = WasmI64.load(WasmI32.fromGrain(mantissa), 8n)

@@ -215,7 +215,12 @@ let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
   }
 },
 decRefChildren = (userPtr: WasmI32) => {
-  match (WasmI32.load(userPtr, 0n)) {
+  match (WasmI32.load(
+    userPtr,
+    0n
+    // decRef underlying BigInts
+    // No travelsal necessary for other tags
+  )) {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let tag = WasmI32.load(userPtr, 4n)
       if (userPtr == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) {

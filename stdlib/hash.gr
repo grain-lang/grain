@@ -110,7 +110,16 @@ let rec hashOne = (val, depth) => {
     (val & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE
   ) {
     let heapPtr = val
-    match (WasmI32.load(heapPtr, 0n)) {
+    match (WasmI32.load(
+      heapPtr,
+      0n
+      // moduleId
+      // typeId
+      // variantId
+      // moduleId
+      // typeId
+      // TODO(#1187): should include fixint size once implemented
+    )) {
       t when (
         t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
       ) => {

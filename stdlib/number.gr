@@ -402,7 +402,7 @@ export let pow = (base, power) => {
                 let (<<) = WasmI64.shl
                 ax = WasmF64.reinterpretI64(
                   WasmI64.reinterpretF64(ax) & 0xFFFFFFFFN |
-                  WasmI64.extendI32S(ix) << 32N
+                    WasmI64.extendI32S(ix) << 32N
                 )
                 let bp = if (k != 0n) 1.5W else 1.0W
                 u = WasmF64.sub(ax, bp)
@@ -416,8 +416,8 @@ export let pow = (base, power) => {
                   WasmI64.shl(
                     WasmI64.extendI32S(
                       WasmI32.or(WasmI32.shrS(ix, 1n), 0x20000000n) +
-                      0x00080000n +
-                      WasmI32.shl(k, 18n)
+                        0x00080000n +
+                        WasmI32.shl(k, 18n)
                     ),
                     32N
                   )
@@ -544,7 +544,7 @@ export let pow = (base, power) => {
                   } else {
                     z = WasmF64.reinterpretI64(
                       WasmI64.reinterpretF64(z) & 0xFFFFFFFFN |
-                      WasmI64.shl(WasmI64.extendI32S(j), 32N)
+                        WasmI64.shl(WasmI64.extendI32S(j), 32N)
                     )
                   }
                   WasmI32.toGrain(newFloat64(s * z)): Number
@@ -915,10 +915,19 @@ export let parseFloat = Atof.parseFloat
  */
 @unsafe
 export let parse = input => {
-  match (parseInt(input, 10)) {
+  match (parseInt(
+    input,
+    10
+    // Split the input on a `/` and attempt to parse a rational
+    // Search for `/`
+  )) {
     Ok(number) => Ok(number),
     Err(msg) =>
-      match (parseFloat(input)) {
+      match (parseFloat(
+        input
+        // Split the input on a `/` and attempt to parse a rational
+        // Search for `/`
+      )) {
         Ok(number) => Ok(number),
         Err(_) => {
           // Split the input on a `/` and attempt to parse a rational

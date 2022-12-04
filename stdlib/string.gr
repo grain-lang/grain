@@ -2127,7 +2127,14 @@ let trimString = (str: String, fromEnd: Bool) => {
       if (
         byte == 0xEFn && // Check for the first BOM byte
         // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
-        WasmI32.load(stringPtr, i - 1n) >>> 8n == 0xBFBBEFn
+        WasmI32.load(
+          // Check for the first BOM byte
+          // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
+          stringPtr,
+          i - 1n
+        ) >>>
+        8n ==
+        0xBFBBEFn
       ) {
         i += 2n
         count += 3n
@@ -2137,7 +2144,14 @@ let trimString = (str: String, fromEnd: Bool) => {
       if (
         byte == 0xBFn && // Check for the last BOM byte
         // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
-        WasmI32.load(stringPtr, i - 3n) >>> 8n == 0xBFBBEFn
+        WasmI32.load(
+          // Check for the last BOM byte
+          // Check for the full BOM codepoint, 0xEFBBBF. Bytes are reversed because wasm is little-endian
+          stringPtr,
+          i - 3n
+        ) >>>
+        8n ==
+        0xBFBBEFn
       ) {
         i -= 2n
         count += 3n

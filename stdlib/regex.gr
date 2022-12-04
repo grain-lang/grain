@@ -170,10 +170,10 @@ let eat = (buf: RegExBuf, char: Char) => {
         parseErr(
           buf,
           "Expected character '" ++
-          Char.toString(char) ++
-          ", but found character '" ++
-          Char.toString(ret) ++
-          "'",
+            Char.toString(char) ++
+            ", but found character '" ++
+            Char.toString(ret) ++
+            "'",
           0
         )
       )
@@ -705,7 +705,10 @@ parsePosixCharClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing POSIX character class after `[`", 0))
   } else {
-    match (peek(buf)) {
+    match (peek(
+      buf
+      // space and tab
+    )) {
       Err(e) => Err(e),
       Ok(':') => {
         ignore(eat(buf, ':'))
@@ -731,7 +734,10 @@ parsePosixCharClass = (buf: RegExBuf) => {
               ),
           }
         }
-        match (loop([])) {
+        match (loop(
+          []
+          // space and tab
+        )) {
           Err(e) => Err(e),
           Ok(s) => {
             match (s) {
@@ -828,7 +834,12 @@ parseRangeRest =
   if (!more(buf)) {
     Err(parseErr(buf, "Missing closing `]`", 0))
   } else {
-    match (peek(buf)) {
+    match (peek(
+      buf
+      // NOTE: Based on the spec, we don't propagate out
+      //       the errors here. Instead, we treat malformed
+      //       POSIX classes as being simple sequences of characters.
+    )) {
       Err(e) => Err(e),
       Ok(']') => {
         ignore(eat(buf, ']'))
@@ -911,8 +922,8 @@ parseRangeRest =
                       Err(e) =>
                         Err(
                           "Invalid Regular Expression: illegal alphebetic escape (position " ++
-                          toString(curPos) ++
-                          ")"
+                            toString(curPos) ++
+                            ")"
                         ),
                       Ok(range1) => {
                         match (rangeAddCaseAware(rng, spanFrom, buf.config)) {
@@ -947,7 +958,12 @@ parseRangeRest =
       Ok('[') => {
         ignore(eat(buf, '['))
         let curPos = unbox(buf.cursor)
-        match (parsePosixCharClass(buf)) {
+        match (parsePosixCharClass(
+          buf
+          // NOTE: Based on the spec, we don't propagate out
+          //       the errors here. Instead, we treat malformed
+          //       POSIX classes as being simple sequences of characters.
+        )) {
           // NOTE: Based on the spec, we don't propagate out
           //       the errors here. Instead, we treat malformed
           //       POSIX classes as being simple sequences of characters.
@@ -1002,7 +1018,16 @@ parseRangeRestSpan =
 // Main parsing
 
 let rec parseAtom = (buf: RegExBuf) => {
-  match (peek(buf)) {
+  match (peek(
+    buf
+    // fancy group
+    // cut
+    // conditional
+    // match with mode
+    // simple group
+    // Note that this inc operation is side-effecting
+    // if in multiline mode, '.' matches everything but \n
+  )) {
     Err(e) => Err(e),
     Ok(c) =>
       match (c) {
@@ -1014,7 +1039,13 @@ let rec parseAtom = (buf: RegExBuf) => {
             if (!moreN(buf, 2)) {
               Err(parseErr(buf, "Parentheses not closed", 2))
             } else {
-              match (peekN(buf, 2)) {
+              match (peekN(
+                buf,
+                2
+                // cut
+                // conditional
+                // match with mode
+              )) {
                 Err(e) => Err(e),
                 Ok('>') => {
                   // cut
@@ -1408,7 +1439,11 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected unicode category", 0))
   } else {
-    match (peek(buf)) {
+    match (peek(
+      buf
+      // In case anyone is curious where these codes originate from:
+      // https://www.unicode.org/reports/tr44/#General_Category_Values
+    )) {
       Err(e) => Err(e),
       Ok('{') => {
         ignore(eat(buf, '{'))
@@ -1432,7 +1467,11 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
             },
           }
         }
-        let lst = match (loop([])) {
+        let lst = match (loop(
+          []
+          // In case anyone is curious where these codes originate from:
+          // https://www.unicode.org/reports/tr44/#General_Category_Values
+        )) {
           Err(e) => Err(e),
           Ok(s) => {
             // In case anyone is curious where these codes originate from:
@@ -1554,10 +1593,10 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
                   parseErr(
                     buf,
                     "Unrecognized property name in `\\" ++
-                    pC ++
-                    "`: `" ++
-                    s ++
-                    "`",
+                      pC ++
+                      "`: `" ++
+                      s ++
+                      "`",
                     0
                   )
                 ),
@@ -1577,7 +1616,10 @@ parseLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected literal", 0))
   } else {
-    match (peek(buf)) {
+    match (peek(
+      buf
+      // TODO(#691): Enable case-insensitive regular expression matching
+    )) {
       Err(e) => Err(e),
       Ok('*') => Err(parseErr(buf, "`*` follows nothing in pattern", 0)),
       Ok('+') => Err(parseErr(buf, "`+` follows nothing in pattern", 0)),
@@ -1613,7 +1655,10 @@ parseBackslashLiteral = (buf: RegExBuf) => {
     // Special case: EOS after backslash matches null
     Err(parseErr(buf, "Expected to find escaped value after backslash", 0))
   } else {
-    match (peek(buf)) {
+    match (peek(
+      buf
+      // pregexp:
+    )) {
       Err(e) => Err(e),
       // pregexp:
       Ok(c) when (
@@ -1700,13 +1745,21 @@ parseNonGreedy = (buf: RegExBuf) => {
   }
 },
 parsePCE = (buf: RegExBuf) => {
-  match (parseAtom(buf)) {
+  match (parseAtom(
+    buf
+    // for `{n,}`, we match >= n times, so n2adj should be infinity
+    // match exactly n1 times
+  )) {
     Err(e) => Err(e),
     Ok(atom) => {
       if (!more(buf)) {
         Ok(atom)
       } else {
-        match (peek(buf)) {
+        match (peek(
+          buf
+          // for `{n,}`, we match >= n times, so n2adj should be infinity
+          // match exactly n1 times
+        )) {
           Err(e) => Err(e),
           Ok('*') => {
             ignore(eat(buf, '*'))
@@ -1731,17 +1784,33 @@ parsePCE = (buf: RegExBuf) => {
           },
           Ok('{') when buf.config.isPerlRegExp => {
             ignore(eat(buf, '{'))
-            match (parseInteger(buf, 0)) {
+            match (parseInteger(
+              buf,
+              0
+              // for `{n,}`, we match >= n times, so n2adj should be infinity
+              // match exactly n1 times
+            )) {
               Err(e) => Err(e),
               Ok(n1) => {
-                match (peek(buf)) {
+                match (peek(
+                  buf
+                  // for `{n,}`, we match >= n times, so n2adj should be infinity
+                  // match exactly n1 times
+                )) {
                   Ok(',') => {
                     ignore(eat(buf, ','))
                     let curPos = unbox(buf.cursor)
-                    match (parseInteger(buf, 0)) {
+                    match (parseInteger(
+                      buf,
+                      0
+                      // for `{n,}`, we match >= n times, so n2adj should be infinity
+                    )) {
                       Err(e) => Err(e),
                       Ok(n2) => {
-                        match (peek(buf)) {
+                        match (peek(
+                          buf
+                          // for `{n,}`, we match >= n times, so n2adj should be infinity
+                        )) {
                           Err(e) => Err(e),
                           Ok('}') => {
                             // for `{n,}`, we match >= n times, so n2adj should be infinity
@@ -1770,7 +1839,10 @@ parsePCE = (buf: RegExBuf) => {
                   },
                   Ok('}') => {
                     ignore(eat(buf, '}'))
-                    match (parseNonGreedy(buf)) {
+                    match (parseNonGreedy(
+                      buf
+                      // match exactly n1 times
+                    )) {
                       Err(e) => Err(e),
                       // match exactly n1 times
                       Ok(ng) => Ok(RERepeat(atom, n1, Some(n1), ng)),

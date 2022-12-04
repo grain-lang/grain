@@ -302,7 +302,11 @@ let rec splitLt = (splitKey, node) => {
   match (node) {
     Empty => Empty,
     Tree({ key, left, right, _ }) => {
-      match (compare(key, splitKey)) {
+      match (compare(
+        key,
+        splitKey
+        // we want this node, join it to the output
+      )) {
         // we want this node, join it to the output
         cmp when cmp < 0 => concat3(key, left, splitLt(splitKey, right)),
         cmp when cmp > 0 => splitLt(splitKey, left),
@@ -318,7 +322,11 @@ let rec splitGt = (splitKey, node) => {
   match (node) {
     Empty => Empty,
     Tree({ key, left, right, _ }) => {
-      match (compare(key, splitKey)) {
+      match (compare(
+        key,
+        splitKey
+        // we want this node, join it to the output
+      )) {
         // we want this node, join it to the output
         cmp when cmp > 0 => concat3(key, splitGt(splitKey, left), right),
         cmp when cmp < 0 => splitGt(splitKey, right),

@@ -348,7 +348,11 @@ let relativeDir = tokens => {
 
 // TODO(#1496): reuse this and the other helper functions for the typed implementations
 let fromStringHelper = (pathStr, platform) => {
-  let tokens = match (lexPath(pathStr, platform)) {
+  let tokens = match (lexPath(
+    pathStr,
+    platform
+    // will cause empty strings to get parsed as relative directory '.'
+  )) {
     // will cause empty strings to get parsed as relative directory '.'
     [] => [Dot],
     tokens => tokens,
