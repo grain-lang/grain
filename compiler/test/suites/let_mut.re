@@ -103,5 +103,5 @@ describe("let mut", ({test, testSkip}) => {
     "3\n6\n",
   );
   /* unsafe let mut in a loop */
-  assertFileRun("let-mut_loop", "letMutForLoop", "0N\n1N\n2N\n3N\n4N\n");
+  assertFileRun("let-mut_loop", "letMutForLoop", "0\n1\n2\n3\n4\n");
 });

@@ -1,10 +1,10 @@
 import WasmI64 from "runtime/unsafe/wasmi64"
-import PrintWasm from "runtime/unsafe/printWasm"
+import DebugPrint from "runtime/debugPrint"
 
 @unsafe
 let foo = () => {
   for (let mut x = 0N; WasmI64.ltS(x, 5N); x = WasmI64.add(x, 1N)) {
-    PrintWasm.printI64(x)
+    DebugPrint.printI64(x)
   }
 }
 
