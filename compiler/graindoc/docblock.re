@@ -392,7 +392,10 @@ let to_markdown = (~current_version, docblock) => {
           buf,
           Markdown.paragraph(Markdown.code(exception_type)),
         );
-        Buffer.add_string(buf, Markdown.bullet_list(exception_descriptions));
+        Buffer.add_string(
+          buf,
+          Markdown.bullet_list(List.rev(exception_descriptions)),
+        );
       },
       throws,
     );

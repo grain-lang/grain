@@ -146,8 +146,8 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When the `length` is greater than the buffer size
 * When the `length` is negative
+* When the `length` is greater than the buffer size
 
 ### Buffer.**toBytes**
 
@@ -205,9 +205,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `start + length` is greater than the buffer size
-* When `start` is greater than or equal to the buffer size
 * When `start` is negative
+* When `start` is greater than or equal to the buffer size
+* When `start + length` is greater than the buffer size
 
 ### Buffer.**toString**
 
@@ -376,10 +376,10 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When the `length` is greater than the `bytes` length minus `start`
-* When the `length` is negative
-* When the `start` is greater than or equal to the `bytes` size
 * When the `start` is negative
+* When the `start` is greater than or equal to the `bytes` size
+* When the `length` is negative
+* When the `length` is greater than the `bytes` length minus `start`
 
 ### Buffer.**addBuffer**
 
@@ -461,9 +461,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 1` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
 
 ### Buffer.**getInt8U**
 
@@ -495,9 +495,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 1` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
 
 ### Buffer.**setInt8**
 
@@ -524,9 +524,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 1` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
 
 ### Buffer.**addInt8**
 
@@ -578,9 +578,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 2` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
 
 ### Buffer.**getInt16U**
 
@@ -612,9 +612,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 2` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
 
 ### Buffer.**setInt16**
 
@@ -641,9 +641,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 2` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
 
 ### Buffer.**addInt16**
 
@@ -695,9 +695,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 4` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
 
 ### Buffer.**setInt32**
 
@@ -724,9 +724,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 4` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
 
 ### Buffer.**addInt32**
 
@@ -778,9 +778,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 4` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
 
 ### Buffer.**setFloat32**
 
@@ -807,9 +807,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 4` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
 
 ### Buffer.**addFloat32**
 
@@ -861,9 +861,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 8` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
 
 ### Buffer.**setInt64**
 
@@ -890,9 +890,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 8` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
 
 ### Buffer.**addInt64**
 
@@ -944,9 +944,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 8` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
 
 ### Buffer.**setFloat64**
 
@@ -973,9 +973,9 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index + 8` is greater than the buffer size
-* When `index` is greater than or equal to the buffer size
 * When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
 
 ### Buffer.**addFloat64**
 

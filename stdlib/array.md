@@ -87,8 +87,8 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When `length` is negative
 * When `length` is not an integer
+* When `length` is negative
 
 Examples:
 
@@ -128,8 +128,8 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When `length` is negative
 * When `length` is not an integer
+* When `length` is negative
 
 Examples:
 
