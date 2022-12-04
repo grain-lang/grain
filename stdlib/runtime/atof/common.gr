@@ -152,7 +152,7 @@ export let power = (q: WasmI32) => {
   let (*) = WasmI32.mul
   let (>>) = WasmI32.shrS
 
-  (q * (152_170n + 65536n) >> 16n) + 63n
+  ((q * (152_170n + 65536n)) >> 16n) + 63n
 }
 
 @unsafe
