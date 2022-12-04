@@ -119,3 +119,9 @@ if (true) {
 } else {
   false
 }
+
+Result.expect(
+  "Unexpected error when writing to stdout",
+  // Is stdout correct here?
+  File.fdWrite(File.stdout, "Status: 500\n\nInternal Server Error")
+)

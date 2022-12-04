@@ -2210,6 +2210,37 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   };
 }
 
+and print_args_with_comments =
+    (
+      ~comments: list(Parsetree.comment),
+      ~original_source,
+      args: list(Parsetree.expression),
+    ) => {
+  let get_loc = (e: Parsetree.expression) => e.pexp_loc;
+  let print_item = (~comments, e: Parsetree.expression) => {
+    Doc.group(
+      print_expression(
+        ~expression_parent=GenericExpression,
+        ~original_source,
+        ~comments,
+        e,
+      ),
+    );
+  };
+
+  let args =
+    item_iterator(
+      ~get_loc,
+      ~print_item,
+      ~comments,
+      ~followed_by_arrow=false,
+      ~iterated_item=IteratedPatterns,
+      args,
+    );
+
+  Doc.join(~sep=Doc.line, args);
+}
+
 and print_arguments_with_callback_in_first_position =
     (~original_source, ~comments, args: list(Parsetree.expression)) => {
   switch (args) {
@@ -2245,14 +2276,7 @@ and print_arguments_with_callback_in_first_position =
       print_arg_lambda(~comments, ~original_source, callback);
 
     let printed_args =
-      switch (remainder) {
-      | [] => Doc.nil
-      | _ =>
-        Doc.join(
-          ~sep=Doc.concat([Doc.comma, Doc.line]),
-          List.map(print_arg(~comments, ~original_source), remainder),
-        )
-      };
+      print_args_with_comments(~comments, ~original_source, remainder);
 
     Doc.concat([
       printed_callback,
@@ -2288,12 +2312,10 @@ and print_arguments_with_callback_in_last_position =
       Array.sub(Array.of_list(args), 0, List.length(args) - 1);
 
     let printed_args =
-      Doc.join(
-        ~sep=Doc.concat([Doc.comma, Doc.line]),
-        List.map(
-          print_arg(~comments, ~original_source),
-          Array.to_list(remainderArr),
-        ),
+      print_args_with_comments(
+        ~comments,
+        ~original_source,
+        Array.to_list(remainderArr),
       );
 
     Doc.concat([
@@ -2456,10 +2478,7 @@ and print_other_application =
       ]);
     } else {
       let printed_args =
-        Doc.join(
-          ~sep=Doc.concat([Doc.comma, Doc.line]),
-          List.map(print_arg(~comments, ~original_source), expressions),
-        );
+        print_args_with_comments(~comments, ~original_source, expressions);
 
       Doc.group(
         Doc.concat([
