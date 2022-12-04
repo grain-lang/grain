@@ -12,6 +12,7 @@ type iterator_item_type =
   | IteratedRecord
   | IteratedTypeConstructor
   | IteratedPatterns
+  | IteratedArgs
   | IteratedMatchItem
   | IteratedDataDeclarations
   | IteratedRecordLabels
@@ -963,6 +964,7 @@ let rec item_iterator =
     | IteratedTypeItems
     | IteratedEnum
     | IteratedTypeConstructor
+    | IteratedArgs
     | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
     | IteratedTupleConstructor
     | IteratedValueBindings => false
@@ -2234,7 +2236,7 @@ and print_args_with_comments =
       ~print_item,
       ~comments,
       ~followed_by_arrow=false,
-      ~iterated_item=IteratedPatterns,
+      ~iterated_item=IteratedArgs,
       args,
     );
 
