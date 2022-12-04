@@ -12,6 +12,7 @@ type iterator_item_type =
   | IteratedRecord
   | IteratedTypeConstructor
   | IteratedPatterns
+  | IteratedArgs
   | IteratedMatchItem
   | IteratedDataDeclarations
   | IteratedRecordLabels
@@ -23,7 +24,7 @@ type iterator_item_type =
   | IteratedRecordData
   | IteratedValueBindings;
 type expression_parent_type =
-  | ConditionalExpression
+  | ExpressionInParens
   | GenericExpression;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
@@ -963,6 +964,7 @@ let rec item_iterator =
     | IteratedTypeItems
     | IteratedEnum
     | IteratedTypeConstructor
+    | IteratedArgs
     | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
     | IteratedTupleConstructor
     | IteratedValueBindings => false
@@ -2038,7 +2040,7 @@ and print_infix_application =
       },
       after_comments_docs,
       switch (expression_parent) {
-      | ConditionalExpression =>
+      | ExpressionInParens =>
         Doc.concat([
           Doc.line,
           if (right_is_leaf) {
@@ -2201,13 +2203,44 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   | _ =>
     Doc.group(
       print_expression(
-        ~expression_parent=ConditionalExpression,
+        ~expression_parent=ExpressionInParens,
         ~original_source,
         ~comments,
         arg,
       ),
     )
   };
+}
+
+and print_args_with_comments =
+    (
+      ~comments: list(Parsetree.comment),
+      ~original_source,
+      args: list(Parsetree.expression),
+    ) => {
+  let get_loc = (e: Parsetree.expression) => e.pexp_loc;
+  let print_item = (~comments, e: Parsetree.expression) => {
+    Doc.group(
+      print_expression(
+        ~expression_parent=ExpressionInParens,
+        ~original_source,
+        ~comments,
+        e,
+      ),
+    );
+  };
+
+  let args =
+    item_iterator(
+      ~get_loc,
+      ~print_item,
+      ~comments,
+      ~followed_by_arrow=false,
+      ~iterated_item=IteratedArgs,
+      args,
+    );
+
+  Doc.join(~sep=Doc.line, args);
 }
 
 and print_arguments_with_callback_in_first_position =
@@ -2245,14 +2278,7 @@ and print_arguments_with_callback_in_first_position =
       print_arg_lambda(~comments, ~original_source, callback);
 
     let printed_args =
-      switch (remainder) {
-      | [] => Doc.nil
-      | _ =>
-        Doc.join(
-          ~sep=Doc.concat([Doc.comma, Doc.line]),
-          List.map(print_arg(~comments, ~original_source), remainder),
-        )
-      };
+      print_args_with_comments(~comments, ~original_source, remainder);
 
     Doc.concat([
       printed_callback,
@@ -2288,12 +2314,10 @@ and print_arguments_with_callback_in_last_position =
       Array.sub(Array.of_list(args), 0, List.length(args) - 1);
 
     let printed_args =
-      Doc.join(
-        ~sep=Doc.concat([Doc.comma, Doc.line]),
-        List.map(
-          print_arg(~comments, ~original_source),
-          Array.to_list(remainderArr),
-        ),
+      print_args_with_comments(
+        ~comments,
+        ~original_source,
+        Array.to_list(remainderArr),
       );
 
     Doc.concat([
@@ -2456,10 +2480,7 @@ and print_other_application =
       ]);
     } else {
       let printed_args =
-        Doc.join(
-          ~sep=Doc.concat([Doc.comma, Doc.line]),
-          List.map(print_arg(~comments, ~original_source), expressions),
-        );
+        print_args_with_comments(~comments, ~original_source, expressions);
 
       Doc.group(
         Doc.concat([
@@ -2872,7 +2893,7 @@ and print_expression =
               let guard_doc =
                 Doc.group(
                   print_expression(
-                    ~expression_parent=ConditionalExpression,
+                    ~expression_parent=ExpressionInParens,
                     ~original_source,
                     ~comments=branch_guard_comments,
                     guard,
@@ -3255,7 +3276,7 @@ and print_expression =
           },
           Doc.group(
             print_expression(
-              ~expression_parent=ConditionalExpression,
+              ~expression_parent=ExpressionInParens,
               ~original_source,
               ~comments=commentsInCondition,
               condition,
@@ -3326,7 +3347,7 @@ and print_expression =
               Doc.concat([
                 Doc.softLine,
                 print_expression(
-                  ~expression_parent=ConditionalExpression,
+                  ~expression_parent=ExpressionInParens,
                   ~original_source,
                   ~comments=comments_in_expression,
                   expression,
@@ -3373,7 +3394,7 @@ and print_expression =
                 | Some(expr) =>
                   Doc.group(
                     print_expression(
-                      ~expression_parent=ConditionalExpression,
+                      ~expression_parent=ExpressionInParens,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
@@ -3390,7 +3411,7 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
-                        ~expression_parent=ConditionalExpression,
+                        ~expression_parent=ExpressionInParens,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3408,7 +3429,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
-                        ~expression_parent=ConditionalExpression,
+                        ~expression_parent=ExpressionInParens,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3541,13 +3562,18 @@ and print_expression =
       };
 
     | PExpApp(func, expressions) =>
+      let comments_in_expression =
+        Comment_utils.get_comments_inside_location(
+          ~location=expr.pexp_loc,
+          comments,
+        );
       print_application(
         ~expression_parent,
         ~expressions,
         ~original_source,
-        ~comments,
+        ~comments=comments_in_expression,
         func,
-      )
+      );
     | PExpBlock(expressions) =>
       switch (expressions) {
       | [] =>
