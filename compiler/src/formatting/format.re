@@ -24,7 +24,7 @@ type iterator_item_type =
   | IteratedRecordData
   | IteratedValueBindings;
 type expression_parent_type =
-  | ExpressionInParens
+  | GroupedExpression
   | GenericExpression;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
@@ -2040,7 +2040,7 @@ and print_infix_application =
       },
       after_comments_docs,
       switch (expression_parent) {
-      | ExpressionInParens =>
+      | GroupedExpression =>
         Doc.concat([
           Doc.line,
           if (right_is_leaf) {
@@ -2203,7 +2203,7 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   | _ =>
     Doc.group(
       print_expression(
-        ~expression_parent=ExpressionInParens,
+        ~expression_parent=GroupedExpression,
         ~original_source,
         ~comments,
         arg,
@@ -2222,7 +2222,7 @@ and print_args_with_comments =
   let print_item = (~comments, e: Parsetree.expression) => {
     Doc.group(
       print_expression(
-        ~expression_parent=ExpressionInParens,
+        ~expression_parent=GroupedExpression,
         ~original_source,
         ~comments,
         e,
@@ -2893,7 +2893,7 @@ and print_expression =
               let guard_doc =
                 Doc.group(
                   print_expression(
-                    ~expression_parent=ExpressionInParens,
+                    ~expression_parent=GroupedExpression,
                     ~original_source,
                     ~comments=branch_guard_comments,
                     guard,
@@ -3276,7 +3276,7 @@ and print_expression =
           },
           Doc.group(
             print_expression(
-              ~expression_parent=ExpressionInParens,
+              ~expression_parent=GroupedExpression,
               ~original_source,
               ~comments=commentsInCondition,
               condition,
@@ -3347,7 +3347,7 @@ and print_expression =
               Doc.concat([
                 Doc.softLine,
                 print_expression(
-                  ~expression_parent=ExpressionInParens,
+                  ~expression_parent=GroupedExpression,
                   ~original_source,
                   ~comments=comments_in_expression,
                   expression,
@@ -3394,7 +3394,7 @@ and print_expression =
                 | Some(expr) =>
                   Doc.group(
                     print_expression(
-                      ~expression_parent=ExpressionInParens,
+                      ~expression_parent=GroupedExpression,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
@@ -3411,7 +3411,7 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
-                        ~expression_parent=ExpressionInParens,
+                        ~expression_parent=GroupedExpression,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3429,7 +3429,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
-                        ~expression_parent=ExpressionInParens,
+                        ~expression_parent=GroupedExpression,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
