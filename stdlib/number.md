@@ -755,6 +755,32 @@ Returns:
 |----|-----------|
 |`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
+### Number.**parse**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+parse : String -> Result<Number, String>
+```
+
+Parses a string representation of an integer, float, or rational into a `Number`.
+Underscores that appear in the numeric portion of the input are ignored.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`input`|`String`|The string to parse|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+
 ### Number.**sin**
 
 <details>

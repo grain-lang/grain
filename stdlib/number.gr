@@ -20,7 +20,7 @@ import {
 } from "runtime/numbers"
 import Atoi from "runtime/atoi/parse"
 import Atof from "runtime/atof/parse"
-import { newFloat64, newInt64 } from "runtime/dataStructures"
+import { newFloat64, newInt64, allocateString } from "runtime/dataStructures"
 import Tags from "runtime/unsafe/tags"
 import Exception from "runtime/exception"
 
@@ -903,6 +903,68 @@ export let parseInt = Atoi.parseInt
  * @since v0.5.5
  */
 export let parseFloat = Atof.parseFloat
+
+/**
+ * Parses a string representation of an integer, float, or rational into a `Number`.
+ * Underscores that appear in the numeric portion of the input are ignored.
+ *
+ * @param input: The string to parse
+ * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
+ *
+ * @since v0.5.5
+ */
+@unsafe
+export let parse = input => {
+  match (parseInt(input, 10)) {
+    Ok(number) => Ok(number),
+    Err(msg) =>
+      match (parseFloat(input)) {
+        Ok(number) => Ok(number),
+        Err(_) => {
+          // Split the input on a `/` and attempt to parse a rational
+          let (+) = WasmI32.add
+          let (-) = WasmI32.sub
+          let (<) = WasmI32.ltU
+          let (==) = WasmI32.eq
+
+          // Search for `/`
+          let input = WasmI32.fromGrain(input)
+          let len = WasmI32.load(input, 4n)
+          let mut slashIdx = -1n
+          for (let mut i = 0n; i < len; i += 1n) {
+            if (WasmI32.load8U(input + i, 8n) == 0x2fn) {
+              slashIdx = i
+              break
+            }
+          }
+
+          if (slashIdx == -1n) {
+            Err(msg)
+          } else {
+            let numeratorLen = slashIdx
+            let denominatorLen = len - slashIdx - 1n
+
+            let numerator = allocateString(numeratorLen)
+            Memory.copy(numerator + 8n, input + 8n, numeratorLen)
+            let numerator = WasmI32.toGrain(numerator): String
+
+            let denominator = allocateString(denominatorLen)
+            Memory.copy(
+              denominator + 8n,
+              input + 8n + slashIdx + 1n,
+              denominatorLen
+            )
+            let denominator = WasmI32.toGrain(denominator): String
+
+            match ((parseInt(numerator, 10), parseInt(denominator, 10))) {
+              (Ok(numerator), Ok(denominator)) => Ok(numerator / denominator),
+              (Err(msg), _) | (_, Err(msg)) => Err(msg),
+            }
+          }
+        },
+      },
+  }
+}
 
 /**
  * Computes how many times pi has to be subtracted to achieve the required bounds for sin.

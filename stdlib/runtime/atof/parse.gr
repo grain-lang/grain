@@ -82,7 +82,7 @@ let parse8Digits = (digits: WasmI64) => {
   let c = (b & _MASK) * 0x000F_4240_0000_0064N
   let d = (b >> 16N & _MASK) * 0x0000_2710_0000_0001N
 
-  c + d >> 32N
+  (c + d) >> 32N
 }
 
 @unsafe
