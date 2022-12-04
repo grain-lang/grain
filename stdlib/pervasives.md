@@ -942,13 +942,18 @@ assert : Bool -> Void
 ```
 
 Assert that the given Boolean condition is `true`.
-Throws an `AssertionError` if the condition is `false`.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`condition`|`Bool`|The condition to assert|
+
+Throws:
+
+`AssertionError`
+
+* When the `condition` is false
 
 Examples:
 

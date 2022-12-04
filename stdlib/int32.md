@@ -330,6 +330,12 @@ Returns:
 |----|-----------|
 |`Int32`|The modulus of its operands|
 
+Throws:
+
+`ModuloByZero`
+
+* When `y` is zero
+
 ## Bitwise operations
 
 Functions for operating on bits of Int32 values.

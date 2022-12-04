@@ -406,6 +406,12 @@ Returns:
 |----|-----------|
 |`a`|The unwrapped value if the Result is the `Ok` variant|
 
+Throws:
+
+`Failure(String)`
+
+* When the `result` is `Err`
+
 Examples:
 
 ```grain
@@ -437,6 +443,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`a`|The unwrapped value if the result is the `Ok` variant|
+
+Throws:
+
+`Failure(String)`
+
+* When the `result` is `Err`
 
 Examples:
 

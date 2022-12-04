@@ -899,7 +899,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the given value is zero.
+* When `z` is zero
 
 ### Number.**factorial**
 
@@ -913,7 +913,6 @@ factorial : Number -> Number
 ```
 
 Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
-Fails if the input is a negative number.
 
 Parameters:
 
@@ -926,6 +925,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The factorial of the given value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `n` is negative
 
 ### Number.**toRadians**
 
