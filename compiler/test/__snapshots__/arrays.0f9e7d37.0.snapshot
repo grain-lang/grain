@@ -149,7 +149,7 @@ arrays › array_access
               )
               (i32.store offset=12
                (local.get $0)
-               (i32.const 51)
+               (i32.const 55)
               )
               (i32.store offset=16
                (local.get $0)
@@ -183,7 +183,7 @@ arrays › array_access
               )
               (i32.store offset=12
                (local.get $0)
-               (i32.const 53)
+               (i32.const 57)
               )
               (i32.store offset=16
                (local.get $0)
@@ -249,7 +249,7 @@ arrays › array_access
             )
             (i32.store offset=12
              (local.get $0)
-             (i32.const 51)
+             (i32.const 55)
             )
             (i32.store offset=16
              (local.get $0)

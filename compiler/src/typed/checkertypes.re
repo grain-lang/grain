@@ -62,6 +62,8 @@ let type_constant =
   | Const_number(_) => instance_def(Builtin_types.type_number)
   | Const_int32(_) => instance_def(Builtin_types.type_int32)
   | Const_int64(_) => instance_def(Builtin_types.type_int64)
+  | Const_uint32(_) => instance_def(Builtin_types.type_uint32)
+  | Const_uint64(_) => instance_def(Builtin_types.type_uint64)
   | Const_float32(_) => instance_def(Builtin_types.type_float32)
   | Const_float64(_) => instance_def(Builtin_types.type_float64)
   | Const_wasmi32(_) => instance_def(Builtin_types.type_wasmi32)
@@ -154,7 +156,7 @@ let constant:
         Error(
           Location.errorf(
             ~loc,
-            "Int32 literal %sl exceeds the range of representable 32-bit integers.",
+            "Int32 literal %sl exceeds the range of representable 32-bit signed integers.",
             n,
           ),
         )
@@ -166,7 +168,65 @@ let constant:
         Error(
           Location.errorf(
             ~loc,
-            "Int64 literal %sL exceeds the range of representable 64-bit integers.",
+            "Int64 literal %sL exceeds the range of representable 64-bit signed integers.",
+            n,
+          ),
+        )
+      }
+    | PConstUint32(is_neg, n) =>
+      switch (is_neg, Literals.conv_uint32(n)) {
+      | (false, Some(num)) => Ok(Const_uint32(num))
+      | (false, None) =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Uint32 literal %sul exceeds the range of representable 32-bit unsigned integers.",
+            n,
+          ),
+        )
+      | (true, Some(num)) =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Uint32 literal -%sul contains a sign but should be unsigned; consider using 0x%sul instead.",
+            n,
+            Literals.get_neg_uint32_hex(num),
+          ),
+        )
+      | (true, None) =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Uint32 literal -%sul contains a sign but should be unsigned.",
+            n,
+          ),
+        )
+      }
+    | PConstUint64(is_neg, n) =>
+      switch (is_neg, Literals.conv_uint64(n)) {
+      | (false, Some(num)) => Ok(Const_uint64(num))
+      | (false, None) =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Uint64 literal %suL exceeds the range of representable 64-bit unsigned integers.",
+            n,
+          ),
+        )
+      | (true, Some(num)) =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Uint64 literal -%suL contains a sign but should be unsigned; consider using 0x%suL instead.",
+            n,
+            Literals.get_neg_uint64_hex(num),
+          ),
+        )
+      | (true, None) =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Uint64 literal -%suL contains a sign but should be unsigned.",
             n,
           ),
         )

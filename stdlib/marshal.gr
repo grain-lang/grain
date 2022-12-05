@@ -170,6 +170,13 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
             },
           }
         },
+        t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+          acc + 8n
+        },
+        t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+          // 16 for alignment
+          acc + 16n
+        },
         _ => {
           fail "Unknown heap type"
         },
@@ -396,6 +403,14 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           fail "Unknown number type"
         },
       }
+    },
+    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 8n)
+      offset + 8n
+    },
+    t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      Memory.copy(buf + offset, heapPtr, 16n)
+      offset + 16n
     },
     _ => {
       fail "Unknown heap type"
@@ -729,6 +744,20 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         },
       }
     },
+    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+      if (offset + 8n > bufSize) {
+        reportError("Not enough bytes remaining in buffer for Uint32", offset)
+      } else {
+        None
+      }
+    },
+    t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      if (offset + 16n > bufSize) {
+        reportError("Not enough bytes remaining in buffer for Uint64", offset)
+      } else {
+        None
+      }
+    },
     _ => {
       None
     },
@@ -1020,6 +1049,24 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           fail "Unknown number type"
         },
       }
+    },
+    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+      let value = Memory.malloc(8n)
+      Memory.copy(value, valuePtr, 8n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      value
+    },
+    t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      let value = Memory.malloc(16n)
+      Memory.copy(value, valuePtr, 16n)
+
+      let asInt32 = toGrain(newInt32(value)): Int32
+      Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
+
+      value
     },
     _ => {
       fail "Unknown heap type"

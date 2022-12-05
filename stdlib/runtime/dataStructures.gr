@@ -56,6 +56,22 @@ provide primitive allocateInt32: () -> WasmI32 = "@allocate.int32"
 provide primitive newInt32: WasmI32 -> WasmI32 = "@new.int32"
 
 /**
+ * Allocates a new Uint32.
+ *
+ * @returns The pointer to the empty Uint32
+ */
+@unsafe
+provide primitive allocateUint32: () -> WasmI32 = "@allocate.uint32"
+
+/**
+ * Allocates a new Uint32 with a prepopulated value
+ * @param value: The value to store
+ * @returns The pointer to the Uint32
+ */
+@unsafe
+provide primitive newUint32: WasmI32 -> WasmI32 = "@new.uint32"
+
+/**
  * Allocates a new Int64.
  *
  * @returns The pointer to the empty Int64
@@ -70,6 +86,22 @@ provide primitive allocateInt64: () -> WasmI32 = "@allocate.int64"
  */
 @unsafe
 provide primitive newInt64: WasmI64 -> WasmI32 = "@new.int64"
+
+/**
+ * Allocates a new Uint64.
+ *
+ * @returns The pointer to the empty Uint64
+ */
+@unsafe
+provide primitive allocateUint64: () -> WasmI32 = "@allocate.uint64"
+
+/**
+ * Allocates a new Uint64 with a prepopulated value
+ * @param value: The value to store
+ * @returns The pointer to the Uint64
+ */
+@unsafe
+provide primitive newUint64: WasmI64 -> WasmI32 = "@new.uint64"
 
 // FLOATS
 

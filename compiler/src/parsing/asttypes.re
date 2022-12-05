@@ -34,6 +34,8 @@ type constant =
   | Const_char(string)
   | Const_int32(int32)
   | Const_int64(int64)
+  | Const_uint32(int32)
+  | Const_uint64(int64)
   | Const_float32(float)
   | Const_float64(float)
   | Const_wasmi32(int32)

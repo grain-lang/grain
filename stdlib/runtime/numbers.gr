@@ -7,7 +7,14 @@ include "runtime/exception" as Exception
 include "runtime/bigint" as BI
 
 include "runtime/unsafe/constants" as Constants
-from Constants use { _SMAX32_I64 as _I32_MAX, _SMIN32_I64 as _I32_MIN }
+from Constants use {
+  _SMAX32_I64 as _I32_MAX,
+  _SMIN32_I64 as _I32_MIN,
+  _SMAX_I64 as _I64_MAX,
+  _SMIN_I64 as _I64_MIN,
+  _UMAX32_I64 as _U32_MAX,
+  _UMIN32_I64 as _U32_MIN,
+}
 include "runtime/unsafe/wasmi32" as WasmI32
 include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/wasmf32" as WasmF32
@@ -218,6 +225,19 @@ provide let reducedInteger = x => {
     WasmI64.gtS(x, WasmI64.shrS(_I32_MAX, 1N)) ||
     WasmI64.ltS(x, WasmI64.shrS(_I32_MIN, 1N))
   ) {
+    newInt32(WasmI32.wrapI64(x))
+  } else {
+    tagSimple(WasmI32.wrapI64(x))
+  }
+}
+
+@unsafe
+provide let reducedUnsignedInteger = x => {
+  if (WasmI64.gtU(x, _I64_MAX)) {
+    BI.makeWrappedUint64(x)
+  } else if (WasmI64.gtU(x, _I32_MAX)) {
+    newInt64(x)
+  } else if (WasmI64.gtU(x, WasmI64.shrU(_I32_MAX, 1N))) {
     newInt32(WasmI32.wrapI64(x))
   } else {
     tagSimple(WasmI32.wrapI64(x))
@@ -487,6 +507,80 @@ provide let coerceNumberToWasmI32 = (x: Number) => {
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let int64 = boxedInt64Number(x)
         if (WasmI64.gtS(int64, _I32_MAX) || WasmI64.ltS(int64, _I32_MIN)) {
+          throw Exception.Overflow
+        }
+        WasmI32.wrapI64(int64)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        BI.toInt32(x)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      },
+    }
+  }
+}
+
+@unsafe
+provide let coerceNumberToUnsignedWasmI64 = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  if (isSimpleNumber(x)) {
+    let num = untagSimple(x)
+    if (WasmI32.ltS(num, 0n)) {
+      throw Exception.Overflow
+    }
+    WasmI64.extendI32U(num)
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        let int32 = boxedInt32Number(x)
+        if (WasmI32.ltS(int32, 0n)) {
+          throw Exception.Overflow
+        }
+        WasmI64.extendI32U(int32)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.ltS(int64, 0N)) {
+          throw Exception.Overflow
+        }
+        int64
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        BI.toUnsignedInt64(x)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      },
+    }
+  }
+}
+
+@unsafe
+provide let coerceNumberToUnsignedWasmI32 = (x: Number) => {
+  let x = WasmI32.fromGrain(x)
+  if (isSimpleNumber(x)) {
+    let num = untagSimple(x)
+    if (WasmI32.ltS(num, 0n)) {
+      throw Exception.Overflow
+    }
+    num
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        let int32 = boxedInt32Number(x)
+        if (WasmI32.ltS(int32, 0n)) {
+          throw Exception.Overflow
+        }
+        int32
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.gtS(int64, _U32_MAX) || WasmI64.ltS(int64, _U32_MIN)) {
           throw Exception.Overflow
         }
         WasmI32.wrapI64(int64)

@@ -30,10 +30,6 @@ assert shl(-1L, 3L) == -8L
 assert shl(-2L, 63L) == 0L
 assert shl(24L, 1L) == 48L
 
-assert shrU(4L, 1L) == 2L
-assert shrU(4L, 2L) == 1L
-assert shrU(4L, 3L) == 0L
-assert shrU(-1L, 63L) == 1L
 assert shr(-1L, 63L) == -1L
 assert shr(-24L, 1L) == -12L
 
@@ -45,16 +41,6 @@ assert !gt(5L, 5L)
 assert !gte(5L, 22L)
 assert !lt(5L, -17L)
 assert !lte(5L, 4L)
-
-// Unsigned comparisons
-assert gtU(5L, 4L)
-assert gteU(5L, 5L)
-assert ltU(5L, 17L)
-assert lteU(5L, 5L)
-assert !gtU(5L, 5L)
-assert !gteU(5L, 22L)
-assert ltU(5L, -17L)
-assert !lteU(5L, 4L)
 
 assert clz(0b11L) == 62L
 assert ctz(0b11000L) == 3L

@@ -254,6 +254,8 @@ module MakeMap = (Iter: MapArgument) => {
     | CNumber(i) => leave_with(CNumber(i))
     | CInt32(i) => leave_with(CInt32(i))
     | CInt64(i) => leave_with(CInt64(i))
+    | CUint32(i) => leave_with(CUint32(i))
+    | CUint64(i) => leave_with(CUint64(i))
     | CFloat32(f) => leave_with(CFloat32(f))
     | CFloat64(f) => leave_with(CFloat64(f))
     };

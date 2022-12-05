@@ -178,6 +178,8 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
@@ -192,6 +194,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId

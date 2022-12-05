@@ -49,6 +49,10 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt32(i));
   let int64 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt64(i));
+  let uint32 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint32(i));
+  let uint64 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint64(i));
   let float32 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CFloat32(i));
   let float64 = (~loc=?, ~attributes=?, ~env=?, i) =>

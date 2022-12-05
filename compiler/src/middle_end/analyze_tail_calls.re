@@ -80,6 +80,8 @@ let rec analyze_comp_expression =
   | CNumber(_)
   | CInt32(_)
   | CInt64(_)
+  | CUint32(_)
+  | CUint64(_)
   | CFloat32(_)
   | CFloat64(_)
   | CPrim0(_)

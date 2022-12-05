@@ -44,6 +44,12 @@ isNumber : WasmI32 -> Bool
 reducedInteger : WasmI64 -> WasmI32
 ```
 
+### Numbers.**reducedUnsignedInteger**
+
+```grain
+reducedUnsignedInteger : WasmI64 -> WasmI32
+```
+
 ### Numbers.**boxedNumberTag**
 
 ```grain
@@ -108,6 +114,18 @@ coerceNumberToWasmI64 : Number -> WasmI64
 
 ```grain
 coerceNumberToWasmI32 : Number -> WasmI32
+```
+
+### Numbers.**coerceNumberToUnsignedWasmI64**
+
+```grain
+coerceNumberToUnsignedWasmI64 : Number -> WasmI64
+```
+
+### Numbers.**coerceNumberToUnsignedWasmI32**
+
+```grain
+coerceNumberToUnsignedWasmI32 : Number -> WasmI32
 ```
 
 ### Numbers.**numberEqual**

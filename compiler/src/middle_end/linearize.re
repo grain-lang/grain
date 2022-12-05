@@ -186,6 +186,14 @@ let transl_const =
     Right(with_bind("int32", tmp => [BLet(tmp, Comp.int32(i), Nonglobal)]))
   | Const_int64(i) =>
     Right(with_bind("int64", tmp => [BLet(tmp, Comp.int64(i), Nonglobal)]))
+  | Const_uint32(i) =>
+    Right(
+      with_bind("uint32", tmp => [BLet(tmp, Comp.uint32(i), Nonglobal)]),
+    )
+  | Const_uint64(i) =>
+    Right(
+      with_bind("uint64", tmp => [BLet(tmp, Comp.uint64(i), Nonglobal)]),
+    )
   | Const_float64(i) =>
     Right(
       with_bind("float64", tmp => [BLet(tmp, Comp.float64(i), Nonglobal)]),

@@ -161,6 +161,8 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
@@ -175,6 +177,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId
@@ -340,6 +344,8 @@ and comp_expression_desc =
   | CNumber(Asttypes.number_type)
   | CInt32(int32)
   | CInt64(int64)
+  | CUint32(int32)
+  | CUint64(int64)
   | CFloat32(float)
   | CFloat64(float)
 

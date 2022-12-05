@@ -242,3 +242,33 @@ bitflag, 16 bits of reserved space, and the 64-bit limbs containing the value.
 ║ what ║ value tag │ boxed number tag │ size            | flags           │ <reserved>         | limbs (u64)        ║
 ╚══════╩═══════════╧══════════════════╧═════════════════╧═════════════════╧═════════════════════════════════════════╝
 ```
+
+### Unsigned Integers
+
+Unsigned integers are distinct from `Number`s, which always represent signed numbers.
+
+#### Uint32
+
+The payload for Uint32 values is a single, unsigned, 32-bit integer.
+
+```plaintext
+╔══════╦═══════════╤══════════════╗
+║ size ║ 32        │ 32           ║
+╠══════╬═══════════╪══════════════╣
+║ what ║ value tag │ value (i32)  ║
+╚══════╩═══════════╧══════════════╝
+```
+
+#### Uint64
+
+The payload for Uint64 values is a single, unsigned, 64-bit integer. 32 bits
+of padding are added after the value tag in order to play nicely with 8-byte
+memory alignment.
+
+```plaintext
+╔══════╦═══════════╤═════════╤══════════════╗
+║ size ║ 32        │ 32      │ 64           ║
+╠══════╬═══════════╪═════════╪══════════════╣
+║ what ║ value tag │ padding │ value (i64)  ║
+╚══════╩═══════════╧═════════╧══════════════╝
+```

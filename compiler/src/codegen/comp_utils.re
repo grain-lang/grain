@@ -40,16 +40,22 @@ let rec compile_const = (c): Literal.t => {
   let identity: 'a. 'a => 'a = x => x;
   let conv_int32 = n => Int32.(add(mul(2l, n), 1l));
   let conv_int64 = n => Int64.(add(mul(2L, n), 1L));
+  let conv_uint32 = n => Int32.(add(mul(2l, n), 1l));
+  let conv_uint64 = n => Int64.(add(mul(2L, n), 1L));
   let conv_float32 = identity;
   let conv_float64 = identity;
   switch (c) {
   | MConstLiteral(MConstLiteral(_) as c) => compile_const(c)
   | MConstI32(n) => Literal.int32(conv_int32(n))
   | MConstI64(n) => Literal.int64(conv_int64(n))
+  | MConstU32(n) => Literal.int32(conv_uint32(n))
+  | MConstU64(n) => Literal.int64(conv_uint64(n))
   | MConstF32(n) => Literal.float32(conv_float32(n))
   | MConstF64(n) => Literal.float64(conv_float64(n))
   | MConstLiteral(MConstI32(n)) => Literal.int32(n)
   | MConstLiteral(MConstI64(n)) => Literal.int64(n)
+  | MConstLiteral(MConstU32(n)) => Literal.int32(n)
+  | MConstLiteral(MConstU64(n)) => Literal.int64(n)
   | MConstLiteral(MConstF32(n)) => Literal.float32(n)
   | MConstLiteral(MConstF64(n)) => Literal.float64(n)
   };

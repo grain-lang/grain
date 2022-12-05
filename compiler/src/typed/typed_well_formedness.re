@@ -135,6 +135,8 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           when
             modname == "Int32"
             || modname == "Int64"
+            || modname == "Uint32"
+            || modname == "Uint64"
             || modname == "Float32"
             || modname == "Float64" =>
         // NOTE: Due to type-checking, we shouldn't need to worry about ending up with a FloatXX value and a Const_number_float
@@ -148,6 +150,8 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           switch (modname) {
           | "Int32" => Grain_utils.Warnings.FromNumberLiteralI32(n_str)
           | "Int64" => Grain_utils.Warnings.FromNumberLiteralI64(n_str)
+          | "Uint32" => Grain_utils.Warnings.FromNumberLiteralU32(n_str)
+          | "Uint64" => Grain_utils.Warnings.FromNumberLiteralU64(n_str)
           | "Float32" => Grain_utils.Warnings.FromNumberLiteralF32(n_str)
           | "Float64" => Grain_utils.Warnings.FromNumberLiteralF64(n_str)
           | _ => failwith("Impossible")

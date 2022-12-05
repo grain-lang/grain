@@ -6,6 +6,7 @@ describe("numbers", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertRun = makeRunner(test_or_skip);
+  let assertRunError = makeErrorRunner(test_or_skip);
   let assertCompileError = makeCompileErrorRunner(test);
 
   assertRun("numbers1", "print(0.3333 + (1 / 3))", "0.6666333333333333\n");
@@ -92,5 +93,46 @@ describe("numbers", ({test, testSkip}) => {
     "number_syntax_err3",
     "987654321987654321987654321L",
     "representable 64-bit",
+  );
+  assertCompileError(
+    "negative_unsigned_err1",
+    "-1ul",
+    "Uint32 literal -1ul contains a sign but should be unsigned; consider using 0xfffffffful instead.",
+  );
+  assertCompileError(
+    "negative_unsigned_err2",
+    "-1uL",
+    "Uint64 literal -1uL contains a sign but should be unsigned; consider using 0xffffffffffffffffuL instead.",
+  );
+  assertCompileError(
+    "negative_unsigned_err3",
+    "-9999999999999999999ul",
+    "Uint32 literal -9999999999999999999ul contains a sign but should be unsigned.",
+  );
+  assertCompileError(
+    "negative_unsigned_err4",
+    "-99999999999999999999999uL",
+    "Uint64 literal -99999999999999999999999uL contains a sign but should be unsigned.",
+  );
+  // runtime errors
+  assertRunError(
+    "unsigned_overflow_err1",
+    {|include "uint32"; let n = -1; print(Uint32.fromNumber(n))|},
+    "Overflow: Number overflow",
+  );
+  assertRunError(
+    "unsigned_overflow_err2",
+    {|include "uint32"; let n = 0x1ffffffff; print(Uint32.fromNumber(n))|},
+    "Overflow: Number overflow",
+  );
+  assertRunError(
+    "unsigned_overflow_err1",
+    {|include "uint64"; let n = -1; print(Uint64.fromNumber(n))|},
+    "Overflow: Number overflow",
+  );
+  assertRunError(
+    "unsigned_overflow_err2",
+    {|include "uint64"; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
+    "Overflow: Number overflow",
   );
 });

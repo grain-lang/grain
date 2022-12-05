@@ -75,6 +75,34 @@ let conv_int64 = s => {
   Int64.of_string_opt(s);
 };
 
+let uint_format_str = s =>
+  if (String.length(s) > 2) {
+    let prefix = String.sub(s, 0, 2);
+    if (prefix == "0b" || prefix == "0x" || prefix == "0o") {
+      s;
+    } else {
+      "0u" ++ s;
+    };
+  } else {
+    "0u" ++ s;
+  };
+
+let conv_uint32 = s => {
+  Int32.of_string_opt(uint_format_str(s));
+};
+
+let conv_uint64 = s => {
+  Int64.of_string_opt(uint_format_str(s));
+};
+
+let get_neg_uint32_hex = n => {
+  Printf.sprintf("%lx", Int32.neg(n));
+};
+
+let get_neg_uint64_hex = n => {
+  Printf.sprintf("%Lx", Int64.neg(n));
+};
+
 let conv_float32 = s => {
   Float.of_string_opt(s);
 };

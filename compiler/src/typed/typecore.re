@@ -102,6 +102,8 @@ let prim0_type =
   fun
   | AllocateInt32
   | AllocateInt64
+  | AllocateUint32
+  | AllocateUint64
   | AllocateFloat32
   | AllocateFloat64
   | AllocateRational => Builtin_types.type_wasmi32
@@ -119,6 +121,8 @@ let prim1_type =
   | BytesSize => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
   | NewInt32 => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
   | NewInt64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
+  | NewUint32 => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
+  | NewUint64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
   | NewFloat32 => (Builtin_types.type_wasmf32, Builtin_types.type_wasmi32)
   | NewFloat64 => (Builtin_types.type_wasmf64, Builtin_types.type_wasmi32)
   | BuiltinId => (Builtin_types.type_string, Builtin_types.type_wasmi32)

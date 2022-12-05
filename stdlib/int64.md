@@ -227,6 +227,8 @@ Returns:
 
 ### Int64.**divU**
 
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
 No other changes yet.
@@ -278,6 +280,8 @@ Returns:
 |`Int64`|The remainder of its operands|
 
 ### Int64.**remU**
+
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
@@ -446,6 +450,8 @@ Returns:
 
 ### Int64.**shrU**
 
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
 No other changes yet.
@@ -579,6 +585,8 @@ Returns:
 
 ### Int64.**ltU**
 
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
@@ -630,6 +638,8 @@ Returns:
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
 ### Int64.**gtU**
+
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -683,6 +693,8 @@ Returns:
 
 ### Int64.**lteU**
 
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
 No other changes yet.
@@ -734,6 +746,8 @@ Returns:
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
 ### Int64.**gteU**
+
+> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>

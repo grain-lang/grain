@@ -106,6 +106,8 @@ module MakeIter = (Iter: IterArgument) => {
     | CNumber(i) => ()
     | CInt32(i) => ()
     | CInt64(i) => ()
+    | CUint32(i) => ()
+    | CUint64(i) => ()
     | CFloat32(f) => ()
     | CFloat64(f) => ()
     };

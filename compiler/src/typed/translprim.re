@@ -51,6 +51,8 @@ let prim_map =
       ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
       ("@allocate.int32", Primitive0(AllocateInt32)),
       ("@allocate.int64", Primitive0(AllocateInt64)),
+      ("@allocate.uint32", Primitive0(AllocateUint32)),
+      ("@allocate.uint64", Primitive0(AllocateUint64)),
       ("@allocate.float32", Primitive0(AllocateFloat32)),
       ("@allocate.float64", Primitive0(AllocateFloat64)),
       ("@allocate.rational", Primitive0(AllocateRational)),
@@ -61,6 +63,8 @@ let prim_map =
       ("@allocate.bigInt", Primitive1(AllocateBigInt)),
       ("@new.int32", Primitive1(NewInt32)),
       ("@new.int64", Primitive1(NewInt64)),
+      ("@new.uint32", Primitive1(NewUint32)),
+      ("@new.uint64", Primitive1(NewUint64)),
       ("@new.float32", Primitive1(NewFloat32)),
       ("@new.float64", Primitive1(NewFloat64)),
       ("@builtin.id", Primitive1(BuiltinId)),
@@ -1508,7 +1512,9 @@ let transl_prim = (env, desc) => {
       (Expression.constant(~loc, ~attributes=disable_gc, value), attrs);
     | Primitive0(
         (
-          AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
+          AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
+          AllocateFloat32 |
+          AllocateFloat64 |
           AllocateRational |
           Unreachable
         ) as p,

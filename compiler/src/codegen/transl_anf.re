@@ -529,6 +529,8 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
+  | Const_uint32(u32) => MConstU32(u32)
+  | Const_uint64(u64) => MConstU64(u64)
   | Const_float32(f) => MConstF32(f)
   | Const_float64(f) => MConstF64(f)
   | Const_wasmi32(i32) => MConstLiteral(MConstI32(i32))
@@ -890,6 +892,8 @@ let rec compile_comp = (~id=?, env, c) => {
       )
     | CInt32(i) => MAllocate(MInt32(i))
     | CInt64(i) => MAllocate(MInt64(i))
+    | CUint32(i) => MAllocate(MUint32(i))
+    | CUint64(i) => MAllocate(MUint64(i))
     | CFloat32(f) => MAllocate(MFloat32(f))
     | CFloat64(f) => MAllocate(MFloat64(f))
     | CGetTupleItem(idx, tup) =>

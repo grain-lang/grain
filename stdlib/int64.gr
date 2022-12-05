@@ -153,7 +153,9 @@ provide let div = (x: Int64, y: Int64) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of its operands
- *
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+ * 
  * @since v0.2.0
  */
 @unsafe
@@ -187,7 +189,9 @@ provide let rem = (x: Int64, y: Int64) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The remainder of its operands
- *
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+ * 
  * @since v0.2.0
  */
 @unsafe
@@ -319,7 +323,9 @@ provide let shr = (value: Int64, amount: Int64) => {
  * @param value: The value to shift
  * @param amount: The amount to shift by
  * @returns The shifted value
- *
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
+ * 
  * @since v0.2.0
  */
 @unsafe
@@ -402,6 +408,8 @@ provide let lt = (x: Int64, y: Int64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
  *
  * @since v0.5.0
  */
@@ -434,6 +442,8 @@ provide let gt = (x: Int64, y: Int64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
  *
  * @since v0.5.0
  */
@@ -466,6 +476,8 @@ provide let lte = (x: Int64, y: Int64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
  *
  * @since v0.5.0
  */
@@ -498,6 +510,8 @@ provide let gte = (x: Int64, y: Int64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ * 
+ * @deprecated This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
  *
  * @since v0.5.0
  */
