@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.6](https://github.com/grain-lang/grain/compare/cli-v0.5.5...cli-v0.5.6) (2022-12-05)
+
+
+### Bug Fixes
+
+* **compiler:** Increase JS stack size ([#1532](https://github.com/grain-lang/grain/issues/1532)) ([9d1ff1f](https://github.com/grain-lang/grain/commit/9d1ff1f427f2b2a92aa7958cf84b2d1026b1bac5))
+
 ### [0.5.5](https://github.com/grain-lang/grain/compare/cli-v0.5.4...cli-v0.5.5) (2022-12-05)
 
 
