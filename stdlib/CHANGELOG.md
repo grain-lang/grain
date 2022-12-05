@@ -1,5 +1,28 @@
 # Changelog
 
+### [0.5.5](https://github.com/grain-lang/grain/compare/stdlib-v0.5.4...stdlib-v0.5.5) (2022-12-05)
+
+
+### Features
+
+* **graindoc:** Add attribute for exceptions that may be thrown ([#1492](https://github.com/grain-lang/grain/issues/1492)) ([b2e75c7](https://github.com/grain-lang/grain/commit/b2e75c7452ef2544c768729c7a45e21ff31616d0))
+* **graindoc:** Support deprecations on module docblocks ([#1498](https://github.com/grain-lang/grain/issues/1498)) ([b3dc85c](https://github.com/grain-lang/grain/commit/b3dc85c0fc311479de4e57774a075c3a922216ba))
+* **stdlib:** Add `parse` function to Number module ([#1517](https://github.com/grain-lang/grain/issues/1517)) ([59e89d1](https://github.com/grain-lang/grain/commit/59e89d12b7fcf2626c8adb45c742a787171b7024))
+* **stdlib:** Add `parseFloat` function to Number module ([#1288](https://github.com/grain-lang/grain/issues/1288)) ([e21f2b1](https://github.com/grain-lang/grain/commit/e21f2b137f7dcd67cccf9debf695db852dc2afc5))
+* **stdlib:** Add `split` function to Regex module ([#1469](https://github.com/grain-lang/grain/issues/1469)) ([0c1eb73](https://github.com/grain-lang/grain/commit/0c1eb73d01e30f457138c6e3b603a9faddcf8e9b))
+* **stdlib:** Add `splitAll` function to Regex module ([0c1eb73](https://github.com/grain-lang/grain/commit/0c1eb73d01e30f457138c6e3b603a9faddcf8e9b))
+* **stdlib:** Add Path module for working with system paths ([#1452](https://github.com/grain-lang/grain/issues/1452)) ([900e976](https://github.com/grain-lang/grain/commit/900e976654565b3618e2215e9b7cefbda873d9a8))
+* **stdlib:** Improve performance in Array & List modules ([#1487](https://github.com/grain-lang/grain/issues/1487)) ([2168f6a](https://github.com/grain-lang/grain/commit/2168f6ade151548bc655debeb8a1bc09ce87cb77))
+* **stdlib:** Improve performance of `flatMap`, `some`, and `every` functions in Array module ([2168f6a](https://github.com/grain-lang/grain/commit/2168f6ade151548bc655debeb8a1bc09ce87cb77))
+* **stdlib:** Improve performance of `some` and `every` functions in List module ([2168f6a](https://github.com/grain-lang/grain/commit/2168f6ade151548bc655debeb8a1bc09ce87cb77))
+
+
+### Bug Fixes
+
+* **grainfmt:** Add parentheses around some binops for precedence clarity ([#1514](https://github.com/grain-lang/grain/issues/1514)) ([3ac27cc](https://github.com/grain-lang/grain/commit/3ac27cc6e17b896dae0ef2cb5f5de510c7c2dd60))
+* **grainfmt:** Handle multiple line items and comments better ([#1460](https://github.com/grain-lang/grain/issues/1460)) ([5395fd4](https://github.com/grain-lang/grain/commit/5395fd45b79fb3bcf3dd1ec52a1d5973a23a4bdc))
+* **runtime:** Properly divide bigints in the number type ([59e89d1](https://github.com/grain-lang/grain/commit/59e89d12b7fcf2626c8adb45c742a787171b7024))
+
 ### [0.5.4](https://github.com/grain-lang/grain/compare/stdlib-v0.5.3...stdlib-v0.5.4) (2022-11-12)
 
 

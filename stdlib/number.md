@@ -732,7 +732,7 @@ Returns:
 ### Number.**parseFloat**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -758,7 +758,7 @@ Returns:
 ### Number.**parse**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 

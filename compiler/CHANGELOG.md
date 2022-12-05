@@ -1,5 +1,34 @@
 # Changelog
 
+### [0.5.5](https://github.com/grain-lang/grain/compare/compiler-v0.5.4...compiler-v0.5.5) (2022-12-05)
+
+
+### Features
+
+* **compiler:** Perform partial match checking on `let` bindings ([#1486](https://github.com/grain-lang/grain/issues/1486)) ([3678eb5](https://github.com/grain-lang/grain/commit/3678eb5dc4c4ef199c1313f8f280ce3de458005a))
+* **graindoc:** Add attribute for exceptions that may be thrown ([#1492](https://github.com/grain-lang/grain/issues/1492)) ([b2e75c7](https://github.com/grain-lang/grain/commit/b2e75c7452ef2544c768729c7a45e21ff31616d0))
+* **graindoc:** Support deprecations on module docblocks ([#1498](https://github.com/grain-lang/grain/issues/1498)) ([b3dc85c](https://github.com/grain-lang/grain/commit/b3dc85c0fc311479de4e57774a075c3a922216ba))
+* **stdlib:** Add `parse` function to Number module ([#1517](https://github.com/grain-lang/grain/issues/1517)) ([59e89d1](https://github.com/grain-lang/grain/commit/59e89d12b7fcf2626c8adb45c742a787171b7024))
+* **stdlib:** Add `parseFloat` function to Number module ([#1288](https://github.com/grain-lang/grain/issues/1288)) ([e21f2b1](https://github.com/grain-lang/grain/commit/e21f2b137f7dcd67cccf9debf695db852dc2afc5))
+* **stdlib:** Add `split` function to Regex module ([#1469](https://github.com/grain-lang/grain/issues/1469)) ([0c1eb73](https://github.com/grain-lang/grain/commit/0c1eb73d01e30f457138c6e3b603a9faddcf8e9b))
+* **stdlib:** Add `splitAll` function to Regex module ([0c1eb73](https://github.com/grain-lang/grain/commit/0c1eb73d01e30f457138c6e3b603a9faddcf8e9b))
+* **stdlib:** Add Path module for working with system paths ([#1452](https://github.com/grain-lang/grain/issues/1452)) ([900e976](https://github.com/grain-lang/grain/commit/900e976654565b3618e2215e9b7cefbda873d9a8))
+
+
+### Bug Fixes
+
+* **compiler:** Fix precedence of `>>` operator ([#1515](https://github.com/grain-lang/grain/issues/1515)) ([1565c16](https://github.com/grain-lang/grain/commit/1565c16e98dd5c137fb852d23f890f8d7c70d352))
+* **compiler:** Raise appropriate error on unbound export ([#1528](https://github.com/grain-lang/grain/issues/1528)) ([43d512d](https://github.com/grain-lang/grain/commit/43d512dbcfb61cd10674a83658ed23b4e0ea8898))
+* **compiler:** Raise appropriate exception when modules are missing during dependency graph construction ([#1485](https://github.com/grain-lang/grain/issues/1485)) ([d8cd8f1](https://github.com/grain-lang/grain/commit/d8cd8f11aec66eb257bd1cfc9f7884dcd787efd6))
+* **grainfmt:** Add parentheses around some binops for precedence clarity ([#1514](https://github.com/grain-lang/grain/issues/1514)) ([3ac27cc](https://github.com/grain-lang/grain/commit/3ac27cc6e17b896dae0ef2cb5f5de510c7c2dd60))
+* **grainfmt:** Avoid duplicating comments inside records ([#1428](https://github.com/grain-lang/grain/issues/1428)) ([b993030](https://github.com/grain-lang/grain/commit/b99303013698312ff936519645698c05e1bfd807))
+* **grainfmt:** Handle comment in or near if conditionals better ([#1513](https://github.com/grain-lang/grain/issues/1513)) ([8a60985](https://github.com/grain-lang/grain/commit/8a609854ffe40f55e0d147655f6991b7efc3be50))
+* **grainfmt:** Handle multiple line items and comments better ([#1460](https://github.com/grain-lang/grain/issues/1460)) ([5395fd4](https://github.com/grain-lang/grain/commit/5395fd45b79fb3bcf3dd1ec52a1d5973a23a4bdc))
+* **grainfmt:** Maintain comments in function arguments ([#1527](https://github.com/grain-lang/grain/issues/1527)) ([6ad6dc1](https://github.com/grain-lang/grain/commit/6ad6dc12a15d2166277d990bca49f66b5177e0f9))
+* **grainfmt:** Reduce binop format time ([#1482](https://github.com/grain-lang/grain/issues/1482)) ([e850455](https://github.com/grain-lang/grain/commit/e850455ff8dff5844de128637b42e8b8dcb7daf0))
+* **grainlsp:** Properly surface errors in other files ([#1490](https://github.com/grain-lang/grain/issues/1490)) ([6a09953](https://github.com/grain-lang/grain/commit/6a099533ffecb801f3ccbcc9c66a57a86737a90c))
+* **runtime:** Properly divide bigints in the number type ([59e89d1](https://github.com/grain-lang/grain/commit/59e89d12b7fcf2626c8adb45c742a787171b7024))
+
 ### [0.5.4](https://github.com/grain-lang/grain/compare/compiler-v0.5.3...compiler-v0.5.4) (2022-11-12)
 
 
