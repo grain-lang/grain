@@ -3,7 +3,7 @@
  *
  * @example import ImmutableArray from "immutablearray"
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 
 import List from "list"
@@ -12,13 +12,14 @@ import Set from "set"
 import Buffer from "buffer"
 import Option from "option"
 import Number from "number"
+import Exception from "runtime/exception"
 
-// immutable arrays implemented as relaxed radix balanced trees. This data
+// Immutable arrays implemented as relaxed radix balanced trees. This data
 // structure allows access and updating in O(log(n)) time, but since the tree
 // branching factor is chosen to be a large number (32), these operations run
 // in effectively constant time in most practical situations.
 
-// this implementation was adapted from Elm's Array module
+// This implementation was adapted from Elm's Array module
 // https://github.com/elm/core/blob/master/src/Array.elm
 // license of software used:
 
@@ -50,12 +51,12 @@ import Number from "number"
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// maximum number of children each tree node can have;
+// Maximum number of children each tree node can have;
 // an arbitrary multiple of 2 that gives a good performance tradeoff
 let branchingFactor = 32
 // 32 = 2^5
 let branchingBits = 5
-// to be applied to numbers to bring them within the range [0, 32)
+// To be applied to numbers to bring them within the range [0, 32)
 let bitmask = branchingFactor - 1
 
 type Tree<a> = Array<Node<a>>,
@@ -68,7 +69,7 @@ enum Node<a> {
  * @section Types: Type declarations included in the ImmutableArray module.
  */
 
-// a "tail" of < 32 values at the end of the array is kept as a performance
+// A "tail" of < 32 values at the end of the array is kept as a performance
 // optimization
 record ImmutableArray<a> {
   length: Number,
@@ -84,7 +85,7 @@ record ImmutableArray<a> {
 /**
  * An empty array.
  * 
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let empty = {
   let empty = { length: 0, shift: branchingBits, root: [>], tail: [>] }
@@ -97,7 +98,7 @@ export let empty = {
  * @param array: The array to check
  * @returns `true` if the array is empty and `false` otherwise
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let isEmpty = array => array.length == 0
 
@@ -108,7 +109,7 @@ export let isEmpty = array => array.length == 0
  * @returns The number of elements in the array
  *
  * @example length(fromList([1, 2, 3, 4, 5])) == 5
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let length = array => array.length
 
@@ -127,8 +128,8 @@ let arraySetCopy = (index, value, array) => {
   copy
 }
 
-// appends 2 arrays together, truncating to a max size of 32 for storage in
-// a tree node. Also returns number of elements truncated
+// Appends 2 arrays together, truncating to a max size of 32 for storage in
+// a tree node. Also returns number of elements truncated.
 let arrayAppendMax32 = (array1, array2) => {
   let len1 = Array.length(array1)
   let len2 = Array.length(array2)
@@ -166,7 +167,7 @@ let log32floor = num => {
  * @example getOpt(-1, fromList([1, 2, 3])) == Some(3)
  * @example getOpt(4, fromList([1, 2, 3])) == None
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let getOpt = (index, array) => {
   let index = wrapNegativeIndex(array.length, index)
@@ -199,7 +200,7 @@ export let getOpt = (index, array) => {
  * 
  * @example get(1, fromList([1, 2, 3, 4, 5])) == 2
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let get = (index, array) => Option.unwrap(getOpt(index, array))
 
@@ -214,7 +215,7 @@ export let get = (index, array) => Option.unwrap(getOpt(index, array))
  * 
  * @example set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let set = (index, value, array) => {
   let index = wrapNegativeIndex(array.length, index)
@@ -234,7 +235,7 @@ export let set = (index, value, array) => {
 
   let { length, shift, root, tail } = array
   if (index < 0 || index >= length) {
-    array
+    throw Exception.IndexOutOfBounds
   } else if (index >= tailIndex(length)) {
     { length, shift, root, tail: arraySetCopy(index & bitmask, value, tail) }
   } else {
@@ -242,7 +243,7 @@ export let set = (index, value, array) => {
   }
 }
 
-// inserts a new tail into the array. If the length of the tail equals the
+// Inserts a new tail into the array. If the length of the tail equals the
 // branching factor, it is instead inserted into the main tree rather than
 // the tail
 let replaceTail = (newTail, array) => {
@@ -301,7 +302,7 @@ record Builder<a> {
   numNodes: Number,
 }
 
-// flatten an array into a builder
+// Flatten an array into a builder
 let arrayToBuilder = array => {
   let rec reduceFn = (acc, node) => {
     match (node) {
@@ -317,7 +318,7 @@ let arrayToBuilder = array => {
   }
 }
 
-// for use to compress a large (> 32) list of nodes into subtrees
+// For use to compress a large (> 32) list of nodes into subtrees
 let rec compressNodes = (nodes, acc) => {
   let node = Array.fromList(List.take(branchingFactor, nodes))
   let remaining = List.drop(branchingFactor, nodes)
@@ -329,7 +330,7 @@ let rec compressNodes = (nodes, acc) => {
 }
 
 let builderToArray = builder => {
-  // builds the non-tail portion of an array
+  // Builds the non-tail portion of an array
   let rec buildTree = (nodes, numNodes) => {
     let newNodeSize = Number.ceil(numNodes / branchingFactor)
     match (newNodeSize) {
@@ -354,7 +355,7 @@ let builderToArray = builder => {
   }
 }
 
-// append a chunk of <= 32 values to a builder
+// Append a chunk of <= 32 values to a builder
 let appendBuilder = (toAppend, builder) => {
   let { tail, nodes, numNodes } = builder
   let (appended, numNotAppended) = arrayAppendMax32(tail, toAppend)
@@ -381,10 +382,10 @@ let appendBuilder = (toAppend, builder) => {
  *
  * @example append(fromList([1, 2]), fromList([3, 4, 5])) == fromList([1, 2, 3, 4, 5])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let append = (array1, array2) => {
-  // magic number of 4 determined best from benchmarks
+  // Magic number of 4 determined best from benchmarks
   if (array2.length <= branchingFactor * 4) {
     let rec reduceFn = (array, node) => {
       match (node) {
@@ -420,7 +421,7 @@ export let append = (array1, array2) => {
  * 
  * @example concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2, 3, 4, 5, 6])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let concat = arrays => {
   List.reduce(append, empty, arrays)
@@ -437,7 +438,7 @@ export let concat = arrays => {
  *
  * @example init(5, i => i + 3) == fromList([3, 4, 5, 6, 7])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let init = (length, fn) => {
   let tailLen = length % branchingFactor
@@ -464,7 +465,7 @@ export let init = (length, fn) => {
  *
  * @example make(5, "foo") == fromList(["foo", "foo", "foo", "foo", "foo"])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let make = (length, value) => {
   init(length, (_) => value)
@@ -476,7 +477,7 @@ export let make = (length, value) => {
  * @param fn: The iterator function to call with each element
  * @param array: The array to iterate
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let forEach = (fn, array) => {
   let rec forEachFn = node => {
@@ -497,7 +498,7 @@ export let forEach = (fn, array) => {
  * @param n: The number of times to iterate the given array
  * @param array: The array to iterate
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let cycle = (fn, n, array) => {
   for (let mut i = 0; i < n; i += 1) {
@@ -513,7 +514,7 @@ export let cycle = (fn, n, array) => {
  * @param array: The array to iterate
  * @returns The new array with mapped values
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let map = (fn, array) => {
   let rec mapFn = node => {
@@ -544,7 +545,7 @@ export let map = (fn, array) => {
  *
  * @example reduce((acc, x) => acc + x, 0, fromList([1, 2, 3])) == 6
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let reduce = (fn, initial, array) => {
   let rec reduceFn = (acc, node) => {
@@ -574,7 +575,7 @@ export let reduce = (fn, initial, array) => {
  *
  * @example reduceRight((x, acc) => acc ++ x, "", fromList(["baz", "bar", "foo"])) == "foobarbaz"
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let reduceRight = (fn, initial, array) => {
   let rec reduceFn = (node, acc) => {
@@ -600,7 +601,7 @@ export let reduceRight = (fn, initial, array) => {
  * 
  * @example flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4, 5, 6])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let flatMap = (fn, array) => {
   reduce((acc, x) => append(acc, fn(x)), empty, array)
@@ -612,7 +613,7 @@ export let flatMap = (fn, array) => {
  * @param list: The list to convert
  * @returns The array containing all elements from the list
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let fromList = list => {
   let rec fromListInner = (list, nodes, numNodes) => {
@@ -634,7 +635,7 @@ export let fromList = list => {
  * @param array: The array to convert
  * @returns The list containing all elements from the array
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let toList = array => {
   reduceRight((val, list) => [val, ...list], [], array)
@@ -649,7 +650,7 @@ export let toList = array => {
  * @param array: The array to iterate
  * @returns The new array containing elements where `fn` returned `true`
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let filter = (fn, array) => {
   fromList(reduceRight((x, arr) => if (fn(x)) [x, ...arr] else arr, [], array))
@@ -663,7 +664,7 @@ export let filter = (fn, array) => {
  * @param array: The array to check
  * @returns `true` if all elements satify the condition or `false` otherwise
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let every = (fn, array) => {
   reduce((acc, x) => acc && fn(x), true, array)
@@ -677,7 +678,7 @@ export let every = (fn, array) => {
  * @param array: The array to iterate
  * @returns `true` if one or more elements satify the condition or `false` otherwise
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let some = (fn, array) => {
   reduce((acc, x) => acc || fn(x), false, array)
@@ -689,7 +690,7 @@ export let some = (fn, array) => {
  * @param array: The array to reverse
  * @returns The new array
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let reverse = array => {
   fromList(reduce((acc, x) => [x, ...acc], [], array))
@@ -703,7 +704,7 @@ export let reverse = array => {
  * @param array: The array to inspect
  * @returns `true` if the value exists in the array or `false` otherwise
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let contains = (value, array) => {
   reduce((acc, x) => acc || x == value, false, array)
@@ -716,7 +717,7 @@ export let contains = (value, array) => {
  * @param array: The array to search
  * @returns `Some(element)` containing the first value found or `None` otherwise
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let find = (fn, array) => {
   reduce((acc, x) => if (acc == None && fn(x)) Some(x) else acc, None, array)
@@ -729,7 +730,7 @@ export let find = (fn, array) => {
  * @param array: The array to search
  * @returns `Some(index)` containing the index of the first element found or `None` otherwise
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let findIndex = (fn, array) => {
   let mut i = -1
@@ -747,7 +748,7 @@ export let findIndex = (fn, array) => {
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing all pairs of `(a, b)`
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let product = (array1, array2) => {
   fromList(
@@ -764,7 +765,7 @@ export let product = (array1, array2) => {
  * @param array: The array to iterate
  * @returns The total number of elements that satisfy the condition
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let count = (fn, array) => {
   reduce((acc, x) => if (fn(x)) acc + 1 else acc, 0, array)
@@ -777,7 +778,7 @@ export let count = (fn, array) => {
  * @param array: The array to filter
  * @returns The new array with only unique values
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let unique = array => {
   let set = Set.fromList(toList(array))
@@ -802,10 +803,10 @@ export let unique = array => {
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing indexed pairs of `(a, b)`
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let zip = (array1, array2) => {
-  // does the trick :}
+  // Does the trick :}
   fromList(List.zip(toList(array1), toList(array2)))
 }
 
@@ -827,7 +828,7 @@ export let zip = (array1, array2) => {
  * @example zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) == fromList([5, 7, 9])
  * @example zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 10])
  * 
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let zipWith = (fn, array1, array2) => {
   fromList(List.zipWith(fn, toList(array1), toList(array2)))
@@ -839,7 +840,7 @@ export let zipWith = (fn, array1, array2) => {
  * @param array: The array of tuples to split
  * @returns An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let unzip = array => {
   let (list1, list2) = List.unzip(toList(array))
@@ -853,7 +854,7 @@ export let unzip = array => {
  * @param array: The input strings
  * @returns The concatenated string
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let join = (separator, array) => {
   let buf = Buffer.make(16)
@@ -885,7 +886,7 @@ let clampIndex = (len, index) => {
  * @example slice(0, 2, fromList(['a', 'b', 'c'])) == fromList(['a', 'b'])
  * @example slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let slice = (start, end, array) => {
   let begin = clampIndex(array.length, start)
@@ -907,7 +908,7 @@ export let slice = (start, end, array) => {
  * @param array: The array to be sorted
  * @returns The sorted array
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let sort = (comp, array) => {
   fromList(List.sort(comp, toList(array)))
@@ -925,7 +926,7 @@ export let sort = (comp, array) => {
  * @example rotate(2, fromList([1, 2, 3, 4, 5])) == fromList([3, 4, 5, 1, 2])
  * @example rotate(-1, fromList([1, 2, 3, 4, 5])) == fromList([5, 1, 2, 3, 4])
  *
- * @since v0.5.5
+ * @since v0.6.0
  */
 export let rotate = (n, array) => {
   let sliceI = if (array.length == 0) 0 else n % array.length

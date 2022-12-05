@@ -78,6 +78,7 @@ assert ImmutableArray.init(32, identity) == fromList(noTail)
 
 assert ImmutableArray.make(5, 10) == fromList([10, 10, 10, 10, 10])
 assert ImmutableArray.make(0, 10) == fromList([])
+assert ImmutableArray.make(6, "a") == fromList(["a", "a", "a", "a", "a", "a"])
 
 // ImmutableArray.append
 
