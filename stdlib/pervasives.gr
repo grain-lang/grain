@@ -473,9 +473,10 @@ export primitive ignore: a -> Void = "@ignore"
 
 /**
  * Assert that the given Boolean condition is `true`.
- * Throws an `AssertionError` if the condition is `false`.
  *
  * @param condition: The condition to assert
+ *
+ * @throws AssertionError: When the `condition` is false
  *
  * @example assert 3 > 2
  * @example assert true

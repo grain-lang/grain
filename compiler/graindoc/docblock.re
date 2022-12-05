@@ -246,6 +246,9 @@ let signature_item_in_range =
   };
 };
 
+// Used for joining multiple `@throws` annotations with the exact same type
+module StringMap = Map.Make(String);
+
 let to_markdown = (~current_version, docblock) => {
   let buf = Buffer.create(0);
   Buffer.add_string(buf, Markdown.heading(~level=3, docblock.name));
@@ -351,6 +354,50 @@ let to_markdown = (~current_version, docblock) => {
     Buffer.add_string(
       buf,
       Markdown.table(~headers=["type", "description"], returns),
+    );
+  };
+  let throws =
+    docblock.attributes
+    |> List.filter(Comments.Attribute.is_throws)
+    |> List.fold_left(
+         (map, attr: Comments.Attribute.t) => {
+           switch (attr) {
+           | Throws({attr_type: Some(attr_type), attr_desc}) =>
+             StringMap.update(
+               attr_type,
+               descs => {
+                 switch (descs) {
+                 | None => Some([attr_desc])
+                 | Some(descs) => Some([attr_desc, ...descs])
+                 }
+               },
+               map,
+             )
+           | Throws({attr_type: None, attr_desc}) =>
+             failwith(
+               "Unreachable: `throws` attribute requires an exception type.",
+             )
+           | _ =>
+             failwith("Unreachable: Non-`throws` attribute can't exist here.")
+           }
+         },
+         StringMap.empty,
+       )
+    |> StringMap.bindings;
+  if (List.length(throws) > 0) {
+    Buffer.add_string(buf, Markdown.paragraph("Throws:"));
+    List.iter(
+      ((exception_type, exception_descriptions)) => {
+        Buffer.add_string(
+          buf,
+          Markdown.paragraph(Markdown.code(exception_type)),
+        );
+        Buffer.add_string(
+          buf,
+          Markdown.bullet_list(List.rev(exception_descriptions)),
+        );
+      },
+      throws,
     );
   };
   let examples =

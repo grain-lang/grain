@@ -882,7 +882,6 @@ gamma : Number -> Number
 ```
 
 Computes the gamma function of a value using Lanczos approximation.
-Fails when the given value is zero.
 
 Parameters:
 
@@ -896,6 +895,12 @@ Returns:
 |----|-----------|
 |`Number`|The gamma of the given value|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `z` is zero
+
 ### Number.**factorial**
 
 <details disabled>
@@ -908,7 +913,6 @@ factorial : Number -> Number
 ```
 
 Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
-Fails if the input is a negative number.
 
 Parameters:
 
@@ -921,6 +925,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The factorial of the given value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `n` is negative
 
 ### Number.**toRadians**
 

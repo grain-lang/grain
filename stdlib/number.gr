@@ -1048,10 +1048,11 @@ export let tan = (radians: Number) => {
 // https://en.wikipedia.org/wiki/Lanczos_approximation
 /**
  * Computes the gamma function of a value using Lanczos approximation.
- * Fails when the given value is zero.
  *
  * @param z: The value to interpolate
  * @returns The gamma of the given value
+ *
+ * @throws InvalidArgument(String): When `z` is zero
  *
  * @since v0.5.4
  */
@@ -1100,10 +1101,11 @@ export let rec gamma = z => {
 
 /**
  * Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
- * Fails if the input is a negative number.
  *
  * @param n: The value to factorialize
  * @returns The factorial of the given value
+ *
+ * @throws InvalidArgument(String): When `n` is negative
  *
  * @since v0.5.4
  */

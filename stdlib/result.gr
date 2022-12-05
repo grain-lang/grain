@@ -1,15 +1,15 @@
 /**
  * @module Result: Utilities for working with the Result data type.
- * 
+ *
  * The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
  * or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
- * 
+ *
  * @example import Result from "result"
- * 
- * 
+ *
+ *
  * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
  * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"
- * 
+ *
  * @since v0.2.0
  */
 
@@ -22,7 +22,7 @@
  *
  * @param result: The result to check
  * @returns `true` if the Result is the `Ok` variant or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let isOk = result => {
@@ -37,7 +37,7 @@ export let isOk = result => {
  *
  * @param result: The result to check
  * @returns `true` if the Result is the `Err` variant or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let isErr = result => !isOk(result)
@@ -47,7 +47,7 @@ export let isErr = result => !isOk(result)
  *
  * @param result: The result to convert
  * @returns `Some(value)` if the Result is `Ok(value)` or `None` if the Result is an `Err`
- * 
+ *
  * @since v0.2.0
  */
 export let toOption = result => {
@@ -63,7 +63,7 @@ export let toOption = result => {
  * @param fn: The function to call on the value of an `Ok` variant
  * @param result: The result to map
  * @returns A new Result produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let flatMap = (fn, result) => {
@@ -79,7 +79,7 @@ export let flatMap = (fn, result) => {
  * @param fn: The function to call on the value of an `Err` variant
  * @param result: The result to map
  * @returns A new Result produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let flatMapErr = (fn, result) => {
@@ -95,7 +95,7 @@ export let flatMapErr = (fn, result) => {
  * @param fn: The function to call on the value of an `Ok` variant
  * @param result: The result to map
  * @returns A new `Ok` variant produced by the mapping function if the variant was `Ok` or the unmodified `Err` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let map = (fn, result) => {
@@ -111,7 +111,7 @@ export let map = (fn, result) => {
  * @param fn: The function to call on the value of an `Err` variant
  * @param result: The result to map
  * @returns A new `Err` variant produced by the mapping function if the variant was `Err` or the unmodified `Ok` otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let mapErr = (fn, result) => {
@@ -129,8 +129,8 @@ export let mapErr = (fn, result) => {
  * @param def: A fallback value for an `Err` variant
  * @param result: The result to map
  * @returns The value produced by the mapping function if the result is of the `Ok` variant or the default value otherwise
- * 
- * @since v0.2.0 
+ *
+ * @since v0.2.0
  */
 export let mapWithDefault = (fn, def, result) => {
   match (result) {
@@ -148,7 +148,7 @@ export let mapWithDefault = (fn, def, result) => {
  * @param fnErr: The function to call on the value of an `Err` variant
  * @param result: The result to map
  * @returns The value produced by one of the mapping functions
- * 
+ *
  * @since v0.2.0
  */
 export let mapWithDefaultFn = (fnOk, fnErr, result) => {
@@ -164,7 +164,7 @@ export let mapWithDefaultFn = (fnOk, fnErr, result) => {
  * @param result1: The first result
  * @param result2: The second result
  * @returns The first Result if it is the `Ok` variant or the second Result otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let or = (result1, result2) => {
@@ -180,7 +180,7 @@ export let or = (result1, result2) => {
  * @param result1: The first result
  * @param result2: The second result
  * @returns The second Result if both are the `Ok` variant or the first Result otherwise
- * 
+ *
  * @since v0.2.0
  */
 export let and = (result1, result2) => {
@@ -198,7 +198,7 @@ export let and = (result1, result2) => {
  * @param fnOk: The function to call on the value of an `Ok` variant
  * @param fnErr: The function to call on the value of an `Err` variant
  * @param result: The result to inspect
- * 
+ *
  * @since v0.2.0
  */
 export let peek = (fnOk, fnErr, result) => {
@@ -213,7 +213,7 @@ export let peek = (fnOk, fnErr, result) => {
  *
  * @param fn: The function to call on the value of an `Ok` variant
  * @param result: The result to inspect
- * 
+ *
  * @since v0.2.0
  */
 export let peekOk = (fn, result) => {
@@ -225,7 +225,7 @@ export let peekOk = (fn, result) => {
  *
  * @param fn: The function to call on the value of an `Err` variant
  * @param result: The result to inspect
- * 
+ *
  * @since v0.2.0
  */
 export let peekErr = (fn, result) => {
@@ -239,6 +239,8 @@ export let peekErr = (fn, result) => {
  * @param msg: The message to prepend if the result contains an `Err`
  * @param result: The result to extract a value from
  * @returns The unwrapped value if the Result is the `Ok` variant
+ *
+ * @throws Failure(String): When the `result` is `Err`
  *
  * @example Result.expect("Unexpected error", Ok(1234)) + 42
  *
@@ -257,6 +259,8 @@ export let expect = (msg, result) => {
  *
  * @param result: The result to extract a value from
  * @returns The unwrapped value if the result is the `Ok` variant
+ *
+ * @throws Failure(String): When the `result` is `Err`
  *
  * @example Result.unwrap(Err("This will throw"))
  *
