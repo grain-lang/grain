@@ -20,7 +20,7 @@ follows:
 - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -172,7 +172,7 @@ Functions for working with Paths.
 ### Path.**fromString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -212,7 +212,7 @@ fromString(".") // a relative Path referencing the current directory
 ### Path.**fromPlatformString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -251,7 +251,7 @@ fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the f
 ### Path.**toString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -287,7 +287,7 @@ toString(fromString("dir/")) == "./dir/"
 ### Path.**toPlatformString**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -325,7 +325,7 @@ toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
 ### Path.**isDirectory**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -390,7 +390,7 @@ isAbsolute(fromString("./file.txt")) == false
 ### Path.**append**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -430,7 +430,7 @@ append(fromString("./dir/"), fromString("/dir2")) == Err(AppendAbsolute) // cann
 ### Path.**relativeTo**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -489,7 +489,7 @@ relativeTo(fromString("../here"), fromString("./there")) == Err(ImpossibleRelati
 ### Path.**ancestry**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -533,7 +533,7 @@ ancestry(fromString("C:/dir1"), fromString("/dir2")) == Err(DifferentRoots)
 ### Path.**parent**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -568,7 +568,7 @@ parent(fromString("/")) == fromString("/")
 ### Path.**basename**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -603,7 +603,7 @@ basename(fromString(".."))) == None
 ### Path.**stem**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -646,7 +646,7 @@ stem(fromString("/dir/")) == Err(IncompatiblePathType) // can only take stem of 
 ### Path.**extension**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
@@ -689,7 +689,7 @@ extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take ext
 ### Path.**root**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
+<summary tabindex="-1">Added in <code>0.5.5</code></summary>
 No other changes yet.
 </details>
 
