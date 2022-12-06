@@ -54,6 +54,7 @@ let compile_source = (uri, source) => {
 
   switch (
     Compile.compile_string(
+      ~is_root_file=true,
       ~hook=stop_after_typed_well_formed,
       ~name=filename,
       source,

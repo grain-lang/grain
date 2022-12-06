@@ -955,12 +955,19 @@ and transl_comp_expression =
       cond_setup,
     );
   | TExpBlock([]) => (Comp.imm(~allocation_type, Imm.const(Const_void)), [])
-  | TExpBlock([stmt]) => transl_comp_expression(stmt)
-  | TExpBlock([fst, ...rest]) =>
-    let (fst_ans, fst_setup) = transl_comp_expression(fst);
-    let (rest_ans, rest_setup) =
-      transl_comp_expression({...e, exp_desc: TExpBlock(rest)});
-    (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
+  | TExpBlock(stmts) =>
+    let stmts = List.rev_map(transl_comp_expression, stmts);
+    // stmts is non-empty, so this cannot fail
+    let (last_ans, last_setup) = List.hd(stmts);
+    let stmts = List.tl(stmts);
+    let setup =
+      List.concat @@
+      List.fold_left(
+        (acc, (ans, setup)) => {[setup, [BSeq(ans)], ...acc]},
+        [last_setup],
+        stmts,
+      );
+    (last_ans, setup);
   | TExpLet(Nonrecursive, _, []) => (
       Comp.imm(~allocation_type, Imm.const(Const_void)),
       [],

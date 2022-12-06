@@ -12,6 +12,7 @@ type compilation_state_desc =
   | Initial(input_source)
   | Parsed(Parsetree.parsed_program)
   | WellFormed(Parsetree.parsed_program)
+  | DependenciesCompiled(Parsetree.parsed_program)
   | TypeChecked(Typedtree.typed_program)
   | TypedWellFormed(Typedtree.typed_program)
   | Linearized(Anftree.anf_program)

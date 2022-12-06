@@ -15,6 +15,9 @@ let resolve_unit:
 
 let compile_module_dependency: ref((string, string) => unit);
 
+let compile_dependency_graph:
+  (~base_file: string, list(Grain_parsing.Location.loc(string))) => unit;
+
 let read_file_cmi: string => Cmi_format.cmi_infos;
 
 let clear_dependency_graph: unit => unit;
