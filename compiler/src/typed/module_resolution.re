@@ -454,17 +454,24 @@ module Dependency_graph =
   });
 
 let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
-  /* NOTE: We need to take care here to *not* wrap get_up_to_date with this try/with, since
-     it will falsely raise No_module_file if a Not_found is raised during the compilation */
   let base_dir = Filepath.String.dirname(current_filename^());
   let path = Config.module_search_path();
   let located =
     try(locate_module(~disable_relpath, base_dir, path, unit_name)) {
     | Not_found => error(No_module_file(loc, unit_name, None))
     };
+  located_to_out_file_name(located);
+};
+
+let process_dependency = (~loc, ~base_file, unit_name) => {
+  let base_dir = Filepath.String.dirname(base_file);
+  let path = Config.module_search_path();
+  let located =
+    try(locate_module(~disable_relpath=false, base_dir, path, unit_name)) {
+    | Not_found => error(No_module_file(loc, unit_name, None))
+    };
   let out_file = located_to_out_file_name(located);
-  let current_dep_node =
-    Dependency_graph.lookup_filename(current_filename^());
+  let current_dep_node = Dependency_graph.lookup_filename(base_file);
   let existing_dependency = Dependency_graph.lookup_filename(out_file);
   let dn =
     switch (existing_dependency) {
@@ -482,9 +489,16 @@ let locate_module_file = (~loc, ~disable_relpath=false, unit_name) => {
       };
     };
   Dependency_graph.register(dn);
-  Dependency_graph.compile_dependencies(~loc, out_file);
-  let ret = located_to_out_file_name(located);
-  ret;
+};
+
+let compile_dependency_graph = (~base_file, dependencies) => {
+  open Location;
+  List.iter(
+    ({txt: dependency, loc}) =>
+      process_dependency(~loc, ~base_file, dependency),
+    dependencies,
+  );
+  Dependency_graph.compile_graph();
 };
 
 let clear_dependency_graph = () => {

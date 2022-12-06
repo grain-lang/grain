@@ -11,8 +11,6 @@ const v8 = require("v8");
  * This seems to work for our needs with Node 16, but we should be cautious when updating.
  */
 v8.setFlagsFromString("--experimental-wasm-return-call");
-// TODO(#1580): Remove this flag
-v8.setFlagsFromString("--stack-size=2048");
 
 const commander = require("commander");
 const exec = require("./exec.js");

@@ -133,15 +133,11 @@ module Make = (DV: Dependency_value) => {
     ret;
   };
 
-  let compile_dependencies = (~loc=?, filename) => {
-    switch (lookup_filename(filename)) {
-    | None => raise(Not_found)
-    | Some(vtx) =>
-      let to_compile = ref(solve_next_out_of_date(~stop=vtx, ()));
-      while (Option.is_some(to_compile^)) {
-        DV.compile_module(~loc?, Option.get(to_compile^));
-        to_compile := solve_next_out_of_date(~stop=vtx, ());
-      };
+  let compile_graph = () => {
+    let to_compile = ref(solve_next_out_of_date());
+    while (Option.is_some(to_compile^)) {
+      DV.compile_module(Option.get(to_compile^));
+      to_compile := solve_next_out_of_date();
     };
   };
 

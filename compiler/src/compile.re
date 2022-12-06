@@ -153,7 +153,15 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       };
       Well_formedness.check_well_formedness(p);
       WellFormed(p);
-    | WellFormed(p) => TypeChecked(Typemod.type_implementation(p))
+    | WellFormed(p) =>
+      if (is_root_file) {
+        let base_file = Option.value(~default="", cstate_filename);
+        Module_resolution.compile_dependency_graph(
+          ~base_file,
+          Driver.read_imports(p),
+        );
+      };
+      TypeChecked(Typemod.type_implementation(p));
     | TypeChecked(typed_mod) =>
       Typed_well_formedness.check_well_formedness(typed_mod);
       TypedWellFormed(typed_mod);
