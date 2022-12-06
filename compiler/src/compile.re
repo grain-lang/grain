@@ -14,6 +14,7 @@ type compilation_state_desc =
   | Initial(input_source)
   | Parsed(Parsetree.parsed_program)
   | WellFormed(Parsetree.parsed_program)
+  | DependenciesCompiled(Parsetree.parsed_program)
   | TypeChecked(Typedtree.typed_program)
   | TypedWellFormed(Typedtree.typed_program)
   | Linearized(Anftree.anf_program)
@@ -68,6 +69,7 @@ let log_state = state =>
       prerr_string("\nParsed program:\n");
       prerr_sexp(Grain_parsing.Parsetree.sexp_of_parsed_program, p);
     | WellFormed(_) => prerr_string("\nWell-Formedness passed")
+    | DependenciesCompiled(_) => prerr_string("\nDependencies compiled")
     | TypeChecked(typed_mod) =>
       prerr_string("\nTyped program:\n");
       prerr_sexp(Grain_typed.Typedtree.sexp_of_typed_program, typed_mod);
@@ -161,7 +163,8 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
           Driver.read_imports(p),
         );
       };
-      TypeChecked(Typemod.type_implementation(p));
+      DependenciesCompiled(p);
+    | DependenciesCompiled(p) => TypeChecked(Typemod.type_implementation(p))
     | TypeChecked(typed_mod) =>
       Typed_well_formedness.check_well_formedness(typed_mod);
       TypedWellFormed(typed_mod);
