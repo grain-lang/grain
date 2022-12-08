@@ -78,7 +78,8 @@ assert ImmutableArray.get(branchingLongTailLen - 1, arr) == -1
 assert ImmutableArray.init(5, identity) == fromList([0, 1, 2, 3, 4])
 assert ImmutableArray.init(10, x => x * 2) ==
   fromList([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
-assert ImmutableArray.init(0, x => x * 2) == fromList([])
+assert ImmutableArray.init(0, x => fail "called init on 0 length") ==
+  fromList([])
 assert ImmutableArray.init(branchingLongTailLen, identity) ==
   fromList(branchingLongTail)
 assert ImmutableArray.init(32, identity) == fromList(noTail)
@@ -211,7 +212,9 @@ assert ImmutableArray.toList(fromList(noTail)) == noTail
 
 // ImmutableArray.map
 
-assert ImmutableArray.map(incr, fromList([])) == fromList([])
+assert ImmutableArray.map(x =>
+  fail "Map iterator should not be called on 0-length array", fromList([])) ==
+  fromList([])
 assert ImmutableArray.map(incr, fromList([2, 3, 4])) == fromList([3, 4, 5])
 assert ImmutableArray.map(incr, bltArr) ==
   fromList(List.map(incr, branchingLongTail))
@@ -261,6 +264,12 @@ let arrB = fromList([5, 4, 3, 2, 1])
 assert ImmutableArray.zip(arrA, arrB) ==
   fromList([(1, 5), (2, 4), (3, 3), (4, 2), (5, 1)])
 
+let arrA = fromList([1, 2, 3])
+let arrB = fromList([5, 4, 3, 2, 1])
+
+assert ImmutableArray.zip(arrA, arrB) == fromList([(1, 5), (2, 4), (3, 3)])
+assert ImmutableArray.zip(arrB, arrA) == fromList([(5, 1), (4, 2), (3, 3)])
+
 // ImmutableArray.zipWith
 
 let addFn = (a, b) => a + b
@@ -268,6 +277,11 @@ let arrA = fromList([1, 2, 3])
 let arrB = fromList([4, 5, 6])
 
 assert ImmutableArray.zipWith(addFn, arrA, arrB) == fromList([5, 7, 9])
+
+let arrB = fromList([4, 5, 6, 7, 8])
+
+assert ImmutableArray.zipWith(addFn, arrA, arrB) == fromList([5, 7, 9])
+assert ImmutableArray.zipWith(addFn, arrB, arrA) == fromList([5, 7, 9])
 
 let multFn = (a, b) => a * b
 let arrB = fromList([4, 5])
@@ -287,7 +301,9 @@ assert ImmutableArray.unzip(fromList([])) == (fromList([]), fromList([]))
 let arr = fromList([1, 2, 3])
 
 assert ImmutableArray.count(x => x > 0, arr) == 3
-assert ImmutableArray.count(x => x > 0, fromList([])) == 0
+assert ImmutableArray.count(x =>
+  fail "count iterator should not be called on empty array", fromList([])) ==
+  0
 assert ImmutableArray.count(x => x == 3, arr) == 1
 
 // ImmutableArray.reduce
