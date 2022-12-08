@@ -21,6 +21,7 @@ import {
   (*),
   (/),
   (%),
+  (**),
   (<),
   (>),
   (<=),
@@ -270,6 +271,17 @@ export (/)
  * @since v0.1.0
  */
 export (%)
+
+/**
+ * Computes the exponentiation of the given base and power.
+ *
+ * @param base: The base number
+ * @param power: The exponent number
+ * @returns The base raised to the given power
+ *
+ * @since v0.6.0
+ */
+export (**)
 
 /**
  * Increments the value by one.
