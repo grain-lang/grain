@@ -310,24 +310,6 @@ convertInexactToExact : Number -> Number
 (%) : (Number, Number) -> Number
 ```
 
-### Numbers.**incr**
-
-```grain
-incr : Number -> Number
-```
-
-### Numbers.**decr**
-
-```grain
-decr : Number -> Number
-```
-
-### Numbers.**isBigInt**
-
-```grain
-isBigInt : a -> Bool
-```
-
 ### Numbers.**scalbn**
 
 <details disabled>
@@ -353,4 +335,48 @@ Returns:
 |type|description|
 |----|-----------|
 |`WasmF64`|The result of x * 2^n|
+
+### Numbers.**(**)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.6.0</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(**) : (Number, Number) -> Number
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Number`|The base number|
+|`power`|`Number`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The base raised to the given power|
+
+### Numbers.**incr**
+
+```grain
+incr : Number -> Number
+```
+
+### Numbers.**decr**
+
+```grain
+decr : Number -> Number
+```
+
+### Numbers.**isBigInt**
+
+```grain
+isBigInt : a -> Bool
+```
 
