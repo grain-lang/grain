@@ -1153,7 +1153,7 @@ let rec lookup_module_descr_aux = (~mark, id, env) =>
     | IdentExternal(m, {txt: n}) =>
       let (p, descr) = lookup_module_descr(~mark, m, env);
       /* let (_, pos) = Tbl.find n (get_components descr).comp_components in */
-      /* FIXME: Should this have a proper position? */
+      // TODO(#1509): Should this have a proper position?
       (PExternal(p, n, Path.nopos), descr);
     }
   )

@@ -110,8 +110,6 @@ export let init: (Number, Number -> a) -> Array<a> =
   let array = allocateArray(length)
   let mut index = 0n
   for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
-    // [FIXME] This line fails the array/map test suite (#815)
-    // assert !WasmI32.eqz(WasmI32.and(WasmI32.fromGrain(index), 1n)) // must be a simple int for next line to be correct
     WasmI32.store(
       WasmI32.add(array, i),
       Memory.incRef(WasmI32.fromGrain(fn(tagSimpleNumber(index)))),

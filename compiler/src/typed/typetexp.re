@@ -119,7 +119,7 @@ let find_component = (lookup: (~mark: _=?) => _, make_error, env, loc, lid) =>
     }
   ) {
   | Not_found =>
-    /* [FIXME] This should be replaced with a more specific exception, since it can eat errors from compilation of submodules */
+    // TODO(#1506): Replace this with a more specific exception as it can eat errors from compilation of submodules
     narrow_unbound_lid_error(env, loc, lid, make_error)
   };
 

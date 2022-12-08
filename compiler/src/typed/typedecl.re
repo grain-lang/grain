@@ -824,7 +824,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
     (List.map init_variance decls)
     (List.map (fun _ -> false) decls)*/
 
-  /* FIXME: Check re-exportation */
+  // TODO(#1508): Check re-exportation
   /*List.iter2 (check_abbrev final_env) sdecl_list final_decls;*/
   /* Keep original declaration */
   let final_decls =

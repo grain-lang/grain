@@ -1785,7 +1785,7 @@ let rec initial_only_guarded =
 /* Exhaustiveness check */
 /************************/
 
-/* FIXME: If we port over untypeast, then use its function instead */
+// If we were to port untypeast(https://docs.mirage.io/ocaml/Untypeast/index.html) over, we could use its function instead of this
 let untype_constant =
   fun
   | Const_number(Const_number_int(i)) =>
