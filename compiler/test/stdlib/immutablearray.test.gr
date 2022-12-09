@@ -37,22 +37,6 @@ assert !ImmutableArray.isEmpty(fromList([1, 2, 3]))
 assert ImmutableArray.length(bltArr) == branchingLongTailLen
 assert ImmutableArray.length(noTailArr) == 32
 
-// ImmutableArray.getOpt
-
-assert ImmutableArray.getOpt(1, arr) == Some(2)
-assert ImmutableArray.getOpt(-1, arr) == Some(3)
-assert ImmutableArray.getOpt(3, arr) == None
-assert ImmutableArray.getOpt(-4, arr) == None
-
-assert ImmutableArray.getOpt(0, bltArr) == Some(0)
-assert ImmutableArray.getOpt(branchingLongTailLen - 1, bltArr) ==
-  Some(branchingLongTailLen - 1)
-assert ImmutableArray.getOpt(branchingLongTailLen, bltArr) == None
-
-assert ImmutableArray.getOpt(0, noTailArr) == Some(0)
-assert ImmutableArray.getOpt(31, noTailArr) == Some(31)
-assert ImmutableArray.getOpt(32, noTailArr) == None
-
 // ImmutableArray.get
 
 assert ImmutableArray.get(1, arr) == 2
@@ -294,6 +278,13 @@ let arrA = fromList([1, 2, 3, 4, 5])
 let arrB = fromList([5, 4, 3, 2, 1])
 
 assert ImmutableArray.unzip(ImmutableArray.zip(arrA, arrB)) == (arrA, arrB)
+
+let arrA = fromList([1, 2, 3, 4])
+let arrB = fromList([3, 2, 1])
+let trimmedA = fromList([1, 2, 3])
+assert ImmutableArray.unzip(ImmutableArray.zip(arrA, arrB)) == (trimmedA, arrB)
+assert ImmutableArray.unzip(ImmutableArray.zip(arrB, arrA)) == (arrB, trimmedA)
+
 assert ImmutableArray.unzip(fromList([])) == (fromList([]), fromList([]))
 
 // ImmutableArray.count

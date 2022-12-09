@@ -156,20 +156,19 @@ let log32floor = num => {
 }
 
 /**
- * Attempts to retrieve the element from the array at the specified index.
+ * Retrieves the element from the array at the specified index.
  * A negative index is treated as an offset from the end of the array.
  *
  * @param index: The index to access
  * @param array: The array to access
- * @returns `Some(element)` containing the element from the array at the given index or `None` if the index is out of the array bounds
+ * @returns The element from the array
  * 
- * @example getOpt(1, fromList([1, 2, 3])) == Some(2)
- * @example getOpt(-1, fromList([1, 2, 3])) == Some(3)
- * @example getOpt(4, fromList([1, 2, 3])) == None
+ * @example get(1, fromList([1, 2, 3, 4])) == 2
+ * @example get(-1, fromList([1, 2, 3, 4])) == 4
  *
  * @since v0.6.0
  */
-export let getOpt = (index, array) => {
+export let get = (index, array) => {
   let index = wrapNegativeIndex(array.length, index)
 
   let rec getInner = (shift, node) => {
@@ -182,27 +181,13 @@ export let getOpt = (index, array) => {
 
   let { length, shift, root, tail } = array
   if (index < 0 || index >= length) {
-    None
+    throw Exception.IndexOutOfBounds
   } else if (index >= tailIndex(length)) {
-    Some(tail[index & bitmask])
+    tail[index & bitmask]
   } else {
-    Some(getInner(shift, root))
+    getInner(shift, root)
   }
 }
-
-/**
- * Retrieves the element from the array at the specified index.
- * A negative index is treated as an offset from the end of the array.
- *
- * @param index: The index to access
- * @param array: The array to access
- * @returns The element from the array
- * 
- * @example get(1, fromList([1, 2, 3, 4, 5])) == 2
- *
- * @since v0.6.0
- */
-export let get = (index, array) => Option.unwrap(getOpt(index, array))
 
 /**
  * Creates a new array in which the element at the specified index is set to a
