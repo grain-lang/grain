@@ -165,7 +165,7 @@ let nerrors = ref(0);
 let defaults = [
   LetRecNonFunction(""),
   AmbiguousName([], [], false),
-  // [FIXME] see if we can reenable (grain-lang/grain#681)
+  // TODO(#681): Look into reenabling these
   //NotPrincipal(""),
   //NameOutOfScope("", [], false),
   StatementType,

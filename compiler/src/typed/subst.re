@@ -82,9 +82,6 @@ let remove_loc =
     location: (_this, _loc) => Location.dummy_loc,
   };
 
-/* FIXME: Remove*/
-let attrs = (s, x) => x;
-
 let rec module_path = (s, path) =>
   try(PathMap.find(path, s.modules)) {
   | Not_found =>
@@ -117,14 +114,6 @@ let type_path = (s, path) =>
     | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos)
     }
   };
-
-/* FIXME: Decide if this is needed */
-/*let type_path s p =
-  match Path.constructor_typath p with
-  | Regular p -> type_path s p
-  | Cstr (ty_path, cstr) -> Pdot(type_path s ty_path, cstr, nopos)
-  | LocalExt _ -> type_path s p
-  | Ext (p, cstr) -> Pdot(module_path s p, cstr, nopos)*/
 
 let to_subst_by_type_function = (s, p) =>
   switch (PathMap.find(p, s.types)) {

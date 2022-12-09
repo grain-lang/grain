@@ -1258,7 +1258,7 @@ and type_function =
     | [{pmb_pat: {ppat_desc: PPatConstraint(p, _)}, _} as mb] =>
       arity([{...mb, pmb_pat: p}])
     | [{pmb_pat: {ppat_desc: PPatTuple(args)}, _}] => List.length(args)
-    /* FIXME: Less hard-coding, please */
+    // TODO(#1507): Reduce the number of hard-coded cases
     | [{pmb_pat: {ppat_desc: PPatConstruct({txt: ident, _}, []), _}, _}]
         when Identifier.equal(ident, Identifier.IdentName(mknoloc("()"))) => 0
     | _ => failwith("Impossible: type_function: impossible caselist")

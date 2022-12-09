@@ -45,7 +45,7 @@ let default_function_optimization_passes =
   List.concat([
     // All the additions here are optional if DWARF must be preserved. That is,
     // when DWARF is relevant we run fewer optimizations.
-    // FIXME: support DWARF in all of them.
+    // FIXME(BINARYEN): support DWARF in all of them.
     // Untangling to semi-ssa form is helpful (but best to ignore merges
     // so as to not introduce new copies).
     if (optimize_level >= 3 || shrink_level >= 1) {

@@ -1325,8 +1325,7 @@ let bind_constructor =
 };
 
 let linearize_decl = (env, loc, typath, decl) => {
-  /* FIXME: [philip] This is kind of hacky...would be better to store this in the Env directly...not to mention,
-     I think this'll be much more fragile than if it were in the static info */
+  // TODO(#1510): This is kind of hacky, it would be better to store this in the Env directly
   let ty_id = get_type_id(typath);
   let descrs = Datarepr.constructors_of_type(typath, decl);
   List.map(bind_constructor(env, loc, ty_id), descrs);

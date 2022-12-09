@@ -191,7 +191,7 @@ let types_have_correct_case = (errs, super) => {
     check_uppercase(name_loc, name);
     super.data(self, d);
   };
-  /* FIXME: The parser should read in uppercase types as PTyConstr instances */
+  // TODO(#1502): The parser should read in uppercase types as PTyConstr instances
   let iterator = {...super, data: iter_data};
   {errs, iterator};
 };
@@ -533,6 +533,6 @@ let well_formedness_checker = () =>
 let check_well_formedness = ({statements}) => {
   let checker = well_formedness_checker();
   List.iter(checker.iterator.toplevel(checker.iterator), statements);
-  /* FIXME: We should be able to raise _all_ errors at once */
+  // TODO(#1503): We should be able to raise _all_ errors at once
   List.iter(e => raise(Error(e)), checker.errs^);
 };
