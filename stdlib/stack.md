@@ -6,6 +6,11 @@ title: Stack
 
 An immutable stack implementation. A stack is a LIFO (last-in-first-out) data structure where new values are added, retrieved, and removed from the end.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 import Stack from "stack"
 ```
@@ -43,6 +48,11 @@ An empty stack.
 
 > **Deprecated:** This will be removed in the v0.6.0 release of Grain.
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 make : () -> Stack<a>
 ```
@@ -56,6 +66,11 @@ Returns:
 |`Stack<a>`|An empty stack|
 
 ### Stack.**isEmpty**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 isEmpty : Stack<a> -> Bool
@@ -77,6 +92,18 @@ Returns:
 
 ### Stack.**peek**
 
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.1</code></td><td>Rename from `head` to `peek`</td></tr>
+</tbody>
+</table>
+</details>
+
 ```grain
 peek : Stack<a> -> Option<a>
 ```
@@ -96,6 +123,11 @@ Returns:
 |`Option<a>`|`Some(value)` containing the value at the top of the stack or `None` otherwise.|
 
 ### Stack.**push**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 push : (a, Stack<a>) -> Stack<a>
@@ -118,6 +150,11 @@ Returns:
 
 ### Stack.**pop**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 pop : Stack<a> -> Stack<a>
 ```
@@ -137,6 +174,11 @@ Returns:
 |`Stack<a>`|A new stack with the last item removed|
 
 ### Stack.**size**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.3.2</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 size : Stack<a> -> Number
