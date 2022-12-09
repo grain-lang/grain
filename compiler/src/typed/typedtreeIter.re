@@ -122,7 +122,6 @@ module MakeIterator =
     Iter.leave_data_declaration(decl);
   }
 
-  // TODO(#1505): Refactor this function
   and iter_toplevel_stmt = stmt => {
     Iter.enter_toplevel_stmt(stmt);
     switch (stmt.ttop_desc) {
@@ -137,7 +136,6 @@ module MakeIterator =
     };
     Iter.leave_toplevel_stmt(stmt);
   }
-  // TODO(#1505): Refactor this function
   and iter_toplevel_stmts = stmts =>
     List.iter(
       cur =>

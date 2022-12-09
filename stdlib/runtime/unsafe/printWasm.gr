@@ -2,7 +2,6 @@ import Conv from "runtime/unsafe/conv"
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Memory from "runtime/unsafe/memory"
 
-// TODO(#791): These functions currently leak memory
 @unsafe
 export let printI32 = val => {
   let conv = Conv.toInt32(val)
