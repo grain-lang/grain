@@ -1,6 +1,7 @@
 {
   "files.associations": {
-    "*.dyp": "ocaml.ocamllex"
+    "*.dyp": "ocaml.ocamllex",
+    "CODEOWNERS": "ignore"
   },
   "ocaml.sandbox": {
     "kind": "esy",
