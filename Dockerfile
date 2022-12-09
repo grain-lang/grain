@@ -20,13 +20,11 @@ RUN npm ci --ignore-scripts
 # conditional copies and the arm64 folder is ignored on amd64 anyway
 COPY --from=esy /app/_release /grain/node_modules/esy/platform-linux-arm64
 # Manually run esy's postinstall script
-RUN cd node_modules/esy && npm run postinstall
-
-# Necessary because we disabled scripts during the original install
-RUN npm run prepare
-
-# Build the compiler and CLI
-RUN npm run compiler build
+RUN cd node_modules/esy && npm run postinstall \
+    # Necessary because we disabled scripts during the original install
+    && cd .. && npm run prepare \
+    # Build the compiler and CLI
+    && npm run compiler build
 
 # Set up container environment
 WORKDIR /
