@@ -114,6 +114,8 @@ let addInt32help = (value, buffer) => {
  * @param initialSize: The initial size of the buffer
  * @returns The new buffer
  *
+ * @throws InvalidArgument(String): When the `initialSize` is a negative number
+ *
  * @since v0.4.0
  */
 export let make = initialSize => {
@@ -168,6 +170,9 @@ export let reset = buffer => {
  * @param length: The number of bytes to truncate the buffer to
  * @param buffer: The buffer to truncate
  *
+ * @throws IndexOutOfBounds: When the `length` is negative
+ * @throws IndexOutOfBounds: When the `length` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 @unsafe
@@ -201,6 +206,10 @@ export let toBytes = buffer => {
  * @param length: The number of bytes to include after the starting index
  * @param buffer: The buffer to copy from
  * @returns A byte sequence with bytes copied from the buffer
+ *
+ * @throws IndexOutOfBounds: When `start` is negative
+ * @throws IndexOutOfBounds: When `start` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `start + length` is greater than the buffer size
  *
  * @since v0.4.0
  */
@@ -329,6 +338,11 @@ export let addStringSlice = (start: Number, end, string, buffer) => {
  * @param bytes: The byte sequence to append
  * @param buffer: The buffer to mutate
  *
+ * @throws IndexOutOfBounds: When the `start` is negative
+ * @throws IndexOutOfBounds: When the `start` is greater than or equal to the `bytes` size
+ * @throws IndexOutOfBounds: When the `length` is negative
+ * @throws IndexOutOfBounds: When the `length` is greater than the `bytes` length minus `start`
+ *
  * @since v0.4.0
  */
 @unsafe
@@ -410,6 +424,10 @@ export let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
  * @param buffer: The buffer to access
  * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getInt8S = (index, buffer) => {
@@ -424,6 +442,10 @@ export let getInt8S = (index, buffer) => {
  * @param buffer: The buffer to access
  * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getInt8U = (index, buffer) => {
@@ -437,6 +459,10 @@ export let getInt8U = (index, buffer) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
  * @since v0.4.0
  */
@@ -464,6 +490,10 @@ export let addInt8 = (value, buffer) => {
  * @param buffer: The buffer to access
  * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getInt16S = (index, buffer) => {
@@ -478,6 +508,10 @@ export let getInt16S = (index, buffer) => {
  * @param buffer: The buffer to access
  * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getInt16U = (index, buffer) => {
@@ -491,6 +525,10 @@ export let getInt16U = (index, buffer) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
  * @since v0.4.0
  */
@@ -518,6 +556,10 @@ export let addInt16 = (value, buffer) => {
  * @param buffer: The buffer to access
  * @returns A signed 32-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getInt32 = (index, buffer) => {
@@ -531,6 +573,10 @@ export let getInt32 = (index, buffer) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
  * @since v0.4.0
  */
@@ -558,6 +604,10 @@ export let addInt32 = (value, buffer) => {
  * @param buffer: The buffer to access
  * @returns A 32-bit float that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getFloat32 = (index, buffer) => {
@@ -571,6 +621,10 @@ export let getFloat32 = (index, buffer) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
  *
  * @since v0.4.0
  */
@@ -601,6 +655,10 @@ export let addFloat32 = (value, buffer) => {
  * @param buffer: The buffer to access
  * @returns A signed 64-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getInt64 = (index, buffer) => {
@@ -614,6 +672,10 @@ export let getInt64 = (index, buffer) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
  * @since v0.4.0
  */
@@ -644,6 +706,10 @@ export let addInt64 = (value, buffer) => {
  * @param buffer: The buffer to access
  * @returns A 64-bit float that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
+ *
  * @since v0.4.0
  */
 export let getFloat64 = (index, buffer) => {
@@ -657,6 +723,10 @@ export let getFloat64 = (index, buffer) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
  *
  * @since v0.4.0
  */

@@ -182,6 +182,12 @@ Returns:
 |----|-----------|
 |`Bytes`|A byte sequence with of the copied bytes|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `start + length` is greater than the bytes size
+
 ### Bytes.**resize**
 
 <details disabled>
@@ -211,6 +217,12 @@ Returns:
 |----|-----------|
 |`Bytes`|A resized byte sequence|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When the new size is negative
+
 ### Bytes.**move**
 
 <details disabled>
@@ -234,6 +246,13 @@ Parameters:
 |`length`|`Number`|The amount of bytes to copy from the source buffer|
 |`src`|`Bytes`|The source byte sequence|
 |`dst`|`Bytes`|The destination byte sequence|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `srcIndex + length` is greater than the `src` bytes size
+* When the `dstIndex + length` is greater than the `dst` bytes size
 
 ### Bytes.**concat**
 
@@ -330,6 +349,13 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing a signed 8-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 1` is greater than the bytes size
+
 ### Bytes.**getInt8U**
 
 <details disabled>
@@ -356,6 +382,13 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing an unsigned 8-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 1` is greater than the bytes size
+
 ### Bytes.**setInt8**
 
 <details disabled>
@@ -376,6 +409,13 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int32`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 1` is greater than the bytes size
 
 ### Bytes.**getInt16S**
 
@@ -403,6 +443,13 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing a signed 16-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 2` is greater than the bytes size
+
 ### Bytes.**getInt16U**
 
 <details disabled>
@@ -429,6 +476,13 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing an unsigned 16-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 2` is greater than the bytes size
+
 ### Bytes.**setInt16**
 
 <details disabled>
@@ -449,6 +503,13 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int32`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 2` is greater than the bytes size
 
 ### Bytes.**getInt32**
 
@@ -476,6 +537,13 @@ Returns:
 |----|-----------|
 |`Int32`|A signed 32-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 4` is greater than the bytes size
+
 ### Bytes.**setInt32**
 
 <details disabled>
@@ -496,6 +564,13 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int32`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 4` is greater than the bytes size
 
 ### Bytes.**getFloat32**
 
@@ -523,6 +598,13 @@ Returns:
 |----|-----------|
 |`Float32`|A 32-bit float that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 4` is greater than the bytes size
+
 ### Bytes.**setFloat32**
 
 <details disabled>
@@ -543,6 +625,13 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Float32`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 4` is greater than the bytes size
 
 ### Bytes.**getInt64**
 
@@ -570,6 +659,13 @@ Returns:
 |----|-----------|
 |`Int64`|A signed 64-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 8` is greater than the bytes size
+
 ### Bytes.**setInt64**
 
 <details disabled>
@@ -590,6 +686,13 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int64`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 8` is greater than the bytes size
 
 ### Bytes.**getFloat64**
 
@@ -617,6 +720,13 @@ Returns:
 |----|-----------|
 |`Float64`|A 64-bit float that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 8` is greater than the bytes size
+
 ### Bytes.**setFloat64**
 
 <details disabled>
@@ -637,4 +747,11 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Float64`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 8` is greater than the bytes size
 

@@ -38,6 +38,10 @@ module Attribute = {
     | History({
         attr_version,
         attr_desc,
+      })
+    | Throws({
+        attr_type,
+        attr_desc,
       });
 
   let parse_param = (~attr, content) => {
@@ -142,6 +146,22 @@ module Attribute = {
     };
   };
 
+  let parse_throws = (~attr, content) => {
+    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
+    if (Str.string_match(re, content, 0)) {
+      let attr_type = Str.matched_group(1, content);
+      let attr_desc = Str.matched_group(2, content);
+      Throws({attr_type: Some(attr_type), attr_desc});
+    } else {
+      raise(
+        MalformedAttribute(
+          attr,
+          "@throws ExceptionType: Explanation of exceptional case",
+        ),
+      );
+    };
+  };
+
   let extract = comment => {
     let attrs = ref([]);
     let attr_line_re = Str.regexp({|^@\([a-zA-Z_]+\)\b\(.*\)$|});
@@ -179,6 +199,9 @@ module Attribute = {
           | "history" =>
             let history_attr = parse_history(~attr, content);
             attrs := [history_attr, ...attrs^];
+          | "throws" =>
+            let throws_attr = parse_throws(~attr, content);
+            attrs := [throws_attr, ...attrs^];
           | _ => raise(InvalidAttribute(attr))
           };
 
@@ -250,6 +273,13 @@ module Attribute = {
   let is_history = (attr: t) => {
     switch (attr) {
     | History(_) => true
+    | _ => false
+    };
+  };
+
+  let is_throws = (attr: t) => {
+    switch (attr) {
+    | Throws(_) => true
     | _ => false
     };
   };

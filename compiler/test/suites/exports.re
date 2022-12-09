@@ -87,6 +87,11 @@ describe("exports", ({test, testSkip}) => {
       ExposedType.apply((arg) => print("ok"))
     |},
   );
+  assertCompileError(
+    "regression_issue_1489",
+    "export foo",
+    "Unbound value foo",
+  );
 
   assertSnapshot("let_rec_export", "export let rec foo = () => 5");
 

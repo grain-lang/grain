@@ -130,6 +130,12 @@ Returns:
 |----|-----------|
 |`a`|The unwrapped value if the Option is the `Some` variant|
 
+Throws:
+
+`Failure(String)`
+
+* When the `option` is `None`
+
 ### Option.**unwrap**
 
 <details disabled>
@@ -155,6 +161,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`a`|The unwrapped value if the Option is the `Some` variant|
+
+Throws:
+
+`Failure(String)`
+
+* When the `option` is `None`
 
 ### Option.**unwrapWithDefault**
 

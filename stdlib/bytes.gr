@@ -153,6 +153,8 @@ export let copy = (b: Bytes) => {
  * @param bytes: The byte sequence to copy from
  * @returns A byte sequence with of the copied bytes
  *
+ * @throws InvalidArgument(String): When `start + length` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -185,6 +187,8 @@ export let slice = (start: Number, length: Number, bytes: Bytes) => {
  * @param right: The number of uninitialized bytes to append
  * @param bytes: The byte sequence get a subset of bytes from
  * @returns A resized byte sequence
+ *
+ * @throws InvalidArgument(String): When the new size is negative
  *
  * @since v0.3.2
  */
@@ -240,6 +244,9 @@ export let resize = (left: Number, right: Number, bytes: Bytes) => {
  * @param length: The amount of bytes to copy from the source buffer
  * @param src: The source byte sequence
  * @param dst: The destination byte sequence
+ *
+ * @throws InvalidArgument(String): When `srcIndex + length` is greater than the `src` bytes size
+ * @throws InvalidArgument(String): When the `dstIndex + length` is greater than the `dst` bytes size
  *
  * @since v0.3.2
  */
@@ -338,6 +345,9 @@ export let clear = (bytes: Bytes) => {
  * @param bytes: The byte sequence to access
  * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -357,6 +367,9 @@ export let getInt8S = (index: Number, bytes: Bytes) => {
  * @param index: The byte index to access
  * @param bytes: The byte sequence to access
  * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
  *
  * @since v0.3.2
  */
@@ -378,6 +391,9 @@ export let getInt8U = (index: Number, bytes: Bytes) => {
  * @param value: The value to set
  * @param bytes: The byte sequence to mutate
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -397,6 +413,9 @@ export let setInt8 = (index: Number, value: Int32, bytes: Bytes) => {
  * @param index: The byte index to access
  * @param bytes: The byte sequence to access
  * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
  *
  * @since v0.3.2
  */
@@ -418,6 +437,9 @@ export let getInt16S = (index: Number, bytes: Bytes) => {
  * @param bytes: The byte sequence to access
  * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -437,6 +459,9 @@ export let getInt16U = (index: Number, bytes: Bytes) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param bytes: The byte sequence to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the bytes size
  *
  * @since v0.3.2
  */
@@ -458,6 +483,9 @@ export let setInt16 = (index: Number, value: Int32, bytes: Bytes) => {
  * @param bytes: The byte sequence to access
  * @returns A signed 32-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -477,6 +505,9 @@ export let getInt32 = (index: Number, bytes: Bytes) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param bytes: The byte sequence to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
  *
  * @since v0.3.2
  */
@@ -498,6 +529,9 @@ export let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
  * @param bytes: The byte sequence to access
  * @returns A 32-bit float that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -517,6 +551,9 @@ export let getFloat32 = (index: Number, bytes: Bytes) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param bytes: The byte sequence to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the bytes size
  *
  * @since v0.3.2
  */
@@ -538,6 +575,9 @@ export let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
  * @param bytes: The byte sequence to access
  * @returns A signed 64-bit integer that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -557,6 +597,9 @@ export let getInt64 = (index: Number, bytes: Bytes) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param bytes: The byte sequence to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
  *
  * @since v0.3.2
  */
@@ -578,6 +621,9 @@ export let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
  * @param bytes: The byte sequence to access
  * @returns A 64-bit float that starts at the given index
  *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
+ *
  * @since v0.3.2
  */
 @unsafe
@@ -597,6 +643,9 @@ export let getFloat64 = (index: Number, bytes: Bytes) => {
  * @param index: The byte index to update
  * @param value: The value to set
  * @param bytes: The byte sequence to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the bytes size
  *
  * @since v0.3.2
  */

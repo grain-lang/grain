@@ -126,6 +126,37 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
   };
 };
 
+let read_imports = ({Parsetree.comments, Parsetree.statements}) => {
+  let implicit_opens =
+    List.map(
+      o => {
+        switch (o) {
+        | Grain_utils.Config.Pervasives_mod => Location.mknoloc("pervasives")
+        | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc")
+        }
+      },
+      switch (comments) {
+      | [Block({cmt_content}), ..._] =>
+        Grain_utils.Config.with_inline_flags(
+          ~on_error=_ => (),
+          cmt_content,
+          Grain_utils.Config.get_implicit_opens,
+        )
+      | _ => Grain_utils.Config.get_implicit_opens()
+      },
+    );
+  let found_imports = ref([]);
+  let iter_mod = (self, import) =>
+    found_imports := [import.Parsetree.pimp_path, ...found_imports^];
+  let iterator = {...Ast_iterator.default_iterator, import: iter_mod};
+  List.iter(iterator.toplevel(iterator), statements);
+
+  List.sort_uniq(
+    (a, b) => String.compare(a.txt, b.txt),
+    List.append(implicit_opens, found_imports^),
+  );
+};
+
 let scan_for_imports =
     (~defer_errors=true, filename: string): list(loc(string)) => {
   let ic = open_in(filename);
@@ -137,37 +168,9 @@ let scan_for_imports =
       close_in(ic);
       source;
     };
-    let {Parsetree.comments, Parsetree.statements} =
-      parse(~name=filename, lexbuf, source);
-    let implicit_opens =
-      List.map(
-        o => {
-          switch (o) {
-          | Grain_utils.Config.Pervasives_mod =>
-            Location.mknoloc("pervasives")
-          | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc")
-          }
-        },
-        switch (comments) {
-        | [Block({cmt_content}), ..._] =>
-          Grain_utils.Config.with_inline_flags(
-            ~on_error=_ => (),
-            cmt_content,
-            Grain_utils.Config.get_implicit_opens,
-          )
-        | _ => Grain_utils.Config.get_implicit_opens()
-        },
-      );
-    let found_imports = ref([]);
-    let iter_mod = (self, import) =>
-      found_imports := [import.Parsetree.pimp_path, ...found_imports^];
-    let iterator = {...Ast_iterator.default_iterator, import: iter_mod};
-    List.iter(iterator.toplevel(iterator), statements);
+    let prog = parse(~name=filename, lexbuf, source);
     close_in(ic);
-    List.sort_uniq(
-      (a, b) => String.compare(a.txt, b.txt),
-      List.append(implicit_opens, found_imports^),
-    );
+    read_imports(prog);
   }) {
   | e =>
     close_in(ic);

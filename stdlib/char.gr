@@ -4,7 +4,7 @@
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
  * @example import Char from "char"
- * 
+ *
  * @since 0.3.0
  */
 
@@ -26,23 +26,23 @@ exception MalformedUtf8
 
 /**
  * The minimum valid Unicode scalar value.
- * 
+ *
  * @since 0.3.0
  */
 export let min = 0x0000
 /**
  * The maximum valid Unicode scalar value.
- * 
+ *
  * @since 0.3.0
  */
 export let max = 0x10FFFF
 
 /**
  * Determines whether the given character code is a valid Unicode scalar value.
- * 
+ *
  * @param charCode: The number to check
  * @returns `true` if the number refers to a valid Unicode scalar value or `false` otherwise
- * 
+ *
  * @since 0.3.0
  */
 export let isValid = charCode => {
@@ -53,10 +53,10 @@ export let isValid = charCode => {
 
 /**
  * Determines the Unicode scalar value for a character.
- * 
+ *
  * @param char: The character
  * @returns The Unicode scalar value for the given character
- * 
+ *
  * @since 0.3.0
  */
 @unsafe
@@ -70,11 +70,12 @@ export let code = (char: Char) => {
 
 /**
  * Creates a character from the given Unicode scalar value.
- * Throws an exception if the Unicode scalar value is invalid.
- * 
+ *
  * @param usv: The Unicode scalar value
  * @returns The character for the given Unicode scalar value
- * 
+ *
+ * @throws InvalidArgument(String): When the Unicode scalar value is invalid
+ *
  * @since 0.3.0
  */
 @unsafe
@@ -101,11 +102,12 @@ export let fromCode = (usv: Number) => {
 
 /**
  * Returns the next valid character by Unicode scalar value.
- * Throws if the input character is the max valid Unicode scalar value.
- * 
+ *
  * @param char: The character
  * @returns The next valid character by Unicode scalar value
- * 
+ *
+ * @throws Failure(String): When the input character is the maximum valid Unicode scalar value
+ *
  * @since 0.3.0
  */
 export let succ = char => {
@@ -121,11 +123,12 @@ export let succ = char => {
 
 /**
  * Returns the previous valid character by Unicode scalar value.
- * Throws if the input character is the min valid Unicode scalar value.
- * 
+ *
  * @param char: The character
  * @returns The previous valid character by Unicode scalar value
- * 
+ *
+ * @throws Failure(String): When the input character is the minimum valid Unicode scalar value
+ *
  * @since 0.3.0
  */
 export let pred = char => {
@@ -141,10 +144,10 @@ export let pred = char => {
 
 /**
  * Converts the given character to a string.
- * 
+ *
  * @param char: The character to convert
  * @returns A string containing the given character
- * 
+ *
  * @since 0.3.0
  */
 @unsafe

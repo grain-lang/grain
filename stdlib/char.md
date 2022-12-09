@@ -107,7 +107,6 @@ fromCode : Number -> Char
 ```
 
 Creates a character from the given Unicode scalar value.
-Throws an exception if the Unicode scalar value is invalid.
 
 Parameters:
 
@@ -121,6 +120,12 @@ Returns:
 |----|-----------|
 |`Char`|The character for the given Unicode scalar value|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When the Unicode scalar value is invalid
+
 ### Char.**succ**
 
 <details disabled>
@@ -133,7 +138,6 @@ succ : Char -> Char
 ```
 
 Returns the next valid character by Unicode scalar value.
-Throws if the input character is the max valid Unicode scalar value.
 
 Parameters:
 
@@ -147,6 +151,12 @@ Returns:
 |----|-----------|
 |`Char`|The next valid character by Unicode scalar value|
 
+Throws:
+
+`Failure(String)`
+
+* When the input character is the maximum valid Unicode scalar value
+
 ### Char.**pred**
 
 <details disabled>
@@ -159,7 +169,6 @@ pred : Char -> Char
 ```
 
 Returns the previous valid character by Unicode scalar value.
-Throws if the input character is the min valid Unicode scalar value.
 
 Parameters:
 
@@ -172,6 +181,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Char`|The previous valid character by Unicode scalar value|
+
+Throws:
+
+`Failure(String)`
+
+* When the input character is the minimum valid Unicode scalar value
 
 ### Char.**toString**
 

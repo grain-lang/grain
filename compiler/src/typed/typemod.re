@@ -601,7 +601,8 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             | None => Ident.create(name.txt)
             };
           let name = Identifier.IdentName(name);
-          let (p, {val_fullpath} as desc) = Env.lookup_value(name, env);
+          let (p, {val_fullpath} as desc) =
+            Typetexp.find_value(env, loc, name);
           (
             TSigValue(id, desc),
             {tex_id: id, tex_path: val_fullpath, tex_loc: loc},

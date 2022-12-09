@@ -57,3 +57,10 @@ let bold = str => {
 let blockquote = str => {
   Format.sprintf("> %s\n\n", str);
 };
+
+let bullet_list = items => {
+  let bullets =
+    List.map(item => Format.sprintf("* %s", item), items)
+    |> String.concat("\n");
+  Format.sprintf("%s\n\n", bullets);
+};

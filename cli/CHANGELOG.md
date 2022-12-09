@@ -1,5 +1,26 @@
 # Changelog
 
+### [0.5.7](https://github.com/grain-lang/grain/compare/cli-v0.5.6...cli-v0.5.7) (2022-12-06)
+
+
+### Bug Fixes
+
+* **compiler:** Prevent stack overflows when compiling long blocks ([#1534](https://github.com/grain-lang/grain/issues/1534)) ([dc6d699](https://github.com/grain-lang/grain/commit/dc6d699cffeefa71ef2898c484f840c991f66c7a))
+
+### [0.5.6](https://github.com/grain-lang/grain/compare/cli-v0.5.5...cli-v0.5.6) (2022-12-05)
+
+
+### Bug Fixes
+
+* **compiler:** Increase JS stack size ([#1532](https://github.com/grain-lang/grain/issues/1532)) ([9d1ff1f](https://github.com/grain-lang/grain/commit/9d1ff1f427f2b2a92aa7958cf84b2d1026b1bac5))
+
+### [0.5.5](https://github.com/grain-lang/grain/compare/cli-v0.5.4...cli-v0.5.5) (2022-12-05)
+
+
+### Miscellaneous Chores
+
+* **cli:** Synchronize Grain versions
+
 ### [0.5.4](https://github.com/grain-lang/grain/compare/cli-v0.5.3...cli-v0.5.4) (2022-11-12)
 
 

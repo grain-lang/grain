@@ -437,12 +437,14 @@ export let rec flatten = list => {
 
 /**
  * Inserts a new value into a list at the specified index.
- * Fails if the index is out-of-bounds.
  *
  * @param value: The value to insert
  * @param index: The index to update
  * @param list: The list to update
  * @returns The new list
+ *
+ * @throws Failure(String): When `index` is negative
+ * @throws Failure(String): When `index` is more than 0 and greater than the list size
  *
  * @since v0.1.0
  */
@@ -481,11 +483,13 @@ export let count = (fn, list) => {
 
 /**
  * Split a list into two, with the first list containing the required number of elements.
- * Fails if the input list doesn't contain at least the required amount of elements.
  *
  * @param count: The number of elements required
  * @param list: The list to split
  * @returns Two lists where the first contains exactly the required amount of elements and the second contains any remaining elements
+ *
+ * @throws Failure(String): When `count` is negative
+ * @throws Failure(String): When the list doesn't contain at least the required amount of elements
  *
  * @since v0.1.0
  */
@@ -513,13 +517,13 @@ export let part = (count, list) => {
  * If value is negative, list elements will be rotated by the
  * specified amount to the right. See examples.
  *
- * Fails if the input list doesn't contain at least the required amount of elements.
- *
  * @param count: The number of elements to rotate by
  * @param list: The list to be rotated
  *
  * @example List.rotate(2, [1, 2, 3, 4, 5]) // [3, 4, 5, 1, 2]
  * @example List.rotate(-1, [1, 2, 3, 4, 5]) // [5, 1, 2, 3, 4]
+ *
+ * @throws Failure(String): When the list doesn't contain at least the required amount of elements
  *
  * @since v0.1.0
  */
@@ -556,7 +560,7 @@ export let unique = list => {
  * Produces a new list filled with tuples of elements from both given lists.
  * The first tuple will contain the first item of each list, the second tuple
  * will contain the second item of each list, and so on.
- * 
+ *
  * Calling this function with lists of different sizes will cause the returned
  * list to have the length of the smaller list.
  *
@@ -566,7 +570,7 @@ export let unique = list => {
  *
  * @example List.zip([1, 2, 3], [4, 5, 6]) // [(1, 4), (2, 5), (3, 6)]
  * @example List.zip([1, 2, 3], [4, 5]) // [(1, 4), (2, 5)]
- * 
+ *
  * @since v0.5.3
  */
 export let zip = (list1, list2) => {
@@ -586,7 +590,7 @@ export let zip = (list1, list2) => {
  * applying the function to the first elements of each list, the second element
  * will contain the result of applying the function to the second elements of
  * each list, and so on.
- * 
+ *
  * Calling this function with lists of different sizes will cause the returned
  * list to have the length of the smaller list.
  *
@@ -597,7 +601,7 @@ export let zip = (list1, list2) => {
  *
  * @example List.zipWith((a, b) => a + b, [1, 2, 3], [4, 5, 6]) // [5, 7, 9]
  * @example List.zipWith((a, b) => a * b, [1, 2, 3], [4, 5]) // [4, 10]
- * 
+ *
  * @since v0.5.3
  */
 export let zipWith = (fn, list1, list2) => {
@@ -629,11 +633,11 @@ export let unzip = list => {
  * Produces a new list with the specified number of elements removed from
  * the beginning of the input list.
  *
- * Fails if the specified amount is a negative number.
- *
  * @param count: The amount of elements to remove
  * @param list: The input list
  * @returns The new list without the dropped elements
+ *
+ * @throws Failure(String): When `count` is negative
  *
  * @since v0.2.0
  */
@@ -671,11 +675,11 @@ export let rec dropWhile = (fn, list) => {
  * Produces a new list with–at most—the specified amount elements from
  * the beginning of the input list.
  *
- * Fails if the specified amount is a negative number.
- *
  * @param count: The amount of elements to keep
  * @param list: The input list
  * @returns The new list containing the taken elements
+ *
+ * @throws Failure(String): When `count` is negative
  *
  * @since v0.2.0
  */
@@ -773,12 +777,13 @@ export let product = (list1, list2) => {
  * Provides the subset of a list given zero-based start index and amount of elements
  * to include.
  *
- * Fails if the start index or amount of elements are negative numbers.
- *
  * @param start: The index of the list where the subset will begin (inclusive)
  * @param length: The amount of elements to be included in the subset
  * @param list: The input list
  * @returns The subset of the list
+ *
+ * @throws Failure(String): When `start` is negative
+ * @throws Failure(String): When `length` is negative
  *
  * @since v0.2.0
  */

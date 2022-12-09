@@ -47,6 +47,12 @@ Returns:
 |----|-----------|
 |`Buffer`|The new buffer|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When the `initialSize` is a negative number
+
 ### Buffer.**length**
 
 <details disabled>
@@ -136,6 +142,13 @@ Parameters:
 |`length`|`Number`|The number of bytes to truncate the buffer to|
 |`buffer`|`Buffer`|The buffer to truncate|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When the `length` is negative
+* When the `length` is greater than the buffer size
+
 ### Buffer.**toBytes**
 
 <details disabled>
@@ -187,6 +200,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bytes`|A byte sequence with bytes copied from the buffer|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `start` is negative
+* When `start` is greater than or equal to the buffer size
+* When `start + length` is greater than the buffer size
 
 ### Buffer.**toString**
 
@@ -351,6 +372,15 @@ Parameters:
 |`bytes`|`Bytes`|The byte sequence to append|
 |`buffer`|`Buffer`|The buffer to mutate|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When the `start` is negative
+* When the `start` is greater than or equal to the `bytes` size
+* When the `length` is negative
+* When the `length` is greater than the `bytes` length minus `start`
+
 ### Buffer.**addBuffer**
 
 <details disabled>
@@ -427,6 +457,14 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing a signed 8-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
+
 ### Buffer.**getInt8U**
 
 <details disabled>
@@ -453,6 +491,14 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing an unsigned 8-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
+
 ### Buffer.**setInt8**
 
 <details disabled>
@@ -473,6 +519,14 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int32`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
 
 ### Buffer.**addInt8**
 
@@ -520,6 +574,14 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing a signed 16-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
+
 ### Buffer.**getInt16U**
 
 <details disabled>
@@ -546,6 +608,14 @@ Returns:
 |----|-----------|
 |`Int32`|A 32-bit integer representing an unsigned 16-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
+
 ### Buffer.**setInt16**
 
 <details disabled>
@@ -566,6 +636,14 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int32`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
 
 ### Buffer.**addInt16**
 
@@ -613,6 +691,14 @@ Returns:
 |----|-----------|
 |`Int32`|A signed 32-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
+
 ### Buffer.**setInt32**
 
 <details disabled>
@@ -633,6 +719,14 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int32`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
 
 ### Buffer.**addInt32**
 
@@ -680,6 +774,14 @@ Returns:
 |----|-----------|
 |`Float32`|A 32-bit float that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
+
 ### Buffer.**setFloat32**
 
 <details disabled>
@@ -700,6 +802,14 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Float32`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
 
 ### Buffer.**addFloat32**
 
@@ -747,6 +857,14 @@ Returns:
 |----|-----------|
 |`Int64`|A signed 64-bit integer that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
+
 ### Buffer.**setInt64**
 
 <details disabled>
@@ -767,6 +885,14 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Int64`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
 
 ### Buffer.**addInt64**
 
@@ -814,6 +940,14 @@ Returns:
 |----|-----------|
 |`Float64`|A 64-bit float that starts at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
+
 ### Buffer.**setFloat64**
 
 <details disabled>
@@ -834,6 +968,14 @@ Parameters:
 |`index`|`Number`|The byte index to update|
 |`value`|`Float64`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
 
 ### Buffer.**addFloat64**
 

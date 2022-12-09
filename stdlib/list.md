@@ -674,7 +674,6 @@ insert : (a, Number, List<a>) -> List<a>
 ```
 
 Inserts a new value into a list at the specified index.
-Fails if the index is out-of-bounds.
 
 Parameters:
 
@@ -689,6 +688,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`List<a>`|The new list|
+
+Throws:
+
+`Failure(String)`
+
+* When `index` is negative
+* When `index` is more than 0 and greater than the list size
 
 ### List.**count**
 
@@ -735,7 +741,6 @@ part : (Number, List<a>) -> (List<a>, List<a>)
 ```
 
 Split a list into two, with the first list containing the required number of elements.
-Fails if the input list doesn't contain at least the required amount of elements.
 
 Parameters:
 
@@ -749,6 +754,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`(List<a>, List<a>)`|Two lists where the first contains exactly the required amount of elements and the second contains any remaining elements|
+
+Throws:
+
+`Failure(String)`
+
+* When `count` is negative
+* When the list doesn't contain at least the required amount of elements
 
 ### List.**rotate**
 
@@ -766,14 +778,18 @@ Rotates list elements by the specified amount to the left.
 If value is negative, list elements will be rotated by the
 specified amount to the right. See examples.
 
-Fails if the input list doesn't contain at least the required amount of elements.
-
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`count`|`Number`|The number of elements to rotate by|
 |`list`|`List<a>`|The list to be rotated|
+
+Throws:
+
+`Failure(String)`
+
+* When the list doesn't contain at least the required amount of elements
 
 Examples:
 
@@ -943,8 +959,6 @@ drop : (Number, List<a>) -> List<a>
 Produces a new list with the specified number of elements removed from
 the beginning of the input list.
 
-Fails if the specified amount is a negative number.
-
 Parameters:
 
 |param|type|description|
@@ -957,6 +971,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`List<a>`|The new list without the dropped elements|
+
+Throws:
+
+`Failure(String)`
+
+* When `count` is negative
 
 ### List.**dropWhile**
 
@@ -1000,8 +1020,6 @@ take : (Number, List<a>) -> List<a>
 Produces a new list with–at most—the specified amount elements from
 the beginning of the input list.
 
-Fails if the specified amount is a negative number.
-
 Parameters:
 
 |param|type|description|
@@ -1014,6 +1032,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`List<a>`|The new list containing the taken elements|
+
+Throws:
+
+`Failure(String)`
+
+* When `count` is negative
 
 ### List.**takeWhile**
 
@@ -1152,8 +1176,6 @@ sub : (Number, Number, List<a>) -> List<a>
 Provides the subset of a list given zero-based start index and amount of elements
 to include.
 
-Fails if the start index or amount of elements are negative numbers.
-
 Parameters:
 
 |param|type|description|
@@ -1167,6 +1189,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`List<a>`|The subset of the list|
+
+Throws:
+
+`Failure(String)`
+
+* When `start` is negative
+* When `length` is negative
 
 ### List.**join**
 

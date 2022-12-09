@@ -49,7 +49,11 @@ type params = {
 
 let compile_typed = (input: Fp.t(Fp.absolute)) => {
   switch (
-    Compile.compile_file(~hook=stop_after_typed, Filepath.to_string(input))
+    Compile.compile_file(
+      ~is_root_file=true,
+      ~hook=stop_after_typed,
+      Filepath.to_string(input),
+    )
   ) {
   | exception exn =>
     let bt =

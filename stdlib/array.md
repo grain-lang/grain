@@ -83,6 +83,13 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `length` is not an integer
+* When `length` is negative
+
 Examples:
 
 ```grain
@@ -116,6 +123,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The new array|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `length` is not an integer
+* When `length` is negative
 
 Examples:
 
@@ -999,8 +1013,6 @@ Produces a new array filled with tuples of elements from both given arrays.
 The first tuple will contain the first item of each array, the second tuple
 will contain the second item of each array, and so on.
 
-Calling this function with arrays of different sizes will throw an error.
-
 Parameters:
 
 |param|type|description|
@@ -1013,6 +1025,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<(a, b)>`|The new array containing indexed pairs of `(a, b)`|
+
+Throws:
+
+`Failure(String)`
+
+* When the arrays have different sizes
 
 ### Array.**zipWith**
 
