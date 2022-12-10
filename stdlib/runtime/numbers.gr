@@ -1993,7 +1993,8 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
 export let cmp = (x: WasmI32, y: WasmI32) => {
   if (isSimpleNumber(x)) {
     if (isSimpleNumber(y)) {
-      if (WasmI32.ltS(x, y)) -1n else if (WasmI32.gtS(x, y)) 1n else 0n
+      // fast comparison path for simple numbers
+      WasmI32.sub(x, y)
     } else {
       let yBoxedNumberTag = boxedNumberTag(y)
       match (yBoxedNumberTag) {
