@@ -65,6 +65,13 @@ enum Node<a> {
   Leaf(Array<a>),
 }
 
+// a helper data structure used for building an array piece by piece
+record Builder<a> {
+  btail: Array<a>,
+  nodes: List<Node<a>>,
+  numNodes: Number,
+}
+
 /**
  * @section Types: Type declarations included in the ImmutableArray module.
  */
@@ -162,6 +169,7 @@ let log32floor = num => {
  * @param index: The index to access
  * @param array: The array to access
  * @returns The element from the array
+ * @throws IndexOutOfBounds: if the index being accessed is outside the array's bounds
  * 
  * @example get(1, fromList([1, 2, 3, 4])) == 2
  * @example get(-1, fromList([1, 2, 3, 4])) == 4
@@ -197,6 +205,7 @@ export let get = (index, array) => {
  * @param value: The value to store
  * @param array: The array to update
  * @returns A new array containing the new element at the given index
+ * @throws IndexOutOfBounds: if the index being updated is outside the array's bounds
  * 
  * @example set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
  *
@@ -280,13 +289,6 @@ let appendTree = (toAppend, array) => {
   }
 }
 
-// a helper data structure used for building an array piece by piece
-record Builder<a> {
-  tail: Array<a>,
-  nodes: List<Node<a>>,
-  numNodes: Number,
-}
-
 // Flatten an array into a builder
 let arrayToBuilder = array => {
   let rec reduceFn = (acc, node) => {
@@ -297,7 +299,7 @@ let arrayToBuilder = array => {
   }
   let { tail, root, length, _ } = array
   {
-    tail,
+    btail: tail,
     nodes: Array.reduce(reduceFn, [], root),
     numNodes: length >> branchingBits,
   }
@@ -324,17 +326,23 @@ let builderToArray = builder => {
     }
   }
 
-  let { tail, nodes, numNodes } = builder
+  let { btail, nodes, numNodes } = builder
   match (numNodes) {
-    0 => { length: Array.length(tail), shift: branchingBits, root: [>], tail },
+    0 =>
+      {
+        length: Array.length(btail),
+        shift: branchingBits,
+        root: [>],
+        tail: btail,
+      },
     _ => {
       let treeSize = numNodes * branchingFactor
       let depth = log32floor(treeSize - 1)
       {
-        length: treeSize + Array.length(tail),
+        length: treeSize + Array.length(btail),
         shift: Number.max(1, depth) * branchingBits,
         root: buildTree(nodes, numNodes),
-        tail,
+        tail: btail,
       }
     },
   }
@@ -342,18 +350,18 @@ let builderToArray = builder => {
 
 // Append a chunk of <= 32 values to a builder
 let appendBuilder = (toAppend, builder) => {
-  let { tail, nodes, numNodes } = builder
-  let (appended, numNotAppended) = arrayAppendMax32(tail, toAppend)
+  let { btail, nodes, numNodes } = builder
+  let (appended, numNotAppended) = arrayAppendMax32(btail, toAppend)
 
   if (numNotAppended >= 0) {
     let appendLen = Array.length(toAppend)
     {
-      tail: Array.slice(appendLen - numNotAppended, appendLen, toAppend),
+      btail: Array.slice(appendLen - numNotAppended, appendLen, toAppend),
       nodes: [Leaf(appended), ...nodes],
       numNodes: numNodes + 1,
     }
   } else {
-    { tail: appended, nodes, numNodes }
+    { btail: appended, nodes, numNodes }
   }
 }
 
@@ -370,7 +378,8 @@ let appendBuilder = (toAppend, builder) => {
  * @since v0.6.0
  */
 export let append = (array1, array2) => {
-  // Magic number of 4 determined best from benchmarks
+  // Magic number of 4 determined best from benchmarks according to Elm's
+  // Array implementation
   if (array2.length <= branchingFactor * 4) {
     let rec reduceFn = (array, node) => {
       match (node) {
@@ -392,8 +401,8 @@ export let append = (array1, array2) => {
       arrayToBuilder(array1),
       array2.root
     )
-    let { tail, nodes, numNodes } = appendBuilder(array2.tail, withoutTail)
-    builderToArray({ tail, nodes: List.reverse(nodes), numNodes })
+    let { btail, nodes, numNodes } = appendBuilder(array2.tail, withoutTail)
+    builderToArray({ btail, nodes: List.reverse(nodes), numNodes })
   }
 }
 
@@ -427,11 +436,11 @@ export let concat = arrays => {
  */
 export let init = (length, fn) => {
   let tailLen = length % branchingFactor
-  let tail = Array.init(tailLen, i => fn(length - tailLen + i))
+  let btail = Array.init(tailLen, i => fn(length - tailLen + i))
 
   let rec initInner = (beginI, nodes) => {
     if (beginI < 0) {
-      builderToArray({ tail, nodes, numNodes: length >> branchingBits })
+      builderToArray({ btail, nodes, numNodes: length >> branchingBits })
     } else {
       let leaf = Leaf(Array.init(branchingFactor, i => fn(beginI + i)))
       initInner(beginI - branchingFactor, [leaf, ...nodes])
@@ -605,7 +614,7 @@ export let fromList = list => {
     let node = Array.fromList(List.take(branchingFactor, list))
     let remaining = List.drop(branchingFactor, list)
     if (Array.length(node) < branchingFactor) {
-      builderToArray({ tail: node, nodes: List.reverse(nodes), numNodes })
+      builderToArray({ btail: node, nodes: List.reverse(nodes), numNodes })
     } else {
       fromListInner(remaining, [Leaf(node), ...nodes], numNodes + 1)
     }
@@ -791,7 +800,6 @@ export let unique = array => {
  * @since v0.6.0
  */
 export let zip = (array1, array2) => {
-  // Does the trick :}
   fromList(List.zip(toList(array1), toList(array2)))
 }
 
@@ -823,7 +831,7 @@ export let zipWith = (fn, array1, array2) => {
  * Produces two arrays by splitting apart an array of tuples.
  *
  * @param array: The array of tuples to split
- * @returns An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element
+ * @returns An array containing all elements from the first tuple element and an array containing all elements from the second tuple element
  *
  * @since v0.6.0
  */

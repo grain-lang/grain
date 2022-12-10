@@ -96,47 +96,6 @@ Examples:
 length(fromList([1, 2, 3, 4, 5])) == 5
 ```
 
-### ImmutableArray.**getOpt**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-getOpt : (Number, ImmutableArray<a>) -> Option<a>
-```
-
-Attempts to retrieve the element from the array at the specified index.
-A negative index is treated as an offset from the end of the array.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`index`|`Number`|The index to access|
-|`array`|`ImmutableArray<a>`|The array to access|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Option<a>`|`Some(element)` containing the element from the array at the given index or `None` if the index is out of the array bounds|
-
-Examples:
-
-```grain
-getOpt(1, fromList([1, 2, 3])) == Some(2)
-```
-
-```grain
-getOpt(-1, fromList([1, 2, 3])) == Some(3)
-```
-
-```grain
-getOpt(4, fromList([1, 2, 3])) == None
-```
-
 ### ImmutableArray.**get**
 
 <details disabled>
@@ -164,10 +123,20 @@ Returns:
 |----|-----------|
 |`a`|The element from the array|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* if the index being accessed is outside the array's bounds
+
 Examples:
 
 ```grain
-get(1, fromList([1, 2, 3, 4, 5])) == 2
+get(1, fromList([1, 2, 3, 4])) == 2
+```
+
+```grain
+get(-1, fromList([1, 2, 3, 4])) == 4
 ```
 
 ### ImmutableArray.**set**
@@ -198,16 +167,16 @@ Returns:
 |----|-----------|
 |`ImmutableArray<a>`|A new array containing the new element at the given index|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* if the index being updated is outside the array's bounds
+
 Examples:
 
 ```grain
 set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
-```
-
-### ImmutableArray.**Builder**
-
-```grain
-type Builder<a>
 ```
 
 ### ImmutableArray.**append**
@@ -937,7 +906,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`(ImmutableArray<a>, ImmutableArray<b>)`|An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element|
+|`(ImmutableArray<a>, ImmutableArray<b>)`|An array containing all elements from the first tuple element and an array containing all elements from the second tuple element|
 
 ### ImmutableArray.**join**
 
