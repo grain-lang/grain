@@ -1,0 +1,437 @@
+import ImmutableArray from "immutablearray"
+import List from "list"
+import String from "string"
+import Range from "range"
+
+let fromList = ImmutableArray.fromList
+let arr = fromList([1, 2, 3])
+
+// for testing the case where the tail is empty
+let noTail = Range.map(identity, Range.Exclusive(0, 32))
+let noTailArr = fromList(noTail)
+
+// for testing the case where the tree branches and has a tail of max length
+let branchingLongTailLen = 32 * 33 + 31
+let branchingLongTail = Range.map(
+  identity,
+  Range.Exclusive(0, branchingLongTailLen)
+)
+let bltArr = fromList(branchingLongTail)
+
+// for testing the case where the tree is about to branch
+let almostBranchingLen = 32 * 32 + 31
+let almostBranching = Range.map(
+  identity,
+  Range.Exclusive(0, almostBranchingLen)
+)
+let abArr = fromList(almostBranching)
+
+assert ImmutableArray.empty == fromList([])
+
+// ImmutableArray.length & ImmutableArray.isEmpty
+
+assert ImmutableArray.length(ImmutableArray.empty) == 0
+assert ImmutableArray.isEmpty(ImmutableArray.empty)
+assert ImmutableArray.length(fromList([1, 2, 3])) == 3
+assert !ImmutableArray.isEmpty(fromList([1, 2, 3]))
+assert ImmutableArray.length(bltArr) == branchingLongTailLen
+assert ImmutableArray.length(noTailArr) == 32
+
+// ImmutableArray.get
+
+assert ImmutableArray.get(1, arr) == 2
+assert ImmutableArray.get(-1, arr) == 3
+assert ImmutableArray.get(-2, arr) == 2
+assert ImmutableArray.get(0, arr) == 1
+
+// ImmutableArray.set
+
+let arr = fromList([1, 2])
+
+let arr = ImmutableArray.set(0, 5, arr)
+assert ImmutableArray.get(0, arr) == 5
+let arr = ImmutableArray.set(-1, 5, arr)
+assert ImmutableArray.get(1, arr) == 5
+let arr = ImmutableArray.set(32, -1, bltArr)
+assert ImmutableArray.get(32, arr) == -1
+let arr = ImmutableArray.set(branchingLongTailLen - 1, -1, bltArr)
+assert ImmutableArray.get(branchingLongTailLen - 1, arr) == -1
+
+// ImmutableArray.init
+
+assert ImmutableArray.init(5, identity) == fromList([0, 1, 2, 3, 4])
+assert ImmutableArray.init(10, x => x * 2) ==
+  fromList([0, 2, 4, 6, 8, 10, 12, 14, 16, 18])
+assert ImmutableArray.init(0, x => fail "called init on 0 length") ==
+  fromList([])
+assert ImmutableArray.init(branchingLongTailLen, identity) ==
+  fromList(branchingLongTail)
+assert ImmutableArray.init(32, identity) == fromList(noTail)
+
+// ImmutableArray.make
+
+assert ImmutableArray.make(5, 10) == fromList([10, 10, 10, 10, 10])
+assert ImmutableArray.make(0, 10) == fromList([])
+assert ImmutableArray.make(6, "a") == fromList(["a", "a", "a", "a", "a", "a"])
+
+// ImmutableArray.append
+
+let arr1 = fromList([1, 2])
+let arr2 = fromList([3, 4, 5])
+
+assert ImmutableArray.append(arr1, arr2) == fromList([1, 2, 3, 4, 5])
+assert ImmutableArray.append(fromList([]), fromList([])) == fromList([])
+assert ImmutableArray.append(arr1, fromList([])) == arr1
+assert ImmutableArray.append(fromList([]), arr1) == arr1
+assert ImmutableArray.append(abArr, fromList([almostBranchingLen])) ==
+  fromList(List.append(almostBranching, [almostBranchingLen]))
+let val = branchingLongTailLen
+assert ImmutableArray.append(bltArr, fromList([val, val + 1, val + 2])) ==
+  fromList(List.append(branchingLongTail, [val, val + 1, val + 2]))
+assert ImmutableArray.append(fromList([-3, -2, -1]), bltArr) ==
+  fromList([-3, -2, -1, ...branchingLongTail])
+let vals = Range.map(x => x + 32, Range.Exclusive(0, 128))
+assert ImmutableArray.append(noTailArr, fromList(vals)) ==
+  fromList(List.append(noTail, vals))
+let vals = Range.map(x => x + 32, Range.Exclusive(0, 128 + 31))
+assert ImmutableArray.append(noTailArr, fromList(vals)) ==
+  fromList(List.append(noTail, vals))
+assert ImmutableArray.append(noTailArr, noTailArr) ==
+  fromList(List.append(noTail, noTail))
+
+// ImmutableArray.concat
+
+let arr1 = fromList([1, 2])
+let arr2 = fromList([])
+let arr3 = fromList([3, 4, 5])
+let arr4 = fromList([6, 7, 8, 9])
+
+assert ImmutableArray.concat([]) == fromList([])
+assert ImmutableArray.concat([fromList([])]) == fromList([])
+assert ImmutableArray.concat([fromList([]), fromList([])]) == fromList([])
+assert ImmutableArray.concat([arr3]) == fromList([3, 4, 5])
+assert ImmutableArray.concat([arr1, arr2, arr3, arr4]) ==
+  fromList([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+// ImmutableArray.cycle
+
+let arr1 = fromList([1, 2, 3])
+let mut sum = 0
+
+let sentinel = _n => {
+  sum = 42
+}
+
+ImmutableArray.cycle(sentinel, 3, fromList([]))
+
+assert sum == 0
+
+let addToSum = n => {
+  sum += n
+}
+
+ImmutableArray.cycle(addToSum, 2, arr1)
+
+assert sum == 12
+
+let arr2 = fromList(["a", "b", "c"])
+let mut word = ""
+let addToWord = n => {
+  word = word ++ n
+}
+
+ImmutableArray.cycle(addToWord, 2, arr2)
+
+assert word == "abcabc"
+
+sum = 0
+
+ImmutableArray.cycle(sentinel, 0, arr1)
+
+assert sum == 0
+
+ImmutableArray.cycle(sentinel, -42, arr1)
+
+assert sum == 0
+
+// ImmutableArray.forEach
+
+let arr1 = fromList([1, 2, 3])
+let mut sum = 0
+
+let sentinel = _n => {
+  sum = 42
+}
+
+ImmutableArray.forEach(sentinel, fromList([]))
+
+assert sum == 0
+
+let addToSum = n => {
+  sum += n
+}
+
+ImmutableArray.forEach(addToSum, arr1)
+
+assert sum == 6
+
+let mut list = []
+ImmutableArray.forEach(x => list = [x, ...list], bltArr)
+assert List.reverse(list) == branchingLongTail
+
+// ImmutableArray.reverse
+
+assert ImmutableArray.reverse(fromList([])) == fromList([]) // Empty
+let testArr = fromList([1, 2, 3, 4])
+assert ImmutableArray.reverse(testArr) ==
+  fromList([4, 3, 2, 1]) // array is reversed properly
+assert testArr == fromList([1, 2, 3, 4]) // original array is not modified
+
+// ImmutableArray.toList
+
+assert ImmutableArray.toList(fromList([])) == []
+assert ImmutableArray.toList(fromList([1, 2, 3])) == [1, 2, 3]
+assert ImmutableArray.toList(fromList(branchingLongTail)) == branchingLongTail
+assert ImmutableArray.toList(fromList(noTail)) == noTail
+
+// ImmutableArray.map
+
+assert ImmutableArray.map(x =>
+  fail "Map iterator should not be called on 0-length array", fromList([])) ==
+  fromList([])
+assert ImmutableArray.map(incr, fromList([2, 3, 4])) == fromList([3, 4, 5])
+assert ImmutableArray.map(incr, bltArr) ==
+  fromList(List.map(incr, branchingLongTail))
+
+// ImmutableArray.contains
+
+let arr = fromList([1, 2, 3])
+
+assert ImmutableArray.contains(3, arr)
+assert !ImmutableArray.contains(4, arr)
+
+// ImmutableArray.find
+
+assert ImmutableArray.find(x => x == 2, arr) == Some(2)
+assert ImmutableArray.find(x => fail "Shoulnd't be called", fromList([])) ==
+  None
+assert ImmutableArray.find(x => false, arr) == None
+
+// ImmutableArray.findIndex
+
+assert ImmutableArray.findIndex(x => x == 1, arr) == Some(0)
+assert ImmutableArray.findIndex(x => x == 2, arr) == Some(1)
+assert ImmutableArray.findIndex(x => fail "Shouldn't be called", fromList(
+  []
+)) ==
+  None
+assert ImmutableArray.findIndex(x => false, arr) == None
+
+// ImmutableArray.product
+
+let arrA = fromList([1, 2])
+let arrB = fromList([2, 3, 4])
+let arrC = fromList([1])
+let arrD = fromList([2])
+
+assert ImmutableArray.product(arrA, arrB) ==
+  fromList([(1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)])
+assert ImmutableArray.product(arrC, arrB) == fromList([(1, 2), (1, 3), (1, 4)])
+assert ImmutableArray.product(arrC, arrD) == fromList([(1, 2)])
+assert ImmutableArray.product(fromList([]), fromList([])) == fromList([])
+
+// ImmutableArray.zip
+
+let arrA = fromList([1, 2, 3, 4, 5])
+let arrB = fromList([5, 4, 3, 2, 1])
+
+assert ImmutableArray.zip(arrA, arrB) ==
+  fromList([(1, 5), (2, 4), (3, 3), (4, 2), (5, 1)])
+
+let arrA = fromList([1, 2, 3])
+let arrB = fromList([5, 4, 3, 2, 1])
+
+assert ImmutableArray.zip(arrA, arrB) == fromList([(1, 5), (2, 4), (3, 3)])
+assert ImmutableArray.zip(arrB, arrA) == fromList([(5, 1), (4, 2), (3, 3)])
+
+// ImmutableArray.zipWith
+
+let addFn = (a, b) => a + b
+let arrA = fromList([1, 2, 3])
+let arrB = fromList([4, 5, 6])
+
+assert ImmutableArray.zipWith(addFn, arrA, arrB) == fromList([5, 7, 9])
+
+let arrB = fromList([4, 5, 6, 7, 8])
+
+assert ImmutableArray.zipWith(addFn, arrA, arrB) == fromList([5, 7, 9])
+assert ImmutableArray.zipWith(addFn, arrB, arrA) == fromList([5, 7, 9])
+
+let multFn = (a, b) => a * b
+let arrB = fromList([4, 5])
+assert ImmutableArray.zipWith(multFn, arrA, arrB) == fromList([4, 10])
+assert ImmutableArray.zipWith(addFn, fromList([]), arrB) == fromList([])
+
+// ImmutableArray.unzip
+
+let arrA = fromList([1, 2, 3, 4, 5])
+let arrB = fromList([5, 4, 3, 2, 1])
+
+assert ImmutableArray.unzip(ImmutableArray.zip(arrA, arrB)) == (arrA, arrB)
+
+let arrA = fromList([1, 2, 3, 4])
+let arrB = fromList([3, 2, 1])
+let trimmedA = fromList([1, 2, 3])
+assert ImmutableArray.unzip(ImmutableArray.zip(arrA, arrB)) == (trimmedA, arrB)
+assert ImmutableArray.unzip(ImmutableArray.zip(arrB, arrA)) == (arrB, trimmedA)
+
+assert ImmutableArray.unzip(fromList([])) == (fromList([]), fromList([]))
+
+// ImmutableArray.count
+
+let arr = fromList([1, 2, 3])
+
+assert ImmutableArray.count(x => x > 0, arr) == 3
+assert ImmutableArray.count(x =>
+  fail "count iterator should not be called on empty array", fromList([])) ==
+  0
+assert ImmutableArray.count(x => x == 3, arr) == 1
+
+// ImmutableArray.reduce
+
+assert ImmutableArray.reduce((acc, x) => acc + x, 0, arr) == 6
+assert ImmutableArray.reduce((acc, x) => fail "Shouldn't be called",
+0,
+fromList([])
+) ==
+  0
+assert ImmutableArray.reduce((+), 0, bltArr) ==
+  List.reduce((+), 0, branchingLongTail)
+
+// ImmutableArray.reduceRight
+
+assert ImmutableArray.reduceRight((cur, acc) => cur - acc, 0, arr) == 2
+assert ImmutableArray.reduceRight((x, acc) => fail "Shouldn't be called",
+0,
+fromList([])
+) ==
+  0
+assert ImmutableArray.reduceRight((x, acc) => [x, ...acc], [], bltArr) ==
+  branchingLongTail
+
+// ImmutableArray.flatMap
+
+assert ImmutableArray.flatMap(x => fromList([x, x * 2]), arr) ==
+  fromList([1, 2, 2, 4, 3, 6])
+assert ImmutableArray.flatMap(x => fail "Shouldn't be called", fromList([])) ==
+  fromList([])
+
+// ImmutableArray.every
+
+assert ImmutableArray.every(x => x < 4, arr) == true
+assert ImmutableArray.every(x => x > 4, arr) == false
+assert ImmutableArray.every(x => fail "Shouldn't be called", fromList([]))
+
+// ImmutableArray.some
+
+assert ImmutableArray.some(x => x > 1, arr) == true
+assert ImmutableArray.some(x => x > 4, arr) == false
+assert !ImmutableArray.some(x => fail "Shouldn't be called", fromList([]))
+
+// ImmutableArray.filter
+
+assert ImmutableArray.filter(x => true, arr) == fromList([1, 2, 3])
+assert ImmutableArray.filter(x => x > 1, arr) == fromList([2, 3])
+assert ImmutableArray.filter(x => x % 2 == 0, arr) == fromList([2])
+assert ImmutableArray.filter(x => fail "Shouldn't be called", fromList([])) ==
+  fromList([])
+
+// ImmutableArray.unique
+
+assert ImmutableArray.unique(fromList([1, 1, 2, 2, 3, 3])) ==
+  fromList([1, 2, 3])
+assert ImmutableArray.unique(fromList([0, 1, 2])) == fromList([0, 1, 2])
+assert ImmutableArray.unique(fromList([0, 0, 0, 0, 0, 0])) == fromList([0])
+assert ImmutableArray.unique(fromList([])) == fromList([])
+
+// ImmutableArray.join
+assert ImmutableArray.join(", ", fromList(["a", "b", "c"])) == "a, b, c"
+assert ImmutableArray.join(", ", fromList(["some text"])) == "some text"
+assert ImmutableArray.join(
+  " - ",
+  fromList(["some text", "some more text", "even more text"])
+) ==
+  "some text - some more text - even more text"
+assert ImmutableArray.join(", ", fromList([])) == ""
+
+// ImmutableArray.slice
+let testChars = fromList(['a', 'b', 'c'])
+
+assert ImmutableArray.slice(0, 1, testChars) == fromList(['a'])
+assert ImmutableArray.slice(1, ImmutableArray.length(testChars), testChars) ==
+  fromList(['b', 'c'])
+assert ImmutableArray.slice(0, 0, testChars) == fromList([])
+// Purposefully huge number
+assert ImmutableArray.slice(1, 10000, testChars) == fromList(['b', 'c'])
+// Negative indexing
+assert ImmutableArray.slice(1, -1, testChars) == fromList(['b'])
+assert ImmutableArray.slice(-2, -1, testChars) == fromList(['b'])
+// Bad order
+assert ImmutableArray.slice(2, 1, testChars) == fromList([])
+assert ImmutableArray.slice(-1, -2, testChars) == fromList([])
+// Empty
+assert ImmutableArray.slice(1, 4, fromList([])) == fromList([])
+
+// ImmutableArray.sort
+// Numbers
+let arr = fromList([5, 3, 4, 6, 2, 1])
+let result = ImmutableArray.sort(compare, arr)
+assert result == fromList([1, 2, 3, 4, 5, 6])
+// Empty
+let arr = fromList([])
+let result = ImmutableArray.sort(compare, arr)
+assert result == fromList([])
+// Strings
+let compareLengths = (left, right) => {
+  match ((String.length(left), String.length(right))) {
+    (left, right) when left > right => 1,
+    (left, right) when left == right => 0,
+    _ => -1,
+  }
+}
+let arr = fromList(["a", "abcde", "abc", "ab", "abcd", "a"])
+let result = ImmutableArray.sort(compareLengths, arr)
+assert result == fromList(["a", "a", "ab", "abc", "abcd", "abcde"])
+
+// ImmutableArray.rotate
+let arr1 = fromList([1, 2, 3, 4, 5])
+ImmutableArray.rotate(0, arr1)
+assert arr1 == fromList([1, 2, 3, 4, 5])
+
+let arr2 = fromList([1, 2, 3, 4, 5])
+let result = ImmutableArray.rotate(3, arr2)
+assert result == fromList([4, 5, 1, 2, 3])
+
+let arr3 = fromList([1, 2, 3, 4, 5])
+let result = ImmutableArray.rotate(-4, arr3)
+assert result == fromList([2, 3, 4, 5, 1])
+
+let arr4 = fromList([1, 2, 3, 4, 5])
+let result = ImmutableArray.rotate(5, arr4)
+assert result == fromList([1, 2, 3, 4, 5])
+
+let arr5 = fromList([1, 2, 3, 4, 5])
+let result = ImmutableArray.rotate(48, arr5)
+assert result == fromList([4, 5, 1, 2, 3])
+
+let arr6 = fromList([1, 2, 3, 4, 5])
+let result = ImmutableArray.rotate(-54, arr6)
+assert result == fromList([2, 3, 4, 5, 1])
+
+let arr7 = fromList([])
+let result = ImmutableArray.rotate(1, arr7)
+assert result == fromList([])
+
+let arr8 = fromList(["a", "b", "c"])
+let result = ImmutableArray.rotate(1, arr8)
+assert result == fromList(["b", "c", "a"])
