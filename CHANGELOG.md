@@ -1,5 +1,19 @@
 # Changelog
 
+### [0.5.8](https://github.com/grain-lang/grain/compare/grain-v0.5.7...grain-v0.5.8) (2022-12-10)
+
+
+### Features
+
+* **compiler:** Lower stack usage ([#1542](https://github.com/grain-lang/grain/issues/1542)) ([ef43141](https://github.com/grain-lang/grain/commit/ef431412c310b4adffa4b5786581a6b18942a32e))
+* **runtime:** Optimize simple number comparison ([f7ceae7](https://github.com/grain-lang/grain/commit/f7ceae729260bc3c5eee017954aa7e242c3f8cb5))
+* **stdlib:** Add `ImmutableArray` module ([#1477](https://github.com/grain-lang/grain/issues/1477)) ([a34d8b9](https://github.com/grain-lang/grain/commit/a34d8b9e8ce629c40d65b99561c0f41fa400542e))
+
+
+### Bug Fixes
+
+* **stdlib:** Fix NaN comparisons ([#1543](https://github.com/grain-lang/grain/issues/1543)) ([f7ceae7](https://github.com/grain-lang/grain/commit/f7ceae729260bc3c5eee017954aa7e242c3f8cb5))
+
 ### [0.5.7](https://github.com/grain-lang/grain/compare/grain-v0.5.6...grain-v0.5.7) (2022-12-06)
 
 
