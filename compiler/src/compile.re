@@ -337,8 +337,6 @@ let save_mashed = (f, outfile) =>
   | _ => failwith("Should be impossible")
   };
 
-let free_vars = anfed => Ident.Set.elements @@ Anf_utils.anf_free_vars(anfed);
-
 let report_error = loc =>
   Location.(
     Printf.(

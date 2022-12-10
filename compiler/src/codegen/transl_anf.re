@@ -580,7 +580,8 @@ let compile_lambda =
   //       of recursive functions to be garbage-collectible, since
   //       Grain's garbage collector does not currently collect
   //       cyclic reference chains)
-  let used_var_set = Ident.Set.remove(id, Anf_utils.anf_free_vars(body));
+  let used_var_set =
+    Ident.Set.remove(id, Analyze_free_vars.anf_free_vars(body));
   let arg_vars = List.map(((arg, _)) => arg, args);
   let global_vars =
     Ident.fold_all((id, _, acc) => [id, ...acc], global_table^, []);

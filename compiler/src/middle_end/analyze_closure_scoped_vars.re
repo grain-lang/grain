@@ -15,7 +15,10 @@ module CSVArg: Anf_iterator.IterArgument = {
     switch (desc) {
     | CLambda(_) =>
       closure_scoped_vars :=
-        Ident.Set.union(closure_scoped_vars^, Anf_utils.comp_free_vars(c))
+        Ident.Set.union(
+          closure_scoped_vars^,
+          Analyze_free_vars.comp_free_vars(c),
+        )
     | _ => ()
     };
 
