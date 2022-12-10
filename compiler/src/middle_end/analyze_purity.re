@@ -2,12 +2,6 @@ open Anftree;
 open Anf_iterator;
 open Grain_typed;
 
-/*
-    NOTE: Not every ANF node is guaranteed to have a purity analysis,
-    but every node is guaranteed to either have one or be the child
-    of a node which does.
- */
-
 type analysis +=
   | Pure(bool);
 
@@ -37,161 +31,138 @@ let anf_expression_purity_internal = a =>
 
 let push_purity = (lref, p) => lref := [Pure(p), ...lref^];
 
-let rec analyze_comp_expression =
-        ({comp_desc: desc, comp_analyses: analyses}) => {
-  let purity =
-    switch (desc) {
-    | CImmExpr({imm_desc: ImmTrap}) => false
-    | CImmExpr(_) => true
-    | CPrim0(
-        AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
-        AllocateRational,
-      ) =>
-      true
-    | CPrim0(Unreachable) => false
-    | CPrim1(
-        AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
-        NewInt32 |
-        NewInt64 |
-        NewFloat32 |
-        NewFloat64 |
-        LoadAdtVariant |
-        StringSize |
-        BytesSize |
-        TagSimpleNumber |
-        UntagSimpleNumber |
-        TagChar |
-        UntagChar |
-        Not |
-        Box |
-        Unbox |
-        BoxBind |
-        UnboxBind |
-        Ignore |
-        ArrayLength |
-        WasmFromGrain |
-        WasmToGrain |
-        WasmUnaryI32(_) |
-        WasmUnaryI64(_) |
-        WasmUnaryF32(_) |
-        WasmUnaryF64(_) |
-        WasmMemoryGrow,
-        _,
-      ) =>
-      true
-    | CPrim1(Assert | Throw | AllocateBigInt, _) => false
-    | CPrim2(
-        NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
-        WasmLoadF32 |
-        WasmLoadF64 |
-        WasmBinaryI32(_) |
-        WasmBinaryI64(_) |
-        WasmBinaryF32(_) |
-        WasmBinaryF64(_),
-        _,
-        _,
-      ) =>
-      true
-    | CPrimN(
-        WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
-        WasmMemoryCopy |
-        WasmMemoryFill |
-        WasmMemorySize |
-        WasmMemoryCompare,
-        _,
-      ) =>
-      false
-    | CArraySet(_)
-    | CBoxAssign(_)
-    | CAssign(_)
-    | CLocalAssign(_) => false
-    | CArrayGet(_)
-    | CArray(_)
-    | CTuple(_)
-    | CAdt(_)
-    | CRecord(_)
-    | CGetTupleItem(_) => true
-    | CSetTupleItem(_) => false
-    | CGetAdtItem(_)
-    | CGetAdtTag(_)
-    | CGetRecordItem(_) => true
-    | CSetRecordItem(_) => false
-    | CIf(_, t, f) =>
-      analyze_anf_expression(t);
-      analyze_anf_expression(f);
-      anf_expression_purity_internal(t) && anf_expression_purity_internal(f);
-    | CFor(c, inc, body) =>
-      Option.iter(analyze_anf_expression, c);
-      Option.iter(analyze_anf_expression, inc);
-      analyze_anf_expression(body);
-      Option.fold(~none=true, ~some=anf_expression_purity_internal, c)
-      && Option.fold(~none=true, ~some=anf_expression_purity_internal, inc)
-      && anf_expression_purity_internal(body);
-    | CContinue
-    | CBreak => false
-    | CSwitch(_, branches, _) =>
-      let branches_purities =
-        List.map(
-          ((t, b)) => {
-            analyze_anf_expression(b);
-            anf_expression_purity_internal(b);
-          },
-          branches,
-        );
-      List.for_all(x => x, branches_purities);
-    | CApp(_) => false
-    | CAppBuiltin(_) => false
-    | CLambda(_, _, (body, _)) =>
-      analyze_anf_expression(body);
-      true;
-    | CNumber(_)
-    | CInt32(_)
-    | CInt64(_)
-    | CFloat32(_)
-    | CFloat64(_)
-    | CBytes(_)
-    | CString(_)
-    | CChar(_) => true
-    };
+module PurityArg: Anf_iterator.IterArgument = {
+  include Anf_iterator.DefaultIterArgument;
 
-  push_purity(analyses, purity);
-}
+  let leave_comp_expression = ({comp_desc: desc, comp_analyses: analyses}) =>
+    push_purity(analyses) @@
+    (
+      switch (desc) {
+      | CImmExpr({imm_desc: ImmTrap}) => false
+      | CImmExpr(_) => true
+      | CPrim0(
+          AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
+          AllocateRational,
+        ) =>
+        true
+      | CPrim0(Unreachable) => false
+      | CPrim1(
+          AllocateArray | AllocateTuple | AllocateBytes | AllocateString |
+          NewInt32 |
+          NewInt64 |
+          NewFloat32 |
+          NewFloat64 |
+          LoadAdtVariant |
+          StringSize |
+          BytesSize |
+          TagSimpleNumber |
+          UntagSimpleNumber |
+          TagChar |
+          UntagChar |
+          Not |
+          Box |
+          Unbox |
+          BoxBind |
+          UnboxBind |
+          Ignore |
+          ArrayLength |
+          WasmFromGrain |
+          WasmToGrain |
+          WasmUnaryI32(_) |
+          WasmUnaryI64(_) |
+          WasmUnaryF32(_) |
+          WasmUnaryF64(_) |
+          WasmMemoryGrow,
+          _,
+        ) =>
+        true
+      | CPrim1(Assert | Throw | AllocateBigInt, _) => false
+      | CPrim2(
+          NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
+          WasmLoadF32 |
+          WasmLoadF64 |
+          WasmBinaryI32(_) |
+          WasmBinaryI64(_) |
+          WasmBinaryF32(_) |
+          WasmBinaryF64(_),
+          _,
+          _,
+        ) =>
+        true
+      | CPrimN(
+          WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
+          WasmMemoryCopy |
+          WasmMemoryFill |
+          WasmMemorySize |
+          WasmMemoryCompare,
+          _,
+        ) =>
+        false
+      | CArraySet(_)
+      | CBoxAssign(_)
+      | CAssign(_)
+      | CLocalAssign(_) => false
+      | CArrayGet(_)
+      | CArray(_)
+      | CTuple(_)
+      | CAdt(_)
+      | CRecord(_)
+      | CGetTupleItem(_) => true
+      | CSetTupleItem(_) => false
+      | CGetAdtItem(_)
+      | CGetAdtTag(_)
+      | CGetRecordItem(_) => true
+      | CSetRecordItem(_) => false
+      | CIf(_, t, f) =>
+        anf_expression_purity_internal(t)
+        && anf_expression_purity_internal(f)
+      | CFor(c, inc, body) =>
+        Option.fold(~none=true, ~some=anf_expression_purity_internal, c)
+        && Option.fold(~none=true, ~some=anf_expression_purity_internal, inc)
+        && anf_expression_purity_internal(body)
+      | CContinue
+      | CBreak => false
+      | CSwitch(_, branches, _) =>
+        let branches_purities =
+          List.map(
+            ((_, b)) => {anf_expression_purity_internal(b)},
+            branches,
+          );
+        List.for_all(x => x, branches_purities);
+      | CApp(_) => false
+      | CAppBuiltin(_) => false
+      | CLambda(_)
+      | CNumber(_)
+      | CInt32(_)
+      | CInt64(_)
+      | CFloat32(_)
+      | CFloat64(_)
+      | CBytes(_)
+      | CString(_)
+      | CChar(_) => true
+      }
+    );
 
-and analyze_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
-  switch (desc) {
-  | AELet(g, Nonrecursive, _, binds, body) =>
-    let process_bind = ((id, bind)) => {
-      analyze_comp_expression(bind);
-      comp_expression_purity_internal(bind);
-    };
+  let leave_anf_expression = ({anf_desc: desc, anf_analyses: analyses}) =>
+    push_purity(analyses) @@
+    (
+      switch (desc) {
+      | AELet(_, _, _, binds, body) =>
+        let process_bind = ((_, bind)) => {
+          comp_expression_purity_internal(bind);
+        };
 
-    let bind_purity = List.for_all(x => x, List.map(process_bind, binds));
-    analyze_anf_expression(body);
-    let purity = anf_expression_purity_internal(body) && bind_purity;
-    push_purity(analyses, purity);
-  | AELet(g, Recursive, _, binds, body) =>
-    let process_bind = ((id, bind)) => {
-      analyze_comp_expression(bind);
-      comp_expression_purity_internal(bind);
-    };
-
-    let bind_purity = List.for_all(x => x, List.map(process_bind, binds));
-    analyze_anf_expression(body);
-    let purity = anf_expression_purity_internal(body) && bind_purity;
-    push_purity(analyses, purity);
-  | AESeq(hd, tl) =>
-    analyze_comp_expression(hd);
-    analyze_anf_expression(tl);
-    let purity =
-      comp_expression_purity_internal(hd)
-      && anf_expression_purity_internal(tl);
-    push_purity(analyses, purity);
-  | AEComp(c) =>
-    analyze_comp_expression(c);
-    let purity = comp_expression_purity_internal(c);
-    push_purity(analyses, purity);
-  };
-
-let analyze = ({imports, body, analyses}) => {
-  analyze_anf_expression(body);
+        let bind_purity =
+          List.for_all(x => x, List.map(process_bind, binds));
+        anf_expression_purity_internal(body) && bind_purity;
+      | AESeq(hd, tl) =>
+        comp_expression_purity_internal(hd)
+        && anf_expression_purity_internal(tl)
+      | AEComp(c) => comp_expression_purity_internal(c)
+      }
+    );
 };
+
+module PurityIterator = Anf_iterator.MakeIter(PurityArg);
+
+let analyze = anfprog => PurityIterator.iter_anf_program(anfprog);
