@@ -127,7 +127,7 @@ Throws:
 
 `IndexOutOfBounds`
 
-* if the index being accessed is outside the array's bounds
+* When the index being accessed is outside the array's bounds
 
 Examples:
 
@@ -171,7 +171,7 @@ Throws:
 
 `IndexOutOfBounds`
 
-* if the index being updated is outside the array's bounds
+* When the index being updated is outside the array's bounds
 
 Examples:
 
