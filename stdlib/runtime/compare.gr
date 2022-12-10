@@ -161,7 +161,7 @@ compareHelp = (x, y) => {
     }
   } else if (isNumber(x)) {
     // Numbers have special comparison rules, e.g. NaN == NaN
-    tagSimpleNumber(numberCompare(x, y, true))
+    tagSimpleNumber(numberCompare(x, y))
   } else {
     // Handle all other heap allocated things
     // Can short circuit if pointers are the same

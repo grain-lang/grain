@@ -656,8 +656,7 @@ No other changes yet.
 isNaN : Number -> Bool
 ```
 
-Checks if a number contains the NaN value (Not A Number).
-Only boxed floating point numbers can contain NaN.
+Checks if a number is the float NaN value (Not A Number).
 
 Parameters:
 
