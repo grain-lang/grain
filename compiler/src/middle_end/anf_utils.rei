@@ -1,10 +1,6 @@
 open Grain_typed;
 open Anftree;
 
-let anf_free_vars: anf_expression => Ident.Set.t;
-let comp_free_vars: comp_expression => Ident.Set.t;
-let imm_free_vars: imm_expression => Ident.Set.t;
-
 type stack_size = {
   stack_size_ptr: int,
   stack_size_i32: int,

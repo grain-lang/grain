@@ -5,6 +5,7 @@ let analysis_passes = [
   Analyze_purity.analyze,
   Analyze_tail_calls.analyze,
   Analyze_inline_wasm.analyze,
+  Analyze_free_vars.analyze,
   Analyze_closure_scoped_vars.analyze,
   Analyze_mutable_vars.analyze,
 ];
@@ -50,8 +51,8 @@ let optimize_program = (prog: Anftree.anf_program): Anftree.anf_program => {
     if (n <= 0) {
       prog;
     } else {
-      analyze(prog);
-      let opt = clear_analyses(run_optimization_pass(prog));
+      analyze(clear_analyses(prog));
+      let opt = run_optimization_pass(prog);
       pass(n - 1, opt);
     };
 
