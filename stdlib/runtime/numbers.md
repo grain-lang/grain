@@ -22,6 +22,12 @@ isInteger : WasmI32 -> Bool
 isRational : WasmI32 -> Bool
 ```
 
+### Numbers.**isNaN**
+
+```grain
+isNaN : WasmI32 -> Bool
+```
+
 ### Numbers.**isNumber**
 
 ```grain
@@ -109,7 +115,7 @@ numberEqual : (WasmI32, WasmI32) -> Bool
 ### Numbers.**cmp**
 
 ```grain
-cmp : (WasmI32, WasmI32, Bool) -> WasmI32
+cmp : (WasmI32, WasmI32) -> WasmI32
 ```
 
 ### Numbers.**(<)**

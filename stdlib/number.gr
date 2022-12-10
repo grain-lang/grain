@@ -16,6 +16,7 @@ import {
   isInteger,
   isRational,
   isBoxedNumber,
+  isNaN,
   scalbn,
 } from "runtime/numbers"
 import Atoi from "runtime/atoi/parse"
@@ -814,8 +815,7 @@ export let isFinite = (x: Number) => {
 }
 
 /**
- * Checks if a number contains the NaN value (Not A Number).
- * Only boxed floating point numbers can contain NaN.
+ * Checks if a number is the float NaN value (Not A Number).
  *
  * @param x: The number to check
  * @returns `true` if the value is NaN, otherwise `false`
@@ -825,25 +825,7 @@ export let isFinite = (x: Number) => {
 @unsafe
 export let isNaN = (x: Number) => {
   let asPtr = WasmI32.fromGrain(x)
-  if (isBoxedNumber(asPtr)) {
-    // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
-    let tag = WasmI32.load(asPtr, 4n)
-    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
-      // uses the fact that NaN is the only number not equal to itself
-      let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.ne(wf64, wf64)
-    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
-      let wf32 = WasmF32.load(asPtr, 8n)
-      WasmF32.ne(wf32, wf32)
-    } else {
-      // Neither rational numbers nor boxed integers can be infinite or NaN.
-      // Grain doesn't allow creating a rational with denominator of zero either.
-      false
-    }
-  } else {
-    // Simple numbers are integers and cannot be NaN.
-    false
-  }
+  isNaN(asPtr)
 }
 
 /**

@@ -11,6 +11,18 @@ assert compare(0.0 / 0.0, -1 / 0.0) < 0
 assert compare(0.0 / 0.0, 987654321.) < 0
 assert compare(0.0 / 0.0, 987654321) < 0
 assert compare(0.0 / 0.0, 0) < 0
+assert !(0.0 / 0.0 < 0.0 / 0.0)
+assert !(0.0 / 0.0 < 10)
+assert !(0.0 / 0.0 < 10.)
+assert !(0.0 / 0.0 <= 0.0 / 0.0)
+assert !(0.0 / 0.0 <= 10)
+assert !(0.0 / 0.0 <= 10.)
+assert !(0.0 / 0.0 > 0.0 / 0.0)
+assert !(0.0 / 0.0 > 10)
+assert !(0.0 / 0.0 > 10.)
+assert !(0.0 / 0.0 >= 0.0 / 0.0)
+assert !(0.0 / 0.0 >= 10)
+assert !(0.0 / 0.0 >= 10.)
 // Booleans
 assert compare(false, true) < 0
 assert compare(true, false) > 0

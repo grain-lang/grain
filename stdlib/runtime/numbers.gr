@@ -108,6 +108,29 @@ export let isRational = x => {
 }
 
 @unsafe
+export let isNaN = x => {
+  if (isBoxedNumber(x)) {
+    // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
+    let tag = WasmI32.load(x, 4n)
+    if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
+      // uses the fact that NaN is the only number not equal to itself
+      let wf64 = WasmF64.load(x, 8n)
+      WasmF64.ne(wf64, wf64)
+    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
+      let wf32 = WasmF32.load(x, 8n)
+      WasmF32.ne(wf32, wf32)
+    } else {
+      // Neither rational numbers nor boxed integers can be infinite or NaN.
+      // Grain doesn't allow creating a rational with denominator of zero either.
+      false
+    }
+  } else {
+    // Simple numbers are integers and cannot be NaN.
+    false
+  }
+}
+
+@unsafe
 let isBigInt = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
@@ -1777,8 +1800,11 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
   }
 }
 
+// cmpFloat applies a total ordering relation:
+// unlike regular float logic, NaN is considered equal to itself and
+// smaller than any other number
 @unsafe
-let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
+let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
   let xf = if (is64) {
     boxedFloat64Number(x)
   } else {
@@ -1787,13 +1813,13 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
   if (isSimpleNumber(y)) {
     let yf = WasmF64.convertI32S(untagSimple(y))
     // special NaN cases
-    if (totalOrdering && WasmF64.ne(xf, xf)) {
+    if (WasmF64.ne(xf, xf)) {
       if (WasmF64.ne(yf, yf)) {
         0n
       } else {
         -1n
       }
-    } else if (totalOrdering && WasmF64.ne(yf, yf)) {
+    } else if (WasmF64.ne(yf, yf)) {
       if (WasmF64.ne(xf, xf)) {
         0n
       } else {
@@ -1834,13 +1860,13 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
         },
       }
       // special NaN cases
-      if (totalOrdering && WasmF64.ne(xf, xf)) {
+      if (WasmF64.ne(xf, xf)) {
         if (WasmF64.ne(yf, yf)) {
           0n
         } else {
           -1n
         }
-      } else if (totalOrdering && WasmF64.ne(yf, yf)) {
+      } else if (WasmF64.ne(yf, yf)) {
         if (WasmF64.ne(xf, xf)) {
           0n
         } else {
@@ -1854,7 +1880,7 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
 }
 
 @unsafe
-let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
+let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
   let xi = if (is64) {
     boxedInt64Number(x)
   } else {
@@ -1890,10 +1916,10 @@ let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
         ) -1n else 1n
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, false, totalOrdering))
+        WasmI32.sub(0n, cmpFloat(y, x, false))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, true, totalOrdering))
+        WasmI32.sub(0n, cmpFloat(y, x, true))
       },
       _ => {
         throw UnknownNumberTag
@@ -1903,7 +1929,7 @@ let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool, totalOrdering: Bool) => {
 }
 
 @unsafe
-let cmpRational = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
+let cmpRational = (x: WasmI32, y: WasmI32) => {
   if (isSimpleNumber(y)) {
     let xf = WasmF64.div(
       BI.toFloat64(boxedRationalNumerator(x)),
@@ -1915,10 +1941,10 @@ let cmpRational = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpSmallInt(y, x, false, totalOrdering))
+        WasmI32.sub(0n, cmpSmallInt(y, x, false))
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpSmallInt(y, x, true, totalOrdering))
+        WasmI32.sub(0n, cmpSmallInt(y, x, true))
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         WasmI32.sub(0n, cmpBigInt(y, x))
@@ -1951,10 +1977,10 @@ let cmpRational = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
         }
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, false, totalOrdering))
+        WasmI32.sub(0n, cmpFloat(y, x, false))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, true, totalOrdering))
+        WasmI32.sub(0n, cmpFloat(y, x, true))
       },
       _ => {
         throw UnknownNumberTag
@@ -1964,7 +1990,7 @@ let cmpRational = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
 }
 
 @unsafe
-export let cmp = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
+export let cmp = (x: WasmI32, y: WasmI32) => {
   if (isSimpleNumber(x)) {
     if (isSimpleNumber(y)) {
       if (WasmI32.ltS(x, y)) -1n else if (WasmI32.gtS(x, y)) 1n else 0n
@@ -1972,22 +1998,22 @@ export let cmp = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
       let yBoxedNumberTag = boxedNumberTag(y)
       match (yBoxedNumberTag) {
         t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpSmallInt(y, x, false, totalOrdering))
+          WasmI32.sub(0n, cmpSmallInt(y, x, false))
         },
         t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpSmallInt(y, x, true, totalOrdering))
+          WasmI32.sub(0n, cmpSmallInt(y, x, true))
         },
         t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
           WasmI32.sub(0n, cmpBigInt(y, x))
         },
         t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpRational(y, x, totalOrdering))
+          WasmI32.sub(0n, cmpRational(y, x))
         },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpFloat(y, x, false, totalOrdering))
+          WasmI32.sub(0n, cmpFloat(y, x, false))
         },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpFloat(y, x, true, totalOrdering))
+          WasmI32.sub(0n, cmpFloat(y, x, true))
         },
         _ => {
           throw UnknownNumberTag
@@ -1998,22 +2024,22 @@ export let cmp = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
     let xBoxedNumberTag = boxedNumberTag(x)
     match (xBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        cmpSmallInt(x, y, false, totalOrdering)
+        cmpSmallInt(x, y, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        cmpSmallInt(x, y, true, totalOrdering)
+        cmpSmallInt(x, y, true)
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         cmpBigInt(x, y)
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        cmpRational(x, y, totalOrdering)
+        cmpRational(x, y)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        cmpFloat(x, y, false, totalOrdering)
+        cmpFloat(x, y, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        cmpFloat(x, y, true, totalOrdering)
+        cmpFloat(x, y, true)
       },
       _ => {
         throw UnknownNumberTag
@@ -2022,39 +2048,46 @@ export let cmp = (x: WasmI32, y: WasmI32, totalOrdering: Bool) => {
   }
 }
 
+// In the comparison functions below, NaN is neither greater than, less than,
+// or equal to any other number (including NaN), so any comparison involving
+// NaN is always false. The only exception to this rule is `compare`, which
+// applies a total ordering relation to allow numbers to be sortable (with
+// NaN being considered equal to itself and less than all other numbers in
+// this case).
+
 @unsafe
 export let (<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.ltS(cmp(x, y, false), 0n)
+  !isNaN(x) && !isNaN(y) && WasmI32.ltS(cmp(x, y), 0n)
 }
 
 @unsafe
 export let (>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.gtS(cmp(x, y, false), 0n)
+  !isNaN(x) && !isNaN(y) && WasmI32.gtS(cmp(x, y), 0n)
 }
 
 @unsafe
 export let (<=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.leS(cmp(x, y, false), 0n)
+  !isNaN(x) && !isNaN(y) && WasmI32.leS(cmp(x, y), 0n)
 }
 
 @unsafe
 export let (>=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.geS(cmp(x, y, false), 0n)
+  !isNaN(x) && !isNaN(y) && WasmI32.geS(cmp(x, y), 0n)
 }
 
 @unsafe
 export let compare = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.toGrain(tagSimple(cmp(x, y, true))): Number
+  WasmI32.toGrain(tagSimple(cmp(x, y))): Number
 }
 
 /*
