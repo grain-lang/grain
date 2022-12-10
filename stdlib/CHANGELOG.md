@@ -1,5 +1,18 @@
 # Changelog
 
+### [0.5.8](https://github.com/grain-lang/grain/compare/stdlib-v0.5.7...stdlib-v0.5.8) (2022-12-10)
+
+
+### Features
+
+* **runtime:** Optimize simple number comparison ([f7ceae7](https://github.com/grain-lang/grain/commit/f7ceae729260bc3c5eee017954aa7e242c3f8cb5))
+* **stdlib:** Add `ImmutableArray` module ([#1477](https://github.com/grain-lang/grain/issues/1477)) ([a34d8b9](https://github.com/grain-lang/grain/commit/a34d8b9e8ce629c40d65b99561c0f41fa400542e))
+
+
+### Bug Fixes
+
+* **stdlib:** Fix NaN comparisons ([#1543](https://github.com/grain-lang/grain/issues/1543)) ([f7ceae7](https://github.com/grain-lang/grain/commit/f7ceae729260bc3c5eee017954aa7e242c3f8cb5))
+
 ### [0.5.7](https://github.com/grain-lang/grain/compare/stdlib-v0.5.6...stdlib-v0.5.7) (2022-12-06)
 
 
