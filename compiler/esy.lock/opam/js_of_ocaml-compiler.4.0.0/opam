@@ -6,18 +6,18 @@ maintainer: ["Ocsigen team <dev@ocsigen.org>"]
 authors: ["Ocsigen team <dev@ocsigen.org>"]
 license:
   "GPL-2.0-or-later AND LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
-homepage: "https://ocsigen.github.io/js_of_ocaml"
-doc: "https://ocsigen.github.io/js_of_ocaml"
+homepage: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
+doc: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
 bug-reports: "https://github.com/ocsigen/js_of_ocaml/issues"
 depends: [
-  "dune" {>= "2.8"}
-  "ocaml" {>= "4.04" & < "4.14"}
+  "dune" {>= "2.9"}
+  "ocaml" {>= "4.04" & < "4.15"}
   "num" {with-test}
-  "ppx_expect" {>= "v0.12.0" & with-test}
+  "ppx_expect" {>= "v0.14.2" & with-test}
   "ppxlib" {>= "0.15.0"}
   "re" {with-test}
-  "cmdliner"
-  "menhir" {< "20211215"}
+  "cmdliner" {>= "1.0.0"}
+  "menhir"
   "menhirLib"
   "menhirSdk"
   "yojson"
@@ -39,16 +39,18 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files=false"
     "@install"
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 url {
   src:
-    "https://github.com/ocsigen/js_of_ocaml/releases/download/3.11.0/js_of_ocaml-3.11.0.tbz"
+    "https://github.com/ocsigen/js_of_ocaml/releases/download/4.0.0/js_of_ocaml-4.0.0.tbz"
   checksum: [
-    "sha256=158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a"
-    "sha512=d83f0988aa1089fa01a0a693d7e6a832018c5a8ce707f44685809769377ef7ef59ce48229b1612966bd9166b610d66ddff8f2606f6c3f09c49f601b74842fde1"
+    "sha256=df02f819e5b2f48234af2b3e3e7c9781afa8212f8bece7ebcfbd8358b394495e"
+    "sha512=92e822849c8be14ce0428f7f4be3991449f76e65d408073a5b8b9674ba2d099439027aa11618b603c7ee31a179cf6976d54a929917a69b269425f0367926c200"
   ]
 }
-x-commit-hash: "4572278dea9cc8a7d44d65b440004a2ec3bce7a7"
+x-commit-hash: "6fb1d008061b6c028c375b240882bb735d54a5bc"

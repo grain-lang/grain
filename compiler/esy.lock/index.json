@@ -1,5 +1,5 @@
 {
-  "checksum": "32045821d84271d4ad224cf908c1d48b",
+  "checksum": "9d7a8bd6272ceea3af34e28ebd632e6f",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "yarn-pkg-config@github:esy-ocaml/yarn-pkg-config#db3a0b63883606dd57c54a7158d560d6cba8cd79@d41d8cd9": {
@@ -1730,23 +1730,28 @@
         "@opam/dune@opam:3.6.1@662f326b"
       ]
     },
-    "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8": {
-      "id": "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8",
+    "@opam/js_of_ocaml-compiler@opam:4.0.0@e10fcdb0": {
+      "id": "@opam/js_of_ocaml-compiler@opam:4.0.0@e10fcdb0",
       "name": "@opam/js_of_ocaml-compiler",
-      "version": "opam:3.11.0",
+      "version": "opam:4.0.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/15/158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a#sha256:158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a",
-          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/3.11.0/js_of_ocaml-3.11.0.tbz#sha256:158dafe7271ac79157981d1c3f5f177ec78a0099c38f861ae14e7ac06bd29c3a"
+          "archive:https://opam.ocaml.org/cache/sha256/df/df02f819e5b2f48234af2b3e3e7c9781afa8212f8bece7ebcfbd8358b394495e#sha256:df02f819e5b2f48234af2b3e3e7c9781afa8212f8bece7ebcfbd8358b394495e",
+          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/4.0.0/js_of_ocaml-4.0.0.tbz#sha256:df02f819e5b2f48234af2b3e3e7c9781afa8212f8bece7ebcfbd8358b394495e"
         ],
         "opam": {
           "name": "js_of_ocaml-compiler",
-          "version": "3.11.0",
-          "path": "esy.lock/opam/js_of_ocaml-compiler.3.11.0"
+          "version": "4.0.0",
+          "path": "esy.lock/opam/js_of_ocaml-compiler.4.0.0"
         }
       },
-      "overrides": [],
+      "overrides": [
+        {
+          "opamoverride":
+            "esy.lock/overrides/opam__s__js__of__ocaml_compiler_opam__c__4.0.0_opam_override"
+        }
+      ],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#ef896268d711aedf96826075706df7d119271d62@d41d8cd9",
         "@opam/yojson@opam:2.0.2@eb65f292",
@@ -2409,7 +2414,7 @@
       "devDependencies": [
         "@reason-native/rely@github:reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9",
         "@opam/ocaml-lsp-server@opam:1.14.1@ac41cc96",
-        "@opam/js_of_ocaml-compiler@opam:3.11.0@6004d7b8"
+        "@opam/js_of_ocaml-compiler@opam:4.0.0@e10fcdb0"
       ],
       "installConfig": { "pnp": false }
     },
