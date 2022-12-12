@@ -1,0 +1,39 @@
+opam-version: "2.0"
+synopsis: "Auto-formatter for OCaml code (RPC mode)"
+description:
+  "OCamlFormat is a tool to automatically format OCaml code in a uniform style. This package defines a RPC interface to OCamlFormat"
+maintainer: ["OCamlFormat Team <ocamlformat-dev@lists.ocaml.org>"]
+authors: ["Josh Berdine <jjb@fb.com>"]
+license: "MIT"
+homepage: "https://github.com/ocaml-ppx/ocamlformat"
+bug-reports: "https://github.com/ocaml-ppx/ocamlformat/issues"
+depends: [
+  "dune" {>= "2.8"}
+  "ocaml" {>= "4.08"}
+  "csexp" {>= "1.4.0"}
+  "odoc" {with-doc}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ocamlformat.git"
+url {
+  src:
+    "https://github.com/ocaml-ppx/ocamlformat/releases/download/0.24.1/ocamlformat-0.24.1.tbz"
+  checksum: [
+    "sha256=023425e9818f80ea50537b2371a4a766c149a9957d05807e88a004d2d5f441ce"
+    "sha512=753b6128be68042895202f99959b360ce954db6f82b19b83b4bb346761a8e9cfdfc2b4b25e2070e60601b555562e78f9ebb02760ff127464e0b66cedbddca304"
+  ]
+}
+x-commit-hash: "86938aa4435b251af1a3b081f7fbed90f982cf62"
