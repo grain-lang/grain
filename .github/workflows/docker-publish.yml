@@ -1,7 +1,7 @@
 name: Publish Docker images
 on:
   push:
-    branches: main
+    branches: [main]
   workflow_dispatch:
     inputs:
       tag:
@@ -17,7 +17,7 @@ env:
 jobs:
   push_base_image:
     name: Push base Docker image to multiple registries
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
@@ -97,7 +97,7 @@ jobs:
 
   push_slim_image:
     name: Push slim Docker image to multiple registries
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
