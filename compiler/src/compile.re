@@ -283,6 +283,7 @@ let compile_wasi_polyfill = () => {
 };
 
 let reset_compiler_state = () => {
+  Driver.reset();
   Ident.setup();
   Ctype.reset_levels();
   Env.clear_imports();
@@ -294,7 +295,6 @@ let reset_compiler_state = () => {
 let compile_string =
     (~is_root_file=false, ~hook=?, ~name=?, ~outfile=?, ~reset=true, str) => {
   if (reset) {
-    Driver.reset();
     reset_compiler_state();
     compile_wasi_polyfill();
   };
@@ -311,7 +311,6 @@ let compile_string =
 let compile_file =
     (~is_root_file=false, ~hook=?, ~outfile=?, ~reset=true, filename) => {
   if (reset) {
-    Driver.reset();
     reset_compiler_state();
     compile_wasi_polyfill();
   };
