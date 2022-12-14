@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.5.9](https://github.com/grain-lang/grain/compare/grain-v0.5.8...grain-v0.5.9) (2022-12-14)
+
+
+### Features
+
+* **compiler:** Cache parsetrees during compilation process ([#1548](https://github.com/grain-lang/grain/issues/1548)) ([7b53aab](https://github.com/grain-lang/grain/commit/7b53aaba74c6eb809cddcde5374f63eaa4a00d36))
+
+
+### Bug Fixes
+
+* **compiler:** Properly parse large hex numbers ([#1546](https://github.com/grain-lang/grain/issues/1546)) ([5f8d770](https://github.com/grain-lang/grain/commit/5f8d770ec60b686c3183bd8a200800c3f03e8e30))
+
 ### [0.5.8](https://github.com/grain-lang/grain/compare/grain-v0.5.7...grain-v0.5.8) (2022-12-10)
 
 

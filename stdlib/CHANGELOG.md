@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.9](https://github.com/grain-lang/grain/compare/stdlib-v0.5.8...stdlib-v0.5.9) (2022-12-14)
+
+
+### Miscellaneous Chores
+
+* **stdlib:** Synchronize Grain versions
+
 ### [0.5.8](https://github.com/grain-lang/grain/compare/stdlib-v0.5.7...stdlib-v0.5.8) (2022-12-10)
 
 
