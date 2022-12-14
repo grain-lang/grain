@@ -1,0 +1,34 @@
+opam-version: "2.0"
+synopsis: "JSON codec generator for OCaml"
+description: """\
+ppx_deriving_yojson is a ppx_deriving plugin that provides
+a JSON codec generator."""
+maintainer: "whitequark <whitequark@whitequark.org>"
+authors: "whitequark <whitequark@whitequark.org>"
+license: "MIT"
+tags: ["syntax" "json"]
+homepage: "https://github.com/ocaml-ppx/ppx_deriving_yojson"
+bug-reports: "https://github.com/ocaml-ppx/ppx_deriving_yojson/issues"
+depends: [
+  "ocaml" {>= "4.05.0"}
+  "dune" {>= "1.0"}
+  "yojson" {>= "1.6.0"}
+  "result"
+  "ppx_deriving" {>= "5.1"}
+  "ppxlib" {>= "0.26.0"}
+  "ounit2" {with-test}
+]
+build: [
+  ["dune" "subst"] {dev}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+]
+dev-repo: "git+https://github.com/ocaml-ppx/ppx_deriving_yojson.git"
+url {
+  src:
+    "https://github.com/ocaml-ppx/ppx_deriving_yojson/releases/download/v3.7.0/ppx_deriving_yojson-3.7.0.tar.gz"
+  checksum: [
+    "md5=456be82acb16bbf6be12ab01f9dfaa94"
+    "sha512=6aa8b3a6e60afd1ce68995bad6776c975b3640303b2049233e661c46300abea1f48916d4e876412de49f35744f31b99c29736e2bb974e1b4a494b0932bbd6e80"
+  ]
+}

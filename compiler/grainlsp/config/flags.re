@@ -10,10 +10,8 @@ let () = {
         // These flags preserve the original C++ error behavior. Ref https://github.com/ocaml/ocaml/issues/10423
         ["-cc", "clang++"]
       | Some("mingw64") =>
-        // MinGW needs the -static flag passed directly to the linker,
-        // to avoid needing MinGW locations in the path
-        // Ref https://github.com/grain-lang/binaryen.ml#static-linking
-        ["-ccopt", "--", "-ccopt", "-static"]
+        // MinGW needs these flags passed directly to flexdll, to avoid needing MinGW locations in the path
+        ["-ccopt", "-l:libpthread.a", "-ccopt", "-l:libstdc++.a"]
       | Some(_) => default
       | None => default
       };
