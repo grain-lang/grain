@@ -58,7 +58,7 @@
     "@reason-native/rely": "^4.0.0"
   },
   "resolutions": {
-    "ocaml": "phated/ocaml:package.json#ef896268d711aedf96826075706df7d119271d62",
+    "ocaml": "phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017",
     "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
     "@opam/dune": "3.6.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
