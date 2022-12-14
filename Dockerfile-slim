@@ -25,6 +25,7 @@ RUN cd node_modules/esy && npm run postinstall
 
 # Necessary because we disabled scripts during the original install
 RUN npm run prepare
+
 # Build the compiler and CLI
 RUN npm run compiler build \
     # Remove build files
