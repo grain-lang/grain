@@ -103,26 +103,46 @@ let parse_program_for_syntax_error = (~name=?, lexbuf, source) => {
   I.loop_handle(succeed, fail(source, buffer), supplier, checkpoint);
 };
 
+let cached_parsetrees = Hashtbl.create(64);
+let reset = () => Hashtbl.clear(cached_parsetrees);
+
+let get_cached_parsetree = name => {
+  Option.fold(~none=None, ~some=Hashtbl.find_opt(cached_parsetrees), name);
+};
+
 let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
-  Sedlexing.set_position(lexbuf, Location.start_pos);
-  Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
-  let lexer = Wrapped_lexer.init(lexbuf);
-  let token = _ => Wrapped_lexer.token(lexer);
-  try({...parse_program(token, lexbuf), comments: Lexer.consume_comments()}) {
-  | Sedlexing.MalFormed =>
-    raise(Ast_helper.BadEncoding(Location.curr(lexbuf)))
-  | Parser.Error =>
-    // Fast parse failed, so now we do a slow, thoughtful parse to produce a
-    // good error message.
-    let source = source();
-    ignore @@
-    parse_program_for_syntax_error(
-      ~name?,
-      Sedlexing.Utf8.from_string(source),
-      source,
-    );
-    // This should never be hit, but if it does someone will see and report
-    failwith("Impossible: Program with syntax error raised no error");
+  switch (get_cached_parsetree(name)) {
+  | Some(cached) => cached
+  | None =>
+    Sedlexing.set_position(lexbuf, Location.start_pos);
+    Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
+    let lexer = Wrapped_lexer.init(lexbuf);
+    let token = _ => Wrapped_lexer.token(lexer);
+    let program =
+      try({
+        ...parse_program(token, lexbuf),
+        comments: Lexer.consume_comments(),
+      }) {
+      | Sedlexing.MalFormed =>
+        raise(Ast_helper.BadEncoding(Location.curr(lexbuf)))
+      | Parser.Error =>
+        // Fast parse failed, so now we do a slow, thoughtful parse to produce a
+        // good error message.
+        let source = source();
+        ignore @@
+        parse_program_for_syntax_error(
+          ~name?,
+          Sedlexing.Utf8.from_string(source),
+          source,
+        );
+        // This should never be hit, but if it does someone will see and report
+        failwith("Impossible: Program with syntax error raised no error");
+      };
+    switch (name) {
+    | Some(name) => Hashtbl.add(cached_parsetrees, name, program)
+    | None => ()
+    };
+    program;
   };
 };
 
