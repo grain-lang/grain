@@ -3,7 +3,18 @@ let simple_number_max = 1073741823L;
 let simple_number_min = (-1073741824L);
 
 let conv_number_int = s => {
-  Int64.of_string_opt(s);
+  switch (Int64.of_string_opt(s)) {
+  | Some(n) =>
+    // We may accidentally parse the number using its two's
+    // compliment representation when it should be a bigint
+    // We just return None in this case
+    if (n < 0L && s.[0] != '-' || n > 0L && s.[0] == '-') {
+      None;
+    } else {
+      Some(n);
+    }
+  | None => None
+  };
 };
 
 let conv_number_float = s => {

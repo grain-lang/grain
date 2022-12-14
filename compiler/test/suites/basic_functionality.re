@@ -16,6 +16,8 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("neg", "-40");
   assertSnapshot("simple_min", "-1073741824");
   assertSnapshot("simple_max", "1073741823");
+  assertSnapshot("bigint_start_neg", "-0xffff_ffff_ffff_ffff");
+  assertSnapshot("bigint_start_pos", "0xffff_ffff_ffff_ffff");
   assertSnapshot("heap_number_i32_wrapper", "1073741824");
   assertSnapshot("heap_number_i32_wrapper_max", "2147483647");
   assertSnapshot("heap_number_i64_wrapper", "2147483648");
