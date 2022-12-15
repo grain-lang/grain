@@ -1,0 +1,78 @@
+# In the format of:
+# FILE @PRIMARY_OWNER ...@SECONDARY_OWNERS
+
+# Order of precendence is top-to-bottom. The last line to match a file will assign the codeowners
+
+# Deliberately no catch-all so we know when we need to add something to this file
+
+/.gitpod.Dockerfile                         @marcusroberts @ospencer
+/.gitpod.yml                                @marcusroberts @ospencer
+/README.md                                  @ospencer @phated @peblair
+
+/.vscode/                                   @phated @ospencer
+
+/docs/                                      @ospencer @phated @peblair @marcusroberts @jozanza
+
+/.github/workflows/ci.yml                   @phated @ospencer
+/.github/workflows/docker-publish.yml       @ospencer @phated
+/.github/workflows/release.yml              @phated @ospencer
+
+/cli/.prettierignore                        @ospencer @phated @jozanza
+/cli/.prettierrc.json                       @ospencer @phated @jozanza
+/cli/__test__/                              @jozanza @phated @ospencer @peblair
+/cli/bin/                                   @phated @ospencer @marcusroberts
+/cli/package.json                           @phated @ospencer
+
+/compiler/esy.lock/                         @phated @ospencer
+/compiler/dune-project                      @ospencer @phated
+/compiler/dune-workspace                    @ospencer @phated
+/compiler/dune                              @ospencer @phated
+/compiler/src/dune                          @phated @ospencer
+/compiler/test/                             @ospencer @phated @peblair
+/compiler/test/formatter_inputs             @marcusroberts @phated @ospencer
+/compiler/test/formatter_outputs            @marcusroberts @phated @ospencer
+/compiler/test/stdlib/                      @ospencer @phated @peblair @marcusroberts @jozanza
+/compiler/grainc/                           @peblair @phated @ospencer
+/compiler/graindoc/                         @phated @marcusroberts @ospencer
+/compiler/grainformat/                      @marcusroberts @phated @ospencer
+/compiler/grainlsp/                         @marcusroberts @phated @ospencer
+/compiler/src/codegen/                      @ospencer @peblair @phated
+/compiler/src/diagnostics/                  @marcusroberts @ospencer @phated
+/compiler/src/formatting/                   @marcusroberts @phated @ospencer
+/compiler/src/language_server/              @marcusroberts @ospencer @phated
+/compiler/src/linking/                      @ospencer @phated @peblair
+/compiler/src/middle_end/                   @ospencer @peblair @phated
+/compiler/src/parsing/                      @ospencer @peblair @phated @marcusroberts
+/compiler/src/typed/                        @ospencer @peblair @phated
+/compiler/src/utils/                        @phated @ospencer @marcusroberts @peblair @jozanza
+/compiler/src/compile.re                    @ospencer @peblair @phated
+/compiler/src/compile.rei                   @ospencer @peblair @phated
+/compiler/esy.json                          @ospencer @phated
+/compiler/package.json                      @ospencer @phated
+
+/js-runner/.prettierignore                  @ospencer @phated
+/js-runner/.prettierrc.json                 @ospencer @phated
+/js-runner/README.md                        @ospencer @phated
+/js-runner/src/                             @ospencer @phated @peblair
+/js-runner/package.json                     @ospencer @phated
+/js-runner/webpack.*.js                     @ospencer @phated
+/js-runner/LICENSE                          @ospencer @peblair
+
+/stdlib/                                    @ospencer @phated @peblair @marcusroberts @jozanza
+/stdlib/runtime/                            @ospencer @peblair @jozanza
+/stdlib/package.json                        @phated @ospencer
+/stdlib/index.js                            @phated
+/stdlib/LICENSE                             @ospencer @peblair
+
+/.gitattributes                             @phated @ospencer
+/.gitignore                                 @phated @ospencer
+/CODE_OF_CONDUCT.md                         @ospencer @phated
+/CONTRIBUTING.md                            @ospencer @peblair @phated @marcusroberts @jozanza
+/.dockerignore                              @ospencer @peblair
+/Dockerfile                                 @ospencer @peblair @phated
+/Dockerfile-slim                            @ospencer @peblair @phated
+/.npmrc                                     @phated @ospencer
+/package-lock.json                          @phated @ospencer
+/package.json                               @phated @ospencer
+/release-please-config.json                 @phated @ospencer
+/LICENSE                                    @ospencer @peblair

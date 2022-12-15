@@ -40,15 +40,15 @@ Introduces a new package `Grain_diagnostics` that provides information needed by
 
 Generally, we want to scope our types to the three primary types defined by the spec:
 
-* `feat:` - This should be the most used type, as most work we are doing in the project are new features. Commits using this type will always show up in the Changelog.
-* `fix:` - When fixing a bug, we should use this type. Commits using this type will always show up in the Changelog.
-* `chore:` - The least used type, these are **not** included in the Changelog unless they are breaking changes.
+- `feat:` - This should be the most used type, as most work we are doing in the project are new features. Commits using this type will always show up in the Changelog.
+- `fix:` - When fixing a bug, we should use this type. Commits using this type will always show up in the Changelog.
+- `chore:` - The least used type, these are **not** included in the Changelog unless they are breaking changes.
 
 We've used some legacy types previously, but these often have a better format:
 
-* `docs:` - These should be annotated as `chore(docs)` if they aren't being changed with a feature or fix.
-* `refactor:` - These should be annotated as `chore(refactor)`.
-* `ci:` - These should be annotated as `chore(ci)`.
+- `docs:` - These should be annotated as `chore(docs)` if they aren't being changed with a feature or fix.
+- `refactor:` - These should be annotated as `chore(refactor)`.
+- `ci:` - These should be annotated as `chore(ci)`.
 
 ### Conventional Commits: Breaking Changes
 
@@ -81,7 +81,7 @@ The easiest way to do this is to have multiple Conventional Commits while you wo
 
 ### Reviews
 
-As the Grain core team has grown, we've adjusted our code review process. On the [grain-lang/grain](https://github.com/grain-lang/grain) repository, we require **two** approvals from core team members for any non-breaking pull request and **three** approvals for pull requests containing breaking changes. For any other repositories in the grain-lang organization, we require **one** approval.
+As the Grain core team has grown, we've adjusted our code review process. On the [grain-lang/grain](https://github.com/grain-lang/grain) repository, we require **one** approval from a "code owner", as defined in the [CODEOWNERS](/.github/CODEOWNERS) file for any non-breaking pull request and approvals from **all** "code owners" for pull requests containing breaking changes. For any other repositories in the grain-lang organization, we require **one** approval from any core team member.
 
 ### With Breaking Changes
 
@@ -97,7 +97,7 @@ We use "squash merging" to merge pull requests. This will cause all commits to b
 
 When squash merging, we can keep intermediate Conventional Commits around by adding them to the body of the commit message; however, the GitHub UI adds a `*` character before each commit message and our releaser bot can't parse that.
 
-When squashing, you want to update both the title of the commit to be a good Conventional Commit and adjust the body to contain any other Conventional Commits that you want to keep (not prefixed with `*`). We also keep any "Co-authored-by:" lines at the bottom of the commit if the change was done by multiple authors. If "Co-authored-by:" lines appear due to accepted PR suggestions, it's good to delete them so the author gets full credit for the change.
+When squashing, you want to update both the title of the commit to be a good Conventional Commit and adjust the body to contain any other Conventional Commits that you want to keep (not prefixed with `*`) and delete any extra information. We also keep any "Co-authored-by:" lines at the bottom of the commit if the change was done by multiple authors. If "Co-authored-by:" lines appear due to accepted PR suggestions, it's good to delete them so the author gets full credit for the change.
 
 Our overall approach to squashing is to be mindful of the impact of each commit. The commits populate our changelog, so it's important to properly convey to Grain consumers what changes have happened. It is also a record that we and others will review in the future. Thus, we want to attribute the change to its correct authors and provide useful information that future contributors need.
 
@@ -105,7 +105,7 @@ Our overall approach to squashing is to be mindful of the impact of each commit.
 
 Before merging, you should mentally review these questions:
 
-* Is continuous integration passing?
-* Do you have the required amount of approvals?
-* Does anyone else need to be pinged for thoughts?
-* Will this cause problems for our release schedule? For example: maybe a patch release still needs to be published.
+- Is continuous integration passing?
+- Do you have the required amount of approvals?
+- Does anyone else need to be pinged for thoughts?
+- Will this cause problems for our release schedule? For example: maybe a patch release still needs to be published.
