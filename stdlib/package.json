@@ -1,6 +1,6 @@
 {
   "name": "@grain/stdlib",
-  "version": "0.5.8",
+  "version": "0.5.9",
   "description": "The standard library for the Grain language.",
   "license": "MIT",
   "homepage": "https://grain-lang.org",
