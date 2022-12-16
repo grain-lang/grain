@@ -773,7 +773,8 @@ No other changes yet.
 rotate : (Number, List<a>) -> List<a>
 ```
 
-Rotates list elements by the specified amount to the left.
+Rotates list elements by the specified amount to the left, such that `n`th
+element is the first in the new list.
 
 If value is negative, list elements will be rotated by the
 specified amount to the right. See examples.
@@ -782,7 +783,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`count`|`Number`|The number of elements to rotate by|
+|`n`|`Number`|The number of elements to rotate by|
 |`list`|`List<a>`|The list to be rotated|
 
 Throws:

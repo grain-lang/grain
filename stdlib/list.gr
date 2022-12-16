@@ -512,12 +512,13 @@ export let part = (count, list) => {
 }
 
 /**
- * Rotates list elements by the specified amount to the left.
+ * Rotates list elements by the specified amount to the left, such that `n`th
+ * element is the first in the new list.
  *
  * If value is negative, list elements will be rotated by the
  * specified amount to the right. See examples.
  *
- * @param count: The number of elements to rotate by
+ * @param n: The number of elements to rotate by
  * @param list: The list to be rotated
  *
  * @example List.rotate(2, [1, 2, 3, 4, 5]) // [3, 4, 5, 1, 2]
@@ -527,9 +528,9 @@ export let part = (count, list) => {
  *
  * @since v0.1.0
  */
-export let rotate = (count, list) => {
+export let rotate = (n, list) => {
   let (beginning, end) =
-    if (count >= 0) part(count, list) else part(length(list) + count, list)
+    if (n >= 0) part(n, list) else part(length(list) + n, list)
   append(end, beginning)
 }
 
