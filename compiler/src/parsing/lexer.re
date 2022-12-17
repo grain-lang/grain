@@ -79,6 +79,9 @@ let collect_comment = (comment_type, source, loc, lexbuf) => {
   comments := [comment_type(source, loc), ...comments^];
 };
 
+// Grain follows the Unicode properties for programming languages outlined in
+// https://unicode.org/reports/tr31/#Pattern_Syntax
+
 let dec_digit = [%sedlex.regexp? '0' .. '9'];
 let hex_digit = [%sedlex.regexp? '0' .. '9' | 'A' .. 'F' | 'a' .. 'f'];
 let oct_digit = [%sedlex.regexp? '0' .. '7'];
@@ -118,7 +121,9 @@ let dec_float = [%sedlex.regexp?
 
 let unsigned_float = [%sedlex.regexp? dec_float];
 
-let uident = [%sedlex.regexp? (lu, Star(xid_continue))];
+let uident = [%sedlex.regexp?
+  (Intersect(xid_start, lu), Star(xid_continue))
+];
 let lident = [%sedlex.regexp?
   (Sub(xid_start, lu) | '_', Star(xid_continue))
 ];
@@ -150,22 +155,35 @@ let slash_operator_chars = [%sedlex.regexp?
   (Sub(operator_char, '/' | '*'), operator_chars)
 ];
 
-// Tabs and space separators (https://www.compart.com/en/unicode/category/Zs)
-let blank = [%sedlex.regexp? Plus(zs | '\t')];
-
 let unicode_esc = [%sedlex.regexp? ("\\u{", Rep(hex_digit, 1 .. 6), "}")];
 let unicode4_esc = [%sedlex.regexp? ("\\u", Rep(hex_digit, 4))];
 let hex_esc = [%sedlex.regexp? ("\\x", Rep(hex_digit, 1 .. 2))];
 let oct_esc = [%sedlex.regexp? ("\\", Rep(oct_digit, 1 .. 3))];
 let num_esc = [%sedlex.regexp? unicode_esc | unicode4_esc | hex_esc | oct_esc];
 
-let newline_char = [%sedlex.regexp? "\r\n" | '\n'];
-let newline_chars = [%sedlex.regexp?
-  (Star(newline_char | blank), newline_char)
-];
+// Whitespace follows Pattern_White_Space, though we separate spaces from newlines
+// https://util.unicode.org/UnicodeJsps/list-unicodeset.jsp?a=[:Pattern_White_Space=Yes:]
 
-let line_comment = [%sedlex.regexp? ("//", Star(Compl('\r' | '\n')))];
-let shebang_comment = [%sedlex.regexp? ("#!", Star(Compl('\r' | '\n')))];
+// HORIZONTAL TABULATION
+// VERTICAL TABULATION
+// SPACE
+// LEFT-TO-RIGHT MARK
+// RIGHT-TO-LEFT MARK
+let blank = [%sedlex.regexp? Plus(0x09 | 0x0B | 0x20 | 0x200E | 0x200F)];
+
+// LINE FEED
+// FORM FEED
+// CARRIAGE RETURN
+// NEXT LINE
+// LINE SEPARATOR
+// PARAGRAPH SEPARATOR
+let newline_char = [%sedlex.regexp?
+  0x0A | 0x0C | 0x0D | 0x85 | 0x2028 | 0x2029
+];
+let newlines = [%sedlex.regexp? (Star(newline_char | blank), newline_char)];
+
+let line_comment = [%sedlex.regexp? ("//", Star(Compl(newline_char)))];
+let shebang_comment = [%sedlex.regexp? ("#!", Star(Compl(newline_char)))];
 
 let sub_lexeme = (lexbuf, first, last) => {
   // We use this implementation over Sedlexing's sub_lexeme since it supports negative indexing
@@ -205,7 +223,7 @@ let rec token = lexbuf => {
     Buffer.add_string(buf, "/**");
     read_doc_comment(start_p, buf, lexbuf);
   | blank => token(lexbuf)
-  | newline_chars => positioned(EOL)
+  | newlines => positioned(EOL)
   | (unsigned_float, 'f') => positioned(FLOAT32(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_float, 'd') => positioned(FLOAT64(sub_lexeme(lexbuf, 0, -1)))
   | unsigned_float =>
