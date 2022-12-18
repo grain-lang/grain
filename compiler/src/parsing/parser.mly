@@ -377,7 +377,7 @@ data_declaration:
   | ENUM UIDENT id_vec? data_constructors { Dat.variant ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
   | RECORD UIDENT id_vec? data_labels { Dat.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
-prim1_expr:
+unop_expr:
   | prefix_op non_assign_expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [$2] }
 
 paren_expr:
@@ -535,27 +535,22 @@ assign_expr:
   | array_set { $1 }
 
 non_assign_expr:
-  | app_expr    { $1 }
-  | prim1_expr  { $1 }
-  | simple_expr { $1 }
-  | record_get  { $1 }
-  | paren_expr  { $1 }
-  | braced_expr { $1 }
-  | if_expr     { $1 }
-  | while_expr  { $1 }
-  | for_expr    { $1 }
-  | match_expr  { $1 }
-  | list_expr   { $1 }
-  | array_get   { $1 }
-  | array_expr  { $1 }
+  | left_accessor_expr { $1 }
+  | unop_expr          { $1 }
+  | if_expr            { $1 }
+  | while_expr         { $1 }
+  | for_expr           { $1 }
+  | match_expr         { $1 }
 
-%inline left_accessor_expr:
+left_accessor_expr:
   | app_expr    { $1 }
   | simple_expr { $1 }
   | array_get   { $1 }
   | record_get  { $1 }
   | paren_expr  { $1 }
   | braced_expr { $1 }
+  | list_expr   { $1 }
+  | array_expr  { $1 }
 
 block_body_expr:
   | let_expr    { $1 }
