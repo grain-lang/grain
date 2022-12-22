@@ -20,6 +20,7 @@ describe("arrays", ({test, testSkip}) => {
   assertSnapshot("array_access3", "let x = [> 1, 2, 3]; x[2]");
   assertSnapshot("array_access4", "let x = [> 1, 2, 3]; x[-2]");
   assertSnapshot("array_access5", "let x = [> 1, 2, 3]; x[-3]");
+  assertSnapshot("array_access5", "[> 1, 2, 3][-3]");
   assertRunError(
     "array_access_err",
     "let x = [> 1, 2, 3]; x[3]",
