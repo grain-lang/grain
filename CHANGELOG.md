@@ -1,5 +1,18 @@
 # Changelog
 
+### [0.5.10](https://github.com/grain-lang/grain/compare/grain-v0.5.9...grain-v0.5.10) (2022-12-23)
+
+
+### Features
+
+* **compiler:** Allow lists and arrays on the left side of access expressions ([#1557](https://github.com/grain-lang/grain/issues/1557)) ([8c00750](https://github.com/grain-lang/grain/commit/8c00750c099587f8131ea30e346841137c52bd83))
+* **docs:** Update approvals process using CODEOWNERS ([#1541](https://github.com/grain-lang/grain/issues/1541)) ([3eb9f7d](https://github.com/grain-lang/grain/commit/3eb9f7de8a85f1d200cce6092826233257ae2579))
+
+
+### Bug Fixes
+
+* **compiler:** Provide appropriate error during invalid array access ([#1556](https://github.com/grain-lang/grain/issues/1556)) ([3d7b9e3](https://github.com/grain-lang/grain/commit/3d7b9e3d99b2639b46080e1c564d1453cd80f666))
+
 ### [0.5.9](https://github.com/grain-lang/grain/compare/grain-v0.5.8...grain-v0.5.9) (2022-12-14)
 
 
