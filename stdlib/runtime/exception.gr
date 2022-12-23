@@ -99,6 +99,7 @@ export let panicWithException = (e: Exception) => {
 }
 
 export exception IndexOutOfBounds
+export exception IndexNonInteger
 export exception DivisionByZero
 export exception ModuloByZero
 export exception Overflow
@@ -119,6 +120,7 @@ export exception InvalidArgument(String)
 let runtimeErrorPrinter = e => {
   match (e) {
     IndexOutOfBounds => Some("IndexOutOfBounds: Index out of bounds"),
+    IndexNonInteger => Some("IndexNonInteger: Index not an integer"),
     DivisionByZero => Some("DivisionByZero: Division by zero"),
     ModuloByZero => Some("ModuloByZero: Modulo by zero"),
     Overflow => Some("Overflow: Number overflow"),

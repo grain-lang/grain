@@ -75,6 +75,8 @@ let assertion_error_closure_ident =
   Ident.create_persistent("GRAIN$EXPORT$AssertionError");
 let index_out_of_bounds_ident =
   Ident.create_persistent("GRAIN$EXPORT$IndexOutOfBounds");
+let index_non_integer_ident =
+  Ident.create_persistent("GRAIN$EXPORT$IndexNonInteger");
 let match_failure_ident =
   Ident.create_persistent("GRAIN$EXPORT$MatchFailure");
 
@@ -131,6 +133,15 @@ let required_global_imports = [
     mimp_id: index_out_of_bounds_ident,
     mimp_mod: exception_mod,
     mimp_name: Ident.name(index_out_of_bounds_ident),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: index_non_integer_ident,
+    mimp_mod: exception_mod,
+    mimp_name: Ident.name(index_non_integer_ident),
     mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -1009,6 +1020,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     switch (err) {
     | Runtime_errors.MatchFailure => (match_failure_ident, None)
     | Runtime_errors.IndexOutOfBounds => (index_out_of_bounds_ident, None)
+    | Runtime_errors.IndexNonInteger => (index_non_integer_ident, None)
     | Runtime_errors.AssertionError => (
         assertion_error_closure_ident,
         Some(get_wasm_imported_name(exception_mod, assertion_error_ident)),
@@ -1124,56 +1136,136 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
     // incref/decref pair). Since it won't live in a local, it wouldn't be
     // cleaned up automatically anyway.
     compile_imm(~skip_incref=true, wasm_mod, env, arr_imm);
+  let resolve_idx = () => {
+    // PRECONDITION: idx is in swap slot 1
+    // PRECONDITION: arr is in swap slot 2
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label("resolve_idx"),
+      [
+        /* Maximum array length in 32-bit mode is less than 2^30, so any heap-allocated int is out of bounds. */
+        /* Check that the index is a simple int. */
+        Expression.If.make(
+          wasm_mod,
+          Expression.Unary.make(
+            wasm_mod,
+            Op.eq_z_int32,
+            Expression.Binary.make(
+              wasm_mod,
+              Op.and_int32,
+              get_swap(1),
+              Expression.Const.make(wasm_mod, const_int32(1)),
+            ),
+          ),
+          Expression.Block.make(
+            wasm_mod,
+            gensym_label("IndexNotSimpleInteger"),
+            [
+              set_swap(1, load(~offset=4, wasm_mod, get_swap(1))),
+              Expression.Drop.make(
+                wasm_mod,
+                Expression.If.make(
+                  wasm_mod,
+                  Expression.Binary.make(
+                    wasm_mod,
+                    Op.or_int32,
+                    Expression.Binary.make(
+                      wasm_mod,
+                      Op.or_int32,
+                      Expression.Binary.make(
+                        wasm_mod,
+                        Op.eq_int32,
+                        get_swap(1),
+                        Expression.Const.make(
+                          wasm_mod,
+                          const_int32(
+                            tag_val_of_boxed_number_tag_type(BoxedInt32),
+                          ),
+                        ),
+                      ),
+                      Expression.Binary.make(
+                        wasm_mod,
+                        Op.eq_int32,
+                        get_swap(1),
+                        Expression.Const.make(
+                          wasm_mod,
+                          const_int32(
+                            tag_val_of_boxed_number_tag_type(BoxedInt64),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expression.Binary.make(
+                      wasm_mod,
+                      Op.eq_int32,
+                      get_swap(1),
+                      Expression.Const.make(
+                        wasm_mod,
+                        const_int32(
+                          tag_val_of_boxed_number_tag_type(BoxedBigInt),
+                        ),
+                      ),
+                    ),
+                  ),
+                  call_error_handler(wasm_mod, env, IndexOutOfBounds, []),
+                  call_error_handler(wasm_mod, env, IndexNonInteger, []),
+                ),
+              ),
+            ],
+          ),
+          Expression.Null.make(),
+        ),
+        set_swap(1, untag_number(wasm_mod, get_swap(1))),
+        /* Resolve a negative index */
+        Expression.If.make(
+          wasm_mod,
+          Expression.Binary.make(
+            wasm_mod,
+            Op.lt_s_int32,
+            get_swap(1),
+            Expression.Const.make(wasm_mod, const_int32(0)),
+          ),
+          set_swap(
+            1,
+            Expression.Binary.make(
+              wasm_mod,
+              Op.add_int32,
+              get_swap(1),
+              load(~offset=4, wasm_mod, get_swap(2)),
+            ),
+          ),
+          Expression.Null.make(),
+        ),
+        /*
+         Check index not out of bounds
+         */
+        error_if_true(
+          wasm_mod,
+          env,
+          Expression.Binary.make(
+            wasm_mod,
+            Op.le_u_int32,
+            load(~offset=4, wasm_mod, get_swap(2)),
+            get_swap(1),
+          ),
+          IndexOutOfBounds,
+          [],
+        ),
+      ],
+    );
+  };
   switch (op) {
+  | MArrayLength =>
+    tag_number(wasm_mod, load(~offset=4, wasm_mod, get_arr_value()))
   | MArrayGet(idx_imm) =>
-    // ASSUMPTION: idx is a basic (non-heap) int
     let idx = compile_imm(wasm_mod, env, idx_imm);
-    let set_idx = () => set_swap(1, untag_number(wasm_mod, idx));
-    let get_idx = () => get_swap(1);
-    let set_arr = () => set_swap(2, get_arr_value());
-    let get_arr = () => get_swap(2);
-    /* Check that the index is in bounds */
     Expression.Block.make(
       wasm_mod,
       gensym_label("MArrayGet"),
       [
-        set_idx(),
-        set_arr(),
-        /*
-         Check index not out of bounds (negative end)
-         */
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.Binary.make(
-            wasm_mod,
-            Op.gt_s_int32,
-            Expression.Binary.make(
-              wasm_mod,
-              Op.mul_int32,
-              load(~offset=4, wasm_mod, get_arr()),
-              Expression.Const.make(wasm_mod, const_int32(-1)),
-            ),
-            get_idx(),
-          ),
-          IndexOutOfBounds,
-          [],
-        ),
-        /*
-         Check index not out of bounds (positive end)
-         */
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.Binary.make(
-            wasm_mod,
-            Op.le_s_int32,
-            load(~offset=4, wasm_mod, get_arr()),
-            get_idx(),
-          ),
-          IndexOutOfBounds,
-          [],
-        ),
+        set_swap(1, idx),
+        set_swap(2, get_arr_value()),
+        resolve_idx(),
         /*
          Load item at array+8+(4*idx) and incRef it
          */
@@ -1188,108 +1280,44 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
               Op.add_int32,
               Expression.Binary.make(
                 wasm_mod,
-                Op.mul_int32,
-                /* Resolve a negative index */
-                Expression.If.make(
-                  wasm_mod,
-                  Expression.Binary.make(
-                    wasm_mod,
-                    Op.lt_s_int32,
-                    get_idx(),
-                    Expression.Const.make(wasm_mod, const_int32(0)),
-                  ),
-                  Expression.Binary.make(
-                    wasm_mod,
-                    Op.add_int32,
-                    get_idx(),
-                    load(~offset=4, wasm_mod, get_arr()),
-                  ),
-                  get_idx(),
-                ),
-                Expression.Const.make(wasm_mod, const_int32(4)),
+                Op.shl_int32,
+                get_swap(1),
+                Expression.Const.make(wasm_mod, const_int32(2)),
               ),
-              get_arr(),
+              get_swap(2),
             ),
           ),
         ),
       ],
     );
-  | MArrayLength =>
-    tag_number(wasm_mod, load(~offset=4, wasm_mod, get_arr_value()))
   | MArraySet(idx_imm, val_imm) =>
-    // ASSUMPTION: idx is a basic (non-heap) int
     let idx = compile_imm(wasm_mod, env, idx_imm);
     let val_ = compile_imm(wasm_mod, env, val_imm);
-    let get_idx = () => get_swap(1);
-    let set_arr = () => set_swap(2, get_arr_value());
-    let get_arr = () => get_swap(2);
-    /* Check that the index is in bounds */
     Expression.Block.make(
       wasm_mod,
-      gensym_label("MArrayGet"),
+      gensym_label("MArraySet"),
       [
-        set_swap(1, untag_number(wasm_mod, idx)),
-        set_arr(),
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.Binary.make(
-            wasm_mod,
-            Op.gt_s_int32,
-            Expression.Binary.make(
-              wasm_mod,
-              Op.mul_int32,
-              load(~offset=4, wasm_mod, get_arr()),
-              Expression.Const.make(wasm_mod, const_int32(-1)),
-            ),
-            get_idx(),
-          ),
-          IndexOutOfBounds,
-          [],
-        ),
-        error_if_true(
-          wasm_mod,
-          env,
-          Expression.Binary.make(
-            wasm_mod,
-            Op.le_s_int32,
-            load(~offset=4, wasm_mod, get_arr()),
-            get_idx(),
-          ),
-          IndexOutOfBounds,
-          [],
-        ),
-        store(
-          ~offset=8,
-          wasm_mod,
+        set_swap(1, idx),
+        set_swap(2, get_arr_value()),
+        resolve_idx(),
+        set_swap(
+          2,
           Expression.Binary.make(
             wasm_mod,
             Op.add_int32,
             Expression.Binary.make(
               wasm_mod,
-              Op.mul_int32,
-              /* Resolve a negative index */
-              Expression.If.make(
-                wasm_mod,
-                Expression.Binary.make(
-                  wasm_mod,
-                  Op.lt_s_int32,
-                  get_idx(),
-                  Expression.Const.make(wasm_mod, const_int32(0)),
-                ),
-                Expression.Binary.make(
-                  wasm_mod,
-                  Op.add_int32,
-                  get_idx(),
-                  load(~offset=4, wasm_mod, get_arr()),
-                ),
-                get_idx(),
-              ),
-              Expression.Const.make(wasm_mod, const_int32(4)),
+              Op.shl_int32,
+              get_swap(1),
+              Expression.Const.make(wasm_mod, const_int32(2)),
             ),
-            get_arr(),
+            get_swap(2),
           ),
-          // TODO: decref the old item more efficiently (using a swap slot, most likely)
+        ),
+        store(
+          ~offset=8,
+          wasm_mod,
+          get_swap(2),
           Expression.Tuple_extract.make(
             wasm_mod,
             Expression.Tuple_make.make(
@@ -1299,37 +1327,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                 call_decref(
                   wasm_mod,
                   env,
-                  load(
-                    ~offset=8,
-                    wasm_mod,
-                    Expression.Binary.make(
-                      wasm_mod,
-                      Op.add_int32,
-                      Expression.Binary.make(
-                        wasm_mod,
-                        Op.mul_int32,
-                        /* Resolve a negative index */
-                        Expression.If.make(
-                          wasm_mod,
-                          Expression.Binary.make(
-                            wasm_mod,
-                            Op.lt_s_int32,
-                            get_idx(),
-                            Expression.Const.make(wasm_mod, const_int32(0)),
-                          ),
-                          Expression.Binary.make(
-                            wasm_mod,
-                            Op.add_int32,
-                            get_idx(),
-                            load(~offset=4, wasm_mod, get_arr()),
-                          ),
-                          get_idx(),
-                        ),
-                        Expression.Const.make(wasm_mod, const_int32(4)),
-                      ),
-                      get_arr(),
-                    ),
-                  ),
+                  load(~offset=8, wasm_mod, get_swap(2)),
                 ),
               ],
             ),
