@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.10](https://github.com/grain-lang/grain/compare/stdlib-v0.5.9...stdlib-v0.5.10) (2022-12-23)
+
+
+### Bug Fixes
+
+* **compiler:** Provide appropriate error during invalid array access ([#1556](https://github.com/grain-lang/grain/issues/1556)) ([3d7b9e3](https://github.com/grain-lang/grain/commit/3d7b9e3d99b2639b46080e1c564d1453cd80f666))
+
 ### [0.5.9](https://github.com/grain-lang/grain/compare/stdlib-v0.5.8...stdlib-v0.5.9) (2022-12-14)
 
 
