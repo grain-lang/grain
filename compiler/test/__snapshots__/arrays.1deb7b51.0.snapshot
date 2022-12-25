@@ -9,6 +9,7 @@ arrays › array_access5
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$panicWithException\" (global $GRAIN$EXPORT$panicWithException_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$IndexOutOfBounds\" (global $GRAIN$EXPORT$IndexOutOfBounds_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$IndexNonInteger\" (global $GRAIN$EXPORT$IndexNonInteger_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
@@ -31,9 +32,9 @@ arrays › array_access5
   (local $5 f64)
   (local $6 i32)
   (return
-   (block $cleanup_locals.6 (result i32)
+   (block $cleanup_locals.8 (result i32)
     (local.set $0
-     (block $compile_block.5 (result i32)
+     (block $compile_block.7 (result i32)
       (block $compile_store.3
        (local.set $6
         (tuple.extract 0
@@ -76,44 +77,89 @@ arrays › array_access5
        (block $do_backpatches.2
        )
       )
-      (block $MArrayGet.4 (result i32)
+      (block $MArrayGet.6 (result i32)
        (local.set $1
-        (i32.shr_s
-         (i32.const -5)
-         (i32.const 1)
-        )
+        (i32.const -5)
        )
        (local.set $2
         (local.get $6)
        )
-       (if
-        (i32.gt_s
-         (i32.mul
+       (block $resolve_idx.5
+        (if
+         (i32.eqz
+          (i32.and
+           (local.get $1)
+           (i32.const 1)
+          )
+         )
+         (block $IndexNotSimpleInteger.4
+          (local.set $1
+           (i32.load offset=4
+            (local.get $1)
+           )
+          )
+          (drop
+           (if (result i32)
+            (i32.or
+             (i32.or
+              (i32.eq
+               (local.get $1)
+               (i32.const 3)
+              )
+              (i32.eq
+               (local.get $1)
+               (i32.const 4)
+              )
+             )
+             (i32.eq
+              (local.get $1)
+              (i32.const 6)
+             )
+            )
+            (call $panicWithException_0
+             (global.get $GRAIN$EXPORT$panicWithException_0)
+             (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
+            )
+            (call $panicWithException_0
+             (global.get $GRAIN$EXPORT$panicWithException_0)
+             (global.get $GRAIN$EXPORT$IndexNonInteger_0)
+            )
+           )
+          )
+         )
+        )
+        (local.set $1
+         (i32.shr_s
+          (local.get $1)
+          (i32.const 1)
+         )
+        )
+        (if
+         (i32.lt_s
+          (local.get $1)
+          (i32.const 0)
+         )
+         (local.set $1
+          (i32.add
+           (local.get $1)
+           (i32.load offset=4
+            (local.get $2)
+           )
+          )
+         )
+        )
+        (if
+         (i32.le_u
           (i32.load offset=4
            (local.get $2)
           )
-          (i32.const -1)
+          (local.get $1)
          )
-         (local.get $1)
-        )
-        (drop
-         (call $panicWithException_0
-          (global.get $GRAIN$EXPORT$panicWithException_0)
-          (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
-         )
-        )
-       )
-       (if
-        (i32.le_s
-         (i32.load offset=4
-          (local.get $2)
-         )
-         (local.get $1)
-        )
-        (drop
-         (call $panicWithException_0
-          (global.get $GRAIN$EXPORT$panicWithException_0)
-          (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
+         (drop
+          (call $panicWithException_0
+           (global.get $GRAIN$EXPORT$panicWithException_0)
+           (global.get $GRAIN$EXPORT$IndexOutOfBounds_0)
+          )
          )
         )
        )
@@ -121,21 +167,9 @@ arrays › array_access5
         (global.get $GRAIN$EXPORT$incRef_0)
         (i32.load offset=8
          (i32.add
-          (i32.mul
-           (if (result i32)
-            (i32.lt_s
-             (local.get $1)
-             (i32.const 0)
-            )
-            (i32.add
-             (local.get $1)
-             (i32.load offset=4
-              (local.get $2)
-             )
-            )
-            (local.get $1)
-           )
-           (i32.const 4)
+          (i32.shl
+           (local.get $1)
+           (i32.const 2)
           )
           (local.get $2)
          )
