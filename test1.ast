@@ -1,0 +1,1244 @@
+
+Parsed program:
+((statements
+  (((ptop_desc
+     (PTopLet Nonexported Nonrecursive Immutable
+      (((pvb_pat
+         ((ppat_desc
+           (PPatVar
+            ((txt printFoo)
+             (loc
+              ((loc_start
+                (position (file test1.gr) (line 1) (col 4) (bol 0)))
+               (loc_end (position (file test1.gr) (line 1) (col 12) (bol 0)))
+               (loc_ghost false))))))
+          (ppat_loc
+           ((loc_start (position (file test1.gr) (line 1) (col 4) (bol 0)))
+            (loc_end (position (file test1.gr) (line 1) (col 12) (bol 0)))
+            (loc_ghost false)))))
+        (pvb_expr
+         ((pexp_desc
+           (PExpLambda ()
+            ((pexp_desc
+              (PExpApp
+               ((pexp_desc
+                 (PExpId
+                  ((txt
+                    (IdentName
+                     ((txt print)
+                      (loc
+                       ((loc_start
+                         (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                        (loc_end
+                         (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                        (loc_ghost false))))))
+                   (loc
+                    ((loc_start
+                      (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                     (loc_end
+                      (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                     (loc_ghost false))))))
+                (pexp_attributes ())
+                (pexp_loc
+                 ((loc_start
+                   (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                  (loc_end
+                   (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                  (loc_ghost false))))
+               (((pexp_desc (PExpConstant (PConstString foo)))
+                 (pexp_attributes ())
+                 (pexp_loc
+                  ((loc_start
+                    (position (file test1.gr) (line 1) (col 27) (bol 0)))
+                   (loc_end
+                    (position (file test1.gr) (line 1) (col 32) (bol 0)))
+                   (loc_ghost false)))))))
+             (pexp_attributes ())
+             (pexp_loc
+              ((loc_start
+                (position (file test1.gr) (line 1) (col 21) (bol 0)))
+               (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+               (loc_ghost false))))))
+          (pexp_attributes ())
+          (pexp_loc
+           ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+            (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+            (loc_ghost false)))))
+        (pvb_loc
+         ((loc_start (position (file test1.gr) (line 1) (col 4) (bol 0)))
+          (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+          (loc_ghost false)))))))
+    (ptop_attributes ())
+    (ptop_loc
+     ((loc_start (position (file test1.gr) (line 1) (col 0) (bol 0)))
+      (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+      (loc_ghost false))))
+   ((ptop_desc
+     (PTopLet Nonexported Nonrecursive Immutable
+      (((pvb_pat
+         ((ppat_desc
+           (PPatVar
+            ((txt printBar)
+             (loc
+              ((loc_start
+                (position (file test1.gr) (line 2) (col 38) (bol 34)))
+               (loc_end
+                (position (file test1.gr) (line 2) (col 46) (bol 34)))
+               (loc_ghost false))))))
+          (ppat_loc
+           ((loc_start (position (file test1.gr) (line 2) (col 38) (bol 34)))
+            (loc_end (position (file test1.gr) (line 2) (col 46) (bol 34)))
+            (loc_ghost false)))))
+        (pvb_expr
+         ((pexp_desc
+           (PExpLambda ()
+            ((pexp_desc
+              (PExpApp
+               ((pexp_desc
+                 (PExpId
+                  ((txt
+                    (IdentName
+                     ((txt print)
+                      (loc
+                       ((loc_start
+                         (position (file test1.gr) (line 2) (col 55)
+                          (bol 34)))
+                        (loc_end
+                         (position (file test1.gr) (line 2) (col 60)
+                          (bol 34)))
+                        (loc_ghost false))))))
+                   (loc
+                    ((loc_start
+                      (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                     (loc_end
+                      (position (file test1.gr) (line 2) (col 60) (bol 34)))
+                     (loc_ghost false))))))
+                (pexp_attributes ())
+                (pexp_loc
+                 ((loc_start
+                   (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                  (loc_end
+                   (position (file test1.gr) (line 2) (col 60) (bol 34)))
+                  (loc_ghost false))))
+               (((pexp_desc (PExpConstant (PConstString bar)))
+                 (pexp_attributes ())
+                 (pexp_loc
+                  ((loc_start
+                    (position (file test1.gr) (line 2) (col 61) (bol 34)))
+                   (loc_end
+                    (position (file test1.gr) (line 2) (col 66) (bol 34)))
+                   (loc_ghost false)))))))
+             (pexp_attributes ())
+             (pexp_loc
+              ((loc_start
+                (position (file test1.gr) (line 2) (col 55) (bol 34)))
+               (loc_end
+                (position (file test1.gr) (line 2) (col 67) (bol 34)))
+               (loc_ghost false))))))
+          (pexp_attributes ())
+          (pexp_loc
+           ((loc_start (position (file test1.gr) (line 2) (col 49) (bol 34)))
+            (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+            (loc_ghost false)))))
+        (pvb_loc
+         ((loc_start (position (file test1.gr) (line 2) (col 38) (bol 34)))
+          (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+          (loc_ghost false)))))))
+    (ptop_attributes ())
+    (ptop_loc
+     ((loc_start (position (file test1.gr) (line 2) (col 34) (bol 34)))
+      (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+      (loc_ghost false))))
+   ((ptop_desc
+     (PTopExpr
+      ((pexp_desc
+        (PExpApp
+         ((pexp_desc
+           (PExpIf
+            ((pexp_desc (PExpConstant (PConstBool true)))
+             (pexp_attributes ())
+             (pexp_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 74) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 78) (bol 69)))
+               (loc_ghost false))))
+            ((pexp_desc
+              (PExpId
+               ((txt
+                 (IdentName
+                  ((txt printFoo)
+                   (loc
+                    ((loc_start
+                      (position (file test1.gr) (line 4) (col 80) (bol 69)))
+                     (loc_end
+                      (position (file test1.gr) (line 4) (col 88) (bol 69)))
+                     (loc_ghost false))))))
+                (loc
+                 ((loc_start
+                   (position (file test1.gr) (line 4) (col 80) (bol 69)))
+                  (loc_end
+                   (position (file test1.gr) (line 4) (col 88) (bol 69)))
+                  (loc_ghost false))))))
+             (pexp_attributes ())
+             (pexp_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 80) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 88) (bol 69)))
+               (loc_ghost false))))
+            ((pexp_desc
+              (PExpId
+               ((txt
+                 (IdentName
+                  ((txt printBar)
+                   (loc
+                    ((loc_start
+                      (position (file test1.gr) (line 4) (col 94) (bol 69)))
+                     (loc_end
+                      (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                     (loc_ghost false))))))
+                (loc
+                 ((loc_start
+                   (position (file test1.gr) (line 4) (col 94) (bol 69)))
+                  (loc_end
+                   (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                  (loc_ghost false))))))
+             (pexp_attributes ())
+             (pexp_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 94) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 102) (bol 69)))
+               (loc_ghost false))))))
+          (pexp_attributes ())
+          (pexp_loc
+           ((loc_start (position (file test1.gr) (line 4) (col 70) (bol 69)))
+            (loc_end (position (file test1.gr) (line 4) (col 102) (bol 69)))
+            (loc_ghost false))))
+         ()))
+       (pexp_attributes ())
+       (pexp_loc
+        ((loc_start (position (file test1.gr) (line 4) (col 69) (bol 69)))
+         (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+         (loc_ghost false))))))
+    (ptop_attributes ())
+    (ptop_loc
+     ((loc_start (position (file test1.gr) (line 4) (col 69) (bol 69)))
+      (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+      (loc_ghost false))))))
+ (comments ())
+ (prog_loc
+  ((loc_start (position (file test1.gr) (line 1) (col 0) (bol 0)))
+   (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+   (loc_ghost false))))
+
+
+Well-Formedness passed
+
+
+Dependencies compiled
+
+
+Typed program:
+((statements
+  (((ttop_desc
+     (TTopLet Nonrecursive Immutable
+      (((vb_pat
+         ((pat_desc
+           (TPatVar ((stamp 1131) (name printFoo))
+            ((txt printFoo)
+             (loc
+              ((loc_start
+                (position (file test1.gr) (line 1) (col 4) (bol 0)))
+               (loc_end (position (file test1.gr) (line 1) (col 12) (bol 0)))
+               (loc_ghost false))))))
+          (pat_loc
+           ((loc_start (position (file test1.gr) (line 1) (col 4) (bol 0)))
+            (loc_end (position (file test1.gr) (line 1) (col 12) (bol 0)))
+            (loc_ghost false)))
+          (pat_type
+           ((desc
+             (TTyLink
+              ((desc
+                (TTyArrow ()
+                 ((desc
+                   (TTyLink
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 100000000) (id 309))))
+                  (level 1131) (id 300))
+                 TComOk))
+               (level 100000000) (id 301))))
+            (level 1131) (id 299)))
+          (pat_env <opaque>)))
+        (vb_expr
+         ((exp_desc
+           (TExpLambda
+            (((mb_pat
+               ((pat_desc
+                 (TPatConstruct
+                  ((txt (IdentName ((txt "()") (loc dummy_loc))))
+                   (loc dummy_loc))
+                  ((cstr_name "()")
+                   (cstr_res
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 100000000) (id 21)))
+                   (cstr_existentials ()) (cstr_args ()) (cstr_arity 0)
+                   (cstr_tag (CstrBlock 0)) (cstr_consts 0)
+                   (cstr_nonconsts 1) (cstr_loc dummy_loc))
+                  ()))
+                (pat_loc dummy_loc)
+                (pat_type
+                 ((desc
+                   (TTyLink
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 100000000) (id 305))))
+                  (level 1132) (id 302)))
+                (pat_env <opaque>)))
+              (mb_body
+               ((exp_desc
+                 (TExpApp
+                  ((exp_desc
+                    (TExpIdent
+                     (PExternal
+                      (PIdent ((stamp 0) (name Pervasives) (flags 1))) print
+                      24)
+                     ((txt
+                       (IdentName
+                        ((txt print)
+                         (loc
+                          ((loc_start
+                            (position (file test1.gr) (line 1) (col 21)
+                             (bol 0)))
+                           (loc_end
+                            (position (file test1.gr) (line 1) (col 26)
+                             (bol 0)))
+                           (loc_ghost false))))))
+                      (loc
+                       ((loc_start
+                         (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                        (loc_end
+                         (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                        (loc_ghost false))))
+                     ((val_type
+                       ((desc
+                         (TTyArrow
+                          (((desc (TTyVar ())) (level 100000000) (id -111)))
+                          ((desc
+                            (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                             TMemNil))
+                           (level 100000000) (id 250))
+                          TComOk))
+                        (level 100000000) (id 249)))
+                      (val_repr (ReprFunction (WasmI32) () (Direct print)))
+                      (val_kind TValReg)
+                      (val_internalpath
+                       (PExternal
+                        (PIdent ((stamp 0) (name Pervasives) (flags 1)))
+                        print 24))
+                      (val_fullpath
+                       (PExternal
+                        (PIdent ((stamp 0) (name Pervasives) (flags 1)))
+                        print 24))
+                      (val_mutable false) (val_global true)
+                      (val_loc dummy_loc))))
+                   (exp_loc
+                    ((loc_start
+                      (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                     (loc_end
+                      (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                     (loc_ghost false)))
+                   (exp_attributes ())
+                   (exp_type
+                    ((desc
+                      (TTyArrow
+                       (((desc
+                          (TTyLink
+                           ((desc
+                             (TTyConstr (PIdent ((stamp 14) (name String)))
+                              () TMemNil))
+                            (level 1131) (id 311))))
+                         (level 1132) (id 310)))
+                       ((desc
+                         (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                          TMemNil))
+                        (level 100000000) (id 309))
+                       TComOk))
+                     (level 1131) (id 308)))
+                   (exp_env <opaque>))
+                  (((exp_desc (TExpConstant (Const_string foo)))
+                    (exp_loc
+                     ((loc_start
+                       (position (file test1.gr) (line 1) (col 27) (bol 0)))
+                      (loc_end
+                       (position (file test1.gr) (line 1) (col 32) (bol 0)))
+                      (loc_ghost false)))
+                    (exp_attributes ())
+                    (exp_type
+                     ((desc
+                       (TTyConstr (PIdent ((stamp 14) (name String))) ()
+                        TMemNil))
+                      (level 1131) (id 311)))
+                    (exp_env <opaque>)))))
+                (exp_loc
+                 ((loc_start
+                   (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                  (loc_end
+                   (position (file test1.gr) (line 1) (col 33) (bol 0)))
+                  (loc_ghost false)))
+                (exp_attributes ())
+                (exp_type
+                 ((desc
+                   (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+                  (level 100000000) (id 309)))
+                (exp_env <opaque>)))
+              (mb_guard ()) (mb_loc dummy_loc)))
+            Total))
+          (exp_loc
+           ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+            (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+            (loc_ghost false)))
+          (exp_attributes ())
+          (exp_type
+           ((desc
+             (TTyArrow ()
+              ((desc
+                (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+               (level 100000000) (id 309))
+              TComOk))
+            (level 1131) (id 315)))
+          (exp_env <opaque>)))
+        (vb_loc
+         ((loc_start (position (file test1.gr) (line 1) (col 4) (bol 0)))
+          (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+          (loc_ghost false)))))))
+    (ttop_attributes ())
+    (ttop_loc
+     ((loc_start (position (file test1.gr) (line 1) (col 0) (bol 0)))
+      (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+      (loc_ghost false)))
+    (ttop_env <opaque>))
+   ((ttop_desc
+     (TTopLet Nonrecursive Immutable
+      (((vb_pat
+         ((pat_desc
+           (TPatVar ((stamp 1133) (name printBar))
+            ((txt printBar)
+             (loc
+              ((loc_start
+                (position (file test1.gr) (line 2) (col 38) (bol 34)))
+               (loc_end
+                (position (file test1.gr) (line 2) (col 46) (bol 34)))
+               (loc_ghost false))))))
+          (pat_loc
+           ((loc_start (position (file test1.gr) (line 2) (col 38) (bol 34)))
+            (loc_end (position (file test1.gr) (line 2) (col 46) (bol 34)))
+            (loc_ghost false)))
+          (pat_type
+           ((desc
+             (TTyLink
+              ((desc
+                (TTyArrow ()
+                 ((desc
+                   (TTyLink
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 100000000) (id 326))))
+                  (level 1133) (id 317))
+                 TComOk))
+               (level 100000000) (id 318))))
+            (level 1133) (id 316)))
+          (pat_env <opaque>)))
+        (vb_expr
+         ((exp_desc
+           (TExpLambda
+            (((mb_pat
+               ((pat_desc
+                 (TPatConstruct
+                  ((txt (IdentName ((txt "()") (loc dummy_loc))))
+                   (loc dummy_loc))
+                  ((cstr_name "()")
+                   (cstr_res
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 100000000) (id 21)))
+                   (cstr_existentials ()) (cstr_args ()) (cstr_arity 0)
+                   (cstr_tag (CstrBlock 0)) (cstr_consts 0)
+                   (cstr_nonconsts 1) (cstr_loc dummy_loc))
+                  ()))
+                (pat_loc dummy_loc)
+                (pat_type
+                 ((desc
+                   (TTyLink
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 100000000) (id 322))))
+                  (level 1134) (id 319)))
+                (pat_env <opaque>)))
+              (mb_body
+               ((exp_desc
+                 (TExpApp
+                  ((exp_desc
+                    (TExpIdent
+                     (PExternal
+                      (PIdent ((stamp 0) (name Pervasives) (flags 1))) print
+                      24)
+                     ((txt
+                       (IdentName
+                        ((txt print)
+                         (loc
+                          ((loc_start
+                            (position (file test1.gr) (line 2) (col 55)
+                             (bol 34)))
+                           (loc_end
+                            (position (file test1.gr) (line 2) (col 60)
+                             (bol 34)))
+                           (loc_ghost false))))))
+                      (loc
+                       ((loc_start
+                         (position (file test1.gr) (line 2) (col 55)
+                          (bol 34)))
+                        (loc_end
+                         (position (file test1.gr) (line 2) (col 60)
+                          (bol 34)))
+                        (loc_ghost false))))
+                     ((val_type
+                       ((desc
+                         (TTyArrow
+                          (((desc (TTyVar ())) (level 100000000) (id -111)))
+                          ((desc
+                            (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                             TMemNil))
+                           (level 100000000) (id 250))
+                          TComOk))
+                        (level 100000000) (id 249)))
+                      (val_repr (ReprFunction (WasmI32) () (Direct print)))
+                      (val_kind TValReg)
+                      (val_internalpath
+                       (PExternal
+                        (PIdent ((stamp 0) (name Pervasives) (flags 1)))
+                        print 24))
+                      (val_fullpath
+                       (PExternal
+                        (PIdent ((stamp 0) (name Pervasives) (flags 1)))
+                        print 24))
+                      (val_mutable false) (val_global true)
+                      (val_loc dummy_loc))))
+                   (exp_loc
+                    ((loc_start
+                      (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                     (loc_end
+                      (position (file test1.gr) (line 2) (col 60) (bol 34)))
+                     (loc_ghost false)))
+                   (exp_attributes ())
+                   (exp_type
+                    ((desc
+                      (TTyArrow
+                       (((desc
+                          (TTyLink
+                           ((desc
+                             (TTyConstr (PIdent ((stamp 14) (name String)))
+                              () TMemNil))
+                            (level 1133) (id 328))))
+                         (level 1134) (id 327)))
+                       ((desc
+                         (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                          TMemNil))
+                        (level 100000000) (id 326))
+                       TComOk))
+                     (level 1133) (id 325)))
+                   (exp_env <opaque>))
+                  (((exp_desc (TExpConstant (Const_string bar)))
+                    (exp_loc
+                     ((loc_start
+                       (position (file test1.gr) (line 2) (col 61) (bol 34)))
+                      (loc_end
+                       (position (file test1.gr) (line 2) (col 66) (bol 34)))
+                      (loc_ghost false)))
+                    (exp_attributes ())
+                    (exp_type
+                     ((desc
+                       (TTyConstr (PIdent ((stamp 14) (name String))) ()
+                        TMemNil))
+                      (level 1133) (id 328)))
+                    (exp_env <opaque>)))))
+                (exp_loc
+                 ((loc_start
+                   (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                  (loc_end
+                   (position (file test1.gr) (line 2) (col 67) (bol 34)))
+                  (loc_ghost false)))
+                (exp_attributes ())
+                (exp_type
+                 ((desc
+                   (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+                  (level 100000000) (id 326)))
+                (exp_env <opaque>)))
+              (mb_guard ()) (mb_loc dummy_loc)))
+            Total))
+          (exp_loc
+           ((loc_start (position (file test1.gr) (line 2) (col 49) (bol 34)))
+            (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+            (loc_ghost false)))
+          (exp_attributes ())
+          (exp_type
+           ((desc
+             (TTyArrow ()
+              ((desc
+                (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+               (level 100000000) (id 326))
+              TComOk))
+            (level 1133) (id 332)))
+          (exp_env <opaque>)))
+        (vb_loc
+         ((loc_start (position (file test1.gr) (line 2) (col 38) (bol 34)))
+          (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+          (loc_ghost false)))))))
+    (ttop_attributes ())
+    (ttop_loc
+     ((loc_start (position (file test1.gr) (line 2) (col 34) (bol 34)))
+      (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+      (loc_ghost false)))
+    (ttop_env <opaque>))
+   ((ttop_desc
+     (TTopExpr
+      ((exp_desc
+        (TExpApp
+         ((exp_desc
+           (TExpIf
+            ((exp_desc (TExpConstant (Const_bool true)))
+             (exp_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 74) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 78) (bol 69)))
+               (loc_ghost false)))
+             (exp_attributes ())
+             (exp_type
+              ((desc
+                (TTyLink
+                 ((desc
+                   (TTyConstr (PIdent ((stamp 13) (name Bool))) () TMemNil))
+                  (level 1134) (id 336))))
+               (level 1134) (id 335)))
+             (exp_env <opaque>))
+            ((exp_desc
+              (TExpIdent (PIdent ((stamp 1131) (name printFoo)))
+               ((txt
+                 (IdentName
+                  ((txt printFoo)
+                   (loc
+                    ((loc_start
+                      (position (file test1.gr) (line 4) (col 80) (bol 69)))
+                     (loc_end
+                      (position (file test1.gr) (line 4) (col 88) (bol 69)))
+                     (loc_ghost false))))))
+                (loc
+                 ((loc_start
+                   (position (file test1.gr) (line 4) (col 80) (bol 69)))
+                  (loc_end
+                   (position (file test1.gr) (line 4) (col 88) (bol 69)))
+                  (loc_ghost false))))
+               ((val_type
+                 ((desc
+                   (TTyLink
+                    ((desc
+                      (TTyArrow ()
+                       ((desc
+                         (TTyLink
+                          ((desc
+                            (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                             TMemNil))
+                           (level 100000000) (id 309))))
+                        (level 1131) (id 300))
+                       TComOk))
+                     (level 100000000) (id 301))))
+                  (level 1131) (id 299)))
+                (val_repr (ReprValue WasmI32)) (val_kind TValReg)
+                (val_internalpath (PIdent ((stamp 1131) (name printFoo))))
+                (val_fullpath (PIdent ((stamp 1131) (name printFoo))))
+                (val_mutable false) (val_global true)
+                (val_loc
+                 ((loc_start
+                   (position (file test1.gr) (line 1) (col 4) (bol 0)))
+                  (loc_end
+                   (position (file test1.gr) (line 1) (col 12) (bol 0)))
+                  (loc_ghost false))))))
+             (exp_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 80) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 88) (bol 69)))
+               (loc_ghost false)))
+             (exp_attributes ())
+             (exp_type
+              ((desc
+                (TTyArrow ()
+                 ((desc
+                   (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+                  (level 1132) (id 338))
+                 TComOk))
+               (level 1133) (id 337)))
+             (exp_env <opaque>))
+            ((exp_desc
+              (TExpIdent (PIdent ((stamp 1133) (name printBar)))
+               ((txt
+                 (IdentName
+                  ((txt printBar)
+                   (loc
+                    ((loc_start
+                      (position (file test1.gr) (line 4) (col 94) (bol 69)))
+                     (loc_end
+                      (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                     (loc_ghost false))))))
+                (loc
+                 ((loc_start
+                   (position (file test1.gr) (line 4) (col 94) (bol 69)))
+                  (loc_end
+                   (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                  (loc_ghost false))))
+               ((val_type
+                 ((desc
+                   (TTyLink
+                    ((desc
+                      (TTyArrow ()
+                       ((desc
+                         (TTyLink
+                          ((desc
+                            (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                             TMemNil))
+                           (level 100000000) (id 326))))
+                        (level 1133) (id 317))
+                       TComOk))
+                     (level 100000000) (id 318))))
+                  (level 1133) (id 316)))
+                (val_repr (ReprValue WasmI32)) (val_kind TValReg)
+                (val_internalpath (PIdent ((stamp 1133) (name printBar))))
+                (val_fullpath (PIdent ((stamp 1133) (name printBar))))
+                (val_mutable false) (val_global true)
+                (val_loc
+                 ((loc_start
+                   (position (file test1.gr) (line 2) (col 38) (bol 34)))
+                  (loc_end
+                   (position (file test1.gr) (line 2) (col 46) (bol 34)))
+                  (loc_ghost false))))))
+             (exp_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 94) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 102) (bol 69)))
+               (loc_ghost false)))
+             (exp_attributes ())
+             (exp_type
+              ((desc
+                (TTyLink
+                 ((desc
+                   (TTyArrow ()
+                    ((desc
+                      (TTyConstr (PIdent ((stamp 17) (name Void))) ()
+                       TMemNil))
+                     (level 1132) (id 338))
+                    TComOk))
+                  (level 1133) (id 337))))
+               (level 1134) (id 339)))
+             (exp_env <opaque>))))
+          (exp_loc
+           ((loc_start (position (file test1.gr) (line 4) (col 70) (bol 69)))
+            (loc_end (position (file test1.gr) (line 4) (col 102) (bol 69)))
+            (loc_ghost false)))
+          (exp_attributes ())
+          (exp_type
+           ((desc
+             (TTyArrow ()
+              ((desc
+                (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+               (level 1132) (id 338))
+              TComOk))
+            (level 1133) (id 337)))
+          (exp_env <opaque>))
+         ()))
+       (exp_loc
+        ((loc_start (position (file test1.gr) (line 4) (col 69) (bol 69)))
+         (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+         (loc_ghost false)))
+       (exp_attributes ())
+       (exp_type
+        ((desc (TTyConstr (PIdent ((stamp 17) (name Void))) () TMemNil))
+         (level 1132) (id 338)))
+       (exp_env <opaque>))))
+    (ttop_attributes ())
+    (ttop_loc
+     ((loc_start (position (file test1.gr) (line 4) (col 69) (bol 69)))
+      (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+      (loc_ghost false)))
+    (ttop_env <opaque>))))
+ (env <opaque>)
+ (signature
+  ((cmi_name Test1) (cmi_sign ()) (cmi_crcs <opaque>) (cmi_flags ())
+   (cmi_config_sum 1fc18795a2edd151237a56e6fe60df31)))
+ (comments ()))
+
+
+Typed well-formedness passed
+
+
+ANFed program:
+((body
+  ((anf_desc
+    (AELet Global Nonrecursive Immutable
+     ((((stamp 1131) (name printFoo))
+       ((comp_desc
+         (CLambda (printFoo) ()
+          (((anf_desc
+             (AELet Nonglobal Nonrecursive Immutable
+              ((((stamp 1136) (name str))
+                ((comp_desc (CString foo)) (comp_loc dummy_loc)
+                 (comp_env <opaque>) (comp_attributes ())
+                 (comp_analyses <opaque>) (comp_allocation_type Managed))))
+              ((anf_desc
+                (AEComp
+                 ((comp_desc
+                   (CApp
+                    (((imm_desc (ImmId ((stamp 1135) (name print))))
+                      (imm_loc
+                       ((loc_start
+                         (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                        (loc_end
+                         (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                        (loc_ghost false)))
+                      (imm_env <opaque>) (imm_analyses <opaque>))
+                     ((Managed) (Unmanaged WasmI32)))
+                    (((imm_desc (ImmId ((stamp 1136) (name str))))
+                      (imm_loc
+                       ((loc_start
+                         (position (file test1.gr) (line 1) (col 27) (bol 0)))
+                        (loc_end
+                         (position (file test1.gr) (line 1) (col 32) (bol 0)))
+                        (loc_ghost false)))
+                      (imm_env <opaque>) (imm_analyses <opaque>)))
+                    false))
+                  (comp_loc
+                   ((loc_start
+                     (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                    (loc_end
+                     (position (file test1.gr) (line 1) (col 33) (bol 0)))
+                    (loc_ghost false)))
+                  (comp_env <opaque>) (comp_attributes ())
+                  (comp_analyses <opaque>)
+                  (comp_allocation_type (Unmanaged WasmI32)))))
+               (anf_loc
+                ((loc_start
+                  (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                 (loc_end
+                  (position (file test1.gr) (line 1) (col 33) (bol 0)))
+                 (loc_ghost false)))
+               (anf_env <opaque>) (anf_analyses <opaque>)
+               (anf_allocation_type (Unmanaged WasmI32)))))
+            (anf_loc
+             ((loc_start
+               (position (file test1.gr) (line 1) (col 21) (bol 0)))
+              (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+              (loc_ghost false)))
+            (anf_env <opaque>) (anf_analyses <opaque>)
+            (anf_allocation_type (Unmanaged WasmI32)))
+           (Unmanaged WasmI32))))
+        (comp_loc
+         ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+          (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+          (loc_ghost false)))
+        (comp_env <opaque>) (comp_attributes ()) (comp_analyses <opaque>)
+        (comp_allocation_type Managed))))
+     ((anf_desc
+       (AELet Global Nonrecursive Immutable
+        ((((stamp 1133) (name printBar))
+          ((comp_desc
+            (CLambda (printBar) ()
+             (((anf_desc
+                (AELet Nonglobal Nonrecursive Immutable
+                 ((((stamp 1137) (name str))
+                   ((comp_desc (CString bar)) (comp_loc dummy_loc)
+                    (comp_env <opaque>) (comp_attributes ())
+                    (comp_analyses <opaque>) (comp_allocation_type Managed))))
+                 ((anf_desc
+                   (AEComp
+                    ((comp_desc
+                      (CApp
+                       (((imm_desc (ImmId ((stamp 1135) (name print))))
+                         (imm_loc
+                          ((loc_start
+                            (position (file test1.gr) (line 2) (col 55)
+                             (bol 34)))
+                           (loc_end
+                            (position (file test1.gr) (line 2) (col 60)
+                             (bol 34)))
+                           (loc_ghost false)))
+                         (imm_env <opaque>) (imm_analyses <opaque>))
+                        ((Managed) (Unmanaged WasmI32)))
+                       (((imm_desc (ImmId ((stamp 1137) (name str))))
+                         (imm_loc
+                          ((loc_start
+                            (position (file test1.gr) (line 2) (col 61)
+                             (bol 34)))
+                           (loc_end
+                            (position (file test1.gr) (line 2) (col 66)
+                             (bol 34)))
+                           (loc_ghost false)))
+                         (imm_env <opaque>) (imm_analyses <opaque>)))
+                       false))
+                     (comp_loc
+                      ((loc_start
+                        (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                       (loc_end
+                        (position (file test1.gr) (line 2) (col 67) (bol 34)))
+                       (loc_ghost false)))
+                     (comp_env <opaque>) (comp_attributes ())
+                     (comp_analyses <opaque>)
+                     (comp_allocation_type (Unmanaged WasmI32)))))
+                  (anf_loc
+                   ((loc_start
+                     (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                    (loc_end
+                     (position (file test1.gr) (line 2) (col 67) (bol 34)))
+                    (loc_ghost false)))
+                  (anf_env <opaque>) (anf_analyses <opaque>)
+                  (anf_allocation_type (Unmanaged WasmI32)))))
+               (anf_loc
+                ((loc_start
+                  (position (file test1.gr) (line 2) (col 55) (bol 34)))
+                 (loc_end
+                  (position (file test1.gr) (line 2) (col 67) (bol 34)))
+                 (loc_ghost false)))
+               (anf_env <opaque>) (anf_analyses <opaque>)
+               (anf_allocation_type (Unmanaged WasmI32)))
+              (Unmanaged WasmI32))))
+           (comp_loc
+            ((loc_start
+              (position (file test1.gr) (line 2) (col 49) (bol 34)))
+             (loc_end (position (file test1.gr) (line 2) (col 67) (bol 34)))
+             (loc_ghost false)))
+           (comp_env <opaque>) (comp_attributes ()) (comp_analyses <opaque>)
+           (comp_allocation_type Managed))))
+        ((anf_desc
+          (AELet Nonglobal Nonrecursive Immutable
+           ((((stamp 1138) (name if))
+             ((comp_desc
+               (CIf
+                ((imm_desc (ImmConst (Const_bool true))) (imm_loc dummy_loc)
+                 (imm_env <opaque>) (imm_analyses <opaque>))
+                ((anf_desc
+                  (AEComp
+                   ((comp_desc
+                     (CImmExpr
+                      ((imm_desc (ImmId ((stamp 1131) (name printFoo))))
+                       (imm_loc
+                        ((loc_start
+                          (position (file test1.gr) (line 4) (col 80)
+                           (bol 69)))
+                         (loc_end
+                          (position (file test1.gr) (line 4) (col 88)
+                           (bol 69)))
+                         (loc_ghost false)))
+                       (imm_env <opaque>) (imm_analyses <opaque>))))
+                    (comp_loc
+                     ((loc_start
+                       (position (file test1.gr) (line 4) (col 80) (bol 69)))
+                      (loc_end
+                       (position (file test1.gr) (line 4) (col 88) (bol 69)))
+                      (loc_ghost false)))
+                    (comp_env <opaque>) (comp_attributes ())
+                    (comp_analyses <opaque>) (comp_allocation_type Managed))))
+                 (anf_loc
+                  ((loc_start
+                    (position (file test1.gr) (line 4) (col 80) (bol 69)))
+                   (loc_end
+                    (position (file test1.gr) (line 4) (col 88) (bol 69)))
+                   (loc_ghost false)))
+                 (anf_env <opaque>) (anf_analyses <opaque>)
+                 (anf_allocation_type Managed))
+                ((anf_desc
+                  (AEComp
+                   ((comp_desc
+                     (CImmExpr
+                      ((imm_desc (ImmId ((stamp 1133) (name printBar))))
+                       (imm_loc
+                        ((loc_start
+                          (position (file test1.gr) (line 4) (col 94)
+                           (bol 69)))
+                         (loc_end
+                          (position (file test1.gr) (line 4) (col 102)
+                           (bol 69)))
+                         (loc_ghost false)))
+                       (imm_env <opaque>) (imm_analyses <opaque>))))
+                    (comp_loc
+                     ((loc_start
+                       (position (file test1.gr) (line 4) (col 94) (bol 69)))
+                      (loc_end
+                       (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                      (loc_ghost false)))
+                    (comp_env <opaque>) (comp_attributes ())
+                    (comp_analyses <opaque>) (comp_allocation_type Managed))))
+                 (anf_loc
+                  ((loc_start
+                    (position (file test1.gr) (line 4) (col 94) (bol 69)))
+                   (loc_end
+                    (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                   (loc_ghost false)))
+                 (anf_env <opaque>) (anf_analyses <opaque>)
+                 (anf_allocation_type Managed))))
+              (comp_loc
+               ((loc_start
+                 (position (file test1.gr) (line 4) (col 70) (bol 69)))
+                (loc_end
+                 (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                (loc_ghost false)))
+              (comp_env <opaque>) (comp_attributes ())
+              (comp_analyses <opaque>) (comp_allocation_type Managed))))
+           ((anf_desc
+             (AEComp
+              ((comp_desc
+                (CApp
+                 (((imm_desc (ImmId ((stamp 1138) (name if))))
+                   (imm_loc
+                    ((loc_start
+                      (position (file test1.gr) (line 4) (col 70) (bol 69)))
+                     (loc_end
+                      (position (file test1.gr) (line 4) (col 102) (bol 69)))
+                     (loc_ghost false)))
+                   (imm_env <opaque>) (imm_analyses <opaque>))
+                  (() (Unmanaged WasmI32)))
+                 () false))
+               (comp_loc
+                ((loc_start
+                  (position (file test1.gr) (line 4) (col 69) (bol 69)))
+                 (loc_end
+                  (position (file test1.gr) (line 4) (col 105) (bol 69)))
+                 (loc_ghost false)))
+               (comp_env <opaque>) (comp_attributes ())
+               (comp_analyses <opaque>)
+               (comp_allocation_type (Unmanaged WasmI32)))))
+            (anf_loc dummy_loc) (anf_env <opaque>) (anf_analyses <opaque>)
+            (anf_allocation_type (Unmanaged WasmI32)))))
+         (anf_loc dummy_loc) (anf_env <opaque>) (anf_analyses <opaque>)
+         (anf_allocation_type (Unmanaged WasmI32)))))
+      (anf_loc dummy_loc) (anf_env <opaque>) (anf_analyses <opaque>)
+      (anf_allocation_type (Unmanaged WasmI32)))))
+   (anf_loc dummy_loc) (anf_env <opaque>) (anf_analyses <opaque>)
+   (anf_allocation_type (Unmanaged WasmI32))))
+ (env <opaque>)
+ (imports
+  ((specs
+    (((imp_use_id ((stamp 1135) (name print)))
+      (imp_desc (GrainValue pervasives print))
+      (imp_shape
+       (FunctionShape (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+      (imp_exported Nonglobal) (imp_analyses <opaque>))))
+   (path_map
+    (((PIdent ((stamp 0) (name Pervasives) (flags 1)))
+      ((stamp 1135) (name print)))
+     ((PIdent ((stamp 0) (name Pervasives) (flags 1)))
+      ((stamp 1135) (name print)))))))
+ (signature
+  ((cmi_name Test1) (cmi_sign ()) (cmi_crcs <opaque>) (cmi_flags ())
+   (cmi_config_sum 1fc18795a2edd151237a56e6fe60df31)))
+ (type_metadata ()) (analyses <opaque>))
+
+
+Optimized program:
+((body
+  ((anf_desc
+    (AELet Global Nonrecursive Immutable
+     ((((stamp 1131) (name printFoo))
+       ((comp_desc
+         (CLambda (printFoo) ()
+          (((anf_desc
+             (AELet Nonglobal Nonrecursive Immutable
+              ((((stamp 1136) (name str))
+                ((comp_desc (CString foo)) (comp_loc dummy_loc)
+                 (comp_env <opaque>) (comp_attributes ())
+                 (comp_analyses <opaque>) (comp_allocation_type Managed))))
+              ((anf_desc
+                (AEComp
+                 ((comp_desc
+                   (CApp
+                    (((imm_desc (ImmId ((stamp 1135) (name print))))
+                      (imm_loc
+                       ((loc_start
+                         (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                        (loc_end
+                         (position (file test1.gr) (line 1) (col 26) (bol 0)))
+                        (loc_ghost false)))
+                      (imm_env <opaque>) (imm_analyses <opaque>))
+                     ((Managed) (Unmanaged WasmI32)))
+                    (((imm_desc (ImmId ((stamp 1136) (name str))))
+                      (imm_loc
+                       ((loc_start
+                         (position (file test1.gr) (line 1) (col 27) (bol 0)))
+                        (loc_end
+                         (position (file test1.gr) (line 1) (col 32) (bol 0)))
+                        (loc_ghost false)))
+                      (imm_env <opaque>) (imm_analyses <opaque>)))
+                    false))
+                  (comp_loc
+                   ((loc_start
+                     (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                    (loc_end
+                     (position (file test1.gr) (line 1) (col 33) (bol 0)))
+                    (loc_ghost false)))
+                  (comp_env <opaque>) (comp_attributes ())
+                  (comp_analyses <opaque>)
+                  (comp_allocation_type (Unmanaged WasmI32)))))
+               (anf_loc
+                ((loc_start
+                  (position (file test1.gr) (line 1) (col 21) (bol 0)))
+                 (loc_end
+                  (position (file test1.gr) (line 1) (col 33) (bol 0)))
+                 (loc_ghost false)))
+               (anf_env <opaque>) (anf_analyses <opaque>)
+               (anf_allocation_type (Unmanaged WasmI32)))))
+            (anf_loc
+             ((loc_start
+               (position (file test1.gr) (line 1) (col 21) (bol 0)))
+              (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+              (loc_ghost false)))
+            (anf_env <opaque>) (anf_analyses <opaque>)
+            (anf_allocation_type (Unmanaged WasmI32)))
+           (Unmanaged WasmI32))))
+        (comp_loc
+         ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+          (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+          (loc_ghost false)))
+        (comp_env <opaque>) (comp_attributes ()) (comp_analyses <opaque>)
+        (comp_allocation_type Managed))))
+     ((anf_desc
+       (AEComp
+        ((comp_desc
+          (CApp
+           (((imm_desc (ImmId ((stamp 1131) (name printFoo))))
+             (imm_loc
+              ((loc_start
+                (position (file test1.gr) (line 4) (col 70) (bol 69)))
+               (loc_end
+                (position (file test1.gr) (line 4) (col 102) (bol 69)))
+               (loc_ghost false)))
+             (imm_env <opaque>) (imm_analyses <opaque>))
+            (() (Unmanaged WasmI32)))
+           () false))
+         (comp_loc
+          ((loc_start (position (file test1.gr) (line 4) (col 69) (bol 69)))
+           (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+           (loc_ghost false)))
+         (comp_env <opaque>) (comp_attributes ()) (comp_analyses <opaque>)
+         (comp_allocation_type (Unmanaged WasmI32)))))
+      (anf_loc dummy_loc) (anf_env <opaque>) (anf_analyses <opaque>)
+      (anf_allocation_type (Unmanaged WasmI32)))))
+   (anf_loc dummy_loc) (anf_env <opaque>) (anf_analyses <opaque>)
+   (anf_allocation_type (Unmanaged WasmI32))))
+ (env <opaque>)
+ (imports
+  ((specs
+    (((imp_use_id ((stamp 1135) (name print)))
+      (imp_desc (GrainValue pervasives print))
+      (imp_shape
+       (FunctionShape (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+      (imp_exported Nonglobal) (imp_analyses <opaque>))))
+   (path_map
+    (((PIdent ((stamp 0) (name Pervasives) (flags 1)))
+      ((stamp 1135) (name print)))
+     ((PIdent ((stamp 0) (name Pervasives) (flags 1)))
+      ((stamp 1135) (name print)))))))
+ (signature
+  ((cmi_name Test1) (cmi_sign ()) (cmi_crcs <opaque>) (cmi_flags ())
+   (cmi_config_sum 1fc18795a2edd151237a56e6fe60df31)))
+ (type_metadata ()) (analyses <opaque>))
+
+
+Mashed program:
+((functions
+  (((id ((stamp 1131) (name printFoo))) (name (printFoo)) (args (Managed))
+    (return_type ((Unmanaged WasmI32)))
+    (body
+     (((instr_desc
+        (MStore
+         (((MLocalBind 0 Managed)
+           ((instr_desc (MAllocate (MString foo))) (instr_loc dummy_loc))))))
+       (instr_loc dummy_loc))
+      ((instr_desc
+        (MCallKnown (func print_1135)
+         (closure (MImmBinding (MGlobalBind print_1135 Managed)))
+         (func_type ((Managed) ((Unmanaged WasmI32))))
+         (args ((MImmBinding (MLocalBind 0 Managed))))))
+       (instr_loc
+        ((loc_start (position (file test1.gr) (line 1) (col 21) (bol 0)))
+         (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+         (loc_ghost false))))))
+    (stack_size
+     ((stack_size_ptr 1) (stack_size_i32 0) (stack_size_i64 0)
+      (stack_size_f32 0) (stack_size_f64 0)))
+    (attrs ())
+    (func_loc
+     ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+      (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+      (loc_ghost false))))))
+ (imports
+  (((mimp_id ((stamp 1135) (name print))) (mimp_mod pervasives)
+    (mimp_name print)
+    (mimp_type
+     (MFuncImport (Managed (Unmanaged WasmI32)) ((Unmanaged WasmI32))))
+    (mimp_kind MImportGrain) (mimp_setup MSetupNone) (mimp_used true))
+   ((mimp_id ((stamp 1135) (name print))) (mimp_mod pervasives)
+    (mimp_name print) (mimp_type (MGlobalImport Managed true))
+    (mimp_kind MImportGrain) (mimp_setup MCallGetter) (mimp_used true))))
+ (exports ())
+ (main_body
+  (((instr_desc
+     (MStore
+      (((MGlobalBind printFoo_1131 Managed)
+        ((instr_desc
+          (MAllocate (MClosure ((func_idx ()) (arity 1) (variables ())))))
+         (instr_loc
+          ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+           (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+           (loc_ghost false))))))))
+    (instr_loc
+     ((loc_start (position (file test1.gr) (line 1) (col 15) (bol 0)))
+      (loc_end (position (file test1.gr) (line 1) (col 33) (bol 0)))
+      (loc_ghost false))))
+   ((instr_desc
+     (MCallKnown (func printFoo_1131)
+      (closure (MImmBinding (MGlobalBind printFoo_1131 Managed)))
+      (func_type (() ((Unmanaged WasmI32)))) (args ())))
+    (instr_loc
+     ((loc_start (position (file test1.gr) (line 4) (col 69) (bol 69)))
+      (loc_end (position (file test1.gr) (line 4) (col 105) (bol 69)))
+      (loc_ghost false))))))
+ (main_body_stack_size
+  ((stack_size_ptr 0) (stack_size_i32 0) (stack_size_i64 0)
+   (stack_size_f32 0) (stack_size_f64 0)))
+ (globals ((((stamp 1131) (name printFoo)) Managed)))
+ (function_table_elements ())
+ (signature
+  ((cmi_name Test1) (cmi_sign ()) (cmi_crcs <opaque>) (cmi_flags ())
+   (cmi_config_sum 1fc18795a2edd151237a56e6fe60df31)))
+ (type_metadata ()))
+
+
+Compiled successfully
+
+
+Emitted successfully
+
+
+Linked successfully
+
+
+Assembled successfully
+
