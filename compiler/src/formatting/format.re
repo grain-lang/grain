@@ -3675,7 +3675,7 @@ and print_expression_inner =
   expression_doc;
 }
 
-and group_expression = (expr: Parsetree.expression) => {
+and is_grouped_access_expression = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
   | PExpConstant(_)
   | PExpTuple(_)
@@ -3710,7 +3710,7 @@ and print_expression =
     );
   switch (expression_parent) {
   | NeedsLeftSideGrouped =>
-    if (group_expression(expr)) {
+    if (is_grouped_access_expression(expr)) {
       Doc.concat([Doc.lparen, printed_expr, Doc.rparen]);
     } else {
       printed_expr;
