@@ -26,7 +26,7 @@ type iterator_item_type =
 type expression_parent_type =
   | GroupedExpression
   | GenericExpression
-  | LeftSideExpression;
+  | NeedsLeftSideGrouped;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
@@ -2051,7 +2051,7 @@ and print_infix_application =
           },
         ])
       | GenericExpression
-      | LeftSideExpression =>
+      | NeedsLeftSideGrouped =>
         Doc.indent(
           Doc.concat([
             Doc.line,
@@ -2453,7 +2453,7 @@ and print_other_application =
         );
       Doc.concat([
         print_expression(
-          ~expression_parent=LeftSideExpression,
+          ~expression_parent=NeedsLeftSideGrouped,
           ~original_source,
           ~comments,
           func,
@@ -2471,7 +2471,7 @@ and print_other_application =
         );
       Doc.concat([
         print_expression(
-          ~expression_parent=LeftSideExpression,
+          ~expression_parent=NeedsLeftSideGrouped,
           ~original_source,
           ~comments,
           func,
@@ -2487,7 +2487,7 @@ and print_other_application =
       Doc.group(
         Doc.concat([
           print_expression(
-            ~expression_parent=LeftSideExpression,
+            ~expression_parent=NeedsLeftSideGrouped,
             ~original_source,
             ~comments,
             func,
@@ -2504,7 +2504,7 @@ and print_other_application =
     Doc.group(
       Doc.concat([
         print_expression(
-          ~expression_parent=LeftSideExpression,
+          ~expression_parent=NeedsLeftSideGrouped,
           ~original_source,
           ~comments,
           func,
@@ -2733,7 +2733,7 @@ and print_expression_inner =
     | PExpArrayGet(expression1, expression2) =>
       Doc.concat([
         print_expression(
-          ~expression_parent=LeftSideExpression,
+          ~expression_parent=NeedsLeftSideGrouped,
           ~original_source,
           ~comments,
           expression1,
@@ -2789,7 +2789,7 @@ and print_expression_inner =
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
         print_expression(
-          ~expression_parent=LeftSideExpression,
+          ~expression_parent=NeedsLeftSideGrouped,
           ~original_source,
           ~comments,
           expression,
@@ -3690,7 +3690,7 @@ and print_expression =
       expr,
     );
   switch (expression_parent) {
-  | LeftSideExpression =>
+  | NeedsLeftSideGrouped =>
     switch (expr.pexp_desc) {
     | PExpApp(_)
     | PExpIf(_) => Doc.concat([Doc.lparen, printed_expr, Doc.rparen])
