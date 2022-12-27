@@ -53,7 +53,7 @@ let make5 = () => "five"
 let closureTest = () => {
   let val = make5()
   let foo = () => val
-  assert Result.unwrap(unmarshal(marshal(foo)))() == "five"
+  assert (Result.unwrap(unmarshal(marshal(foo))))() == "five"
 }
 
 closureTest()
