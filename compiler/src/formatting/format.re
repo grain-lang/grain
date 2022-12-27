@@ -3675,6 +3675,25 @@ and print_expression_inner =
   expression_doc;
 }
 
+and group_expression = (expr: Parsetree.expression) => {
+  switch (expr.pexp_desc) {
+  | PExpConstant(_)
+  | PExpTuple(_)
+  | PExpId(_)
+  | PExpArrayGet(_)
+  | PExpArraySet(_)
+  | PExpRecordGet(_)
+  | PExpRecordSet(_)
+  | PExpRecord(_)
+  | PExpBlock(_)
+  | PExpArray(_) => false
+  | PExpApp(func, _) =>
+    let func_name = get_function_name(func);
+    func_name != list_cons;
+  | _ => true
+  };
+}
+
 and print_expression =
     (
       ~expression_parent: expression_parent_type,
@@ -3691,10 +3710,10 @@ and print_expression =
     );
   switch (expression_parent) {
   | NeedsLeftSideGrouped =>
-    switch (expr.pexp_desc) {
-    | PExpApp(_)
-    | PExpIf(_) => Doc.concat([Doc.lparen, printed_expr, Doc.rparen])
-    | _ => printed_expr
+    if (group_expression(expr)) {
+      Doc.concat([Doc.lparen, printed_expr, Doc.rparen]);
+    } else {
+      printed_expr;
     }
 
   | GenericExpression

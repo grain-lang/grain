@@ -6,3 +6,6 @@ let printBar = () => print("bar")
 (a + b).label
 
 (a + b)[2]
+
+[1, 2, 3][2]
+[> 1, 2, 3][2]
