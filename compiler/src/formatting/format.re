@@ -24,8 +24,9 @@ type iterator_item_type =
   | IteratedRecordData
   | IteratedValueBindings;
 type expression_parent_type =
-  | GroupedExpression
-  | GenericExpression;
+  | InfixExpression
+  | GenericExpression
+  | AccessExpression;
 
 let exception_primitives = [|"throw", "fail", "assert"|];
 
@@ -2040,7 +2041,7 @@ and print_infix_application =
       },
       after_comments_docs,
       switch (expression_parent) {
-      | GroupedExpression =>
+      | InfixExpression =>
         Doc.concat([
           Doc.line,
           if (right_is_leaf) {
@@ -2049,7 +2050,8 @@ and print_infix_application =
             rhs_expr;
           },
         ])
-      | GenericExpression =>
+      | GenericExpression
+      | AccessExpression =>
         Doc.indent(
           Doc.concat([
             Doc.line,
@@ -2203,7 +2205,7 @@ and print_arg = (~original_source, ~comments, arg: Parsetree.expression) => {
   | _ =>
     Doc.group(
       print_expression(
-        ~expression_parent=GroupedExpression,
+        ~expression_parent=InfixExpression,
         ~original_source,
         ~comments,
         arg,
@@ -2222,7 +2224,7 @@ and print_args_with_comments =
   let print_item = (~comments, e: Parsetree.expression) => {
     Doc.group(
       print_expression(
-        ~expression_parent=GroupedExpression,
+        ~expression_parent=InfixExpression,
         ~original_source,
         ~comments,
         e,
@@ -2451,7 +2453,7 @@ and print_other_application =
         );
       Doc.concat([
         print_expression(
-          ~expression_parent=GenericExpression,
+          ~expression_parent=AccessExpression,
           ~original_source,
           ~comments,
           func,
@@ -2469,7 +2471,7 @@ and print_other_application =
         );
       Doc.concat([
         print_expression(
-          ~expression_parent=GenericExpression,
+          ~expression_parent=AccessExpression,
           ~original_source,
           ~comments,
           func,
@@ -2485,7 +2487,7 @@ and print_other_application =
       Doc.group(
         Doc.concat([
           print_expression(
-            ~expression_parent=GenericExpression,
+            ~expression_parent=AccessExpression,
             ~original_source,
             ~comments,
             func,
@@ -2502,7 +2504,7 @@ and print_other_application =
     Doc.group(
       Doc.concat([
         print_expression(
-          ~expression_parent,
+          ~expression_parent=AccessExpression,
           ~original_source,
           ~comments,
           func,
@@ -2611,7 +2613,7 @@ and paren_wrap_patterns =
     );
   };
 }
-and print_expression =
+and print_expression_inner =
     (
       ~expression_parent: expression_parent_type,
       ~original_source: array(string),
@@ -2731,7 +2733,7 @@ and print_expression =
     | PExpArrayGet(expression1, expression2) =>
       Doc.concat([
         print_expression(
-          ~expression_parent=GenericExpression,
+          ~expression_parent=AccessExpression,
           ~original_source,
           ~comments,
           expression1,
@@ -2787,7 +2789,7 @@ and print_expression =
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
         print_expression(
-          ~expression_parent=GenericExpression,
+          ~expression_parent=AccessExpression,
           ~original_source,
           ~comments,
           expression,
@@ -2893,7 +2895,7 @@ and print_expression =
               let guard_doc =
                 Doc.group(
                   print_expression(
-                    ~expression_parent=GroupedExpression,
+                    ~expression_parent=InfixExpression,
                     ~original_source,
                     ~comments=branch_guard_comments,
                     guard,
@@ -3276,7 +3278,7 @@ and print_expression =
           },
           Doc.group(
             print_expression(
-              ~expression_parent=GroupedExpression,
+              ~expression_parent=InfixExpression,
               ~original_source,
               ~comments=commentsInCondition,
               condition,
@@ -3347,7 +3349,7 @@ and print_expression =
               Doc.concat([
                 Doc.softLine,
                 print_expression(
-                  ~expression_parent=GroupedExpression,
+                  ~expression_parent=InfixExpression,
                   ~original_source,
                   ~comments=comments_in_expression,
                   expression,
@@ -3394,7 +3396,7 @@ and print_expression =
                 | Some(expr) =>
                   Doc.group(
                     print_expression(
-                      ~expression_parent=GroupedExpression,
+                      ~expression_parent=InfixExpression,
                       ~original_source,
                       ~comments=comments_before_loop_expression,
                       expr,
@@ -3411,7 +3413,7 @@ and print_expression =
                     Doc.line,
                     Doc.group(
                       print_expression(
-                        ~expression_parent=GroupedExpression,
+                        ~expression_parent=InfixExpression,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3429,7 +3431,7 @@ and print_expression =
                     },
                     Doc.group(
                       print_expression(
-                        ~expression_parent=GroupedExpression,
+                        ~expression_parent=InfixExpression,
                         ~original_source,
                         ~comments=comments_before_loop_expression,
                         expr,
@@ -3671,6 +3673,52 @@ and print_expression =
     };
 
   expression_doc;
+}
+
+and is_grouped_access_expression = (expr: Parsetree.expression) => {
+  switch (expr.pexp_desc) {
+  | PExpConstant(_)
+  | PExpTuple(_)
+  | PExpId(_)
+  | PExpArrayGet(_)
+  | PExpArraySet(_)
+  | PExpRecordGet(_)
+  | PExpRecordSet(_)
+  | PExpRecord(_)
+  | PExpBlock(_)
+  | PExpArray(_) => false
+  | PExpApp(func, _) =>
+    let func_name = get_function_name(func);
+    infixop(func_name);
+  | _ => true
+  };
+}
+
+and print_expression =
+    (
+      ~expression_parent: expression_parent_type,
+      ~original_source: array(string),
+      ~comments: list(Parsetree.comment),
+      expr: Parsetree.expression,
+    ) => {
+  let printed_expr =
+    print_expression_inner(
+      ~expression_parent,
+      ~original_source,
+      ~comments,
+      expr,
+    );
+  switch (expression_parent) {
+  | AccessExpression =>
+    if (is_grouped_access_expression(expr)) {
+      Doc.concat([Doc.lparen, printed_expr, Doc.rparen]);
+    } else {
+      printed_expr;
+    }
+
+  | GenericExpression
+  | InfixExpression => printed_expr
+  };
 }
 and print_assignment = (~original_source, ~comments, left, value) => {
   switch (value.pexp_desc) {

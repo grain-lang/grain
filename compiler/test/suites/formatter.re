@@ -53,4 +53,5 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("binops", "binops");
   assertFormatOutput("binop_perf", "binop_perf");
   assertFormatOutput("chained", "chained");
+  assertFormatOutput("grouped_expr", "grouped_expr");
 });
