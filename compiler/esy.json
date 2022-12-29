@@ -1,6 +1,6 @@
 {
   "name": "@grain/compiler",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "esy": {
     "build": [
       "dune build @native --no-buffer"

@@ -1,5 +1,13 @@
 # Changelog
 
+### [0.5.11](https://github.com/grain-lang/grain/compare/grain-v0.5.10...grain-v0.5.11) (2022-12-29)
+
+
+### Bug Fixes
+
+* **compiler:** Fix dependency compilation of wasi polyfill ([#1563](https://github.com/grain-lang/grain/issues/1563)) ([fa8b209](https://github.com/grain-lang/grain/commit/fa8b209629deeb9f088d086311504dbde8371189))
+* **grainfmt:** Fix grouping of expressions on LHS of fn application, record access etc ([#1562](https://github.com/grain-lang/grain/issues/1562)) ([6c46015](https://github.com/grain-lang/grain/commit/6c460156335cd3e864eb71f05f83fe6a8f8593ae))
+
 ### [0.5.10](https://github.com/grain-lang/grain/compare/grain-v0.5.9...grain-v0.5.10) (2022-12-23)
 
 
