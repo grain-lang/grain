@@ -276,7 +276,13 @@ let compile_wasi_polyfill = () => {
         cstate_filename: Some(file),
         cstate_outfile: Some(default_output_filename(file)),
       };
-      ignore(compile_resume(~hook=stop_after_object_file_emitted, cstate));
+      ignore(
+        compile_resume(
+          ~is_root_file=true,
+          ~hook=stop_after_object_file_emitted,
+          cstate,
+        ),
+      );
     })
   | None => ()
   };
