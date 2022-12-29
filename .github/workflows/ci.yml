@@ -101,4 +101,5 @@ jobs:
       - name: Run NEAR smoketest
         if: matrix.os != 'windows-latest'
         run: |
+          npm run stdlib clean
           npm run cli test
