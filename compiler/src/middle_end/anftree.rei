@@ -308,7 +308,7 @@ and comp_expression_desc =
   | CArray(list(imm_expression))
   | CArrayGet(imm_expression, imm_expression)
   | CArraySet(imm_expression, imm_expression, imm_expression)
-  | CRecord(imm_expression, list((loc(string), imm_expression)))
+  | CRecord(imm_expression, list((option(loc(string)), imm_expression)))
   | CAdt(imm_expression, imm_expression, list(imm_expression))
   | CGetTupleItem(int32, imm_expression)
   | CSetTupleItem(int32, imm_expression, imm_expression)

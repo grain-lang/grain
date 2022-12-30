@@ -24,6 +24,10 @@ type listitem('a) =
   | ListItem('a)
   | ListSpread('a, Location.t);
 
+type recorditem =
+  | RecordItem(loc(Identifier.t), expression)
+  | RecordSpread(expression, Location.t);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
@@ -192,8 +196,47 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpConstant(a));
   let tuple = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpTuple(a));
-  let record = (~loc=?, ~attributes=?, a) =>
-    mk(~loc?, ~attributes?, PExpRecord(a));
+  let record = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpRecord(a, b));
+  let record_fields = (~loc=?, ~attributes=?, a) =>
+    switch (a) {
+    | [] => assert(false)
+    | [base, ...rest] =>
+      let (spread_base, record_items) =
+        switch (base) {
+        | RecordItem(id, expr) => (None, [(id, expr)])
+        | RecordSpread(expr, _) => (Some(expr), [])
+        };
+      let record_items =
+        List.fold_left(
+          (acc, expr) => {
+            switch (expr) {
+            | RecordItem(id, expr) => [(id, expr), ...acc]
+            | RecordSpread(_, loc) =>
+              switch (spread_base) {
+              | None =>
+                raise(
+                  SyntaxError(
+                    loc,
+                    "A record spread can only appear at the beginning of a record expression.",
+                  ),
+                )
+              | Some(_) =>
+                raise(
+                  SyntaxError(
+                    loc,
+                    "A record expression may only contain one record spread.",
+                  ),
+                )
+              }
+            }
+          },
+          record_items,
+          rest,
+        );
+      let record_items = List.rev(record_items);
+      record(~loc?, ~attributes?, spread_base, record_items);
+    };
   let record_get = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpRecordGet(a, b));
   let record_set = (~loc=?, ~attributes=?, a, b, c) =>

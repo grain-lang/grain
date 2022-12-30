@@ -214,8 +214,9 @@ module MakeMap =
           map_expression(a2),
           map_expression(a3),
         )
-      | TExpRecord(args) =>
+      | TExpRecord(b, args) =>
         TExpRecord(
+          Option.map(map_expression, b),
           Array.map(
             fun
             | (desc, Overridden(name, expr)) => (

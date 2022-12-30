@@ -450,7 +450,7 @@ simple_expr:
 
 braced_expr:
   | lbrace block_body rbrace { Exp.block ~loc:(to_loc $loc) $2 }
-  | lbrace record_exprs rbrace { Exp.record ~loc:(to_loc $loc) $2 }
+  | lbrace record_exprs rbrace { Exp.record_fields ~loc:(to_loc $loc) $2 }
 
 block:
   | lbrace block_body rbrace { Exp.block ~loc:(to_loc $loc) $2 }
@@ -579,14 +579,18 @@ record_set:
   | colon expr {$2}
 
 punned_record_field:
-  | id { $1, (Exp.ident ~loc:(to_loc $loc) $1) }
+  | id { RecordItem ($1, (Exp.ident ~loc:(to_loc $loc) $1)) }
 
 non_punned_record_field:
-  | id record_field_value { $1, $2 }
+  | id record_field_value { RecordItem ($1, $2) }
+
+spread_record_field:
+  | ELLIPSIS expr { RecordSpread ($2, to_loc $loc) }
 
 %inline record_field:
   | punned_record_field { $1 }
   | non_punned_record_field { $1 }
+  | spread_record_field { $1 }
 
 record_exprs:
   // Don't ever parse {x} as a record

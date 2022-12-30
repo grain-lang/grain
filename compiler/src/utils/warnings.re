@@ -27,7 +27,10 @@ type t =
   | FromNumberLiteralI32(string)
   | FromNumberLiteralI64(string)
   | FromNumberLiteralF32(string)
-  | FromNumberLiteralF64(string);
+  | FromNumberLiteralF64(string)
+  | UselessRecordSpread;
+
+let last_warning_number = 22;
 
 let number =
   fun
@@ -51,9 +54,8 @@ let number =
   | FromNumberLiteralI32(_) => 18
   | FromNumberLiteralI64(_) => 19
   | FromNumberLiteralF32(_) => 20
-  | FromNumberLiteralF64(_) => 21;
-
-let last_warning_number = 21;
+  | FromNumberLiteralF64(_) => 21
+  | UselessRecordSpread => last_warning_number;
 
 let message =
   fun
@@ -136,7 +138,8 @@ let message =
     Printf.sprintf(
       "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
       n,
-    );
+    )
+  | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
 
 let sub_locs =
   fun
@@ -183,6 +186,7 @@ let defaults = [
   FromNumberLiteralI64(""),
   FromNumberLiteralF32(""),
   FromNumberLiteralF64(""),
+  UselessRecordSpread,
 ];
 
 let _ = List.iter(x => current^.active[number(x)] = true, defaults);

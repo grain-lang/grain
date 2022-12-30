@@ -726,7 +726,9 @@ and type_expect_ =
       exp_type: Builtin_types.type_void,
       exp_env: env,
     });
-  | PExpRecord(es) =>
+  | PExpRecord(b, es) =>
+    let opt_exp = Option.map(type_exp(env), b);
+
     let (ty_record, opath) = {
       let get_path = ty =>
         try({
@@ -738,9 +740,19 @@ and type_expect_ =
         | Not_found => None
         };
 
-      switch (get_path(ty_expected)) {
-      | None => (newvar(), None)
-      | op => (ty_expected, op)
+      let expected_opath = get_path(ty_expected);
+      let opt_exp_opath = Option.bind(opt_exp, exp => get_path(exp.exp_type));
+      switch (expected_opath, opt_exp_opath) {
+      | (None, None) => (newvar(), None)
+      | (Some(_), None)
+      | (Some((_, _, true)), Some(_)) => (ty_expected, expected_opath)
+      | (None | Some((_, _, false)), Some((_, p', _))) =>
+        let decl = Env.find_type(p', env);
+        begin_def();
+        let ty = newconstr(p', instance_list(env, decl.type_params));
+        end_def();
+        generalize_structure(ty);
+        (ty, opt_exp_opath);
       };
     };
 
@@ -782,7 +794,7 @@ and type_expect_ =
     );
 
     check_duplicates(lbl_exp_list);
-    let label_definitions = {
+    let (opt_exp, label_definitions) = {
       let (_lid, lbl, _lbl_exp) = List.hd(lbl_exp_list);
       let matching_label = lbl =>
         List.find(
@@ -790,33 +802,65 @@ and type_expect_ =
           lbl_exp_list,
         );
 
-      Array.map(
-        lbl =>
+      switch (opt_exp) {
+      | None =>
+        let label_definitions =
+          Array.map(
+            lbl =>
+              switch (matching_label(lbl)) {
+              | (lid, _lbl, lbl_exp) => Overridden(lid, lbl_exp)
+              | exception Not_found =>
+                let present_indices =
+                  List.map(((_, lbl, _)) => lbl.lbl_pos, lbl_exp_list);
+
+                let label_names = extract_label_names(env, ty_expected);
+                let rec missing_labels = n => (
+                  fun
+                  | [] => []
+                  | [lbl, ...rem] =>
+                    if (List.mem(n, present_indices)) {
+                      missing_labels(n + 1, rem);
+                    } else {
+                      [lbl, ...missing_labels(n + 1, rem)];
+                    }
+                );
+
+                let missing = missing_labels(0, label_names);
+                raise(Error(loc, env, Label_missing(missing)));
+              },
+            lbl.lbl_all,
+          );
+        (None, label_definitions);
+      | Some(exp) =>
+        let ty_exp = instance(env, exp.exp_type);
+        let unify_kept = lbl => {
+          let (_, ty_arg1, ty_res1) = instance_label(false, lbl);
+          unify_exp_types(exp.exp_loc, env, ty_exp, ty_res1);
           switch (matching_label(lbl)) {
-          | (lid, _lbl, lbl_exp) => Overridden(lid, lbl_exp)
+          | (lid, _lbl, lbl_exp) =>
+            // do not connect result types for overridden labels
+            Overridden(lid, lbl_exp)
           | exception Not_found =>
-            let present_indices =
-              List.map(((_, lbl, _)) => lbl.lbl_pos, lbl_exp_list);
-
-            let label_names = extract_label_names(env, ty_expected);
-            let rec missing_labels = n => (
-              fun
-              | [] => []
-              | [lbl, ...rem] =>
-                if (List.mem(n, present_indices)) {
-                  missing_labels(n + 1, rem);
-                } else {
-                  [lbl, ...missing_labels(n + 1, rem)];
-                }
+            let (_, ty_arg2, ty_res2) = instance_label(false, lbl);
+            unify_exp_types(loc, env, ty_arg1, ty_arg2);
+            with_explanation(() =>
+              unify_exp_types(loc, env, instance(env, ty_expected), ty_res2)
             );
-
-            let missing = missing_labels(0, label_names);
-            raise(Error(loc, env, Label_missing(missing)));
-          },
-        lbl.lbl_all,
-      );
+            Kept;
+          };
+        };
+        let label_definitions = Array.map(unify_kept, lbl.lbl_all);
+        (Some({...exp, exp_type: ty_exp}), label_definitions);
+      };
     };
-
+    let num_fields =
+      switch (lbl_exp_list) {
+      | [] => assert(false)
+      | [(_, lbl, _), ..._] => Array.length(lbl.lbl_all)
+      };
+    if (b != None && List.length(es) == num_fields) {
+      Location.prerr_warning(loc, Grain_utils.Warnings.UselessRecordSpread);
+    };
     let label_descriptions = {
       let (_, {lbl_all}, _) = List.hd(lbl_exp_list);
       lbl_all;
@@ -830,7 +874,7 @@ and type_expect_ =
       );
 
     re({
-      exp_desc: TExpRecord(fields),
+      exp_desc: TExpRecord(opt_exp, fields),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,

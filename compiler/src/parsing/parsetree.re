@@ -435,7 +435,7 @@ and expression_desc =
   | PExpArray(list(expression))
   | PExpArrayGet(expression, expression)
   | PExpArraySet(expression, expression, expression)
-  | PExpRecord(list((loc(Identifier.t), expression)))
+  | PExpRecord(option(expression), list((loc(Identifier.t), expression)))
   | PExpRecordGet(expression, loc(Identifier.t))
   | PExpRecordSet(expression, loc(Identifier.t), expression)
   | PExpLet(rec_flag, mut_flag, list(value_binding))

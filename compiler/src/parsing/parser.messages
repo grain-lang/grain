@@ -513,6 +513,15 @@ program: LBRACK ELLIPSIS WHEN
 ## The known suffix of the stack is as follows:
 ## ELLIPSIS
 ##
+program: LBRACE ELLIPSIS WHEN
+##
+## Ends in an error in state: 184.
+##
+## spread_record_field -> ELLIPSIS . expr [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ELLIPSIS
+##
 program: LET WASMI64 EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 430.
@@ -3229,6 +3238,30 @@ program: LBRACE UIDENT COMMA EOL UIDENT COLON BREAK WHILE
 ## The known suffix of the stack is as follows:
 ## punned_record_field comma lseparated_nonempty_list_inner(comma,record_field)
 ##
+program: LBRACE ELLIPSIS BIGINT COMMA ELLIPSIS BIGINT ARROW
+##
+## Ends in an error in state: 227.
+##
+## lseparated_nonempty_list_inner(comma,record_field) -> lseparated_nonempty_list_inner(comma,record_field) . comma punned_record_field [ RBRACE EOL COMMA ]
+## lseparated_nonempty_list_inner(comma,record_field) -> lseparated_nonempty_list_inner(comma,record_field) . comma non_punned_record_field [ RBRACE EOL COMMA ]
+## lseparated_nonempty_list_inner(comma,record_field) -> lseparated_nonempty_list_inner(comma,record_field) . comma spread_record_field [ RBRACE EOL COMMA ]
+## record_exprs -> spread_record_field comma lseparated_nonempty_list_inner(comma,record_field) . option(comma) [ RBRACE EOL ]
+##
+## The known suffix of the stack is as follows:
+## spread_record_field comma lseparated_nonempty_list_inner(comma,record_field)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 171, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 125, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 69, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 203, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 59, spurious reduction of production expr -> non_stmt_expr
+## In state 208, spurious reduction of production spread_record_field -> ELLIPSIS expr
+## In state 224, spurious reduction of production lseparated_nonempty_list_inner(comma,record_field) -> spread_record_field
+##
 
 Expected a comma followed by more record fields or an immediate `}` to complete the record expression.
 
@@ -3289,6 +3322,47 @@ program: LBRACE UIDENT COMMA UIDENT COMMA EOL WHILE
 ##
 
 Expected more record fields or an immediate `}` to complete the record expression.
+
+program: LBRACE ELLIPSIS BIGINT ARROW
+##
+## Ends in an error in state: 222.
+##
+## record_exprs -> spread_record_field . comma lseparated_nonempty_list_inner(comma,record_field) option(comma) [ RBRACE EOL ]
+##
+## The known suffix of the stack is as follows:
+## spread_record_field
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 171, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 125, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 69, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 203, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 59, spurious reduction of production expr -> non_stmt_expr
+## In state 208, spurious reduction of production spread_record_field -> ELLIPSIS expr
+##
+
+Expected a comma followed by one or more record field overrides to complete the record expression.
+
+program: LBRACE ELLIPSIS BIGINT COMMA WHILE
+##
+## Ends in an error in state: 223.
+##
+## record_exprs -> spread_record_field comma . lseparated_nonempty_list_inner(comma,record_field) option(comma) [ RBRACE EOL ]
+##
+## The known suffix of the stack is as follows:
+## spread_record_field comma
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 93, spurious reduction of production comma -> COMMA
+##
+
+Expected one or more record field overrides to complete the record expression.
 
 program: LBRACE UIDENT COMMA UIDENT THICKARROW
 ##

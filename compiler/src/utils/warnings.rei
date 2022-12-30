@@ -41,7 +41,8 @@ type t =
   | FromNumberLiteralI32(string)
   | FromNumberLiteralI64(string)
   | FromNumberLiteralF32(string)
-  | FromNumberLiteralF64(string);
+  | FromNumberLiteralF64(string)
+  | UselessRecordSpread;
 
 let is_active: t => bool;
 let is_error: t => bool;

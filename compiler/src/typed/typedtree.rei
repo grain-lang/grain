@@ -412,7 +412,10 @@ and expression_desc =
   | TExpArray(list(expression))
   | TExpArrayGet(expression, expression)
   | TExpArraySet(expression, expression, expression)
-  | TExpRecord(array((Types.label_description, record_label_definition)))
+  | TExpRecord(
+      option(expression),
+      array((Types.label_description, record_label_definition)),
+    )
   | TExpRecordGet(expression, loc(Identifier.t), Types.label_description)
   | TExpRecordSet(
       expression,
@@ -449,7 +452,7 @@ and expression_desc =
   | TExpNull
 
 and record_label_definition =
-  | Kept(Types.type_expr)
+  | Kept
   | Overridden(loc(Identifier.t), expression)
 
 and value_binding = {
