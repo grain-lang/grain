@@ -51,6 +51,7 @@ let is_logic_op = fn =>
     | "=="
     | "!="
     | "is"
+    | "isnt"
     | "&&"
     | "||" => true
     | _ => false
@@ -104,7 +105,8 @@ let op_precedence = fn => {
     | "!="
     | "is" => 80
     | "&&" => 40
-    | "||" => 30
+    | "||"
+    | "??" => 30
     | _ => op_precedence(fn.[0])
     };
   } else if (String.length(fn) > 0) {
@@ -287,10 +289,11 @@ let infixop = (op: string) => {
   | '<'
   | '>'
   | '&'
-  | '|' => true
+  | '|'
+  | '?' => true
   | _ when op == "is" => true
   | _ when op == "isnt" => true
-  | _ when op == "!=" => true
+  | _ when String.starts_with(~prefix="!=", op) => true
   | _ => false
   | exception _ => false
   };
