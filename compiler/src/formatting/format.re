@@ -1697,10 +1697,11 @@ and print_record =
   let after_brace_comments =
     switch (items) {
     | [item, ..._] =>
-      let loc = switch (item) {
-      | Field((ident, _)) => ident.loc
-      | RecordSpread(exp) => exp.pexp_loc
-      }
+      let loc =
+        switch (item) {
+        | Field((ident, _)) => ident.loc
+        | RecordSpread(exp) => exp.pexp_loc
+        };
 
       Comment_utils.get_after_brace_comments(
         ~loc=recloc,
