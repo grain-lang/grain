@@ -1,5 +1,15 @@
 # Changelog
 
+### [0.5.12](https://github.com/grain-lang/grain/compare/grain-v0.5.11...grain-v0.5.12) (2023-01-05)
+
+
+### Bug Fixes
+
+* **grainfmt:** Handle comments after braces properly ([654ab8c](https://github.com/grain-lang/grain/commit/654ab8cd946ea99261e37d85ea76bc9a49325311))
+* **grainfmt:** Handle comments after braces properly when on one line ([#1578](https://github.com/grain-lang/grain/issues/1578)) ([654ab8c](https://github.com/grain-lang/grain/commit/654ab8cd946ea99261e37d85ea76bc9a49325311))
+* **grainfmt:** Properly handle coalesing operator ([#1568](https://github.com/grain-lang/grain/issues/1568)) ([4595f97](https://github.com/grain-lang/grain/commit/4595f97d8013a57bccfd09138d3351e94887a6ba))
+* **stdlib:** Remove memory corruption in File.fdReaddir ([#1573](https://github.com/grain-lang/grain/issues/1573)) ([060fc7b](https://github.com/grain-lang/grain/commit/060fc7ba4e5c4d86098eafbee09bbce13bca32c3))
+
 ### [0.5.11](https://github.com/grain-lang/grain/compare/grain-v0.5.10...grain-v0.5.11) (2022-12-29)
 
 

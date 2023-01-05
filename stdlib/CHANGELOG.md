@@ -1,5 +1,12 @@
 # Changelog
 
+### [0.5.12](https://github.com/grain-lang/grain/compare/stdlib-v0.5.11...stdlib-v0.5.12) (2023-01-05)
+
+
+### Bug Fixes
+
+* **stdlib:** Remove memory corruption in File.fdReaddir ([#1573](https://github.com/grain-lang/grain/issues/1573)) ([060fc7b](https://github.com/grain-lang/grain/commit/060fc7ba4e5c4d86098eafbee09bbce13bca32c3))
+
 ### [0.5.11](https://github.com/grain-lang/grain/compare/stdlib-v0.5.10...stdlib-v0.5.11) (2022-12-29)
 
 
