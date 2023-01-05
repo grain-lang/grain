@@ -300,22 +300,20 @@ let get_after_brace_comments =
     switch (first) {
     | None => cmts
     | Some(leading) =>
-      let fstclog = Locations.get_comment_loc(fst);
-
-      let (_, itemstartline, itemstartc, _) =
+      let (_, firststartline, firststartc, _) =
         Locations.get_raw_pos_info(leading.loc_start);
 
-      if (itemstartline > startline) {
-        cmts;
-      } else {
-        let (_, cmtstartline, cmtstartc, _) =
-          Locations.get_raw_pos_info(fstclog.loc_start);
-        if (cmtstartline >= itemstartline && cmtstartc > itemstartc) {
-          [];
-        } else {
-          cmts;
-        };
-      };
+      List.filter(
+        cmt => {
+          let cmt_loc = Locations.get_comment_loc(cmt);
+          let (_, cmtendline, cmtendc, _) =
+            Locations.get_raw_pos_info(cmt_loc.loc_end);
+          cmtendline < firststartline
+          || cmtendline == firststartline
+          && cmtendc <= firststartc;
+        },
+        cmts,
+      );
     }
   };
 };
