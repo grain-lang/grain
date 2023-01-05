@@ -1128,9 +1128,9 @@ export let fdReaddir = (fd: FileDescriptor) => {
 
             let filetype = filetypeFromNumber(WasmI32.load8U(ent, 20n))
 
-            let dirent = { inode, path, filetype }
+            let dirent = WasmI32.fromGrain({ inode, path, filetype })
 
-            WasmI32.store(arr + i * 4n, WasmI32.fromGrain(dirent), 8n)
+            WasmI32.store(arr + i * 4n, Memory.incRef(dirent), 8n)
 
             let next = WasmI32.load(bufs, 4n)
             Memory.free(bufs)
