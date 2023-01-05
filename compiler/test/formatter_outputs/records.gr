@@ -110,3 +110,9 @@ let s = { // comment 1
   var: A, // end line comment
   str: "",
 }
+
+let y = { /* comment 1 */
+  x, /* comment 2 */
+  longlonglongnamenamename2: 12345, /* comment 3 */
+  longlonglongnamenamename3: 12345, /* comment 4 */
+} // end line comment
