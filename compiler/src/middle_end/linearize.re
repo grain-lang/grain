@@ -763,8 +763,9 @@ let rec transl_imm =
     let (new_args, new_setup) =
       List.split(
         List.map(
-          fun
-          | (ld, Kept) => {
+          arg =>
+            switch (arg) {
+            | (ld, Kept) =>
               let (base_var, _) = Option.get(base_imm);
               let fieldtmp = gensym("field");
               (
@@ -783,8 +784,7 @@ let rec transl_imm =
                   ),
                 ],
               );
-            }
-          | (_, Overridden({txt: name, loc}, expr)) => {
+            | (_, Overridden({txt: name, loc}, expr)) =>
               let (var, setup) = transl_imm(expr);
               (
                 (

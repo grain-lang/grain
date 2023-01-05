@@ -200,7 +200,7 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpRecord(a, b));
   let record_fields = (~loc=?, ~attributes=?, a) =>
     switch (a) {
-    | [] => assert(false)
+    | [] => failwith("Impossible: empty record field list")
     | [base, ...rest] =>
       let (spread_base, record_items) =
         switch (base) {
