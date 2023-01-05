@@ -34,6 +34,7 @@ import {
 } from "runtime/dataStructures"
 
 import List from "list"
+import { append as appendToArray } from "array"
 
 /**
  * @section Types: Type declarations included in the File module.
@@ -1114,7 +1115,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
         None => {
           Memory.free(bufUsed)
 
-          let arr = allocateArray(numEntries)
+          let mut arr: Array<DirectoryEntry> = [>]
 
           for (let mut i = numEntries - 1n; i >= 0n; i -= 1n) {
             let ent = WasmI32.load(bufs, 0n)
@@ -1130,7 +1131,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
 
             let dirent = { inode, path, filetype }
 
-            WasmI32.store(arr + i * 4n, WasmI32.fromGrain(dirent), 8n)
+            arr = appendToArray([> dirent], arr)
 
             let next = WasmI32.load(bufs, 4n)
             Memory.free(bufs)
@@ -1139,7 +1140,7 @@ export let fdReaddir = (fd: FileDescriptor) => {
             bufs = next
           }
 
-          Ok(WasmI32.toGrain(arr): Array<DirectoryEntry>)
+          Ok(arr)
         },
       }
     }
