@@ -2732,7 +2732,9 @@ let () =
     | Error(
         (
           Missing_module(loc, _, _) | Illegal_value_name(loc, _) |
-          Value_not_found_in_module(loc, _, _)
+          Value_not_found_in_module(loc, _, _) |
+          Unbound_module(loc, _) |
+          Unbound_label(loc, _)
         ) as err,
       )
         when loc != Location.dummy_loc =>
