@@ -416,4 +416,67 @@ describe("pattern matching", ({test, testSkip}) => {
     |},
     "7\n",
   );
+
+  // inline record constructors
+  assertRun(
+    "inline_rec_pattern_1",
+    {|
+      enum E {
+        Tup(String, Number),
+        Rec { x: Number, y: String }
+      }
+      let a = Rec { x: 123, y: "abc" }
+      match (a) {
+        Rec { y, x } => print(x),
+        _ => fail ""
+      }
+      match (a) {
+        Rec { y, _ } | Tup(y, _) => print(y),
+        _ => fail ""
+      }
+      match (a) {
+        Rec { _ } => print("record"),
+        _ => fail ""
+      }
+    |},
+    "123\nabc\nrecord\n",
+  );
+  assertRun(
+    "inline_rec_pattern_2",
+    {|
+      enum E {
+        Rec { x: Number, y: String }
+      }
+      let a = Rec { x: 123, y: "abc" }
+      let Rec { y, _ } = a
+      print(y)
+    |},
+    "abc\n",
+  );
+  assertCompileError(
+    "inline_rec_pattern_3",
+    {|
+      enum E {
+        T(Number),
+        R { x: Number }
+      }
+      match (T(1)) {
+        T { _ } => print("success"),
+        _ => fail ""
+      }
+    |},
+    "T is a tuple constructor but a record constructor pattern was given.",
+  );
+  assertCompileError(
+    "inline_rec_pattern_4",
+    {|
+      enum Rec {
+        Rec { x: Number }
+      }
+      match (Rec { x: 1 }) {
+        Rec(y) => print("success")
+      }
+    |},
+    "Rec is a record constructor but a tuple constructor pattern was given.",
+  );
 });

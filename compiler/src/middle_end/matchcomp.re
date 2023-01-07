@@ -609,9 +609,23 @@ let rec compile_matrix = mtx =>
       let constructors = matrix_head_constructors(mtx);
       /* Printf.eprintf "constructors:\n%s\n" (Sexplib.Sexp.to_string_hum ((Sexplib.Conv.sexp_of_list sexp_of_constructor_description) constructors)); */
       let handle_constructor = ((_, switch_branches), cstr) => {
-        let arity = cstr.cstr_arity;
         let specialized = specialize_matrix(cstr, alias, mtx);
-        let result = compile_matrix(specialized);
+        let (arity, mtx) =
+          switch (cstr.cstr_inlined) {
+          | None => (cstr.cstr_arity, specialized)
+          | Some(t) =>
+            switch (t.type_kind) {
+            | TDataRecord(rfs) =>
+              let arity = List.length(rfs);
+              let mtx = flatten_matrix(arity, alias, specialized);
+              (arity, mtx);
+            | _ =>
+              failwith(
+                "Impossible: inlined record constructor pattern with non-record data",
+              )
+            }
+          };
+        let result = compile_matrix(mtx);
         let final_tree =
           Explode(ConstructorMatrix(Some(arity)), alias, result);
         (

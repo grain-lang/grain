@@ -72,7 +72,7 @@ type error =
   | No_value_clauses
   | Exception_pattern_below_toplevel
   | Inlined_record_escape
-  | Inlined_record_expected
+  | Inlined_record_misuse(Identifier.t, string, string)
   | Invalid_extension_constructor_payload
   | Not_an_extension_constructor
   | Literal_overflow(string)
@@ -396,7 +396,8 @@ let rec is_nonexpansive = exp =>
   | TExpIf(c, t, f) => is_nonexpansive(t) && is_nonexpansive(f)
   | TExpWhile(c, b) => is_nonexpansive(b)
   | TExpBlock([_, ..._] as es) => is_nonexpansive(last(es))
-  | TExpConstruct(_, _, el) => List.for_all(is_nonexpansive, el)
+  | TExpConstruct(_, _, TExpConstrTuple(el)) =>
+    List.for_all(is_nonexpansive, el)
   | _ => false
   };
 
@@ -934,7 +935,8 @@ and type_expect_ =
     let pat =
       switch (args) {
       | [] =>
-        Pat.construct(
+        Pat.tuple_construct(
+          ~loc=Location.dummy_loc,
           Location.mknoloc(Identifier.IdentName(Location.mknoloc("()"))),
           [],
         )
@@ -983,8 +985,15 @@ and type_expect_ =
       exp_type: ty_res,
       exp_env: env,
     });
-  | PExpConstruct(cstr, args) =>
-    type_construct(env, loc, cstr, args, ty_expected_explained, attributes)
+  | PExpConstruct(cstr, arg) =>
+    type_construct(
+      env,
+      loc,
+      cstr,
+      arg,
+      ty_expected_explained,
+      sexp.pexp_attributes,
+    )
   | PExpMatch(arg, branches) =>
     begin_def();
     let arg = type_exp(env, arg);
@@ -1344,7 +1353,15 @@ and type_function =
       arity([{...mb, pmb_pat: p}])
     | [{pmb_pat: {ppat_desc: PPatTuple(args)}, _}] => List.length(args)
     // TODO(#1507): Reduce the number of hard-coded cases
-    | [{pmb_pat: {ppat_desc: PPatConstruct({txt: ident, _}, []), _}, _}]
+    | [
+        {
+          pmb_pat: {
+            ppat_desc: PPatConstruct({txt: ident, _}, PPatConstrTuple([])),
+            _,
+          },
+          _,
+        },
+      ]
         when Identifier.equal(ident, Identifier.IdentName(mknoloc("()"))) => 0
     | _ => failwith("Impossible: type_function: impossible caselist")
     };
@@ -1480,8 +1497,23 @@ and type_application = (~in_function=?, env, funct, args) => {
   (typed_args, instance(env, ty_ret));
 }
 
-and type_construct = (env, loc, lid, sargs, ty_expected_explained, attrs) => {
+and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
+  let (sargs, is_record_cstr) =
+    switch (sarg) {
+    | PExpConstrTuple(sargs) => (sargs, false)
+    | PExpConstrRecord(rfs) => (
+        [
+          {
+            pexp_desc: PExpRecord(None, rfs),
+            pexp_attributes: attrs,
+            pexp_loc: loc,
+          },
+        ],
+        true,
+      )
+    };
+  let attrs = Typetexp.type_attributes(attrs);
   let opath =
     try({
       let (p0, p, _) = extract_concrete_variant(env, ty_expected);
@@ -1501,6 +1533,20 @@ and type_construct = (env, loc, lid, sargs, ty_expected_explained, attrs) => {
       Constructor.disambiguate(lid, env, opath),
       constrs,
     );
+  let is_record_cstr_def = constr.cstr_inlined != None;
+  if (is_record_cstr_def != is_record_cstr) {
+    raise(
+      Error(
+        loc,
+        env,
+        Inlined_record_misuse(
+          lid.txt,
+          if (is_record_cstr_def) {"record"} else {"tuple"},
+          if (is_record_cstr) {"record"} else {"tuple"},
+        ),
+      ),
+    );
+  };
   if (List.length(sargs) != constr.cstr_arity) {
     raise(
       Error(
@@ -1523,7 +1569,7 @@ and type_construct = (env, loc, lid, sargs, ty_expected_explained, attrs) => {
   let (ty_args, ty_res) = instance_constructor(constr);
   let texp =
     re({
-      exp_desc: TExpConstruct(lid, constr, []),
+      exp_desc: TExpConstruct(lid, constr, TExpConstrTuple([])),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attrs,
@@ -1569,8 +1615,18 @@ and type_construct = (env, loc, lid, sargs, ty_expected_explained, attrs) => {
         end*/
 
   let args = type_arguments(~recarg, env, sargs, ty_args, ty_args0);
+  let arg =
+    if (is_record_cstr) {
+      switch (args) {
+      | [{exp_desc: TExpRecord(_, rfs)}] => TExpConstrRecord(rfs)
+      | _ =>
+        failwith("Impossible: record constructor inner expression not record")
+      };
+    } else {
+      TExpConstrTuple(args);
+    };
   /* NOTE: shouldn't we call "re" on this final expression? -- AF */
-  {...texp, exp_desc: TExpConstruct(lid, constr, args)};
+  {...texp, exp_desc: TExpConstruct(lid, constr, arg)};
 }
 
 /* Typing of statements (expressions whose values are discarded) */
@@ -2684,8 +2740,15 @@ let report_error = (env, ppf) =>
       ppf,
       "@[This form is not allowed as the type of the inlined record could escape.@]",
     )
-  | Inlined_record_expected =>
-    fprintf(ppf, "@[This constructor expects an inlined record argument.@]")
+  | Inlined_record_misuse(cstr_name, cstr_type, exp_type) =>
+    fprintf(
+      ppf,
+      "@[%a is a %s constructor but is treated like a %s constructor.@]",
+      identifier,
+      cstr_name,
+      cstr_type,
+      exp_type,
+    )
   | Invalid_extension_constructor_payload =>
     fprintf(
       ppf,

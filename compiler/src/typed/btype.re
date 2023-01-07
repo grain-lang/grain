@@ -171,12 +171,15 @@ type type_iterators = {
 let iter_type_expr_cstr_args = f =>
   fun
   | TConstrTuple(tl) => List.iter(f, tl)
+  | TConstrRecord(rfs) => List.iter(rf => f(rf.rf_type), rfs)
   | TConstrSingleton => ();
 
 let map_type_expr_cstr_args = f =>
   fun
   | TConstrSingleton => TConstrSingleton
-  | TConstrTuple(tl) => TConstrTuple(List.map(f, tl));
+  | TConstrTuple(tl) => TConstrTuple(List.map(f, tl))
+  | TConstrRecord(rfs) =>
+    TConstrRecord(List.map(rf => {...rf, rf_type: f(rf.rf_type)}, rfs));
 
 let iter_type_expr_kind = f =>
   fun

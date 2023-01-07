@@ -190,6 +190,10 @@ let transl_constructor_arguments = (env, closed) =>
       let l = List.map(transl_simple_type(env, closed), l);
       (Types.TConstrTuple(List.map(t => t.ctyp_type, l)), TConstrTuple(l));
     }
+  | PConstrRecord(l) => {
+      let (lbls, lbls') = transl_labels(env, closed, l);
+      (Types.TConstrRecord(lbls'), TConstrRecord(lbls));
+    }
   | PConstrSingleton => (Types.TConstrSingleton, TConstrSingleton);
 
 let make_constructor = (env, type_path, type_params, sargs) => {
@@ -293,6 +297,18 @@ let transl_declaration = (env, sdecl, id) => {
         let repr =
           switch (args) {
           | TConstrSingleton => ReprValue(WasmI32)
+          | TConstrRecord(rfs) =>
+            ReprFunction(
+              List.map(
+                rf =>
+                  Type_utils.wasm_repr_of_allocation_type(
+                    Type_utils.get_allocation_type(env, rf.Types.rf_type),
+                  ),
+                rfs,
+              ),
+              [WasmI32],
+              Indirect,
+            )
           | TConstrTuple(args) =>
             ReprFunction(
               List.map(
@@ -1074,6 +1090,18 @@ let transl_extension_constructor =
   let repr =
     switch (args) {
     | TConstrSingleton => ReprValue(WasmI32)
+    | TConstrRecord(rfs) =>
+      ReprFunction(
+        List.map(
+          rf =>
+            Type_utils.wasm_repr_of_allocation_type(
+              Type_utils.get_allocation_type(env, rf.Types.rf_type),
+            ),
+          rfs,
+        ),
+        [WasmI32],
+        Indirect,
+      )
     | TConstrTuple(args) =>
       ReprFunction(
         List.map(
@@ -1190,8 +1218,8 @@ let explain_unbound_single = (ppf, tv, ty) => {
 let tys_of_constr_args =
   fun
   | Types.TConstrTuple(tl) => tl
-  | Types.TConstrSingleton => [];
-/*| Types.Cstr_record lbls -> List.map (fun l -> l.Types.ld_type) lbls*/
+  | Types.TConstrSingleton => []
+  | Types.TConstrRecord(rfs) => List.map(rf => rf.Types.rf_type, rfs);
 
 let report_error = ppf =>
   fun

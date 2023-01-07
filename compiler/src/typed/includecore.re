@@ -203,6 +203,44 @@ let report_type_mismatch = (first, second, decl, ppf) =>
     }
   );
 
+let rec compare_record_constructors = (~loc, env, params1, params2, n, l, r) =>
+  switch (l, r) {
+  | ([], []) => []
+  | ([r, ..._], []) => [Field_missing(true, r.Types.rf_name)]
+  | ([], [r, ..._]) => [Field_missing(false, r.Types.rf_name)]
+  | ([rf1, ...rem1], [rf2, ...rem2]) =>
+    let (name1, name2) = (
+      Ident.name(rf1.rf_name),
+      Ident.name(rf2.rf_name),
+    );
+    if (name1 != name2) {
+      [Field_names(n, rf1.rf_name, rf2.rf_name)];
+    } else {
+      let tl1 = params1 @ [rf1.rf_type];
+      let tl2 = params2 @ [rf2.rf_type];
+      let cmp =
+        if (Ctype.equal(env, true, tl1, tl2)) {
+          None;
+        } else {
+          Some(Field_type(rf1.rf_name));
+        };
+
+      switch (cmp) {
+      | Some(reason) => [Field_type(rf1.rf_name)]
+      | None =>
+        compare_record_constructors(
+          ~loc,
+          env,
+          params1,
+          params2,
+          n + 1,
+          rem1,
+          rem2,
+        )
+      };
+    };
+  };
+
 let rec compare_constructor_arguments =
         (~loc, env, cstr, params1, params2, arg1, arg2) =>
   switch (arg1, arg2) {
@@ -217,8 +255,10 @@ let rec compare_constructor_arguments =
     } else {
       [Field_type(cstr)];
     }
-  /*| Types.Cstr_record l1, Types.Cstr_record l2 ->
-    compare_records env ~loc params1 params2 0 l1 l2*/
+  | (Types.TConstrRecord(l1), Types.TConstrRecord(l2)) =>
+    compare_record_constructors(env, ~loc, params1, params2, 0, l1, l2)
+  | (Types.TConstrRecord(_), _) => [Kind]
+  | (_, Types.TConstrRecord(_)) => [Kind]
   | _ => [Field_type(cstr)]
   }
 

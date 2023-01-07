@@ -858,6 +858,18 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
                       | TConstrSingleton => cd_args
                       | TConstrTuple(exprs) =>
                         TConstrTuple(List.map(resolve_type_expr, exprs))
+                      | TConstrRecord(rfs) =>
+                        TConstrRecord(
+                          List.map(
+                            rf =>
+                              {
+                                ...rf,
+                                Types.rf_type:
+                                  resolve_type_expr(rf.Types.rf_type),
+                              },
+                            rfs,
+                          ),
+                        )
                       },
                   },
                 cdecls,

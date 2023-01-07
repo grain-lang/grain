@@ -36,6 +36,7 @@ type error =
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
   | Unbound_label(Location.t, string)
+  | Unbound_label_with_alt(Location.t, string, string)
   | No_module_file(string, option(string))
   | Value_not_found_in_module(Location.t, string, string)
   | Illegal_value_name(Location.t, string)
@@ -105,6 +106,7 @@ let lookup_constructor:
 let lookup_all_constructors:
   (~mark: bool=?, Identifier.t, t) =>
   list((constructor_description, unit => unit));
+let get_all_constructors: t => list(constructor_description);
 let lookup_all_labels:
   (~mark: bool=?, Identifier.t, t) => list((label_description, unit => unit));
 let lookup_module:

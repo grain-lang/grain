@@ -3388,6 +3388,36 @@ program: LBRACE ELLIPSIS BIGINT COMMA ELLIPSIS BIGINT ARROW
 
 Expected a comma followed by more record fields or an immediate `}` to complete the record expression.
 
+program: UIDENT LBRACE ELLIPSIS UIDENT ARROW
+##
+## Ends in an error in state: 488.
+##
+## construct_expr -> type_id lbrace lseparated_nonempty_list_inner(comma,record_field) . option(comma) rbrace [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+## lseparated_nonempty_list_inner(comma,record_field) -> lseparated_nonempty_list_inner(comma,record_field) . comma punned_record_field [ RBRACE EOL COMMA ]
+## lseparated_nonempty_list_inner(comma,record_field) -> lseparated_nonempty_list_inner(comma,record_field) . comma non_punned_record_field [ RBRACE EOL COMMA ]
+## lseparated_nonempty_list_inner(comma,record_field) -> lseparated_nonempty_list_inner(comma,record_field) . comma spread_record_field [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## type_id lbrace lseparated_nonempty_list_inner(comma,record_field)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 131, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 42, spurious reduction of production construct_expr -> type_id
+## In state 199, spurious reduction of production left_accessor_expr -> construct_expr
+## In state 175, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 129, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 78, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 208, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 68, spurious reduction of production expr -> non_stmt_expr
+## In state 213, spurious reduction of production spread_record_field -> ELLIPSIS expr
+## In state 229, spurious reduction of production lseparated_nonempty_list_inner(comma,record_field) -> spread_record_field
+##
+
+Expected a comma followed by more record fields or an immediate `}` to complete the inline record expression.
+
 program: LBRACE LIDENT COLON BREAK COMMA EOL WHILE
 ##
 ## Ends in an error in state: 336.
@@ -3548,6 +3578,24 @@ program: LBRACE UNDERSCORE
 ##
 
 Expected an expression or a record field.
+
+program: UIDENT LBRACE WHILE
+##
+## Ends in an error in state: 487.
+##
+## construct_expr -> type_id lbrace . record_exprs rbrace [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## type_id lbrace
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 21, spurious reduction of production lbrace -> LBRACE
+##
+
+Expected an inline record field.
 
 program: LBRACE WASMI64 SEMI RECORD
 ##
@@ -4005,6 +4053,24 @@ program: LET LBRACE WHILE
 ##
 
 Expected a comma-separated list of record field patterns.
+
+program: LET UIDENT LBRACE WHILE
+##
+## Ends in an error in state: 348.
+##
+## pattern -> type_id lbrace . record_patterns rbrace [ WHEN THICKARROW RPAREN RBRACK RBRACE PIPE EQUAL EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## type_id lbrace
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 21, spurious reduction of production lbrace -> LBRACE
+##
+
+Expected a comma-separated list of inline record field patterns.
 
 program: LET LBRACK ELLIPSIS WASMI64 WHILE
 ##

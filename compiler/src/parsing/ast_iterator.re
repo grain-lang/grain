@@ -35,6 +35,31 @@ let iter_ident = (sub, id) => {
   };
   iter(id.txt);
 };
+let iter_expressions = (sub, es) => {
+  List.iter(sub.expr(sub), es);
+};
+let iter_patterns = (sub, ps) => {
+  List.iter(sub.pat(sub), ps);
+};
+let iter_record_fields = (sub, es) => {
+  List.iter(
+    ((name, exp)) => {
+      iter_loc(sub, name);
+      sub.expr(sub, exp);
+    },
+    es,
+  );
+};
+
+let iter_record_pattern = (sub, fs) => {
+  List.iter(
+    ((id, pat)) => {
+      iter_loc(sub, id);
+      sub.pat(sub, pat);
+    },
+    fs,
+  );
+};
 
 module Cnst = {
   let iter = (sub, c) => ();
@@ -53,8 +78,8 @@ module E = {
     switch (desc) {
     | PExpId(i) => iter_ident(sub, i)
     | PExpConstant(c) => sub.constant(sub, c)
-    | PExpTuple(es) => List.iter(sub.expr(sub), es)
-    | PExpArray(es) => List.iter(sub.expr(sub), es)
+    | PExpTuple(es) => iter_expressions(sub, es)
+    | PExpArray(es) => iter_expressions(sub, es)
     | PExpArrayGet(a, i) =>
       sub.expr(sub, a);
       sub.expr(sub, i);
@@ -64,13 +89,7 @@ module E = {
       sub.expr(sub, arg);
     | PExpRecord(b, es) =>
       Option.iter(sub.expr(sub), b);
-      List.iter(
-        ((name, exp)) => {
-          iter_loc(sub, name);
-          sub.expr(sub, exp);
-        },
-        es,
-      );
+      iter_record_fields(sub, es);
     | PExpRecordGet(e, f) =>
       sub.expr(sub, e);
       iter_loc(sub, f);
@@ -87,7 +106,7 @@ module E = {
     | PExpPrim2(p2, e1, e2) =>
       sub.expr(sub, e1);
       sub.expr(sub, e2);
-    | PExpPrimN(p, es) => List.iter(sub.expr(sub), es)
+    | PExpPrimN(p, es) => iter_expressions(sub, es)
     | PExpBoxAssign(a, b) =>
       sub.expr(sub, a);
       sub.expr(sub, b);
@@ -113,15 +132,18 @@ module E = {
       sub.expr(sub, e);
       sub.typ(sub, t);
     | PExpLambda(pl, e) =>
-      List.iter(sub.pat(sub), pl);
+      iter_patterns(sub, pl);
       sub.expr(sub, e);
     | PExpApp(e, el) =>
       sub.expr(sub, e);
-      List.iter(sub.expr(sub), el);
-    | PExpConstruct(c, el) =>
+      iter_expressions(sub, el);
+    | PExpConstruct(c, e) =>
       iter_ident(sub, c);
-      List.iter(sub.expr(sub), el);
-    | PExpBlock(el) => List.iter(sub.expr(sub), el)
+      switch (e) {
+      | PExpConstrTuple(el) => iter_expressions(sub, el)
+      | PExpConstrRecord(es) => iter_record_fields(sub, es)
+      };
+    | PExpBlock(el) => iter_expressions(sub, el)
     | PExpNull => ()
     };
   };
@@ -133,23 +155,19 @@ module P = {
     switch (desc) {
     | PPatAny => ()
     | PPatVar(sl) => iter_loc(sub, sl)
-    | PPatTuple(pl) => List.iter(sub.pat(sub), pl)
-    | PPatArray(pl) => List.iter(sub.pat(sub), pl)
-    | PPatRecord(fs, _) =>
-      List.iter(
-        ((id, pat)) => {
-          iter_loc(sub, id);
-          sub.pat(sub, pat);
-        },
-        fs,
-      )
+    | PPatTuple(pl) => iter_patterns(sub, pl)
+    | PPatArray(pl) => iter_patterns(sub, pl)
+    | PPatRecord(fs, _) => iter_record_pattern(sub, fs)
     | PPatConstant(c) => sub.constant(sub, c)
     | PPatConstraint(p, pt) =>
       sub.pat(sub, p);
       sub.typ(sub, pt);
-    | PPatConstruct(id, pl) =>
+    | PPatConstruct(id, p) =>
       iter_ident(sub, id);
-      List.iter(sub.pat(sub), pl);
+      switch (p) {
+      | PPatConstrTuple(pl) => iter_patterns(sub, pl)
+      | PPatConstrRecord(fs, _) => iter_record_pattern(sub, fs)
+      };
     | PPatOr(p1, p2) =>
       sub.pat(sub, p1);
       sub.pat(sub, p2);
@@ -166,6 +184,7 @@ module C = {
     iter_loc(sub, name);
     switch (args) {
     | PConstrTuple(ptl) => List.iter(sub.typ(sub), ptl)
+    | PConstrRecord(ldl) => List.iter(sub.label(sub), ldl)
     | PConstrSingleton => ()
     };
   };
@@ -213,6 +232,7 @@ module Except = {
     | PExtDecl(args) =>
       switch (args) {
       | PConstrTuple(ptl) => List.iter(sub.typ(sub), ptl)
+      | PConstrRecord(ldl) => List.iter(sub.label(sub), ldl)
       | PConstrSingleton => ()
       }
     | PExtRebind(id) => iter_loc(sub, id)

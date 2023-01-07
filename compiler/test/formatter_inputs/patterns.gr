@@ -26,3 +26,11 @@ match (list) {
   [_, alongidentalongident123456, _] | [_, _, alongidentalongident123456, _, _] => Some(alongidentalongident123456),
   _ => None,
 }
+
+enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ } /* fifth */, Tup(Number, Number) }
+
+match (Rec { x: 1, y: 2 }) {
+  Rec  {x: 3, _} => 3,
+  Rec{x, y}|Tup(x, y) => x,
+  Rec{_} => 4
+}

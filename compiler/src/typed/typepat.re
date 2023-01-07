@@ -42,7 +42,8 @@ type error =
   | UnexpectedExistential
   | OrpatVars(Ident.t, list(Ident.t))
   | OrPatternTypeClash(Ident.t, list((type_expr, type_expr)))
-  | UnrefutedPattern(pattern);
+  | UnrefutedPattern(pattern)
+  | InlineRecordPatternMisuse(Identifier.t, string, string);
 
 exception Error(Location.t, Env.t, error);
 
@@ -53,10 +54,12 @@ let iter_ppat = (f, p) =>
   | PPatConstant(_) => ()
   | PPatTuple(lst) => List.iter(f, lst)
   | PPatArray(lst) => List.iter(f, lst)
-  | PPatRecord(fs, _) => List.iter(((_, p)) => f(p), fs)
+  | PPatRecord(fs, _)
+  | PPatConstruct(_, PPatConstrRecord(fs, _)) =>
+    List.iter(((_, p)) => f(p), fs)
   | PPatAlias(p, _)
   | PPatConstraint(p, _) => f(p)
-  | PPatConstruct(_, lst) => List.iter(f, lst)
+  | PPatConstruct(_, PPatConstrTuple(lst)) => List.iter(f, lst)
   | PPatOr(p1, p2) =>
     f(p1);
     f(p2);
@@ -550,7 +553,7 @@ and type_pat_aux =
           ppat_desc:
             PPatConstruct(
               Location.mkloc(Identifier.IdentName(name), name.loc),
-              [],
+              PPatConstrTuple([]),
             ),
         },
         expected_ty,
@@ -723,29 +726,34 @@ and type_pat_aux =
     };
 
     let k' = pat => rp(k, unif(pat));
-    switch (mode) {
-    | Normal =>
-      k'(
-        wrap_disambiguate(
-          "This record pattern is expected to have",
-          mk_expected(expected_ty),
-          type_label_a_list(
-            loc,
-            false,
-            env^,
-            type_label_pat,
-            opath,
-            lid_pat_list,
-          ),
-          make_record_pat,
+    k'(
+      wrap_disambiguate(
+        "This record pattern is expected to have",
+        mk_expected(expected_ty),
+        type_label_a_list(
+          loc,
+          false,
+          env^,
+          type_label_pat,
+          opath,
+          lid_pat_list,
         ),
-      )
-    | _ => failwith("Counter examples NYI")
-    /* | Counter_example {labels; _} ->
-       type_label_a_list ~labels loc false !env type_label_pat opath
-         lid_pat_list (fun lbl_pat_list -> k' (make_record_pat lbl_pat_list)) */
-    };
-  | PPatConstruct(lid, sargs) =>
+        make_record_pat,
+      ),
+    );
+  | PPatConstruct(lid, sarg) =>
+    let (sargs, is_record_pat) =
+      switch (sarg) {
+      | PPatConstrTuple(sargs) => (sargs, false)
+      | PPatConstrRecord(rfs, c) =>
+        let desc =
+          switch (rfs) {
+          // trick to get `C { _ }` pattern to work properly
+          | [] => PPatAny
+          | _ => PPatRecord(rfs, c)
+          };
+        ([{ppat_desc: desc, ppat_loc: loc}], true);
+      };
     let opath =
       /*try
           let (p0, p, _) = extract_concrete_variant !env expected_ty in
@@ -794,6 +802,20 @@ and type_pat_aux =
             Warnings.Fragile_literal_pattern
       | _ -> ()
       end;*/
+    let is_record_cstr = constr.cstr_inlined != None;
+    if (is_record_pat != is_record_cstr) {
+      raise(
+        Error(
+          loc,
+          env^,
+          InlineRecordPatternMisuse(
+            lid.txt,
+            if (is_record_cstr) {"record"} else {"tuple"},
+            if (is_record_pat) {"record"} else {"tuple"},
+          ),
+        ),
+      );
+    };
     if (List.length(sargs) != constr.cstr_arity) {
       raise(
         Error(
@@ -1247,6 +1269,15 @@ let report_error = (env, ppf) =>
       "Here is an example of a value that would reach it:",
       Printpat.top_pretty,
       pat,
+    )
+  | InlineRecordPatternMisuse(cstr_name, cstr_type, pat_type) =>
+    fprintf(
+      ppf,
+      "@[%a is a %s constructor but a %s constructor pattern was given.@]",
+      identifier,
+      cstr_name,
+      cstr_type,
+      pat_type,
     );
 
 let report_error = (env, ppf, err) =>

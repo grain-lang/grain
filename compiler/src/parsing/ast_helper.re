@@ -41,6 +41,21 @@ let ident_cons = {
   loc: Location.dummy_loc,
 };
 
+let record_pattern_info = record_pats =>
+  List.fold_right(
+    ((pat_opt, closed), (pats, closed_acc)) =>
+      (
+        Option.fold(~some=pat => [pat, ...pats], ~none=pats, pat_opt),
+        if (closed_acc == Asttypes.Open) {
+          Asttypes.Open;
+        } else {
+          closed;
+        },
+      ),
+    record_pats,
+    ([], Asttypes.Closed),
+  );
+
 module Const = {
   let bytes = b => PConstBytes(b);
   let string = s => PConstString(s);
@@ -85,6 +100,21 @@ module CDecl = {
   };
   let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
   let tuple = (~loc=?, n, a) => mk(~loc?, n, PConstrTuple(a));
+  let record = (~loc=?, n, a) => {
+    List.iter(
+      ld =>
+        if (ld.pld_mutable == Mutable) {
+          raise(
+            SyntaxError(
+              ld.pld_loc,
+              "An inline record constructor cannot have mutable fields.",
+            ),
+          );
+        },
+      a,
+    );
+    mk(~loc?, n, PConstrRecord(a));
+  };
 };
 
 module LDecl = {
@@ -132,40 +162,33 @@ module Pat = {
   let tuple = (~loc=?, a) => mk(~loc?, PPatTuple(a));
   let array = (~loc=?, a) => mk(~loc?, PPatArray(a));
   let record = (~loc=?, a) => {
-    let (patterns, closed) =
-      List.fold_right(
-        ((pat_opt, closed), (pats, closed_acc)) =>
-          (
-            Option.fold(~some=pat => [pat, ...pats], ~none=pats, pat_opt),
-            if (closed_acc == Asttypes.Open) {
-              Asttypes.Open;
-            } else {
-              closed;
-            },
-          ),
-        a,
-        ([], Asttypes.Closed),
-      );
+    let (patterns, closed) = record_pattern_info(a);
     mk(~loc?, PPatRecord(patterns, closed));
   };
   let constant = (~loc=?, a) => mk(~loc?, PPatConstant(a));
   let constraint_ = (~loc=?, a, b) => mk(~loc?, PPatConstraint(a, b));
-  let construct = (~loc=?, a, b) => mk(~loc?, PPatConstruct(a, b));
-  let list = (~loc=?, a) => {
-    let empty = construct(ident_empty, []);
+  let construct = (~loc, a, b) => mk(~loc, PPatConstruct(a, b));
+  let tuple_construct = (~loc, a, b) =>
+    construct(~loc, a, PPatConstrTuple(b));
+  let record_construct = (~loc, a, b) => {
+    let (patterns, closed) = record_pattern_info(b);
+    construct(~loc, a, PPatConstrRecord(patterns, closed));
+  };
+  let list = (~loc, a) => {
+    let empty = tuple_construct(~loc, ident_empty, []);
     let a = List.rev(a);
     switch (a) {
     | [] => empty
     | [base, ...rest] =>
       let base =
         switch (base) {
-        | ListItem(pat) => construct(ident_cons, [pat, empty])
+        | ListItem(pat) => tuple_construct(~loc, ident_cons, [pat, empty])
         | ListSpread(pat, _) => pat
         };
       List.fold_left(
         (acc, pat) => {
           switch (pat) {
-          | ListItem(pat) => construct(ident_cons, [pat, acc])
+          | ListItem(pat) => tuple_construct(~loc, ident_cons, [pat, acc])
           | ListSpread(_, loc) =>
             raise(
               SyntaxError(
@@ -281,8 +304,29 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpLambda(a, b));
   let apply = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpApp(a, b));
-  let construct = (~loc=?, ~attributes=?, a, b) =>
-    mk(~loc?, ~attributes?, PExpConstruct(a, b));
+  let construct = (~loc, ~attributes=?, a, b) =>
+    mk(~loc, ~attributes?, PExpConstruct(a, b));
+  let tuple_construct = (~loc, ~attributes=?, a, b) =>
+    construct(~loc, ~attributes?, a, PExpConstrTuple(b));
+  let record_construct = (~loc, ~attributes=?, a, b) => {
+    let record_items =
+      List.map(
+        expr => {
+          switch (expr) {
+          | RecordItem(id, expr) => (id, expr)
+          | RecordSpread(_, loc) =>
+            raise(
+              SyntaxError(
+                loc,
+                "A record spread cannot appear in an inline record constructor expression.",
+              ),
+            )
+          }
+        },
+        b,
+      );
+    construct(~loc, ~attributes?, a, PExpConstrRecord(record_items));
+  };
   // It's difficult to parse rational numbers while division exists (in the
   // parser state where you've read NUMBER_INT and you're looking ahead at /,
   // you've got a shift/reduce conflict between reducing const -> NUMBER_INT
@@ -326,8 +370,8 @@ module Exp = {
   };
   let block = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpBlock(a));
-  let list = (~loc=?, ~attributes=?, a) => {
-    let empty = construct(~loc?, ident_empty, []);
+  let list = (~loc, ~attributes=?, a) => {
+    let empty = tuple_construct(~loc, ident_empty, []);
     let list =
       switch (List.rev(a)) {
       | [] => empty
@@ -335,14 +379,14 @@ module Exp = {
         let base =
           switch (base) {
           | ListItem(expr) =>
-            construct(~attributes?, ident_cons, [expr, empty])
+            tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
           | ListSpread(expr, _) => expr
           };
         List.fold_left(
           (acc, expr) => {
             switch (expr) {
             | ListItem(expr) =>
-              construct(~attributes?, ident_cons, [expr, acc])
+              tuple_construct(~loc, ~attributes?, ident_cons, [expr, acc])
             | ListSpread(_, loc) =>
               raise(
                 SyntaxError(
@@ -356,7 +400,7 @@ module Exp = {
           rest,
         );
       };
-    Option.fold(~none=list, ~some=loc => {...list, pexp_loc: loc}, loc);
+    {...list, pexp_loc: loc};
   };
   let null = (~loc=?, ~attributes=?, ()) =>
     mk(~loc?, ~attributes?, PExpNull);

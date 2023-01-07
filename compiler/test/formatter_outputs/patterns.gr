@@ -21,3 +21,17 @@ match (list) {
     Some(alongidentalongident123456),
   _ => None,
 }
+
+enum Rec { /* first */ /* second */ /* third */ /* fourth */ /* fifth */
+  Rec{
+    x: Number,
+    y: Number,
+  },
+  Tup(Number, Number),
+}
+
+match (Rec{ x: 1, y: 2 }) {
+  Rec{ x: 3, _ } => 3,
+  Rec{ x, y } | Tup(x, y) => x,
+  Rec{ _ } => 4,
+}

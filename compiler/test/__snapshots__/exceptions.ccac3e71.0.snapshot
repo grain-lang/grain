@@ -31,14 +31,14 @@ exceptions › exception_2
        (local.tee $0
         (call $malloc_0
          (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 48)
+         (i32.const 56)
         )
        )
        (i32.const 1)
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.const 40)
+       (i32.const 44)
       )
       (i64.store offset=8
        (local.get $0)
@@ -46,19 +46,23 @@ exceptions › exception_2
       )
       (i64.store offset=16
        (local.get $0)
-       (i64.const 120259084289)
+       (i64.const 137438953473)
       )
       (i64.store offset=24
        (local.get $0)
-       (i64.const 85899345922)
+       (i64.const 103079215106)
       )
       (i64.store offset=32
        (local.get $0)
-       (i64.const 12884903017)
+       (i64.const 4849018077184)
       )
       (i64.store offset=40
        (local.get $0)
-       (i64.const 7302982)
+       (i64.const 31366068853276675)
+      )
+      (i64.store offset=48
+       (local.get $0)
+       (i64.const 0)
       )
       (local.get $0)
      )

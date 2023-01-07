@@ -323,6 +323,7 @@ let closed_type_decl = decl =>
             | None =>
               switch (cd_args) {
               | TConstrTuple(l) => List.iter(closed_type, l)
+              | TConstrRecord(l) => List.iter(l => closed_type(l.rf_type), l)
               | TConstrSingleton => ()
               }
             },
@@ -2073,6 +2074,8 @@ and mcomp_variant_description = (type_pairs, env, xs, ys) => {
       switch (c1.cd_args, c2.cd_args) {
       | (TConstrTuple(l1), TConstrTuple(l2)) =>
         mcomp_list(type_pairs, env, l1, l2)
+      | (TConstrRecord(l1), TConstrRecord(l2)) =>
+        mcomp_record_description(type_pairs, env, l1, l2)
       | (TConstrSingleton, TConstrSingleton) => ()
       | _ => raise(Unify([]))
       };
@@ -2086,6 +2089,24 @@ and mcomp_variant_description = (type_pairs, env, xs, ys) => {
     };
 
   iter(xs, ys);
+}
+
+and mcomp_record_description = (type_pairs, env) => {
+  let rec iter = (x, y) => {
+    switch (x, y) {
+    | ([l1, ...xs], [l2, ...ys]) =>
+      mcomp(type_pairs, env, l1.rf_type, l2.rf_type);
+      if (Ident.name(l1.rf_name) == Ident.name(l2.rf_name)
+          && l1.rf_mutable == l2.rf_mutable) {
+        iter(xs, ys);
+      } else {
+        raise(Unify([]));
+      };
+    | ([], []) => ()
+    | _ => raise(Unify([]))
+    };
+  };
+  iter;
 };
 
 let mcomp = (env, t1, t2) => mcomp(TypePairs.create(4), env, t1, t2);
@@ -3245,6 +3266,8 @@ let nondep_extension_constructor = (env, id, ext) =>
     let repr =
       switch (args) {
       | TConstrSingleton => ReprValue(WasmI32)
+      | TConstrRecord(rfs) =>
+        ReprFunction(List.map(_ => WasmI32, rfs), [WasmI32], Indirect)
       | TConstrTuple(args) =>
         // All native Grain function args are Managed (i32) types.
         ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Indirect)

@@ -321,8 +321,18 @@ and core_type_desc =
   | TTyPoly(list(string), core_type);
 
 [@deriving sexp]
+type record_field = {
+  rf_name: Ident.t,
+  rf_type: core_type,
+  rf_mutable: bool,
+  [@sexp_drop_if sexp_locs_disabled]
+  rf_loc: Location.t,
+};
+
+[@deriving sexp]
 type constructor_arguments =
   | TConstrTuple(list(core_type))
+  | TConstrRecord(list(record_field))
   | TConstrSingleton
 
 [@deriving sexp]
@@ -362,15 +372,6 @@ type constructor_declaration = {
   cd_res: option(core_type),
   [@sexp_drop_if sexp_locs_disabled]
   cd_loc: Location.t,
-};
-
-[@deriving sexp]
-type record_field = {
-  rf_name: Ident.t,
-  rf_type: core_type,
-  rf_mutable: bool,
-  [@sexp_drop_if sexp_locs_disabled]
-  rf_loc: Location.t,
 };
 
 [@deriving sexp]
@@ -480,10 +481,16 @@ and expression_desc =
   | TExpConstruct(
       loc(Identifier.t),
       constructor_description,
-      list(expression),
+      constructor_expression,
     )
   | TExpBlock(list(expression))
   | TExpNull
+
+and constructor_expression =
+  | TExpConstrTuple(list(expression))
+  | TExpConstrRecord(
+      array((Types.label_description, record_label_definition)),
+    )
 
 and record_label_definition =
   | Kept

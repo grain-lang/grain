@@ -33,6 +33,12 @@ let map_identifier = (sub, {loc, txt}) => {
     };
   {loc: sub.location(sub, loc), txt: map_ident(txt)};
 };
+let map_record_fields = (sub, es) => {
+  List.map(
+    ((name, expr)) => (map_loc(sub, name), sub.expr(sub, expr)),
+    es,
+  );
+};
 
 module Cnst = {
   let map = (sub, c) => c;
@@ -68,10 +74,7 @@ module E = {
         ~loc,
         ~attributes,
         Option.map(sub.expr(sub), b),
-        List.map(
-          ((name, expr)) => (map_loc(sub, name), sub.expr(sub, expr)),
-          es,
-        ),
+        map_record_fields(sub, es),
       )
     | PExpRecordGet(e, f) =>
       record_get(~loc, ~attributes, sub.expr(sub, e), map_loc(sub, f))
@@ -139,12 +142,17 @@ module E = {
         sub.expr(sub, e),
         List.map(sub.expr(sub), el),
       )
-    | PExpConstruct(id, el) =>
+    | PExpConstruct(id, e) =>
       construct(
         ~loc,
         ~attributes,
         map_identifier(sub, id),
-        List.map(sub.expr(sub), el),
+        switch (e) {
+        | PExpConstrTuple(el) =>
+          PExpConstrTuple(List.map(sub.expr(sub), el))
+        | PExpConstrRecord(es) =>
+          PExpConstrRecord(map_record_fields(sub, es))
+        },
       )
     | PExpBlock(el) => block(~loc, ~attributes, List.map(sub.expr(sub), el))
     | PExpNull => null(~loc, ~attributes, ())
@@ -175,8 +183,22 @@ module P = {
     | PPatConstant(c) => constant(~loc, sub.constant(sub, c))
     | PPatConstraint(p, pt) =>
       constraint_(~loc, sub.pat(sub, p), sub.typ(sub, pt))
-    | PPatConstruct(id, pl) =>
-      construct(~loc, map_identifier(sub, id), List.map(sub.pat(sub), pl))
+    | PPatConstruct(id, p) =>
+      construct(
+        ~loc,
+        map_identifier(sub, id),
+        switch (p) {
+        | PPatConstrTuple(pl) => PPatConstrTuple(List.map(sub.pat(sub), pl))
+        | PPatConstrRecord(fs, c) =>
+          PPatConstrRecord(
+            List.map(
+              ((id, pat)) => (map_loc(sub, id), sub.pat(sub, pat)),
+              fs,
+            ),
+            c,
+          )
+        },
+      )
     | PPatOr(p1, p2) => or_(~loc, sub.pat(sub, p1), sub.pat(sub, p2))
     | PPatAlias(p, id) => alias(~loc, sub.pat(sub, p), map_loc(sub, id))
     };
@@ -190,6 +212,8 @@ module C = {
     let sname = map_loc(sub, name);
     switch (args) {
     | PConstrTuple(ptl) => tuple(~loc, sname, List.map(sub.typ(sub), ptl))
+    | PConstrRecord(ldl) =>
+      record(~loc, sname, List.map(sub.label(sub), ldl))
     | PConstrSingleton => singleton(~loc, sname)
     };
   };
@@ -245,6 +269,8 @@ module Exc = {
         PExtDecl(
           switch (args) {
           | PConstrTuple(ptl) => PConstrTuple(List.map(sub.typ(sub), ptl))
+          | PConstrRecord(ldl) =>
+            PConstrRecord(List.map(sub.label(sub), ldl))
           | PConstrSingleton => PConstrSingleton
           },
         )
