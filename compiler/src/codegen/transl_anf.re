@@ -822,7 +822,11 @@ let rec compile_comp = (~id=?, env, c) => {
         MRecord(
           compile_imm(env, ttag),
           List.map(
-            (({txt: name}, arg)) => (name, compile_imm(env, arg)),
+            ((name, arg)) =>
+              (
+                Option.map(({txt: name}) => name, name),
+                compile_imm(env, arg),
+              ),
             args,
           ),
         ),

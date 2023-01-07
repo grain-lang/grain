@@ -116,3 +116,19 @@ let y = { /* comment 1 */
   longlonglongnamenamename2: 12345, /* comment 3 */
   longlonglongnamenamename3: 12345, /* comment 4 */
 } // end line comment
+
+let y = { ...x, bar: 2 }
+
+let y = { ...x, bar: 2 }
+
+let y = {
+  ...x,
+  longlonglongnamenamename2: 12345,
+  longlonglongnamenamename3: 12345,
+}
+
+let y = { /* comment 1 */
+  ...x, /* comment 2 */
+  longlonglongnamenamename2: 12345, /* comment 3 */
+  longlonglongnamenamename3: 12345, /* comment 4 */
+} // end line comment

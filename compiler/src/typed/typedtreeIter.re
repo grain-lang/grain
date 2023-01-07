@@ -214,13 +214,14 @@ module MakeIterator =
     | TExpMatch(value, branches, _) =>
       iter_expression(value);
       iter_match_branches(branches);
-    | TExpRecord(args) =>
+    | TExpRecord(b, args) =>
+      Option.iter(iter_expression, b);
       Array.iter(
         fun
         | (_, Overridden(_, expr)) => iter_expression(expr)
         | _ => (),
         args,
-      )
+      );
     | TExpRecordGet(expr, _, _) => iter_expression(expr)
     | TExpRecordSet(e1, _, _, e2) =>
       iter_expression(e1);

@@ -128,6 +128,10 @@ type sugared_list_item =
   | Regular(Parsetree.expression)
   | Spread(Parsetree.expression);
 
+type record_item =
+  | Field((Location.loc(Identifier.t), Parsetree.expression))
+  | RecordSpread(Parsetree.expression);
+
 type sugared_pattern_item =
   | RegularPattern(Parsetree.pattern)
   | SpreadPattern(Parsetree.pattern);
@@ -1627,53 +1631,81 @@ and print_ident = (ident: Identifier.t) => {
 
 and print_record =
     (
+      ~base: option(Parsetree.expression),
       ~fields: list((Location.loc(Identifier.t), Parsetree.expression)),
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
       recloc: Location.t,
     ) => {
-  let get_loc = (field: (Location.loc(Identifier.t), Parsetree.expression)) => {
-    let (_, expr) = field;
-    expr.pexp_loc;
-  };
-
-  let print_item =
-      (~comments, field: (Location.loc(Identifier.t), Parsetree.expression)) => {
-    let (locidentifier, expr) = field;
-    let ident = locidentifier.txt;
-    let printed_ident = print_ident(ident);
-    let printed_expr =
-      print_expression(
-        ~expression_parent=GenericExpression,
-        ~original_source,
-        ~comments,
-        expr,
-      );
-    let punned_expr = check_for_pun(expr);
-
-    let pun =
-      switch (printed_ident, punned_expr: Doc.t) {
-      | (Text(i), Text(e)) => i == e
-      | _ => false
-      };
-
-    if (!pun) {
-      Doc.group(
-        Doc.concat([printed_ident, Doc.text(":"), Doc.space, printed_expr]),
-      );
-    } else {
-      Doc.group(printed_ident);
+  let get_loc = item => {
+    switch (item) {
+    | Field((_, expr)) => expr.pexp_loc
+    | RecordSpread(base) => base.pexp_loc
     };
   };
 
+  let print_item = (~comments, item) => {
+    switch (item) {
+    | Field(field) =>
+      let (locidentifier, expr) = field;
+      let ident = locidentifier.txt;
+      let printed_ident = print_ident(ident);
+      let printed_expr =
+        print_expression(
+          ~expression_parent=GenericExpression,
+          ~original_source,
+          ~comments,
+          expr,
+        );
+      let punned_expr = check_for_pun(expr);
+
+      let pun =
+        switch (printed_ident, punned_expr: Doc.t) {
+        | (Text(i), Text(e)) => i == e
+        | _ => false
+        };
+
+      if (!pun) {
+        Doc.group(
+          Doc.concat([
+            printed_ident,
+            Doc.text(":"),
+            Doc.space,
+            printed_expr,
+          ]),
+        );
+      } else {
+        Doc.group(printed_ident);
+      };
+    | RecordSpread(base) =>
+      Doc.concat([
+        Doc.text("..."),
+        print_expression(
+          ~expression_parent=GenericExpression,
+          ~original_source,
+          ~comments,
+          base,
+        ),
+      ])
+    };
+  };
+
+  let items =
+    Option.to_list(Option.map(x => RecordSpread(x), base))
+    @ List.map(x => Field(x), fields);
+
   let after_brace_comments =
-    switch (fields) {
-    | [field, ..._] =>
-      let (ident, expr) = field;
+    switch (items) {
+    | [item, ..._] =>
+      let loc =
+        switch (item) {
+        | Field((ident, _)) => ident.loc
+        | RecordSpread(exp) => exp.pexp_loc
+        };
 
       Comment_utils.get_after_brace_comments(
         ~loc=recloc,
-        ~first=ident.loc,
+        ~first=loc,
         comments,
       );
 
@@ -1689,7 +1721,7 @@ and print_record =
       ~print_item,
       ~comments=cleaned_comments,
       ~iterated_item=IteratedRecord,
-      fields,
+      items,
     );
   let printed_fields = Doc.join(~sep=Doc.line, items);
 
@@ -1707,7 +1739,7 @@ and print_record =
         printed_fields_after_brace,
         Doc.ifBreaks(
           Doc.nil,
-          switch (fields) {
+          switch (items) {
           | [_one] =>
             // TODO: not needed once we annotate with ::
             Doc.comma // append a comma as single argument record look like block {data:val}
@@ -2787,8 +2819,14 @@ and print_expression_inner =
         ]),
       )
 
-    | PExpRecord(record) =>
-      print_record(~fields=record, ~original_source, ~comments, expr.pexp_loc)
+    | PExpRecord(base, record) =>
+      print_record(
+        ~base,
+        ~fields=record,
+        ~original_source,
+        ~comments,
+        expr.pexp_loc,
+      )
     | PExpRecordGet(expression, {txt, _}) =>
       Doc.concat([
         print_expression(

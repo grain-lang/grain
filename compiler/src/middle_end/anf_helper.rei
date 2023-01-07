@@ -168,7 +168,7 @@ module Comp: {
       ~attributes: attributes=?,
       ~env: env=?,
       imm_expression,
-      list((str, imm_expression))
+      list((option(str), imm_expression))
     ) =>
     comp_expression;
   let adt:

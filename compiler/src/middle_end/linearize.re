@@ -757,35 +757,56 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpRecord(args) =>
+  | TExpRecord(base, args) =>
+    let base_imm = Option.map(transl_imm, base);
     let tmp = gensym("record");
-    let definitions =
-      Array.to_list @@ Array.map(((desc, def)) => def, args);
-    let definitions =
-      List.map(
-        fun
-        | Kept(_) => assert(false)
-        | Overridden(name, def) => (name, def),
-        definitions,
-      );
     let (new_args, new_setup) =
       List.split(
         List.map(
-          (({txt: name, loc}, expr)) => {
-            let (var, setup) = transl_imm(expr);
-            (
-              (Location.mkloc(Identifier.string_of_ident(name), loc), var),
-              setup,
-            );
-          },
-          definitions,
+          arg =>
+            switch (arg) {
+            | (ld, Kept) =>
+              let (base_var, _) = Option.get(base_imm);
+              let fieldtmp = gensym("field");
+              (
+                (None, Imm.id(~loc, ~env, fieldtmp)),
+                [
+                  BLet(
+                    fieldtmp,
+                    Comp.record_get(
+                      ~loc,
+                      ~env,
+                      ~allocation_type,
+                      Int32.of_int(ld.lbl_pos),
+                      base_var,
+                    ),
+                    Nonglobal,
+                  ),
+                ],
+              );
+            | (_, Overridden({txt: name, loc}, expr)) =>
+              let (var, setup) = transl_imm(expr);
+              (
+                (
+                  Some(
+                    Location.mkloc(Identifier.string_of_ident(name), loc),
+                  ),
+                  var,
+                ),
+                setup,
+              );
+            },
+          Array.to_list(args),
         ),
       );
     let (typath, _, _) = Typepat.extract_concrete_record(env, typ);
     let ty_id = get_type_id(typath);
     (
       Imm.id(~loc, ~env, tmp),
-      List.concat(new_setup)
+      List.concat(
+        Option.to_list(Option.map(((_, setup)) => setup, base_imm))
+        @ new_setup,
+      )
       @ [
         BLet(
           tmp,

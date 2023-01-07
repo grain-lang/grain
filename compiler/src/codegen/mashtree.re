@@ -314,7 +314,7 @@ type allocation_type =
   | MTuple(list(immediate))
   | MBox(immediate)
   | MArray(list(immediate))
-  | MRecord(immediate, list((string, immediate)))
+  | MRecord(immediate, list((option(string), immediate)))
   | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
   | MBytes(bytes)
   | MString(string)

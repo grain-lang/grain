@@ -1,5 +1,9 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_utils;
+
+let {describe} =
+  describeConfig |> withCustomMatchers(customMatchers) |> build;
 
 describe("records", ({test, testSkip}) => {
   let test_or_skip =
@@ -8,6 +12,7 @@ describe("records", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
+  let assertWarning = makeWarningRunner(test);
 
   assertRun(
     "record_1",
@@ -182,5 +187,45 @@ describe("records", ({test, testSkip}) => {
       print(Baz({ bar: 1 }))
     |},
     "Baz(<record value>)\n",
+  );
+  // record spread
+  assertRun(
+    "record_spread_1",
+    "record Rec {foo: Number, bar: Number, mut baz: Number}; let a = {foo: 1, bar: 2, baz: 3}; let b = {...a, bar: 3}; b.baz = 5; print(b); print(a)",
+    "{\n  foo: 1,\n  bar: 3,\n  baz: 5\n}\n{\n  foo: 1,\n  bar: 2,\n  baz: 3\n}\n",
+  );
+  assertSnapshot(
+    "record_spread_2",
+    "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {...a, bar: 3}",
+  );
+  assertCompileError(
+    "record_spread_3",
+    "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {bar: 3, ...a}",
+    "A record spread can only appear at the beginning of a record expression",
+  );
+  assertCompileError(
+    "record_spread_4",
+    "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {...a, ...a}",
+    "A record expression may only contain one record spread",
+  );
+  assertCompileError(
+    "record_spread_5",
+    "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {...a}",
+    "Expected a comma followed by one or more record field overrides to complete the record expression",
+  );
+  assertCompileError(
+    "record_spread_6",
+    "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {...a,}",
+    "Expected one or more record field overrides to complete the record expression",
+  );
+  assertCompileError(
+    "record_spread_7",
+    "record Rec {foo: Number, bar: Number}; record Rec2 {baz: Number}; let a = {foo: 1, bar: 2}; let b = {...a, baz: 3}",
+    "The field baz does not belong to type Rec",
+  );
+  assertWarning(
+    "record_spread_8",
+    "record Rec {foo: Number, bar: Number}; let a = {foo: 1, bar: 2}; let b = {...a, foo: 2, bar: 3}",
+    Warnings.UselessRecordSpread,
   );
 });

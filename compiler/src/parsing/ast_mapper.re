@@ -63,10 +63,11 @@ module E = {
         sub.expr(sub, i),
         sub.expr(sub, arg),
       )
-    | PExpRecord(es) =>
+    | PExpRecord(b, es) =>
       record(
         ~loc,
         ~attributes,
+        Option.map(sub.expr(sub), b),
         List.map(
           ((name, expr)) => (map_loc(sub, name), sub.expr(sub, expr)),
           es,

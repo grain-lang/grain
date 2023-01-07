@@ -62,14 +62,15 @@ module E = {
       sub.expr(sub, a);
       sub.expr(sub, i);
       sub.expr(sub, arg);
-    | PExpRecord(es) =>
+    | PExpRecord(b, es) =>
+      Option.iter(sub.expr(sub), b);
       List.iter(
         ((name, exp)) => {
           iter_loc(sub, name);
           sub.expr(sub, exp);
         },
         es,
-      )
+      );
     | PExpRecordGet(e, f) =>
       sub.expr(sub, e);
       iter_loc(sub, f);
