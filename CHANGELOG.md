@@ -1,5 +1,17 @@
 # Changelog
 
+### [0.5.13](https://github.com/grain-lang/grain/compare/grain-v0.5.12...grain-v0.5.13) (2023-01-07)
+
+
+### Features
+
+* **compiler:** Record spread syntax ([#1565](https://github.com/grain-lang/grain/issues/1565)) ([ab60e12](https://github.com/grain-lang/grain/commit/ab60e1269f008daf1af343364e706312060a9122))
+
+
+### Bug Fixes
+
+* **compiler:** Fix error location reporting of unbound modules and labels ([#1577](https://github.com/grain-lang/grain/issues/1577)) ([5146b14](https://github.com/grain-lang/grain/commit/5146b145468f280ea39af276d8b345c17a0595da))
+
 ### [0.5.12](https://github.com/grain-lang/grain/compare/grain-v0.5.11...grain-v0.5.12) (2023-01-05)
 
 
