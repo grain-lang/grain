@@ -8,6 +8,51 @@ Access to system clocks.
 from "wasi/time" include Time
 ```
 
+## Types
+
+Type declarations included in the Time module.
+
+### Time.**Clock**
+
+```grain
+enum Clock {
+  Realtime,
+  Monotonic,
+  ProcessCpuTime,
+  ThreadCpuTime,
+}
+```
+
+Variants:
+
+```grain
+Realtime
+```
+
+The clock measuring real time. Time value zero corresponds with
+1970-01-01T00:00:00Z.
+
+```grain
+Monotonic
+```
+
+The store-wide monotonic clock, which is defined as a clock measuring
+real time, whose value cannot be adjusted and which cannot have negative
+clock jumps. The epoch of this clock is undefined. The absolute time
+value of this clock therefore has no meaning.
+
+```grain
+ProcessCpuTime
+```
+
+The CPU-time clock associated with the current process.
+
+```grain
+ThreadCpuTime
+```
+
+The CPU-time clock associated with the current thread.
+
 ## Values
 
 Functions and constants included in the Time module.

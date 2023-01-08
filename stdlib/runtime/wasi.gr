@@ -21,6 +21,10 @@ provide foreign wasm proc_raise:
   WasmI32 => WasmI32 from "wasi_snapshot_preview1"
 provide foreign wasm sched_yield: () => WasmI32 from "wasi_snapshot_preview1"
 
+// events
+provide foreign wasm poll_oneoff:
+  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
+
 // random
 provide foreign wasm random_get:
   (WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
@@ -154,6 +158,10 @@ provide let _FDFLAG_NONBLOCK = 4n
 provide let _FDFLAG_RSYNC = 8n
 @unsafe
 provide let _FDFLAG_SYNC = 16n
+
+// sublock flags
+@unsafe
+provide let _SUBCLOCK_FLAG_CLOCK_ABSTIME = 1n
 
 // whence
 @unsafe
