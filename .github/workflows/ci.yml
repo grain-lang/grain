@@ -79,7 +79,6 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           npm run compiler check-format
-          npm run js-runner check-format
           npm run cli check-format
 
       # This is to test the CLI is working

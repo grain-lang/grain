@@ -5,7 +5,7 @@
     {
       "type": "linked-versions",
       "groupName": "Grain",
-      "components": ["grain", "cli", "compiler", "js-runner", "stdlib"]
+      "components": ["grain", "cli", "compiler", "stdlib"]
     }
   ],
   "packages": {
@@ -20,11 +20,6 @@
         {
           "type": "json",
           "path": "package.json",
-          "jsonpath": "$.dependencies['@grain/js-runner']"
-        },
-        {
-          "type": "json",
-          "path": "package.json",
           "jsonpath": "$.dependencies['@grain/stdlib']"
         }
       ]
@@ -33,10 +28,6 @@
       "component": "compiler",
       "package-name": "@grain/compiler",
       "release-type": "ocaml"
-    },
-    "js-runner": {
-      "component": "js-runner",
-      "release-type": "node"
     },
     "stdlib": {
       "component": "stdlib",

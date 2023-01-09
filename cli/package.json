@@ -11,7 +11,7 @@
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain",
+    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --options=experimental-wasi-unstable-preview1,no-warnings --output ../pkg/grain",
     "build:test": "grain compile --release --wasi-polyfill __test__/wasi.gr --use-start-section __test__/index.gr",
     "pretest": "npm run build:test",
     "test": "jest --detectOpenHandles"
@@ -37,7 +37,6 @@
   },
   "homepage": "https://github.com/grain-lang/grain#readme",
   "dependencies": {
-    "@grain/js-runner": "0.5.13",
     "@grain/stdlib": "0.5.13",
     "commander": "^8.1.0"
   },

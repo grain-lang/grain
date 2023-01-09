@@ -11,7 +11,6 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
       stdlib_tag_name: ${{ steps.release.outputs.stdlib--tag_name }}
-      js-runner_tag_name: ${{ steps.release.outputs.js-runner--tag_name }}
     steps:
       - uses: GoogleCloudPlatform/release-please-action@v3.2.5
         id: release
@@ -26,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       stdlib_download_url: ${{ steps.stdlib-upload.outputs.browser_download_url }}
-      js-runner_download_url: ${{ steps.js-runner-upload.outputs.browser_download_url }}
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
@@ -119,24 +117,6 @@ jobs:
           asset_name: stdlib.tgz
           tag: ${{ needs.release-please.outputs.stdlib_tag_name }}
 
-      - name: Pack js-runner
-        if: ${{ needs.release-please.outputs.releases_created }}
-        working-directory: ./js-runner
-        # Runs `npm pack` and assigns the filename to an env var we can use later
-        # `sed` is used to workaround https://github.com/npm/cli/issues/3405
-        run: |
-          echo "RUNNER_TAR=$(npm pack --json | jq -r '.[0].filename' | sed -r 's/@//g' | sed -r 's/\//-/g')" >> $GITHUB_ENV
-
-      - name: Upload js-runner
-        id: js-runner-upload
-        if: ${{ needs.release-please.outputs.releases_created }}
-        uses: grain-lang/upload-release-action@v3.0.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./js-runner/${{ env.RUNNER_TAR }}
-          asset_name: js-runner.tgz
-          tag: ${{ needs.release-please.outputs.js-runner_tag_name }}
-
   dispatch-website:
     needs: [release-please, prepare-artifacts]
     if: ${{ needs.release-please.outputs.releases_created }}
@@ -194,23 +174,5 @@ jobs:
       - name: Publish to npm
         run: |
           npm publish ${{ needs.prepare-artifacts.outputs.stdlib_download_url }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}
-
-  npm-release-js-runner:
-    needs: [release-please, prepare-artifacts]
-    if: ${{ needs.release-please.outputs.releases_created }}
-    name: Publish js-runner to npm registry
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3.1.1
-        with:
-          node-version: "16"
-          registry-url: "https://registry.npmjs.org"
-
-      - name: Publish to npm
-        run: |
-          npm publish ${{ needs.prepare-artifacts.outputs.js-runner_download_url }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE }}

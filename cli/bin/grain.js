@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --experimental-wasi-unstable-preview1 --no-warnings
 
 // https://github.com/grain-lang/grain/issues/114
 const v8 = require("v8");
@@ -160,7 +160,6 @@ class GrainCommand extends commander.Command {
       "--use-start-section",
       "replaces the _start export with a start section during linking"
     );
-    cmd.forwardOption("--no-link", "disable static linking");
     cmd.forwardOption(
       "--no-pervasives",
       "don't automatically import the Grain Pervasives module"
@@ -190,14 +189,13 @@ program
   .command("compile-and-run <file>", { isDefault: true, hidden: true })
   // `--version` should only be available on the default command
   .version(pkgJson.version, "-v, --version", "output the current version")
-  .addOption(new commander.Option("-p, --print-output").hideHelp())
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
     exec.grainc(file, options, program);
     if (options.o) {
-      run(options.o, options);
+      run(options.o);
     } else {
-      run(file.replace(/\.gr$/, ".gr.wasm"), options);
+      run(file.replace(/\.gr$/, ".gr.wasm"));
     }
   });
 
@@ -205,12 +203,12 @@ program
   .command("compile <file>")
   .description("compile a grain program into wasm")
   .forwardOption("-o <filename>", "output filename")
+  .forwardOption("--no-link", "disable static linking")
   .action(exec.grainc);
 
 program
   .command("run <file>")
-  .description("run a wasm file with grain's javascript runner")
-  .addOption(new commander.Option("-p, --print-output").hideHelp())
+  .description("run a wasm file via Node.js")
   .action(run);
 
 program
