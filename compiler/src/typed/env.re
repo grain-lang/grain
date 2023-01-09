@@ -1780,41 +1780,6 @@ and store_type = (~check, id, info, env) => {
   let labels = Datarepr.labels_of_type(path, info);
   let descrs = (List.map(snd, constructors), List.map(snd, labels));
 
-  let val_descrs =
-    List.map(
-      ((id, desc)) => {
-        let val_type =
-          switch (desc.cstr_args) {
-          | [] => desc.cstr_res
-          | args => Btype.newgenty(TTyArrow(args, desc.cstr_res, TComOk))
-          };
-        let val_type =
-          switch (desc.cstr_existentials) {
-          | [] => val_type
-          | existentials => Btype.newgenty(TTyPoly(val_type, existentials))
-          };
-        let val_repr =
-          switch (desc.cstr_args) {
-          | [] => ReprValue(WasmI32)
-          | args =>
-            ReprFunction(List.map(_ => WasmI32, args), [WasmI32], Unknown)
-          };
-        let path = PIdent(Ident.create(desc.cstr_name));
-        let val_desc = {
-          val_type,
-          val_repr,
-          val_internalpath: path,
-          val_fullpath: path,
-          val_kind: TValConstructor(desc),
-          val_loc: desc.cstr_loc,
-          val_mutable: false,
-          val_global: true,
-        };
-        (id, val_desc);
-      },
-      constructors,
-    );
-
   /*if check && not loc.Location.loc_ghost &&
       Warnings.is_active (Warnings.Unused_constructor ("", false, false))
     then begin
@@ -1850,18 +1815,7 @@ and store_type = (~check, id, info, env) => {
         env.labels,
       ),
     types: IdTbl.add(id, (info, descrs), env.types),
-    values:
-      List.fold_left(
-        (acc, (id, val_desc)) => IdTbl.add(id, val_desc, acc),
-        env.values,
-        val_descrs,
-      ),
-    summary:
-      List.fold_left(
-        (acc, (id, val_desc)) => Env_value(acc, id, val_desc),
-        Env_type(env.summary, id, info),
-        val_descrs,
-      ),
+    summary: Env_type(env.summary, id, info),
   };
 }
 
@@ -1879,43 +1833,9 @@ and store_type_infos = (id, info, env) =>
 
 and store_extension = (~check, id, ext, env) => {
   let cstr = Datarepr.extension_descr(PIdent(id), ext);
-  let val_desc = {
-    let val_type =
-      switch (cstr.cstr_args) {
-      | [] => cstr.cstr_res
-      | args => Btype.newgenty(TTyArrow(args, cstr.cstr_res, TComOk))
-      };
-    let val_type =
-      switch (cstr.cstr_existentials) {
-      | [] => val_type
-      | existentials => Btype.newgenty(TTyPoly(val_type, existentials))
-      };
-    let val_repr =
-      switch (cstr.cstr_args) {
-      | [] => ReprValue(WasmI32)
-      | args =>
-        ReprFunction(
-          List.map(_ => WasmI32, args),
-          [WasmI32],
-          Direct(Ident.unique_name(id)),
-        )
-      };
-    let path = PIdent(Ident.create(cstr.cstr_name));
-    {
-      val_type,
-      val_repr,
-      val_internalpath: path,
-      val_fullpath: path,
-      val_kind: TValConstructor(cstr),
-      val_mutable: false,
-      val_global: true,
-      val_loc: cstr.cstr_loc,
-    };
-  };
   {
     ...env,
     constructors: TycompTbl.add(id, cstr, env.constructors),
-    values: IdTbl.add(id, val_desc, env.values),
     summary: Env_extension(env.summary, id, ext),
   };
 }
