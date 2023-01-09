@@ -258,15 +258,13 @@ functions › lam_destructure_7
      )
     )
    )
-   (return
-    (call $+_1118
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1118)
-     )
-     (local.get $18)
-     (local.get $11)
+   (return_call $+_1118
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1118)
     )
+    (local.get $18)
+    (local.get $11)
    )
   )
  )
@@ -361,11 +359,9 @@ functions › lam_destructure_7
     (block $do_backpatches.37
     )
    )
-   (return
-    (call $lam_lambda_1117
-     (local.get $6)
-     (local.get $8)
-    )
+   (return_call $lam_lambda_1117
+    (local.get $6)
+    (local.get $8)
    )
   )
  )

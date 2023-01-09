@@ -65,15 +65,13 @@ basic functionality › bigint_1
     (block $do_backpatches.2
     )
    )
-   (return
-    (call $+_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1113)
-     )
-     (local.get $6)
-     (i32.const 3)
+   (return_call $+_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1113)
     )
+    (local.get $6)
+    (i32.const 3)
    )
   )
  )

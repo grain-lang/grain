@@ -38,15 +38,13 @@ functions › shorthand_4
      )
     )
    )
-   (return
-    (call $+_1115
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1115)
-     )
-     (local.get $1)
-     (i32.const 7)
+   (return_call $+_1115
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1115)
     )
+    (local.get $1)
+    (i32.const 7)
    )
   )
  )
@@ -74,14 +72,12 @@ functions › shorthand_4
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $foo_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $foo_1113)
-     )
-     (i32.const 3)
+   (return_call $foo_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $foo_1113)
     )
+    (i32.const 3)
    )
   )
  )

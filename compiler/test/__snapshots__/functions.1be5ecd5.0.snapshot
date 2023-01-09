@@ -67,14 +67,12 @@ functions › shorthand_1
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $foo_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $foo_1113)
-     )
-     (i32.const 3)
+   (return_call $foo_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $foo_1113)
     )
+    (i32.const 3)
    )
   )
  )

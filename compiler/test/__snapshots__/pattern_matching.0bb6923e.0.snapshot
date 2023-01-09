@@ -879,15 +879,13 @@ pattern matching › adt_match_4
                  )
                 )
                )
-               (return
-                (call $+_1149
-                 (call $incRef_0
-                  (global.get $GRAIN$EXPORT$incRef_0)
-                  (global.get $+_1149)
-                 )
-                 (local.get $22)
-                 (local.get $15)
+               (return_call $+_1149
+                (call $incRef_0
+                 (global.get $GRAIN$EXPORT$incRef_0)
+                 (global.get $+_1149)
                 )
+                (local.get $22)
+                (local.get $15)
                )
               )
              )
@@ -921,15 +919,13 @@ pattern matching › adt_match_4
                )
               )
              )
-             (return
-              (call $+_1149
-               (call $incRef_0
-                (global.get $GRAIN$EXPORT$incRef_0)
-                (global.get $+_1149)
-               )
-               (local.get $11)
-               (local.get $12)
+             (return_call $+_1149
+              (call $incRef_0
+               (global.get $GRAIN$EXPORT$incRef_0)
+               (global.get $+_1149)
               )
+              (local.get $11)
+              (local.get $12)
              )
             )
            )

@@ -72,14 +72,12 @@ provides › provide_start_function
      )
     )
    )
-   (return
-    (call $print_1117
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $print_1117)
-     )
-     (local.get $7)
+   (return_call $print_1117
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $print_1117)
     )
+    (local.get $7)
    )
   )
  )

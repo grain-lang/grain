@@ -272,15 +272,13 @@ pattern matching › record_match_3
        )
        (br $switch.18_outer
         (block $compile_block.19
-         (return
-          (call $+_1125
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1125)
-           )
-           (local.get $7)
-           (local.get $8)
+         (return_call $+_1125
+          (call $incRef_0
+           (global.get $GRAIN$EXPORT$incRef_0)
+           (global.get $+_1125)
           )
+          (local.get $7)
+          (local.get $8)
          )
         )
        )

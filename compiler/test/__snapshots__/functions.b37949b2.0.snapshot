@@ -183,15 +183,13 @@ functions › lam_destructure_4
      )
     )
    )
-   (return
-    (call $+_1117
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1117)
-     )
-     (local.get $14)
-     (local.get $10)
+   (return_call $+_1117
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1117)
     )
+    (local.get $14)
+    (local.get $10)
    )
   )
  )
@@ -254,14 +252,12 @@ functions › lam_destructure_4
     (block $do_backpatches.24
     )
    )
-   (return
-    (call $foo_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $foo_1113)
-     )
-     (local.get $6)
+   (return_call $foo_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $foo_1113)
     )
+    (local.get $6)
    )
   )
  )

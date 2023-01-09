@@ -168,15 +168,13 @@ optimizations › test_dead_branch_elimination_5
     (block $do_backpatches.15
     )
    )
-   (return
-    (call $+_1126
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1126)
-     )
-     (local.get $6)
-     (local.get $7)
+   (return_call $+_1126
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1126)
     )
+    (local.get $6)
+    (local.get $7)
    )
   )
  )

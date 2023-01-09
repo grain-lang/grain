@@ -53,14 +53,12 @@ basic functionality › complex2
     (block $do_backpatches.1
     )
    )
-   (return
-    (call $print_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $print_1113)
-     )
-     (local.get $6)
+   (return_call $print_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $print_1113)
     )
+    (local.get $6)
    )
   )
  )

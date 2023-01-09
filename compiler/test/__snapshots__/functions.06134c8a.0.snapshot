@@ -68,12 +68,10 @@ functions › dup_func
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $foo_1117
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $foo_1117)
-     )
+   (return_call $foo_1117
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $foo_1117)
     )
    )
   )

@@ -90,9 +90,9 @@ let compilation_mode: ref(option(string));
 
 let statically_link: ref(bool);
 
-/** Enable tail-call optimizations */
+/** Disables tail-call optimizations */
 
-let experimental_tail_call: ref(bool);
+let no_tail_call: ref(bool);
 
 /** Whether to allow cyclic types. */
 

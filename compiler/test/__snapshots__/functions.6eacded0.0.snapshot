@@ -110,11 +110,9 @@ functions › func_recursive_closure
      )
     )
    )
-   (return
-    (call $foo_1117
-     (local.get $7)
-     (i32.const 11)
-    )
+   (return_call $foo_1117
+    (local.get $7)
+    (i32.const 11)
    )
   )
  )
@@ -144,15 +142,13 @@ functions › func_recursive_closure
       )
      )
     )
-    (return
-     (call $+_1124
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $+_1124)
-      )
-      (local.get $1)
-      (local.get $2)
+    (return_call $+_1124
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $+_1124)
      )
+     (local.get $1)
+     (local.get $2)
     )
    )
   )
@@ -292,11 +288,9 @@ functions › func_recursive_closure
            )
           )
          )
-         (return
-          (call $bar_1120
-           (local.get $9)
-           (i32.const 3)
-          )
+         (return_call $bar_1120
+          (local.get $9)
+          (i32.const 3)
          )
         )
         (block $compile_block.29
@@ -331,11 +325,9 @@ functions › func_recursive_closure
            )
           )
          )
-         (return
-          (call $foo_1117
-           (local.get $0)
-           (local.get $10)
-          )
+         (return_call $foo_1117
+          (local.get $0)
+          (local.get $10)
          )
         )
        )
@@ -437,15 +429,13 @@ functions › func_recursive_closure
       )
      )
     )
-    (return
-     (call $+_1124
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $+_1124)
-      )
-      (local.get $10)
-      (local.get $11)
+    (return_call $+_1124
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $+_1124)
      )
+     (local.get $10)
+     (local.get $11)
     )
    )
   )
@@ -481,12 +471,10 @@ functions › func_recursive_closure
     (block $do_backpatches.49
     )
    )
-   (return
-    (call $truc_1116
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $truc_1116)
-     )
+   (return_call $truc_1116
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $truc_1116)
     )
    )
   )

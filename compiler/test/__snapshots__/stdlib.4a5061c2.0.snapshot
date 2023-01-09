@@ -256,15 +256,13 @@ stdlib › stdlib_equal_19
     (block $do_backpatches.13
     )
    )
-   (return
-    (call $==_1114
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $==_1114)
-     )
-     (local.get $7)
-     (local.get $9)
+   (return_call $==_1114
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $==_1114)
     )
+    (local.get $7)
+    (local.get $9)
    )
   )
  )

@@ -59,14 +59,12 @@ basic functionality › if_one_sided
      (i32.const 31)
     )
     (block $compile_block.3
-     (return
-      (call $print_1117
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $print_1117)
-       )
-       (i32.const 11)
+     (return_call $print_1117
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $print_1117)
       )
+      (i32.const 11)
      )
     )
     (block $compile_block.4 (result i32)

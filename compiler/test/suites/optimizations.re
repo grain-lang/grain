@@ -261,7 +261,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertAnf(
     "test_no_local_mutation_optimization_of_closure_scope_mut",
-    "/* grainc-flags --experimental-wasm-tail-call */ provide let bar = () => { let mut x = 5; let foo = () => x; foo() }",
+    "provide let bar = () => { let mut x = 5; let foo = () => x; foo() }",
     {
       open Grain_typed;
       let x = Ident.create("x");
@@ -336,7 +336,7 @@ describe("optimizations", ({test, testSkip}) => {
   /* All optimizations are needed to work completely on this input */
   assertAnf(
     "test_optimizations_work_together",
-    "/* grainc-flags --experimental-wasm-tail-call */ {\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
+    "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
     {
       open Grain_typed;
       let plus = Ident.create("+");
@@ -414,7 +414,6 @@ describe("optimizations", ({test, testSkip}) => {
   // Removal of manual memory management calls
   assertAnf(
     "test_manual_gc_calls_removed",
-    ~config_fn=() => {Grain_utils.Config.experimental_tail_call := true},
     {|
       /* grainc-flags --no-gc */
       include "runtime/unsafe/memory"

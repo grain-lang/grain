@@ -380,15 +380,13 @@ pattern matching › tuple_match_deep
            )
           )
          )
-         (return
-          (call $+_1131
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1131)
-           )
-           (local.get $18)
-           (local.get $10)
+         (return_call $+_1131
+          (call $incRef_0
+           (global.get $GRAIN$EXPORT$incRef_0)
+           (global.get $+_1131)
           )
+          (local.get $18)
+          (local.get $10)
          )
         )
        )

@@ -1,4 +1,3 @@
-/* grainc-flags --experimental-wasm-tail-call */
 module SinisterTailCall
 
 // Contrived example to test *ADVANCED* tail calls

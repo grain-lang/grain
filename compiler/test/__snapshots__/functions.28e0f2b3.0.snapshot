@@ -102,14 +102,12 @@ functions › lambda_pat_any
     (block $do_backpatches.6
     )
    )
-   (return
-    (call $x_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $x_1113)
-     )
-     (local.get $6)
+   (return_call $x_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $x_1113)
     )
+    (local.get $6)
    )
   )
  )

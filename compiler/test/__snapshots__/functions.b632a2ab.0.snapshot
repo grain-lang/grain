@@ -100,11 +100,9 @@ functions › lam_destructure_1
     (block $do_backpatches.6
     )
    )
-   (return
-    (call $lam_lambda_1113
-     (local.get $6)
-     (local.get $7)
-    )
+   (return_call $lam_lambda_1113
+    (local.get $6)
+    (local.get $7)
    )
   )
  )

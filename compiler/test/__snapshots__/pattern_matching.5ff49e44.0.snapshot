@@ -347,15 +347,13 @@ pattern matching › record_match_4
            )
           )
          )
-         (return
-          (call $+_1126
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1126)
-           )
-           (local.get $13)
-           (local.get $9)
+         (return_call $+_1126
+          (call $incRef_0
+           (global.get $GRAIN$EXPORT$incRef_0)
+           (global.get $+_1126)
           )
+          (local.get $13)
+          (local.get $9)
          )
         )
        )

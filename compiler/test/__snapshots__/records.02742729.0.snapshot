@@ -180,15 +180,13 @@ records › record_get_multiple
      )
     )
    )
-   (return
-    (call $+_1118
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1118)
-     )
-     (local.get $7)
-     (local.get $8)
+   (return_call $+_1118
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1118)
     )
+    (local.get $7)
+    (local.get $8)
    )
   )
  )

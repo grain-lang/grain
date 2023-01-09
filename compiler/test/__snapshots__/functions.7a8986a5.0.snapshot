@@ -65,11 +65,9 @@ functions › app_1
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $lam_lambda_1114
-     (local.get $6)
-     (i32.const 3)
-    )
+   (return_call $lam_lambda_1114
+    (local.get $6)
+    (i32.const 3)
    )
   )
  )

@@ -260,15 +260,13 @@ basic functionality › comp22
     (block $do_backpatches.17
     )
    )
-   (return
-    (call $isnt_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $isnt_1113)
-     )
-     (local.get $8)
-     (local.get $11)
+   (return_call $isnt_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $isnt_1113)
     )
+    (local.get $8)
+    (local.get $11)
    )
   )
  )

@@ -38,15 +38,13 @@ functions › fn_trailing_comma
      )
     )
    )
-   (return
-    (call $+_1116
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1116)
-     )
-     (local.get $1)
-     (local.get $2)
+   (return_call $+_1116
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1116)
     )
+    (local.get $1)
+    (local.get $2)
    )
   )
  )
@@ -74,15 +72,13 @@ functions › fn_trailing_comma
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $testFn_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $testFn_1113)
-     )
-     (i32.const 5)
-     (i32.const 7)
+   (return_call $testFn_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $testFn_1113)
     )
+    (i32.const 5)
+    (i32.const 7)
    )
   )
  )

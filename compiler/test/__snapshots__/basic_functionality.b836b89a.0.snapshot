@@ -64,15 +64,13 @@ basic functionality › complex1
     (block $do_backpatches.1
     )
    )
-   (return
-    (call $-_1123
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $-_1123)
-     )
-     (i32.const 7)
-     (local.get $6)
+   (return_call $-_1123
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $-_1123)
     )
+    (i32.const 7)
+    (local.get $6)
    )
   )
  )
