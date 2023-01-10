@@ -46,23 +46,14 @@ enum StringList {
 primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata"
 
 @unsafe
-let findTypeMetadata = (moduleId, typeId) => {
+let findTypeMetadata = typeId => {
   let mut metadataPtr = WasmI32.load(_RUNTIME_TYPE_METADATA_PTR, 0n)
   let mut modData = -1n
   let mut modTypesCount = 0n
-  while (metadataPtr != 0n) {
-    if (WasmI32.load(metadataPtr, 4n) == moduleId) {
-      modData = metadataPtr + 12n
-      modTypesCount = WasmI32.load(metadataPtr, 8n)
-      break
-    }
-    metadataPtr = WasmI32.load(metadataPtr, 0n)
-  }
-
-  if (modData == -1n) {
-    -1n
-  } else {
-    let mut typeData = -1n
+  let mut typeData = -1n
+  while (metadataPtr != 0n && typeData == -1n) {
+    modData = metadataPtr + 12n
+    modTypesCount = WasmI32.load(metadataPtr, 8n)
     for (let mut i = 0n; i < modTypesCount; i += 1n) {
       if (WasmI32.load(modData, 4n) == typeId) {
         typeData = modData
@@ -70,18 +61,18 @@ let findTypeMetadata = (moduleId, typeId) => {
       }
       modData += WasmI32.load(modData, 0n)
     }
-
-    typeData
+    metadataPtr = WasmI32.load(metadataPtr, 0n)
   }
+
+  typeData
 }
 
 @unsafe
 let getVariantName = variant => {
-  let moduleId = WasmI32.load(variant, 4n) >> 1n
   let typeId = WasmI32.load(variant, 8n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
 
-  let mut block = findTypeMetadata(moduleId, typeId)
+  let mut block = findTypeMetadata(typeId)
 
   if (block == -1n) {
     -1n
@@ -108,11 +99,10 @@ let getVariantName = variant => {
 
 @unsafe
 let getRecordFieldNames = record_ => {
-  let moduleId = WasmI32.load(record_, 4n) >> 1n
   let typeId = WasmI32.load(record_, 8n) >> 1n
   let arity = WasmI32.load(record_, 12n)
 
-  let mut fields = findTypeMetadata(moduleId, typeId)
+  let mut fields = findTypeMetadata(typeId)
 
   if (fields == -1n) {
     -1n

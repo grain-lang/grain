@@ -1,7 +1,7 @@
 tuples › tup1_trailing_space
 (module
- (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
@@ -13,8 +13,18 @@ tuples › tup1_trailing_space
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
+ (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (func $_gtype_metadata
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (nop)
+ )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)

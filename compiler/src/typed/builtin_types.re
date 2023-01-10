@@ -21,12 +21,11 @@ open Path;
 open Types;
 open Btype;
 
-let builtin_idents = ref([]);
-let builtin_decls = ref([]);
+let builtin_idents = Hashtbl.create(64);
 
 let wrap = (create, s) => {
   let id = create(s);
-  builtin_idents := [(s, id), ...builtin_idents^];
+  Hashtbl.add(builtin_idents, s, id);
   id;
 };
 
@@ -52,7 +51,11 @@ and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
 and ident_array = ident_create("Array")
-and ident_fd = ident_create("FileDescriptor");
+and ident_fd = ident_create("FileDescriptor")
+and ident_assertion_error = ident_create_predef_exn("AssertionError")
+and ident_index_out_of_bounds = ident_create_predef_exn("IndexOutOfBounds")
+and ident_index_non_integer = ident_create_predef_exn("IndexNonInteger")
+and ident_match_failure = ident_create_predef_exn("MatchFailure");
 
 let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
@@ -98,8 +101,6 @@ and type_array = var =>
 and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
 and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
-let all_predef_exns = [];
-
 let decl_abstr = path => {
   type_params: [],
   type_arity: 0,
@@ -128,41 +129,45 @@ let ident_false = ident_create("false")
 and ident_true = ident_create("true")
 and ident_void_cstr = ident_create("()");
 
-let decl_create = decl => {
-  builtin_decls := [decl, ...builtin_decls^];
-  decl;
-};
-
-let decl_exception =
-  decl_create({...decl_abstr(path_exception), type_kind: TDataOpen});
-let decl_bool =
-  decl_create({
-    ...decl_abstr_imm(WasmI32, path_bool),
-    type_kind: TDataVariant([cstr(ident_false, []), cstr(ident_true, [])]),
-  })
-and decl_void =
-  decl_create({
-    ...decl_abstr_imm(WasmI32, path_void),
-    type_kind: TDataVariant([cstr(ident_void_cstr, [])]),
-  })
+let decl_exception = {...decl_abstr(path_exception), type_kind: TDataOpen};
+let decl_bool = {
+  ...decl_abstr_imm(WasmI32, path_bool),
+  type_kind: TDataVariant([cstr(ident_false, []), cstr(ident_true, [])]),
+}
+and decl_void = {
+  ...decl_abstr_imm(WasmI32, path_void),
+  type_kind: TDataVariant([cstr(ident_void_cstr, [])]),
+}
 and decl_box = {
   let tvar = newgenvar();
-  decl_create({
-    ...decl_abstr(path_box),
-    type_params: [tvar],
-    type_arity: 1,
-  });
+  {...decl_abstr(path_box), type_params: [tvar], type_arity: 1};
 }
 and decl_array = {
   let tvar = newgenvar();
-  decl_create({
-    ...decl_abstr(path_array),
-    type_params: [tvar],
-    type_arity: 1,
-  });
+  {...decl_abstr(path_array), type_params: [tvar], type_arity: 1};
 };
 
-let initial_env = (add_type, empty_env) =>
+let exception_create = (name, ty_args, args) => {
+  {
+    ext_type_path: path_exception,
+    ext_type_params: ty_args,
+    ext_args: args,
+    ext_repr: ReprValue(WasmI32),
+    ext_name: name,
+    Types.ext_loc: Location.dummy_loc,
+  };
+};
+
+let decl_assertion_error =
+  exception_create(ident_assertion_error, [], TConstrTuple([type_string]));
+let decl_index_out_of_bounds =
+  exception_create(ident_index_out_of_bounds, [], TConstrSingleton);
+let decl_index_non_integer =
+  exception_create(ident_index_non_integer, [], TConstrSingleton);
+let decl_match_failure =
+  exception_create(ident_match_failure, [], TConstrSingleton);
+
+let initial_env = (add_type, add_extension, empty_env) =>
   empty_env
   |> add_type(ident_number, decl_abstr(path_number))
   |> add_type(ident_exception, decl_exception)
@@ -183,7 +188,11 @@ let initial_env = (add_type, empty_env) =>
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
   |> add_type(ident_fd, decl_abstr(path_fd))
-  |> add_type(ident_bytes, decl_abstr(path_bytes));
+  |> add_type(ident_bytes, decl_abstr(path_bytes))
+  |> add_extension(ident_assertion_error, decl_assertion_error)
+  |> add_extension(ident_index_out_of_bounds, decl_index_out_of_bounds)
+  |> add_extension(ident_index_non_integer, decl_index_non_integer)
+  |> add_extension(ident_match_failure, decl_match_failure);
 
 let builtin_values =
   List.map(
@@ -199,5 +208,3 @@ let builtin_values =
    compatibility. */
 
 let _ = Ident.setup();
-let builtin_idents = List.rev(builtin_idents^);
-let builtin_decls = List.rev(builtin_decls^);

@@ -30,4 +30,6 @@ let current_unit_name: ref(unit => string);
 
 let current_filename: ref(unit => string);
 
+let get_dependencies: unit => list(string);
+
 let dump_dependency_graph: unit => unit;

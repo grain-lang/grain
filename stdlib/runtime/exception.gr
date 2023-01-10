@@ -98,8 +98,6 @@ export let panicWithException = (e: Exception) => {
   panic(exceptionToString(e))
 }
 
-export exception IndexOutOfBounds
-export exception IndexNonInteger
 export exception DivisionByZero
 export exception ModuloByZero
 export exception Overflow
@@ -114,7 +112,7 @@ export exception MatchFailure
  * this file to construct the error, but constructing a string in this module is impractical as we
  * don't have access to memory allocation since malloc.gr depends on this module.
  */
-export exception AssertionError(String)
+
 export exception InvalidArgument(String)
 
 let runtimeErrorPrinter = e => {

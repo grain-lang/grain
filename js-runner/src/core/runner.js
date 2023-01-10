@@ -131,6 +131,9 @@ export class GrainRunner {
         // This is a good point to debug when modules are loaded:
         // console.log(`Located module: ${imp.module}`);
         await this.load(imp.module, located);
+        if (located.hasTypeMetadata) {
+          located.loadTypeMetadata();
+        }
         if (located.isStartable) {
           located.start();
         }
@@ -142,6 +145,9 @@ export class GrainRunner {
     // All of the dependencies have been loaded. Now we can instantiate with the import object.
     await mod.instantiate(this.imports, this);
     this.idMap[this.imports["_grainEnv"]["moduleRuntimeId"]] = name;
+    if (mod.hasTypeMetadata) {
+      mod.loadTypeMetadata();
+    }
     if (mod.isStartable) {
       this.imports["_grainEnv"]["relocBase"] += mod.tableSize || 0;
 

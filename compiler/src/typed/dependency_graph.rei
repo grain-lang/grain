@@ -31,6 +31,11 @@ module Make:
     let compile_graph: unit => unit;
 
     /**
+   Returns a topologically sorted list of all dependencies.
+   */
+    let get_dependencies: unit => list(string);
+
+    /**
    Dumps the edges in this graph to stderr.
    */
     let dump: unit => unit;

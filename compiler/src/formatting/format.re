@@ -1125,16 +1125,16 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
   switch (patterns) {
   | [arg1, arg2, ..._] =>
     switch (arg2.ppat_desc) {
-    | PPatConstruct(innerfunc, innerpatterns) =>
-      let func =
-        switch (innerfunc.txt) {
+    | PPatConstruct(innercstr, innerpatterns) =>
+      let cstr =
+        switch (innercstr.txt) {
         | IdentName({txt: name}) => name
         | _ => ""
         };
 
-      if (func == "[]") {
+      if (cstr == "[]") {
         [RegularPattern(arg1)];
-      } else if (func == list_cons) {
+      } else if (cstr == list_cons) {
         let inner = resugar_pattern_list_inner(innerpatterns);
         [RegularPattern(arg1), ...inner];
       } else {
@@ -1145,20 +1145,6 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
     }
   | _ =>
     raise(IllegalParse("List pattern cons should always have two patterns"))
-  };
-}
-
-and is_empty_list = (expr: Parsetree.expression) => {
-  switch (expr.pexp_desc) {
-  | PExpId(loc) =>
-    let loc_txt =
-      switch (loc.txt) {
-      | IdentName({txt: name}) => name
-      | _ => ""
-      };
-
-    loc_txt == "[]";
-  | _ => false
   };
 }
 
@@ -1323,21 +1309,11 @@ and resugar_list_inner = (expressions: list(Parsetree.expression)) =>
   switch (expressions) {
   | [arg1, arg2] =>
     switch (arg2.pexp_desc) {
-    | PExpApp(innerfunc, innerexpressions) =>
-      let func_name = get_function_name(innerfunc);
-
-      if (func_name == list_cons) {
-        let inner = resugar_list_inner(innerexpressions);
-        List.append([Regular(arg1)], inner);
-      } else {
-        [Regular(arg1), Spread(arg2)];
-      };
-    | _ =>
-      if (is_empty_list(arg2)) {
-        [Regular(arg1)];
-      } else {
-        [Regular(arg1), Spread(arg2)];
-      }
+    | PExpConstruct({txt: IdentName({txt: "[...]"})}, innerexpressions) =>
+      let inner = resugar_list_inner(innerexpressions);
+      List.append([Regular(arg1)], inner);
+    | PExpConstruct({txt: IdentName({txt: "[]"})}, _) => [Regular(arg1)]
+    | _ => [Regular(arg1), Spread(arg2)]
     }
   | _ =>
     // Grain syntax makes it impossible to construct a list cons without
@@ -2438,8 +2414,6 @@ and print_other_application =
     )
   | _ when infixop(function_name) =>
     raise(IllegalParse("Formatter error, wrong number of args "))
-  | _ when function_name == list_cons =>
-    resugar_list(~original_source, ~comments, expressions)
   | [first_expr, ..._]
       when Array.exists(fn => function_name == fn, exception_primitives) =>
     Doc.concat([
@@ -3617,6 +3591,24 @@ and print_expression_inner =
         ~comments=comments_in_expression,
         func,
       );
+    | PExpConstruct({txt: IdentName({txt: "[...]"})}, expressions) =>
+      resugar_list(~original_source, ~comments, expressions)
+    | PExpConstruct({txt: IdentName({txt: "[]"})}, expressions) =>
+      Doc.text("[]")
+    | PExpConstruct({txt: id}, []) => print_ident(id)
+    | PExpConstruct(constr, expressions) =>
+      let comments_in_expression =
+        Comment_utils.get_comments_inside_location(
+          ~location=expr.pexp_loc,
+          comments,
+        );
+      print_application(
+        ~expression_parent,
+        ~expressions,
+        ~original_source,
+        ~comments=comments_in_expression,
+        Ast_helper.Exp.ident(constr),
+      );
     | PExpBlock(expressions) =>
       switch (expressions) {
       | [] =>
@@ -3719,6 +3711,7 @@ and print_expression_inner =
 and is_grouped_access_expression = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
   | PExpConstant(_)
+  | PExpConstruct(_)
   | PExpTuple(_)
   | PExpId(_)
   | PExpArrayGet(_)

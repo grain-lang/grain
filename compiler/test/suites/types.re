@@ -83,7 +83,7 @@ describe("aliased types", ({test, testSkip}) => {
       type Foo = List<String>
       [1, 2, 3] : Foo
     |},
-    "Type Number is not compatible with type String",
+    "This expression has type Number but",
   );
   assertCompileError(
     "err_type_alias_2",
@@ -91,7 +91,7 @@ describe("aliased types", ({test, testSkip}) => {
       type Foo = List<String>
       let a: Foo = [1, 2, 3]
     |},
-    "Type Number is not compatible with type String",
+    "This expression has type Number but",
   );
   assertCompileError(
     "err_type_alias_3",
@@ -99,7 +99,7 @@ describe("aliased types", ({test, testSkip}) => {
       type Foo<a> = List<a>
       let a: Foo<String> = [1, 2, 3]
     |},
-    "Type Number is not compatible with type String",
+    "This expression has type Number but",
   );
   assertCompileError(
     "err_type_alias_4",

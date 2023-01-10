@@ -177,6 +177,7 @@ type prim1 =
     | NewInt64
     | NewFloat32
     | NewFloat64
+    | BuiltinId
     | LoadAdtVariant
     | StringSize
     | BytesSize

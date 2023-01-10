@@ -186,7 +186,7 @@ describe("records", ({test, testSkip}) => {
       export enum Bar { Baz(Foo<Number>) }
       print(Baz({ bar: 1 }))
     |},
-    "Baz(<record value>)\n",
+    "Baz({\n  bar: 1\n})\n",
   );
   // record spread
   assertRun(

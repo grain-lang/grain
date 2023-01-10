@@ -137,6 +137,13 @@ module E = {
         sub.expr(sub, e),
         List.map(sub.expr(sub), el),
       )
+    | PExpConstruct(id, el) =>
+      construct(
+        ~loc,
+        ~attributes,
+        map_identifier(sub, id),
+        List.map(sub.expr(sub), el),
+      )
     | PExpBlock(el) => block(~loc, ~attributes, List.map(sub.expr(sub), el))
     | PExpNull => null(~loc, ~attributes, ())
     | PExpConstraint(e, t) =>

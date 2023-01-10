@@ -667,7 +667,7 @@ export let slice = (start: Number, to: Number, string: String) => {
   }
 
   if (start > len || to > len) {
-    throw Exception.IndexOutOfBounds
+    throw IndexOutOfBounds
   }
 
   if (to < start) {
@@ -1217,7 +1217,7 @@ let encodeAtHelp =
     match (encoding) {
       UTF8 => {
         if (bytesIdx + 3n > destSize) {
-          throw Exception.IndexOutOfBounds
+          throw IndexOutOfBounds
         }
         WasmI32.store8(bytes + bytesIdx, 0xEFn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xBBn, _BYTES_OFFSET)
@@ -1226,7 +1226,7 @@ let encodeAtHelp =
       },
       UTF16_BE => {
         if (bytesIdx + 2n > destSize) {
-          throw Exception.IndexOutOfBounds
+          throw IndexOutOfBounds
         }
         WasmI32.store8(bytes + bytesIdx, 0xFEn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xFFn, _BYTES_OFFSET)
@@ -1234,7 +1234,7 @@ let encodeAtHelp =
       },
       UTF16_LE => {
         if (bytesIdx + 2n > destSize) {
-          throw Exception.IndexOutOfBounds
+          throw IndexOutOfBounds
         }
         WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_OFFSET)
@@ -1242,7 +1242,7 @@ let encodeAtHelp =
       },
       UTF32_BE => {
         if (bytesIdx + 4n > destSize) {
-          throw Exception.IndexOutOfBounds
+          throw IndexOutOfBounds
         }
         WasmI32.store8(bytes + bytesIdx, 0n, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0n, _BYTES_OFFSET)
@@ -1252,7 +1252,7 @@ let encodeAtHelp =
       },
       UTF32_LE => {
         if (bytesIdx + 4n > destSize) {
-          throw Exception.IndexOutOfBounds
+          throw IndexOutOfBounds
         }
         WasmI32.store8(bytes + bytesIdx, 0xFFn, _BYTES_OFFSET)
         WasmI32.store8(bytes + bytesIdx + 1n, 0xFEn, _BYTES_OFFSET)
@@ -1269,7 +1269,7 @@ let encodeAtHelp =
       // the target encoding is UTF8 as well, then copy the entire memory range
       // in bulk. No need to iterate individual characters.
       if (bytesIdx + byteSize > destSize) {
-        throw Exception.IndexOutOfBounds
+        throw IndexOutOfBounds
       }
       Memory.copy(bytes + bytesIdx + _BYTES_OFFSET, ptr, byteSize)
     },
@@ -1291,7 +1291,7 @@ let encodeAtHelp =
             // With the optimization above for bulk memory copy, this match
             // should never occur for the UTF8 case.
             if (bytesIdx + n > destSize) {
-              throw Exception.IndexOutOfBounds
+              throw IndexOutOfBounds
             }
             Memory.copy(bytes + bytesIdx + _BYTES_OFFSET, ptr, n)
             bytesIdx += n
@@ -1301,7 +1301,7 @@ let encodeAtHelp =
             if (codePoint <= 0xFFFFn) {
               // <hi><lo>
               if (bytesIdx + 2n > destSize) {
-                throw Exception.IndexOutOfBounds
+                throw IndexOutOfBounds
               }
               WasmI32.store8(
                 bytes + bytesIdx,
@@ -1317,7 +1317,7 @@ let encodeAtHelp =
             } else {
               // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
               if (bytesIdx + 4n > destSize) {
-                throw Exception.IndexOutOfBounds
+                throw IndexOutOfBounds
               }
               let uPrime = codePoint - 0x10000n
               let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) +
@@ -1343,7 +1343,7 @@ let encodeAtHelp =
             let codePoint = getCodePoint(ptr)
             if (codePoint <= 0xFFFFn) {
               if (bytesIdx + 2n > destSize) {
-                throw Exception.IndexOutOfBounds
+                throw IndexOutOfBounds
               }
               // <lo><hi>
               WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)
@@ -1356,7 +1356,7 @@ let encodeAtHelp =
             } else {
               // https://en.wikipedia.org/wiki/UTF-16#Code_points_from_U+010000_to_U+10FFFF
               if (bytesIdx + 4n > destSize) {
-                throw Exception.IndexOutOfBounds
+                throw IndexOutOfBounds
               }
               let uPrime = codePoint - 0x10000n
               let w1 = ((uPrime & 0b11111111110000000000n) >>> 10n) +
@@ -1380,7 +1380,7 @@ let encodeAtHelp =
           },
           UTF32_BE => {
             if (bytesIdx + 4n > destSize) {
-              throw Exception.IndexOutOfBounds
+              throw IndexOutOfBounds
             }
             let codePoint = getCodePoint(ptr)
             WasmI32.store8(
@@ -1407,7 +1407,7 @@ let encodeAtHelp =
           },
           UTF32_LE => {
             if (bytesIdx + 4n > destSize) {
-              throw Exception.IndexOutOfBounds
+              throw IndexOutOfBounds
             }
             let codePoint = getCodePoint(ptr)
             WasmI32.store8(bytes + bytesIdx, codePoint & 0xffn, _BYTES_OFFSET)

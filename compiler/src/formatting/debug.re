@@ -81,6 +81,8 @@ let debug_expression = (expr: Parsetree.expression) => {
   | PExpLambda(patterns, expression) =>
     print_loc("PExpLambda", expr.pexp_loc)
   | PExpApp(func, expressions) => print_loc("PExpApp", expr.pexp_loc)
+  | PExpConstruct(func, expression) =>
+    print_loc("PExpConstruct", expr.pexp_loc)
   | PExpBlock(expressions) => print_loc("PExpBlock", expr.pexp_loc)
   | PExpBoxAssign(expression, expression1) =>
     print_loc("PExpBoxAssign", expr.pexp_loc)
