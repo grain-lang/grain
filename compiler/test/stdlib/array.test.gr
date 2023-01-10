@@ -387,11 +387,11 @@ assert arr1 == [> 1, 2, 3, 4, 5]
 
 let arr2 = [> 1, 2, 3, 4, 5]
 Array.rotate(3, arr2)
-assert arr2 == [> 3, 4, 5, 1, 2]
+assert arr2 == [> 4, 5, 1, 2, 3]
 
 let arr3 = [> 1, 2, 3, 4, 5]
 Array.rotate(-4, arr3)
-assert arr3 == [> 5, 1, 2, 3, 4]
+assert arr3 == [> 2, 3, 4, 5, 1]
 
 let arr4 = [> 1, 2, 3, 4, 5]
 Array.rotate(5, arr4)
@@ -399,11 +399,11 @@ assert arr4 == [> 1, 2, 3, 4, 5]
 
 let arr5 = [> 1, 2, 3, 4, 5]
 Array.rotate(48, arr5)
-assert arr5 == [> 3, 4, 5, 1, 2]
+assert arr5 == [> 4, 5, 1, 2, 3]
 
 let arr6 = [> 1, 2, 3, 4, 5]
 Array.rotate(-54, arr6)
-assert arr6 == [> 5, 1, 2, 3, 4]
+assert arr6 == [> 2, 3, 4, 5, 1]
 
 let arr7 = [>]: Array<Number>
 Array.rotate(1, arr7)
@@ -411,7 +411,7 @@ assert arr7 == [>]
 
 let arr8 = [> "a", "b", "c"]
 Array.rotate(1, arr8)
-assert arr8 == [> "c", "a", "b"]
+assert arr8 == [> "b", "c", "a"]
 
 let arr9 = [>]
 Array.rotate(1, arr9)
