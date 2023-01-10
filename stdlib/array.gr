@@ -807,16 +807,15 @@ export let unique = array => {
  * @throws Failure(String): When the arrays have different sizes
  *
  * @since v0.4.0
+ * @history v0.5.3: Support zipping arrays of different sizes
  */
 export let zip = (array1: Array<a>, array2: Array<b>) => {
   let len = length(array1)
-  if (len != length(array2)) {
-    fail "arguments to zip must be same length"
-  } else {
-    init(len, n => {
-      (array1[n], array2[n])
-    })
-  }
+  let len2 = length(array2)
+  let len = if (len > len2) len2 else len
+  init(len, n => {
+    (array1[n], array2[n])
+  })
 }
 
 /**
