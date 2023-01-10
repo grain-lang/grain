@@ -81,7 +81,7 @@ The easiest way to do this is to have multiple Conventional Commits while you wo
 
 ### Reviews
 
-As the Grain core team has grown, we've adjusted our code review process. On the [grain-lang/grain](https://github.com/grain-lang/grain) repository, we require **one** approval from a "code owner", as defined in the [CODEOWNERS](/.github/CODEOWNERS) file for any non-breaking pull request and approvals from **all** "code owners" for pull requests containing breaking changes. For any other repositories in the grain-lang organization, we require **one** approval from any core team member.
+As the Grain core team has grown, we've adjusted our code review process. On the [grain-lang/grain](https://github.com/grain-lang/grain) repository, we require code approvals as defined by the [CODEOWNERS](/.github/CODEOWNERS) file. **One** codeowner of each file changed in the pull request must approve of the changes before the changes are merged, as enforced by GitHub. Non-breaking pull requests may be merged at any time. Breaking pull requests should only be merged when the core team has general agreement of the changes and is preparing a breaking release. For any other repositories in the grain-lang organization, we require **one** approval from any core team member.
 
 ### With Breaking Changes
 
