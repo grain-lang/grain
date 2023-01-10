@@ -215,6 +215,23 @@ describe("pattern matching", ({test, testSkip}) => {
     "constant_match_4",
     "match ((\"foo\", 5)) { (\"foo\", n) when n == 7 => false, (\"foo\", 9) when true => false, (\"foo\", n) when n == 5 => true, _ => false }",
   );
+  // Constant low level wasm type patterns
+  assertSnapshot(
+    "low_level_constant_match_1",
+    "@unsafe let _ = print(match (1n) { 0n => false, 1n => true, 2n => false, _ => false} )",
+  );
+  assertSnapshot(
+    "low_level_constant_match_2",
+    "@unsafe let _ = print(match (1N) { 0N => false, 1N => true, 2N => false, _ => false} )",
+  );
+  assertSnapshot(
+    "low_level_constant_match_3",
+    "@unsafe let _ = print(match (1.w) { 0.w => false, 1.w => true, 2.w => false, _ => false} )",
+  );
+  assertSnapshot(
+    "low_level_constant_match_4",
+    "@unsafe let _ = print(match (1.W) { 0.W => false, 1.W => true, 2.W => false, _ => false} )",
+  );
   // Or patterns
   assertSnapshot("or_match_1", "match (true) { true | false => 3 }");
   assertSnapshot(
