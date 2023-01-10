@@ -512,7 +512,7 @@ Returns:
 ### Pervasives.**(**)**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.6.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
