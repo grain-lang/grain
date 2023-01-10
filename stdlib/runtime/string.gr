@@ -25,7 +25,11 @@ import Memory from "runtime/unsafe/memory"
 import Tags from "runtime/unsafe/tags"
 import NumberUtils from "runtime/numberUtils"
 
-import { allocateString, allocateArray } from "runtime/dataStructures"
+import {
+  allocateString,
+  allocateArray,
+  untagSimpleNumber,
+} from "runtime/dataStructures"
 
 import foreign wasm fd_write: (
   WasmI32,
@@ -37,6 +41,7 @@ import foreign wasm fd_write: (
 primitive (!): Bool -> Bool = "@not"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive builtinId: String -> Number = "@builtin.id"
 
 enum StringList {
   [],
@@ -68,32 +73,60 @@ let findTypeMetadata = typeId => {
 }
 
 @unsafe
+let _OPTION_ID = untagSimpleNumber(builtinId("Option"))
+@unsafe
+let _RESULT_ID = untagSimpleNumber(builtinId("Result"))
+
+let _SOME = "Some"
+let _NONE = "None"
+let _OK = "Ok"
+let _ERR = "Err"
+
+@unsafe
 let getVariantName = variant => {
   let typeId = WasmI32.load(variant, 8n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
 
-  let mut block = findTypeMetadata(typeId)
-
-  if (block == -1n) {
-    -1n
-  } else {
-    let sectionLength = WasmI32.load(block, 0n)
-    block += 8n
-
-    let end = block + sectionLength
-    let mut result = -1n
-    while (block < end) {
-      if (WasmI32.load(block, 4n) == variantId) {
-        let length = WasmI32.load(block, 8n)
-        let str = allocateString(length)
-        Memory.copy(str + 8n, block + 12n, length)
-        result = str
-        break
+  match (typeId) {
+    id when id == _OPTION_ID => {
+      if (variantId == 0n) {
+        Memory.incRef(WasmI32.fromGrain(_SOME))
+      } else {
+        Memory.incRef(WasmI32.fromGrain(_NONE))
       }
-      block += WasmI32.load(block, 0n)
-    }
+    },
+    id when id == _RESULT_ID => {
+      if (variantId == 0n) {
+        Memory.incRef(WasmI32.fromGrain(_OK))
+      } else {
+        Memory.incRef(WasmI32.fromGrain(_ERR))
+      }
+    },
+    _ => {
+      let mut block = findTypeMetadata(typeId)
 
-    result
+      if (block == -1n) {
+        -1n
+      } else {
+        let sectionLength = WasmI32.load(block, 0n)
+        block += 8n
+
+        let end = block + sectionLength
+        let mut result = -1n
+        while (block < end) {
+          if (WasmI32.load(block, 4n) == variantId) {
+            let length = WasmI32.load(block, 8n)
+            let str = allocateString(length)
+            Memory.copy(str + 8n, block + 12n, length)
+            result = str
+            break
+          }
+          block += WasmI32.load(block, 0n)
+        }
+
+        result
+      }
+    },
   }
 }
 

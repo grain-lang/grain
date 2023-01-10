@@ -34,6 +34,8 @@ let ident_create_predef_exn = wrap(Ident.create_predef_exn);
 
 let ident_number = ident_create("Number")
 and ident_exception = ident_create("Exception")
+and ident_option = ident_create("Option")
+and ident_result = ident_create("Result")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
 and ident_wasmi32 = ident_create("WasmI32")
@@ -59,6 +61,8 @@ and ident_match_failure = ident_create_predef_exn("MatchFailure");
 
 let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
+and path_option = PIdent(ident_option)
+and path_result = PIdent(ident_result)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
 and path_wasmi32 = PIdent(ident_wasmi32)
@@ -80,6 +84,10 @@ and path_fd = PIdent(ident_fd);
 
 let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
 and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
+and type_option = var =>
+  newgenty(TTyConstr(path_option, [var], ref(TMemNil)))
+and type_result = (ok, err) =>
+  newgenty(TTyConstr(path_result, [ok, err], ref(TMemNil)))
 and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
 and type_rational = newgenty(TTyConstr(path_rational, [], ref(TMemNil)))
@@ -127,7 +135,11 @@ let cstr = (id, args) => {
 
 let ident_false = ident_create("false")
 and ident_true = ident_create("true")
-and ident_void_cstr = ident_create("()");
+and ident_void_cstr = ident_create("()")
+and ident_some_cstr = ident_create("Some")
+and ident_none_cstr = ident_create("None")
+and ident_ok_cstr = ident_create("Ok")
+and ident_err_cstr = ident_create("Err");
 
 let decl_exception = {...decl_abstr(path_exception), type_kind: TDataOpen};
 let decl_bool = {
@@ -137,6 +149,33 @@ let decl_bool = {
 and decl_void = {
   ...decl_abstr_imm(WasmI32, path_void),
   type_kind: TDataVariant([cstr(ident_void_cstr, [])]),
+}
+and decl_option = {
+  let tvar = newgenvar();
+  {
+    ...decl_abstr(path_option),
+    type_params: [tvar],
+    type_arity: 1,
+    type_kind:
+      TDataVariant([
+        cstr(ident_some_cstr, [tvar]),
+        cstr(ident_none_cstr, []),
+      ]),
+  };
+}
+and decl_result = {
+  let ok = newgenvar();
+  let err = newgenvar();
+  {
+    ...decl_abstr(path_result),
+    type_params: [ok, err],
+    type_arity: 2,
+    type_kind:
+      TDataVariant([
+        cstr(ident_ok_cstr, [ok]),
+        cstr(ident_err_cstr, [err]),
+      ]),
+  };
 }
 and decl_box = {
   let tvar = newgenvar();
@@ -171,6 +210,8 @@ let initial_env = (add_type, add_extension, empty_env) =>
   empty_env
   |> add_type(ident_number, decl_abstr(path_number))
   |> add_type(ident_exception, decl_exception)
+  |> add_type(ident_option, decl_option)
+  |> add_type(ident_result, decl_result)
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
   |> add_type(ident_float32, decl_abstr(path_float32))
