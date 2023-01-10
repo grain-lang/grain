@@ -207,6 +207,30 @@ import foreign wasm path_rename: (
   WasmI32,
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
+import foreign wasm sock_accept: (
+  WasmI32, 
+  WasmI32, 
+  WasmI32  
+) -> WasmI32 from "wasi_snapshot_preview1";
+import foreign wasm sock_recv: (
+  WasmI32, 
+  WasmI32, 
+  WasmI32, 
+  WasmI32, 
+  WasmI32, 
+  WasmI32  
+) -> WasmI32 from "wasi_snapshot_preview1";
+import foreign wasm sock_send: (
+  WasmI32, 
+  WasmI32, 
+  WasmI32, 
+  WasmI32, 
+  WasmI32  
+) -> WasmI32 from "wasi_snapshot_preview1";
+import foreign wasm sock_shutdown: (
+  WasmI32, 
+  WasmI32  
+) -> WasmI32 from "wasi_snapshot_preview1";
 
 // clocks
 let _CLOCK_REALTIME = 0n
@@ -236,6 +260,21 @@ let _FDFLAG_DSYNC = 2n
 let _FDFLAG_NONBLOCK = 4n
 let _FDFLAG_RSYNC = 8n
 let _FDFLAG_SYNC = 16n
+
+// RiFlags
+let _RIPEEK = 0n
+let _RIWAITALL = 1n
+
+// RoFlags
+let _ROFDS_TRUNCATED = 0n
+let _RODATA_TRUNCATED = 1n
+
+// SdFlags
+let _SDRD = 0n
+let _SDWR = 1n
+
+// SiFlags
+let _SIDEFAULT = 0n
 
 // whence
 let _WHENCE_SET = 0n
