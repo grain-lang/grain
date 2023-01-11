@@ -136,7 +136,11 @@ function execGrainrun(
     },
   }
 ) {
-  return execSync(`${grainrun} ${file}`, execOpts);
+  try {
+    execSync(`${grainrun} ${file}`, execOpts);
+  } catch (e) {
+    process.exit(e.status);
+  }
 }
 
 module.exports = {
