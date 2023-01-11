@@ -135,6 +135,12 @@ assert rotate(0, list) == list
 assert rotate(1, list) == [2, 3, 1]
 assert rotate(2, list) == [3, 1, 2]
 assert rotate(-2, list) == [2, 3, 1]
+let l = [1, 2, 3, 4, 5]
+assert rotate(5, l) == l
+assert rotate(7, l) == [3, 4, 5, 1, 2]
+assert rotate(-18, l) == [3, 4, 5, 1, 2]
+assert rotate(1, []) == []
+assert rotate(0, []) == []
 
 // List.unique
 
