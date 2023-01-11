@@ -1,9 +1,3 @@
-### Exception.**Option**
-
-```grain
-type Option<a>
-```
-
 ### Exception.**printers**
 
 ```grain

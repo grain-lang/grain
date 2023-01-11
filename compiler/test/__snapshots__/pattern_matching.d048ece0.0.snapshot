@@ -11,11 +11,11 @@ pattern matching › adt_match_5
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1169 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1167 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1169 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1167 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -91,7 +91,7 @@ pattern matching › adt_match_5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2653)
+            (i32.const 2651)
            )
            (i32.store offset=12
             (local.get $0)
@@ -136,7 +136,7 @@ pattern matching › adt_match_5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2653)
+            (i32.const 2651)
            )
            (i32.store offset=12
             (local.get $0)
@@ -192,7 +192,7 @@ pattern matching › adt_match_5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2653)
+            (i32.const 2651)
            )
            (i32.store offset=12
             (local.get $0)
@@ -248,7 +248,7 @@ pattern matching › adt_match_5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2653)
+            (i32.const 2651)
            )
            (i32.store offset=12
             (local.get $0)
@@ -304,7 +304,7 @@ pattern matching › adt_match_5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2653)
+            (i32.const 2651)
            )
            (i32.store offset=12
             (local.get $0)
@@ -954,10 +954,10 @@ pattern matching › adt_match_5
                  (local.set $17
                   (tuple.extract 0
                    (tuple.make
-                    (call $+_1169
+                    (call $+_1167
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
-                      (global.get $+_1169)
+                      (global.get $+_1167)
                      )
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
@@ -978,10 +978,10 @@ pattern matching › adt_match_5
                  (block $do_backpatches.88
                  )
                 )
-                (call $+_1169
+                (call $+_1167
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
-                  (global.get $+_1169)
+                  (global.get $+_1167)
                  )
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
@@ -998,10 +998,10 @@ pattern matching › adt_match_5
             )
             (br $switch.84_outer
              (block $compile_block.87 (result i32)
-              (call $+_1169
+              (call $+_1167
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)
-                (global.get $+_1169)
+                (global.get $+_1167)
                )
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)

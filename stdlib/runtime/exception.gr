@@ -11,11 +11,6 @@ import foreign wasm fd_write: (
 
 primitive unreachable: () -> a = "@unreachable"
 
-enum Option<a> {
-  Some(a),
-  None,
-}
-
 export let mut printers = 0n
 
 // These functions are dangerous because they leak runtime memory and perform

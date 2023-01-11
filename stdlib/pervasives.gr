@@ -53,27 +53,6 @@ export enum List<a> {
 }
 
 /**
- * Grain's type representing something that may or may not contain data.
- * Think of this like a better, type-safe "null".
- *
- * @since v0.2.0
- */
-export enum Option<a> {
-  Some(a),
-  None,
-}
-
-/**
- * Grain's type representing the result of something that might error.
- *
- * @since v0.2.0
- */
-export enum Result<t, e> {
-  Ok(t),
-  Err(e),
-}
-
-/**
  * @section Boolean operations: Infix functions for working with Boolean values.
  */
 
