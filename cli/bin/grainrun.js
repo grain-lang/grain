@@ -29,10 +29,15 @@ const wasi = new WASI({
 const importObject = { wasi_snapshot_preview1: wasi.wasiImport };
 
 async function run(filename) {
-  const wasm = await WebAssembly.compile(await readFile(filename));
-  const instance = await WebAssembly.instantiate(wasm, importObject);
+  try {
+    const wasm = await WebAssembly.compile(await readFile(filename));
+    const instance = await WebAssembly.instantiate(wasm, importObject);
 
-  wasi.start(instance);
+    wasi.start(instance);
+  } catch (err) {
+    console.error(err.stack);
+    process.exit(1);
+  }
 }
 
 run(argv[2]);
