@@ -28,7 +28,7 @@ module Grain_parsing = struct end
 
 %token TRUE FALSE VOID
 
-%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK
+%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK RETURN
 %token AT
 
 %token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
@@ -63,7 +63,7 @@ module Grain_parsing = struct end
 %left INFIX_110 DASH
 %left INFIX_120 STAR SLASH
 
-%right SEMI EOL COMMA DOT COLON LPAREN
+%right SEMI EOL COMMA DOT COLON LPAREN RETURN
 
 %nonassoc _if
 %nonassoc ELSE
@@ -531,6 +531,7 @@ stmt_expr:
   | THROW expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [$2] }
   | ASSERT expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [$2] }
   | FAIL expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [$2] }
+  | RETURN ioption(expr) { Exp.return ~loc:(to_loc $loc) $2 }
   | CONTINUE { Exp.continue ~loc:(to_loc $loc) () }
   | BREAK { Exp.break ~loc:(to_loc $loc) () }
 

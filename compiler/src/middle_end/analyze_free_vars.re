@@ -60,6 +60,8 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
         Ident.Set.union(cond, Ident.Set.union(inc, body));
       | CContinue
       | CBreak => Ident.Set.empty
+      | CReturn(expr) =>
+        Option.fold(~none=Ident.Set.empty, ~some=comp_free_vars, expr)
       | CSwitch(arg, branches, _) =>
         List.fold_left(
           (acc, (_, b)) => Ident.Set.union(anf_free_vars(b), acc),

@@ -54,6 +54,9 @@ let rec analyze_comp_expression =
       push_tail_call(analyses);
     };
     false;
+  // An explicit return is definitionally in tail position
+  | CReturn(Some(e)) => analyze_comp_expression(true, e)
+  | CReturn(None)
   | CBoxAssign(_)
   | CAssign(_)
   | CLocalAssign(_)

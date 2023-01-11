@@ -168,6 +168,14 @@ module Comp = {
       ~env?,
       CBreak,
     );
+  let return = (~loc=?, ~attributes=?, ~env=?, ret) =>
+    mk(
+      ~loc?,
+      ~attributes?,
+      ~allocation_type=Unmanaged(WasmI32),
+      ~env?,
+      CReturn(ret),
+    );
   let switch_ =
       (
         ~loc=?,

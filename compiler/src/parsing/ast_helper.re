@@ -269,6 +269,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpContinue);
   let break = (~loc=?, ~attributes=?, ()) =>
     mk(~loc?, ~attributes?, PExpBreak);
+  let return = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpReturn(a));
   let constraint_ = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpConstraint(a, b));
   let box_assign = (~loc=?, ~attributes=?, a, b) =>

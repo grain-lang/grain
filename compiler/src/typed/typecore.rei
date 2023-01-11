@@ -39,6 +39,7 @@ let type_expression: (Env.t, Parsetree.expression) => Typedtree.expression;
 let type_statement_expr:
   (
     ~explanation: Checkertypes.type_forcing_context=?,
+    ~in_function: (Location.t, list(type_expr), type_expr)=?,
     Env.t,
     Parsetree.expression
   ) =>
@@ -48,7 +49,7 @@ let type_statement_expr:
   Location.t -> Typedtree.match_branch list -> Typedtree.partial*/
 let type_expect:
   (
-    ~in_function: (Location.t, type_expr)=?,
+    ~in_function: (Location.t, list(type_expr), type_expr)=?,
     Env.t,
     Parsetree.expression,
     Checkertypes.type_expected

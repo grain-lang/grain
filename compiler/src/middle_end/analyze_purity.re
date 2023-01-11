@@ -122,7 +122,8 @@ module PurityArg: Anf_iterator.IterArgument = {
         && Option.fold(~none=true, ~some=anf_expression_purity_internal, inc)
         && anf_expression_purity_internal(body)
       | CContinue
-      | CBreak => false
+      | CBreak
+      | CReturn(_) => false
       | CSwitch(_, branches, _) =>
         let branches_purities =
           List.map(

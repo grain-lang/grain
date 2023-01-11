@@ -341,6 +341,7 @@ and comp_expression_desc =
   | CFor(option(anf_expression), option(anf_expression), anf_expression)
   | CContinue
   | CBreak
+  | CReturn(option(comp_expression))
   | CSwitch(imm_expression, list((int, anf_expression)), partial)
   | CApp(
       (imm_expression, (list(allocation_type), allocation_type)),

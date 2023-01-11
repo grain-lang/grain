@@ -455,6 +455,7 @@ and expression_desc =
     )
   | PExpContinue
   | PExpBreak
+  | PExpReturn(option(expression))
   | PExpConstraint(expression, parsed_type)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
