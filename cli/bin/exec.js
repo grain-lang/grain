@@ -114,9 +114,32 @@ function execGrainlsp(options, program, execOpts = { stdio: "inherit" }) {
   return execSync(`${grainlsp} ${flags.join(" ")}`, execOpts);
 }
 
+function getGrainrun() {
+  const node = process.execPath;
+  const grainlsp_js = path.join(__dirname, "grainrun.js");
+  return `"${node}" ${grainlsp_js}`;
+}
+
+const grainrun = getGrainrun();
+
+function execGrainrun(
+  file,
+  options,
+  program,
+  execOpts = {
+    stdio: "inherit",
+    env: {
+      NODE_OPTIONS: "--experimental-wasi-unstable-preview1 --no-warnings",
+    },
+  }
+) {
+  return execSync(`${grainrun} ${file}`, execOpts);
+}
+
 module.exports = {
   grainc: execGrainc,
   graindoc: execGraindoc,
   grainformat: execGrainformat,
   grainlsp: execGrainlsp,
+  grainrun: execGrainrun,
 };

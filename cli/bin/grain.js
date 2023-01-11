@@ -1,4 +1,4 @@
-#!/usr/bin/env -S node --experimental-wasi-unstable-preview1 --no-warnings
+#!/usr/bin/env node
 
 // https://github.com/grain-lang/grain/issues/114
 const v8 = require("v8");
@@ -14,7 +14,6 @@ v8.setFlagsFromString("--experimental-wasm-return-call");
 
 const commander = require("commander");
 const exec = require("./exec.js");
-const run = require("./run.js");
 const pkgJson = require("../package.json");
 
 const stdlibPath = require("@grain/stdlib");
@@ -193,9 +192,9 @@ program
   .action(function (file, options, program) {
     exec.grainc(file, options, program);
     if (options.o) {
-      run(options.o);
+      exec.grainrun(options.o, options, program);
     } else {
-      run(file.replace(/\.gr$/, ".gr.wasm"));
+      exec.grainrun(file.replace(/\.gr$/, ".gr.wasm"), options, program);
     }
   });
 
@@ -209,7 +208,7 @@ program
 program
   .command("run <file>")
   .description("run a wasm file via Node.js")
-  .action(run);
+  .action(exec.grainrun);
 
 program
   .command("lsp")
