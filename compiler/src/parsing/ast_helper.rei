@@ -198,6 +198,8 @@ module Exp: {
     expression;
   let continue: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
   let break: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
+  let return:
+    (~loc: loc=?, ~attributes: attributes=?, option(expression)) => expression;
   let constraint_:
     (~loc: loc=?, ~attributes: attributes=?, expression, parsed_type) =>
     expression;
@@ -212,6 +214,9 @@ module Exp: {
     expression;
   let apply:
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
+    expression;
+  let construct:
+    (~loc: loc=?, ~attributes: attributes=?, id, list(expression)) =>
     expression;
   let binop:
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>

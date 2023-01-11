@@ -166,10 +166,6 @@ class GrainCommand extends commander.Command {
       "don't automatically import the Grain Pervasives module"
     );
     cmd.forwardOption(
-      "--parser-debug-level <level>",
-      "debugging level for parser output"
-    );
-    cmd.forwardOption(
       "--memory-base <addr>",
       "set the base address for the Grain heap"
     );

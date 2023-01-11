@@ -505,6 +505,10 @@ let clear_dependency_graph = () => {
   Dependency_graph.clear();
 };
 
+let get_dependencies = () => {
+  Dependency_graph.get_dependencies();
+};
+
 let () = {
   Fs_access.register_cache_flusher((
     Hashtbl.remove(cmi_cache),

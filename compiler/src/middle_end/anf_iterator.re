@@ -91,6 +91,7 @@ module MakeIter = (Iter: IterArgument) => {
       iter_anf_expression(body);
     | CContinue
     | CBreak => ()
+    | CReturn(e) => Option.iter(iter_comp_expression, e)
     | CSwitch(c, branches, _) =>
       iter_imm_expression(c);
       List.iter(((_, body)) => iter_anf_expression(body), branches);

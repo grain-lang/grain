@@ -114,3 +114,5 @@ let type_attributes: Asttypes.attributes => Typedtree.attributes;
 
 let unbound_label_error: (Env.t, Location.loc(Identifier.t)) => 'a;
 let unbound_constructor_error: (Env.t, Location.loc(Identifier.t)) => 'a;
+
+let type_expr_to_core_type: (Env.t, type_expr) => Typedtree.core_type;

@@ -76,11 +76,14 @@ let debug_expression = (expr: Parsetree.expression) => {
     print_loc("PExpFor", expr.pexp_loc)
   | PExpContinue => print_loc("PExpContinue", expr.pexp_loc)
   | PExpBreak => print_loc("PExpBreak", expr.pexp_loc)
+  | PExpReturn(expression) => print_loc("PExpReturn", expr.pexp_loc)
   | PExpConstraint(expression, parsed_type) =>
     print_loc("PExpConstraint", expr.pexp_loc)
   | PExpLambda(patterns, expression) =>
     print_loc("PExpLambda", expr.pexp_loc)
   | PExpApp(func, expressions) => print_loc("PExpApp", expr.pexp_loc)
+  | PExpConstruct(func, expression) =>
+    print_loc("PExpConstruct", expr.pexp_loc)
   | PExpBlock(expressions) => print_loc("PExpBlock", expr.pexp_loc)
   | PExpBoxAssign(expression, expression1) =>
     print_loc("PExpBoxAssign", expr.pexp_loc)

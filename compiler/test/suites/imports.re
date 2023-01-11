@@ -62,7 +62,7 @@ describe("imports", ({test, testSkip}) => {
   assertCompileError(
     "import_all_except_error_constructor",
     "import * except {Cons} from \"tlists\"; Cons(2, Empty)",
-    "Unbound value Cons",
+    "Unbound constructor Cons",
   );
   assertCompileError(
     "import_all_except_multiple_error_constructor",
@@ -72,7 +72,7 @@ describe("imports", ({test, testSkip}) => {
   assertCompileError(
     "import_all_except_multiple_error2_constructor",
     "import * except {Cons, append} from \"tlists\"; let x = Cons(2, Empty); append(x, Empty)",
-    "Unbound value Cons",
+    "Unbound constructor Cons",
   );
   /* import {} tests */
   assertSnapshot("import_some", "import {x} from \"exportStar\"; x");

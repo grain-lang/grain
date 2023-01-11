@@ -1014,7 +1014,8 @@ No other changes yet.
 rotate : (Number, ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
-Rotates array elements by the specified amount to the left.
+Rotates array elements by the specified amount to the left, such that the
+`n`th element is the first in the new array.
 
 If value is negative, array elements will be rotated by the
 specified amount to the right. See examples.

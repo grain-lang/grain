@@ -59,9 +59,9 @@
 /js-runner/LICENSE                          @ospencer @peblair
 
 /stdlib/                                    @ospencer @phated @peblair @marcusroberts @jozanza
-/stdlib/runtime/                            @ospencer @peblair @jozanza
+/stdlib/runtime/                            @ospencer @peblair @jozanza @phated
 /stdlib/package.json                        @phated @ospencer
-/stdlib/index.js                            @phated
+/stdlib/index.js                            @phated @ospencer
 /stdlib/LICENSE                             @ospencer @peblair
 
 /.gitattributes                             @phated @ospencer

@@ -1,8 +1,8 @@
 tuples › nested_tup_1
 (module
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
@@ -13,14 +13,24 @@ tuples › nested_tup_1
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $b_1132 (mut i32) (i32.const 0))
- (global $a_1131 (mut i32) (i32.const 0))
+ (global $b_1130 (mut i32) (i32.const 0))
+ (global $a_1129 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
+ (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (func $_gtype_metadata
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (nop)
+ )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -158,13 +168,13 @@ tuples › nested_tup_1
        )
       )
       (block $compile_store.11
-       (global.set $a_1131
+       (global.set $a_1129
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $a_1131)
+           (global.get $a_1129)
           )
          )
         )
@@ -173,13 +183,13 @@ tuples › nested_tup_1
        )
       )
       (block $compile_store.13
-       (global.set $b_1132
+       (global.set $b_1130
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1132)
+           (global.get $b_1130)
           )
          )
         )
@@ -231,7 +241,7 @@ tuples › nested_tup_1
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.18 (result i32)
-         (global.set $b_1132
+         (global.set $b_1130
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -240,7 +250,7 @@ tuples › nested_tup_1
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $b_1132)
+             (global.get $b_1130)
             )
            )
           )
@@ -253,7 +263,7 @@ tuples › nested_tup_1
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.19 (result i32)
-         (global.set $a_1131
+         (global.set $a_1129
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -262,7 +272,7 @@ tuples › nested_tup_1
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $a_1131)
+             (global.get $a_1129)
             )
            )
           )
@@ -273,7 +283,7 @@ tuples › nested_tup_1
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $a_1131)
+       (global.get $a_1129)
       )
      )
     )

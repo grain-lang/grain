@@ -98,10 +98,6 @@ let recursive_types: ref(bool);
 
 let strict_sequence: ref(bool);
 
-/** The debugging level to use for the parser. Primarily intended for Grain compiler developers. */
-
-let parser_debug_level: ref(int);
-
 /** Whether debugging information should be included in the compiled output. */
 
 let debug: ref(bool);

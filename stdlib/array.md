@@ -1000,9 +1000,16 @@ Returns:
 
 ### Array.**zip**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Support zipping arrays of different sizes</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -1182,19 +1189,27 @@ Parameters:
 
 ### Array.**rotate**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Behavior changed from right-rotation to left-rotation</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
 rotate : (Number, Array<a>) -> Void
 ```
 
-Rotates array elements by the specified amount to the right, in place.
+Rotates array elements in place by the specified amount to the left, such
+that the `n`th element becomes the first in the array.
 
 If value is negative, array elements will be rotated by the
-specified amount to the left. See examples.
+specified amount to the right. See examples.
 
 Parameters:
 
@@ -1206,10 +1221,10 @@ Parameters:
 Examples:
 
 ```grain
-let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 4, 5, 1, 2, 3]
+let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
 ```
 
 ```grain
-let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 2, 3, 4, 5, 1]
+let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
 ```
 

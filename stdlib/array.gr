@@ -807,16 +807,15 @@ export let unique = array => {
  * @throws Failure(String): When the arrays have different sizes
  *
  * @since v0.4.0
+ * @history v0.6.0: Support zipping arrays of different sizes
  */
 export let zip = (array1: Array<a>, array2: Array<b>) => {
   let len = length(array1)
-  if (len != length(array2)) {
-    fail "arguments to zip must be same length"
-  } else {
-    init(len, n => {
-      (array1[n], array2[n])
-    })
-  }
+  let len2 = length(array2)
+  let len = if (len > len2) len2 else len
+  init(len, n => {
+    (array1[n], array2[n])
+  })
 }
 
 /**
@@ -978,17 +977,20 @@ export let sort = (comp, array) => {
 }
 
 /**
- * Rotates array elements by the specified amount to the right, in place.
+ * Rotates array elements in place by the specified amount to the left, such
+ * that the `n`th element becomes the first in the array.
  *
  * If value is negative, array elements will be rotated by the
- * specified amount to the left. See examples.
+ * specified amount to the right. See examples.
  *
  * @param n: The number of elements to rotate by
  * @param arr: The array to be rotated
  *
- * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 4, 5, 1, 2, 3]
- * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 2, 3, 4, 5, 1]
+ * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
+ * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
  * @since v0.4.5
+ * 
+ * @history v0.6.0: Behavior changed from right-rotation to left-rotation
  */
 export let rotate = (n, arr) => {
   let rec gcd = (a, b) => {
@@ -1002,13 +1004,12 @@ export let rotate = (n, arr) => {
   let arrLen = length(arr)
   if (arrLen > 0) {
     let k = n % arrLen
-    let mut d = -1
     let mut j = 0
     for (let mut i = 0; i < gcd(arrLen, k); i += 1) {
       j = i
       let temp = arr[i]
       while (true) {
-        d = (j - k) % arrLen
+        let d = (j + k) % arrLen
         if (d == i) {
           break
         }

@@ -190,6 +190,7 @@ type prim1 =
     | NewInt64
     | NewFloat32
     | NewFloat64
+    | BuiltinId
     | LoadAdtVariant
     | StringSize
     | BytesSize
@@ -425,6 +426,7 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
+  | MReturn(option(instr))
   | MSwitch(immediate, list((int32, block)), block, Types.allocation_type) /* value, branches, default, return type */
   | MPrim0(prim0)
   | MPrim1(prim1, immediate)

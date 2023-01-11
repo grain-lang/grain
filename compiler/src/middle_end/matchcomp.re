@@ -88,7 +88,7 @@ and switch_type =
   | ArraySwitch
 
 and equality_type =
-  | PhysicalEquality
+  | PhysicalEquality(wasm_repr)
   | StructuralEquality;
 
 type conversion_result = {
@@ -544,13 +544,10 @@ let equality_type =
   | Const_void
   | Const_bool(_)
   | Const_char(_)
-  | Const_wasmi32(_) => PhysicalEquality
-  | Const_wasmi64(_)
-  | Const_wasmf32(_)
-  | Const_wasmf64(_) =>
-    failwith(
-      "Pattern matching not supported on low-level i64/f32/f64 types.",
-    );
+  | Const_wasmi32(_) => PhysicalEquality(WasmI32)
+  | Const_wasmi64(_) => PhysicalEquality(WasmI64)
+  | Const_wasmf32(_) => PhysicalEquality(WasmF32)
+  | Const_wasmf64(_) => PhysicalEquality(WasmF64);
 
 let rec compile_matrix = mtx =>
   switch (mtx) {
@@ -878,7 +875,25 @@ module MatchTreeCompiler = {
       let equality_op =
         switch (equality_type) {
         | StructuralEquality => Eq
-        | PhysicalEquality => Is
+        | PhysicalEquality(WasmI32) => Is
+        | PhysicalEquality(WasmI64) =>
+          WasmBinaryI64({
+            wasm_op: Op_eq_int64,
+            arg_types: (Wasm_int64, Wasm_int64),
+            ret_type: Grain_bool,
+          })
+        | PhysicalEquality(WasmF32) =>
+          WasmBinaryF32({
+            wasm_op: Op_eq_float32,
+            arg_types: (Wasm_float32, Wasm_float32),
+            ret_type: Grain_bool,
+          })
+        | PhysicalEquality(WasmF64) =>
+          WasmBinaryF64({
+            wasm_op: Op_eq_float64,
+            arg_types: (Wasm_float64, Wasm_float64),
+            ret_type: Grain_bool,
+          })
         };
       let (const, const_setup) =
         switch (helpConst(const)) {
@@ -1158,8 +1173,16 @@ module MatchTreeCompiler = {
   let collect_bindings = (~mut_boxing=false, ~global=Nonglobal, branches) => {
     let rec collect_bindings = pat => {
       let bind = id => {
+        let allocation_type = get_allocation_type(pat.pat_env, pat.pat_type);
         // Dummy value to be filled in during matching
-        let dummy_value = Imm.const(Const_wasmi32(0l));
+        let dummy_value =
+          switch (allocation_type) {
+          | Managed
+          | Unmanaged(WasmI32) => Imm.const(Const_wasmi32(0l))
+          | Unmanaged(WasmI64) => Imm.const(Const_wasmi64(0L))
+          | Unmanaged(WasmF32) => Imm.const(Const_wasmf32(0.))
+          | Unmanaged(WasmF64) => Imm.const(Const_wasmf64(0.))
+          };
         if (mut_boxing) {
           BLetMut(
             id,
@@ -1167,14 +1190,7 @@ module MatchTreeCompiler = {
             Nonglobal,
           );
         } else {
-          BLetMut(
-            id,
-            Comp.imm(
-              ~allocation_type=get_allocation_type(pat.pat_env, pat.pat_type),
-              dummy_value,
-            ),
-            global,
-          );
+          BLetMut(id, Comp.imm(~allocation_type, dummy_value), global);
         };
       };
       switch (pat.pat_desc) {

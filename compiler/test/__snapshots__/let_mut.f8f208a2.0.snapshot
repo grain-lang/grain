@@ -1,8 +1,8 @@
 let mut › let-mut_addition3
 (module
+ (type $none_=>_none (func))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
- (type $none_=>_none (func))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
@@ -10,17 +10,27 @@ let mut › let-mut_addition3
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1135 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1133 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1135 (param i32 i32 i32) (result i32)))
- (global $b_1131 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1133 (param i32 i32 i32) (result i32)))
+ (global $b_1129 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
+ (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (func $_gtype_metadata
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (nop)
+ )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -35,13 +45,13 @@ let mut › let-mut_addition3
     (local.set $0
      (block $compile_block.8 (result i32)
       (block $compile_store.2
-       (global.set $b_1131
+       (global.set $b_1129
         (tuple.extract 0
          (tuple.make
           (i32.const 9)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1131)
+           (global.get $b_1129)
           )
          )
         )
@@ -53,14 +63,14 @@ let mut › let-mut_addition3
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $+_1135
+          (call $+_1133
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1135)
+            (global.get $+_1133)
            )
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $b_1131)
+            (global.get $b_1129)
            )
            (i32.const 39)
           )
@@ -77,7 +87,7 @@ let mut › let-mut_addition3
       (block $compile_store.7
        (local.set $7
         (block $compile_set.5 (result i32)
-         (global.set $b_1131
+         (global.set $b_1129
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -86,7 +96,7 @@ let mut › let-mut_addition3
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $b_1131)
+             (global.get $b_1129)
             )
            )
           )
@@ -99,7 +109,7 @@ let mut › let-mut_addition3
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $b_1131)
+       (global.get $b_1129)
       )
      )
     )

@@ -764,16 +764,24 @@ Throws:
 
 ### List.**rotate**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.1.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>No longer throws if `count` outside list length bounds</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
 rotate : (Number, List<a>) -> List<a>
 ```
 
-Rotates list elements by the specified amount to the left.
+Rotates list elements by the specified amount to the left, such that `n`th
+element is the first in the new list.
 
 If value is negative, list elements will be rotated by the
 specified amount to the right. See examples.
@@ -782,14 +790,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`count`|`Number`|The number of elements to rotate by|
+|`n`|`Number`|The number of elements to rotate by|
 |`list`|`List<a>`|The list to be rotated|
-
-Throws:
-
-`Failure(String)`
-
-* When the list doesn't contain at least the required amount of elements
 
 Examples:
 
@@ -799,6 +801,10 @@ List.rotate(2, [1, 2, 3, 4, 5]) // [3, 4, 5, 1, 2]
 
 ```grain
 List.rotate(-1, [1, 2, 3, 4, 5]) // [5, 1, 2, 3, 4]
+```
+
+```grain
+List.rotate(-7, [1, 2, 3, 4, 5]) // [4, 5, 1, 2, 3]
 ```
 
 ### List.**unique**

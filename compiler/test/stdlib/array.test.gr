@@ -237,6 +237,16 @@ let arrB = [> 5, 4, 3, 2, 1]
 
 assert Array.zip(arrA, arrB) == [> (1, 5), (2, 4), (3, 3), (4, 2), (5, 1)]
 
+let arrA = [> 1, 2, 3, 4, 5]
+let arrB = [> 5, 4, 3, 2, 1, 6, 7]
+
+assert Array.zip(arrA, arrB) == [> (1, 5), (2, 4), (3, 3), (4, 2), (5, 1)]
+
+let arrA = [> 1, 2, 3, 4, 5, 6, 7]
+let arrB = [> 5, 4, 3, 2, 1]
+
+assert Array.zip(arrA, arrB) == [> (1, 5), (2, 4), (3, 3), (4, 2), (5, 1)]
+
 // Array.zipWith
 
 let addFn = (a, b) => a + b
@@ -377,11 +387,11 @@ assert arr1 == [> 1, 2, 3, 4, 5]
 
 let arr2 = [> 1, 2, 3, 4, 5]
 Array.rotate(3, arr2)
-assert arr2 == [> 3, 4, 5, 1, 2]
+assert arr2 == [> 4, 5, 1, 2, 3]
 
 let arr3 = [> 1, 2, 3, 4, 5]
 Array.rotate(-4, arr3)
-assert arr3 == [> 5, 1, 2, 3, 4]
+assert arr3 == [> 2, 3, 4, 5, 1]
 
 let arr4 = [> 1, 2, 3, 4, 5]
 Array.rotate(5, arr4)
@@ -389,11 +399,11 @@ assert arr4 == [> 1, 2, 3, 4, 5]
 
 let arr5 = [> 1, 2, 3, 4, 5]
 Array.rotate(48, arr5)
-assert arr5 == [> 3, 4, 5, 1, 2]
+assert arr5 == [> 4, 5, 1, 2, 3]
 
 let arr6 = [> 1, 2, 3, 4, 5]
 Array.rotate(-54, arr6)
-assert arr6 == [> 5, 1, 2, 3, 4]
+assert arr6 == [> 2, 3, 4, 5, 1]
 
 let arr7 = [>]: Array<Number>
 Array.rotate(1, arr7)
@@ -401,7 +411,7 @@ assert arr7 == [>]
 
 let arr8 = [> "a", "b", "c"]
 Array.rotate(1, arr8)
-assert arr8 == [> "c", "a", "b"]
+assert arr8 == [> "b", "c", "a"]
 
 let arr9 = [>]
 Array.rotate(1, arr9)

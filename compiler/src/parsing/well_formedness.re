@@ -20,7 +20,9 @@ type wferr =
   | UnknownAttribute(string, Location.t)
   | InvalidAttributeArity(string, int, Location.t)
   | AttributeDisallowed(string, Location.t)
-  | LoopControlOutsideLoop(string, Location.t);
+  | LoopControlOutsideLoop(string, Location.t)
+  | ReturnStatementOutsideFunction(Location.t)
+  | MismatchedReturnStyles(Location.t);
 
 exception Error(wferr);
 
@@ -78,6 +80,13 @@ let prepare_error =
       | AttributeDisallowed(msg, loc) => errorf(~loc, "%s", msg)
       | LoopControlOutsideLoop(control, loc) =>
         errorf(~loc, "`%s` statement used outside of a loop.", control)
+      | ReturnStatementOutsideFunction(loc) =>
+        errorf(~loc, "`return` statement used outside of a function.")
+      | MismatchedReturnStyles(loc) =>
+        errorf(
+          ~loc,
+          "All returned values must use the `return` keyword if the function returns early.",
+        )
     )
   );
 
@@ -503,6 +512,96 @@ let no_loop_control_statement_outside_of_loop = (errs, super) => {
   {errs, iterator};
 };
 
+let malformed_return_statements = (errs, super) => {
+  let rec has_returning_branch = exp => {
+    switch (exp.pexp_desc) {
+    | PExpReturn(_) => true
+    | PExpBlock(expressions) =>
+      let rec find = expressions => {
+        switch (expressions) {
+        | [] => false
+        | [expression] => has_returning_branch(expression)
+        | [_, ...rest] => find(rest)
+        };
+      };
+      find(expressions);
+    | PExpIf(_, _, {pexp_desc: PExpBlock([])}) =>
+      // If expressions with no else branch are not considered
+      false
+    | PExpIf(_, ifso, ifnot) =>
+      has_returning_branch(ifso) || has_returning_branch(ifnot)
+    | PExpMatch(_, branches) =>
+      List.exists(branch => has_returning_branch(branch.pmb_body), branches)
+    | _ => false
+    };
+  };
+  let rec collect_non_returning_branches = (exp, acc) => {
+    switch (exp.pexp_desc) {
+    | PExpReturn(_)
+    // Throwing an error or failing also exits the function immediately
+    | PExpApp(
+        {pexp_desc: PExpId({txt: IdentName({txt: "throw" | "fail"})})},
+        _,
+      ) => acc
+    | PExpBlock(expressions) =>
+      let rec collect = expressions => {
+        switch (expressions) {
+        | [] => acc
+        | [expression] => collect_non_returning_branches(expression, acc)
+        | [_, ...rest] => collect(rest)
+        };
+      };
+      collect(expressions);
+    | PExpIf(_, ifso, ifnot) when has_returning_branch(exp) =>
+      collect_non_returning_branches(ifso, [])
+      @ collect_non_returning_branches(ifnot, acc)
+    | PExpMatch(_, branches) when has_returning_branch(exp) =>
+      List.fold_left(
+        (acc, branch) =>
+          collect_non_returning_branches(branch.pmb_body, acc),
+        acc,
+        branches,
+      )
+    | _ => [exp, ...acc]
+    };
+  };
+  let ctx = ref([]);
+  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+    switch (desc) {
+    | PExpLambda(_) =>
+      // Push a context to record return statements for the current function
+      // This is a stack because functions can be nested
+      ctx := [ref(false), ...ctx^]
+    | PExpReturn(_) =>
+      switch (ctx^) {
+      | [] =>
+        // No function context means we're not in a function
+        errs := [ReturnStatementOutsideFunction(loc), ...errs^]
+      | [hd, ..._] => hd := true
+      }
+    | _ => ()
+    };
+
+    super.expr(self, e);
+
+    // The expression has been iterated; pop the context if the expression was a function
+    switch (desc) {
+    | PExpLambda(_, body) =>
+      let has_return = (List.hd(ctx^))^;
+      ctx := List.tl(ctx^);
+      if (has_return) {
+        List.iter(
+          exp => {errs := [MismatchedReturnStyles(exp.pexp_loc), ...errs^]},
+          collect_non_returning_branches(body, []),
+        );
+      };
+    | _ => ()
+    };
+  };
+  let iterator = {...super, expr: iter_expr};
+  {errs, iterator};
+};
+
 let compose_well_formedness = ({errs, iterator}, cur) =>
   cur(errs, iterator);
 
@@ -521,6 +620,7 @@ let well_formedness_checks = [
   valid_attributes,
   disallowed_attributes,
   no_loop_control_statement_outside_of_loop,
+  malformed_return_statements,
 ];
 
 let well_formedness_checker = () =>

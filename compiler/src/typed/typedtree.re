@@ -194,6 +194,7 @@ type prim1 =
     | NewInt64
     | NewFloat32
     | NewFloat64
+    | BuiltinId
     | LoadAdtVariant
     | StringSize
     | BytesSize
@@ -473,6 +474,7 @@ and expression_desc =
     )
   | TExpContinue
   | TExpBreak
+  | TExpReturn(option(expression))
   | TExpLambda(list(match_branch), partial)
   | TExpApp(expression, list(expression))
   | TExpConstruct(

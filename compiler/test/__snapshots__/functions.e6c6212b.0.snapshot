@@ -2,8 +2,8 @@ functions › fn_trailing_comma
 (module
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
- (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
@@ -11,19 +11,20 @@ functions › fn_trailing_comma
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1134 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1132 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1134 (param i32 i32 i32) (result i32)))
- (global $testFn_1131 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1132 (param i32 i32 i32) (result i32)))
+ (global $testFn_1129 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
+ (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $testFn_1131 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
+ (func $testFn_1129 (param $0 i32) (param $1 i32) (param $2 i32) (result i32)
   (local $3 i32)
   (local $4 i32)
   (local $5 i32)
@@ -36,10 +37,10 @@ functions › fn_trailing_comma
      (tuple.extract 0
       (tuple.make
        (block $compile_block.1 (result i32)
-        (call $+_1134
+        (call $+_1132
          (call $incRef_0
           (global.get $GRAIN$EXPORT$incRef_0)
-          (global.get $+_1134)
+          (global.get $+_1132)
          )
          (call $incRef_0
           (global.get $GRAIN$EXPORT$incRef_0)
@@ -77,6 +78,15 @@ functions › fn_trailing_comma
    )
   )
  )
+ (func $_gtype_metadata
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (nop)
+ )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -89,7 +99,7 @@ functions › fn_trailing_comma
     (local.set $0
      (block $compile_block.6 (result i32)
       (block $compile_store.5
-       (global.set $testFn_1131
+       (global.set $testFn_1129
         (tuple.extract 0
          (tuple.make
           (block $allocate_closure.3 (result i32)
@@ -118,21 +128,21 @@ functions › fn_trailing_comma
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $testFn_1131)
+           (global.get $testFn_1129)
           )
          )
         )
        )
        (block $do_backpatches.4
         (local.set $0
-         (global.get $testFn_1131)
+         (global.get $testFn_1129)
         )
        )
       )
-      (call $testFn_1131
+      (call $testFn_1129
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $testFn_1131)
+        (global.get $testFn_1129)
        )
        (i32.const 5)
        (i32.const 7)

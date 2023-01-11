@@ -108,12 +108,20 @@ export class GrainModule {
     return !!this.exports["_start"];
   }
 
+  get hasTypeMetadata() {
+    return !!this.exports["_gtype_metadata"];
+  }
+
   requiredExport(key) {
     let exports = this.exports;
     if (!(key in exports)) {
       throw new Error(`Module ${this.name} missing required export: ${key}`);
     }
     return exports[key];
+  }
+
+  loadTypeMetadata() {
+    return this.requiredExport("_gtype_metadata")();
   }
 
   start() {

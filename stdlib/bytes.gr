@@ -41,10 +41,10 @@ let checkIndexIsInBounds = (i, byteSize, max) => {
   let (<) = WasmI32.ltS
   let (>) = WasmI32.gtS
   if (i < 0n) {
-    throw Exception.IndexOutOfBounds
+    throw IndexOutOfBounds
   }
   if (i + byteSize > max) {
-    throw Exception.IndexOutOfBounds
+    throw IndexOutOfBounds
   }
 }
 

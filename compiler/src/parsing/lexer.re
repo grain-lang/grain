@@ -220,6 +220,7 @@ let rec token = lexbuf => {
   | "for" => positioned(FOR)
   | "continue" => positioned(CONTINUE)
   | "break" => positioned(BREAK)
+  | "return" => positioned(RETURN)
   | "if" => positioned(IF)
   | "when" => positioned(WHEN)
   | "else" => positioned(ELSE)

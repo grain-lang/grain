@@ -478,32 +478,6 @@ program: EOL WASMI64 THICKARROW
 
 Expected an infix operator to continue the expression or a newline character to terminate it.
 
-program: LBRACE UIDENT COLON EOL UNDERSCORE
-##
-## Ends in an error in state: 332.
-##
-## non_punned_record_field -> id COLON eols . expr [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## id COLON eols
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-##
-program: LBRACE UIDENT COLON WHEN
-##
-## Ends in an error in state: 212.
-##
-## non_punned_record_field -> id COLON . expr [ RBRACE EOL COMMA ]
-## non_punned_record_field -> id COLON . eols expr [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## id COLON
-##
 program: LBRACK ELLIPSIS WHEN
 ##
 ## Ends in an error in state: 182.
@@ -685,6 +659,32 @@ program: MATCH LPAREN FLOAT32 RPAREN LBRACE NUMBER_INT EOL WHEN WHEN
 ##
 ## The known suffix of the stack is as follows:
 ## eols WHEN
+##
+program: LBRACE LIDENT COLON EOL WHEN
+##
+## Ends in an error in state: 243.
+##
+## non_punned_record_field -> id COLON eols . expr [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## id COLON eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LBRACE LIDENT COLON WHEN
+##
+## Ends in an error in state: 212.
+##
+## non_punned_record_field -> id COLON . expr [ RBRACE EOL COMMA ]
+## non_punned_record_field -> id COLON . eols expr [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## id COLON
 ##
 
 Expected an expression.
@@ -2363,6 +2363,65 @@ program: FUN LPAREN WASMI64 RBRACK
 
 Expected `)` to complete the function arguments.
 
+program: UIDENT LPAREN COMMA WHILE
+##
+## Ends in an error in state: 704.
+##
+## construct_expr -> type_id lparen option(comma) . rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## type_id lparen option(comma)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 43, spurious reduction of production comma -> COMMA
+## In state 275, spurious reduction of production option(comma) -> comma
+##
+program: UIDENT LPAREN UIDENT ARROW
+##
+## Ends in an error in state: 473.
+##
+## construct_expr -> type_id lparen lseparated_nonempty_list_inner(comma,expr) . option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+## lseparated_nonempty_list_inner(comma,expr) -> lseparated_nonempty_list_inner(comma,expr) . comma expr [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## type_id lparen lseparated_nonempty_list_inner(comma,expr)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 131, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 42, spurious reduction of production construct_expr -> type_id
+## In state 228, spurious reduction of production left_accessor_expr -> construct_expr
+## In state 175, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 129, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 78, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 237, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 68, spurious reduction of production expr -> non_stmt_expr
+## In state 366, spurious reduction of production lseparated_nonempty_list_inner(comma,expr) -> expr
+##
+program: UIDENT LPAREN UIDENT COMMA RBRACK
+##
+## Ends in an error in state: 707.
+##
+## construct_expr -> type_id lparen lseparated_nonempty_list_inner(comma,expr) option(comma) . rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## type_id lparen lseparated_nonempty_list_inner(comma,expr) option(comma)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 43, spurious reduction of production comma -> COMMA
+## In state 173, spurious reduction of production option(comma) -> comma
+##
+
+Expected `)` to complete the constructor arguments.
+
 program: FUN LPAREN WHILE
 ##
 ## Ends in an error in state: 747.
@@ -2858,6 +2917,21 @@ program: IMPORT LPAREN WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
+program: AT LPAREN WHILE
+##
+## Ends in an error in state: 134.
+##
+## id_str -> lparen . special_op rparen [ WHEN TYPE THICKARROW STAR SLASH SEMI RPAREN RECORD RCARET RBRACK RBRACE PIPE LPAREN LET LCARET LBRACK INFIX_ASSIGNMENT_10 INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 IMPORT GETS FROM EXPORT EQUAL EOL EOF ENUM ELSE DOT DASH COMMA COLON AT AS ]
+##
+## The known suffix of the stack is as follows:
+## lparen
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 2, spurious reduction of production lparen -> LPAREN
+##
 
 Expected an infix or prefix operator, e.g. `+`, `-`, `!`.
 
@@ -3206,7 +3280,7 @@ program: LET REC WHILE
 
 Expected the keyword `mut` or a binding pattern, like an identifier.
 
-program: LBRACE UIDENT COLON BREAK COMMA EOL UIDENT COLON BREAK WHILE
+program: LBRACE LIDENT COLON BREAK COMMA EOL LIDENT COLON BREAK WHILE
 ##
 ## Ends in an error in state: 337.
 ##
@@ -3217,7 +3291,7 @@ program: LBRACE UIDENT COLON BREAK COMMA EOL UIDENT COLON BREAK WHILE
 ## The known suffix of the stack is as follows:
 ## non_punned_record_field comma lseparated_nonempty_list_inner(comma,record_field)
 ##
-program: LBRACE UIDENT COLON BREAK WHILE
+program: LBRACE LIDENT COLON BREAK WHILE
 ##
 ## Ends in an error in state: 334.
 ##
@@ -3227,7 +3301,7 @@ program: LBRACE UIDENT COLON BREAK WHILE
 ## The known suffix of the stack is as follows:
 ## non_punned_record_field
 ##
-program: LBRACE UIDENT COMMA EOL UIDENT COLON BREAK WHILE
+program: LBRACE LIDENT COMMA EOL LIDENT COLON BREAK WHILE
 ##
 ## Ends in an error in state: 206.
 ##
@@ -3265,7 +3339,7 @@ program: LBRACE ELLIPSIS BIGINT COMMA ELLIPSIS BIGINT ARROW
 
 Expected a comma followed by more record fields or an immediate `}` to complete the record expression.
 
-program: LBRACE UIDENT COLON BREAK COMMA EOL WHILE
+program: LBRACE LIDENT COLON BREAK COMMA EOL WHILE
 ##
 ## Ends in an error in state: 336.
 ##
@@ -3283,7 +3357,7 @@ program: LBRACE UIDENT COLON BREAK COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 96, spurious reduction of production comma -> COMMA eols
 ##
-program: LBRACE UIDENT COMMA EOL WHILE
+program: LBRACE LIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 203.
 ##
@@ -3301,7 +3375,7 @@ program: LBRACE UIDENT COMMA EOL WHILE
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 96, spurious reduction of production comma -> COMMA eols
 ##
-program: LBRACE UIDENT COMMA UIDENT COMMA EOL WHILE
+program: LBRACE LIDENT COMMA LIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 208.
 ##
@@ -3364,9 +3438,9 @@ program: LBRACE ELLIPSIS BIGINT COMMA WHILE
 
 Expected one or more record field overrides to complete the record expression.
 
-program: LBRACE UIDENT COMMA UIDENT THICKARROW
+program: LBRACE LIDENT COMMA LIDENT WHILE
 ##
-## Ends in an error in state: 211.
+## Ends in an error in state: 239.
 ##
 ## non_punned_record_field -> id . COLON expr [ RBRACE EOL COMMA ]
 ## non_punned_record_field -> id . COLON eols expr [ RBRACE EOL COMMA ]
@@ -3374,12 +3448,6 @@ program: LBRACE UIDENT COMMA UIDENT THICKARROW
 ##
 ## The known suffix of the stack is as follows:
 ## id
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 129, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,type_id_str)
 ##
 
 Expected a colon followed by an expression, a comma followed by more record fields, or an immediate `}` to complete the record.
@@ -3651,7 +3719,7 @@ program: LET NUMBER_INT SLASH DASH WHILE
 
 Expected a number.
 
-program: LET LBRACE UIDENT COLON EOL WASMI64 WHILE
+program: LET LBRACE LIDENT COLON EOL WASMI64 WHILE
 ##
 ## Ends in an error in state: 413.
 ##
@@ -3666,7 +3734,7 @@ program: LET LBRACE UIDENT COLON EOL WASMI64 WHILE
 ## The known suffix of the stack is as follows:
 ## id COLON eols pattern
 ##
-program: LET LBRACE UIDENT COLON WASMI64 WHILE
+program: LET LBRACE LIDENT COLON WASMI64 WHILE
 ##
 ## Ends in an error in state: 411.
 ##
@@ -3684,7 +3752,7 @@ program: LET LBRACE UIDENT COLON WASMI64 WHILE
 
 Expected a type annotation, a comma followed by more record field patterns, or `}` to complete the record pattern.
 
-program: LET LBRACE UIDENT COLON EOL WHILE
+program: LET LBRACE LIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 412.
 ##
@@ -3700,7 +3768,7 @@ program: LET LBRACE UIDENT COLON EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
-program: LET LBRACE UIDENT COLON WHILE
+program: LET LBRACE LIDENT COLON WHILE
 ##
 ## Ends in an error in state: 410.
 ##
@@ -3798,6 +3866,17 @@ program: LET LBRACE UIDENT THICKARROW
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 129, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,type_id_str)
+##
+program: LET LBRACE LIDENT WHILE
+##
+## Ends in an error in state: 444.
+##
+## record_pattern -> id . COLON pattern [ RBRACE EOL COMMA ]
+## record_pattern -> id . COLON eols pattern [ RBRACE EOL COMMA ]
+## record_pattern -> id . [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## id
 ##
 
 Expected `:` followed by a pattern, a comma followed by another record field pattern, or `}` to complete the record pattern.
@@ -4261,6 +4340,15 @@ program: LPAREN RCARET RCARET WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## lnonempty_list_inner(RCARET) RCARET
+##
+program: IMPORT LPAREN DASH WHILE
+##
+## Ends in an error in state: 728.
+##
+## import_shape -> lparen special_op . rparen [ FROM COMMA ]
+##
+## The known suffix of the stack is as follows:
+## lparen special_op
 ##
 
 Expected `)` to complete infix or prefix operator reference.
@@ -4999,49 +5087,6 @@ program: UIDENT DOT WHILE
 
 Expected an identifier.
 
-program: UIDENT EQUAL EOL UNDERSCORE
-##
-## Ends in an error in state: 219.
-##
-## assign_expr -> id_expr equal . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## id_expr equal
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-## In state 218, spurious reduction of production equal -> EQUAL eols
-##
-program: UIDENT INFIX_ASSIGNMENT_10 EOL UNDERSCORE
-##
-## Ends in an error in state: 329.
-##
-## assign_expr -> id_expr assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## id_expr assign_binop_op eols
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-##
-program: UIDENT INFIX_ASSIGNMENT_10 WHEN
-##
-## Ends in an error in state: 327.
-##
-## assign_expr -> id_expr assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-## assign_expr -> id_expr assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## id_expr assign_binop_op
-##
 program: WASMI64 DOT EOL LIDENT EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 650.
@@ -5179,8 +5224,62 @@ program: BIGINT DOT LIDENT INFIX_ASSIGNMENT_10 EOL WHEN
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
+program: LIDENT INFIX_ASSIGNMENT_10 EOL WHEN
+##
+## Ends in an error in state: 240.
+##
+## assign_expr -> id_expr assign_binop_op eols . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## id_expr assign_binop_op eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: LIDENT INFIX_ASSIGNMENT_10 WHEN
+##
+## Ends in an error in state: 238.
+##
+## assign_expr -> id_expr assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+## assign_expr -> id_expr assign_binop_op . eols expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## id_expr assign_binop_op
+##
+program: LIDENT EQUAL WHEN
+##
+## Ends in an error in state: 224.
+##
+## assign_expr -> id_expr equal . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## id_expr equal
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 222, spurious reduction of production equal -> EQUAL
+##
 
 Expected an expression to assign.
+
+program: RETURN WHEN
+##
+## Ends in an error in state: 13.
+##
+## stmt_expr -> RETURN . [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+## stmt_expr -> RETURN . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## RETURN
+##
+
+Expected an expression to return.
 
 program: WASMI64 INFIX_70 WHEN
 ##
@@ -5639,14 +5738,14 @@ program: LPAREN RCARET WHILE
 
 Expected an expression on the right side of the operator.
 
-program: WASMI64 COLON EOL WHILE
+program: LBRACE UIDENT COLON EOL UNDERSCORE
 ##
-## Ends in an error in state: 125.
+## Ends in an error in state: 332.
 ##
-## annotated_expr -> non_binop_expr COLON eols . typ [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
+## non_punned_record_field -> id COLON eols . expr [ RBRACE EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## non_binop_expr COLON eols
+## id COLON eols
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -6045,6 +6144,25 @@ program: WASMI64 DOT LIDENT LPAREN WASMI64 THICKARROW
 ##
 
 Expected a comma followed by more expressions or `)` to complete the function call.
+
+program: UIDENT LPAREN WHEN
+##
+## Ends in an error in state: 42.
+##
+## construct_expr -> type_id lparen . option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+## construct_expr -> type_id lparen . lseparated_nonempty_list_inner(comma,expr) option(comma) rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+##
+## The known suffix of the stack is as follows:
+## type_id lparen
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 2, spurious reduction of production lparen -> LPAREN
+##
+
+Expected a comma-separated list of expressions or `)` to complete the constructor.
 
 program: WHILE LPAREN UNDERSCORE
 ##

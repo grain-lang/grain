@@ -251,6 +251,7 @@ module MakeMap =
         )
       | TExpContinue => TExpContinue
       | TExpBreak => TExpBreak
+      | TExpReturn(e) => TExpReturn(Option.map(map_expression, e))
       };
     Map.leave_expression({...exp, exp_extra, exp_desc});
   };

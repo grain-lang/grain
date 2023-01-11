@@ -1,8 +1,8 @@
 functions › app_1
 (module
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
@@ -17,9 +17,10 @@ functions › app_1
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
+ (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $lam_lambda_1132 (param $0 i32) (param $1 i32) (result i32)
+ (func $lam_lambda_1130 (param $0 i32) (param $1 i32) (result i32)
   (local $2 i32)
   (local $3 i32)
   (local $4 i32)
@@ -56,6 +57,15 @@ functions › app_1
     (local.get $2)
    )
   )
+ )
+ (func $_gtype_metadata
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (nop)
  )
  (func $_gmain (result i32)
   (local $0 i32)
@@ -110,7 +120,7 @@ functions › app_1
         )
        )
       )
-      (call $lam_lambda_1132
+      (call $lam_lambda_1130
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
         (local.get $6)

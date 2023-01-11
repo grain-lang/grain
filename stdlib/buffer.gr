@@ -76,8 +76,8 @@ let appendBytes = (srcOff, dstOff, len, src, dst) => {
  * Throws if a given index + len is not within the bounds of a buffer's current length
  */
 let checkIsIndexInBounds = (i, len, buf) => {
-  if (i < 0) throw Exception.IndexOutOfBounds
-  if (i >= buf.len || i + len > buf.len) throw Exception.IndexOutOfBounds
+  if (i < 0) throw IndexOutOfBounds
+  if (i >= buf.len || i + len > buf.len) throw IndexOutOfBounds
 }
 
 let addInt8help = (value, buffer) => {
@@ -177,7 +177,7 @@ export let reset = buffer => {
  */
 @unsafe
 export let truncate = (length, buffer) => {
-  if (length < 0 || length > buffer.len) throw Exception.IndexOutOfBounds
+  if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(buffer.data)
@@ -363,13 +363,13 @@ export let addBytesSlice =
     let bytelen = WasmI32.load(WasmI32.fromGrain(bytes), 4n)
     let srcOff = coerceNumberToWasmI32(start)
     if (srcOff < 0n || srcOff >= bytelen) {
-      throw Exception.IndexOutOfBounds
+      throw IndexOutOfBounds
     }
 
     // bounds check length
     let len = coerceNumberToWasmI32(length)
     if (len < 0n || len > bytelen - srcOff) {
-      throw Exception.IndexOutOfBounds
+      throw IndexOutOfBounds
     }
 
     autogrow(length, buffer)

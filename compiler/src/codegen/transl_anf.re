@@ -233,6 +233,7 @@ module RegisterAllocation = {
         )
       | MContinue => MContinue
       | MBreak => MBreak
+      | MReturn(v) => MReturn(Option.map(apply_allocations(ty, allocs), v))
       | MSwitch(v, bs, d, ty) =>
         MSwitch(
           apply_allocation_to_imm(v),
@@ -322,6 +323,7 @@ let run_register_allocation = (instrs: list(Mashtree.instr)) => {
     | MPrim0(_)
     | MContinue
     | MBreak => []
+    | MReturn(v) => Option.fold(~none=[], ~some=live_locals, v)
     | MSwitch(v, bs, d, ty) =>
       imm_live_local(v)
       @ List.concat(List.map(((_, b)) => block_live_locals(b), bs))
@@ -787,6 +789,7 @@ let rec compile_comp = (~id=?, env, c) => {
       )
     | CContinue => MContinue
     | CBreak => MBreak
+    | CReturn(e) => MReturn(Option.map(compile_comp(env), e))
     | CPrim0(p0) => MPrim0(p0)
     | CPrim1(Box, arg)
     | CPrim1(BoxBind, arg) => MAllocate(MBox(compile_imm(env, arg)))
@@ -1360,71 +1363,6 @@ let transl_signature = (~functions, ~imports, signature) => {
             }
           | ReprValue(_) => TSigValue(vid, vd)
           };
-        }
-      | TSigType(tid, {type_kind: TDataVariant(cds)} as td, rs) => {
-          let cds =
-            List.map(
-              ({cd_id, cd_repr} as cd) => {
-                exports :=
-                  [
-                    GlobalExport({
-                      ex_global_name: Ident.name(cd_id),
-                      ex_global_internal_name: Ident.unique_name(cd_id),
-                    }),
-                    ...exports^,
-                  ];
-                switch (cd_repr) {
-                | ReprFunction(args, res, _) =>
-                  let external_name = Ident.name(cd_id);
-                  let internal_name = Ident.unique_name(cd_id);
-                  exports :=
-                    [
-                      FunctionExport({
-                        ex_function_name: external_name,
-                        ex_function_internal_name: internal_name,
-                      }),
-                      ...exports^,
-                    ];
-                  {
-                    ...cd,
-                    cd_repr: ReprFunction(args, res, Direct(internal_name)),
-                  };
-                | ReprValue(_) => cd
-                };
-              },
-              cds,
-            );
-          TSigType(tid, {...td, type_kind: TDataVariant(cds)}, rs);
-        }
-      | TSigTypeExt(tid, {ext_name, ext_args, ext_repr} as cstr, rs) => {
-          exports :=
-            [
-              GlobalExport({
-                ex_global_name: Ident.name(ext_name),
-                ex_global_internal_name: Ident.unique_name(ext_name),
-              }),
-              ...exports^,
-            ];
-          let cstr =
-            switch (ext_repr) {
-            | ReprFunction(args, res, _) =>
-              let external_name = Ident.name(ext_name);
-              let internal_name = Ident.unique_name(ext_name);
-              exports :=
-                [
-                  FunctionExport({
-                    ex_function_name: external_name,
-                    ex_function_internal_name: internal_name,
-                  }),
-                  ...exports^,
-                ];
-              {
-                ...cstr,
-                ext_repr: ReprFunction(args, res, Direct(internal_name)),
-              };
-            | ReprValue(_) => cstr
-            };
-          TSigTypeExt(tid, cstr, rs);
         }
       | _ as item => item,
       signature.Cmi_format.cmi_sign,

@@ -108,6 +108,7 @@ module E = {
       sub.expr(sub, b);
     | PExpContinue
     | PExpBreak => ()
+    | PExpReturn(e) => Option.iter(sub.expr(sub), e)
     | PExpConstraint(e, t) =>
       sub.expr(sub, e);
       sub.typ(sub, t);
@@ -116,6 +117,9 @@ module E = {
       sub.expr(sub, e);
     | PExpApp(e, el) =>
       sub.expr(sub, e);
+      List.iter(sub.expr(sub), el);
+    | PExpConstruct(c, el) =>
+      iter_ident(sub, c);
       List.iter(sub.expr(sub), el);
     | PExpBlock(el) => List.iter(sub.expr(sub), el)
     | PExpNull => ()

@@ -1,7 +1,7 @@
 records › record_both_trailing
 (module
- (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (import \"_grainEnv\" \"mem\" (memory $0 0))
  (import \"_grainEnv\" \"tbl\" (table $tbl 0 funcref))
@@ -13,8 +13,74 @@ records › record_both_trailing
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
+ (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (func $_gtype_metadata
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (block $compile_type_metadata.2
+   (local.set $0
+    (i32.add
+     (block $allocate_string.1 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 48)
+        )
+       )
+       (i32.const 1)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.const 36)
+      )
+      (i64.store offset=8
+       (local.get $0)
+       (i64.const 0)
+      )
+      (i64.store offset=16
+       (local.get $0)
+       (i64.const 103079215105)
+      )
+      (i64.store offset=24
+       (local.get $0)
+       (i64.const 68719477865)
+      )
+      (i64.store offset=32
+       (local.get $0)
+       (i64.const 31366206292230147)
+      )
+      (i64.store offset=40
+       (local.get $0)
+       (i64.const 0)
+      )
+      (local.get $0)
+     )
+     (i32.const 8)
+    )
+   )
+   (i32.store
+    (local.get $0)
+    (i32.load
+     (i32.const 1032)
+    )
+   )
+   (i32.store offset=4
+    (local.get $0)
+    (global.get $moduleRuntimeId_0)
+   )
+   (i32.store
+    (i32.const 1032)
+    (local.get $0)
+   )
+  )
+ )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -23,98 +89,39 @@ records › record_both_trailing
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.6 (result i32)
+   (block $cleanup_locals.5 (result i32)
     (local.set $0
-     (block $compile_function_preamble.5 (result i32)
-      (block $compile_type_metadata.2
-       (local.set $0
-        (i32.add
-         (block $allocate_string.1 (result i32)
-          (i32.store
-           (local.tee $0
-            (call $malloc_0
-             (global.get $GRAIN$EXPORT$malloc_0)
-             (i32.const 48)
-            )
-           )
-           (i32.const 1)
-          )
-          (i32.store offset=4
-           (local.get $0)
-           (i32.const 36)
-          )
-          (i64.store offset=8
-           (local.get $0)
-           (i64.const 0)
-          )
-          (i64.store offset=16
-           (local.get $0)
-           (i64.const 103079215105)
-          )
-          (i64.store offset=24
-           (local.get $0)
-           (i64.const 68719477867)
-          )
-          (i64.store offset=32
-           (local.get $0)
-           (i64.const 31366206292230147)
-          )
-          (i64.store offset=40
-           (local.get $0)
-           (i64.const 0)
-          )
-          (local.get $0)
-         )
-         (i32.const 8)
-        )
-       )
+     (block $compile_block.4 (result i32)
+      (block $allocate_record.3 (result i32)
        (i32.store
-        (local.get $0)
-        (i32.load
-         (i32.const 1032)
+        (local.tee $0
+         (call $malloc_0
+          (global.get $GRAIN$EXPORT$malloc_0)
+          (i32.const 20)
+         )
         )
+        (i32.const 3)
        )
        (i32.store offset=4
         (local.get $0)
-        (global.get $moduleRuntimeId_0)
+        (i32.mul
+         (global.get $moduleRuntimeId_0)
+         (i32.const 2)
+        )
        )
-       (i32.store
-        (i32.const 1032)
+       (i32.store offset=8
         (local.get $0)
+        (i32.const 2259)
        )
-      )
-      (block $compile_block.4 (result i32)
-       (block $allocate_record.3 (result i32)
-        (i32.store
-         (local.tee $0
-          (call $malloc_0
-           (global.get $GRAIN$EXPORT$malloc_0)
-           (i32.const 20)
-          )
-         )
-         (i32.const 3)
-        )
-        (i32.store offset=4
-         (local.get $0)
-         (i32.mul
-          (global.get $moduleRuntimeId_0)
-          (i32.const 2)
-         )
-        )
-        (i32.store offset=8
-         (local.get $0)
-         (i32.const 2263)
-        )
-        (i32.store offset=12
-         (local.get $0)
-         (i32.const 1)
-        )
-        (i32.store offset=16
-         (local.get $0)
-         (i32.const 9)
-        )
+       (i32.store offset=12
         (local.get $0)
+        (i32.const 1)
        )
+       (i32.store offset=16
+        (local.get $0)
+        (i32.const 9)
+       )
+       (local.get $0)
       )
      )
     )

@@ -323,6 +323,7 @@ type prim1 =
   | NewInt64
   | NewFloat32
   | NewFloat64
+  | BuiltinId
   | LoadAdtVariant
   | StringSize
   | BytesSize
@@ -454,9 +455,11 @@ and expression_desc =
     )
   | PExpContinue
   | PExpBreak
+  | PExpReturn(option(expression))
   | PExpConstraint(expression, parsed_type)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
+  | PExpConstruct(loc(Identifier.t), list(expression))
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)

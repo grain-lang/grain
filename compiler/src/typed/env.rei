@@ -62,6 +62,7 @@ let without_cmis: ('a => 'b, 'a) => 'b;
 let find_value: (Path.t, t) => value_description;
 let find_type: (Path.t, t) => type_declaration;
 let find_type_descrs: (Path.t, t) => type_descriptions;
+let find_constructor: (Path.t, t) => constructor_description;
 let find_module: (Path.t, option(string), t) => module_declaration;
 let find_modtype: (Path.t, t) => modtype_declaration;
 

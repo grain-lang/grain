@@ -269,6 +269,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpContinue);
   let break = (~loc=?, ~attributes=?, ()) =>
     mk(~loc?, ~attributes?, PExpBreak);
+  let return = (~loc=?, ~attributes=?, a) =>
+    mk(~loc?, ~attributes?, PExpReturn(a));
   let constraint_ = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpConstraint(a, b));
   let box_assign = (~loc=?, ~attributes=?, a, b) =>
@@ -279,6 +281,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpLambda(a, b));
   let apply = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpApp(a, b));
+  let construct = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpConstruct(a, b));
   // It's difficult to parse rational numbers while division exists (in the
   // parser state where you've read NUMBER_INT and you're looking ahead at /,
   // you've got a shift/reduce conflict between reducing const -> NUMBER_INT
@@ -323,21 +327,22 @@ module Exp = {
   let block = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpBlock(a));
   let list = (~loc=?, ~attributes=?, a) => {
-    let empty = ident(~loc?, ident_empty);
-    let cons = ident(ident_cons);
+    let empty = construct(~loc?, ident_empty, []);
     let list =
       switch (List.rev(a)) {
       | [] => empty
       | [base, ...rest] =>
         let base =
           switch (base) {
-          | ListItem(expr) => apply(~attributes?, cons, [expr, empty])
+          | ListItem(expr) =>
+            construct(~attributes?, ident_cons, [expr, empty])
           | ListSpread(expr, _) => expr
           };
         List.fold_left(
           (acc, expr) => {
             switch (expr) {
-            | ListItem(expr) => apply(~attributes?, cons, [expr, acc])
+            | ListItem(expr) =>
+              construct(~attributes?, ident_cons, [expr, acc])
             | ListSpread(_, loc) =>
               raise(
                 SyntaxError(
