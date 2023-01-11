@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install -g shx
 
-      - name: Set up JS runner and CLI
+      - name: Set up CLI
         run: |
           npm ci
 
