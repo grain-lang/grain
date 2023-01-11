@@ -19,7 +19,7 @@ const { argv, env } = require("process");
 delete env.NODE_OPTIONS;
 
 const wasi = new WASI({
-  args: argv.slice(3),
+  args: argv.slice(2),
   env,
   preopens: {
     "/sandbox": process.cwd(),
