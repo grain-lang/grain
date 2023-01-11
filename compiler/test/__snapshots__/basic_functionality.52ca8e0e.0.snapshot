@@ -11,13 +11,13 @@ basic functionality › func_shadow
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1134 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1137 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1134 (param i32 i32) (result i32)))
- (global $foo_1131 (mut i32) (i32.const 0))
- (global $foo_1129 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1137 (param i32 i32) (result i32)))
+ (global $foo_1134 (mut i32) (i32.const 0))
+ (global $foo_1132 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -25,7 +25,7 @@ basic functionality › func_shadow
  (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $foo_1129 (param $0 i32) (result i32)
+ (func $foo_1132 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -73,7 +73,7 @@ basic functionality › func_shadow
    )
   )
  )
- (func $foo_1131 (param $0 i32) (result i32)
+ (func $foo_1134 (param $0 i32) (result i32)
   (local $1 i32)
   (local $2 i32)
   (local $3 i32)
@@ -144,7 +144,7 @@ basic functionality › func_shadow
     (local.set $0
      (block $compile_block.17 (result i32)
       (block $compile_store.9
-       (global.set $foo_1129
+       (global.set $foo_1132
         (tuple.extract 0
          (tuple.make
           (block $allocate_closure.7 (result i32)
@@ -173,14 +173,14 @@ basic functionality › func_shadow
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $foo_1129)
+           (global.get $foo_1132)
           )
          )
         )
        )
        (block $do_backpatches.8
         (local.set $0
-         (global.get $foo_1129)
+         (global.get $foo_1132)
         )
        )
       )
@@ -188,10 +188,10 @@ basic functionality › func_shadow
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $foo_1129
+          (call $foo_1132
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $foo_1129)
+            (global.get $foo_1132)
            )
           )
           (call $decRef_0
@@ -205,10 +205,10 @@ basic functionality › func_shadow
        )
       )
       (drop
-       (call $print_1134
+       (call $print_1137
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1134)
+         (global.get $print_1137)
         )
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
@@ -217,7 +217,7 @@ basic functionality › func_shadow
        )
       )
       (block $compile_store.14
-       (global.set $foo_1131
+       (global.set $foo_1134
         (tuple.extract 0
          (tuple.make
           (block $allocate_closure.12 (result i32)
@@ -246,14 +246,14 @@ basic functionality › func_shadow
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $foo_1131)
+           (global.get $foo_1134)
           )
          )
         )
        )
        (block $do_backpatches.13
         (local.set $0
-         (global.get $foo_1131)
+         (global.get $foo_1134)
         )
        )
       )
@@ -261,10 +261,10 @@ basic functionality › func_shadow
        (local.set $7
         (tuple.extract 0
          (tuple.make
-          (call $foo_1131
+          (call $foo_1134
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $foo_1131)
+            (global.get $foo_1134)
            )
           )
           (call $decRef_0
@@ -277,10 +277,10 @@ basic functionality › func_shadow
        (block $do_backpatches.15
        )
       )
-      (call $print_1134
+      (call $print_1137
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $print_1134)
+        (global.get $print_1137)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)

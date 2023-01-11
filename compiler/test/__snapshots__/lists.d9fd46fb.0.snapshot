@@ -66,7 +66,7 @@ lists › list1_trailing_space
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2657)
            )
            (i32.store offset=12
             (local.get $0)
@@ -111,7 +111,7 @@ lists › list1_trailing_space
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2657)
            )
            (i32.store offset=12
             (local.get $0)
@@ -167,7 +167,7 @@ lists › list1_trailing_space
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2657)
            )
            (i32.store offset=12
             (local.get $0)
@@ -219,7 +219,7 @@ lists › list1_trailing_space
        )
        (i32.store offset=8
         (local.get $0)
-        (i32.const 2651)
+        (i32.const 2657)
        )
        (i32.store offset=12
         (local.get $0)

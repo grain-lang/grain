@@ -10,13 +10,13 @@ exports › export8
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $y_1141 (mut i32)))
- (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $x_1139 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1138 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$y\" (global $y_1144 (mut i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"GRAIN$EXPORT$x\" (global $x_1142 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1141 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$exportStar\" \"y\" (func $y_1141 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1138 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$exportStar\" \"y\" (func $y_1144 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1141 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -49,10 +49,10 @@ exports › export8
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $y_1141
+          (call $y_1144
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $y_1141)
+            (global.get $y_1144)
            )
            (i32.const 9)
           )
@@ -66,14 +66,14 @@ exports › export8
        (block $do_backpatches.1
        )
       )
-      (call $+_1138
+      (call $+_1141
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $+_1138)
+        (global.get $+_1141)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $x_1139)
+        (global.get $x_1142)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)

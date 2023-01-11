@@ -11,11 +11,11 @@ pattern matching › tuple_match_deep5
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1171 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1174 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1171 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1174 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -96,7 +96,7 @@ pattern matching › tuple_match_deep5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2657)
            )
            (i32.store offset=12
             (local.get $0)
@@ -141,7 +141,7 @@ pattern matching › tuple_match_deep5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2657)
            )
            (i32.store offset=12
             (local.get $0)
@@ -197,7 +197,7 @@ pattern matching › tuple_match_deep5
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2657)
            )
            (i32.store offset=12
             (local.get $0)
@@ -1076,10 +1076,10 @@ pattern matching › tuple_match_deep5
                  (local.set $22
                   (tuple.extract 0
                    (tuple.make
-                    (call $+_1171
+                    (call $+_1174
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
-                      (global.get $+_1171)
+                      (global.get $+_1174)
                      )
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
@@ -1104,10 +1104,10 @@ pattern matching › tuple_match_deep5
                  (local.set $23
                   (tuple.extract 0
                    (tuple.make
-                    (call $+_1171
+                    (call $+_1174
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
-                      (global.get $+_1171)
+                      (global.get $+_1174)
                      )
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
@@ -1128,10 +1128,10 @@ pattern matching › tuple_match_deep5
                  (block $do_backpatches.105
                  )
                 )
-                (call $+_1171
+                (call $+_1174
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
-                  (global.get $+_1171)
+                  (global.get $+_1174)
                  )
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
@@ -1152,10 +1152,10 @@ pattern matching › tuple_match_deep5
                (local.set $22
                 (tuple.extract 0
                  (tuple.make
-                  (call $+_1171
+                  (call $+_1174
                    (call $incRef_0
                     (global.get $GRAIN$EXPORT$incRef_0)
-                    (global.get $+_1171)
+                    (global.get $+_1174)
                    )
                    (call $incRef_0
                     (global.get $GRAIN$EXPORT$incRef_0)
@@ -1176,10 +1176,10 @@ pattern matching › tuple_match_deep5
                (block $do_backpatches.100
                )
               )
-              (call $+_1171
+              (call $+_1174
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)
-                (global.get $+_1171)
+                (global.get $+_1174)
                )
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)
@@ -1196,10 +1196,10 @@ pattern matching › tuple_match_deep5
           )
           (br $switch.97_outer
            (block $compile_block.99 (result i32)
-            (call $+_1171
+            (call $+_1174
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)
-              (global.get $+_1171)
+              (global.get $+_1174)
              )
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)

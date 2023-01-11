@@ -10,11 +10,11 @@ enums › enum_recursive_data_definition
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1147 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1150 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1147 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1150 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -56,7 +56,7 @@ enums › enum_recursive_data_definition
       )
       (i64.store offset=24
        (local.get $0)
-       (i64.const 85899347050)
+       (i64.const 85899347053)
       )
       (i64.store offset=32
        (local.get $0)
@@ -80,7 +80,7 @@ enums › enum_recursive_data_definition
       )
       (i64.store offset=72
        (local.get $0)
-       (i64.const 85899347049)
+       (i64.const 85899347052)
       )
       (i64.store offset=80
        (local.get $0)
@@ -234,7 +234,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2261)
+            (i32.const 2267)
            )
            (i32.store offset=12
             (local.get $0)
@@ -279,7 +279,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2259)
+            (i32.const 2265)
            )
            (i32.store offset=12
             (local.get $0)
@@ -338,7 +338,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2261)
+            (i32.const 2267)
            )
            (i32.store offset=12
             (local.get $0)
@@ -383,7 +383,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2261)
+            (i32.const 2267)
            )
            (i32.store offset=12
             (local.get $0)
@@ -442,7 +442,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2259)
+            (i32.const 2265)
            )
            (i32.store offset=12
             (local.get $0)
@@ -501,7 +501,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2261)
+            (i32.const 2267)
            )
            (i32.store offset=12
             (local.get $0)
@@ -546,7 +546,7 @@ enums › enum_recursive_data_definition
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2261)
+            (i32.const 2267)
            )
            (i32.store offset=12
             (local.get $0)
@@ -582,10 +582,10 @@ enums › enum_recursive_data_definition
        (block $do_backpatches.28
        )
       )
-      (call $print_1147
+      (call $print_1150
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $print_1147)
+        (global.get $print_1150)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
