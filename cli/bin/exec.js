@@ -129,7 +129,10 @@ function execGrainrun(
   execOpts = {
     stdio: "inherit",
     env: {
-      NODE_OPTIONS: "--experimental-wasi-unstable-preview1 --no-warnings",
+      NODE_OPTIONS: [
+        "--experimental-wasi-unstable-preview1",
+        "--no-warnings",
+      ].join(" "),
     },
   }
 ) {
