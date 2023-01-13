@@ -38,7 +38,7 @@ type type_expr = {
 
 and type_desc =
   | TTyVar(option(string)) // A type variable (None == "_")
-  | TTyArrow(list(type_expr), type_expr, commutable) // A function type.
+  | TTyArrow(list((argument_label, type_expr)), type_expr, commutable) // A function type.
   | TTyTuple(list(type_expr)) // A tuple type.
   | TTyRecord(list((string, type_expr))) // A record type.
   | TTyConstr(Path.t, list(type_expr), ref(abbrev_memo)) // A parameterized type.

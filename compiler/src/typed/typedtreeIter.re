@@ -63,7 +63,7 @@ module MakeIterator =
     | TTyAny
     | TTyVar(_) => ()
     | TTyArrow(args, ret) =>
-      List.iter(iter_core_type, args);
+      List.iter(((_, a)) => iter_core_type(a), args);
       iter_core_type(ret);
     | TTyConstr(_, _, args)
     | TTyTuple(args) => List.iter(iter_core_type, args)
@@ -208,9 +208,9 @@ module MakeIterator =
     | TExpLet(recflag, mutflag, binds) =>
       iter_bindings(recflag, mutflag, binds)
     | TExpLambda(branches, _) => iter_match_branches(branches)
-    | TExpApp(exp, args) =>
+    | TExpApp(exp, _, args) =>
       iter_expression(exp);
-      List.iter(iter_expression, args);
+      List.iter(((_, arg)) => iter_expression(arg), args);
     | TExpPrim0(_) => ()
     | TExpPrim1(_, e) => iter_expression(e)
     | TExpPrim2(_, e1, e2) =>

@@ -322,6 +322,7 @@ let rec token = lexbuf => {
   | "::" => positioned(COLONCOLON)
   | ":=" => positioned(GETS)
   | ":" => positioned(COLON)
+  | "?" => positioned(QUESTION)
   | "=" => positioned(EQUAL)
   | "," => positioned(COMMA)
   | ";" => positioned(SEMI)

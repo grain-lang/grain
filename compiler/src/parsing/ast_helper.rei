@@ -61,7 +61,8 @@ module Type: {
   let mk: (~loc: loc=?, parsed_type_desc) => parsed_type;
   let any: (~loc: loc=?, unit) => parsed_type;
   let var: (~loc: loc=?, string) => parsed_type;
-  let arrow: (~loc: loc=?, list(parsed_type), parsed_type) => parsed_type;
+  let arrow:
+    (~loc: loc=?, list(parsed_type_argument), parsed_type) => parsed_type;
   let tuple: (~loc: loc=?, list(parsed_type)) => parsed_type;
   let constr: (~loc: loc=?, id, list(parsed_type)) => parsed_type;
   let poly: (~loc: loc=?, list(str), parsed_type) => parsed_type;
@@ -227,10 +228,20 @@ module Expression: {
     (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
     expression;
   let lambda:
-    (~loc: loc=?, ~attributes: attributes=?, list(pattern), expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      list(lambda_argument),
+      expression
+    ) =>
     expression;
   let apply:
-    (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      expression,
+      list(application_argument)
+    ) =>
     expression;
   let construct:
     (~loc: loc, ~attributes: attributes=?, id, constructor_expression) =>
@@ -243,7 +254,13 @@ module Expression: {
   let record_construct:
     (~loc: loc, ~attributes: attributes=?, id, list(recorditem)) => expression;
   let binop:
-    (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      expression,
+      expression,
+      expression
+    ) =>
     expression;
   let block:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
@@ -331,6 +348,10 @@ module MatchBranch: {
 
 module IncludeDeclaration: {
   let mk: (~loc: loc, str, option(str)) => include_declaration;
+};
+
+module LambdaArgument: {
+  let mk: (~loc: loc=?, pattern, option(expression)) => lambda_argument;
 };
 
 module ModuleDeclaration: {

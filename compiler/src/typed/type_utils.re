@@ -24,7 +24,7 @@ let rec get_fn_allocation_type = (env, ty) => {
   | TTySubst(linked)
   | TTyLink(linked) => get_fn_allocation_type(env, linked)
   | TTyArrow(args, ret, _) => (
-      List.map(get_allocation_type(env), args),
+      List.map(((_, arg)) => get_allocation_type(env, arg), args),
       get_allocation_type(env, ret),
     )
   | TTyConstr(path, args, _) =>

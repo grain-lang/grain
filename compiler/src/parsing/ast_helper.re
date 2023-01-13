@@ -369,38 +369,46 @@ module Expression = {
   // and if you choose to shift then 1 / foo would always be a syntax error
   // because the parser would expect a number). It's easier to just parse it
   // as division and have this action decide that it's actually a rational.
-  let binop = (~loc=?, ~attributes=?, a, b) => {
+  let binop = (~loc=?, ~attributes=?, f, a, b) => {
     // Locations of nested binops are difficult to compute in the parser so we
     // just set the location manually here
     let loc =
       Location.(
         Option.map(
           loc =>
-            switch (b) {
-            | [{pexp_loc: {loc_start}}, {pexp_loc: {loc_end}}] => {
+            switch (a, b) {
+            | ({pexp_loc: {loc_start}}, {pexp_loc: {loc_end}}) => {
                 ...loc,
                 loc_start,
                 loc_end,
               }
-            | _ => failwith("Impossible: not a binop")
             },
           loc,
         )
       );
-    switch (a, b) {
+    switch (f, a, b) {
     | (
         {pexp_desc: PExpId({txt: IdentName({txt: "/"})})},
-        [
-          {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
-          {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
-        ],
+        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
+        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
       ) =>
       constant(
         ~loc?,
         ~attributes?,
         PConstNumber(PConstNumberRational(x, y)),
       )
-    | _ => mk(~loc?, ~attributes?, PExpApp(a, b))
+    | _ =>
+      mk(
+        ~loc?,
+        ~attributes?,
+        PExpApp(
+          f,
+          [
+            {paa_label: Unlabeled, paa_expr: a, paa_loc: a.pexp_loc},
+            {paa_label: Unlabeled, paa_expr: b, paa_loc: b.pexp_loc},
+          ],
+        ),
+      )
     };
   };
   let block = (~loc=?, ~attributes=?, a) =>
@@ -507,6 +515,40 @@ module MatchBranch = {
 module IncludeDeclaration = {
   let mk = (~loc, path, alias) => {
     {pinc_alias: alias, pinc_path: path, pinc_loc: loc};
+  };
+};
+
+module LambdaArgument = {
+  let mk = (~loc=?, pattern, default) => {
+    open Asttypes;
+    let pla_loc = Option.value(~default=Location.dummy_loc, loc);
+    let label =
+      switch (pattern.ppat_desc) {
+      | PPatVar(name)
+      | PPatAlias({ppat_desc: PPatVar(name)}, _)
+      | PPatAlias(_, name)
+      | PPatConstraint(
+          {
+            ppat_desc:
+              PPatVar(name) | PPatAlias({ppat_desc: PPatVar(name)}, _) |
+              PPatAlias(_, name),
+          },
+          _,
+        ) =>
+        Some(name)
+      | _ => None
+      };
+    let pla_label =
+      switch (label, default) {
+      | (Some(name), Some(_)) => Default(name)
+      | (Some(name), None) => Labeled(name)
+      | (None, None) => Unlabeled
+      | (None, Some(_)) =>
+        raise(SyntaxError(pla_loc, "Default arguments must be named."))
+      };
+    let pla_pattern = pattern;
+    let pla_default = default;
+    {pla_label, pla_default, pla_pattern, pla_loc};
   };
 };
 

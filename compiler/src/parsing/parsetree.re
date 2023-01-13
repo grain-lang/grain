@@ -25,7 +25,7 @@ type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 type parsed_type_desc =
   | PTyAny
   | PTyVar(string)
-  | PTyArrow(list(parsed_type), parsed_type)
+  | PTyArrow(list(parsed_type_argument), parsed_type)
   | PTyTuple(list(parsed_type))
   | PTyConstr(loc(Identifier.t), list(parsed_type))
   | PTyPoly(list(loc(string)), parsed_type)
@@ -34,6 +34,12 @@ and parsed_type = {
   ptyp_desc: parsed_type_desc,
   [@sexp_drop_if sexp_locs_disabled]
   ptyp_loc: Location.t,
+}
+
+and parsed_type_argument = {
+  ptyp_arg_label: argument_label,
+  ptyp_arg_type: parsed_type,
+  ptyp_arg_loc: Location.t,
 };
 
 /** Type for fields within a record */
@@ -511,8 +517,8 @@ and expression_desc =
   | PExpReturn(option(expression))
   | PExpConstraint(expression, parsed_type)
   | PExpUse(loc(Identifier.t), use_items)
-  | PExpLambda(list(pattern), expression)
-  | PExpApp(expression, list(expression))
+  | PExpLambda(list(lambda_argument), expression)
+  | PExpApp(expression, list(application_argument))
   | PExpConstruct(loc(Identifier.t), constructor_expression)
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
@@ -523,6 +529,21 @@ and constructor_expression =
   | PExpConstrTuple(list(expression))
   | PExpConstrRecord(list((loc(Identifier.t), expression)))
   | PExpConstrSingleton
+
+[@deriving (sexp, yojson)]
+and lambda_argument = {
+  pla_label: argument_label,
+  pla_pattern: pattern,
+  pla_default: option(expression),
+  pla_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and application_argument = {
+  paa_label: argument_label,
+  paa_expr: expression,
+  paa_loc: Location.t,
+}
 
 /** let-binding form */
 

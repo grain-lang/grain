@@ -1684,7 +1684,13 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 switch (desc.cstr_args) {
                 | [] => desc.cstr_res
                 | args =>
-                  Btype.newgenty(TTyArrow(args, desc.cstr_res, TComOk))
+                  Btype.newgenty(
+                    TTyArrow(
+                      List.map(arg => (Unlabeled, arg), args),
+                      desc.cstr_res,
+                      TComOk,
+                    ),
+                  )
                 };
               let val_type =
                 switch (desc.cstr_existentials) {
@@ -1748,7 +1754,14 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let val_type =
             switch (desc.cstr_args) {
             | [] => desc.cstr_res
-            | args => Btype.newgenty(TTyArrow(args, desc.cstr_res, TComOk))
+            | args =>
+              Btype.newgenty(
+                TTyArrow(
+                  List.map(arg => (Unlabeled, arg), args),
+                  desc.cstr_res,
+                  TComOk,
+                ),
+              )
             };
           let val_type =
             switch (desc.cstr_existentials) {

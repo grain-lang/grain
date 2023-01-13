@@ -1468,6 +1468,13 @@ let transl_prim = (env, desc) => {
 
   let disable_gc = [(Location.mknoloc("disableGC"), [])];
 
+  let lambda_arg = pat => {
+    pla_label: Unlabeled,
+    pla_pattern: pat,
+    pla_default: None,
+    pla_loc: Location.dummy_loc,
+  };
+
   // `attrs` are attributes which should be applied to the `let` which gets implicitly generated.
   //
   // Specifically, consider:
@@ -1593,7 +1600,7 @@ let transl_prim = (env, desc) => {
         Expression.lambda(
           ~loc,
           ~attributes,
-          [pat_a],
+          [lambda_arg(pat_a)],
           Expression.prim1(~loc, p, id_a),
         ),
         Typecore.prim1_type(p),
@@ -1619,7 +1626,7 @@ let transl_prim = (env, desc) => {
         Expression.lambda(
           ~loc,
           ~attributes,
-          [pat_a, pat_b],
+          [lambda_arg(pat_a), lambda_arg(pat_b)],
           Expression.prim2(~loc, p, id_a, id_b),
         ),
         Typecore.prim2_type(p),
@@ -1639,7 +1646,7 @@ let transl_prim = (env, desc) => {
         Expression.lambda(
           ~loc,
           ~attributes,
-          [pat_a, pat_b, pat_c],
+          [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
           Expression.primn(~loc, p, [id_a, id_b, id_c]),
         ),
         Typecore.primn_type(p),

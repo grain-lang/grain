@@ -338,12 +338,37 @@ and transl_type_aux = (env, policy, styp) => {
     };
 
     ctyp(TTyVar(name), ty);
-  | PTyArrow(st1, st2) =>
-    let cty1 = List.map(transl_type(env, policy), st1);
+  | PTyArrow(stl, st2) =>
+    let ctyl =
+      List.map(
+        st => {
+          let ty = transl_type(env, policy, st.ptyp_arg_type);
+          (st.ptyp_arg_label, ty);
+        },
+        stl,
+      );
+    let tyl =
+      List.map(
+        ((l, ty)) => {
+          let ty =
+            if (Btype.is_optional(l)) {
+              newty(
+                TTyConstr(
+                  Builtin_types.path_option,
+                  [ty.ctyp_type],
+                  ref(TMemNil),
+                ),
+              );
+            } else {
+              ty.ctyp_type;
+            };
+          (l, ty);
+        },
+        ctyl,
+      );
     let cty2 = transl_type(env, policy, st2);
-    let ty1 = List.map(x => x.ctyp_type, cty1);
-    let ty = newty(TTyArrow(ty1, cty2.ctyp_type, TComOk));
-    ctyp(TTyArrow(cty1, cty2), ty);
+    let ty = newty(TTyArrow(tyl, cty2.ctyp_type, TComOk));
+    ctyp(TTyArrow(ctyl, cty2), ty);
   | PTyTuple(stl) =>
     assert(List.length(stl) >= 1);
     let ctys = List.map(transl_type(env, policy), stl);
@@ -600,62 +625,6 @@ let type_attributes = attrs => {
       },
     attrs,
   );
-};
-
-let rec type_expr_to_core_type = (env, expr) => {
-  let desc =
-    switch (expr.desc) {
-    | TTyVar(None) => TTyAny
-    | TTyVar(Some(name)) => TTyVar(name)
-    | TTyArrow(args, result, _) =>
-      TTyArrow(
-        List.map(type_expr_to_core_type(env), args),
-        type_expr_to_core_type(env, result),
-      )
-    | TTyTuple(args) =>
-      TTyTuple(List.map(type_expr_to_core_type(env), args))
-    | TTyRecord(fields) =>
-      TTyRecord(
-        List.map(
-          ((field, ty)) =>
-            (
-              Location.mknoloc(
-                Identifier.IdentName(Location.mknoloc(field)),
-              ),
-              type_expr_to_core_type(env, ty),
-            ),
-          fields,
-        ),
-      )
-    | TTyConstr(path, args, _) =>
-      TTyConstr(
-        path,
-        Location.mknoloc(
-          Identifier.IdentName(Location.mknoloc(Path.name(path))),
-        ),
-        List.map(type_expr_to_core_type(env), args),
-      )
-    | TTyUniVar(Some(name)) => TTyVar(name)
-    | TTyUniVar(None) => TTyAny
-    | TTyPoly(ty, args) =>
-      TTyPoly(
-        List.map(
-          fun
-          | {desc: TTyVar(Some(name))} => name
-          | _ => failwith("TTyPoly invalid type vars"),
-          args,
-        ),
-        type_expr_to_core_type(env, ty),
-      )
-    | TTyLink(ty) => type_expr_to_core_type(env, ty).ctyp_desc
-    | TTySubst(ty) => type_expr_to_core_type(env, ty).ctyp_desc
-    };
-  {
-    ctyp_desc: desc,
-    ctyp_type: expr,
-    ctyp_env: env,
-    ctyp_loc: Location.dummy_loc,
-  };
 };
 
 let report_error = (env, ppf) =>

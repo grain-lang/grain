@@ -54,7 +54,6 @@ type error =
   /*| Unbound_type_var_ext of type_expr * extension_constructor*/
   | Varying_anonymous
   | Val_in_structure
-  | Multiple_native_repr_attributes
   | Cannot_unbox_or_untag_type(native_repr_kind)
   | Deep_unbox_or_untag_attribute(native_repr_kind)
   | Bad_immediate_attribute
@@ -868,39 +867,6 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   (final_decls, final_env);
 };
 
-type native_repr_attribute =
-  | Native_repr_attr_absent
-  | Native_repr_attr_present(native_repr_kind);
-
-let get_native_repr_attribute = (attrs, ~global_repr) =>
-  /*Attr_helper.get_no_payload_attribute ["unboxed"; "ocaml.unboxed"]  attrs,
-    Attr_helper.get_no_payload_attribute ["untagged"; "ocaml.untagged"] attrs,*/
-  switch (None, None, global_repr) {
-  | (None, None, None) => Native_repr_attr_absent
-  | (None, None, Some(repr)) => Native_repr_attr_present(repr)
-  | (Some(_), None, None) => Native_repr_attr_present(Unboxed)
-  | (None, Some(_), None) => Native_repr_attr_present(Untagged)
-  | (Some({Location.loc}), _, _)
-  | (_, Some({Location.loc}), _) =>
-    raise(Error(loc, Multiple_native_repr_attributes))
-  };
-
-let native_repr_of_type = (env, kind, ty) =>
-  switch (kind, Ctype.expand_head_opt(env, ty).desc) {
-  | (Untagged, TTyConstr(path, _, _))
-      when Path.same(path, Builtin_types.path_number) =>
-    Some(Untagged_int)
-  /*| Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_float ->
-      Some Unboxed_float
-    | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_int32 ->
-      Some (Unboxed_integer Pint32)
-    | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_int64 ->
-      Some (Unboxed_integer Pint64)
-    | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_nativeint ->
-      Some (Unboxed_integer Pnativeint)*/
-  | _ => None
-  };
-
 /* Translate a value declaration */
 let transl_value_decl = (env, loc, valdecl) => {
   let cty = Typetexp.transl_type_scheme(env, valdecl.pval_type);
@@ -1421,8 +1387,6 @@ let report_error = ppf =>
     )
   | Val_in_structure =>
     fprintf(ppf, "Value declarations are only allowed in signatures")
-  | Multiple_native_repr_attributes =>
-    fprintf(ppf, "Too many [@@unboxed]/[@@untagged] attributes")
   | Cannot_unbox_or_untag_type(Unboxed) =>
     fprintf(
       ppf,

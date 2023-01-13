@@ -153,6 +153,16 @@ program: MODULE UIDENT EOL FOREIGN WASM YIELD
 ## The known suffix of the stack is as follows:
 ## FOREIGN WASM
 ##
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN QUESTION YIELD
+##
+## Ends in an error in state: 198.
+##
+## arg_typ -> QUESTION . LIDENT COLON typ [ RPAREN EOL COMMA ]
+## arg_typ -> QUESTION . LIDENT COLON eols typ [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## QUESTION
+##
 
 Expected a lowercase identifier.
 
@@ -181,6 +191,74 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON YIELD
 ##
 
 Expected the type of the foreign value.
+
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN QUESTION LIDENT YIELD
+##
+## Ends in an error in state: 199.
+##
+## arg_typ -> QUESTION LIDENT . COLON typ [ RPAREN EOL COMMA ]
+## arg_typ -> QUESTION LIDENT . COLON eols typ [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## QUESTION LIDENT
+##
+
+Expected a colon followed by the type of the argument.
+
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN QUESTION LIDENT COLON YIELD
+##
+## Ends in an error in state: 200.
+##
+## arg_typ -> QUESTION LIDENT COLON . typ [ RPAREN EOL COMMA ]
+## arg_typ -> QUESTION LIDENT COLON . eols typ [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## QUESTION LIDENT COLON
+##
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN QUESTION LIDENT COLON EOL YIELD
+##
+## Ends in an error in state: 202.
+##
+## arg_typ -> QUESTION LIDENT COLON eols . typ [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## QUESTION LIDENT COLON eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+##
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN LIDENT COLON YIELD
+##
+## Ends in an error in state: 205.
+##
+## arg_typ -> LIDENT COLON . typ [ RPAREN EOL COMMA ]
+## arg_typ -> LIDENT COLON . eols typ [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LIDENT COLON
+##
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN LIDENT COLON EOL YIELD
+##
+## Ends in an error in state: 207.
+##
+## arg_typ -> LIDENT COLON eols . typ [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## LIDENT COLON eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+##
+
+Expected the type of the argument.
 
 program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS YIELD
 ##
@@ -1205,6 +1283,24 @@ program: EOL MODULE UIDENT EOL YIELD
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 6, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 398, spurious reduction of production eos -> eols
+##
+program: MODULE UIDENT EOL BIGINT LPAREN LIDENT EQUAL YIELD
+##
+## Ends in an error in state: 475.
+##
+## app_arg -> id_str EQUAL . expr [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## id_str EQUAL
+##
+program: MODULE UIDENT EOL FUN LPAREN NUMBER_INT EQUAL YIELD
+##
+## Ends in an error in state: 652.
+##
+## arg_default -> EQUAL . non_stmt_expr [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## EQUAL
 ##
 
 Expected an expression.
@@ -2688,9 +2784,9 @@ program: MODULE UIDENT EOL FUN LPAREN WASMI64 COMMA EOL WASMI64 WHILE
 ## The known suffix of the stack is as follows:
 ## lseparated_nonempty_list_inner(comma,pattern) comma pattern
 ##
-program: MODULE UIDENT EOL FUN LPAREN WASMI64 WHILE
+program: MODULE UIDENT EOL LET LBRACKRCARET NUMBER_INT YIELD
 ##
-## Ends in an error in state: 363.
+## Ends in an error in state: 350.
 ##
 ## lseparated_nonempty_list_inner(comma,pattern) -> pattern . [ RPAREN RBRACK EOL COMMA ]
 ## pattern -> pattern . COLON typ [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
@@ -2702,6 +2798,35 @@ program: MODULE UIDENT EOL FUN LPAREN WASMI64 WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## pattern
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 358, spurious reduction of production const -> option(DASH) NUMBER_INT
+## In state 397, spurious reduction of production pattern -> const
+##
+program: MODULE UIDENT EOL LET LBRACKRCARET NUMBER_INT COMMA NUMBER_INT YIELD
+##
+## Ends in an error in state: 372.
+##
+## lseparated_nonempty_list_inner(comma,pattern) -> lseparated_nonempty_list_inner(comma,pattern) comma pattern . [ RPAREN RBRACK EOL COMMA ]
+## pattern -> pattern . COLON typ [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
+## pattern -> pattern . COLON eols typ [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
+## pattern -> pattern . PIPE pattern [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
+## pattern -> pattern . PIPE eols pattern [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
+## pattern -> pattern . AS id_str [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
+## pattern -> pattern . AS eols id_str [ RPAREN RBRACK PIPE EOL COMMA COLON AS ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(comma,pattern) comma pattern
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 358, spurious reduction of production const -> option(DASH) NUMBER_INT
+## In state 397, spurious reduction of production pattern -> const
 ##
 
 Expected a type annotation, a comma followed by more patterns, `)`, or `]`.
@@ -2726,27 +2851,6 @@ program: MODULE UIDENT EOL FUN LPAREN WASMI64 COMMA EOL WHILE
 ##
 
 Expected another pattern, `)`, or `]`.
-
-program: MODULE UIDENT EOL FUN LPAREN WASMI64 RBRACK
-##
-## Ends in an error in state: 749.
-##
-## lam_expr -> FUN lparen option(patterns) . rparen thickarrow expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## FUN lparen option(patterns)
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 363, spurious reduction of production lseparated_nonempty_list_inner(comma,pattern) -> pattern
-## In state 394, spurious reduction of production option(comma) ->
-## In state 395, spurious reduction of production patterns -> lseparated_nonempty_list_inner(comma,pattern) option(comma)
-## In state 748, spurious reduction of production option(patterns) -> patterns
-##
-
-Expected `)` to complete the function arguments.
 
 program: MODULE UIDENT EOL UIDENT LPAREN COMMA WHILE
 ##
@@ -4622,6 +4726,22 @@ program: MODULE UIDENT EOL MATCH LPAREN WASMI64 RPAREN LBRACE WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 21, spurious reduction of production lbrace -> LBRACE
 ##
+program: MODULE UIDENT EOL LET LBRACKRCARET NUMBER_INT COMMA YIELD
+##
+## Ends in an error in state: 383.
+##
+## lseparated_nonempty_list_inner(comma,pattern) -> lseparated_nonempty_list_inner(comma,pattern) comma . pattern [ RPAREN RBRACK EOL COMMA ]
+## option(comma) -> comma . [ RPAREN RBRACK EOL ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(comma,pattern) comma
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 65, spurious reduction of production comma -> COMMA
+##
 
 Expected a pattern.
 
@@ -5834,6 +5954,22 @@ program: MODULE UIDENT EOL WASMI64 COLON FUN LPAREN WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
+program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN LIDENT COMMA YIELD
+##
+## Ends in an error in state: 216.
+##
+## lseparated_nonempty_list_inner(comma,arg_typ) -> lseparated_nonempty_list_inner(comma,arg_typ) comma . arg_typ [ RPAREN EOL COMMA ]
+## option(comma) -> comma . [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(comma,arg_typ) comma
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 65, spurious reduction of production comma -> COMMA
+##
 
 Expected a comma-separated list of types or an immediate `)` for a function type with no arguments.
 
@@ -6092,6 +6228,35 @@ program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT LPAREN RPAREN YIELD
 ##
 
 Expected a comma followed by more constructors or `}` to complete the enum declaration.
+
+program: MODULE UIDENT EOL FUN LPAREN NUMBER_INT EQUAL UIDENT YIELD
+##
+## Ends in an error in state: 660.
+##
+## lam_args -> lseparated_nonempty_list_inner(comma,lam_arg) . option(comma) [ RPAREN EOL ]
+## lseparated_nonempty_list_inner(comma,lam_arg) -> lseparated_nonempty_list_inner(comma,lam_arg) . comma lam_arg [ RPAREN EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(comma,lam_arg)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 225, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 128, spurious reduction of production construct_expr -> qualified_uid
+## In state 271, spurious reduction of production left_accessor_expr -> construct_expr
+## In state 246, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 223, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 160, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 280, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 653, spurious reduction of production arg_default -> EQUAL non_stmt_expr
+## In state 655, spurious reduction of production option(arg_default) -> arg_default
+## In state 654, spurious reduction of production lam_arg -> pattern option(arg_default)
+## In state 665, spurious reduction of production lseparated_nonempty_list_inner(comma,lam_arg) -> lam_arg
+##
+
+Expected a comma-separated list of arguments or `)` to complete the function arguments.
 
 program: MODULE UIDENT EOL WHILE LPAREN UNDERSCORE
 ##
