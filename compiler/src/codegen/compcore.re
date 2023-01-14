@@ -80,10 +80,6 @@ let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
 let console_mod = "console";
 let tracepoint_ident = Ident.create_persistent("tracepoint");
 
-let grain_main = "_gmain";
-let grain_type_metadata = "_gtype_metadata";
-let grain_start = "_start";
-
 let required_global_imports = [
   {
     mimp_id: reloc_base,
@@ -1604,7 +1600,7 @@ let call_lambda =
         set_swap(wasm_mod, env, 0, compiled_func()),
         instr(
           wasm_mod,
-          global_function_table,
+          grain_global_function_table,
           load(~offset=8, wasm_mod, get_func_swap()),
           args,
           Type.create @@
@@ -3488,9 +3484,9 @@ let compile_imports = (wasm_mod, env, {imports}) => {
   Import.add_memory_import(wasm_mod, "mem", grain_env_mod, "mem", false);
   Import.add_table_import(
     wasm_mod,
-    global_function_table,
+    grain_global_function_table,
     grain_env_mod,
-    global_function_table,
+    grain_global_function_table,
   );
 };
 
@@ -3562,7 +3558,7 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
 let compile_tables = (wasm_mod, env, {function_table_elements}) => {
   Table.add_active_element_segment(
     wasm_mod,
-    global_function_table,
+    grain_global_function_table,
     "elem",
     function_table_elements,
     Expression.Global_get.make(

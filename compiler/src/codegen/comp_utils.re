@@ -3,6 +3,12 @@ open Binaryen;
 open Grain_typed;
 open Grain_utils;
 
+let grain_main = "_gmain";
+let grain_type_metadata = "_gtype_metadata";
+let grain_start = "_start";
+let grain_env_name = "_grainEnv";
+let grain_global_function_table = "tbl";
+
 let wasm_type =
   fun
   | Types.Managed
@@ -88,8 +94,6 @@ let load =
   Expression.Load.make(~signed, wasm_mod, sz, offset, align, ty, ptr);
 };
 
-let grain_env_name = "_grainEnv";
-
 let is_grain_env = str => grain_env_name == str;
 
 let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
@@ -130,8 +134,6 @@ let type_of_repr = repr => {
     }
   );
 };
-
-let global_function_table = "tbl";
 
 let write_universal_exports =
     (wasm_mod, {Cmi_format.cmi_sign}, exported_names) => {
@@ -197,7 +199,7 @@ let write_universal_exports =
                   );
                 Expression.Call_indirect.make(
                   wasm_mod,
-                  global_function_table,
+                  grain_global_function_table,
                   func_ptr,
                   arguments,
                   call_arg_types,
