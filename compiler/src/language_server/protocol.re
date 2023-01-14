@@ -58,13 +58,13 @@ type location = {
 [@deriving yojson]
 type location_link = {
   [@key "originSelectionRange"]
-	origin_selection_range: range,
+  origin_selection_range: range,
   [@key "targetUri"]
-	target_uri: uri,
+  target_uri: uri,
   [@key "targetRange"]
-	target_range: range,
+  target_range: range,
   [@key "targetSelectionRange"]
-	target_selection_range: range
+  target_selection_range: range,
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
@@ -112,8 +112,8 @@ type text_document_sync_kind =
 [@deriving yojson({strict: false})]
 type definition_client_capabilities = {
   [@key "linkSupport"]
-  link_support: bool
-}
+  link_support: bool,
+};
 
 let text_document_sync_kind_to_yojson = kind =>
   text_document_sync_kind_to_enum(kind) |> [%to_yojson: int];

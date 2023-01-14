@@ -20,5 +20,3 @@ let process:
     RequestParams.t
   ) =>
   unit;
-
-  

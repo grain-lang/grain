@@ -67,7 +67,9 @@ module ResponseResult = {
     document_formatting_provider: true,
     text_document_sync: Full,
     hover_provider: true,
-    definition_provider: {link_support:true}, 
+    definition_provider: {
+      link_support: true,
+    },
     type_definition_provider: false,
     references_provider: false,
     document_symbol_provider: false,
