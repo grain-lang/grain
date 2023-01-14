@@ -271,8 +271,6 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
   | RefTest
   | RefCast
   | BrOn
-  | RttCanon
-  | RttSub
   | StructNew
   | StructGet
   | StructSet
