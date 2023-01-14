@@ -42,7 +42,7 @@ module ResponseResult = {
     [@key "hoverProvider"]
     hover_provider: bool,
     [@key "definitionProvider"]
-    definition_provider: bool,
+    definition_provider: Protocol.definition_client_capabilities,
     [@key "typeDefinitionProvider"]
     type_definition_provider: bool,
     [@key "referencesProvider"]
@@ -67,7 +67,7 @@ module ResponseResult = {
     document_formatting_provider: true,
     text_document_sync: Full,
     hover_provider: true,
-    definition_provider: false, // disabled until we can resolve the external module location
+    definition_provider: {link_support:true}, 
     type_definition_provider: false,
     references_provider: false,
     document_symbol_provider: false,
