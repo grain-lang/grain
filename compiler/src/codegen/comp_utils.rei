@@ -6,6 +6,7 @@ let grain_main: string;
 let grain_start: string;
 let grain_env_name: string;
 let grain_global_function_table: string;
+let grain_memory: string;
 
 let wasm_type: Types.allocation_type => Type.t;
 
