@@ -27,6 +27,15 @@ type bigint_data = {
 };
 
 [@deriving (sexp, yojson)]
+type rational_data = {
+  rational_negative: bool,
+  rational_num_limbs: array(int64),
+  rational_den_limbs: array(int64),
+  rational_num_rep: string,
+  rational_den_rep: string,
+};
+
+[@deriving (sexp, yojson)]
 type constant =
   | Const_number(number_type)
   | Const_bytes(bytes)
@@ -43,6 +52,7 @@ type constant =
   | Const_wasmf32(float)
   | Const_wasmf64(float)
   | Const_bigint(bigint_data)
+  | Const_rational(rational_data)
   | Const_bool(bool)
   | Const_void
 
@@ -50,13 +60,7 @@ type constant =
 and number_type =
   | Const_number_int(int64)
   | Const_number_float(float)
-  | Const_number_rational({
-      rational_negative: bool,
-      rational_num_limbs: array(int64),
-      rational_den_limbs: array(int64),
-      rational_num_rep: string,
-      rational_den_rep: string,
-    })
+  | Const_number_rational(rational_data)
   | Const_number_bigint(bigint_data);
 
 /** Marker for exported/nonexported let bindings */

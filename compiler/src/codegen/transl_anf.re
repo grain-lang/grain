@@ -527,6 +527,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
   | Const_char(_) => failwith("compile_const: Const_char post-ANF")
   | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
+  | Const_rational(_) => failwith("compile_const: Const_rational post-ANF")
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
   | Const_uint32(u32) => MConstU32(u32)

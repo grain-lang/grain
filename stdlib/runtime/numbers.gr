@@ -260,7 +260,7 @@ let reducedBigInteger = x => {
 }
 
 @unsafe
-let reducedFractionBigInt = (x, y) => {
+let reducedFractionBigInt = (x, y, keepRational) => {
   let mut x = x
   let mut y = y
   let mut needsDecref = false
@@ -283,7 +283,7 @@ let reducedFractionBigInt = (x, y) => {
   let r = WasmI32.load(quotremResult, 4n)
   // free container used to store quotrem result
   Memory.free(quotremResult)
-  let ret = if (BI.eqz(r)) {
+  let ret = if (!keepRational && BI.eqz(r)) {
     // if remainder is zero, then return the quotient.
     // We decRef the remainder, since we no longer need it
     Memory.decRef(r)
@@ -1006,7 +1006,7 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         let result =
           if (isSub) BI.sub(expandedXNumerator, yNumerator)
           else BI.add(expandedXNumerator, yNumerator)
-        let ret = reducedFractionBigInt(result, yDenominator)
+        let ret = reducedFractionBigInt(result, yDenominator, false)
         Memory.decRef(expandedXNumerator)
         Memory.decRef(result)
         ret
@@ -1108,7 +1108,7 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         let result =
           if (isSub) BI.sub(expandedXNumerator, yNumerator)
           else BI.add(expandedXNumerator, yNumerator)
-        let ret = reducedFractionBigInt(result, yDenominator)
+        let ret = reducedFractionBigInt(result, yDenominator, false)
         Memory.decRef(expandedXNumerator)
         Memory.decRef(result)
         ret
@@ -1223,7 +1223,7 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
           if (isSub) BI.sub(expandedXNumerator, yNumerator)
           else BI.add(expandedXNumerator, yNumerator)
         Memory.decRef(expandedXNumerator)
-        let ret = reducedFractionBigInt(result, yDenominator)
+        let ret = reducedFractionBigInt(result, yDenominator, false)
         Memory.decRef(result)
         ret
       },
@@ -1251,6 +1251,83 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
 }
 
 @unsafe
+provide let addSubRational = (x, y, isSub, keepRational) => {
+  let xNumerator = boxedRationalNumerator(x)
+  let xDenominator = boxedRationalDenominator(x)
+  let yNumerator = boxedRationalNumerator(y)
+  let yDenominator = boxedRationalDenominator(y)
+  if (BI.eq(xDenominator, yDenominator)) {
+    let newNumerator =
+      if (isSub) BI.sub(xNumerator, yNumerator)
+      else BI.add(xNumerator, yNumerator)
+    let ret = reducedFractionBigInt(newNumerator, xDenominator, keepRational)
+    Memory.decRef(newNumerator)
+    ret
+  } else {
+    let numerator1 = BI.mul(xNumerator, yDenominator)
+    let numerator2 = BI.mul(yNumerator, xDenominator)
+    let numerator =
+      if (isSub) BI.sub(numerator1, numerator2)
+      else BI.add(numerator1, numerator2)
+    let denominator = BI.mul(xDenominator, yDenominator)
+    let ret = reducedFractionBigInt(numerator, denominator, keepRational)
+    Memory.decRef(numerator1)
+    Memory.decRef(numerator2)
+    Memory.decRef(numerator)
+    ret
+  }
+}
+
+@unsafe
+provide let timesDivideRational = (x, y, isDivide, keepRational) => {
+  let xNumerator = boxedRationalNumerator(x)
+  let xDenominator = boxedRationalDenominator(x)
+  let yNumerator = boxedRationalNumerator(y)
+  let yDenominator = boxedRationalDenominator(y)
+  // (a / b) * (c / d) == (a * c) / (b * d)
+  // (a / b) / (c / d) == (a * d) / (b * c)
+  let numerator =
+    if (isDivide) BI.mul(xNumerator, yDenominator)
+    else BI.mul(xNumerator, yNumerator)
+  let denominator =
+    if (isDivide) BI.mul(xDenominator, yNumerator)
+    else BI.mul(xDenominator, yDenominator)
+  reducedFractionBigInt(numerator, denominator, keepRational)
+}
+
+@unsafe
+provide let rationalsEqual = (x, y) => {
+  let xNumerator = boxedRationalNumerator(x)
+  let xDenominator = boxedRationalDenominator(x)
+  let yNumerator = boxedRationalNumerator(y)
+  let yDenominator = boxedRationalDenominator(y)
+  BI.eq(xNumerator, yNumerator) && BI.eq(xDenominator, yDenominator)
+}
+
+@unsafe
+provide let cmpRationals = (x, y) => {
+  // Comparing rationals efficiently is an open problem
+  // Producing a definitive answer is quite expensive, so if the two
+  // values are not strictly equal we approximate an answer
+
+  let xNumerator = boxedRationalNumerator(x)
+  let xDenominator = boxedRationalDenominator(x)
+  let yNumerator = boxedRationalNumerator(y)
+  let yDenominator = boxedRationalDenominator(y)
+
+  if (
+    BI.cmp(xNumerator, yNumerator) == 0n &&
+    BI.cmp(xDenominator, yDenominator) == 0n
+  ) {
+    0n
+  } else {
+    let xf = WasmF64.div(BI.toFloat64(xNumerator), BI.toFloat64(xDenominator))
+    let yf = WasmF64.div(BI.toFloat64(yNumerator), BI.toFloat64(yDenominator))
+    if (WasmF64.lt(xf, yf)) -1n else 1n
+  }
+}
+
+@unsafe
 let numberAddSubRationalHelp = (x, y, isSub) => {
   let xNumerator = boxedRationalNumerator(x)
   let xDenominator = boxedRationalDenominator(x)
@@ -1263,7 +1340,7 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
       else BI.add(xNumerator, expandedYNumerator)
     Memory.decRef(expandedYNumerator)
     Memory.decRef(yBig)
-    let ret = reducedFractionBigInt(result, xDenominator)
+    let ret = reducedFractionBigInt(result, xDenominator, false)
     Memory.decRef(result)
     ret
   } else {
@@ -1271,30 +1348,7 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
     match (ytag) {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         // The one case we don't delegate is rational +/- rational
-        let xNumerator = boxedRationalNumerator(x)
-        let xDenominator = boxedRationalDenominator(x)
-        let yNumerator = boxedRationalNumerator(y)
-        let yDenominator = boxedRationalDenominator(y)
-        if (BI.eq(xDenominator, yDenominator)) {
-          let newNumerator =
-            if (isSub) BI.sub(xNumerator, yNumerator)
-            else BI.add(xNumerator, yNumerator)
-          let ret = reducedFractionBigInt(newNumerator, xDenominator)
-          Memory.decRef(newNumerator)
-          ret
-        } else {
-          let numerator1 = BI.mul(xNumerator, yDenominator)
-          let numerator2 = BI.mul(yNumerator, xDenominator)
-          let numerator =
-            if (isSub) BI.sub(numerator1, numerator2)
-            else BI.add(numerator1, numerator2)
-          let denominator = BI.mul(xDenominator, yDenominator)
-          let ret = reducedFractionBigInt(numerator, denominator)
-          Memory.decRef(numerator1)
-          Memory.decRef(numerator2)
-          Memory.decRef(numerator)
-          ret
-        }
+        addSubRational(x, y, isSub, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
         let yBig = BI.makeWrappedInt32(boxedInt32Number(y))
@@ -1303,7 +1357,7 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
         let result =
           if (isSub) BI.sub(xNumerator, expandedYNumerator)
           else BI.add(xNumerator, expandedYNumerator)
-        let ret = reducedFractionBigInt(result, xDenominator)
+        let ret = reducedFractionBigInt(result, xDenominator, false)
         Memory.decRef(expandedYNumerator)
         Memory.decRef(result)
         ret
@@ -1315,7 +1369,7 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
         let result =
           if (isSub) BI.sub(xNumerator, expandedYNumerator)
           else BI.add(xNumerator, expandedYNumerator)
-        let ret = reducedFractionBigInt(result, xDenominator)
+        let ret = reducedFractionBigInt(result, xDenominator, false)
         Memory.decRef(expandedYNumerator)
         Memory.decRef(result)
         ret
@@ -1326,7 +1380,7 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
           if (isSub) BI.sub(xNumerator, expandedYNumerator)
           else BI.add(xNumerator, expandedYNumerator)
         Memory.decRef(expandedYNumerator)
-        let ret = reducedFractionBigInt(result, xDenominator)
+        let ret = reducedFractionBigInt(result, xDenominator, false)
         Memory.decRef(result)
         ret
       },
@@ -1453,7 +1507,7 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         let xBig = BI.makeWrappedInt64(xval)
         let ret = if (isDivide) {
-          reducedFractionBigInt(xBig, y)
+          reducedFractionBigInt(xBig, y, false)
         } else {
           reducedBigInteger(BI.mul(xBig, y))
         }
@@ -1467,13 +1521,13 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
         let ret = if (isDivide) {
           // x / (a / b) == (x * b) / a
           let numerator = BI.mul(xBig, yDenominator)
-          let ret = reducedFractionBigInt(numerator, yNumerator)
+          let ret = reducedFractionBigInt(numerator, yNumerator, false)
           Memory.decRef(numerator)
           ret
         } else {
           // x * (a / b) == (x * a) / b
           let numerator = BI.mul(xBig, yNumerator)
-          let ret = reducedFractionBigInt(numerator, yDenominator)
+          let ret = reducedFractionBigInt(numerator, yDenominator, false)
           Memory.decRef(numerator)
           ret
         }
@@ -1510,7 +1564,7 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
   if (isSimpleNumber(y)) {
     let yBig = BI.makeWrappedInt32(untagSimple(y))
     let ret = if (isDivide) {
-      reducedFractionBigInt(x, yBig)
+      reducedFractionBigInt(x, yBig, false)
     } else {
       reducedBigInteger(BI.mul(x, yBig))
     }
@@ -1523,7 +1577,7 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
         let yBig = BI.makeWrappedInt64(yBoxedVal)
         let ret = if (isDivide) {
-          reducedFractionBigInt(x, yBig)
+          reducedFractionBigInt(x, yBig, false)
         } else {
           reducedBigInteger(BI.mul(x, yBig))
         }
@@ -1534,7 +1588,7 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         let yBoxedVal = boxedInt64Number(y)
         let yBig = BI.makeWrappedInt64(yBoxedVal)
         let ret = if (isDivide) {
-          reducedFractionBigInt(x, yBig)
+          reducedFractionBigInt(x, yBig, false)
         } else {
           reducedBigInteger(BI.mul(x, yBig))
         }
@@ -1543,7 +1597,7 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         if (isDivide) {
-          reducedFractionBigInt(x, y)
+          reducedFractionBigInt(x, y, false)
         } else {
           reducedBigInteger(BI.mul(x, y))
         }
@@ -1554,13 +1608,13 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         if (isDivide) {
           // x / (a / b) == (x * b) / a
           let numerator = BI.mul(x, yDenominator)
-          let ret = reducedFractionBigInt(numerator, yNumerator)
+          let ret = reducedFractionBigInt(numerator, yNumerator, false)
           Memory.decRef(numerator)
           ret
         } else {
           // x * (a / b) == (x * a) / b
           let numerator = BI.mul(x, yNumerator)
-          let ret = reducedFractionBigInt(numerator, yDenominator)
+          let ret = reducedFractionBigInt(numerator, yDenominator, false)
           Memory.decRef(numerator)
           ret
         }
@@ -1614,13 +1668,13 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
     let ret = if (isDivide) {
       // (a / b) / y == a / (b * y)
       let denominator = BI.mul(xDenominator, yBig)
-      let ret = reducedFractionBigInt(xNumerator, denominator)
+      let ret = reducedFractionBigInt(xNumerator, denominator, false)
       Memory.decRef(denominator)
       ret
     } else {
       // (a / b) * y == (a * y) / b
       let numerator = BI.mul(xNumerator, yBig)
-      let ret = reducedFractionBigInt(numerator, xDenominator)
+      let ret = reducedFractionBigInt(numerator, xDenominator, false)
       Memory.decRef(numerator)
       ret
     }
@@ -1638,13 +1692,13 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         let ret = if (isDivide) {
           // (a / b) / y == a / (b * y)
           let denominator = BI.mul(xDenominator, yBig)
-          let ret = reducedFractionBigInt(xNumerator, denominator)
+          let ret = reducedFractionBigInt(xNumerator, denominator, false)
           Memory.decRef(denominator)
           ret
         } else {
           // (a / b) * y == (a * y) / b
           let numerator = BI.mul(xNumerator, yBig)
-          let ret = reducedFractionBigInt(numerator, xDenominator)
+          let ret = reducedFractionBigInt(numerator, xDenominator, false)
           Memory.decRef(numerator)
           ret
         }
@@ -1657,13 +1711,13 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         let ret = if (isDivide) {
           // (a / b) / y == a / (b * y)
           let denominator = BI.mul(xDenominator, yBig)
-          let ret = reducedFractionBigInt(xNumerator, denominator)
+          let ret = reducedFractionBigInt(xNumerator, denominator, false)
           Memory.decRef(denominator)
           ret
         } else {
           // (a / b) * y == (a * y) / b
           let numerator = BI.mul(xNumerator, yBig)
-          let ret = reducedFractionBigInt(numerator, xDenominator)
+          let ret = reducedFractionBigInt(numerator, xDenominator, false)
           Memory.decRef(numerator)
           ret
         }
@@ -1674,31 +1728,19 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         if (isDivide) {
           // (a / b) / y == a / (b * y)
           let denominator = BI.mul(xDenominator, y)
-          let ret = reducedFractionBigInt(xNumerator, denominator)
+          let ret = reducedFractionBigInt(xNumerator, denominator, false)
           Memory.decRef(denominator)
           ret
         } else {
           // (a / b) * y == (a * y) / b
           let numerator = BI.mul(xNumerator, y)
-          let ret = reducedFractionBigInt(numerator, xDenominator)
+          let ret = reducedFractionBigInt(numerator, xDenominator, false)
           Memory.decRef(numerator)
           ret
         }
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        let xNumerator = boxedRationalNumerator(x)
-        let xDenominator = boxedRationalDenominator(x)
-        let yNumerator = boxedRationalNumerator(y)
-        let yDenominator = boxedRationalDenominator(y)
-        // (a / b) * (c / d) == (a * c) / (b * d)
-        // (a / b) / (c / d) == (a * d) / (b * c)
-        let numerator =
-          if (isDivide) BI.mul(xNumerator, yDenominator)
-          else BI.mul(xNumerator, yNumerator)
-        let denominator =
-          if (isDivide) BI.mul(xDenominator, yNumerator)
-          else BI.mul(xDenominator, yDenominator)
-        reducedFractionBigInt(numerator, denominator)
+        timesDivideRational(x, y, isDivide, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         // TODO(#1190): We should probably use something more accurate if possible here
@@ -2044,31 +2086,7 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
         WasmI32.sub(0n, cmpBigInt(y, x))
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        // Comparing rationals efficiently is an open problem
-        // Producing a definitive answer is quite expensive, so if the two
-        // values are not strictly equal we approximate an answer
-
-        let xNumerator = boxedRationalNumerator(x)
-        let xDenominator = boxedRationalDenominator(x)
-        let yNumerator = boxedRationalNumerator(y)
-        let yDenominator = boxedRationalDenominator(y)
-
-        if (
-          BI.cmp(xNumerator, yNumerator) == 0n &&
-          BI.cmp(xDenominator, yDenominator) == 0n
-        ) {
-          0n
-        } else {
-          let xf = WasmF64.div(
-            BI.toFloat64(xNumerator),
-            BI.toFloat64(xDenominator)
-          )
-          let yf = WasmF64.div(
-            BI.toFloat64(yNumerator),
-            BI.toFloat64(yDenominator)
-          )
-          if (WasmF64.lt(xf, yf)) -1n else 1n
-        }
+        cmpRationals(x, y)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
         WasmI32.sub(0n, cmpFloat(y, x, false))
@@ -2655,18 +2673,16 @@ provide let coerceBigIntToNumber = (x: BigInt) => {
 
 @unsafe
 provide let coerceRationalToNumber = (x: Rational) => {
-  if (WasmI32.eq(boxedRationalDenominator(WasmI32.fromGrain(x)), 1n)) {
-    WasmI32.toGrain(
-      reducedInteger(
-        WasmI64.extendI32S(boxedRationalNumerator(WasmI32.fromGrain(x)))
-      )
-    ): Number
+  let x = WasmI32.fromGrain(x)
+  let denom = boxedRationalDenominator(x)
+  let x = if (BI.eq(denom, BI.makeWrappedInt32(1n))) {
+    boxedRationalNumerator(x)
   } else {
-    let x = WasmI32.fromGrain(x)
-    // incRef x to reuse it via WasmI32.toGrain
-    Memory.incRef(x)
-    WasmI32.toGrain(x): Number
+    x
   }
+  // incRef x to reuse it via WasmI32.toGrain
+  Memory.incRef(x)
+  WasmI32.toGrain(x): Number
 }
 
 /**

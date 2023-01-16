@@ -46,6 +46,8 @@ let pretty_const = c =>
   | Const_wasmf32(f) => Printf.sprintf("%fw", f)
   | Const_wasmf64(f) => Printf.sprintf("%fW", f)
   | Const_bigint({bigint_rep}) => bigint_rep
+  | Const_rational({rational_num_rep, rational_den_rep}) =>
+    Printf.sprintf("%s/%sr", rational_num_rep, rational_den_rep)
   | Const_bool(true) => "true"
   | Const_bool(false) => "false"
   | Const_void => "void"

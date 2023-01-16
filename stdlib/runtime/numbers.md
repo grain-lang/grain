@@ -138,6 +138,30 @@ coerceNumberToUnsignedWasmI32 : Number -> WasmI32
 numberEqual : (WasmI32, WasmI32) -> Bool
 ```
 
+### Numbers.**addSubRational**
+
+```grain
+addSubRational : (WasmI32, WasmI32, Bool, Bool) -> WasmI32
+```
+
+### Numbers.**timesDivideRational**
+
+```grain
+timesDivideRational : (WasmI32, WasmI32, Bool, Bool) -> WasmI32
+```
+
+### Numbers.**rationalsEqual**
+
+```grain
+rationalsEqual : (WasmI32, WasmI32) -> Bool
+```
+
+### Numbers.**cmpRationals**
+
+```grain
+cmpRationals : (WasmI32, WasmI32) -> WasmI32
+```
+
 ### Numbers.**cmp**
 
 ```grain

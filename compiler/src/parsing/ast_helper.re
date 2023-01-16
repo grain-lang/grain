@@ -72,6 +72,14 @@ module Constant = {
   let wasmf32 = f => PConstWasmF32(f);
   let wasmf64 = f => PConstWasmF64(f);
   let bigint = i => PConstBigInt(i);
+  let rational = r => {
+    let (n, d) =
+      switch (String.split_on_char('/', r)) {
+      | [n, d] => (n, d)
+      | _ => failwith("Impossible: rational literal without forward slash")
+      };
+    PConstRational(n, d);
+  };
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };
