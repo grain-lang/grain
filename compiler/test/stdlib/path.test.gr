@@ -269,3 +269,12 @@ assert Path.ancestry(fs("../dir1"), fs("./dir2")) == Ok(Path.NoLineage)
 assert Path.ancestry(fs("./dir1"), fs("../../dir2")) == Ok(Path.NoLineage)
 assert Path.ancestry(fs("./dir1"), fs("/dir2")) == Err(Path.DifferentBases)
 assert Path.ancestry(fs("C:/dir1"), fs("/dir2")) == Err(Path.DifferentRoots)
+
+// can destructure TypedPath tuple
+match (fs("./dir1/dir2/dir3")) {
+  Path.RelativeFile(x) => {
+    let (base, fileType, pathArray) = x
+    assert pathArray == ["dir3", "dir2", "dir1"]
+  },
+  _ => fail "not a relative file",
+}

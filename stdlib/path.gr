@@ -130,7 +130,7 @@ record Directory {
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
  * `Directory`)
  */
-type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
+export type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
  * Represents a system path.
  */
