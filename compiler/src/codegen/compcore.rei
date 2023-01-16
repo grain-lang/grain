@@ -3,10 +3,6 @@ open Grain_middle_end;
 open Mashtree;
 open Binaryen;
 
-let grain_main: string;
-let grain_type_metadata: string;
-let grain_start: string;
-
 type codegen_env = {
   name: option(string),
   num_args: int,
