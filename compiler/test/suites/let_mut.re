@@ -99,7 +99,7 @@ describe("let mut", ({test, testSkip}) => {
   /* Exported let mut */
   assertRun(
     "let-mut_export1",
-    "import { x } from \"letMutExport\"; print(x); x = 5; x = 6; print(x)",
+    "include \"letMutExport\" as LetMutExport; from LetMutExport use { x }; print(x); x = 5; x = 6; print(x)",
     "3\n6\n",
   );
   /* unsafe let mut in a loop */

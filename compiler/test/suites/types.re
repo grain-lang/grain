@@ -120,7 +120,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_1",
     {|
-      import * from "aliases"
+      include "aliases"
+      from Aliases use *
       let foo1 = 123 : Foo
       let foo2: Foo = 234
       print(foo1)
@@ -131,7 +132,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_2",
     {|
-      import * from "aliases"
+      include "aliases"
+      from Aliases use *
       let foo1 = [234] : (Bar<Foo>)
       let foo2: Bar<Number> = [123, ...foo1]
       print(foo2)
@@ -141,7 +143,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_3",
     {|
-      import * from "aliases"
+      include "aliases"
+      from Aliases use *
       let foo: Baz = baz
       print(foo: Baz)
     |},
@@ -150,7 +153,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_4",
     {|
-      import { Foo } from "aliases"
+      include "aliases"
+      from Aliases use { type Foo }
       let foo: Foo = 5
       print(foo)
     |},
@@ -159,7 +163,8 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "import_type_alias_5",
     {|
-      import * from "aliases"
+      include "aliases"
+      from Aliases use *
       let foo: Qux<Number> = qux
       print(foo: Qux<Foo>)
     |},
@@ -168,34 +173,37 @@ describe("aliased types", ({test, testSkip}) => {
   assertCompileError(
     "err_import_type_alias_1",
     {|
-      import * from "aliases"
+      include "aliases"
+      from Aliases use *
       let bar = 5: Baz
     |},
     "expected of type
-         %Aliases.Baz",
+         Aliases.Baz",
   );
   assertCompileError(
     "err_import_type_alias_2",
     {|
-      import * from "aliases"
+      include "aliases"
+      from Aliases use *
       let bar: Qux<Number> = 5
     |},
     "expected of type
-         %Aliases.Qux<Number>",
+         Aliases.Qux<Number>",
   );
   assertCompileError(
     "err_import_type_alias_3",
     {|
-      import { Foo, baz } from "aliases"
+      include "aliases"
+      from Aliases use { type Foo, baz }
       let foo: Foo = baz
     |},
-    "expression was expected of type %Aliases.Foo = Number",
+    "expression was expected of type Aliases.Foo = Number",
   );
   assertRun(
     "regression_annotated_type_func_1",
     {|
       type AddPrinter = (Number, Number) -> Void
-      export let add: AddPrinter = (x, y) => print(x + y)
+      expose let add: AddPrinter = (x, y) => print(x + y)
       add(4, 4)
     |},
     "8\n",
@@ -204,7 +212,7 @@ describe("aliased types", ({test, testSkip}) => {
     "regression_annotated_type_func_2",
     {|
       type AddPrinter<a> = (a, a) -> Void
-      export let add: AddPrinter<Number> = (x, y) => print(x + y)
+      expose let add: AddPrinter<Number> = (x, y) => print(x + y)
       add(4, 4)
     |},
     "8\n",
@@ -233,7 +241,7 @@ describe("abstract types", ({test, testSkip}) => {
   assertRun(
     "regression_annotated_func_export",
     {|
-      import A from "funcAliasExport"
+      include "funcAliasExport" as A
       print(A.function())
     |},
     "abc\n",

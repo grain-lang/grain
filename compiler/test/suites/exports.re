@@ -43,63 +43,75 @@ describe("exports", ({test, testSkip}) => {
 
   assertCompileError(
     "export1",
-    "import * from \"noExports\"; x",
+    "include \"noExports\" as NoExports; from NoExports use *; x",
     "Unbound value x",
   );
   assertCompileError(
     "export2",
-    "import * from \"noExports\"; y",
+    "include \"noExports\" as NoExports; from NoExports use *; y",
     "Unbound value y",
   );
   assertCompileError(
     "export3",
-    "import * from \"noExports\"; z",
+    "include \"noExports\" as NoExports; from NoExports use *; z",
     "Unbound value z",
   );
-  assertSnapshot("export4", "import * from \"onlyXExported\"; x");
+  assertSnapshot(
+    "export4",
+    "include \"onlyXExported\" as OnlyXExported; from OnlyXExported use *; x",
+  );
   assertCompileError(
     "export5",
-    "import * from \"onlyXExported\"; y",
+    "include \"onlyXExported\" as OnlyXExported; from OnlyXExported use *; y",
     "Unbound value y",
   );
   assertCompileError(
     "export6",
-    "import * from \"onlyXExported\"; z",
+    "include \"onlyXExported\" as OnlyXExported; from OnlyXExported use *; z",
     "Unbound value z",
   );
-  assertSnapshot("export7", "import * from \"exportStar\"; x");
-  assertSnapshot("export8", "import * from \"exportStar\"; x + y(4)");
-  assertSnapshot("export9", "import * from \"exportStar\"; y(z)");
+  assertSnapshot(
+    "export7",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use *; x",
+  );
+  assertSnapshot(
+    "export8",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use *; x + y(4)",
+  );
+  assertSnapshot(
+    "export9",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use *; y(z)",
+  );
   assertCompileError(
     "export10",
-    "import * from \"exportStar\"; y(secret)",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use *; y(secret)",
     "Unbound value secret",
   );
   assertCompileError(
     "export11",
-    "enum Foo { Bar }; export Bar",
-    "Unbound type constructor",
+    "enum Foo { Bar }; expose { Bar }",
+    "Unbound module Bar",
   );
   assertSnapshot(
     "export12",
     {|
-      import ExposedType from "exposedType"
+      include "exposedType"
       ExposedType.apply((arg) => print("ok"))
     |},
   );
   assertCompileError(
     "regression_issue_1489",
-    "export foo",
+    "expose { foo }",
     "Unbound value foo",
   );
 
-  assertSnapshot("let_rec_export", "export let rec foo = () => 5");
+  assertSnapshot("let_rec_export", "expose let rec foo = () => 5");
 
   assertStartSectionSnapshot(
     "export_start_function",
     {|
       print("init")
-      export let _start = () => {
+      expose let _start = () => {
         print("starting up")
       }
     |},
@@ -107,12 +119,12 @@ describe("exports", ({test, testSkip}) => {
 
   assertHasExport(
     "issue_918_annotated_func_export",
-    "export let foo: () -> Number = () => 5",
+    "module Test; expose let foo: () -> Number = () => 5",
     ("foo", Binaryen.Export.external_function),
   );
   assertHasExport(
     "issue_918_annotated_func_export2",
-    "export let rec foo: () -> Number = () => 5",
+    "module Test; expose let rec foo: () -> Number = () => 5",
     ("foo", Binaryen.Export.external_function),
   );
 });

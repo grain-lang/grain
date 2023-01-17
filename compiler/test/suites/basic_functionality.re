@@ -169,7 +169,7 @@ describe("basic functionality", ({test, testSkip}) => {
   );
   assertCompileError(
     "exports_weak_types",
-    {|export let f = box(x => 0)|},
+    {|expose let f = box(x => 0)|},
     "type variables that cannot be generalized",
   );
   assertSnapshot("int32_1", "42l");
@@ -213,6 +213,8 @@ describe("basic functionality", ({test, testSkip}) => {
       assertParse(
         "unicode_identifiers",
         {|
+          module Test
+
           enum Caipirinha {
             Cachaça,
             Sugar,
@@ -224,6 +226,7 @@ describe("basic functionality", ({test, testSkip}) => {
           type Über = Number
         |},
         {
+          module_name: Location.mknoloc("Test"),
           statements: [
             Top.data([
               (

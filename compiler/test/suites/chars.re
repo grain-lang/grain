@@ -48,12 +48,12 @@ describe("chars", ({test, testSkip}) => {
   assertRun("char_eq2", "print('🌾' == '💯')", "false\n");
   assertRun(
     "char_eq3",
-    "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '🌾')",
+    "include \"char\" as Char; print(Char.fromCode(0x1F33E) == '🌾')",
     "true\n",
   );
   assertRun(
     "char_eq4",
-    "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '💯')",
+    "include \"char\" as Char; print(Char.fromCode(0x1F33E) == '💯')",
     "false\n",
   );
   assertRun("char_toString_escape1", {|print(('\\',))|}, "('\\\\',)\n");
@@ -89,35 +89,59 @@ describe("chars", ({test, testSkip}) => {
   // parse locations
   assertParseWithLocs(
     "char_loc_simple",
-    "'a'",
+    "module Test\n'a'",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("char_loc_simple", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
-        char(~loc=mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)), "a"),
+        char(
+          ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
+          "a",
+        ),
       ],
       comments: [],
-      prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)),
+      prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (2, 15, 12)),
     },
   );
   assertParseWithLocs(
     "char_loc_code",
-    "'\\u{1F3F4}'",
+    "module Test\n'\\u{1F3F4}'",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("char_loc_code", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
-        char(~loc=mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)), "🏴"),
+        char(
+          ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
+          "🏴",
+        ),
       ],
       comments: [],
-      prog_loc: mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)),
+      prog_loc: mk_loc("char_loc_code", (1, 0, 0), (2, 23, 12)),
     },
   );
   assertParseWithLocs(
     "char_loc_emoji",
-    "'💯'",
+    "module Test\n'💯'",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("char_loc_emoji", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
-        char(~loc=mk_loc("char_loc_emoji", (1, 0, 0), (1, 3, 0)), "💯"),
+        char(
+          ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
+          "💯",
+        ),
       ],
       comments: [],
-      prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (1, 3, 0)),
+      prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (2, 15, 12)),
     },
   );
 });

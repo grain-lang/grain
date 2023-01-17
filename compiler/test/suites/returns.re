@@ -14,7 +14,7 @@ describe("early return", ({test, testSkip}) => {
   assertFileRun("early_return2", "earlyReturn", "Some(4)\nNone\n");
   assertSnapshot(
     "early_return3",
-    "export let foo = () => { if (1 == 0) return true; return false }",
+    "expose let foo = () => { if (1 == 0) return true; return false }",
   );
 
   assertCompileError(

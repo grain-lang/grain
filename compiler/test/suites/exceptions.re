@@ -10,15 +10,15 @@ describe("exceptions", ({test, testSkip}) => {
   let assertRunError = makeErrorRunner(test_or_skip);
 
   assertRun("exception_1", "exception Foo; print(Foo)", "Foo\n");
-  assertSnapshot("exception_2", "export exception Foo; Foo");
+  assertSnapshot("exception_2", "expose exception Foo; Foo");
   assertRun(
     "exception_3",
-    "export exception Foo(Bool, Number); print(Foo(false, 6))",
+    "expose exception Foo(Bool, Number); print(Foo(false, 6))",
     "Foo(false, 6)\n",
   );
   assertSnapshot(
     "exception_4",
-    "export exception Foo(Bool, Number); export exception Bar; Bar",
+    "expose exception Foo(Bool, Number); expose exception Bar; Bar",
   );
   assertRunError(
     "throw_exception_1",
@@ -38,13 +38,13 @@ describe("exceptions", ({test, testSkip}) => {
   );
   assertRunError(
     "exception_register_1",
-    {|import Exception from "exception"; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
+    {|include "exception"; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
     "Spooky error",
   );
   assertRunError(
     "exception_register_2",
     {|
-    import Exception from "exception"
+    include "exception"
     exception HorribleError
     Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 1"), _ => None })
     Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 2"), _ => None })

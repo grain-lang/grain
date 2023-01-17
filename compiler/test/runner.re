@@ -191,7 +191,12 @@ let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@
-      compile(~hook=stop_after_object_file_emitted, ~config_fn?, name, prog);
+      compile(
+        ~hook=stop_after_object_file_emitted,
+        ~config_fn?,
+        name,
+        "module Test; " ++ prog,
+      );
       expect.file(watfile(name)).toMatchSnapshot();
     })
   });
@@ -218,7 +223,7 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
       let error =
         try(
           {
-            ignore @@ compile(name, prog);
+            ignore @@ compile(name, "module Test; " ++ prog);
             "";
           }
         ) {
@@ -233,7 +238,7 @@ let makeWarningRunner = (test, name, prog, warning) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, prog);
+      ignore @@ compile(name, "module Test; " ++ prog);
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
@@ -243,7 +248,7 @@ let makeNoWarningRunner = (test, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, prog);
+      ignore @@ compile(name, "module Test; " ++ prog);
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
@@ -252,7 +257,8 @@ let makeNoWarningRunner = (test, name, prog) => {
 let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, prog);
+      ignore @@
+      compile(~num_pages?, ~config_fn?, name, "module Test; " ++ prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
@@ -271,7 +277,8 @@ let makeErrorRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, prog);
+      ignore @@
+      compile(~num_pages?, ~config_fn?, name, "module Test; " ++ prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
@@ -380,8 +387,13 @@ let makeParseRunner =
           | Doc(desc) => Doc({...desc, cmt_loc: Location.dummy_loc})
           };
         };
-      let strip_locs = ({statements, comments}: Parsetree.parsed_program) =>
+      let strip_locs =
+          ({module_name, statements, comments}: Parsetree.parsed_program) =>
         Parsetree.{
+          module_name: {
+            ...module_name,
+            loc: Location.dummy_loc,
+          },
           statements:
             List.map(
               location_stripper.toplevel(location_stripper),

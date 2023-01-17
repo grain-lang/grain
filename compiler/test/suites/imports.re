@@ -15,175 +15,121 @@ describe("imports", ({test, testSkip}) => {
   /* import * tests */
   assertRun(
     "import_all",
-    "import * from \"exportStar\"; {print(x); print(y(4)); print(z)}",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use *; {print(x); print(y(4)); print(z)}",
     "5\n4\nfoo\n",
-  );
-  assertRun(
-    "import_all_except",
-    "import * except {y} from \"exportStar\"; {print(x); print(z)}",
-    "5\nfoo\n",
-  );
-  assertSnapshot(
-    "import_all_except_multiple",
-    "import * except {x, y} from \"exportStar\"; z",
   );
   assertSnapshot(
     "import_all_constructor",
-    "import * from \"tlists\"; Cons(2, Empty)",
-  );
-  assertSnapshot(
-    "import_all_except_constructor",
-    "import * except {Cons} from \"tlists\"; Empty",
-  );
-  assertSnapshot(
-    "import_all_except_multiple_constructor",
-    "import * except {Cons, append} from \"tlists\"; sum(Empty)",
+    "include \"tlists\" as TLists; from TLists use *; Cons(2, Empty)",
   );
   assertSnapshot(
     "import_with_export_multiple",
-    "import * from \"sameExport\"; foo()",
-  );
-  /* import * errors */
-  assertCompileError(
-    "import_all_except_error",
-    "import * except {y} from \"exportStar\"; {print(x); print(y); z}",
-    "Unbound value y",
-  );
-  assertCompileError(
-    "import_all_except_multiple_error",
-    "import * except {x, y} from \"exportStar\"; {print(x); z}",
-    "Unbound value x",
-  );
-  assertCompileError(
-    "import_all_except_multiple_error2",
-    "import * except {x, y} from \"exportStar\"; {print(x); print(y); z}",
-    "Unbound value x",
-  );
-  assertCompileError(
-    "import_all_except_error_constructor",
-    "import * except {Cons} from \"tlists\"; Cons(2, Empty)",
-    "Unbound constructor Cons",
-  );
-  assertCompileError(
-    "import_all_except_multiple_error_constructor",
-    "import * except {Cons, append} from \"tlists\"; append(Empty, Empty)",
-    "Unbound value append",
-  );
-  assertCompileError(
-    "import_all_except_multiple_error2_constructor",
-    "import * except {Cons, append} from \"tlists\"; let x = Cons(2, Empty); append(x, Empty)",
-    "Unbound constructor Cons",
+    "include \"sameExport\" as SameExport; from SameExport use *; foo()",
   );
   /* import {} tests */
-  assertSnapshot("import_some", "import {x} from \"exportStar\"; x");
+  assertSnapshot(
+    "import_some",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x}; x",
+  );
   assertSnapshot(
     "import_some_multiple",
-    "import {x, y} from \"exportStar\"; y(x)",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x, y}; y(x)",
   );
   assertSnapshot(
     "import_some_multiple_trailing",
-    "import {x, y,} from \"exportStar\"; y(x)",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x, y,}; y(x)",
   );
   assertSnapshot(
     "import_some_multiple_trailing2",
-    "import {
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {
       x,
       y,
-    } from \"exportStar\"; y(x)",
+    }; y(x)",
   );
   assertSnapshot(
     "import_some_constructor",
-    "import {Cons, Empty} from \"tlists\"; Cons(5, Empty)",
+    "include \"tlists\" as TLists; from TLists use {type TList}; Cons(5, Empty)",
   );
   assertSnapshot(
     "import_some_mixed",
-    "import {Cons, Empty, sum} from \"tlists\"; sum(Cons(5, Empty))",
+    "include \"tlists\" as TLists; from TLists use {type TList, sum}; sum(Cons(5, Empty))",
   );
-  assertSnapshot("import_alias", "import {x as y} from \"exportStar\"; y");
+  assertSnapshot(
+    "import_alias",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x as y}; y",
+  );
   assertSnapshot(
     "import_alias_multiple",
-    "import {x as y, y as x} from \"exportStar\"; x(y)",
-  );
-  assertSnapshot(
-    "import_alias_constructor",
-    "import {Empty as None, sum} from \"tlists\"; sum(None)",
-  );
-  assertSnapshot(
-    "import_alias_multiple_constructor",
-    "import {Cons as Add, Empty as None, sum} from \"tlists\"; sum(Add(1, None))",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x as y, y as x}; x(y)",
   );
   /* import {} errors */
   assertCompileError(
     "import_some_error",
-    "import {a} from \"exportStar\"; a",
-    "Export \"a\" was not found in \"exportStar\"",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {a}; a",
+    "Unbound value a in module ExposeStar",
   );
   assertCompileError(
     "import_some_error2",
-    "import {x, a} from \"exportStar\"; a",
-    "Export \"a\" was not found in \"exportStar\"",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x, a}; a",
+    "Unbound value a in module ExposeStar",
   );
   assertCompileError(
     "import_some_error3",
-    "import {Foo} from \"exportStar\"; a",
-    "Export \"Foo\" was not found in \"exportStar\"",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {Foo}; a",
+    "Unbound module Foo in module ExposeStar",
   );
   assertCompileError(
     "import_some_error3",
-    "import {x, Foo} from \"exportStar\"; a",
-    "Export \"Foo\" was not found in \"exportStar\"",
+    "include \"exposeStar\" as ExposeStar; from ExposeStar use {x, Foo}; a",
+    "Unbound module Foo in module ExposeStar",
   );
   /* import module tests */
-  assertSnapshot("import_module", "import Foo from \"exportStar\"; Foo.x");
+  assertSnapshot("import_module", "include \"exposeStar\" as Foo; Foo.x");
   assertSnapshot(
     "import_module2",
-    "import Foo from \"exportStar\"; Foo.y(Foo.x)",
+    "include \"exposeStar\" as Foo; Foo.y(Foo.x)",
   );
   /* import module errors */
   assertCompileError(
     "import_module_error",
-    "import Foo from \"exportStar\"; Foo.foo",
+    "include \"exposeStar\" as Foo; Foo.foo",
     "Unbound value foo in module Foo",
   );
   /* import well-formedness errors */
   assertCompileError(
     "import_alias_illegal_renaming",
-    "import {Cons as cons, Empty} from \"list\"; cons(3, Empty)",
-    "Alias 'cons' should have proper casing",
+    "include \"list\" as List; from List use {Cons as cons, Empty}; cons(3, Empty)",
+    "Expected an uppercase module alias",
   );
   assertCompileError(
     "import_alias_illegal_renaming2",
-    "import {sum as Sum, Empty} from \"list\"; sum(Empty)",
-    "Alias 'Sum' should have proper casing",
+    "include \"list\" as List; from List use {sum as Sum, Empty}; sum(Empty)",
+    "Expected a lowercase alias",
   );
   assertCompileError(
     "import_module_illegal_name",
-    "import foo from \"list\";",
-    "Module 'foo' should have an uppercase name",
+    "include \"list\" as foo;",
+    "Expected an uppercase module identifier",
   );
   assertCompileError(
     "import_module_not_external",
-    "import Foo.Foo from \"list\";",
-    "Module name 'Foo.Foo' should contain only one module.",
+    "include \"list\" as Foo.Foo;",
+    "Expected a newline character to terminate the statement",
   );
   assertCompileError(
     "import_value_not_external",
-    "import {foo as Foo.foo} from \"list\";",
-    "Alias 'Foo.foo' should be at most one level deep",
+    "include \"list\" as List; from List use {foo as Foo.foo};",
+    "Expected a lowercase alias",
   );
   /* import multiple modules tests */
   assertSnapshot(
     "import_muliple_modules",
-    "import * from \"tlists\"; import * from \"exportStar\"; Cons(x, Empty)",
+    "include \"tlists\" as TLists; from TLists use *; include \"exposeStar\" as ExposeStar; from ExposeStar use *; Cons(x, Empty)",
   );
   /* import same module tests */
   assertSnapshot(
     "import_same_module_unify",
-    "import * from \"tlists\"; import TList from \"tlists\"; Cons(5, TList.Empty)",
-  );
-  assertSnapshot(
-    "import_same_module_unify2",
-    "import *, TList from \"tlists\"; Cons(5, TList.Empty)",
+    "include \"tlists\" as TLists; from TLists use *; Cons(5, TLists.Empty)",
   );
   /* import filepath tests */
   assertFileSnapshot("import_relative_path1", "relativeImport1");
@@ -192,7 +138,7 @@ describe("imports", ({test, testSkip}) => {
   assertFileSnapshot("import_relative_path4", "relativeImports/foo");
   assertCompileError(
     "import_missing_file",
-    "import * from \"foo\"; 2",
+    "include \"foo\" as Foo; 2",
     "Missing file for module foo",
   );
   /* Unbound module tests */
@@ -204,18 +150,18 @@ describe("imports", ({test, testSkip}) => {
   /* Misc import tests */
   assertCompileError(
     "test_bad_import",
-    "{let x = (1, 2); import * from \"tlists\"; x}",
+    "{let x = (1, 2); include \"tlists\" as TLists; x}",
     "error",
   );
   assertFileRun("test_file_same_name", "list", "OK\n");
   assertSnapshot(
     "annotation_across_import",
-    "import TList, { Empty } from \"tlists\"; let foo : TList.TList<String> = Empty; foo",
+    "include \"tlists\" as TLists; from TLists use { type TList }; let foo : TLists.TList<String> = Empty; foo",
   );
   assertFileRun("relative_import_linking", "relativeImportLinking", "2\n2\n");
   assertFileCompileError(
     "import_broken",
     "brokenImports/main",
-    "./broken.gr\", line 2, characters 16-23",
+    "./broken.gr\", line 4, characters 8-15",
   );
 });

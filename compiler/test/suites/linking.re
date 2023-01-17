@@ -20,7 +20,7 @@ describe("linking", ({test, testSkip}) => {
   );
   assertRun(
     "link_import",
-    {|import List from "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
+    {|include "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
   assertRun("link_issue_994_no_generated_code", {|0|}, "");
@@ -31,7 +31,7 @@ describe("linking", ({test, testSkip}) => {
   );
   assertRun(
     "link_issue_994_exported_type",
-    {|export record Foo { foo: String }|},
+    {|expose record Foo { foo: String }|},
     "",
   );
   // --wasi-polyfill
@@ -52,7 +52,7 @@ describe("linking", ({test, testSkip}) => {
   test("no_start_section", ({expect}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
-    ignore @@ compile(name, {|print("Hello, world!")|});
+    ignore @@ compile(name, {|module Test; print("Hello, world!")|});
     let ic = open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
@@ -89,7 +89,7 @@ describe("linking", ({test, testSkip}) => {
     compile(
       ~config_fn=() => {Grain_utils.Config.use_start_section := true},
       name,
-      {|print("Hello, world!")|},
+      {|module Test; print("Hello, world!")|},
     );
     let ic = open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);

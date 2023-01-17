@@ -171,7 +171,7 @@ describe("functions", ({test, testSkip}) => {
   assertSnapshot(
     "func_recursive_closure",
     {|let makeAdder = (n) => (x) => x + n
-export let truc = () => {
+expose let truc = () => {
   let rec foo = (x) => {
     let baz = makeAdder(1);
     let bar = y => foo(0) + baz(1);
