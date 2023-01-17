@@ -923,7 +923,7 @@ let rec tree_of_type_decl = (id, decl) => {
 
 and tree_of_constructor_arguments =
   fun
-  | TConstrTuple(l) => tree_of_typlist(false, l)
+  | TConstrTuple(l) => [Otyp_tuple(tree_of_typlist(false, l))]
   | TConstrRecord(l) => [Otyp_record(List.map(tree_of_label, l))]
   | TConstrSingleton => []
 
