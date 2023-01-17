@@ -1,4 +1,6 @@
-import Random from "sys/random"
+module RandomTest
+
+include "sys/random"
 
 // Just smoke tests, there's a miniscule chance these could fail
 

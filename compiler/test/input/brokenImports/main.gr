@@ -1,3 +1,0 @@
-import Broken from "./broken"
-
-print(Broken.min(2, 3))

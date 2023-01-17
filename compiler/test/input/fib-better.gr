@@ -1,11 +1,15 @@
+module FibBetter
+
 let rec fib_help = (n, cur, next) => {
   if (n == 0) {
     cur
   } else {
     fib_help(n - 1, next, cur + next)
   }
-};
+}
 
-let fib = (n) => { fib_help(n, 0, 1) };
+let fib = n => {
+  fib_help(n, 0, 1)
+}
 
 print(fib(25))

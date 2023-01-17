@@ -1,7 +1,9 @@
-import Bytes from "bytes"
-import Int32 from "int32"
-import Array from "array"
-import String from "string"
+module BytesTest
+
+include "bytes"
+include "int32"
+include "array"
+include "string"
 
 // Bytes.empty
 assert Bytes.empty == Bytes.empty

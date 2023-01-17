@@ -18,7 +18,7 @@ Utilities for working with strings.
 </details>
 
 ```grain
-import String from "string"
+include "string"
 ```
 
 ## Types

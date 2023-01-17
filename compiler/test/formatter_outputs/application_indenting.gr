@@ -1,3 +1,5 @@
+module ApplicationIndenting
+
 let flagsToWasmVal = (flag, i) => {
   let riiiiiiightsInheriting = Module64.load(structPtr, 16n)
   (riiiiiiightsInheriting &

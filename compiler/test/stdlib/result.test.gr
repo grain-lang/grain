@@ -1,4 +1,6 @@
-import Result from "result"
+module ResultTest
+
+include "result"
 
 // isOk
 assert Result.isOk(Ok(1)) == true

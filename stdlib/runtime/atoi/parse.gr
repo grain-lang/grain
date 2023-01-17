@@ -1,6 +1,9 @@
 // TODO(#1050): Remove dependency on Pervasives once Option/Result types are imbedded in the compiler
 
-import WasmI32, {
+module Parse
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
   add as (+),
   sub as (-),
   gtU as (>),
@@ -10,15 +13,16 @@ import WasmI32, {
   eq as (==),
   ne as (!=),
   and as (&),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
-import BI from "runtime/bigint"
-import { reducedInteger } from "runtime/numbers"
+}
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/unsafe/tags"
+include "runtime/bigint" as BI
+include "runtime/numbers"
+from Numbers use { reducedInteger }
 
 @unsafe
-export let parseInt = (string: String, radix: Number) => {
+provide let parseInt = (string: String, radix: Number) => {
   let _CHAR_0 = 0x30n
   let _CHAR_B = 0x42n
   let _CHAR_b = 0x62n

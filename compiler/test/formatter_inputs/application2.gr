@@ -1,3 +1,5 @@
+module Application2
+
 init(position, index => {filtered[index]});
 
 forEach(

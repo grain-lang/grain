@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Number from "number"
+include "number"
 ```
 
 ## Constants

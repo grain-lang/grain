@@ -1,5 +1,7 @@
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Conv from "runtime/unsafe/conv"
+module WasmI32Test
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/conv"
 
 @unsafe
 let test = () => {

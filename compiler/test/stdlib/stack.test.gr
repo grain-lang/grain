@@ -1,4 +1,6 @@
-import Stack from "stack"
+module StackTest
+
+include "stack"
 
 let empty = Stack.make()
 // 1 <- 2 <- 3

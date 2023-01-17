@@ -1,7 +1,9 @@
-import String from "string"
-import Char from "char"
-import Array from "array"
-import Bytes from "bytes"
+module StringTest
+
+include "string"
+include "char"
+include "array"
+include "bytes"
 
 let fox = "The quick brown fox jumps over the lazy dog."
 let emojis = "we found a path🚀 to greatness🏅but the grind never quits😤💪🏼 keep milling💯🔥😈"

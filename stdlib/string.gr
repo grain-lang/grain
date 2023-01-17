@@ -1,16 +1,20 @@
 /**
  * @module String: Utilities for working with strings.
- * @example import String from "string"
+ * @example include "string"
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `strings`
  * @history v0.2.0: Renamed to `string`
  */
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import Exception from "runtime/exception"
-import Conv from "runtime/unsafe/conv"
-import {
+
+module String
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/memory"
+include "runtime/exception"
+include "runtime/unsafe/conv"
+include "runtime/dataStructures"
+from DataStructures use {
   untagSimpleNumber,
   tagSimpleNumber,
   tagChar,
@@ -18,7 +22,7 @@ import {
   allocateArray,
   allocateString,
   allocateBytes,
-} from "runtime/dataStructures"
+}
 
 /**
  * @section Types: Type declarations included in the String module.
@@ -27,7 +31,7 @@ import {
 /**
  * Byte encodings
  */
-export enum Encoding {
+provide enum Encoding {
   UTF8,
   UTF16_BE,
   UTF16_LE,
@@ -52,7 +56,7 @@ exception MalformedUnicode
  *
  * @since v0.2.0
  */
-export let concat = (++)
+provide let concat = (++)
 
 /**
  * Returns the character length of the input string.
@@ -65,7 +69,7 @@ export let concat = (++)
  * @since v0.1.0
  */
 @unsafe
-export let length = (string: String) => {
+provide let length = (string: String) => {
   let string = WasmI32.fromGrain(string)
   let size = WasmI32.load(string, 4n)
 
@@ -95,7 +99,7 @@ export let length = (string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let byteLength = (string: String) => {
+provide let byteLength = (string: String) => {
   let string = WasmI32.fromGrain(string)
   Conv.wasmI32ToNumber(WasmI32.load(string, 4n))
 }
@@ -112,7 +116,7 @@ export let byteLength = (string: String) => {
  * @since v0.3.0
  */
 @unsafe
-export let indexOf = (search: String, string: String) => {
+provide let indexOf = (search: String, string: String) => {
   let search = WasmI32.fromGrain(search)
   let string = WasmI32.fromGrain(string)
 
@@ -166,7 +170,7 @@ export let indexOf = (search: String, string: String) => {
  * @since v0.5.3
  */
 @unsafe
-export let lastIndexOf = (search: String, string: String) => {
+provide let lastIndexOf = (search: String, string: String) => {
   // The last possible index in the string given the length of the search
   let lastIndex = length(string) - length(search)
 
@@ -314,7 +318,7 @@ let charAtHelp = (position, string: String) => {
  * @since v0.5.3
  */
 @unsafe
-export let charCodeAt = (position, string: String) => {
+provide let charCodeAt = (position, string: String) => {
   tagSimpleNumber(charAtHelp(position, string))
 }
 
@@ -330,7 +334,7 @@ export let charCodeAt = (position, string: String) => {
  * @since v0.4.0
  */
 @unsafe
-export let charAt = (position, string: String) => {
+provide let charAt = (position, string: String) => {
   tagChar(charAtHelp(position, string))
 }
 
@@ -392,7 +396,7 @@ let explodeHelp = (s: String, chars) => {
  * @since v0.3.0
  */
 @unsafe
-export let explode = string => {
+provide let explode = string => {
   WasmI32.toGrain(explodeHelp(string, true)): Array<Char>
 }
 
@@ -407,7 +411,7 @@ export let explode = string => {
  * @since v0.3.0
  */
 @unsafe
-export let implode = (arr: Array<Char>) => {
+provide let implode = (arr: Array<Char>) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (*) = WasmI32.mul
@@ -489,7 +493,7 @@ primitive arrayLength: Array<a> -> Number = "@array.length"
  *
  * @since v0.4.5
  */
-export let reverse = string => {
+provide let reverse = string => {
   let mut arr = explode(string)
   let len = arrayLength(arr)
   let halfLen = len / 2
@@ -513,7 +517,7 @@ export let reverse = string => {
  * @example String.split(" ", "Hello world") == [> "Hello", "world"]
  */
 @unsafe
-export let split = (separator: String, string: String) => {
+provide let split = (separator: String, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -607,7 +611,7 @@ export let split = (separator: String, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let slice = (start: Number, to: Number, string: String) => {
+provide let slice = (start: Number, to: Number, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (==) = WasmI32.eq
@@ -699,7 +703,7 @@ export let slice = (start: Number, to: Number, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let contains = (search: String, string: String) => {
+provide let contains = (search: String, string: String) => {
   // "Not So Naive" string search algorithm
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
@@ -789,7 +793,7 @@ export let contains = (search: String, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let startsWith = (search: String, string: String) => {
+provide let startsWith = (search: String, string: String) => {
   let (+) = WasmI32.add
   let (>) = WasmI32.gtU
   let (==) = WasmI32.eq
@@ -825,7 +829,7 @@ export let startsWith = (search: String, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let endsWith = (search: String, string: String) => {
+provide let endsWith = (search: String, string: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (>) = WasmI32.gtU
@@ -863,7 +867,7 @@ export let endsWith = (search: String, string: String) => {
  * @since v0.5.4
  */
 @unsafe
-export let replaceFirst =
+provide let replaceFirst =
   (
     searchPattern: String,
     replacement: String,
@@ -928,7 +932,7 @@ export let replaceFirst =
  * @since v0.5.4
  */
 @unsafe
-export let replaceLast =
+provide let replaceLast =
   (
     searchPattern: String,
     replacement: String,
@@ -995,7 +999,7 @@ export let replaceLast =
  * @since v0.5.4
  */
 @unsafe
-export let replaceAll =
+provide let replaceAll =
   (
     searchPattern: String,
     replacement: String,
@@ -1415,7 +1419,7 @@ let encodeAtHelp =
  *
  * @since v0.4.0
  */
-export let encodeAt = (string, encoding, dest, destPos) => {
+provide let encodeAt = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, false, dest, destPos)
 }
 
@@ -1430,7 +1434,7 @@ export let encodeAt = (string, encoding, dest, destPos) => {
  *
  * @since v0.4.0
  */
-export let encodeAtWithBom = (string, encoding, dest, destPos) => {
+provide let encodeAtWithBom = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, true, dest, destPos)
 }
 
@@ -1462,7 +1466,7 @@ let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
  *
  * @since v0.4.0
  */
-export let encode = (string: String, encoding: Encoding) => {
+provide let encode = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, false)
 }
 
@@ -1475,7 +1479,7 @@ export let encode = (string: String, encoding: Encoding) => {
  *
  * @since v0.4.0
  */
-export let encodeWithBom = (string: String, encoding: Encoding) => {
+provide let encodeWithBom = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, true)
 }
 
@@ -1889,7 +1893,7 @@ let decodeRangeHelp =
  *
  * @since v0.4.0
  */
-export let decodeRange =
+provide let decodeRange =
   (
     bytes: Bytes,
     encoding: Encoding,
@@ -1910,7 +1914,7 @@ export let decodeRange =
  *
  * @since v0.4.0
  */
-export let decodeRangeKeepBom =
+provide let decodeRangeKeepBom =
   (
     bytes: Bytes,
     encoding: Encoding,
@@ -1936,7 +1940,7 @@ let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
  *
  * @since v0.4.0
  */
-export let decode = (bytes: Bytes, encoding: Encoding) => {
+provide let decode = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, true)
 }
 
@@ -1949,7 +1953,7 @@ export let decode = (bytes: Bytes, encoding: Encoding) => {
  *
  * @since v0.4.0
  */
-export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
+provide let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, false)
 }
 
@@ -1964,7 +1968,7 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
  * @since v0.4.0
  */
 @unsafe
-export let forEachCodePoint = (fn: Number -> Void, str: String) => {
+provide let forEachCodePoint = (fn: Number -> Void, str: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -2022,7 +2026,7 @@ export let forEachCodePoint = (fn: Number -> Void, str: String) => {
  * @since v0.4.0
  */
 @unsafe
-export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
+provide let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
   let (>>>) = WasmI32.shrU
   let (-) = WasmI32.sub
   let (&) = WasmI32.and
@@ -2143,7 +2147,7 @@ let trimString = (str: String, fromEnd: Bool) => {
  *
  * @since v0.4.2
  */
-export let trimStart = (string: String) => trimString(string, false)
+provide let trimStart = (string: String) => trimString(string, false)
 /**
  * Trims the end of a string—removing any trailing whitespace characters.
  *
@@ -2154,7 +2158,7 @@ export let trimStart = (string: String) => trimString(string, false)
  *
  * @since v0.4.2
  */
-export let trimEnd = (string: String) => trimString(string, true)
+provide let trimEnd = (string: String) => trimString(string, true)
 /**
  * Trims a string—removing all leading and trailing whitespace characters.
  *
@@ -2165,4 +2169,4 @@ export let trimEnd = (string: String) => trimString(string, true)
  *
  * @since v0.4.2
  */
-export let trim = (string: String) => trimEnd(trimStart(string))
+provide let trim = (string: String) => trimEnd(trimStart(string))

@@ -1,3 +1,5 @@
+module EarlyReturn
+
 let earlyReturn = () => {
   if (true) return 5 else return 6
 

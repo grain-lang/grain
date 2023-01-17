@@ -1,3 +1,5 @@
+module Ignores
+
 let x= 5
 
 // formatter-ignore

@@ -476,11 +476,11 @@ type import = {
 
 [@deriving sexp]
 type export =
-  | FunctionExport({
+  | WasmFunctionExport({
       ex_function_name: string,
       ex_function_internal_name: string,
     })
-  | GlobalExport({
+  | WasmGlobalExport({
       ex_global_name: string,
       ex_global_internal_name: string,
     });

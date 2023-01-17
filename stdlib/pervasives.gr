@@ -1,19 +1,26 @@
+/* grainc-flags --no-pervasives */
+
 /**
  * @module Pervasives: This module is automatically imported into every Grain program. You can think of it as the global environment. Although it is automatically imported, it can still be imported manually.
  *
- * @example import Pervasives from "pervasives"
+ * @example include "pervasives"
  *
  * @since v0.1.0
  */
 
-import Exception from "runtime/exception"
-import Memory from "runtime/unsafe/memory"
-import WasmI32 from "runtime/unsafe/wasmi32"
+module Pervasives
 
-import { equal as (==) } from "runtime/equal"
-import { compare } from "runtime/compare"
+include "runtime/exception"
+include "runtime/unsafe/memory"
+include "runtime/unsafe/wasmi32"
 
-import {
+include "runtime/equal"
+from Equal use { equal as (==) }
+include "runtime/compare"
+from Compare use { compare }
+
+include "runtime/numbers"
+from Numbers use {
   incr,
   decr,
   (+),
@@ -32,8 +39,9 @@ import {
   (<<),
   (>>>),
   (>>),
-} from "runtime/numbers"
-import { toString, print, concat as (++) } from "runtime/string"
+}
+include "runtime/string"
+from String use { toString, print, concat as (++) }
 
 /**
  * @section Types: Type declarations included in the Pervasives module.
@@ -47,7 +55,7 @@ import { toString, print, concat as (++) } from "runtime/string"
  *
  * @since v0.1.0
  */
-export enum List<a> {
+provide enum List<a> {
   [],
   [...](a, List<a>),
 }
@@ -68,7 +76,7 @@ export enum List<a> {
  *
  * @since v0.1.0
  */
-export primitive (!): Bool -> Bool = "@not"
+provide primitive (!): Bool -> Bool = "@not"
 
 /**
  * Computes the logical AND (`&&`) of the given operands.
@@ -82,7 +90,7 @@ export primitive (!): Bool -> Bool = "@not"
  *
  * @since v0.1.0
  */
-export primitive (&&): (Bool, Bool) -> Bool = "@and"
+provide primitive (&&): (Bool, Bool) -> Bool = "@and"
 
 /**
  * Computes the logical OR `||` of the given operands.
@@ -96,7 +104,7 @@ export primitive (&&): (Bool, Bool) -> Bool = "@and"
  *
  * @since v0.1.0
  */
-export primitive (||): (Bool, Bool) -> Bool = "@or"
+provide primitive (||): (Bool, Bool) -> Bool = "@or"
 
 /**
  * @section Comparison operations: Infix functions for comparing values.
@@ -112,7 +120,7 @@ export primitive (||): (Bool, Bool) -> Bool = "@or"
  *
  * @since v0.1.0
  */
-export (==)
+provide { (==) }
 
 /**
  * Check that two values are **not** equal. This checks for structural equality,
@@ -124,7 +132,7 @@ export (==)
  *
  * @since v0.2.0
  */
-export let (!=): (a, a) -> Bool = (x, y) => !(x == y)
+provide let (!=): (a, a) -> Bool = (x, y) => !(x == y)
 
 /**
  * Checks that two values are physically equal.
@@ -136,7 +144,7 @@ export let (!=): (a, a) -> Bool = (x, y) => !(x == y)
  *
  * @since v0.1.0
  */
-export primitive (is): (a, a) -> Bool = "@is"
+provide primitive (is): (a, a) -> Bool = "@is"
 
 /**
  * Checks that two values are **not** physically equal.
@@ -148,7 +156,7 @@ export primitive (is): (a, a) -> Bool = "@is"
  *
  * @since v0.2.0
  */
-export let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
+provide let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
 
 /**
  * @section Number comparisons: Infix functions for comparing Number values.
@@ -163,7 +171,7 @@ export let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
  *
  * @since v0.1.0
  */
-export (<)
+provide { (<) }
 
 /**
  * Checks if the first operand is greater than the second operand.
@@ -174,7 +182,7 @@ export (<)
  *
  * @since v0.1.0
  */
-export (>)
+provide { (>) }
 
 /**
  * Checks if the first operand is less than or equal to the second operand.
@@ -185,7 +193,7 @@ export (>)
  *
  * @since v0.1.0
  */
-export (<=)
+provide { (<=) }
 
 /**
  * Checks if the first operand is greater than or equal to the second operand.
@@ -196,7 +204,7 @@ export (<=)
  *
  * @since v0.1.0
  */
-export (>=)
+provide { (>=) }
 
 /**
  * Compares the first argument to the second argument and produces an integer result.
@@ -209,7 +217,7 @@ export (>=)
  *
  * @since v0.5.3
  */
-export compare
+provide { compare }
 
 /**
  * @section Math operations: Infix functions for working with Number values.
@@ -224,7 +232,7 @@ export compare
  *
  * @since v0.1.0
  */
-export (+)
+provide { (+) }
 
 /**
  * Computes the difference of its operands.
@@ -235,7 +243,7 @@ export (+)
  *
  * @since v0.1.0
  */
-export (-)
+provide { (-) }
 
 /**
  * Computes the product of its operands.
@@ -246,7 +254,7 @@ export (-)
  *
  * @since v0.1.0
  */
-export (*)
+provide { (*) }
 
 /**
  * Computes the quotient of its operands.
@@ -257,7 +265,7 @@ export (*)
  *
  * @since v0.1.0
  */
-export (/)
+provide { (/) }
 
 /**
  * Computes the remainder of the division of the first operand by the second.
@@ -269,7 +277,7 @@ export (/)
  *
  * @since v0.1.0
  */
-export (%)
+provide { (%) }
 
 /**
  * Increments the value by one.
@@ -279,7 +287,7 @@ export (%)
  *
  * @since v0.1.0
  */
-export incr
+provide { incr }
 
 /**
  * Decrements the value by one.
@@ -289,7 +297,7 @@ export incr
  *
  * @since v0.1.0
  */
-export decr
+provide { decr }
 
 /**
  * @section String operations: Infix functions for operating on String values.
@@ -306,7 +314,7 @@ export decr
  *
  * @since v0.2.0
  */
-export (++)
+provide { (++) }
 
 /**
  * @section Bitwise operations: Infix functions for operating on bits of Number values.
@@ -320,7 +328,7 @@ export (++)
  *
  * @since v0.2.0
  */
-export lnot
+provide { lnot }
 
 /**
  * Computes the bitwise AND (`&`) on the given operands.
@@ -333,7 +341,7 @@ export lnot
  * @history v0.2.0: Originally named `land`
  * @history v0.3.0: Renamed to `&`
  */
-export (&)
+provide { (&) }
 
 /**
  * Computes the bitwise OR (`|`) on the given operands.
@@ -346,7 +354,7 @@ export (&)
  * @history v0.2.0: Originally named `lor`
  * @history v0.3.0: Renamed to `|`
  */
-export (|)
+provide { (|) }
 
 /**
  * Computes the bitwise XOR (`^`) on the given operands.
@@ -360,7 +368,7 @@ export (|)
  * @history v0.2.0: Originally named `lxor`
  * @history v0.3.0: Renamed to `^`
  */
-export (^)
+provide { (^) }
 
 /**
  * Shifts the bits of the value left by the given number of bits.
@@ -373,7 +381,7 @@ export (^)
  * @history v0.2.0: Originally named `lsl`
  * @history v0.3.0: Renamed to `<<`
  */
-export (<<)
+provide { (<<) }
 
 /**
  * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -386,7 +394,7 @@ export (<<)
  * @history v0.2.0: Originally named `lsr`
  * @history v0.3.0: Renamed to `>>>`
  */
-export (>>>)
+provide { (>>>) }
 
 /**
  * Shifts the bits of the value right by the given number of bits.
@@ -399,13 +407,13 @@ export (>>>)
  * @history v0.2.0: Originally named `asr`
  * @history v0.3.0: Renamed to `>>`
  */
-export (>>)
+provide { (>>) }
 
 // Number coercions & conversions
 
 // TODO(#311): Commented until we nail down semantics
-// import foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
-// import foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
+// foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
+// foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
 /**
  * @section Printing: Functions that deal with printing.
@@ -413,25 +421,25 @@ export (>>)
 
 /**
  * Converts the given operand to a string.
- * Provides a better representation of data types if those types are exported from the module.
+ * Provides a better representation of data types if those types are provided from the module.
  *
  * @param value: The operand
  * @returns The operand, as a string
  *
  * @since v0.1.0
  */
-export toString
+provide { toString }
 
 /**
  * Prints the given operand to the console. Works for any type. Internally, calls `toString`
  * on the operand, so a better representation of data type will be printed if those types
- * are exported from the module.
+ * are provided from the module.
  *
  * @param value: The operand
  *
  * @since v0.1.0
  */
-export print
+provide { print }
 
 /**
  * @section Type helpers: Functions that help with typechecking.
@@ -444,7 +452,7 @@ export print
  *
  * @since v0.1.0
  */
-export primitive ignore: a -> Void = "@ignore"
+provide primitive ignore: a -> Void = "@ignore"
 
 /**
  * @section Assertions: Functions that raise if conditions are not met.
@@ -462,15 +470,15 @@ export primitive ignore: a -> Void = "@ignore"
  *
  * @since v0.1.0
  */
-export primitive assert: Bool -> Void = "@assert"
+provide primitive assert: Bool -> Void = "@assert"
 
 /**
  * @section Failures: Functions that throw an Exception unconditionally.
  */
 
 // Exceptions
-export exception Failure(String)
-export exception InvalidArgument(String)
+provide exception Failure(String)
+provide exception InvalidArgument(String)
 
 /**
  * Throw an exception. Currently, exceptions cannot be caught and will crash your program.
@@ -480,7 +488,7 @@ export exception InvalidArgument(String)
  *
  * @since v0.3.0
  */
-export primitive throw: Exception -> a = "@throw"
+provide primitive throw: Exception -> a = "@throw"
 
 /**
  * Unconditionally throw a `Failure` exception with a message.
@@ -489,7 +497,7 @@ export primitive throw: Exception -> a = "@throw"
  * @param message: The reason for the failure
  * @returns Anything and nothing—your program won't continue past a fail expression
  */
-export let fail: String -> a = msg => throw Failure(msg)
+provide let fail: String -> a = msg => throw Failure(msg)
 
 /**
  * @section Other: Other functions on values.
@@ -503,7 +511,7 @@ export let fail: String -> a = msg => throw Failure(msg)
  *
  * @since v0.2.0
  */
-export let identity = x => x
+provide let identity = x => x
 
 /**
  * @section Box operations: Functions for working with Box values.
@@ -519,7 +527,7 @@ export let identity = x => x
  *
  * @since v0.1.0
  */
-export primitive box: a -> Box<a> = "@box"
+provide primitive box: a -> Box<a> = "@box"
 
 /**
  * Retrieves the current value from a box.
@@ -529,7 +537,7 @@ export primitive box: a -> Box<a> = "@box"
  *
  * @since v0.1.0
  */
-export primitive unbox: Box<a> -> a = "@unbox"
+provide primitive unbox: Box<a> -> a = "@unbox"
 
 /**
  * @section List operations: Functions for working with List values.
@@ -546,7 +554,7 @@ export primitive unbox: Box<a> -> a = "@unbox"
  *
  * @since v0.4.0
  */
-export let cons = (a, b) =>
+provide let cons = (a, b) =>
   [a, ...b] // TODO(#802): Remove workaround after 802 is completed
 /**
  * The empty list syntax (`[]`) provided as a value.
@@ -555,7 +563,7 @@ export let cons = (a, b) =>
  *
  * @since v0.4.0
  */
-export let empty = [] // <- for parity with `cons`, but should be deleted as well
+provide let empty = [] // <- for parity with `cons`, but should be deleted as well
 
 // Setup exception printing
 @unsafe

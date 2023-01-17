@@ -60,9 +60,9 @@ and number_type =
 /** Marker for exported/nonexported let bindings */
 
 [@deriving (sexp, yojson)]
-type export_flag =
-  | Nonexported
-  | Exported;
+type provide_flag =
+  | NotProvided
+  | Provided;
 
 /** Marker for recursive/nonrecursive let bindings */
 

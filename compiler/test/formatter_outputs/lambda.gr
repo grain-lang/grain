@@ -1,3 +1,5 @@
+module Lambda
+
 x => {
   x + 1
 }

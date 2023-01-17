@@ -1,6 +1,8 @@
-import ImmutablePriorityQueue from "immutablepriorityqueue"
-import List from "list"
-import Array from "array"
+module ImmutablePriorityQueueTest
+
+include "immutablepriorityqueue"
+include "list"
+include "array"
 
 assert ImmutablePriorityQueue.make(compare) == ImmutablePriorityQueue.empty
 

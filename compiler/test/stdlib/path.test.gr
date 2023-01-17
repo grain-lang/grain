@@ -1,7 +1,9 @@
-import Path from "path"
-import Result from "result"
-import Option from "option"
-import List from "list"
+module PathTest
+
+include "path"
+include "result"
+include "option"
+include "list"
 
 let fs = Path.fromString
 

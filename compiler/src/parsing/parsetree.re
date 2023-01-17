@@ -14,7 +14,7 @@ type loc('a) =
     loc: Location.t,
   };
 
-type export_flag = Asttypes.export_flag = | Nonexported | Exported;
+type provide_flag = Asttypes.provide_flag = | NotProvided | Provided;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
@@ -422,6 +422,29 @@ type primn =
   | WasmMemoryCompare;
 
 [@deriving (sexp, yojson)]
+type use_items =
+  | PUseAll
+  | PUseItems(list(use_item))
+
+[@deriving (sexp, yojson)]
+and use_item =
+  | PUseType({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PUseModule({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PUseValue({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    });
+
+[@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
 
 /** Type for expressions (i.e. things which evaluate to something) */
@@ -463,6 +486,7 @@ and expression_desc =
   | PExpBreak
   | PExpReturn(option(expression))
   | PExpConstraint(expression, parsed_type)
+  | PExpUse(loc(Identifier.t), use_items)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
   | PExpConstruct(loc(Identifier.t), constructor_expression)
@@ -496,20 +520,14 @@ and match_branch = {
   pmb_loc: Location.t,
 };
 
-[@deriving (sexp, yojson)]
-type import_value =
-  | PImportModule(loc(Identifier.t))
-  | PImportAllExcept(list(loc(Identifier.t)))
-  | PImportValues(list((loc(Identifier.t), option(loc(Identifier.t)))));
-
-/** Type for import statements */
+/** Type for include statements */
 
 [@deriving (sexp, yojson)]
-type import_declaration = {
-  pimp_path: loc(string),
-  pimp_val: list(import_value),
+type include_declaration = {
+  pinc_path: loc(string),
+  pinc_alias: option(loc(string)),
   [@sexp_drop_if sexp_locs_disabled]
-  pimp_loc: Location.t,
+  pinc_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
@@ -524,39 +542,46 @@ type value_description = {
 };
 
 [@deriving (sexp, yojson)]
-type export_declaration_desc = {
-  pex_name: loc(string),
-  pex_alias: option(loc(string)),
-  [@sexp_drop_if sexp_locs_disabled]
-  pex_loc: Location.t,
+type provide_item =
+  | PProvideType({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PProvideModule({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PProvideValue({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    });
+
+[@deriving (sexp, yojson)]
+type module_declaration = {
+  pmod_name: loc(string),
+  pmod_stmts: list(toplevel_stmt),
+  pmod_loc: Location.t,
 }
-
-[@deriving (sexp, yojson)]
-and export_declaration =
-  | ExportData(export_declaration_desc)
-  | ExportValue(export_declaration_desc);
-
-[@deriving (sexp, yojson)]
-type export_except =
-  | ExportExceptData(loc(string))
-  | ExportExceptValue(loc(string));
 
 /** Statements which can exist at the top level */
 
 [@deriving (sexp, yojson)]
-type toplevel_stmt_desc =
-  | PTopImport(import_declaration)
-  | PTopForeign(export_flag, value_description)
-  | PTopPrimitive(export_flag, value_description)
-  | PTopData(list((export_flag, data_declaration)))
-  | PTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
+and toplevel_stmt_desc =
+  | PTopInclude(include_declaration)
+  | PTopForeign(provide_flag, value_description)
+  | PTopPrimitive(provide_flag, value_description)
+  | PTopModule(provide_flag, module_declaration)
+  | PTopData(list((provide_flag, data_declaration)))
+  | PTopLet(provide_flag, rec_flag, mut_flag, list(value_binding))
   | PTopExpr(expression)
-  | PTopException(export_flag, type_exception)
-  | PTopExport(list(export_declaration))
-  | PTopExportAll(list(export_except));
+  | PTopException(provide_flag, type_exception)
+  | PTopProvide(list(provide_item))
 
 [@deriving (sexp, yojson)]
-type toplevel_stmt = {
+and toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
@@ -582,6 +607,7 @@ type comment =
 
 [@deriving (sexp, yojson)]
 type parsed_program = {
+  module_name: loc(string),
   statements: list(toplevel_stmt),
   comments: list(comment),
   [@sexp_drop_if sexp_locs_disabled]

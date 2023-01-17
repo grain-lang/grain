@@ -1,9 +1,10 @@
-import List from "list"
+module Operators
+
+include "list"
 
 let myList = []
 
 List.reduce((&&), true, myList)
-
 
 let a = true
 let b = true && false

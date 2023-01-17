@@ -1,3 +1,4 @@
+module Chained
 
 
   let g = 7, // g represents the precision desired, p is the values of p[i] to plug into Lanczos' formula

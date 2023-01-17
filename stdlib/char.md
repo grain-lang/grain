@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Char from "char"
+include "char"
 ```
 
 ## Values

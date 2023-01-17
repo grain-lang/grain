@@ -1,3 +1,5 @@
+module Parens
+
 let x = y => y + 0
 
 x(3) + 4

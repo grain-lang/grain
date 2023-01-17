@@ -1,5 +1,7 @@
 /* grainc-flags --memory-base 0x110000 */
-import WasmI32 from "runtime/unsafe/wasmi32"
+module Asserts
+
+include "runtime/unsafe/wasmi32"
 
 primitive heapBase: WasmI32 = "@heap.base"
 primitive heapStart: WasmI32 = "@heap.start"

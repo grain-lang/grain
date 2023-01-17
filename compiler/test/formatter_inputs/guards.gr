@@ -1,3 +1,5 @@
+module Guards
+
 let myNumber = Some(99)
 let isTuesday = true
 

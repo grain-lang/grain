@@ -39,6 +39,8 @@ type error =
   | Unbound_label_with_alt(Location.t, string, string)
   | No_module_file(string, option(string))
   | Value_not_found_in_module(Location.t, string, string)
+  | Module_not_found_in_module(Location.t, string, string, option(string))
+  | Type_not_found_in_module(Location.t, string, string)
   | Illegal_value_name(Location.t, string)
   | Cyclic_dependencies(string, dependency_chain);
 
@@ -64,6 +66,7 @@ let find_value: (Path.t, t) => value_description;
 let find_type: (Path.t, t) => type_declaration;
 let find_type_descrs: (Path.t, t) => type_descriptions;
 let find_constructor: (Path.t, t) => constructor_description;
+let find_module_chain: (Path.t, t) => list(module_declaration);
 let find_module: (Path.t, option(string), t) => module_declaration;
 let find_modtype: (Path.t, t) => modtype_declaration;
 
@@ -83,6 +86,8 @@ let normalize_path: (option(Location.t), t, Path.t) => Path.t;
 let normalize_path_prefix: (option(Location.t), t, Path.t) => Path.t;
 
 let has_local_constraints: t => bool;
+
+let load_pers_struct: (~loc: Location.t, string) => string;
 
 /* By-identifier lookups */
 /** Looks up the value associated with the given identifier. */
@@ -169,29 +174,13 @@ let set_unit: ((string, string, compilation_mode)) => unit;
 let get_unit: unit => (string, string, compilation_mode);
 let is_runtime_mode: unit => bool;
 
-/* Insertion of all fields of a signature, relative to the given path.
-   Used to implement open. Returns None if the path refers to a functor,
-   not a structure. */
-let open_signature:
-  (
-    ~used_slot: ref(bool)=?,
-    ~toplevel: bool=?,
-    Path.t,
-    Identifier.t,
-    import_declaration,
-    t
-  ) =>
-  option(t);
-/* Similar to [open_signature], except that modules from the load path
-      have precedence over sub-modules of the opened module.
-      For instance, if opening a module [M] with a sub-module [X]:
-      - if the load path contains a [x.cmi] file, then resolving [X] in the
-        new environment yields the same result as resolving [X] in the
-        old environment
-      - otherwise, in the new environment [X] resolves to [M.X]
-   */
-let open_signature_of_initially_opened_module:
-  (~loc: Location.t=?, Path.t, option(string), t) => option(t);
+/* Insertion of a module */
+let include_module: (Identifier.t, include_declaration, t) => t;
+
+let use_partial_signature: (Path.t, list(Parsetree.use_item), t) => t;
+let use_full_signature: (Path.t, t) => t;
+
+let use_full_signature_of_initially_included_module: (Path.t, t) => t;
 
 /* Read, save a signature to/from a file */
 

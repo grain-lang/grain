@@ -1,2 +1,4 @@
 /* grainc-flags --compilation-mode=runtime */
-export foreign wasm debug: a -> Void from "console"
+module Debug
+
+provide foreign wasm debug: a -> Void from "console"

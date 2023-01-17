@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Map from "map"
+include "map"
 ```
 
 ## Types

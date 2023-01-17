@@ -1,4 +1,6 @@
-export enum Instructions { // brace trailer
+module Enums
+
+provide enum Instructions { // brace trailer
   // leading
   MoveNorth(Number), // north
   // below north
@@ -13,7 +15,7 @@ export enum Instructions { // brace trailer
   //trailing
 }
 
-export enum Ship {
+provide enum Ship {
   // east/west, north/south, facing degrees
   Ship(Number, Number, Number),
 }

@@ -1310,63 +1310,82 @@ let transl_signature = (~functions, ~imports, signature) => {
       },
     imports.specs,
   );
-  let sign =
-    List.map(
-      fun
-      | TSigValue(vid, {val_repr, val_internalpath} as vd) => {
-          let id =
-            switch (val_internalpath) {
-            | PIdent(id) => id
-            | PExternal(_) =>
-              switch (Path_tbl.find_opt(imports.path_map, val_internalpath)) {
-              | Some(id) => id
-              | None =>
-                failwith(
-                  "Impossible: path to import not found "
-                  ++ Path.name(val_internalpath),
-                )
-              }
-            };
+  let rec process_item = (~prefix="", item) => {
+    switch (item) {
+    | TSigValue(vid, {val_repr, val_internalpath} as vd) =>
+      let id =
+        switch (val_internalpath) {
+        | PIdent(id) => id
+        | PExternal(_) =>
+          switch (Path_tbl.find_opt(imports.path_map, val_internalpath)) {
+          | Some(id) => id
+          | None =>
+            failwith(
+              "Impossible: path to import not found "
+              ++ Path.name(val_internalpath),
+            )
+          }
+        };
+      exports :=
+        [
+          WasmGlobalExport({
+            ex_global_name: prefix ++ Ident.name(vid),
+            ex_global_internal_name: Ident.unique_name(id),
+          }),
+          ...exports^,
+        ];
+      switch (val_repr) {
+      | ReprFunction(args, rets, _) =>
+        switch (Ident_tbl.find_opt(func_map, id)) {
+        | Some(internal_name) =>
+          let external_name = Ident.name(vid);
           exports :=
             [
-              GlobalExport({
-                ex_global_name: Ident.name(vid),
-                ex_global_internal_name: Ident.unique_name(id),
+              WasmFunctionExport({
+                ex_function_name: prefix ++ external_name,
+                ex_function_internal_name: internal_name,
               }),
               ...exports^,
             ];
-          switch (val_repr) {
-          | ReprFunction(args, rets, _) =>
-            switch (Ident_tbl.find_opt(func_map, id)) {
-            | Some(internal_name) =>
-              let external_name = Ident.name(vid);
-              exports :=
-                [
-                  FunctionExport({
-                    ex_function_name: external_name,
-                    ex_function_internal_name: internal_name,
-                  }),
-                  ...exports^,
-                ];
-              TSigValue(
-                vid,
-                {
-                  ...vd,
-                  val_repr: ReprFunction(args, rets, Direct(external_name)),
-                },
-              );
-            | _ =>
-              TSigValue(
-                vid,
-                {...vd, val_repr: ReprFunction(args, rets, Indirect)},
-              )
-            }
-          | ReprValue(_) => TSigValue(vid, vd)
-          };
+          TSigValue(
+            vid,
+            {
+              ...vd,
+              val_repr: ReprFunction(args, rets, Direct(external_name)),
+            },
+          );
+        | _ =>
+          TSigValue(
+            vid,
+            {...vd, val_repr: ReprFunction(args, rets, Indirect)},
+          )
         }
-      | _ as item => item,
-      signature.Cmi_format.cmi_sign,
-    );
+      | ReprValue(_) => TSigValue(vid, vd)
+      };
+    | TSigModule(tid, decl, rs) =>
+      let decl =
+        switch (decl.md_type) {
+        | TModIdent(_)
+        | TModAlias(_) => decl
+        | TModSignature(_) when Option.is_some(decl.md_filepath) => decl
+        | TModSignature(signature) => {
+            ...decl,
+            md_type:
+              TModSignature(
+                List.map(
+                  process_item(
+                    ~prefix=Printf.sprintf("%s%s.", prefix, Ident.name(tid)),
+                  ),
+                  signature,
+                ),
+              ),
+          }
+        };
+      TSigModule(tid, decl, rs);
+    | _ as item => item
+    };
+  };
+  let sign = List.map(process_item, signature.Cmi_format.cmi_sign);
   ({...signature, cmi_sign: sign}, exports^);
 };
 

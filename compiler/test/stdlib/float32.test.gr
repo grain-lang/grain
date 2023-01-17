@@ -1,4 +1,7 @@
-import * from "float32"
+module Float32Test
+
+include "float32"
+from Float32 use *
 
 // Constants Test
 // smoke test:

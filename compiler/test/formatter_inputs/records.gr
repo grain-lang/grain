@@ -1,4 +1,6 @@
-import Set from "set"
+module Records
+
+include "set"
 
 record Rec {foo: Number, bar: Number}
 let x = {foo: 4, bar: 9}

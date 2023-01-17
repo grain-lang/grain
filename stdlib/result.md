@@ -13,7 +13,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Result from "result"
+include "result"
 ```
 
 ```grain

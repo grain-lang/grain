@@ -1,3 +1,5 @@
+module DataDocs
+
 enum EventType {
   Enter,
   Exit,

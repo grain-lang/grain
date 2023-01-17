@@ -83,5 +83,5 @@ strings › string3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 239
+ ;; custom section \"cmi\", size 236
 )

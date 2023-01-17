@@ -67,7 +67,7 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -112,7 +112,7 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -168,7 +168,7 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -224,7 +224,7 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -276,7 +276,7 @@ lists › list_spread
        )
        (i32.store offset=8
         (local.get $0)
-        (i32.const 2651)
+        (i32.const 2627)
        )
        (i32.store offset=12
         (local.get $0)
@@ -334,5 +334,5 @@ lists › list_spread
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 243
+ ;; custom section \"cmi\", size 236
 )

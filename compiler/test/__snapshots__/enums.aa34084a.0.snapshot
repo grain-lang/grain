@@ -50,7 +50,7 @@ enums › adt_trailing
       )
       (i64.store offset=24
        (local.get $0)
-       (i64.const 103079216233)
+       (i64.const 103079216221)
       )
       (i64.store offset=32
        (local.get $0)
@@ -131,7 +131,7 @@ enums › adt_trailing
        )
        (i32.store offset=8
         (local.get $0)
-        (i32.const 2259)
+        (i32.const 2235)
        )
        (i32.store offset=12
         (local.get $0)
@@ -154,5 +154,5 @@ enums › adt_trailing
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 498
+ ;; custom section \"cmi\", size 490
 )

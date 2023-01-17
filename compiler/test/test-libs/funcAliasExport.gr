@@ -1,3 +1,0 @@
-export type FnType = () -> String
-
-export let function: FnType = () => "abc"

@@ -1,3 +1,5 @@
+module WhileLoops
+
 let mut i = 0
 let size = 10
 

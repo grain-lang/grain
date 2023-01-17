@@ -512,5 +512,5 @@ pattern matching › alias_match_5
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 245
+ ;; custom section \"cmi\", size 236
 )

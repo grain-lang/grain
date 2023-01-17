@@ -267,7 +267,7 @@ module AExp = {
     mk(~loc?, ~env?, ~alloc_type=e.comp_allocation_type, AEComp(e));
 };
 
-module Imp = {
+module Inc = {
   let mk = (use_id, d, s, e) => {
     imp_use_id: use_id,
     imp_desc: d,

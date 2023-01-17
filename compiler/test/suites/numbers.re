@@ -65,12 +65,12 @@ describe("numbers", ({test, testSkip}) => {
   // equality checks
   assertRun(
     "nan_equality1",
-    {|import Float32 from "float32"; print(Float32.div(0.0f, 0.0f) == Float32.div(0.0f, 0.0f))|},
+    {|include "float32"; print(Float32.div(0.0f, 0.0f) == Float32.div(0.0f, 0.0f))|},
     "false\n",
   );
   assertRun(
     "nan_equality2",
-    {|import Float64 from "float64"; print(Float64.div(0.0d, 0.0d) == Float64.div(0.0d, 0.0d))|},
+    {|include "float64"; print(Float64.div(0.0d, 0.0d) == Float64.div(0.0d, 0.0d))|},
     "false\n",
   );
   assertRun("nan_equality3", {|print(0.0 / 0.0 == 0.0 / 0.0)|}, "false\n");

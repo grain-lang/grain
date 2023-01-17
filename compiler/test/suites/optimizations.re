@@ -33,7 +33,10 @@ describe("optimizations", ({test, testSkip}) => {
             open Grain_middle_end;
             let final_anf =
               Anf_utils.clear_locations @@
-              compile_string_to_final_anf(outfile, program_str);
+              compile_string_to_final_anf(
+                outfile,
+                "module Test; " ++ program_str,
+              );
             let saved_disabled = Grain_typed.Ident.disable_stamps^;
             let (result, expected) =
               try(
@@ -211,7 +214,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertAnf(
     "test_local_mutations1",
-    "export let foo = () => {let mut x = 5; x = 6}",
+    "provide let foo = () => {let mut x = 5; x = 6}",
     {
       open Grain_typed;
       let foo = Ident.create("foo");
@@ -262,7 +265,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertAnf(
     "test_no_local_mutation_optimization_of_closure_scope_mut",
-    "/* grainc-flags --experimental-wasm-tail-call */ export let bar = () => { let mut x = 5; let foo = () => x; foo() }",
+    "/* grainc-flags --experimental-wasm-tail-call */ provide let bar = () => { let mut x = 5; let foo = () => x; foo() }",
     {
       open Grain_typed;
       let x = Ident.create("x");
@@ -418,10 +421,10 @@ describe("optimizations", ({test, testSkip}) => {
     ~config_fn=() => {Grain_utils.Config.experimental_tail_call := true},
     {|
       /* grainc-flags --no-gc */
-      import Memory from "runtime/unsafe/memory"
-      import WasmI32 from "runtime/unsafe/wasmi32"
+      include "runtime/unsafe/memory"
+      include "runtime/unsafe/wasmi32"
       @disableGC
-      export let foo = (x, y, z) => {
+      provide let foo = (x, y, z) => {
         Memory.incRef(WasmI32.fromGrain((+)))
         Memory.incRef(WasmI32.fromGrain((+)))
         // x, y, and z will get decRef'd by `+`
@@ -486,9 +489,9 @@ describe("optimizations", ({test, testSkip}) => {
     "test_no_bulk_memory_calls",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
     {|
-      import Memory from "runtime/unsafe/memory"
+      include "runtime/unsafe/memory"
       @disableGC
-      export let foo = () => {
+      provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
         Memory.copy(0n, 0n, 0n)
       }
@@ -569,9 +572,9 @@ describe("optimizations", ({test, testSkip}) => {
     "test_memory_fill_calls_replaced",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := true},
     {|
-      import Memory from "runtime/unsafe/memory"
+      include "runtime/unsafe/memory"
       @disableGC
-      export let foo = () => {
+      provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
         Memory.copy(0n, 0n, 0n)
       }

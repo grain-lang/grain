@@ -39,13 +39,19 @@ describe("strings", ({test, testSkip}) => {
     Top.expr(~loc?) @@ Exp.constant(~loc?, Const.string(s));
   assertParse(
     "string_parse_dqs1",
-    "\"foo\"",
-    {statements: [str("foo")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"foo\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("foo")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   assertParse(
     "string_parse_dqs2",
-    "\"bar\\nbaz\"",
+    "module Test; \"bar\\nbaz\"",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [str("bar\nbaz")],
       comments: [],
       prog_loc: Location.dummy_loc,
@@ -53,8 +59,9 @@ describe("strings", ({test, testSkip}) => {
   );
   assertParse(
     "string_parse_sqs1",
-    "\"foobar\"",
+    "module Test; \"foobar\"",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [str("foobar")],
       comments: [],
       prog_loc: Location.dummy_loc,
@@ -62,76 +69,126 @@ describe("strings", ({test, testSkip}) => {
   );
   assertParse(
     "string_parse_sqs2",
-    "\"bar\\u{41}\"",
-    {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"bar\\u{41}\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("barA")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   assertParse(
     "string_parse_sqs3",
-    "\"bar\\x41\"",
-    {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"bar\\x41\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("barA")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   assertParse(
     "string_parse_sqs4",
-    "\"bar\\101\"",
-    {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"bar\\101\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("barA")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   assertParse(
     "string_parse_sqs5",
-    "\"bar\\u0041\"",
-    {statements: [str("barA")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"bar\\u0041\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("barA")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   assertParse(
     "string_parse_emoji_escape",
-    "\"😂\"",
-    {statements: [str("😂")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"😂\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("😂")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   assertParse(
     "string_parse_emoji_literal",
-    "\"💯\"",
-    {statements: [str("💯")], comments: [], prog_loc: Location.dummy_loc},
+    "module Test; \"💯\"",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [str("💯")],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
   );
   /* String parse locations */
   assertParseWithLocs(
     "string_loc_single_line",
-    "\"foo\"",
+    "module Test\n\"foo\"",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_loc_single_line", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
         str(
-          ~loc=mk_loc("string_loc_single_line", (1, 0, 0), (1, 5, 0)),
+          ~loc=mk_loc("string_loc_single_line", (2, 12, 12), (2, 17, 12)),
           "foo",
         ),
       ],
       comments: [],
-      prog_loc: mk_loc("string_loc_single_line", (1, 0, 0), (1, 5, 0)),
+      prog_loc: mk_loc("string_loc_single_line", (1, 0, 0), (2, 17, 12)),
     },
   );
   assertParseWithLocs(
     "string_loc_multi_line",
-    "\"foo\nbar\nbaz\nqux\nquux\"",
+    "module Test\n\"foo\nbar\nbaz\nqux\nquux\"",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_loc_multi_line", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
         str(
-          ~loc=mk_loc("string_loc_multi_line", (1, 0, 0), (5, 22, 17)),
+          ~loc=mk_loc("string_loc_multi_line", (2, 12, 12), (6, 34, 29)),
           "foo\nbar\nbaz\nqux\nquux",
         ),
       ],
       comments: [],
-      prog_loc: mk_loc("string_loc_multi_line", (1, 0, 0), (5, 22, 17)),
+      prog_loc: mk_loc("string_loc_multi_line", (1, 0, 0), (6, 34, 29)),
     },
   );
   assertParseWithLocs(
     "string_loc_single_line_emoji",
-    "\"💯\"",
+    "module Test\n\"💯\"",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("string_loc_single_line_emoji", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
         str(
-          ~loc=mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 3, 0)),
+          ~loc=
+            mk_loc(
+              "string_loc_single_line_emoji",
+              (2, 12, 12),
+              (2, 15, 12),
+            ),
           "💯",
         ),
       ],
       comments: [],
       prog_loc:
-        mk_loc("string_loc_single_line_emoji", (1, 0, 0), (1, 3, 0)),
+        mk_loc("string_loc_single_line_emoji", (1, 0, 0), (2, 15, 12)),
     },
   );
   assertSnapshot("string1", "\"foo\"");
@@ -206,32 +263,32 @@ bar", 1))|},
   );
   assertRun(
     "string_float1",
-    {|import * from "float32"; print(div(0.0f, 0.0f))|},
+    {|include "float32"; from Float32 use *; print(div(0.0f, 0.0f))|},
     "NaN\n",
   );
   assertRun(
     "string_float2",
-    {|import * from "float32"; print(div(1.0f, 0.0f))|},
+    {|include "float32"; from Float32 use *; print(div(1.0f, 0.0f))|},
     "Infinity\n",
   );
   assertRun(
     "string_float3",
-    {|import * from "float32"; print(div(-1.0f, 0.0f))|},
+    {|include "float32"; from Float32 use *; print(div(-1.0f, 0.0f))|},
     "-Infinity\n",
   );
   assertRun(
     "string_float4",
-    {|import * from "float64"; print(div(0.0d, 0.0d))|},
+    {|include "float64"; from Float64 use *; print(div(0.0d, 0.0d))|},
     "NaN\n",
   );
   assertRun(
     "string_float5",
-    {|import * from "float64"; print(div(1.0d, 0.0d))|},
+    {|include "float64"; from Float64 use *; print(div(1.0d, 0.0d))|},
     "Infinity\n",
   );
   assertRun(
     "string_float6",
-    {|import * from "float64"; print(div(-1.0d, 0.0d))|},
+    {|include "float64"; from Float64 use *; print(div(-1.0d, 0.0d))|},
     "-Infinity\n",
   );
 });

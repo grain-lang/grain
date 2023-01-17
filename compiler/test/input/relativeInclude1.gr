@@ -1,0 +1,5 @@
+module RelativeInclude1
+
+include "../test-libs/provideAll"
+from ProvideAll use *
+x

@@ -1,16 +1,19 @@
 /**
  * @module Hash: Utilities for hashing any value.
- * @example import Hash from "hash"
+ * @example include "hash"
  *
  * @since v0.1.0
  */
+
+module Hash
 
 /**
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
 
-import WasmI32, {
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
   add as (+),
   sub as (-),
   mul as (*),
@@ -24,16 +27,18 @@ import WasmI32, {
   ne as (!=),
   gtU as (>),
   ltU as (<),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Tags from "runtime/unsafe/tags"
+}
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/tags"
 
-import { tagSimpleNumber } from "runtime/dataStructures"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
-import BI from "runtime/bigint"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber }
+include "runtime/numbers"
+from Numbers use { coerceNumberToWasmI32 }
+include "runtime/bigint" as BI
 
-import Random from "sys/random"
-import Result from "result"
+include "sys/random"
+include "result"
 
 @unsafe
 let seed = {
@@ -236,7 +241,7 @@ let rec hashOne = (val, depth) => {
  * @since v0.1.0
  */
 @unsafe
-export let hash = anything => {
+provide let hash = anything => {
   h = seed
 
   hashOne(WasmI32.fromGrain(anything), 0n)

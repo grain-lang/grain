@@ -1,0 +1,21 @@
+module NestedModules
+
+include "list" as List
+include "./modules/provideIncludedModule" as Deep
+
+module Foo {
+  provide let foo = "hello from foo"
+  provide module Bar {
+    provide let bar = "hello from bar"
+    provide { List }
+  }
+}
+
+print(Foo.foo)
+print(Foo.Bar.bar)
+print(Foo.Bar.List.map(x => x + 1, [1, 2, 3]))
+print(Deep.Qux.val)
+print(Deep.Qux.Quux.Array.map(x => x + 1, [> 1, 2, 3]))
+print(Deep.Smoption.isSome(None))
+
+print("foo")

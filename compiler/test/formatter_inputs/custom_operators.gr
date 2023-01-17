@@ -1,3 +1,5 @@
+module CustomOperators
+
 let (+++) = (*)
 let (***) = (+)
 

@@ -18,7 +18,7 @@ Utilities for working with lists.
 </details>
 
 ```grain
-import List from "list"
+include "list"
 ```
 
 ## Values

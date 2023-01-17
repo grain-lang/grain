@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Option from "option"
+include "option"
 ```
 
 ```grain

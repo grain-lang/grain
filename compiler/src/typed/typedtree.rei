@@ -478,13 +478,13 @@ and match_branch = {
 };
 
 [@deriving sexp]
-type import_declaration = {
-  timp_path: Path.t,
-  timp_loc: Location.t,
+type include_declaration = {
+  tinc_path: Path.t,
+  tinc_loc: Location.t,
 };
 
 [@deriving sexp]
-type export_declaration = {
+type provide_declaration = {
   tex_id: Ident.t,
   tex_path: Path.t,
   [@sexp_drop_if sexp_locs_disabled]
@@ -503,17 +503,27 @@ type value_description = {
   tvd_loc: Location.t,
 };
 
-type toplevel_stmt_desc =
+[@deriving sexp]
+type module_declaration = {
+  tmod_id: Ident.t,
+  tmod_decl: Types.module_declaration,
+  tmod_statements: list(toplevel_stmt),
+  [@sexp_drop_if sexp_locs_disabled]
+  tmod_loc: Location.t,
+}
+
+and toplevel_stmt_desc =
   | TTopForeign(value_description)
-  | TTopImport(import_declaration)
-  | TTopExport(list(export_declaration))
+  | TTopInclude(include_declaration)
+  | TTopProvide(list(provide_declaration))
   | TTopData(list(data_declaration))
+  | TTopModule(module_declaration)
   | TTopLet(rec_flag, mut_flag, list(value_binding))
   | TTopException(extension_constructor)
-  | TTopExpr(expression);
+  | TTopExpr(expression)
 
 [@deriving sexp]
-type toplevel_stmt = {
+and toplevel_stmt = {
   ttop_desc: toplevel_stmt_desc,
   ttop_attributes: attributes,
   ttop_loc: Location.t,

@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Float64 from "float64"
+include "float64"
 ```
 
 ## Constants

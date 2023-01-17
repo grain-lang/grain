@@ -1,7 +1,9 @@
-import ImmutableArray from "immutablearray"
-import List from "list"
-import String from "string"
-import Range from "range"
+module ImmutableArrayTest
+
+include "immutablearray"
+include "list"
+include "string"
+include "range"
 
 let fromList = ImmutableArray.fromList
 let arr = fromList([1, 2, 3])

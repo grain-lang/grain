@@ -1,4 +1,6 @@
-import Array from "array"
+module Arrays
+
+include "array"
 
 let empty = [>]
 
@@ -37,5 +39,5 @@ let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
   }
 }
 
-export let getBefore = (array, index) => if (array == [>]) "nope"
+provide let getBefore = (array, index) => if (array == [>]) "nope"
 else array[index - 1]

@@ -1,6 +1,8 @@
-import Char from "char"
-import String from "string"
-import Array from "array"
+module CharTest
+
+include "char"
+include "string"
+include "array"
 
 // isValid
 

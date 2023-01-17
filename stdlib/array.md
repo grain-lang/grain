@@ -18,7 +18,7 @@ Utilities for working with arrays.
 </details>
 
 ```grain
-import Array from "array"
+include "array"
 ```
 
 ## Values

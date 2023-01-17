@@ -1,4 +1,6 @@
-import List from "list"
+module Constraints
+
+include "list"
 let test = test => {
   // Comments
   List.forEach(i => {

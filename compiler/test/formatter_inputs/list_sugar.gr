@@ -1,3 +1,5 @@
+module ListSugar
+
 let list = [1]
 
 let list2 = [1,2]

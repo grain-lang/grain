@@ -1,12 +1,14 @@
 /**
  * @module ImmutableSet: An ImmutableSet is a collection of unique values. Operations on an ImmutableSet do not mutate the set's internal state.
- * @example import ImmutableSet from "immutableset"
+ * @example include "immutableset"
  * 
  * @since v0.5.4
  */
 
-import List from "list"
-import Array from "array"
+module ImmutableSet
+
+include "list"
+include "array"
 
 // implementation based on the paper "Implementing Sets Efficiently in a
 // Functional Language" by Stephen Adams
@@ -39,7 +41,7 @@ let weight = 4
  * 
  * @since v0.5.4
  */
-export let empty = Empty
+provide let empty = Empty
 
 // returns the minimum value in a tree
 let rec min = node => {
@@ -58,7 +60,7 @@ let rec min = node => {
  * 
  * @since v0.5.4
  */
-export let size = set => {
+provide let size = set => {
   match (set) {
     Empty => 0,
     Tree({ size, _ }) => size,
@@ -73,7 +75,7 @@ export let size = set => {
  * 
  * @since v0.5.4
  */
-export let isEmpty = set => {
+provide let isEmpty = set => {
   match (set) {
     Empty => true,
     Tree(_) => false,
@@ -156,7 +158,7 @@ let balancedNode = (key, left, right) => {
  * 
  * @since v0.5.4
  */
-export let rec add = (key, set) => {
+provide let rec add = (key, set) => {
   match (set) {
     Empty => Tree({ key, size: 1, left: Empty, right: Empty }),
     Tree({ key: nodeKey, left, right, _ }) => {
@@ -178,7 +180,7 @@ export let rec add = (key, set) => {
  * 
  * @since v0.5.4
  */
-export let rec contains = (key, set) => {
+provide let rec contains = (key, set) => {
   match (set) {
     Empty => false,
     Tree({ key: nodeKey, left, right, _ }) => {
@@ -221,7 +223,7 @@ let removeInner = (left, right) => {
  * 
  * @since v0.5.4
  */
-export let rec remove = (key, set) => {
+provide let rec remove = (key, set) => {
   match (set) {
     Empty => Empty,
     Tree({ key: nodeKey, left, right, _ }) => {
@@ -242,7 +244,7 @@ export let rec remove = (key, set) => {
  * 
  * @since v0.5.4
  */
-export let forEach = (fn, set) => {
+provide let forEach = (fn, set) => {
   let rec forEachInner = node => {
     match (node) {
       Empty => void,
@@ -266,7 +268,7 @@ export let forEach = (fn, set) => {
  * 
  * @since v0.5.4
  */
-export let reduce = (fn, init, set) => {
+provide let reduce = (fn, init, set) => {
   let rec reduceInner = (acc, node) => {
     match (node) {
       Empty => acc,
@@ -345,7 +347,7 @@ let concat = (node1, node2) => {
  * 
  * @since v0.5.4
  */
-export let filter = (fn, set) => {
+provide let filter = (fn, set) => {
   let rec filterInner = node => {
     match (node) {
       Empty => Empty,
@@ -370,7 +372,7 @@ export let filter = (fn, set) => {
  * 
  * @since v0.5.4
  */
-export let reject = (fn, set) => {
+provide let reject = (fn, set) => {
   filter(key => !fn(key), set)
 }
 
@@ -383,7 +385,7 @@ export let reject = (fn, set) => {
  * 
  * @since v0.5.4
  */
-export let rec union = (set1, set2) => {
+provide let rec union = (set1, set2) => {
   match ((set1, set2)) {
     (Empty, node) | (node, Empty) => node,
     (node1, Tree(node2)) => {
@@ -403,7 +405,7 @@ export let rec union = (set1, set2) => {
  * 
  * @since v0.5.4
  */
-export let diff = (set1, set2) => {
+provide let diff = (set1, set2) => {
   let rec diffInner = (node1, node2) => {
     match ((node1, node2)) {
       (Empty, node) | (node, Empty) => node,
@@ -426,7 +428,7 @@ export let diff = (set1, set2) => {
  * 
  * @since v0.5.4
  */
-export let rec intersect = (set1, set2) => {
+provide let rec intersect = (set1, set2) => {
   match ((set1, set2)) {
     (Empty, _) | (_, Empty) => Empty,
     (node1, Tree(node2)) => {
@@ -449,7 +451,7 @@ export let rec intersect = (set1, set2) => {
  * 
  * @since v0.5.4
  */
-export let fromList = list => {
+provide let fromList = list => {
   List.reduce((set, key) => add(key, set), empty, list)
 }
 
@@ -461,7 +463,7 @@ export let fromList = list => {
  * 
  * @since v0.5.4
  */
-export let toList = set => {
+provide let toList = set => {
   let rec toListInner = (acc, node) => {
     match (node) {
       Empty => acc,
@@ -481,7 +483,7 @@ export let toList = set => {
  * 
  * @since v0.5.4
  */
-export let fromArray = array => {
+provide let fromArray = array => {
   Array.reduce((set, key) => add(key, set), empty, array)
 }
 
@@ -493,6 +495,6 @@ export let fromArray = array => {
  * 
  * @since v0.5.4
  */
-export let toArray = set => {
+provide let toArray = set => {
   Array.fromList(toList(set))
 }

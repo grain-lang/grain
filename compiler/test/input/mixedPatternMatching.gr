@@ -1,11 +1,14 @@
-import * from "list"
+module MixedPatternMatching
 
-export record Rec {
+include "list"
+from List use *
+
+provide record Rec {
   foo: List<Number>,
   bar: String,
 }
 
-export enum Poly {
+provide enum Poly {
   PList(List<Number>),
   PArray(Array<Poly>),
   PAssoc(Rec),
@@ -30,14 +33,14 @@ let test = test => {
       [PList([a]), PAssoc({ foo: [b], _ }), PMulti([], c, { foo: [d], _ })]
     ) =>
       a +
-      b +
-      c +
-      d,
+        b +
+        c +
+        d,
     PPoly([]) => 42,
     PPoly([PList([]) | PPoly([])]) => 50,
     PPoly([PList([a, b]) | PPoly([PList([a, b]) | PPoly([PList([a, b])])])]) =>
       a +
-      b,
+        b,
     PPoly([_, ..._]) => 43,
     PArray([> ]) => 44,
     PArray([> PList([a, b])]) => a + b,

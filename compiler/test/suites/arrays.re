@@ -119,9 +119,11 @@ describe("arrays", ({test, testSkip}) => {
     Ast_helper.(
       assertParse(
         "issue_925_parse_array_set_newline",
-        "state[0] =
-           5",
+        "module Test
+          state[0] =
+            5",
         {
+          module_name: Location.mknoloc("Test"),
           statements: [
             Top.expr(
               Exp.array_set(

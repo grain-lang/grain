@@ -209,6 +209,7 @@ module Exp: {
   let constraint_:
     (~loc: loc=?, ~attributes: attributes=?, expression, parsed_type) =>
     expression;
+  let use: (~loc: loc, ~attributes: attributes=?, id, use_items) => expression;
   let box_assign:
     (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
     expression;
@@ -241,27 +242,40 @@ module Top: {
   let mk:
     (~loc: loc=?, ~attributes: attributes=?, toplevel_stmt_desc) =>
     toplevel_stmt;
-  let import:
-    (~loc: loc=?, ~attributes: attributes=?, import_declaration) =>
+  let include_:
+    (~loc: loc, ~attributes: attributes=?, include_declaration) =>
     toplevel_stmt;
   let foreign:
-    (~loc: loc=?, ~attributes: attributes=?, export_flag, value_description) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      provide_flag,
+      value_description
+    ) =>
+    toplevel_stmt;
+  let module_:
+    (~loc: loc, ~attributes: attributes=?, provide_flag, module_declaration) =>
     toplevel_stmt;
   let primitive:
-    (~loc: loc=?, ~attributes: attributes=?, export_flag, value_description) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      provide_flag,
+      value_description
+    ) =>
     toplevel_stmt;
   let data:
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
-      list((export_flag, data_declaration))
+      list((provide_flag, data_declaration))
     ) =>
     toplevel_stmt;
   let let_:
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
-      export_flag,
+      provide_flag,
       rec_flag,
       mut_flag,
       list(value_binding)
@@ -270,13 +284,10 @@ module Top: {
   let expr:
     (~loc: loc=?, ~attributes: attributes=?, expression) => toplevel_stmt;
   let grain_exception:
-    (~loc: loc=?, ~attributes: attributes=?, export_flag, type_exception) =>
+    (~loc: loc=?, ~attributes: attributes=?, provide_flag, type_exception) =>
     toplevel_stmt;
-  let export:
-    (~loc: loc=?, ~attributes: attributes=?, list(export_declaration)) =>
-    toplevel_stmt;
-  let export_all:
-    (~loc: loc=?, ~attributes: attributes=?, list(export_except)) =>
+  let provide:
+    (~loc: loc, ~attributes: attributes=?, list(provide_item)) =>
     toplevel_stmt;
 };
 
@@ -301,11 +312,8 @@ module Mb: {
     (~loc: loc=?, pattern, expression, option(expression)) => match_branch;
 };
 
-module Imp: {
-  let mk: (~loc: loc=?, list(import_value), str) => import_declaration;
-};
+module Inc: {let mk: (~loc: loc, str, option(str)) => include_declaration;};
 
-module Ex: {
-  let mk:
-    (~loc: loc=?, list((str, option(str)))) => list(export_declaration);
+module Mod: {
+  let mk: (~loc: loc, str, list(toplevel_stmt)) => module_declaration;
 };

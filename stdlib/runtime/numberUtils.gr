@@ -1,11 +1,13 @@
 /* grainc-flags --no-pervasives */
+module NumberUtils
 
 /*
  * This file was inspired by AssemblyScript's std/assembly/util/number.ts
  */
 
-import Memory from "runtime/unsafe/memory"
-import WasmI32, {
+include "runtime/unsafe/memory" as Memory
+include "runtime/unsafe/wasmi32" as WasmI32
+from WasmI32 use {
   eq as (==),
   ne as (!=),
   add as (+),
@@ -14,11 +16,12 @@ import WasmI32, {
   and as (&),
   or as (|),
   // no signed imports, as care should be taken to use signed or unsigned operators
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Exception from "runtime/exception"
-import { allocateString } from "runtime/dataStructures"
+}
+include "runtime/unsafe/wasmi64" as WasmI64
+include "runtime/unsafe/wasmf64" as WasmF64
+include "runtime/exception" as Exception
+include "runtime/dataStructures" as DataStructures
+from DataStructures use { allocateString }
 
 primitive (!): Bool -> Bool = "@not"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
@@ -26,7 +29,7 @@ primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive throw: Exception -> a = "@throw"
 
 @unsafe
-export let _MAX_DOUBLE_LENGTH = 28n
+provide let _MAX_DOUBLE_LENGTH = 28n
 
 @unsafe
 let _CHAR_CODE_0 = 0x30n
@@ -46,7 +49,7 @@ let _I32_MAX = 0xffffffffN
 let mut _POWERS10 = -1n
 
 @unsafe
-export let get_POWERS10 = () => {
+provide let get_POWERS10 = () => {
   if (_POWERS10 == -1n) {
     _POWERS10 = Memory.malloc(40n)
     WasmI32.store(_POWERS10, 1n, 0n)
@@ -192,7 +195,7 @@ let get_DIGITS = () => {
 let mut _HEX_DIGITS = -1n
 
 @unsafe
-export let get_HEX_DIGITS = () => {
+provide let get_HEX_DIGITS = () => {
   if (_HEX_DIGITS == -1n) {
     _HEX_DIGITS = Memory.malloc(512n)
     WasmI32.store16(_HEX_DIGITS, 0x3030n, 0n) // 00
@@ -722,7 +725,7 @@ let isPowerOf2 = value => {
 // Count number of decimals for u32 values
 // In our case input value always non-zero so we can simplify some parts
 @unsafe
-export let decimalCount32 = value => {
+provide let decimalCount32 = value => {
   if (WasmI32.ltU(value, 100000n)) {
     if (WasmI32.ltU(value, 100n)) {
       1n + (if (WasmI32.geU(value, 10n)) 1n else 0n)
@@ -947,7 +950,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
 }
 
 @unsafe
-export let utoa32Buffered = (buf, value, radix) => {
+provide let utoa32Buffered = (buf, value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
@@ -969,7 +972,7 @@ export let utoa32Buffered = (buf, value, radix) => {
 }
 
 @unsafe
-export let utoa32 = (value, radix) => {
+provide let utoa32 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
@@ -996,7 +999,7 @@ export let utoa32 = (value, radix) => {
 }
 
 @unsafe
-export let itoa32 = (value, radix) => {
+provide let itoa32 = (value, radix) => {
   let mut value = value
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
@@ -1032,7 +1035,7 @@ export let itoa32 = (value, radix) => {
 }
 
 @unsafe
-export let utoa64 = (value, radix) => {
+provide let utoa64 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
@@ -1068,7 +1071,7 @@ export let utoa64 = (value, radix) => {
 }
 
 @unsafe
-export let itoa64 = (value, radix) => {
+provide let itoa64 = (value, radix) => {
   if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
@@ -1444,7 +1447,7 @@ let isNaN = value => {
 }
 
 @unsafe
-export let dtoa = value => {
+provide let dtoa = value => {
   let str = if (WasmF64.eq(value, 0.W)) {
     let ret = allocateString(3n)
     WasmI32.store8(ret, _CHAR_CODE_0, 8n)

@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Stack from "stack"
+include "stack"
 ```
 
 ## Types

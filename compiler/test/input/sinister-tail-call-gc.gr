@@ -1,7 +1,9 @@
+module SinisterTailCallGC
+
 // Contrived example to test *ADVANCED* tail calls
 
 let rec is_even_help = (n, b) => {
-  let x = (n, n, b, n);
+  let x = (n, n, b, n)
   if (n == 0) {
     b
   } else {
@@ -12,9 +14,8 @@ let rec is_even_help = (n, b) => {
     is_odd(n - 1)
   }
 },
-
 is_odd_help = (n, b) => {
-  let x = (n,);
+  let x = (n,)
   if (n == 1) {
     b
   } else {
@@ -22,8 +23,11 @@ is_odd_help = (n, b) => {
     is_even(n - 1)
   }
 },
-
-is_even = (n) => { is_even_help(n, true) },
-is_odd = (n) => { is_odd_help(n, true) };
+is_even = n => {
+  is_even_help(n, true)
+},
+is_odd = n => {
+  is_odd_help(n, true)
+}
 
 is_odd(9999)

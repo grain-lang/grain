@@ -1,4 +1,6 @@
-let rec fib = (n) => {
+module OptimiationFriendly
+
+let rec fib = n => {
   if (n == 0) {
     0
   } else {
@@ -8,15 +10,15 @@ let rec fib = (n) => {
       fib(n - 1) + fib(n - 2)
     }
   }
-};
+}
 
-let rec spinlock = (n) => {
+let rec spinlock = n => {
   if (n <= 0) {
     false
   } else {
-    let y = fib(30);
-    spinlock(n - 1);
+    let y = fib(30)
+    spinlock(n - 1)
   }
-};
+}
 
 spinlock(1000)

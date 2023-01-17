@@ -1,6 +1,8 @@
-import Set from "set"
-import List from "list"
-import Array from "array"
+module SetTest
+
+include "set"
+include "list"
+include "array"
 
 // Data types used in multiple tests
 enum Resource {

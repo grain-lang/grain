@@ -1,3 +1,6 @@
-import * from "list"
+module List
+
+include "list"
+from List use *
 
 print("OK")
