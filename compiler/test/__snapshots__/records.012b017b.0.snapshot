@@ -50,7 +50,7 @@ records › record_spread_2
       )
       (i64.store offset=24
        (local.get $0)
-       (i64.const 68719477865)
+       (i64.const 68719477853)
       )
       (i64.store offset=32
        (local.get $0)
@@ -112,5 +112,5 @@ records › record_spread_2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 493
+ ;; custom section \"cmi\", size 482
 )

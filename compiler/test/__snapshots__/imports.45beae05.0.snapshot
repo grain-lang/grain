@@ -55,7 +55,7 @@ imports › annotation_across_import
        )
        (i32.store offset=8
         (local.get $0)
-        (i32.const 2259)
+        (i32.const 2235)
        )
        (i32.store offset=12
         (local.get $0)
@@ -78,5 +78,5 @@ imports › annotation_across_import
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 302
+ ;; custom section \"cmi\", size 282
 )

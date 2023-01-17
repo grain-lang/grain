@@ -11,18 +11,18 @@ basic functionality › unsafe_wasm_globals
  (import \"_grainEnv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_grainEnv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F64_VAL\" (global $_F64_VAL_1163 (mut f64)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printF64\" (global $printF64_1162 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F32_VAL\" (global $_F32_VAL_1161 (mut f32)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printF32\" (global $printF32_1160 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I64_VAL\" (global $_I64_VAL_1159 (mut i64)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printI64\" (global $printI64_1158 (mut i32)))
- (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I32_VAL\" (global $_I32_VAL_1157 (mut i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printI32\" (global $printI32_1156 (mut i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"printF64\" (func $printF64_1162 (param i32 f64) (result i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"printF32\" (func $printF32_1160 (param i32 f32) (result i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"printI64\" (func $printI64_1158 (param i32 i64) (result i32)))
- (import \"GRAIN$MODULE$runtime/debugPrint\" \"printI32\" (func $printI32_1156 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F64_VAL\" (global $_F64_VAL_1151 (mut f64)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printF64\" (global $printF64_1150 (mut i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_F32_VAL\" (global $_F32_VAL_1149 (mut f32)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printF32\" (global $printF32_1148 (mut i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I64_VAL\" (global $_I64_VAL_1147 (mut i64)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printI64\" (global $printI64_1146 (mut i32)))
+ (import \"GRAIN$MODULE$unsafeWasmGlobalsExports\" \"GRAIN$EXPORT$_I32_VAL\" (global $_I32_VAL_1145 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"GRAIN$EXPORT$printI32\" (global $printI32_1144 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"printF64\" (func $printF64_1150 (param i32 f64) (result i32)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"printF32\" (func $printF32_1148 (param i32 f32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"printI64\" (func $printI64_1146 (param i32 i64) (result i32)))
+ (import \"GRAIN$MODULE$runtime/debugPrint\" \"printI32\" (func $printI32_1144 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -49,26 +49,26 @@ basic functionality › unsafe_wasm_globals
   (return
    (block $compile_block.1 (result i32)
     (drop
-     (call $printI32_1156
-      (global.get $printI32_1156)
-      (global.get $_I32_VAL_1157)
+     (call $printI32_1144
+      (global.get $printI32_1144)
+      (global.get $_I32_VAL_1145)
      )
     )
     (drop
-     (call $printI64_1158
-      (global.get $printI64_1158)
-      (global.get $_I64_VAL_1159)
+     (call $printI64_1146
+      (global.get $printI64_1146)
+      (global.get $_I64_VAL_1147)
      )
     )
     (drop
-     (call $printF32_1160
-      (global.get $printF32_1160)
-      (global.get $_F32_VAL_1161)
+     (call $printF32_1148
+      (global.get $printF32_1148)
+      (global.get $_F32_VAL_1149)
      )
     )
-    (call $printF64_1162
-     (global.get $printF64_1162)
-     (global.get $_F64_VAL_1163)
+    (call $printF64_1150
+     (global.get $printF64_1150)
+     (global.get $_F64_VAL_1151)
     )
    )
   )

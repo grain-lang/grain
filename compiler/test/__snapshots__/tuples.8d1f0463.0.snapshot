@@ -75,5 +75,5 @@ tuples › tup1_trailing
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 245
+ ;; custom section \"cmi\", size 236
 )

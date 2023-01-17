@@ -11,7 +11,7 @@ basic functionality › if_one_sided6
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $x_1129 (mut i32) (i32.const 0))
+ (global $x_1117 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -40,13 +40,13 @@ basic functionality › if_one_sided6
     (local.set $0
      (block $compile_block.6 (result i32)
       (block $compile_store.2
-       (global.set $x_1129
+       (global.set $x_1117
         (tuple.extract 0
          (tuple.make
           (i32.const 3)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $x_1129)
+           (global.get $x_1117)
           )
          )
         )
@@ -62,13 +62,13 @@ basic functionality › if_one_sided6
         )
         (block $compile_block.4 (result i32)
          (block $compile_set.3 (result i32)
-          (global.set $x_1129
+          (global.set $x_1117
            (tuple.extract 0
             (tuple.make
              (i32.const 11)
              (call $decRef_0
               (global.get $GRAIN$EXPORT$decRef_0)
-              (global.get $x_1129)
+              (global.get $x_1117)
              )
             )
            )
@@ -83,7 +83,7 @@ basic functionality › if_one_sided6
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $x_1129)
+       (global.get $x_1117)
       )
      )
     )
@@ -96,5 +96,5 @@ basic functionality › if_one_sided6
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 245
+ ;; custom section \"cmi\", size 236
 )

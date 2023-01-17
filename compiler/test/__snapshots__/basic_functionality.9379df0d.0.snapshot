@@ -103,7 +103,7 @@ basic functionality › comp21
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -148,7 +148,7 @@ basic functionality › comp21
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -241,7 +241,7 @@ basic functionality › comp21
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -286,7 +286,7 @@ basic functionality › comp21
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -385,5 +385,5 @@ basic functionality › comp21
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 238
+ ;; custom section \"cmi\", size 236
 )

@@ -107,5 +107,5 @@ boxes › test_set_extra1
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 247
+ ;; custom section \"cmi\", size 236
 )

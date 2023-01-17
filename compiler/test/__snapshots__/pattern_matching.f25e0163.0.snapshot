@@ -79,7 +79,7 @@ pattern matching › or_match_3
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -124,7 +124,7 @@ pattern matching › or_match_3
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2651)
+            (i32.const 2627)
            )
            (i32.store offset=12
             (local.get $0)
@@ -640,5 +640,5 @@ pattern matching › or_match_3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 242
+ ;; custom section \"cmi\", size 236
 )

@@ -10,11 +10,11 @@ imports › import_some_mixed
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $sum_1136 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $sum_1124 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"sum\" (func $sum_1136 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"sum\" (func $sum_1124 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -67,7 +67,7 @@ imports › import_some_mixed
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2259)
+            (i32.const 2235)
            )
            (i32.store offset=12
             (local.get $0)
@@ -112,7 +112,7 @@ imports › import_some_mixed
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2259)
+            (i32.const 2235)
            )
            (i32.store offset=12
             (local.get $0)
@@ -145,10 +145,10 @@ imports › import_some_mixed
        (block $do_backpatches.5
        )
       )
-      (call $sum_1136
+      (call $sum_1124
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $sum_1136)
+        (global.get $sum_1124)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
@@ -178,5 +178,5 @@ imports › import_some_mixed
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 295
+ ;; custom section \"cmi\", size 282
 )
