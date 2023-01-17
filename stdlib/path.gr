@@ -16,15 +16,18 @@
  * - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
  * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
  * 
- * @example import Path from "path"
+ * @example include "path"
  * 
  * @since v0.5.5
  */
-import String from "string"
-import List from "list"
-import Option from "option"
-import Result from "result"
-import Char from "char"
+
+module Path
+
+include "string"
+include "list"
+include "option"
+include "result"
+include "char"
 
 // this module is influenced by https://github.com/reasonml/reason-native/blob/a0ddab6ab25237961e32d8732b0a222ec2372d4a/src/fp/Fp.re
 // with some modifications; reason-native license:
@@ -91,7 +94,7 @@ record TBase<a> {
 /**
  * Represents an absolute path's anchor point.
  */
-export enum AbsoluteRoot {
+expose enum AbsoluteRoot {
   Root,
   Drive(Char),
 }
@@ -134,7 +137,7 @@ type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
  * Represents a system path.
  */
-export enum Path {
+expose enum Path {
   AbsoluteFile(TypedPath<Absolute, File>),
   AbsoluteDir(TypedPath<Absolute, Directory>),
   RelativeFile(TypedPath<Relative, File>),
@@ -144,7 +147,7 @@ export enum Path {
 /**
  * Represents a platform-specific path encoding scheme.
  */
-export enum Platform {
+expose enum Platform {
   Windows,
   Posix,
 }
@@ -152,14 +155,14 @@ export enum Platform {
 /**
  * Represents an error that can occur when finding a property of a path.
  */
-export enum PathOperationError {
+expose enum PathOperationError {
   IncompatiblePathType,
 }
 
 /**
  * Represents an error that can occur when appending paths.
  */
-export enum AppendError {
+expose enum AppendError {
   AppendToFile,
   AppendAbsolute,
 }
@@ -167,7 +170,7 @@ export enum AppendError {
 /**
  * Represents the status of an ancestry check between two paths.
  */
-export enum AncestryStatus {
+expose enum AncestryStatus {
   Descendant,
   Ancestor,
   Self,
@@ -178,7 +181,7 @@ export enum AncestryStatus {
  * Represents an error that can occur when the types of paths are incompatible
  * for an operation.
  */
-export enum IncompatibilityError {
+expose enum IncompatibilityError {
   DifferentRoots,
   DifferentBases,
 }
@@ -186,7 +189,7 @@ export enum IncompatibilityError {
 /**
  * Represents possible errors for the `relativeTo` operation.
  */
-export enum RelativizationError {
+expose enum RelativizationError {
   Incompatible(IncompatibilityError),
   ImpossibleRelativization,
 }
@@ -384,7 +387,7 @@ let fromStringHelper = (pathStr, platform) => {
  * 
  * @since v0.5.5
  */
-export let fromString = pathStr => {
+expose let fromString = pathStr => {
   fromStringHelper(pathStr, Posix)
 }
 
@@ -403,7 +406,7 @@ export let fromString = pathStr => {
  * 
  * @since v0.5.5
  */
-export let fromPlatformString = (pathStr, platform) => {
+expose let fromPlatformString = (pathStr, platform) => {
   fromStringHelper(pathStr, platform)
 }
 
@@ -446,7 +449,7 @@ let toStringHelper = (path, platform) => {
  * 
  * @since v0.5.5
  */
-export let toString = path => {
+expose let toString = path => {
   toStringHelper(pathInfo(path), Posix)
 }
 
@@ -464,7 +467,7 @@ export let toString = path => {
  * 
  * @since v0.5.5
  */
-export let toPlatformString = (path, platform) => {
+expose let toPlatformString = (path, platform) => {
   toStringHelper(pathInfo(path), platform)
 }
 
@@ -479,7 +482,7 @@ export let toPlatformString = (path, platform) => {
  * 
  * @since v0.5.5
  */
-export let isDirectory = path => {
+expose let isDirectory = path => {
   let (_, fileType, _) = pathInfo(path)
   fileType == Dir
 }
@@ -493,7 +496,7 @@ export let isDirectory = path => {
  * @example isAbsolute(fromString("/Users/me")) == true
  * @example isAbsolute(fromString("./file.txt")) == false
  */
-export let isAbsolute = path => {
+expose let isAbsolute = path => {
   let (base, _, _) = pathInfo(path)
   match (base) {
     Abs(_) => true,
@@ -529,7 +532,7 @@ let rec appendHelper = (path: PathInfo, toAppend: PathInfo) =>
  * 
  * @since v0.5.5
  */
-export let append = (path: Path, toAppend: Path) => {
+expose let append = (path: Path, toAppend: Path) => {
   match ((pathInfo(path), pathInfo(toAppend))) {
     ((_, File, _), _) => Err(AppendToFile),
     (_, (Abs(_), _, _)) => Err(AppendAbsolute),
@@ -596,7 +599,7 @@ let relativeToHelper = (source: PathInfo, dest: PathInfo) => {
  * 
  * @since v0.5.5
  */
-export let relativeTo = (source, dest) => {
+expose let relativeTo = (source, dest) => {
   let pathInfo1 = pathInfo(source)
   let (base1, _, _) = pathInfo1
   let pathInfo2 = pathInfo(dest)
@@ -640,7 +643,7 @@ let ancestryHelper = (base: PathInfo, path: PathInfo) => {
  * 
  * @since v0.5.5
  */
-export let ancestry = (path1: Path, path2: Path) => {
+expose let ancestry = (path1: Path, path2: Path) => {
   let pathInfo1 = pathInfo(path1)
   let (base1, _, _) = pathInfo1
   let pathInfo2 = pathInfo(path2)
@@ -669,7 +672,7 @@ let parentHelper = (path: PathInfo) =>
  * 
  * @since v0.5.5
  */
-export let parent = (path: Path) => {
+expose let parent = (path: Path) => {
   toPath(parentHelper(pathInfo(path)))
 }
 
@@ -690,7 +693,7 @@ let basenameHelper = (path: PathInfo) =>
  * 
  * @since v0.5.5
  */
-export let basename = (path: Path) => {
+expose let basename = (path: Path) => {
   basenameHelper(pathInfo(path))
 }
 
@@ -725,7 +728,7 @@ let stemExtHelper = (path: PathInfo) =>
  * 
  * @since v0.5.5
  */
-export let stem = (path: Path) => {
+expose let stem = (path: Path) => {
   match (pathInfo(path)) {
     (_, Dir, _) => Err(IncompatiblePathType),
     pathInfo => {
@@ -748,7 +751,7 @@ export let stem = (path: Path) => {
  * 
  * @since v0.5.5
  */
-export let extension = (path: Path) => {
+expose let extension = (path: Path) => {
   match (pathInfo(path)) {
     (_, Dir, _) => Err(IncompatiblePathType),
     pathInfo => {
@@ -777,7 +780,7 @@ let rootHelper = (path: PathInfo) =>
  * 
  * @since v0.5.5
  */
-export let root = (path: Path) => {
+expose let root = (path: Path) => {
   match (pathInfo(path)) {
     (Rel(_), _, _) => Err(IncompatiblePathType),
     pathInfo => Ok(rootHelper(pathInfo)),

@@ -27,7 +27,7 @@ type Queue<a>
 
 ## Values
 
-Functions and constants for working with queues.
+Functions and constants for working with immutable arrays.
 
 ### Queue.**empty**
 

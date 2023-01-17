@@ -1,16 +1,19 @@
 /**
  * @module Random: Pseudo-random number generation.
- * @example import Random from "random"
+ * @example include "random"
  * @since v0.5.0
  */
-import WasiRandom from "sys/random"
-import Result from "result"
-import Int32 from "int32"
-import Int64 from "int64"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import DS from "runtime/dataStructures"
+
+module Random
+
+include "sys/random" as WasiRandom
+include "result"
+include "int32"
+include "int64"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures" as DS
 
 /**
  * @section Types: Type declarations included in the Random module.
@@ -63,7 +66,7 @@ let squares = (ctr: Int64, key: Int64) => {
  *
  * @since v0.5.0
  */
-export let make = seed => {
+expose let make = seed => {
   { seed, counter: 0L, initialized: false }
 }
 
@@ -74,7 +77,7 @@ export let make = seed => {
  *
  * @since v0.5.0
  */
-export let makeUnseeded = () => {
+expose let makeUnseeded = () => {
   // TODO: Should we just .expect this result for UX's sake?
   Result.map(seed => {
     { seed, counter: 0L, initialized: false }
@@ -109,7 +112,7 @@ let checkInitialized = (random: Random) => {
  *
  * @since v0.5.0
  */
-export let nextInt32 = (random: Random) => {
+expose let nextInt32 = (random: Random) => {
   checkInitialized(random)
   let ret = squares(random.counter, random.seed)
   incCounter(random)
@@ -124,7 +127,7 @@ export let nextInt32 = (random: Random) => {
  *
  * @since v0.5.0
  */
-export let nextInt64 = (random: Random) => {
+expose let nextInt64 = (random: Random) => {
   checkInitialized(random)
   let ret1 = Int64.fromNumber(
     Int32.toNumber(squares(random.counter, random.seed))
@@ -148,7 +151,7 @@ export let nextInt64 = (random: Random) => {
  *
  * @since v0.5.0
  */
-export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
+expose let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
   let (+) = Int32.add
   let (-) = Int32.sub
@@ -178,7 +181,7 @@ export let nextInt32InRange = (random: Random, low: Int32, high: Int32) => {
  *
  * @since v0.5.0
  */
-export let nextInt64InRange = (random: Random, low: Int64, high: Int64) => {
+expose let nextInt64InRange = (random: Random, low: Int64, high: Int64) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
   let (+) = Int64.add
   let (-) = Int64.sub

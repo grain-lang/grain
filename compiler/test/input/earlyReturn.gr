@@ -1,4 +1,6 @@
-import Array from "array"
+module EarlyReturn
+
+include "array"
 
 let findFour = arr => {
   for (let mut i = 0; i < Array.length(arr); i += 1) {

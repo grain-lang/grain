@@ -4,7 +4,7 @@
  * The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
  * or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
  *
- * @example import Result from "result"
+ * @example include "result"
  *
  *
  * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
@@ -12,6 +12,8 @@
  *
  * @since v0.2.0
  */
+
+module Result
 
 /**
  * @section Values: Functions for working with the Result data type.
@@ -25,7 +27,7 @@
  *
  * @since v0.2.0
  */
-export let isOk = result => {
+expose let isOk = result => {
   match (result) {
     Ok(_) => true,
     _ => false,
@@ -40,7 +42,7 @@ export let isOk = result => {
  *
  * @since v0.2.0
  */
-export let isErr = result => !isOk(result)
+expose let isErr = result => !isOk(result)
 
 /**
  * Converts the Result to an Option. An error value is discarded and replaced with `None`.
@@ -50,7 +52,7 @@ export let isErr = result => !isOk(result)
  *
  * @since v0.2.0
  */
-export let toOption = result => {
+expose let toOption = result => {
   match (result) {
     Ok(x) => Some(x),
     _ => None,
@@ -66,7 +68,7 @@ export let toOption = result => {
  *
  * @since v0.2.0
  */
-export let flatMap = (fn, result) => {
+expose let flatMap = (fn, result) => {
   match (result) {
     Ok(x) => fn(x),
     Err(e) => Err(e),
@@ -82,7 +84,7 @@ export let flatMap = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let flatMapErr = (fn, result) => {
+expose let flatMapErr = (fn, result) => {
   match (result) {
     Err(e) => fn(e),
     Ok(x) => Ok(x),
@@ -98,7 +100,7 @@ export let flatMapErr = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let map = (fn, result) => {
+expose let map = (fn, result) => {
   match (result) {
     Ok(x) => Ok(fn(x)),
     Err(e) => Err(e),
@@ -114,7 +116,7 @@ export let map = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let mapErr = (fn, result) => {
+expose let mapErr = (fn, result) => {
   match (result) {
     Err(e) => Err(fn(e)),
     Ok(x) => Ok(x),
@@ -132,7 +134,7 @@ export let mapErr = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let mapWithDefault = (fn, def, result) => {
+expose let mapWithDefault = (fn, def, result) => {
   match (result) {
     Ok(a) => fn(a),
     _ => def,
@@ -151,7 +153,7 @@ export let mapWithDefault = (fn, def, result) => {
  *
  * @since v0.2.0
  */
-export let mapWithDefaultFn = (fnOk, fnErr, result) => {
+expose let mapWithDefaultFn = (fnOk, fnErr, result) => {
   match (result) {
     Ok(a) => fnOk(a),
     Err(a) => fnErr(a),
@@ -167,7 +169,7 @@ export let mapWithDefaultFn = (fnOk, fnErr, result) => {
  *
  * @since v0.2.0
  */
-export let or = (result1, result2) => {
+expose let or = (result1, result2) => {
   match (result1) {
     Ok(x) => result1,
     _ => result2,
@@ -183,7 +185,7 @@ export let or = (result1, result2) => {
  *
  * @since v0.2.0
  */
-export let and = (result1, result2) => {
+expose let and = (result1, result2) => {
   match (result1) {
     Ok(_) => result2,
     Err(_) => result1,
@@ -201,7 +203,7 @@ export let and = (result1, result2) => {
  *
  * @since v0.2.0
  */
-export let peek = (fnOk, fnErr, result) => {
+expose let peek = (fnOk, fnErr, result) => {
   match (result) {
     Ok(x) => ignore(fnOk(x)),
     Err(x) => ignore(fnErr(x)),
@@ -216,7 +218,7 @@ export let peek = (fnOk, fnErr, result) => {
  *
  * @since v0.2.0
  */
-export let peekOk = (fn, result) => {
+expose let peekOk = (fn, result) => {
   peek(fn, identity, result)
 }
 
@@ -228,7 +230,7 @@ export let peekOk = (fn, result) => {
  *
  * @since v0.2.0
  */
-export let peekErr = (fn, result) => {
+expose let peekErr = (fn, result) => {
   peek(identity, fn, result)
 }
 
@@ -246,7 +248,7 @@ export let peekErr = (fn, result) => {
  *
  * @since v0.4.0
  */
-export let expect = (msg, result) => {
+expose let expect = (msg, result) => {
   match (result) {
     Ok(x) => x,
     Err(err) => fail msg ++ ": " ++ toString(err),
@@ -266,6 +268,6 @@ export let expect = (msg, result) => {
  *
  * @since v0.4.0
  */
-export let unwrap = result => {
+expose let unwrap = result => {
   expect("Could not unwrap Err value", result)
 }

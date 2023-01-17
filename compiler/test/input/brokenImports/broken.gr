@@ -1,4 +1,6 @@
-import Number from "number"
-import Foo from "./foo"
+module Broken
 
-export let min = Number.min
+include "number"
+include "./foo"
+
+expose let min = Number.min

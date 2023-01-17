@@ -1,2 +1,5 @@
-import * from "../../test/test-libs/exportStar";
+module RelativeImport2
+
+include "../../test/test-libs/exposeStar"
+from ExposeStar use *
 x

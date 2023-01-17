@@ -1,10 +1,12 @@
+module HashTest
+
 // Sanity tests for generic hashing.
 
-import Hash from "hash"
-import List from "list"
-import Array from "array"
-import String from "string"
-import Bytes from "bytes"
+include "hash"
+include "list"
+include "array"
+include "string"
+include "bytes"
 
 let uniq = list => {
   let mut itemsSeen = []

@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import BigInt from "bigint"
+include "bigint"
 ```
 
 ## Conversions

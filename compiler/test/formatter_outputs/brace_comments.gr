@@ -1,3 +1,5 @@
+module BraceComments
+
 match (1) { // fails
   // fails2
   1 => "1",
@@ -16,7 +18,7 @@ if (true) { // block 1
 
 let space = ""
 
-export let rec setCounter = val => {
+expose let rec setCounter = val => {
   // Write the value to memory.
   setCounter(val)
 }

@@ -1,17 +1,22 @@
 /**
  * @module Float64: Utilities for working with the Float64 type.
- * @example import Float64 from "float64"
+ * @example include "float64"
  * 
  * @since v0.2.0
  */
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import { newFloat64 } from "runtime/dataStructures"
 
-import {
+module Float64
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmf64"
+include "runtime/dataStructures"
+from DataStructures use { newFloat64 }
+
+include "runtime/numbers"
+from Numbers use {
   coerceNumberToFloat64 as fromNumber,
   coerceFloat64ToNumber as toNumber,
-} from "runtime/numbers"
+}
 
 /**
  * @section Constants: Float64 constant values.
@@ -23,7 +28,7 @@ import {
  * @since v0.4.0
  */
 @unsafe
-export let infinity = {
+expose let infinity = {
   let ptr = newFloat64(
     WasmF64.reinterpretI64(
       0b0111111111110000000000000000000000000000000000000000000000000000N
@@ -38,7 +43,7 @@ export let infinity = {
  * @since v0.4.0
  */
 @unsafe
-export let nan = {
+expose let nan = {
   let ptr = newFloat64(
     WasmF64.reinterpretI64(
       0b0111111111110000000000000000000000000000000000000000000000000001N
@@ -52,21 +57,21 @@ export let nan = {
  * 
  * @since v0.5.2
  */
-export let pi = 3.141592653589793d
+expose let pi = 3.141592653589793d
 
 /**
  * Tau represented as a Float64 value.
  * 
  * @since v0.5.2
  */
-export let tau = 6.283185307179586d
+expose let tau = 6.283185307179586d
 
 /**
  * Euler's number represented as a Float64 value.
  * 
  * @since v0.5.2
  */
-export let e = 2.718281828459045d
+expose let e = 2.718281828459045d
 
 /**
  * @section Conversions: Functions for converting between Numbers and the Float64 type.
@@ -80,7 +85,7 @@ export let e = 2.718281828459045d
  * 
  * @since v0.2.0
  */
-export fromNumber
+expose { fromNumber }
 
 /**
  * Converts a Float64 to a Number.
@@ -90,7 +95,7 @@ export fromNumber
  * 
  * @since v0.2.0
  */
-export toNumber
+expose { toNumber }
 
 /**
  * @section Operations: Mathematical operations for Float64 values.
@@ -106,7 +111,7 @@ export toNumber
  * @since v0.2.0
  */
 @unsafe
-export let add = (x: Float64, y: Float64) => {
+expose let add = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.add(xv, yv))
@@ -123,7 +128,7 @@ export let add = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let sub = (x: Float64, y: Float64) => {
+expose let sub = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.sub(xv, yv))
@@ -140,7 +145,7 @@ export let sub = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let mul = (x: Float64, y: Float64) => {
+expose let mul = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.mul(xv, yv))
@@ -157,7 +162,7 @@ export let mul = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let div = (x: Float64, y: Float64) => {
+expose let div = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newFloat64(WasmF64.div(xv, yv))
@@ -178,7 +183,7 @@ export let div = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lt = (x: Float64, y: Float64) => {
+expose let lt = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.lt(xv, yv)
@@ -194,7 +199,7 @@ export let lt = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let gt = (x: Float64, y: Float64) => {
+expose let gt = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.gt(xv, yv)
@@ -210,7 +215,7 @@ export let gt = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lte = (x: Float64, y: Float64) => {
+expose let lte = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.le(xv, yv)
@@ -226,7 +231,7 @@ export let lte = (x: Float64, y: Float64) => {
  * @since v0.2.0
  */
 @unsafe
-export let gte = (x: Float64, y: Float64) => {
+expose let gte = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
   WasmF64.ge(xv, yv)

@@ -1,4 +1,6 @@
-let x = 5;
+module Conditionals
+
+let x = 5
 if (x == 4) {
   false
 } else {

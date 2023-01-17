@@ -1,4 +1,5 @@
 /* grainc-flags --compilation-mode=runtime */
+module Malloc
 
 /*
  * This module implements a generic memory allocator.
@@ -6,7 +7,8 @@
  * from pages 185-188 of K&R C (2nd edition).
  */
 
-import WasmI32, {
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
   add as (+),
   sub as (-),
   mul as (*),
@@ -18,8 +20,8 @@ import WasmI32, {
   shrU as (>>),
   eq as (==),
   ne as (!=),
-} from "runtime/unsafe/wasmi32"
-import Exception from "runtime/exception"
+}
+include "runtime/exception"
 
 primitive memorySize: () -> WasmI32 = "@wasm.memory_size"
 primitive memoryGrow: WasmI32 -> WasmI32 = "@wasm.memory_grow"
@@ -74,7 +76,7 @@ let logMallocHeaderSize = 3n
  */
 let mut heapSize = 0n
 
-export let _RESERVED_RUNTIME_SPACE = 0x4000n
+expose let _RESERVED_RUNTIME_SPACE = 0x4000n
 
 /**
  * The base the heap. The block at this address will be size 0 and
@@ -164,7 +166,7 @@ let growHeap = (nbytes: WasmI32) => {
  *
  * @param ap: The pointer to free
  */
-export let free = (ap: WasmI32) => {
+expose let free = (ap: WasmI32) => {
   let mut blockPtr = ap - 8n // 8 bytes for malloc header
   let mut p = freePtr
 
@@ -238,7 +240,7 @@ let morecore = (nbytes: WasmI32) => {
  * @param nbytes: The number of bytes to allocate
  * @returns The pointer to the allocated region (8-byte aligned) or -1 if the allocation failed
  */
-export let malloc = (nb: WasmI32) => {
+expose let malloc = (nb: WasmI32) => {
   let mut nbytes = nb
   let mut prevp = freePtr
 
@@ -305,6 +307,6 @@ export let malloc = (nb: WasmI32) => {
  *
  * @returns The free list pointer
  */
-export let getFreePtr = () => {
+expose let getFreePtr = () => {
   freePtr
 }

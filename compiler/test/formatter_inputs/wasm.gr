@@ -1,4 +1,6 @@
-export let allocateBytes = (size) => {
+module Wasm
+
+expose let allocateBytes = (size) => {
   let len = size + 8n
   let bytes = Memory.malloc(len)
   Memory.fill(bytes, 0n, len)

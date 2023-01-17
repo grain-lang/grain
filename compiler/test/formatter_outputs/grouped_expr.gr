@@ -1,3 +1,5 @@
+module GroupedExpr
+
 let printFoo = () => print("foo")
 let printBar = () => print("bar")
 

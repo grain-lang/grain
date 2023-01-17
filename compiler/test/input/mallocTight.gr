@@ -1,13 +1,9 @@
 /* grainc-flags --compilation-mode=runtime */
+module MallocTight
 
-import Malloc from "runtime/malloc"
-import WasmI32, {
-  add as (+),
-  sub as (-),
-  mul as (*),
-  eq as (==),
-  ne as (!=),
-} from "runtime/unsafe/wasmi32"
+include "runtime/malloc"
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { add as (+), sub as (-), mul as (*), eq as (==), ne as (!=) }
 
 primitive assert: Bool -> Void = "@assert"
 primitive ignore: a -> Void = "@ignore"

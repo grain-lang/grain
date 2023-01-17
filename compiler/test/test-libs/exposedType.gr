@@ -1,6 +1,8 @@
-import Map from "map"
+module ExposedType
 
-export let apply = (f: Map.Map<String, String> -> Void) => {
+include "map"
+
+expose let apply = (f: Map.Map<String, String> -> Void) => {
   let map = Map.make()
   Map.set("foo", "bar", map)
   f(map)

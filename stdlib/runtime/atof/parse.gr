@@ -26,13 +26,16 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
 */
+module Parse
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import { newInt32, newInt64, newFloat64 } from "runtime/dataStructures"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf64"
+include "runtime/dataStructures"
+from DataStructures use { newInt32, newInt64, newFloat64 }
 
-import {
+include "./common"
+from Common use {
   _CHAR_CODE_UNDERSCORE,
   _CHAR_CODE_PLUS,
   _CHAR_CODE_MINUS,
@@ -58,10 +61,12 @@ import {
   biasedFpToNumber,
   fpNan,
   fpInf,
-} from "./common"
+}
 
-import { computeFloat } from "./lemire"
-import { parseLongMantissa } from "./slow"
+include "./lemire"
+from Lemire use { computeFloat }
+include "./slow"
+from Slow use { parseLongMantissa }
 
 // Try to parse 8 digits at a time:
 // https://johnnylee-sde.github.io/Fast-numeric-string-to-int/
@@ -497,7 +502,7 @@ let parseInfNan = s => {
 }
 
 @unsafe
-export let isFastPath =
+expose let isFastPath =
   (
     exponent: WasmI32,
     mantissa: WasmI64,
@@ -514,7 +519,7 @@ export let isFastPath =
 }
 
 @unsafe
-export let parseFloat = (string: String) => {
+expose let parseFloat = (string: String) => {
   let (!=) = WasmI32.ne
 
   match (parseFloatToParts(string)) {

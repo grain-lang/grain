@@ -3,13 +3,15 @@
  *
  * The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `nil` type in Grain; use an Option where you would normally reach for `null` or `nil`.
  *
- * @example import Option from "option"
+ * @example include "option"
  *
  * @example let hasValue = Some(1234) // Creates an Option containing 1234
  * @example let noValue = None // Creates an Option containing nothing
  *
  * @since v0.2.0
  */
+
+module Option
 
 /**
  * @section Values: Functions for working with the Option data type.
@@ -23,7 +25,7 @@
  *
  * @since v0.2.0
  */
-export let isSome = option => {
+expose let isSome = option => {
   match (option) {
     Some(_) => true,
     None => false,
@@ -38,7 +40,7 @@ export let isSome = option => {
  *
  * @since v0.2.0
  */
-export let isNone = option => {
+expose let isNone = option => {
   match (option) {
     None => true,
     Some(_) => false,
@@ -54,7 +56,7 @@ export let isNone = option => {
  *
  * @since v0.2.0
  */
-export let contains = (value, option) => {
+expose let contains = (value, option) => {
   match (option) {
     Some(x) => x == value,
     None => false,
@@ -73,7 +75,7 @@ export let contains = (value, option) => {
  *
  * @since v0.2.0
  */
-export let expect = (msg, option) => {
+expose let expect = (msg, option) => {
   match (option) {
     Some(x) => x,
     None => fail msg,
@@ -91,7 +93,7 @@ export let expect = (msg, option) => {
  *
  * @since v0.2.0
  */
-export let unwrap = option => {
+expose let unwrap = option => {
   expect("Could not unwrap None value", option)
 }
 
@@ -104,7 +106,7 @@ export let unwrap = option => {
  *
  * @since v0.2.0
  */
-export let unwrapWithDefault = (default, option) => {
+expose let unwrapWithDefault = (default, option) => {
   match (option) {
     Some(x) => x,
     None => default,
@@ -120,7 +122,7 @@ export let unwrapWithDefault = (default, option) => {
  *
  * @since v0.2.0
  */
-export let map = (fn, option) => {
+expose let map = (fn, option) => {
   match (option) {
     Some(x) => Some(fn(x)),
     None => None,
@@ -138,7 +140,7 @@ export let map = (fn, option) => {
  *
  * @since v0.2.0
  */
-export let mapWithDefault = (fn, default, option) => {
+expose let mapWithDefault = (fn, default, option) => {
   match (option) {
     Some(x) => fn(x),
     None => default,
@@ -157,7 +159,7 @@ export let mapWithDefault = (fn, default, option) => {
  *
  * @since v0.2.0
  */
-export let mapWithDefaultFn = (fn, defaultFn, option) => {
+expose let mapWithDefaultFn = (fn, defaultFn, option) => {
   match (option) {
     Some(x) => fn(x),
     None => defaultFn(),
@@ -173,7 +175,7 @@ export let mapWithDefaultFn = (fn, defaultFn, option) => {
  *
  * @since v0.2.0
  */
-export let flatMap = (fn, option) => {
+expose let flatMap = (fn, option) => {
   match (option) {
     Some(x) => fn(x),
     None => None,
@@ -190,7 +192,7 @@ export let flatMap = (fn, option) => {
  *
  * @since v0.2.0
  */
-export let filter = (fn, option) => {
+expose let filter = (fn, option) => {
   match (option) {
     Some(x) =>
       if (fn(x)) {
@@ -211,7 +213,7 @@ export let filter = (fn, option) => {
  *
  * @since v0.2.0
  */
-export let zip = (optionA, optionB) => {
+expose let zip = (optionA, optionB) => {
   match ((optionA, optionB)) {
     (Some(a), Some(b)) => Some((a, b)),
     _ => None,
@@ -228,7 +230,7 @@ export let zip = (optionA, optionB) => {
  *
  * @since v0.2.0
  */
-export let zipWith = (fn, optionA, optionB) => {
+expose let zipWith = (fn, optionA, optionB) => {
   match ((optionA, optionB)) {
     (Some(a), Some(b)) => Some(fn(a, b)),
     _ => None,
@@ -245,7 +247,7 @@ export let zipWith = (fn, optionA, optionB) => {
  *
  * @since v0.2.0
  */
-export let flatten = option => {
+expose let flatten = option => {
   match (option) {
     Some(Some(x)) => Some(x),
     _ => None,
@@ -260,7 +262,7 @@ export let flatten = option => {
  *
  * @since v0.2.0
  */
-export let toList = option => {
+expose let toList = option => {
   match (option) {
     Some(x) => [x],
     None => [],
@@ -275,7 +277,7 @@ export let toList = option => {
  *
  * @since v0.2.0
  */
-export let toArray = option => {
+expose let toArray = option => {
   match (option) {
     Some(x) => [> x],
     None => [>],
@@ -291,7 +293,7 @@ export let toArray = option => {
  *
  * @since v0.2.0
  */
-export let toResult = (err, option) => {
+expose let toResult = (err, option) => {
   match (option) {
     Some(a) => Ok(a),
     None => Err(err),
@@ -306,7 +308,7 @@ export let toResult = (err, option) => {
  *
  * @since v0.2.0
  */
-export let sideEffect = (fn, option) => {
+expose let sideEffect = (fn, option) => {
   match (option) {
     Some(x) => fn(x),
     None => void,
@@ -323,7 +325,7 @@ export let sideEffect = (fn, option) => {
  *
  * @since v0.2.0
  */
-export let peek = (fn, option) => {
+expose let peek = (fn, option) => {
   sideEffect(fn, option)
   option
 }
@@ -337,7 +339,7 @@ export let peek = (fn, option) => {
  *
  * @since v0.2.0
  */
-export let or = (optionA, optionB) => {
+expose let or = (optionA, optionB) => {
   match (optionA) {
     Some(x) => optionA,
     None => optionB,
@@ -353,7 +355,7 @@ export let or = (optionA, optionB) => {
  *
  * @since v0.2.0
  */
-export let and = (optionA, optionB) => {
+expose let and = (optionA, optionB) => {
   match (optionA) {
     Some(_) => optionB,
     None => optionA,

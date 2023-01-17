@@ -1,4 +1,5 @@
 /* grainc-flags --compilation-mode=runtime */
+module GC
 
 /* Notes:
  *
@@ -18,18 +19,13 @@
  *   userPtr : The pointer returned (and referenced by) to the Grain runtime
  */
 
-import Malloc from "runtime/malloc"
-import Tags from "runtime/unsafe/tags"
-import WasmI32, {
-  add as (+),
-  sub as (-),
-  mul as (*),
-  and as (&),
-  eq as (==),
-} from "runtime/unsafe/wasmi32"
+include "runtime/malloc" as Malloc
+include "runtime/unsafe/tags" as Tags
+include "runtime/unsafe/wasmi32" as WasmI32
+from WasmI32 use { add as (+), sub as (-), mul as (*), and as (&), eq as (==) }
 
 // Using foreigns directly here to avoid cyclic dependency
-import foreign wasm fd_write: (
+foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
@@ -55,8 +51,8 @@ let utoa32BufferedDummy = (a: WasmI32, b: WasmI32, c: WasmI32) => void
 WasmI32.store(WasmI32.fromGrain(decimalCount32Dummy) - 8n, 2n, 0n)
 WasmI32.store(WasmI32.fromGrain(utoa32BufferedDummy) - 8n, 2n, 0n)
 
-export let decimalCount32 = box(decimalCount32Dummy)
-export let utoa32Buffered = box(utoa32BufferedDummy)
+expose let decimalCount32 = box(decimalCount32Dummy)
+expose let utoa32Buffered = box(utoa32BufferedDummy)
 
 let mut _DEBUG = false
 
@@ -64,7 +60,7 @@ let _HEADER_SIZE = 8n
 
 /*
 //Debugging functions:
-import foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
+foreign wasm fd_sync : (WasmI32) -> WasmI32 from "wasi_snapshot_preview1"
 
 // incRef debug messages: "decRef: 0xNNNNNN (prev count: nn)\n"
 let _INCREF_DEBUG_STR_1 = "incRef: 0x"
@@ -151,7 +147,7 @@ let setRefCount = (userPtr: WasmI32, count: WasmI32) => {
   WasmI32.store(userPtr - _HEADER_SIZE, count, 0n)
 }
 
-export let malloc = (size: WasmI32) => {
+expose let malloc = (size: WasmI32) => {
   // Add space for header
   let rawPtr = Malloc.malloc(size + _HEADER_SIZE)
 
@@ -163,12 +159,12 @@ export let malloc = (size: WasmI32) => {
   rawPtr + _HEADER_SIZE
 }
 
-export let free = (userPtr: WasmI32) => {
+expose let free = (userPtr: WasmI32) => {
   // Free the raw pointer
   Malloc.free(userPtr - _HEADER_SIZE)
 }
 
-export let incRef = (userPtr: WasmI32) => {
+expose let incRef = (userPtr: WasmI32) => {
   if (
     WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
     WasmI32.ne(userPtr, 0n)
@@ -261,11 +257,11 @@ decRefChildren = (userPtr: WasmI32) => {
   }
 }
 
-export let decRef = userPtr => decRef(userPtr, false)
+expose let decRef = userPtr => decRef(userPtr, false)
 
 // For debugging:
 
-// export let getRefCount = (value) => {
+// expose let getRefCount = (value) => {
 //   let userPtr = WasmI32.fromGrain(value)
 //   let ret = if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
 //     WasmI32.toGrain((getRefCount(userPtr) * 2n) + 1n) : Number
@@ -276,7 +272,7 @@ export let decRef = userPtr => decRef(userPtr, false)
 //   ret
 // }
 
-// export let rec setDebug = (enabled: Bool) => {
+// expose let rec setDebug = (enabled: Bool) => {
 //   _DEBUG = enabled
 //   decRef(WasmI32.fromGrain(setDebug))
 //   void

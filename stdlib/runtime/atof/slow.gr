@@ -26,16 +26,19 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
 */
+module Slow
 
 //! Slow, fallback algorithm for cases the Eisel-Lemire algorithm cannot round.
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import { newInt32, newInt64 } from "runtime/dataStructures"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures"
+from DataStructures use { newInt32, newInt64 }
 
-import {
-  BiasedFp,
+include "./common"
+from Common use {
+  type BiasedFp,
   fpZero,
   fpInf,
   fpErr,
@@ -43,8 +46,9 @@ import {
   _INFINITE_POWER,
   _MANTISSA_EXPLICIT_BITS_32,
   _MANTISSA_EXPLICIT_BITS_64,
-} from "./common"
-import Decimal, { parseDecimal, _DECIMAL_POINT_RANGE } from "./decimal"
+}
+include "./decimal"
+from Decimal use { parseDecimal, _DECIMAL_POINT_RANGE }
 
 @unsafe
 let _MAX_SHIFT = 60n
@@ -112,7 +116,7 @@ let getShift = n => {
  * available here: <https://arxiv.org/pdf/2101.11408.pdf#section.11>.
 */
 @unsafe
-export let parseLongMantissa = (s: String) => {
+expose let parseLongMantissa = (s: String) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (&) = WasmI32.and

@@ -1,15 +1,17 @@
 /**
  * @module PriorityQueue: A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
  *
- * @example import PriorityQueue from "priorityqueue"
+ * @example include "priorityqueue"
  *
  * @since v0.5.3
  */
 
-import Array from "array"
-import List from "list"
-import Number from "number"
-import Option from "option"
+module PriorityQueue
+
+include "array"
+include "list"
+include "number"
+include "option"
 
 /**
  * @section Types: Type declarations included in the PriorityQueue module.
@@ -88,7 +90,7 @@ let rec siftUp = (i, pq) => {
  *
  * @since v0.5.3
  */
-export let makeSized = (size, comp) => {
+expose let makeSized = (size, comp) => {
   { size: 0, array: Array.make(size, None), comp }
 }
 
@@ -106,7 +108,7 @@ export let makeSized = (size, comp) => {
  *
  * @since v0.5.3
  */
-export let make = comp => {
+expose let make = comp => {
   makeSized(16, comp)
 }
 
@@ -118,7 +120,7 @@ export let make = comp => {
  *
  * @since v0.5.3
  */
-export let size = pq => {
+expose let size = pq => {
   pq.size
 }
 
@@ -130,7 +132,7 @@ export let size = pq => {
  *
  * @since v0.5.3
  */
-export let isEmpty = pq => {
+expose let isEmpty = pq => {
   pq.size == 0
 }
 
@@ -142,7 +144,7 @@ export let isEmpty = pq => {
  *
  * @since v0.5.3
  */
-export let push = (val, pq) => {
+expose let push = (val, pq) => {
   let arrLen = Array.length(pq.array)
   // double size of internal array if out of space
   if (pq.size == arrLen) {
@@ -168,7 +170,7 @@ export let push = (val, pq) => {
  *
  * @since v0.5.3
  */
-export let peek = pq => {
+expose let peek = pq => {
   if (pq.size == 0) {
     None
   } else {
@@ -184,7 +186,7 @@ export let peek = pq => {
  *
  * @since v0.5.3
  */
-export let pop = pq => {
+expose let pop = pq => {
   if (pq.size == 0) {
     None
   } else {
@@ -209,7 +211,7 @@ export let pop = pq => {
  *
  * @since v0.5.3
  */
-export let drain = pq => {
+expose let drain = pq => {
   let rec drainRec = acc => {
     match (pop(pq)) {
       Some(val) => drainRec([val, ...acc]),
@@ -232,7 +234,7 @@ export let drain = pq => {
  *
  * @since v0.5.4
  */
-export let fromArray = (array, comp) => {
+expose let fromArray = (array, comp) => {
   let size = Array.length(array)
   let array = Array.map(x => Some(x), array)
   let heap = { size, array, comp }
@@ -255,7 +257,7 @@ export let fromArray = (array, comp) => {
  *
  * @since v0.5.3
  */
-export let fromList = (list, comp) => {
+expose let fromList = (list, comp) => {
   let array = Array.fromList(list)
   fromArray(array, comp)
 }

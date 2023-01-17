@@ -1,10 +1,12 @@
-import Number from "number"
-import Result from "result"
-import Int32 from "int32"
-import Int64 from "int64"
-import Float32 from "float32"
-import Float64 from "float64"
-import BI from "bigint"
+module NumberTest
+
+include "number"
+include "result"
+include "int32"
+include "int64"
+include "float32"
+include "float64"
+include "bigint" as BI
 
 // Constants Test
 assert Number.nan != Number.nan

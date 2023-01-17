@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Bytes from "bytes"
+include "bytes"
 ```
 
 ## Values

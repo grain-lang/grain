@@ -1,3 +1,7 @@
-let x = 4;
-let y = 5;
-let z = (foo) => { "bar" };
+module NoExports
+
+let x = 4
+let y = 5
+let z = foo => {
+  "bar"
+}

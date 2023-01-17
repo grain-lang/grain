@@ -1,3 +1,5 @@
-export type FnType = () -> String
+module FuncAliasExport
 
-export let function: FnType = () => "abc"
+expose type FnType = () -> String
+
+expose let function: FnType = () => "abc"

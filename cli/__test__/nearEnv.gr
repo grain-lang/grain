@@ -1,28 +1,29 @@
 /* grainc-flags --no-gc --no-bulk-memory */
+module NearEnv
 
-export foreign wasm storage_read: (
+expose foreign wasm storage_read: (
   WasmI64,
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> WasmI64 as storageRead from "env"
-export foreign wasm storage_write: (
+expose foreign wasm storage_write: (
   WasmI64,
   WasmI64,
   WasmI64,
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> WasmI64 as storageWrite from "env"
-export foreign wasm storage_has_key: (
+expose foreign wasm storage_has_key: (
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> WasmI64 as storageHasKey from "env"
 
-export foreign wasm read_register: (
+expose foreign wasm read_register: (
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> Void as readRegister from "env"
 
-export foreign wasm value_return: (
+expose foreign wasm value_return: (
   WasmI64,
-  WasmI64
+  WasmI64,
 ) -> Void as valueReturn from "env"

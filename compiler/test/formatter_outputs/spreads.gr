@@ -1,3 +1,5 @@
+module Spreads
+
 let rec filter = (fn, list) => {
   match (list) {
     [] => [],

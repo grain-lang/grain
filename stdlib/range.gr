@@ -1,8 +1,10 @@
 /**
  * @module Range: Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
- * @example import Range from "range"
+ * @example include "range"
  * @since v0.3.0
  */
+
+module Range
 
 /**
  * @section Types: Type declarations included in the Range module.
@@ -11,7 +13,7 @@
 /**
  * Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
  */
-export enum Range {
+expose enum Range {
   Inclusive(Number, Number),
   Exclusive(Number, Number),
 }
@@ -32,7 +34,7 @@ export enum Range {
  *
  * @since v0.3.0
  */
-export let inRange = (value, range) => {
+expose let inRange = (value, range) => {
   match (range) {
     Inclusive(lower, upper) when value >= lower && value <= upper => true,
     Inclusive(upper, lower) when value >= lower && value <= upper => true,
@@ -52,7 +54,7 @@ export let inRange = (value, range) => {
  *
  * @since v0.3.0
  */
-export let forEach = (fn: Number -> Void, range) => {
+expose let forEach = (fn: Number -> Void, range) => {
   match (range) {
     Inclusive(lower, upper) when lower <= upper => {
       let mut idx = lower
@@ -96,7 +98,7 @@ export let forEach = (fn: Number -> Void, range) => {
  *
  * @since v0.3.2
  */
-export let map = (fn, range) => {
+expose let map = (fn, range) => {
   let mut result = []
   match (range) {
     Inclusive(lower, upper) when lower <= upper => {

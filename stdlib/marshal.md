@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Marshal from "marshal"
+include "marshal"
 ```
 
 ## Values

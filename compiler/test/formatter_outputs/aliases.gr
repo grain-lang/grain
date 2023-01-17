@@ -1,3 +1,5 @@
+module Aliases
+
 type Foo = String
 
 type Foo = String // Test comment

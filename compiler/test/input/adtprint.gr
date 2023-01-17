@@ -1,4 +1,6 @@
-export enum Printable {
+module AdtPrint
+
+expose enum Printable {
   Foo,
   Bar,
   Baz(String),

@@ -1,6 +1,8 @@
 /* grainc-flags --no-pervasives */
+module String
 
-import WasmI32, {
+include "runtime/unsafe/wasmi32" as WasmI32
+from WasmI32 use {
   add as (+),
   sub as (-),
   mul as (*),
@@ -16,22 +18,19 @@ import WasmI32, {
   gtS as (>),
   leS as (<=),
   ltS as (<),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import BI from "runtime/bigint"
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
-import NumberUtils from "runtime/numberUtils"
+}
+include "runtime/unsafe/wasmi64" as WasmI64
+include "runtime/unsafe/wasmf32" as WasmF32
+include "runtime/unsafe/wasmf64" as WasmF64
+include "runtime/bigint" as BI
+include "runtime/unsafe/memory" as Memory
+include "runtime/unsafe/tags" as Tags
+include "runtime/numberUtils" as NumberUtils
 
-import {
-  allocateString,
-  allocateArray,
-  untagSimpleNumber,
-} from "runtime/dataStructures"
+include "runtime/dataStructures" as DataStructures
+from DataStructures use { allocateString, allocateArray, untagSimpleNumber }
 
-import foreign wasm fd_write: (
+foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
@@ -202,7 +201,7 @@ let reverse = list => {
 }
 
 @unsafe
-export let concat = (s1: String, s2: String) => {
+expose let concat = (s1: String, s2: String) => {
   let ptr1 = WasmI32.fromGrain(s1)
   let ptr2 = WasmI32.fromGrain(s2)
 
@@ -626,13 +625,13 @@ listToString = (ptr, extraIndents) => {
 }
 
 @unsafe
-export let toString = value => {
+expose let toString = value => {
   let value = WasmI32.fromGrain(value)
   toStringHelp(value, 0n, true)
 }
 
 @unsafe
-export let print = value => {
+expose let print = value => {
   // First convert the value to string, if it isn't one already.
   let valuePtr = WasmI32.fromGrain(value)
   let s = toString(value)

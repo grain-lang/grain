@@ -1,4 +1,6 @@
-export *
+module SameExport
+
+expose *
 
 let foo = () => 5
 let foo = () => foo() + 1

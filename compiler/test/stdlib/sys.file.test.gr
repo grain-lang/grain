@@ -1,5 +1,7 @@
-import Fs from "sys/file"
-import Result from "result"
+module FileTest
+
+include "sys/file" as Fs
+include "result"
 
 // fdRead
 let foo = Result.unwrap(

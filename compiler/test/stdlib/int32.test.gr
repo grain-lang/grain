@@ -1,4 +1,7 @@
-import * from "int32"
+module Int32Test
+
+include "int32"
+from Int32 use *
 
 assert fromNumber(5) == 5l
 assert fromNumber(0) == 0l

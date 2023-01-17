@@ -3,20 +3,18 @@
  *
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
- * @example import Char from "char"
+ * @example include "char"
  *
  * @since 0.3.0
  */
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Errors from "runtime/unsafe/errors"
-import Tags from "runtime/unsafe/tags"
-import {
-  tagSimpleNumber,
-  tagChar,
-  untagChar,
-  allocateString,
-} from "runtime/dataStructures"
+module Char
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/errors"
+include "runtime/unsafe/tags"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber, tagChar, untagChar, allocateString }
 
 exception MalformedUtf8
 
@@ -29,13 +27,13 @@ exception MalformedUtf8
  *
  * @since 0.3.0
  */
-export let min = 0x0000
+expose let min = 0x0000
 /**
  * The maximum valid Unicode scalar value.
  *
  * @since 0.3.0
  */
-export let max = 0x10FFFF
+expose let max = 0x10FFFF
 
 /**
  * Determines whether the given character code is a valid Unicode scalar value.
@@ -45,7 +43,7 @@ export let max = 0x10FFFF
  *
  * @since 0.3.0
  */
-export let isValid = charCode => {
+expose let isValid = charCode => {
   charCode >= min &&
     (charCode <= 0xD7FF || charCode >= 0xE000) &&
     charCode <= max
@@ -60,7 +58,7 @@ export let isValid = charCode => {
  * @since 0.3.0
  */
 @unsafe
-export let code = (char: Char) => {
+expose let code = (char: Char) => {
   let usv = untagChar(char)
 
   // This could save an instruction by combining the two tagging operations,
@@ -79,7 +77,7 @@ export let code = (char: Char) => {
  * @since 0.3.0
  */
 @unsafe
-export let fromCode = (usv: Number) => {
+expose let fromCode = (usv: Number) => {
   let (-) = WasmI32.sub
   let (<<) = WasmI32.shl
 
@@ -110,7 +108,7 @@ export let fromCode = (usv: Number) => {
  *
  * @since 0.3.0
  */
-export let succ = char => {
+expose let succ = char => {
   let codePoint = code(char)
   if (codePoint == max) {
     fail "no valid Unicode scalar value past U+10FFF"
@@ -131,7 +129,7 @@ export let succ = char => {
  *
  * @since 0.3.0
  */
-export let pred = char => {
+expose let pred = char => {
   let codePoint = code(char)
   if (codePoint == min) {
     fail "no valid Unicode scalar value below U+0000"
@@ -151,7 +149,7 @@ export let pred = char => {
  * @since 0.3.0
  */
 @unsafe
-export let toString = (char: Char) => {
+expose let toString = (char: Char) => {
   let (+) = WasmI32.add
   let (-) = WasmI32.sub
   let (*) = WasmI32.mul

@@ -1,10 +1,12 @@
+module FunctionParams
+
 let single_arg = x => x
 
 let unit_arg = () => 3
 
 let two_args = (x, y) => 4
 
-export let fake_write: (int, int, int, string) -> string =
+expose let fake_write: (int, int, int, string) -> string =
   (
     fd,
     iovs,

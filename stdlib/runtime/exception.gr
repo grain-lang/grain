@@ -1,8 +1,10 @@
 /* grainc-flags --compilation-mode=runtime */
+module Exception
 
-import WasmI32, { eq as (==), add as (+) } from "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi32" as WasmI32
+from WasmI32 use { eq as (==), add as (+) }
 
-import foreign wasm fd_write: (
+foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
@@ -11,13 +13,13 @@ import foreign wasm fd_write: (
 
 primitive unreachable: () -> a = "@unreachable"
 
-export let mut printers = 0n
+expose let mut printers = 0n
 
 // These functions are dangerous because they leak runtime memory and perform
 // no GC operations. As such, they should only be called by this module and/or
 // modules that understand these restrictions, namely Pervasives.
 
-export let dangerouslyRegisterBasePrinter = f => {
+expose let dangerouslyRegisterBasePrinter = f => {
   let mut current = printers
   while (true) {
     // There will be at least one printer registered by the time this is called
@@ -39,7 +41,7 @@ export let dangerouslyRegisterBasePrinter = f => {
   void
 }
 
-export let dangerouslyRegisterPrinter = f => {
+expose let dangerouslyRegisterPrinter = f => {
   printers = WasmI32.fromGrain((f, printers))
   // We don't decRef the closure or arguments here to avoid a cyclic dep. on Memory.
   // This is fine, as this function is only called seldomly.
@@ -76,7 +78,7 @@ let exceptionToString = (e: Exception) => {
 // the runtime heap, but this is the only module that needs to do it
 let iov = WasmI32.fromGrain([> 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n])
 
-export let panic = (msg: String) => {
+expose let panic = (msg: String) => {
   let ptr = WasmI32.fromGrain(msg)
   let written = iov + 32n
   let lf = iov + 36n
@@ -89,16 +91,16 @@ export let panic = (msg: String) => {
   unreachable()
 }
 
-export let panicWithException = (e: Exception) => {
+expose let panicWithException = (e: Exception) => {
   panic(exceptionToString(e))
 }
 
-export exception DivisionByZero
-export exception ModuloByZero
-export exception Overflow
-export exception NumberNotIntlike
-export exception NumberNotRational
-export exception MatchFailure
+expose exception DivisionByZero
+expose exception ModuloByZero
+expose exception Overflow
+expose exception NumberNotIntlike
+expose exception NumberNotRational
+expose exception MatchFailure
 /*
  * `assert <condition>` is essentially syntactic sugar for:
  * `if (!<condition>) throw AssertionError(<message>)`
@@ -108,7 +110,7 @@ export exception MatchFailure
  * don't have access to memory allocation since malloc.gr depends on this module.
  */
 
-export exception InvalidArgument(String)
+expose exception InvalidArgument(String)
 
 let runtimeErrorPrinter = e => {
   match (e) {

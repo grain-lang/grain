@@ -1,9 +1,11 @@
 /**
  * @module Regex: Regular Expressions.
- * @example import Regex from "regex"
+ * @example include "regex"
  *
  * @since 0.4.3
  */
+
+module Regex
 
 /*
  This library provides support for regular expressions in Grain.
@@ -11,15 +13,16 @@
  which is licensed under Apache 2.0. Racket's regular expression
  engine is itself inspired by the Spencer engine, as found in Tcl.
  */
-import Array from "array"
-import Char from "char"
-import List from "list"
-import Map from "map"
-import Option from "option"
-import Result from "result"
-import String from "string"
-import Float32 from "float32"
-import { min, max } from "number"
+include "array"
+include "char"
+include "list"
+include "map"
+include "option"
+include "result"
+include "string"
+include "float32"
+include "number"
+from Number use { min, max }
 
 /*
 
@@ -3317,7 +3320,7 @@ let interp = (compiledRe, matchBuffer, pos, start, limitOrEnd, state) => {
   compiledRe(matchBuffer, pos, start, limitOrEnd, limitOrEnd, state, [])
 }
 
-// Should be exported as abstract type when possible
+// Should be exposed as abstract type when possible
 record RegularExpression {
   reParsed: ParsedRegularExpression,
   reNumGroups: Number,
@@ -3489,7 +3492,7 @@ record RegularExpression {
  *
  * @since 0.4.3
  */
-export let make = (regexString: String) => {
+expose let make = (regexString: String) => {
   let buf = makeRegExBuf(regexString)
   match (parseRegex(buf)) {
     Err(e) => Err(e),
@@ -3625,7 +3628,7 @@ let searchMatch =
  *
  * @since 0.4.3
  */
-export record MatchResult {
+expose record MatchResult {
   /**
    * Returns the contents of the given group
    */
@@ -3792,7 +3795,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
  *
  * @since 0.4.3
  */
-export let isMatch = (rx: RegularExpression, string: String) => {
+expose let isMatch = (rx: RegularExpression, string: String) => {
   fastDriveRegexIsMatch(rx, string, 0, String.length(string))
 }
 
@@ -3809,7 +3812,7 @@ export let isMatch = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-export let isMatchRange =
+expose let isMatchRange =
   (
     rx: RegularExpression,
     string: String,
@@ -3829,7 +3832,7 @@ export let isMatchRange =
  *
  * @since 0.4.3
  */
-export let find = (rx: RegularExpression, string: String) => {
+expose let find = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatch(rx, string, 0, String.length(string))
 }
 
@@ -3846,7 +3849,7 @@ export let find = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-export let findRange =
+expose let findRange =
   (
     rx: RegularExpression,
     string: String,
@@ -3862,7 +3865,7 @@ export let findRange =
  * @param string: The string to search
  * @returns The list of matches
  */
-export let findAll = (rx: RegularExpression, string: String) => {
+expose let findAll = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatchAll(rx, string, 0, String.length(string))
 }
 
@@ -3879,7 +3882,7 @@ export let findAll = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-export let findAllRange =
+expose let findAllRange =
   (
     rx: RegularExpression,
     string: String,
@@ -4039,7 +4042,7 @@ let regexReplaceHelp =
  *
  * @since 0.4.3
  */
-export let replace =
+expose let replace =
   (
     rx: RegularExpression,
     toSearch: String,
@@ -4061,7 +4064,7 @@ export let replace =
  *
  * @since 0.4.3
  */
-export let replaceAll =
+expose let replaceAll =
   (
     rx: RegularExpression,
     toSearch: String,
@@ -4119,7 +4122,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
  *
  * @since v0.5.5
  */
-export let split = (rx: RegularExpression, str: String) => {
+expose let split = (rx: RegularExpression, str: String) => {
   regexSplitHelp(rx, str, false)
 }
 
@@ -4137,6 +4140,6 @@ export let split = (rx: RegularExpression, str: String) => {
  *
  * @since v0.5.5
  */
-export let splitAll = (rx: RegularExpression, str: String) => {
+expose let splitAll = (rx: RegularExpression, str: String) => {
   regexSplitHelp(rx, str, true)
 }

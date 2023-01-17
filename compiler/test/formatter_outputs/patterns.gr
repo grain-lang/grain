@@ -1,5 +1,7 @@
-import Option from "option"
-import List from "list"
+module Patterns
+
+include "option"
+include "list"
 
 let user = Some("Bob")
 

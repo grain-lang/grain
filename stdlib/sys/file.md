@@ -7,7 +7,7 @@ Utilities for accessing the filesystem & working with files.
 Many of the functions in this module are not intended to be used directly, but rather for other libraries to be built on top of them.
 
 ```grain
-import File from "sys/file"
+include "sys/file"
 ```
 
 ## Types

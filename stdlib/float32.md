@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Float32 from "float32"
+include "float32"
 ```
 
 ## Constants

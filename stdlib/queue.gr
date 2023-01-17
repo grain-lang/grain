@@ -5,7 +5,10 @@
  *
  * @deprecated This module will be renamed to ImmutableQueue in the v0.6.0 release of Grain.
  */
-import List from "list"
+
+module Queue
+
+include "list"
 
 /**
  * @section Types: Type declarations included in the Queue module.
@@ -17,7 +20,7 @@ record Queue<a> {
 }
 
 /**
- * @section Values: Functions and constants for working with queues.
+ * @section Values: Functions and constants for working with immutable arrays.
  */
 
 /**
@@ -25,7 +28,7 @@ record Queue<a> {
  *
  * @since v0.5.4
  */
-export let empty = {
+expose let empty = {
   let empty = { forwards: [], backwards: [] }
   empty
 }
@@ -39,7 +42,7 @@ export let empty = {
  *
  * @since v0.2.0
  */
-export let make = () => {
+expose let make = () => {
   { forwards: [], backwards: [] }
 }
 
@@ -51,7 +54,7 @@ export let make = () => {
  *
  * @since v0.2.0
  */
-export let isEmpty = queue => {
+expose let isEmpty = queue => {
   match (queue) {
     { forwards: [], backwards: [] } => true,
     _ => false,
@@ -69,7 +72,7 @@ export let isEmpty = queue => {
  * @history v0.3.2: Deprecated `head` function
  * @history v0.4.0: Removed `head` function
  */
-export let peek = queue => {
+expose let peek = queue => {
   match (queue) {
     { forwards: [], backwards: [] } => None,
     { forwards, backwards } => List.head(forwards),
@@ -88,7 +91,7 @@ export let peek = queue => {
  * @history v0.3.2: Deprecated `enqueue` function
  * @history v0.4.0: Removed `enqueue` function
  */
-export let push = (value, queue) => {
+expose let push = (value, queue) => {
   match (queue) {
     { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
     { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
@@ -106,7 +109,7 @@ export let push = (value, queue) => {
  * @history v0.3.2: Deprecated `dequeue` function
  * @history v0.4.0: Removed `dequeue` function
  */
-export let pop = queue => {
+expose let pop = queue => {
   match (queue) {
     { forwards: [], backwards: [] } => queue,
     { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
@@ -127,7 +130,7 @@ export let pop = queue => {
  *
  * @since v0.3.2
  */
-export let size = queue => {
+expose let size = queue => {
   match (queue) {
     { forwards: [], backwards: [] } => 0,
     { forwards, backwards: [] } => List.length(forwards),

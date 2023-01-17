@@ -1,6 +1,8 @@
 /* grainc-flags --no-pervasives */
+module Compare
 
-import WasmI32, {
+include "runtime/unsafe/wasmi32" as WasmI32
+from WasmI32 use {
   eq as (==),
   ne as (!=),
   and as (&),
@@ -14,12 +16,14 @@ import WasmI32, {
   remS as (%),
   shl as (<<),
   shrU as (>>>),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
-import { tagSimpleNumber } from "runtime/dataStructures"
-import { isNumber, cmp as numberCompare } from "runtime/numbers"
+}
+include "runtime/unsafe/wasmi64" as WasmI64
+include "runtime/unsafe/memory" as Memory
+include "runtime/unsafe/tags" as Tags
+include "runtime/dataStructures" as DataStructures
+from DataStructures use { tagSimpleNumber }
+include "runtime/numbers" as Numbers
+from Numbers use { isNumber, cmp as numberCompare }
 
 primitive (!): Bool -> Bool = "@not"
 primitive (||): (Bool, Bool) -> Bool = "@or"
@@ -174,6 +178,6 @@ compareHelp = (x, y) => {
 }
 
 @unsafe
-export let compare = (x: a, y: a) => {
+expose let compare = (x: a, y: a) => {
   compareHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
 }

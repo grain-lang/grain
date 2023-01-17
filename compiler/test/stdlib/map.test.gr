@@ -1,6 +1,8 @@
-import Map from "map"
-import List from "list"
-import Array from "array"
+module MapTest
+
+include "map" as Map
+include "list" as List
+include "array" as Array
 
 // Data types used in multiple tests
 enum Resource {

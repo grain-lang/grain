@@ -3,14 +3,16 @@
  *
  * The Exception type represents an error that has occured during computation.
  *
- * @example import Exception from "exception"
+ * @example include "exception"
  *
  * @since 0.3.0
  */
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import Exception from "runtime/exception"
+module Exception
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/memory"
+include "runtime/exception"
 
 /**
  * @section Values: Functions included in the Exception module.
@@ -26,7 +28,7 @@ import Exception from "runtime/exception"
  * @since v0.3.0
  */
 @disableGC
-export let rec registerPrinter = (printer: Exception -> Option<String>) => {
+expose let rec registerPrinter = (printer: Exception -> Option<String>) => {
   // This function _must_ be @disableGC because the printer list uses
   // unsafe types. Not really a memory leak as this list is never collected
 

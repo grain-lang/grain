@@ -1,17 +1,19 @@
 /**
  * @module ImmutableArray: An immutable array implementation, providing fast arbitrary lookups and modifications.
  *
- * @example import ImmutableArray from "immutablearray"
+ * @example include "immutablearray"
  *
  * @since v0.6.0
  */
 
-import List from "list"
-import Array from "array"
-import Set from "set"
-import Buffer from "buffer"
-import Option from "option"
-import Number from "number"
+module ImmutableArray
+
+include "list"
+include "array"
+include "set"
+include "buffer"
+include "option"
+include "number"
 
 // Immutable arrays implemented as relaxed radix balanced trees. This data
 // structure allows access and updating in O(log(n)) time, but since the tree
@@ -93,7 +95,7 @@ record ImmutableArray<a> {
  * 
  * @since v0.6.0
  */
-export let empty = {
+expose let empty = {
   let empty = { length: 0, shift: branchingBits, root: [>], tail: [>] }
   empty
 }
@@ -106,7 +108,7 @@ export let empty = {
  *
  * @since v0.6.0
  */
-export let isEmpty = array => array.length == 0
+expose let isEmpty = array => array.length == 0
 
 /**
  * Provides the length of the input array.
@@ -117,7 +119,7 @@ export let isEmpty = array => array.length == 0
  * @example length(fromList([1, 2, 3, 4, 5])) == 5
  * @since v0.6.0
  */
-export let length = array => array.length
+expose let length = array => array.length
 
 let tailIndex = length => {
   let shiftedRight = length >> branchingBits
@@ -175,7 +177,7 @@ let log32floor = num => {
  *
  * @since v0.6.0
  */
-export let get = (index, array) => {
+expose let get = (index, array) => {
   let index = wrapNegativeIndex(array.length, index)
 
   let rec getInner = (shift, node) => {
@@ -210,7 +212,7 @@ export let get = (index, array) => {
  *
  * @since v0.6.0
  */
-export let set = (index, value, array) => {
+expose let set = (index, value, array) => {
   let index = wrapNegativeIndex(array.length, index)
 
   let rec setInner = (shift, node) => {
@@ -376,7 +378,7 @@ let appendBuilder = (toAppend, builder) => {
  *
  * @since v0.6.0
  */
-export let append = (array1, array2) => {
+expose let append = (array1, array2) => {
   // Magic number of 4 determined best from benchmarks according to Elm's
   // Array implementation
   if (array2.length <= branchingFactor * 4) {
@@ -416,7 +418,7 @@ export let append = (array1, array2) => {
  *
  * @since v0.6.0
  */
-export let concat = arrays => {
+expose let concat = arrays => {
   List.reduce(append, empty, arrays)
 }
 
@@ -433,7 +435,7 @@ export let concat = arrays => {
  *
  * @since v0.6.0
  */
-export let init = (length, fn) => {
+expose let init = (length, fn) => {
   let tailLen = length % branchingFactor
   let btail = Array.init(tailLen, i => fn(length - tailLen + i))
 
@@ -460,7 +462,7 @@ export let init = (length, fn) => {
  *
  * @since v0.6.0
  */
-export let make = (length, value) => {
+expose let make = (length, value) => {
   init(length, (_) => value)
 }
 
@@ -472,7 +474,7 @@ export let make = (length, value) => {
  *
  * @since v0.6.0
  */
-export let forEach = (fn, array) => {
+expose let forEach = (fn, array) => {
   let rec forEachFn = node => {
     match (node) {
       Tree(subTree) => Array.forEach(forEachFn, subTree),
@@ -493,7 +495,7 @@ export let forEach = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let cycle = (fn, n, array) => {
+expose let cycle = (fn, n, array) => {
   for (let mut i = 0; i < n; i += 1) {
     forEach(fn, array)
   }
@@ -509,7 +511,7 @@ export let cycle = (fn, n, array) => {
  *
  * @since v0.6.0
  */
-export let map = (fn, array) => {
+expose let map = (fn, array) => {
   let rec mapFn = node => {
     match (node) {
       Tree(subTree) => Tree(Array.map(mapFn, subTree)),
@@ -540,7 +542,7 @@ export let map = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let reduce = (fn, initial, array) => {
+expose let reduce = (fn, initial, array) => {
   let rec reduceFn = (acc, node) => {
     match (node) {
       Tree(subTree) => Array.reduce(reduceFn, acc, subTree),
@@ -570,7 +572,7 @@ export let reduce = (fn, initial, array) => {
  *
  * @since v0.6.0
  */
-export let reduceRight = (fn, initial, array) => {
+expose let reduceRight = (fn, initial, array) => {
   let rec reduceFn = (node, acc) => {
     match (node) {
       Tree(subTree) => Array.reduceRight(reduceFn, acc, subTree),
@@ -596,7 +598,7 @@ export let reduceRight = (fn, initial, array) => {
  *
  * @since v0.6.0
  */
-export let flatMap = (fn, array) => {
+expose let flatMap = (fn, array) => {
   reduce((acc, x) => append(acc, fn(x)), empty, array)
 }
 
@@ -608,7 +610,7 @@ export let flatMap = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let fromList = list => {
+expose let fromList = list => {
   let rec fromListInner = (list, nodes, numNodes) => {
     let node = Array.fromList(List.take(branchingFactor, list))
     let remaining = List.drop(branchingFactor, list)
@@ -630,7 +632,7 @@ export let fromList = list => {
  *
  * @since v0.6.0
  */
-export let toList = array => {
+expose let toList = array => {
   reduceRight((val, list) => [val, ...list], [], array)
 }
 
@@ -645,7 +647,7 @@ export let toList = array => {
  *
  * @since v0.6.0
  */
-export let filter = (fn, array) => {
+expose let filter = (fn, array) => {
   fromList(reduceRight((x, arr) => if (fn(x)) [x, ...arr] else arr, [], array))
 }
 
@@ -659,7 +661,7 @@ export let filter = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let every = (fn, array) => {
+expose let every = (fn, array) => {
   reduce((acc, x) => acc && fn(x), true, array)
 }
 
@@ -673,7 +675,7 @@ export let every = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let some = (fn, array) => {
+expose let some = (fn, array) => {
   reduce((acc, x) => acc || fn(x), false, array)
 }
 
@@ -685,7 +687,7 @@ export let some = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let reverse = array => {
+expose let reverse = array => {
   fromList(reduce((acc, x) => [x, ...acc], [], array))
 }
 
@@ -699,7 +701,7 @@ export let reverse = array => {
  *
  * @since v0.6.0
  */
-export let contains = (value, array) => {
+expose let contains = (value, array) => {
   reduce((acc, x) => acc || x == value, false, array)
 }
 
@@ -712,7 +714,7 @@ export let contains = (value, array) => {
  *
  * @since v0.6.0
  */
-export let find = (fn, array) => {
+expose let find = (fn, array) => {
   reduce((acc, x) => if (acc == None && fn(x)) Some(x) else acc, None, array)
 }
 
@@ -725,7 +727,7 @@ export let find = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let findIndex = (fn, array) => {
+expose let findIndex = (fn, array) => {
   let mut i = -1
   reduce((acc, x) => {
     i += 1
@@ -743,7 +745,7 @@ export let findIndex = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let product = (array1, array2) => {
+expose let product = (array1, array2) => {
   fromList(
     reduceRight((x1, list) => {
       reduceRight((x2, list) => [(x1, x2), ...list], list, array2)
@@ -760,7 +762,7 @@ export let product = (array1, array2) => {
  *
  * @since v0.6.0
  */
-export let count = (fn, array) => {
+expose let count = (fn, array) => {
   reduce((acc, x) => if (fn(x)) acc + 1 else acc, 0, array)
 }
 
@@ -773,7 +775,7 @@ export let count = (fn, array) => {
  *
  * @since v0.6.0
  */
-export let unique = array => {
+expose let unique = array => {
   let set = Set.fromList(toList(array))
   filter(x => {
     let good = Set.contains(x, set)
@@ -798,7 +800,7 @@ export let unique = array => {
  *
  * @since v0.6.0
  */
-export let zip = (array1, array2) => {
+expose let zip = (array1, array2) => {
   fromList(List.zip(toList(array1), toList(array2)))
 }
 
@@ -822,7 +824,7 @@ export let zip = (array1, array2) => {
  * 
  * @since v0.6.0
  */
-export let zipWith = (fn, array1, array2) => {
+expose let zipWith = (fn, array1, array2) => {
   fromList(List.zipWith(fn, toList(array1), toList(array2)))
 }
 
@@ -834,7 +836,7 @@ export let zipWith = (fn, array1, array2) => {
  *
  * @since v0.6.0
  */
-export let unzip = array => {
+expose let unzip = array => {
   let (list1, list2) = List.unzip(toList(array))
   (fromList(list1), fromList(list2))
 }
@@ -848,7 +850,7 @@ export let unzip = array => {
  *
  * @since v0.6.0
  */
-export let join = (separator, array) => {
+expose let join = (separator, array) => {
   let buf = Buffer.make(16)
   let mut i = 0
   forEach(x => {
@@ -880,7 +882,7 @@ let clampIndex = (len, index) => {
  *
  * @since v0.6.0
  */
-export let slice = (start, end, array) => {
+expose let slice = (start, end, array) => {
   let begin = clampIndex(array.length, start)
   let end = clampIndex(array.length, end)
   let mut i = array.length
@@ -902,7 +904,7 @@ export let slice = (start, end, array) => {
  *
  * @since v0.6.0
  */
-export let sort = (comp, array) => {
+expose let sort = (comp, array) => {
   fromList(List.sort(comp, toList(array)))
 }
 
@@ -921,7 +923,7 @@ export let sort = (comp, array) => {
  *
  * @since v0.6.0
  */
-export let rotate = (n, array) => {
+expose let rotate = (n, array) => {
   let sliceI = if (array.length == 0) 0 else n % array.length
   let before = slice(0, sliceI, array)
   let after = slice(sliceI, array.length, array)

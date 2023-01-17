@@ -1,44 +1,45 @@
 /* grainc-flags --compilation-mode=runtime */
+module WasmF64
 
 // WebAssembly Memory Instructions
-export primitive load: (WasmI32, WasmI32) -> WasmF64 = "@wasm.load_float64"
-export primitive store: (
+expose primitive load: (WasmI32, WasmI32) -> WasmF64 = "@wasm.load_float64"
+expose primitive store: (
   WasmI32,
   WasmF64,
   WasmI32,
 ) -> Void = "@wasm.store_float64"
 
 // WebAssembly Unary Instructions
-export primitive neg: WasmF64 -> WasmF64 = "@wasm.neg_float64"
-export primitive abs: WasmF64 -> WasmF64 = "@wasm.abs_float64"
-export primitive ceil: WasmF64 -> WasmF64 = "@wasm.ceil_float64"
-export primitive floor: WasmF64 -> WasmF64 = "@wasm.floor_float64"
-export primitive trunc: WasmF64 -> WasmF64 = "@wasm.trunc_float64"
-export primitive nearest: WasmF64 -> WasmF64 = "@wasm.nearest_float64"
-export primitive sqrt: WasmF64 -> WasmF64 = "@wasm.sqrt_float64"
+expose primitive neg: WasmF64 -> WasmF64 = "@wasm.neg_float64"
+expose primitive abs: WasmF64 -> WasmF64 = "@wasm.abs_float64"
+expose primitive ceil: WasmF64 -> WasmF64 = "@wasm.ceil_float64"
+expose primitive floor: WasmF64 -> WasmF64 = "@wasm.floor_float64"
+expose primitive trunc: WasmF64 -> WasmF64 = "@wasm.trunc_float64"
+expose primitive nearest: WasmF64 -> WasmF64 = "@wasm.nearest_float64"
+expose primitive sqrt: WasmF64 -> WasmF64 = "@wasm.sqrt_float64"
 
 // WebAssembly Binary Instructions
-export primitive add: (WasmF64, WasmF64) -> WasmF64 = "@wasm.add_float64"
-export primitive sub: (WasmF64, WasmF64) -> WasmF64 = "@wasm.sub_float64"
-export primitive mul: (WasmF64, WasmF64) -> WasmF64 = "@wasm.mul_float64"
-export primitive div: (WasmF64, WasmF64) -> WasmF64 = "@wasm.div_float64"
-export primitive copySign: (
+expose primitive add: (WasmF64, WasmF64) -> WasmF64 = "@wasm.add_float64"
+expose primitive sub: (WasmF64, WasmF64) -> WasmF64 = "@wasm.sub_float64"
+expose primitive mul: (WasmF64, WasmF64) -> WasmF64 = "@wasm.mul_float64"
+expose primitive div: (WasmF64, WasmF64) -> WasmF64 = "@wasm.div_float64"
+expose primitive copySign: (
   WasmF64,
   WasmF64,
 ) -> WasmF64 = "@wasm.copy_sign_float64"
-export primitive min: (WasmF64, WasmF64) -> WasmF64 = "@wasm.min_float64"
-export primitive max: (WasmF64, WasmF64) -> WasmF64 = "@wasm.max_float64"
-export primitive eq: (WasmF64, WasmF64) -> Bool = "@wasm.eq_float64"
-export primitive ne: (WasmF64, WasmF64) -> Bool = "@wasm.ne_float64"
-export primitive lt: (WasmF64, WasmF64) -> Bool = "@wasm.lt_float64"
-export primitive le: (WasmF64, WasmF64) -> Bool = "@wasm.le_float64"
-export primitive gt: (WasmF64, WasmF64) -> Bool = "@wasm.gt_float64"
-export primitive ge: (WasmF64, WasmF64) -> Bool = "@wasm.ge_float64"
+expose primitive min: (WasmF64, WasmF64) -> WasmF64 = "@wasm.min_float64"
+expose primitive max: (WasmF64, WasmF64) -> WasmF64 = "@wasm.max_float64"
+expose primitive eq: (WasmF64, WasmF64) -> Bool = "@wasm.eq_float64"
+expose primitive ne: (WasmF64, WasmF64) -> Bool = "@wasm.ne_float64"
+expose primitive lt: (WasmF64, WasmF64) -> Bool = "@wasm.lt_float64"
+expose primitive le: (WasmF64, WasmF64) -> Bool = "@wasm.le_float64"
+expose primitive gt: (WasmF64, WasmF64) -> Bool = "@wasm.gt_float64"
+expose primitive ge: (WasmF64, WasmF64) -> Bool = "@wasm.ge_float64"
 
 // WebAssembly Conversion instructions
-export primitive reinterpretI64: WasmI64 -> WasmF64 = "@wasm.reinterpret_int64"
-export primitive convertI32S: WasmI32 -> WasmF64 = "@wasm.convert_s_int32_to_float64"
-export primitive convertI32U: WasmI32 -> WasmF64 = "@wasm.convert_u_int32_to_float64"
-export primitive convertI64S: WasmI64 -> WasmF64 = "@wasm.convert_s_int64_to_float64"
-export primitive convertI64U: WasmI64 -> WasmF64 = "@wasm.convert_u_int64_to_float64"
-export primitive promoteF32: WasmF32 -> WasmF64 = "@wasm.promote_float32"
+expose primitive reinterpretI64: WasmI64 -> WasmF64 = "@wasm.reinterpret_int64"
+expose primitive convertI32S: WasmI32 -> WasmF64 = "@wasm.convert_s_int32_to_float64"
+expose primitive convertI32U: WasmI32 -> WasmF64 = "@wasm.convert_u_int32_to_float64"
+expose primitive convertI64S: WasmI64 -> WasmF64 = "@wasm.convert_s_int64_to_float64"
+expose primitive convertI64U: WasmI64 -> WasmF64 = "@wasm.convert_u_int64_to_float64"
+expose primitive promoteF32: WasmF32 -> WasmF64 = "@wasm.promote_float32"

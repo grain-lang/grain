@@ -1,13 +1,15 @@
 /**
  * @module ImmutableMap: An ImmutableMap holds key-value pairs. Any value may be used as a key or value. Operations on an ImmutableMap do not mutate the map's internal state.
- * @example import ImmutableMap from "immutablemap"
+ * @example include "immutablemap"
  *
  * @since v0.5.4
  */
 
-import List from "list"
-import Array from "array"
-import Option from "option"
+module ImmutableMap
+
+include "list"
+include "array"
+include "option"
 
 // implementation based on the paper "Implementing Sets Efficiently in a
 // Functional Language" by Stephen Adams
@@ -40,7 +42,7 @@ let weight = 4
  *
  * @since v0.5.4
  */
-export let empty = Empty
+expose let empty = Empty
 
 // returns the key-value pair of the minimum key in a tree
 let rec min = node => {
@@ -59,7 +61,7 @@ let rec min = node => {
  *
  * @since v0.5.4
  */
-export let size = map => {
+expose let size = map => {
   match (map) {
     Empty => 0,
     Tree({ size, _ }) => size,
@@ -74,7 +76,7 @@ export let size = map => {
  *
  * @since v0.5.4
  */
-export let isEmpty = map => {
+expose let isEmpty = map => {
   match (map) {
     Empty => true,
     Tree(_) => false,
@@ -167,7 +169,7 @@ let balancedNode = (key, val, left, right) => {
  *
  * @since v0.5.4
  */
-export let rec set = (key, val, map) => {
+expose let rec set = (key, val, map) => {
   match (map) {
     Empty => Tree({ key, val, size: 1, left: Empty, right: Empty }),
     Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
@@ -191,7 +193,7 @@ export let rec set = (key, val, map) => {
  *
  * @since v0.5.4
  */
-export let rec get = (key, map) => {
+expose let rec get = (key, map) => {
   match (map) {
     Empty => None,
     Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
@@ -213,7 +215,7 @@ export let rec get = (key, map) => {
  *
  * @since v0.5.4
  */
-export let rec contains = (key, map) => {
+expose let rec contains = (key, map) => {
   Option.isSome(get(key, map))
 }
 
@@ -249,7 +251,7 @@ let removeInner = (left, right) => {
  *
  * @since v0.5.4
  */
-export let rec remove = (key, map) => {
+expose let rec remove = (key, map) => {
   match (map) {
     Empty => Empty,
     Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
@@ -278,7 +280,7 @@ export let rec remove = (key, map) => {
  *
  * @since v0.5.4
  */
-export let update = (key, fn, map) => {
+expose let update = (key, fn, map) => {
   let val = get(key, map)
   match (fn(val)) {
     Some(next) => set(key, next, map),
@@ -294,7 +296,7 @@ export let update = (key, fn, map) => {
  *
  * @since v0.5.4
  */
-export let forEach = (fn, map) => {
+expose let forEach = (fn, map) => {
   let rec forEachInner = node => {
     match (node) {
       Empty => void,
@@ -318,7 +320,7 @@ export let forEach = (fn, map) => {
  *
  * @since v0.5.4
  */
-export let reduce = (fn, init, map) => {
+expose let reduce = (fn, init, map) => {
   let rec reduceInner = (acc, node) => {
     match (node) {
       Empty => acc,
@@ -390,7 +392,7 @@ let reduceRight = (fn, init, map) => {
  *
  * @since v0.5.4
  */
-export let keys = map => {
+expose let keys = map => {
   reduceRight((list, key, _) => [key, ...list], [], map)
 }
 
@@ -402,7 +404,7 @@ export let keys = map => {
  *
  * @since v0.5.4
  */
-export let values = map => {
+expose let values = map => {
   reduceRight((list, _, value) => [value, ...list], [], map)
 }
 
@@ -415,7 +417,7 @@ export let values = map => {
  *
  * @since v0.5.4
  */
-export let filter = (fn, map) => {
+expose let filter = (fn, map) => {
   let rec filterInner = node => {
     match (node) {
       Empty => Empty,
@@ -440,7 +442,7 @@ export let filter = (fn, map) => {
  *
  * @since v0.5.4
  */
-export let reject = (fn, map) => {
+expose let reject = (fn, map) => {
   filter((key, val) => !fn(key, val), map)
 }
 
@@ -452,7 +454,7 @@ export let reject = (fn, map) => {
  *
  * @since v0.5.4
  */
-export let fromList = list => {
+expose let fromList = list => {
   List.reduce((map, (key, val)) => set(key, val, map), empty, list)
 }
 
@@ -464,7 +466,7 @@ export let fromList = list => {
  *
  * @since v0.5.4
  */
-export let toList = map => {
+expose let toList = map => {
   reduceRight((list, key, val) => [(key, val), ...list], [], map)
 }
 
@@ -476,7 +478,7 @@ export let toList = map => {
  *
  * @since v0.5.4
  */
-export let fromArray = array => {
+expose let fromArray = array => {
   Array.reduce((map, (key, val)) => set(key, val, map), empty, array)
 }
 
@@ -488,6 +490,6 @@ export let fromArray = array => {
  *
  * @since v0.5.4
  */
-export let toArray = map => {
+expose let toArray = map => {
   Array.fromList(toList(map))
 }

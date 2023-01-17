@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Regex from "regex"
+include "regex"
 ```
 
 ## Values

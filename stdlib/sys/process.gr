@@ -3,10 +3,13 @@
  *
  * This includes things like accessing environment variables and sending signals.
  *
- * @example import Process from "sys/process"
+ * @example include "sys/process"
  */
 
-import WasmI32, {
+module Process
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
   add as (+),
   mul as (*),
   shrS as (>>),
@@ -15,14 +18,11 @@ import WasmI32, {
   eq as (==),
   ne as (!=),
   ltS as (<),
-} from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import Wasi from "runtime/wasi"
-import {
-  tagSimpleNumber,
-  allocateArray,
-  allocateString,
-} from "runtime/dataStructures"
+}
+include "runtime/unsafe/memory"
+include "runtime/wasi"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
 
 /**
  * @section Types: Type declarations included in the Process module.
@@ -31,7 +31,7 @@ import {
 /**
  * Signals that can be sent to the host system.
  */
-export enum Signal {
+expose enum Signal {
   // Hangup.
   HUP,
   // Terminate interrupt signal.
@@ -100,7 +100,7 @@ export enum Signal {
  * @returns `Ok(args)` of an array containing positional string arguments to the process if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let argv = () => {
+expose let argv = () => {
   let argcPtr = Memory.malloc(8n)
   let argvBufSizePtr = argcPtr + 4n
 
@@ -153,7 +153,7 @@ export let argv = () => {
  * @returns `Ok(vars)` of an array containing environment variables supplied to the process if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let env = () => {
+expose let env = () => {
   let envcPtr = Memory.malloc(8n)
   let envvBufSizePtr = envcPtr + 4n
 
@@ -207,7 +207,7 @@ export let env = () => {
  * @returns `Err(exception)` if unsuccessful. Will not actually return a value if successful, as the process has ended
  */
 @unsafe
-export let exit = (code: Number) => {
+expose let exit = (code: Number) => {
   let mut code = WasmI32.fromGrain(code)
 
   if ((code & 1n) == 0n) {
@@ -227,7 +227,7 @@ export let exit = (code: Number) => {
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let sigRaise = (signalPtr: Signal) => {
+expose let sigRaise = (signalPtr: Signal) => {
   let signal = WasmI32.fromGrain(signalPtr)
   let signal = WasmI32.load(signal, 12n) >> 1n
   let err = Wasi.proc_raise(signal)
@@ -244,7 +244,7 @@ export let sigRaise = (signalPtr: Signal) => {
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let schedYield = () => {
+expose let schedYield = () => {
   let err = Wasi.sched_yield()
   if (err != Wasi._ESUCCESS) {
     Err(Wasi.SystemError(tagSimpleNumber(err)))

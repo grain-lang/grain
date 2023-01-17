@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Int64 from "int64"
+include "int64"
 ```
 
 ## Conversions

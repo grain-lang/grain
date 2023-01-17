@@ -1,0 +1,9 @@
+module ExposeStar
+
+let x = 5
+let y = x => {
+  x
+}
+let z = "foo"
+
+expose *

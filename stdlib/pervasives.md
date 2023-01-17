@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Pervasives from "pervasives"
+include "pervasives"
 ```
 
 ## Types
@@ -845,7 +845,7 @@ toString : a -> String
 ```
 
 Converts the given operand to a string.
-Provides a better representation of data types if those types are exported from the module.
+Provides a better representation of data types if those types are exposed from the module.
 
 Parameters:
 
@@ -872,7 +872,7 @@ print : a -> Void
 
 Prints the given operand to the console. Works for any type. Internally, calls `toString`
 on the operand, so a better representation of data type will be printed if those types
-are exported from the module.
+are exposed from the module.
 
 Parameters:
 

@@ -1,15 +1,20 @@
 /**
  * @module Map: A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
- * @example import Map from "map"
+ * @example include "map"
  *
  * @since v0.2.0
  */
-import List from "list"
-import Array from "array"
-import { hash } from "hash"
-import Memory from "runtime/unsafe/memory"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import { allocateArray, untagSimpleNumber } from "runtime/dataStructures"
+
+module Map
+
+include "list"
+include "array"
+include "runtime/dataStructures"
+from DataStructures use { allocateArray, untagSimpleNumber }
+include "hash"
+from Hash use { hash }
+include "runtime/unsafe/memory"
+include "runtime/unsafe/wasmi32"
 
 // TODO: Consider implementing this as List<(Box<k>, Box<v>)>
 record Bucket<k, v> {
@@ -39,7 +44,7 @@ record Map<k, v> {
  *
  * @since v0.2.0
  */
-export let makeSized = size => { // TODO: This could take an `eq` function to custom comparisons
+expose let makeSized = size => { // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
   { size: 0, buckets }
 }
@@ -51,7 +56,7 @@ export let makeSized = size => { // TODO: This could take an `eq` function to cu
  *
  * @since v0.2.0
  */
-export let make = () => {
+expose let make = () => {
   makeSized(16)
 }
 
@@ -130,7 +135,7 @@ let rec replaceInBucket = (key, value, node) => {
  *
  * @since v0.2.0
  */
-export let set = (key, value, map) => {
+expose let set = (key, value, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -174,7 +179,7 @@ let rec valueFromBucket = (key, node) => {
  *
  * @since v0.2.0
  */
-export let get = (key, map) => {
+expose let get = (key, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -204,7 +209,7 @@ let rec nodeInBucket = (key, node) => {
  *
  * @since v0.2.0
  */
-export let contains = (key, map) => {
+expose let contains = (key, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -236,7 +241,7 @@ let rec removeInBucket = (key, node) => {
  *
  * @since v0.2.0
  */
-export let remove = (key, map) => {
+expose let remove = (key, map) => {
   let buckets = map.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -265,7 +270,7 @@ export let remove = (key, map) => {
  *
  * @since v0.3.0
  */
-export let update = (key, fn, map) => {
+expose let update = (key, fn, map) => {
   let val = get(key, map)
   match (fn(val)) {
     Some(next) => set(key, next, map),
@@ -281,7 +286,7 @@ export let update = (key, fn, map) => {
  *
  * @since v0.2.0
  */
-export let size = map => {
+expose let size = map => {
   map.size
 }
 
@@ -293,7 +298,7 @@ export let size = map => {
  *
  * @since v0.2.0
  */
-export let isEmpty = map => {
+expose let isEmpty = map => {
   size(map) == 0
 }
 
@@ -304,7 +309,7 @@ export let isEmpty = map => {
  *
  * @since v0.2.0
  */
-export let clear = map => {
+expose let clear = map => {
   map.size = 0
   let buckets = map.buckets
   Array.forEachi((bucket, idx) => {
@@ -331,7 +336,7 @@ let rec forEachBucket = (fn, node) => {
  * @since v0.2.0
  * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
-export let forEach = (fn, map) => {
+expose let forEach = (fn, map) => {
   let buckets = map.buckets
   Array.forEach(bucket => {
     forEachBucket(fn, bucket)
@@ -356,7 +361,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
  *
  * @since v0.2.0
  */
-export let reduce = (fn, init, map) => {
+expose let reduce = (fn, init, map) => {
   let buckets = map.buckets
   let mut acc = init
   Array.forEach(bucket => {
@@ -373,7 +378,7 @@ export let reduce = (fn, init, map) => {
  *
  * @since v0.2.0
  */
-export let keys = map => {
+expose let keys = map => {
   reduce((list, key, _value) => [key, ...list], [], map)
 }
 
@@ -385,7 +390,7 @@ export let keys = map => {
  *
  * @since v0.2.0
  */
-export let values = map => {
+expose let values = map => {
   reduce((list, _key, value) => [value, ...list], [], map)
 }
 
@@ -397,7 +402,7 @@ export let values = map => {
  *
  * @since v0.2.0
  */
-export let toList = map => {
+expose let toList = map => {
   reduce((list, key, value) => [(key, value), ...list], [], map)
 }
 
@@ -409,7 +414,7 @@ export let toList = map => {
  *
  * @since v0.2.0
  */
-export let fromList = list => {
+expose let fromList = list => {
   let map = make()
   List.forEach(pair => {
     let (key, value) = pair
@@ -427,7 +432,7 @@ export let fromList = list => {
  * @since v0.2.0
  */
 @unsafe
-export let toArray: Map<a, b> -> Array<(a, b)> = map => {
+expose let toArray: Map<a, b> -> Array<(a, b)> = map => {
   let length = untagSimpleNumber(map.size)
   let array = WasmI32.toGrain(allocateArray(length))
   @unsafe
@@ -455,7 +460,7 @@ export let toArray: Map<a, b> -> Array<(a, b)> = map => {
  *
  * @since v0.2.0
  */
-export let fromArray = array => {
+expose let fromArray = array => {
   let map = make()
   Array.forEach(pair => {
     let (key, value) = pair
@@ -472,7 +477,7 @@ export let fromArray = array => {
  *
  * @since v0.2.0
  */
-export let filter = (predicate, map) => {
+expose let filter = (predicate, map) => {
   let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
     [key, ...list]
   } else {
@@ -491,7 +496,7 @@ export let filter = (predicate, map) => {
  *
  * @since v0.2.0
  */
-export let reject = (predicate, map) => {
+expose let reject = (predicate, map) => {
   filter((key, value) => !predicate(key, value), map)
 }
 
@@ -504,6 +509,6 @@ export let reject = (predicate, map) => {
  *
  * @since v0.2.0
  */
-export let getInternalStats = map => {
+expose let getInternalStats = map => {
   (map.size, Array.length(map.buckets))
 }

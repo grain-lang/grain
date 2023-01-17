@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Path from "path"
+include "path"
 ```
 
 ## Types

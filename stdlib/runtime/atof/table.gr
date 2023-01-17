@@ -1,15 +1,16 @@
 /* grainc-flags --no-pervasives */
+module Table
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Memory from "runtime/unsafe/memory"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf64"
+include "runtime/unsafe/memory"
 
 @unsafe
 let mut _F64_POWERS10_FAST_PATH = -1n
 
 @unsafe
-export let get_F64_POWERS10_FAST_PATH = () => {
+expose let get_F64_POWERS10_FAST_PATH = () => {
   let (==) = WasmI32.eq
   if (_F64_POWERS10_FAST_PATH == -1n) {
     _F64_POWERS10_FAST_PATH = Memory.malloc(256n) // 32 x 64-bit values
@@ -54,7 +55,7 @@ export let get_F64_POWERS10_FAST_PATH = () => {
 let mut _POWERS5 = -1n
 
 @unsafe
-export let get_POWERS5 = () => {
+expose let get_POWERS5 = () => {
   let (==) = WasmI32.eq
   if (_POWERS5 == -1n) {
     _POWERS5 = Memory.malloc(10416n) // 1302 x 64-bit values

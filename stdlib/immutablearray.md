@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import ImmutableArray from "immutablearray"
+include "immutablearray"
 ```
 
 ## Types

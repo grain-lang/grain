@@ -1,5 +1,7 @@
-import Array from "array"
-import String from "string"
+module ArrayTest
+
+include "array"
+include "string"
 
 let arr = [> 1, 2, 3]
 

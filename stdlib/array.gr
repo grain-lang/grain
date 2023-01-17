@@ -1,18 +1,22 @@
 /**
  * @module Array: Utilities for working with arrays.
  *
- * @example import Array from "array"
+ * @example include "array"
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `arrays`
  * @history v0.2.0: Renamed to `array`
  */
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
-import Exception from "runtime/exception"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
+module Array
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures"
+from DataStructures use { allocateArray, tagSimpleNumber }
+include "runtime/exception"
+include "runtime/numbers"
+from Numbers use { coerceNumberToWasmI32 }
 
 /**
  * @section Values: Functions for working with the Array data type.
@@ -45,7 +49,7 @@ let checkLength = length => {
  * @since v0.1.0
  */
 @unsafe
-export let length = array => {
+expose let length = array => {
   let ptr = WasmI32.fromGrain(array: Array<a>)
   tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
 }
@@ -66,7 +70,7 @@ export let length = array => {
  * @since v0.1.0
  */
 @unsafe
-export let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
+expose let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
   let lengthArg = length
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
@@ -99,7 +103,7 @@ export let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
  * @since v0.1.0
  */
 @unsafe
-export let init: (Number, Number -> a) -> Array<a> =
+expose let init: (Number, Number -> a) -> Array<a> =
   (
     length: Number,
     fn: Number -> a,
@@ -134,7 +138,7 @@ export let init: (Number, Number -> a) -> Array<a> =
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let get = (index, array) => {
+expose let get = (index, array) => {
   array[index]
 }
 
@@ -152,7 +156,7 @@ export let get = (index, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let set = (index, value, array) => {
+expose let set = (index, value, array) => {
   array[index] = value
 }
 
@@ -167,7 +171,7 @@ export let set = (index, value, array) => {
  *
  * @since v0.1.0
  */
-export let append = (array1, array2) => {
+expose let append = (array1, array2) => {
   let len1 = length(array1)
   let len2 = length(array2)
 
@@ -190,7 +194,7 @@ export let append = (array1, array2) => {
  *
  * @since v0.1.0
  */
-export let concat = arrays => {
+expose let concat = arrays => {
   // This function is slightly verbose to avoid depending on the List stdlib.
 
   let rec findLength = (arrays, acc) => {
@@ -232,7 +236,7 @@ export let concat = arrays => {
  *
  * @since v0.1.0
  */
-export let copy = array => {
+expose let copy = array => {
   init(length(array), n => array[n])
 }
 
@@ -245,7 +249,7 @@ export let copy = array => {
  *
  * @since v0.4.4
  */
-export let cycle = (fn, n, array) => {
+expose let cycle = (fn, n, array) => {
   let length = length(array)
   for (let mut iteration = 0; iteration < n; iteration += 1) {
     for (let mut count = 0; count < length; count += 1) {
@@ -263,7 +267,7 @@ export let cycle = (fn, n, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let forEach = (fn, array) => {
+expose let forEach = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
     fn(array[count]): Void
@@ -280,7 +284,7 @@ export let forEach = (fn, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let forEachi = (fn, array) => {
+expose let forEachi = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
     fn(array[count], count): Void
@@ -298,7 +302,7 @@ export let forEachi = (fn, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let map = (fn, array) => {
+expose let map = (fn, array) => {
   let length = length(array)
   init(length, i => {
     fn(array[i])
@@ -315,7 +319,7 @@ export let map = (fn, array) => {
  *
  * @since v0.1.0
  */
-export let mapi = (fn, array) => {
+expose let mapi = (fn, array) => {
   let length = length(array)
   init(length, index => {
     fn(array[index], index)
@@ -340,7 +344,7 @@ export let mapi = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let reduce = (fn, initial, array) => {
+expose let reduce = (fn, initial, array) => {
   let mut acc = initial
   forEach(el => acc = fn(acc, el), array)
   acc
@@ -364,7 +368,7 @@ export let reduce = (fn, initial, array) => {
  *
  * @since v0.5.3
  */
-export let reduceRight = (fn, initial, array) => {
+expose let reduceRight = (fn, initial, array) => {
   let mut acc = initial
   for (let mut i = length(array) - 1; i >= 0; i -= 1) {
     acc = fn(array[i], acc)
@@ -389,7 +393,7 @@ export let reduceRight = (fn, initial, array) => {
  *
  * @since v0.3.0
  */
-export let reducei = (fn, initial, array) => {
+expose let reducei = (fn, initial, array) => {
   let mut acc = initial
   forEachi((el, index) => acc = fn(acc, el, index), array)
   acc
@@ -407,7 +411,7 @@ export let reducei = (fn, initial, array) => {
  *
  * @since v0.3.0
  */
-export let flatMap = (fn, array) => {
+expose let flatMap = (fn, array) => {
   let nested = map(fn, array)
   let arrLen = reduce((acc, arr) => acc + length(arr), 0, nested)
   let mut outerI = 0
@@ -433,7 +437,7 @@ export let flatMap = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let every = (fn, array) => {
+expose let every = (fn, array) => {
   let len = length(array)
   let mut all = true
   for (let mut index = 0; all && index < len; index += 1) {
@@ -452,7 +456,7 @@ export let every = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let some = (fn, array) => {
+expose let some = (fn, array) => {
   let len = length(array)
   let mut found = false
   for (let mut index = 0; !found && index < len; index += 1) {
@@ -469,7 +473,7 @@ export let some = (fn, array) => {
  *
  * @since v0.2.0
  */
-export let fill = (value, array) => {
+expose let fill = (value, array) => {
   let length = length(array)
   forEachi((_, index) => {
     array[index] = value
@@ -488,7 +492,7 @@ export let fill = (value, array) => {
  *
  * @since v0.2.0
  */
-export let fillRange = (value, start, stop, array) => {
+expose let fillRange = (value, start, stop, array) => {
   let length = length(array)
   let startIndex = if (start < 0) length + start else start
   let stopIndex = if (stop < 0) length + stop else stop
@@ -519,7 +523,7 @@ export let fillRange = (value, start, stop, array) => {
  *
  * @since v0.4.0
  */
-export let reverse = array => {
+expose let reverse = array => {
   let len = length(array)
   init(len, index => {
     let last = len - index - 1
@@ -535,7 +539,7 @@ export let reverse = array => {
  *
  * @since v0.1.0
  */
-export let toList = array => {
+expose let toList = array => {
   let rec buildList = (acc, index) => {
     let index = index - 1
     if (index < 0) {
@@ -555,7 +559,7 @@ export let toList = array => {
  *
  * @since v0.1.0
  */
-export let fromList = list => {
+expose let fromList = list => {
   let rec listLength = (list, acc) => {
     match (list) {
       [_, ...rest] => listLength(rest, acc + 1),
@@ -586,7 +590,7 @@ export let fromList = list => {
  *
  * @since v0.2.0
  */
-export let contains = (search, array) => {
+expose let contains = (search, array) => {
   // TODO(#189): This should be rewritten to use recursion and pattern matching
   let len = length(array)
   let mut found = false
@@ -605,7 +609,7 @@ export let contains = (search, array) => {
  *
  * @since v0.2.0
  */
-export let find = (fn, array) => {
+expose let find = (fn, array) => {
   let length = length(array)
   if (length == 0) {
     None
@@ -639,7 +643,7 @@ export let find = (fn, array) => {
  *
  * @since v0.2.0
  */
-export let findIndex = (fn, array) => {
+expose let findIndex = (fn, array) => {
   let length = length(array)
   if (length == 0) {
     None
@@ -674,7 +678,7 @@ export let findIndex = (fn, array) => {
  *
  * @since v0.2.0
  */
-export let product = (array1: Array<a>, array2: Array<b>) => {
+expose let product = (array1: Array<a>, array2: Array<b>) => {
   let lenA = length(array1)
   let lenB = length(array2)
   let mut indexA = -1
@@ -698,7 +702,7 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
  *
  * @since v0.2.0
  */
-export let count = (fn, array) => {
+expose let count = (fn, array) => {
   let length = length(array)
   let mut position = 0
   let mut count = 0
@@ -720,7 +724,7 @@ export let count = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let counti = (fn, array) => {
+expose let counti = (fn, array) => {
   let length = length(array)
   let mut count = 0
   for (let mut position = 0; position < length; position += 1) {
@@ -742,7 +746,7 @@ export let counti = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let filter = (fn, array) => {
+expose let filter = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
   forEach(el => {
@@ -767,7 +771,7 @@ export let filter = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let filteri = (fn, array) => {
+expose let filteri = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
   forEachi((el, index) => {
@@ -790,7 +794,7 @@ export let filteri = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let unique = array => {
+expose let unique = array => {
   filteri((el, index) =>
     findIndex(value => value == el, array) == Some(index), array)
 }
@@ -809,7 +813,7 @@ export let unique = array => {
  * @since v0.4.0
  * @history v0.6.0: Support zipping arrays of different sizes
  */
-export let zip = (array1: Array<a>, array2: Array<b>) => {
+expose let zip = (array1: Array<a>, array2: Array<b>) => {
   let len = length(array1)
   let len2 = length(array2)
   let len = if (len > len2) len2 else len
@@ -838,7 +842,7 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  *
  * @since v0.5.3
  */
-export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
+expose let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
   let len1 = length(array1)
   let len2 = length(array2)
   let minLen = if (len1 > len2) len2 else len1
@@ -855,7 +859,7 @@ export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
  *
  * @since v0.4.0
  */
-export let unzip = array => {
+expose let unzip = array => {
   let lenArr = length(array)
 
   let a = init(lenArr, n => {
@@ -880,7 +884,7 @@ export let unzip = array => {
  *
  * @since v0.4.0
  */
-export let join = (separator: String, items: Array<String>) => {
+expose let join = (separator: String, items: Array<String>) => {
   let iter = (acc, str) => {
     match (acc) {
       None => Some(str),
@@ -919,7 +923,7 @@ let wrapNegativeIndex = (arrLen, idx) => {
  *
  * @since v0.4.0
  */
-export let slice = (startIndex, endIndex, array) => {
+expose let slice = (startIndex, endIndex, array) => {
   let arrayLength = length(array)
   let startIndex = wrapNegativeIndex(arrayLength, startIndex)
   let endIndex = wrapNegativeIndex(arrayLength, endIndex)
@@ -948,7 +952,7 @@ export let slice = (startIndex, endIndex, array) => {
  * @param array: The array to be sorted
  * @since v0.4.5
  */
-export let sort = (comp, array) => {
+expose let sort = (comp, array) => {
   let partition = (low, high) => {
     let pivot = array[high]
     let mut i = low - 1
@@ -992,7 +996,7 @@ export let sort = (comp, array) => {
  * 
  * @history v0.6.0: Behavior changed from right-rotation to left-rotation
  */
-export let rotate = (n, arr) => {
+expose let rotate = (n, arr) => {
   let rec gcd = (a, b) => {
     if (b == 0) {
       a

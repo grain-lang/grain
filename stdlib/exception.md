@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Exception from "exception"
+include "exception"
 ```
 
 ## Values

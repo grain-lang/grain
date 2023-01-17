@@ -1,3 +1,5 @@
+module Blocks
+
 { 1 + 1 }
 
 {
