@@ -12,8 +12,7 @@ type mapper = {
   label: (mapper, label_declaration) => label_declaration,
   location: (mapper, Location.t) => Location.t,
   import: (mapper, import_declaration) => import_declaration,
-  export: (mapper, list(export_declaration)) => list(export_declaration),
-  export_all: (mapper, list(export_except)) => list(export_except),
+  export: (mapper, expose_items) => expose_items,
   value_binding: (mapper, value_binding) => value_binding,
   match_branch: (mapper, match_branch) => match_branch,
   value_description: (mapper, value_description) => value_description,
@@ -150,6 +149,40 @@ module E = {
     | PExpNull => null(~loc, ~attributes, ())
     | PExpConstraint(e, t) =>
       constraint_(~loc, ~attributes, sub.expr(sub, e), sub.typ(sub, t))
+    | PExpUse(id, u) =>
+      let u =
+        switch (u) {
+        | PUseItems(items) =>
+          PUseItems(
+            List.map(
+              item => {
+                switch (item) {
+                | PUseType({name, alias, loc}) =>
+                  PUseType({
+                    name: map_identifier(sub, name),
+                    alias: Option.map(map_identifier(sub), alias),
+                    loc: sub.location(sub, loc),
+                  })
+                | PUseModule({name, alias, loc}) =>
+                  PUseModule({
+                    name: map_identifier(sub, name),
+                    alias: Option.map(map_identifier(sub), alias),
+                    loc: sub.location(sub, loc),
+                  })
+                | PUseValue({name, alias, loc}) =>
+                  PUseValue({
+                    name: map_identifier(sub, name),
+                    alias: Option.map(map_identifier(sub), alias),
+                    loc: sub.location(sub, loc),
+                  })
+                }
+              },
+              items,
+            ),
+          )
+        | PUseAll => PUseAll
+        };
+      use(~loc, ~attributes, map_identifier(sub, id), u);
     };
   };
 };
@@ -292,26 +325,10 @@ module MB = {
 };
 
 module I = {
-  let map_shape = (sub, ival) => {
-    Imp.(
-      switch (ival) {
-      | PImportValues(values) =>
-        PImportValues(
-          List.map(
-            ((name, alias)) => (map_loc(sub, name), map_opt(sub, alias)),
-            values,
-          ),
-        )
-      | PImportAllExcept(values) =>
-        PImportAllExcept(List.map(map_loc(sub), values))
-      | PImportModule(id) => PImportModule(map_loc(sub, id))
-      }
-    );
-  };
-  let map = (sub, {pimp_val, pimp_path, pimp_loc}) => {
+  let map = (sub, {pimp_alias, pimp_path, pimp_loc}) => {
     {
       pimp_path: map_loc(sub, pimp_path),
-      pimp_val: List.map(map_shape(sub), pimp_val),
+      pimp_alias: Option.map(map_loc(sub), pimp_alias),
       pimp_loc: sub.location(sub, pimp_loc),
     };
   };
@@ -319,34 +336,38 @@ module I = {
 
 module Ex = {
   let map = (sub, exports) => {
-    let process_desc = ({pex_name, pex_alias, pex_loc}) => {
-      let pex_name = map_loc(sub, pex_name);
-      let pex_alias =
-        switch (pex_alias) {
-        | Some(alias) => Some(map_loc(sub, alias))
-        | None => None
-        };
-      let pex_loc = sub.location(sub, pex_loc);
-      {pex_name, pex_alias, pex_loc};
+    switch (exports) {
+    | PExposeItems(items) =>
+      PExposeItems(
+        List.map(
+          item => {
+            switch (item) {
+            | PExposeType({name, alias, loc}) =>
+              PExposeType({
+                name: map_identifier(sub, name),
+                alias: Option.map(map_identifier(sub), alias),
+                loc: sub.location(sub, loc),
+              })
+            | PExposeModule({name, alias, loc}) =>
+              PExposeModule({
+                name: map_identifier(sub, name),
+                alias: Option.map(map_identifier(sub), alias),
+                loc: sub.location(sub, loc),
+              })
+            | PExposeValue({name, alias, loc}) =>
+              PExposeValue({
+                name: map_identifier(sub, name),
+                alias: Option.map(map_identifier(sub), alias),
+                loc: sub.location(sub, loc),
+              })
+            }
+          },
+          items,
+        ),
+      )
+    | PExposeAll => PExposeAll
     };
-    List.map(
-      export =>
-        switch (export) {
-        | ExportData(desc) => ExportData(process_desc(desc))
-        | ExportValue(desc) => ExportValue(process_desc(desc))
-        },
-      exports,
-    );
   };
-  let map_export_all = (sub, excepts) =>
-    List.map(
-      except =>
-        switch (except) {
-        | ExportExceptData(name) => ExportExceptData(map_loc(sub, name))
-        | ExportExceptValue(name) => ExportExceptValue(map_loc(sub, name))
-        },
-      excepts,
-    );
 };
 
 module VD = {
@@ -390,12 +411,17 @@ module TL = {
         m,
         List.map(sub.value_binding(sub), vb),
       )
+    | PTopModule(e, d) =>
+      Top.module_(
+        ~loc,
+        ~attributes,
+        e,
+        {...d, pmod_stmts: List.map(sub.toplevel(sub), d.pmod_stmts)},
+      )
     | PTopExpr(e) => Top.expr(~loc, ~attributes, sub.expr(sub, e))
     | PTopException(e, d) =>
       Top.grain_exception(~loc, ~attributes, e, sub.grain_exception(sub, d))
-    | PTopExport(ex) => Top.export(~loc, ~attributes, sub.export(sub, ex))
-    | PTopExportAll(ex) =>
-      Top.export_all(~loc, ~attributes, sub.export_all(sub, ex))
+    | PTopExpose(ex) => Top.export(~loc, ~attributes, sub.export(sub, ex))
     };
   };
 };
@@ -411,7 +437,6 @@ let default_mapper = {
   location: (_, x) => x,
   import: I.map,
   export: Ex.map,
-  export_all: Ex.map_export_all,
   value_binding: V.map,
   match_branch: MB.map,
   value_description: VD.map,

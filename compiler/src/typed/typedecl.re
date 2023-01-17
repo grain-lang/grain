@@ -959,7 +959,7 @@ let transl_value_decl = (env, loc, valdecl) => {
         val_kind: TValPrim(prim),
         Types.val_loc: loc,
         val_internalpath: PIdent(id),
-        val_fullpath: Path.PIdent(Ident.create("<bogus>")),
+        val_fullpath: Path.PIdent(id),
         val_mutable: false,
         val_global: true,
       }
@@ -969,7 +969,7 @@ let transl_value_decl = (env, loc, valdecl) => {
         val_kind: TValReg,
         Types.val_loc: loc,
         val_internalpath: PIdent(id),
-        val_fullpath: Path.PIdent(Ident.create("<bogus>")),
+        val_fullpath: Path.PIdent(id),
         val_mutable: false,
         val_global: true,
       }

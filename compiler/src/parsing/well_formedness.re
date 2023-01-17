@@ -5,11 +5,7 @@ open Grain_utils;
 type wferr =
   | MalformedString(Location.t)
   | IllegalCharacterLiteral(string, Location.t)
-  | MultipleModuleName(Location.t)
-  | TypeNameShouldBeUppercase(string, Location.t)
-  | IllegalAliasName(string, Location.t)
   | ExternalAlias(string, Location.t)
-  | ModuleNameShouldBeUppercase(string, Location.t)
   | ModuleImportNameShouldNotBeExternal(string, Location.t)
   | TyvarNameShouldBeLowercase(string, Location.t)
   | ExportAllShouldOnlyAppearOnce(Location.t)
@@ -38,16 +34,8 @@ let prepare_error =
           cl,
           cl,
         )
-      | MultipleModuleName(loc) =>
-        errorf(~loc, "Multiple modules in identifier")
-      | TypeNameShouldBeUppercase(name, loc) =>
-        errorf(~loc, "Type '%s' should have an uppercase name.", name)
-      | IllegalAliasName(name, loc) =>
-        errorf(~loc, "Alias '%s' should have proper casing.", name)
       | ExternalAlias(name, loc) =>
         errorf(~loc, "Alias '%s' should be at most one level deep.", name)
-      | ModuleNameShouldBeUppercase(name, loc) =>
-        errorf(~loc, "Module '%s' should have an uppercase name.", name)
       | ModuleImportNameShouldNotBeExternal(name, loc) =>
         errorf(~loc, "Module name '%s' should contain only one module.", name)
       | TyvarNameShouldBeLowercase(var, loc) =>
@@ -132,132 +120,7 @@ let malformed_characters = (errs, super) => {
   {errs, iterator};
 };
 
-let malformed_identifiers = (errs, super) => {
-  open Identifier;
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
-    switch (desc) {
-    | PExpId({txt: IdentExternal(IdentExternal(_), _)}) =>
-      errs := [MultipleModuleName(loc), ...errs^]
-    | _ => ()
-    };
-    super.expr(self, e);
-  };
-  let iter_import = (self, import) => {
-    let xor = (p, q) => p && !q || !p && q;
-    let casing_mismatch = (orig, alias) => {
-      let o = orig.[0];
-      let a = alias.[0];
-      xor(
-        Char_utils.is_uppercase_letter(o),
-        Char_utils.is_uppercase_letter(a),
-      );
-    };
-    List.iter(
-      pimp_val =>
-        switch (pimp_val) {
-        | PImportValues(values) =>
-          List.iter(
-            ((name, alias)) =>
-              switch (name, alias) {
-              | (
-                  {txt: IdentName({txt: orig})},
-                  Some({txt: IdentName({txt: alias}), loc}),
-                )
-                  when casing_mismatch(orig, alias) =>
-                errs := [IllegalAliasName(alias, loc), ...errs^]
-              | (_, Some({txt: IdentExternal(_) as alias, loc})) =>
-                errs :=
-                  [
-                    ExternalAlias(Identifier.string_of_ident(alias), loc),
-                    ...errs^,
-                  ]
-              | _ => ()
-              },
-            values,
-          )
-        | _ => ()
-        },
-      import.pimp_val,
-    );
-    super.import(self, import);
-  };
-  let iterator = {...super, expr: iter_expr, import: iter_import};
-  {errs, iterator};
-};
-
-let types_have_correct_case = (errs, super) => {
-  let check_uppercase = (loc, s) => {
-    let first_char = s.[0];
-    if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs := [TypeNameShouldBeUppercase(s, loc), ...errs^];
-    };
-  };
-  let iter_data =
-      (
-        self,
-        {pdata_name: {loc: name_loc, txt: name}, pdata_loc: loc, _} as d,
-      ) => {
-    check_uppercase(name_loc, name);
-    super.data(self, d);
-  };
-  // TODO(#1502): The parser should read in uppercase types as PTyConstr instances
-  let iterator = {...super, data: iter_data};
-  {errs, iterator};
-};
-
-let modules_have_correct_case = (errs, super) => {
-  let check_uppercase = (loc, s) => {
-    let first_char = s.[0];
-    if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs := [ModuleNameShouldBeUppercase(s, loc), ...errs^];
-    };
-  };
-  let iter_mod = (self, import) => {
-    List.iter(
-      fun
-      | PImportModule({loc: name_loc, txt: IdentName({txt: name})}) =>
-        check_uppercase(name_loc, name)
-      | PImportModule(_) /* IdentExternal handled by another WF rule */
-      | PImportAllExcept(_)
-      | PImportValues(_) => (),
-      import.pimp_val,
-    );
-    super.import(self, import);
-  };
-  let iterator = {...super, import: iter_mod};
-  {errs, iterator};
-};
-
-let module_imports_not_external = (errs, super) => {
-  let check_name = (loc, id) =>
-    switch (id) {
-    | Identifier.IdentName(_) => ()
-    | Identifier.IdentExternal(_) =>
-      errs :=
-        [
-          ModuleImportNameShouldNotBeExternal(
-            Identifier.string_of_ident(id),
-            loc,
-          ),
-          ...errs^,
-        ]
-    };
-  let iter_mod = (self, import) => {
-    List.iter(
-      fun
-      | PImportModule({loc: name_loc, txt: name}) =>
-        check_name(name_loc, name)
-      | PImportAllExcept(_)
-      | PImportValues(_) => (),
-      import.pimp_val,
-    );
-    super.import(self, import);
-  };
-  let iterator = {...super, import: iter_mod};
-  {errs, iterator};
-};
-
-let only_has_one_export_all = (errs, super) => {
+let only_has_one_expose_all = (errs, super) => {
   let count_export = ref(0);
   let iter_export_all = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
     let check_export_count = () =>
@@ -265,7 +128,7 @@ let only_has_one_export_all = (errs, super) => {
         errs := [ExportAllShouldOnlyAppearOnce(loc), ...errs^];
       };
     switch (desc) {
-    | PTopExportAll(_) =>
+    | PTopExpose(PExposeAll) =>
       incr(count_export);
       check_export_count();
     | _ => ()
@@ -608,11 +471,7 @@ let compose_well_formedness = ({errs, iterator}, cur) =>
 let well_formedness_checks = [
   malformed_strings,
   malformed_characters,
-  malformed_identifiers,
-  types_have_correct_case,
-  modules_have_correct_case,
-  module_imports_not_external,
-  only_has_one_export_all,
+  only_has_one_expose_all,
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
   no_letrec_mut,

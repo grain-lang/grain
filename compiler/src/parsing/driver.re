@@ -118,6 +118,7 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
     Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
     let lexer = Wrapped_lexer.init(lexbuf);
     let token = _ => Wrapped_lexer.token(lexer);
+    Lexer.reset();
     let program =
       try({
         ...parse_program(token, lexbuf),

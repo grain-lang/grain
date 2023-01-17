@@ -21,10 +21,9 @@ let compile_constructor_tag =
 let gensym = Ident.create;
 
 let value_imports = ref([]);
-/* At the linearization phase, we lift all imports */
-let symbol_table = ref(Ident.empty: Ident.tbl(Ident.tbl(Ident.t)));
-let type_map = Path_tbl.create(10);
-let import_map = Path_tbl.create(10);
+let module_symbol_map = Path_tbl.create(256);
+let type_map = Path_tbl.create(256);
+let import_map = Path_tbl.create(256);
 
 let get_type_id = (typath, env) =>
   switch (Path_tbl.find_opt(type_map, typath)) {
@@ -36,50 +35,86 @@ let get_type_id = (typath, env) =>
     id;
   };
 
-let lookup_symbol =
-    (~allocation_type, ~repr, ~path, mod_, mod_decl, name, original_name) => {
-  switch (Ident.find_same_opt(mod_, symbol_table^)) {
-  | Some(_) => ()
-  | None => symbol_table := Ident.add(mod_, Ident.empty, symbol_table^)
-  };
-  let modtbl = Ident.find_same(mod_, symbol_table^);
-  switch (Ident.find_name_opt(name, modtbl)) {
-  | Some((_, ident)) =>
-    Path_tbl.add(import_map, path, ident);
-    ident;
-  | None =>
-    let fresh = gensym(name);
-    Path_tbl.add(import_map, path, fresh);
-    switch (mod_decl.md_filepath) {
-    | Some(filepath) =>
-      let shape =
-        switch (repr) {
-        | ReprFunction(args, rets, Direct(_)) =>
-          // Add closure argument
-          let args = [
-            Managed,
-            ...List.map(allocation_type_of_wasm_repr, args),
+let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
+  switch (path) {
+  | Path.PIdent(id) => id
+  | Path.PExternal(mod_, name, _pos) =>
+    let mod_map =
+      switch (Path_tbl.find_opt(module_symbol_map, mod_)) {
+      | Some(map) => map
+      | None =>
+        let mod_map = Hashtbl.create(256);
+        Path_tbl.add(module_symbol_map, mod_, mod_map);
+        mod_map;
+      };
+    switch (Hashtbl.find_opt(mod_map, name)) {
+    | Some(id) => id
+    | None =>
+      let (path_hd, path_tl) = Path.flatten(mod_);
+      let mod_names = [Ident.name(path_hd), ...path_tl];
+      let module_chain = Env.find_module_chain(mod_, env);
+      let (file, prefix) =
+        List.fold_left(
+          ((file, prefix), (decl, name)) => {
+            switch (decl.md_filepath) {
+            | Some(filepath) => (Some(filepath), "")
+            | None => (file, prefix ++ name ++ ".")
+            }
+          },
+          (None, ""),
+          List.combine(List.rev(module_chain), mod_names),
+        );
+      switch (file) {
+      | Some(filepath) =>
+        let fresh = gensym(name);
+        Path_tbl.add(import_map, path, fresh);
+        let shape =
+          switch (repr) {
+          | ReprFunction(args, rets, Direct(_)) =>
+            // Add closure argument
+            let args = [
+              Managed,
+              ...List.map(allocation_type_of_wasm_repr, args),
+            ];
+            // Add return type for functions that return void
+            let rets =
+              switch (rets) {
+              | [] => [Unmanaged(WasmI32)]
+              | _ => List.map(allocation_type_of_wasm_repr, rets)
+              };
+            FunctionShape(args, rets);
+          | _ => GlobalShape(allocation_type)
+          };
+        value_imports :=
+          [
+            Imp.grain_value(fresh, filepath, prefix ++ name, shape),
+            ...value_imports^,
           ];
-          // Add return type for functions that return void
-          let rets =
-            switch (rets) {
-            | [] => [Unmanaged(WasmI32)]
-            | _ => List.map(allocation_type_of_wasm_repr, rets)
-            };
-          FunctionShape(args, rets);
-        | _ => GlobalShape(allocation_type)
-        };
-      value_imports :=
-        [
-          Imp.grain_value(fresh, filepath, original_name, shape),
-          ...value_imports^,
-        ];
+        Hashtbl.add(mod_map, name, fresh);
+        fresh;
 
-    | None => ()
+      | None =>
+        switch (List.hd(module_chain).md_type) {
+        | TModSignature(signature) =>
+          List.iter(
+            item =>
+              switch (item) {
+              | TSigValue(_, {val_fullpath: PIdent(id)}) =>
+                Hashtbl.add(mod_map, Ident.name(id), id)
+              | TSigValue(_) =>
+                failwith("Impossible: internal value with external path")
+              | TSigType(_, type_declaration, _) => failwith("TODO")
+              | TSigTypeExt(_)
+              | TSigModule(_)
+              | TSigModType(_) => ()
+              },
+            signature,
+          );
+          Hashtbl.find(mod_map, name);
+        | _ => failwith("internal module has no signature")
+        }
+      };
     };
-    symbol_table :=
-      Ident.add(mod_, Ident.add(fresh, fresh, modtbl), symbol_table^);
-    fresh;
   };
 };
 
@@ -186,30 +221,12 @@ let rec transl_imm =
   switch (exp_desc) {
   | TExpIdent(_, _, {val_kind: TValUnbound(_)}) =>
     failwith("Impossible: val_kind was unbound")
-  | TExpIdent(
-      Path.PExternal(Path.PIdent(mod_) as p, ident, _),
-      _,
-      {
-        val_fullpath: Path.PExternal(_, original_name, _),
-        val_mutable,
-        val_global,
-        val_repr,
-      },
-    ) =>
-    let mod_decl = Env.find_module(p, None, env);
+  | TExpIdent(_, _, {val_fullpath, val_mutable, val_global, val_repr}) =>
     let id =
       Imm.id(
         ~loc,
         ~env,
-        lookup_symbol(
-          ~allocation_type,
-          ~repr=val_repr,
-          ~path=p,
-          mod_,
-          mod_decl,
-          ident,
-          original_name,
-        ),
+        lookup_symbol(~env, ~allocation_type, ~repr=val_repr, val_fullpath),
       );
     if (val_mutable && !val_global && !boxed) {
       let tmp = gensym("unbox_mut");
@@ -224,101 +241,102 @@ let rec transl_imm =
     } else {
       (id, []);
     };
-  | TExpIdent(
-      Path.PExternal(Path.PIdent(mod_) as p, ident, _),
-      _,
-      {val_mutable, val_global, val_repr},
-    ) =>
-    let mod_decl = Env.find_module(p, None, env);
-    let id =
-      Imm.id(
-        ~loc,
-        ~env,
-        lookup_symbol(
-          ~allocation_type,
-          ~repr=val_repr,
-          ~path=p,
-          mod_,
-          mod_decl,
-          ident,
-          ident,
-        ),
-      );
-    if (val_mutable && !val_global && !boxed) {
-      let tmp = gensym("unbox_mut");
-      let setup = [
-        BLet(
-          tmp,
-          Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
-          Nonglobal,
-        ),
-      ];
-      (Imm.id(~loc, ~env, tmp), setup);
-    } else {
-      (id, []);
-    };
-  | TExpIdent(Path.PExternal(_), _, _) =>
-    failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
-  | TExpIdent(Path.PIdent(ident) as path, _, _) =>
-    switch (Env.find_value(path, env)) {
-    | {val_fullpath: Path.PIdent(_), val_mutable, val_global} =>
-      let id = Imm.id(~loc, ~env, ident);
-      if (val_mutable && !val_global && !boxed) {
-        let tmp = gensym("unbox_mut");
-        let setup = [
-          BLet(
-            tmp,
-            Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
-            Nonglobal,
-          ),
-        ];
-        (Imm.id(~loc, ~env, tmp), setup);
-      } else {
-        (id, []);
-      };
-    | {
-        val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
-        val_mutable,
-        val_global,
-        val_repr,
-      } =>
-      let mod_decl = Env.find_module(p, None, env);
-      let id =
-        Imm.id(
-          ~loc,
-          ~env,
-          lookup_symbol(
-            ~allocation_type,
-            ~repr=val_repr,
-            ~path=p,
-            mod_,
-            mod_decl,
-            ident,
-            ident,
-          ),
-        );
-      if (val_mutable && !val_global && !boxed) {
-        let tmp = gensym("unbox_mut");
-        let setup = [
-          BLet(
-            tmp,
-            Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
-            Nonglobal,
-          ),
-        ];
-        (Imm.id(~loc, ~env, tmp), setup);
-      } else {
-        (id, []);
-      };
-    | {val_fullpath: Path.PExternal(_)} =>
-      failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
-    }
+  // | TExpIdent(
+  //     Path.PExternal(Path.PIdent(mod_) as p, ident, _),
+  //     _,
+  //     {val_mutable, val_global, val_repr},
+  //   ) =>
+  //   let mod_decl = Env.find_module(p, None, env);
+  //   let id =
+  //     Imm.id(
+  //       ~loc,
+  //       ~env,
+  //       lookup_symbol(
+  //         ~allocation_type,
+  //         ~repr=val_repr,
+  //         ~path=p,
+  //         mod_,
+  //         mod_decl,
+  //         ident,
+  //         ident,
+  //       ),
+  //     );
+  //   if (val_mutable && !val_global && !boxed) {
+  //     let tmp = gensym("unbox_mut");
+  //     let setup = [
+  //       BLet(
+  //         tmp,
+  //         Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+  //         Nonglobal,
+  //       ),
+  //     ];
+  //     (Imm.id(~loc, ~env, tmp), setup);
+  //   } else {
+  //     (id, []);
+  //   };
+  // | TExpIdent(Path.PExternal(_) as path, _, _) =>
+  //   Printf.eprintf("!!!! %s\n", Path.name(path));
+  //   failwith("NYI: transl_imm: TExpIdent with multiple PExternal");
+  // | TExpIdent(Path.PIdent(ident) as path, _, _) =>
+  //   switch (Env.find_value(path, env)) {
+  //   | {val_fullpath: Path.PIdent(_), val_mutable, val_global} =>
+  //     let id = Imm.id(~loc, ~env, ident);
+  //     if (val_mutable && !val_global && !boxed) {
+  //       let tmp = gensym("unbox_mut");
+  //       let setup = [
+  //         BLet(
+  //           tmp,
+  //           Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+  //           Nonglobal,
+  //         ),
+  //       ];
+  //       (Imm.id(~loc, ~env, tmp), setup);
+  //     } else {
+  //       (id, []);
+  //     };
+  //   | {
+  //       val_fullpath: Path.PExternal(Path.PIdent(mod_) as p, ident, _),
+  //       val_mutable,
+  //       val_global,
+  //       val_repr,
+  //     } =>
+  //     let mod_decl = Env.find_module(p, None, env);
+  //     let id =
+  //       Imm.id(
+  //         ~loc,
+  //         ~env,
+  //         lookup_symbol(
+  //           ~allocation_type,
+  //           ~repr=val_repr,
+  //           ~path=p,
+  //           mod_,
+  //           mod_decl,
+  //           ident,
+  //           ident,
+  //         ),
+  //       );
+  //     if (val_mutable && !val_global && !boxed) {
+  //       let tmp = gensym("unbox_mut");
+  //       let setup = [
+  //         BLet(
+  //           tmp,
+  //           Comp.prim1(~loc, ~env, ~allocation_type, UnboxBind, id),
+  //           Nonglobal,
+  //         ),
+  //       ];
+  //       (Imm.id(~loc, ~env, tmp), setup);
+  //     } else {
+  //       (id, []);
+  //     };
+  //   | {val_fullpath: Path.PExternal(_)} =>
+  //     failwith("NYI: transl_imm: TExpIdent with multiple PExternal")
+  //   }
   | TExpConstant(c) =>
     switch (transl_const(~loc, ~env, c)) {
     | Left(imm) => (imm, [])
     | Right((name, cexprs)) => (Imm.id(~loc, ~env, name), cexprs)
     }
-  | TExpNull => (Imm.const(~loc, ~env, Const_bool(false)), [])
+  | TExpNull => (Imm.const(~loc, ~env, Const_void), [])
   | TExpPrim0(op) =>
     let tmp = gensym("prim0");
     (
@@ -1568,32 +1586,33 @@ let rec transl_anf_statement =
       ({tex_path}) => {
         let {val_fullpath, val_type, val_repr} =
           Env.find_value(tex_path, env);
-        switch (val_fullpath) {
-        | Path.PExternal(Path.PIdent(mod_) as p, ident, _) =>
-          let allocation_type = get_allocation_type(env, val_type);
-          let mod_decl = Env.find_module(p, None, env);
-          // Lookup external exports to import them into the module
-          ignore @@
-          lookup_symbol(
-            ~allocation_type,
-            ~repr=val_repr,
-            ~path=val_fullpath,
-            mod_,
-            mod_decl,
-            ident,
-            ident,
-          );
-        | Path.PIdent(_) => ()
-        | _ => failwith("NYI: Path with multiple PExternal")
-        };
+        let allocation_type = get_allocation_type(env, val_type);
+        // Lookup external exports to import them into the module
+        ignore @@
+        lookup_symbol(~env, ~allocation_type, ~repr=val_repr, val_fullpath);
       },
       exports,
     );
     (None, []);
+  | TTopModule(decl) =>
+    let (binds, imports) =
+      List.fold_left(
+        ((acc_bind, acc_imp), cur) =>
+          switch (cur) {
+          | (None, lst) => (acc_bind, List.rev_append(lst, acc_imp))
+          | (Some(b), lst) => (
+              List.rev_append(b, acc_bind),
+              List.rev_append(lst, acc_imp),
+            )
+          },
+        ([], []),
+        List.map(transl_anf_statement, decl.tmod_statements),
+      );
+    (Some(List.rev(binds)), imports);
   | _ => (None, [])
   };
 
-let gather_type_metadata = statements => {
+let rec gather_type_metadata = statements => {
   List.fold_left(
     (metadata, {ttop_desc, ttop_env}) => {
       switch (ttop_desc) {
@@ -1642,6 +1661,8 @@ let gather_type_metadata = statements => {
           ),
           ...metadata,
         ];
+      | TTopModule(decl) =>
+        List.append(gather_type_metadata(decl.tmod_statements), metadata)
       | TTopExpr(_)
       | TTopImport(_)
       | TTopExport(_)
@@ -1658,8 +1679,8 @@ let transl_anf_module =
     ({statements, env, signature}: typed_program): anf_program => {
   Path_tbl.clear(type_map);
   Path_tbl.clear(import_map);
+  Path_tbl.clear(module_symbol_map);
   value_imports := [];
-  symbol_table := Ident.empty;
   let (top_binds, imports) =
     List.fold_left(
       ((acc_bind, acc_imp), cur) =>

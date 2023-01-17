@@ -62,7 +62,7 @@ let link_type_vars = ty => {
   link_types(ty);
 };
 
-let translate_signature = sg =>
+let rec translate_signature = sg =>
   List.map(
     item =>
       switch (item) {
@@ -146,7 +146,15 @@ let translate_signature = sg =>
           | TConstrTuple(tys) => TConstrTuple(List.map(link_type_vars, tys))
           };
         TSigTypeExt(id, {...ec, ext_type_params, ext_args}, ext);
-      | TSigModule(_)
+      | TSigModule(id, mod_decl, rs) =>
+        let md_type =
+          switch (mod_decl.md_type) {
+          | TModIdent(_)
+          | TModAlias(_) => mod_decl.md_type
+          | TModSignature(signature) =>
+            TModSignature(translate_signature(signature))
+          };
+        TSigModule(id, {...mod_decl, md_type}, rs);
       | TSigModType(_) => failwith("translsig: NYI for module types")
       },
     sg,

@@ -73,74 +73,27 @@ let extract_sig_open = (env, loc, mty) =>
 
 /* Compute the environment after opening a module */
 
-let type_open_ = (~used_slot=?, ~toplevel=?, env, mod_) => {
-  let filepath = Some(mod_.pimp_path.txt);
+let include_module = (env, sod) => {
+  let filename = sod.pimp_path.txt;
+  let mod_name = Env.load_pers_struct(~loc=sod.pimp_loc, filename);
   let mod_name =
-    switch (
-      List.find_map(
-        fun
-        | PImportModule(id) => Some(id)
-        | _ => None,
-        mod_.pimp_val,
-      )
-    ) {
-    | Some({txt: IdentName({txt: name})}) => name
-    | Some(_) => failwith("multilevel mod name")
-    | None =>
-      "%"
-      ++ Grain_utils.Filepath.String.filename_to_module_name(
-           mod_.pimp_path.txt,
-         )
+    switch (sod.pimp_alias) {
+    | Some({txt: alias}) => alias
+    | None => mod_name
     };
-  let mod_name = Identifier.IdentName(mknoloc(mod_name));
+  let mod_name =
+    Identifier.IdentName(Location.mkloc(mod_name, sod.pimp_loc));
   let path =
     Typetexp.lookup_module(
       ~load=true,
       env,
-      mod_.pimp_loc,
+      sod.pimp_loc,
       mod_name,
-      filepath,
+      Some(filename),
     );
-  switch (
-    Env.open_signature(~used_slot?, ~toplevel?, path, mod_name, mod_, env)
-  ) {
-  | Some(env) => (path, env)
-  | None =>
-    let md = Env.find_module(path, filepath, env);
-    ignore(extract_sig_open(env, mod_.pimp_loc, md.md_type));
-    assert(false);
-  };
-};
+  let newenv = Env.include_module(mod_name, sod, env);
 
-let type_initially_opened_module = (env, module_name, module_path) => {
-  let loc = Location.in_file("compiler internals");
-  let lid = {Asttypes.loc, txt: Identifier.IdentName(module_name)};
-  let path =
-    Typetexp.lookup_module(~load=true, env, lid.loc, lid.txt, module_path);
-  switch (
-    Env.open_signature_of_initially_opened_module(path, module_path, env)
-  ) {
-  | Some(env) => (path, env)
-  | None =>
-    let md = Env.find_module(path, module_path, env);
-    ignore(extract_sig_open(env, lid.loc, md.md_type));
-    assert(false);
-  };
-};
-
-let type_open = (~toplevel=?, env, sod) => {
-  let (path, newenv) =
-    /*Builtin_attributes.warning_scope sod.popen_attributes
-      (fun () ->*/
-    type_open_(~toplevel?, env, sod);
-  /* )*/
-
-  let od = {
-    /*open_override = sod.popen_override;*/
-    timp_path: path,
-    /*open_attributes = sod.popen_attributes;*/
-    timp_loc: sod.pimp_loc,
-  };
+  let od = {timp_path: path, timp_loc: sod.pimp_loc};
 
   (path, newenv, od);
 };
@@ -342,6 +295,9 @@ and normalize_signature_item = (env, item) =>
       val_repr: Type_utils.repr_of_type(env, desc.val_type),
     };
     TSigValue(id, desc);
+  | TSigModule(id, md, rs) when Option.is_some(md.md_filepath) =>
+    // imported modules should remain intact
+    TSigModule(id, md, rs)
   | TSigModule(id, md, rs) =>
     TSigModule(id, {...md, md_type: normalize_modtype(env, md.md_type)}, rs)
   | _ => item
@@ -388,54 +344,20 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
     )
   };
 
-let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => {
-  let export_all = ref((false, [], []));
-  List.iter(
-    ({ptop_desc}) =>
-      /* Take the last export *; after well-formedness there should only be one */
-      switch (ptop_desc) {
-      | PTopExportAll(excepts) =>
-        export_all := (true, [], []);
-        List.iter(
-          except =>
-            switch (except) {
-            | ExportExceptData(name) =>
-              let (_, values, datas) = export_all^;
-              export_all := (true, values, [name, ...datas]);
-            | ExportExceptValue(name) =>
-              let (_, values, datas) = export_all^;
-              export_all := (true, [name, ...values], datas);
-            },
-          excepts,
-        );
-      | _ => ()
-      },
-    sstr.Parsetree.statements,
-  );
-
-  let string_needs_export = (str: Grain_parsing.Parsetree.loc(string)) => {
-    let (flag, excepts, _) = export_all^;
-    flag && (!) @@ List.exists(({txt}) => txt == str.txt, excepts);
-  };
-
-  let ident_needs_export = (id: Ident.t) => {
-    let (flag, excepts, _) = export_all^;
-    flag && (!) @@ List.exists(except_id => id.name == except_id.txt, excepts);
-  };
-
-  let data_needs_export = (str: Grain_parsing.Parsetree.loc(string)) => {
-    let (flag, _, excepts) = export_all^;
-    flag && (!) @@ List.exists(({txt}) => txt == str.txt, excepts);
-  };
+let rec type_module = (~toplevel=false, anchor, env, statements) => {
+  let expose_all =
+    List.exists(
+      ({ptop_desc}) =>
+        switch (ptop_desc) {
+        | PTopExpose(PExposeAll) => true
+        | _ => false
+        },
+      statements,
+    );
 
   let process_foreign = (env, e, d, attributes, loc) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
-    let e =
-      if (string_needs_export(d.pval_name)) {
-        Exported;
-      } else {
-        e;
-      };
+    let e = if (expose_all) {Exported} else {e};
     let signature =
       switch (e) {
       | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
@@ -452,12 +374,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let process_primitive = (env, e, d, attributes, loc) => {
     let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
-    let e =
-      if (string_needs_export(d.pval_name)) {
-        Exported;
-      } else {
-        e;
-      };
+    let e = if (expose_all) {Exported} else {e};
     let signature =
       switch (e) {
       | Exported => Some(TSigValue(desc.tvd_id, desc.tvd_val))
@@ -475,7 +392,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   };
 
   let process_import = (env, import, attributes, loc) => {
-    let (_path, newenv, od) = type_open(env, import);
+    let (_path, newenv, od) = include_module(env, import);
     (
       newenv,
       {
@@ -498,12 +415,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       map2_rec_type_with_row_types(
         ~rec_flag=Recursive,
         (rs, info, e) => {
-          let e =
-            if (data_needs_export(info.data_name)) {
-              Exported;
-            } else {
-              e;
-            };
+          let e = if (expose_all) {Exported} else {e};
           switch (e) {
           | Exported => TSigType(info.data_id, info.data_type, rs)
           | Nonexported =>
@@ -534,6 +446,36 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     (newenv, ty_decl, statement);
   };
 
+  let process_module = (env, export_flag, desc, attributes, loc) => {
+    // The env returned here is the environment _within_ the module
+    let (statements, signature, inner_env) =
+      type_module(None, env, desc.pmod_stmts);
+    let signature = normalize_signature(inner_env, signature);
+    let mod_name = Ident.create(desc.pmod_name.txt);
+    let mod_type = TModSignature(signature);
+    let newenv = Env.add_module(mod_name, mod_type, None, env);
+    let mod_decl = Env.find_module(PIdent(mod_name), None, newenv);
+    let e = if (expose_all) {Exported} else {export_flag};
+    let signature =
+      switch (e) {
+      | Exported => Some(TSigModule(mod_name, mod_decl, TRecNot))
+      | Nonexported => None
+      };
+    let statement = {
+      ttop_desc:
+        TTopModule({
+          tmod_id: mod_name,
+          tmod_decl: mod_decl,
+          tmod_statements: statements,
+          tmod_loc: loc,
+        }),
+      ttop_loc: loc,
+      ttop_env: newenv,
+      ttop_attributes: Typetexp.type_attributes(attributes),
+    };
+    (newenv, signature, statement);
+  };
+
   let rec process_let =
           (env, export_flag, rec_flag, mut_flag, binds, attributes, loc) => {
     Ctype.init_def(Ident.current_time());
@@ -553,7 +495,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
     let signatures =
       List.fold_right(
         (id, sigs) =>
-          if (ident_needs_export(id) || export_flag == Exported) {
+          if (expose_all || export_flag == Exported) {
             some_exported := true;
             [TSigValue(id, Env.find_value(PIdent(id), newenv)), ...sigs];
           } else {
@@ -578,35 +520,51 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       )
     ) {
     | Some(External_name(name)) =>
-      let export = {
-        pex_name: Location.mknoloc(Ident.name(List.hd(idents))),
-        pex_alias: Some(Location.mknoloc(name)),
-        pex_loc: Location.dummy_loc,
-      };
+      let export =
+        PExposeValue({
+          name:
+            Location.mknoloc(
+              Identifier.IdentName(
+                Location.mknoloc(Ident.name(List.hd(idents))),
+              ),
+            ),
+          alias:
+            Some(
+              Location.mknoloc(
+                Identifier.IdentName(Location.mknoloc(name)),
+              ),
+            ),
+          loc: Location.dummy_loc,
+        });
       let (newsignatures, stmts) =
-        process_export_value(newenv, [export], []);
+        process_expose_value(newenv, [export], []);
       (newenv, signatures @ newsignatures, [stmt] @ stmts);
     | _ => (newenv, signatures, [stmt])
     };
   }
 
-  and process_export_value = (env, exports, attributes) => {
+  and process_expose_value = (env, exports, attributes) => {
     let (sigs, values) =
       List.split @@
       List.map(
-        ({pex_name: name, pex_alias: alias, pex_loc: loc}) => {
-          let id =
-            switch (alias) {
-            | Some(alias) => Ident.create(alias.txt)
-            | None => Ident.create(name.txt)
-            };
-          let name = Identifier.IdentName(name);
-          let (p, {val_fullpath} as desc) =
-            Typetexp.find_value(env, loc, name);
-          (
-            TSigValue(id, desc),
-            {tex_id: id, tex_path: val_fullpath, tex_loc: loc},
-          );
+        item => {
+          switch (item) {
+          | PExposeValue({name: {txt: IdentName(name)}, alias, loc}) =>
+            let id =
+              switch (alias) {
+              | Some({txt: IdentName(alias)}) => Ident.create(alias.txt)
+              | Some(_) => failwith("Impossible: invalid alias")
+              | None => Ident.create(name.txt)
+              };
+            let name = Identifier.IdentName(name);
+            let (p, {val_fullpath} as desc) =
+              Typetexp.find_value(env, loc, name);
+            (
+              TSigValue(id, desc),
+              {tex_id: id, tex_path: val_fullpath, tex_loc: loc},
+            );
+          | _ => failwith("Impossible: non-value expose")
+          }
         },
         exports,
       );
@@ -625,12 +583,15 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let process_expr = (env, expr, attributes, loc) => {
     let expr = Typecore.type_statement_expr(env, expr);
-    {
-      ttop_desc: TTopExpr(expr),
-      ttop_attributes: Typetexp.type_attributes(attributes),
-      ttop_loc: loc,
-      ttop_env: env,
-    };
+    (
+      expr.exp_env,
+      {
+        ttop_desc: TTopExpr(expr),
+        ttop_attributes: Typetexp.type_attributes(attributes),
+        ttop_loc: loc,
+        ttop_env: env,
+      },
+    );
   };
 
   let process_exception = (env, export_flag, ext, attributes, loc) => {
@@ -641,12 +602,7 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
       ttop_env: newenv,
       ttop_attributes: Typetexp.type_attributes(attributes),
     };
-    let export_flag =
-      if (string_needs_export(ext.ext_name)) {
-        Exported;
-      } else {
-        export_flag;
-      };
+    let export_flag = if (expose_all) {Exported} else {export_flag};
     let sign =
       switch (export_flag) {
       | Exported =>
@@ -657,55 +613,66 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
   };
 
   let type_export_aliases = ref([]);
-  let process_export_data = (env, exports, loc) => {
-    let process_one = (rs, {pex_name: name, pex_alias: alias, pex_loc: loc}) => {
-      let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name));
-      switch (alias) {
-      | Some(alias) =>
-        type_export_aliases :=
-          [
-            (type_id, PIdent(Ident.create(alias.txt))),
-            ...type_export_aliases^,
-          ]
-      | None => ()
-      };
-      let type_ = Env.find_type(type_id, env);
-      TSigType(Path.head(type_id), type_, rs);
-    };
-    if (List.length(exports) > 1) {
-      [
-        process_one(TRecFirst, List.hd(exports)),
-        ...List.map(process_one(TRecNext), List.tl(exports)),
-      ];
-    } else {
-      List.map(process_one(TRecNot), exports);
-    };
-  };
 
-  let process_export = (env, exports, attributes, loc) => {
-    let (values, datas) =
-      List.fold_right(
-        (export, (values, datas)) =>
-          switch (export) {
-          | ExportValue(desc) => ([desc, ...values], datas)
-          | ExportData(desc) => (values, [desc, ...datas])
-          },
-        exports,
-        ([], []),
-      );
-    let data_sigs =
-      if (List.length(datas) > 0) {
-        process_export_data(env, datas, loc);
-      } else {
-        [];
-      };
-    let (sigs, stmts) =
-      if (List.length(values) > 0) {
-        process_export_value(env, values, attributes);
-      } else {
-        ([], []);
-      };
-    (data_sigs @ sigs, stmts);
+  let process_expose = (env, items, attributes, loc) => {
+    List.fold_right(
+      (item, (sigs, stmts)) =>
+        switch (item) {
+        | PExposeValue({name: {txt: IdentName(name)}, alias, loc}) =>
+          let id =
+            switch (alias) {
+            | Some({txt: IdentName(alias)}) => Ident.create(alias.txt)
+            | Some(_) => failwith("Impossible: invalid alias")
+            | None => Ident.create(name.txt)
+            };
+          let name = Identifier.IdentName(name);
+          let (p, {val_fullpath} as desc) =
+            Typetexp.find_value(env, loc, name);
+          (
+            [TSigValue(id, desc), ...sigs],
+            [
+              {
+                ttop_desc:
+                  TTopExport([
+                    {tex_id: id, tex_path: val_fullpath, tex_loc: loc},
+                  ]),
+                ttop_loc: Location.dummy_loc,
+                ttop_env: env,
+                ttop_attributes: Typetexp.type_attributes(attributes),
+              },
+              ...stmts,
+            ],
+          );
+        | PExposeType({name: {txt: IdentName(name)}, alias, loc}) =>
+          let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name));
+          switch (alias) {
+          | Some({txt: IdentName(alias)}) =>
+            type_export_aliases :=
+              [
+                (type_id, PIdent(Ident.create(alias.txt))),
+                ...type_export_aliases^,
+              ]
+          | Some(_) => failwith("Impossible: invalid alias")
+          | None => ()
+          };
+          let type_ = Env.find_type(type_id, env);
+          ([TSigType(Path.head(type_id), type_, TRecNot), ...sigs], stmts);
+        | PExposeModule({name: {txt: IdentName(name)}, alias, loc}) =>
+          let (mod_id, mod_decl) =
+            Typetexp.find_module(env, loc, IdentName(name));
+          let sig_ =
+            switch (alias) {
+            | Some({txt: IdentName(alias)}) =>
+              TSigModule(Ident.create(alias.txt), mod_decl, TRecNot)
+            | Some(_) => failwith("Impossible: invalid alias")
+            | None => TSigModule(Ident.create(name.txt), mod_decl, TRecNot)
+            };
+          ([sig_, ...sigs], stmts);
+        | _ => failwith("Impossible: non-value expose")
+        },
+      items,
+      ([], []),
+    );
   };
 
   let (final_env, signatures, statements) =
@@ -718,9 +685,12 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
         | PTopImport(i) =>
           let (new_env, stmt) = process_import(env, i, attributes, loc);
           (new_env, signatures, [stmt, ...statements]);
-        | PTopExport(ex) =>
-          let (sigs, stmts) = process_export(env, ex, attributes, loc);
+        | PTopExpose(PExposeItems(items)) =>
+          let (sigs, stmts) = process_expose(env, items, attributes, loc);
           (env, List.rev(sigs) @ signatures, List.rev(stmts) @ statements);
+        | PTopExpose(PExposeAll) =>
+          // expose * handled separately
+          (env, signatures, statements)
         | PTopForeign(e, d) =>
           let (new_env, signature, statement) =
             process_foreign(env, e, d, attributes, loc);
@@ -747,13 +717,22 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             List.rev(sigs) @ signatures,
             [statement, ...statements],
           );
+        | PTopModule(e, d) =>
+          let (new_env, signature, statement) =
+            process_module(env, e, d, attributes, loc);
+          let signatures =
+            switch (signature) {
+            | Some(s) => [s, ...signatures]
+            | None => signatures
+            };
+          (new_env, signatures, [statement, ...statements]);
         | PTopLet(e, r, m, vb) =>
           let (new_env, sigs, stmts) =
             process_let(env, e, r, m, vb, attributes, loc);
           (new_env, List.rev(sigs) @ signatures, stmts @ statements);
         | PTopExpr(e) =>
-          let statement = process_expr(env, e, attributes, loc);
-          (env, signatures, [statement, ...statements]);
+          let (new_env, statement) = process_expr(env, e, attributes, loc);
+          (new_env, signatures, [statement, ...statements]);
         | PTopException(e, d) =>
           let (new_env, signature, statement) =
             process_exception(env, e, d.ptyexn_constructor, attributes, loc);
@@ -763,10 +742,9 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
             | None => signatures
             };
           (new_env, signatures, [statement, ...statements]);
-        | PTopExportAll(_) => (env, signatures, statements)
         },
       (env, [], []),
-      sstr.Parsetree.statements,
+      statements,
     );
   let (signatures, statements) = (
     List.rev(signatures),
@@ -896,75 +874,68 @@ let type_module = (~toplevel=false, funct_body, anchor, env, sstr /*scope*/) => 
 
   let signatures = List.map(resolve_type_alias, signatures);
 
-  let run = () => {
-    // TODO: Is it really safe to drop the import statements here?
-    let stritems = (statements, final_env);
-    (stritems, signatures, final_env);
-  };
-
-  run();
+  (statements, signatures, final_env);
 };
 
-let type_module = type_module(false, None);
+let type_module = type_module(None);
+
+let register_implicit_modules = modules => {
+  List.iter(
+    m => {
+      let filepath =
+        switch (m) {
+        | Grain_utils.Config.Pervasives_mod => "pervasives"
+        | Grain_utils.Config.Gc_mod => "runtime/gc"
+        };
+      Env.add_import(filepath);
+    },
+    modules,
+  );
+};
 
 let lookup_implicit_module_spec = m =>
   switch (m) {
-  | Grain_utils.Config.Pervasives_mod => ("Pervasives", "pervasives", true)
-  | Grain_utils.Config.Gc_mod => ("GC", "runtime/gc", false)
+  | Grain_utils.Config.Pervasives_mod => Some(("Pervasives", "pervasives"))
+  | Grain_utils.Config.Gc_mod => None
   };
 
-let get_current_implicit_modules = () =>
-  List.map(
-    lookup_implicit_module_spec,
-    Grain_utils.Config.get_implicit_opens(),
-  );
+let get_current_used_implicit_modules = implicit_opens =>
+  List.filter_map(lookup_implicit_module_spec, implicit_opens);
 
-let open_implicit_module = (m, env, in_env) => {
+let use_implicit_module = (m, env) => {
   open Asttypes;
   let loc = Location.dummy_loc;
-  let (modname, filename, _) = m;
-  let values =
-    if (in_env) {
-      [
-        PImportModule(
-          Location.mknoloc(Identifier.IdentName(Location.mknoloc(modname))),
-        ),
-        PImportAllExcept([]),
-      ];
-    } else {
-      [];
-    };
-  let (_path, newenv) =
-    type_open_(
-      env,
-      {
-        pimp_path: {
-          loc,
-          txt: filename,
-        },
-        pimp_val: values,
-        pimp_loc: loc,
-      },
-    );
-  newenv;
+  let (modname, filename) = m;
+  let filepath = Some(filename);
+  let ident = Identifier.IdentName(Location.mknoloc(modname));
+  let path = Typetexp.lookup_module(~load=true, env, loc, ident, filepath);
+  let include_desc = {
+    pimp_path: Location.mknoloc(filename),
+    pimp_alias: None,
+    pimp_loc: loc,
+  };
+  let env = Env.include_module(ident, include_desc, env);
+  Env.use_full_signature_of_initially_included_module(path, env);
 };
 
 let initial_env = () => {
   Ident.reinit();
   let initial = Env.initial_env;
   let env = initial;
+  let implicit_modules = Grain_utils.Config.get_implicit_opens();
+  register_implicit_modules(implicit_modules);
   let (unit_name, source, mode) = Env.get_unit();
   List.fold_left(
     (env, m) => {
-      let (modname, _, in_env) = m;
+      let (modname, _) = m;
       if (unit_name != modname) {
-        open_implicit_module(m, env, in_env);
+        use_implicit_module(m, env);
       } else {
         env;
       };
     },
     env,
-    get_current_implicit_modules(),
+    get_current_used_implicit_modules(implicit_modules),
   );
 };
 
@@ -977,30 +948,28 @@ let get_compilation_mode = () => {
 
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
-  // TODO: Do we maybe need a fallback here?
-  let modulename =
-    Grain_utils.Filepath.String.filename_to_module_name(sourcefile);
-  Env.set_unit((modulename, sourcefile, get_compilation_mode()));
+  let module_name = prog.module_name.txt;
+  Env.set_unit((module_name, sourcefile, get_compilation_mode()));
   let initenv = initial_env();
-  let (stritems, sg, finalenv) = type_module(initenv, prog);
-  let (statements, env) = stritems;
+  let (statements, sg, finalenv) = type_module(initenv, prog.statements);
   let simple_sg = simplify_signature(sg);
   let filename = sourcefile; // TODO(1396): Don't use filepath as filename
-  let coercion =
-    Includemod.compunit(
-      initenv,
-      ~mark=Includemod.Mark_positive,
-      sourcefile,
-      sg,
-      "(inferred signature)",
-      simple_sg,
-    );
+  // pretty sure we don't need this
+  // let coercion =
+  //   Includemod.compunit(
+  //     initenv,
+  //     ~mark=Includemod.Mark_positive,
+  //     sourcefile,
+  //     sg,
+  //     "(inferred signature)",
+  //     simple_sg,
+  //   );
 
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);
-  let signature = Env.build_signature(normalized_sig, modulename, filename);
-  ignore(coercion);
-  {statements, env, signature, comments: prog.comments};
+  let signature = Env.build_signature(normalized_sig, module_name, filename);
+  // ignore(coercion);
+  {statements, env: finalenv, signature, comments: prog.comments};
 };
 
 /* Error report */

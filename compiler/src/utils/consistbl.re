@@ -59,6 +59,11 @@ module Make =
     try({
       let (old_crc, old_source) = Module_name.Tbl.find(tbl, name);
       if (crc != old_crc) {
+        prerr_endline("inconsistent crcs");
+        prerr_string("new: ");
+        prerr_endline(crc);
+        prerr_string("old: ");
+        prerr_endline(old_crc);
         raise(Inconsistency(name, source, old_source));
       };
     }) {

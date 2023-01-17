@@ -273,6 +273,8 @@ module Exp = {
     mk(~loc?, ~attributes?, PExpReturn(a));
   let constraint_ = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpConstraint(a, b));
+  let use = (~loc=?, ~attributes=?, a, b) =>
+    mk(~loc?, ~attributes?, PExpUse(a, b));
   let box_assign = (~loc=?, ~attributes=?, a, b) =>
     mk(~loc?, ~attributes?, PExpBoxAssign(a, b));
   let assign = (~loc=?, ~attributes=?, a, b) =>
@@ -378,6 +380,8 @@ module Top = {
     mk(~loc?, ~attributes?, PTopImport(i));
   let foreign = (~loc=?, ~attributes=?, e, d) =>
     mk(~loc?, ~attributes?, PTopForeign(e, d));
+  let module_ = (~loc=?, ~attributes=?, e, m) =>
+    mk(~loc?, ~attributes?, PTopModule(e, m));
   let primitive = (~loc=?, ~attributes=?, e, d) =>
     mk(~loc?, ~attributes?, PTopPrimitive(e, d));
   let data = (~loc=?, ~attributes=?, elts) =>
@@ -389,9 +393,7 @@ module Top = {
   let grain_exception = (~loc=?, ~attributes=?, e, ext) =>
     mk(~loc?, ~attributes?, PTopException(e, ext));
   let export = (~loc=?, ~attributes=?, e) =>
-    mk(~loc?, ~attributes?, PTopExport(e));
-  let export_all = (~loc=?, ~attributes=?, e) =>
-    mk(~loc?, ~attributes?, PTopExportAll(e));
+    mk(~loc?, ~attributes?, PTopExpose(e));
 };
 
 module Val = {
@@ -423,26 +425,15 @@ module Mb = {
 };
 
 module Imp = {
-  let mk = (~loc=?, shapes, path) => {
+  let mk = (~loc=?, path, alias) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
-    {pimp_val: shapes, pimp_path: path, pimp_loc: loc};
+    {pimp_alias: alias, pimp_path: path, pimp_loc: loc};
   };
 };
 
-module Ex = {
-  let mk = (~loc=?, exports) => {
+module Mod = {
+  let mk = (~loc=?, name, stmts) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
-    List.map(
-      ((name, alias)) => {
-        let desc = {pex_name: name, pex_alias: alias, pex_loc: loc};
-        let r = Str.regexp("^[A-Z]");
-        if (Str.string_match(r, name.txt, 0)) {
-          ExportData(desc);
-        } else {
-          ExportValue(desc);
-        };
-      },
-      exports,
-    );
+    {pmod_name: name, pmod_stmts: stmts, pmod_loc: loc};
   };
 };

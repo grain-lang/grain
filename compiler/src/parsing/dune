@@ -1,6 +1,6 @@
 (menhir
  (modules parser)
- (flags --explain --unused-tokens --strict))
+ (flags --explain --unused-tokens))
 
 ;; The following two rules create a copy of the file parser.mly named
 ;; unitActionsParser.mly. This is a copy of the grammar where the semantic

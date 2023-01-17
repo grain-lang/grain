@@ -131,6 +131,11 @@ module MakeMap =
       | TTopForeign(_)
       | TTopImport(_)
       | TTopExport(_) => stmt.ttop_desc
+      | TTopModule(decl) =>
+        TTopModule({
+          ...decl,
+          tmod_statements: map_toplevel_stmts(decl.tmod_statements),
+        })
       | TTopLet(recflag, mutflag, binds) =>
         TTopLet(recflag, mutflag, map_bindings(recflag, mutflag, binds))
       | TTopExpr(e) => TTopExpr(map_expression(e))

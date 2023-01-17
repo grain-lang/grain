@@ -130,6 +130,7 @@ module MakeIterator =
     | TTopForeign(_)
     | TTopImport(_)
     | TTopExport(_) => ()
+    | TTopModule({tmod_statements}) => iter_toplevel_stmts(tmod_statements)
     | TTopExpr(e) => iter_expression(e)
     | TTopLet(recflag, mutflag, binds) =>
       iter_bindings(recflag, mutflag, binds)
@@ -145,6 +146,7 @@ module MakeIterator =
         | TTopImport(_)
         | TTopExport(_)
         | TTopExpr(_)
+        | TTopModule(_)
         | TTopLet(_) => iter_toplevel_stmt(cur)
         | TTopData(_) =>
           Iter.enter_data_declarations();

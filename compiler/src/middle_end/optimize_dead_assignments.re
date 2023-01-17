@@ -42,7 +42,7 @@ module DAEArg: Anf_mapper.MapArgument = {
   let enter_anf_program = ({signature: {cmi_sign}, imports} as p) => {
     open Types;
     // Consider exported values as used so they are not removed
-    List.iter(
+    let rec process_sig =
       fun
       | TSigValue(id, {val_internalpath: PIdent(full_id)}) => {
           mark_exported(full_id);
@@ -65,10 +65,11 @@ module DAEArg: Anf_mapper.MapArgument = {
       | TSigType(_, {type_kind: TDataVariant(cds)}, _) =>
         List.iter(({cd_id}) => mark_exported(cd_id), cds)
       | TSigType(_) => ()
-      | TSigModule(_)
-      | TSigModType(_) => failwith("NYI: modules in module signatures"),
-      cmi_sign,
-    );
+      | TSigModule(_, {md_type: TModSignature(signature)}, _) =>
+        List.iter(process_sig, signature)
+      | TSigModule(_) => ()
+      | TSigModType(_) => failwith("NYI: module types in module signatures");
+    List.iter(process_sig, cmi_sign);
     p;
   };
 

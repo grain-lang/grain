@@ -67,10 +67,6 @@ let fix_blocks = ({statements} as prog) => {
   {...prog, statements: List.map(mapper.toplevel(mapper), statements)};
 };
 
-let is_uppercase_ident = name => {
-  Char_utils.is_uppercase_letter(name.[0]);
-};
-
 let mkid = ns => {
   let help = ns => {
     let rec help = (ns, (acc_ident, acc_str)) => {
@@ -98,13 +94,13 @@ let mkid_expr = (loc, ns) =>
 
 let mkstr = (loc, s) => mkloc(s, to_loc(loc));
 
-let make_program = statements => {
+let make_program = (module_name, statements) => {
   let prog_loc = {
     loc_start: first_loc^.loc_end,
     loc_end: last_loc^.loc_end,
     loc_ghost: false,
   };
-  fix_blocks({statements, comments: [], prog_loc});
+  fix_blocks({module_name, statements, comments: [], prog_loc});
 };
 
 let parse_program = (program, token, lexbuf) => {

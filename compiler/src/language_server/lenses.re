@@ -24,8 +24,9 @@ module ResponseResult = {
 
 let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
-  | TTopImport(import_declaration) => None
-  | TTopForeign(value_description) => None
+  | TTopImport(_)
+  | TTopForeign(_)
+  | TTopModule(_)
   | TTopData([]) => None
   | TTopData(data_declarations) =>
     let decls =
