@@ -140,49 +140,49 @@ describe("strings", ({test, testSkip}) => {
   assertSnapshot("concat", "\"foo\" ++ \"bar\"");
   assertRun(
     "toString_escape1",
-    {|print(("foo\\bar",))|},
-    "(\"foo\\\\bar\",)\n",
+    {|print(("foo\\bar", 1))|},
+    "(\"foo\\\\bar\", 1)\n",
   );
   assertRun(
     "toString_escape2",
-    {|print(("foo\bbar",))|},
-    "(\"foo\\bbar\",)\n",
+    {|print(("foo\bbar", 1))|},
+    "(\"foo\\bbar\", 1)\n",
   );
   assertRun(
     "toString_escape3",
-    {|print(("foo\fbar",))|},
-    "(\"foo\\fbar\",)\n",
+    {|print(("foo\fbar", 1))|},
+    "(\"foo\\fbar\", 1)\n",
   );
   assertRun(
     "toString_escape4",
-    {|print(("foo\nbar",))|},
-    "(\"foo\\nbar\",)\n",
+    {|print(("foo\nbar", 1))|},
+    "(\"foo\\nbar\", 1)\n",
   );
   assertRun(
     "toString_escape5",
     {|print(("foo
-bar",))|},
-    "(\"foo\\nbar\",)\n",
+bar", 1))|},
+    "(\"foo\\nbar\", 1)\n",
   );
   assertRun(
     "toString_escape6",
-    {|print(("foo\rbar",))|},
-    "(\"foo\\rbar\",)\n",
+    {|print(("foo\rbar", 1))|},
+    "(\"foo\\rbar\", 1)\n",
   );
   assertRun(
     "toString_escape7",
-    {|print(("foo\tbar",))|},
-    "(\"foo\\tbar\",)\n",
+    {|print(("foo\tbar",1 ))|},
+    "(\"foo\\tbar\", 1)\n",
   );
   assertRun(
     "toString_escape8",
-    {|print(("foo\vbar",))|},
-    "(\"foo\\vbar\",)\n",
+    {|print(("foo\vbar", 1))|},
+    "(\"foo\\vbar\", 1)\n",
   );
   assertRun(
     "toString_escape9",
-    {|print(("foo\"bar",))|},
-    "(\"foo\\\"bar\",)\n",
+    {|print(("foo\"bar", 1))|},
+    "(\"foo\\\"bar\", 1)\n",
   );
   assertCompileError(
     "string_err",

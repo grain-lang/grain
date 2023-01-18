@@ -56,16 +56,16 @@ describe("chars", ({test, testSkip}) => {
     "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '💯')",
     "false\n",
   );
-  assertRun("char_toString_escape1", {|print(('\\',))|}, "('\\\\',)\n");
-  assertRun("char_toString_escape2", {|print(('\b',))|}, "('\\b',)\n");
-  assertRun("char_toString_escape3", {|print(('\f',))|}, "('\\f',)\n");
-  assertRun("char_toString_escape4", {|print(('\n',))|}, "('\\n',)\n");
+  assertRun("char_toString_escape1", {|print(('\\', 1))|}, "('\\\\', 1)\n");
+  assertRun("char_toString_escape2", {|print(('\b', 1))|}, "('\\b', 1)\n");
+  assertRun("char_toString_escape3", {|print(('\f', 1))|}, "('\\f', 1)\n");
+  assertRun("char_toString_escape4", {|print(('\n', 1))|}, "('\\n', 1)\n");
   assertRun("char_toString_escape5", {|print(('
-',))|}, "('\\n',)\n");
-  assertRun("char_toString_escape6", {|print(('\r',))|}, "('\\r',)\n");
-  assertRun("char_toString_escape7", {|print(('\t',))|}, "('\\t',)\n");
-  assertRun("char_toString_escape8", {|print(('\v',))|}, "('\\v',)\n");
-  assertRun("char_toString_escape9", {|print(('\'',))|}, "('\\'',)\n");
+', 1))|}, "('\\n', 1)\n");
+  assertRun("char_toString_escape6", {|print(('\r', 1))|}, "('\\r', 1)\n");
+  assertRun("char_toString_escape7", {|print(('\t', 1))|}, "('\\t', 1)\n");
+  assertRun("char_toString_escape8", {|print(('\v', 1))|}, "('\\v', 1)\n");
+  assertRun("char_toString_escape9", {|print(('\'', 1))|}, "('\\'', 1)\n");
   assertCompileError(
     "char_illegal",
     "'abc'",

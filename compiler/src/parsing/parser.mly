@@ -270,7 +270,7 @@ patterns:
   | ioption(eols) lseparated_nonempty_list(comma, pattern) ioption(comma) { $2 }
 
 tuple_patterns:
-  | pattern COMMA ioption(tuple_pattern_ending) { $1::(Option.value ~default:[] $3) }
+  | pattern COMMA tuple_pattern_ending { $1::$3 }
 
 record_patterns:
   | lseparated_nonempty_list(comma, record_pattern) comma? { $1 }
@@ -301,7 +301,7 @@ typs:
   | ioption(eols) lseparated_nonempty_list(comma, typ) ioption(comma) { $2 }
 
 tuple_typs:
-  | typ COMMA ioption(tuple_typ_ending) { $1::(Option.value ~default:[] $3) }
+  | typ COMMA tuple_typ_ending { $1::$3 }
 
 value_bind:
   | pattern equal expr { Vb.mk ~loc:(to_loc $loc) $1 $3 }
@@ -573,7 +573,7 @@ block_body_expr:
   | ioption(eols) lseparated_nonempty_list(comma, expr) comma? { $2 }
 
 tuple_exprs:
-  | expr COMMA ioption(tuple_expr_ending) { $1::(Option.value ~default:[] $3) }
+  | expr COMMA tuple_expr_ending { $1::$3 }
 
 array_get:
   | left_accessor_expr lbrack expr rbrack { Exp.array_get ~loc:(to_loc $loc) $1 $3 }

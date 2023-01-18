@@ -17,7 +17,7 @@ describe("pattern matching", ({test, testSkip}) => {
   let assertNoWarning = makeNoWarningRunner(test);
 
   /* Pattern matching on tuples */
-  assertRun("tuple_match_1", "print(match ((1,)) { (a,) => a })", "1\n");
+  assertRun("tuple_match_1", "print(match ((1, 2)) { (a, _) => a })", "1\n");
   assertRun(
     "tuple_match_2",
     "print(match ((1, 2, 3)) { (a, b, c) => a + b + c })",

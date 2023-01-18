@@ -826,6 +826,55 @@ program: RECORD UIDENT LBRACE LIDENT COLON WHILE
 ## The known suffix of the stack is as follows:
 ## simple_id COLON
 ##
+program: WASMI64 COLON LPAREN UIDENT COMMA EOL UIDENT COMMA EOL WHILE
+##
+## Ends in an error in state: 111.
+##
+## lseparated_nonempty_list_inner(comma,typ) -> lseparated_nonempty_list_inner(comma,typ) comma . typ [ RPAREN EOL COMMA ]
+## tuple_typs -> typ COMMA eols lseparated_nonempty_list_inner(comma,typ) comma . [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## typ COMMA eols lseparated_nonempty_list_inner(comma,typ) comma
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+## In state 96, spurious reduction of production comma -> COMMA eols
+##
+program: WASMI64 COLON LPAREN UIDENT COMMA UIDENT COMMA EOL WHILE
+##
+## Ends in an error in state: 105.
+##
+## lseparated_nonempty_list_inner(comma,typ) -> lseparated_nonempty_list_inner(comma,typ) comma . typ [ RPAREN EOL COMMA ]
+## tuple_typs -> typ COMMA lseparated_nonempty_list_inner(comma,typ) comma . [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## typ COMMA lseparated_nonempty_list_inner(comma,typ) comma
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 5, spurious reduction of production eols -> nonempty_list(eol)
+## In state 96, spurious reduction of production comma -> COMMA eols
+##
+program: WASMI64 COLON LPAREN UIDENT COMMA WHILE
+##
+## Ends in an error in state: 103.
+##
+## tuple_typs -> typ COMMA . [ RPAREN EOL ]
+## tuple_typs -> typ COMMA . lseparated_nonempty_list_inner(comma,typ) [ RPAREN EOL ]
+## tuple_typs -> typ COMMA . lseparated_nonempty_list_inner(comma,typ) comma [ RPAREN EOL ]
+## tuple_typs -> typ COMMA . eols lseparated_nonempty_list_inner(comma,typ) [ RPAREN EOL ]
+## tuple_typs -> typ COMMA . eols lseparated_nonempty_list_inner(comma,typ) comma [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## typ COMMA
+##
 
 Expected a type.
 
@@ -3847,6 +3896,30 @@ program: LET NUMBER_INT PIPE EOL WHILE
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 5, spurious reduction of production eols -> nonempty_list(eol)
 ##
+program: LPAREN WASMI64 COMMA WHEN
+##
+## Ends in an error in state: 520.
+##
+## tuple_exprs -> expr COMMA . [ RPAREN EOL ]
+## tuple_exprs -> expr COMMA . lseparated_nonempty_list_inner(comma,expr) option(comma) [ RPAREN EOL ]
+## tuple_exprs -> expr COMMA . eols lseparated_nonempty_list_inner(comma,expr) option(comma) [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## expr COMMA
+##
+program: LET LPAREN WASMI64 COMMA WHILE
+##
+## Ends in an error in state: 382.
+##
+## tuple_patterns -> pattern COMMA . [ RPAREN EOL ]
+## tuple_patterns -> pattern COMMA . lseparated_nonempty_list_inner(comma,pattern) [ RPAREN EOL ]
+## tuple_patterns -> pattern COMMA . lseparated_nonempty_list_inner(comma,pattern) comma [ RPAREN EOL ]
+## tuple_patterns -> pattern COMMA . eols lseparated_nonempty_list_inner(comma,pattern) [ RPAREN EOL ]
+## tuple_patterns -> pattern COMMA . eols lseparated_nonempty_list_inner(comma,pattern) comma [ RPAREN EOL ]
+##
+## The known suffix of the stack is as follows:
+## pattern COMMA
+##
 
 Expected a pattern.
 
@@ -4142,22 +4215,6 @@ program: LET LPAREN WASMI64 COMMA WASMI64 RBRACK
 
 Expected a comma followed by another pattern or `)` to complete the tuple pattern.
 
-program: LET LPAREN WASMI64 COMMA WHILE
-##
-## Ends in an error in state: 382.
-##
-## tuple_patterns -> pattern COMMA . [ RPAREN EOL ]
-## tuple_patterns -> pattern COMMA . lseparated_nonempty_list_inner(comma,pattern) [ RPAREN EOL ]
-## tuple_patterns -> pattern COMMA . lseparated_nonempty_list_inner(comma,pattern) comma [ RPAREN EOL ]
-## tuple_patterns -> pattern COMMA . eols lseparated_nonempty_list_inner(comma,pattern) [ RPAREN EOL ]
-## tuple_patterns -> pattern COMMA . eols lseparated_nonempty_list_inner(comma,pattern) comma [ RPAREN EOL ]
-##
-## The known suffix of the stack is as follows:
-## pattern COMMA
-##
-
-Expected a pattern or an immediate `)` for a single-argument tuple pattern.
-
 program: LET LPAREN WASMI64 WHILE
 ##
 ## Ends in an error in state: 381.
@@ -4417,20 +4474,6 @@ program: LPAREN WASMI64 COMMA WASMI64 THICKARROW
 ##
 
 Expected a comma followed by an expression or `)` to complete the tuple expression.
-
-program: LPAREN WASMI64 COMMA WHEN
-##
-## Ends in an error in state: 520.
-##
-## tuple_exprs -> expr COMMA . [ RPAREN EOL ]
-## tuple_exprs -> expr COMMA . lseparated_nonempty_list_inner(comma,expr) option(comma) [ RPAREN EOL ]
-## tuple_exprs -> expr COMMA . eols lseparated_nonempty_list_inner(comma,expr) option(comma) [ RPAREN EOL ]
-##
-## The known suffix of the stack is as follows:
-## expr COMMA
-##
-
-Expected an expression or `)` for a single-argument tuple.
 
 program: LPAREN WASMI64 EOL WHILE
 ##
@@ -5882,58 +5925,6 @@ program: WASMI64 COLON FUN WHILE
 
 # This error can't appear as the FUN token wouldn't have been injected.
 Expected an identifier for a single-argument function or a comma-separated list of types surrounded by `(`/`)`.
-
-program: WASMI64 COLON LPAREN UIDENT COMMA EOL UIDENT COMMA EOL WHILE
-##
-## Ends in an error in state: 111.
-##
-## lseparated_nonempty_list_inner(comma,typ) -> lseparated_nonempty_list_inner(comma,typ) comma . typ [ RPAREN EOL COMMA ]
-## tuple_typs -> typ COMMA eols lseparated_nonempty_list_inner(comma,typ) comma . [ RPAREN EOL ]
-##
-## The known suffix of the stack is as follows:
-## typ COMMA eols lseparated_nonempty_list_inner(comma,typ) comma
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-## In state 96, spurious reduction of production comma -> COMMA eols
-##
-program: WASMI64 COLON LPAREN UIDENT COMMA UIDENT COMMA EOL WHILE
-##
-## Ends in an error in state: 105.
-##
-## lseparated_nonempty_list_inner(comma,typ) -> lseparated_nonempty_list_inner(comma,typ) comma . typ [ RPAREN EOL COMMA ]
-## tuple_typs -> typ COMMA lseparated_nonempty_list_inner(comma,typ) comma . [ RPAREN EOL ]
-##
-## The known suffix of the stack is as follows:
-## typ COMMA lseparated_nonempty_list_inner(comma,typ) comma
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-## In state 96, spurious reduction of production comma -> COMMA eols
-##
-program: WASMI64 COLON LPAREN UIDENT COMMA WHILE
-##
-## Ends in an error in state: 103.
-##
-## tuple_typs -> typ COMMA . [ RPAREN EOL ]
-## tuple_typs -> typ COMMA . lseparated_nonempty_list_inner(comma,typ) [ RPAREN EOL ]
-## tuple_typs -> typ COMMA . lseparated_nonempty_list_inner(comma,typ) comma [ RPAREN EOL ]
-## tuple_typs -> typ COMMA . eols lseparated_nonempty_list_inner(comma,typ) [ RPAREN EOL ]
-## tuple_typs -> typ COMMA . eols lseparated_nonempty_list_inner(comma,typ) comma [ RPAREN EOL ]
-##
-## The known suffix of the stack is as follows:
-## typ COMMA
-##
-
-Expected a type or an immediate `)` to complete the tuple type.
 
 program: WASMI64 COLON LPAREN UIDENT COMMA EOL UIDENT WHEN
 ##

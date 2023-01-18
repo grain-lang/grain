@@ -522,7 +522,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         let rparen = ")"
         let mut strings = [rparen]
         if (tupleLength <= 1n) {
-          // Special case: unary tuple
+          // Special case: unary tuple, which is not valid Grain syntax; however, boxed values
+          // are stored as a unary tuple, so we keep this in case one gets printed
           let comma = ","
           strings = [comma, ...strings]
           void

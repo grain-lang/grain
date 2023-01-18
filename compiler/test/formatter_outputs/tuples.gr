@@ -6,8 +6,8 @@ let (x, y) = ((1, 2), (3, 4))
 let (a, b) = y
 
 let a = 1
-let b = (1,)
-let c: (Number,) = (1,)
+
+let c: (Number, Number) = (1, 1)
 
 let d = (1, 2, 3)
 
