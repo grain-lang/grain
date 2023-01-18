@@ -21,7 +21,7 @@ function buildImportObj(runner) {
       // TODO: Might need to be `process.stdout.write`?
       tracepoint: (n) => console.log(`tracepoint ${n} reached\n`),
     },
-    _grainEnv: {
+    _genv: {
       mem: runner.managedMemory._memory,
       tbl: runner.table,
     },
