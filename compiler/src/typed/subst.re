@@ -69,12 +69,12 @@ let add_modtype = (id, ty, s) => {
 
 let for_saving = s => {...s, for_saving: true};
 
-let loc = (s, x) =>
-  if (s.for_saving) {
-    Location.dummy_loc;
-  } else {
-    x;
-  };
+let loc = (s, x) => x;
+// if (s.for_saving) {
+//   Location.dummy_loc;
+// } else {
+//   x;
+// };  // MR FIX ME
 
 let remove_loc =
   Ast_mapper.{
