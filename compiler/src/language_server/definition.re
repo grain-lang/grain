@@ -119,24 +119,6 @@ let process =
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
 
-    let loc_start: Lexing.position = {
-      pos_fname: "",
-      pos_lnum: 1,
-      pos_bol: 0,
-      pos_cnum: 0,
-    };
-
-    let loc_end: Lexing.position = {
-      pos_fname: "",
-      pos_lnum: 1,
-      pos_bol: 0,
-      pos_cnum: 1,
-    };
-
-    let target_location: Location.t = {loc_start, loc_end, loc_ghost: false};
-
-    let target_range = loc_to_range(target_location);
-
     switch (results) {
     | [Expression(exp, desc), ..._] =>
       Trace.log("is an expression");
@@ -184,6 +166,7 @@ let process =
           ~target_uri=uri,
           loc_to_range(loc),
         );
+
       | _ =>
         Trace.log("Is not a TTyConstr");
         send_no_result(~id);
@@ -191,12 +174,8 @@ let process =
 
     | [Declaration(decl), ..._] =>
       Trace.log("is a declaration");
-      send_definition(
-        ~id,
-        ~range=loc_to_range(decl.data_loc),
-        ~target_uri=params.text_document.uri,
-        target_range,
-      );
+      send_no_result(~id);
+
     | [Module(path, loc), ..._] =>
       Trace.log("is a module");
       Trace.log(print_loc_string("Module location from search", loc));
@@ -211,13 +190,7 @@ let process =
       let fname = loc.loc_start.pos_fname;
       Trace.log("fpath is  " ++ fname);
       let uri = Protocol.filename_to_uri(fname);
-
-      send_definition(
-        ~id,
-        ~range=loc_to_range(loc),
-        ~target_uri=uri,
-        target_range,
-      );
+      send_no_result(~id);
 
     | _ =>
       Trace.log("nothing we process for definitions");
