@@ -63,7 +63,7 @@ module Grain_parsing = struct end
 %left INFIX_110 DASH
 %left INFIX_120 STAR SLASH
 
-%right SEMI EOL COMMA DOT COLON LPAREN RETURN
+%right SEMI EOL COMMA DOT COLON LPAREN
 
 %nonassoc _if
 %nonassoc ELSE
@@ -531,7 +531,8 @@ stmt_expr:
   | THROW expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [$2] }
   | ASSERT expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [$2] }
   | FAIL expr { Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [$2] }
-  | RETURN ioption(expr) { Exp.return ~loc:(to_loc $loc) $2 }
+  // allow DASH to cause a shift instead of the usual reduction of the left side for subtraction
+  | RETURN ioption(expr) %prec _below_infix { Exp.return ~loc:(to_loc $loc) $2 }
   | CONTINUE { Exp.continue ~loc:(to_loc $loc) () }
   | BREAK { Exp.break ~loc:(to_loc $loc) () }
 

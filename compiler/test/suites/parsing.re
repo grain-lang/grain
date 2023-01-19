@@ -216,4 +216,19 @@ describe("parsing", ({test, testSkip}) => {
       prog_loc: Location.dummy_loc,
     },
   );
+  assertParse(
+    "regression_issue_1609",
+    "return -1",
+    {
+      statements: [
+        Top.expr(
+          Exp.return(
+            Some(Exp.constant(PConstNumber(PConstNumberInt("-1")))),
+          ),
+        ),
+      ],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
 });
