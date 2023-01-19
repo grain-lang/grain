@@ -104,11 +104,13 @@ let dec_float_decimal_explicit = [%sedlex.regexp?
 let dec_float_integral = [%sedlex.regexp?
   (dec_digit, Star(dec_digit | '_'))
 ];
+let dec_float_alphabetic = [%sedlex.regexp? "Infinity" | "NaN"];
 
 let dec_float = [%sedlex.regexp?
   (dec_float_integral, dec_float_decimal, Opt(dec_float_exp)) |
   (dec_float_decimal_explicit, Opt(dec_float_exp)) |
-  (dec_float_integral, dec_float_exp)
+  (dec_float_integral, dec_float_exp) |
+  dec_float_alphabetic
 ];
 
 let unsigned_float = [%sedlex.regexp? dec_float];
@@ -250,6 +252,8 @@ let rec token = lexbuf => {
   | "try" => positioned(TRY)
   | "throw" => positioned(THROW)
   | "catch" => positioned(CATCH)
+  | "macro" => positioned(MACRO)
+  | "yield" => positioned(YIELD)
   | "..." => positioned(ELLIPSIS)
   | "." => positioned(DOT)
   | "::" => positioned(COLONCOLON)

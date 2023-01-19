@@ -195,7 +195,7 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
 
     Expression.Call_indirect.set_table(
       expr,
-      Comp_utils.global_function_table,
+      Comp_utils.grain_global_function_table,
     );
 
     let num_operands = Expression.Call_indirect.get_num_operands(expr);
@@ -496,7 +496,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       ignore @@
       Table.add_active_element_segment(
         linked_mod,
-        Comp_utils.global_function_table,
+        Comp_utils.grain_global_function_table,
         new_name,
         elems,
         Expression.Const.make(
@@ -525,7 +525,7 @@ let link_all = (linked_mod, dependencies, signature) => {
   ignore @@
   Table.add_table(
     linked_mod,
-    Comp_utils.global_function_table,
+    Comp_utils.grain_global_function_table,
     table_offset^,
     -1,
     Type.funcref,
@@ -555,7 +555,7 @@ let link_all = (linked_mod, dependencies, signature) => {
             linked_mod,
             Hashtbl.find(
               Hashtbl.find(exported_names, dep),
-              Compcore.grain_type_metadata,
+              Comp_utils.grain_type_metadata,
             ),
             [],
             Type.none,
@@ -568,7 +568,7 @@ let link_all = (linked_mod, dependencies, signature) => {
                 linked_mod,
                 Hashtbl.find(
                   Hashtbl.find(exported_names, dep),
-                  Compcore.grain_main,
+                  Comp_utils.grain_main,
                 ),
                 [],
                 Type.int32,
@@ -594,7 +594,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       dependencies @ [main],
     );
 
-  let start_name = gensym(Compcore.grain_start);
+  let start_name = gensym(Comp_utils.grain_start);
   let start =
     Function.add_function(
       linked_mod,
@@ -609,7 +609,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     Function.set_start(linked_mod, start);
   } else {
     ignore @@
-    Export.add_function_export(linked_mod, start_name, Compcore.grain_start);
+    Export.add_function_export(linked_mod, start_name, Comp_utils.grain_start);
   };
 };
 
