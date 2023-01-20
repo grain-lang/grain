@@ -46,24 +46,6 @@ let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
 };
 
-let send_definition =
-    (
-      ~id: Protocol.message_id,
-      ~range: Protocol.range,
-      ~target_uri: Protocol.uri,
-      target_range: Protocol.range,
-    ) => {
-  Protocol.response(
-    ~id,
-    ResponseResult.to_yojson({
-      origin_selection_range: range,
-      target_uri,
-      target_range,
-      target_selection_range: target_range,
-    }),
-  );
-};
-
 // copied from hover, make a util function
 let loc_to_range = (pos: Location.t): Protocol.range => {
   let (_, startline, startchar, _) =
@@ -81,6 +63,25 @@ let loc_to_range = (pos: Location.t): Protocol.range => {
       character: endchar,
     },
   };
+};
+
+let send_definition =
+    (~id: Protocol.message_id, ~range: Protocol.range, ~target: Location.t) => {
+  let target_start = target.loc_start;
+  let filename = target_start.pos_fname;
+  let target_uri = Protocol.filename_to_uri(filename);
+
+  let target_range = loc_to_range(target);
+
+  Protocol.response(
+    ~id,
+    ResponseResult.to_yojson({
+      origin_selection_range: range,
+      target_uri,
+      target_range,
+      target_selection_range: target_range,
+    }),
+  );
 };
 
 let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
@@ -127,16 +128,11 @@ let process =
         Trace.log("no expression desc");
         send_no_result(~id);
       | Some(d) =>
-        let lstart = d.val_loc.loc_start;
-        let fname = lstart.pos_fname;
-        let uri = Protocol.filename_to_uri(fname);
-
         send_definition(
           ~id,
           ~range=loc_to_range(exp.exp_loc),
-          ~target_uri=uri,
-          loc_to_range(d.val_loc),
-        );
+          ~target=d.val_loc,
+        )
       };
     | [Pattern(pat), ..._] =>
       Trace.log("is a pattern");
@@ -155,17 +151,17 @@ let process =
         );
 
         let loc = search.type_loc;
-        let lstart = loc.loc_start;
-        let fname = lstart.pos_fname;
-        let uri = Protocol.filename_to_uri(fname);
-        Trace.log("type uri is " ++ fname);
 
-        send_definition(
-          ~id,
-          ~range=loc_to_range(loc),
-          ~target_uri=uri,
-          loc_to_range(loc),
-        );
+        // not sure how to get type declaration location
+
+        // let target_loc =
+
+        //  send_definition(
+        //   ~id,
+        //   ~range=loc_to_range(loc),
+        //   ~target=target_loc,
+        // )
+        send_no_result(~id);
 
       | _ =>
         Trace.log("Is not a TTyConstr");
@@ -178,18 +174,20 @@ let process =
 
     | [Module(path, loc), ..._] =>
       Trace.log("is a module");
-      Trace.log(print_loc_string("Module location from search", loc));
-      let lstart = loc.loc_start;
-      let fname = lstart.pos_fname;
-      Trace.log("module loc uri is " ++ fname);
 
       let modsearch = Env.find_module(path, None, program.env);
 
-      let loc = modsearch.md_loc;
-      Trace.log(print_loc_string("Module location from search", loc));
-      let fname = loc.loc_start.pos_fname;
-      Trace.log("fpath is  " ++ fname);
-      let uri = Protocol.filename_to_uri(fname);
+      let mod_loc = modsearch.md_loc;
+
+      // seems to come back as dummy
+      Trace.log(print_loc_string("Module location from search", mod_loc));
+
+      //  send_definition(
+      //   ~id,
+      //   ~range=loc_to_range(loc),
+      //   ~target=mod_loc,
+      // )
+
       send_no_result(~id);
 
     | _ =>
