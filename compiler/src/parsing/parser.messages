@@ -2931,7 +2931,7 @@ program: IMPORT LBRACE UIDENT THICKARROW
 ## In state 129, spurious reduction of production id -> lseparated_nonempty_list_inner(dot,type_id_str)
 ##
 
-Expected an alias like`as foo`, a comma followed by another identifier, or `}` to complete the block.
+Expected an alias like `as foo`, a comma followed by another identifier, or `}` to complete the block.
 
 program: IMPORT LBRACE WHILE
 ##
