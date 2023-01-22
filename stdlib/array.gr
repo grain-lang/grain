@@ -606,8 +606,7 @@ export let contains = (search, array) => {
  */
 export let find = (fn, array) => {
   let len = length(array)
-  let mut i = 0
-  for (let mut index = 0; i < len; i+= 1) {
+  for (let mut i = 0; i < len; i += 1) {
     if (fn(array[i])) {
       return Some(array[i])
     }
@@ -626,7 +625,7 @@ export let find = (fn, array) => {
  */
 export let findIndex = (fn, array) => {
   let len = length(array)
-  for (let mut i = 0; i < len; i+= 1) {
+  for (let mut i = 0; i < len; i += 1) {
     if (fn(array[i])) return Some(i)
   }
   return None
@@ -954,7 +953,7 @@ export let sort = (comp, array) => {
  * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
  * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
  * @since v0.4.5
- * 
+ *
  * @history v0.6.0: Behavior changed from right-rotation to left-rotation
  */
 export let rotate = (n, arr) => {

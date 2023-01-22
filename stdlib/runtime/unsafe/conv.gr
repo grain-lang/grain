@@ -88,6 +88,5 @@ export let wasmI32ToNumber = (n: WasmI32) => {
   // If it did overflow, then the value differs and we need to discard it and
   // allocate the number on the heap. A boxed 32 bit number actually is the
   // same thing as an Int32. It only needs to be cast into Number.
-  let asInt32 = toInt32(n)
   return WasmI32.toGrain(newInt32(n)): Number
 }

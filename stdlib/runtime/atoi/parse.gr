@@ -53,7 +53,7 @@ export let parseInt = (string: String, radix: Number) => {
   ) {
     return Err("Radix must be an integer between 2 and 36")
   }
-  
+
   if (WasmI32.eqz(strLen)) {
     return Err("Invalid input")
   }
@@ -97,9 +97,7 @@ export let parseInt = (string: String, radix: Number) => {
   let mut radixBigInt = 0n
   let mut valueBigInt = 0n
   let mut isBigInt = 0n
-
-  // we use 0 to represent no error and 1 to represent an invalid input
-  let mut error = 1n
+  let mut sawDigit = 0n
 
   for (let mut i = offset; i < strEnd; i += 1n) {
     let char = WasmI32.load8U(i, 0n)
@@ -109,10 +107,7 @@ export let parseInt = (string: String, radix: Number) => {
       continue
     }
 
-    // We've seen at least one non-underscore character, so we'll consider
-    // the input valid until we find out otherwise
-
-    error = 0n
+    sawDigit = 1n
 
     let mut digit = 0n
 
@@ -121,16 +116,12 @@ export let parseInt = (string: String, radix: Number) => {
       c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
       c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
       _ => {
-        error = 1n
-        // invalid digit
-        break
+        return Err("Invalid digit in input")
       },
     }
 
     if (digit >= WasmI32.wrapI64(radix)) {
-      error = 1n
-      // invalid digit
-      break
+      return Err("Invalid digit in input")
     }
 
     let digit = WasmI64.extendI32U(digit)
@@ -172,13 +163,12 @@ export let parseInt = (string: String, radix: Number) => {
     }
   }
 
-  if (error == 1n) return Err("Invalid digit in input")
+  // TODO: Verify this is suitable for handling "_"
+  if (WasmI32.eqz(sawDigit)) return Err("Invalid digit in input")
 
   if (WasmI32.eqz(isBigInt)) {
     let value = if (negative) value else WasmI64.mul(value, -1N)
-    let number = WasmI32.toGrain(
-      Memory.incRef(reducedInteger(value))
-    ): Number
+    let number = WasmI32.toGrain(Memory.incRef(reducedInteger(value))): Number
     return Ok(number)
   }
 
@@ -188,6 +178,6 @@ export let parseInt = (string: String, radix: Number) => {
     Memory.decRef(valueBigInt)
     return Ok(WasmI32.toGrain(newvalue))
   }
-  
+
   return Ok(WasmI32.toGrain(valueBigInt))
 }
