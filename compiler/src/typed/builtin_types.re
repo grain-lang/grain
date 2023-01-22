@@ -36,7 +36,10 @@ let ident_number = ident_create("Number")
 and ident_exception = ident_create("Exception")
 and ident_option = ident_create("Option")
 and ident_result = ident_create("Result")
-and ident_list = ident_create("List")
+and ident_list = ident_create("List");
+let ident_range = ident_create("Range")
+and ident_range_start = ident_create("range_start")
+and ident_range_end = ident_create("range_end")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
 and ident_uint32 = ident_create("Uint32")
@@ -67,6 +70,7 @@ and path_exception = PIdent(ident_exception)
 and path_option = PIdent(ident_option)
 and path_result = PIdent(ident_result)
 and path_list = PIdent(ident_list)
+and path_range = PIdent(ident_range)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
 and path_uint32 = PIdent(ident_uint32)
@@ -95,6 +99,8 @@ and type_option = var =>
 and type_result = (ok, err) =>
   newgenty(TTyConstr(path_result, [ok, err], ref(TMemNil)))
 and type_list = var => newgenty(TTyConstr(path_list, [var], ref(TMemNil)))
+and type_range = var =>
+  newgenty(TTyRecord([("range_start", var), ("range_end", var)]))
 and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
 and type_uint32 = newgenty(TTyConstr(path_uint32, [], ref(TMemNil)))
@@ -150,7 +156,9 @@ and ident_none_cstr = ident_create("None")
 and ident_ok_cstr = ident_create("Ok")
 and ident_err_cstr = ident_create("Err")
 and ident_cons_cstr = ident_create("[...]")
-and ident_empty_cstr = ident_create("[]");
+and ident_empty_cstr = ident_create("[]")
+and ident_inclusive_cstr = ident_create("Inclusive")
+and ident_exclusive_cstr = ident_create("Exclusive");
 
 let decl_exception = {...decl_abstr(path_exception), type_kind: TDataOpen};
 let decl_bool = {
@@ -201,6 +209,29 @@ and decl_list = {
       ]),
   };
 }
+and decl_range = {
+  let tvar = newgenvar();
+  {
+    ...decl_abstr(path_range),
+    type_params: [tvar],
+    type_arity: 1,
+    type_kind:
+      TDataRecord([
+        {
+          rf_name: ident_range_start,
+          rf_type: tvar,
+          rf_mutable: false,
+          rf_loc: Location.dummy_loc,
+        },
+        {
+          rf_name: ident_range_end,
+          rf_type: tvar,
+          rf_mutable: false,
+          rf_loc: Location.dummy_loc,
+        },
+      ]),
+  };
+}
 and decl_box = {
   let tvar = newgenvar();
   {...decl_abstr(path_box), type_params: [tvar], type_arity: 1};
@@ -237,6 +268,7 @@ let initial_env = (add_type, add_extension, empty_env) =>
   |> add_type(ident_option, decl_option)
   |> add_type(ident_result, decl_result)
   |> add_type(ident_list, decl_list)
+  |> add_type(ident_range, decl_range)
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
   |> add_type(ident_uint32, decl_abstr(path_uint32))

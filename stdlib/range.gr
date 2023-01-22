@@ -9,31 +9,27 @@
 module Range
 
 /**
- * Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
- */
-provide enum Range {
-  Inclusive(Number, Number),
-  Exclusive(Number, Number),
-}
-
-/**
  * Checks if the given number is within the range.
  *
  * @param value: The number being checked
  * @param range: The range to check within
  * @returns Whether or not the value is within range
  *
- * @example Range.inRange(1, Range.Inclusive(0, 2)) == true
- * @example Range.inRange(10, Range.Inclusive(0, 2)) == false
+ * @example Range.inRange(1, Inclusive(0, 2)) == true
+ * @example Range.inRange(10, Inclusive(0, 2)) == false
  *
  * @since v0.3.0
  */
 provide let inRange = (value, range) => {
   match (range) {
-    Inclusive(lower, upper) when value >= lower && value <= upper => true,
-    Inclusive(upper, lower) when value >= lower && value <= upper => true,
-    Exclusive(lower, upper) when value >= lower && value < upper => true,
-    Exclusive(upper, lower) when value >= lower && value < upper => true,
+    { range_start: lower, range_end: upper } when (
+      value >= lower && value < upper
+    ) =>
+      true,
+    { range_start: upper, range_end: lower } when (
+      value >= lower && value < upper
+    ) =>
+      true,
     _ => false,
   }
 }
@@ -44,34 +40,20 @@ provide let inRange = (value, range) => {
  * @param fn: The function to be executed on each number in the range
  * @param range: The range to iterate
  *
- * @example Range.forEach(val => print(val), Range.Exclusive(0, 2))
+ * @example Range.forEach(val => print(val), Exclusive(0, 2))
  *
  * @since v0.3.0
  */
 provide let forEach = (fn: Number -> Void, range) => {
   match (range) {
-    Inclusive(lower, upper) when lower <= upper => {
-      let mut idx = lower
-      while (idx <= upper) {
-        fn(idx)
-        idx += 1
-      }
-    },
-    Inclusive(upper, lower) => {
-      let mut idx = upper
-      while (idx >= lower) {
-        fn(idx)
-        idx -= 1
-      }
-    },
-    Exclusive(lower, upper) when lower <= upper => {
+    { range_start: lower, range_end: upper } when lower <= upper => {
       let mut idx = lower
       while (idx < upper) {
         fn(idx)
         idx += 1
       }
     },
-    Exclusive(upper, lower) => {
+    { range_start: upper, range_end: lower } => {
       let mut idx = upper
       while (idx > lower) {
         fn(idx)
@@ -88,35 +70,21 @@ provide let forEach = (fn: Number -> Void, range) => {
  * @param range: The range to iterate
  * @returns A list containing all values returned from the `fn`
  *
- * @example Range.map(val => val * 2, Range.Inclusive(0, 2)) == [0, 2, 4]
+ * @example Range.map(val => val * 2, Inclusive(0, 2)) == [0, 2, 4]
  *
  * @since v0.3.2
  */
 provide let map = (fn, range) => {
   let mut result = []
   match (range) {
-    Inclusive(lower, upper) when lower <= upper => {
-      let mut idx = upper
-      while (idx >= lower) {
-        result = [fn(idx), ...result]
-        idx -= 1
-      }
-    },
-    Inclusive(upper, lower) => {
-      let mut idx = lower
-      while (idx <= upper) {
-        result = [fn(idx), ...result]
-        idx += 1
-      }
-    },
-    Exclusive(lower, upper) when lower <= upper => {
+    { range_start: lower, range_end: upper } when lower <= upper => {
       let mut idx = upper - 1
       while (idx >= lower) {
         result = [fn(idx), ...result]
         idx -= 1
       }
     },
-    Exclusive(upper, lower) => {
+    { range_start: upper, range_end: lower } => {
       let mut idx = lower + 1
       while (idx <= upper) {
         result = [fn(idx), ...result]
