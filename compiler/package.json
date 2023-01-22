@@ -9,7 +9,8 @@
     "node": ">=16"
   },
   "devDependencies": {
-    "esy": "0.6.12"
+    "esy": "0.6.12",
+    "shx": "^0.3.4"
   },
   "scripts": {
     "link": "npm link",
@@ -37,6 +38,7 @@
     "graindoc-parser:update-errors": "esy b menhir src/diagnostics/graindoc_parser.mly --unused-tokens --update-errors src/diagnostics/graindoc_parser.messages > src/diagnostics/graindoc_parser.messages.generated && cp src/diagnostics/graindoc_parser.messages.generated src/diagnostics/graindoc_parser.messages",
     "graindoc-parser:check-errors": "npm run graindoc-parser:list-errors && esy b menhir src/diagnostics/graindoc_parser.mly --unused-tokens --compare-errors src/diagnostics/graindoc_parser.messages.generated --compare-errors src/diagnostics/graindoc_parser.messages",
     "import-dependencies": "esy import-dependencies _export",
+    "postimport-dependencies": "shx rm -rf _export",
     "export-dependencies": "esy export-dependencies",
     "build-dependencies": "esy build-dependencies"
   }
