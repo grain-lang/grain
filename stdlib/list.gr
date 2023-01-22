@@ -526,7 +526,7 @@ export let part = (count, list) => {
  * @example List.rotate(-7, [1, 2, 3, 4, 5]) // [4, 5, 1, 2, 3]
  *
  * @since v0.1.0
- * 
+ *
  * @history v0.6.0: No longer throws if `count` outside list length bounds
  */
 export let rotate = (count, list) => {
@@ -671,7 +671,7 @@ export let rec drop = (count, list) => {
   } else {
     match ((count, list)) {
       (_, []) => [],
-      (n, _) when n == 0 => list,
+      (0, _) => list,
       (n, [first, ...rest]) => drop(n - 1, rest),
     }
   }
@@ -713,7 +713,7 @@ export let rec take = (count, list) => {
   } else {
     match ((count, list)) {
       (_, []) => list,
-      (n, _) when n == 0 => [],
+      (0, _) => [],
       (n, [first, ...rest]) => [first, ...take(n - 1, rest)],
     }
   }
