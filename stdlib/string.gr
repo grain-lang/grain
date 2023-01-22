@@ -127,39 +127,31 @@ export let indexOf = (search: String, string: String) => {
   let (&) = WasmI32.and
 
   if (psize > size) {
-    None
-  } else {
-    let mut idx = 0n
-    let mut ptr = string + 8n
-    let mut pptr = search + 8n
-    let end = ptr + size - psize + 1n
+    return None
+  }
+  let mut idx = 0n
+  let mut ptr = string + 8n
+  let mut pptr = search + 8n
+  let end = ptr + size - psize + 1n
 
-    let mut result = -1n
-
-    while (ptr < end) {
-      if (Memory.compare(ptr, pptr, psize) == 0n) {
-        result = idx
-        break
-      }
-      idx += 1n
-      let byte = WasmI32.load8U(ptr, 0n)
-      if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n
-      } else {
-        ptr += 2n
-      }
+  while (ptr < end) {
+    if (Memory.compare(ptr, pptr, psize) == 0n) {
+      return Some(tagSimpleNumber(idx))
     }
-
-    if (result == -1n) {
-      None
+    idx += 1n
+    let byte = WasmI32.load8U(ptr, 0n)
+    if ((byte & 0x80n) == 0x00n) {
+      ptr += 1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      ptr += 4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      ptr += 3n
     } else {
-      Some(tagSimpleNumber(result))
+      ptr += 2n
     }
   }
+
+  return None
 }
 
 /**
@@ -191,34 +183,28 @@ export let lastIndexOf = (search: String, string: String) => {
   let searchSize = WasmI32.load(search, 4n)
   let stringSize = WasmI32.load(string, 4n)
   if (searchSize > stringSize) {
-    None
-  } else {
-    let mut matchIndex = -1n
-    let mut stringIndex = untagSimpleNumber(lastIndex)
-    let searchPtr = search + 8n
-    let stringStartPtr = string + 8n
-    for (
-      let mut stringPtr = stringStartPtr + stringSize - searchSize;
-      stringPtr >= stringStartPtr;
-      stringPtr -= 1n
-    ) {
-      let byte = WasmI32.load8U(stringPtr, 0n)
-      if ((byte & 0xC0n) == 0x80n) {
-        // We're not at the start of a codepoint, so move on
-        continue
-      }
-      if (Memory.compare(stringPtr, searchPtr, searchSize) == 0n) {
-        matchIndex = stringIndex
-        break
-      }
-      stringIndex -= 1n
-    }
-    if (matchIndex == -1n) {
-      None
-    } else {
-      Some(tagSimpleNumber(matchIndex))
-    }
+    return None
   }
+  let mut stringIndex = untagSimpleNumber(lastIndex)
+  let searchPtr = search + 8n
+  let stringStartPtr = string + 8n
+  for (
+    let mut stringPtr = stringStartPtr + stringSize - searchSize;
+    stringPtr >= stringStartPtr;
+    stringPtr -= 1n
+  ) {
+    let byte = WasmI32.load8U(stringPtr, 0n)
+    if ((byte & 0xC0n) == 0x80n) {
+      // We're not at the start of a codepoint, so move on
+      continue
+    }
+    if (Memory.compare(stringPtr, searchPtr, searchSize) == 0n) {
+      return Some(tagSimpleNumber(stringIndex))
+    }
+    stringIndex -= 1n
+  }
+
+  return None
 }
 
 @unsafe
@@ -295,11 +281,9 @@ let charAtHelp = (position, string: String) => {
   let mut ptr = string + 8n
   let end = ptr + size
   let mut counter = 0n
-  let mut result = 0n
   while (ptr < end) {
     if (counter == position) {
-      result = getCodePoint(ptr)
-      break
+      return getCodePoint(ptr)
     }
     let byte = WasmI32.load8U(ptr, 0n)
     let n = if ((byte & 0x80n) == 0x00n) {
@@ -314,10 +298,8 @@ let charAtHelp = (position, string: String) => {
     counter += 1n
     ptr += n
   }
-  if (WasmI32.eqz(WasmI32.fromGrain(result))) {
-    fail "charAt: should be impossible (please report)"
-  }
-  result
+
+  fail "charAt: should be impossible (please report)"
 }
 
 /**
@@ -747,52 +729,52 @@ export let contains = (search: String, string: String) => {
 
   if (m > n) {
     // Bail if pattern length is longer than input length
-    false
-  } else if (m < 2n) {
+    return false
+  }
+
+  if (m < 2n) {
     // Handle very small patterns
     if (m == 0n) {
-      true
-    } else {
-      let pat = WasmI32.load8U(search, 0n)
-      let mut result = false
-      while (j < n) {
-        if (pat == WasmI32.load8U(string + j, 0n)) {
-          result = true
-          break
-        } else {
-          j += 1n
-        }
-      }
-      result
-    }
-  } else {
-    // NSM preprocessing
-    if (WasmI32.load8U(search, 0n) == WasmI32.load8U(search, 1n)) {
-      k = 2n
-      ell = 1n
-    } else {
-      k = 1n
-      ell = 2n
+      return true
     }
 
-    let mut result = false
-    // NSM searching
-    while (j <= n - m) {
-      if (WasmI32.load8U(search, 1n) != WasmI32.load8U(string + j, 1n)) {
-        j += k
+    let pat = WasmI32.load8U(search, 0n)
+    while (j < n) {
+      if (pat == WasmI32.load8U(string + j, 0n)) {
+        return true
       } else {
-        if (
-          Memory.compare(search + 2n, string + j + 2n, m - 2n) == 0n &&
-          WasmI32.load8U(search, 0n) == WasmI32.load8U(string + j, 0n)
-        ) {
-          result = true
-          break
-        }
-        j += ell
+        j += 1n
       }
     }
-    result
+
+    return false
   }
+
+  // NSM preprocessing
+  if (WasmI32.load8U(search, 0n) == WasmI32.load8U(search, 1n)) {
+    k = 2n
+    ell = 1n
+  } else {
+    k = 1n
+    ell = 2n
+  }
+
+  // NSM searching
+  while (j <= n - m) {
+    if (WasmI32.load8U(search, 1n) != WasmI32.load8U(string + j, 1n)) {
+      j += k
+    } else {
+      if (
+        Memory.compare(search + 2n, string + j + 2n, m - 2n) == 0n &&
+        WasmI32.load8U(search, 0n) == WasmI32.load8U(string + j, 0n)
+      ) {
+        return true
+      }
+      j += ell
+    }
+  }
+
+  return false
 }
 
 /**
@@ -902,25 +884,19 @@ export let replaceFirst =
   let replacementLen = WasmI32.load(replacementPtr, 4n)
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
-    string
-  } else {
-    patternPtr += 8n
-    stringPtr += 8n
-    replacementPtr += 8n
+    return string
+  }
+  patternPtr += 8n
+  stringPtr += 8n
+  replacementPtr += 8n
 
-    let mut found = false
-    // Search for an instance of the string
-    let mut foundIndex = -1n
-    let stringEndPtr = stringPtr + stringLen - patternLen + 1n
-    for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
-      // check for match
-      foundIndex += 1n
-      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
-        found = true
-        break
-      }
-    }
-    if (found) {
+  // Search for an instance of the string
+  let mut foundIndex = -1n
+  let stringEndPtr = stringPtr + stringLen - patternLen + 1n
+  for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
+    // check for match
+    foundIndex += 1n
+    if (Memory.compare(i, patternPtr, patternLen) == 0n) {
       // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
       let strPtr = str + 8n
@@ -932,11 +908,11 @@ export let replaceFirst =
         stringLen - foundIndex
       )
       // Copy over the str
-      WasmI32.toGrain(str): String
-    } else {
-      string
+      return WasmI32.toGrain(str): String
     }
   }
+
+  return string
 }
 
 /**
@@ -974,25 +950,20 @@ export let replaceLast =
 
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
-    string
-  } else {
-    patternPtr += 8n
-    stringPtr += 8n
-    replacementPtr += 8n
+    return string
+  }
+  patternPtr += 8n
+  stringPtr += 8n
+  replacementPtr += 8n
 
-    let mut found = false
-    // Search for an instance of the string
-    let stringEndPtr = stringPtr + stringLen - patternLen
-    let mut foundIndex = stringLen - patternLen + 1n
-    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
-      // check for match
-      foundIndex -= 1n
-      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
-        found = true
-        break
-      }
-    }
-    if (found) {
+  let mut found = false
+  // Search for an instance of the string
+  let stringEndPtr = stringPtr + stringLen - patternLen
+  let mut foundIndex = stringLen - patternLen + 1n
+  for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+    // check for match
+    foundIndex -= 1n
+    if (Memory.compare(i, patternPtr, patternLen) == 0n) {
       // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
       let strPtr = str + 8n
@@ -1004,11 +975,11 @@ export let replaceLast =
         stringLen - foundIndex
       )
       // Copy over the str
-      WasmI32.toGrain(str): String
-    } else {
-      string
+      return WasmI32.toGrain(str): String
     }
   }
+
+  return string
 }
 
 /**
