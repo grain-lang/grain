@@ -495,7 +495,7 @@ export let pathOpen =
     combinedFsFlags,
     newFd
   )
-  
+
   if (err != Wasi._ESUCCESS) {
     Memory.free(newFd)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
@@ -534,7 +534,7 @@ export let fdRead = (fd: FileDescriptor, size: Number) => {
     Memory.free(strPtr)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   nread = WasmI32.load(nread, 0n)
   WasmI32.store(strPtr, nread, 4n)
   Memory.free(iovs)
@@ -573,7 +573,7 @@ export let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
     Memory.free(strPtr)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   nread = WasmI32.load(nread, 0n)
   WasmI32.store(strPtr, nread, 4n)
   Memory.free(iovs)
@@ -605,7 +605,7 @@ export let fdWrite = (fd: FileDescriptor, data: String) => {
     Memory.free(iovs)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   nwritten = WasmI32.load(nwritten, 0n)
   Memory.free(iovs)
   return Ok(tagSimpleNumber(nwritten))
@@ -726,7 +726,7 @@ export let fdSync = (fd: FileDescriptor) => {
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   return Ok(void)
 }
 
@@ -803,20 +803,21 @@ export let fdStats = (fd: FileDescriptor) => {
 
   let flagsToWasmVal = (flag, i) => {
     let rightsInheriting = WasmI64.load(structPtr, 16n)
-    (rightsInheriting &
-      1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
-    0N
+    (rightsInheriting & 1N << WasmI64.extendI32U(WasmI32.fromGrain(i) >> 1n)) >
+      0N
   }
   let rightsInheritingList = List.filteri(flagsToWasmVal, orderedRights)
 
   Memory.free(structPtr)
 
-  return Ok({
-    filetype,
-    flags: fdflagsList,
-    rights: rightsList,
-    rightsInheriting: rightsInheritingList,
-  })
+  return Ok(
+    {
+      filetype,
+      flags: fdflagsList,
+      rights: rightsList,
+      rightsInheriting: rightsInheritingList,
+    }
+  )
 }
 
 /**
@@ -838,7 +839,7 @@ export let fdSetFlags = (fd: FileDescriptor, flags: List<FdFlag>) => {
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   return Ok(void)
 }
 
@@ -895,21 +896,17 @@ export let fdFilestats = (fd: FileDescriptor) => {
   let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
   let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
   let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-  let linkcount = WasmI32.toGrain(
-    newInt64(WasmI64.load(filestats, 24n))
-  ): Int64
+  let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))): Int64
   let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
-  let accessed = WasmI32.toGrain(
-    newInt64(WasmI64.load(filestats, 40n))
-  ): Int64
-  let modified = WasmI32.toGrain(
-    newInt64(WasmI64.load(filestats, 48n))
-  ): Int64
+  let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))): Int64
+  let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))): Int64
   let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
 
   Memory.free(filestats)
 
-  return Ok({ device, inode, filetype, linkcount, size, accessed, modified, changed })
+  return Ok(
+    { device, inode, filetype, linkcount, size, accessed, modified, changed }
+  )
 }
 
 /**
@@ -953,7 +950,7 @@ export let fdSetAccessTime = (fd: FileDescriptor, timestamp: Int64) => {
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   return Ok(void)
 }
 
@@ -972,7 +969,7 @@ export let fdSetAccessTimeNow = (fd: FileDescriptor) => {
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   return Ok(void)
 }
 
@@ -1271,16 +1268,10 @@ export let pathFilestats =
   let device = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 0n))): Int64
   let inode = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 8n))): Int64
   let filetype = filetypeFromNumber(WasmI32.load8U(filestats, 16n))
-  let linkcount = WasmI32.toGrain(
-    newInt64(WasmI64.load(filestats, 24n))
-  ): Int64
+  let linkcount = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 24n))): Int64
   let size = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 32n))): Int64
-  let accessed = WasmI32.toGrain(
-    newInt64(WasmI64.load(filestats, 40n))
-  ): Int64
-  let modified = WasmI32.toGrain(
-    newInt64(WasmI64.load(filestats, 48n))
-  ): Int64
+  let accessed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 40n))): Int64
+  let modified = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 48n))): Int64
   let changed = WasmI32.toGrain(newInt64(WasmI64.load(filestats, 56n))): Int64
 
   Memory.free(filestats)
@@ -1370,7 +1361,7 @@ export let pathSetAccessTimeNow =
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
-  
+
   return Ok(void)
 }
 
