@@ -30,20 +30,6 @@ import Exception from "runtime/exception"
  */
 
 /**
- * NaN represented as a Number value.
- *
- * @since v0.5.4
- */
-export let nan = 0.0 / 0.0
-
-/**
- * Infinity represented as a Number value.
- *
- * @since v0.5.4
- */
-export let infinity = 1.0 / 0.0
-
-/**
  * Pi represented as a Number value.
  *
  * @since v0.5.2
@@ -644,9 +630,9 @@ export let max = (x: Number, y: Number) => if (compare(x, y) > 0) x else y
 @unsafe
 export let ceil = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let ceiling = WasmI64.truncF64S(WasmF64.ceil(xval))
@@ -666,9 +652,9 @@ export let ceil = (x: Number) => {
 @unsafe
 export let floor = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let floored = WasmI64.truncF64S(WasmF64.floor(xval))
@@ -688,9 +674,9 @@ export let floor = (x: Number) => {
 @unsafe
 export let trunc = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let trunced = WasmI64.truncF64S(xval)
@@ -710,9 +696,9 @@ export let trunc = (x: Number) => {
 @unsafe
 export let round = (x: Number) => {
   if (x != x) {
-    nan
-  } else if (x == infinity) {
-    infinity
+    NaN
+  } else if (x == Infinity) {
+    Infinity
   } else {
     let xval = coerceNumberToWasmF64(x)
     let rounded = WasmI64.truncF64S(WasmF64.nearest(xval))
@@ -980,8 +966,8 @@ let chebyshevSine = (radians: Number) => {
  * @history v0.5.4: Handle NaN and Infinity
  */
 export let sin = (radians: Number) => {
-  if (radians != radians || radians == infinity) {
-    nan
+  if (radians != radians || radians == Infinity) {
+    NaN
   } else {
     let quot = reduceToPiBound(radians)
     let bounded = radians - pi * quot
@@ -1003,8 +989,8 @@ export let sin = (radians: Number) => {
  * @history v0.5.4: Handle NaN and Infinity
  */
 export let cos = (radians: Number) => {
-  if (radians != radians || radians == infinity) {
-    nan
+  if (radians != radians || radians == Infinity) {
+    NaN
   } else {
     sin(pi / 2 + radians)
   }
@@ -1020,7 +1006,7 @@ export let cos = (radians: Number) => {
  */
 export let tan = (radians: Number) => {
   if (isNaN(radians) || isInfinite(radians)) {
-    nan
+    NaN
   } else {
     sin(radians) / cos(radians)
   }
@@ -1077,7 +1063,7 @@ export let rec gamma = z => {
       let t = z + g + 0.5
       output = sqrt(2 * pi) * pow(t, z + 0.5) * exp(t * -1) * x
     }
-    if (abs(output) == infinity) infinity else output
+    if (abs(output) == Infinity) Infinity else output
   }
 }
 
