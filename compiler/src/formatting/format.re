@@ -1784,10 +1784,6 @@ and print_type =
               parsed_types,
             ),
           ),
-          switch (parsed_types) {
-          | [_one] => Doc.comma
-          | _ => Doc.nil
-          },
         ]),
       ),
       Doc.softLine,

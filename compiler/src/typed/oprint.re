@@ -380,9 +380,6 @@ and print_out_type_2 = ppf =>
         print_typlist(print_simple_out_type, ","),
         tyl,
       );
-      if (List.length(tyl) == 1) {
-        pp_print_char(ppf, ',');
-      };
       pp_print_char(ppf, ')');
       pp_close_box(ppf, ());
     }

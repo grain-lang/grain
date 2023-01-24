@@ -21,9 +21,14 @@ describe("tuples", ({test, testSkip}) => {
     "nested_tup_3",
     "let (x, y) = ((1, 2), (3, 4)); let (a, b) = y; a",
   );
-  assertSnapshot("singleton_tup", "(1,)");
-  assertSnapshot("singleton_tup_annotation", "(1,): (Number,)");
+  // Single-argument tuples are not supported at the parser, but `(1)` is parsed as a grouped value
   assertSnapshot("no_non_trailing_comma_singleton_tup", "(1)");
+  assertCompileError("singleton_tup_err", "(1,)", "Expected a pattern");
+  assertCompileError(
+    "singleton_tup_annotation_err",
+    "(1, 1): (Number,)",
+    "Expected a type",
+  );
   // trailing commas
   assertSnapshot("tup1_trailing", "(1, 2, 3,)");
   assertSnapshot("tup1_destruct_trailing", "let (a, b, c,) =(1, 2, 3,)");
