@@ -589,11 +589,10 @@ export let fromList = list => {
 export let contains = (search, array) => {
   // TODO(#189): This should be rewritten to use recursion and pattern matching
   let len = length(array)
-  let mut found = false
-  for (let mut index = 0; !found && index < len; index += 1) {
-    found = array[index] == search
+  for (let mut i = 0; i < len; i += 1) {
+    if (array[i] == search) return true
   }
-  found
+  return false
 }
 
 /**
@@ -606,28 +605,13 @@ export let contains = (search, array) => {
  * @since v0.2.0
  */
 export let find = (fn, array) => {
-  let length = length(array)
-  if (length == 0) {
-    None
-  } else {
-    let mut count = 0
-    let mut matching = false
-    let mut matchedItem = array[0]
-    while (count < length) {
-      if (fn(array[count])) {
-        matching = true
-        matchedItem = array[count]
-        count = length
-      } else {
-        count += 1
-      }
-    }
-    if (!matching) {
-      None
-    } else {
-      Some(matchedItem)
+  let len = length(array)
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i])) {
+      return Some(array[i])
     }
   }
+  return None
 }
 
 /**
@@ -640,28 +624,11 @@ export let find = (fn, array) => {
  * @since v0.2.0
  */
 export let findIndex = (fn, array) => {
-  let length = length(array)
-  if (length == 0) {
-    None
-  } else {
-    let mut count = 0
-    let mut matching = false
-    let mut matchedIndex = 0
-    while (count < length) {
-      if (fn(array[count])) {
-        matching = true
-        matchedIndex = count
-        count = length
-      } else {
-        count += 1
-      }
-    }
-    if (!matching) {
-      None
-    } else {
-      Some(matchedIndex)
-    }
+  let len = length(array)
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i])) return Some(i)
   }
+  return None
 }
 
 /**
@@ -682,8 +649,6 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
   init(lenA * lenB, n => {
     if (n % lenB == 0) {
       indexA += 1
-    } else {
-      indexA = indexA
     }
     (array1[indexA], array2[n % lenB])
   })
@@ -699,15 +664,14 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
  * @since v0.2.0
  */
 export let count = (fn, array) => {
-  let length = length(array)
-  let mut position = 0
-  let mut count = 0
-  for (let mut position = 0; position < length; position += 1) {
-    if (fn(array[position])) {
-      count += 1
+  let len = length(array)
+  let mut n = 0
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i])) {
+      n += 1
     }
   }
-  count
+  n
 }
 
 /**
@@ -721,14 +685,14 @@ export let count = (fn, array) => {
  * @since v0.3.0
  */
 export let counti = (fn, array) => {
-  let length = length(array)
-  let mut count = 0
-  for (let mut position = 0; position < length; position += 1) {
-    if (fn(array[position], position)) {
-      count += 1
+  let len = length(array)
+  let mut n = 0
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i], i)) {
+      n += 1
     }
   }
-  count
+  n
 }
 
 /**
@@ -989,7 +953,7 @@ export let sort = (comp, array) => {
  * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
  * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
  * @since v0.4.5
- * 
+ *
  * @history v0.6.0: Behavior changed from right-rotation to left-rotation
  */
 export let rotate = (n, arr) => {

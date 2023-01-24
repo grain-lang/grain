@@ -52,23 +52,19 @@ let exceptionToString = (e: Exception) => {
   let mut result = _GENERIC_EXCEPTION_NAME
   let mut current = printers
   while (true) {
-    if (current == 0n) {
-      break
-    }
+    if (current == 0n) return result
     let (printer, next) = WasmI32.toGrain(current): (
       Exception -> Option<String>,
       WasmI32
     )
     match (printer(e)) {
-      Some(str) => {
-        result = str
-        break
+      Some(str) => return str,
+      None => {
+        current = next
       },
-      None => void,
     }
-    current = next
   }
-  result
+  return result
 }
 
 // HACK: Allocate static buffer for printing (40 bytes)

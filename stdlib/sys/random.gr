@@ -28,12 +28,11 @@ export let randomInt32 = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    let rand = WasmI32.load(buf, 0n)
-    Memory.free(buf)
-    Ok(WasmI32.toGrain(newInt32(rand)): Int32)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  let rand = WasmI32.load(buf, 0n)
+  Memory.free(buf)
+  return Ok(WasmI32.toGrain(newInt32(rand)): Int32)
 }
 
 /**
@@ -50,12 +49,11 @@ export let randomInt64 = () => {
   let err = Wasi.random_get(buf, 8n)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    let rand = WasmI64.load(buf, 0n)
-    Memory.free(buf)
-    Ok(WasmI32.toGrain(newInt64(rand)): Int64)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  let rand = WasmI64.load(buf, 0n)
+  Memory.free(buf)
+  return Ok(WasmI32.toGrain(newInt64(rand)): Int64)
 }
 
 /**
@@ -70,10 +68,9 @@ export let random = () => {
   let err = Wasi.random_get(buf, 4n)
   if (err != Wasi._ESUCCESS) {
     Memory.free(buf)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    let rand = WasmI32.load(buf, 0n)
-    Memory.free(buf)
-    Ok(tagSimpleNumber(rand))
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  let rand = WasmI32.load(buf, 0n)
+  Memory.free(buf)
+  return Ok(tagSimpleNumber(rand))
 }

@@ -185,19 +185,16 @@ export let peek = pq => {
  * @since v0.5.3
  */
 export let pop = pq => {
-  if (pq.size == 0) {
-    None
-  } else {
-    let root = pq.array[0]
+  if (pq.size == 0) return None
+  let root = pq.array[0]
 
-    pq.array[0] = pq.array[pq.size - 1]
-    pq.array[pq.size - 1] = None
-    pq.size -= 1
-    // reorder heap to ensure that binary heap property of parent nodes having
-    // larger values than their children is upheld
-    siftDown(0, pq)
-    root
-  }
+  pq.array[0] = pq.array[pq.size - 1]
+  pq.array[pq.size - 1] = None
+  pq.size -= 1
+  // reorder heap to ensure that binary heap property of parent nodes having
+  // larger values than their children is upheld
+  siftDown(0, pq)
+  return root
 }
 
 /**
