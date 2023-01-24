@@ -1112,9 +1112,7 @@ let rec parseAtom = (buf: RegExBuf) => {
                     },
                   }
                 },
-                Ok(c) when (
-                  c == 'i' || c == 's' || c == 'm' || c == '-' || c == ':'
-                ) => {
+                Ok('i' | 's' | 'm' | '-' | ':') => {
                   // match with mode
                   ignore(eat(buf, '('))
                   ignore(eat(buf, '?'))
@@ -1678,7 +1676,7 @@ parseNonGreedy = (buf: RegExBuf) => {
     } else {
       match (peek(buf)) {
         Err(e) => Err(e),
-        Ok(c) when c == '?' || c == '*' || c == '+' => {
+        Ok('?' | '*' | '+' as c) => {
           Err(parseErr(buf, "nested '" ++ toString(c) ++ "' in pattern", 0))
         },
         Ok(_) => res,
