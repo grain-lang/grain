@@ -6,7 +6,7 @@ open Grain_utils;
 let grain_main = "_gmain";
 let grain_type_metadata = "_gtype_metadata";
 let grain_start = "_start";
-let grain_env_name = "_grainEnv";
+let grain_env_name = "_genv";
 let grain_global_function_table = "tbl";
 
 let wasm_type =
