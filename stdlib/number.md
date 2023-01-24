@@ -17,32 +17,6 @@ import Number from "number"
 
 Number constant values.
 
-### Number.**nan**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-nan : Number
-```
-
-NaN represented as a Number value.
-
-### Number.**infinity**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-infinity : Number
-```
-
-Infinity represented as a Number value.
-
 ### Number.**pi**
 
 <details disabled>
