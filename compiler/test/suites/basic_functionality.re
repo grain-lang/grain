@@ -9,6 +9,7 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertSnapshotFile = makeSnapshotFileRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
   let assertParse = makeParseRunner(test);
+  let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
 
   assertSnapshot("nil", "");
@@ -30,8 +31,14 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("fals", "let x = false; x");
   assertSnapshot("tru", "let x = true; x");
   assertSnapshot("infinity", "let x = Infinity; x");
+  assertRun("infinity_2", "assert Infinity == 1.0 / 0.0", "");
+  assertRun("infinity_3", "assert Infinity == Infinity", "");
   assertSnapshot("infinity_neg", "let x = -Infinity; x");
+  assertRun("infinity_neg_2", "assert -Infinity == -1.0 / 0.0", "");
+  assertRun("infinity_neg_3", "assert -Infinity == -Infinity", "");
   assertSnapshot("nan", "let x = NaN; x");
+  assertRun("nan_2", "assert NaN != NaN", "");
+
   assertSnapshot(
     "complex1",
     "\n    let x = 2, y = 3, z = if (true) { 4 } else { 5 };\n    if (true) {\n      print(y)\n      y - (z + x)\n    } else {\n      print(8)\n      8\n    }\n    ",
