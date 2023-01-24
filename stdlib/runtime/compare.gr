@@ -36,33 +36,27 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       let xvariant = WasmI32.load(xptr, 12n)
       let yvariant = WasmI32.load(yptr, 12n)
       if (xvariant != yvariant) {
-        tagSimpleNumber(xvariant - yvariant)
-      } else {
-        let xarity = WasmI32.load(xptr, 16n)
-        let yarity = WasmI32.load(yptr, 16n)
-
-        let mut result = 0
-
-        let bytes = xarity * 4n
-        for (let mut i = 0n; i < bytes; i += 4n) {
-          let sub = compareHelp(
-            WasmI32.load(xptr + i, 20n),
-            WasmI32.load(yptr + i, 20n)
-          )
-          if (WasmI32.fromGrain(sub) != zero) {
-            result = sub
-            break
-          }
-        }
-
-        result
+        return tagSimpleNumber(xvariant - yvariant)
       }
+      let xarity = WasmI32.load(xptr, 16n)
+      let yarity = WasmI32.load(yptr, 16n)
+
+      let bytes = xarity * 4n
+      for (let mut i = 0n; i < bytes; i += 4n) {
+        let sub = compareHelp(
+          WasmI32.load(xptr + i, 20n),
+          WasmI32.load(yptr + i, 20n)
+        )
+        if (WasmI32.fromGrain(sub) != zero) {
+          return sub
+        }
+      }
+
+      return 0
     },
     t when t == Tags._GRAIN_RECORD_HEAP_TAG => {
       let xlength = WasmI32.load(xptr, 12n)
       let ylength = WasmI32.load(yptr, 12n)
-
-      let mut result = 0
 
       let bytes = xlength * 4n
       for (let mut i = 0n; i < bytes; i += 4n) {
@@ -71,12 +65,11 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
           WasmI32.load(yptr + i, 16n)
         )
         if (WasmI32.fromGrain(sub) != zero) {
-          result = sub
-          break
+          return sub
         }
       }
 
-      result
+      return 0
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
       let xlength = WasmI32.load(xptr, 4n)
@@ -84,23 +77,20 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
 
       // Check if the same length
       if (xlength != ylength) {
-        tagSimpleNumber(xlength - ylength)
-      } else {
-        let mut result = 0
-        let bytes = xlength * 4n
-        for (let mut i = 0n; i < bytes; i += 4n) {
-          let sub = compareHelp(
-            WasmI32.load(xptr + i, 8n),
-            WasmI32.load(yptr + i, 8n)
-          )
-          if (WasmI32.fromGrain(sub) != zero) {
-            result = sub
-            break
-          }
-        }
-
-        result
+        return tagSimpleNumber(xlength - ylength)
       }
+      let bytes = xlength * 4n
+      for (let mut i = 0n; i < bytes; i += 4n) {
+        let sub = compareHelp(
+          WasmI32.load(xptr + i, 8n),
+          WasmI32.load(yptr + i, 8n)
+        )
+        if (WasmI32.fromGrain(sub) != zero) {
+          return sub
+        }
+      }
+
+      return 0
     },
     t when (
       t == Tags._GRAIN_STRING_HEAP_TAG || t == Tags._GRAIN_BYTES_HEAP_TAG
@@ -109,24 +99,22 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       let ylength = WasmI32.load(yptr, 4n)
 
       if (xlength == ylength) {
-        tagSimpleNumber(Memory.compare(xptr + 8n, yptr + 8n, xlength))
+        return tagSimpleNumber(Memory.compare(xptr + 8n, yptr + 8n, xlength))
+      }
+      if (xlength < ylength) {
+        let sub = Memory.compare(xptr + 8n, yptr + 8n, xlength)
+        // The shorter one comes first
+        return if (sub == 0n) -1 else tagSimpleNumber(sub)
       } else {
-        if (xlength < ylength) {
-          let sub = Memory.compare(xptr + 8n, yptr + 8n, xlength)
-          // The shorter one comes first
-          if (sub == 0n) -1 else tagSimpleNumber(sub)
-        } else {
-          let sub = Memory.compare(xptr + 8n, yptr + 8n, ylength)
-          // The shorter one comes first
-          if (sub == 0n) 1 else tagSimpleNumber(sub)
-        }
+        let sub = Memory.compare(xptr + 8n, yptr + 8n, ylength)
+        // The shorter one comes first
+        return if (sub == 0n) 1 else tagSimpleNumber(sub)
       }
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
       let xsize = WasmI32.load(xptr, 4n)
       let ysize = WasmI32.load(yptr, 4n)
 
-      let mut result = 0
       let bytes = xsize * 4n
       for (let mut i = 0n; i < bytes; i += 4n) {
         let sub = compareHelp(
@@ -134,16 +122,15 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
           WasmI32.load(yptr + i, 8n)
         )
         if (WasmI32.fromGrain(sub) != zero) {
-          result = sub
-          break
+          return sub
         }
       }
 
-      result
+      return 0
     },
     _ => {
       // No other implementation
-      tagSimpleNumber(xptr - yptr)
+      return tagSimpleNumber(xptr - yptr)
     },
   }
 },

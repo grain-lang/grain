@@ -394,14 +394,12 @@ export let eqz = (num: WasmI32) => {
   let (!=) = WasmI64.ne
   let (-) = WasmI32.sub
   let (>=) = WasmI32.geS
-  let mut result = 1n
   for (let mut i = numLimbs - 1n; i >= 0n; i -= 1n) {
     if (getLimb(num, i) != 0N) {
-      result = 0n
-      break
+      return false
     }
   }
-  WasmI32.ne(result, 0n)
+  return true
 }
 
 @unsafe
@@ -574,23 +572,20 @@ let cmpUnsignedI64 = (num1: WasmI32, num2: WasmI64) => {
   let delta = num1Limbs - num2Limbs
   let num2abs = if (WasmI64.ltS(num2, 0N)) WasmI64.mul(-1N, num2) else num2
   if (delta != 0n) {
-    delta
-  } else {
-    // num1 and num2 have the same size. Compare all limbs, high to low
-    let mut result = 0n
-    for (let mut i = num1Limbs - 1n; i >= 0n; i -= 1n) {
-      let limb1 = getLimb(num1, i)
-      let limb2 = if (i == 0n) num2abs else 0N
-      if (WasmI64.ltU(limb1, limb2)) {
-        result = -1n
-        break
-      } else if (WasmI64.ltU(limb2, limb1)) {
-        result = 1n
-        break
-      }
-    }
-    result
+    return delta
   }
+  // num1 and num2 have the same size. Compare all limbs, high to low
+  for (let mut i = num1Limbs - 1n; i >= 0n; i -= 1n) {
+    let limb1 = getLimb(num1, i)
+    let limb2 = if (i == 0n) num2abs else 0N
+    if (WasmI64.ltU(limb1, limb2)) {
+      return -1n
+    } else if (WasmI64.ltU(limb2, limb1)) {
+      return 1n
+    }
+  }
+
+  return 0n
 }
 
 @unsafe
@@ -646,23 +641,19 @@ let cmpUnsigned = (num1: WasmI32, num2: WasmI32) => {
   let num2Limbs = getSize(num2)
   let delta = num1Limbs - num2Limbs
   if (delta != 0n) {
-    delta
-  } else {
-    // num1 and num2 have the same size. Compare all limbs, high to low
-    let mut result = 0n
-    for (let mut i = num1Limbs - 1n; i >= 0n; i -= 1n) {
-      let limb1 = getLimb(num1, i)
-      let limb2 = getLimb(num2, i)
-      if (WasmI64.ltU(limb1, limb2)) {
-        result = -1n
-        break
-      } else if (WasmI64.ltU(limb2, limb1)) {
-        result = 1n
-        break
-      }
-    }
-    result
+    return delta
   }
+  // num1 and num2 have the same size. Compare all limbs, high to low
+  for (let mut i = num1Limbs - 1n; i >= 0n; i -= 1n) {
+    let limb1 = getLimb(num1, i)
+    let limb2 = getLimb(num2, i)
+    if (WasmI64.ltU(limb1, limb2)) {
+      return -1n
+    } else if (WasmI64.ltU(limb2, limb1)) {
+      return 1n
+    }
+  }
+  return 0n
 }
 
 @unsafe
@@ -1763,41 +1754,39 @@ export let popcnt = (num: WasmI32, flagDest: WasmI32) => {
 @unsafe
 export let gcd = (num1: WasmI32, num2: WasmI32) => {
   if (eqz(num1)) {
-    abs(num2)
-  } else if (eqz(num2)) {
-    abs(num1)
-  } else {
-    let mut u = abs(num1)
-    let mut v = abs(num2)
-    let i = countTrailingZeroBits(u)
-    let j = countTrailingZeroBits(v)
-    let k = minu32(i, j)
-    let mut newu = shrS(u, i)
-    let mut newv = shrS(v, j)
-    Memory.decRef(u)
-    Memory.decRef(v)
-    u = newu
-    v = newv
-    let mut ret = 0n
-    while (true) {
-      if (gt(u, v)) {
-        let tmp = v
-        v = u
-        u = tmp
-      }
-      newv = sub(v, u)
-      Memory.decRef(v)
-      v = newv
-      if (eqz(v)) {
-        ret = shl(u, k)
-        break
-      }
-      newv = shrS(v, countTrailingZeroBits(v))
-      Memory.decRef(v)
-      v = newv
-    }
-    ret
+    return abs(num2)
   }
+  if (eqz(num2)) {
+    return abs(num1)
+  }
+  let mut u = abs(num1)
+  let mut v = abs(num2)
+  let i = countTrailingZeroBits(u)
+  let j = countTrailingZeroBits(v)
+  let k = minu32(i, j)
+  let mut newu = shrS(u, i)
+  let mut newv = shrS(v, j)
+  Memory.decRef(u)
+  Memory.decRef(v)
+  u = newu
+  v = newv
+  while (true) {
+    if (gt(u, v)) {
+      let tmp = v
+      v = u
+      u = tmp
+    }
+    newv = sub(v, u)
+    Memory.decRef(v)
+    v = newv
+    if (eqz(v)) {
+      return shl(u, k)
+    }
+    newv = shrS(v, countTrailingZeroBits(v))
+    Memory.decRef(v)
+    v = newv
+  }
+  return 0n
 }
 
 // For division, "normalized" refers to the following (from Brent & Zimmermann):
