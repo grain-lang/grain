@@ -142,7 +142,6 @@ let getVariantMetadata = variant => {
     block += WasmI32.load(block, 0n)
   }
 
-  // result
   return -1n
 }
 
