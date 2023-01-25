@@ -349,18 +349,25 @@ let disambiguate_lid_a_list = (loc, closed, env, opath, lid_a_list) => {
     | Not_found =>
       switch (opath) {
       | None =>
-        let cstrs = Env.get_all_constructors(env);
         let id_str = Identifier.string_of_ident(lid.txt);
         let inline_record_field =
-          List.find_map(
-            cstr =>
-              switch (cstr.cstr_inlined) {
-              | Some({type_kind: TDataRecord(rfs), _})
-                  when List.exists(rf => rf.Types.rf_name.name == id_str, rfs) =>
-                Some(cstr.cstr_name)
-              | _ => None
-              },
-            cstrs,
+          Env.fold_constructors(
+            (cstr, suggestion) => {
+              switch (suggestion) {
+              | Some(_) => suggestion
+              | None =>
+                switch (cstr.cstr_inlined) {
+                | Some({type_kind: TDataRecord(rfs), _})
+                    when
+                      List.exists(rf => rf.Types.rf_name.name == id_str, rfs) =>
+                  Some(cstr.cstr_name)
+                | _ => None
+                }
+              }
+            },
+            None,
+            env,
+            None,
           );
         Env.error(
           switch (inline_record_field) {

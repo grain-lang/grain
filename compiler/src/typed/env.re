@@ -307,17 +307,6 @@ module TycompTbl = {
       keys2,
     );
   };
-
-  let rec get_all = tbl =>
-    Ident.fold_all((id, x, acc) => [x, ...acc], tbl.current, [])
-    @ (
-      switch (tbl.opened) {
-      | None => []
-      | Some({using, next, components}) =>
-        let rest = get_all(next);
-        Tbl.fold((k, v, acc) => v @ acc, components, []) @ rest;
-      }
-    );
 };
 
 module IdTbl = {
@@ -1305,8 +1294,6 @@ let lookup_modtype = (~mark, id, e) =>
 
 let lookup_all_constructors = (~mark, id, env) =>
   lookup_tycomptbl(~mark, x => x.constructors, x => x.comp_constrs, id, env);
-
-let get_all_constructors = env => TycompTbl.get_all(env.constructors);
 
 let lookup_constructor = (~mark=true, id, env) =>
   switch (lookup_all_constructors(~mark, id, env)) {

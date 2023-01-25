@@ -106,7 +106,6 @@ let lookup_constructor:
 let lookup_all_constructors:
   (~mark: bool=?, Identifier.t, t) =>
   list((constructor_description, unit => unit));
-let get_all_constructors: t => list(constructor_description);
 let lookup_all_labels:
   (~mark: bool=?, Identifier.t, t) => list((label_description, unit => unit));
 let lookup_module:
