@@ -46,6 +46,7 @@ let constructor_existentials = (cd_args, cd_res) => {
     switch (cd_args) {
     | TConstrSingleton => []
     | TConstrTuple(l) => l
+    | TConstrRecord(l) => List.map(l => l.rf_type, l)
     };
 
   let existentials =
@@ -65,6 +66,21 @@ let constructor_args = (cd_args, cd_res, path) => {
   switch (cd_args) {
   | TConstrSingleton => (existentials, [], None)
   | TConstrTuple(l) => (existentials, l, None)
+  | TConstrRecord(rfs) =>
+    let arg_vars_set = free_vars(~param=true, newgenty(TTyTuple(tyl)));
+    let type_params = TypeSet.elements(arg_vars_set);
+    let arity = List.length(type_params);
+    let tdecl = {
+      type_params,
+      type_arity: arity,
+      type_kind: TDataRecord(rfs),
+      type_manifest: None,
+      type_loc: Location.dummy_loc,
+      type_newtype_level: None,
+      type_allocation: Managed,
+      type_path: path,
+    };
+    (existentials, [newgenconstr(path, type_params)], Some(tdecl));
   };
 };
 
@@ -114,6 +130,7 @@ let constructor_descrs = (ty_path, decl, cstrs) => {
       cstr_consts: num_consts^,
       cstr_nonconsts: num_nonconsts^,
       cstr_loc: cd_loc,
+      cstr_inlined,
     };
     (cd_id, cstr);
   };
@@ -143,6 +160,7 @@ let extension_descr = (path_ext, ext) => {
     cstr_consts: (-1),
     cstr_nonconsts: (-1),
     cstr_loc: ext.ext_loc,
+    cstr_inlined,
   };
 };
 

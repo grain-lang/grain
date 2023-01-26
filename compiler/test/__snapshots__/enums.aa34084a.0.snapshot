@@ -31,14 +31,14 @@ enums › adt_trailing
        (local.tee $0
         (call $malloc_0
          (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 80)
+         (i32.const 88)
         )
        )
        (i32.const 1)
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.const 68)
+       (i32.const 76)
       )
       (i64.store offset=8
        (local.get $0)
@@ -46,33 +46,37 @@ enums › adt_trailing
       )
       (i64.store offset=16
        (local.get $0)
-       (i64.const 240518168577)
+       (i64.const 274877906945)
       )
       (i64.store offset=24
        (local.get $0)
-       (i64.const 85899347049)
+       (i64.const 103079216233)
       )
       (i64.store offset=32
        (local.get $0)
-       (i64.const 25769803776)
+       (i64.const 0)
       )
       (i64.store offset=40
        (local.get $0)
-       (i64.const 111546296789059)
+       (i64.const 7306360607450595334)
       )
       (i64.store offset=48
        (local.get $0)
-       (i64.const 4294967324)
+       (i64.const 137438979443)
       )
       (i64.store offset=56
        (local.get $0)
-       (i64.const 8102087123911311369)
+       (i64.const 4294967296)
       )
       (i64.store offset=64
        (local.get $0)
-       (i64.const 452824363621)
+       (i64.const 8102087123911311369)
       )
       (i64.store offset=72
+       (local.get $0)
+       (i64.const 452824363621)
+      )
+      (i64.store offset=80
        (local.get $0)
        (i64.const 0)
       )

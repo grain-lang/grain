@@ -94,6 +94,7 @@ module MakeMap =
   and map_constructor_arguments =
     fun
     | TConstrTuple(args) => TConstrTuple(List.map(map_core_type, args))
+    | TConstrRecord(rfs) => TConstrRecord(List.map(map_record_field, rfs))
     | TConstrSingleton as ca => ca
 
   and map_constructor_declaration = ({cd_args, cd_res} as cd) => {
@@ -179,6 +180,20 @@ module MakeMap =
     (cstr, loc);
   }
 
+  and map_record_fields = rfs => {
+    Array.map(
+      rf =>
+        switch (rf) {
+        | (desc, Overridden(name, expr)) => (
+            desc,
+            Overridden(name, map_expression(expr)),
+          )
+        | (desc, def) => (desc, def)
+        },
+      rfs,
+    );
+  }
+
   and map_expression = exp => {
     let exp = Map.enter_expression(exp);
     let exp_extra = List.map(map_exp_extra, exp.exp_extra);
@@ -215,18 +230,7 @@ module MakeMap =
           map_expression(a3),
         )
       | TExpRecord(b, args) =>
-        TExpRecord(
-          Option.map(map_expression, b),
-          Array.map(
-            fun
-            | (desc, Overridden(name, expr)) => (
-                desc,
-                Overridden(name, map_expression(expr)),
-              )
-            | (desc, def) => (desc, def),
-            args,
-          ),
-        )
+        TExpRecord(Option.map(map_expression, b), map_record_fields(args))
       | TExpRecordGet(record, field, ld) =>
         TExpRecordGet(map_expression(record), field, ld)
       | TExpRecordSet(record, field, ld, arg) =>
@@ -237,8 +241,10 @@ module MakeMap =
           map_expression(arg),
         )
       | TExpBlock(args) => TExpBlock(List.map(map_expression, args))
-      | TExpConstruct(a, b, args) =>
-        TExpConstruct(a, b, List.map(map_expression, args))
+      | TExpConstruct(a, b, TExpConstrTuple(args)) =>
+        TExpConstruct(a, b, TExpConstrTuple(List.map(map_expression, args)))
+      | TExpConstruct(a, b, TExpConstrRecord(args)) =>
+        TExpConstruct(a, b, TExpConstrRecord(map_record_fields(args)))
       | TExpIf(c, t, f) =>
         TExpIf(map_expression(c), map_expression(t), map_expression(f))
       | TExpWhile(c, b) => TExpWhile(map_expression(c), map_expression(b))

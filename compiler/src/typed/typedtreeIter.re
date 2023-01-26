@@ -100,6 +100,7 @@ module MakeIterator =
   and iter_constructor_arguments =
     fun
     | TConstrTuple(args) => List.iter(iter_core_type, args)
+    | TConstrRecord(rfs) => List.iter(iter_record_field, rfs)
     | TConstrSingleton => ()
 
   and iter_constructor_declaration = ({cd_args, cd_res}) => {
@@ -180,6 +181,17 @@ module MakeIterator =
     Iter.leave_pattern(pat);
   }
 
+  and iter_record_fields = rfs => {
+    Array.iter(
+      expr =>
+        switch (expr) {
+        | (_, Overridden(_, expr)) => iter_expression(expr)
+        | _ => ()
+        },
+      rfs,
+    );
+  }
+
   and iter_expression = ({exp_desc, exp_extra} as exp) => {
     Iter.enter_expression(exp);
     List.iter(
@@ -216,12 +228,7 @@ module MakeIterator =
       iter_match_branches(branches);
     | TExpRecord(b, args) =>
       Option.iter(iter_expression, b);
-      Array.iter(
-        fun
-        | (_, Overridden(_, expr)) => iter_expression(expr)
-        | _ => (),
-        args,
-      );
+      iter_record_fields(args);
     | TExpRecordGet(expr, _, _) => iter_expression(expr)
     | TExpRecordSet(e1, _, _, e2) =>
       iter_expression(e1);
@@ -229,7 +236,10 @@ module MakeIterator =
     | TExpTuple(args)
     | TExpArray(args)
     | TExpBlock(args)
-    | TExpConstruct(_, _, args) => List.iter(iter_expression, args)
+    | TExpConstruct(_, _, TExpConstrTuple(args)) =>
+      List.iter(iter_expression, args)
+    | TExpConstruct(_, _, TExpConstrRecord(args)) =>
+      iter_record_fields(args)
     | TExpArrayGet(a1, a2) =>
       iter_expression(a1);
       iter_expression(a2);

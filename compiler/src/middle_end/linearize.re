@@ -900,12 +900,27 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       (exp_setup @ setup) @ [BLet(tmp, ans, Nonglobal)],
     );
-  | TExpConstruct(_, {cstr_tag}, args) =>
+  | TExpConstruct(_, {cstr_tag}, arg) =>
     let tmp = gensym("adt");
     let (_, typath, _) = Ctype.extract_concrete_typedecl(env, typ);
     let ty_id = get_type_id(typath, env);
     let compiled_tag = compile_constructor_tag(cstr_tag);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      switch (arg) {
+      | TExpConstrRecord(fields) =>
+        List.split(
+          List.map(
+            field =>
+              switch (field) {
+              | (_, Kept) =>
+                failwith("Impossible: inline record variant with Kept field")
+              | (_, Overridden({txt: name, loc}, expr)) => transl_imm(expr)
+              },
+            Array.to_list(fields),
+          ),
+        )
+      | TExpConstrTuple(args) => List.split(List.map(transl_imm, args))
+      };
     let imm_tytag =
       Imm.const(
         ~loc,
@@ -999,7 +1014,7 @@ and transl_comp_expression =
                 TExpConstruct(
                   assertion_error_identifier,
                   assertion_error,
-                  [error_message],
+                  TExpConstrTuple([error_message]),
                 ),
             },
           ),
@@ -1613,6 +1628,23 @@ let gather_type_metadata = statements => {
                       (
                         compile_constructor_tag(cstr.cstr_tag),
                         cstr.cstr_name,
+                        switch (cstr.cstr_inlined) {
+                        | None => TupleConstructor
+                        | Some(t) =>
+                          let label_names =
+                            switch (t.type_kind) {
+                            | TDataRecord(rfs) =>
+                              List.map(
+                                rf => Ident.name(rf.Types.rf_name),
+                                rfs,
+                              )
+                            | _ =>
+                              failwith(
+                                "Impossible: inlined record constructor with non-record underlying type",
+                              )
+                            };
+                          RecordConstructor(label_names);
+                        },
                       ),
                     descrs,
                   );

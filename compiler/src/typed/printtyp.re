@@ -815,6 +815,7 @@ let filter_params = tyl => {
 let mark_loops_constructor_arguments =
   fun
   | TConstrTuple(l) => List.iter(mark_loops, l)
+  | TConstrRecord(rfs) => List.iter(rf => mark_loops(rf.rf_type), rfs)
   | TConstrSingleton => ();
 
 let rec tree_of_type_decl = (id, decl) => {
@@ -922,7 +923,8 @@ let rec tree_of_type_decl = (id, decl) => {
 
 and tree_of_constructor_arguments =
   fun
-  | TConstrTuple(l) => tree_of_typlist(false, l)
+  | TConstrTuple(l) => [Otyp_tuple(tree_of_typlist(false, l))]
+  | TConstrRecord(l) => [Otyp_record(List.map(tree_of_label, l))]
   | TConstrSingleton => []
 
 and tree_of_constructor = cd => {
@@ -938,7 +940,13 @@ and tree_of_constructor = cd => {
     names := nm;
     (name, args, Some(ret));
   };
-};
+}
+
+and tree_of_label = l => (
+  Ident.name(l.rf_name),
+  l.rf_mutable,
+  tree_of_typexp(false, l.rf_type),
+);
 
 let tree_of_type_declaration = (id, decl, rs) =>
   Osig_type(tree_of_type_decl(id, decl), tree_of_rec(rs));

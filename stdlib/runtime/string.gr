@@ -81,59 +81,31 @@ let _OK = "Ok"
 let _ERR = "Err"
 
 @unsafe
-let getVariantName = variant => {
+let getBuiltinVariantName = variant => {
   let typeId = WasmI32.load(variant, 8n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
 
   match (typeId) {
     id when id == _OPTION_ID => {
       if (variantId == 0n) {
-        return Memory.incRef(WasmI32.fromGrain(_SOME))
+        Memory.incRef(WasmI32.fromGrain(_SOME))
       } else {
-        return Memory.incRef(WasmI32.fromGrain(_NONE))
+        Memory.incRef(WasmI32.fromGrain(_NONE))
       }
     },
     id when id == _RESULT_ID => {
       if (variantId == 0n) {
-        return Memory.incRef(WasmI32.fromGrain(_OK))
+        Memory.incRef(WasmI32.fromGrain(_OK))
       } else {
-        return Memory.incRef(WasmI32.fromGrain(_ERR))
+        Memory.incRef(WasmI32.fromGrain(_ERR))
       }
     },
-    _ => {
-      let mut block = findTypeMetadata(typeId)
-
-      if (block == -1n) return -1n
-
-      let sectionLength = WasmI32.load(block, 0n)
-      block += 8n
-
-      let end = block + sectionLength
-      while (block < end) {
-        if (WasmI32.load(block, 4n) == variantId) {
-          let length = WasmI32.load(block, 8n)
-          let str = allocateString(length)
-          Memory.copy(str + 8n, block + 12n, length)
-          return str
-        }
-        block += WasmI32.load(block, 0n)
-      }
-
-      return -1n
-    },
+    _ => -1n,
   }
 }
 
 @unsafe
-let getRecordFieldNames = record_ => {
-  let typeId = WasmI32.load(record_, 8n) >> 1n
-  let arity = WasmI32.load(record_, 12n)
-
-  let mut fields = findTypeMetadata(typeId)
-
-  if (fields == -1n) return -1n
-  fields += 8n
-
+let getFieldArray = (fields, arity) => {
   let fieldArray = allocateArray(arity)
 
   let mut fieldOffset = 0n
@@ -147,7 +119,43 @@ let getRecordFieldNames = record_ => {
     fieldOffset += WasmI32.load(fields + fieldOffset, 0n)
   }
 
-  return fieldArray
+  fieldArray
+}
+
+@unsafe
+let getVariantMetadata = variant => {
+  let typeId = WasmI32.load(variant, 8n) >> 1n
+  let variantId = WasmI32.load(variant, 12n) >> 1n
+
+  let mut block = findTypeMetadata(typeId)
+
+  if (block == -1n) return -1n
+
+  let sectionLength = WasmI32.load(block, 0n)
+  block += 8n
+
+  let end = block + sectionLength
+  while (block < end) {
+    if (WasmI32.load(block, 8n) == variantId) {
+      return block
+    }
+    block += WasmI32.load(block, 0n)
+  }
+
+  return -1n
+}
+
+@unsafe
+let getRecordFieldNames = record_ => {
+  let typeId = WasmI32.load(record_, 8n) >> 1n
+  let arity = WasmI32.load(record_, 12n)
+
+  let mut fields = findTypeMetadata(typeId)
+
+  if (fields == -1n) return -1n
+
+  fields += 8n
+  return getFieldArray(fields, arity)
 }
 
 @unsafe
@@ -384,38 +392,48 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     },
     t when t == Tags._GRAIN_ADT_HEAP_TAG => {
       // [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
-      let variantName = getVariantName(ptr)
-
-      if (variantName == -1n) {
-        "<enum value>"
+      let builtinVariantName = getBuiltinVariantName(ptr)
+      if (builtinVariantName != -1n) {
+        // Assumes that all builtin variants do not have inline record
+        // constructors; if this changes this should be changed as well
+        tupleVariantToString(
+          ptr,
+          WasmI32.toGrain(builtinVariantName),
+          extraIndents
+        )
       } else {
-        let variantName = WasmI32.toGrain(variantName): String
-        // Check if this is a list
-        if (isListVariant(variantName)) {
-          listToString(ptr, extraIndents)
+        let variantPtr = getVariantMetadata(ptr)
+        if (variantPtr == -1n) {
+          "<enum value>"
         } else {
-          let variantArity = WasmI32.load(ptr, 16n)
-          if (variantArity == 0n) {
-            variantName
+          let length = WasmI32.load(variantPtr, 12n)
+          let variantName = allocateString(length)
+          Memory.copy(variantName + 8n, variantPtr + 16n, length)
+          let variantName = WasmI32.toGrain(variantName): String
+          // Check if this is a list
+          if (isListVariant(variantName)) {
+            listToString(ptr, extraIndents)
           } else {
-            let comspace = ", "
-            let rparen = ")"
-            let mut strings = [rparen]
-            for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
-              let tmp = toStringHelp(
-                WasmI32.load(ptr + i, 20n),
-                extraIndents,
-                false
+            let distToRecordFields = WasmI32.load(variantPtr, 4n)
+            let isRecordVariant = distToRecordFields != 0n
+            if (isRecordVariant) {
+              let fields = variantPtr + distToRecordFields
+              let recordArity = WasmI32.load(ptr, 16n)
+              let recordVariantFields = getFieldArray(fields, recordArity)
+              let recordString = recordToString(
+                ptr,
+                recordArity,
+                recordVariantFields,
+                20n,
+                extraIndents
               )
-              strings = [tmp, ...strings]
-              if (i > 0n) {
-                strings = [comspace, ...strings]
-              }
-            }
-            let lparen = "("
-            strings = [variantName, lparen, ...strings]
+              Memory.decRef(recordVariantFields)
+              let strings = [variantName, recordString]
 
-            join(strings)
+              join(strings)
+            } else {
+              tupleVariantToString(ptr, variantName, extraIndents)
+            }
           }
         }
       }
@@ -426,43 +444,9 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       if (fields == -1n) {
         "<record value>"
       } else {
-        let prevPadAmount = extraIndents * 2n
-        let prevSpacePadding = if (prevPadAmount == 0n) {
-          ""
-        } else {
-          let v = allocateString(prevPadAmount)
-          Memory.fill(
-            v + 8n,
-            0x20n,
-            prevPadAmount
-          ) // create indentation for closing brace
-          WasmI32.toGrain(v): String
-        }
-        let padAmount = (extraIndents + 1n) * 2n
-        let spacePadding = allocateString(padAmount)
-        Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
-        let spacePadding = WasmI32.toGrain(spacePadding): String
-        let newline = "\n"
-        let rbrace = "}"
-        let mut strings = [newline, prevSpacePadding, rbrace]
-        let colspace = ": "
-        let comlf = ",\n"
-        for (let mut i = recordArity * 4n - 4n; i >= 0n; i -= 4n) {
-          let fieldName = WasmI32.toGrain(WasmI32.load(fields + i, 8n)): String
-          let fieldValue = toStringHelp(
-            WasmI32.load(ptr + i, 16n),
-            extraIndents + 1n,
-            false
-          )
-          strings = [spacePadding, fieldName, colspace, fieldValue, ...strings]
-          if (i > 0n) {
-            strings = [comlf, ...strings]
-          }
-        }
-        let lbrace = "{\n"
-        strings = [lbrace, ...strings]
-
-        join(strings)
+        let result = recordToString(ptr, recordArity, fields, 16n, extraIndents)
+        Memory.decRef(fields)
+        result
       }
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
@@ -615,6 +599,66 @@ listToString = (ptr, extraIndents) => {
   strings = [rbrack, ...strings]
   let reversed = reverse(strings)
   join(reversed)
+},
+tupleVariantToString = (ptr, variantName, extraIndents) => {
+  let variantArity = WasmI32.load(ptr, 16n)
+  if (variantArity == 0n) {
+    variantName
+  } else {
+    let comspace = ", "
+    let rparen = ")"
+    let mut strings = [rparen]
+    for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
+      let tmp = toStringHelp(WasmI32.load(ptr + i, 20n), extraIndents, false)
+      strings = [tmp, ...strings]
+      if (i > 0n) {
+        strings = [comspace, ...strings]
+      }
+    }
+    let lparen = "("
+    strings = [variantName, lparen, ...strings]
+
+    join(strings)
+  }
+},
+recordToString = (ptr, recordArity, fields, contentOffset, extraIndents) => {
+  let prevPadAmount = extraIndents * 2n
+  let prevSpacePadding = if (prevPadAmount == 0n) {
+    ""
+  } else {
+    let v = allocateString(prevPadAmount)
+    Memory.fill(
+      v + 8n,
+      0x20n,
+      prevPadAmount
+    ) // create indentation for closing brace
+    WasmI32.toGrain(v): String
+  }
+  let padAmount = (extraIndents + 1n) * 2n
+  let spacePadding = allocateString(padAmount)
+  Memory.fill(spacePadding + 8n, 0x20n, padAmount) // create indentation
+  let spacePadding = WasmI32.toGrain(spacePadding): String
+  let newline = "\n"
+  let rbrace = "}"
+  let mut strings = [newline, prevSpacePadding, rbrace]
+  let colspace = ": "
+  let comlf = ",\n"
+  for (let mut i = recordArity * 4n - 4n; i >= 0n; i -= 4n) {
+    let fieldName = WasmI32.toGrain(WasmI32.load(fields + i, 8n)): String
+    let fieldValue = toStringHelp(
+      WasmI32.load(ptr + i, contentOffset),
+      extraIndents + 1n,
+      false
+    )
+    strings = [spacePadding, fieldName, colspace, fieldValue, ...strings]
+    if (i > 0n) {
+      strings = [comlf, ...strings]
+    }
+  }
+  let lbrace = "{\n"
+  strings = [lbrace, ...strings]
+
+  join(strings)
 }
 
 @unsafe

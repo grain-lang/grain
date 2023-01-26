@@ -3178,7 +3178,7 @@ and compile_instr = (wasm_mod, env, instr) =>
   };
 
 type type_metadata =
-  | ADTMeta(int, list((int, string)))
+  | ADTMeta(int, list((int, string, Types.adt_constructor_type)))
   | RecordMeta(int, list(string));
 
 let compile_type_metadata = (wasm_mod, env, type_metadata) => {
@@ -3218,7 +3218,11 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
           List.map(
             meta => {
               switch (meta) {
-              | ExceptionMetadata(_, variant, name) => (variant, name)
+              | ExceptionMetadata(_, variant, name) => (
+                  variant,
+                  name,
+                  TupleConstructor,
+                )
               | _ => failwith("impossible by partition")
               }
             },
@@ -3247,26 +3251,77 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
     meta => {
       switch (meta) {
       | ADTMeta(id, cstrs) =>
+        // For inline record constructors, store field names after other ADT info
+        let extra_required =
+          List.map(
+            ((_, _, cstr_type)) =>
+              switch (cstr_type) {
+              | TupleConstructor => 0
+              | RecordConstructor(fields) =>
+                List.fold_left(
+                  (total, field) =>
+                    total + 8 + round_to_8(String.length(field)),
+                  0,
+                  fields,
+                )
+              },
+            cstrs,
+          );
+
         let section_length =
-          List.fold_left(
-            (total, (_, cstr)) =>
-              total + 12 + round_to_8(String.length(cstr)),
+          List.fold_left2(
+            (total, (_, cstr, cstr_type), extra) => {
+              total + 16 + round_to_8(String.length(cstr)) + extra
+            },
             8,
             cstrs,
+            extra_required,
           );
         Buffer.add_int32_le(buf, Int32.of_int(section_length));
         Buffer.add_int32_le(buf, Int32.of_int(id));
-        List.iter(
-          ((id, cstr)) => {
+        List.iter2(
+          ((id, cstr, cstr_type), fields_section_length) => {
             let length = String.length(cstr);
             let aligned_length = round_to_8(length);
-            Buffer.add_int32_le(buf, Int32.of_int(aligned_length + 12));
+            let constr_length = aligned_length + 16;
+            Buffer.add_int32_le(
+              buf,
+              Int32.of_int(constr_length + fields_section_length),
+            );
+            // Indicates offset to field data; special value of 0 can be interpreted
+            // to indicate that this is not a record variant
+            Buffer.add_int32_le(
+              buf,
+              Int32.of_int(
+                if (cstr_type == TupleConstructor) {
+                  0;
+                } else {
+                  constr_length;
+                },
+              ),
+            );
             Buffer.add_int32_le(buf, Int32.of_int(id));
             Buffer.add_int32_le(buf, Int32.of_int(length));
             Buffer.add_string(buf, cstr);
             alignBuffer(aligned_length - length);
+            switch (cstr_type) {
+            | TupleConstructor => ()
+            | RecordConstructor(fields) =>
+              List.iter(
+                field => {
+                  let length = String.length(field);
+                  let aligned_length = round_to_8(length);
+                  Buffer.add_int32_le(buf, Int32.of_int(aligned_length + 8));
+                  Buffer.add_int32_le(buf, Int32.of_int(length));
+                  Buffer.add_string(buf, field);
+                  alignBuffer(aligned_length - length);
+                },
+                fields,
+              )
+            };
           },
           cstrs,
+          extra_required,
         );
       | RecordMeta(id, fields) =>
         let section_length =

@@ -15,7 +15,8 @@ describe("blocks", ({test}) => {
           statements: [
             Top.expr(
               Exp.block([
-                Exp.construct(
+                Exp.tuple_construct(
+                  ~loc=Location.dummy_loc,
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("Foo")),
                   ),

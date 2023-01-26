@@ -74,6 +74,7 @@ type error =
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
   | Unbound_label(Location.t, string)
+  | Unbound_label_with_alt(Location.t, string, string)
   | No_module_file(string, option(string))
   | Value_not_found_in_module(Location.t, string, string)
   | Illegal_value_name(Location.t, string)
@@ -933,6 +934,7 @@ let check_pers_struct = (~loc, name, filename) =>
       | Depend_on_unsafe_string_unit(name, _) =>
         Printf.sprintf("%s uses -unsafe-string", name)
       | Unbound_label(_) => assert(false)
+      | Unbound_label_with_alt(_) => assert(false)
       | Unbound_module(_) => assert(false)
       | Missing_module(_) => assert(false)
       | No_module_file(_) => assert(false)
@@ -1007,18 +1009,45 @@ let find_value = find(env => env.values, sc => sc.comp_values);
 let find_constructor =
   find_tycomp(env => env.constructors, sc => sc.comp_constrs);
 
-let find_type_full = find(env => env.types, sc => sc.comp_types)
+let find_type_data = find(env => env.types, sc => sc.comp_types)
 
 and find_modtype = find(env => env.modtypes, sc => sc.comp_modtypes);
 
-let find_type_full = (path, env) =>
+let type_of_cstr = path =>
+  fun
+  | {cstr_inlined: Some(decl), _} => {
+      let labels = List.map(snd, Datarepr.labels_of_type(path, decl));
+      switch (decl.type_kind) {
+      | TDataRecord(_) => (decl, ([], labels))
+      | _ =>
+        failwith(
+          "Impossible: inlined record constructor with non-record data type",
+        )
+      };
+    }
+  | _ =>
+    failwith("Impossible: Env.type_of_cstr called on non-record constructor");
+
+let rec find_type_full = (path, env) =>
   switch (path) {
   | PIdent(_) =>
     try((PathMap.find(path, env.local_constraints), ([], []))) {
-    | Not_found => find_type_full(path, env)
+    | Not_found => find_type_data(path, env)
     }
-  | _ => find_type_full(path, env)
-  };
+  | PExternal(p, name, pos) =>
+    try({
+      let cstr = find_cstr(p, name, env);
+      type_of_cstr(path, cstr);
+    }) {
+    | Not_found => find_type_data(path, env)
+    }
+  }
+
+and find_cstr = (path, name, env) => {
+  let (_, type_descriptions) = find_type_full(path, env);
+  let (cstrs, _) = type_descriptions;
+  List.find(cstr => cstr.cstr_name == name, cstrs);
+};
 
 let find_type = (p, env) => fst(find_type_full(p, env));
 
@@ -2649,6 +2678,13 @@ let report_error = ppf =>
       ppf,
       "Unbound record label %s. Perhaps you need to import its type or write a type definition?",
       label,
+    )
+  | Unbound_label_with_alt(_, label, alt) =>
+    fprintf(
+      ppf,
+      "Unbound record label %s. However, this label exists on record constructor %s, which is incompatible with this record type.",
+      label,
+      alt,
     )
   | Unbound_module(_, modname) => fprintf(ppf, "Unbound module %s", modname)
   | No_module_file(m, None) => fprintf(ppf, "Missing file for module %s", m)

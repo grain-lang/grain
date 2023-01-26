@@ -72,48 +72,6 @@ and abbrev_memo =
   | TMemLink(ref(abbrev_memo));
 
 [@deriving (sexp, yojson)]
-type constructor_tag =
-  | CstrConstant(int)
-  | CstrBlock(int)
-  | CstrExtension(int, Path.t, extension_constructor_type)
-  | CstrUnboxed
-
-[@deriving (sexp, yojson)]
-and extension_constructor_type =
-  | CstrExtensionConstant
-  | CstrExtensionBlock
-
-[@deriving (sexp, yojson)]
-and constructor_description = {
-  cstr_name: string, // Constructor name
-  cstr_res: type_expr, // Type of the result
-  cstr_existentials: list(type_expr), // list of existentials
-  cstr_args: list(type_expr), // Type of the arguments
-  cstr_arity: int, // Number of arguments
-  cstr_tag: constructor_tag, // Tag for heap blocks
-  cstr_consts: int, // Number of constant constructors
-  cstr_nonconsts: int, // Number of non-constant constructors
-  [@sexp_drop_if sexp_locs_disabled]
-  cstr_loc: Location.t,
-}
-
-and value_unbound_reason =
-  | ValUnboundGhostRecursive;
-
-[@deriving (sexp, yojson)]
-type type_metadata =
-  | ADTMetadata(int, list((int, string)))
-  | RecordMetadata(int, list(string))
-  | ExceptionMetadata(int, int, string);
-
-[@deriving (sexp, yojson)]
-type value_kind =
-  | TValReg
-  | TValPrim(string)
-  | TValUnbound(value_unbound_reason)
-  | TValConstructor(constructor_description);
-
-[@deriving (sexp, yojson)]
 type allocation_type =
   | Unmanaged(wasm_repr)
   | Managed
@@ -137,50 +95,12 @@ and func_direct =
   | Unknown;
 
 [@deriving (sexp, yojson)]
-type value_description = {
-  val_type: type_expr,
-  val_repr,
-  val_kind: value_kind,
-  val_internalpath: Path.t,
-  val_fullpath: Path.t,
-  val_mutable: bool,
-  val_global: bool,
-  [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
-  val_loc: Location.t,
-};
-
-[@deriving (sexp, yojson)]
 type record_field = {
   rf_name: Ident.t,
   rf_type: type_expr,
   rf_mutable: bool,
   [@sexp_drop_if sexp_locs_disabled]
   rf_loc: Location.t,
-};
-
-[@deriving (sexp, yojson)]
-type constructor_declaration = {
-  cd_id: Ident.t,
-  cd_args: constructor_arguments,
-  cd_res: option(type_expr),
-  cd_repr: val_repr,
-  [@sexp_drop_if sexp_locs_disabled]
-  cd_loc: Location.t,
-}
-
-and constructor_arguments =
-  | TConstrTuple(list(type_expr))
-  | TConstrSingleton;
-
-[@deriving (sexp, yojson)]
-type extension_constructor = {
-  ext_type_path: Path.t,
-  ext_type_params: list(type_expr),
-  ext_args: constructor_arguments,
-  ext_repr: val_repr,
-  ext_name: Ident.t,
-  [@sexp_drop_if sexp_locs_disabled]
-  ext_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
@@ -200,7 +120,94 @@ and type_kind =
   | TDataVariant(list(constructor_declaration))
   | TDataAbstract
   | TDataRecord(list(record_field))
-  | TDataOpen;
+  | TDataOpen
+
+[@deriving (sexp, yojson)]
+and constructor_declaration = {
+  cd_id: Ident.t,
+  cd_args: constructor_arguments,
+  cd_res: option(type_expr),
+  cd_repr: val_repr,
+  [@sexp_drop_if sexp_locs_disabled]
+  cd_loc: Location.t,
+}
+
+and constructor_arguments =
+  | TConstrTuple(list(type_expr))
+  | TConstrRecord(list(record_field))
+  | TConstrSingleton;
+
+[@deriving (sexp, yojson)]
+type extension_constructor_type =
+  | CstrExtensionConstant
+  | CstrExtensionBlock;
+
+[@deriving (sexp, yojson)]
+type constructor_tag =
+  | CstrConstant(int)
+  | CstrBlock(int)
+  | CstrExtension(int, Path.t, extension_constructor_type)
+  | CstrUnboxed;
+
+[@deriving (sexp, yojson)]
+type constructor_description = {
+  cstr_name: string, // Constructor name
+  cstr_res: type_expr, // Type of the result
+  cstr_existentials: list(type_expr), // list of existentials
+  cstr_args: list(type_expr), // Type of the arguments
+  cstr_arity: int, // Number of arguments
+  cstr_tag: constructor_tag, // Tag for heap blocks
+  cstr_consts: int, // Number of constant constructors
+  cstr_nonconsts: int, // Number of non-constant constructors
+  cstr_inlined: option(type_declaration), // For inlined record constructors
+  [@sexp_drop_if sexp_locs_disabled]
+  cstr_loc: Location.t,
+}
+
+and value_unbound_reason =
+  | ValUnboundGhostRecursive;
+
+[@deriving (sexp, yojson)]
+type adt_constructor_type =
+  | TupleConstructor
+  | RecordConstructor(list(string));
+
+[@deriving (sexp, yojson)]
+type type_metadata =
+  | ADTMetadata(int, list((int, string, adt_constructor_type)))
+  | RecordMetadata(int, list(string))
+  | ExceptionMetadata(int, int, string);
+
+[@deriving (sexp, yojson)]
+type value_kind =
+  | TValReg
+  | TValPrim(string)
+  | TValUnbound(value_unbound_reason)
+  | TValConstructor(constructor_description);
+
+[@deriving (sexp, yojson)]
+type value_description = {
+  val_type: type_expr,
+  val_repr,
+  val_kind: value_kind,
+  val_internalpath: Path.t,
+  val_fullpath: Path.t,
+  val_mutable: bool,
+  val_global: bool,
+  [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
+  val_loc: Location.t,
+};
+
+[@deriving (sexp, yojson)]
+type extension_constructor = {
+  ext_type_path: Path.t,
+  ext_type_params: list(type_expr),
+  ext_args: constructor_arguments,
+  ext_repr: val_repr,
+  ext_name: Ident.t,
+  [@sexp_drop_if sexp_locs_disabled]
+  ext_loc: Location.t,
+};
 
 [@deriving (sexp, yojson)]
 type rec_status =

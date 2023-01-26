@@ -64,6 +64,8 @@ module CDecl: {
   let mk: (~loc: loc=?, str, constructor_arguments) => constructor_declaration;
   let singleton: (~loc: loc=?, str) => constructor_declaration;
   let tuple: (~loc: loc=?, str, list(parsed_type)) => constructor_declaration;
+  let record:
+    (~loc: loc=?, str, list(label_declaration)) => constructor_declaration;
 };
 
 module LDecl: {
@@ -100,10 +102,14 @@ module Pat: {
   let record:
     (~loc: loc=?, list((option((id, pattern)), Asttypes.closed_flag))) =>
     pattern;
-  let list: (~loc: loc=?, list(listitem(pattern))) => pattern;
+  let list: (~loc: loc, list(listitem(pattern))) => pattern;
   let constant: (~loc: loc=?, constant) => pattern;
   let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
-  let construct: (~loc: loc=?, id, list(pattern)) => pattern;
+  let construct: (~loc: loc, id, constructor_pattern) => pattern;
+  let tuple_construct: (~loc: loc, id, list(pattern)) => pattern;
+  let record_construct:
+    (~loc: loc, id, list((option((id, pattern)), Asttypes.closed_flag))) =>
+    pattern;
   let or_: (~loc: loc=?, pattern, pattern) => pattern;
   let alias: (~loc: loc=?, pattern, str) => pattern;
 };
@@ -132,7 +138,7 @@ module Exp: {
     (~loc: loc=?, ~attributes: attributes=?, expression, id, expression) =>
     expression;
   let list:
-    (~loc: loc=?, ~attributes: attributes=?, list(listitem(expression))) =>
+    (~loc: loc, ~attributes: attributes=?, list(listitem(expression))) =>
     expression;
   let array:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
@@ -216,8 +222,12 @@ module Exp: {
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
     expression;
   let construct:
-    (~loc: loc=?, ~attributes: attributes=?, id, list(expression)) =>
+    (~loc: loc, ~attributes: attributes=?, id, constructor_expression) =>
     expression;
+  let tuple_construct:
+    (~loc: loc, ~attributes: attributes=?, id, list(expression)) => expression;
+  let record_construct:
+    (~loc: loc, ~attributes: attributes=?, id, list(recorditem)) => expression;
   let binop:
     (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
     expression;

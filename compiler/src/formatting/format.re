@@ -1125,7 +1125,7 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
   switch (patterns) {
   | [arg1, arg2, ..._] =>
     switch (arg2.ppat_desc) {
-    | PPatConstruct(innercstr, innerpatterns) =>
+    | PPatConstruct(innercstr, PPatConstrTuple(innerpatterns)) =>
       let cstr =
         switch (innercstr.txt) {
         | IdentName({txt: name}) => name
@@ -1309,10 +1309,15 @@ and resugar_list_inner = (expressions: list(Parsetree.expression)) =>
   switch (expressions) {
   | [arg1, arg2] =>
     switch (arg2.pexp_desc) {
-    | PExpConstruct({txt: IdentName({txt: "[...]"})}, innerexpressions) =>
+    | PExpConstruct(
+        {txt: IdentName({txt: "[...]"})},
+        PExpConstrTuple(innerexpressions),
+      ) =>
       let inner = resugar_list_inner(innerexpressions);
       List.append([Regular(arg1)], inner);
-    | PExpConstruct({txt: IdentName({txt: "[]"})}, _) => [Regular(arg1)]
+    | PExpConstruct({txt: IdentName({txt: "[]"})}, PExpConstrTuple(_)) => [
+        Regular(arg1),
+      ]
     | _ => [Regular(arg1), Spread(arg2)]
     }
   | _ =>
@@ -1338,6 +1343,7 @@ and print_record_pattern =
     ) => {
   let close =
     switch (closedflag) {
+    | Open when patternlocs == [] => Doc.text("_")
     | Open => Doc.concat([Doc.text(","), Doc.space, Doc.text("_")])
     | Closed => Doc.nil
     };
@@ -1462,7 +1468,7 @@ and print_pattern =
         ]),
         false,
       )
-    | PPatConstruct(location, patterns) =>
+    | PPatConstruct(location, PPatConstrTuple(patterns)) =>
       let func =
         switch (location.txt) {
         | IdentName({txt: name}) => name
@@ -1502,7 +1508,20 @@ and print_pattern =
           false,
         );
       };
-
+    | PPatConstruct(location, PPatConstrRecord(patternlocs, closedflag)) => (
+        Doc.concat([
+          print_ident(location.txt),
+          print_record_pattern(
+            ~patternlocs,
+            ~closedflag,
+            ~original_source,
+            ~comments,
+            ~next_loc,
+            pat.ppat_loc,
+          ),
+        ]),
+        false,
+      )
     | PPatOr(pattern1, pattern2) => (
         Doc.group(
           Doc.concat([
@@ -3604,12 +3623,18 @@ and print_expression_inner =
         ~comments=comments_in_expression,
         func,
       );
-    | PExpConstruct({txt: IdentName({txt: "[...]"})}, expressions) =>
+    | PExpConstruct(
+        {txt: IdentName({txt: "[...]"})},
+        PExpConstrTuple(expressions),
+      ) =>
       resugar_list(~original_source, ~comments, expressions)
-    | PExpConstruct({txt: IdentName({txt: "[]"})}, expressions) =>
+    | PExpConstruct(
+        {txt: IdentName({txt: "[]"})},
+        PExpConstrTuple(expressions),
+      ) =>
       Doc.text("[]")
-    | PExpConstruct({txt: id}, []) => print_ident(id)
-    | PExpConstruct(constr, expressions) =>
+    | PExpConstruct({txt: id}, PExpConstrTuple([])) => print_ident(id)
+    | PExpConstruct(constr, PExpConstrTuple(expressions)) =>
       let comments_in_expression =
         Comment_utils.get_comments_inside_location(
           ~location=expr.pexp_loc,
@@ -3622,6 +3647,17 @@ and print_expression_inner =
         ~comments=comments_in_expression,
         Ast_helper.Exp.ident(constr),
       );
+    | PExpConstruct(id, PExpConstrRecord(record)) =>
+      Doc.concat([
+        print_ident(id.txt),
+        print_record(
+          ~base=None,
+          ~fields=record,
+          ~original_source,
+          ~comments,
+          expr.pexp_loc,
+        ),
+      ])
     | PExpBlock(expressions) =>
       switch (expressions) {
       | [] =>
@@ -4223,6 +4259,61 @@ let rec print_data =
                 ]),
               );
             }
+          | PConstrRecord(label_declarations) =>
+            let get_loc = (lbl: Parsetree.label_declaration) => {
+              lbl.pld_loc;
+            };
+
+            let print_item = (~comments, lbl: Parsetree.label_declaration) => {
+              Doc.concat([
+                print_ident(lbl.pld_name.txt),
+                Doc.text(":"),
+                Doc.space,
+                print_type(~original_source, ~comments, lbl.pld_type),
+              ]);
+            };
+
+            let pre_brace_comments = []; // We can't determine from AST if comment comes before or after brace
+
+            let remaining_comments =
+              remove_used_comments(
+                ~remove_comments=pre_brace_comments,
+                comments,
+              );
+
+            let after_brace_comments =
+              Comment_utils.get_after_brace_comments(
+                ~loc=data.pdata_loc,
+                remaining_comments,
+              );
+
+            let cleaned_comments =
+              remove_used_comments(
+                ~remove_comments=after_brace_comments,
+                remaining_comments,
+              );
+
+            let decl_items =
+              item_iterator(
+                ~get_loc,
+                ~print_item,
+                ~comments=cleaned_comments,
+                ~iterated_item=IteratedRecordLabels,
+                label_declarations,
+              );
+            let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
+            let printed_decls_after_brace =
+              Doc.concat([Doc.hardLine, printed_decls]);
+
+            Doc.group(
+              Doc.concat([
+                Doc.lbrace,
+                Comment_utils.single_line_of_comments(after_brace_comments),
+                Doc.indent(printed_decls_after_brace),
+                Doc.hardLine,
+                Doc.rbrace,
+              ]),
+            );
           | PConstrSingleton => Doc.nil
           },
         ]),
@@ -4820,6 +4911,10 @@ let toplevel_print =
             } else {
               Doc.nil;
             }
+          | PConstrRecord(_) =>
+            failwith(
+              "Impossible: exception should not have a record constructor",
+            )
           }
 
         | PExtRebind(lid) => print_ident(lid.txt)

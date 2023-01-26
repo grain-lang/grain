@@ -138,7 +138,7 @@ type error =
   | No_value_clauses
   | Exception_pattern_below_toplevel
   | Inlined_record_escape
-  | Inlined_record_expected
+  | Inlined_record_misuse(Identifier.t, string, string)
   | Invalid_extension_constructor_payload
   | Not_an_extension_constructor
   | Literal_overflow(string)

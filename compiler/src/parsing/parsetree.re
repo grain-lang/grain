@@ -35,11 +35,23 @@ and parsed_type = {
   ptyp_loc: Location.t,
 };
 
+/** Type for fields within a record */
+
+[@deriving (sexp, yojson)]
+type label_declaration = {
+  pld_name: loc(Identifier.t),
+  pld_type: parsed_type,
+  pld_mutable: mut_flag,
+  [@sexp_drop_if sexp_locs_disabled]
+  pld_loc: Location.t,
+};
+
 /** Type for arguments to a constructor */
 
 [@deriving (sexp, yojson)]
 type constructor_arguments =
   | PConstrTuple(list(parsed_type))
+  | PConstrRecord(list(label_declaration))
   | PConstrSingleton
 
 [@deriving (sexp, yojson)]
@@ -79,17 +91,6 @@ type constructor_declaration = {
   pcd_args: constructor_arguments,
   [@sexp_drop_if sexp_locs_disabled]
   pcd_loc: Location.t,
-};
-
-/** Type for fields within a record */
-
-[@deriving (sexp, yojson)]
-type label_declaration = {
-  pld_name: loc(Identifier.t),
-  pld_type: parsed_type,
-  pld_mutable: mut_flag,
-  [@sexp_drop_if sexp_locs_disabled]
-  pld_loc: Location.t,
 };
 
 /** Different types of data which can be declared. Currently only one. */
@@ -149,9 +150,14 @@ type pattern_desc =
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
   | PPatConstraint(pattern, parsed_type)
-  | PPatConstruct(loc(Identifier.t), list(pattern))
+  | PPatConstruct(loc(Identifier.t), constructor_pattern)
   | PPatOr(pattern, pattern)
   | PPatAlias(pattern, loc(string))
+
+[@deriving (sexp, yojson)]
+and constructor_pattern =
+  | PPatConstrRecord(list((loc(Identifier.t), pattern)), closed_flag)
+  | PPatConstrTuple(list(pattern)) // Empty list used to represent singleton constructors
 
 [@deriving (sexp, yojson)]
 and pattern = {
@@ -459,12 +465,17 @@ and expression_desc =
   | PExpConstraint(expression, parsed_type)
   | PExpLambda(list(pattern), expression)
   | PExpApp(expression, list(expression))
-  | PExpConstruct(loc(Identifier.t), list(expression))
+  | PExpConstruct(loc(Identifier.t), constructor_expression)
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
   | /** Used for modules without body expressions */
     PExpNull
+
+[@deriving (sexp, yojson)]
+and constructor_expression =
+  | PExpConstrTuple(list(expression))
+  | PExpConstrRecord(list((loc(Identifier.t), expression)))
 
 /** let-binding form */
 

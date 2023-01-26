@@ -252,8 +252,9 @@ pattern:
   | lbrackrcaret rbrack { Pat.array ~loc:(to_loc $loc) [] }
   | lparen pattern rparen { $2 }
   | lbrace record_patterns rbrace { Pat.record ~loc:(to_loc $loc) $2 }
-  | type_id lparen patterns rparen { Pat.construct ~loc:(to_loc $loc) $1 $3 }
-  | type_id { Pat.construct ~loc:(to_loc $loc) $1 [] }
+  | type_id lparen patterns rparen { Pat.tuple_construct ~loc:(to_loc $loc) $1 $3 }
+  | type_id lbrace record_patterns rbrace { Pat.record_construct ~loc:(to_loc $loc) $1 $3 }
+  | type_id { Pat.tuple_construct ~loc:(to_loc $loc) $1 [] }
   | lbrack rbrack { Pat.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item_pat) comma? rbrack { Pat.list ~loc:(to_loc $loc) $2 }
   | pattern PIPE opt_eols pattern %prec PIPE { Pat.or_ ~loc:(to_loc $loc) $1 $4 }
@@ -355,6 +356,7 @@ export_stmt:
 data_constructor:
   | UIDENT { CDecl.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
   | UIDENT lparen typs? rparen { CDecl.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Option.value ~default:[] $3) }
+  | UIDENT data_labels { CDecl.record ~loc:(to_loc $loc) (mkstr $loc $1) $2 }
   /* Special support for lists */
   | lbrack rbrack { CDecl.singleton ~loc:(to_loc $loc) (mkstr $loc "[]") }
   | lbrack ELLIPSIS rbrack lparen typs? rparen { CDecl.tuple ~loc:(to_loc $loc) (mkstr $loc "[...]") (Option.value ~default:[] $5) }
@@ -393,8 +395,9 @@ rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
 
 construct_expr:
-  | type_id lparen lseparated_list(comma, expr) comma? rparen { Exp.construct ~loc:(to_loc $loc) $1 $3 }
-  | type_id %prec LPAREN { Exp.construct ~loc:(to_loc $loc) $1 [] }
+  | type_id lparen lseparated_list(comma, expr) comma? rparen { Exp.tuple_construct ~loc:(to_loc $loc) $1 $3 }
+  | type_id lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Exp.record_construct ~loc:(to_loc $loc) $1 $3 }
+  | type_id %prec LPAREN { Exp.tuple_construct ~loc:(to_loc $loc) $1 [] }
 
 // These are all inlined to carry over their precedence.
 %inline infix_op:

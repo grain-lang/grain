@@ -78,6 +78,8 @@ let translate_signature = sg =>
             cd => {
               switch (cd.cd_args) {
               | TConstrSingleton => ()
+              | TConstrRecord(rfs) =>
+                List.iter(rf => collect_type_vars(rf.rf_type), rfs)
               | TConstrTuple(tys) => List.iter(collect_type_vars, tys)
               };
               Option.iter(collect_type_vars, cd.cd_res);
@@ -102,6 +104,13 @@ let translate_signature = sg =>
                     | TConstrSingleton => TConstrSingleton
                     | TConstrTuple(tys) =>
                       TConstrTuple(List.map(link_type_vars, tys))
+                    | TConstrRecord(rfs) =>
+                      TConstrRecord(
+                        List.map(
+                          rf => {...rf, rf_type: link_type_vars(rf.rf_type)},
+                          rfs,
+                        ),
+                      )
                     };
                   {
                     ...cd,
@@ -138,12 +147,21 @@ let translate_signature = sg =>
         switch (ec.ext_args) {
         | TConstrSingleton => ()
         | TConstrTuple(tys) => List.iter(collect_type_vars, tys)
+        | TConstrRecord(rfs) =>
+          List.iter(rf => collect_type_vars(rf.rf_type), rfs)
         };
         let ext_type_params = List.map(link_type_vars, ec.ext_type_params);
         let ext_args =
           switch (ec.ext_args) {
           | TConstrSingleton => TConstrSingleton
           | TConstrTuple(tys) => TConstrTuple(List.map(link_type_vars, tys))
+          | TConstrRecord(rfs) =>
+            TConstrRecord(
+              List.map(
+                rf => {...rf, rf_type: link_type_vars(rf.rf_type)},
+                rfs,
+              ),
+            )
           };
         TSigTypeExt(id, {...ec, ext_type_params, ext_args}, ext);
       | TSigModule(_)

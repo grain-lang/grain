@@ -1851,7 +1851,7 @@ module Conv = {
           txt: Identifier.IdentName({...cstr_lid, txt: id}),
         };
         Hashtbl.add(constrs, id, cstr);
-        mkpat(PPatConstruct(lid, List.map(loop, lst)));
+        mkpat(PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst)))); // record vs tuple should not matter at this point
       };
 
     let ps = loop(typed);
