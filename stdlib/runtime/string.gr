@@ -556,7 +556,7 @@ toStringHelp = (grainValue, extraIndents, toplevel) => {
     if (tag == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
       heapValueToString(grainValue, extraIndents, toplevel)
     } else if (tag == Tags._GRAIN_CHAR_TAG_TYPE) {
-      let string = usvToString(grainValue >> 3n)
+      let string = usvToString(grainValue >> 8n)
       if (toplevel) {
         string
       } else {

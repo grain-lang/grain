@@ -1728,7 +1728,7 @@ let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
 let create_char = (wasm_mod, env, char) => {
   let uchar = List.hd @@ Utf8.decodeUtf8String(char);
   let uchar_int: int = Utf8__Uchar.toInt(uchar);
-  let grain_char = uchar_int lsl 3 lor 0b010;
+  let grain_char = uchar_int lsl 8 lor 0b010;
   Expression.Const.make(wasm_mod, const_int32(grain_char));
 };
 
@@ -2342,7 +2342,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
         wasm_mod,
         Op.shl_int32,
         compiled_arg,
-        Expression.Const.make(wasm_mod, const_int32(0x3)),
+        Expression.Const.make(wasm_mod, const_int32(0x8)),
       ),
       Expression.Const.make(wasm_mod, const_int32(0b10)),
     )
@@ -2351,7 +2351,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       wasm_mod,
       Op.shr_s_int32,
       compiled_arg,
-      Expression.Const.make(wasm_mod, const_int32(0x3)),
+      Expression.Const.make(wasm_mod, const_int32(0x8)),
     )
   | Not =>
     /* Flip the first bit */
