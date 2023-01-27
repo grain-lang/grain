@@ -33,7 +33,7 @@ chars › char8
    (block $cleanup_locals.2 (result i32)
     (local.set $0
      (block $compile_block.1 (result i32)
-      (i32.const 80194)
+      (i32.const 2566146)
      )
     )
     (local.get $0)

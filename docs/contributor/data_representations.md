@@ -36,7 +36,7 @@ To avoid overwriting data, we shift simple numbers to the left by 1 bit, then se
 
 ### Chars
 
-The Grain `Char` type is represented as a tagged Unicode scalar value. They're similar to simple numbers, though they use a full 3-bit tag, `0b010`. Unicode scalar values exist in the range 0x0-10FFFF, which means it only takes 21 bits to store a USV—that leaves plenty of room for our 3-bit tag, and we cover the full spectrum of USVs. To tag a USV, we shift the value left by 3 bits and set the last 3 bits to our tag value, `0b010`. This means that Grain chars are stored as `8n + 2`, where `n` is the USV. Just like numbers, there are some tricks we can do to avoid untagging and retagging when manipulating chars. For example, the successor of a char can be found by just adding 8: `8(n + 1) + 2` is `(8n + 2) + 8`.
+The Grain `Char` type is represented as a tagged Unicode scalar value. They're similar to simple numbers, though they use a full 3-bit tag, `0b010`. Unicode scalar values exist in the range 0x0-10FFFF, which means it only takes 21 bits to store a USV—that leaves plenty of room for our 3-bit tag, and we cover the full spectrum of USVs. To tag a USV, we shift the value left by 8 bits and set the last 3 bits to our tag value, `0b010`. This means that Grain chars are stored as `(2^8)n + 2`, where `n` is the USV. Just like numbers, there are some tricks we can do to avoid untagging and retagging when manipulating chars.
 
 ## Structure of Heap-Allocated Data
 

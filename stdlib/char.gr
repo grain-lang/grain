@@ -10,7 +10,6 @@
 
 import WasmI32 from "runtime/unsafe/wasmi32"
 import Errors from "runtime/unsafe/errors"
-import Tags from "runtime/unsafe/tags"
 import {
   tagSimpleNumber,
   tagChar,
@@ -92,10 +91,10 @@ export let fromCode = (usv: Number) => {
 
   // Here we use a math trick to avoid fully untagging and retagging.
   // Simple numbers are represented as 2n + 1 and chars are represented as
-  // 8n + 2. Quick reminder that shifting left is the equivalent of multiplying
-  // by 2, and that _GRAIN_CHAR_TAG_TYPE is equal to 2:
-  // 4(2n + 1) - 2 = 8n + 2
-  let char = (usv << 2n) - Tags._GRAIN_CHAR_TAG_TYPE
+  // (2^8)n + 2. Quick reminder that shifting left is the equivalent of multiplying
+  // by 2
+  // 2^7(2n + 1) - (2^7 - 2) = (2^8)n + 2
+  let char = (usv << 7n) - 126n
 
   WasmI32.toGrain(char): Char
 }
