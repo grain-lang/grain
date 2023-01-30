@@ -90,7 +90,7 @@ let mkid = ns => {
 };
 
 let mkid_expr = (loc, ns) =>
-  Exp.ident(~loc=to_loc(loc), mkid(ns, to_loc(loc)));
+  Expression.ident(~loc=to_loc(loc), mkid(ns, to_loc(loc)));
 
 let mkstr = (loc, s) => mkloc(s, to_loc(loc));
 

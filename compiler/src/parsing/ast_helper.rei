@@ -32,7 +32,7 @@ type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
 
-module Const: {
+module Constant: {
   let string: string => constant;
   let char: string => constant;
   let number: number_type => constant;
@@ -49,7 +49,7 @@ module Const: {
   let void: constant;
 };
 
-module Typ: {
+module Type: {
   let mk: (~loc: loc=?, parsed_type_desc) => parsed_type;
   let any: (~loc: loc=?, unit) => parsed_type;
   let var: (~loc: loc=?, string) => parsed_type;
@@ -60,7 +60,7 @@ module Typ: {
   let force_poly: parsed_type => parsed_type;
 };
 
-module CDecl: {
+module ConstructorDeclaration: {
   let mk: (~loc: loc=?, str, constructor_arguments) => constructor_declaration;
   let singleton: (~loc: loc=?, str) => constructor_declaration;
   let tuple: (~loc: loc=?, str, list(parsed_type)) => constructor_declaration;
@@ -68,11 +68,11 @@ module CDecl: {
     (~loc: loc=?, str, list(label_declaration)) => constructor_declaration;
 };
 
-module LDecl: {
+module LabelDeclaration: {
   let mk: (~loc: loc=?, id, parsed_type, mut_flag) => label_declaration;
 };
 
-module Dat: {
+module DataDeclaration: {
   let mk:
     (~loc: loc=?, str, list(parsed_type), data_kind, option(parsed_type)) =>
     data_declaration;
@@ -87,13 +87,13 @@ module Dat: {
     data_declaration;
 };
 
-module Except: {
+module Exception: {
   let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
   let singleton: (~loc: loc=?, str) => type_exception;
   let tuple: (~loc: loc=?, str, list(parsed_type)) => type_exception;
 };
 
-module Pat: {
+module Pattern: {
   let mk: (~loc: loc=?, pattern_desc) => pattern;
   let any: (~loc: loc=?, unit) => pattern;
   let var: (~loc: loc=?, str) => pattern;
@@ -114,7 +114,7 @@ module Pat: {
   let alias: (~loc: loc=?, pattern, str) => pattern;
 };
 
-module Exp: {
+module Expression: {
   let mk:
     (~loc: loc=?, ~attributes: attributes=?, expression_desc) => expression;
   let ident: (~loc: loc=?, ~attributes: attributes=?, id) => expression;
@@ -238,7 +238,7 @@ module Exp: {
   let ignore: expression => expression;
 };
 
-module Top: {
+module Toplevel: {
   let mk:
     (~loc: loc=?, ~attributes: attributes=?, toplevel_stmt_desc) =>
     toplevel_stmt;
@@ -291,7 +291,7 @@ module Top: {
     toplevel_stmt;
 };
 
-module Val: {
+module ValueDescription: {
   let mk:
     (
       ~loc: loc=?,
@@ -305,15 +305,19 @@ module Val: {
     value_description;
 };
 
-module Vb: {let mk: (~loc: loc=?, pattern, expression) => value_binding;};
+module ValueBinding: {
+  let mk: (~loc: loc=?, pattern, expression) => value_binding;
+};
 
-module Mb: {
+module MatchBranch: {
   let mk:
     (~loc: loc=?, pattern, expression, option(expression)) => match_branch;
 };
 
-module Inc: {let mk: (~loc: loc, str, option(str)) => include_declaration;};
+module IncludeDeclaration: {
+  let mk: (~loc: loc, str, option(str)) => include_declaration;
+};
 
-module Mod: {
+module ModuleDeclaration: {
   let mk: (~loc: loc, str, list(toplevel_stmt)) => module_declaration;
 };

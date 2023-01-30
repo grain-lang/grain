@@ -14,9 +14,9 @@ describe("blocks", ({test}) => {
         {
           module_name: Location.mknoloc("Test"),
           statements: [
-            Top.expr(
-              Exp.block([
-                Exp.tuple_construct(
+            Toplevel.expr(
+              Expression.block([
+                Expression.tuple_construct(
                   ~loc=Location.dummy_loc,
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("Foo")),

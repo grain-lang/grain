@@ -45,7 +45,7 @@ module Cnst = {
 
 module E = {
   let map = (sub, {pexp_desc: desc, pexp_attributes: attrs, pexp_loc: loc}) => {
-    open Exp;
+    open Expression;
     let loc = sub.location(sub, loc);
     let attributes =
       List.map(
@@ -197,7 +197,7 @@ module E = {
 
 module P = {
   let map = (sub, {ppat_desc: desc, ppat_loc: loc}) => {
-    open Pat;
+    open Pattern;
     let loc = sub.location(sub, loc);
     switch (desc) {
     | PPatAny => any(~loc, ())
@@ -240,7 +240,7 @@ module P = {
 
 module C = {
   let map = (sub, {pcd_name: name, pcd_args: args, pcd_loc: loc}) => {
-    open CDecl;
+    open ConstructorDeclaration;
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);
     switch (args) {
@@ -255,7 +255,7 @@ module C = {
 module L = {
   let map =
       (sub, {pld_name: name, pld_type: typ, pld_mutable: mut, pld_loc: loc}) => {
-    open LDecl;
+    open LabelDeclaration;
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);
     mk(~loc, sname, sub.typ(sub, typ), mut);
@@ -274,7 +274,7 @@ module D = {
           pdata_loc: loc,
         },
       ) => {
-    open Dat;
+    open DataDeclaration;
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);
     let sargs = List.map(sub.typ(sub), args);
@@ -291,7 +291,7 @@ module D = {
 
 module Exc = {
   let map = (sub, {ptyexn_constructor: ext, ptyexn_loc: loc}) => {
-    open Except;
+    open Exception;
     let cloc = sub.location(sub, loc);
     let {pext_name: n, pext_kind: k, pext_loc: loc} = ext;
     let name = map_loc(sub, n);
@@ -316,7 +316,7 @@ module Exc = {
 
 module T = {
   let map = (sub, {ptyp_desc: desc, ptyp_loc: loc}) => {
-    open Typ;
+    open Type;
     let loc = sub.location(sub, loc);
     switch (desc) {
     | PTyAny => any(~loc, ())
@@ -401,7 +401,7 @@ module VD = {
 
 module TL = {
   let map = (sub, {ptop_desc: desc, ptop_attributes: attrs, ptop_loc: loc}) => {
-    open Top;
+    open Toplevel;
     let loc = sub.location(sub, loc);
     let attributes =
       List.map(
@@ -411,19 +411,19 @@ module TL = {
       );
     switch (desc) {
     | PTopInclude(decls) =>
-      Top.include_(~loc, ~attributes, sub.include_(sub, decls))
+      Toplevel.include_(~loc, ~attributes, sub.include_(sub, decls))
     | PTopForeign(e, d) =>
-      Top.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
+      Toplevel.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
     | PTopPrimitive(e, d) =>
-      Top.primitive(~loc, ~attributes, e, sub.value_description(sub, d))
+      Toplevel.primitive(~loc, ~attributes, e, sub.value_description(sub, d))
     | PTopData(dd) =>
-      Top.data(
+      Toplevel.data(
         ~loc,
         ~attributes,
         List.map(((e, d)) => (e, sub.data(sub, d)), dd),
       )
     | PTopLet(e, r, m, vb) =>
-      Top.let_(
+      Toplevel.let_(
         ~loc,
         ~attributes,
         e,
@@ -432,16 +432,22 @@ module TL = {
         List.map(sub.value_binding(sub), vb),
       )
     | PTopModule(e, d) =>
-      Top.module_(
+      Toplevel.module_(
         ~loc,
         ~attributes,
         e,
         {...d, pmod_stmts: List.map(sub.toplevel(sub), d.pmod_stmts)},
       )
-    | PTopExpr(e) => Top.expr(~loc, ~attributes, sub.expr(sub, e))
+    | PTopExpr(e) => Toplevel.expr(~loc, ~attributes, sub.expr(sub, e))
     | PTopException(e, d) =>
-      Top.grain_exception(~loc, ~attributes, e, sub.grain_exception(sub, d))
-    | PTopProvide(ex) => Top.provide(~loc, ~attributes, sub.provide(sub, ex))
+      Toplevel.grain_exception(
+        ~loc,
+        ~attributes,
+        e,
+        sub.grain_exception(sub, d),
+      )
+    | PTopProvide(ex) =>
+      Toplevel.provide(~loc, ~attributes, sub.provide(sub, ex))
     };
   };
 };

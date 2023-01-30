@@ -935,12 +935,12 @@ and type_expect_ =
     let pat =
       switch (args) {
       | [] =>
-        Pat.tuple_construct(
+        Pattern.tuple_construct(
           ~loc=Location.dummy_loc,
           Location.mknoloc(Identifier.IdentName(Location.mknoloc("()"))),
           [],
         )
-      | args => Pat.tuple(args)
+      | args => Pattern.tuple(args)
       };
     type_function(
       ~in_function?,
@@ -949,7 +949,7 @@ and type_expect_ =
       env,
       ty_expected_explained,
       (),
-      [Mb.mk(pat, body, None)],
+      [MatchBranch.mk(pat, body, None)],
     );
   | PExpApp(func, args) =>
     begin_def(); /* one more level for non-returning functions */
@@ -1936,7 +1936,7 @@ and type_let =
           /*| _, PExpConstraint (_, sty) when !Grain_utils.Config.principal ->
             (* propagate type annotation to pattern,
                to allow it to be generalized in -principal mode *)
-            Pat.constraint_
+            Pattern.constraint_
               ~loc:{spat.ppat_loc with Location.loc_ghost=true}
               spat
               sty*/

@@ -1816,7 +1816,7 @@ let untype_constant =
 /* conversion from Typedtree.pattern to Parsetree.pattern list */
 module Conv = {
   open Parsetree;
-  let mkpat = desc => Ast_helper.Pat.mk(desc);
+  let mkpat = desc => Ast_helper.Pattern.mk(desc);
 
   let name_counter = ref(0);
   let fresh = name => {

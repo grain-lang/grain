@@ -150,7 +150,7 @@ let transl_labels = (env, closed, lbls) => {
   let mk = ({pld_name: name, pld_type: arg, pld_mutable: mut, pld_loc: loc}) => {
     /* Builtin_attributes.warning_scope attrs
        (fun () -> */
-    let arg = Ast_helper.Typ.force_poly(arg);
+    let arg = Ast_helper.Type.force_poly(arg);
     let cty = transl_simple_type(env, closed, arg);
     let mut = mut == Mutable;
     {

@@ -87,7 +87,12 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
           };
         value_imports :=
           [
-            Inc.grain_value(fresh, filepath, prefix ++ name, shape),
+            IncludeDeclaration.grain_value(
+              fresh,
+              filepath,
+              prefix ++ name,
+              shape,
+            ),
             ...value_imports^,
           ];
         Hashtbl.add(mod_map, name, fresh);
@@ -1482,7 +1487,7 @@ let rec transl_anf_statement =
       (
         None,
         [
-          Inc.wasm_func(
+          IncludeDeclaration.wasm_func(
             ~global=Global,
             desc.tvd_id,
             desc.tvd_mod.txt,
@@ -1496,7 +1501,7 @@ let rec transl_anf_statement =
       (
         None,
         [
-          Inc.wasm_value(
+          IncludeDeclaration.wasm_value(
             ~global=Global,
             desc.tvd_id,
             desc.tvd_mod.txt,

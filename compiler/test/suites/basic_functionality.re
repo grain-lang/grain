@@ -235,39 +235,45 @@ describe("basic functionality", ({test, testSkip}) => {
         {
           module_name: Location.mknoloc("Test"),
           statements: [
-            Top.data([
+            Toplevel.data([
               (
                 Asttypes.NotProvided,
-                Dat.variant(
+                DataDeclaration.variant(
                   Location.mknoloc("Caipirinha"),
                   [],
                   [
-                    CDecl.singleton(Location.mknoloc("Cachaça")),
-                    CDecl.singleton(Location.mknoloc("Sugar")),
-                    CDecl.singleton(Location.mknoloc("Lime")),
+                    ConstructorDeclaration.singleton(
+                      Location.mknoloc("Cachaça"),
+                    ),
+                    ConstructorDeclaration.singleton(
+                      Location.mknoloc("Sugar"),
+                    ),
+                    ConstructorDeclaration.singleton(
+                      Location.mknoloc("Lime"),
+                    ),
                   ],
                 ),
               ),
             ]),
-            Top.let_(
+            Toplevel.let_(
               Asttypes.NotProvided,
               Asttypes.Nonrecursive,
               Asttypes.Immutable,
               [
-                Vb.mk(
-                  Pat.var(Location.mknoloc("pokémon")),
-                  Exp.constant(Const.string("pikachu")),
+                ValueBinding.mk(
+                  Pattern.var(Location.mknoloc("pokémon")),
+                  Expression.constant(Constant.string("pikachu")),
                 ),
               ],
             ),
-            Top.data([
+            Toplevel.data([
               (
                 Asttypes.NotProvided,
-                Dat.abstract(
+                DataDeclaration.abstract(
                   Location.mknoloc("Über"),
                   [],
                   Some(
-                    Typ.constr(
+                    Type.constr(
                       Location.mknoloc(
                         Identifier.IdentName(Location.mknoloc("Number")),
                       ),
