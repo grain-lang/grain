@@ -1,4 +1,6 @@
-export enum Shape<
+module EnumLong
+
+provide enum Shape<
   a,
   b,
   c,
@@ -60,7 +62,7 @@ export enum Shape<
   ),
 }
 
-export enum Test {
+provide enum Test {
   Test(
     Shape<
       String,

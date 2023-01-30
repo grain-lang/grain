@@ -23,8 +23,8 @@ module CSVArg: Anf_iterator.IterArgument = {
     };
 
   let leave_anf_program = ({signature: {cmi_sign}}) => {
-    Types.(
-      List.iter(
+    let rec process_sig =
+      Types.(
         fun
         | TSigValue(_, {val_fullpath: PIdent(id)})
         | TSigTypeExt(_, {ext_name: id}, _) =>
@@ -38,11 +38,12 @@ module CSVArg: Anf_iterator.IterArgument = {
           )
         | TSigType(_) => ()
         | TSigValue(_) => failwith("NYI: external val_fullpath")
-        | TSigModule(_)
-        | TSigModType(_) => failwith("NYI: modules in module signatures"),
-        cmi_sign,
-      )
-    );
+        | TSigModule(_, {md_type: TModSignature(signature)}, _) =>
+          List.iter(process_sig, signature)
+        | TSigModule(_) => ()
+        | TSigModType(_) => failwith("NYI: module types in module signatures")
+      );
+    List.iter(process_sig, cmi_sign);
   };
 };
 

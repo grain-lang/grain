@@ -1,0 +1,3 @@
+module LetMutProvide
+
+provide let mut x = 3

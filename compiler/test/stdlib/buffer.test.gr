@@ -1,8 +1,10 @@
-import Array from "array"
-import String from "string"
-import Buffer from "buffer"
-import Bytes from "bytes"
-import Int32 from "int32"
+module BufferTest
+
+include "array"
+include "string"
+include "buffer"
+include "bytes"
+include "int32"
 
 // it should have 0 length when buffer is created
 assert Buffer.length(Buffer.make(0)) == 0

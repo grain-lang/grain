@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Hash from "hash"
+include "hash"
 ```
 
 ## Values

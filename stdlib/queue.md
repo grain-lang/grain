@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Queue from "queue"
+include "queue"
 ```
 
 ## Types

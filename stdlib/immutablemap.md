@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import ImmutableMap from "immutablemap"
+include "immutablemap"
 ```
 
 ## Types

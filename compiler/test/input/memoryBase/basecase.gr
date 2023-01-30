@@ -1,3 +1,5 @@
+module BaseCase
+
 enum Thing {
   HelloWorld,
 }

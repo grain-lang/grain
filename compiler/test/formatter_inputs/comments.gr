@@ -1,3 +1,5 @@
+module Comments
+
 /* Let's start with a block 
  the line above ends with a space that we preserve
  followed by a blank line
@@ -27,7 +29,7 @@ let myfun2 = (x /*post*/, y) => 10
  * @param array: The array to be sliced
  * @returns The subset of the array that was sliced
  */
-export let slice = (startIndex, endIndex, array) => {
+provide let slice = (startIndex, endIndex, array) => {
   "no code"
 }
 

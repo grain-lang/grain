@@ -1,5 +1,7 @@
-import Array from "array"
-import Process from "sys/process"
+module ProcessTest
+
+include "array"
+include "sys/process"
 
 // Just a smoke test
 match (Process.argv()) {

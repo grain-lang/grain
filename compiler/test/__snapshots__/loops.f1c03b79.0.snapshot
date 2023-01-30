@@ -10,16 +10,16 @@ loops › loop4
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$>\" (global $>_1142 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1140 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1136 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$>\" (global $>_1130 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1128 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1124 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \">\" (func $>_1142 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1140 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"-\" (func $-_1136 (param i32 i32 i32) (result i32)))
- (global $count_1130 (mut i32) (i32.const 0))
- (global $b_1129 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \">\" (func $>_1130 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1128 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"-\" (func $-_1124 (param i32 i32 i32) (result i32)))
+ (global $count_1118 (mut i32) (i32.const 0))
+ (global $b_1117 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -51,13 +51,13 @@ loops › loop4
     (local.set $0
      (block $compile_block.21 (result i32)
       (block $compile_store.2
-       (global.set $b_1129
+       (global.set $b_1117
         (tuple.extract 0
          (tuple.make
           (i32.const 25)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1129)
+           (global.get $b_1117)
           )
          )
         )
@@ -66,13 +66,13 @@ loops › loop4
        )
       )
       (block $compile_store.4
-       (global.set $count_1130
+       (global.set $count_1118
         (tuple.extract 0
          (tuple.make
           (i32.const 1)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $count_1130)
+           (global.get $count_1118)
           )
          )
         )
@@ -92,14 +92,14 @@ loops › loop4
               (i32.eqz
                (i32.shr_u
                 (block $compile_block.8 (result i32)
-                 (call $>_1142
+                 (call $>_1130
                   (call $incRef_0
                    (global.get $GRAIN$EXPORT$incRef_0)
-                   (global.get $>_1142)
+                   (global.get $>_1130)
                   )
                   (call $incRef_0
                    (global.get $GRAIN$EXPORT$incRef_0)
-                   (global.get $b_1129)
+                   (global.get $b_1117)
                   )
                   (i32.const 1)
                  )
@@ -116,14 +116,14 @@ loops › loop4
                 (local.set $6
                  (tuple.extract 0
                   (tuple.make
-                   (call $-_1136
+                   (call $-_1124
                     (call $incRef_0
                      (global.get $GRAIN$EXPORT$incRef_0)
-                     (global.get $-_1136)
+                     (global.get $-_1124)
                     )
                     (call $incRef_0
                      (global.get $GRAIN$EXPORT$incRef_0)
-                     (global.get $b_1129)
+                     (global.get $b_1117)
                     )
                     (i32.const 3)
                    )
@@ -140,7 +140,7 @@ loops › loop4
                (block $compile_store.13
                 (local.set $8
                  (block $compile_set.11 (result i32)
-                  (global.set $b_1129
+                  (global.set $b_1117
                    (tuple.extract 0
                     (tuple.make
                      (call $incRef_0
@@ -149,7 +149,7 @@ loops › loop4
                      )
                      (call $decRef_0
                       (global.get $GRAIN$EXPORT$decRef_0)
-                      (global.get $b_1129)
+                      (global.get $b_1117)
                      )
                     )
                    )
@@ -164,14 +164,14 @@ loops › loop4
                 (local.set $7
                  (tuple.extract 0
                   (tuple.make
-                   (call $+_1140
+                   (call $+_1128
                     (call $incRef_0
                      (global.get $GRAIN$EXPORT$incRef_0)
-                     (global.get $+_1140)
+                     (global.get $+_1128)
                     )
                     (call $incRef_0
                      (global.get $GRAIN$EXPORT$incRef_0)
-                     (global.get $count_1130)
+                     (global.get $count_1118)
                     )
                     (i32.const 3)
                    )
@@ -186,7 +186,7 @@ loops › loop4
                 )
                )
                (block $compile_set.16 (result i32)
-                (global.set $count_1130
+                (global.set $count_1118
                  (tuple.extract 0
                   (tuple.make
                    (call $incRef_0
@@ -195,7 +195,7 @@ loops › loop4
                    )
                    (call $decRef_0
                     (global.get $GRAIN$EXPORT$decRef_0)
-                    (global.get $count_1130)
+                    (global.get $count_1118)
                    )
                   )
                  )
@@ -217,7 +217,7 @@ loops › loop4
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $count_1130)
+       (global.get $count_1118)
       )
      )
     )
@@ -242,5 +242,5 @@ loops › loop4
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 237
+ ;; custom section \"cmi\", size 236
 )

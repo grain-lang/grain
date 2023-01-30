@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Set from "set"
+include "set"
 ```
 
 ## Types

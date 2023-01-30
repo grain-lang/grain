@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import PriorityQueue from "priorityqueue"
+include "priorityqueue"
 ```
 
 ## Types

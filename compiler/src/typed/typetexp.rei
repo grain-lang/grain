@@ -103,8 +103,7 @@ let find_all_constructors:
 let find_value:
   (Env.t, Location.t, Identifier.t) => (Path.t, value_description);
 let find_module:
-  (Env.t, Location.t, Identifier.t, option(string)) =>
-  (Path.t, module_declaration);
+  (Env.t, Location.t, Identifier.t) => (Path.t, module_declaration);
 let lookup_module:
   (~load: bool=?, Env.t, Location.t, Identifier.t, option(string)) => Path.t;
 let find_modtype:

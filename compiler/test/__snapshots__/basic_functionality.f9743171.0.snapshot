@@ -67,5 +67,5 @@ basic functionality › heap_number_i32_wrapper
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 255
+ ;; custom section \"cmi\", size 236
 )

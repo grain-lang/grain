@@ -30,8 +30,9 @@ describe("parsing", ({test, testSkip}) => {
   let testOp = op =>
     assertParse(
       op,
-      "a " ++ op ++ " b",
+      "module Test; a " ++ op ++ " b",
       {
+        module_name: Location.mknoloc("Test"),
         statements: [
           Top.expr(
             Exp.apply(
@@ -98,8 +99,9 @@ describe("parsing", ({test, testSkip}) => {
   // verify precedence is maintained
   assertParse(
     "custom_op_precedence_1",
-    "a +++ b *** c",
+    "module Test; a +++ b *** c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
         Top.expr(
           Exp.apply(
@@ -128,8 +130,9 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "custom_op_precedence_2",
-    "a &&-- b &-- c",
+    "module Test; a &&-- b &-- c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
         Top.expr(
           Exp.apply(
@@ -158,8 +161,9 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "custom_op_precedence_3",
-    "a ||-- b |-- c",
+    "module Test; a ||-- b |-- c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
         Top.expr(
           Exp.apply(
@@ -188,8 +192,9 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "regression_issue_1473",
-    "a << b >> c",
+    "module Test; a << b >> c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
         Top.expr(
           Exp.apply(
@@ -218,8 +223,9 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "regression_issue_1609",
-    "return -1",
+    "module Test; return -1",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
         Top.expr(
           Exp.return(

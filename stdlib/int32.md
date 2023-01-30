@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Int32 from "int32"
+include "int32"
 ```
 
 ## Conversions

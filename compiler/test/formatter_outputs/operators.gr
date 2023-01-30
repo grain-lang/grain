@@ -1,4 +1,6 @@
-import List from "list"
+module Operators
+
+include "list"
 
 let myList = []
 

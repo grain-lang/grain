@@ -1,6 +1,9 @@
-import List from "list"
-import Wasi from "runtime/wasi"
-import * from "bigint"
+module BigintTest
+
+include "list"
+include "runtime/wasi"
+include "bigint"
+from Bigint use *
 
 assert toString(15t) == "15"
 assert toString(-15t) == "-15"

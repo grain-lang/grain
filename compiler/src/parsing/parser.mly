@@ -36,7 +36,7 @@ module Grain_parsing = struct end
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
 
-%token ENUM RECORD TYPE IMPORT EXPORT FOREIGN WASM PRIMITIVE
+%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE FOREIGN WASM PRIMITIVE
 %token EXCEPT FROM STAR
 %token SLASH DASH PIPE
 %token EOL EOF
@@ -88,7 +88,6 @@ module Grain_parsing = struct end
   expr
   typ
   data_typ
-  id
   id_expr
   lbrace
   lbrack
@@ -102,7 +101,7 @@ module Grain_parsing = struct end
   equal
   const
   pattern
-  type_id
+  qualified_uid
   value_binds
   construct_expr
 
@@ -252,9 +251,9 @@ pattern:
   | lbrackrcaret rbrack { Pat.array ~loc:(to_loc $loc) [] }
   | lparen pattern rparen { $2 }
   | lbrace record_patterns rbrace { Pat.record ~loc:(to_loc $loc) $2 }
-  | type_id lparen patterns rparen { Pat.tuple_construct ~loc:(to_loc $loc) $1 $3 }
-  | type_id lbrace record_patterns rbrace { Pat.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | type_id { Pat.tuple_construct ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid lparen patterns rparen { Pat.tuple_construct ~loc:(to_loc $loc) $1 $3 }
+  | qualified_uid lbrace record_patterns rbrace { Pat.record_construct ~loc:(to_loc $loc) $1 $3 }
+  | qualified_uid { Pat.tuple_construct ~loc:(to_loc $loc) $1 [] }
   | lbrack rbrack { Pat.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item_pat) comma? rbrack { Pat.list ~loc:(to_loc $loc) $2 }
   | pattern PIPE opt_eols pattern %prec PIPE { Pat.or_ ~loc:(to_loc $loc) $1 $4 }
@@ -278,13 +277,13 @@ record_patterns:
 
 record_pattern:
   | UNDERSCORE { None, Open }
-  | id colon pattern { Some($1, $3), Closed }
-  | id { Some($1, Pat.var ~loc:(to_loc $loc) (mkstr $loc (Identifier.last $1.txt))), Closed }
+  | qualified_lid colon pattern { Some($1, $3), Closed }
+  | qualified_lid { Some($1, Pat.var ~loc:(to_loc $loc) (mkstr $loc (Identifier.last $1.txt))), Closed }
 
 data_typ:
-  | type_id lcaret typs rcaret { Typ.constr ~loc:(to_loc $loc) $1 $3 }
+  | qualified_uid lcaret typs rcaret { Typ.constr ~loc:(to_loc $loc) $1 $3 }
   // Resolve Foo < n > abiguity in favor of the type vector
-  | type_id %prec _below_infix { Typ.constr ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid %prec _below_infix { Typ.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
   | data_typ arrow typ { Typ.arrow ~loc:(to_loc $loc) [$1] $3 }
@@ -310,48 +309,61 @@ value_bind:
 value_binds:
   | lseparated_nonempty_list(comma, value_bind) { $1 }
 
-import_exception:
-  | EXCEPT lbrace lseparated_nonempty_list(comma, any_id) comma? rbrace {$3}
-
 as_prefix(X):
   | AS X {$2}
 
 aliasable(X):
   | X as_prefix(X)? {($1, $2)}
 
-import_ids:
-  | lseparated_nonempty_list(comma, aliasable(any_id)) comma? {$1}
+use_item:
+  | TYPE aliasable(uid) { PUseType { name=fst $2; alias = snd $2; loc=to_loc $loc} }
+  | aliasable(uid) { PUseModule { name=fst $1; alias = snd $1; loc=to_loc $loc} }
+  | aliasable(lid) { PUseValue { name=fst $1; alias = snd $1; loc=to_loc $loc} }
 
-import_shape:
-  | simple_id { PImportModule $1 }
-  | type_id { PImportModule $1 }
-  | special_id { PImportModule (mkid [$1] (to_loc $loc)) }
-  | STAR import_exception? { PImportAllExcept (Option.value ~default:[] $2) }
-  | lbrace import_ids? rbrace { PImportValues (Option.value ~default:[] $2) }
+use_items:
+  | lseparated_nonempty_list(comma, use_item) comma? {$1}
 
-import_stmt:
-  | IMPORT lseparated_nonempty_list(comma, import_shape) comma? FROM file_path { Imp.mk ~loc:(to_loc $loc) $2 $5 }
+use_shape:
+  | STAR { PUseAll }
+  | lbrace use_items? rbrace { PUseItems (Option.value ~default:[] $2) }
+
+use_stmt:
+  | FROM qualified_uid USE use_shape { Exp.use ~loc:(to_loc $loc) $2 $4 }
+
+include_alias:
+  | AS qualified_uid { make_module_alias $2 }
+
+include_stmt:
+  | INCLUDE file_path include_alias? { Inc.mk ~loc:(to_loc $loc) $2 $3 }
 
 data_declaration_stmt:
-  | EXPORT data_declaration { (Exported, $2) }
-  | data_declaration { (Nonexported, $1) }
+  | PROVIDE data_declaration { (Provided, $2) }
+  | data_declaration { (NotProvided, $1) }
 
 data_declaration_stmts:
   | separated_nonempty_list(comma, data_declaration_stmt) { $1 }
 
-export_exception:
-  | EXCEPT lseparated_nonempty_list(comma, export_id_str) {$2}
+provide_item:
+  | TYPE aliasable(uid) { PProvideType { name=fst $2; alias = snd $2; loc=to_loc $loc} }
+  | aliasable(uid) { PProvideModule { name=fst $1; alias = snd $1; loc=to_loc $loc} }
+  | aliasable(lid) { PProvideValue { name=fst $1; alias = snd $1; loc=to_loc $loc} }
 
-export_stmt:
-  | attributes EXPORT LET REC value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Exported Recursive Immutable $5 }
-  | attributes EXPORT LET value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Exported Nonrecursive Immutable $4 }
-  | attributes EXPORT LET REC MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Exported Recursive Mutable $6 }
-  | attributes EXPORT LET MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Exported Nonrecursive Mutable $5 }
-  | attributes EXPORT foreign_stmt { Top.foreign ~loc:(to_loc $sloc) ~attributes:$1 Exported $3 }
-  | attributes EXPORT primitive_stmt { Top.primitive ~loc:(to_loc $sloc) ~attributes:$1 Exported $3 }
-  | attributes EXPORT exception_stmt { Top.grain_exception ~loc:(to_loc $sloc) ~attributes:$1 Exported $3 }
-  | attributes EXPORT separated_nonempty_list(comma, aliasable(any_id_str)) { Top.export ~loc:(to_loc $sloc) ~attributes:$1 (Ex.mk ~loc:(to_loc $loc($3)) $3) }
-  | attributes EXPORT STAR export_exception? { Top.export_all ~loc:(to_loc $sloc) ~attributes:$1 (Option.value ~default:[] $4) }
+provide_items:
+  | lseparated_nonempty_list(comma, provide_item) comma? {$1}
+
+provide_shape:
+  | lbrace provide_items? rbrace { Option.value ~default:[] $2 }
+
+provide_stmt:
+  | attributes PROVIDE LET REC value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Recursive Immutable $5 }
+  | attributes PROVIDE LET value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Nonrecursive Immutable $4 }
+  | attributes PROVIDE LET REC MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Recursive Mutable $6 }
+  | attributes PROVIDE LET MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Nonrecursive Mutable $5 }
+  | attributes PROVIDE foreign_stmt { Top.foreign ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE primitive_stmt { Top.primitive ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE exception_stmt { Top.grain_exception ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE provide_shape { Top.provide ~loc:(to_loc $sloc) ~attributes:$1 $3 }
+  | attributes PROVIDE module_stmt { Top.module_ ~loc:(to_loc $loc) ~attributes:$1 Provided $3 }
 
 data_constructor:
   | UIDENT { CDecl.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
@@ -365,8 +377,8 @@ data_constructors:
   | lbrace lseparated_nonempty_list(comma, data_constructor) comma? rbrace { $2 }
 
 data_label:
-  | simple_id colon typ { LDecl.mk ~loc:(to_loc $loc) $1 $3 Immutable }
-  | MUT simple_id colon typ { LDecl.mk ~loc:(to_loc $loc) $2 $4 Mutable }
+  | lid colon typ { LDecl.mk ~loc:(to_loc $loc) $1 $3 Immutable }
+  | MUT lid colon typ { LDecl.mk ~loc:(to_loc $loc) $2 $4 Mutable }
 
 data_labels:
   | lbrace lseparated_nonempty_list(comma, data_label) comma? rbrace { $2 }
@@ -395,9 +407,9 @@ rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
 
 construct_expr:
-  | type_id lparen lseparated_list(comma, expr) comma? rparen { Exp.tuple_construct ~loc:(to_loc $loc) $1 $3 }
-  | type_id lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Exp.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | type_id %prec LPAREN { Exp.tuple_construct ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid lparen lseparated_list(comma, expr) comma? rparen { Exp.tuple_construct ~loc:(to_loc $loc) $1 $3 }
+  | qualified_uid lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Exp.record_construct ~loc:(to_loc $loc) $1 $3 }
+  | qualified_uid %prec LPAREN { Exp.tuple_construct ~loc:(to_loc $loc) $1 [] }
 
 // These are all inlined to carry over their precedence.
 %inline infix_op:
@@ -435,26 +447,22 @@ special_op:
 %inline modid:
   | lseparated_nonempty_list(dot, type_id_str) { $1 }
 
-non_modid:
-  | id_str { [$1] }
+qualified_lid:
+  | modid dot id_str { mkid (List.append $1 [$3]) (to_loc $loc) }
+  | id_str { (mkid [$1]) (to_loc $loc) }
 
-id:
-  | modid dot non_modid { mkid (List.append $1 $3) (to_loc $loc) }
-  | non_modid { (mkid $1) (to_loc $loc) }
-
-simple_id:
-  | LIDENT { (mkid [mkstr $loc $1]) (to_loc $loc) }
-
-type_id:
+qualified_uid:
   | lseparated_nonempty_list(dot, type_id_str) %prec DOT { (mkid $1) (to_loc $loc) }
 
-any_id:
-  | id
-  | type_id { $1 }
+lid:
+  | id_str { (mkid [$1]) (to_loc $loc) }
+
+uid:
+  | UIDENT { (mkid [mkstr $loc $1]) (to_loc $loc) }
 
 id_expr:
   // Force any following colon to cause a shift
-  | id %prec COLON { Exp.ident ~loc:(to_loc $loc) $1 }
+  | qualified_lid %prec COLON { Exp.ident ~loc:(to_loc $loc) $1 }
 
 simple_expr:
   | const { Exp.constant ~loc:(to_loc (snd $1)) (fst $1) }
@@ -538,6 +546,7 @@ stmt_expr:
   | RETURN ioption(expr) %prec _below_infix { Exp.return ~loc:(to_loc $loc) $2 }
   | CONTINUE { Exp.continue ~loc:(to_loc $loc) () }
   | BREAK { Exp.break ~loc:(to_loc $loc) () }
+  | use_stmt { $1 }
 
 assign_binop_op:
   | INFIX_ASSIGNMENT_10 { mkstr $loc $1 }
@@ -585,20 +594,20 @@ array_set:
   | left_accessor_expr lbrack expr rbrack equal expr { Exp.array_set ~loc:(to_loc $loc) $1 $3 $6 }
 
 record_get:
-  | left_accessor_expr dot simple_id { Exp.record_get ~loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr dot lid { Exp.record_get ~loc:(to_loc $loc) $1 $3 }
 
 record_set:
-  | left_accessor_expr dot simple_id equal expr { Exp.record_set ~loc:(to_loc $loc) $1 $3 $5 }
-  | left_accessor_expr dot simple_id assign_binop_op opt_eols expr { Exp.record_set ~loc:(to_loc $loc) $1 $3 (Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [Exp.record_get ~loc:(to_loc $loc) $1 $3; $6]) }
+  | left_accessor_expr dot lid equal expr { Exp.record_set ~loc:(to_loc $loc) $1 $3 $5 }
+  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Exp.record_set ~loc:(to_loc $loc) $1 $3 (Exp.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [Exp.record_get ~loc:(to_loc $loc) $1 $3; $6]) }
 
 %inline record_field_value:
   | colon expr {$2}
 
 punned_record_field:
-  | id { RecordItem ($1, (Exp.ident ~loc:(to_loc $loc) $1)) }
+  | qualified_lid { RecordItem ($1, (Exp.ident ~loc:(to_loc $loc) $1)) }
 
 non_punned_record_field:
-  | id record_field_value { RecordItem ($1, $2) }
+  | qualified_lid record_field_value { RecordItem ($1, $2) }
 
 spread_record_field:
   | ELLIPSIS expr { RecordSpread ($2, to_loc $loc) }
@@ -627,14 +636,6 @@ id_str:
 type_id_str:
   | UIDENT { Location.mkloc $1 (to_loc $loc) }
 
-any_id_str:
-  | id_str { $1 }
-  | type_id_str { $1 }
-
-export_id_str:
-  | id_str { ExportExceptValue $1 }
-  | type_id_str { ExportExceptData $1 }
-
 foreign_stmt:
   | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { Val.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] () }
 
@@ -649,22 +650,29 @@ exception_stmt:
   | EXCEPTION type_id_str { Except.singleton ~loc:(to_loc $loc) $2 }
   | EXCEPTION type_id_str lparen typs? rparen { Except.tuple ~loc:(to_loc $loc) $2 (Option.value ~default:[] $4) }
 
+module_stmt:
+  | MODULE UIDENT lbrace toplevel_stmts RBRACE { Mod.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }
+
 toplevel_stmt:
-  | attributes LET REC value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Recursive Immutable $4 }
-  | attributes LET value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Nonrecursive Immutable $3 }
-  | attributes LET REC MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Recursive Mutable $5 }
-  | attributes LET MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 Nonexported Nonrecursive Mutable $4 }
+  | attributes LET REC value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Recursive Immutable $4 }
+  | attributes LET value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Nonrecursive Immutable $3 }
+  | attributes LET REC MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Recursive Mutable $5 }
+  | attributes LET MUT value_binds { Top.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Nonrecursive Mutable $4 }
   | attributes data_declaration_stmts { Top.data ~loc:(to_loc $sloc) ~attributes:$1 $2 }
-  | attributes IMPORT foreign_stmt { Top.foreign ~loc:(to_loc $loc) ~attributes:$1 Nonexported $3 }
-  | attributes import_stmt { Top.import ~loc:(to_loc $loc) ~attributes:$1 $2 }
+  | attributes foreign_stmt { Top.foreign ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
+  | attributes include_stmt { Top.include_ ~loc:(to_loc $loc) ~attributes:$1 $2 }
+  | attributes module_stmt { Top.module_ ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | expr { Top.expr ~loc:(to_loc $loc) $1 }
-  | export_stmt { $1 }
-  | primitive_stmt { Top.primitive ~loc:(to_loc $loc) Nonexported $1 }
-  | exception_stmt { Top.grain_exception ~loc:(to_loc $loc) Nonexported $1 }
+  | provide_stmt { $1 }
+  | primitive_stmt { Top.primitive ~loc:(to_loc $loc) NotProvided $1 }
+  | exception_stmt { Top.grain_exception ~loc:(to_loc $loc) NotProvided $1 }
 
 toplevel_stmts:
   | lseparated_nonempty_list(eos, toplevel_stmt) eos? { $1 }
 
+module_header:
+  | MODULE UIDENT { mkstr $loc($2) $2 }
+
 program:
-  | opt_eols toplevel_stmts EOF { make_program $2 }
-  | opt_eols EOF { make_program [] }
+  | opt_eols module_header eos toplevel_stmts EOF { make_program $2 $4 }
+  | opt_eols module_header eos? EOF { make_program $2 [] }

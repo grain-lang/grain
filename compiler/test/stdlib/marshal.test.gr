@@ -1,6 +1,9 @@
-import * from "marshal"
-import Bytes from "bytes"
-import Result from "result"
+module MarshalTest
+
+include "marshal"
+from Marshal use *
+include "bytes"
+include "result"
 
 let roundtripOk = value => unmarshal(marshal(value)) == Ok(value)
 

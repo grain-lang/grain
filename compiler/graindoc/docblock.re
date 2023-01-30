@@ -62,9 +62,9 @@ let enumerate_exports = stmts => {
             },
             decls,
           )
-        | TTopExport(decls) =>
+        | TTopProvide(decls) =>
           List.iter(
-            ({tex_id, tex_loc}: Typedtree.export_declaration) => {
+            ({tex_id, tex_loc}: Typedtree.provide_declaration) => {
               id_tbl := Ident.add(tex_id, tex_loc, id_tbl^)
             },
             decls,

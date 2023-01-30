@@ -1,0 +1,6 @@
+module Bar
+
+include "./baz"
+from Baz use { baz }
+
+provide let bar = n => baz(n) * 3

@@ -1185,13 +1185,13 @@ and type_expect_ =
         },
         sinit,
       );
-    let env =
+    let body_env =
       Option.value(~default=env, Option.map(init => init.exp_env, init));
     let cond =
       Option.map(
         scond => {
           type_expect(
-            env,
+            body_env,
             scond,
             mk_expected(
               ~explanation=Loop_conditional,
@@ -1203,12 +1203,12 @@ and type_expect_ =
       );
     let inc =
       Option.map(
-        sinc => {type_expect(env, sinc, mk_expected(newvar()))},
+        sinc => {type_expect(body_env, sinc, mk_expected(newvar()))},
         sinc,
       );
     let body =
       type_expect(
-        env,
+        body_env,
         sbody,
         mk_expected(~explanation=Loop_body, Builtin_types.type_void),
       );
@@ -1322,6 +1322,21 @@ and type_expect_ =
       exp_attributes: attributes,
       exp_type: typ,
       exp_env: env,
+    });
+  | PExpUse(module_, items) =>
+    let path = Typetexp.lookup_module(env, module_.loc, module_.txt, None);
+    let newenv =
+      switch (items) {
+      | PUseAll => Env.use_full_signature(path, env)
+      | PUseItems(items) => Env.use_partial_signature(path, items, env)
+      };
+    rue({
+      exp_desc: TExpNull,
+      exp_loc: loc,
+      exp_extra: [],
+      exp_attributes: attributes,
+      exp_type: instance(env, Builtin_types.type_void),
+      exp_env: newenv,
     });
   | PExpNull =>
     rue({

@@ -168,9 +168,9 @@ let lookup_module = (~load=false, env, loc, lid, filepath) =>
     lid,
   );
 
-let find_module = (env, loc, lid, filepath) => {
-  let path = lookup_module(~load=true, env, loc, lid, filepath);
-  let decl = Env.find_module(path, filepath, env);
+let find_module = (env, loc, lid) => {
+  let path = lookup_module(env, loc, lid, None);
+  let decl = Env.find_module(path, None, env);
   /* No need to check for deprecated here, this is done in Env. */
   (path, decl);
 };

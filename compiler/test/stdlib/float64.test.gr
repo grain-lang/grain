@@ -1,4 +1,7 @@
-import * from "float64"
+module Float64Test
+
+include "float64"
+from Float64 use *
 
 // Constants Tests
 // smoke test:

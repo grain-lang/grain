@@ -1,4 +1,6 @@
-import Random from "random"
+module RandomTest
+
+include "random"
 
 let rng1 = Random.make(0xf00L)
 let rng2 = Random.make(0xf00L)

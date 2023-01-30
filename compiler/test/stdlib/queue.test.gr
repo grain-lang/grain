@@ -1,4 +1,6 @@
-import Queue from "queue"
+module QueueTest
+
+include "queue"
 
 let empty = Queue.make()
 // 1 <- 2 <- 3

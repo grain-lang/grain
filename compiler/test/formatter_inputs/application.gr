@@ -1,6 +1,8 @@
-import Array from "array"
-import Option from "option"
-import Map from "map"
+module Application
+
+include "array"
+include "option"
+include "map"
 
 let data = [>]
 
@@ -21,15 +23,15 @@ let findIndex =  (x,y) => None
  * @param array: The array to filter
  * @returns The new array with only unique values
  */
-export let unique = array => {
+provide let unique = array => {
   filteri((el, index) => findIndex(longvalue => longvalue == el, array) == Some(index), array)
 }
 
-export let unique2 = array => {
+provide let unique2 = array => {
   filteri((el, index) => findIndex(value => value == el, array) == Some(index), array)
 }
 
-export let batchActionCreateAccount = ({index}) => {
+provide let batchActionCreateAccount = ({index}) => {
   Native.promiseBatchActionCreateAccount(Conv.fromInt64(index))
 }
 

@@ -14,45 +14,75 @@ describe("stdlib", ({test, testSkip}) => {
   assertSnapshot("stdlib_cons", "[1, 2, 3]");
   assertSnapshot(
     "stdlib_equal_1",
-    "import * from \"list\"; (1, 2) is (1, 2)",
+    "include \"list\" as List; from List use *; (1, 2) is (1, 2)",
   );
   assertSnapshot(
     "stdlib_equal_2",
-    "import * from \"pervasives\"; (1, 2) == (1, 2)",
+    "include \"pervasives\" as Pervasives; from Pervasives use *; (1, 2) == (1, 2)",
   );
   assertSnapshot(
     "stdlib_equal_3",
-    "import * from \"list\"; [1, 2, 3] == [1, 2, 3]",
+    "include \"list\" as List; from List use *; [1, 2, 3] == [1, 2, 3]",
   );
-  assertSnapshot("stdlib_equal_4", "import * from \"list\"; 1 == 1");
-  assertSnapshot("stdlib_equal_5", "import * from \"list\"; 1 == 2");
-  assertSnapshot("stdlib_equal_6", "import * from \"list\"; true == true");
-  assertSnapshot("stdlib_equal_7", "import * from \"list\"; true == false");
-  assertSnapshot("stdlib_equal_8", "import * from \"list\"; [>] == [>]");
-  assertSnapshot("stdlib_equal_9", "import * from \"list\"; [>] == [> 1]");
-  assertSnapshot("stdlib_equal_10", "import * from \"list\"; [> 1] == [> 1]");
+  assertSnapshot(
+    "stdlib_equal_4",
+    "include \"list\" as List; from List use *; 1 == 1",
+  );
+  assertSnapshot(
+    "stdlib_equal_5",
+    "include \"list\" as List; from List use *; 1 == 2",
+  );
+  assertSnapshot(
+    "stdlib_equal_6",
+    "include \"list\" as List; from List use *; true == true",
+  );
+  assertSnapshot(
+    "stdlib_equal_7",
+    "include \"list\" as List; from List use *; true == false",
+  );
+  assertSnapshot(
+    "stdlib_equal_8",
+    "include \"list\" as List; from List use *; [>] == [>]",
+  );
+  assertSnapshot(
+    "stdlib_equal_9",
+    "include \"list\" as List; from List use *; [>] == [> 1]",
+  );
+  assertSnapshot(
+    "stdlib_equal_10",
+    "include \"list\" as List; from List use *; [> 1] == [> 1]",
+  );
   assertSnapshot(
     "stdlib_equal_11",
-    "import * from \"list\"; [> 1, 2] == [> 1]",
+    "include \"list\" as List; from List use *; [> 1, 2] == [> 1]",
   );
   assertSnapshot(
     "stdlib_equal_12",
-    "import * from \"list\"; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
+    "include \"list\" as List; from List use *; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
   );
-  assertSnapshot("stdlib_equal_13", "import * from \"list\"; \"\" == \"\"");
-  assertSnapshot("stdlib_equal_14", "import * from \"list\"; \" \" == \"\"");
-  assertSnapshot("stdlib_equal_15", "import * from \"list\"; \"f\" == \"\"");
+  assertSnapshot(
+    "stdlib_equal_13",
+    "include \"list\" as List; from List use *; \"\" == \"\"",
+  );
+  assertSnapshot(
+    "stdlib_equal_14",
+    "include \"list\" as List; from List use *; \" \" == \"\"",
+  );
+  assertSnapshot(
+    "stdlib_equal_15",
+    "include \"list\" as List; from List use *; \"f\" == \"\"",
+  );
   assertSnapshot(
     "stdlib_equal_16",
-    "import * from \"list\"; \"foo\" == \"foo\"",
+    "include \"list\" as List; from List use *; \"foo\" == \"foo\"",
   );
   assertSnapshot(
     "stdlib_equal_17",
-    "import * from \"list\"; \"foo 😂\" == \"foo 😂\"",
+    "include \"list\" as List; from List use *; \"foo 😂\" == \"foo 😂\"",
   );
   assertSnapshot(
     "stdlib_equal_18",
-    "import * from \"list\"; \"foo 😂\" == \"foo 🙄\"",
+    "include \"list\" as List; from List use *; \"foo 😂\" == \"foo 🙄\"",
   );
   assertSnapshot(
     "stdlib_equal_19",
@@ -74,18 +104,18 @@ describe("stdlib", ({test, testSkip}) => {
   assertFileRun("recursive_equal_mut", "recursive-equal-mut", "OK\n");
   assertCompileError(
     "stdlib_length_err",
-    "import * from \"list\"; length(true)",
+    "include \"list\" as List; from List use *; length(true)",
     "This expression has type Bool but",
   );
   assertCompileError(
     "stdlib_reverse_err",
-    "import * from \"list\"; reverse(1)",
+    "include \"list\" as List; from List use *; reverse(1)",
     "This expression has type Number but",
   );
   // logging to the stdout file descriptor
   assertRun(
     "stdlib_file_stdout",
-    {|import File from "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe")); print(void)|},
+    {|include "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe")); print(void)|},
     "enterthevoid\n",
   );
   assertStdlib("array.test");

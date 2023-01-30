@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Range from "range"
+include "range"
 ```
 
 ## Types

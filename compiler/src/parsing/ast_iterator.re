@@ -10,9 +10,8 @@ type iterator = {
   constructor: (iterator, constructor_declaration) => unit,
   label: (iterator, label_declaration) => unit,
   location: (iterator, Location.t) => unit,
-  import: (iterator, import_declaration) => unit,
-  export: (iterator, list(export_declaration)) => unit,
-  export_all: (iterator, list(export_except)) => unit,
+  include_: (iterator, include_declaration) => unit,
+  provide: (iterator, list(provide_item)) => unit,
   value_binding: (iterator, value_binding) => unit,
   match_branch: (iterator, match_branch) => unit,
   value_description: (iterator, value_description) => unit,
@@ -131,6 +130,25 @@ module E = {
     | PExpConstraint(e, t) =>
       sub.expr(sub, e);
       sub.typ(sub, t);
+    | PExpUse(i, u) =>
+      iter_loc(sub, i);
+      switch (u) {
+      | PUseItems(items) =>
+        List.iter(
+          item => {
+            switch (item) {
+            | PUseType({name, alias, loc})
+            | PUseModule({name, alias, loc})
+            | PUseValue({name, alias, loc}) =>
+              iter_ident(sub, name);
+              Option.iter(iter_ident(sub), alias);
+              sub.location(sub, loc);
+            }
+          },
+          items,
+        )
+      | PUseAll => ()
+      };
     | PExpLambda(pl, e) =>
       iter_patterns(sub, pl);
       sub.expr(sub, e);
@@ -277,45 +295,27 @@ module MB = {
 };
 
 module I = {
-  let iter_shape = (sub, ival) => {
-    switch (ival) {
-    | PImportValues(values) =>
-      List.iter(
-        ((name, alias)) => {
-          iter_loc(sub, name);
-          iter_opt(sub, alias);
-        },
-        values,
-      )
-    | PImportAllExcept(values) => List.iter(iter_loc(sub), values)
-    | PImportModule(id) => iter_loc(sub, id)
-    };
-  };
-  let iter = (sub, {pimp_val, pimp_path, pimp_loc}) => {
-    List.iter(iter_shape(sub), pimp_val);
-    iter_loc(sub, pimp_path);
-    sub.location(sub, pimp_loc);
+  let iter = (sub, {pinc_alias, pinc_path, pinc_loc}) => {
+    Option.iter(iter_loc(sub), pinc_alias);
+    iter_loc(sub, pinc_path);
+    sub.location(sub, pinc_loc);
   };
 };
 
-module Ex = {
-  let iter = (sub, exports) =>
+module Pr = {
+  let iter = (sub, items) =>
     List.iter(
-      export =>
-        switch (export) {
-        | ExportData({pex_loc: loc})
-        | ExportValue({pex_loc: loc}) => sub.location(sub, loc)
-        },
-      exports,
-    );
-  let iter_export_all = (sub, excepts) =>
-    List.iter(
-      except =>
-        switch (except) {
-        | ExportExceptData(name)
-        | ExportExceptValue(name) => iter_loc(sub, name)
-        },
-      excepts,
+      item => {
+        switch (item) {
+        | PProvideType({name, alias, loc})
+        | PProvideModule({name, alias, loc})
+        | PProvideValue({name, alias, loc}) =>
+          iter_ident(sub, name);
+          Option.iter(iter_ident(sub), alias);
+          sub.location(sub, loc);
+        }
+      },
+      items,
     );
 };
 
@@ -343,13 +343,13 @@ module TL = {
       attrs,
     );
     switch (desc) {
-    | PTopImport(id) => sub.import(sub, id)
-    | PTopExport(ex) => sub.export(sub, ex)
-    | PTopExportAll(ex) => sub.export_all(sub, ex)
+    | PTopInclude(id) => sub.include_(sub, id)
+    | PTopProvide(ex) => sub.provide(sub, ex)
     | PTopForeign(e, vd) => sub.value_description(sub, vd)
     | PTopPrimitive(e, vd) => sub.value_description(sub, vd)
     | PTopData(dd) => List.iter(((_, d)) => sub.data(sub, d), dd)
     | PTopLet(e, r, m, vb) => List.iter(sub.value_binding(sub), vb)
+    | PTopModule(e, d) => List.iter(sub.toplevel(sub), d.pmod_stmts)
     | PTopExpr(e) => sub.expr(sub, e)
     | PTopException(e, d) => sub.grain_exception(sub, d)
     };
@@ -365,9 +365,8 @@ let default_iterator = {
   constructor: C.iter,
   label: L.iter,
   location: (_, x) => (),
-  import: I.iter,
-  export: Ex.iter,
-  export_all: Ex.iter_export_all,
+  include_: I.iter,
+  provide: Pr.iter,
   value_binding: V.iter,
   match_branch: MB.iter,
   value_description: VD.iter,

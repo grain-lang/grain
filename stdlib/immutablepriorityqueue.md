@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import ImmutablePriorityQueue from "immutablepriorityqueue"
+include "immutablepriorityqueue"
 ```
 
 ## Types

@@ -1,21 +1,25 @@
 /**
  * @module Bytes: Utilities for working with byte sequences.
  *
- * @example import Bytes from "bytes"
+ * @example include "bytes"
  *
  * @since v0.3.2
  */
 
-import Memory from "runtime/unsafe/memory"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Conv from "runtime/unsafe/conv"
-import { allocateBytes, allocateString } from "runtime/dataStructures"
-import Exception from "runtime/exception"
-import Int32 from "int32"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
+module Bytes
+
+include "runtime/unsafe/memory"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/wasmf64"
+include "runtime/unsafe/conv"
+include "runtime/dataStructures"
+from DataStructures use { allocateBytes, allocateString }
+include "runtime/exception"
+include "int32"
+include "runtime/numbers"
+from Numbers use { coerceNumberToWasmI32 }
 
 @unsafe
 let _SIZE_OFFSET = 4n
@@ -65,7 +69,7 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
  * @since v0.3.2
  */
 @unsafe
-export let make = (size: Number) => {
+provide let make = (size: Number) => {
   let bytes = allocateBytes(coerceNumberToWasmI32(size))
   WasmI32.toGrain(bytes): Bytes
 }
@@ -75,7 +79,7 @@ export let make = (size: Number) => {
  *
  * @since v0.3.2
  */
-export let empty = make(0)
+provide let empty = make(0)
 
 /**
  * Creates a new byte sequence from the input string.
@@ -86,7 +90,7 @@ export let empty = make(0)
  * @since v0.3.2
  */
 @unsafe
-export let fromString = (string: String) => {
+provide let fromString = (string: String) => {
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(string)
   let size = getSize(src)
@@ -104,7 +108,7 @@ export let fromString = (string: String) => {
  * @since v0.3.2
  */
 @unsafe
-export let toString = (bytes: Bytes) => {
+provide let toString = (bytes: Bytes) => {
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
@@ -122,7 +126,7 @@ export let toString = (bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let length = (bytes: Bytes) => {
+provide let length = (bytes: Bytes) => {
   let b = WasmI32.fromGrain(bytes)
   Conv.wasmI32ToNumber(getSize(b))
 }
@@ -136,7 +140,7 @@ export let length = (bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let copy = (b: Bytes) => {
+provide let copy = (b: Bytes) => {
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(b)
   let size = getSize(src)
@@ -158,7 +162,7 @@ export let copy = (b: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let slice = (start: Number, length: Number, bytes: Bytes) => {
+provide let slice = (start: Number, length: Number, bytes: Bytes) => {
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(bytes)
@@ -193,7 +197,7 @@ export let slice = (start: Number, length: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let resize = (left: Number, right: Number, bytes: Bytes) => {
+provide let resize = (left: Number, right: Number, bytes: Bytes) => {
   let (<) = WasmI32.ltS
   let (>) = WasmI32.gtS
   let (+) = WasmI32.add
@@ -251,7 +255,7 @@ export let resize = (left: Number, right: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let move =
+provide let move =
   (
     srcIndex: Number,
     dstIndex: Number,
@@ -294,7 +298,7 @@ export let move =
  *
  * @since v0.3.2
  */
-export let concat = (bytes1: Bytes, bytes2: Bytes) => {
+provide let concat = (bytes1: Bytes, bytes2: Bytes) => {
   let len1 = length(bytes1)
   let len2 = length(bytes2)
   let ret = resize(0, len2, bytes1)
@@ -311,7 +315,7 @@ export let concat = (bytes1: Bytes, bytes2: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let fill = (value: Int32, bytes: Bytes) => {
+provide let fill = (value: Int32, bytes: Bytes) => {
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
@@ -327,7 +331,7 @@ export let fill = (value: Int32, bytes: Bytes) => {
  * @since v0.5.0
  */
 @unsafe
-export let clear = (bytes: Bytes) => {
+provide let clear = (bytes: Bytes) => {
   let (+) = WasmI32.add
   let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
@@ -351,7 +355,7 @@ export let clear = (bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getInt8S = (index: Number, bytes: Bytes) => {
+provide let getInt8S = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -374,7 +378,7 @@ export let getInt8S = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getInt8U = (index: Number, bytes: Bytes) => {
+provide let getInt8U = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -397,7 +401,7 @@ export let getInt8U = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let setInt8 = (index: Number, value: Int32, bytes: Bytes) => {
+provide let setInt8 = (index: Number, value: Int32, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -420,7 +424,7 @@ export let setInt8 = (index: Number, value: Int32, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getInt16S = (index: Number, bytes: Bytes) => {
+provide let getInt16S = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -443,7 +447,7 @@ export let getInt16S = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getInt16U = (index: Number, bytes: Bytes) => {
+provide let getInt16U = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -466,7 +470,7 @@ export let getInt16U = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let setInt16 = (index: Number, value: Int32, bytes: Bytes) => {
+provide let setInt16 = (index: Number, value: Int32, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -489,7 +493,7 @@ export let setInt16 = (index: Number, value: Int32, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getInt32 = (index: Number, bytes: Bytes) => {
+provide let getInt32 = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -512,7 +516,7 @@ export let getInt32 = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
+provide let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -535,7 +539,7 @@ export let setInt32 = (index: Number, value: Int32, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getFloat32 = (index: Number, bytes: Bytes) => {
+provide let getFloat32 = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -558,7 +562,7 @@ export let getFloat32 = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
+provide let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -581,7 +585,7 @@ export let setFloat32 = (index: Number, value: Float32, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getInt64 = (index: Number, bytes: Bytes) => {
+provide let getInt64 = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -604,7 +608,7 @@ export let getInt64 = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
+provide let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -627,7 +631,7 @@ export let setInt64 = (index: Number, value: Int64, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let getFloat64 = (index: Number, bytes: Bytes) => {
+provide let getFloat64 = (index: Number, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)
@@ -650,7 +654,7 @@ export let getFloat64 = (index: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-export let setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
+provide let setFloat64 = (index: Number, value: Float64, bytes: Bytes) => {
   let (+) = WasmI32.add
   let ptr = WasmI32.fromGrain(bytes)
   let size = getSize(ptr)

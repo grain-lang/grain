@@ -1,3 +1,5 @@
+module PervasivesTest
+
 // compare
 
 // Number comparisons are tested thoroughly by other tests

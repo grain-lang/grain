@@ -10,8 +10,9 @@ describe("blocks", ({test}) => {
     Ast_helper.(
       assertParse(
         "block_parse_lone_no_args_enum",
-        "{ Foo }",
+        "module Test; { Foo }",
         {
+          module_name: Location.mknoloc("Test"),
           statements: [
             Top.expr(
               Exp.block([

@@ -1,11 +1,13 @@
-import List from "list"
+module Matches
+
+include "list"
 
 record Queue<a> {
   forwards: List<a>,
   backwards: List<a>,
 }
 
-export let push = (value, queue) => {
+provide let push = (value, queue) => {
   match (queue) {
     { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
     // comment
@@ -13,7 +15,7 @@ export let push = (value, queue) => {
   }
 }
 
-export let pop = queue => {
+provide let pop = queue => {
   match (queue) {
     { forwards: [], backwards: [] } => queue,
     { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },

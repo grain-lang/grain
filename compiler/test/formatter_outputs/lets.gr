@@ -1,3 +1,5 @@
+module Lets
+
 let rec myFun1 = x => x + 1, myFun2 = x => x + 1
 
 let myBlock = {

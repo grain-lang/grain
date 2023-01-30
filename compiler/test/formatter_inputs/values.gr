@@ -1,13 +1,15 @@
-import Int32 from "int32"
-import Int64 from "int64"
-import Float32 from "float32"
-import Float64 from "float64"
-import Bytes from "bytes"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
+module Values
 
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
+include "int32"
+include "int64"
+include "float32"
+include "float64"
+include "bytes"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/wasmf64"
 
 let char = 'a'
 

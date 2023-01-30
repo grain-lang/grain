@@ -5,7 +5,7 @@ title: Random
 System access to random values.
 
 ```grain
-import Random from "sys/random"
+include "sys/random"
 ```
 
 ## Values

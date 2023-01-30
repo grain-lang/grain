@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Buffer from "buffer"
+include "buffer"
 ```
 
 ## Values

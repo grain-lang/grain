@@ -1,6 +1,8 @@
-import PriorityQueue from "priorityqueue"
-import List from "list"
-import Array from "array"
+module PriorityQueueTest
+
+include "priorityqueue"
+include "list"
+include "array"
 
 // formatter-ignore
 let lotsOfVals = [>

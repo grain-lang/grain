@@ -1,13 +1,15 @@
 /**
  * @module ImmutablePriorityQueue: An immutable priority queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
  *
- * @example import ImmutablePriorityQueue from "immutablepriorityqueue"
+ * @example include "immutablepriorityqueue"
  *
  * @since v0.5.3
  */
 
-import List from "list"
-import Array from "array"
+module ImmutablePriorityQueue
+
+include "list"
+include "array"
 
 // implementation based on immutable skew binomial queue with global root optimization
 // as described in the paper "Optimal Purely Functional Priority Queues" by Chris Okasaki.
@@ -49,7 +51,7 @@ record ImmutablePriorityQueue<a> {
  *
  * @since v0.5.4
  */
-export let empty = {
+provide let empty = {
   let empty = { comp: compare, size: 0, root: None }
   empty
 }
@@ -68,7 +70,7 @@ export let empty = {
  *
  * @since v0.5.3
  */
-export let make = comp => {
+provide let make = comp => {
   { comp, size: 0, root: None }
 }
 
@@ -80,7 +82,7 @@ export let make = comp => {
  *
  * @since v0.5.3
  */
-export let size = pq => {
+provide let size = pq => {
   pq.size
 }
 
@@ -92,7 +94,7 @@ export let size = pq => {
  *
  * @since v0.5.3
  */
-export let isEmpty = pq => {
+provide let isEmpty = pq => {
   pq.size == 0
 }
 
@@ -136,7 +138,7 @@ let skewInsert = (comp, val, pq) => {
  * @param pq: The priority queue
  * @returns A new priority queue with the given element inserted
  */
-export let push = (val, pq) => {
+provide let push = (val, pq) => {
   let { comp, size, root } = pq
   match (root) {
     None => { comp, size: 1, root: Some({ rootVal: val, pq: [] }) },
@@ -162,7 +164,7 @@ export let push = (val, pq) => {
  *
  * @since v0.5.3
  */
-export let peek = pq => {
+provide let peek = pq => {
   match (pq.root) {
     None => None,
     Some({ rootVal, _ }) => Some(rootVal),
@@ -286,7 +288,7 @@ let rec findHighestPriority = (comp, pq) => {
  *
  * @since v0.5.3
  */
-export let pop = pq => {
+provide let pop = pq => {
   let pqWithRoot = pq
   let { comp, size, root } = pq
   match (root) {
@@ -315,7 +317,7 @@ export let pop = pq => {
  *
  * @since v0.5.3
  */
-export let drain = pq => {
+provide let drain = pq => {
   let rec drainRec = (acc, pq) => {
     match (pq.root) {
       None => acc,
@@ -338,7 +340,7 @@ export let drain = pq => {
  *
  * @since v0.5.3
  */
-export let fromList = (list, comp) => {
+provide let fromList = (list, comp) => {
   List.reduce((pq, val) => push(val, pq), make(comp), list)
 }
 
@@ -355,6 +357,6 @@ export let fromList = (list, comp) => {
  *
  * @since v0.5.4
  */
-export let fromArray = (array, comp) => {
+provide let fromArray = (array, comp) => {
   Array.reduce((pq, val) => push(val, pq), make(comp), array)
 }

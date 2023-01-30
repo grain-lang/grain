@@ -1,5 +1,7 @@
-import Option from "option"
-import String from "string"
+module OptionTest
+
+include "option"
+include "string"
 
 // Option.isSome
 

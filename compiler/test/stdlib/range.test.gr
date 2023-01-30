@@ -1,4 +1,6 @@
-import Range from "range"
+module RangeTest
+
+include "range"
 
 let inclusiveAscendingRange = Range.Inclusive(1, 5)
 let inclusiveDescendingRange = Range.Inclusive(5, 1)

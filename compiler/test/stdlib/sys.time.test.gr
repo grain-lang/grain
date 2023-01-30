@@ -1,5 +1,8 @@
-import { lt as (<) } from "int64"
-import Time from "sys/time"
+module TimeTest
+
+include "int64"
+from Int64 use { lt as (<) }
+include "sys/time"
 
 let mt1 = Time.monotonicTime()
 let mt2 = Time.monotonicTime()

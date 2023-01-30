@@ -1,5 +1,7 @@
-import WasmF32 from "runtime/unsafe/wasmf32"
-import Conv from "runtime/unsafe/conv"
+module WasmF32Test
+
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/conv"
 
 @unsafe
 let test = () => {

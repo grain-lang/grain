@@ -1,3 +1,5 @@
+module Infix
+
 let trimString = (str: String, end: Bool) => {
   let chars = [>], charsLength = 0
   let mut i = 0, offset = 1

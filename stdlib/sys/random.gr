@@ -1,14 +1,18 @@
 /**
  * @module Random: System access to random values.
  *
- * @example import Random from "sys/random"
+ * @example include "sys/random"
  */
 
-import WasmI32, { eq as (==), ne as (!=) } from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import Wasi from "runtime/wasi"
-import { tagSimpleNumber, newInt32, newInt64 } from "runtime/dataStructures"
+module Random
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { eq as (==), ne as (!=) }
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/wasi"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber, newInt32, newInt64 }
 
 /**
  * @section Values: Functions and constants included in the Random module.
@@ -22,7 +26,7 @@ import { tagSimpleNumber, newInt32, newInt64 } from "runtime/dataStructures"
  * @since v0.5.0
  */
 @unsafe
-export let randomInt32 = () => {
+provide let randomInt32 = () => {
   let buf = Memory.malloc(4n)
 
   let err = Wasi.random_get(buf, 4n)
@@ -43,7 +47,7 @@ export let randomInt32 = () => {
  * @since v0.5.0
  */
 @unsafe
-export let randomInt64 = () => {
+provide let randomInt64 = () => {
   let buf = Memory.malloc(8n)
 
   let err = Wasi.random_get(buf, 8n)
@@ -62,7 +66,7 @@ export let randomInt64 = () => {
  * @returns `Ok(num)` of a random number if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let random = () => {
+provide let random = () => {
   let buf = Memory.malloc(4n)
 
   let err = Wasi.random_get(buf, 4n)

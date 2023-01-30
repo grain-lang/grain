@@ -3548,7 +3548,7 @@ let compile_imports = (wasm_mod, env, {imports}) => {
 let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   let compile_export = (i, export) => {
     switch (export) {
-    | GlobalExport({ex_global_internal_name, ex_global_name}) =>
+    | WasmGlobalExport({ex_global_internal_name, ex_global_name}) =>
       let ex_global_name = "GRAIN$EXPORT$" ++ ex_global_name;
       ignore @@
       Export.add_global_export(
@@ -3556,7 +3556,7 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
         ex_global_internal_name,
         ex_global_name,
       );
-    | FunctionExport({ex_function_internal_name, ex_function_name}) =>
+    | WasmFunctionExport({ex_function_internal_name, ex_function_name}) =>
       ignore @@
       Export.add_function_export(
         wasm_mod,
@@ -3573,14 +3573,14 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
     /* Exports are already reversed, so keeping the first of any name is the correct behavior. */
     List.filter(
       fun
-      | GlobalExport({ex_global_name}) =>
+      | WasmGlobalExport({ex_global_name}) =>
         if (StringSet.mem(ex_global_name, exported_globals^)) {
           false;
         } else {
           exported_globals := StringSet.add(ex_global_name, exported_globals^);
           true;
         }
-      | FunctionExport({ex_function_name}) =>
+      | WasmFunctionExport({ex_function_name}) =>
         if (StringSet.mem(ex_function_name, exported_functions^)) {
           false;
         } else {

@@ -1,18 +1,22 @@
 /**
  * @module BigInt: Utilities for working with the BigInt type.
- * @example import BigInt from "bigint"
+ * @example include "bigint"
  *
  * @since v0.5.0
  */
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import BI from "runtime/bigint"
-import DS from "runtime/dataStructures"
 
-import {
+module Bigint
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/memory"
+include "runtime/bigint" as BI
+include "runtime/dataStructures" as DS
+
+include "runtime/numbers"
+from Numbers use {
   coerceNumberToBigInt as fromNumber,
   coerceBigIntToNumber as toNumber,
-} from "runtime/numbers"
+}
 
 /**
  * @section Conversions: Functions for converting between Numbers and the BigInt type.
@@ -26,7 +30,7 @@ import {
  *
  * @since v0.5.0
  */
-export fromNumber
+provide { fromNumber }
 /**
  * Converts a BigInt to a Number.
  *
@@ -35,7 +39,7 @@ export fromNumber
  *
  * @since v0.5.0
  */
-export toNumber
+provide { toNumber }
 
 /**
  * @section Operations: Mathematical operations for BigInt values.
@@ -50,7 +54,7 @@ export toNumber
  * @since v0.5.0
  */
 @unsafe
-export let incr = (num: BigInt) => {
+provide let incr = (num: BigInt) => {
   WasmI32.toGrain(BI.incr(WasmI32.fromGrain(num))): BigInt
 }
 
@@ -63,7 +67,7 @@ export let incr = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let decr = (num: BigInt) => {
+provide let decr = (num: BigInt) => {
   WasmI32.toGrain(BI.decr(WasmI32.fromGrain(num))): BigInt
 }
 
@@ -76,7 +80,7 @@ export let decr = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let neg = (num: BigInt) => {
+provide let neg = (num: BigInt) => {
   WasmI32.toGrain(BI.negate(WasmI32.fromGrain(num))): BigInt
 }
 
@@ -89,7 +93,7 @@ export let neg = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let abs = (num: BigInt) => {
+provide let abs = (num: BigInt) => {
   WasmI32.toGrain(BI.abs(WasmI32.fromGrain(num))): BigInt
 }
 
@@ -103,7 +107,7 @@ export let abs = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let add = (num1: BigInt, num2: BigInt) => {
+provide let add = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -119,7 +123,7 @@ export let add = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let sub = (num1: BigInt, num2: BigInt) => {
+provide let sub = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -135,7 +139,7 @@ export let sub = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let mul = (num1: BigInt, num2: BigInt) => {
+provide let mul = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -154,7 +158,7 @@ export let mul = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let div = (num1: BigInt, num2: BigInt) => {
+provide let div = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -171,7 +175,7 @@ export let div = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let rem = (num1: BigInt, num2: BigInt) => {
+provide let rem = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.rem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -187,7 +191,7 @@ export let rem = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let quotRem = (num1: BigInt, num2: BigInt) => {
+provide let quotRem = (num1: BigInt, num2: BigInt) => {
   let dest = Memory.malloc(8n)
   BI.quotRem(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2), dest)
   let q = WasmI32.toGrain(WasmI32.load(dest, 0n)): BigInt
@@ -206,7 +210,7 @@ export let quotRem = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let gcd = (num1: BigInt, num2: BigInt) => {
+provide let gcd = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.gcd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -226,7 +230,7 @@ export let gcd = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let shl = (num: BigInt, places: Int32) => {
+provide let shl = (num: BigInt, places: Int32) => {
   let num = WasmI32.fromGrain(num)
   let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
   WasmI32.toGrain(BI.shl(num, places)): BigInt
@@ -242,7 +246,7 @@ export let shl = (num: BigInt, places: Int32) => {
  * @since v0.5.0
  */
 @unsafe
-export let shr = (num: BigInt, places: Int32) => {
+provide let shr = (num: BigInt, places: Int32) => {
   let num = WasmI32.fromGrain(num)
   let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
   WasmI32.toGrain(BI.shrS(num, places)): BigInt
@@ -261,7 +265,7 @@ export let shr = (num: BigInt, places: Int32) => {
  * @since v0.5.0
  */
 @unsafe
-export let eqz = (num: BigInt) => {
+provide let eqz = (num: BigInt) => {
   let num = WasmI32.fromGrain(num)
   BI.eqz(num)
 }
@@ -276,7 +280,7 @@ export let eqz = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let eq = (num1: BigInt, num2: BigInt) => {
+provide let eq = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   BI.eq(num1, num2)
@@ -292,7 +296,7 @@ export let eq = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let ne = (num1: BigInt, num2: BigInt) => {
+provide let ne = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   BI.ne(num1, num2)
@@ -308,7 +312,7 @@ export let ne = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let lt = (num1: BigInt, num2: BigInt) => {
+provide let lt = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   BI.lt(num1, num2)
@@ -324,7 +328,7 @@ export let lt = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let lte = (num1: BigInt, num2: BigInt) => {
+provide let lte = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   BI.lte(num1, num2)
@@ -340,7 +344,7 @@ export let lte = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let gt = (num1: BigInt, num2: BigInt) => {
+provide let gt = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   BI.gt(num1, num2)
@@ -356,7 +360,7 @@ export let gt = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let gte = (num1: BigInt, num2: BigInt) => {
+provide let gte = (num1: BigInt, num2: BigInt) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   BI.gte(num1, num2)
@@ -375,7 +379,7 @@ export let gte = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let lnot = (num: BigInt) => {
+provide let lnot = (num: BigInt) => {
   WasmI32.toGrain(BI.bitwiseNot(WasmI32.fromGrain(num))): BigInt
 }
 
@@ -389,7 +393,7 @@ export let lnot = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let land = (num1: BigInt, num2: BigInt) => {
+provide let land = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseAnd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -405,7 +409,7 @@ export let land = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let lor = (num1: BigInt, num2: BigInt) => {
+provide let lor = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseOr(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -421,7 +425,7 @@ export let lor = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let lxor = (num1: BigInt, num2: BigInt) => {
+provide let lxor = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseXor(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -437,7 +441,7 @@ export let lxor = (num1: BigInt, num2: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let clz = (num: BigInt) => {
+provide let clz = (num: BigInt) => {
   WasmI32.toGrain(
     DS.newInt32(BI.countLeadingZeros(WasmI32.fromGrain(num)))
   ): Int32
@@ -452,7 +456,7 @@ export let clz = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let ctz = (num: BigInt) => {
+provide let ctz = (num: BigInt) => {
   WasmI32.toGrain(
     DS.newInt64(BI.countTrailingZeros(WasmI32.fromGrain(num)))
   ): Int64
@@ -468,7 +472,7 @@ export let ctz = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let popcnt = (num: BigInt) => {
+provide let popcnt = (num: BigInt) => {
   let flagDest = Memory.malloc(4n)
   WasmI32.store(flagDest, 0n, 0n)
   let res = BI.popcnt(WasmI32.fromGrain(num), flagDest)
@@ -492,6 +496,6 @@ export let popcnt = (num: BigInt) => {
  * @since v0.5.0
  */
 @unsafe
-export let toString = (num: BigInt) => {
+provide let toString = (num: BigInt) => {
   BI.bigIntToString10(WasmI32.fromGrain(num))
 }

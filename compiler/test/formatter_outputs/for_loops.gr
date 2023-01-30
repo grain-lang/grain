@@ -1,3 +1,5 @@
+module ForLoops
+
 let size = 2
 
 for (let mut i = 0; i < size; i += 1) {

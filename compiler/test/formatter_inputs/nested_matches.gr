@@ -1,3 +1,5 @@
+module NestedMatches
+
 let join = (separator: String, items: List<String>) => {
   let rec iter = (sep, acc, rem) => {
     match(rem) {

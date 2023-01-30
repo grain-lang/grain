@@ -10,7 +10,7 @@ No other changes yet.
 </details>
 
 ```grain
-import ImmutableSet from "immutableset"
+include "immutableset"
 ```
 
 ## Types

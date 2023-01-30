@@ -1,2 +1,0 @@
-import {quux} from "../quux/quux"
-export let baz = (n) => quux(n) + 1

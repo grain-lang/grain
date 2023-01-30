@@ -1,7 +1,0 @@
-import A from "./relativeImportLinking/a"
-import MutExport from "./relativeImportLinking/mutExport"
-
-MutExport.x := unbox(MutExport.x) + 1
-
-print(A.readX())
-print(unbox(MutExport.x))

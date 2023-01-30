@@ -1,12 +1,16 @@
 /**
  * @module Set: A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
- * @example import Set from "set"
+ * @example include "set"
  * 
  * @since v0.3.0
  */
-import List from "list"
-import Array from "array"
-import { hash } from "hash"
+
+module Set
+
+include "list"
+include "array"
+include "hash"
+from Hash use { hash }
 
 record Bucket<t> {
   mut key: t,
@@ -35,7 +39,7 @@ record Set<k> {
  * 
  * @since v0.3.0
  */
-export let makeSized = size => {
+provide let makeSized = size => {
   let buckets = Array.make(size, None)
   { size: 0, buckets }
 }
@@ -46,7 +50,7 @@ export let makeSized = size => {
  * 
  * @since v0.3.0
  */
-export let make = () => {
+provide let make = () => {
   makeSized(16)
 }
 
@@ -123,7 +127,7 @@ let rec nodeInBucket = (key, node) => {
  * 
  * @since v0.3.0
  */
-export let add = (key, set) => {
+provide let add = (key, set) => {
   let buckets = set.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -156,7 +160,7 @@ export let add = (key, set) => {
  * 
  * @since v0.3.0
  */
-export let contains = (key, set) => {
+provide let contains = (key, set) => {
   let buckets = set.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -188,7 +192,7 @@ let rec removeInBucket = (key, node) => {
  * 
  * @since v0.3.0
  */
-export let remove = (key, set) => {
+provide let remove = (key, set) => {
   let buckets = set.buckets
   let idx = getBucketIndex(key, buckets)
   let bucket = buckets[idx]
@@ -216,7 +220,7 @@ export let remove = (key, set) => {
  * 
  * @since v0.3.0
  */
-export let size = set => {
+provide let size = set => {
   set.size
 }
 
@@ -228,7 +232,7 @@ export let size = set => {
  * 
  * @since v0.3.0
  */
-export let isEmpty = set => {
+provide let isEmpty = set => {
   size(set) == 0
 }
 
@@ -239,7 +243,7 @@ export let isEmpty = set => {
  * 
  * @since v0.3.0
  */
-export let clear = set => {
+provide let clear = set => {
   set.size = 0
   let buckets = set.buckets
   Array.forEachi((bucket, idx) => {
@@ -266,7 +270,7 @@ let rec forEachBucket = (fn, node) => {
  * @since v0.3.0
  * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
-export let forEach = (fn, set) => {
+provide let forEach = (fn, set) => {
   let buckets = set.buckets
   Array.forEach(bucket => {
     forEachBucket(fn, bucket)
@@ -290,7 +294,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
  * 
  * @since v0.3.0
  */
-export let reduce = (fn, init, set) => {
+provide let reduce = (fn, init, set) => {
   let buckets = set.buckets
   let mut acc = init
   Array.forEach(bucket => {
@@ -307,7 +311,7 @@ export let reduce = (fn, init, set) => {
  * 
  * @since v0.3.0
  */
-export let filter = (fn, set) => {
+provide let filter = (fn, set) => {
   let keysToRemove = reduce((list, key) => if (!fn(key)) {
     [key, ...list]
   } else {
@@ -326,7 +330,7 @@ export let filter = (fn, set) => {
  * 
  * @since v0.3.0
  */
-export let reject = (fn, set) => {
+provide let reject = (fn, set) => {
   filter(key => !fn(key), set)
 }
 
@@ -338,7 +342,7 @@ export let reject = (fn, set) => {
  * 
  * @since v0.3.0
  */
-export let toList = set => {
+provide let toList = set => {
   reduce((list, key) => [key, ...list], [], set)
 }
 
@@ -350,7 +354,7 @@ export let toList = set => {
  * 
  * @since v0.3.0
  */
-export let fromList = list => {
+provide let fromList = list => {
   let set = make()
   List.forEach(key => {
     add(key, set)
@@ -366,7 +370,7 @@ export let fromList = list => {
  * 
  * @since v0.3.0
  */
-export let toArray = set => {
+provide let toArray = set => {
   Array.fromList(toList(set))
 }
 
@@ -378,7 +382,7 @@ export let toArray = set => {
  * 
  * @since v0.3.0
  */
-export let fromArray = array => {
+provide let fromArray = array => {
   let set = make()
   Array.forEach(key => {
     add(key, set)
@@ -395,7 +399,7 @@ export let fromArray = array => {
  * 
  * @since v0.3.0
  */
-export let union = (set1, set2) => {
+provide let union = (set1, set2) => {
   let set = make()
   forEach(key => {
     add(key, set)
@@ -415,7 +419,7 @@ export let union = (set1, set2) => {
  * 
  * @since v0.3.0
  */
-export let diff = (set1, set2) => {
+provide let diff = (set1, set2) => {
   let set = make()
   forEach(key => {
     if (!contains(key, set2)) {
@@ -439,7 +443,7 @@ export let diff = (set1, set2) => {
  * 
  * @since v0.3.0
  */
-export let intersect = (set1, set2) => {
+provide let intersect = (set1, set2) => {
   let set = make()
   forEach(key => {
     if (contains(key, set2)) {
@@ -463,6 +467,6 @@ export let intersect = (set1, set2) => {
  * 
  * @since v0.3.0
  */
-export let getInternalStats = set => {
+provide let getInternalStats = set => {
   (set.size, Array.length(set.buckets))
 }

@@ -1,18 +1,17 @@
 /* grainc-flags --no-pervasives */
+module Numbers
 
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
-import Exception from "runtime/exception"
-import BI from "runtime/bigint"
+include "runtime/unsafe/memory" as Memory
+include "runtime/unsafe/tags" as Tags
+include "runtime/exception" as Exception
+include "runtime/bigint" as BI
 
-import {
-  _SMAX32_I64 as _I32_MAX,
-  _SMIN32_I64 as _I32_MIN,
-} from "runtime/unsafe/constants"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
+include "runtime/unsafe/constants" as Constants
+from Constants use { _SMAX32_I64 as _I32_MAX, _SMIN32_I64 as _I32_MIN }
+include "runtime/unsafe/wasmi32" as WasmI32
+include "runtime/unsafe/wasmi64" as WasmI64
+include "runtime/unsafe/wasmf32" as WasmF32
+include "runtime/unsafe/wasmf64" as WasmF64
 
 primitive (!): Bool -> Bool = "@not"
 primitive (&&): (Bool, Bool) -> Bool = "@and"
@@ -22,13 +21,14 @@ primitive throw: Exception -> a = "@throw"
 exception UnknownNumberTag
 exception InvariantViolation
 
-import {
+include "runtime/dataStructures" as DataStructures
+from DataStructures use {
   newRational,
   newInt32,
   newInt64,
   newFloat32,
   newFloat64,
-} from "runtime/dataStructures"
+}
 
 @unsafe
 let _F32_MAX = 3.40282347e+38W
@@ -61,7 +61,7 @@ let isSimpleNumber = x => {
 }
 
 @unsafe
-export let isBoxedNumber = x => {
+provide let isBoxedNumber = x => {
   if (
     WasmI32.eq(
       WasmI32.and(x, Tags._GRAIN_GENERIC_TAG_MASK),
@@ -75,7 +75,7 @@ export let isBoxedNumber = x => {
 }
 
 @unsafe
-export let isFloat = x => {
+provide let isFloat = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
     WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) ||
@@ -86,7 +86,7 @@ export let isFloat = x => {
 }
 
 @unsafe
-export let isInteger = x => {
+provide let isInteger = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
     WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG) ||
@@ -98,7 +98,7 @@ export let isInteger = x => {
 }
 
 @unsafe
-export let isRational = x => {
+provide let isRational = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
     WasmI32.eq(tag, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG)
@@ -108,7 +108,7 @@ export let isRational = x => {
 }
 
 @unsafe
-export let isNaN = x => {
+provide let isNaN = x => {
   if (isBoxedNumber(x)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
     let tag = WasmI32.load(x, 4n)
@@ -141,7 +141,7 @@ let isBigInt = x => {
 }
 
 @unsafe
-export let isNumber = x => {
+provide let isNumber = x => {
   // x is a number if it is a literal number or a boxed_num heap value
   isSimpleNumber(x) || isBoxedNumber(x)
 }
@@ -211,7 +211,7 @@ let gcd32 = (x, y) => {
 }
 
 @unsafe
-export let reducedInteger = x => {
+provide let reducedInteger = x => {
   if (WasmI64.gtS(x, _I32_MAX) || WasmI64.ltS(x, _I32_MIN)) {
     newInt64(x)
   } else if (
@@ -336,42 +336,42 @@ let reducedFraction64 = (x, y) => {
  */
 
 @unsafe
-export let boxedNumberTag = xptr => {
+provide let boxedNumberTag = xptr => {
   WasmI32.load(xptr, 4n)
 }
 
 @unsafe
-export let boxedInt32Number = xptr => {
+provide let boxedInt32Number = xptr => {
   WasmI32.load(xptr, 8n)
 }
 
 @unsafe
-export let boxedInt64Number = xptr => {
+provide let boxedInt64Number = xptr => {
   WasmI64.load(xptr, 8n)
 }
 
 @unsafe
-export let boxedFloat32Number = xptr => {
+provide let boxedFloat32Number = xptr => {
   WasmF32.load(xptr, 8n)
 }
 
 @unsafe
-export let boxedFloat64Number = xptr => {
+provide let boxedFloat64Number = xptr => {
   WasmF64.load(xptr, 8n)
 }
 
 @unsafe
-export let boxedRationalNumerator = xptr => {
+provide let boxedRationalNumerator = xptr => {
   WasmI32.load(xptr, 8n)
 }
 
 @unsafe
-export let boxedRationalDenominator = xptr => {
+provide let boxedRationalDenominator = xptr => {
   WasmI32.load(xptr, 12n)
 }
 
 @unsafe
-export let coerceNumberToWasmF32 = (x: Number) => {
+provide let coerceNumberToWasmF32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
     WasmF32.convertI32S(untagSimple(x))
@@ -413,7 +413,7 @@ export let coerceNumberToWasmF32 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToWasmF64 = (x: Number) => {
+provide let coerceNumberToWasmF64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
     WasmF64.convertI32S(untagSimple(x))
@@ -449,7 +449,7 @@ export let coerceNumberToWasmF64 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToWasmI64 = (x: Number) => {
+provide let coerceNumberToWasmI64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
     WasmI64.extendI32S(untagSimple(x))
@@ -474,7 +474,7 @@ export let coerceNumberToWasmI64 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToWasmI32 = (x: Number) => {
+provide let coerceNumberToWasmI32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
     untagSimple(x)
@@ -503,7 +503,7 @@ export let coerceNumberToWasmI32 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToBigInt = (x: Number) => {
+provide let coerceNumberToBigInt = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
     BI.makeWrappedInt32(untagSimple(x))
@@ -556,7 +556,7 @@ let isSafeIntegerF64 = value => {
   * to that number
   *
   * NOTE: The preconditions in these functions are important, so do NOT
-  *       export them!
+  *       provide them!
   */
 
 @unsafe
@@ -807,7 +807,7 @@ let numberEqualBigIntHelp = (x, y) => {
 }
 
 @unsafe
-export let numberEqual = (x, y) => {
+provide let numberEqual = (x, y) => {
   if (isSimpleNumber(x)) {
     // Short circuit if non-pointer value is the same
     WasmI32.eq(x, y) || numberEqualSimpleHelp(x, y)
@@ -1990,7 +1990,7 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
 }
 
 @unsafe
-export let cmp = (x: WasmI32, y: WasmI32) => {
+provide let cmp = (x: WasmI32, y: WasmI32) => {
   if (isSimpleNumber(x)) {
     if (isSimpleNumber(y)) {
       // fast comparison path for simple numbers
@@ -2057,35 +2057,35 @@ export let cmp = (x: WasmI32, y: WasmI32) => {
 // this case).
 
 @unsafe
-export let (<) = (x: Number, y: Number) => {
+provide let (<) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   !isNaN(x) && !isNaN(y) && WasmI32.ltS(cmp(x, y), 0n)
 }
 
 @unsafe
-export let (>) = (x: Number, y: Number) => {
+provide let (>) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   !isNaN(x) && !isNaN(y) && WasmI32.gtS(cmp(x, y), 0n)
 }
 
 @unsafe
-export let (<=) = (x: Number, y: Number) => {
+provide let (<=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   !isNaN(x) && !isNaN(y) && WasmI32.leS(cmp(x, y), 0n)
 }
 
 @unsafe
-export let (>=) = (x: Number, y: Number) => {
+provide let (>=) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   !isNaN(x) && !isNaN(y) && WasmI32.geS(cmp(x, y), 0n)
 }
 
 @unsafe
-export let compare = (x: Number, y: Number) => {
+provide let compare = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   WasmI32.toGrain(tagSimple(cmp(x, y))): Number
@@ -2096,7 +2096,7 @@ export let compare = (x: Number, y: Number) => {
  */
 
 @unsafe
-export let numberEq = (x: Number, y: Number) => {
+provide let numberEq = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberEqual(x, y)
@@ -2109,7 +2109,7 @@ export let numberEq = (x: Number, y: Number) => {
 // TODO(#306): Semantics around when things should stay i32/i64
 
 @unsafe
-export let lnot = (x: Number) => {
+provide let lnot = (x: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   if (isBigInt(xw32)) {
     WasmI32.toGrain(reducedBigInteger(BI.bitwiseNot(xw32))): Number
@@ -2120,7 +2120,7 @@ export let lnot = (x: Number) => {
 }
 
 @unsafe
-export let (<<) = (x: Number, y: Number) => {
+provide let (<<) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   if (isBigInt(xw32)) {
     let yval = coerceNumberToWasmI32(y)
@@ -2141,7 +2141,7 @@ export let (<<) = (x: Number, y: Number) => {
 }
 
 @unsafe
-export let (>>>) = (x: Number, y: Number) => {
+provide let (>>>) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   if (isBigInt(xw32)) {
     let yval = coerceNumberToWasmI32(y)
@@ -2156,7 +2156,7 @@ export let (>>>) = (x: Number, y: Number) => {
 }
 
 @unsafe
-export let (&) = (x: Number, y: Number) => {
+provide let (&) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   let yw32 = WasmI32.fromGrain(y)
   if (isBigInt(xw32) || isBigInt(yw32)) {
@@ -2182,7 +2182,7 @@ export let (&) = (x: Number, y: Number) => {
 }
 
 @unsafe
-export let (|) = (x: Number, y: Number) => {
+provide let (|) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   let yw32 = WasmI32.fromGrain(y)
   if (isBigInt(xw32) || isBigInt(yw32)) {
@@ -2208,7 +2208,7 @@ export let (|) = (x: Number, y: Number) => {
 }
 
 @unsafe
-export let (^) = (x: Number, y: Number) => {
+provide let (^) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   let yw32 = WasmI32.fromGrain(y)
   if (isBigInt(xw32) || isBigInt(yw32)) {
@@ -2234,7 +2234,7 @@ export let (^) = (x: Number, y: Number) => {
 }
 
 @unsafe
-export let (>>) = (x: Number, y: Number) => {
+provide let (>>) = (x: Number, y: Number) => {
   let xw32 = WasmI32.fromGrain(x)
   if (isBigInt(xw32)) {
     let yval = coerceNumberToWasmI32(y)
@@ -2254,7 +2254,7 @@ export let (>>) = (x: Number, y: Number) => {
 //         we will fail if attempting to coerce to an int!
 
 @unsafe
-export let coerceNumberToInt32 = (x: Number) => {
+provide let coerceNumberToInt32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
     !isSimpleNumber(x) &&
@@ -2273,7 +2273,7 @@ export let coerceNumberToInt32 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToInt64 = (x: Number) => {
+provide let coerceNumberToInt64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
     !isSimpleNumber(x) &&
@@ -2291,7 +2291,7 @@ export let coerceNumberToInt64 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToBigInt = (x: Number) => {
+provide let coerceNumberToBigInt = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (isBigInt(x)) {
     // avoid extra malloc and prevent x from being freed
@@ -2306,7 +2306,7 @@ export let coerceNumberToBigInt = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToRational = (x: Number) => {
+provide let coerceNumberToRational = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (isSimpleNumber(x)) {
     newRational(BI.makeWrappedInt32(untagSimple(x)), BI.makeWrappedInt32(1n))
@@ -2336,7 +2336,7 @@ export let coerceNumberToRational = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToFloat32 = (x: Number) => {
+provide let coerceNumberToFloat32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
     !isSimpleNumber(x) &&
@@ -2354,7 +2354,7 @@ export let coerceNumberToFloat32 = (x: Number) => {
 }
 
 @unsafe
-export let coerceNumberToFloat64 = (x: Number) => {
+provide let coerceNumberToFloat64 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
     !isSimpleNumber(x) &&
@@ -2372,21 +2372,21 @@ export let coerceNumberToFloat64 = (x: Number) => {
 }
 
 @unsafe
-export let coerceInt32ToNumber = (x: Int32) => {
+provide let coerceInt32ToNumber = (x: Int32) => {
   WasmI32.toGrain(
     reducedInteger(WasmI64.extendI32S(boxedInt32Number(WasmI32.fromGrain(x))))
   ): Number
 }
 
 @unsafe
-export let coerceInt64ToNumber = (x: Int64) => {
+provide let coerceInt64ToNumber = (x: Int64) => {
   WasmI32.toGrain(
     reducedInteger(boxedInt64Number(WasmI32.fromGrain(x)))
   ): Number
 }
 
 @unsafe
-export let coerceBigIntToNumber = (x: BigInt) => {
+provide let coerceBigIntToNumber = (x: BigInt) => {
   let x = WasmI32.fromGrain(x)
   // reducedBigInteger assumes that the bigint is dead,
   // but in our case, it is not
@@ -2395,7 +2395,7 @@ export let coerceBigIntToNumber = (x: BigInt) => {
 }
 
 @unsafe
-export let coerceRationalToNumber = (x: Rational) => {
+provide let coerceRationalToNumber = (x: Rational) => {
   if (WasmI32.eq(boxedRationalDenominator(WasmI32.fromGrain(x)), 1n)) {
     WasmI32.toGrain(
       reducedInteger(
@@ -2411,14 +2411,14 @@ export let coerceRationalToNumber = (x: Rational) => {
 }
 
 @unsafe
-export let coerceFloat32ToNumber = (x: Float32) => {
+provide let coerceFloat32ToNumber = (x: Float32) => {
   WasmI32.toGrain(
     newFloat64(WasmF64.promoteF32(boxedFloat32Number(WasmI32.fromGrain(x))))
   ): Number
 }
 
 @unsafe
-export let coerceFloat64ToNumber = (x: Float64) => {
+provide let coerceFloat64ToNumber = (x: Float64) => {
   let x = WasmI32.fromGrain(x)
   // incRef x to reuse it via WasmI32.toGrain
   Memory.incRef(x)
@@ -2428,7 +2428,7 @@ export let coerceFloat64ToNumber = (x: Float64) => {
 /// USER-EXPOSED CONVERSION FUNCTIONS
 
 @unsafe
-export let convertExactToInexact = (x: Number) => {
+provide let convertExactToInexact = (x: Number) => {
   x
 }
 
@@ -2469,40 +2469,40 @@ let convertInexactToExactHelp = x => {
 }
 
 @unsafe
-export let convertInexactToExact = (x: Number) => {
+provide let convertInexactToExact = (x: Number) => {
   WasmI32.toGrain(convertInexactToExactHelp(WasmI32.fromGrain(x))): Number
 }
 
 @unsafe
-export let (+) = (x: Number, y: Number) => {
+provide let (+) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberAdd(x, y)
 }
 
 @unsafe
-export let (-) = (x: Number, y: Number) => {
+provide let (-) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberSub(x, y)
 }
 
 @unsafe
-export let (*) = (x: Number, y: Number) => {
+provide let (*) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberTimes(x, y)
 }
 
 @unsafe
-export let (/) = (x: Number, y: Number) => {
+provide let (/) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   numberDivide(x, y)
 }
 
 @unsafe
-export let (%) = (x: Number, y: Number) => {
+provide let (%) = (x: Number, y: Number) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   WasmI32.toGrain(numberMod(x, y)): Number
@@ -2510,16 +2510,16 @@ export let (%) = (x: Number, y: Number) => {
 
 // inc/dec
 
-export let incr = x => {
+provide let incr = x => {
   x + 1
 }
 
-export let decr = x => {
+provide let decr = x => {
   x - 1
 }
 
 @unsafe
-export let isBigInt = x => {
+provide let isBigInt = x => {
   let x = WasmI32.fromGrain(x)
   isBigInt(x)
 }
@@ -2544,7 +2544,7 @@ export let isBigInt = x => {
  * @since v0.5.4
  */
 @unsafe
-export let scalbn = (x, n) => {
+provide let scalbn = (x, n) => {
   let (>) = WasmI32.gtS
   let (<) = WasmI32.ltS
   let (*) = WasmF64.mul

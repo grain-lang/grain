@@ -1,4 +1,6 @@
 /* grainc-flags --no-pervasives */
+module Bigint
+
 /**
  * Arbitary-precision integers.
  */
@@ -13,21 +15,17 @@ The following is the copyright notice from the `nim-lang/bigints` project (MIT L
 
 Copyright 2019 Dennis Felsing
 */
-import Memory from "runtime/unsafe/memory"
-import Tags from "runtime/unsafe/tags"
-import {
-  _UMAX_I64,
-  _SMAX32_I64,
-  _SMAX_I64,
-  _SMAX_I32,
-} from "runtime/unsafe/constants"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Exception from "runtime/exception"
-import DS from "runtime/dataStructures"
-import RPrint from "runtime/utils/printing"
+include "runtime/unsafe/memory"
+include "runtime/unsafe/tags"
+include "runtime/unsafe/constants"
+from Constants use { _UMAX_I64, _SMAX32_I64, _SMAX_I64, _SMAX_I32 }
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/wasmf64"
+include "runtime/exception"
+include "runtime/dataStructures" as DS
+include "runtime/utils/printing" as RPrint
 
 // things we need which are missing due to --no-pervasives:
 primitive (!): Bool -> Bool = "@not"
@@ -150,7 +148,7 @@ let init = (limbs: WasmI32) => {
 
 // For debugging
 @unsafe
-export let debugDumpNumber = (num: WasmI32) => {
+provide let debugDumpNumber = (num: WasmI32) => {
   //let num = WasmI32.fromGrain(num)
   RPrint.printString("-=-=-=-== debug dump ==-=-=-=-")
   RPrint.printString("Ref Count:")
@@ -182,7 +180,7 @@ export let debugDumpNumber = (num: WasmI32) => {
 }
 
 @unsafe
-export let getSize = ptr => {
+provide let getSize = ptr => {
   WasmI32.load(ptr, 8n)
 }
 
@@ -192,7 +190,7 @@ let setSize = (ptr, n) => {
 }
 
 @unsafe
-export let getFlags = ptr => {
+provide let getFlags = ptr => {
   WasmI32.load(ptr, 12n)
 }
 
@@ -227,7 +225,7 @@ let setFlag = (ptr, flag, value) => {
 }
 
 @unsafe
-export let getLimb = (ptr, i) => {
+provide let getLimb = (ptr, i) => {
   let (*) = WasmI32.mul
   let (+) = WasmI32.add
   WasmI64.load(ptr, (i + 2n) * 8n)
@@ -337,7 +335,7 @@ let makeZero = () => {
 }
 
 @unsafe
-export let makeWrappedInt32 = (value: WasmI32) => {
+provide let makeWrappedInt32 = (value: WasmI32) => {
   let ret = init(1n)
   if (WasmI32.ltS(value, 0n)) {
     setFlag(ret, _IS_NEGATIVE, 1n)
@@ -352,14 +350,14 @@ export let makeWrappedInt32 = (value: WasmI32) => {
 }
 
 @unsafe
-export let makeWrappedUint32 = (value: WasmI32) => {
+provide let makeWrappedUint32 = (value: WasmI32) => {
   let ret = init(1n)
   setLimb(ret, 0n, WasmI64.extendI32U(value))
   ret
 }
 
 @unsafe
-export let makeWrappedInt64 = (value: WasmI64) => {
+provide let makeWrappedInt64 = (value: WasmI64) => {
   let ret = init(1n)
   if (WasmI64.ltS(value, 0N)) {
     setFlag(ret, _IS_NEGATIVE, 1n)
@@ -374,14 +372,14 @@ export let makeWrappedInt64 = (value: WasmI64) => {
 }
 
 @unsafe
-export let makeWrappedUint64 = (value: WasmI64) => {
+provide let makeWrappedUint64 = (value: WasmI64) => {
   let ret = init(1n)
   setLimb(ret, 0n, value)
   ret
 }
 
 @unsafe
-export let isNegative = (num: WasmI32) => {
+provide let isNegative = (num: WasmI32) => {
   flagIsSet(num, _IS_NEGATIVE)
 }
 
@@ -389,7 +387,7 @@ export let isNegative = (num: WasmI32) => {
  * Returns true if the given bigint is equal to zero
  */
 @unsafe
-export let eqz = (num: WasmI32) => {
+provide let eqz = (num: WasmI32) => {
   let numLimbs = getSize(num)
   let (!=) = WasmI64.ne
   let (-) = WasmI32.sub
@@ -409,7 +407,7 @@ let negateInPlace = (num: WasmI32) => {
 }
 
 @unsafe
-export let negate = (num: WasmI32) => {
+provide let negate = (num: WasmI32) => {
   let ret = clone(num)
   setFlag(ret, _IS_NEGATIVE, if (flagIsSet(ret, _IS_NEGATIVE)) 0n else 1n)
   ret
@@ -422,7 +420,7 @@ let absInPlace = (num: WasmI32) => {
 }
 
 @unsafe
-export let abs = (num: WasmI32) => {
+provide let abs = (num: WasmI32) => {
   let ret = clone(num)
   setFlag(ret, _IS_NEGATIVE, 0n)
   ret
@@ -432,7 +430,7 @@ export let abs = (num: WasmI32) => {
  * Conversions
  */
 @unsafe
-export let canConvertToInt32 = (num: WasmI32) => {
+provide let canConvertToInt32 = (num: WasmI32) => {
   let (<=) = WasmI64.leU
   let (==) = WasmI32.eq
   let numLimbs = getSize(num)
@@ -447,7 +445,7 @@ export let canConvertToInt32 = (num: WasmI32) => {
 }
 
 @unsafe
-export let toInt32 = (num: WasmI32) => {
+provide let toInt32 = (num: WasmI32) => {
   let (<=) = WasmI64.leU
   let (==) = WasmI32.eq
   let numLimbs = getSize(num)
@@ -470,7 +468,7 @@ export let toInt32 = (num: WasmI32) => {
 }
 
 @unsafe
-export let canConvertToInt64 = (num: WasmI32) => {
+provide let canConvertToInt64 = (num: WasmI32) => {
   let (<=) = WasmI64.leU
   let (==) = WasmI32.eq
   let numLimbs = getSize(num)
@@ -489,7 +487,7 @@ export let canConvertToInt64 = (num: WasmI32) => {
 }
 
 @unsafe
-export let toInt64 = (num: WasmI32) => {
+provide let toInt64 = (num: WasmI32) => {
   let (<=) = WasmI64.leU
   let (==) = WasmI32.eq
   let numLimbs = getSize(num)
@@ -512,7 +510,7 @@ export let toInt64 = (num: WasmI32) => {
 }
 
 @unsafe
-export let toFloat64 = (num: WasmI32) => {
+provide let toFloat64 = (num: WasmI32) => {
   // approximate!
   // semi-port of https://github.com/JuliaLang/julia/issues/31293#issuecomment-477220553
   let (<=) = WasmI64.leU
@@ -553,7 +551,7 @@ export let toFloat64 = (num: WasmI32) => {
 }
 
 @unsafe
-export let toFloat32 = (num: WasmI32) => {
+provide let toFloat32 = (num: WasmI32) => {
   WasmF32.demoteF64(toFloat64(num))
 }
 
@@ -589,7 +587,7 @@ let cmpUnsignedI64 = (num1: WasmI32, num2: WasmI64) => {
 }
 
 @unsafe
-export let cmpI64 = (num1: WasmI32, num2: WasmI64) => {
+provide let cmpI64 = (num1: WasmI32, num2: WasmI64) => {
   if (eqz(num1)) {
     if (WasmI64.eqz(num2)) {
       0n
@@ -614,7 +612,7 @@ export let cmpI64 = (num1: WasmI32, num2: WasmI64) => {
 }
 
 @unsafe
-export let cmpF64 = (num1: WasmI32, num2: WasmF64) => {
+provide let cmpF64 = (num1: WasmI32, num2: WasmF64) => {
   let asf64 = toFloat64(num1)
   let (<) = WasmF64.lt
   let (>) = WasmF64.gt
@@ -628,7 +626,7 @@ export let cmpF64 = (num1: WasmI32, num2: WasmF64) => {
 }
 
 @unsafe
-export let cmpF32 = (num1: WasmI32, num2: WasmF32) => {
+provide let cmpF32 = (num1: WasmI32, num2: WasmF32) => {
   cmpF64(num1, WasmF64.promoteF32(num2))
 }
 
@@ -657,7 +655,7 @@ let cmpUnsigned = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let cmp = (num1: WasmI32, num2: WasmI32) => {
+provide let cmp = (num1: WasmI32, num2: WasmI32) => {
   if (eqz(num1)) {
     if (eqz(num2)) {
       0n
@@ -682,32 +680,32 @@ export let cmp = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let eq = (num1: WasmI32, num2: WasmI32) => {
+provide let eq = (num1: WasmI32, num2: WasmI32) => {
   WasmI32.eq(cmp(num1, num2), 0n)
 }
 
 @unsafe
-export let ne = (num1: WasmI32, num2: WasmI32) => {
+provide let ne = (num1: WasmI32, num2: WasmI32) => {
   WasmI32.ne(cmp(num1, num2), 0n)
 }
 
 @unsafe
-export let lt = (num1: WasmI32, num2: WasmI32) => {
+provide let lt = (num1: WasmI32, num2: WasmI32) => {
   WasmI32.ltS(cmp(num1, num2), 0n)
 }
 
 @unsafe
-export let lte = (num1: WasmI32, num2: WasmI32) => {
+provide let lte = (num1: WasmI32, num2: WasmI32) => {
   WasmI32.leS(cmp(num1, num2), 0n)
 }
 
 @unsafe
-export let gt = (num1: WasmI32, num2: WasmI32) => {
+provide let gt = (num1: WasmI32, num2: WasmI32) => {
   WasmI32.gtS(cmp(num1, num2), 0n)
 }
 
 @unsafe
-export let gte = (num1: WasmI32, num2: WasmI32) => {
+provide let gte = (num1: WasmI32, num2: WasmI32) => {
   WasmI32.geS(cmp(num1, num2), 0n)
 }
 
@@ -777,7 +775,7 @@ let _SIZES = [>
 ]
 
 @unsafe
-export let bigIntToString = (num: WasmI32, base: WasmI32) => {
+provide let bigIntToString = (num: WasmI32, base: WasmI32) => {
   let getDigit = n =>
     WasmI32.load8U(WasmI32.add(WasmI32.fromGrain(_DIGITS), n), 8n)
   if (WasmI32.ltS(base, 2n) || WasmI32.gtS(base, 32n)) {
@@ -894,7 +892,7 @@ export let bigIntToString = (num: WasmI32, base: WasmI32) => {
 }
 
 @unsafe
-export let bigIntToString10 = (num: WasmI32) => {
+provide let bigIntToString10 = (num: WasmI32) => {
   bigIntToString(num, 10n)
 }
 
@@ -1127,7 +1125,7 @@ let unsignedSubInt = (num1: WasmI32, int: WasmI64) => {
 }
 
 @unsafe
-export let add = (num1: WasmI32, num2: WasmI32) => {
+provide let add = (num1: WasmI32, num2: WasmI32) => {
   if (flagIsSet(num1, _IS_NEGATIVE)) {
     if (flagIsSet(num2, _IS_NEGATIVE)) {
       let ret = unsignedAdd(num1, num2)
@@ -1146,7 +1144,7 @@ export let add = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let addInt = (num1: WasmI32, int: WasmI64) => {
+provide let addInt = (num1: WasmI32, int: WasmI64) => {
   // int is *signed*
   if (eqz(num1)) {
     let ret = makeWrappedUint64(int)
@@ -1172,7 +1170,7 @@ export let addInt = (num1: WasmI32, int: WasmI64) => {
 }
 
 @unsafe
-export let sub = (num1: WasmI32, num2: WasmI32) => {
+provide let sub = (num1: WasmI32, num2: WasmI32) => {
   if (flagIsSet(num1, _IS_NEGATIVE)) {
     if (flagIsSet(num2, _IS_NEGATIVE)) {
       unsignedSub(num2, num1)
@@ -1191,7 +1189,7 @@ export let sub = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let subInt = (num1: WasmI32, int: WasmI64) => {
+provide let subInt = (num1: WasmI32, int: WasmI64) => {
   // int is *signed*
   if (eqz(num1)) {
     let ret = makeWrappedUint64(int)
@@ -1218,12 +1216,12 @@ export let subInt = (num1: WasmI32, int: WasmI64) => {
 }
 
 @unsafe
-export let incr = (num: WasmI32) => {
+provide let incr = (num: WasmI32) => {
   addInt(num, 1N)
 }
 
 @unsafe
-export let decr = (num: WasmI32) => {
+provide let decr = (num: WasmI32) => {
   subInt(num, 1N)
 }
 
@@ -1291,7 +1289,7 @@ let unsignedMul = (num1: WasmI32, num2: WasmI32) => {
 
 // TODO(#1189): Replace with Karatsuba multiplication
 @unsafe
-export let mul = (num1: WasmI32, num2: WasmI32) => {
+provide let mul = (num1: WasmI32, num2: WasmI32) => {
   let ret = if (eqz(num1) || eqz(num2)) {
     makeZero()
   } else {
@@ -1316,7 +1314,7 @@ export let mul = (num1: WasmI32, num2: WasmI32) => {
  */
 
 @unsafe
-export let shl = (num: WasmI32, places: WasmI32) => {
+provide let shl = (num: WasmI32, places: WasmI32) => {
   // places is *unsigned*
   let numLimbs = getSize(num)
   let mut carry = 0N
@@ -1361,7 +1359,7 @@ export let shl = (num: WasmI32, places: WasmI32) => {
 }
 
 @unsafe
-export let shrS = (num: WasmI32, places: WasmI32) => {
+provide let shrS = (num: WasmI32, places: WasmI32) => {
   // places is *unsigned*
   let numLimbs = getSize(num)
   let mut carry = 0N
@@ -1523,7 +1521,7 @@ let bitwiseXorPositive = (num1: WasmI32, num2: WasmI32) => {
 // https://stackoverflow.com/a/32298732
 
 @unsafe
-export let bitwiseNot = (num: WasmI32) => {
+provide let bitwiseNot = (num: WasmI32) => {
   // ~x == -x - 1
   let numNegated = negate(num)
   let result = decr(numNegated)
@@ -1532,7 +1530,7 @@ export let bitwiseNot = (num: WasmI32) => {
 }
 
 @unsafe
-export let bitwiseAnd = (num1: WasmI32, num2: WasmI32) => {
+provide let bitwiseAnd = (num1: WasmI32, num2: WasmI32) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   let ret = if (!flagIsSet(num1, _IS_NEGATIVE)) {
@@ -1583,7 +1581,7 @@ export let bitwiseAnd = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
+provide let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   let ret = if (!flagIsSet(num1, _IS_NEGATIVE)) {
@@ -1644,7 +1642,7 @@ export let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let bitwiseXor = (num1: WasmI32, num2: WasmI32) => {
+provide let bitwiseXor = (num1: WasmI32, num2: WasmI32) => {
   let num1 = WasmI32.fromGrain(num1)
   let num2 = WasmI32.fromGrain(num2)
   let ret = if (!flagIsSet(num1, _IS_NEGATIVE)) {
@@ -1695,7 +1693,7 @@ export let bitwiseXor = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let countLeadingZeros = (num: WasmI32) => {
+provide let countLeadingZeros = (num: WasmI32) => {
   // if positive, there are an infinite number. if negative, there are none.
   if (flagIsSet(num, _IS_NEGATIVE)) {
     0n
@@ -1705,7 +1703,7 @@ export let countLeadingZeros = (num: WasmI32) => {
 }
 
 @unsafe
-export let countTrailingZeros = (num: WasmI32) => {
+provide let countTrailingZeros = (num: WasmI32) => {
   // the number of trailing zeros is the same for `x` and `-x` (using two's complement),
   // so we can safely ignore the sign.
   let numLimbs = getSize(num)
@@ -1726,7 +1724,7 @@ export let countTrailingZeros = (num: WasmI32) => {
 }
 
 @unsafe
-export let popcnt = (num: WasmI32, flagDest: WasmI32) => {
+provide let popcnt = (num: WasmI32, flagDest: WasmI32) => {
   // negative numbers have an infinite number of ones, so we return SMAX
   if (flagIsSet(num, _IS_NEGATIVE)) {
     WasmI32.store(flagDest, 1n, 0n)
@@ -1752,7 +1750,7 @@ export let popcnt = (num: WasmI32, flagDest: WasmI32) => {
 
 // BigInt GCD
 @unsafe
-export let gcd = (num1: WasmI32, num2: WasmI32) => {
+provide let gcd = (num1: WasmI32, num2: WasmI32) => {
   if (eqz(num1)) {
     return abs(num2)
   }
@@ -1988,17 +1986,17 @@ let division =
 }
 
 @unsafe
-export let quotRem = (num1: WasmI32, num2: WasmI32, dest: WasmI32) => {
+provide let quotRem = (num1: WasmI32, num2: WasmI32, dest: WasmI32) => {
   division(num1, num2, dest, false)
 }
 
 @unsafe
-export let divMod = (num1: WasmI32, num2: WasmI32, dest: WasmI32) => {
+provide let divMod = (num1: WasmI32, num2: WasmI32, dest: WasmI32) => {
   division(num1, num2, dest, true)
 }
 
 @unsafe
-export let quot = (num1: WasmI32, num2: WasmI32) => {
+provide let quot = (num1: WasmI32, num2: WasmI32) => {
   let dest = Memory.malloc(8n)
   division(num1, num2, dest, false)
   let ret = WasmI32.load(dest, 0n)
@@ -2007,7 +2005,7 @@ export let quot = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let div = (num1: WasmI32, num2: WasmI32) => {
+provide let div = (num1: WasmI32, num2: WasmI32) => {
   let dest = Memory.malloc(8n)
   division(num1, num2, dest, true)
   let ret = WasmI32.load(dest, 0n)
@@ -2016,7 +2014,7 @@ export let div = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let rem = (num1: WasmI32, num2: WasmI32) => {
+provide let rem = (num1: WasmI32, num2: WasmI32) => {
   let dest = Memory.malloc(8n)
   division(num1, num2, dest, false)
   let ret = WasmI32.load(dest, 4n)
@@ -2025,7 +2023,7 @@ export let rem = (num1: WasmI32, num2: WasmI32) => {
 }
 
 @unsafe
-export let mod = (num1: WasmI32, num2: WasmI32) => {
+provide let mod = (num1: WasmI32, num2: WasmI32) => {
   let dest = Memory.malloc(8n)
   division(num1, num2, dest, true)
   let ret = WasmI32.load(dest, 4n)

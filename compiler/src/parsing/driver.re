@@ -118,6 +118,7 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
     Option.iter(n => apply_filename_to_lexbuf(n, lexbuf), name);
     let lexer = Wrapped_lexer.init(lexbuf);
     let token = _ => Wrapped_lexer.token(lexer);
+    Lexer.reset();
     let program =
       try({
         ...parse_program(token, lexbuf),
@@ -165,15 +166,15 @@ let read_imports = ({Parsetree.comments, Parsetree.statements}) => {
       | _ => Grain_utils.Config.get_implicit_opens()
       },
     );
-  let found_imports = ref([]);
+  let found_includes = ref([]);
   let iter_mod = (self, import) =>
-    found_imports := [import.Parsetree.pimp_path, ...found_imports^];
-  let iterator = {...Ast_iterator.default_iterator, import: iter_mod};
+    found_includes := [import.Parsetree.pinc_path, ...found_includes^];
+  let iterator = {...Ast_iterator.default_iterator, include_: iter_mod};
   List.iter(iterator.toplevel(iterator), statements);
 
   List.sort_uniq(
     (a, b) => String.compare(a.txt, b.txt),
-    List.append(implicit_opens, found_imports^),
+    List.append(implicit_opens, found_includes^),
   );
 };
 
