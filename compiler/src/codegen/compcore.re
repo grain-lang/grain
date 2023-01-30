@@ -3741,7 +3741,10 @@ let compile_main = (wasm_mod, env, prog) => {
 
 let compile_functions = (wasm_mod, env, {functions} as prog) => {
   let handle_attrs = ({attrs} as func) =>
-    if (List.mem(Typedtree.Disable_gc, attrs)) {
+    if (List.exists(
+          ({Grain_parsing.Location.txt}) => txt == Typedtree.Disable_gc,
+          attrs,
+        )) {
       Config.preserve_config(() => {
         Config.no_gc := true;
         compile_function(wasm_mod, env, func);

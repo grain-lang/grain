@@ -1468,9 +1468,9 @@ let rec transl_anf_statement =
       List.fold_left(
         name =>
           fun
-          | External_name(name) => name
+          | {txt: External_name(name)} => name
           | _ => name,
-        desc.tvd_name.txt,
+        desc.tvd_name,
         attributes,
       );
     Path_tbl.add(include_map, desc.tvd_val.val_fullpath, desc.tvd_id);
@@ -1491,7 +1491,7 @@ let rec transl_anf_statement =
             ~global=Global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            external_name,
+            external_name.txt,
             FunctionShape(argsty, retty),
           ),
         ],
@@ -1505,7 +1505,7 @@ let rec transl_anf_statement =
             ~global=Global,
             desc.tvd_id,
             desc.tvd_mod.txt,
-            external_name,
+            external_name.txt,
             GlobalShape(ty),
           ),
         ],

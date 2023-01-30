@@ -590,11 +590,12 @@ let fold_modtypes = fold_simple(Env.fold_modtypes);
 
 let type_attributes = attrs => {
   List.map(
-    (({txt}, args)) =>
+    (({txt, loc}, args)) =>
       switch (txt, args) {
-      | ("disableGC", []) => Disable_gc
-      | ("unsafe", []) => Unsafe
-      | ("externalName", [{txt}]) => External_name(txt)
+      | ("disableGC", []) => Location.mkloc(Disable_gc, loc)
+      | ("unsafe", []) => Location.mkloc(Unsafe, loc)
+      | ("externalName", [name]) =>
+        Location.mkloc(External_name(name), loc)
       | _ => failwith("type_attributes: impossible by well-formedness")
       },
     attrs,

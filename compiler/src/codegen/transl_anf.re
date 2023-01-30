@@ -730,7 +730,7 @@ let compile_wrapper =
       stack_size_f32: 0,
       stack_size_f64: 0,
     },
-    attrs: [Disable_gc],
+    attrs: [Location.mknoloc(Typedtree.Disable_gc)],
     loc: Location.dummy_loc,
   };
   worklist_enqueue(worklist_item);
