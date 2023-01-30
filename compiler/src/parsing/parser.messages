@@ -191,6 +191,73 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS YIELD
 ## The known suffix of the stack is as follows:
 ## AS
 ##
+program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT AS EOL YIELD
+##
+## Ends in an error in state: 51.
+##
+## as_prefix(uid) -> AS option(eols) . uid [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## AS option(eols)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+## In state 53, spurious reduction of production option(eols) -> eols
+##
+program: MODULE UIDENT EOL PROVIDE LBRACE LIDENT AS EOL YIELD
+##
+## Ends in an error in state: 98.
+##
+## as_prefix(lid) -> AS option(eols) . lid [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## AS option(eols)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+## In state 53, spurious reduction of production option(eols) -> eols
+##
+program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS EOL YIELD
+##
+## Ends in an error in state: 755.
+##
+## as_prefix(id_str) -> AS option(eols) . id_str [ FROM ]
+##
+## The known suffix of the stack is as follows:
+## AS option(eols)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+## In state 53, spurious reduction of production option(eols) -> eols
+##
+program: MODULE UIDENT EOL INCLUDE STRING AS EOL YIELD
+##
+## Ends in an error in state: 823.
+##
+## include_alias -> AS eols . qualified_uid [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## AS eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 6, spurious reduction of production eols -> nonempty_list(eol)
+##
 
 Expected an alias.
 
