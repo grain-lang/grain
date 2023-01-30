@@ -310,7 +310,7 @@ value_binds:
   | lseparated_nonempty_list(comma, value_bind) { $1 }
 
 as_prefix(X):
-  | AS X {$2}
+  | AS opt_eols X {$3}
 
 aliasable(X):
   | X as_prefix(X)? {($1, $2)}
@@ -331,7 +331,7 @@ use_stmt:
   | FROM qualified_uid USE use_shape { Exp.use ~loc:(to_loc $loc) $2 $4 }
 
 include_alias:
-  | AS qualified_uid { make_module_alias $2 }
+  | AS opt_eols qualified_uid { make_module_alias $3 }
 
 include_stmt:
   | INCLUDE file_path include_alias? { Inc.mk ~loc:(to_loc $loc) $2 $3 }

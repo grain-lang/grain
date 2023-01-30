@@ -4,6 +4,7 @@ include "runtime/unsafe/memory"
 include "runtime/unsafe/tags"
 include "list"
 include "option" as Opt
+include "option" as Opt
 // TODO(#1627): This comment disappears
 include "array"
 include "array" as Foo
