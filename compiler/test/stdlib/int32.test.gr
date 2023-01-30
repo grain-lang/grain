@@ -3,6 +3,8 @@ module Int32Test
 include "int32"
 from Int32 use *
 
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(5) == 5l
 assert fromNumber(0) == 0l
 
