@@ -265,22 +265,10 @@ let get_comments_to_end_of_line =
 
 let comment_to_doc = (comment: Parsetree.comment) => {
   let comment_string = Comments.get_comment_source(comment);
-  let newline =
-    switch (comment) {
-    | Line(_)
-    | Shebang(_) => Doc.hardLine
-    | Doc(_) => Doc.hardLine
-    | _ => Doc.nil
-    };
+
   // this is needed for a couple of reasons.  cmt_content doesn't include the comment delimiters (// or /*)
   // if we use cmt_source, it passes through the newline for line comments, which we don't want here
   // we want our own line/hardline formatting blocks
-
-  Doc.concat([Doc.text(String.trim(comment_string)), newline]);
-};
-
-let nobreak_comment_to_doc = (comment: Parsetree.comment) => {
-  let comment_string = Comments.get_comment_source(comment);
 
   Doc.text(String.trim(comment_string));
 };
@@ -329,6 +317,11 @@ let rec comments_inner =
     | [] => [Doc.nil]
     | [cmt, ...rem] => [
         comment_to_doc(cmt),
+        switch (cmt) {
+        | Line(_)
+        | Shebang(_) => Doc.hardLine
+        | _ => Doc.nil
+        },
         ...comments_inner(~prev=cmt, rem),
       ]
     }
@@ -349,23 +342,21 @@ let rec comments_inner =
           comment_to_doc(cmt),
           ...comments_inner(~prev=cmt, rem),
         ]
-
       | 1 => [
-          switch (prev_cmt) {
-          | Line(_) => Doc.nil
-          | _ => Doc.hardLine
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | _ => Doc.nil
           },
           comment_to_doc(cmt),
           ...comments_inner(~prev=cmt, rem),
         ]
       | _ => [
-          switch (prev_cmt) {
-          | Doc(_)
-          | Shebang(_)
-          | Line(_) => Doc.nil
-          | _ => Doc.hardLine
+          switch (cmt) {
+          | Line(_)
+          | Shebang(_) => Doc.hardLine
+          | _ => Doc.nil
           },
-          Doc.hardLine,
           comment_to_doc(cmt),
           ...comments_inner(~prev=cmt, rem),
         ]
@@ -418,7 +409,7 @@ let rec trailing_comments_inner =
   | None =>
     switch (comments) {
     | [] => []
-    | [cmt] => [nobreak_comment_to_doc(cmt)]
+    | [cmt] => [comment_to_doc(cmt)]
     | [cmt, ...rem] => [
         comment_to_doc(cmt),
         ...trailing_comments_inner(~prev=cmt, rem),
@@ -435,30 +426,22 @@ let rec trailing_comments_inner =
       let (_, this_line, _, _) =
         Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
 
-      let comment_printer =
-        switch (rem) {
-        | [] => nobreak_comment_to_doc
-        | _ => comment_to_doc
-        };
-
       switch (this_line - prev_line) {
       | 0 => [
           Doc.space,
-          comment_printer(cmt),
+          comment_to_doc(cmt),
           ...trailing_comments_inner(~prev=cmt, rem),
         ]
 
       | 1 => [
-          switch (prev_cmt) {
-          | Line(_) => Doc.nil
-          | _ => Doc.hardLine
-          },
-          comment_printer(cmt),
+          Doc.hardLine,
+          comment_to_doc(cmt),
           ...trailing_comments_inner(~prev=cmt, rem),
         ]
       | _ => [
           Doc.hardLine,
-          comment_printer(cmt),
+          Doc.hardLine,
+          comment_to_doc(cmt),
           ...trailing_comments_inner(~prev=cmt, rem),
         ]
       };
@@ -480,70 +463,67 @@ let single_line_of_comments = (comments: list(Parsetree.comment)) =>
       Doc.space,
       Doc.join(
         ~sep=Doc.space,
-        List.map(c => {nobreak_comment_to_doc(c)}, comments),
+        List.map(c => {comment_to_doc(c)}, comments),
       ),
     ])
   };
 
-let rec new_comments_inner =
-        (
-          ~prev: option(Parsetree.comment)=?,
-          comments: list(Parsetree.comment),
-        ) => {
-  switch (prev) {
-  | None =>
-    switch (comments) {
-    | [] => []
-    | [cmt, ...rem] => [
-        comment_to_doc(cmt),
-        ...new_comments_inner(~prev=cmt, rem),
-      ]
-    }
-  | Some(prev_cmt) =>
-    switch (comments) {
-    | [] => []
-    | [cmt, ...rem] =>
-      let (_, prev_line, _, _) =
-        Locations.get_raw_pos_info(
-          Locations.get_comment_loc(prev_cmt).loc_end,
-        );
-      let (_, this_line, _, _) =
-        Locations.get_raw_pos_info(Locations.get_comment_loc(cmt).loc_start);
-
-      switch (this_line - prev_line) {
-      | 0 => [
-          Doc.space,
-          comment_to_doc(cmt),
-          ...new_comments_inner(~prev=cmt, rem),
-        ]
-
-      | 1 => [
-          switch (prev_cmt) {
-          | Line(_)
-          | Doc(_) => Doc.nil
-          | _ => Doc.hardLine
-          },
-          comment_to_doc(cmt),
-          ...new_comments_inner(~prev=cmt, rem),
-        ]
-      | _ => [
-          switch (prev_cmt) {
-          | Doc(_)
-          | Shebang(_)
-          | Line(_) => Doc.nil
-          | _ => Doc.hardLine
-          },
-          Doc.hardLine,
-          comment_to_doc(cmt),
-          ...new_comments_inner(~prev=cmt, rem),
-        ]
-      };
-    }
-  };
-};
-
-let new_comments_to_docs = (comments: list(Parsetree.comment)) =>
+let new_comments_to_docs =
+    (~root_loc: Location.t, comments: list(Parsetree.comment)) =>
   switch (comments) {
   | [] => Doc.nil
-  | _remaining_comments => Doc.concat(new_comments_inner(comments))
+  | _remaining_comments =>
+    List.rev(comments)
+    |> List.fold_left(
+         (acc, cmt: Parsetree.comment) => {
+           switch (acc) {
+           | [] =>
+             let hardlines =
+               switch (cmt) {
+               // Doc blocks are always attached to the next item they encounter
+               | Doc(_) => [Doc.hardLine]
+               | _ =>
+                 let (_, this_line, _, _) =
+                   Locations.get_raw_pos_info(
+                     Locations.get_comment_loc(cmt).loc_end,
+                   );
+                 // TODO: This root_line code seems really fragile
+                 let (_, root_line, _, _) =
+                   Locations.get_raw_pos_info(root_loc.loc_start);
+
+                 if (this_line > root_line + 1) {
+                   [Doc.hardLine, Doc.hardLine];
+                 } else {
+                   [Doc.hardLine];
+                 };
+               };
+
+             [(Doc.concat([comment_to_doc(cmt), ...hardlines]), cmt)];
+           | [(_, next_cmt), ..._] =>
+             let (_, this_line, _, _) =
+               Locations.get_raw_pos_info(
+                 Locations.get_comment_loc(cmt).loc_end,
+               );
+             let (_, next_line, _, _) =
+               Locations.get_raw_pos_info(
+                 Locations.get_comment_loc(next_cmt).loc_start,
+               );
+
+             let hardlines =
+               if (this_line > next_line + 1) {
+                 [Doc.hardLine, Doc.hardLine];
+               } else {
+                 [Doc.hardLine];
+               };
+
+             [
+               (Doc.concat([comment_to_doc(cmt), ...hardlines]), cmt),
+               ...acc,
+             ];
+           }
+         },
+         [],
+       )
+    |> List.map(((doc, _)) => doc)
+    |> Doc.concat
   };

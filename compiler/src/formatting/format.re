@@ -255,24 +255,6 @@ let item_separator = (~this_line: int, ~line_above: int, break_separator) =>
     break_separator;
   };
 
-let comment_separator =
-    (~this_line: int, ~line_above: int, comment: Parsetree.comment) =>
-  if (this_line - line_above > 1) {
-    switch (comment) {
-    | Line(_) => Doc.hardLine
-    | Shebang(_) => Doc.hardLine
-    | Doc(_) => Doc.hardLine
-    | _ => Doc.concat([Doc.hardLine, Doc.hardLine])
-    };
-  } else {
-    switch (comment) {
-    | Line(_)
-    | Shebang(_) => Doc.nil
-    | Doc(_) => Doc.softLine
-    | Block(_) => Doc.hardLine
-    };
-  };
-
 let add_parens = (doc: Doc.t) =>
   Doc.concat([
     Doc.lparen,
@@ -370,27 +352,6 @@ let before_comments_break_line =
     };
   };
 
-let handle_after_comments_break = (~this_line, leading_comments) =>
-  switch (leading_comments) {
-  | [] => Doc.nil
-  | in_comments =>
-    let last_comment = get_last_item_in_list(in_comments);
-    let (_, last_comment_line, _, _) =
-      Locations.get_raw_pos_info(
-        Locations.get_comment_loc(last_comment).loc_end,
-      );
-
-    if (last_comment_line == this_line) {
-      Doc.line;
-    } else {
-      comment_separator(
-        ~this_line,
-        ~line_above=last_comment_line,
-        last_comment,
-      );
-    };
-  };
-
 let before_comments_break = (~previous: prev_item_t, ~this_line, comments) =>
   switch (previous) {
   | TopOfFile => Doc.nil
@@ -448,35 +409,30 @@ let rec block_item_iterator_line =
   switch (items) {
   | [] => Doc.nil
   | [item, ...remainder] =>
+    let location = get_loc(item);
     let leading_comments =
       switch (previous) {
       | Block(prev_node) =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
+        Comment_utils.get_comments_before_location(~location, comments)
       | PreviousItem(prev_node) =>
         Comment_utils.get_comments_between_locations(
           ~loc1=prev_node,
-          ~loc2=get_loc(item),
+          ~loc2=location,
           comments,
         )
       | TopOfFile =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
+        Comment_utils.get_comments_before_location(~location, comments)
       };
 
     let leading_comment_docs =
-      Comment_utils.new_comments_to_docs(leading_comments);
+      Comment_utils.new_comments_to_docs(
+        ~root_loc=location,
+        leading_comments,
+      );
 
     let this_loc = get_loc(item);
     let (_, this_line, this_char, _) =
       Locations.get_raw_pos_info(this_loc.loc_start);
-
-    let after_comments_break =
-      handle_after_comments_break(~this_line, leading_comments);
 
     let bcb =
       before_comments_break_line(~previous, ~this_line, leading_comments);
@@ -540,7 +496,6 @@ let rec block_item_iterator_line =
         Doc.concat([
           bcb,
           leading_comment_docs,
-          after_comments_break,
           print_item(~comments=item_comments, item),
           Doc.ifBreaks(Option.value(~default=Doc.nil, separator), Doc.nil),
           trailing_comment_separator,
@@ -555,7 +510,6 @@ let rec block_item_iterator_line =
           bcb,
           block_top_spacing,
           leading_comment_docs,
-          after_comments_break,
           print_item(~comments=item_comments, item),
           Option.value(~default=Doc.nil, separator),
         ]);
@@ -596,34 +550,29 @@ let rec block_item_iterator =
   | [] => Doc.nil
   | [item, ...remainder] =>
     let attribute_text = print_attribute(item);
+    let location = get_loc(item);
     let leading_comments =
       switch (previous) {
       | Block(prev_node) =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
+        Comment_utils.get_comments_before_location(~location, comments)
       | PreviousItem(prev_node) =>
         Comment_utils.get_comments_between_locations(
           ~loc1=prev_node,
-          ~loc2=get_loc(item),
+          ~loc2=location,
           comments,
         )
       | TopOfFile =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
+        Comment_utils.get_comments_before_location(~location, comments)
       };
     let leading_comment_docs =
-      Comment_utils.new_comments_to_docs(leading_comments);
+      Comment_utils.new_comments_to_docs(
+        ~root_loc=location,
+        leading_comments,
+      );
 
     let this_loc = get_loc(item);
     let (_, this_line, this_char, _) =
       Locations.get_raw_pos_info(this_loc.loc_start);
-
-    let after_comments_break =
-      handle_after_comments_break(~this_line, leading_comments);
 
     let bcb = before_comments_break(~previous, ~this_line, leading_comments);
 
@@ -775,7 +724,6 @@ let rec block_item_iterator =
             bcb,
             block_top_spacing,
             leading_comment_docs,
-            after_comments_break,
             attribute_text,
             print_item(~comments=item_comments, item),
             trailing_comment_separator,
@@ -790,7 +738,6 @@ let rec block_item_iterator =
             bcb,
             block_top_spacing,
             leading_comment_docs,
-            after_comments_break,
             attribute_text,
             print_item(~comments=item_comments, item),
           ]);
@@ -834,13 +781,9 @@ let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
           let (_, code_line, _, _) =
             Locations.get_raw_pos_info(itemloc.loc_end);
           if (this_comment_line > code_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
-            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+            [Comment_utils.comment_to_doc(comment), ...acc];
           };
         | Some(next) =>
           let (_, next_comment_line, _, _) =
@@ -851,13 +794,9 @@ let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
           next_comment := Some(comment);
 
           if (this_comment_line <= next_comment_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
-            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+            [Comment_utils.comment_to_doc(comment), ...acc];
           };
         };
       },
@@ -884,7 +823,7 @@ let mix_comments_and_separator =
       [
         separator,
         Doc.space,
-        Comment_utils.nobreak_comment_to_doc(comment),
+        Comment_utils.comment_to_doc(comment),
         Doc.breakParent, // forces the lines to break, and so make this line comment force a new line
         ...acc,
       ];
@@ -906,11 +845,7 @@ let mix_comments_and_separator =
             Locations.get_raw_pos_info(item_location.loc_end);
 
           if (this_comment_line > code_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
             force_break_for_comment(comment, acc);
           };
@@ -924,11 +859,7 @@ let mix_comments_and_separator =
           next_comment := Some(comment);
 
           if (this_comment_line < next_comment_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
             force_break_for_comment(comment, acc);
           };
@@ -998,7 +929,10 @@ let rec item_iterator =
       | _ =>
         Doc.group(
           Doc.concat([
-            Comment_utils.new_comments_to_docs(leading_comments),
+            Comment_utils.new_comments_to_docs(
+              ~root_loc=get_loc(first_item),
+              leading_comments,
+            ),
             Doc.ifBreaks(Doc.nil, Doc.space),
           ]),
         )
@@ -1261,10 +1195,7 @@ and resugar_list =
             let trailing_comments =
               List.map(
                 (cmt: Parsetree.comment) =>
-                  Doc.concat([
-                    Doc.space,
-                    Comment_utils.nobreak_comment_to_doc(cmt),
-                  ]),
+                  Doc.concat([Doc.space, Comment_utils.comment_to_doc(cmt)]),
                 item_comments,
               );
 
@@ -3072,7 +3003,7 @@ and print_expression_inner =
         | cmts =>
           Doc.concat([
             Doc.line,
-            Comment_utils.new_comments_to_docs(later_line_comments),
+            Comment_utils.block_trailing_comments_docs(later_line_comments),
           ])
         };
 
@@ -3323,7 +3254,7 @@ and print_expression_inner =
                   (index, c) =>
                     Doc.concat([
                       Doc.space,
-                      Comment_utils.nobreak_comment_to_doc(c),
+                      Comment_utils.comment_to_doc(c),
                       switch (c) {
                       | Line(_) => Doc.breakParent
                       | _ => Doc.nil
@@ -4228,7 +4159,7 @@ let rec print_data =
         | cmts =>
           Doc.concat([
             Doc.space,
-            Comment_utils.new_comments_to_docs(cmts),
+            Comment_utils.new_comments_to_docs(~root_loc=get_loc(hd), cmts),
             Doc.ifBreaks(Doc.nil, Doc.space),
           ])
         };
@@ -4631,7 +4562,10 @@ let data_print =
           };
 
         let leading_comment_docs =
-          Comment_utils.new_comments_to_docs(leading_comments);
+          Comment_utils.new_comments_to_docs(
+            ~root_loc=decl.pdata_loc,
+            leading_comments,
+          );
 
         let data_comments =
           Comment_utils.get_comments_inside_location(
@@ -5049,12 +4983,10 @@ let format_ast =
 
   let module_header =
     Doc.concat([
-      Comment_utils.new_comments_to_docs(leading_comments),
-      if (leading_comments == []) {
-        Doc.nil;
-      } else {
-        Doc.hardLine;
-      },
+      Comment_utils.new_comments_to_docs(
+        ~root_loc=parsed_program.module_name.loc,
+        leading_comments,
+      ),
       Doc.text("module"),
       Doc.space,
       Doc.text(parsed_program.module_name.txt),
@@ -5069,7 +5001,7 @@ let format_ast =
     | [] =>
       Doc.concat([
         module_header,
-        Comment_utils.new_comments_to_docs(remaining_comments),
+        Comment_utils.block_trailing_comments_docs(remaining_comments),
       ])
     | _ =>
       let top_level_stmts =
