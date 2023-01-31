@@ -25,7 +25,7 @@ module PrimMap =
 let default_loc = Location.dummy_loc;
 
 let mkident = name =>
-  Exp.ident(
+  Expression.ident(
     Location.mkloc(
       Identifier.IdentName(Location.mkloc(name, default_loc)),
       default_loc,
@@ -1487,15 +1487,15 @@ let transl_prim = (env, desc) => {
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
         | HeapBase => (
-            Const.wasmi32(string_of_int(active_memory_base())),
+            Constant.wasmi32(string_of_int(active_memory_base())),
             true,
           )
         | HeapStart => (
-            Const.wasmi32(string_of_int(active_memory_base() + 0x10)),
+            Constant.wasmi32(string_of_int(active_memory_base() + 0x10)),
             true,
           )
         | HeapTypeMetadata => (
-            Const.wasmi32(string_of_int(active_memory_base() + 0x8)),
+            Constant.wasmi32(string_of_int(active_memory_base() + 0x8)),
             true,
           )
         };
@@ -1505,7 +1505,7 @@ let transl_prim = (env, desc) => {
         } else {
           [];
         };
-      (Exp.constant(~loc, ~attributes=disable_gc, value), attrs);
+      (Expression.constant(~loc, ~attributes=disable_gc, value), attrs);
     | Primitive0(
         (
           AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
@@ -1513,7 +1513,12 @@ let transl_prim = (env, desc) => {
           Unreachable
         ) as p,
       ) => (
-        Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.prim0(~loc, p)),
+        Expression.lambda(
+          ~loc,
+          ~attributes=disable_gc,
+          [],
+          Expression.prim0(~loc, p),
+        ),
         [],
       )
     | Primitive1(
@@ -1524,19 +1529,19 @@ let transl_prim = (env, desc) => {
           WasmToGrain
         ) as p,
       ) => (
-        Exp.lambda(
+        Expression.lambda(
           ~loc,
           ~attributes=disable_gc,
           [pat_a],
-          Exp.prim1(~loc, p, id_a),
+          Expression.prim1(~loc, p, id_a),
         ),
         [],
       )
     | Primitive1(BuiltinId) =>
       // This primitive must always be inlined, so we do not generate a lambda
-      (Exp.constant(PConstVoid), [])
+      (Expression.constant(PConstVoid), [])
     | Primitive1(p) => (
-        Exp.lambda(~loc, [pat_a], Exp.prim1(~loc, p, id_a)),
+        Expression.lambda(~loc, [pat_a], Expression.prim1(~loc, p, id_a)),
         [],
       )
     | Primitive2(
@@ -1549,20 +1554,29 @@ let transl_prim = (env, desc) => {
           WasmLoadF64
         ) as p,
       ) => (
-        Exp.lambda(
+        Expression.lambda(
           ~loc,
           ~attributes=disable_gc,
           [pat_a, pat_b],
-          Exp.prim2(~loc, p, id_a, id_b),
+          Expression.prim2(~loc, p, id_a, id_b),
         ),
         [],
       )
     | Primitive2(p) => (
-        Exp.lambda(~loc, [pat_a, pat_b], Exp.prim2(~loc, p, id_a, id_b)),
+        Expression.lambda(
+          ~loc,
+          [pat_a, pat_b],
+          Expression.prim2(~loc, p, id_a, id_b),
+        ),
         [],
       )
     | PrimitiveN(WasmMemorySize as p) => (
-        Exp.lambda(~loc, ~attributes=disable_gc, [], Exp.primn(~loc, p, [])),
+        Expression.lambda(
+          ~loc,
+          ~attributes=disable_gc,
+          [],
+          Expression.primn(~loc, p, []),
+        ),
         [],
       )
     | PrimitiveN(
@@ -1573,11 +1587,11 @@ let transl_prim = (env, desc) => {
           WasmMemoryCompare
         ) as p,
       ) => (
-        Exp.lambda(
+        Expression.lambda(
           ~loc,
           ~attributes=disable_gc,
           [pat_a, pat_b, pat_c],
-          Exp.primn(~loc, p, [id_a, id_b, id_c]),
+          Expression.primn(~loc, p, [id_a, id_b, id_c]),
         ),
         [],
       )

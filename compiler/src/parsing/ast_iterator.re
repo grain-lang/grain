@@ -240,7 +240,7 @@ module D = {
   };
 };
 
-module Except = {
+module Exception = {
   let iter = (sub, {ptyexn_constructor: ext, ptyexn_loc: loc}) => {
     sub.location(sub, loc);
     let {pext_name: n, pext_kind: k, pext_loc: loc} = ext;
@@ -370,6 +370,6 @@ let default_iterator = {
   value_binding: V.iter,
   match_branch: MB.iter,
   value_description: VD.iter,
-  grain_exception: Except.iter,
+  grain_exception: Exception.iter,
   toplevel: TL.iter,
 };

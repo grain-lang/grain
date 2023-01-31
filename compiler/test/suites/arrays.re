@@ -125,15 +125,15 @@ describe("arrays", ({test, testSkip}) => {
         {
           module_name: Location.mknoloc("Test"),
           statements: [
-            Top.expr(
-              Exp.array_set(
-                Exp.ident(
+            Toplevel.expr(
+              Expression.array_set(
+                Expression.ident(
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("state")),
                   ),
                 ),
-                Exp.constant(Const.number(PConstNumberInt("0"))),
-                Exp.constant(Const.number(PConstNumberInt("5"))),
+                Expression.constant(Constant.number(PConstNumberInt("0"))),
+                Expression.constant(Constant.number(PConstNumberInt("5"))),
               ),
             ),
           ],

@@ -56,7 +56,7 @@ let record_pattern_info = record_pats =>
     ([], Asttypes.Closed),
   );
 
-module Const = {
+module Constant = {
   let bytes = b => PConstBytes(b);
   let string = s => PConstString(s);
   let char = c => PConstChar(c);
@@ -74,7 +74,7 @@ module Const = {
   let void = PConstVoid;
 };
 
-module Typ = {
+module Type = {
   let mk = (~loc=?, d) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {ptyp_desc: d, ptyp_loc: loc};
@@ -93,7 +93,7 @@ module Typ = {
     };
 };
 
-module CDecl = {
+module ConstructorDeclaration = {
   let mk = (~loc=?, n, a) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {pcd_name: n, pcd_args: a, pcd_loc: loc};
@@ -117,14 +117,14 @@ module CDecl = {
   };
 };
 
-module LDecl = {
+module LabelDeclaration = {
   let mk = (~loc=?, n, t, m) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
   };
 };
 
-module Dat = {
+module DataDeclaration = {
   let mk = (~loc=?, n, t, k, m) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {
@@ -142,7 +142,7 @@ module Dat = {
     mk(~loc?, n, t, PDataRecord(ldl), None);
 };
 
-module Except = {
+module Exception = {
   let mk = (~loc=?, n, t) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
@@ -152,7 +152,7 @@ module Except = {
   let tuple = (~loc=?, n, args) => mk(~loc?, n, PConstrTuple(args));
 };
 
-module Pat = {
+module Pattern = {
   let mk = (~loc=?, d) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {ppat_desc: d, ppat_loc: loc};
@@ -207,7 +207,7 @@ module Pat = {
   let alias = (~loc=?, a, b) => mk(~loc?, PPatAlias(a, b));
 };
 
-module Exp = {
+module Expression = {
   let mk = (~loc=?, ~attributes=?, d) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     let attributes = Option.value(~default=[], attributes);
@@ -414,7 +414,7 @@ module Exp = {
     };
 };
 
-module Top = {
+module Toplevel = {
   let mk = (~loc=?, ~attributes=?, d) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     let attributes = Option.value(~default=[], attributes);
@@ -440,7 +440,7 @@ module Top = {
     mk(~loc, ~attributes?, PTopProvide(e));
 };
 
-module Val = {
+module ValueDescription = {
   let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim, ()) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {
@@ -454,27 +454,27 @@ module Val = {
   };
 };
 
-module Vb = {
+module ValueBinding = {
   let mk = (~loc=?, p, e) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {pvb_pat: p, pvb_expr: e, pvb_loc: loc};
   };
 };
 
-module Mb = {
+module MatchBranch = {
   let mk = (~loc=?, p, e, g) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {pmb_pat: p, pmb_body: e, pmb_guard: g, pmb_loc: loc};
   };
 };
 
-module Inc = {
+module IncludeDeclaration = {
   let mk = (~loc, path, alias) => {
     {pinc_alias: alias, pinc_path: path, pinc_loc: loc};
   };
 };
 
-module Mod = {
+module ModuleDeclaration = {
   let mk = (~loc, name, stmts) => {
     {pmod_name: name, pmod_stmts: stmts, pmod_loc: loc};
   };

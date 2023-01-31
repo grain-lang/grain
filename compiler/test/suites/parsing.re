@@ -16,15 +16,15 @@ describe("parsing", ({test, testSkip}) => {
     "Ok(3)\nErr(\"Division by zero!\")\n",
   );
   let a =
-    Exp.ident(
+    Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("a"))),
     );
   let b =
-    Exp.ident(
+    Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("b"))),
     );
   let c =
-    Exp.ident(
+    Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("c"))),
     );
   let testOp = op =>
@@ -34,9 +34,9 @@ describe("parsing", ({test, testSkip}) => {
       {
         module_name: Location.mknoloc("Test"),
         statements: [
-          Top.expr(
-            Exp.apply(
-              Exp.ident(
+          Toplevel.expr(
+            Expression.apply(
+              Expression.ident(
                 Location.mknoloc(
                   Identifier.IdentName(Location.mknoloc(op)),
                 ),
@@ -103,17 +103,17 @@ describe("parsing", ({test, testSkip}) => {
     {
       module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("+++")),
               ),
             ),
             [
               a,
-              Exp.apply(
-                Exp.ident(
+              Expression.apply(
+                Expression.ident(
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("***")),
                   ),
@@ -134,17 +134,17 @@ describe("parsing", ({test, testSkip}) => {
     {
       module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("&&--")),
               ),
             ),
             [
               a,
-              Exp.apply(
-                Exp.ident(
+              Expression.apply(
+                Expression.ident(
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("&--")),
                   ),
@@ -165,17 +165,17 @@ describe("parsing", ({test, testSkip}) => {
     {
       module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("||--")),
               ),
             ),
             [
               a,
-              Exp.apply(
-                Exp.ident(
+              Expression.apply(
+                Expression.ident(
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("|--")),
                   ),
@@ -196,16 +196,16 @@ describe("parsing", ({test, testSkip}) => {
     {
       module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc(">>")),
               ),
             ),
             [
-              Exp.apply(
-                Exp.ident(
+              Expression.apply(
+                Expression.ident(
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("<<")),
                   ),
@@ -227,9 +227,9 @@ describe("parsing", ({test, testSkip}) => {
     {
       module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.return(
-            Some(Exp.constant(PConstNumber(PConstNumberInt("-1")))),
+        Toplevel.expr(
+          Expression.return(
+            Some(Expression.constant(PConstNumber(PConstNumberInt("-1")))),
           ),
         ),
       ],

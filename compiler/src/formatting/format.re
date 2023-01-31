@@ -3645,7 +3645,7 @@ and print_expression_inner =
         ~expressions,
         ~original_source,
         ~comments=comments_in_expression,
-        Ast_helper.Exp.ident(constr),
+        Ast_helper.Expression.ident(constr),
       );
     | PExpConstruct(id, PExpConstrRecord(record)) =>
       Doc.concat([

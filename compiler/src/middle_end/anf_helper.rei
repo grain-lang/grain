@@ -351,7 +351,7 @@ module AExp: {
   let comp: (~loc: loc=?, ~env: env=?, comp_expression) => anf_expression;
 };
 
-module Inc: {
+module IncludeDeclaration: {
   let mk: (ident, import_desc, import_shape, global_flag) => import_spec;
   let grain_value:
     (~global: global_flag=?, ident, string, string, import_shape) =>
