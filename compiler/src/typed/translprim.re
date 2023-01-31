@@ -1501,7 +1501,7 @@ let transl_prim = (env, desc) => {
         };
       let attrs =
         if (needs_disablegc) {
-          [Typedtree.Disable_gc];
+          [Location.mknoloc(Typedtree.Disable_gc)];
         } else {
           [];
         };

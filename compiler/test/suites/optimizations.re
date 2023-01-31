@@ -445,7 +445,9 @@ describe("optimizations", ({test, testSkip}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Disable_gc],
+              ~attributes=[
+                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
+              ],
               [(arg, Managed), (arg, Managed), (arg, Managed)],
               (
                 AExp.let_(
@@ -509,7 +511,9 @@ describe("optimizations", ({test, testSkip}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Disable_gc],
+              ~attributes=[
+                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
+              ],
               [],
               (
                 AExp.seq(
@@ -590,7 +594,9 @@ describe("optimizations", ({test, testSkip}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Disable_gc],
+              ~attributes=[
+                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
+              ],
               [],
               (
                 AExp.seq(

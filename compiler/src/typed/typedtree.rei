@@ -24,13 +24,13 @@ let sexp_locs_disabled: 'a => bool;
 type loc('a) = Location.loc('a);
 
 [@deriving sexp]
-type attributes = list(attribute)
+type attributes = list(loc(attribute))
 
 [@deriving sexp]
 and attribute =
   | Disable_gc
   | Unsafe
-  | External_name(string);
+  | External_name(loc(string));
 
 type partial =
   | Partial

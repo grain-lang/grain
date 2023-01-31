@@ -500,12 +500,12 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
     switch (
       List.find_opt(
         fun
-        | External_name(_) => true
+        | {txt: External_name(_)} => true
         | _ => false,
         attributes,
       )
     ) {
-    | Some(External_name(name)) =>
+    | Some({txt: External_name(name)}) =>
       let export =
         PProvideValue({
           name:
@@ -514,13 +514,8 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
                 Location.mknoloc(Ident.name(List.hd(idents))),
               ),
             ),
-          alias:
-            Some(
-              Location.mknoloc(
-                Identifier.IdentName(Location.mknoloc(name)),
-              ),
-            ),
-          loc: Location.dummy_loc,
+          alias: Some(Location.mknoloc(Identifier.IdentName(name))),
+          loc: name.loc,
         });
       let (newsignatures, stmts) =
         process_provide_value(newenv, [export], []);

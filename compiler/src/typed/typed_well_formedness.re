@@ -33,8 +33,8 @@ let is_marked_unsafe = attrs => {
   // Disable_gc implies Unsafe
   List.exists(
     fun
-    | Disable_gc
-    | Unsafe => true
+    | {txt: Disable_gc}
+    | {txt: Unsafe} => true
     | _ => false,
     attrs,
   );
