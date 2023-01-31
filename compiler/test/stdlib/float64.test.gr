@@ -16,6 +16,8 @@ assert tau == 6.283185307179586d
 
 assert e == 2.718281828459045d
 // Operation Tests
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(5) == 5.0d
 assert fromNumber(0) == 0.0d
 
