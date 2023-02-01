@@ -13,9 +13,9 @@ tuples › tup1_destruct_trailing
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $a_1117 (mut i32) (i32.const 0))
- (global $c_1119 (mut i32) (i32.const 0))
- (global $b_1118 (mut i32) (i32.const 0))
+ (global $a_1116 (mut i32) (i32.const 0))
+ (global $c_1118 (mut i32) (i32.const 0))
+ (global $b_1117 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -90,13 +90,13 @@ tuples › tup1_destruct_trailing
        )
       )
       (block $compile_store.5
-       (global.set $a_1117
+       (global.set $a_1116
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $a_1117)
+           (global.get $a_1116)
           )
          )
         )
@@ -105,13 +105,13 @@ tuples › tup1_destruct_trailing
        )
       )
       (block $compile_store.7
-       (global.set $b_1118
+       (global.set $b_1117
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1118)
+           (global.get $b_1117)
           )
          )
         )
@@ -120,13 +120,13 @@ tuples › tup1_destruct_trailing
        )
       )
       (block $compile_store.9
-       (global.set $c_1119
+       (global.set $c_1118
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $c_1119)
+           (global.get $c_1118)
           )
          )
         )
@@ -198,7 +198,7 @@ tuples › tup1_destruct_trailing
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.16 (result i32)
-         (global.set $c_1119
+         (global.set $c_1118
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -207,7 +207,7 @@ tuples › tup1_destruct_trailing
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $c_1119)
+             (global.get $c_1118)
             )
            )
           )
@@ -220,7 +220,7 @@ tuples › tup1_destruct_trailing
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.17 (result i32)
-         (global.set $b_1118
+         (global.set $b_1117
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -229,7 +229,7 @@ tuples › tup1_destruct_trailing
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $b_1118)
+             (global.get $b_1117)
             )
            )
           )
@@ -242,7 +242,7 @@ tuples › tup1_destruct_trailing
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.18 (result i32)
-         (global.set $a_1117
+         (global.set $a_1116
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -251,7 +251,7 @@ tuples › tup1_destruct_trailing
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $a_1117)
+             (global.get $a_1116)
             )
            )
           )

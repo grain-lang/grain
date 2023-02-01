@@ -67,11 +67,11 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2627)
+            (i32.const 11)
            )
            (i32.store offset=12
             (local.get $0)
-            (i32.const 1)
+            (i32.const 3)
            )
            (i32.store offset=16
             (local.get $0)
@@ -112,11 +112,11 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2627)
+            (i32.const 11)
            )
            (i32.store offset=12
             (local.get $0)
-            (i32.const 3)
+            (i32.const 1)
            )
            (i32.store offset=16
             (local.get $0)
@@ -168,11 +168,11 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2627)
+            (i32.const 11)
            )
            (i32.store offset=12
             (local.get $0)
-            (i32.const 3)
+            (i32.const 1)
            )
            (i32.store offset=16
             (local.get $0)
@@ -224,11 +224,11 @@ lists › list_spread
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2627)
+            (i32.const 11)
            )
            (i32.store offset=12
             (local.get $0)
-            (i32.const 3)
+            (i32.const 1)
            )
            (i32.store offset=16
             (local.get $0)
@@ -276,11 +276,11 @@ lists › list_spread
        )
        (i32.store offset=8
         (local.get $0)
-        (i32.const 2627)
+        (i32.const 11)
        )
        (i32.store offset=12
         (local.get $0)
-        (i32.const 3)
+        (i32.const 1)
        )
        (i32.store offset=16
         (local.get $0)
