@@ -36,6 +36,7 @@ let ident_number = ident_create("Number")
 and ident_exception = ident_create("Exception")
 and ident_option = ident_create("Option")
 and ident_result = ident_create("Result")
+and ident_list = ident_create("List")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
 and ident_wasmi32 = ident_create("WasmI32")
@@ -63,6 +64,7 @@ let path_number = PIdent(ident_number)
 and path_exception = PIdent(ident_exception)
 and path_option = PIdent(ident_option)
 and path_result = PIdent(ident_result)
+and path_list = PIdent(ident_list)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
 and path_wasmi32 = PIdent(ident_wasmi32)
@@ -88,6 +90,7 @@ and type_option = var =>
   newgenty(TTyConstr(path_option, [var], ref(TMemNil)))
 and type_result = (ok, err) =>
   newgenty(TTyConstr(path_result, [ok, err], ref(TMemNil)))
+and type_list = var => newgenty(TTyConstr(path_list, [var], ref(TMemNil)))
 and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
 and type_rational = newgenty(TTyConstr(path_rational, [], ref(TMemNil)))
@@ -139,7 +142,9 @@ and ident_void_cstr = ident_create("()")
 and ident_some_cstr = ident_create("Some")
 and ident_none_cstr = ident_create("None")
 and ident_ok_cstr = ident_create("Ok")
-and ident_err_cstr = ident_create("Err");
+and ident_err_cstr = ident_create("Err")
+and ident_cons_cstr = ident_create("[...]")
+and ident_empty_cstr = ident_create("[]");
 
 let decl_exception = {...decl_abstr(path_exception), type_kind: TDataOpen};
 let decl_bool = {
@@ -174,6 +179,19 @@ and decl_result = {
       TDataVariant([
         cstr(ident_ok_cstr, [ok]),
         cstr(ident_err_cstr, [err]),
+      ]),
+  };
+}
+and decl_list = {
+  let tvar = newgenvar();
+  {
+    ...decl_abstr(path_list),
+    type_params: [tvar],
+    type_arity: 1,
+    type_kind:
+      TDataVariant([
+        cstr(ident_cons_cstr, [tvar, type_list(tvar)]),
+        cstr(ident_empty_cstr, []),
       ]),
   };
 }
@@ -212,6 +230,7 @@ let initial_env = (add_type, add_extension, empty_env) =>
   |> add_type(ident_exception, decl_exception)
   |> add_type(ident_option, decl_option)
   |> add_type(ident_result, decl_result)
+  |> add_type(ident_list, decl_list)
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
   |> add_type(ident_float32, decl_abstr(path_float32))

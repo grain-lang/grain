@@ -649,89 +649,6 @@ program: MODULE UIDENT EOL DASH WHILE
 
 Expected a number to follow the minus sign.
 
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE LBRACK ELLIPSIS RBRACK LPAREN UIDENT RCARET
-##
-## Ends in an error in state: 961.
-##
-## data_constructor -> lbrack ELLIPSIS rbrack lparen option(typs) . rparen [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrack ELLIPSIS rbrack lparen option(typs)
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 89, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,type_id_str)
-## In state 79, spurious reduction of production data_typ -> type_id
-## In state 106, spurious reduction of production typ -> data_typ
-## In state 88, spurious reduction of production lseparated_nonempty_list_inner(comma,typ) -> typ
-## In state 94, spurious reduction of production option(comma) ->
-## In state 97, spurious reduction of production typs -> lseparated_nonempty_list_inner(comma,typ) option(comma)
-## In state 119, spurious reduction of production option(typs) -> typs
-##
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE LBRACK ELLIPSIS RBRACK LPAREN WHILE
-##
-## Ends in an error in state: 960.
-##
-## data_constructor -> lbrack ELLIPSIS rbrack lparen . option(typs) rparen [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrack ELLIPSIS rbrack lparen
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 2, spurious reduction of production lparen -> LPAREN
-##
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE LBRACK ELLIPSIS RBRACK WHILE
-##
-## Ends in an error in state: 959.
-##
-## data_constructor -> lbrack ELLIPSIS rbrack . lparen option(typs) rparen [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrack ELLIPSIS rbrack
-##
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE LBRACK ELLIPSIS WHILE
-##
-## Ends in an error in state: 958.
-##
-## data_constructor -> lbrack ELLIPSIS . rbrack lparen option(typs) rparen [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrack ELLIPSIS
-##
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE LBRACK RBRACK WHILE
-##
-## Ends in an error in state: 953.
-##
-## data_constructors -> lbrace lseparated_nonempty_list_inner(comma,data_constructor) . option(comma) rbrace [ SEMI EOL EOF COMMA ]
-## lseparated_nonempty_list_inner(comma,data_constructor) -> lseparated_nonempty_list_inner(comma,data_constructor) . comma data_constructor [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrace lseparated_nonempty_list_inner(comma,data_constructor)
-##
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE LBRACK WHILE
-##
-## Ends in an error in state: 957.
-##
-## data_constructor -> lbrack . rbrack [ RBRACE EOL COMMA ]
-## data_constructor -> lbrack . ELLIPSIS rbrack lparen option(typs) rparen [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrack
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 19, spurious reduction of production lbrack -> LBRACK
-##
-
-Expected a list enum declaration using the syntax `enum List<a> { [], [...](a, List<a>) }`.
-
 program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT COMMA EOL WHILE
 ##
 ## Ends in an error in state: 956.
@@ -6289,6 +6206,19 @@ program: MODULE UIDENT EOL UIDENT LPAREN WHEN
 ##
 
 Expected a comma-separated list of expressions or `)` to complete the constructor.
+
+program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT LPAREN RPAREN YIELD
+##
+## Ends in an error in state: 778.
+##
+## data_constructors -> lbrace lseparated_nonempty_list_inner(comma,data_constructor) . option(comma) rbrace [ SEMI RBRACE EOL EOF COMMA ]
+## lseparated_nonempty_list_inner(comma,data_constructor) -> lseparated_nonempty_list_inner(comma,data_constructor) . comma data_constructor [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## lbrace lseparated_nonempty_list_inner(comma,data_constructor)
+##
+
+Expected a comma followed by more constructors or `}` to complete the enum declaration.
 
 program: MODULE UIDENT EOL WHILE LPAREN UNDERSCORE
 ##

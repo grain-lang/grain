@@ -42,11 +42,6 @@ primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive builtinId: String -> Number = "@builtin.id"
 
-enum StringList {
-  [],
-  [...](String, StringList),
-}
-
 primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata"
 
 @unsafe
@@ -70,6 +65,8 @@ let findTypeMetadata = typeId => {
 }
 
 @unsafe
+let _LIST_ID = untagSimpleNumber(builtinId("List"))
+@unsafe
 let _OPTION_ID = untagSimpleNumber(builtinId("Option"))
 @unsafe
 let _RESULT_ID = untagSimpleNumber(builtinId("Result"))
@@ -78,6 +75,12 @@ let _SOME = "Some"
 let _NONE = "None"
 let _OK = "Ok"
 let _ERR = "Err"
+
+@unsafe
+let isListVariant = variant => {
+  let typeId = WasmI32.load(variant, 8n) >> 1n
+  typeId == _LIST_ID
+}
 
 @unsafe
 let getBuiltinVariantName = variant => {
@@ -332,13 +335,6 @@ let usvToString = usv => {
 }
 
 @unsafe
-let isListVariant = (variant: String) => {
-  // Only lists can start with `[`, so only need to check for that
-  // Sort of a hack until we have a better solution
-  WasmI32.load8U(WasmI32.fromGrain(variant), 8n) == 0x5Bn
-}
-
-@unsafe
 let rec heapValueToString = (ptr, extraIndents, toplevel) => {
   let tag = WasmI32.load(ptr, 0n)
   match (tag) {
@@ -400,6 +396,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           WasmI32.toGrain(builtinVariantName),
           extraIndents
         )
+      } else if (isListVariant(ptr)) {
+        listToString(ptr, extraIndents)
       } else {
         let variantPtr = getVariantMetadata(ptr)
         if (variantPtr == -1n) {
@@ -409,30 +407,25 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let variantName = allocateString(length)
           Memory.copy(variantName + 8n, variantPtr + 16n, length)
           let variantName = WasmI32.toGrain(variantName): String
-          // Check if this is a list
-          if (isListVariant(variantName)) {
-            listToString(ptr, extraIndents)
-          } else {
-            let distToRecordFields = WasmI32.load(variantPtr, 4n)
-            let isRecordVariant = distToRecordFields != 0n
-            if (isRecordVariant) {
-              let fields = variantPtr + distToRecordFields
-              let recordArity = WasmI32.load(ptr, 16n)
-              let recordVariantFields = getFieldArray(fields, recordArity)
-              let recordString = recordToString(
-                ptr,
-                recordArity,
-                recordVariantFields,
-                20n,
-                extraIndents
-              )
-              Memory.decRef(recordVariantFields)
-              let strings = [variantName, recordString]
+          let distToRecordFields = WasmI32.load(variantPtr, 4n)
+          let isRecordVariant = distToRecordFields != 0n
+          if (isRecordVariant) {
+            let fields = variantPtr + distToRecordFields
+            let recordArity = WasmI32.load(ptr, 16n)
+            let recordVariantFields = getFieldArray(fields, recordArity)
+            let recordString = recordToString(
+              ptr,
+              recordArity,
+              recordVariantFields,
+              20n,
+              extraIndents
+            )
+            Memory.decRef(recordVariantFields)
+            let strings = [variantName, recordString]
 
-              join(strings)
-            } else {
-              tupleVariantToString(ptr, variantName, extraIndents)
-            }
+            join(strings)
+          } else {
+            tupleVariantToString(ptr, variantName, extraIndents)
           }
         }
       }
@@ -582,7 +575,7 @@ listToString = (ptr, extraIndents) => {
 
   while (true) {
     let variantId = WasmI32.load(cur, 12n) >> 1n // tagged number
-    if (variantId == 0n) {
+    if (variantId == 1n) {
       break
     } else {
       if (!isFirst) {

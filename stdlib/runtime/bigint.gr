@@ -33,11 +33,6 @@ primitive (&&): (Bool, Bool) -> Bool = "@and"
 primitive (||): (Bool, Bool) -> Bool = "@or"
 primitive throw: Exception -> a = "@throw"
 
-enum List<a> {
-  [],
-  [...](a, List<a>),
-}
-
 // Layout:
 // -------------------------------------------------------
 // | numtag | tag | size | flags | <reserved> | limbs... |
