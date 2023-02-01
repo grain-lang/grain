@@ -81,7 +81,10 @@ let enumerate_exports = stmts => {
             },
             vbinds,
           )
-        | _ => ()
+        | TTopModule(_)
+        | TTopInclude(_)
+        | TTopException(_)
+        | TTopExpr(_) => ()
         };
       };
     });
