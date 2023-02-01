@@ -1,5 +1,5 @@
 /**
- * @module Option: Utilities for working with the Option data type.
+ * Utilities for working with the Option data type.
  *
  * The Option type is an enum that represents the possibility of something being present (with the `Some` variant), or not (with the `None` variant). There’s no standalone `null` or `nil` type in Grain; use an Option where you would normally reach for `null` or `nil`.
  *

@@ -1,5 +1,6 @@
 /**
- * @module ImmutableMap: An ImmutableMap holds key-value pairs. Any value may be used as a key or value. Operations on an ImmutableMap do not mutate the map's internal state.
+ * An ImmutableMap holds key-value pairs. Any value may be used as a key or value. Operations on an ImmutableMap do not mutate the map's internal state.
+ *
  * @example include "immutablemap"
  *
  * @since v0.5.4

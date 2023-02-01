@@ -1,5 +1,6 @@
 /**
- * @module BigInt: Utilities for working with the BigInt type.
+ * Utilities for working with the BigInt type.
+ *
  * @example include "bigint"
  *
  * @since v0.5.0

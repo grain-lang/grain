@@ -1,7 +1,8 @@
 /**
- * @module Set: A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
+ * A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
+ *
  * @example include "set"
- * 
+ *
  * @since v0.3.0
  */
 
@@ -36,7 +37,7 @@ record Set<k> {
  *
  * @param size: The initial storage size of the set
  * @returns An empty set with the given initial storage size
- * 
+ *
  * @since v0.3.0
  */
 provide let makeSized = size => {
@@ -47,7 +48,7 @@ provide let makeSized = size => {
  * Creates a new, empty set.
  *
  * @returns An empty set
- * 
+ *
  * @since v0.3.0
  */
 provide let make = () => {
@@ -124,7 +125,7 @@ let rec nodeInBucket = (key, node) => {
  *
  * @param key: The value to add
  * @param set: The set to update
- * 
+ *
  * @since v0.3.0
  */
 provide let add = (key, set) => {
@@ -157,7 +158,7 @@ provide let add = (key, set) => {
  * @param key: The value to search for
  * @param set: The set to search
  * @returns `true` if the set contains the given value or `false` otherwise
- * 
+ *
  * @since v0.3.0
  */
 provide let contains = (key, set) => {
@@ -189,7 +190,7 @@ let rec removeInBucket = (key, node) => {
  *
  * @param key: The value to remove
  * @param set: The set to update
- * 
+ *
  * @since v0.3.0
  */
 provide let remove = (key, set) => {
@@ -217,7 +218,7 @@ provide let remove = (key, set) => {
  *
  * @param set: The set to inspect
  * @returns The count of elements in the set
- * 
+ *
  * @since v0.3.0
  */
 provide let size = set => {
@@ -229,7 +230,7 @@ provide let size = set => {
  *
  * @param set: The set to inspect
  * @returns `true` if the given set is empty or `false` otherwise
- * 
+ *
  * @since v0.3.0
  */
 provide let isEmpty = set => {
@@ -240,7 +241,7 @@ provide let isEmpty = set => {
  * Resets the set by removing all values.
  *
  * @param set: The set to reset
- * 
+ *
  * @since v0.3.0
  */
 provide let clear = set => {
@@ -266,7 +267,7 @@ let rec forEachBucket = (fn, node) => {
  *
  * @param fn: The iterator function to call with each element
  * @param set: The set to iterate
- * 
+ *
  * @since v0.3.0
  * @history v0.5.0: Ensured the iterator function return type is always `Void`
  */
@@ -291,7 +292,7 @@ let rec reduceEachBucket = (fn, node, acc) => {
  * @param init: The initial value to use for the accumulator on the first iteration
  * @param set: The set to iterate
  * @returns The final accumulator returned from `fn`
- * 
+ *
  * @since v0.3.0
  */
 provide let reduce = (fn, init, set) => {
@@ -308,7 +309,7 @@ provide let reduce = (fn, init, set) => {
  *
  * @param fn: The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed
  * @param set: The set to iterate
- * 
+ *
  * @since v0.3.0
  */
 provide let filter = (fn, set) => {
@@ -327,7 +328,7 @@ provide let filter = (fn, set) => {
  *
  * @param fn: The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed
  * @param set: The set to iterate
- * 
+ *
  * @since v0.3.0
  */
 provide let reject = (fn, set) => {
@@ -339,7 +340,7 @@ provide let reject = (fn, set) => {
  *
  * @param set: The set to convert
  * @returns A list containing all set values
- * 
+ *
  * @since v0.3.0
  */
 provide let toList = set => {
@@ -351,7 +352,7 @@ provide let toList = set => {
  *
  * @param list: The list to convert
  * @returns A set containing all list values
- * 
+ *
  * @since v0.3.0
  */
 provide let fromList = list => {
@@ -367,7 +368,7 @@ provide let fromList = list => {
  *
  * @param set: The set to convert
  * @returns An array containing all set values
- * 
+ *
  * @since v0.3.0
  */
 provide let toArray = set => {
@@ -379,7 +380,7 @@ provide let toArray = set => {
  *
  * @param array: The array to convert
  * @returns A set containing all array values
- * 
+ *
  * @since v0.3.0
  */
 provide let fromArray = array => {
@@ -396,7 +397,7 @@ provide let fromArray = array => {
  * @param set1: The first set to combine
  * @param set2: The second set to combine
  * @returns A set containing all elements of both sets
- * 
+ *
  * @since v0.3.0
  */
 provide let union = (set1, set2) => {
@@ -416,7 +417,7 @@ provide let union = (set1, set2) => {
  * @param set1: The first set to combine
  * @param set2: The second set to combine
  * @returns A set containing only unshared elements from both sets
- * 
+ *
  * @since v0.3.0
  */
 provide let diff = (set1, set2) => {
@@ -440,7 +441,7 @@ provide let diff = (set1, set2) => {
  * @param set1: The first set to combine
  * @param set2: The second set to combine
  * @returns A set containing only shared elements from both sets
- * 
+ *
  * @since v0.3.0
  */
 provide let intersect = (set1, set2) => {
@@ -464,7 +465,7 @@ provide let intersect = (set1, set2) => {
  *
  * @param set: The set to inspect
  * @returns The internal state of the set
- * 
+ *
  * @since v0.3.0
  */
 provide let getInternalStats = set => {

@@ -1,5 +1,5 @@
 /**
- * @module PriorityQueue: A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+ * A mutable priority queue implementation. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
  *
  * @example include "priorityqueue"
  *
@@ -80,10 +80,10 @@ let rec siftUp = (i, pq) => {
  * comparator function takes two elements and must return 0 if both share
  * priority, a positive number if the first has greater priority, and a
  * negative number if the first has less priority.
- * 
+ *
  * Generally, you won't need to care about the storage size of your priority
  * queue and can use `PriorityQueue.make()` instead.
- * 
+ *
  * @param size: The initial storage size of the priority queue
  * @param comp: The comparator function used to indicate priority order
  * @returns An empty priority queue
@@ -99,10 +99,10 @@ provide let makeSized = (size, comp) => {
  * determine priority of elements. The comparator function takes two elements
  * and must return 0 if both share priority, a positive number if the first
  * has greater priority, and a negative number if the first has less priority.
- * 
+ *
  * @param comp: The comparator function used to indicate priority order
  * @returns An empty priority queue
- * 
+ *
  * @example PriorityQueue.make(compare) // creates a min priority queue of numbers using the compare pervasive
  * @example PriorityQueue.make((a, b) => String.length(b) - String.length(a)) // creates a priority queue by string length (longest to shortest)
  *
@@ -114,7 +114,7 @@ provide let make = comp => {
 
 /**
  * Gets the number of elements in a priority queue.
- * 
+ *
  * @param pq: The priority queue to inspect
  * @returns The number of elements in the priority queue
  *
@@ -126,7 +126,7 @@ provide let size = pq => {
 
 /**
  * Determines if the priority queue contains no elements.
- * 
+ *
  * @param pq: The priority queue to check
  * @returns `true` if the priority queue is empty and `false` otherwise
  *
@@ -138,7 +138,7 @@ provide let isEmpty = pq => {
 
 /**
  * Adds a new element to the priority queue.
- * 
+ *
  * @param val: The value to add into the priority queue
  * @param pq: The priority queue to update
  *
@@ -164,7 +164,7 @@ provide let push = (val, pq) => {
 /**
  * Retrieves the highest priority element in the priority queue. It is not
  * removed from the queue.
- * 
+ *
  * @param pq: The priority queue to inspect
  * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
  *
@@ -180,7 +180,7 @@ provide let peek = pq => {
 
 /**
  * Removes and retrieves the highest priority element in the priority queue.
- * 
+ *
  * @param pq: The priority queue to inspect
  * @returns `Some(value)` containing the highest priority element or `None` if the priority queue is empty
  *
@@ -202,7 +202,7 @@ provide let pop = pq => {
 /**
  * Clears the priority queue and produces a list of all of the elements in the priority
  * queue in priority order.
- * 
+ *
  * @param pq: The priority queue to drain
  * @returns A list of all elements in the priority in priority order
  *
@@ -224,7 +224,7 @@ provide let drain = pq => {
  * elements. The comparator function takes two elements and must return 0 if
  * both share priority, a positive number if the first has greater priority,
  * and a negative number if the first has less priority.
- * 
+ *
  * @param array: An array of values used to initialize the priority queue
  * @param comp: A comparator function used to assign priority to elements
  * @returns A priority queue containing the elements from the array
@@ -247,7 +247,7 @@ provide let fromArray = (array, comp) => {
  * elements. The comparator function takes two elements and must return 0 if
  * both share priority, a positive number if the first has greater priority,
  * and a negative number if the first has less priority.
- * 
+ *
  * @param list: A list of values used to initialize the priority queue
  * @param comp: A comparator function used to assign priority to elements
  * @returns A priority queue containing the elements from the list

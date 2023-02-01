@@ -1,7 +1,8 @@
 /**
- * @module ImmutableSet: An ImmutableSet is a collection of unique values. Operations on an ImmutableSet do not mutate the set's internal state.
+ * An ImmutableSet is a collection of unique values. Operations on an ImmutableSet do not mutate the set's internal state.
+ *
  * @example include "immutableset"
- * 
+ *
  * @since v0.5.4
  */
 
@@ -38,7 +39,7 @@ let weight = 4
 
 /**
  * An empty set
- * 
+ *
  * @since v0.5.4
  */
 provide let empty = Empty
@@ -57,7 +58,7 @@ let rec min = node => {
  *
  * @param set: The set to inspect
  * @returns The count of elements in the set
- * 
+ *
  * @since v0.5.4
  */
 provide let size = set => {
@@ -72,7 +73,7 @@ provide let size = set => {
  *
  * @param set: The set to inspect
  * @returns `true` if the given set is empty or `false` otherwise
- * 
+ *
  * @since v0.5.4
  */
 provide let isEmpty = set => {
@@ -155,7 +156,7 @@ let balancedNode = (key, left, right) => {
  * @param key: The value to add
  * @param set: The base set
  * @returns A new set containing the new element
- * 
+ *
  * @since v0.5.4
  */
 provide let rec add = (key, set) => {
@@ -177,7 +178,7 @@ provide let rec add = (key, set) => {
  * @param key: The value to search for
  * @param set: The set to search
  * @returns `true` if the set contains the given value or `false` otherwise
- * 
+ *
  * @since v0.5.4
  */
 provide let rec contains = (key, set) => {
@@ -220,7 +221,7 @@ let removeInner = (left, right) => {
  * @param key: The value to exclude
  * @param set: The set to exclude from
  * @returns A new set without the excluded element
- * 
+ *
  * @since v0.5.4
  */
 provide let rec remove = (key, set) => {
@@ -241,7 +242,7 @@ provide let rec remove = (key, set) => {
  *
  * @param fn: The iterator function to call with each element
  * @param set: The set to iterate
- * 
+ *
  * @since v0.5.4
  */
 provide let forEach = (fn, set) => {
@@ -265,7 +266,7 @@ provide let forEach = (fn, set) => {
  * @param init: The initial value to use for the accumulator on the first iteration
  * @param set: The set to iterate
  * @returns The final accumulator returned from `fn`
- * 
+ *
  * @since v0.5.4
  */
 provide let reduce = (fn, init, set) => {
@@ -344,7 +345,7 @@ let concat = (node1, node2) => {
  * @param fn: The predicate function to indicate which elements to exclude from the set, where returning `false` indicates the value should be excluded
  * @param set: The set to iterate
  * @returns A new set excluding the elements not fulfilling the predicate
- * 
+ *
  * @since v0.5.4
  */
 provide let filter = (fn, set) => {
@@ -369,7 +370,7 @@ provide let filter = (fn, set) => {
  * @param fn: The predicate function to indicate which elements to exclude from the set, where returning `true` indicates the value should be excluded
  * @param set: The set to iterate
  * @returns A new set excluding the elements fulfilling the predicate
- * 
+ *
  * @since v0.5.4
  */
 provide let reject = (fn, set) => {
@@ -382,7 +383,7 @@ provide let reject = (fn, set) => {
  * @param set1: The first set to combine
  * @param set2: The second set to combine
  * @returns A set containing all elements of both sets
- * 
+ *
  * @since v0.5.4
  */
 provide let rec union = (set1, set2) => {
@@ -402,7 +403,7 @@ provide let rec union = (set1, set2) => {
  * @param set1: The first set to combine
  * @param set2: The second set to combine
  * @returns A set containing only unshared elements from both sets
- * 
+ *
  * @since v0.5.4
  */
 provide let diff = (set1, set2) => {
@@ -425,7 +426,7 @@ provide let diff = (set1, set2) => {
  * @param set1: The first set to combine
  * @param set2: The second set to combine
  * @returns A set containing only shared elements from both sets
- * 
+ *
  * @since v0.5.4
  */
 provide let rec intersect = (set1, set2) => {
@@ -448,7 +449,7 @@ provide let rec intersect = (set1, set2) => {
  *
  * @param list: The list to convert
  * @returns A set containing all list values
- * 
+ *
  * @since v0.5.4
  */
 provide let fromList = list => {
@@ -460,7 +461,7 @@ provide let fromList = list => {
  *
  * @param set: The set to convert
  * @returns A list containing all set values
- * 
+ *
  * @since v0.5.4
  */
 provide let toList = set => {
@@ -480,7 +481,7 @@ provide let toList = set => {
  *
  * @param array: The array to convert
  * @returns A set containing all array values
- * 
+ *
  * @since v0.5.4
  */
 provide let fromArray = array => {
@@ -492,7 +493,7 @@ provide let fromArray = array => {
  *
  * @param set: The set to convert
  * @returns An array containing all set values
- * 
+ *
  * @since v0.5.4
  */
 provide let toArray = set => {

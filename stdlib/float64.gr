@@ -1,7 +1,8 @@
 /**
- * @module Float64: Utilities for working with the Float64 type.
+ * Utilities for working with the Float64 type.
+ *
  * @example include "float64"
- * 
+ *
  * @since v0.2.0
  */
 
@@ -24,7 +25,7 @@ from Numbers use {
 
 /**
  * Infinity represented as a Float64 value.
- * 
+ *
  * @since v0.4.0
  */
 @unsafe
@@ -39,7 +40,7 @@ provide let infinity = {
 
 /**
  * NaN (Not a Number) represented as a Float64 value.
- * 
+ *
  * @since v0.4.0
  */
 @unsafe
@@ -54,21 +55,21 @@ provide let nan = {
 
 /**
  * Pi represented as a Float64 value.
- * 
+ *
  * @since v0.5.2
  */
 provide let pi = 3.141592653589793d
 
 /**
  * Tau represented as a Float64 value.
- * 
+ *
  * @since v0.5.2
  */
 provide let tau = 6.283185307179586d
 
 /**
  * Euler's number represented as a Float64 value.
- * 
+ *
  * @since v0.5.2
  */
 provide let e = 2.718281828459045d
@@ -82,7 +83,7 @@ provide let e = 2.718281828459045d
  *
  * @param number: The value to convert
  * @returns The Number represented as a Float64
- * 
+ *
  * @since v0.2.0
  */
 provide { fromNumber }
@@ -92,7 +93,7 @@ provide { fromNumber }
  *
  * @param float: The value to convert
  * @returns The Float64 represented as a Number
- * 
+ *
  * @since v0.2.0
  */
 provide { toNumber }
@@ -107,7 +108,7 @@ provide { toNumber }
  * @param x: The first operand
  * @param y: The second operand
  * @returns The sum of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -124,7 +125,7 @@ provide let add = (x: Float64, y: Float64) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The difference of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -141,7 +142,7 @@ provide let sub = (x: Float64, y: Float64) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The product of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -158,7 +159,7 @@ provide let mul = (x: Float64, y: Float64) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -179,7 +180,7 @@ provide let div = (x: Float64, y: Float64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -195,7 +196,7 @@ provide let lt = (x: Float64, y: Float64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -211,7 +212,7 @@ provide let gt = (x: Float64, y: Float64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
@@ -227,7 +228,7 @@ provide let lte = (x: Float64, y: Float64) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe

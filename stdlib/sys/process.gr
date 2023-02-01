@@ -1,5 +1,5 @@
 /**
- * @module Process: Utilities for accessing functionality and information about the Grain program's process.
+ * Utilities for accessing functionality and information about the Grain program's process.
  *
  * This includes things like accessing environment variables and sending signals.
  *

@@ -1,5 +1,5 @@
 /**
- * @module ImmutablePriorityQueue: An immutable priority queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+ * An immutable priority queue. A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
  *
  * @example include "immutablepriorityqueue"
  *

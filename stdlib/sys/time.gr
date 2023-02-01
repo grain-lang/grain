@@ -1,5 +1,5 @@
 /**
- * @module Time: Access to system clocks.
+ * Access to system clocks.
  *
  * @example include "sys/time"
  */

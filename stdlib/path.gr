@@ -1,23 +1,23 @@
 /**
- * @module Path: Utilities for working with system paths.
- * 
+ * Utilities for working with system paths.
+ *
  * This module treats paths purely as a data representation and does not
  * provide functionality for interacting with the file system.
- * 
+ *
  * This module explicitly encodes whether a path is absolute or relative, and
  * whether it refers to a file or a directory, as part of the `Path` type.
  *
  * Paths in this module abide by a special POSIX-like representation/grammar
  * rather than one defined by a specific operating system. The rules are as
  * follows:
- * 
+ *
  * - Path separators are denoted by `/` for POSIX-like paths
  * - Absolute paths may be rooted either at the POSIX-like root `/` or at Windows-like drive roots like `C:/`
  * - Paths referencing files must not include trailing forward slashes, but paths referencing directories may
  * - The path segment `.` indicates the relative "current" directory of a path, and `..` indicates the parent directory of a path
- * 
+ *
  * @example include "path"
- * 
+ *
  * @since v0.5.5
  */
 
@@ -377,14 +377,14 @@ let fromStringHelper = (pathStr, platform) => {
 /**
  * Parses a path string into a `Path`. Paths will be parsed as file paths
  * rather than directory paths if there is ambiguity.
- * 
+ *
  * @param pathStr: The string to parse as a path
  * @returns The path wrapped with details encoded within the type
- * 
+ *
  * @example fromString("/bin/") // an absolute Path referencing the directory /bin/
  * @example fromString("file.txt") // a relative Path referencing the file ./file.txt
  * @example fromString(".") // a relative Path referencing the current directory
- * 
+ *
  * @since v0.5.5
  */
 provide let fromString = pathStr => {
@@ -396,14 +396,14 @@ provide let fromString = pathStr => {
  * the given platform (`/` for `Posix` and either `/` or `\` for `Windows`).
  * Paths will be parsed as file paths rather than directory paths if there is
  * ambiguity.
- * 
+ *
  * @param pathStr: The string to parse as a path
  * @param platform: The platform whose path separators should be used for parsing
  * @returns The path wrapped with details encoded within the type
- * 
+ *
  * @example fromPlatformString("/bin/", Posix) // an absolute Path referencing the directory /bin/
  * @example fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
- * 
+ *
  * @since v0.5.5
  */
 provide let fromPlatformString = (pathStr, platform) => {
@@ -440,13 +440,13 @@ let toStringHelper = (path, platform) => {
 /**
  * Converts the given `Path` into a string, using the `/` path separator.
  * A trailing slash is added to directory paths.
- * 
+ *
  * @param path: The path to convert to a string
  * @returns A string representing the given path
- * 
+ *
  * @example toString(fromString("/file.txt")) == "/file.txt"
  * @example toString(fromString("dir/")) == "./dir/"
- * 
+ *
  * @since v0.5.5
  */
 provide let toString = path => {
@@ -457,14 +457,14 @@ provide let toString = path => {
  * Converts the given `Path` into a string, using the canonical path separator
  * appropriate to the given platform (`/` for `Posix` and `\` for `Windows`).
  * A trailing slash is added to directory paths.
- * 
+ *
  * @param path: The path to convert to a string
  * @param platform: The `Platform` to use to represent the path as a string
  * @returns A string representing the given path
- * 
+ *
  * @example toPlatformString(fromString("dir/"), Posix) == "./dir/"
  * @example toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
- * 
+ *
  * @since v0.5.5
  */
 provide let toPlatformString = (path, platform) => {
@@ -473,13 +473,13 @@ provide let toPlatformString = (path, platform) => {
 
 /**
  * Determines whether the path is a directory path.
- * 
+ *
  * @param path: The path to inspect
  * @returns `true` if the path is a directory path or `false` otherwise
- * 
+ *
  * @example isDirectory(fromString("file.txt")) == false
  * @example isDirectory(fromString("/bin/")) == true
- * 
+ *
  * @since v0.5.5
  */
 provide let isDirectory = path => {
@@ -489,10 +489,10 @@ provide let isDirectory = path => {
 
 /**
  * Determines whether the path is an absolute path.
- * 
+ *
  * @param path: The path to inspect
  * @returns `true` if the path is absolute or `false` otherwise
- * 
+ *
  * @example isAbsolute(fromString("/Users/me")) == true
  * @example isAbsolute(fromString("./file.txt")) == false
  */
@@ -521,15 +521,15 @@ let rec appendHelper = (path: PathInfo, toAppend: PathInfo) =>
 
 /**
  * Creates a new path by appending a relative path segment to a directory path.
- * 
+ *
  * @param path: The base path
  * @param toAppend: The relative path to append
  * @returns `Ok(path)` combining the base and appended paths or `Err(err)` if the paths are incompatible
- * 
+ *
  * @example append(fromString("./dir/"), fromString("file.txt")) == Ok(fromString("./dir/file.txt"))
  * @example append(fromString("a.txt"), fromString("b.sh")) == Err(AppendToFile) // cannot append to file path
  * @example append(fromString("./dir/"), fromString("/dir2")) == Err(AppendAbsolute) // cannot append an absolute path
- * 
+ *
  * @since v0.5.5
  */
 provide let append = (path: Path, toAppend: Path) => {
@@ -579,24 +579,24 @@ let relativeToHelper = (source: PathInfo, dest: PathInfo) => {
 /**
  * Attempts to construct a new relative path which will lead to the destination
  * path from the source path.
- * 
+ *
  * If the source and destination are incompatible in their bases, the result
  * will be `Err(IncompatibilityError)`.
  *
  * If the route to the destination cannot be concretely determined from the
  * source, the result will be `Err(ImpossibleRelativization)`.
- * 
+ *
  * @param source: The source path
  * @param dest: The destination path to resolve
  * @returns `Ok(path)` containing the relative path if successfully resolved or `Err(err)` otherwise
- * 
+ *
  * @example relativeTo(fromString("/usr"), fromString("/usr/bin")) == Ok(fromString("./bin"))
  * @example relativeTo(fromString("/home/me"), fromString("/home/me")) == Ok(fromString("."))
  * @example relativeTo(fromString("/file.txt"), fromString("/etc/")) == Ok(fromString("../etc/"))
  * @example relativeTo(fromString(".."), fromString("../../thing")) Ok(fromString("../thing"))
  * @example relativeTo(fromString("/usr/bin"), fromString("C:/Users")) == Err(Incompatible(DifferentRoots))
  * @example relativeTo(fromString("../here"), fromString("./there")) == Err(ImpossibleRelativization)
- * 
+ *
  * @since v0.5.5
  */
 provide let relativeTo = (source, dest) => {
@@ -631,16 +631,16 @@ let ancestryHelper = (base: PathInfo, path: PathInfo) => {
 
 /**
  * Determines the relative ancestry betwen two paths.
- * 
+ *
  * @param base: The first path to consider
  * @param path: The second path to consider
  * @returns `Ok(ancestryStatus)` with the relative ancestry between the paths if they are compatible or `Err(err)` if they are incompatible
- * 
+ *
  * @example ancestry(fromString("/usr"), fromString("/usr/bin/bash")) == Ok(Ancestor)
  * @example ancestry(fromString("/Users/me"), fromString("/Users")) == Ok(Descendant)
  * @example ancestry(fromString("/usr"), fromString("/etc")) == Ok(Neither)
  * @example ancestry(fromString("C:/dir1"), fromString("/dir2")) == Err(DifferentRoots)
- * 
+ *
  * @since v0.5.5
  */
 provide let ancestry = (path1: Path, path2: Path) => {
@@ -663,13 +663,13 @@ let parentHelper = (path: PathInfo) =>
 
 /**
  * Retrieves the path corresponding to the parent directory of the given path.
- * 
+ *
  * @param path: The path to inspect
  * @returns A path corresponding to the parent directory of the given path
- * 
+ *
  * @example parent(fromString("./dir/inner")) == fromString("./dir/")
  * @example parent(fromString("/")) == fromString("/")
- * 
+ *
  * @since v0.5.5
  */
 provide let parent = (path: Path) => {
@@ -684,13 +684,13 @@ let basenameHelper = (path: PathInfo) =>
 
 /**
  * Retrieves the basename (named final segment) of a path.
- * 
+ *
  * @param path: The path to inspect
  * @returns `Some(path)` containing the basename of the path or `None` if the path does not have one
- * 
+ *
  * @example basename(fromString("./dir/file.txt")) == Some("file.txt")
  * @example basename(fromString(".."))) == None
- * 
+ *
  * @since v0.5.5
  */
 provide let basename = (path: Path) => {
@@ -717,15 +717,15 @@ let stemExtHelper = (path: PathInfo) =>
 
 /**
  * Retrieves the basename of a file path without the extension.
- * 
+ *
  * @param path: The path to inspect
  * @returns `Ok(path)` containing the stem of the file path or `Err(err)` if the path is a directory path
- * 
+ *
  * @example stem(fromString("file.txt")) == Ok("file")
  * @example stem(fromString(".gitignore")) == Ok(".gitignore")
  * @example stem(fromString(".a.tar.gz")) == Ok(".a")
  * @example stem(fromString("/dir/")) == Err(IncompatiblePathType) // can only take stem of a file path
- * 
+ *
  * @since v0.5.5
  */
 provide let stem = (path: Path) => {
@@ -740,15 +740,15 @@ provide let stem = (path: Path) => {
 
 /**
  * Retrieves the extension on the basename of a file path.
- * 
+ *
  * @param path: The path to inspect
  * @returns `Ok(path)` containing the extension of the file path or `Err(err)` if the path is a directory path
- * 
+ *
  * @example extension(fromString("file.txt")) == Ok(".txt")
  * @example extension(fromString(".gitignore")) == Ok("")
  * @example extension(fromString(".a.tar.gz")) == Ok(".tar.gz")
  * @example extension(fromString("/dir/")) == Err(IncompatiblePathType) // can only take extension of a file path
- * 
+ *
  * @since v0.5.5
  */
 provide let extension = (path: Path) => {
@@ -770,14 +770,14 @@ let rootHelper = (path: PathInfo) =>
 
 /**
  * Retrieves the root of the absolute path.
- * 
+ *
  * @param path: The path to inspect
  * @returns `Ok(root)` containing the root of the path or `Err(err)` if the path is a relative path
- * 
+ *
  * @example root(fromString("C:/Users/me/")) == Ok(Drive('C'))
  * @example root(fromString("/home/me/")) == Ok(Root)
  * @example root(fromString("./file.txt")) == Err(IncompatiblePathType)
- * 
+ *
  * @since v0.5.5
  */
 provide let root = (path: Path) => {

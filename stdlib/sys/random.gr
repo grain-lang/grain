@@ -1,5 +1,5 @@
 /**
- * @module Random: System access to random values.
+ * System access to random values.
  *
  * @example include "sys/random"
  */

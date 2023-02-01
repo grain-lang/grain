@@ -1,5 +1,5 @@
 /**
- * @module Bytes: Utilities for working with byte sequences.
+ * Utilities for working with byte sequences.
  *
  * @example include "bytes"
  *

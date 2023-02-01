@@ -1,5 +1,6 @@
 /**
- * @module Int64: Utilities for working with the Int64 type.
+ * Utilities for working with the Int64 type.
+ *
  * @example include "int64"
  *
  * @since v0.2.0
