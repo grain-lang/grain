@@ -1,5 +1,4 @@
-// TODO(#1050): Remove dependency on Pervasives once Option/Result types are imbedded in the compiler
-
+/* grainc-flags --no-pervasives */
 module Parse
 
 include "runtime/unsafe/wasmi32"
@@ -20,6 +19,9 @@ include "runtime/unsafe/tags"
 include "runtime/bigint" as BI
 include "runtime/numbers"
 from Numbers use { reducedInteger }
+
+primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (||): (Bool, Bool) -> Bool = "@or"
 
 @unsafe
 provide let parseInt = (string: String, radix: Number) => {
