@@ -2,12 +2,6 @@
 title: String
 ---
 
-### String.**StringList**
-
-```grain
-type StringList
-```
-
 ### String.**concat**
 
 ```grain

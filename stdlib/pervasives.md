@@ -13,21 +13,6 @@ No other changes yet.
 include "pervasives"
 ```
 
-## Types
-
-Type declarations included in the Pervasives module.
-
-### Pervasives.**List**
-
-```grain
-enum List<a> {
-  [],
-  [...](a, List<a>),
-}
-```
-
-The type of Grain lists.
-
 ## Boolean operations
 
 Infix functions for working with Boolean values.
