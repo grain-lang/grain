@@ -12,78 +12,27 @@ describe("stdlib", ({test, testSkip}) => {
   let assertStdlib = makeStdlibRunner(test_or_skip);
 
   assertSnapshot("stdlib_cons", "[1, 2, 3]");
-  assertSnapshot(
-    "stdlib_equal_1",
-    "include \"list\" as List; from List use *; (1, 2) is (1, 2)",
-  );
+  assertSnapshot("stdlib_equal_1", "(1, 2) is (1, 2)");
   assertSnapshot(
     "stdlib_equal_2",
     "include \"pervasives\" as Pervasives; from Pervasives use *; (1, 2) == (1, 2)",
   );
-  assertSnapshot(
-    "stdlib_equal_3",
-    "include \"list\" as List; from List use *; [1, 2, 3] == [1, 2, 3]",
-  );
-  assertSnapshot(
-    "stdlib_equal_4",
-    "include \"list\" as List; from List use *; 1 == 1",
-  );
-  assertSnapshot(
-    "stdlib_equal_5",
-    "include \"list\" as List; from List use *; 1 == 2",
-  );
-  assertSnapshot(
-    "stdlib_equal_6",
-    "include \"list\" as List; from List use *; true == true",
-  );
-  assertSnapshot(
-    "stdlib_equal_7",
-    "include \"list\" as List; from List use *; true == false",
-  );
-  assertSnapshot(
-    "stdlib_equal_8",
-    "include \"list\" as List; from List use *; [>] == [>]",
-  );
-  assertSnapshot(
-    "stdlib_equal_9",
-    "include \"list\" as List; from List use *; [>] == [> 1]",
-  );
-  assertSnapshot(
-    "stdlib_equal_10",
-    "include \"list\" as List; from List use *; [> 1] == [> 1]",
-  );
-  assertSnapshot(
-    "stdlib_equal_11",
-    "include \"list\" as List; from List use *; [> 1, 2] == [> 1]",
-  );
-  assertSnapshot(
-    "stdlib_equal_12",
-    "include \"list\" as List; from List use *; [> 1, 2, 3, 4] == [> 1, 2, 3, 4]",
-  );
-  assertSnapshot(
-    "stdlib_equal_13",
-    "include \"list\" as List; from List use *; \"\" == \"\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_14",
-    "include \"list\" as List; from List use *; \" \" == \"\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_15",
-    "include \"list\" as List; from List use *; \"f\" == \"\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_16",
-    "include \"list\" as List; from List use *; \"foo\" == \"foo\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_17",
-    "include \"list\" as List; from List use *; \"foo 😂\" == \"foo 😂\"",
-  );
-  assertSnapshot(
-    "stdlib_equal_18",
-    "include \"list\" as List; from List use *; \"foo 😂\" == \"foo 🙄\"",
-  );
+  assertSnapshot("stdlib_equal_3", "[1, 2, 3] == [1, 2, 3]");
+  assertSnapshot("stdlib_equal_4", "1 == 1");
+  assertSnapshot("stdlib_equal_5", "1 == 2");
+  assertSnapshot("stdlib_equal_6", "true == true");
+  assertSnapshot("stdlib_equal_7", "true == false");
+  assertSnapshot("stdlib_equal_8", "[>] == [>]");
+  assertSnapshot("stdlib_equal_9", "[>] == [> 1]");
+  assertSnapshot("stdlib_equal_10", "[> 1] == [> 1]");
+  assertSnapshot("stdlib_equal_11", "[> 1, 2] == [> 1]");
+  assertSnapshot("stdlib_equal_12", "[> 1, 2, 3, 4] == [> 1, 2, 3, 4]");
+  assertSnapshot("stdlib_equal_13", "\"\" == \"\"");
+  assertSnapshot("stdlib_equal_14", "\" \" == \"\"");
+  assertSnapshot("stdlib_equal_15", "\"f\" == \"\"");
+  assertSnapshot("stdlib_equal_16", "\"foo\" == \"foo\"");
+  assertSnapshot("stdlib_equal_17", "\"foo 😂\" == \"foo 😂\"");
+  assertSnapshot("stdlib_equal_18", "\"foo 😂\" == \"foo 🙄\"");
   assertSnapshot(
     "stdlib_equal_19",
     "record Rec {foo: Number, bar: String, baz: Bool}; {foo: 4, bar: \"boo\", baz: true} == {foo: 4, bar: \"boo\", baz: true}",
