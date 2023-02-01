@@ -6,7 +6,7 @@
  * @since v0.5.0
  */
 
-module Bigint
+module BigInt
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/memory"

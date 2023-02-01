@@ -3,7 +3,7 @@ module BigintTest
 include "list"
 include "runtime/wasi"
 include "bigint"
-from Bigint use *
+from BigInt use *
 
 assert toString(15t) == "15"
 assert toString(-15t) == "-15"
