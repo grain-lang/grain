@@ -1,3 +1,7 @@
+---
+title: Parse
+---
+
 ### Parse.**parseInt**
 
 ```grain

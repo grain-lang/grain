@@ -1,3 +1,7 @@
+---
+title: Equal
+---
+
 ### Equal.**equal**
 
 ```grain

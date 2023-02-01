@@ -1,3 +1,7 @@
+---
+title: Exception
+---
+
 ### Exception.**printers**
 
 ```grain

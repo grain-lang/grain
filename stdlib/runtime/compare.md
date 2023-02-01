@@ -1,3 +1,7 @@
+---
+title: Compare
+---
+
 ### Compare.**compare**
 
 ```grain

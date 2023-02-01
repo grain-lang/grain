@@ -1,3 +1,7 @@
+---
+title: Bigint
+---
+
 ### Bigint.**List**
 
 ```grain

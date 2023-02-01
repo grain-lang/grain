@@ -1,3 +1,7 @@
+---
+title: DebugPrint
+---
+
 ### DebugPrint.**print**
 
 ```grain

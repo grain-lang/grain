@@ -1,3 +1,7 @@
+---
+title: String
+---
+
 ### String.**StringList**
 
 ```grain

@@ -1,3 +1,7 @@
+---
+title: Debug
+---
+
 ### Debug.**debug**
 
 ```grain

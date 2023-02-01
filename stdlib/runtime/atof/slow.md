@@ -1,3 +1,7 @@
+---
+title: Slow
+---
+
 ### Slow.**parseLongMantissa**
 
 ```grain

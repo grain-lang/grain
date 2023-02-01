@@ -1,3 +1,7 @@
+---
+title: Decimal
+---
+
 ### Decimal.**Decimal**
 
 ```grain

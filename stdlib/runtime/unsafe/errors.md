@@ -1,3 +1,7 @@
+---
+title: Errors
+---
+
 ### Errors.**_GRAIN_ERR_NOT_NUMBER_COMP**
 
 ```grain
