@@ -1,6 +1,7 @@
 module SetTest
 
 include "set"
+from Set use { Immutable as ImmSet }
 include "list"
 include "array"
 
@@ -15,6 +16,8 @@ record ResourceData {
   name: String,
   emoji: String,
 }
+
+// Mutable set tests
 
 // Set.isEmpty
 
@@ -257,3 +260,187 @@ let largeSet = Set.fromArray(Array.init(128, i => i))
 
 // (nodeCount, bucketLength)
 assert Set.getInternalStats(largeSet) == (128, 64)
+
+// Immutable set tests
+
+// ImmSet.isEmpty
+
+let mut e = ImmSet.empty
+
+assert ImmSet.isEmpty(e)
+e = ImmSet.remove("🌾", e)
+assert ImmSet.isEmpty(e)
+let newE = ImmSet.add("🌾", e)
+assert !ImmSet.isEmpty(newE)
+assert ImmSet.isEmpty(e)
+
+// ImmSet.size
+
+let s = ImmSet.fromList(["🌾", "🐑", "🧱"])
+
+assert ImmSet.size(s) == 3
+
+// ImmSet.contains
+
+let h = ImmSet.fromList(["🌾", "🐑", "🧱"])
+
+assert ImmSet.contains("🌾", h)
+assert ImmSet.contains("🐑", h)
+assert ImmSet.contains("🧱", h)
+assert !ImmSet.contains("🌳", h)
+
+// ImmSet.add
+
+let mut vars = ImmSet.empty
+
+vars = ImmSet.add(Grain, vars)
+vars = ImmSet.add(Sheep, vars)
+vars = ImmSet.add(Grain, vars)
+
+assert ImmSet.size(vars) == 2
+
+let mut recs = ImmSet.empty
+
+recs = ImmSet.add({ name: "Grain", emoji: "🌾" }, recs)
+recs = ImmSet.add({ name: "Sheep", emoji: "🐑" }, recs)
+recs = ImmSet.add({ name: "Brick", emoji: "🧱" }, recs)
+recs = ImmSet.add({ name: "Grain", emoji: "🌾" }, recs)
+recs = ImmSet.add({ name: "Sheep", emoji: "🐑" }, recs)
+recs = ImmSet.add({ name: "Brick", emoji: "🧱" }, recs)
+
+assert ImmSet.size(recs) == 3
+
+// ImmSet.remove
+
+let mut r = ImmSet.fromList(["🌾", "🐑", "🧱"])
+
+assert ImmSet.size(r) == 3
+
+r = ImmSet.remove("🌾", r)
+
+assert ImmSet.size(r) == 2
+assert !ImmSet.contains("🌾", r)
+
+r = ImmSet.remove("🐑", r)
+r = ImmSet.remove("🧱", r)
+
+assert ImmSet.isEmpty(r)
+
+// ImmSet.filter
+
+let makeTestSet = () => ImmSet.fromList([Grain, Sheep, Brick])
+
+let mut filterTestSet = makeTestSet()
+
+ImmSet.filter(key => fail "Shouldn't be called", ImmSet.empty)
+filterTestSet = ImmSet.filter(key => key == Sheep, filterTestSet)
+
+assert !ImmSet.contains(Grain, filterTestSet)
+assert ImmSet.contains(Sheep, filterTestSet)
+assert !ImmSet.contains(Brick, filterTestSet)
+
+// ImmSet.reject
+
+let mut rejectTestSet = makeTestSet()
+
+ImmSet.reject(key => fail "Shouldn't be called", ImmSet.empty)
+rejectTestSet = ImmSet.reject(key => key == Sheep, rejectTestSet)
+
+assert ImmSet.contains(Grain, rejectTestSet)
+assert !ImmSet.contains(Sheep, rejectTestSet)
+assert ImmSet.contains(Brick, rejectTestSet)
+
+// ImmSet.reduce
+
+let reduceTestSet = ImmSet.fromList([1, 3, 2, 5, 4])
+
+let result = ImmSet.reduce((acc, key) => fail "Shouldn't be called",
+0,
+ImmSet.empty
+)
+
+assert result == 0
+
+let mut called = 0
+
+let result = ImmSet.reduce((acc, key) => {
+  called += 1
+  [key, ...acc]
+}, [], reduceTestSet)
+
+assert called == 5
+assert result == [5, 4, 3, 2, 1]
+
+// ImmSet.forEach
+
+let forEachTestSet = makeTestSet()
+
+ImmSet.forEach(key => fail "Shouldn't be called", ImmSet.empty)
+
+let mut called = 0
+
+ImmSet.forEach(key => {
+  called += 1
+  match (key) {
+    Grain => void,
+    Sheep => void,
+    Brick => void,
+    _ => fail "ImmSet.forEach() should not contain this value.",
+  }
+}, forEachTestSet)
+
+assert called == 3
+
+// ImmSet.diff
+
+let d = ImmSet.fromList([0, 1, 2, 3, 4, 5, 6])
+let e = ImmSet.fromList([4, 2, 1, 3, 0, -2, -1, -3])
+
+let diffSet = ImmSet.diff(d, e)
+
+assert ImmSet.size(diffSet) == 5
+assert [-3, -2, -1, 5, 6] == ImmSet.toList(diffSet)
+
+// ImmSet.union
+
+let unionSet = ImmSet.union(d, e)
+
+assert ImmSet.size(unionSet) == 10
+assert [-3, -2, -1, 0, 1, 2, 3, 4, 5, 6] == ImmSet.toList(unionSet)
+
+// ImmSet.intersect
+
+let intersectSet = ImmSet.intersect(d, e)
+
+assert ImmSet.size(intersectSet) == 5
+assert [0, 1, 2, 3, 4] == ImmSet.toList(intersectSet)
+
+// ImmSet.fromList
+
+let k = ImmSet.fromList([1, 1, 1])
+
+assert ImmSet.size(k) == 1
+assert ImmSet.contains(1, k)
+
+// ImmSet.toList
+
+let o = ImmSet.fromList([0, 2, 1, 3, 0, 4, 2])
+
+let l = ImmSet.toList(o)
+
+assert l == [0, 1, 2, 3, 4]
+
+// ImmSet.fromArray
+
+let q = ImmSet.fromArray([> 0, 0, 0])
+
+assert ImmSet.size(q) == 1
+assert ImmSet.contains(0, q)
+
+// ImmSet.toArray
+
+let p = ImmSet.fromArray([> 0, 1, 2, 3, 4, 3, 2, 1, 0])
+
+let r = ImmSet.toArray(p)
+
+assert r == [> 0, 1, 2, 3, 4]

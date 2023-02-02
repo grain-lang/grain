@@ -1,6 +1,7 @@
 module PriorityQueueTest
 
 include "priorityqueue"
+from PriorityQueue use { Immutable as ImmPQ }
 include "list"
 include "array"
 
@@ -83,3 +84,89 @@ assert PriorityQueue.drain(
 
 assert PriorityQueue.fromList(Array.toList(lotsOfVals), compare) ==
   PriorityQueue.fromArray(lotsOfVals, compare)
+
+// formatter-ignore
+let lotsOfVals = [>
+  3, 2, 1, 5, 3, 2, 2, 10, 6, 5,
+  6, 4, 9, 10, 10, 5, 9, 6, 1, 3,
+  3, 6, 6, 1, 3, 9, 6, 7, 4, 6,
+  5, 4, 4, 8, 6, 4, 1, 2, 3, 8,
+  8, 8, 10, 9, 6, 8, 4, 1, 1, 2,
+  10, 2, 8, 10, 8, 7, 4, 8, 10, 1,
+  3, 10, 4, 1, 6, 9, 6, 7, 8, 7,
+  10, 4, 5, 10, 3, 2, 4, 5, 9, 5,
+  3, 5, 10, 8, 7, 1, 6, 1, 4, 8,
+  3, 5, 7, 2, 4, 2, 4, 5, 10, 6,
+  7, 7, 7, 1, 10, 4, 9, 9, 10, 10,
+  2, 5, 2, 4, 3, 10, 9, 8, 3, 5,
+  7, 10, 9, 7, 8, 9, 3, 7, 7, 1,
+  7, 7, 6, 3, 3, 5, 1, 8, 9, 10,
+  7, 5, 9, 2, 9, 1, 6, 3, 10, 6,
+  10, 2, 6, 2, 9, 3, 3, 2, 4, 1,
+  9, 4, 9, 2, 9, 4, 8, 5, 6, 7,
+  4, 6, 5, 4, 3, 4, 2, 9, 10, 1,
+  10, 4, 4, 6, 3, 1, 9, 10, 2, 2,
+  5, 5, 3, 4, 5, 8, 3, 8, 4, 10
+]
+let numVals = Array.length(lotsOfVals)
+
+let sortedVals = Array.copy(lotsOfVals)
+Array.sort(compare, sortedVals)
+
+let mut pq = ImmPQ.make((a, b) => a - b)
+let mut maxPq = ImmPQ.make((a, b) => b - a)
+
+assert ImmPQ.size(pq) == 0
+assert ImmPQ.isEmpty(pq)
+assert ImmPQ.peek(pq) == None
+assert ImmPQ.drain(pq) == []
+
+pq = ImmPQ.pop(pq)
+assert ImmPQ.size(pq) == 0
+
+for (let mut i = 0; i < numVals; i += 1) {
+  let newPq = ImmPQ.push(lotsOfVals[i], pq)
+  let newMaxPq = ImmPQ.push(lotsOfVals[i], maxPq)
+  assert ImmPQ.size(pq) == i
+  assert ImmPQ.size(maxPq) == i
+  assert ImmPQ.size(newPq) == i + 1
+  assert ImmPQ.size(newMaxPq) == i + 1
+  pq = newPq
+  maxPq = newMaxPq
+}
+
+let pqWithAll = pq
+let maxPqWithAll = maxPq
+
+for (let mut i = 0; i < numVals; i += 1) {
+  let val = ImmPQ.peek(pq)
+  assert val == Some(sortedVals[i])
+  let maxVal = ImmPQ.peek(maxPq)
+  assert maxVal == Some(sortedVals[numVals - i - 1])
+
+  let newPq = ImmPQ.pop(pq)
+  let newMaxPq = ImmPQ.pop(maxPq)
+  let expectedSize = numVals - i
+  assert ImmPQ.size(pq) == expectedSize
+  assert ImmPQ.size(maxPq) == expectedSize
+  assert ImmPQ.size(newPq) == expectedSize - 1
+  assert ImmPQ.size(newMaxPq) == expectedSize - 1
+  pq = newPq
+  maxPq = newMaxPq
+}
+
+assert ImmPQ.size(pq) == 0
+assert ImmPQ.size(pqWithAll) == numVals
+assert !ImmPQ.isEmpty(pqWithAll)
+assert ImmPQ.peek(pq) == None
+
+let sortedList = Array.toList(sortedVals)
+assert ImmPQ.drain(pqWithAll) == sortedList
+assert ImmPQ.drain(maxPqWithAll) == List.reverse(sortedList)
+assert ImmPQ.drain(ImmPQ.fromList(Array.toList(lotsOfVals), (a, b) => a - b)) ==
+  sortedList
+assert ImmPQ.drain(ImmPQ.fromList(Array.toList(lotsOfVals), (a, b) => b - a)) ==
+  List.reverse(sortedList)
+
+assert ImmPQ.fromList(Array.toList(lotsOfVals), compare) ==
+  ImmPQ.fromArray(lotsOfVals, compare)
