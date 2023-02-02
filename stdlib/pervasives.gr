@@ -44,23 +44,6 @@ include "runtime/string"
 from String use { toString, print, concat as (++) }
 
 /**
- * @section Types: Type declarations included in the Pervasives module.
- */
-
-/**
- * The type of Grain lists.
- *
- * @example [1, 2, 3]
- * @example []
- *
- * @since v0.1.0
- */
-provide enum List<a> {
-  [],
-  [...](a, List<a>),
-}
-
-/**
  * @section Boolean operations: Infix functions for working with Boolean values.
  */
 

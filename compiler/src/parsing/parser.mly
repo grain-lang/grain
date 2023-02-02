@@ -369,9 +369,6 @@ data_constructor:
   | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
   | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Option.value ~default:[] $3) }
   | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc $1) $2 }
-  /* Special support for lists */
-  | lbrack rbrack { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc "[]") }
-  | lbrack ELLIPSIS rbrack lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc "[...]") (Option.value ~default:[] $5) }
 
 data_constructors:
   | lbrace lseparated_nonempty_list(comma, data_constructor) comma? rbrace { $2 }

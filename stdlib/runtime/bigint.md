@@ -2,12 +2,6 @@
 title: Bigint
 ---
 
-### Bigint.**List**
-
-```grain
-type List<a>
-```
-
 ### Bigint.**debugDumpNumber**
 
 ```grain
