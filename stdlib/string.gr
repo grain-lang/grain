@@ -1,5 +1,6 @@
 /**
- * @module String: Utilities for working with strings.
+ * Utilities for working with strings.
+ *
  * @example include "string"
  *
  * @since v0.2.0

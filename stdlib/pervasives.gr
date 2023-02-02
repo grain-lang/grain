@@ -1,7 +1,7 @@
 /* grainc-flags --no-pervasives */
 
 /**
- * @module Pervasives: This module is automatically imported into every Grain program. You can think of it as the global environment. Although it is automatically imported, it can still be imported manually.
+ * This module is automatically imported into every Grain program. You can think of it as the global environment. Although it is automatically imported, it can still be imported manually.
  *
  * @example include "pervasives"
  *

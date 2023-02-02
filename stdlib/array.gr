@@ -1,5 +1,5 @@
 /**
- * @module Array: Utilities for working with arrays.
+ * Utilities for working with arrays.
  *
  * @example include "array"
  *

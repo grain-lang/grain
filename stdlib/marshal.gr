@@ -1,5 +1,5 @@
 /**
- * @module Marshal: Utilities for serializing and deserializing Grain data.
+ * Utilities for serializing and deserializing Grain data.
  *
  * @example include "marshal"
  *

@@ -1,5 +1,6 @@
 /**
- * @module Hash: Utilities for hashing any value.
+ * Utilities for hashing any value.
+ *
  * @example include "hash"
  *
  * @since v0.1.0

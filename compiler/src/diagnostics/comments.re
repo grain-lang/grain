@@ -23,10 +23,6 @@ module Attribute = {
         attr_desc,
         attr_type,
       })
-    | Module({
-        attr_name,
-        attr_desc,
-      })
     // Currently only accepts single-line examples
     | Example({attr_desc})
     | Section({
@@ -68,19 +64,6 @@ module Attribute = {
     } else {
       raise(
         MalformedAttribute(attr, "@returns Description of return value"),
-      );
-    };
-  };
-
-  let parse_module = (~attr, content) => {
-    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_name = Str.matched_group(1, content);
-      let attr_desc = Str.matched_group(2, content);
-      Module({attr_name, attr_desc});
-    } else {
-      raise(
-        MalformedAttribute(attr, "@module ModuleName: Description of module"),
       );
     };
   };
@@ -181,9 +164,6 @@ module Attribute = {
           | "returns" =>
             let returns_attr = parse_returns(~attr, content);
             attrs := [returns_attr, ...attrs^];
-          | "module" =>
-            let module_attr = parse_module(~attr, content);
-            attrs := [module_attr, ...attrs^];
           | "example" =>
             let example_attr = parse_example(~attr, content);
             attrs := [example_attr, ...attrs^];
@@ -231,13 +211,6 @@ module Attribute = {
   let is_returns = (attr: t) => {
     switch (attr) {
     | Returns(_) => true
-    | _ => false
-    };
-  };
-
-  let is_module = (attr: t) => {
-    switch (attr) {
-    | Module(_) => true
     | _ => false
     };
   };
@@ -412,20 +385,6 @@ module Doc = {
       };
     };
     ending_on_lnum_help(lnum, true);
-  };
-
-  let find_module = (module C: OrderedComments) => {
-    let module_comments = ref([]);
-    C.iter((_, (_comment, _desc, attrs) as comment) =>
-      if (List.exists(Attribute.is_module, attrs)) {
-        module_comments := [comment, ...module_comments^];
-      }
-    );
-    if (List.length(module_comments^) > 1) {
-      failwith("More than one @module block is not supported");
-    } else {
-      List.nth_opt(module_comments^, 0);
-    };
   };
 
   let find_sections = (module C: OrderedComments) => {

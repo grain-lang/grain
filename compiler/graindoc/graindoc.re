@@ -87,8 +87,14 @@ let generate_docs =
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
-  let module_comment = Comments.Doc.find_module(comments);
-  let module_name = ref(None);
+  let module_name = program.module_name.txt;
+  let module_comment =
+    Comments.Doc.ending_on(
+      ~lnum=program.module_name.loc.loc_start.pos_lnum - 1,
+      comments,
+    );
+
+  Buffer.add_string(buf, Markdown.frontmatter([("title", module_name)]));
   switch (module_comment) {
   | Some((_, desc, attrs)) =>
     let deprecations =
@@ -104,31 +110,20 @@ let generate_docs =
            }
          });
 
-    // TODO(#787): Should we fail if more than one `@module` attribute?
-    let module_attr = attrs |> List.find(Comments.Attribute.is_module);
-    switch (module_attr) {
-    | Module({attr_name, attr_desc}) =>
-      module_name := Some(attr_name);
-      Buffer.add_string(buf, Markdown.frontmatter([("title", attr_name)]));
-      if (List.length(deprecations) > 0) {
-        List.iter(
-          msg =>
-            Buffer.add_string(
-              buf,
-              Markdown.blockquote(
-                Markdown.bold("Deprecated:") ++ " " ++ msg,
-              ),
-            ),
-          deprecations,
-        );
-      };
-      Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-      switch (desc) {
-      // Guard isn't be needed because we turn an empty string into None during extraction
-      | Some(desc) => Buffer.add_string(buf, Markdown.paragraph(desc))
-      | None => ()
-      };
-    | _ => failwith("Unreachable: Non-`module` attribute can't exist here.")
+    if (List.length(deprecations) > 0) {
+      List.iter(
+        msg =>
+          Buffer.add_string(
+            buf,
+            Markdown.blockquote(Markdown.bold("Deprecated:") ++ " " ++ msg),
+          ),
+        deprecations,
+      );
+    };
+
+    switch (desc) {
+    | Some(desc) => Buffer.add_string(buf, Markdown.paragraph(desc))
+    | None => ()
     };
 
     // TODO(#787): Should we fail if more than one `@since` attribute?
@@ -187,13 +182,12 @@ let generate_docs =
   | None => ()
   };
 
-  let module_name = module_name^;
   let add_docblock = sig_item => {
     let docblock =
       Docblock.for_signature_item(
         ~comments,
         ~exports,
-        ~module_name?,
+        ~module_name,
         sig_item,
       );
     switch (docblock) {

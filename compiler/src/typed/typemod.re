@@ -947,7 +947,13 @@ let type_implementation = prog => {
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);
   let signature = Env.build_signature(normalized_sig, module_name, filename);
-  {statements, env: finalenv, signature, comments: prog.comments};
+  {
+    module_name: prog.module_name,
+    statements,
+    env: finalenv,
+    signature,
+    comments: prog.comments,
+  };
 };
 
 /* Error report */

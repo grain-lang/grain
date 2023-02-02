@@ -1,3 +1,7 @@
+---
+title: Tags
+---
+
 ### Tags.**_GRAIN_NUMBER_TAG_TYPE**
 
 ```grain

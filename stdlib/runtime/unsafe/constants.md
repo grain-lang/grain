@@ -1,3 +1,7 @@
+---
+title: Constants
+---
+
 ### Constants.**_SMIN_I32**
 
 ```grain

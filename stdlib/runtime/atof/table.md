@@ -1,3 +1,7 @@
+---
+title: Table
+---
+
 ### Table.**get_F64_POWERS10_FAST_PATH**
 
 ```grain

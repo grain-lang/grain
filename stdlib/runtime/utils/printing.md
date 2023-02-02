@@ -1,3 +1,7 @@
+---
+title: Printing
+---
+
 ### Printing.**numberToString**
 
 ```grain

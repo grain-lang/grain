@@ -1,6 +1,8 @@
 /**
- * @module Number: Utilities for working with numbers.
+ * Utilities for working with numbers.
+ *
  * @example include "number"
+ *
  * @since v0.4.0
  */
 

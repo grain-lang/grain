@@ -63,28 +63,6 @@ module String = {
     Printf.sprintf("%s.%s", remove_extension(baseName), newExt);
   };
 
-  // TODO(#216): Turn this into a function that only operates on Fp
-  let filename_to_module_name = fname => {
-    let baseName =
-      Option.bind(from_string(fname), p =>
-        switch (p) {
-        | Absolute(path) => Fp.baseName(path)
-        | Relative(path) => Fp.baseName(path)
-        }
-      );
-    let name =
-      switch (baseName) {
-      | Some(baseName) => remove_extension(baseName)
-      | None =>
-        raise(
-          Invalid_argument(
-            Printf.sprintf("Invalid filepath (fname: '%s')", fname),
-          ),
-        )
-      };
-    String.capitalize_ascii(name);
-  };
-
   let normalize_separators = path =>
     if (Sys.unix) {
       path;

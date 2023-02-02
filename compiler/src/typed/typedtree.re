@@ -587,6 +587,7 @@ type comment =
 
 [@deriving sexp]
 type typed_program = {
+  module_name: loc(string),
   statements: list(toplevel_stmt),
   env: [@sexp.opaque] Env.t,
   signature: Cmi_format.cmi_infos,

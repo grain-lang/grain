@@ -1,3 +1,7 @@
+---
+title: NumberUtils
+---
+
 ### NumberUtils.**_MAX_DOUBLE_LENGTH**
 
 ```grain

@@ -1,5 +1,5 @@
 /**
- * @module Buffer: Utilities for working with buffers.
+ * Utilities for working with buffers.
  *
  * Buffers are data structures that automatically expand as more data is appended. They are useful for storing and operating on an unknown number of bytes. All set or append operations mutate the buffer.
  * @example include "buffer"

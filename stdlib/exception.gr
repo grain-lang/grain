@@ -1,5 +1,5 @@
 /**
- * @module Exception: Utilities for working with the Exception type.
+ * Utilities for working with the Exception type.
  *
  * The Exception type represents an error that has occured during computation.
  *

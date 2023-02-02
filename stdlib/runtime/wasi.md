@@ -1,3 +1,7 @@
+---
+title: Wasi
+---
+
 ### Wasi.**args_get**
 
 ```grain

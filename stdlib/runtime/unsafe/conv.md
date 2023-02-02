@@ -1,3 +1,7 @@
+---
+title: Conv
+---
+
 ### Conv.**toInt32**
 
 ```grain

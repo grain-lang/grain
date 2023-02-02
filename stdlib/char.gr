@@ -1,5 +1,5 @@
 /**
- * @module Char: Utilities for working with the Char type.
+ * Utilities for working with the Char type.
  *
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *

@@ -1,11 +1,10 @@
 /**
- * @module Result: Utilities for working with the Result data type.
+ * Utilities for working with the Result data type.
  *
  * The Result type is an enum that represents the possibility of a success case (with the `Ok` variant),
  * or an error case (with the `Err` variant). Use a Result as the return type of a function that may return an error.
  *
  * @example include "result"
- *
  *
  * @example let success = Ok((x) => 1 + x) // Creates a successful Result containing (x) => 1 + x
  * @example let failure = Err("Something bad happened") // Creates an unsuccessful Result containing "Something bad happened"

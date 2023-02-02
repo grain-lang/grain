@@ -1,34 +1,38 @@
-### Gc.**decimalCount32**
+---
+title: GC
+---
+
+### GC.**decimalCount32**
 
 ```grain
 decimalCount32 : Box<WasmI32 -> WasmI32>
 ```
 
-### Gc.**utoa32Buffered**
+### GC.**utoa32Buffered**
 
 ```grain
 utoa32Buffered : Box<(WasmI32, WasmI32, WasmI32) -> Void>
 ```
 
-### Gc.**malloc**
+### GC.**malloc**
 
 ```grain
 malloc : WasmI32 -> WasmI32
 ```
 
-### Gc.**free**
+### GC.**free**
 
 ```grain
 free : WasmI32 -> Void
 ```
 
-### Gc.**incRef**
+### GC.**incRef**
 
 ```grain
 incRef : WasmI32 -> WasmI32
 ```
 
-### Gc.**decRef**
+### GC.**decRef**
 
 ```grain
 decRef : WasmI32 -> WasmI32

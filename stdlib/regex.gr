@@ -1,5 +1,6 @@
 /**
- * @module Regex: Regular Expressions.
+ * Regular Expressions.
+ *
  * @example include "regex"
  *
  * @since 0.4.3

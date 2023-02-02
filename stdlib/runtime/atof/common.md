@@ -1,3 +1,7 @@
+---
+title: Common
+---
+
 ### Common.**BiasedFp**
 
 ```grain

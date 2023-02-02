@@ -1,5 +1,6 @@
 /**
- * @module Int32: Utilities for working with the Int32 type.
+ * Utilities for working with the Int32 type.
+ *
  * @example include "int32"
  *
  * @since v0.2.0

@@ -1,3 +1,7 @@
+---
+title: Malloc
+---
+
 ### Malloc.**_RESERVED_RUNTIME_SPACE**
 
 ```grain
