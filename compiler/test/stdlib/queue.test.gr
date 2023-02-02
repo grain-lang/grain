@@ -1,58 +1,58 @@
 module QueueTest
 
 include "queue"
-from Queue use { Mutable as MutQ, Immutable as ImmQ }
+from Queue use { Immutable as ImmQ }
 include "list"
 
 // Mutable queue tests
 
-let empty = MutQ.make()
-assert MutQ.isEmpty(empty)
-assert MutQ.size(empty) == 0
-assert MutQ.peek(empty) == None
-assert MutQ.pop(empty) == None
-assert MutQ.size(empty) == 0
+let empty = Queue.make()
+assert Queue.isEmpty(empty)
+assert Queue.size(empty) == 0
+assert Queue.peek(empty) == None
+assert Queue.pop(empty) == None
+assert Queue.size(empty) == 0
 
-let queue = MutQ.make()
-MutQ.push(1, queue)
-MutQ.push(2, queue)
-MutQ.push(3, queue)
+let queue = Queue.make()
+Queue.push(1, queue)
+Queue.push(2, queue)
+Queue.push(3, queue)
 
-assert !MutQ.isEmpty(queue)
-assert MutQ.size(queue) == 3
-assert MutQ.peek(queue) == Some(1)
+assert !Queue.isEmpty(queue)
+assert Queue.size(queue) == 3
+assert Queue.peek(queue) == Some(1)
 
-assert MutQ.pop(queue) == Some(1)
-assert MutQ.peek(queue) == Some(2)
-assert MutQ.size(queue) == 2
+assert Queue.pop(queue) == Some(1)
+assert Queue.peek(queue) == Some(2)
+assert Queue.size(queue) == 2
 
-MutQ.push(4, queue)
-assert MutQ.size(queue) == 3
-assert MutQ.peek(queue) == Some(2)
-let copy = MutQ.copy(queue)
-MutQ.pop(copy)
-assert MutQ.size(copy) == 2
-assert MutQ.size(queue) == 3
-MutQ.clear(queue)
-assert MutQ.size(queue) == 0
-assert MutQ.peek(queue) == None
+Queue.push(4, queue)
+assert Queue.size(queue) == 3
+assert Queue.peek(queue) == Some(2)
+let copy = Queue.copy(queue)
+Queue.pop(copy)
+assert Queue.size(copy) == 2
+assert Queue.size(queue) == 3
+Queue.clear(queue)
+assert Queue.size(queue) == 0
+assert Queue.peek(queue) == None
 
 // test that expansion works
-let queue = MutQ.makeSized(3)
-MutQ.push(0, queue)
-MutQ.push(1, queue)
-MutQ.push(2, queue)
-MutQ.push(3, queue)
-assert MutQ.pop(queue) == Some(0)
-assert MutQ.pop(queue) == Some(1)
-assert MutQ.pop(queue) == Some(2)
-assert MutQ.pop(queue) == Some(3)
-assert MutQ.pop(queue) == None
+let queue = Queue.makeSized(3)
+Queue.push(0, queue)
+Queue.push(1, queue)
+Queue.push(2, queue)
+Queue.push(3, queue)
+assert Queue.pop(queue) == Some(0)
+assert Queue.pop(queue) == Some(1)
+assert Queue.pop(queue) == Some(2)
+assert Queue.pop(queue) == Some(3)
+assert Queue.pop(queue) == None
 
 // test that the "circular" behavior of the circular queue works as expected
-let queue = MutQ.makeSized(4)
-let push = x => () => MutQ.push(x, queue)
-let pop = () => ignore(MutQ.pop(queue))
+let queue = Queue.makeSized(4)
+let push = x => () => Queue.push(x, queue)
+let pop = () => ignore(Queue.pop(queue))
 let actions = [
   push(1),
   push(2),
@@ -71,17 +71,17 @@ let actions = [
 ]
 List.forEach(action => action(), actions)
 
-assert MutQ.size(queue) == 4
-assert MutQ.peek(queue) == Some(6)
+assert Queue.size(queue) == 4
+assert Queue.peek(queue) == Some(6)
 
-MutQ.push(10, queue)
-assert MutQ.size(queue) == 5
-assert MutQ.pop(queue) == Some(6)
-assert MutQ.pop(queue) == Some(7)
-assert MutQ.pop(queue) == Some(8)
-assert MutQ.pop(queue) == Some(9)
-assert MutQ.pop(queue) == Some(10)
-assert MutQ.pop(queue) == None
+Queue.push(10, queue)
+assert Queue.size(queue) == 5
+assert Queue.pop(queue) == Some(6)
+assert Queue.pop(queue) == Some(7)
+assert Queue.pop(queue) == Some(8)
+assert Queue.pop(queue) == Some(9)
+assert Queue.pop(queue) == Some(10)
+assert Queue.pop(queue) == None
 
 // Immutable queue tests
 

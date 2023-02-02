@@ -1,5 +1,9 @@
 /**
- * Mutable and immutable queue implementations. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
+ * A queue is a FIFO (first-in-first-out) data structure where new
+ * values are added to the end and retrieved or removed from the beginning.
+ *
+ * The default implementation is mutable, but an immutable queue
+ * implementation is available in the `Immutable` submodule.
  *
  * @example include "queue"
  *
@@ -10,6 +14,153 @@ module Queue
 
 include "list"
 include "array"
+
+/**
+ * A mutable FIFO (first-in-first-out) data structure.
+ */
+abstract record Queue<a> {
+  mut size: Number,
+  mut array: Array<Option<a>>,
+  mut headI: Number,
+  mut tailI: Number, // tail points to where the next element should be inserted
+}
+
+/**
+ * Creates a new queue with an initial storage of the given size. As values are
+ * added or removed, the internal storage may grow or shrink. Generally, you
+ * won’t need to care about the storage size of your map and can use
+ * `Queue.make()` instead.
+ *
+ * @param size: The initial storage size of the queue
+ * @returns An empty queue
+ *
+ * @since v0.6.0
+ */
+provide let makeSized = size => {
+  { size: 0, array: Array.make(size, None), headI: 0, tailI: 0 }
+}
+
+/**
+ * Creates a new queue.
+ *
+ * @returns An empty queue
+ *
+ * @since v0.6.0
+ */
+provide let make = () => {
+  makeSized(16)
+}
+
+/**
+ * Checks if the given queue contains no items.
+ *
+ * @param queue: The queue to check
+ * @returns `true` if the queue has no items or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+provide let isEmpty = queue => queue.size == 0
+
+/**
+ * Computes the size of the input queue.
+ *
+ * @param queue: The queue to inspect
+ * @returns The count of the items in the queue
+ *
+ * @since v0.6.0
+ */
+provide let size = queue => queue.size
+
+/**
+ * Provides the value at the beginning of the queue, if it exists.
+ *
+ * @param queue: The queue to inspect
+ * @returns `Some(value)` containing the value at the beginning of the queue or `None` otherwise.
+ *
+ * @since v0.6.0
+ */
+provide let peek = queue => {
+  if (queue.size == 0) None else queue.array[queue.headI]
+}
+
+/**
+ * Adds a new item to the end of the queue.
+ *
+ * @param value: The item to be added
+ * @param queue: The queue being updated
+ *
+ * @since v0.6.0
+ */
+provide let push = (value, queue) => {
+  let arrLen = Array.length(queue.array)
+  // expand the array if needed
+  if (queue.size == arrLen) {
+    let newArray = Array.make(arrLen * 2, None)
+
+    newArray[0] = queue.array[queue.headI]
+    let mut insertI = 1
+    let mut currI = (queue.headI + 1) % arrLen
+    while (currI != queue.tailI) {
+      newArray[insertI] = queue.array[currI]
+      insertI += 1
+      currI = (currI + 1) % arrLen
+    }
+
+    queue.headI = 0
+    queue.tailI = arrLen
+    queue.array = newArray
+  }
+  queue.array[queue.tailI] = Some(value)
+  queue.tailI = (queue.tailI + 1) % Array.length(queue.array)
+  queue.size += 1
+}
+
+/**
+ * Removes the item at the beginning of the queue.
+ *
+ * @param queue: The queue being updated
+ * @returns The element removed from the queue
+ *
+ * @since v0.6.0
+ */
+provide let pop = queue => {
+  if (queue.size == 0) {
+    None
+  } else {
+    let elem = queue.array[queue.headI]
+    queue.array[queue.headI] = None
+    queue.headI = (queue.headI + 1) % Array.length(queue.array)
+    queue.size -= 1
+    elem
+  }
+}
+
+/**
+ * Clears the queue by removing all of its elements
+ *
+ * @param queue: The queue to clear
+ *
+ * @since v0.6.0
+ */
+provide let clear = queue => {
+  queue.size = 0
+  Array.fill(None, queue.array)
+  queue.headI = 0
+  queue.tailI = 0
+}
+
+/**
+ * Produces a shallow copy of the input queue.
+ *
+ * @param queue: The queue to copy
+ * @returns A new queue containing the elements from the input
+ *
+ * @since v0.6.0
+ */
+provide let copy = queue => {
+  let { size, array, headI, tailI } = queue
+  { size, array: Array.copy(array), headI, tailI }
+}
 
 /**
  * An immutable queue implementation.
@@ -135,169 +286,5 @@ provide module Immutable {
       { forwards: [], backwards } => List.length(backwards),
       { forwards, backwards } => List.length(forwards) + List.length(backwards),
     }
-  }
-}
-
-/**
- * A mutable queue implementation.
- */
-provide module Mutable {
-  // tail points to where the next element should be inserted
-
-  /**
-   * A mutable FIFO (first-in-first-out) data structure.
-   */
-
-  abstract record Queue<a> {
-    mut size: Number,
-    mut array: Array<Option<a>>,
-    mut headI: Number,
-    mut tailI: Number,
-  }
-
-  /**
-   * Creates a new queue with an initial storage of the given size. As values are
-   * added or removed, the internal storage may grow or shrink. Generally, you
-   * won’t need to care about the storage size of your map and can use
-   * `Queue.make()` instead.
-   *
-   * @param size: The initial storage size of the queue
-   * @returns An empty queue
-   *
-   * @since v0.6.0
-   */
-
-  provide let makeSized = size => {
-    { size: 0, array: Array.make(size, None), headI: 0, tailI: 0 }
-  }
-
-  /**
-   * Creates a new queue.
-   *
-   * @returns An empty queue
-   *
-   * @since v0.6.0
-   */
-
-  provide let make = () => {
-    makeSized(16)
-  }
-
-  /**
-   * Checks if the given queue contains no items.
-   *
-   * @param queue: The queue to check
-   * @returns `true` if the queue has no items or `false` otherwise
-   *
-   * @since v0.6.0
-   */
-
-  provide let isEmpty = queue => queue.size == 0
-
-  /**
-   * Computes the size of the input queue.
-   *
-   * @param queue: The queue to inspect
-   * @returns The count of the items in the queue
-   *
-   * @since v0.6.0
-   */
-
-  provide let size = queue => queue.size
-
-  /**
-   * Provides the value at the beginning of the queue, if it exists.
-   *
-   * @param queue: The queue to inspect
-   * @returns `Some(value)` containing the value at the beginning of the queue or `None` otherwise.
-   *
-   * @since v0.6.0
-   */
-
-  provide let peek = queue => {
-    if (queue.size == 0) None else queue.array[queue.headI]
-  }
-
-  /**
-   * Adds a new item to the end of the queue.
-   *
-   * @param value: The item to be added
-   * @param queue: The queue being updated
-   *
-   * @since v0.6.0
-   */
-
-  provide let push = (value, queue) => {
-    let arrLen = Array.length(queue.array)
-    // expand the array if needed
-    if (queue.size == arrLen) {
-      let newArray = Array.make(arrLen * 2, None)
-
-      newArray[0] = queue.array[queue.headI]
-      let mut insertI = 1
-      let mut currI = (queue.headI + 1) % arrLen
-      while (currI != queue.tailI) {
-        newArray[insertI] = queue.array[currI]
-        insertI += 1
-        currI = (currI + 1) % arrLen
-      }
-
-      queue.headI = 0
-      queue.tailI = arrLen
-      queue.array = newArray
-    }
-    queue.array[queue.tailI] = Some(value)
-    queue.tailI = (queue.tailI + 1) % Array.length(queue.array)
-    queue.size += 1
-  }
-
-  /**
-   * Removes the item at the beginning of the queue.
-   *
-   * @param queue: The queue being updated
-   * @returns The element removed from the queue
-   *
-   * @since v0.6.0
-   */
-
-  provide let pop = queue => {
-    if (queue.size == 0) {
-      None
-    } else {
-      let elem = queue.array[queue.headI]
-      queue.array[queue.headI] = None
-      queue.headI = (queue.headI + 1) % Array.length(queue.array)
-      queue.size -= 1
-      elem
-    }
-  }
-
-  /**
-   * Clears the queue by removing all of its elements
-   *
-   * @param queue: The queue to clear
-   *
-   * @since v0.6.0
-   */
-
-  provide let clear = queue => {
-    queue.size = 0
-    Array.fill(None, queue.array)
-    queue.headI = 0
-    queue.tailI = 0
-  }
-
-  /**
-   * Produces a shallow copy of the input queue.
-   *
-   * @param queue: The queue to copy
-   * @returns A new queue containing the elements from the input
-   *
-   * @since v0.6.0
-   */
-
-  provide let copy = queue => {
-    let { size, array, headI, tailI } = queue
-    { size, array: Array.copy(array), headI, tailI }
   }
 }
