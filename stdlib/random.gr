@@ -21,7 +21,7 @@ include "runtime/dataStructures" as DS
  * @section Types: Type declarations included in the Random module.
  */
 
-record Random {
+abstract record Random {
   seed: Uint64,
   mut counter: Uint64,
   mut initialized: Bool,

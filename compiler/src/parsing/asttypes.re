@@ -64,7 +64,8 @@ and number_type =
 [@deriving (sexp, yojson)]
 type provide_flag =
   | NotProvided
-  | Provided;
+  | Provided
+  | Abstract;
 
 /** Marker for recursive/nonrecursive let bindings */
 

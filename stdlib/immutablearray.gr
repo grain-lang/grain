@@ -79,7 +79,7 @@ record Builder<a> {
 
 // A "tail" of < 32 values at the end of the array is kept as a performance
 // optimization
-record ImmutableArray<a> {
+abstract record ImmutableArray<a> {
   length: Number,
   shift: Number,
   root: Tree<a>,

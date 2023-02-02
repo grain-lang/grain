@@ -28,7 +28,7 @@ record Bucket<k, v> {
  * @section Types: Type declarations included in the Map module.
  */
 
-record Map<k, v> {
+abstract record Map<k, v> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k, v>>>,
 }

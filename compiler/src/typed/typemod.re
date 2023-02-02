@@ -351,6 +351,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       switch (e) {
       | Provided => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract foreign")
       };
     let foreign = {
       ttop_desc: TTopForeign(desc),
@@ -367,6 +368,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       switch (e) {
       | Provided => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract primitive")
       };
     let (defs, newenv, attrs) = Translprim.transl_prim(newenv, desc);
     let prim = {
@@ -394,28 +396,27 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
 
   let process_datas = (env, data_decls, attributes, loc) => {
     let (decls, newenv) =
-      Typedecl.transl_data_decl(
-        env,
-        Recursive,
-        List.map(((_, d)) => d, data_decls),
-      );
-    let ty_decl =
+      Typedecl.transl_data_decl(env, Recursive, data_decls);
+    let ty_decls =
       map2_rec_type_with_row_types(
         ~rec_flag=Recursive,
         (rs, info, e) => {
           switch (e) {
-          | Provided => TSigType(info.data_id, info.data_type, rs)
-          | NotProvided =>
-            TSigType(
-              info.data_id,
-              {
-                ...info.data_type,
-                type_kind: TDataAbstract,
-                // Removing the manifest hides the type implementation
-                // of this alias from any consuming module
-                type_manifest: None,
-              },
-              rs,
+          | NotProvided => None
+          | Provided => Some(TSigType(info.data_id, info.data_type, rs))
+          | Abstract =>
+            Some(
+              TSigType(
+                info.data_id,
+                {
+                  ...info.data_type,
+                  type_kind: TDataAbstract,
+                  // Removing the manifest hides the type implementation
+                  // of this type from the consuming module
+                  type_manifest: None,
+                },
+                rs,
+              ),
             )
           }
         },
@@ -423,6 +424,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
         List.map(((e, _)) => e, data_decls),
         [],
       );
+    let ty_decls = List.filter_map(decl => decl, ty_decls);
     let statement = {
       ttop_desc: TTopData(decls),
       ttop_loc: loc,
@@ -430,7 +432,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       ttop_attributes: Typetexp.type_attributes(attributes),
     };
     let newenv = enrich_type_decls(anchor, decls, env, newenv);
-    (newenv, ty_decl, statement);
+    (newenv, ty_decls, statement);
   };
 
   let process_module = (env, provide_flag, desc, attributes, loc) => {
@@ -440,12 +442,13 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
     let signature = normalize_signature(inner_env, signature);
     let mod_name = Ident.create(desc.pmod_name.txt);
     let mod_type = TModSignature(signature);
-    let newenv = Env.add_module(mod_name, mod_type, None, env);
+    let newenv = Env.add_module(mod_name, mod_type, None, loc, env);
     let mod_decl = Env.find_module(PIdent(mod_name), None, newenv);
     let signature =
       switch (provide_flag) {
       | Provided => Some(TSigModule(mod_name, mod_decl, TRecNot))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract module")
       };
     let statement = {
       ttop_desc:
@@ -453,6 +456,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           tmod_id: mod_name,
           tmod_decl: mod_decl,
           tmod_statements: statements,
+          tmod_provided: provide_flag,
           tmod_loc: loc,
         }),
       ttop_loc: loc,
@@ -588,6 +592,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       | Provided =>
         Some(TSigTypeExt(ext.ext_id, ext.ext_type, TExtException))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract exception")
       };
     (newenv, sign, stmt);
   };

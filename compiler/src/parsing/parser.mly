@@ -36,7 +36,7 @@ module Grain_parsing = struct end
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
 
-%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE FOREIGN WASM PRIMITIVE
+%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
 %token EXCEPT FROM STAR
 %token SLASH DASH PIPE
 %token EOL EOF
@@ -340,6 +340,7 @@ include_stmt:
   | INCLUDE file_path include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
 
 data_declaration_stmt:
+  | ABSTRACT data_declaration { (Abstract, $2) }
   | PROVIDE data_declaration { (Provided, $2) }
   | data_declaration { (NotProvided, $1) }
 

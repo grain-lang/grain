@@ -3315,8 +3315,7 @@ let interp = (compiledRe, matchBuffer, pos, start, limitOrEnd, state) => {
   compiledRe(matchBuffer, pos, start, limitOrEnd, limitOrEnd, state, [])
 }
 
-// Should be provided as abstract type when possible
-record RegularExpression {
+abstract record RegularExpression {
   reParsed: ParsedRegularExpression,
   reNumGroups: Number,
   reReferences: Bool,

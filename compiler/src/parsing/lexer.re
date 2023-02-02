@@ -271,6 +271,7 @@ let rec token = lexbuf => {
   | "include" => positioned(INCLUDE)
   | "use" => positioned(USE)
   | "provide" => positioned(PROVIDE)
+  | "abstract" => positioned(ABSTRACT)
   | "except" => positioned(EXCEPT)
   | "from" => positioned(FROM)
   | "*" => positioned(STAR)

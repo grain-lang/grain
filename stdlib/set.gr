@@ -22,7 +22,7 @@ record Bucket<t> {
  * @section Types: Type declarations included in the Set module.
  */
 
-record Set<k> {
+abstract record Set<k> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k>>>,
 }

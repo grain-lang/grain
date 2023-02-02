@@ -20,7 +20,7 @@ include "option"
 /**
  * Mutable data structure which maintains a priority order for its elements.
  */
-record PriorityQueue<a> {
+abstract record PriorityQueue<a> {
   mut size: Number,
   mut array: Array<Option<a>>,
   comp: (a, a) -> Number,

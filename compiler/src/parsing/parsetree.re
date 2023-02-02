@@ -14,7 +14,8 @@ type loc('a) =
     loc: Location.t,
   };
 
-type provide_flag = Asttypes.provide_flag = | NotProvided | Provided;
+type provide_flag =
+  Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 

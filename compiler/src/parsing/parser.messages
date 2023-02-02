@@ -1591,7 +1591,19 @@ program: MODULE UIDENT EOL PROVIDE WHILE
 ## attributes PROVIDE
 ##
 
-Expected a let binding, data declaration, exception, or comma-separated list of identifiers surrounded by `{}`.
+Expected a let binding, type declaration, exception, or comma-separated list of identifiers surrounded by `{}`.
+
+program: MODULE UIDENT EOL ABSTRACT YIELD
+##
+## Ends in an error in state: 827.
+##
+## data_declaration_stmt -> ABSTRACT . data_declaration [ SEMI RBRACE EOL EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ABSTRACT
+##
+
+Expected a type declaration.
 
 program: MODULE UIDENT EOL FAIL WHEN
 ##

@@ -628,11 +628,7 @@ let strengthen =
                                                              module_type,
   );
 
-let md = (md_type, md_filepath) => {
-  md_type,
-  md_filepath,
-  md_loc: Location.dummy_loc,
-};
+let md = (md_type, md_filepath, md_loc) => {md_type, md_filepath, md_loc};
 
 let subst_modtype_maker = ((subst, md)) =>
   if (subst === Subst.identity) {
@@ -1072,7 +1068,11 @@ let find_module = (path, filename, env) =>
       let filename = Option.value(~default=Ident.name(id), filename);
       if (Ident.persistent(id) && !(filename == unit_source)) {
         let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
-        md(TModSignature(Lazy.force(ps.ps_sig)), Some(filename));
+        md(
+          TModSignature(Lazy.force(ps.ps_sig)),
+          Some(filename),
+          Location.dummy_loc,
+        );
       } else {
         raise(Not_found);
       };
@@ -1926,8 +1926,8 @@ let add_module_declaration = (~arg=false, ~check, id, md, env) => {
 
 and add_modtype = (id, info, env) => store_modtype(id, info, env);
 
-let add_module = (~arg=?, id, mty, mf, env) =>
-  add_module_declaration(~check=false, ~arg?, id, md(mty, mf), env);
+let add_module = (~arg=?, id, mty, mf, mloc, env) =>
+  add_module_declaration(~check=false, ~arg?, id, md(mty, mf, mloc), env);
 
 let add_constructor = (id, desc, {constructors, _} as e) => {
   ...e,
@@ -1968,9 +1968,9 @@ and enter_module_declaration = (~arg=?, id, md, env) =>
    (id, add_functor_arg ?arg id env) */
 and enter_modtype = enter(store_modtype);
 
-let enter_module = (~arg=?, s, mty, env) => {
+let enter_module = (~arg=?, s, mty, mloc, env) => {
   let id = Ident.create(s);
-  (id, enter_module_declaration(~arg?, id, md(mty, None), env));
+  (id, enter_module_declaration(~arg?, id, md(mty, None, mloc), env));
 };
 
 /* Insertion of all components of a signature */
@@ -2077,7 +2077,7 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
       env0;
     } else {
       let mod_type = TModAlias(path);
-      env0 |> add_module(mod_ident, mod_type, filename);
+      env0 |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
     }
   | _ =>
     let {ps_sig} = find_pers_struct(~loc=mod_.pinc_loc, mod_.pinc_path.txt);
@@ -2089,7 +2089,7 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
       {mtd_type: Some(mod_type), mtd_loc: mod_.pinc_loc},
       env0,
     )
-    |> add_module(mod_ident, mod_type, filename);
+    |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
   };
 };
 

@@ -3,8 +3,8 @@ module Aliases
 provide type Foo = Number
 provide type Bar<a> = List<a>
 
-type Baz = Number
-type Qux<a> = a
+abstract type Baz = Number
+abstract type Qux<a> = a
 
 provide let baz = 5: Baz
 provide let qux = 7: Qux<Number>

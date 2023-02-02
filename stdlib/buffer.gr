@@ -20,7 +20,7 @@ include "char"
 include "runtime/numbers"
 from Numbers use { coerceNumberToWasmI32 }
 
-record Buffer {
+abstract record Buffer {
   mut len: Number,
   initialSize: Number,
   mut data: Bytes,

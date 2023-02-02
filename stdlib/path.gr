@@ -104,28 +104,28 @@ provide enum AbsoluteRoot {
 /**
  * Represents a relative path.
  */
-record Relative {
+abstract record Relative {
   _rel: Void,
 }
 
 /**
  * Represents an absolute path.
  */
-record Absolute {
+abstract record Absolute {
   _abs: Void,
 }
 
 /**
  * Represents a path referencing a file.
  */
-record File {
+abstract record File {
   _file: Void,
 }
 
 /**
  * Represents a path referencing a directory.
  */
-record Directory {
+abstract record Directory {
   _directory: Void,
 }
 
@@ -133,7 +133,7 @@ record Directory {
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
  * `Directory`)
  */
-type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
+abstract type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
  * Represents a system path.
  */

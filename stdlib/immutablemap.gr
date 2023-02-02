@@ -24,7 +24,7 @@ record Node<k, v> {
 /**
  * @section Types: Type declarations included in the ImmutableMap module.
  */
-enum ImmutableMap<k, v> {
+abstract enum ImmutableMap<k, v> {
   Empty,
   Tree(Node<k, v>),
 }

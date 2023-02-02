@@ -210,7 +210,7 @@ let check_type_var = (loc, univ, id) => {
   };
 };
 
-let transl_declaration = (env, sdecl, id) => {
+let transl_declaration = (env, provide_flag, sdecl, id) => {
   /* Bind type parameters */
   reset_type_variables();
   Ctype.begin_def();
@@ -396,6 +396,7 @@ let transl_declaration = (env, sdecl, id) => {
     data_type: decl,
     data_manifest: tman,
     data_loc: sdecl.pdata_loc,
+    data_provided: provide_flag,
     data_kind: tkind,
   };
 };
@@ -624,7 +625,7 @@ let check_duplicates = sdecl_list => {
   let labels = Hashtbl.create(7)
   and constrs = Hashtbl.create(7);
   List.iter(
-    sdecl =>
+    ((_, sdecl)) =>
       switch (sdecl.pdata_kind) {
       | PDataAbstract => ()
       | PDataVariant(cl) =>
@@ -692,7 +693,10 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
 
   /* Create identifiers. */
   let id_list =
-    List.map(sdecl => Ident.create(sdecl.pdata_name.txt), sdecl_list);
+    List.map(
+      ((_, sdecl)) => Ident.create(sdecl.pdata_name.txt),
+      sdecl_list,
+    );
 
   /*
       Since we've introduced fresh idents, make sure the definition
@@ -704,7 +708,12 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   Ctype.begin_def();
   /* Enter types. */
   let temp_env =
-    List.fold_left2(enter_type(rec_flag), env, sdecl_list, id_list);
+    List.fold_left2(
+      enter_type(rec_flag),
+      env,
+      List.map(snd, sdecl_list),
+      id_list,
+    );
   /* Translate each declaration. */
   let current_slot = ref(None);
   let warn_unused = Warnings.is_active(Warnings.Unused_type_declaration(""));
@@ -731,9 +740,9 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
     | Asttypes.Nonrecursive => (id, None)
     };
 
-  let transl_declaration = (name_sdecl, (id, slot)) => {
+  let transl_declaration = ((provide_flag, name_sdecl), (id, slot)) => {
     current_slot := slot;
-    transl_declaration(temp_env, name_sdecl, id);
+    transl_declaration(temp_env, provide_flag, name_sdecl, id);
   };
   /*Builtin_attributes.warning_scope
     name_sdecl.ptype_attributes
@@ -758,7 +767,8 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   | Asttypes.Nonrecursive => ()
   | Asttypes.Recursive =>
     List.iter2(
-      (id, sdecl) => update_type(temp_env, newenv, id, sdecl.pdata_loc),
+      (id, (_, sdecl)) =>
+        update_type(temp_env, newenv, id, sdecl.pdata_loc),
       id_list,
       sdecl_list,
     )
@@ -768,7 +778,11 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   List.iter(((_, decl)) => generalize_decl(decl), decls);
   /* Check for ill-formed abbrevs */
   let id_loc_list =
-    List.map2((id, sdecl) => (id, sdecl.pdata_loc), id_list, sdecl_list);
+    List.map2(
+      (id, (_, sdecl)) => (id, sdecl.pdata_loc),
+      id_list,
+      sdecl_list,
+    );
 
   List.iter(
     ((id, decl)) =>
@@ -798,7 +812,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   List.iter(check_abbrev_recursion(newenv, id_loc_list, to_check), tdecls);
   /* Check that all type variables are closed */
   List.iter2(
-    (sdecl, tdecl) => {
+    ((_, sdecl), tdecl) => {
       let decl = tdecl.data_type;
       switch (Ctype.closed_type_decl(decl)) {
       | Some(ty) =>

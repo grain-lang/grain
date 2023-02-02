@@ -20,7 +20,11 @@ open Types;
 open Format;
 
 let transl_data_decl:
-  (Env.t, Asttypes.rec_flag, list(Parsetree.data_declaration)) =>
+  (
+    Env.t,
+    Asttypes.rec_flag,
+    list((Asttypes.provide_flag, Parsetree.data_declaration))
+  ) =>
   (list(Typedtree.data_declaration), Env.t);
 
 let transl_value_decl:
