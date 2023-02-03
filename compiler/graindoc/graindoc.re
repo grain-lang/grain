@@ -100,7 +100,7 @@ let generate_docs =
     let deprecations =
       attrs
       |> List.filter(Comments.Attribute.is_deprecated)
-      |> List.map((attr: Comments.Attribute.t) => {
+      |> List.map((attr: Comment_attributes.t) => {
            switch (attr) {
            | Deprecated({attr_desc}) => attr_desc
            | _ =>
@@ -130,7 +130,7 @@ let generate_docs =
     let since_attr =
       attrs
       |> List.find_opt(Comments.Attribute.is_since)
-      |> Option.map((attr: Comments.Attribute.t) => {
+      |> Option.map((attr: Comment_attributes.t) => {
            switch (attr) {
            | Since({attr_version}) =>
              Docblock.output_for_since(~current_version, attr_version)
@@ -141,7 +141,7 @@ let generate_docs =
     let history_attrs =
       attrs
       |> List.filter(Comments.Attribute.is_history)
-      |> List.map((attr: Comments.Attribute.t) => {
+      |> List.map((attr: Comment_attributes.t) => {
            switch (attr) {
            | History({attr_version, attr_desc}) =>
              Docblock.output_for_history(
@@ -168,7 +168,7 @@ let generate_docs =
     let example_attrs = attrs |> List.filter(Comments.Attribute.is_example);
     if (List.length(example_attrs) > 0) {
       List.iter(
-        (attr: Comments.Attribute.t) => {
+        (attr: Comment_attributes.t) => {
           switch (attr) {
           | Example({attr_desc}) =>
             Buffer.add_string(buf, Markdown.code_block(attr_desc))
@@ -218,7 +218,7 @@ let generate_docs =
             next_section_start_line,
           );
         List.iter(
-          (attr: Comments.Attribute.t) => {
+          (attr: Comment_attributes.t) => {
             switch (attr) {
             | Section({attr_name, attr_desc}) =>
               Buffer.add_string(buf, Markdown.heading(~level=2, attr_name));
