@@ -140,4 +140,24 @@ describe("numbers", ({test, testSkip}) => {
     {|include "uint64"; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
+  assertRunError(
+    "shortnum_err1",
+    {|include "uint8"; print(Uint8.fromNumber(-1))|},
+    "Overflow: Number overflow",
+  );
+  assertRunError(
+    "shortnum_err2",
+    {|include "uint8"; print(Uint8.fromNumber(256))|},
+    "Overflow: Number overflow",
+  );
+  assertCompileError(
+    "shortnum_err3",
+    "-1us",
+    "Uint8 literal -1us contains a sign but should be unsigned; consider using 0xffus instead.",
+  );
+  assertCompileError(
+    "shortnum_err4",
+    "-99999us",
+    "Uint8 literal -99999us contains a sign but should be unsigned.",
+  );
 });

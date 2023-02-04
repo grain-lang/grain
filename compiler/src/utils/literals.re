@@ -67,6 +67,36 @@ let conv_number_rational = (n, d) => {
   };
 };
 
+let int8_max = 127l;
+let int8_min = (-128l);
+
+let conv_int8 = s => {
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    if (n < int8_min || n > int8_max) {
+      None;
+    } else {
+      Some(Int32.logand(n, 0xFFl));
+    }
+  };
+};
+
+let int16_max = 32767l;
+let int16_min = (-32768l);
+
+let conv_int16 = s => {
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    if (n < int16_min || n > int16_max) {
+      None;
+    } else {
+      Some(Int32.logand(n, 0xFFFFl));
+    }
+  };
+};
+
 let conv_int32 = s => {
   Int32.of_string_opt(s);
 };
@@ -87,12 +117,48 @@ let uint_format_str = s =>
     "0u" ++ s;
   };
 
+let uint8_max = 255l;
+
+let conv_uint8 = s => {
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    if (n < 0l || n > uint8_max) {
+      None;
+    } else {
+      Some(n);
+    }
+  };
+};
+
+let uint16_max = 65535l;
+
+let conv_uint16 = s => {
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    if (n < 0l || n > uint16_max) {
+      None;
+    } else {
+      Some(n);
+    }
+  };
+};
+
 let conv_uint32 = s => {
   Int32.of_string_opt(uint_format_str(s));
 };
 
 let conv_uint64 = s => {
   Int64.of_string_opt(uint_format_str(s));
+};
+
+let get_neg_uint8_hex = n => {
+  Printf.sprintf("%lx", Int32.logand(Int32.neg(n), 0xFFl));
+};
+
+let get_neg_uint16_hex = n => {
+  Printf.sprintf("%lx", Int32.logand(Int32.neg(n), 0xFFFFl));
 };
 
 let get_neg_uint32_hex = n => {

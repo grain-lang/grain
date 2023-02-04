@@ -286,8 +286,12 @@ type primn =
 
 [@deriving sexp]
 type constant =
+  | MConstI8(int32)
+  | MConstI16(int32)
   | MConstI32(int32)
   | MConstI64(int64)
+  | MConstU8(int32)
+  | MConstU16(int32)
   | MConstU32(int32)
   | MConstU64(int64)
   | MConstF32(float)
@@ -326,8 +330,12 @@ type allocation_type =
   | MBytes(bytes)
   | MString(string)
   | MChar(string)
+  | MInt8(int32)
+  | MInt16(int32)
   | MInt32(int32)
   | MInt64(int64)
+  | MUint8(int32)
+  | MUint16(int32)
   | MUint32(int32)
   | MUint64(int64)
   | MFloat32(float)

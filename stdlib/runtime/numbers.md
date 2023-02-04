@@ -564,6 +564,19 @@ Returns:
 |----|-----------|
 |`Number`|The shifted value|
 
+### Numbers.**coerceNumberToShortUint**
+
+```grain
+coerceNumberToShortUint : (Number, WasmI32, WasmI64, Bool) -> WasmI32
+```
+
+### Numbers.**coerceNumberToShortInt**
+
+```grain
+coerceNumberToShortInt :
+  (Number, WasmI32, WasmI32, WasmI64, WasmI64, Bool) -> WasmI32
+```
+
 ### Numbers.**coerceNumberToInt32**
 
 <details disabled>
@@ -763,6 +776,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The Int64 represented as a Number|
+
+### Numbers.**coerceShortUintToNumber**
+
+```grain
+coerceShortUintToNumber : (WasmI32, Bool) -> Number
+```
+
+### Numbers.**coerceShortIntToNumber**
+
+```grain
+coerceShortIntToNumber : (WasmI32, Bool) -> Number
+```
 
 ### Numbers.**coerceBigIntToNumber**
 

@@ -1732,6 +1732,27 @@ let create_char = (wasm_mod, env, char) => {
   Expression.Const.make(wasm_mod, const_int32(grain_char));
 };
 
+type int_type =
+  | Int8Type
+  | Int16Type
+  | Uint8Type
+  | Uint16Type;
+
+let create_short_int = (wasm_mod, env, int_type, int) => {
+  let tag =
+    switch (int_type) {
+    | Int8Type => 1l
+    | Int16Type => 2l
+    | Uint8Type => 3l
+    | Uint16Type => 4l
+    };
+  let (<<) = Int32.shift_left;
+  let (||) = Int32.logor;
+  let shifted_tag = tag << 3;
+  let grain_short_int = int << 8 || shifted_tag || 0b010l;
+  Expression.Const.make(wasm_mod, Literal.int32(grain_short_int));
+};
+
 let allocate_closure =
     (
       wasm_mod,
@@ -2804,6 +2825,8 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MString(str) => allocate_string(wasm_mod, env, str)
   | MChar(char) => create_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
+  | MInt8(i) => create_short_int(wasm_mod, env, Int8Type, i)
+  | MInt16(i) => create_short_int(wasm_mod, env, Int16Type, i)
   | MInt32(i) =>
     allocate_int32(
       wasm_mod,
@@ -2816,6 +2839,8 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
       env,
       Expression.Const.make(wasm_mod, Literal.int64(i)),
     )
+  | MUint8(i) => create_short_int(wasm_mod, env, Uint8Type, i)
+  | MUint16(i) => create_short_int(wasm_mod, env, Uint16Type, i)
   | MUint32(i) =>
     allocate_uint32(
       wasm_mod,

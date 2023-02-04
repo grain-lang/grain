@@ -188,10 +188,20 @@ let transl_const =
         [BLet(tmp, Comp.number(Const_number_rational(data)), Nonglobal)]
       ),
     )
+  | Const_int8(i) =>
+    Right(with_bind("int8", tmp => [BLet(tmp, Comp.int8(i), Nonglobal)]))
+  | Const_int16(i) =>
+    Right(with_bind("int16", tmp => [BLet(tmp, Comp.int16(i), Nonglobal)]))
   | Const_int32(i) =>
     Right(with_bind("int32", tmp => [BLet(tmp, Comp.int32(i), Nonglobal)]))
   | Const_int64(i) =>
     Right(with_bind("int64", tmp => [BLet(tmp, Comp.int64(i), Nonglobal)]))
+  | Const_uint8(i) =>
+    Right(with_bind("uint8", tmp => [BLet(tmp, Comp.uint8(i), Nonglobal)]))
+  | Const_uint16(i) =>
+    Right(
+      with_bind("uint16", tmp => [BLet(tmp, Comp.uint16(i), Nonglobal)]),
+    )
   | Const_uint32(i) =>
     Right(
       with_bind("uint32", tmp => [BLet(tmp, Comp.uint32(i), Nonglobal)]),

@@ -563,12 +563,26 @@ toStringHelp = (grainValue, extraIndents, toplevel) => {
     let tag = grainValue & 7n
     if (tag == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
       heapValueToString(grainValue, extraIndents, toplevel)
-    } else if (tag == Tags._GRAIN_CHAR_TAG_TYPE) {
-      let string = usvToString(grainValue >> 8n)
-      if (toplevel) {
-        string
+    } else if (tag == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
+      let shortVal = grainValue >>> 8n
+      let shortValTag = (grainValue & 0xF8n) >> 3n
+      if (shortValTag == Tags._GRAIN_CHAR_SHORTVAL_TAG) {
+        let string = usvToString(shortVal)
+        if (toplevel) {
+          string
+        } else {
+          escapeChar(string)
+        }
+      } else if (shortValTag == Tags._GRAIN_INT8_SHORTVAL_TAG) {
+        NumberUtils.itoa32(WasmI32.extendS8(shortVal), 10n)
+      } else if (shortValTag == Tags._GRAIN_INT16_SHORTVAL_TAG) {
+        NumberUtils.itoa32(WasmI32.extendS16(shortVal), 10n)
+      } else if (shortValTag == Tags._GRAIN_UINT8_SHORTVAL_TAG) {
+        NumberUtils.utoa32(shortVal & 0xffn, 10n)
+      } else if (shortValTag == Tags._GRAIN_UINT16_SHORTVAL_TAG) {
+        NumberUtils.utoa32(shortVal & 0xffffn, 10n)
       } else {
-        escapeChar(string)
+        "<unknown small value>"
       }
     } else if (grainValue == WasmI32.fromGrain(true)) {
       "true"

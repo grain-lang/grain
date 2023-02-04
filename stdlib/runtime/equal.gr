@@ -13,15 +13,28 @@ from WasmI32 use {
   ltS as (<),
   remS as (%),
   shl as (<<),
+  shrU as (>>),
 }
 include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/tags" as Tags
 include "runtime/numbers" as Numbers
+include "runtime/exception"
 from Numbers use { isNumber, numberEqual }
 
 primitive (!) = "@not"
 primitive (||) = "@or"
 primitive (&&) = "@and"
+
+@unsafe
+let _INT8_MASK = WasmI32.or(
+  Tags._GRAIN_INT8_TAG_MASK,
+  Tags._GRAIN_SHORTVAL_TAG_TYPE
+)
+@unsafe
+let _INT16_MASK = WasmI32.or(
+  Tags._GRAIN_INT16_TAG_MASK,
+  Tags._GRAIN_SHORTVAL_TAG_TYPE
+)
 
 @unsafe
 let cycleMarker = 0x80000000n
@@ -209,7 +222,25 @@ equalHelp = (x, y) => {
     (y & Tags._GRAIN_GENERIC_TAG_MASK) != 0n
   ) {
     // Short circuit for non-pointer values
-    x == y
+    if ((x & Tags._GRAIN_SHORTVAL_TAG_TYPE) != 0n) {
+      let shortValTag = (x & 0xF8n) >> 3n
+      // Need to fix leading bits
+      if (
+        shortValTag == Tags._GRAIN_INT8_SHORTVAL_TAG ||
+        shortValTag == Tags._GRAIN_UINT8_SHORTVAL_TAG
+      ) {
+        (x & 0xffffn) == (y & 0xffffn)
+      } else if (
+        shortValTag == Tags._GRAIN_INT16_SHORTVAL_TAG ||
+        shortValTag == Tags._GRAIN_UINT16_SHORTVAL_TAG
+      ) {
+        (x & 0xffffffn) == (y & 0xffffffn)
+      } else {
+        x == y
+      }
+    } else {
+      x == y
+    }
   } else if (isNumber(x)) {
     // Numbers have special equality rules, e.g. NaN != NaN
     numberEqual(x, y)

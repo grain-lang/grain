@@ -73,5 +73,5 @@ let boxed_number_tag_type_of_tag_val =
 type tag_type =
   | NumberTagType
   | ConstTagType
-  | CharTagType
+  | ShortValTagType
   | GenericHeapType(option(heap_tag_type));

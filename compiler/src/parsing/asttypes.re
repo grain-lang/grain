@@ -41,8 +41,12 @@ type constant =
   | Const_bytes(bytes)
   | Const_string(string)
   | Const_char(string)
+  | Const_int8(int32) // no built-in int8/16 types; just store in 32-bit integers
+  | Const_int16(int32)
   | Const_int32(int32)
   | Const_int64(int64)
+  | Const_uint8(int32)
+  | Const_uint16(int32)
   | Const_uint32(int32)
   | Const_uint64(int64)
   | Const_float32(float)

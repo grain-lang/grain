@@ -138,8 +138,12 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CAppBuiltin(_) => false
       | CLambda(_)
       | CNumber(_)
+      | CInt8(_)
+      | CInt16(_)
       | CInt32(_)
       | CInt64(_)
+      | CUint8(_)
+      | CUint16(_)
       | CUint32(_)
       | CUint64(_)
       | CFloat32(_)

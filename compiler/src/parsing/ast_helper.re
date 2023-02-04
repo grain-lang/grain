@@ -61,8 +61,12 @@ module Constant = {
   let string = s => PConstString(s);
   let char = c => PConstChar(c);
   let number = i => PConstNumber(i);
+  let int8 = i => PConstInt8(i);
+  let int16 = i => PConstInt16(i);
   let int32 = i => PConstInt32(i);
   let int64 = i => PConstInt64(i);
+  let uint8 = (is_neg, i) => PConstUint8(is_neg, i);
+  let uint16 = (is_neg, i) => PConstUint16(is_neg, i);
   let uint32 = (is_neg, i) => PConstUint32(is_neg, i);
   let uint64 = (is_neg, i) => PConstUint64(is_neg, i);
   let float32 = f => PConstFloat32(f);

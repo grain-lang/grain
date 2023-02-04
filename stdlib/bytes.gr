@@ -377,6 +377,7 @@ provide let getInt8U = (index: Number, bytes: Bytes) => {
   let offset = coerceNumberToWasmI32(index)
   checkIndexIsInBounds(offset, _INT8_BYTE_SIZE, size)
   let n = WasmI32.load8U(ptr + offset, _VALUE_OFFSET)
+  // TODO change
   Conv.toInt32(n)
 }
 

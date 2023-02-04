@@ -45,10 +45,18 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CImmExpr(imm));
   let number = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CNumber(i));
+  let int8 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt8(i));
+  let int16 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt16(i));
   let int32 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt32(i));
   let int64 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt64(i));
+  let uint8 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint8(i));
+  let uint16 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint16(i));
   let uint32 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint32(i));
   let uint64 = (~loc=?, ~attributes=?, ~env=?, i) =>

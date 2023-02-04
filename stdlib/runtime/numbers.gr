@@ -2048,7 +2048,7 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
 }
 
 @unsafe
-let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
+let cmpShortInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
   let xi = if (is64) {
     boxedInt64Number(x)
   } else {
@@ -2109,10 +2109,10 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpSmallInt(y, x, false))
+        WasmI32.sub(0n, cmpShortInt(y, x, false))
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpSmallInt(y, x, true))
+        WasmI32.sub(0n, cmpShortInt(y, x, true))
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         WasmI32.sub(0n, cmpBigInt(y, x))
@@ -2143,10 +2143,10 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
       let yBoxedNumberTag = boxedNumberTag(y)
       match (yBoxedNumberTag) {
         t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpSmallInt(y, x, false))
+          WasmI32.sub(0n, cmpShortInt(y, x, false))
         },
         t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpSmallInt(y, x, true))
+          WasmI32.sub(0n, cmpShortInt(y, x, true))
         },
         t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
           WasmI32.sub(0n, cmpBigInt(y, x))
@@ -2169,10 +2169,10 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
     let xBoxedNumberTag = boxedNumberTag(x)
     match (xBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        cmpSmallInt(x, y, false)
+        cmpShortInt(x, y, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        cmpSmallInt(x, y, true)
+        cmpShortInt(x, y, true)
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         cmpBigInt(x, y)
@@ -2517,6 +2517,80 @@ provide let (>>) = (x: Number, y: Number) => {
  * @since v0.2.0
  */
 @unsafe
+provide let coerceNumberToShortUint = (x: Number, max32, max64, is8bit) => {
+  let x = WasmI32.fromGrain(x)
+  let int32 = if (isSimpleNumber(x)) {
+    untagSimple(x)
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        boxedInt32Number(x)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.gtS(int64, max64) || WasmI64.ltS(int64, 0N)) {
+          throw Exception.Overflow
+        }
+        WasmI32.wrapI64(int64)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        BI.toInt32(x)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      },
+    }
+  }
+  if (WasmI32.gtS(int32, max32) || WasmI32.ltS(int32, 0n)) {
+    throw Exception.Overflow
+  }
+  if (is8bit) WasmI32.and(int32, 0xffffn) else WasmI32.and(int32, 0xffffn)
+}
+
+@unsafe
+provide let coerceNumberToShortInt =
+  (
+    x: Number,
+    min32,
+    max32,
+    min64,
+    max64,
+    is8bit,
+  ) => {
+  let x = WasmI32.fromGrain(x)
+  let int32 = if (isSimpleNumber(x)) {
+    untagSimple(x)
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
+        boxedInt32Number(x)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.gtS(int64, max64) || WasmI64.ltS(int64, min64)) {
+          throw Exception.Overflow
+        }
+        WasmI32.wrapI64(int64)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        BI.toInt32(x)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      },
+    }
+  }
+  if (WasmI32.gtS(int32, max32) || WasmI32.ltS(int32, min32)) {
+    throw Exception.Overflow
+  }
+  if (is8bit) WasmI32.extendS8(int32) else WasmI32.extendS16(int32)
+}
+
+@unsafe
 provide let coerceNumberToInt32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   let result = if (
@@ -2702,6 +2776,18 @@ provide let coerceInt64ToNumber = (x: Int64) => {
  *
  * @since v0.5.0
  */
+@unsafe
+provide let coerceShortUintToNumber = (x, is8bit) => {
+  let i32 = if (is8bit) WasmI32.and(x, 0xffn) else WasmI32.and(x, 0xffffn)
+  WasmI32.toGrain(tagSimple(i32)): Number
+}
+
+@unsafe
+provide let coerceShortIntToNumber = (x, is8bit) => {
+  let i32 = if (is8bit) WasmI32.extendS8(x) else WasmI32.extendS16(x)
+  WasmI32.toGrain(tagSimple(i32)): Number
+}
+
 @unsafe
 provide let coerceBigIntToNumber = (x: BigInt) => {
   let x = WasmI32.fromGrain(x)

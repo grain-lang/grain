@@ -1,6 +1,7 @@
 module MarshalTest
 
 include "marshal"
+include "int8"
 from Marshal use *
 include "bytes"
 include "result"
@@ -17,6 +18,11 @@ assert roundtripOk(42uL)
 assert roundtripOk(42.)
 assert roundtripOk(42.f)
 assert roundtripOk(42.d)
+assert roundtripOk(-1s)
+assert roundtripOk(Int8.(<<)(1s, 8s))
+assert roundtripOk(-1S)
+assert roundtripOk(42us)
+assert roundtripOk(42uS)
 assert roundtripOk(1/3)
 assert roundtripOk('c')
 assert roundtripOk("unicode string 💯🌾🙏🏽")

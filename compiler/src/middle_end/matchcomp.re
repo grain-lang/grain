@@ -534,8 +534,12 @@ let rec default_matrix = (cur, mtx) => {
 let equality_type =
   fun
   | Const_number(_)
+  | Const_int8(_)
+  | Const_int16(_)
   | Const_int32(_)
   | Const_int64(_)
+  | Const_uint8(_)
+  | Const_uint16(_)
   | Const_uint32(_)
   | Const_uint64(_)
   | Const_bigint(_)
