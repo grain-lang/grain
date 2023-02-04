@@ -238,7 +238,7 @@ Returns:
 ### File.**fdRead**
 
 ```grain
-fdRead : (FileDescriptor, Number) -> Result<(String, Number), Exception>
+fdRead : (FileDescriptor, Number) -> Result<(Bytes, Number), Exception>
 ```
 
 Read from a file descriptor.
@@ -254,13 +254,13 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<(String, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+|`Result<(Bytes, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
 
 ### File.**fdPread**
 
 ```grain
 fdPread :
-  (FileDescriptor, Int64, Number) -> Result<(String, Number), Exception>
+  (FileDescriptor, Int64, Number) -> Result<(Bytes, Number), Exception>
 ```
 
 Read from a file descriptor without updating the file descriptor's offset.
@@ -277,12 +277,12 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<(String, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+|`Result<(Bytes, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
 
 ### File.**fdWrite**
 
 ```grain
-fdWrite : (FileDescriptor, String) -> Result<Number, Exception>
+fdWrite : (FileDescriptor, Bytes) -> Result<Number, Exception>
 ```
 
 Write to a file descriptor.
@@ -292,7 +292,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fd`|`FileDescriptor`|The file descriptor to which data will be written|
-|`data`|`String`|The data to be written|
+|`data`|`Bytes`|The data to be written|
 
 Returns:
 
@@ -303,7 +303,7 @@ Returns:
 ### File.**fdPwrite**
 
 ```grain
-fdPwrite : (FileDescriptor, String, Int64) -> Result<Number, Exception>
+fdPwrite : (FileDescriptor, Bytes, Int64) -> Result<Number, Exception>
 ```
 
 Write to a file descriptor without updating the file descriptor's offset.
@@ -313,7 +313,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`fd`|`FileDescriptor`|The file descriptor to which data will be written|
-|`data`|`String`|The data to be written|
+|`data`|`Bytes`|The data to be written|
 |`offset`|`Int64`|The position within the file to begin writing|
 
 Returns:
