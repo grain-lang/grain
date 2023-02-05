@@ -48,6 +48,6 @@
   },
   "optionalDependencies": {
     "jest": "28.1.0",
-    "near-workspaces": "2.0.0"
+    "near-workspaces": "3.2.2"
   }
 }
