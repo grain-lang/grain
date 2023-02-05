@@ -67,6 +67,31 @@ Returns:
 |----|-----------|
 |`Number`|The Uint64 represented as a Number|
 
+### Uint64.**fromInt64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromInt64 : Int64 -> Uint64
+```
+
+Converts a Int64 to a Uint64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Int64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint64`|The Int64 represented as a Uint64|
+
 ## Operations
 
 Mathematical operations for Uint64 values.
@@ -121,7 +146,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The decremented value|
 
-### Uint64.**add**
+### Uint64.**(+)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -129,7 +154,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (Uint64, Uint64) -> Uint64
+(+) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the sum of its operands.
@@ -147,7 +172,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The sum of the two operands|
 
-### Uint64.**sub**
+### Uint64.**(-)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -155,7 +180,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (Uint64, Uint64) -> Uint64
+(-) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the difference of its operands.
@@ -173,7 +198,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The difference of the two operands|
 
-### Uint64.**mul**
+### Uint64.**(*)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -181,7 +206,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (Uint64, Uint64) -> Uint64
+(*) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the product of its operands.
@@ -199,7 +224,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The product of the two operands|
 
-### Uint64.**div**
+### Uint64.**(/)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -207,7 +232,7 @@ No other changes yet.
 </details>
 
 ```grain
-div : (Uint64, Uint64) -> Uint64
+(/) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the quotient of its operands.
@@ -225,7 +250,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The quotient of its operands|
 
-### Uint64.**rem**
+### Uint64.**(%)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -233,7 +258,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (Uint64, Uint64) -> Uint64
+(%) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the remainder of the division of its operands.
@@ -307,7 +332,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The rotated value|
 
-### Uint64.**shl**
+### Uint64.**(<<)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -315,7 +340,7 @@ No other changes yet.
 </details>
 
 ```grain
-shl : (Uint64, Uint64) -> Uint64
+(<<) : (Uint64, Uint64) -> Uint64
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -333,7 +358,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The shifted value|
 
-### Uint64.**shr**
+### Uint64.**(>>)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -341,7 +366,7 @@ No other changes yet.
 </details>
 
 ```grain
-shr : (Uint64, Uint64) -> Uint64
+(>>) : (Uint64, Uint64) -> Uint64
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -363,7 +388,7 @@ Returns:
 
 Functions for comparing Uint64 values.
 
-### Uint64.**eq**
+### Uint64.**(==)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -371,7 +396,7 @@ No other changes yet.
 </details>
 
 ```grain
-eq : (Uint64, Uint64) -> Bool
+(==) : (Uint64, Uint64) -> Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -389,7 +414,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### Uint64.**ne**
+### Uint64.**(!=)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -397,7 +422,7 @@ No other changes yet.
 </details>
 
 ```grain
-ne : (Uint64, Uint64) -> Bool
+(!=) : (Uint64, Uint64) -> Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -440,7 +465,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### Uint64.**lt**
+### Uint64.**(<)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -448,7 +473,7 @@ No other changes yet.
 </details>
 
 ```grain
-lt : (Uint64, Uint64) -> Bool
+(<) : (Uint64, Uint64) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -466,7 +491,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Uint64.**gt**
+### Uint64.**(>)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -474,7 +499,7 @@ No other changes yet.
 </details>
 
 ```grain
-gt : (Uint64, Uint64) -> Bool
+(>) : (Uint64, Uint64) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -492,7 +517,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Uint64.**lte**
+### Uint64.**(<=)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -500,7 +525,7 @@ No other changes yet.
 </details>
 
 ```grain
-lte : (Uint64, Uint64) -> Bool
+(<=) : (Uint64, Uint64) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -518,7 +543,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Uint64.**gte**
+### Uint64.**(>=)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -526,7 +551,7 @@ No other changes yet.
 </details>
 
 ```grain
-gte : (Uint64, Uint64) -> Bool
+(>=) : (Uint64, Uint64) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -573,7 +598,7 @@ Returns:
 |----|-----------|
 |`Uint64`|Containing the inverted bits of the given value|
 
-### Uint64.**land**
+### Uint64.**(&)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -581,7 +606,7 @@ No other changes yet.
 </details>
 
 ```grain
-land : (Uint64, Uint64) -> Uint64
+(&) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -599,7 +624,7 @@ Returns:
 |----|-----------|
 |`Uint64`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### Uint64.**lor**
+### Uint64.**(|)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -607,7 +632,7 @@ No other changes yet.
 </details>
 
 ```grain
-lor : (Uint64, Uint64) -> Uint64
+(|) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -625,7 +650,7 @@ Returns:
 |----|-----------|
 |`Uint64`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### Uint64.**lxor**
+### Uint64.**(^)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -633,7 +658,7 @@ No other changes yet.
 </details>
 
 ```grain
-lxor : (Uint64, Uint64) -> Uint64
+(^) : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.

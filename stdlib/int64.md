@@ -67,6 +67,31 @@ Returns:
 |----|-----------|
 |`Number`|The Int64 represented as a Number|
 
+### Int64.**fromUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromUint64 : Uint64 -> Int64
+```
+
+Converts a Uint64 to a Int64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Uint64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The Uint64 represented as a Int64|
+
 ## Operations
 
 Mathematical operations for Int64 values.

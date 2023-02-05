@@ -12,7 +12,7 @@ include "sys/random"
 
 Functions and constants included in the Random module.
 
-### Random.**randomInt32**
+### Random.**randomUint32**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -20,7 +20,7 @@ No other changes yet.
 </details>
 
 ```grain
-randomInt32 : () -> Result<Int32, Exception>
+randomUint32 : () -> Result<Uint32, Exception>
 ```
 
 Produce a random 32-bit integer. This function can be slow, so it's best to seed a generator if lots of random data is needed.
@@ -29,9 +29,9 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Int32, Exception>`|`Ok(num)` of a random Int32 if successful or `Err(exception)` otherwise|
+|`Result<Uint32, Exception>`|`Ok(num)` of a random Uint32 if successful or `Err(exception)` otherwise|
 
-### Random.**randomInt64**
+### Random.**randomUint64**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.0</code></summary>
@@ -39,7 +39,7 @@ No other changes yet.
 </details>
 
 ```grain
-randomInt64 : () -> Result<Int64, Exception>
+randomUint64 : () -> Result<Uint64, Exception>
 ```
 
 Produce a random 64-bit integer. This function can be slow, so it's best to seed a generator if lots of random data is needed.
@@ -48,7 +48,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Int64, Exception>`|`Ok(num)` of a random Int64 if successful or `Err(exception)` otherwise|
+|`Result<Uint64, Exception>`|`Ok(num)` of a random Uint64 if successful or `Err(exception)` otherwise|
 
 ### Random.**random**
 

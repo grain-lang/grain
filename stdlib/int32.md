@@ -67,6 +67,31 @@ Returns:
 |----|-----------|
 |`Number`|The Int32 represented as a Number|
 
+### Int32.**fromUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromUint32 : Uint32 -> Int32
+```
+
+Converts a Uint32 to a Int32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Uint32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int32`|The Uint32 represented as a Int32|
+
 ## Operations
 
 Mathematical operations for Int32 values.
@@ -225,34 +250,6 @@ Returns:
 |----|-----------|
 |`Int32`|The quotient of its operands|
 
-### Int32.**divU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-divU : (Int32, Int32) -> Int32
-```
-
-Computes the quotient of its operands using unsigned division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first operand|
-|`y`|`Int32`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int32`|The quotient of its operands|
-
 ### Int32.**rem**
 
 <details disabled>
@@ -265,34 +262,6 @@ rem : (Int32, Int32) -> Int32
 ```
 
 Computes the remainder of the division of its operands using signed division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first operand|
-|`y`|`Int32`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int32`|The remainder of its operands|
-
-### Int32.**remU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-remU : (Int32, Int32) -> Int32
-```
-
-Computes the remainder of the division of its operands using unsigned division.
 
 Parameters:
 
@@ -448,34 +417,6 @@ Returns:
 |----|-----------|
 |`Int32`|The shifted value|
 
-### Int32.**shrU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-shrU : (Int32, Int32) -> Int32
-```
-
-Shifts the bits of the value right by the given number of bits.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int32`|The value to shift|
-|`amount`|`Int32`|The amount to shift by|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int32`|The shifted value|
-
 ## Comparisons
 
 Functions for comparing Int32 values.
@@ -583,34 +524,6 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Int32.**ltU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-ltU : (Int32, Int32) -> Bool
-```
-
-Checks if the first unsigned value is less than the second unsigned value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first value|
-|`y`|`Int32`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
-
 ### Int32.**gt**
 
 <details disabled>
@@ -623,34 +536,6 @@ gt : (Int32, Int32) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first value|
-|`y`|`Int32`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
-
-### Int32.**gtU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-gtU : (Int32, Int32) -> Bool
-```
-
-Checks if the first unsigned value is greater than the second unsigned value.
 
 Parameters:
 
@@ -691,34 +576,6 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Int32.**lteU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-lteU : (Int32, Int32) -> Bool
-```
-
-Checks if the first unsigned value is less than or equal to the second unsigned value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first value|
-|`y`|`Int32`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
-
 ### Int32.**gte**
 
 <details disabled>
@@ -731,34 +588,6 @@ gte : (Int32, Int32) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int32`|The first value|
-|`y`|`Int32`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-### Int32.**gteU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint32 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-gteU : (Int32, Int32) -> Bool
-```
-
-Checks if the first unsigned value is greater than or equal to the second unsigned value.
 
 Parameters:
 

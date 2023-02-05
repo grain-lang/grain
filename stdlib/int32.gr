@@ -45,6 +45,21 @@ provide { fromNumber }
 provide { toNumber }
 
 /**
+ * Converts a Uint32 to a Int32.
+ *
+ * @param number: The value to convert
+ * @returns The Uint32 represented as a Int32
+ * 
+ * @since v0.6.0
+ */
+@unsafe
+provide let fromUint32 = (x: Uint32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), 4n)
+  let result = newInt32(x)
+  WasmI32.toGrain(result): Int32
+}
+
+/**
  * @section Operations: Mathematical operations for Int32 values.
  */
 

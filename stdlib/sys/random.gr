@@ -12,7 +12,7 @@ include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/memory"
 include "runtime/wasi"
 include "runtime/dataStructures"
-from DataStructures use { tagSimpleNumber, newInt32, newInt64 }
+from DataStructures use { tagSimpleNumber, newUint32, newUint64 }
 
 /**
  * @section Values: Functions and constants included in the Random module.
@@ -21,12 +21,12 @@ from DataStructures use { tagSimpleNumber, newInt32, newInt64 }
 /**
  * Produce a random 32-bit integer. This function can be slow, so it's best to seed a generator if lots of random data is needed.
  *
- * @returns `Ok(num)` of a random Int32 if successful or `Err(exception)` otherwise
+ * @returns `Ok(num)` of a random Uint32 if successful or `Err(exception)` otherwise
  *
  * @since v0.5.0
  */
 @unsafe
-provide let randomInt32 = () => {
+provide let randomUint32 = () => {
   let buf = Memory.malloc(4n)
 
   let err = Wasi.random_get(buf, 4n)
@@ -36,18 +36,18 @@ provide let randomInt32 = () => {
   }
   let rand = WasmI32.load(buf, 0n)
   Memory.free(buf)
-  return Ok(WasmI32.toGrain(newInt32(rand)): Int32)
+  return Ok(WasmI32.toGrain(newUint32(rand)): Uint32)
 }
 
 /**
  * Produce a random 64-bit integer. This function can be slow, so it's best to seed a generator if lots of random data is needed.
  *
- * @returns `Ok(num)` of a random Int64 if successful or `Err(exception)` otherwise
+ * @returns `Ok(num)` of a random Uint64 if successful or `Err(exception)` otherwise
  *
  * @since v0.5.0
  */
 @unsafe
-provide let randomInt64 = () => {
+provide let randomUint64 = () => {
   let buf = Memory.malloc(8n)
 
   let err = Wasi.random_get(buf, 8n)
@@ -57,7 +57,7 @@ provide let randomInt64 = () => {
   }
   let rand = WasmI64.load(buf, 0n)
   Memory.free(buf)
-  return Ok(WasmI32.toGrain(newInt64(rand)): Int64)
+  return Ok(WasmI32.toGrain(newUint64(rand)): Uint64)
 }
 
 /**

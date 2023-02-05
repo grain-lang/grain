@@ -11,6 +11,9 @@ assert fromNumber(0) == 0L
 assert toNumber(555L) == 555
 assert toNumber(0L) == 0
 
+assert fromUint64(1uL) == 1L
+assert fromUint64(0xffffffffffffffffuL) == -1L
+
 assert lnot(0xffffffffffffffffL) == 0L
 assert lnot(0L) == 0xffffffffffffffffL
 assert lnot(0xf0f0f0f0f0f0f0f0L) == 0x0f0f0f0f0f0f0f0fL

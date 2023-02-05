@@ -67,6 +67,31 @@ Returns:
 |----|-----------|
 |`Number`|The Uint32 represented as a Number|
 
+### Uint32.**fromInt32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromInt32 : Int32 -> Uint32
+```
+
+Converts a Int32 to a Uint32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Int32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint32`|The Int32 represented as a Uint32|
+
 ## Operations
 
 Mathematical operations for Uint32 values.
@@ -121,7 +146,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The decremented value|
 
-### Uint32.**add**
+### Uint32.**(+)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -129,7 +154,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (Uint32, Uint32) -> Uint32
+(+) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the sum of its operands.
@@ -147,7 +172,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The sum of the two operands|
 
-### Uint32.**sub**
+### Uint32.**(-)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -155,7 +180,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (Uint32, Uint32) -> Uint32
+(-) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the difference of its operands.
@@ -173,7 +198,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The difference of the two operands|
 
-### Uint32.**mul**
+### Uint32.**(*)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -181,7 +206,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (Uint32, Uint32) -> Uint32
+(*) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the product of its operands.
@@ -199,7 +224,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The product of the two operands|
 
-### Uint32.**div**
+### Uint32.**(/)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -207,7 +232,7 @@ No other changes yet.
 </details>
 
 ```grain
-div : (Uint32, Uint32) -> Uint32
+(/) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the quotient of its operands.
@@ -225,7 +250,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The quotient of its operands|
 
-### Uint32.**rem**
+### Uint32.**(%)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -233,7 +258,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (Uint32, Uint32) -> Uint32
+(%) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the remainder of the division of its operands.
@@ -307,7 +332,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The rotated value|
 
-### Uint32.**shl**
+### Uint32.**(<<)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -315,7 +340,7 @@ No other changes yet.
 </details>
 
 ```grain
-shl : (Uint32, Uint32) -> Uint32
+(<<) : (Uint32, Uint32) -> Uint32
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -333,7 +358,7 @@ Returns:
 |----|-----------|
 |`Uint32`|The shifted value|
 
-### Uint32.**shr**
+### Uint32.**(>>)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -341,7 +366,7 @@ No other changes yet.
 </details>
 
 ```grain
-shr : (Uint32, Uint32) -> Uint32
+(>>) : (Uint32, Uint32) -> Uint32
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -363,7 +388,7 @@ Returns:
 
 Functions for comparing Uint32 values.
 
-### Uint32.**eq**
+### Uint32.**(==)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -371,7 +396,7 @@ No other changes yet.
 </details>
 
 ```grain
-eq : (Uint32, Uint32) -> Bool
+(==) : (Uint32, Uint32) -> Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -389,7 +414,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### Uint32.**ne**
+### Uint32.**(!=)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -397,7 +422,7 @@ No other changes yet.
 </details>
 
 ```grain
-ne : (Uint32, Uint32) -> Bool
+(!=) : (Uint32, Uint32) -> Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -440,7 +465,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### Uint32.**lt**
+### Uint32.**(<)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -448,7 +473,7 @@ No other changes yet.
 </details>
 
 ```grain
-lt : (Uint32, Uint32) -> Bool
+(<) : (Uint32, Uint32) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -466,7 +491,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Uint32.**gt**
+### Uint32.**(>)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -474,7 +499,7 @@ No other changes yet.
 </details>
 
 ```grain
-gt : (Uint32, Uint32) -> Bool
+(>) : (Uint32, Uint32) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -492,7 +517,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Uint32.**lte**
+### Uint32.**(<=)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -500,7 +525,7 @@ No other changes yet.
 </details>
 
 ```grain
-lte : (Uint32, Uint32) -> Bool
+(<=) : (Uint32, Uint32) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -518,7 +543,7 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Uint32.**gte**
+### Uint32.**(>=)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -526,7 +551,7 @@ No other changes yet.
 </details>
 
 ```grain
-gte : (Uint32, Uint32) -> Bool
+(>=) : (Uint32, Uint32) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -573,7 +598,7 @@ Returns:
 |----|-----------|
 |`Uint32`|Containing the inverted bits of the given value|
 
-### Uint32.**land**
+### Uint32.**(&)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -581,7 +606,7 @@ No other changes yet.
 </details>
 
 ```grain
-land : (Uint32, Uint32) -> Uint32
+(&) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -599,7 +624,7 @@ Returns:
 |----|-----------|
 |`Uint32`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### Uint32.**lor**
+### Uint32.**(|)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -607,7 +632,7 @@ No other changes yet.
 </details>
 
 ```grain
-lor : (Uint32, Uint32) -> Uint32
+(|) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -625,7 +650,7 @@ Returns:
 |----|-----------|
 |`Uint32`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### Uint32.**lxor**
+### Uint32.**(^)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -633,7 +658,7 @@ No other changes yet.
 </details>
 
 ```grain
-lxor : (Uint32, Uint32) -> Uint32
+(^) : (Uint32, Uint32) -> Uint32
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
