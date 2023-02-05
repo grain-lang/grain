@@ -522,10 +522,6 @@ provide primitive box: a -> Box<a> = "@box"
  */
 provide primitive unbox: Box<a> -> a = "@unbox"
 
-/**
- * @section List operations: Functions for working with List values.
- */
-
 // Setup exception printing
 @unsafe
 let rec setupExceptions = () => {

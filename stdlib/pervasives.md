@@ -1062,7 +1062,3 @@ Returns:
 |----|-----------|
 |`a`|The value inside the box|
 
-## List operations
-
-Functions for working with List values.
-
