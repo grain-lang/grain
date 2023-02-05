@@ -35,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3.1.1
         with:
-          node-version: "18"
+          node-version: "19"
           check-latest: true
           cache: "npm"
 
@@ -188,7 +188,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3.1.1
         with:
-          node-version: "18"
+          node-version: "19"
           registry-url: "https://registry.npmjs.org"
 
       - name: Publish to npm
@@ -206,7 +206,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3.1.1
         with:
-          node-version: "18"
+          node-version: "19"
           registry-url: "https://registry.npmjs.org"
 
       - name: Publish to npm

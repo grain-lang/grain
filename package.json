@@ -10,7 +10,7 @@
     "compiler"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=19.6"
   },
   "scripts": {
     "prepare": "npm run js-runner build && npm run cli link",
