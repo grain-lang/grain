@@ -12,19 +12,22 @@ afterAll(async () => {
 describe("Runs in NEAR sandbox", () => {
   jest.setTimeout(100_000_000);
   let Worker;
+  let SandboxServer;
   try {
     Worker = require("near-workspaces").Worker;
+    SandboxServer = require("near-workspaces").SandboxServer;
   } catch (err) {
     // no-op
   }
   // near-workspaces is optional, so if it's not installed, we can skip tests
   const testIf = !Worker ? test.skip : test;
   testIf("it should not produce wasm multivalue function", async () => {
+    const port = await SandboxServer.nextPort();
+    const rpcAddr = `http://127.0.0.1:${port}`;
+    SandboxServer.prototype.rpcAddr = rpcAddr;
     worker = await Worker.init({
-      network: {
-        network: "sandbox",
-        rpcAddr: "http://127.0.0.1",
-      },
+      network: "sandbox",
+      rpcAddr,
     });
     const root = worker.rootAccount;
     const contract = await root.devDeploy(
