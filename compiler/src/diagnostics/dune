@@ -6,8 +6,8 @@
  (action
   (with-stdout-to
    graindoc_parser_messages.ml
-   (run menhir %{dep:graindoc_parser.mly} --compile-errors %{dep:graindoc_parser.messages}
-     --unused-tokens))))
+   (run menhir %{dep:graindoc_parser.mly} --compile-errors
+     %{dep:graindoc_parser.messages} --unused-tokens))))
 
 (library
  (name grain_diagnostics)
