@@ -1,6 +1,7 @@
 module FileTest
 
 include "sys/file" as Fs
+include "bytes"
 include "result"
 
 // fdRead
@@ -20,7 +21,7 @@ let (buf, nread) = Result.unwrap(Fs.fdRead(foo, 40))
 
 Fs.fdClose(foo)
 
-assert buf == "foo, bar, & baz"
+assert buf == Bytes.fromString("foo, bar, & baz")
 assert nread == 15
 
 // fdWrite
@@ -36,7 +37,7 @@ let foo = Result.unwrap(
   )
 )
 
-assert Fs.fdWrite(foo, "this and that") == Ok(13)
+assert Fs.fdWrite(foo, Bytes.fromString("this and that")) == Ok(13)
 
 Fs.fdSeek(foo, 0L, Fs.Set)
 
@@ -46,5 +47,5 @@ Fs.fdSetSize(foo, 0L)
 
 Fs.fdClose(foo)
 
-assert buf == "this and that"
+assert buf == Bytes.fromString("this and that")
 assert nread == 13

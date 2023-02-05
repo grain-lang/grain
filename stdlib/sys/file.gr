@@ -32,6 +32,7 @@ include "runtime/dataStructures"
 from DataStructures use {
   tagSimpleNumber,
   allocateArray,
+  allocateBytes,
   allocateString,
   newInt64,
   allocateInt64,
@@ -525,7 +526,7 @@ provide let fdRead = (fd: FileDescriptor, size: Number) => {
   let n = WasmI32.fromGrain(size) >> 1n
 
   let iovs = Memory.malloc(3n * 4n)
-  let strPtr = allocateString(n)
+  let strPtr = allocateBytes(n)
 
   WasmI32.store(iovs, strPtr + 2n * 4n, 0n)
   WasmI32.store(iovs, n, 4n)
@@ -542,7 +543,7 @@ provide let fdRead = (fd: FileDescriptor, size: Number) => {
   nread = WasmI32.load(nread, 0n)
   WasmI32.store(strPtr, nread, 4n)
   Memory.free(iovs)
-  return Ok((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
+  return Ok((WasmI32.toGrain(strPtr): Bytes, tagSimpleNumber(nread)))
 }
 
 /**
@@ -564,7 +565,7 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   let n = WasmI32.fromGrain(size) >> 1n
 
   let iovs = Memory.malloc(3n * 4n)
-  let strPtr = allocateString(n)
+  let strPtr = allocateBytes(n)
 
   WasmI32.store(iovs, strPtr + 2n * 4n, 0n)
   WasmI32.store(iovs, n, 4n)
@@ -581,7 +582,7 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   nread = WasmI32.load(nread, 0n)
   WasmI32.store(strPtr, nread, 4n)
   Memory.free(iovs)
-  return Ok((WasmI32.toGrain(strPtr): String, tagSimpleNumber(nread)))
+  return Ok((WasmI32.toGrain(strPtr): Bytes, tagSimpleNumber(nread)))
 }
 
 /**
@@ -592,7 +593,7 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
  * @returns `Ok(numBytes)` of the number of bytes written if successful or `Err(Exception)` otherwise
  */
 @unsafe
-provide let fdWrite = (fd: FileDescriptor, data: String) => {
+provide let fdWrite = (fd: FileDescriptor, data: Bytes) => {
   let fdArg = fd
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
 
@@ -624,7 +625,7 @@ provide let fdWrite = (fd: FileDescriptor, data: String) => {
  * @returns `Ok(numBytes)` of the number of bytes written if successful or `Err(exception)` otherwise
  */
 @unsafe
-provide let fdPwrite = (fd: FileDescriptor, data: String, offset: Int64) => {
+provide let fdPwrite = (fd: FileDescriptor, data: Bytes, offset: Int64) => {
   let fdArg = fd
   let offsetArg = offset
   let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }

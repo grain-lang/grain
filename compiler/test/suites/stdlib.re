@@ -64,7 +64,12 @@ describe("stdlib", ({test, testSkip}) => {
   // logging to the stdout file descriptor
   assertRun(
     "stdlib_file_stdout",
-    {|include "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe")); print(void)|},
+    {|
+      include "bytes"
+      include "sys/file"
+      ignore(File.fdWrite(File.stdout, Bytes.fromString("enterthe")))
+      print(void)
+    |},
     "enterthevoid\n",
   );
   assertStdlib("array.test");
