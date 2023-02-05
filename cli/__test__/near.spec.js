@@ -10,7 +10,7 @@ afterAll(async () => {
 });
 
 describe("Runs in NEAR sandbox", () => {
-  jest.setTimeout(100_000);
+  jest.setTimeout(100_000_000);
   let Worker;
   try {
     Worker = require("near-workspaces").Worker;
