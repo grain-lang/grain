@@ -6,7 +6,7 @@ homepage: "https://github.com/ocaml-community/utop"
 bug-reports: "https://github.com/ocaml-community/utop/issues"
 doc: "https://ocaml-community.github.io/utop/"
 depends: [
-  "ocaml" {>= "4.03.0"}
+  "ocaml" {>= "4.08.0"}
   "base-unix"
   "base-threads"
   "ocamlfind" {>= "1.7.2"}
@@ -34,10 +34,10 @@ and more.  It integrates with the Tuareg mode in Emacs.
 """
 url {
   src:
-    "https://github.com/ocaml-community/utop/releases/download/2.10.0/utop-2.10.0.tbz"
+    "https://github.com/ocaml-community/utop/releases/download/2.11.0/utop-2.11.0.tbz"
   checksum: [
-    "sha256=475d16a2f9ea61c602ac32673ee210c76cc768f7214987d70c069532c2782d00"
-    "sha512=becbbc3b6651978bc6729631ec8a17a4e93e21d85b00af499f10caa9553166378190e6f1b2495ce4b8c2b5952f315ca88923a761067de47b614ed16d0f0d77c4"
+    "sha256=6937c6c672913ac3b875341ac4a205c7561d01cd8ac8f47cfb35d3bc0e762170"
+    "sha512=ab8b96eaa7f24654a371245f14819b74de0907ed8f3b2bbd9196808dc10e536458cf95418eeacf6dfc4b7f64a8dd088ee31e2eaae3d9ebc7de7cebcada52fb84"
   ]
 }
-x-commit-hash: "e56a75d2826fbe0ba3bc27a6d19fe08e02c3216d"
+x-commit-hash: "595002e6f07e6a3c6abc6e94a1b2448006115f1b"

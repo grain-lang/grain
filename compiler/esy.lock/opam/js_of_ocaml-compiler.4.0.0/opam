@@ -28,6 +28,7 @@ conflicts: [
   "ocamlfind" {< "1.5.1"}
   "js_of_ocaml" {< "3.0"}
   "base-domains"
+  "ocaml-option-bytecode-only"
 ]
 dev-repo: "git+https://github.com/ocsigen/js_of_ocaml.git"
 build: [
