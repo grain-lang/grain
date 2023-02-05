@@ -64,7 +64,7 @@ and lexer_mode =
   | Since
   | History
   | Throws
-  | GenericAttribute;
+  | FreeTextAttribute;
 
 let rec token = (state, lexbuf) => {
   switch (state.lexer_mode) {
@@ -75,7 +75,7 @@ let rec token = (state, lexbuf) => {
   | Since => since(state, lexbuf)
   | History => history(state, lexbuf)
   | Throws => throws(state, lexbuf)
-  | GenericAttribute => generic_attribute(state, lexbuf)
+  | FreeTextAttribute => free_text_attribute(state, lexbuf)
   };
 }
 
@@ -97,16 +97,16 @@ and default = (state, lexbuf) => {
     state.lexer_mode = Param;
     PARAM;
   | "@returns" =>
-    state.lexer_mode = GenericAttribute;
+    state.lexer_mode = FreeTextAttribute;
     RETURNS;
   | "@example" =>
-    state.lexer_mode = GenericAttribute;
+    state.lexer_mode = FreeTextAttribute;
     EXAMPLE;
   | "@section" =>
     state.lexer_mode = Section;
     SECTION;
   | "@deprecated" =>
-    state.lexer_mode = GenericAttribute;
+    state.lexer_mode = FreeTextAttribute;
     DEPRECATED;
   | "@since" =>
     state.lexer_mode = Since;
@@ -123,9 +123,9 @@ and default = (state, lexbuf) => {
   };
 }
 
-and generic_attribute = (state, lexbuf) => {
+and free_text_attribute = (state, lexbuf) => {
   switch%sedlex (lexbuf) {
-  | blank => generic_attribute(state, lexbuf)
+  | blank => free_text_attribute(state, lexbuf)
   | _ =>
     state.lexer_mode = Default;
     default(state, lexbuf);
