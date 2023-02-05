@@ -20,7 +20,12 @@ describe("Runs in NEAR sandbox", () => {
   // near-workspaces is optional, so if it's not installed, we can skip tests
   const testIf = !Worker ? test.skip : test;
   testIf("it should not produce wasm multivalue function", async () => {
-    worker = await Worker.init();
+    worker = await Worker.init({
+      network: {
+        network: "sandbox",
+        rpcAddr: "http://127.0.0.1",
+      },
+    });
     const root = worker.rootAccount;
     const contract = await root.devDeploy(
       path.join(__dirname, "index.gr.wasm")
