@@ -22,8 +22,7 @@ describe("Runs in NEAR sandbox", () => {
   testIf("it should not produce wasm multivalue function", async () => {
     worker = await Worker.init();
     const root = worker.rootAccount;
-    const contract = await root.createAndDeploy(
-      "grain-near-multivalue-test",
+    const contract = await root.devDeploy(
       path.join(__dirname, "index.gr.wasm")
     );
     expect(await contract.view("hello")).toEqual("Hello, World!");
