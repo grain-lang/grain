@@ -1,5 +1,34 @@
-import { wasi, readFile, readURL, readBuffer } from "./grain-module";
+import { WASI } from "@wasmer/wasi/lib/index.cjs";
+import { WasmFs } from "@wasmer/wasmfs";
+import { readFile, readURL, readBuffer } from "./grain-module";
 import { GRAIN_STRING_HEAP_TAG, GRAIN_GENERIC_HEAP_TAG_TYPE } from "./tags";
+
+let bindings;
+
+if (__RUNNER_BROWSER) {
+  const wasmFs = new WasmFs();
+  const decoder = new TextDecoder("utf-8");
+  // Monkeypatching the writeSync for stdout/stderr printing
+  const originalWriteSync = wasmFs.fs.writeSync;
+  wasmFs.fs.writeSync = (fd, buf, offset, length, position) => {
+    if (fd === 1) {
+      console.log(decoder.decode(buf));
+      return;
+    }
+    if (fd === 2) {
+      console.error(decoder.decode(buf));
+      return;
+    }
+
+    originalWriteSync(fd, buf, offset, length, position);
+  };
+  bindings = {
+    ...wasiBindings.default,
+    fs: wasmFs.fs,
+  };
+} else {
+  bindings = wasiBindings.default;
+}
 
 const MALLOC_MODULE = "GRAIN$MODULE$runtime/gc";
 const STRING_MODULE = "GRAIN$MODULE$runtime/string";
@@ -23,6 +52,12 @@ export class GrainRunner {
     this.table = new WebAssembly.Table({
       element: "anyfunc",
       initial: 1024,
+    });
+    this.wasi = new WASI({
+      args: __RUNNER_BROWSER ? [] : process.argv,
+      env: __RUNNER_BROWSER ? {} : process.env,
+      bindings,
+      preopens: opts.preopenDirs,
     });
   }
 
@@ -52,7 +87,7 @@ export class GrainRunner {
       throw new Error(`Failed to ensure string module.`);
     }
     await this.load(STRING_MODULE, located);
-    located.start();
+    located.start(this.wasi);
   }
 
   grainValueToString(v) {
@@ -117,7 +152,7 @@ export class GrainRunner {
           continue;
         }
         if (imp.module.startsWith("wasi_")) {
-          Object.assign(this.imports, wasi.getImports(mod.wasmModule));
+          Object.assign(this.imports, this.wasi.getImports(mod.wasmModule));
           continue;
         }
         // Should return an instance of GrainModule
@@ -135,7 +170,7 @@ export class GrainRunner {
           located.loadTypeMetadata();
         }
         if (located.isStartable) {
-          located.start();
+          located.start(this.wasi);
         }
         this.ptrZero = this.ptr;
         this.imports[imp.module] = located.exports;
@@ -166,12 +201,12 @@ export class GrainRunner {
 
   async runFileUnboxed(path) {
     let module = await this.loadFile(path);
-    return module.runUnboxed();
+    return module.runUnboxed(this.wasi);
   }
 
   async runFile(path) {
     let module = await this.loadFile(path);
-    return module.start();
+    return module.start(this.wasi);
   }
 
   async loadURL(url) {
@@ -181,12 +216,12 @@ export class GrainRunner {
 
   async runURL(path) {
     let module = await this.loadURL(path);
-    return module.start();
+    return module.start(this.wasi);
   }
 
   async runURLUnboxed(path) {
     let module = await this.loadURL(path);
-    return module.runUnboxed();
+    return module.runUnboxed(this.wasi);
   }
 
   async loadBuffer(buffer) {
@@ -196,11 +231,11 @@ export class GrainRunner {
 
   async runBuffer(buffer) {
     let module = await this.loadBuffer(buffer);
-    return module.start();
+    return module.start(this.wasi);
   }
 
   async runBufferUnboxed(buffer) {
     let module = await this.loadBuffer(buffer);
-    return module.runUnboxed();
+    return module.runUnboxed(this.wasi);
   }
 }
