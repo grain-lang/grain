@@ -3,7 +3,7 @@
 
 %right EOL
 
-%start <(Comment_attributes.parsed_graindoc)> graindoc
+%start <Comment_attributes.parsed_graindoc> graindoc
 
 %%
 
