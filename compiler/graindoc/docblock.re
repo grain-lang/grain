@@ -8,7 +8,7 @@ type t = {
   name: string,
   type_sig: string,
   description: option(string),
-  attributes: list(Comments.Attribute.t),
+  attributes: Comments.Attribute.attributes,
 };
 
 exception
@@ -163,7 +163,7 @@ let for_value_description =
 
   let (args, returns) = types_for_function(~ident, vd);
   // This replaces the default `None` for `attr_type` on `Param` and `Returns` attributes
-  let apply_types: (int, Comments.Attribute.t) => Comments.Attribute.t =
+  let apply_types: (int, Comment_attributes.t) => Comment_attributes.t =
     (idx, attr) => {
       switch (attr) {
       | Param(attr) =>
@@ -252,7 +252,7 @@ let to_markdown = (~current_version, docblock) => {
   let deprecations =
     docblock.attributes
     |> List.filter(Comments.Attribute.is_deprecated)
-    |> List.map((attr: Comments.Attribute.t) => {
+    |> List.map((attr: Comment_attributes.t) => {
          switch (attr) {
          | Deprecated({attr_desc}) => attr_desc
          | _ =>
@@ -275,7 +275,7 @@ let to_markdown = (~current_version, docblock) => {
   let since_attr =
     docblock.attributes
     |> List.find_opt(Comments.Attribute.is_since)
-    |> Option.map((attr: Comments.Attribute.t) => {
+    |> Option.map((attr: Comment_attributes.t) => {
          switch (attr) {
          | Since({attr_version}) =>
            output_for_since(~current_version, attr_version)
@@ -286,7 +286,7 @@ let to_markdown = (~current_version, docblock) => {
   let history_attrs =
     docblock.attributes
     |> List.filter(Comments.Attribute.is_history)
-    |> List.map((attr: Comments.Attribute.t) => {
+    |> List.map((attr: Comment_attributes.t) => {
          switch (attr) {
          | History({attr_version, attr_desc}) =>
            output_for_history(~current_version, attr_version, attr_desc)
@@ -315,7 +315,7 @@ let to_markdown = (~current_version, docblock) => {
   let params =
     docblock.attributes
     |> List.filter(Comments.Attribute.is_param)
-    |> List.map((attr: Comments.Attribute.t) => {
+    |> List.map((attr: Comment_attributes.t) => {
          switch (attr) {
          | Param({attr_name, attr_type, attr_desc}) => [
              Markdown.code(attr_name),
@@ -336,7 +336,7 @@ let to_markdown = (~current_version, docblock) => {
   let returns =
     docblock.attributes
     |> List.filter(Comments.Attribute.is_returns)
-    |> List.map((attr: Comments.Attribute.t) => {
+    |> List.map((attr: Comment_attributes.t) => {
          switch (attr) {
          | Returns({attr_type, attr_desc}) => [
              Option.fold(~none="", ~some=Markdown.code, attr_type),
@@ -357,7 +357,7 @@ let to_markdown = (~current_version, docblock) => {
     docblock.attributes
     |> List.filter(Comments.Attribute.is_throws)
     |> List.fold_left(
-         (map, attr: Comments.Attribute.t) => {
+         (map, attr: Comment_attributes.t) => {
            switch (attr) {
            | Throws({attr_type: Some(attr_type), attr_desc}) =>
              StringMap.update(
@@ -400,7 +400,7 @@ let to_markdown = (~current_version, docblock) => {
   let examples =
     docblock.attributes
     |> List.filter(Comments.Attribute.is_example)
-    |> List.map((attr: Comments.Attribute.t) => {
+    |> List.map((attr: Comment_attributes.t) => {
          switch (attr) {
          | Example({attr_desc}) => attr_desc
          | _ =>

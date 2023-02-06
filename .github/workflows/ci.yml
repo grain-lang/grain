@@ -73,6 +73,7 @@ jobs:
       - name: Check parser error messages exhaustiveness
         run: |
           npm run compiler parser:check-errors
+          npm run compiler graindoc-parser:check-errors
 
       # Formatting lint last because building is more important
       - name: Run formatting lint
