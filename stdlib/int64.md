@@ -250,34 +250,6 @@ Returns:
 |----|-----------|
 |`Int64`|The quotient of its operands|
 
-### Int64.**divU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-divU : (Int64, Int64) -> Int64
-```
-
-Computes the quotient of its operands using unsigned division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first operand|
-|`y`|`Int64`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The quotient of its operands|
-
 ### Int64.**rem**
 
 <details disabled>
@@ -290,34 +262,6 @@ rem : (Int64, Int64) -> Int64
 ```
 
 Computes the remainder of the division of its operands using signed division.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first operand|
-|`y`|`Int64`|The second operand|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The remainder of its operands|
-
-### Int64.**remU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-remU : (Int64, Int64) -> Int64
-```
-
-Computes the remainder of the division of its operands using unsigned division.
 
 Parameters:
 
@@ -473,34 +417,6 @@ Returns:
 |----|-----------|
 |`Int64`|The shifted value|
 
-### Int64.**shrU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-shrU : (Int64, Int64) -> Int64
-```
-
-Shifts the bits of the value right by the given number of bits.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`value`|`Int64`|The value to shift|
-|`amount`|`Int64`|The amount to shift by|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Int64`|The shifted value|
-
 ## Comparisons
 
 Functions for comparing Int64 values.
@@ -608,34 +524,6 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Int64.**ltU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-ltU : (Int64, Int64) -> Bool
-```
-
-Checks if the first unsigned value is less than the second unsigned value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first value|
-|`y`|`Int64`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
-
 ### Int64.**gt**
 
 <details disabled>
@@ -648,34 +536,6 @@ gt : (Int64, Int64) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first value|
-|`y`|`Int64`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
-
-### Int64.**gtU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-gtU : (Int64, Int64) -> Bool
-```
-
-Checks if the first unsigned value is greater than the second unsigned value.
 
 Parameters:
 
@@ -716,34 +576,6 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Int64.**lteU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-lteU : (Int64, Int64) -> Bool
-```
-
-Checks if the first unsigned value is less than or equal to the second unsigned value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first value|
-|`y`|`Int64`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
-
 ### Int64.**gte**
 
 <details disabled>
@@ -756,34 +588,6 @@ gte : (Int64, Int64) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Int64`|The first value|
-|`y`|`Int64`|The second value|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-### Int64.**gteU**
-
-> **Deprecated:** This will be removed in the v0.7.0 release of Grain. Use Uint64 instead for unsigned operations
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
-</details>
-
-```grain
-gteU : (Int64, Int64) -> Bool
-```
-
-Checks if the first unsigned value is greater than or equal to the second unsigned value.
 
 Parameters:
 
