@@ -11,11 +11,11 @@ pattern matching › tuple_match_deep5
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1158 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1152 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1158 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1152 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -1076,10 +1076,10 @@ pattern matching › tuple_match_deep5
                  (local.set $22
                   (tuple.extract 0
                    (tuple.make
-                    (call $+_1158
+                    (call $+_1152
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
-                      (global.get $+_1158)
+                      (global.get $+_1152)
                      )
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
@@ -1104,10 +1104,10 @@ pattern matching › tuple_match_deep5
                  (local.set $23
                   (tuple.extract 0
                    (tuple.make
-                    (call $+_1158
+                    (call $+_1152
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
-                      (global.get $+_1158)
+                      (global.get $+_1152)
                      )
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
@@ -1128,10 +1128,10 @@ pattern matching › tuple_match_deep5
                  (block $do_backpatches.105
                  )
                 )
-                (call $+_1158
+                (call $+_1152
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
-                  (global.get $+_1158)
+                  (global.get $+_1152)
                  )
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
@@ -1152,10 +1152,10 @@ pattern matching › tuple_match_deep5
                (local.set $22
                 (tuple.extract 0
                  (tuple.make
-                  (call $+_1158
+                  (call $+_1152
                    (call $incRef_0
                     (global.get $GRAIN$EXPORT$incRef_0)
-                    (global.get $+_1158)
+                    (global.get $+_1152)
                    )
                    (call $incRef_0
                     (global.get $GRAIN$EXPORT$incRef_0)
@@ -1176,10 +1176,10 @@ pattern matching › tuple_match_deep5
                (block $do_backpatches.100
                )
               )
-              (call $+_1158
+              (call $+_1152
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)
-                (global.get $+_1158)
+                (global.get $+_1152)
                )
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)
@@ -1196,10 +1196,10 @@ pattern matching › tuple_match_deep5
           )
           (br $switch.97_outer
            (block $compile_block.99 (result i32)
-            (call $+_1158
+            (call $+_1152
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)
-              (global.get $+_1158)
+              (global.get $+_1152)
              )
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)

@@ -11,13 +11,13 @@ optimizations › test_dead_branch_elimination_5
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1129 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1123 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1129 (param i32 i32 i32) (result i32)))
- (global $y_1117 (mut i32) (i32.const 0))
- (global $x_1116 (mut i32) (i32.const 0))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1123 (param i32 i32 i32) (result i32)))
+ (global $y_1111 (mut i32) (i32.const 0))
+ (global $x_1110 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -50,7 +50,7 @@ optimizations › test_dead_branch_elimination_5
     (local.set $0
      (block $compile_block.17 (result i32)
       (block $compile_store.3
-       (global.set $x_1116
+       (global.set $x_1110
         (tuple.extract 0
          (tuple.make
           (block $allocate_tuple.1 (result i32)
@@ -75,7 +75,7 @@ optimizations › test_dead_branch_elimination_5
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $x_1116)
+           (global.get $x_1110)
           )
          )
         )
@@ -84,7 +84,7 @@ optimizations › test_dead_branch_elimination_5
        )
       )
       (block $compile_store.6
-       (global.set $y_1117
+       (global.set $y_1111
         (tuple.extract 0
          (tuple.make
           (block $allocate_tuple.4 (result i32)
@@ -109,7 +109,7 @@ optimizations › test_dead_branch_elimination_5
           )
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $y_1117)
+           (global.get $y_1111)
           )
          )
         )
@@ -121,14 +121,14 @@ optimizations › test_dead_branch_elimination_5
        (local.set $8
         (block $MTupleSet.7 (result i32)
          (i32.store offset=8
-          (global.get $x_1116)
+          (global.get $x_1110)
           (tuple.extract 0
            (tuple.make
             (i32.const 7)
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
              (i32.load offset=8
-              (global.get $x_1116)
+              (global.get $x_1110)
              )
             )
            )
@@ -144,14 +144,14 @@ optimizations › test_dead_branch_elimination_5
        (local.set $9
         (block $MTupleSet.10 (result i32)
          (i32.store offset=8
-          (global.get $y_1117)
+          (global.get $y_1111)
           (tuple.extract 0
            (tuple.make
             (i32.const 9)
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
              (i32.load offset=8
-              (global.get $y_1117)
+              (global.get $y_1111)
              )
             )
            )
@@ -170,7 +170,7 @@ optimizations › test_dead_branch_elimination_5
           (call $incRef_0
            (global.get $GRAIN$EXPORT$incRef_0)
            (i32.load offset=8
-            (global.get $x_1116)
+            (global.get $x_1110)
            )
           )
           (call $decRef_0
@@ -190,7 +190,7 @@ optimizations › test_dead_branch_elimination_5
           (call $incRef_0
            (global.get $GRAIN$EXPORT$incRef_0)
            (i32.load offset=8
-            (global.get $y_1117)
+            (global.get $y_1111)
            )
           )
           (call $decRef_0
@@ -203,10 +203,10 @@ optimizations › test_dead_branch_elimination_5
        (block $do_backpatches.15
        )
       )
-      (call $+_1129
+      (call $+_1123
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $+_1129)
+        (global.get $+_1123)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)

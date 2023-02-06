@@ -50,7 +50,7 @@ records › record_spread_2
       )
       (i64.store offset=24
        (local.get $0)
-       (i64.const 68719477852)
+       (i64.const 68719477846)
       )
       (i64.store offset=32
        (local.get $0)

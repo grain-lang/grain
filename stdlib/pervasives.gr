@@ -522,32 +522,6 @@ provide primitive box: a -> Box<a> = "@box"
  */
 provide primitive unbox: Box<a> -> a = "@unbox"
 
-/**
- * @section List operations: Functions for working with List values.
- */
-
-/**
- * The list spread syntax (`[a, ...b]`) provided as a function.
- *
- * @param a: The head of the list
- * @param b: The tail of the list
- * @returns The new list
- *
- * @deprecated This will be removed in a future release of Grain.
- *
- * @since v0.4.0
- */
-provide let cons = (a, b) =>
-  [a, ...b] // TODO(#802): Remove workaround after 802 is completed
-/**
- * The empty list syntax (`[]`) provided as a value.
- *
- * @deprecated This will be removed in a future release of Grain.
- *
- * @since v0.4.0
- */
-provide let empty = [] // <- for parity with `cons`, but should be deleted as well
-
 // Setup exception printing
 @unsafe
 let rec setupExceptions = () => {
