@@ -23,8 +23,11 @@ describe("Runs in NEAR sandbox", () => {
   const testIf = !Worker ? test.skip : test;
   testIf("it should not produce wasm multivalue function", async () => {
     const port = await SandboxServer.nextPort();
+    // NEAR hasn't accepted https://github.com/near/workspaces-js/pull/200
+    // so we hack around their lack of Node 18+ support
     const rpcAddr = `http://127.0.0.1:${port}`;
     SandboxServer.prototype.rpcAddr = rpcAddr;
+    Worker.prototype.rpcAddr = rpcAddr;
     worker = await Worker.init({
       network: "sandbox",
       rpcAddr,
