@@ -834,13 +834,9 @@ let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
           let (_, code_line, _, _) =
             Locations.get_raw_pos_info(itemloc.loc_end);
           if (this_comment_line > code_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
-            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+            [Comment_utils.comment_to_doc(comment), ...acc];
           };
         | Some(next) =>
           let (_, next_comment_line, _, _) =
@@ -851,13 +847,9 @@ let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
           next_comment := Some(comment);
 
           if (this_comment_line <= next_comment_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
-            [Comment_utils.nobreak_comment_to_doc(comment), ...acc];
+            [Comment_utils.comment_to_doc(comment), ...acc];
           };
         };
       },
@@ -884,7 +876,7 @@ let mix_comments_and_separator =
       [
         separator,
         Doc.space,
-        Comment_utils.nobreak_comment_to_doc(comment),
+        Comment_utils.comment_to_doc(comment),
         Doc.breakParent, // forces the lines to break, and so make this line comment force a new line
         ...acc,
       ];
@@ -906,11 +898,7 @@ let mix_comments_and_separator =
             Locations.get_raw_pos_info(item_location.loc_end);
 
           if (this_comment_line > code_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
             force_break_for_comment(comment, acc);
           };
@@ -924,11 +912,7 @@ let mix_comments_and_separator =
           next_comment := Some(comment);
 
           if (this_comment_line < next_comment_line) {
-            [
-              Doc.hardLine,
-              Comment_utils.nobreak_comment_to_doc(comment),
-              ...acc,
-            ];
+            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
           } else {
             force_break_for_comment(comment, acc);
           };
@@ -1261,10 +1245,7 @@ and resugar_list =
             let trailing_comments =
               List.map(
                 (cmt: Parsetree.comment) =>
-                  Doc.concat([
-                    Doc.space,
-                    Comment_utils.nobreak_comment_to_doc(cmt),
-                  ]),
+                  Doc.concat([Doc.space, Comment_utils.comment_to_doc(cmt)]),
                 item_comments,
               );
 
@@ -3323,7 +3304,7 @@ and print_expression_inner =
                   (index, c) =>
                     Doc.concat([
                       Doc.space,
-                      Comment_utils.nobreak_comment_to_doc(c),
+                      Comment_utils.comment_to_doc(c),
                       switch (c) {
                       | Line(_) => Doc.breakParent
                       | _ => Doc.nil

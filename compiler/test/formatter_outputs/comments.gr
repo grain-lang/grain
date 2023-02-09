@@ -128,3 +128,22 @@ Result.expect(
   File.fdWrite(File.stdout, "Status: 500\n\nInternal Server Error")
 )
 // this comment stays outside
+
+// For debugging:
+
+// provide let getRefCount = (value) => {
+//   let userPtr = WasmI32.fromGrain(value)
+//   let ret = if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && WasmI32.ne(userPtr, 0n)) {
+//     WasmI32.toGrain((getRefCount(userPtr) * 2n) + 1n) : Number
+//   } else {
+//     0
+//   }
+//   decRef(userPtr)
+//   ret
+// }
+
+// provide let rec setDebug = (enabled: Bool) => {
+//   _DEBUG = enabled
+//   decRef(WasmI32.fromGrain(setDebug))
+//   void
+// }
