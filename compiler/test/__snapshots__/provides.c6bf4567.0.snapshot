@@ -1,16 +1,14 @@
 provides › let_rec_provide
 (module
  (type $none_=>_none (func))
- (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (import \"_genv\" \"mem\" (memory $0 0))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
  (global $foo_1113 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
@@ -68,37 +66,14 @@ provides › let_rec_provide
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.7 (result i32)
+   (block $cleanup_locals.6 (result i32)
     (local.set $0
-     (block $compile_block.6 (result i32)
-      (block $compile_store.5
+     (block $compile_block.5 (result i32)
+      (block $compile_store.4
        (global.set $foo_1113
         (tuple.extract 0
          (tuple.make
-          (block $allocate_closure.3 (result i32)
-           (i32.store
-            (local.tee $0
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 6)
-           )
-           (i32.store offset=4
-            (local.get $0)
-            (i32.const 1)
-           )
-           (i32.store offset=8
-            (local.get $0)
-            (i32.const -1)
-           )
-           (i32.store offset=12
-            (local.get $0)
-            (i32.const 0)
-           )
-           (local.get $0)
-          )
+          (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
            (global.get $foo_1113)
@@ -106,10 +81,7 @@ provides › let_rec_provide
          )
         )
        )
-       (block $do_backpatches.4
-        (local.set $0
-         (global.get $foo_1113)
-        )
+       (block $do_backpatches.3
        )
       )
       (i32.const 1879048190)
@@ -124,5 +96,5 @@ provides › let_rec_provide
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 848
+ ;; custom section \"cmi\", size 873
 )

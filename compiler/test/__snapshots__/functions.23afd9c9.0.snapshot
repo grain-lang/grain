@@ -557,37 +557,14 @@ functions › lam_destructure_5
   (local $7 i32)
   (local $8 i32)
   (return
-   (block $cleanup_locals.44 (result i32)
+   (block $cleanup_locals.43 (result i32)
     (local.set $0
-     (block $compile_block.43 (result i32)
-      (block $compile_store.36
+     (block $compile_block.42 (result i32)
+      (block $compile_store.35
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (block $allocate_closure.34 (result i32)
-           (i32.store
-            (local.tee $0
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 6)
-           )
-           (i32.store offset=4
-            (local.get $0)
-            (i32.const 3)
-           )
-           (i32.store offset=8
-            (local.get $0)
-            (i32.const -1)
-           )
-           (i32.store offset=12
-            (local.get $0)
-            (i32.const 0)
-           )
-           (local.get $0)
-          )
+          (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
            (local.get $6)
@@ -595,17 +572,14 @@ functions › lam_destructure_5
          )
         )
        )
-       (block $do_backpatches.35
-        (local.set $0
-         (local.get $6)
-        )
+       (block $do_backpatches.34
        )
       )
-      (block $compile_store.39
+      (block $compile_store.38
        (local.set $7
         (tuple.extract 0
          (tuple.make
-          (block $allocate_tuple.37 (result i32)
+          (block $allocate_tuple.36 (result i32)
            (i32.store
             (local.tee $0
              (call $malloc_0
@@ -640,14 +614,14 @@ functions › lam_destructure_5
          )
         )
        )
-       (block $do_backpatches.38
+       (block $do_backpatches.37
        )
       )
-      (block $compile_store.42
+      (block $compile_store.41
        (local.set $8
         (tuple.extract 0
          (tuple.make
-          (block $allocate_tuple.40 (result i32)
+          (block $allocate_tuple.39 (result i32)
            (i32.store
             (local.tee $0
              (call $malloc_0
@@ -678,7 +652,7 @@ functions › lam_destructure_5
          )
         )
        )
-       (block $do_backpatches.41
+       (block $do_backpatches.40
        )
       )
       (call $lam_lambda_1118
