@@ -224,18 +224,6 @@ module Sourcetree: Sourcetree = {
     module Iterator =
       TypedtreeIter.MakeIterator({
         include TypedtreeIter.DefaultIteratorArgument;
-        let process_value_description = (id, instance_ty, ty) => {
-          // Never consider special idents when deciding to display generalized
-          // types, i.e. always display instance types for lists
-          Parsetree.(
-            Identifier.(
-              switch (id) {
-              | {txt: IdentName({txt: "[]" | "[...]"})} => instance_ty
-              | _ => ty
-              }
-            )
-          );
-        };
         let enter_expression = exp => {
           Parsetree.(
             Path.(
@@ -266,15 +254,7 @@ module Sourcetree: Sourcetree = {
                   [
                     (
                       loc_to_interval(exp.exp_loc),
-                      Value(
-                        exp.exp_env,
-                        process_value_description(
-                          id,
-                          exp.exp_type,
-                          desc.val_type,
-                        ),
-                        exp.exp_loc,
-                      ),
+                      Value(exp.exp_env, desc.val_type, exp.exp_loc),
                     ),
                     ...segments^,
                   ]

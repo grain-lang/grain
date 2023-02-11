@@ -59,6 +59,21 @@ module E = {
     | PExpId(i) => ident(~loc, ~attributes, map_identifier(sub, i))
     | PExpConstant(c) => constant(~loc, ~attributes, sub.constant(sub, c))
     | PExpTuple(es) => tuple(~loc, ~attributes, List.map(sub.expr(sub), es))
+    | PExpList(es) =>
+      list(
+        ~loc,
+        ~attributes,
+        List.map(
+          item => {
+            switch (item) {
+            | ListItem(e) => ListItem(sub.expr(sub, e))
+            | ListSpread(e, loc) =>
+              ListSpread(sub.expr(sub, e), sub.location(sub, loc))
+            }
+          },
+          es,
+        ),
+      )
     | PExpArray(es) => array(~loc, ~attributes, List.map(sub.expr(sub), es))
     | PExpArrayGet(a, i) =>
       array_get(~loc, ~attributes, sub.expr(sub, a), sub.expr(sub, i))
@@ -222,6 +237,20 @@ module P = {
     | PPatAny => any(~loc, ())
     | PPatVar(sl) => var(~loc, map_loc(sub, sl))
     | PPatTuple(pl) => tuple(~loc, List.map(sub.pat(sub), pl))
+    | PPatList(pl) =>
+      list(
+        ~loc,
+        List.map(
+          item => {
+            switch (item) {
+            | ListItem(p) => ListItem(sub.pat(sub, p))
+            | ListSpread(p, loc) =>
+              ListSpread(sub.pat(sub, p), sub.location(sub, loc))
+            }
+          },
+          pl,
+        ),
+      )
     | PPatArray(pl) => array(~loc, List.map(sub.pat(sub), pl))
     | PPatRecord(fs, c) =>
       record(

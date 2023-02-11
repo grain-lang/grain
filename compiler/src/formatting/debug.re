@@ -51,6 +51,7 @@ let debug_expression = (expr: Parsetree.expression) => {
   | PExpId({txt: id}) => print_loc("PExpId", expr.pexp_loc)
   | PExpLet(rec_flag, mut_flag, vbs) => print_loc("PExpLet", expr.pexp_loc)
   | PExpTuple(expressions) => print_loc("PExpTuple", expr.pexp_loc)
+  | PExpList(expressions) => print_loc("PExpList", expr.pexp_loc)
   | PExpArray(expressions) => print_loc("PExpArray", expr.pexp_loc)
   | PExpArrayGet(expression1, expression2) =>
     print_loc("PExpArrayGet", expr.pexp_loc)
@@ -98,6 +99,7 @@ let debug_pattern = (pat: Parsetree.pattern) => {
   | PPatConstant(c) => print_endline("PPatAny")
   | PPatVar({txt, _}) => print_endline("PPatVar " ++ txt)
   | PPatTuple(patterns) => print_endline("PPatTuple")
+  | PPatList(patterns) => print_endline("PPatList")
   | PPatArray(patterns) => print_endline("PPatArray")
   | PPatRecord(patternlocs, closedflag) => print_endline("PPatRecord")
   | PPatConstraint(pattern, parsed_type) => print_endline("PPatConstraint")
