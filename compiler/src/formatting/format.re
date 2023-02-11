@@ -2971,8 +2971,8 @@ and print_expression_inner =
           print_ident(txt),
         ]);
       print_assignment(~original_source, ~comments, left, expression2);
-    | PExpCollectionConcat(concat_t, colls) =>
-      let list_length = List.length(colls);
+    | PExpCollectionConcat(concat_t, collections) =>
+      let list_length = List.length(collections);
 
       let items =
         List.mapi(
@@ -2988,7 +2988,7 @@ and print_expression_inner =
             //  3]
             let end_line_comments =
               if (index < list_length - 2) {
-                let (_, next_e) = List.nth(colls, index + 1);
+                let (_, next_e) = List.nth(collections, index + 1);
                 Comment_utils.get_comments_between_locations(
                   ~loc1=e.Parsetree.pexp_loc,
                   ~loc2=next_e.pexp_loc,
@@ -3050,7 +3050,7 @@ and print_expression_inner =
               };
             (expr, end_line_comments);
           },
-          colls,
+          collections,
         );
 
       let (last_line_breaks_for_comments, list_items) =

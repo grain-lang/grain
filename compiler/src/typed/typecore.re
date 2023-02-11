@@ -979,25 +979,28 @@ and type_expect_ =
       exp_type: Builtin_types.type_void,
       exp_env: env,
     });
-  | PExpCollectionConcat(t, colls) =>
+  | PExpCollectionConcat(t, collections) =>
     let (mk_builtin_type, texp_type) =
       switch (t) {
       | PExpListConcat => (Builtin_types.type_list, TExpListConcat)
       | PExpArrayConcat => (Builtin_types.type_array, TExpArrayConcat)
       };
-    let coll_type = mk_builtin_type(newvar());
-    with_explanation(() => unify_exp_types(loc, env, coll_type, ty_expected));
-    let typed_colls =
+    let collection_type = mk_builtin_type(newvar());
+    with_explanation(() =>
+      unify_exp_types(loc, env, collection_type, ty_expected)
+    );
+    let typed_collections =
       List.map(
-        ((_, expr)) => type_expect(env, expr, mk_expected(coll_type)),
-        colls,
+        ((_, expr)) =>
+          type_expect(env, expr, mk_expected(collection_type)),
+        collections,
       );
     rue({
-      exp_desc: TExpCollectionConcat(texp_type, typed_colls),
+      exp_desc: TExpCollectionConcat(texp_type, typed_collections),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
-      exp_type: coll_type,
+      exp_type: collection_type,
       exp_env: env,
     });
   | PExpLet(rec_flag, mut_flag, pats) =>

@@ -61,7 +61,7 @@ let debug_expression = (expr: Parsetree.expression) => {
     print_loc("PExpRecordGet", expr.pexp_loc)
   | PExpRecordSet(expression, {txt, _}, expression2) =>
     print_loc("PExpRecordSet", expr.pexp_loc)
-  | PExpCollectionConcat(t, colls) =>
+  | PExpCollectionConcat(t, collections) =>
     print_loc("PExpCollectionConcat", expr.pexp_loc)
   | PExpMatch(expression, match_branches) =>
     print_loc("PExpMatch", expr.pexp_loc)

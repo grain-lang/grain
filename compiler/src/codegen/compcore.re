@@ -3016,14 +3016,14 @@ and compile_instr = (wasm_mod, env, instr) =>
     compile_record_op(wasm_mod, env, record, record_op)
   | MClosureOp(closure_op, closure) =>
     compile_closure_op(wasm_mod, env, closure, closure_op)
-  | MCollectionConcat(t, colls) =>
-    let colls_arr = allocate_array(wasm_mod, env, colls);
+  | MCollectionConcat(t, collections) =>
+    let collections_arr = allocate_array(wasm_mod, env, collections);
     let concat =
       switch (t) {
       | TExpListConcat => call_list_concat
       | TExpArrayConcat => call_array_concat
       };
-    concat(wasm_mod, env, [colls_arr]);
+    concat(wasm_mod, env, [collections_arr]);
   | MPrim0(p0) => compile_prim0(wasm_mod, env, p0)
   | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)

@@ -38,6 +38,10 @@ type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
 
+type array_concat_item =
+  | ArrayConcatItems(list(expression))
+  | ArrayConcatSpread(expression);
+
 let ident_empty = {
   txt: Identifier.IdentName(Location.mknoloc("[]")),
   loc: Location.dummy_loc,
@@ -433,41 +437,49 @@ module Expression = {
             tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
           | ListSpread(expr, _) => expr
           };
-        if (List.exists(
-              expr =>
+        let has_nonfinal_spread =
+          List.exists(
+            expr =>
+              switch (expr) {
+              | ListSpread(_) => true
+              | ListItem(_) => false
+              },
+            rest,
+          );
+        if (has_nonfinal_spread) {
+          let grouped =
+            List.fold_left(
+              (acc, expr) => {
                 switch (expr) {
-                | ListSpread(_) => true
-                | ListItem(_) => false
-                },
+                | ListSpread(expr, loc) => [
+                    {...expr, pexp_loc: loc},
+                    ...acc,
+                  ]
+                | ListItem(expr) =>
+                  let (first, rest) =
+                    switch (acc) {
+                    | [first, ...rest] => (first, rest)
+                    | _ => assert(false)
+                    };
+                  [
+                    tuple_construct(
+                      ~loc,
+                      ~attributes?,
+                      ident_cons,
+                      [expr, first],
+                    ),
+                    ...rest,
+                  ];
+                }
+              },
+              [base],
               rest,
-            )) {
+            );
           collection_concat(
             ~loc,
             ~attributes?,
             PExpListConcat,
-            List.map(
-              expr =>
-                switch (expr) {
-                | ListSpread(expr, loc) => (
-                    PExpSpreadExpr,
-                    {...expr, pexp_loc: loc},
-                  )
-                | ListItem(expr) => (
-                    PExpNonSpreadExpr,
-                    // Still convert to a single-element list to make later compilation steps easier
-                    tuple_construct(
-                      ~loc=expr.pexp_loc,
-                      ~attributes?,
-                      ident_cons,
-                      [
-                        expr,
-                        tuple_construct(~loc=expr.pexp_loc, ident_empty, []),
-                      ],
-                    ),
-                  )
-                },
-              a,
-            ),
+            List.map(expr => (PExpSpreadExpr, expr), grouped),
           );
         } else {
           List.fold_left(
@@ -489,17 +501,58 @@ module Expression = {
     {...list, pexp_loc: loc};
   };
   let array_items = (~loc, ~attributes=?, a) => {
-    let no_spreads =
-      List.for_all(
+    let has_spread =
+      List.exists(
         x => {
           switch (x) {
-          | ArrayItem(_) => true
-          | ArraySpread(_) => false
+          | ArraySpread(_) => true
+          | ArrayItem(_) => false
           }
         },
         a,
       );
-    if (no_spreads) {
+    if (has_spread) {
+      let grouped =
+        List.fold_right(
+          (expr, acc) => {
+            switch (expr) {
+            | ArrayItem(expr) =>
+              switch (acc) {
+              | [ArrayConcatItems(exprs), ...rest] => [
+                  ArrayConcatItems([expr, ...exprs]),
+                  ...rest,
+                ]
+              | _ => [ArrayConcatItems([expr]), ...acc]
+              }
+            | ArraySpread(expr, loc) => [
+                ArrayConcatSpread({...expr, pexp_loc: loc}),
+                ...acc,
+              ]
+            }
+          },
+          a,
+          [],
+        );
+      collection_concat(
+        ~loc,
+        ~attributes?,
+        PExpArrayConcat,
+        List.map(
+          x => {
+            switch (x) {
+            | ArrayConcatItems([first, ...rest] as exprs) => (
+                PExpNonSpreadExpr,
+                array(~loc=first.pexp_loc, ~attributes?, exprs),
+              )
+            | ArrayConcatItems([]) =>
+              failwith("Impossible: empty ArrayConcatItems")
+            | ArrayConcatSpread(expr) => (PExpSpreadExpr, expr)
+            }
+          },
+          grouped,
+        ),
+      );
+    } else {
       array(
         ~loc,
         ~attributes?,
@@ -512,28 +565,6 @@ module Expression = {
               )
             | ArrayItem(expr) => expr
             },
-          a,
-        ),
-      );
-    } else {
-      collection_concat(
-        ~loc,
-        ~attributes?,
-        PExpArrayConcat,
-        List.map(
-          x => {
-            switch (x) {
-            | ArrayItem(expr) => (
-                PExpNonSpreadExpr,
-                // Still convert to a single-element array to make later compilation steps easier
-                array(~loc=expr.pexp_loc, ~attributes?, [expr]),
-              )
-            | ArraySpread(expr, loc) => (
-                PExpSpreadExpr,
-                {...expr, pexp_loc: loc},
-              )
-            }
-          },
           a,
         ),
       );

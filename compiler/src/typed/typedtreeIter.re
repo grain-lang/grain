@@ -247,7 +247,8 @@ module MakeIterator =
       iter_expression(a1);
       iter_expression(a2);
       iter_expression(a3);
-    | TExpCollectionConcat(_, colls) => List.iter(iter_expression, colls)
+    | TExpCollectionConcat(_, collections) =>
+      List.iter(iter_expression, collections)
     | TExpIf(c, t, f) =>
       iter_expression(c);
       iter_expression(t);

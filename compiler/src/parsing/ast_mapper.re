@@ -87,12 +87,12 @@ module E = {
         map_loc(sub, f),
         sub.expr(sub, v),
       )
-    | PExpCollectionConcat(t, colls) =>
+    | PExpCollectionConcat(t, collections) =>
       collection_concat(
         ~loc,
         ~attributes,
         t,
-        List.map(((t, expr)) => (t, sub.expr(sub, expr)), colls),
+        List.map(((t, expr)) => (t, sub.expr(sub, expr)), collections),
       )
     | PExpLet(r, m, vbs) =>
       let_(~loc, ~attributes, r, m, List.map(sub.value_binding(sub), vbs))

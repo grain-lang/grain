@@ -30,8 +30,8 @@ describe("lists", ({test, testSkip}) => {
   );
   assertRun(
     "list_spread_anywhere2",
-    "let a = [1, 2]; let b = [4, 5]; print([...a, 3, ...b])",
-    "[1, 2, 3, 4, 5]\n",
+    "let a = [2]; let b = [5, 6]; print([1, ...a, 3, 4, ...b])",
+    "[1, 2, 3, 4, 5, 6]\n",
   );
   assertRun(
     "list_spread_anywhere3",

@@ -122,8 +122,8 @@ describe("arrays", ({test, testSkip}) => {
   );
   assertRun(
     "array_spread2",
-    "let a = [> 1, 2, 3]; print([> 0, ...a])",
-    "[> 0, 1, 2, 3]\n",
+    "let a = [> 4, 5]; print([> 1, 2, 3, ...a, 6])",
+    "[> 1, 2, 3, 4, 5, 6]\n",
   );
   assertRun(
     "array_spread3",

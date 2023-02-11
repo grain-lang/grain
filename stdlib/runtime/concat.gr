@@ -2,10 +2,15 @@
 module Concat
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { (+) }
+from WasmI32 use { (<), (>=), (+), (-), (*) }
 include "runtime/unsafe/memory"
 include "runtime/dataStructures"
 from DataStructures use { tagSimpleNumber, allocateArray }
+
+@unsafe
+let _ARRAY_LENGTH_OFFSET = 4n
+@unsafe
+let _ARRAY_DATA_OFFSET = 8n
 
 let rec append = (list1, list2) => {
   match (list1) {
@@ -15,50 +20,43 @@ let rec append = (list1, list2) => {
 }
 
 @unsafe
-provide let listConcat = listsArray => {
+provide let listConcat = (listsArray: Array<List<a>>) => {
   let ptr = WasmI32.fromGrain(listsArray)
-  let length = WasmI32.load(ptr, 4n)
+  let length = WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET)
+  let byteLength = length * 4n
   let mut result = []
 
-  for (let mut i = 0n; WasmI32.ltU(i, length); i += 1n) {
-    let list = listsArray[tagSimpleNumber(i)]
-    result = append(result, list)
+  for (let mut offset = byteLength - 4n; offset >= 0n; offset -= 4n) {
+    let listPtr = Memory.incRef(WasmI32.load(ptr + offset, _ARRAY_DATA_OFFSET))
+    let list = WasmI32.toGrain(listPtr): List<a>
+    result = append(list, result)
   }
   result
 }
 
 @unsafe
-let findLength = arr => {
-  let ptr = WasmI32.fromGrain(arr)
-  WasmI32.load(ptr, 4n)
-}
-
-@unsafe
 provide let arrayConcat = (arraysArray: Array<Array<a>>) => {
-  let numArrs = findLength(arraysArray)
+  let ptr = WasmI32.fromGrain(arraysArray)
+  let numArrsByteLength = WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET) * 4n
 
   let mut totLength = 0n
-  for (let mut i = 0n; WasmI32.ltU(i, numArrs); i += 1n) {
-    let array = arraysArray[tagSimpleNumber(i)]
-    totLength += findLength(array)
+  for (let mut offset = 0n; offset < numArrsByteLength; offset += 4n) {
+    let arrayPtr = WasmI32.load(ptr + offset, _ARRAY_DATA_OFFSET)
+    let arrayLen = WasmI32.load(arrayPtr, _ARRAY_LENGTH_OFFSET)
+    totLength += arrayLen
   }
 
   let result = allocateArray(totLength)
-  let mut byteOffset = result
-  for (let mut i = 0n; WasmI32.ltU(i, numArrs); i += 1n) {
-    let array = arraysArray[tagSimpleNumber(i)]
-    let length = findLength(array)
-    for (
-      let mut arrI = 0n;
-      WasmI32.ltU(arrI, length);
-      arrI += 1n
-    ) {
-      WasmI32.store(
-        byteOffset,
-        Memory.incRef(WasmI32.fromGrain(array[tagSimpleNumber(arrI)])),
-        8n
+  let mut insertElemOffset = result
+  for (let mut offset = 0n; offset < numArrsByteLength; offset += 4n) {
+    let arrayPtr = WasmI32.load(ptr + offset, _ARRAY_DATA_OFFSET)
+    let arrayByteLen = WasmI32.load(arrayPtr, _ARRAY_LENGTH_OFFSET) * 4n
+    for (let mut arrOffset = 0n; arrOffset < arrayByteLen; arrOffset += 4n) {
+      let elem = Memory.incRef(
+        WasmI32.load(arrayPtr + arrOffset, _ARRAY_DATA_OFFSET)
       )
-      byteOffset += 4n
+      WasmI32.store(insertElemOffset, elem, _ARRAY_DATA_OFFSET)
+      insertElemOffset += 4n
     }
   }
   WasmI32.toGrain(result): Array<a>

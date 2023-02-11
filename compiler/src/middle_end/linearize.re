@@ -929,9 +929,10 @@ let rec transl_imm =
         ),
       ],
     );
-  | TExpCollectionConcat(t, colls) =>
+  | TExpCollectionConcat(t, collections) =>
     let tmp = gensym("catcollection");
-    let (new_args, new_setup) = List.split(List.map(transl_imm, colls));
+    let (new_args, new_setup) =
+      List.split(List.map(transl_imm, collections));
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup)

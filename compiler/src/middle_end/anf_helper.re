@@ -146,13 +146,13 @@ module Comp = {
       ~env?,
       CSetRecordItem(idx, record, arg),
     );
-  let collection_concat = (~loc=?, ~attributes=?, ~env=?, t, colls) =>
+  let collection_concat = (~loc=?, ~attributes=?, ~env=?, t, collections) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CCollectionConcat(t, colls),
+      CCollectionConcat(t, collections),
     );
   let if_ = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, cond, tru, fals) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CIf(cond, tru, fals));
