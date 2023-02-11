@@ -14,7 +14,7 @@ let optimization_passes = [
   Optimize_manual_memory_management.optimize,
   Optimize_tail_calls.optimize,
   Optimize_constants.optimize,
-  Optimize_simple_binops.optimize,
+  Optimize_simple_expressions.optimize,
   Optimize_dead_assignments.optimize,
   Optimize_dead_branches.optimize,
   Optimize_dead_statements.optimize,
