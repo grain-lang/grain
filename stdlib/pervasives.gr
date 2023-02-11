@@ -13,6 +13,7 @@ module Pervasives
 include "runtime/exception"
 include "runtime/unsafe/memory"
 include "runtime/unsafe/wasmi32"
+include "runtime/concat"
 
 include "runtime/equal"
 from Equal use { equal as (==) }

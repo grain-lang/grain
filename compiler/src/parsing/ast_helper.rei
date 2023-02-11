@@ -24,6 +24,10 @@ type listitem('a) =
   | ListItem('a)
   | ListSpread('a, Location.t);
 
+type arrayitem =
+  | ArrayItem(expression)
+  | ArraySpread(expression, Location.t);
+
 type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
@@ -157,6 +161,16 @@ module Expression: {
     expression;
   let list:
     (~loc: loc, ~attributes: attributes=?, list(listitem(expression))) =>
+    expression;
+  let array_items:
+    (~loc: loc, ~attributes: attributes=?, list(arrayitem)) => expression;
+  let collection_concat:
+    (
+      ~loc: loc,
+      ~attributes: attributes=?,
+      collection_concat_type,
+      list((collection_concat_expression_type, expression))
+    ) =>
     expression;
   let array:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;

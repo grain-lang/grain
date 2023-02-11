@@ -24,6 +24,10 @@ type listitem('a) =
   | ListItem('a)
   | ListSpread('a, Location.t);
 
+type arrayitem =
+  | ArrayItem(expression)
+  | ArraySpread(expression, Location.t);
+
 type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
@@ -415,6 +419,8 @@ module Expression = {
   };
   let block = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpBlock(a));
+  let collection_concat = (~loc, ~attributes=?, a, b) =>
+    mk(~loc, ~attributes?, PExpCollectionConcat(a, b));
   let list = (~loc, ~attributes=?, a) => {
     let empty = tuple_construct(~loc, ident_empty, []);
     let list =
@@ -427,25 +433,111 @@ module Expression = {
             tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
           | ListSpread(expr, _) => expr
           };
-        List.fold_left(
-          (acc, expr) => {
+        if (List.exists(
+              expr =>
+                switch (expr) {
+                | ListSpread(_) => true
+                | ListItem(_) => false
+                },
+              rest,
+            )) {
+          collection_concat(
+            ~loc,
+            ~attributes?,
+            PExpListConcat,
+            List.map(
+              expr =>
+                switch (expr) {
+                | ListSpread(expr, loc) => (
+                    PExpSpreadExpr,
+                    {...expr, pexp_loc: loc},
+                  )
+                | ListItem(expr) => (
+                    PExpNonSpreadExpr,
+                    // Still convert to a single-element list to make later compilation steps easier
+                    tuple_construct(
+                      ~loc=expr.pexp_loc,
+                      ~attributes?,
+                      ident_cons,
+                      [
+                        expr,
+                        tuple_construct(~loc=expr.pexp_loc, ident_empty, []),
+                      ],
+                    ),
+                  )
+                },
+              a,
+            ),
+          );
+        } else {
+          List.fold_left(
+            (acc, expr) => {
+              switch (expr) {
+              | ListItem(expr) =>
+                tuple_construct(~loc, ~attributes?, ident_cons, [expr, acc])
+              | ListSpread(_, loc) =>
+                failwith(
+                  "Impossible: non-final list spread when existence has been disproven",
+                )
+              }
+            },
+            base,
+            rest,
+          );
+        };
+      };
+    {...list, pexp_loc: loc};
+  };
+  let array_items = (~loc, ~attributes=?, a) => {
+    let no_spreads =
+      List.for_all(
+        x => {
+          switch (x) {
+          | ArrayItem(_) => true
+          | ArraySpread(_) => false
+          }
+        },
+        a,
+      );
+    if (no_spreads) {
+      array(
+        ~loc,
+        ~attributes?,
+        List.map(
+          expr =>
             switch (expr) {
-            | ListItem(expr) =>
-              tuple_construct(~loc, ~attributes?, ident_cons, [expr, acc])
-            | ListSpread(_, loc) =>
-              raise(
-                SyntaxError(
-                  loc,
-                  "A list spread can only appear at the end of a list.",
-                ),
+            | ArraySpread(_) =>
+              failwith(
+                "Impossible: spread in array when existence has been disproven",
+              )
+            | ArrayItem(expr) => expr
+            },
+          a,
+        ),
+      );
+    } else {
+      collection_concat(
+        ~loc,
+        ~attributes?,
+        PExpArrayConcat,
+        List.map(
+          x => {
+            switch (x) {
+            | ArrayItem(expr) => (
+                PExpNonSpreadExpr,
+                // Still convert to a single-element array to make later compilation steps easier
+                array(~loc=expr.pexp_loc, ~attributes?, [expr]),
+              )
+            | ArraySpread(expr, loc) => (
+                PExpSpreadExpr,
+                {...expr, pexp_loc: loc},
               )
             }
           },
-          base,
-          rest,
-        );
-      };
-    {...list, pexp_loc: loc};
+          a,
+        ),
+      );
+    };
   };
 
   let ignore = e =>

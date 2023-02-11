@@ -347,6 +347,7 @@ and comp_expression_desc =
   | CGetAdtTag(imm_expression)
   | CGetRecordItem(int32, imm_expression)
   | CSetRecordItem(int32, imm_expression, imm_expression)
+  | CCollectionConcat(Typedtree.collection_concat_type, list(imm_expression))
   | CIf(imm_expression, anf_expression, anf_expression)
   | CFor(option(anf_expression), option(anf_expression), anf_expression)
   | CContinue

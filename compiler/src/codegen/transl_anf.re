@@ -545,6 +545,8 @@ let rec compile_comp = (~id=?, env, c) => {
         MRecordSet(idx, compile_imm(env, arg)),
         compile_imm(env, record),
       )
+    | CCollectionConcat(t, lists) =>
+      MCollectionConcat(t, List.map(compile_imm(env), lists))
     | CLambda(name, args, body, closure_status) =>
       let (body, return_type) = body;
       let body = (body, [return_type]);

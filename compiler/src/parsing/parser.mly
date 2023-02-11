@@ -569,9 +569,13 @@ list_expr:
   | lbrack rbrack { Expression.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item) comma? rbrack { Expression.list ~loc:(to_loc $loc) $2 }
 
+array_item:
+  | ELLIPSIS expr { ArraySpread ($2, to_loc $loc) }
+  | expr { ArrayItem $1 }
+
 array_expr:
   | lbrackrcaret rbrack { Expression.array ~loc:(to_loc $loc) [] }
-  | lbrackrcaret opt_eols lseparated_nonempty_list(comma, expr) comma? rbrack { Expression.array ~loc:(to_loc $loc) $3 }
+  | lbrackrcaret opt_eols lseparated_nonempty_list(comma, array_item) comma? rbrack { Expression.array_items ~loc:(to_loc $loc) $3 }
 
 stmt_expr:
   | THROW expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }

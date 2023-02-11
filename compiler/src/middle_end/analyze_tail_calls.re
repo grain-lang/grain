@@ -84,6 +84,7 @@ let rec analyze_comp_expression =
   | CPrim1(_)
   | CPrim2(_)
   | CPrimN(_)
+  | CCollectionConcat(_)
   | CImmExpr(_) => false
   }
 

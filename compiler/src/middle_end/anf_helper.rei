@@ -168,6 +168,15 @@ module Comp: {
       imm_expression
     ) =>
     comp_expression;
+  let collection_concat:
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      ~env: env=?,
+      Typedtree.collection_concat_type,
+      list(imm_expression)
+    ) =>
+    comp_expression;
   let record:
     (
       ~loc: loc=?,

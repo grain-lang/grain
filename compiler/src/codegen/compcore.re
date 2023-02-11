@@ -80,6 +80,19 @@ let equal_mod = "GRAIN$MODULE$runtime/equal";
 let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
 
+/* List concat */
+let collection_concat_mod = "GRAIN$MODULE$runtime/concat";
+let list_concat_ident = Ident.create_persistent("listConcat");
+let list_concat_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$listConcat");
+let array_concat_ident = Ident.create_persistent("arrayConcat");
+let array_concat_closure_ident =
+  Ident.create_persistent("GRAIN$EXPORT$arrayConcat");
+
+/* JS-runner support */
+let console_mod = "console";
+let tracepoint_ident = Ident.create_persistent("tracepoint");
+
 let required_global_imports = [
   {
     mimp_id: reloc_base,
@@ -174,6 +187,24 @@ let grain_runtime_imports = [
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
+  {
+    mimp_id: list_concat_closure_ident,
+    mimp_mod: collection_concat_mod,
+    mimp_name: Ident.name(list_concat_closure_ident),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: array_concat_closure_ident,
+    mimp_mod: collection_concat_mod,
+    mimp_name: Ident.name(array_concat_closure_ident),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
 ];
 
 let runtime_global_imports =
@@ -244,6 +275,24 @@ let grain_function_imports = [
         [Types.Managed, Types.Managed, Types.Managed],
         [Types.Unmanaged(WasmI32)],
       ),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: list_concat_ident,
+    mimp_mod: collection_concat_mod,
+    mimp_name: Ident.name(list_concat_ident),
+    mimp_type: MFuncImport([Types.Managed, Types.Managed], [Types.Managed]),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: array_concat_ident,
+    mimp_mod: collection_concat_mod,
+    mimp_name: Ident.name(array_concat_ident),
+    mimp_type: MFuncImport([Types.Managed, Types.Managed], [Types.Managed]),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -404,6 +453,44 @@ let call_equal = (wasm_mod, env, args) =>
     ],
     Type.int32,
   );
+let call_list_concat = (wasm_mod, env, args) => {
+  let args = [
+    Expression.Global_get.make(
+      wasm_mod,
+      get_wasm_imported_name(
+        collection_concat_mod,
+        list_concat_closure_ident,
+      ),
+      Type.int32,
+    ),
+    ...args,
+  ];
+  Expression.Call.make(
+    wasm_mod,
+    get_wasm_imported_name(collection_concat_mod, list_concat_ident),
+    args,
+    Type.int32,
+  );
+};
+let call_array_concat = (wasm_mod, env, args) => {
+  let args = [
+    Expression.Global_get.make(
+      wasm_mod,
+      get_wasm_imported_name(
+        collection_concat_mod,
+        array_concat_closure_ident,
+      ),
+      Type.int32,
+    ),
+    ...args,
+  ];
+  Expression.Call.make(
+    wasm_mod,
+    get_wasm_imported_name(collection_concat_mod, array_concat_ident),
+    args,
+    Type.int32,
+  );
+};
 
 /** Untags the number */
 
@@ -2929,6 +3016,14 @@ and compile_instr = (wasm_mod, env, instr) =>
     compile_record_op(wasm_mod, env, record, record_op)
   | MClosureOp(closure_op, closure) =>
     compile_closure_op(wasm_mod, env, closure, closure_op)
+  | MCollectionConcat(t, colls) =>
+    let colls_arr = allocate_array(wasm_mod, env, colls);
+    let concat =
+      switch (t) {
+      | TExpListConcat => call_list_concat
+      | TExpArrayConcat => call_array_concat
+      };
+    concat(wasm_mod, env, [colls_arr]);
   | MPrim0(p0) => compile_prim0(wasm_mod, env, p0)
   | MPrim1(p1, arg) => compile_prim1(wasm_mod, env, p1, arg, instr.instr_loc)
   | MPrim2(p2, arg1, arg2) => compile_prim2(wasm_mod, env, p2, arg1, arg2)

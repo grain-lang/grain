@@ -83,6 +83,7 @@ module MakeIter = (Iter: IterArgument) => {
     | CSetRecordItem(_, record, arg) =>
       iter_imm_expression(record);
       iter_imm_expression(arg);
+    | CCollectionConcat(_, colls) => List.iter(iter_imm_expression, colls)
     | CIf(c, t, f) =>
       iter_imm_expression(c);
       iter_anf_expression(t);

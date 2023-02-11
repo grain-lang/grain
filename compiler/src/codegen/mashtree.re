@@ -474,6 +474,7 @@ and instr_desc =
   | MAdtOp(adt_op, immediate)
   | MRecordOp(record_op, immediate)
   | MClosureOp(closure_op, immediate)
+  | MCollectionConcat(Typedtree.collection_concat_type, list(immediate))
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
   | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */

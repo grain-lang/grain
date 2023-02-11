@@ -36,7 +36,8 @@ let instr_produces_value = instr =>
   | MBoxOp(_)
   | MArrayOp(_)
   | MAdtOp(_)
-  | MRecordOp(_) => true
+  | MRecordOp(_)
+  | MCollectionConcat(_) => true
   | MClosureOp(MClosureSetPtr(_), _) => false
   | MStore(_) => false
   | MSet(_) => true
@@ -177,6 +178,7 @@ let rec analyze_usage = instrs => {
       };
       process_imm(imm);
     | MClosureOp(closure_op, imm) => process_imm(imm)
+    | MCollectionConcat(t, collections) => List.iter(process_imm, collections)
     | MStore(binds) =>
       List.iter(
         ((bind, instr)) => {
@@ -502,6 +504,8 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         MRecordOp(record_op, handle_imm(~non_gc_instr=true, imm));
       | MClosureOp(closure_op, imm) =>
         MClosureOp(closure_op, handle_imm(~non_gc_instr=true, imm))
+      | MCollectionConcat(t, collections) =>
+        MCollectionConcat(t, List.map(handle_imm, collections))
       | MStore(binds) =>
         MStore(
           List.map(

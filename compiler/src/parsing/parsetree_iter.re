@@ -248,6 +248,8 @@ and iter_expression =
     iter_expression(hooks, e);
     iter_loc(hooks, f);
     iter_expression(hooks, v);
+  | PExpCollectionConcat(_, collections) =>
+    iter_expressions(hooks, List.map(snd, collections))
   | PExpLet(r, m, vbs) => iter_let(hooks, r, m, vbs)
   | PExpMatch(e, mbs) =>
     iter_expression(hooks, e);

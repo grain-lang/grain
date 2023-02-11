@@ -491,6 +491,16 @@ type expression = {
 }
 
 [@deriving (sexp, yojson)]
+and collection_concat_type =
+  | PExpListConcat
+  | PExpArrayConcat
+
+[@deriving (sexp, yojson)]
+and collection_concat_expression_type =
+  | PExpSpreadExpr
+  | PExpNonSpreadExpr
+
+[@deriving (sexp, yojson)]
 and expression_desc =
   | PExpId(loc(Identifier.t))
   | PExpConstant(constant)
@@ -501,6 +511,10 @@ and expression_desc =
   | PExpRecord(option(expression), list((loc(Identifier.t), expression)))
   | PExpRecordGet(expression, loc(Identifier.t))
   | PExpRecordSet(expression, loc(Identifier.t), expression)
+  | PExpCollectionConcat(
+      collection_concat_type,
+      list((collection_concat_expression_type, expression)),
+    )
   | PExpLet(rec_flag, mut_flag, list(value_binding))
   | PExpMatch(expression, list(match_branch))
   | PExpPrim0(prim0)

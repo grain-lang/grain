@@ -1035,6 +1035,15 @@ program: MODULE UIDENT EOL LBRACE ELLIPSIS WHEN
 ## The known suffix of the stack is as follows:
 ## ELLIPSIS
 ##
+program: MODULE UIDENT EOL LBRACKRCARET ELLIPSIS YIELD
+##
+## Ends in an error in state: 225.
+##
+## array_item -> ELLIPSIS . expr [ RBRACK EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ELLIPSIS
+##
 program: MODULE UIDENT EOL LET WASMI64 EQUAL EOL UNDERSCORE
 ##
 ## Ends in an error in state: 430.
@@ -2884,22 +2893,6 @@ program: MODULE UIDENT EOL UIDENT LPAREN UIDENT ARROW
 ## In state 68, spurious reduction of production expr -> non_stmt_expr
 ## In state 366, spurious reduction of production lseparated_nonempty_list_inner(comma,expr) -> expr
 ##
-program: MODULE UIDENT EOL UIDENT LPAREN UIDENT COMMA RBRACK
-##
-## Ends in an error in state: 707.
-##
-## construct_expr -> type_id lparen lseparated_nonempty_list_inner(comma,expr) option(comma) . rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## type_id lparen lseparated_nonempty_list_inner(comma,expr) option(comma)
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 43, spurious reduction of production comma -> COMMA
-## In state 173, spurious reduction of production option(comma) -> comma
-##
 
 Expected `)` to complete the constructor arguments.
 
@@ -3321,25 +3314,6 @@ program: MODULE UIDENT EOL PREFIX_150 LBRACK RBRACK LBRACK BIGINT ARROW
 ##
 
 Expected `]` to complete the array index expression.
-
-program: MODULE UIDENT EOL LBRACE BREAK RBRACE LPAREN WASMI64 COMMA RBRACK
-##
-## Ends in an error in state: 320.
-##
-## app_expr -> braced_expr lparen lseparated_nonempty_list_inner(comma,expr) option(comma) . rparen [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## braced_expr lparen lseparated_nonempty_list_inner(comma,expr) option(comma)
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 95, spurious reduction of production comma -> COMMA
-## In state 171, spurious reduction of production option(comma) -> comma
-##
-
-Expected `)` to complete the function call.
 
 program: MODULE UIDENT EOL LBRACE LET REC WHILE
 ##
@@ -3772,25 +3746,6 @@ program: MODULE UIDENT EOL LBRACKRCARET WASMI64 COMMA EOL UNDERSCORE
 
 Expected an expression or `]` to complete the array expression.
 
-program: MODULE UIDENT EOL LBRACKRCARET WASMI64 COMMA RPAREN
-##
-## Ends in an error in state: 177.
-##
-## array_expr -> lbrackrcaret lseparated_nonempty_list_inner(comma,expr) option(comma) . rbrack [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-##
-## The known suffix of the stack is as follows:
-## lbrackrcaret lseparated_nonempty_list_inner(comma,expr) option(comma)
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 95, spurious reduction of production comma -> COMMA
-## In state 171, spurious reduction of production option(comma) -> comma
-##
-
-Expected `]` to complete the array expression.
-
 program: MODULE UIDENT EOL LBRACKRCARET WASMI64 EOL WHILE
 ##
 ## Ends in an error in state: 179.
@@ -3810,26 +3765,30 @@ program: MODULE UIDENT EOL LBRACKRCARET WASMI64 EOL WHILE
 
 Expected `]` to complete the array expression.
 
-program: MODULE UIDENT EOL LBRACKRCARET WASMI64 THICKARROW
+program: MODULE UIDENT EOL LBRACKRCARET UIDENT ARROW
 ##
-## Ends in an error in state: 176.
+## Ends in an error in state: 417.
 ##
-## array_expr -> lbrackrcaret lseparated_nonempty_list_inner(comma,expr) . option(comma) rbrack [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON ]
-## lseparated_nonempty_list_inner(comma,expr) -> lseparated_nonempty_list_inner(comma,expr) . comma expr [ RBRACK EOL COMMA ]
+## array_expr -> lbrackrcaret lseparated_nonempty_list_inner(comma,array_item) . option(comma) rbrack [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LPAREN LCARET LBRACK INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 GETS EOL EOF ELSE DOT DASH COMMA COLON ]
+## lseparated_nonempty_list_inner(comma,array_item) -> lseparated_nonempty_list_inner(comma,array_item) . comma array_item [ RBRACK EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## lbrackrcaret lseparated_nonempty_list_inner(comma,expr)
+## lbrackrcaret lseparated_nonempty_list_inner(comma,array_item)
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 42, spurious reduction of production non_assign_expr -> simple_expr
-## In state 127, spurious reduction of production non_binop_expr -> non_assign_expr
-## In state 71, spurious reduction of production annotated_expr -> non_binop_expr
-## In state 243, spurious reduction of production non_stmt_expr -> annotated_expr
-## In state 62, spurious reduction of production expr -> non_stmt_expr
-## In state 266, spurious reduction of production lseparated_nonempty_list_inner(comma,expr) -> expr
+## In state 200, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 127, spurious reduction of production construct_expr -> qualified_uid
+## In state 240, spurious reduction of production left_accessor_expr -> construct_expr
+## In state 221, spurious reduction of production non_assign_expr -> left_accessor_expr
+## In state 198, spurious reduction of production non_binop_expr -> non_assign_expr
+## In state 152, spurious reduction of production annotated_expr -> non_binop_expr
+## In state 249, spurious reduction of production non_stmt_expr -> annotated_expr
+## In state 145, spurious reduction of production expr -> non_stmt_expr
+## In state 421, spurious reduction of production array_item -> expr
+## In state 427, spurious reduction of production lseparated_nonempty_list_inner(comma,array_item) -> array_item
 ##
 
 Expected a comma followed by an expression or `]` to complete the array expression.

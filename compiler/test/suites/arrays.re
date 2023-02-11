@@ -114,6 +114,27 @@ describe("arrays", ({test, testSkip}) => {
     "[> ,]",
     "Error: Syntax error",
   );
+  // spread syntax
+  assertRun(
+    "array_spread1",
+    "let a = [> 1, 2, 3]; let b = [> 4, 5, 6]; print([> ...a, ...b])",
+    "[> 1, 2, 3, 4, 5, 6]\n",
+  );
+  assertRun(
+    "array_spread2",
+    "let a = [> 1, 2, 3]; print([> 0, ...a])",
+    "[> 0, 1, 2, 3]\n",
+  );
+  assertRun(
+    "array_spread3",
+    "let a = [> 1, 2, 3]; print([> ...a])",
+    "[> 1, 2, 3]\n",
+  );
+  assertCompileError(
+    "array_spread4",
+    "let a = [> 1, 2, 3]; [> ...a, \"a\"]",
+    "has type String but",
+  );
   // parsing
   Grain_parsing.(
     Ast_helper.(
