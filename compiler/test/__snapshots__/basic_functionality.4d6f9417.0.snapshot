@@ -33,10 +33,7 @@ basic functionality › not1
    (block $cleanup_locals.2 (result i32)
     (local.set $0
      (block $compile_block.1 (result i32)
-      (i32.xor
-       (i32.const -2)
-       (i32.const -2147483648)
-      )
+      (i32.const 2147483646)
      )
     )
     (local.get $0)
