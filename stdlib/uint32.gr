@@ -33,11 +33,7 @@ let _VALUE_OFFSET = 4n
  */
 @unsafe
 provide let fromNumber = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
-  Memory.incRef(x)
-  let result = newUint32(
-    coerceNumberToUnsignedWasmI32(WasmI32.toGrain(x): Number)
-  )
+  let result = newUint32(coerceNumberToUnsignedWasmI32(x))
   WasmI32.toGrain(result): Uint32
 }
 

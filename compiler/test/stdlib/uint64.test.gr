@@ -12,8 +12,7 @@ let fromNumber = fromNumber
 
 assert fromNumber(5) === 5uL
 assert fromNumber(0) === 0uL
-// 0xffffffffffffffff (Number) gets converted to -1, used decimal number instead
-assert fromNumber(18446744073709551615) === 0xffffffffffffffffuL
+assert fromNumber(0xffffffffffffffff) === 0xffffffffffffffffuL
 assert fromNumber(0xffffffff) === 0xffffffffuL
 assert fromNumber(0x7fffffff) === 0x7fffffffuL
 
