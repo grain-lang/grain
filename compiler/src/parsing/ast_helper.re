@@ -20,28 +20,11 @@ open Parsetree;
 exception SyntaxError(Location.t, string);
 exception BadEncoding(Location.t);
 
-type listitem('a) =
-  | ListItem('a)
-  | ListSpread('a, Location.t);
-
-type recorditem =
-  | RecordItem(loc(Identifier.t), expression)
-  | RecordSpread(expression, Location.t);
-
 type location('a) = loc('a);
 
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
-
-let ident_empty = {
-  txt: Identifier.IdentName(Location.mknoloc("[]")),
-  loc: Location.dummy_loc,
-};
-let ident_cons = {
-  txt: Identifier.IdentName(Location.mknoloc("[...]")),
-  loc: Location.dummy_loc,
-};
 
 let record_pattern_info = record_pats =>
   List.fold_right(
@@ -210,33 +193,7 @@ module Pattern = {
     construct(~loc, a, PPatConstrRecord(patterns, closed));
   };
   let list = (~loc, a) => {
-    let empty = tuple_construct(~loc, ident_empty, []);
-    let a = List.rev(a);
-    switch (a) {
-    | [] => empty
-    | [base, ...rest] =>
-      let base =
-        switch (base) {
-        | ListItem(pat) => tuple_construct(~loc, ident_cons, [pat, empty])
-        | ListSpread(pat, _) => pat
-        };
-      List.fold_left(
-        (acc, pat) => {
-          switch (pat) {
-          | ListItem(pat) => tuple_construct(~loc, ident_cons, [pat, acc])
-          | ListSpread(_, loc) =>
-            raise(
-              SyntaxError(
-                loc,
-                "A list spread can only appear at the end of a list.",
-              ),
-            )
-          }
-        },
-        base,
-        rest,
-      );
-    };
+    mk(~loc, PPatList(a));
   };
   let or_ = (~loc=?, a, b) => mk(~loc?, PPatOr(a, b));
   let alias = (~loc=?, a, b) => mk(~loc?, PPatAlias(a, b));
@@ -418,36 +375,7 @@ module Expression = {
   let block = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpBlock(a));
   let list = (~loc, ~attributes=?, a) => {
-    let empty = tuple_construct(~loc, ident_empty, []);
-    let list =
-      switch (List.rev(a)) {
-      | [] => empty
-      | [base, ...rest] =>
-        let base =
-          switch (base) {
-          | ListItem(expr) =>
-            tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
-          | ListSpread(expr, _) => expr
-          };
-        List.fold_left(
-          (acc, expr) => {
-            switch (expr) {
-            | ListItem(expr) =>
-              tuple_construct(~loc, ~attributes?, ident_cons, [expr, acc])
-            | ListSpread(_, loc) =>
-              raise(
-                SyntaxError(
-                  loc,
-                  "A list spread can only appear at the end of a list.",
-                ),
-              )
-            }
-          },
-          base,
-          rest,
-        );
-      };
-    {...list, pexp_loc: loc};
+    mk(~loc, ~attributes?, PExpList(a));
   };
 
   let ignore = e =>

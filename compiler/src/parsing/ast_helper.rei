@@ -20,14 +20,6 @@ open Parsetree;
 exception SyntaxError(Location.t, string);
 exception BadEncoding(Location.t);
 
-type listitem('a) =
-  | ListItem('a)
-  | ListSpread('a, Location.t);
-
-type recorditem =
-  | RecordItem(loc(Identifier.t), expression)
-  | RecordSpread(expression, Location.t);
-
 type location('a) = loc('a);
 
 type id = loc(Identifier.t);
@@ -144,7 +136,7 @@ module Pattern: {
   let record:
     (~loc: loc=?, list((option((id, pattern)), Asttypes.closed_flag))) =>
     pattern;
-  let list: (~loc: loc, list(listitem(pattern))) => pattern;
+  let list: (~loc: loc, list(list_item(pattern))) => pattern;
   let constant: (~loc: loc=?, constant) => pattern;
   let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
   let construct: (~loc: loc, id, constructor_pattern) => pattern;
@@ -174,14 +166,19 @@ module Expression: {
     ) =>
     expression;
   let record_fields:
-    (~loc: loc=?, ~attributes: attributes=?, list(recorditem)) => expression;
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      list(record_item(expression))
+    ) =>
+    expression;
   let record_get:
     (~loc: loc=?, ~attributes: attributes=?, expression, id) => expression;
   let record_set:
     (~loc: loc=?, ~attributes: attributes=?, expression, id, expression) =>
     expression;
   let list:
-    (~loc: loc, ~attributes: attributes=?, list(listitem(expression))) =>
+    (~loc: loc, ~attributes: attributes=?, list(list_item(expression))) =>
     expression;
   let array:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
@@ -284,7 +281,13 @@ module Expression: {
   let tuple_construct:
     (~loc: loc, ~attributes: attributes=?, id, list(expression)) => expression;
   let record_construct:
-    (~loc: loc, ~attributes: attributes=?, id, list(recorditem)) => expression;
+    (
+      ~loc: loc,
+      ~attributes: attributes=?,
+      id,
+      list(record_item(expression))
+    ) =>
+    expression;
   let binop:
     (
       ~loc: loc=?,

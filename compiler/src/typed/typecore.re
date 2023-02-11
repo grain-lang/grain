@@ -724,6 +724,55 @@ and type_expect_ =
       exp_type: newty(TTyTuple(List.map(e => e.exp_type, expl))),
       exp_env: env,
     });
+  | PExpList(es) =>
+    let convert_list = (~loc, ~attributes=?, a) => {
+      open Ast_helper;
+      let empty = Expression.tuple_construct(~loc, ident_empty, []);
+      let list =
+        switch (List.rev(a)) {
+        | [] => empty
+        | [base, ...rest] =>
+          let base =
+            switch (base) {
+            | ListItem(expr) =>
+              Expression.tuple_construct(
+                ~loc,
+                ~attributes?,
+                ident_cons,
+                [expr, empty],
+              )
+            | ListSpread(expr, _) => expr
+            };
+          List.fold_left(
+            (acc, expr) => {
+              switch (expr) {
+              | ListItem(expr) =>
+                Expression.tuple_construct(
+                  ~loc,
+                  ~attributes?,
+                  ident_cons,
+                  [expr, acc],
+                )
+              | ListSpread(_, loc) =>
+                raise(
+                  SyntaxError(
+                    loc,
+                    "A list spread can only appear at the end of a list.",
+                  ),
+                )
+              }
+            },
+            base,
+            rest,
+          );
+        };
+      {...list, pexp_loc: loc};
+    };
+    type_expect(
+      env,
+      convert_list(~loc, ~attributes=sexp.pexp_attributes, es),
+      ty_expected_explained,
+    );
   | PExpArray(es) =>
     let ty = newgenvar();
     let to_unify = Builtin_types.type_array(ty);

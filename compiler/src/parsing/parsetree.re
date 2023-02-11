@@ -154,6 +154,16 @@ and number_type =
   | PConstNumberFloat(string)
   | PConstNumberRational(string, string);
 
+[@deriving (sexp, yojson)]
+type list_item('a) =
+  | ListItem('a)
+  | ListSpread('a, Location.t);
+
+[@deriving (sexp, yojson)]
+type record_item('a) =
+  | RecordItem(loc(Identifier.t), 'a)
+  | RecordSpread('a, Location.t);
+
 /** Various binding forms */
 
 [@deriving (sexp, yojson)]
@@ -161,6 +171,7 @@ type pattern_desc =
   | PPatAny
   | PPatVar(loc(string))
   | PPatTuple(list(pattern))
+  | PPatList(list(list_item(pattern)))
   | PPatArray(list(pattern))
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
@@ -496,6 +507,7 @@ and expression_desc =
   | PExpId(loc(Identifier.t))
   | PExpConstant(constant)
   | PExpTuple(list(expression))
+  | PExpList(list(list_item(expression)))
   | PExpArray(list(expression))
   | PExpArrayGet(expression, expression)
   | PExpArraySet(expression, expression, expression)
