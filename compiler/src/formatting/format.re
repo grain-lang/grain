@@ -18,6 +18,7 @@ type iterator_item_type =
   | IteratedRecordLabels
   | IteratedTupleExpression
   | IteratedArrayExpression
+  | IteratedListExpression
   | IteratedTypeItems
   | IteratedTupleConstructor
   | IteratedEnum
@@ -115,7 +116,6 @@ let op_precedence = fn => {
     9999;
   };
 };
-let list_cons = "[...]";
 
 exception IllegalParse(string);
 exception FormatterError(string);
@@ -124,17 +124,9 @@ type compilation_error =
   | ParseError(exn)
   | InvalidCompilationState;
 
-type sugared_list_item =
-  | Regular(Parsetree.expression)
-  | Spread(Parsetree.expression);
-
 type record_item =
   | Field((Location.loc(Identifier.t), Parsetree.expression))
   | RecordSpread(Parsetree.expression);
-
-type sugared_pattern_item =
-  | RegularPattern(Parsetree.pattern)
-  | SpreadPattern(Parsetree.pattern);
 
 let get_original_code = (location: Location.t, source: array(string)) => {
   let (_, start_line, startc, _) =
@@ -950,6 +942,7 @@ let rec item_iterator =
     | IteratedRecordPattern
     | IteratedTupleExpression
     | IteratedArrayExpression
+    | IteratedListExpression
     | IteratedRecord
     | IteratedRecordData
     | IteratedRecordLabels => true
@@ -1051,262 +1044,7 @@ let rec item_iterator =
   };
 };
 
-let rec resugar_list_patterns =
-        (
-          ~bracket_line,
-          ~original_source: array(string),
-          ~comments: list(Parsetree.comment),
-          ~next_loc: Location.t,
-          patterns: list(Parsetree.pattern),
-        ) => {
-  let processed_list = resugar_pattern_list_inner(patterns);
-
-  let get_loc = (pattern: sugared_pattern_item) => {
-    switch (pattern) {
-    | RegularPattern(p)
-    | SpreadPattern(p) => p.ppat_loc
-    };
-  };
-
-  let print_item = (~comments, pattern: sugared_pattern_item) => {
-    switch (pattern) {
-    | RegularPattern(e) =>
-      Doc.group(print_pattern(~original_source, ~comments, ~next_loc, e))
-    | SpreadPattern(e) =>
-      Doc.group(
-        Doc.concat([
-          Doc.text("..."),
-          print_pattern(~original_source, ~comments, ~next_loc, e),
-        ]),
-      )
-    };
-  };
-
-  let items =
-    item_iterator(
-      ~get_loc,
-      ~print_item,
-      ~comments,
-      ~iterated_item=IteratedListPattern,
-      processed_list,
-    );
-  let printed_patterns = Doc.join(~sep=Doc.line, items);
-  let printed_patterns_after_bracket =
-    Doc.concat([Doc.softLine, printed_patterns]);
-
-  Doc.group(
-    Doc.concat([
-      Doc.lbracket,
-      Doc.indent(printed_patterns_after_bracket),
-      Doc.softLine,
-      Doc.rbracket,
-    ]),
-  );
-}
-
-and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
-  switch (patterns) {
-  | [arg1, arg2, ..._] =>
-    switch (arg2.ppat_desc) {
-    | PPatConstruct(innercstr, PPatConstrTuple(innerpatterns)) =>
-      let cstr =
-        switch (innercstr.txt) {
-        | IdentName({txt: name}) => name
-        | _ => ""
-        };
-
-      if (cstr == "[]") {
-        [RegularPattern(arg1)];
-      } else if (cstr == list_cons) {
-        let inner = resugar_pattern_list_inner(innerpatterns);
-        [RegularPattern(arg1), ...inner];
-      } else {
-        [RegularPattern(arg1), SpreadPattern(arg2)];
-      };
-
-    | _ => [RegularPattern(arg1), SpreadPattern(arg2)]
-    }
-  | _ =>
-    raise(IllegalParse("List pattern cons should always have two patterns"))
-  };
-}
-
-and resugar_list =
-    (
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      expressions: list(Parsetree.expression),
-    ) => {
-  let processed_list = resugar_list_inner(expressions);
-
-  let last_item_was_spread = ref(false);
-
-  let list_length = List.length(processed_list);
-
-  let items =
-    List.mapi(
-      (index, item) =>
-        switch (item) {
-        | Regular(e) =>
-          last_item_was_spread := false;
-
-          // Do we have any comments on this line?
-          // If so, we break the whole list
-
-          // we might have a list list [1, 2 // comment
-          //                            3]
-          // so need to use the comment after the last item
-          // [1,
-          //  2, //comment
-          //  3]
-
-          let end_line_comments =
-            if (index < list_length - 2) {
-              let next_item = List.nth(processed_list, index + 1);
-              Comment_utils.get_comments_between_locations(
-                ~loc1=e.pexp_loc,
-                ~loc2=
-                  switch (next_item) {
-                  | Regular(e)
-                  | Spread(e) => e.pexp_loc
-                  },
-                comments,
-              );
-            } else {
-              let (_, item_line, item_char, _) =
-                Locations.get_raw_pos_info(e.pexp_loc.loc_end);
-              Comment_utils.get_comments_on_line_end(
-                ~line=item_line,
-                ~char=item_char,
-                comments,
-              );
-            };
-
-          (
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments=
-                Comment_utils.get_comments_inside_location(
-                  ~location=e.pexp_loc,
-                  comments,
-                ),
-              e,
-            ),
-            end_line_comments,
-          );
-
-        | Spread(e) =>
-          last_item_was_spread := true;
-
-          (
-            Doc.concat([
-              Doc.text("..."),
-              print_expression(
-                ~expression_parent=GenericExpression,
-                ~original_source,
-                ~comments=
-                  Comment_utils.get_comments_inside_location(
-                    ~location=e.pexp_loc,
-                    comments,
-                  ),
-                e,
-              ),
-            ]),
-            [],
-          );
-        },
-      processed_list,
-    );
-
-  // We have to compose this list by hand because of the complexity of if a list item
-  // is followed by a comment, the comma must come before the comment.
-  // It also impacts how we force a new line for a line ending comment at the end of a list
-  // without introducing an extra blank line when bringing the indentation back in again
-
-  let last_line_breaks_for_comments = ref(false);
-  let items_length = List.length(items);
-  let list_items =
-    List.mapi(
-      (i, (item, item_comments)) => {
-        let final_item = items_length - 1 == i;
-
-        let comment_doc =
-          switch (item_comments) {
-          | [] =>
-            last_line_breaks_for_comments := false;
-            if (final_item) {
-              Doc.nil;
-            } else {
-              Doc.concat([Doc.comma, Doc.line]);
-            };
-          | _ =>
-            let trailing_comments =
-              List.map(
-                (cmt: Parsetree.comment) =>
-                  Doc.concat([Doc.space, Comment_utils.comment_to_doc(cmt)]),
-                item_comments,
-              );
-
-            last_line_breaks_for_comments := true;
-            Doc.concat([
-              Doc.comma,
-              Doc.concat(trailing_comments),
-              if (final_item) {Doc.nil} else {Doc.hardLine},
-            ]);
-          };
-
-        Doc.concat([Doc.group(item), comment_doc]);
-      },
-      items,
-    );
-
-  Doc.group(
-    Doc.concat([
-      Doc.lbracket,
-      Doc.indent(
-        Doc.concat([
-          Doc.softLine,
-          Doc.concat(list_items),
-          if (last_item_was_spread^ || last_line_breaks_for_comments^) {
-            Doc.nil;
-          } else {
-            Doc.ifBreaks(Doc.comma, Doc.nil);
-          },
-        ]),
-      ),
-      if (last_line_breaks_for_comments^) {
-        Doc.hardLine;
-      } else {
-        Doc.softLine;
-      },
-      Doc.rbracket,
-    ]),
-  );
-}
-
-and resugar_list_inner = (expressions: list(Parsetree.expression)) =>
-  switch (expressions) {
-  | [arg1, arg2] =>
-    switch (arg2.pexp_desc) {
-    | PExpConstruct(
-        {txt: IdentName({txt: "[...]"})},
-        PExpConstrTuple(innerexpressions),
-      ) =>
-      let inner = resugar_list_inner(innerexpressions);
-      List.append([Regular(arg1)], inner);
-    | PExpConstruct({txt: IdentName({txt: "[]"})}, PExpConstrTuple(_)) => [
-        Regular(arg1),
-      ]
-    | _ => [Regular(arg1), Spread(arg2)]
-    }
-  | _ =>
-    // Grain syntax makes it impossible to construct a list cons without
-    // two arguments, but we'll check just to make sure
-    raise(IllegalParse("List cons should always have two expressions"))
-  }
-
-and check_for_pattern_pun = (pat: Parsetree.pattern) =>
+let rec check_for_pattern_pun = (pat: Parsetree.pattern) =>
   switch (pat.ppat_desc) {
   | PPatVar({txt, _}) => Doc.text(txt)
   | _ => Doc.nil
@@ -1416,6 +1154,25 @@ and print_pattern =
         ),
         true,
       )
+    | PPatList(patterns) => (
+        Doc.group(
+          Doc.concat([
+            Doc.lbracket,
+            Doc.softLine,
+            Doc.indent(
+              print_list_patterns(
+                ~next_loc,
+                ~comments,
+                ~original_source,
+                patterns,
+              ),
+            ),
+            Doc.softLine,
+            Doc.rbracket,
+          ]),
+        ),
+        false,
+      )
     | PPatArray(patterns) => (
         Doc.group(
           Doc.concat([
@@ -1448,46 +1205,24 @@ and print_pattern =
         ]),
         false,
       )
-    | PPatConstruct(location, PPatConstrTuple(patterns)) =>
-      let func =
-        switch (location.txt) {
-        | IdentName({txt: name}) => name
-        | _ => ""
-        };
-      if (func == list_cons) {
-        let (_, bracket_line, _, _) =
-          Locations.get_raw_pos_info(pat.ppat_loc.loc_start);
-
-        (
-          resugar_list_patterns(
-            ~bracket_line,
-            ~original_source,
-            ~comments,
-            ~next_loc,
-            patterns,
-          ),
-          false,
-        );
-      } else {
-        (
-          Doc.concat([
-            print_ident(location.txt),
-            switch (patterns) {
-            | [] => Doc.nil
-            | _patterns =>
-              add_parens(
-                print_patterns(
-                  ~next_loc,
-                  ~comments,
-                  ~original_source,
-                  patterns,
-                ),
-              )
-            },
-          ]),
-          false,
-        );
-      };
+    | PPatConstruct(location, PPatConstrTuple(patterns)) => (
+        Doc.concat([
+          print_ident(location.txt),
+          switch (patterns) {
+          | [] => Doc.nil
+          | _patterns =>
+            add_parens(
+              print_patterns(
+                ~next_loc,
+                ~comments,
+                ~original_source,
+                patterns,
+              ),
+            )
+          },
+        ]),
+        false,
+      )
     | PPatConstruct(location, PPatConstrSingleton) => (
         Doc.concat([print_ident(location.txt)]),
         false,
@@ -2614,6 +2349,52 @@ and print_patterns =
     Doc.join(~sep=Doc.line, items);
   };
 }
+and print_list_patterns =
+    (
+      ~next_loc: Location.t,
+      ~comments: list(Parsetree.comment),
+      ~original_source: array(string),
+      ~followed_by_arrow: option(bool)=?,
+      patterns: list(Parsetree.list_item(Parsetree.pattern)),
+    ) => {
+  let get_loc = (p: Parsetree.list_item(Parsetree.pattern)) => {
+    switch (p) {
+    | ListItem(p) => p.ppat_loc
+    | ListSpread(_, loc) => loc
+    };
+  };
+  let print_item = (~comments, p: Parsetree.list_item(Parsetree.pattern)) => {
+    switch (p) {
+    | ListItem(p) => print_pattern(~original_source, ~comments, ~next_loc, p)
+    | ListSpread(p, _) =>
+      Doc.concat([
+        Doc.text("..."),
+        print_pattern(~original_source, ~comments, ~next_loc, p),
+      ])
+    };
+  };
+
+  let comments_in_scope =
+    Comment_utils.get_comments_before_location(~location=next_loc, comments);
+
+  switch (patterns) {
+  | [] => Doc.nil
+  | _ =>
+    let items =
+      item_iterator(
+        ~get_loc,
+        ~print_item,
+        ~comments=comments_in_scope,
+        ~followed_by_arrow?,
+        ~iterated_item=IteratedPatterns,
+        patterns,
+      );
+    Doc.concat([
+      Doc.join(~sep=Doc.line, items),
+      Doc.ifBreaks(Doc.comma, Doc.nil),
+    ]);
+  };
+}
 
 and print_lambda_arguments =
     (
@@ -2830,6 +2611,74 @@ and print_expression_inner =
           Doc.softLine,
           Doc.rparen,
         ]),
+      );
+
+    | PExpList(expressions) =>
+      let get_loc = (item: Parsetree.list_item(Parsetree.expression)) => {
+        switch (item) {
+        | ListItem(e) => e.pexp_loc
+        | ListSpread(_, loc) => loc
+        };
+      };
+      let print_item =
+          (~comments, item: Parsetree.list_item(Parsetree.expression)) => {
+        switch (item) {
+        | ListItem(e) =>
+          print_expression(
+            ~expression_parent=GenericExpression,
+            ~original_source,
+            ~comments,
+            e,
+          )
+        | ListSpread(e, _) =>
+          Doc.concat([
+            Doc.text("..."),
+            print_expression(
+              ~expression_parent=GenericExpression,
+              ~original_source,
+              ~comments,
+              e,
+            ),
+          ])
+        };
+      };
+
+      let after_bracket_comments =
+        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
+      let cleaned_comments =
+        remove_used_comments(
+          ~remove_comments=after_bracket_comments,
+          comments,
+        );
+      let items =
+        item_iterator(
+          ~get_loc,
+          ~print_item,
+          ~comments=cleaned_comments,
+          ~iterated_item=IteratedListExpression,
+          expressions,
+        );
+      Doc.group(
+        switch (expressions) {
+        | [] => Doc.text("[]")
+        | _ =>
+          Doc.concat([
+            Doc.lbracket,
+            Doc.softLine,
+            Comment_utils.single_line_of_comments(after_bracket_comments),
+            Doc.indent(
+              Doc.concat([
+                force_break_if_line_comment(
+                  ~separator=Doc.softLine,
+                  after_bracket_comments,
+                ),
+                Doc.join(~sep=Doc.line, items),
+              ]),
+            ),
+            Doc.softLine,
+            Doc.rbracket,
+          ])
+        },
       );
 
     | PExpArray(expressions) =>
@@ -3766,17 +3615,8 @@ and print_expression_inner =
         ~comments=comments_in_expression,
         func,
       );
-    | PExpConstruct(
-        {txt: IdentName({txt: "[...]"})},
-        PExpConstrTuple(expressions),
-      ) =>
-      resugar_list(~original_source, ~comments, expressions)
-    | PExpConstruct(
-        {txt: IdentName({txt: "[]"})},
-        PExpConstrTuple(expressions),
-      ) =>
-      Doc.text("[]")
     | PExpConstruct({txt: id}, PExpConstrSingleton) => print_ident(id)
+    | PExpConstruct({txt: id}, PExpConstrTuple([])) => print_ident(id)
     | PExpConstruct(constr, PExpConstrTuple(expressions)) =>
       let comments_in_expression =
         Comment_utils.get_comments_inside_location(
@@ -4011,6 +3851,7 @@ and is_grouped_access_expression = (expr: Parsetree.expression) => {
   | PExpConstant(_)
   | PExpConstruct(_)
   | PExpTuple(_)
+  | PExpList(_)
   | PExpId(_)
   | PExpArrayGet(_)
   | PExpArraySet(_)
