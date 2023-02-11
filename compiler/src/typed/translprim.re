@@ -6,7 +6,8 @@ open Parsetree;
 type primitive_constant =
   | HeapBase
   | HeapStart
-  | HeapTypeMetadata;
+  | HeapTypeMetadata
+  | ElideTypeInfo;
 
 type primitive =
   | PrimitiveConstant(primitive_constant)
@@ -49,6 +50,7 @@ let prim_map =
       ("@heap.base", PrimitiveConstant(HeapBase)),
       ("@heap.start", PrimitiveConstant(HeapStart)),
       ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
+      ("@meta.elide_type_info", PrimitiveConstant(ElideTypeInfo)),
       ("@allocate.int32", Primitive0(AllocateInt32)),
       ("@allocate.int64", Primitive0(AllocateInt64)),
       ("@allocate.float32", Primitive0(AllocateFloat32)),
@@ -1497,6 +1499,10 @@ let transl_prim = (env, desc) => {
         | HeapTypeMetadata => (
             Constant.wasmi32(string_of_int(active_memory_base() + 0x8)),
             true,
+          )
+        | ElideTypeInfo => (
+            Constant.bool(Grain_utils.Config.elide_type_info^),
+            false,
           )
         };
       let attrs =

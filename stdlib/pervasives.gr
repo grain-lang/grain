@@ -523,6 +523,7 @@ provide primitive box: a -> Box<a> = "@box"
 provide primitive unbox: Box<a> -> a = "@unbox"
 
 // Setup exception printing
+primitive elideTypeInfo: Bool = "@meta.elide_type_info"
 @unsafe
 let rec setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {
@@ -533,7 +534,11 @@ let rec setupExceptions = () => {
     }
   })
 
-  Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
+  // If type information is elided, remove dependency on toString as
+  // it will have no effect on exceptions
+  if (!elideTypeInfo) {
+    Exception.dangerouslyRegisterBasePrinter(e => Some(toString(e)))
+  }
 }
 
 setupExceptions()
