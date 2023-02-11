@@ -605,7 +605,18 @@ let provided_multiple_times = (errs, super) => {
     switch (pattern.ppat_desc) {
     | PPatAny => binds
     | PPatVar(bind) => [bind, ...binds]
-    | PPatTuple(pats)
+    | PPatTuple(pats) => List.fold_left(extract_bindings, binds, pats)
+    | PPatList(pats) =>
+      List.fold_left(
+        (binds, item) => {
+          switch (item) {
+          | ListItem(p) => extract_bindings(binds, p)
+          | ListSpread(p, loc) => extract_bindings(binds, p)
+          }
+        },
+        binds,
+        pats,
+      )
     | PPatArray(pats) => List.fold_left(extract_bindings, binds, pats)
     | PPatRecord(pats, _) =>
       List.fold_left(

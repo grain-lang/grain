@@ -230,6 +230,18 @@ and iter_expression =
   | PExpId(i) => iter_ident(hooks, i)
   | PExpConstant(c) => iter_constant(hooks, c)
   | PExpTuple(es) => iter_expressions(hooks, es)
+  | PExpList(es) =>
+    List.iter(
+      item => {
+        switch (item) {
+        | ListItem(e) => iter_expression(hooks, e)
+        | ListSpread(e, loc) =>
+          iter_expression(hooks, e);
+          iter_location(hooks, loc);
+        }
+      },
+      es,
+    )
   | PExpArray(es) => iter_expressions(hooks, es)
   | PExpArrayGet(a, i) =>
     iter_expression(hooks, a);
@@ -432,6 +444,18 @@ and iter_pattern = (hooks, {ppat_desc: desc, ppat_loc: loc} as pat) => {
   | PPatAny => ()
   | PPatVar(sl) => iter_loc(hooks, sl)
   | PPatTuple(pl) => iter_patterns(hooks, pl)
+  | PPatList(pl) =>
+    List.iter(
+      item => {
+        switch (item) {
+        | ListItem(p) => iter_pattern(hooks, p)
+        | ListSpread(p, loc) =>
+          iter_pattern(hooks, p);
+          iter_location(hooks, loc);
+        }
+      },
+      pl,
+    )
   | PPatArray(pl) => iter_patterns(hooks, pl)
   | PPatRecord(fs, _) => iter_record_patterns(hooks, fs)
   | PPatConstant(c) => iter_constant(hooks, c)
