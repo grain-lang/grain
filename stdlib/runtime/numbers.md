@@ -162,6 +162,18 @@ rationalsEqual : (WasmI32, WasmI32) -> Bool
 cmpRationals : (WasmI32, WasmI32) -> WasmI32
 ```
 
+### Numbers.**rationalNumerator**
+
+```grain
+rationalNumerator : Rational -> Number
+```
+
+### Numbers.**rationalDenominator**
+
+```grain
+rationalDenominator : Rational -> Number
+```
+
 ### Numbers.**cmp**
 
 ```grain

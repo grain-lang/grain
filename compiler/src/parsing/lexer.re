@@ -253,9 +253,7 @@ let rec token = lexbuf => {
   | (unsigned_float, 'w') => positioned(WASMF32(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_float, 'W') => positioned(WASMF64(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_int, 't') => positioned(BIGINT(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, '/', unsigned_int, 'r') =>
-    positioned(RATIONAL(sub_lexeme(lexbuf, 0, -1)))
-  | (unsigned_int, '/', '-', unsigned_int, 'r') =>
+  | (unsigned_int, '/', Opt('-'), unsigned_int, 'r') =>
     positioned(RATIONAL(sub_lexeme(lexbuf, 0, -1)))
   | unsigned_int => positioned(NUMBER_INT(Sedlexing.Utf8.lexeme(lexbuf)))
   | "primitive" => positioned(PRIMITIVE)

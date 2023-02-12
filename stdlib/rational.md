@@ -59,13 +59,67 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`float`|`Rational`|The value to convert|
+|`rational`|`Rational`|The value to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Number`|The Rational represented as a Number|
+
+## Metadata
+
+Operations for inspecting Rational values.
+
+### Rational.**numerator**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+numerator : Rational -> Number
+```
+
+Finds the numerator of the rational number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Rational`|The rational number to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The numerator of the rational number|
+
+### Rational.**denominator**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+denominator : Rational -> Number
+```
+
+Finds the denominator of the rational number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Rational`|The rational number to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The denominator of the rational number|
 
 ## Operations
 

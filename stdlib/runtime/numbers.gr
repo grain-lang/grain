@@ -1328,6 +1328,22 @@ provide let cmpRationals = (x, y) => {
 }
 
 @unsafe
+provide let rationalNumerator = (x: Rational) => {
+  let x = WasmI32.fromGrain(x)
+  let num = boxedRationalNumerator(x)
+  Memory.incRef(num)
+  WasmI32.toGrain(reducedBigInteger(num)): Number
+}
+
+@unsafe
+provide let rationalDenominator = (x: Rational) => {
+  let x = WasmI32.fromGrain(x)
+  let num = boxedRationalDenominator(x)
+  Memory.incRef(num)
+  WasmI32.toGrain(reducedBigInteger(num)): Number
+}
+
+@unsafe
 let numberAddSubRationalHelp = (x, y, isSub) => {
   let xNumerator = boxedRationalNumerator(x)
   let xDenominator = boxedRationalDenominator(x)

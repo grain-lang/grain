@@ -13,6 +13,8 @@ include "runtime/numbers"
 from Numbers use {
   coerceNumberToRational as fromNumber,
   coerceRationalToNumber as toNumber,
+  rationalNumerator as numerator,
+  rationalDenominator as denominator,
   addSubRational,
   timesDivideRational,
   rationalsEqual,
@@ -36,12 +38,38 @@ provide { fromNumber }
 /**
  * Converts a Rational to a Number.
  *
- * @param float: The value to convert
+ * @param rational: The value to convert
  * @returns The Rational represented as a Number
  * 
  * @since v0.6.0
  */
 provide { toNumber }
+
+/**
+ * @section Metadata: Operations for inspecting Rational values.
+ */
+
+/**
+ * Finds the numerator of the rational number.
+ * 
+ * @param x: The rational number to inspect
+ * @returns The numerator of the rational number
+ * 
+ * @since v0.6.0
+ */
+@unsafe
+provide { numerator }
+
+/**
+ * Finds the denominator of the rational number.
+ * 
+ * @param x: The rational number to inspect
+ * @returns The denominator of the rational number
+ * 
+ * @since v0.6.0
+ */
+@unsafe
+provide { denominator }
 
 /**
  * @section Operations: Mathematical operations for Rational values.
