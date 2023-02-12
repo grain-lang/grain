@@ -646,10 +646,6 @@ let provided_multiple_times = (errs, super) => {
     | PTopForeign(
         Provided | Abstract,
         {pval_name, pval_name_alias, pval_loc},
-      )
-    | PTopPrimitive(
-        Provided | Abstract,
-        {pval_name, pval_name_alias, pval_loc},
       ) =>
       let name = Option.value(~default=pval_name, pval_name_alias);
       if (Hashtbl.mem(values, name.txt)) {
@@ -657,6 +653,12 @@ let provided_multiple_times = (errs, super) => {
       } else {
         Hashtbl.add(values, name.txt, ());
       };
+    | PTopPrimitive(Provided | Abstract, {pprim_ident, pprim_loc}) =>
+      if (Hashtbl.mem(values, pprim_ident.txt)) {
+        errs := [ProvidedMultipleTimes(pprim_ident.txt, pprim_loc), ...errs^];
+      } else {
+        Hashtbl.add(values, pprim_ident.txt, ());
+      }
     | PTopData(decls) =>
       List.iter(
         decl => {

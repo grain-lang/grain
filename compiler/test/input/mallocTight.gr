@@ -5,10 +5,10 @@ include "runtime/malloc"
 include "runtime/unsafe/wasmi32"
 from WasmI32 use { add as (+), sub as (-), mul as (*), eq as (==), ne as (!=) }
 
-primitive assert: Bool -> Void = "@assert"
-primitive ignore: a -> Void = "@ignore"
+primitive assert = "@assert"
+primitive ignore = "@ignore"
 
-primitive heapBase: WasmI32 = "@heap.base"
+primitive heapBase = "@heap.base"
 
 // Because we're in runtime mode, malloc has yet to be called
 // This provides us with a clean slate to test malloc

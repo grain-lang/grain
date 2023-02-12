@@ -40,9 +40,9 @@ from NumberUtils use { get_POWERS10 }
 include "./table"
 from Table use { get_F64_POWERS10_FAST_PATH, get_POWERS5 }
 
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (!): Bool -> Bool = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive (!) = "@not"
 
 provide record BiasedFp {
   f: Int64,

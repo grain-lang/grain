@@ -646,8 +646,8 @@ prim:
   | primitive_ { Location.mkloc $1 (to_loc $loc) }
 
 primitive_stmt:
-  | PRIMITIVE id_str colon typ equal STRING { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] () }
-  | PRIMITIVE prim colon typ equal STRING { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] () }
+  | PRIMITIVE id_str equal STRING { PrimitiveDescription.mk ~loc:(to_loc $loc) ~ident:$2 ~name:(mkstr $loc($4) $4) () }
+  | PRIMITIVE prim equal STRING { PrimitiveDescription.mk ~loc:(to_loc $loc) ~ident:$2 ~name:(mkstr $loc($4) $4) () }
 
 exception_stmt:
   | EXCEPTION type_id_str { Exception.singleton ~loc:(to_loc $loc) $2 }
@@ -665,9 +665,9 @@ toplevel_stmt:
   | attributes foreign_stmt { Toplevel.foreign ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | attributes include_stmt { Toplevel.include_ ~loc:(to_loc $loc) ~attributes:$1 $2 }
   | attributes module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
+  | attributes primitive_stmt { Toplevel.primitive ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | expr { Toplevel.expr ~loc:(to_loc $loc) $1 }
   | provide_stmt { $1 }
-  | primitive_stmt { Toplevel.primitive ~loc:(to_loc $loc) NotProvided $1 }
   | exception_stmt { Toplevel.grain_exception ~loc:(to_loc $loc) NotProvided $1 }
 
 toplevel_stmts:

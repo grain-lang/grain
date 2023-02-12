@@ -4703,13 +4703,13 @@ let print_foreign_value_description =
   ]);
 };
 
-let print_primitive_value_description =
+let print_primitive_description =
     (
       ~original_source: array(string),
       ~comments: list(Parsetree.comment),
-      vd: Parsetree.value_description,
+      pd: Parsetree.primitive_description,
     ) => {
-  let ident = vd.pval_name.txt;
+  let ident = pd.pprim_ident.txt;
 
   let fixed_ident =
     if (infixop(ident) || prefixop(ident)) {
@@ -4720,14 +4720,11 @@ let print_primitive_value_description =
 
   Doc.concat([
     fixed_ident,
-    Doc.text(":"),
-    Doc.space,
-    print_type(~original_source, ~comments, vd.pval_type),
     Doc.space,
     Doc.equal,
     Doc.space,
     Doc.text("\""),
-    Doc.join(~sep=Doc.text(","), List.map(p => Doc.text(p), vd.pval_prim)),
+    Doc.text(pd.pprim_name.txt),
     Doc.text("\""),
   ]);
 };
@@ -4758,7 +4755,7 @@ let rec toplevel_print =
           value_description,
         ),
       ]);
-    | PTopPrimitive(provide_flag, value_description) =>
+    | PTopPrimitive(provide_flag, primitive_description) =>
       let provide =
         switch (provide_flag) {
         | NotProvided => Doc.nil
@@ -4768,10 +4765,10 @@ let rec toplevel_print =
       Doc.concat([
         provide,
         Doc.text("primitive "),
-        print_primitive_value_description(
+        print_primitive_description(
           ~original_source,
           ~comments,
-          value_description,
+          primitive_description,
         ),
       ]);
     | PTopData(data_declarations) =>

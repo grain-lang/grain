@@ -20,8 +20,8 @@ include "runtime/bigint" as BI
 include "runtime/numbers"
 from Numbers use { reducedInteger }
 
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive (&&) = "@and"
+primitive (||) = "@or"
 
 @unsafe
 provide let parseInt = (string: String, radix: Number) => {

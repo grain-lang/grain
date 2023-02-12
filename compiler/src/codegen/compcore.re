@@ -2379,6 +2379,7 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
     allocate_number_uninitialized(wasm_mod, env, BoxedRational)
   | AllocateUint32 => allocate_uint_uninitialized(wasm_mod, env, true)
   | AllocateUint64 => allocate_uint_uninitialized(wasm_mod, env, false)
+  | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
   };
 };
@@ -2665,7 +2666,6 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
     compile_wasm_store(~sz, ~ty=Type.int64, wasm_mod, env, args)
   | WasmStoreF32 => compile_wasm_store(~ty=Type.float32, wasm_mod, env, args)
   | WasmStoreF64 => compile_wasm_store(~ty=Type.float64, wasm_mod, env, args)
-  | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
   | WasmMemoryCopy =>
     Expression.Block.make(
       wasm_mod,

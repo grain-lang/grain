@@ -46,8 +46,4 @@ provide let fill = (dest, c, n) => {
   }
 }
 
-provide primitive compare: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) -> WasmI32 = "@wasm.memory_compare"
+provide primitive compare = "@wasm.memory_compare"

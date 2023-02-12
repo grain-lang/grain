@@ -19,9 +19,9 @@ include "runtime/unsafe/tags" as Tags
 include "runtime/numbers" as Numbers
 from Numbers use { isNumber, numberEqual }
 
-primitive (!): Bool -> Bool = "@not"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (!) = "@not"
+primitive (||) = "@or"
+primitive (&&) = "@and"
 
 @unsafe
 let cycleMarker = 0x80000000n

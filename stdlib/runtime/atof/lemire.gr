@@ -58,9 +58,9 @@ from Common use {
   fpErr,
 }
 
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (!): Bool -> Bool = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive (!) = "@not"
 
 // From Rust:
 // This will compute or rather approximate w * 5**q and return a pair of 64-bit words

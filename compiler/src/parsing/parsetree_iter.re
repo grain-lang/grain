@@ -13,8 +13,8 @@ type hooks = {
   leave_provide: list(provide_item) => unit,
   enter_foreign: (provide_flag, value_description) => unit,
   leave_foreign: (provide_flag, value_description) => unit,
-  enter_primitive: (provide_flag, value_description) => unit,
-  leave_primitive: (provide_flag, value_description) => unit,
+  enter_primitive: (provide_flag, primitive_description) => unit,
+  leave_primitive: (provide_flag, primitive_description) => unit,
   enter_top_let:
     (provide_flag, rec_flag, mut_flag, list(value_binding)) => unit,
   leave_top_let:
@@ -142,10 +142,10 @@ and iter_foreign = (hooks, p, vd) => {
   hooks.leave_foreign(p, vd);
 }
 
-and iter_primitive = (hooks, p, vd) => {
-  hooks.enter_primitive(p, vd);
-  iter_value_description(hooks, vd);
-  hooks.leave_primitive(p, vd);
+and iter_primitive = (hooks, p, pd) => {
+  hooks.enter_primitive(p, pd);
+  iter_primitive_description(hooks, pd);
+  hooks.leave_primitive(p, pd);
 }
 
 and iter_value_description =
@@ -153,6 +153,13 @@ and iter_value_description =
   iter_location(hooks, loc);
   iter_loc(hooks, vmod);
   iter_loc(hooks, vname);
+}
+
+and iter_primitive_description =
+    (hooks, {pprim_ident: ident, pprim_name: name, pprim_loc: loc}) => {
+  iter_location(hooks, loc);
+  iter_loc(hooks, ident);
+  iter_loc(hooks, name);
 }
 
 and iter_data_declarations = (hooks, dds) => {

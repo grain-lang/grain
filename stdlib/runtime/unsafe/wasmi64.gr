@@ -2,87 +2,59 @@
 module WasmI64
 
 // WebAssembly Memory Instructions
-provide primitive load: (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_int64"
-provide primitive load8S: (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_s_int64"
-provide primitive load8U: (WasmI32, WasmI32) -> WasmI64 = "@wasm.load_8_u_int64"
-provide primitive load16S: (
-  WasmI32,
-  WasmI32,
-) -> WasmI64 = "@wasm.load_16_s_int64"
-provide primitive load16U: (
-  WasmI32,
-  WasmI32,
-) -> WasmI64 = "@wasm.load_16_u_int64"
-provide primitive load32S: (
-  WasmI32,
-  WasmI32,
-) -> WasmI64 = "@wasm.load_32_s_int64"
-provide primitive load32U: (
-  WasmI32,
-  WasmI32,
-) -> WasmI64 = "@wasm.load_32_u_int64"
-provide primitive store: (
-  WasmI32,
-  WasmI64,
-  WasmI32,
-) -> Void = "@wasm.store_int64"
-provide primitive store8: (
-  WasmI32,
-  WasmI64,
-  WasmI32,
-) -> Void = "@wasm.store_8_int64"
-provide primitive store16: (
-  WasmI32,
-  WasmI64,
-  WasmI32,
-) -> Void = "@wasm.store_16_int64"
-provide primitive store32: (
-  WasmI32,
-  WasmI64,
-  WasmI32,
-) -> Void = "@wasm.store_32_int64"
+provide primitive load = "@wasm.load_int64"
+provide primitive load8S = "@wasm.load_8_s_int64"
+provide primitive load8U = "@wasm.load_8_u_int64"
+provide primitive load16S = "@wasm.load_16_s_int64"
+provide primitive load16U = "@wasm.load_16_u_int64"
+provide primitive load32S = "@wasm.load_32_s_int64"
+provide primitive load32U = "@wasm.load_32_u_int64"
+provide primitive store = "@wasm.store_int64"
+provide primitive store8 = "@wasm.store_8_int64"
+provide primitive store16 = "@wasm.store_16_int64"
+provide primitive store32 = "@wasm.store_32_int64"
 
 // WebAssembly Unary Instructions
-provide primitive clz: WasmI64 -> WasmI64 = "@wasm.clz_int64"
-provide primitive ctz: WasmI64 -> WasmI64 = "@wasm.ctz_int64"
-provide primitive popcnt: WasmI64 -> WasmI64 = "@wasm.popcnt_int64"
-provide primitive eqz: WasmI64 -> Bool = "@wasm.eq_z_int64"
+provide primitive clz = "@wasm.clz_int64"
+provide primitive ctz = "@wasm.ctz_int64"
+provide primitive popcnt = "@wasm.popcnt_int64"
+provide primitive eqz = "@wasm.eq_z_int64"
 
 // WebAssembly Binary Instructions
-provide primitive add: (WasmI64, WasmI64) -> WasmI64 = "@wasm.add_int64"
-provide primitive sub: (WasmI64, WasmI64) -> WasmI64 = "@wasm.sub_int64"
-provide primitive mul: (WasmI64, WasmI64) -> WasmI64 = "@wasm.mul_int64"
-provide primitive divS: (WasmI64, WasmI64) -> WasmI64 = "@wasm.div_s_int64"
-provide primitive divU: (WasmI64, WasmI64) -> WasmI64 = "@wasm.div_u_int64"
-provide primitive remS: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rem_s_int64"
-provide primitive remU: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rem_u_int64"
-provide primitive and: (WasmI64, WasmI64) -> WasmI64 = "@wasm.and_int64"
-provide primitive or: (WasmI64, WasmI64) -> WasmI64 = "@wasm.or_int64"
-provide primitive xor: (WasmI64, WasmI64) -> WasmI64 = "@wasm.xor_int64"
-provide primitive shl: (WasmI64, WasmI64) -> WasmI64 = "@wasm.shl_int64"
-provide primitive shrU: (WasmI64, WasmI64) -> WasmI64 = "@wasm.shr_u_int64"
-provide primitive shrS: (WasmI64, WasmI64) -> WasmI64 = "@wasm.shr_s_int64"
-provide primitive rotl: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rot_l_int64"
-provide primitive rotr: (WasmI64, WasmI64) -> WasmI64 = "@wasm.rot_r_int64"
-provide primitive eq: (WasmI64, WasmI64) -> Bool = "@wasm.eq_int64"
-provide primitive ne: (WasmI64, WasmI64) -> Bool = "@wasm.ne_int64"
-provide primitive ltS: (WasmI64, WasmI64) -> Bool = "@wasm.lt_s_int64"
-provide primitive ltU: (WasmI64, WasmI64) -> Bool = "@wasm.lt_u_int64"
-provide primitive leS: (WasmI64, WasmI64) -> Bool = "@wasm.le_s_int64"
-provide primitive leU: (WasmI64, WasmI64) -> Bool = "@wasm.le_u_int64"
-provide primitive gtS: (WasmI64, WasmI64) -> Bool = "@wasm.gt_s_int64"
-provide primitive gtU: (WasmI64, WasmI64) -> Bool = "@wasm.gt_u_int64"
-provide primitive geS: (WasmI64, WasmI64) -> Bool = "@wasm.ge_s_int64"
-provide primitive geU: (WasmI64, WasmI64) -> Bool = "@wasm.ge_u_int64"
+provide primitive add = "@wasm.add_int64"
+provide primitive sub = "@wasm.sub_int64"
+provide primitive mul = "@wasm.mul_int64"
+provide primitive divS = "@wasm.div_s_int64"
+provide primitive divU = "@wasm.div_u_int64"
+provide primitive remS = "@wasm.rem_s_int64"
+provide primitive remU = "@wasm.rem_u_int64"
+provide primitive and = "@wasm.and_int64"
+provide primitive or = "@wasm.or_int64"
+provide primitive xor = "@wasm.xor_int64"
+provide primitive shl = "@wasm.shl_int64"
+provide primitive shrU = "@wasm.shr_u_int64"
+provide primitive shrS = "@wasm.shr_s_int64"
+provide primitive rotl = "@wasm.rot_l_int64"
+provide primitive rotr = "@wasm.rot_r_int64"
+provide primitive eq = "@wasm.eq_int64"
+provide primitive ne = "@wasm.ne_int64"
+provide primitive ltS = "@wasm.lt_s_int64"
+provide primitive ltU = "@wasm.lt_u_int64"
+provide primitive leS = "@wasm.le_s_int64"
+provide primitive leU = "@wasm.le_u_int64"
+provide primitive gtS = "@wasm.gt_s_int64"
+provide primitive gtU = "@wasm.gt_u_int64"
+provide primitive geS = "@wasm.ge_s_int64"
+provide primitive geU = "@wasm.ge_u_int64"
 
 // WebAssembly Conversion instructions
-provide primitive extendI32S: WasmI32 -> WasmI64 = "@wasm.extend_s_int32"
-provide primitive extendI32U: WasmI32 -> WasmI64 = "@wasm.extend_u_int32"
-provide primitive truncF32S: WasmF32 -> WasmI64 = "@wasm.trunc_s_float32_to_int64"
-provide primitive truncF32U: WasmF32 -> WasmI64 = "@wasm.trunc_u_float32_to_int64"
-provide primitive truncF64S: WasmF64 -> WasmI64 = "@wasm.trunc_s_float64_to_int64"
-provide primitive truncF64U: WasmF64 -> WasmI64 = "@wasm.trunc_u_float64_to_int64"
-provide primitive reinterpretF64: WasmF64 -> WasmI64 = "@wasm.reinterpret_float64"
-provide primitive extendS8: WasmI64 -> WasmI64 = "@wasm.extend_s8_int64"
-provide primitive extendS16: WasmI64 -> WasmI64 = "@wasm.extend_s16_int64"
-provide primitive extendS32: WasmI64 -> WasmI64 = "@wasm.extend_s32_int64"
+provide primitive extendI32S = "@wasm.extend_s_int32"
+provide primitive extendI32U = "@wasm.extend_u_int32"
+provide primitive truncF32S = "@wasm.trunc_s_float32_to_int64"
+provide primitive truncF32U = "@wasm.trunc_u_float32_to_int64"
+provide primitive truncF64S = "@wasm.trunc_s_float64_to_int64"
+provide primitive truncF64U = "@wasm.trunc_u_float64_to_int64"
+provide primitive reinterpretF64 = "@wasm.reinterpret_float64"
+provide primitive extendS8 = "@wasm.extend_s8_int64"
+provide primitive extendS16 = "@wasm.extend_s16_int64"
+provide primitive extendS32 = "@wasm.extend_s32_int64"

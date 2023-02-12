@@ -37,12 +37,13 @@ foreign wasm fd_write: (
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive builtinId: String -> Number = "@builtin.id"
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive builtinId = "@builtin.id"
 
-primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata"
+@unsafe
+primitive _RUNTIME_TYPE_METADATA_PTR = "@heap.type_metadata"
 
 @unsafe
 let findTypeMetadata = typeId => {

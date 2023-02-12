@@ -265,7 +265,7 @@ module Toplevel: {
       ~loc: loc=?,
       ~attributes: attributes=?,
       provide_flag,
-      value_description
+      primitive_description
     ) =>
     toplevel_stmt;
   let data:
@@ -293,6 +293,10 @@ module Toplevel: {
   let provide:
     (~loc: loc, ~attributes: attributes=?, list(provide_item)) =>
     toplevel_stmt;
+};
+
+module PrimitiveDescription: {
+  let mk: (~loc: loc, ~ident: str, ~name: str, unit) => primitive_description;
 };
 
 module ValueDescription: {

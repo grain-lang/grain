@@ -25,9 +25,9 @@ from DataStructures use { tagSimpleNumber }
 include "runtime/numbers" as Numbers
 from Numbers use { isNumber, cmp as numberCompare }
 
-primitive (!): Bool -> Bool = "@not"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (!) = "@not"
+primitive (||) = "@or"
+primitive (&&) = "@and"
 
 @unsafe
 let zero = WasmI32.fromGrain(0)

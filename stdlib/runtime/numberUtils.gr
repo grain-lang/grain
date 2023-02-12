@@ -23,10 +23,10 @@ include "runtime/exception" as Exception
 include "runtime/dataStructures" as DataStructures
 from DataStructures use { allocateString }
 
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive throw: Exception -> a = "@throw"
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive throw = "@throw"
 
 @unsafe
 provide let _MAX_DOUBLE_LENGTH = 28n

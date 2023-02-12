@@ -11,7 +11,7 @@ foreign wasm fd_write: (
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
-primitive unreachable: () -> a = "@unreachable"
+primitive unreachable = "@unreachable"
 
 provide let mut printers = 0n
 
