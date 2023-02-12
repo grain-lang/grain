@@ -114,8 +114,8 @@ let checkInitialized = (random: Random) => {
  * @param random: The pseudo-random number generator to use
  * @returns The randomly generated number
  *
- * @since v0.5.0
- * @history v0.6.0: Changed from `nextInt32` to `nextUint32`
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `nextInt32`
  */
 provide let nextUint32 = (random: Random) => {
   checkInitialized(random)
@@ -130,8 +130,8 @@ provide let nextUint32 = (random: Random) => {
  * @param random: The pseudo-random number generator to use
  * @returns The randomly generated number
  *
- * @since v0.5.0
- * @history v0.6.0: Changed from `nextInt64` to `nextUint64`
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `nextInt64`
  */
 provide let nextUint64 = (random: Random) => {
   from Uint64 use { (|), (<<) }
@@ -156,8 +156,8 @@ provide let nextUint64 = (random: Random) => {
  * @param high: The upper bound of the range (exclusive)
  * @returns The randomly generated number
  *
- * @since v0.5.0
- * @history v0.6.0: Changed from `nextInt32InRange` to `nextUint32InRange`
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `nextInt32InRange`
  */
 provide let nextUint32InRange = (random: Random, low: Uint32, high: Uint32) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
@@ -182,8 +182,8 @@ provide let nextUint32InRange = (random: Random, low: Uint32, high: Uint32) => {
  * @param high: The upper bound of the range (exclusive)
  * @returns The randomly generated number
  *
- * @since v0.5.0
- * @history v0.6.0: Changed from `nextInt64InRange` to `nextUint64InRange`
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `nextInt64InRange`
  */
 provide let nextUint64InRange = (random: Random, low: Uint64, high: Uint64) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method

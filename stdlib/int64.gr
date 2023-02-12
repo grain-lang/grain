@@ -46,7 +46,7 @@ provide { fromNumber }
 provide { toNumber }
 
 /**
- * Converts a Uint64 to a Int64.
+ * Converts a Uint64 to an Int64.
  *
  * @param number: The value to convert
  * @returns The Uint64 represented as a Int64

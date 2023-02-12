@@ -54,7 +54,7 @@ provide let toNumber = (x: Uint64) => {
 }
 
 /**
- * Converts a Int64 to a Uint64.
+ * Converts an Int64 to a Uint64.
  *
  * @param number: The value to convert
  * @returns The Int64 represented as a Uint64

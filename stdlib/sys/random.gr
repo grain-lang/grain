@@ -23,7 +23,8 @@ from DataStructures use { tagSimpleNumber, newUint32, newUint64 }
  *
  * @returns `Ok(num)` of a random Uint32 if successful or `Err(exception)` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `randomInt32`
  */
 @unsafe
 provide let randomUint32 = () => {
@@ -44,7 +45,8 @@ provide let randomUint32 = () => {
  *
  * @returns `Ok(num)` of a random Uint64 if successful or `Err(exception)` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `randomInt64`
  */
 @unsafe
 provide let randomUint64 = () => {

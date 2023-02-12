@@ -55,7 +55,7 @@ provide let toNumber = (x: Uint32) => {
 }
 
 /**
- * Converts a Int32 to a Uint32.
+ * Converts an Int32 to a Uint32.
  *
  * @param number: The value to convert
  * @returns The Int32 represented as a Uint32

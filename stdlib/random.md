@@ -74,13 +74,13 @@ Returns:
 ### Random.**nextUint32**
 
 <details>
-<summary>Added in <code>0.5.0</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Changed from `nextInt32` to `nextUint32`</td></tr>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt32`</td></tr>
 </tbody>
 </table>
 </details>
@@ -106,13 +106,13 @@ Returns:
 ### Random.**nextUint64**
 
 <details>
-<summary>Added in <code>0.5.0</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Changed from `nextInt64` to `nextUint64`</td></tr>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt64`</td></tr>
 </tbody>
 </table>
 </details>
@@ -138,13 +138,13 @@ Returns:
 ### Random.**nextUint32InRange**
 
 <details>
-<summary>Added in <code>0.5.0</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Changed from `nextInt32InRange` to `nextUint32InRange`</td></tr>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt32InRange`</td></tr>
 </tbody>
 </table>
 </details>
@@ -173,13 +173,13 @@ Returns:
 ### Random.**nextUint64InRange**
 
 <details>
-<summary>Added in <code>0.5.0</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>Changed from `nextInt64InRange` to `nextUint64InRange`</td></tr>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt64InRange`</td></tr>
 </tbody>
 </table>
 </details>

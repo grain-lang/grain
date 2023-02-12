@@ -514,17 +514,6 @@ provide let toUnsignedInt64 = (num: WasmI32) => {
   } else if (numLimbs == 1n) {
     let limb = getLimb(num, 0n)
     limb
-    // TODO mayb
-    // if (limb <= _SMAX32_I64) {
-    //   if (flagIsSet(num, _IS_NEGATIVE)) {
-    //     WasmI64.mul(-1N, limb)
-    //   } else {
-    //     limb
-    //   }
-    // } else {
-    //     // throw Exception.NumberNotIntlike
-    //   throw Exception.Overflow
-    // }
   } else {
     throw Exception.Overflow
   }

@@ -78,7 +78,7 @@ No other changes yet.
 fromUint32 : Uint32 -> Int32
 ```
 
-Converts a Uint32 to a Int32.
+Converts a Uint32 to an Int32.
 
 Parameters:
 

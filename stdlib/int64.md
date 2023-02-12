@@ -78,7 +78,7 @@ No other changes yet.
 fromUint64 : Uint64 -> Int64
 ```
 
-Converts a Uint64 to a Int64.
+Converts a Uint64 to an Int64.
 
 Parameters:
 

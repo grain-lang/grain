@@ -14,9 +14,16 @@ Functions and constants included in the Random module.
 
 ### Random.**randomUint32**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `randomInt32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -33,9 +40,16 @@ Returns:
 
 ### Random.**randomUint64**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `randomInt64`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
