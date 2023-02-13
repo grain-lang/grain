@@ -365,30 +365,40 @@ let no_loop_control_statement_outside_of_loop =
   module NoLoopControlStatementOutsideOfLoop: IteratorArgument = {
     include Super;
 
-    // TODO: I need help rewriting this wellformedness check
-    let in_loop = ref(false);
-    let after = ref(false);
+    let ctx = ref([]);
     let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
-      after := in_loop^;
       switch (desc) {
       | PExpWhile(_)
-      | PExpFor(_) => in_loop := true
-      | PExpLambda(_) => in_loop := false
+      | PExpFor(_) => ctx := [true, ...ctx^]
+      | PExpLambda(_) => ctx := [false, ...ctx^]
       | PExpContinue =>
-        if (! in_loop^) {
-          errs := [LoopControlOutsideLoop("continue", loc), ...errs^];
+        switch (ctx^) {
+        // No loop context means we're not in a loop
+        | []
+        | [false, ..._] =>
+          errs := [LoopControlOutsideLoop("continue", loc), ...errs^]
+        | _ => ()
         }
       | PExpBreak =>
-        if (! in_loop^) {
-          errs := [LoopControlOutsideLoop("break", loc), ...errs^];
+        switch (ctx^) {
+        // No loop context means we're not in a loop
+        | []
+        | [false, ..._] =>
+          errs := [LoopControlOutsideLoop("break", loc), ...errs^]
+        | _ => ()
         }
       | _ => ()
       };
       Super.enter_expression(e);
     };
 
-    let leave_expression = e => {
-      in_loop := after^;
+    let leave_expression = ({pexp_desc: desc} as e) => {
+      switch (desc) {
+      | PExpWhile(_)
+      | PExpFor(_)
+      | PExpLambda(_) => ctx := List.tl(ctx^)
+      | _ => ()
+      };
       Super.leave_expression(e);
     };
   };
