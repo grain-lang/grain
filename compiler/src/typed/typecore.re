@@ -292,26 +292,6 @@ let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
     env,
   );
 
-let all_idents_cases = el => {
-  open Ast_iterator;
-  let idents = Hashtbl.create(8);
-  let rec f_expr = iter =>
-    fun
-    | {pexp_desc: PExpId({txt: Identifier.IdentName({txt: id}), _}), _} =>
-      Hashtbl.replace(idents, id, ())
-    | e => default_iterator.expr(iter, e);
-
-  let iterator = {...default_iterator, expr: f_expr};
-  List.iter(
-    cp => {
-      Option.iter(iterator.expr(iterator), cp.pmb_guard);
-      iterator.expr(iterator, cp.pmb_body);
-    },
-    el,
-  );
-  Hashtbl.fold((x, (), rest) => [x, ...rest], idents, []);
-};
-
 let constant:
   (Location.t, Parsetree.constant) =>
   result(Asttypes.constant, Location.error) = (
@@ -508,18 +488,6 @@ let generalizable = (level, ty) => {
     unmark_type(ty);
     false;
   };
-};
-
-/* Duplicate types of values in the environment */
-/* XXX Should we do something about global type variables too? */
-
-let duplicate_ident_types = (caselist, env) => {
-  let caselist =
-    List.filter(
-      ({pmb_pat}) => /*contains_gadt env pc_lhs*/ false,
-      caselist,
-    );
-  Env.copy_types(all_idents_cases(caselist), env);
 };
 
 /* Getting proper location of already typed expressions.
