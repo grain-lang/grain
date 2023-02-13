@@ -218,6 +218,50 @@ let write_universal_exports =
               | [] => Expression.Drop.make(wasm_mod, function_call)
               | _ => function_call
               };
+            let function_body =
+              Expression.Block.make(
+                wasm_mod,
+                "closure_incref",
+                [
+                  Expression.If.make(
+                    wasm_mod,
+                    Expression.Binary.make(
+                      wasm_mod,
+                      Op.ne_int32,
+                      get_closure(),
+                      Expression.Const.make(wasm_mod, Literal.int32(0l)),
+                    ),
+                    store(
+                      wasm_mod,
+                      Expression.Binary.make(
+                        wasm_mod,
+                        Op.sub_int32,
+                        get_closure(),
+                        Expression.Const.make(wasm_mod, Literal.int32(8l)),
+                      ),
+                      Expression.Binary.make(
+                        wasm_mod,
+                        Op.add_int32,
+                        load(
+                          wasm_mod,
+                          Expression.Binary.make(
+                            wasm_mod,
+                            Op.sub_int32,
+                            get_closure(),
+                            Expression.Const.make(
+                              wasm_mod,
+                              Literal.int32(8l),
+                            ),
+                          ),
+                        ),
+                        Expression.Const.make(wasm_mod, Literal.int32(1l)),
+                      ),
+                    ),
+                    Expression.Null.make(),
+                  ),
+                  function_body,
+                ],
+              );
             let arg_types =
               Type.create(Array.of_list(List.map(type_of_repr, args)));
             let result_types =
