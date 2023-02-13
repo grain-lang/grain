@@ -182,8 +182,7 @@ type summary =
   | Env_module(summary, Ident.t, module_declaration)
   | Env_modtype(summary, Ident.t, modtype_declaration)
   | Env_open(summary, Path.t)
-  | Env_constraints(summary, PathMap.t(type_declaration))
-  | Env_copy_types(summary, list(string));
+  | Env_constraints(summary, PathMap.t(type_declaration));
 
 module TycompTbl = {
   /** This module is used to store components of types (i.e. labels
@@ -1198,16 +1197,6 @@ let find_modtype_expansion = (path, env) =>
 
 let has_local_constraints = env => !PathMap.is_empty(env.local_constraints);
 
-let copy_types = (l, env) => {
-  let f = desc => {
-    ...desc,
-    val_type: Subst.type_expr(Subst.identity, desc.val_type),
-  };
-  let values =
-    List.fold_left((env, s) => IdTbl.update(s, f, env), env.values, l);
-  {...env, values, summary: Env_copy_types(env.summary, l)};
-};
-
 /* Currently a no-op */
 let mark_value_used = (env, name, loc) => (); /*Printf.eprintf "Marking value %s used\n" name*/
 let mark_type_used = (env, name, loc) => ();
@@ -2062,7 +2051,6 @@ let check_opened = (mod_: Parsetree.include_declaration, env) => {
     | Env_extension(summary, _, _)
     | Env_modtype(summary, _, _)
     | Env_constraints(summary, _)
-    | Env_copy_types(summary, _)
     | Env_open(summary, _) => find_open(summary)
     };
 

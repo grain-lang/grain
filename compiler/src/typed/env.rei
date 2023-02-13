@@ -14,8 +14,7 @@ type summary =
   | Env_module(summary, Ident.t, module_declaration)
   | Env_modtype(summary, Ident.t, modtype_declaration)
   | Env_open(summary, Path.t)
-  | Env_constraints(summary, PathMap.t(type_declaration))
-  | Env_copy_types(summary, list(string));
+  | Env_constraints(summary, PathMap.t(type_declaration));
 
 type type_descriptions = (
   list(constructor_description),
@@ -126,9 +125,6 @@ let lookup_module:
 let lookup_modtype:
   (~loc: Location.t=?, ~mark: bool=?, Identifier.t, t) =>
   (Path.t, modtype_declaration);
-
-let copy_types: (list(string), t) => t;
-/* Used only in Typecore.duplicate_ident_types. */
 
 /* By-identifier insertions */
 /** Adds a value identifier with the given name and description. */
