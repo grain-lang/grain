@@ -3,7 +3,8 @@ open Typedtree;
 type primitive_constant =
   | HeapBase
   | HeapStart
-  | HeapTypeMetadata;
+  | HeapTypeMetadata
+  | ElideTypeInfo;
 
 type primitive =
   | PrimitiveConstant(primitive_constant)

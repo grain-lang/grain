@@ -65,6 +65,10 @@ module ConstantFoldingArg: Anf_mapper.MapArgument = {
       | "==" => wrap_imm @@ Const_bool(x == y)
       | _ => c
       };
+    | CPrim1(Not, {imm_desc: ImmConst(Const_bool(b))} as i) => {
+        ...c,
+        comp_desc: CImmExpr({...i, imm_desc: ImmConst(Const_bool(!b))}),
+      }
     | CPrim2(prim2, {imm_desc: ImmConst(x)} as i, {imm_desc: ImmConst(y)}) =>
       let wrap_imm = imm => {
         ...c,
