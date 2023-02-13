@@ -1,5 +1,5 @@
 open Parsetree;
-open Ast_iterator;
+open Parsetree_iter;
 open Grain_utils;
 
 type wferr =
@@ -90,11 +90,11 @@ let () =
 
 type well_formedness_checker = {
   errs: ref(list(wferr)),
-  iterator,
+  iter_hooks: hooks,
 };
 
 let malformed_strings = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstString(s)) =>
       if (!Utf8.validString(s)) {
@@ -102,14 +102,20 @@ let malformed_strings = (errs, super) => {
       }
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
+  };
 };
 
 let malformed_characters = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstChar(c)) =>
       if (String_utils.Utf8.utf_length_at_offset(c, 0) != String.length(c)) {
@@ -117,14 +123,20 @@ let malformed_characters = (errs, super) => {
       }
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
+  };
 };
 
 let no_empty_record_patterns = (errs, super) => {
-  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | PTopLet(_, _, _, vbs) =>
       List.iter(
@@ -138,9 +150,9 @@ let no_empty_record_patterns = (errs, super) => {
       )
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(e);
   };
-  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLet(_, _, vbs) =>
       List.iter(
@@ -154,14 +166,21 @@ let no_empty_record_patterns = (errs, super) => {
       )
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_expression,
+    },
+  };
 };
 
 let only_functions_oh_rhs_letrec = (errs, super) => {
-  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | PTopLet(_, Recursive, _, vbs) =>
       List.iter(
@@ -172,9 +191,9 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
       )
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(e);
   };
-  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLet(Recursive, _, vbs) =>
       List.iter(
@@ -185,52 +204,73 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
       )
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_expression,
+    },
+  };
 };
 
 let no_letrec_mut = (errs, super) => {
-  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | PTopLet(_, Recursive, Mutable, vbs) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(e);
   };
-  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLet(Recursive, Mutable, vbs) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_expression,
+    },
+  };
 };
 
 let no_zero_denominator_rational = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iter_pat = (self, {ppat_desc: desc, ppat_loc: loc} as p) => {
+  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
     | PPatConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
-    super.pat(self, p);
+    super.enter_pattern(p);
   };
-  let iterator = {...super, expr: iter_expr, pat: iter_pat};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      enter_pattern,
+    },
+  };
 };
 
 type known_attribute = {
@@ -245,29 +285,27 @@ let known_attributes = [
 ];
 
 let valid_attributes = (errs, super) => {
-  let iter_attributes = (({txt, loc}, args)) => {
+  let enter_attribute = (({txt, loc}, args) as attr) => {
     switch (List.find_opt(({name}) => name == txt, known_attributes)) {
     | Some({arity}) when List.length(args) != arity =>
       errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
     | None => errs := [UnknownAttribute(txt, loc), ...errs^]
     | _ => ()
     };
+    super.enter_attribute(attr);
   };
 
-  let iter_expr = (self, {pexp_attributes: attrs} as e) => {
-    List.iter(iter_attributes, attrs);
-    super.expr(self, e);
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_attribute,
+    },
   };
-  let iter_toplevel = (self, {ptop_attributes: attrs} as top) => {
-    List.iter(iter_attributes, attrs);
-    super.toplevel(self, top);
-  };
-  let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
-  {errs, iterator};
 };
 
 let disallowed_attributes = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_attributes: attrs} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_attributes: attrs} as e) => {
     switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
     | Some(({txt, loc}, _)) =>
       errs :=
@@ -279,10 +317,10 @@ let disallowed_attributes = (errs, super) => {
         ]
     | None => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iter_toplevel =
-      (self, {ptop_desc: desc, ptop_attributes: attrs} as top) => {
+  let enter_toplevel_stmt =
+      ({ptop_desc: desc, ptop_attributes: attrs} as top) => {
     switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
     | Some(({txt, loc}, _)) =>
       switch (desc) {
@@ -328,35 +366,65 @@ let disallowed_attributes = (errs, super) => {
       }
     | None => ()
     };
-    super.toplevel(self, top);
+    super.enter_toplevel_stmt(top);
   };
-  let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      enter_toplevel_stmt,
+    },
+  };
 };
 
 let no_loop_control_statement_outside_of_loop = (errs, super) => {
-  let in_loop = ref(false);
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
-    let after = in_loop^;
+  let ctx = ref([]);
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpWhile(_)
-    | PExpFor(_) => in_loop := true
-    | PExpLambda(_) => in_loop := false
+    | PExpFor(_) => ctx := [true, ...ctx^]
+    | PExpLambda(_) => ctx := [false, ...ctx^]
     | PExpContinue =>
-      if (! in_loop^) {
-        errs := [LoopControlOutsideLoop("continue", loc), ...errs^];
+      switch (ctx^) {
+      // No loop context means we're not in a loop
+      | []
+      | [false, ..._] =>
+        errs := [LoopControlOutsideLoop("continue", loc), ...errs^]
+      | _ => ()
       }
     | PExpBreak =>
-      if (! in_loop^) {
-        errs := [LoopControlOutsideLoop("break", loc), ...errs^];
+      switch (ctx^) {
+      // No loop context means we're not in a loop
+      | []
+      | [false, ..._] =>
+        errs := [LoopControlOutsideLoop("break", loc), ...errs^]
+      | _ => ()
       }
     | _ => ()
     };
-    super.expr(self, e);
-    in_loop := after;
+    super.enter_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  let leave_expression = ({pexp_desc: desc} as e) => {
+    switch (desc) {
+    | PExpWhile(_)
+    | PExpFor(_)
+    | PExpLambda(_) => ctx := List.tl(ctx^)
+    | _ => ()
+    };
+    super.leave_expression(e);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      leave_expression,
+    },
+  };
 };
 
 let malformed_return_statements = (errs, super) => {
@@ -413,7 +481,7 @@ let malformed_return_statements = (errs, super) => {
     };
   };
   let ctx = ref([]);
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLambda(_) =>
       // Push a context to record return statements for the current function
@@ -429,8 +497,10 @@ let malformed_return_statements = (errs, super) => {
     | _ => ()
     };
 
-    super.expr(self, e);
+    super.enter_expression(e);
+  };
 
+  let leave_expression = ({pexp_desc: desc} as e) => {
     // The expression has been iterated; pop the context if the expression was a function
     switch (desc) {
     | PExpLambda(_, body) =>
@@ -444,32 +514,51 @@ let malformed_return_statements = (errs, super) => {
       };
     | _ => ()
     };
+    super.leave_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      leave_expression,
+    },
+  };
 };
 
 let no_local_include = (errs, super) => {
   let file_level = ref([true]);
-  let iter_toplevel = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as top) => {
     switch (desc) {
     | PTopInclude(_) when !List.hd(file_level^) =>
       errs := [LocalIncludeStatement(loc), ...errs^]
     | PTopModule(_) => file_level := [false, ...file_level^]
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(top);
+  };
+
+  let leave_toplevel_stmt = ({ptop_desc: desc} as top) => {
     switch (desc) {
     | PTopModule(_) => file_level := List.tl(file_level^)
     | _ => ()
     };
+    super.leave_toplevel_stmt(top);
   };
-  let iterator = {...super, toplevel: iter_toplevel};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      leave_toplevel_stmt,
+    },
+  };
 };
 
-let compose_well_formedness = ({errs, iterator}, cur) =>
-  cur(errs, iterator);
+let compose_well_formedness = ({errs, iter_hooks}, cur) =>
+  cur(errs, iter_hooks);
 
 let well_formedness_checks = [
   malformed_strings,
@@ -488,13 +577,17 @@ let well_formedness_checks = [
 let well_formedness_checker = () =>
   List.fold_left(
     compose_well_formedness,
-    {errs: ref([]), iterator: default_iterator},
+    {errs: ref([]), iter_hooks: default_hooks},
     well_formedness_checks,
   );
 
 let check_well_formedness = ({statements}) => {
   let checker = well_formedness_checker();
-  List.iter(checker.iterator.toplevel(checker.iterator), statements);
+
+  let well_formedness_iter = make(checker.iter_hooks);
+
+  List.iter(well_formedness_iter.iter_toplevel_stmt, statements);
+
   // TODO(#1503): We should be able to raise _all_ errors at once
   List.iter(e => raise(Error(e)), checker.errs^);
 };
