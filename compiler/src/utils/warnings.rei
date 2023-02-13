@@ -40,6 +40,8 @@ type t =
   | FuncWasmUnsafe(string)
   | FromNumberLiteralI32(string)
   | FromNumberLiteralI64(string)
+  | FromNumberLiteralU32(string)
+  | FromNumberLiteralU64(string)
   | FromNumberLiteralF32(string)
   | FromNumberLiteralF64(string)
   | UselessRecordSpread;

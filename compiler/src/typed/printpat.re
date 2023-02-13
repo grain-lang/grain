@@ -39,6 +39,8 @@ let pretty_const = c =>
   | Const_float32(f) => Printf.sprintf("%f", f)
   | Const_int32(i) => Printf.sprintf("%ldl", i)
   | Const_int64(i) => Printf.sprintf("%LdL", i)
+  | Const_uint32(i) => Printf.sprintf("%luul", i)
+  | Const_uint64(i) => Printf.sprintf("%LuuL", i)
   | Const_wasmi32(i) => Printf.sprintf("%ldn", i)
   | Const_wasmi64(i) => Printf.sprintf("%LdN", i)
   | Const_wasmf32(f) => Printf.sprintf("%fw", f)

@@ -505,6 +505,21 @@ provide let toInt64 = (num: WasmI32) => {
 }
 
 @unsafe
+provide let toUnsignedInt64 = (num: WasmI32) => {
+  let (<=) = WasmI64.leU
+  let (==) = WasmI32.eq
+  let numLimbs = getSize(num)
+  if (numLimbs == 0n) {
+    0N
+  } else if (numLimbs == 1n) {
+    let limb = getLimb(num, 0n)
+    limb
+  } else {
+    throw Exception.Overflow
+  }
+}
+
+@unsafe
 provide let toFloat64 = (num: WasmI32) => {
   // approximate!
   // semi-port of https://github.com/JuliaLang/julia/issues/31293#issuecomment-477220553
@@ -599,6 +614,23 @@ provide let cmpI64 = (num1: WasmI32, num2: WasmI64) => {
     }
   } else {
     if (WasmI64.eqz(num2) || WasmI64.ltS(num2, 0N)) {
+      1n
+    } else {
+      cmpUnsignedI64(num1, num2)
+    }
+  }
+}
+
+@unsafe
+provide let cmpU64 = (num1: WasmI32, num2: WasmI64) => {
+  if (eqz(num1)) {
+    if (WasmI64.eqz(num2)) {
+      0n
+    } else {
+      1n
+    }
+  } else {
+    if (WasmI64.eqz(num2)) {
       1n
     } else {
       cmpUnsignedI64(num1, num2)

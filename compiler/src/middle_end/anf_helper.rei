@@ -49,6 +49,12 @@ module Comp: {
   let int64:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int64) =>
     comp_expression;
+  let uint32:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
+    comp_expression;
+  let uint64:
+    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int64) =>
+    comp_expression;
   let float32:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, float) =>
     comp_expression;

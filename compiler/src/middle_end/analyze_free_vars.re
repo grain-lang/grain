@@ -131,6 +131,8 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
       | CNumber(_)
       | CInt32(_)
       | CInt64(_)
+      | CUint32(_)
+      | CUint64(_)
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)

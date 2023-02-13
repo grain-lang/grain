@@ -133,6 +133,8 @@ let all_coherent = column => {
       | (Const_number(_), Const_number(_))
       | (Const_int32(_), Const_int32(_))
       | (Const_int64(_), Const_int64(_))
+      | (Const_uint32(_), Const_uint32(_))
+      | (Const_uint64(_), Const_uint64(_))
       | (Const_float32(_), Const_float32(_))
       | (Const_float64(_), Const_float64(_))
       | (Const_wasmi32(_), Const_wasmi32(_))
@@ -146,7 +148,9 @@ let all_coherent = column => {
       | (Const_string(_), Const_string(_))
       | (Const_char(_), Const_char(_)) => true
       | (
-          Const_number(_) | Const_int32(_) | Const_int64(_) | Const_float32(_) |
+          Const_number(_) | Const_int32(_) | Const_int64(_) | Const_uint32(_) |
+          Const_uint64(_) |
+          Const_float32(_) |
           Const_float64(_) |
           Const_wasmi32(_) |
           Const_wasmi64(_) |
@@ -278,7 +282,9 @@ let const_compare = (x, y) =>
       Const_bigint(_) |
       Const_void |
       Const_int32(_) |
-      Const_int64(_),
+      Const_int64(_) |
+      Const_uint32(_) |
+      Const_uint64(_),
       _,
     ) =>
     Stdlib.compare(x, y)
@@ -972,6 +978,30 @@ let build_other = (ext, env) =>
       | _ => assert(false),
       fun
       | i => TPatConstant(Const_int64(i)),
+      0L,
+      Int64.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_uint32(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_uint32(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_uint32(i)),
+      0l,
+      Int32.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_uint64(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_uint64(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_uint64(i)),
       0L,
       Int64.succ,
       p,
@@ -1800,6 +1830,10 @@ let untype_constant =
     Parsetree.PConstNumber(Parsetree.PConstNumberInt(bigint_rep))
   | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))
   | Const_int64(i) => Parsetree.PConstInt64(Int64.to_string(i))
+  | Const_uint32(i) =>
+    Parsetree.PConstUint32(false, Printf.sprintf("%lu", i))
+  | Const_uint64(i) =>
+    Parsetree.PConstUint64(false, Printf.sprintf("%Lu", i))
   | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
   | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
   | Const_wasmi32(i) => Parsetree.PConstWasmI32(Int32.to_string(i))
@@ -2155,6 +2189,8 @@ let inactive = (~partial, pat) =>
         | Const_bool(_)
         | Const_int32(_)
         | Const_int64(_)
+        | Const_uint32(_)
+        | Const_uint64(_)
         | Const_float32(_)
         | Const_float64(_)
         | Const_wasmi32(_)

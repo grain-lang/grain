@@ -116,6 +116,40 @@ Returns:
 |----|-----------|
 |`WasmI32`|The pointer to the Int32|
 
+### DataStructures.**allocateUint32**
+
+```grain
+allocateUint32 : () -> WasmI32
+```
+
+Allocates a new Uint32.
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The pointer to the empty Uint32|
+
+### DataStructures.**newUint32**
+
+```grain
+newUint32 : WasmI32 -> WasmI32
+```
+
+Allocates a new Uint32 with a prepopulated value
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`WasmI32`|The value to store|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The pointer to the Uint32|
+
 ### DataStructures.**allocateInt64**
 
 ```grain
@@ -149,6 +183,40 @@ Returns:
 |type|description|
 |----|-----------|
 |`WasmI32`|The pointer to the Int64|
+
+### DataStructures.**allocateUint64**
+
+```grain
+allocateUint64 : () -> WasmI32
+```
+
+Allocates a new Uint64.
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The pointer to the empty Uint64|
+
+### DataStructures.**newUint64**
+
+```grain
+newUint64 : WasmI64 -> WasmI32
+```
+
+Allocates a new Uint64 with a prepopulated value
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`WasmI64`|The value to store|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The pointer to the Uint64|
 
 ### DataStructures.**allocateFloat32**
 

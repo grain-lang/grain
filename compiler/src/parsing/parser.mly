@@ -13,7 +13,7 @@ module Grain_parsing = struct end
 
 
 %token <string> NUMBER_INT NUMBER_FLOAT
-%token <string> INT32 INT64 FLOAT32 FLOAT64 BIGINT
+%token <string> INT32 INT64 UINT32 UINT64 FLOAT32 FLOAT64 BIGINT
 %token <string> WASMI32 WASMI64 WASMF32 WASMF64
 %token <string> LIDENT UIDENT
 %token <string> STRING CHAR
@@ -199,6 +199,8 @@ const:
   | DASH? NUMBER_FLOAT { Constant.number (PConstNumberFloat (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
   | DASH? INT32 { Constant.int32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? INT64 { Constant.int64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? UINT32 { Constant.uint32 (Option.is_some $1) $2, $sloc }
+  | DASH? UINT64 { Constant.uint64 (Option.is_some $1) $2, $sloc }
   | DASH? FLOAT32 { Constant.float32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? FLOAT64 { Constant.float64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? WASMI32 { Constant.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }

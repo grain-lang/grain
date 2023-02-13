@@ -983,17 +983,18 @@ provide let utoa32 = (value, radix) => {
   } else if (radix == 10n) {
     let decimals = decimalCount32(value)
     let out = allocateString(decimals)
-    utoa32_dec_core(out, value, decimals)
+    utoa32_dec_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
   } else if (radix == 16n) {
     let decimals = WasmI32.shrU(31n - WasmI32.clz(value), 2n) + 1n
     let out = allocateString(decimals)
-    utoa32_hex_core(out, value, decimals)
+    utoa32_hex_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
   } else {
-    let decimals = ulog_base(WasmI64.extendI32U(value), radix)
+    let val64 = WasmI64.extendI32U(value)
+    let decimals = ulog_base(val64, radix)
     let out = allocateString(decimals)
-    utoa64_any_core(out, WasmI64.extendI32U(value), decimals, radix)
+    utoa64_any_core(out + 8n, val64, decimals, radix)
     WasmI32.toGrain(out): String
   }
 }

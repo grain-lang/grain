@@ -100,6 +100,12 @@ canConvertToInt64 : WasmI32 -> Bool
 toInt64 : WasmI32 -> WasmI64
 ```
 
+### Bigint.**toUnsignedInt64**
+
+```grain
+toUnsignedInt64 : WasmI32 -> WasmI64
+```
+
 ### Bigint.**toFloat64**
 
 ```grain
@@ -116,6 +122,12 @@ toFloat32 : WasmI32 -> WasmF32
 
 ```grain
 cmpI64 : (WasmI32, WasmI64) -> WasmI32
+```
+
+### Bigint.**cmpU64**
+
+```grain
+cmpU64 : (WasmI32, WasmI64) -> WasmI32
 ```
 
 ### Bigint.**cmpF64**

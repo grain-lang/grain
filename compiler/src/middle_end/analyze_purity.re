@@ -41,7 +41,9 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CImmExpr({imm_desc: ImmTrap}) => false
       | CImmExpr(_) => true
       | CPrim0(
-          AllocateInt32 | AllocateInt64 | AllocateFloat32 | AllocateFloat64 |
+          AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
+          AllocateFloat32 |
+          AllocateFloat64 |
           AllocateRational,
         ) =>
         true
@@ -51,6 +53,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           BuiltinId |
           NewInt32 |
           NewInt64 |
+          NewUint32 |
+          NewUint64 |
           NewFloat32 |
           NewFloat64 |
           LoadAdtVariant |
@@ -137,6 +141,8 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CNumber(_)
       | CInt32(_)
       | CInt64(_)
+      | CUint32(_)
+      | CUint64(_)
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)

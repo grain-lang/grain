@@ -83,6 +83,8 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("hash.test");
   assertStdlib("int32.test");
   assertStdlib("int64.test");
+  assertStdlib("uint32.test");
+  assertStdlib("uint64.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
   assertStdlib("immutablemap.test");

@@ -220,6 +220,13 @@ let rec hashOne = (val, depth) => {
           },
         }
       },
+      t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+        hash32(WasmI32.load(heapPtr, 4n))
+      },
+      t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+        hash32(WasmI32.load(heapPtr, 8n))
+        hash32(WasmI32.load(heapPtr, 12n))
+      },
       _ => {
         hash32(heapPtr)
       },

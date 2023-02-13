@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : Int64 -> Random
+make : Uint64 -> Random
 ```
 
 Creates a new pseudo-random number generator with the given seed.
@@ -44,7 +44,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`seed`|`Int64`|The seed for the pseudo-random number generator|
+|`seed`|`Uint64`|The seed for the pseudo-random number generator|
 
 Returns:
 
@@ -71,15 +71,22 @@ Returns:
 |----|-----------|
 |`Result<Random, Exception>`|`Ok(generator)` of a pseudo-random number generator if successful or `Err(exception)` otherwise|
 
-### Random.**nextInt32**
+### Random.**nextUint32**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-nextInt32 : Random -> Int32
+nextUint32 : Random -> Uint32
 ```
 
 Generates a random 32-bit integer from the given pseudo-random number generator.
@@ -94,17 +101,24 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|The randomly generated number|
+|`Uint32`|The randomly generated number|
 
-### Random.**nextInt64**
+### Random.**nextUint64**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt64`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-nextInt64 : Random -> Int64
+nextUint64 : Random -> Uint64
 ```
 
 Generates a random 64-bit integer from the given pseudo-random number generator.
@@ -119,17 +133,24 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The randomly generated number|
+|`Uint64`|The randomly generated number|
 
-### Random.**nextInt32InRange**
+### Random.**nextUint32InRange**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt32InRange`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-nextInt32InRange : (Random, Int32, Int32) -> Int32
+nextUint32InRange : (Random, Uint32, Uint32) -> Uint32
 ```
 
 Generates a random 32-bit integer from the given pseudo-random number generator
@@ -140,24 +161,31 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`random`|`Random`|The pseudo-random number generator to use|
-|`low`|`Int32`|The lower bound of the range (inclusive)|
-|`high`|`Int32`|The upper bound of the range (exclusive)|
+|`low`|`Uint32`|The lower bound of the range (inclusive)|
+|`high`|`Uint32`|The upper bound of the range (exclusive)|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|The randomly generated number|
+|`Uint32`|The randomly generated number|
 
-### Random.**nextInt64InRange**
+### Random.**nextUint64InRange**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `nextInt64InRange`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-nextInt64InRange : (Random, Int64, Int64) -> Int64
+nextUint64InRange : (Random, Uint64, Uint64) -> Uint64
 ```
 
 Generates a random 64-bit integer from the given pseudo-random number generator
@@ -168,12 +196,12 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`random`|`Random`|The pseudo-random number generator to use|
-|`low`|`Int64`|The lower bound of the range (inclusive)|
-|`high`|`Int64`|The upper bound of the range (exclusive)|
+|`low`|`Uint64`|The lower bound of the range (inclusive)|
+|`high`|`Uint64`|The upper bound of the range (exclusive)|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The randomly generated number|
+|`Uint64`|The randomly generated number|
 

@@ -230,6 +230,8 @@ let rec token = lexbuf => {
     positioned(NUMBER_FLOAT(Sedlexing.Utf8.lexeme(lexbuf)))
   | (unsigned_int, 'l') => positioned(INT32(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_int, 'L') => positioned(INT64(sub_lexeme(lexbuf, 0, -1)))
+  | (unsigned_int, "ul") => positioned(UINT32(sub_lexeme(lexbuf, 0, -2)))
+  | (unsigned_int, "uL") => positioned(UINT64(sub_lexeme(lexbuf, 0, -2)))
   | (unsigned_int, 'n') => positioned(WASMI32(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_int, 'N') => positioned(WASMI64(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_float, 'w') => positioned(WASMF32(sub_lexeme(lexbuf, 0, -1)))

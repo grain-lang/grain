@@ -181,6 +181,8 @@ describe("basic functionality", ({test, testSkip}) => {
   );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");
+  assertSnapshot("uint32_1", "42ul");
+  assertSnapshot("uint64_1", "99999999999999999uL");
   assertSnapshot("int64_pun_1", "9999999 * 99999999");
   assertSnapshot("int64_pun_2", "-99999999 - 999999999");
   assertSnapshot("bigint_1", "9223372036854775807 + 1");

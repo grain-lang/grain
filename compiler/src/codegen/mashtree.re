@@ -174,6 +174,8 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
@@ -188,6 +190,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId
@@ -284,6 +288,8 @@ type primn =
 type constant =
   | MConstI32(int32)
   | MConstI64(int64)
+  | MConstU32(int32)
+  | MConstU64(int64)
   | MConstF32(float)
   | MConstF64(float)
   | MConstLiteral(constant); /* Special case for things which should not be encoded */
@@ -322,6 +328,8 @@ type allocation_type =
   | MChar(string)
   | MInt32(int32)
   | MInt64(int64)
+  | MUint32(int32)
+  | MUint64(int64)
   | MFloat32(float)
   | MFloat64(float)
   | MRational({

@@ -2047,6 +2047,94 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
   );
 };
 
+let allocate_uint_uninitialized = (wasm_mod, env, is_32_bit) => {
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+  let make_alloc = () =>
+    heap_allocate(wasm_mod, env, if (is_32_bit) {2} else {4});
+
+  let (tag, label) =
+    if (is_32_bit) {
+      (Uint32Type, "allocate_unitialized_uint32");
+    } else {
+      (Uint64Type, "allocate_unitialized_uint64");
+    };
+
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(~skip_incref=true, wasm_mod, env, 0, make_alloc()),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(tag)),
+      ),
+    ),
+  ];
+  let postamble = [get_swap()];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label(label),
+    List.concat([preamble, postamble]),
+  );
+};
+
+type alloc_uint_type =
+  | Uint32(Expression.t)
+  | Uint64(Expression.t);
+
+let allocate_uint = (wasm_mod, env, uint_value) => {
+  let get_swap = () => get_swap(wasm_mod, env, 0);
+
+  let (tag, instrs, needed_words, label) =
+    switch (uint_value) {
+    | Uint32(uint32) => (
+        Uint32Type,
+        [store(~offset=4, ~ty=Type.int32, wasm_mod, get_swap(), uint32)],
+        2,
+        "allocate_uint32",
+      )
+    | Uint64(uint64) => (
+        Uint64Type,
+        [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(), uint64)],
+        // Allocate 4 words to store with 8-byte alignment
+        4,
+        "allocate_uint64",
+      )
+    };
+
+  let preamble = [
+    store(
+      ~offset=0,
+      wasm_mod,
+      tee_swap(
+        ~skip_incref=true,
+        wasm_mod,
+        env,
+        0,
+        heap_allocate(wasm_mod, env, needed_words),
+      ),
+      Expression.Const.make(
+        wasm_mod,
+        const_int32(tag_val_of_heap_tag_type(tag)),
+      ),
+    ),
+  ];
+  let postamble = [get_swap()];
+  Expression.Block.make(
+    wasm_mod,
+    gensym_label(label),
+    List.concat([preamble, instrs, postamble]),
+  );
+};
+
+let allocate_uint32 = (wasm_mod, env, i) => {
+  allocate_uint(wasm_mod, env, Uint32(i));
+};
+
+let allocate_uint64 = (wasm_mod, env, i) => {
+  allocate_uint(wasm_mod, env, Uint64(i));
+};
+
 type alloc_number_type =
   | Int32(Expression.t)
   | Int64(Expression.t)
@@ -2289,6 +2377,8 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
     allocate_number_uninitialized(wasm_mod, env, BoxedFloat64)
   | AllocateRational =>
     allocate_number_uninitialized(wasm_mod, env, BoxedRational)
+  | AllocateUint32 => allocate_uint_uninitialized(wasm_mod, env, true)
+  | AllocateUint64 => allocate_uint_uninitialized(wasm_mod, env, false)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
   };
 };
@@ -2312,6 +2402,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | NewInt64 => allocate_number(wasm_mod, env, Int64(compiled_arg))
   | NewFloat32 => allocate_number(wasm_mod, env, Float32(compiled_arg))
   | NewFloat64 => allocate_number(wasm_mod, env, Float64(compiled_arg))
+  | NewUint32 => allocate_uint(wasm_mod, env, Uint32(compiled_arg))
+  | NewUint64 => allocate_uint(wasm_mod, env, Uint64(compiled_arg))
   | LoadAdtVariant => load(~offset=12, wasm_mod, compiled_arg)
   | StringSize
   | BytesSize => load(~offset=4, wasm_mod, compiled_arg)
@@ -2720,6 +2812,18 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
     )
   | MInt64(i) =>
     allocate_int64(
+      wasm_mod,
+      env,
+      Expression.Const.make(wasm_mod, Literal.int64(i)),
+    )
+  | MUint32(i) =>
+    allocate_uint32(
+      wasm_mod,
+      env,
+      Expression.Const.make(wasm_mod, Literal.int32(i)),
+    )
+  | MUint64(i) =>
+    allocate_uint64(
       wasm_mod,
       env,
       Expression.Const.make(wasm_mod, Literal.int64(i)),

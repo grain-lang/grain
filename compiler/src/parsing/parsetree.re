@@ -120,6 +120,8 @@ type constant =
   | PConstNumber(number_type)
   | PConstInt32(string)
   | PConstInt64(string)
+  | PConstUint32(bool, string)
+  | PConstUint64(bool, string)
   | PConstFloat32(string)
   | PConstFloat64(string)
   | PConstWasmI32(string)
@@ -312,6 +314,8 @@ type wasm_op =
 type prim0 =
   | AllocateInt32
   | AllocateInt64
+  | AllocateUint32
+  | AllocateUint64
   | AllocateFloat32
   | AllocateFloat64
   | AllocateRational
@@ -327,6 +331,8 @@ type prim1 =
   | AllocateBigInt
   | NewInt32
   | NewInt64
+  | NewUint32
+  | NewUint64
   | NewFloat32
   | NewFloat64
   | BuiltinId
