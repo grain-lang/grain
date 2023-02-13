@@ -445,6 +445,9 @@ and use_item =
     });
 
 [@deriving (sexp, yojson)]
+type attribute = Asttypes.attribute;
+
+[@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
 
 /** Type for expressions (i.e. things which evaluate to something) */

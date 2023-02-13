@@ -167,10 +167,17 @@ let read_imports = ({Parsetree.comments, Parsetree.statements}) => {
       },
     );
   let found_includes = ref([]);
-  let iter_mod = (self, import) =>
-    found_includes := [import.Parsetree.pinc_path, ...found_includes^];
-  let iterator = {...Ast_iterator.default_iterator, include_: iter_mod};
-  List.iter(iterator.toplevel(iterator), statements);
+
+  module IncludeIterator =
+    Ast_iterator.MakeIterator({
+      include Ast_iterator.DefaultIteratorArgument;
+
+      let enter_include = inc => {
+        found_includes := [inc.Parsetree.pinc_path, ...found_includes^];
+      };
+    });
+
+  List.iter(IncludeIterator.iter_toplevel_stmt, statements);
 
   List.sort_uniq(
     (a, b) => String.compare(a.txt, b.txt),

@@ -17,29 +17,71 @@
 
 open Parsetree;
 
-/** A [iterator] record implements one "method" per syntactic category,
-    using an open recursion style: each method takes as its first
-    argument the iterator to be applied to children in the syntax
-    tree. */
+module type IteratorArgument = {
+  let enter_location: Location.t => unit;
+  let leave_location: Location.t => unit;
 
-type iterator = {
-  constant: (iterator, constant) => unit,
-  expr: (iterator, expression) => unit,
-  pat: (iterator, pattern) => unit,
-  typ: (iterator, parsed_type) => unit,
-  data: (iterator, data_declaration) => unit,
-  constructor: (iterator, constructor_declaration) => unit,
-  label: (iterator, label_declaration) => unit,
-  location: (iterator, Location.t) => unit,
-  include_: (iterator, include_declaration) => unit,
-  provide: (iterator, list(provide_item)) => unit,
-  value_binding: (iterator, value_binding) => unit,
-  match_branch: (iterator, match_branch) => unit,
-  value_description: (iterator, value_description) => unit,
-  grain_exception: (iterator, type_exception) => unit,
-  toplevel: (iterator, toplevel_stmt) => unit,
+  let enter_attribute: attribute => unit;
+  let leave_attribute: attribute => unit;
+
+  let enter_parsed_program: parsed_program => unit;
+  let leave_parsed_program: parsed_program => unit;
+
+  let enter_include: include_declaration => unit;
+  let leave_include: include_declaration => unit;
+
+  let enter_provide: list(provide_item) => unit;
+  let leave_provide: list(provide_item) => unit;
+
+  let enter_foreign: (provide_flag, value_description) => unit;
+  let leave_foreign: (provide_flag, value_description) => unit;
+
+  let enter_primitive: (provide_flag, value_description) => unit;
+  let leave_primitive: (provide_flag, value_description) => unit;
+
+  let enter_top_let:
+    (provide_flag, rec_flag, mut_flag, list(value_binding)) => unit;
+  let leave_top_let:
+    (provide_flag, rec_flag, mut_flag, list(value_binding)) => unit;
+
+  let enter_module: (provide_flag, module_declaration) => unit;
+  let leave_module: (provide_flag, module_declaration) => unit;
+
+  let enter_pattern: pattern => unit;
+  let leave_pattern: pattern => unit;
+
+  let enter_expression: expression => unit;
+  let leave_expression: expression => unit;
+
+  let enter_type: parsed_type => unit;
+  let leave_type: parsed_type => unit;
+
+  let enter_toplevel_stmt: toplevel_stmt => unit;
+  let leave_toplevel_stmt: toplevel_stmt => unit;
+
+  let enter_constant: constant => unit;
+  let leave_constant: constant => unit;
+
+  let enter_let: (rec_flag, mut_flag, list(value_binding)) => unit;
+  let leave_let: (rec_flag, mut_flag, list(value_binding)) => unit;
+
+  let enter_value_binding: value_binding => unit;
+  let leave_value_binding: value_binding => unit;
+
+  let enter_data_declarations:
+    list((provide_flag, data_declaration)) => unit;
+  let leave_data_declarations:
+    list((provide_flag, data_declaration)) => unit;
+
+  let enter_data_declaration: data_declaration => unit;
+  let leave_data_declaration: data_declaration => unit;
 };
 
-/** A default iterator, which implements a "do not do anything" mapping. */
+module type Iterator = {
+  let iter_parsed_program: parsed_program => unit;
+  let iter_toplevel_stmt: toplevel_stmt => unit;
+};
 
-let default_iterator: iterator;
+module MakeIterator: (Iter: IteratorArgument) => Iterator;
+
+module DefaultIteratorArgument: IteratorArgument;
