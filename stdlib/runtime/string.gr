@@ -242,7 +242,6 @@ let escape = (ptr, isString) => {
     let byte = WasmI32.load8U(ptr + i, startOffset)
     if (
       byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
-      byte == _SEQ_V ||
       byte == _SEQ_SLASH ||
       byte == _SEQ_QUOTE
     ) {
@@ -261,7 +260,6 @@ let escape = (ptr, isString) => {
     let byte = WasmI32.load8U(ptr + i, startOffset)
     if (
       byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
-      byte == _SEQ_V ||
       byte == _SEQ_SLASH ||
       byte == _SEQ_QUOTE
     ) {
