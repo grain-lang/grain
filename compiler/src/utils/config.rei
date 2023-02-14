@@ -78,6 +78,10 @@ let initial_memory_pages: ref(int);
 
 let maximum_memory_pages: ref(option(int));
 
+/** Import the memory from `env.memory` */
+
+let import_memory: ref(bool);
+
 /** Compilation mode to use when compiling */
 
 let compilation_mode: ref(option(string));

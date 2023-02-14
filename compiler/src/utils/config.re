@@ -445,6 +445,13 @@ let maximum_memory_pages =
     None,
   );
 
+let import_memory =
+  toggle_flag(
+    ~names=["import-memory"],
+    ~doc="Import the memory from `env.memory`",
+    false,
+  );
+
 let compilation_mode =
   opt(
     ~names=["compilation-mode"],
