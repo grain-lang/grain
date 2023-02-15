@@ -41,11 +41,6 @@ type hooks = {
   leave_data_declaration: data_declaration => unit,
 };
 
-type t = {
-  iter_parsed_program: parsed_program => unit,
-  iter_toplevel_stmt: toplevel_stmt => unit,
-};
-
-let make: hooks => t;
+let iter_parsed_program: (hooks, parsed_program) => unit;
 
 let default_hooks: hooks;

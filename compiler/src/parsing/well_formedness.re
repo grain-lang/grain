@@ -582,12 +582,10 @@ let well_formedness_checker = () =>
   );
 
 let check_well_formedness = program => {
-  let checker = well_formedness_checker();
+  let {errs, iter_hooks} = well_formedness_checker();
 
-  let well_formedness_iter = make(checker.iter_hooks);
-
-  well_formedness_iter.iter_parsed_program(program);
+  Parsetree_iter.iter_parsed_program(iter_hooks, program);
 
   // TODO(#1503): We should be able to raise _all_ errors at once
-  List.iter(e => raise(Error(e)), checker.errs^);
+  List.iter(e => raise(Error(e)), errs^);
 };

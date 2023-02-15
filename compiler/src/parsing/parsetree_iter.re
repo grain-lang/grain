@@ -70,16 +70,15 @@ let iter_ident = (hooks, id) => {
   iter(id.txt);
 };
 
+let iter_attribute = (hooks, (attr_name, attr_args) as attr) => {
+  hooks.enter_attribute(attr);
+  iter_loc(hooks, attr_name);
+  List.iter(iter_loc(hooks), attr_args);
+  hooks.leave_attribute(attr);
+};
+
 let iter_attributes = (hooks, attrs) => {
-  List.iter(
-    ((attr_name, attr_args) as attr) => {
-      hooks.enter_attribute(attr);
-      iter_loc(hooks, attr_name);
-      List.iter(iter_loc(hooks), attr_args);
-      hooks.leave_attribute(attr);
-    },
-    attrs,
-  );
+  List.iter(iter_attribute(hooks), attrs);
 };
 
 let rec iter_parsed_program = (hooks, {statements} as program) => {
@@ -98,47 +97,29 @@ and iter_toplevel_stmt =
   iter_location(hooks, loc);
   iter_attributes(hooks, attrs);
   switch (desc) {
-  | PTopInclude(id) =>
-    hooks.enter_include(id);
-    iter_include(hooks, id);
-    hooks.leave_include(id);
-  | PTopProvide(ex) =>
-    hooks.enter_provide(ex);
-    iter_provide(hooks, ex);
-    hooks.leave_provide(ex);
-  | PTopForeign(p, vd) =>
-    hooks.enter_foreign(p, vd);
-    iter_value_description(hooks, vd);
-    hooks.leave_foreign(p, vd);
-  | PTopPrimitive(p, vd) =>
-    hooks.enter_primitive(p, vd);
-    iter_value_description(hooks, vd);
-    hooks.leave_primitive(p, vd);
-  | PTopData(dds) =>
-    hooks.enter_data_declarations(dds);
-    iter_data_declarations(hooks, dds);
-    hooks.leave_data_declarations(dds);
-  | PTopLet(p, r, m, vbs) =>
-    hooks.enter_top_let(p, r, m, vbs);
-    iter_value_bindings(hooks, vbs);
-    hooks.leave_top_let(p, r, m, vbs);
-  | PTopModule(p, d) =>
-    hooks.enter_module(p, d);
-    List.iter(iter_toplevel_stmt(hooks), d.pmod_stmts);
-    hooks.leave_module(p, d);
+  | PTopInclude(id) => iter_include(hooks, id)
+  | PTopProvide(ex) => iter_provide(hooks, ex)
+  | PTopForeign(p, vd) => iter_foreign(hooks, p, vd)
+  | PTopPrimitive(p, vd) => iter_primitive(hooks, p, vd)
+  | PTopData(dds) => iter_data_declarations(hooks, dds)
+  | PTopLet(p, r, m, vbs) => iter_top_let(hooks, p, r, m, vbs)
+  | PTopModule(p, d) => iter_module(hooks, p, d)
   | PTopExpr(e) => iter_expression(hooks, e)
   | PTopException(e, d) => iter_exception(hooks, d)
   };
   hooks.leave_toplevel_stmt(top);
 }
 
-and iter_include = (hooks, {pinc_alias, pinc_path, pinc_loc}) => {
+and iter_include = (hooks, {pinc_alias, pinc_path, pinc_loc} as id) => {
+  hooks.enter_include(id);
   Option.iter(iter_loc(hooks), pinc_alias);
   iter_loc(hooks, pinc_path);
   iter_location(hooks, pinc_loc);
+  hooks.leave_include(id);
 }
 
 and iter_provide = (hooks, items) => {
+  hooks.enter_provide(items);
   List.iter(
     item => {
       switch (item) {
@@ -152,6 +133,19 @@ and iter_provide = (hooks, items) => {
     },
     items,
   );
+  hooks.leave_provide(items);
+}
+
+and iter_foreign = (hooks, p, vd) => {
+  hooks.enter_foreign(p, vd);
+  iter_value_description(hooks, vd);
+  hooks.leave_foreign(p, vd);
+}
+
+and iter_primitive = (hooks, p, vd) => {
+  hooks.enter_primitive(p, vd);
+  iter_value_description(hooks, vd);
+  hooks.leave_primitive(p, vd);
 }
 
 and iter_value_description =
@@ -162,7 +156,9 @@ and iter_value_description =
 }
 
 and iter_data_declarations = (hooks, dds) => {
+  hooks.enter_data_declarations(dds);
   List.iter(((_, d)) => iter_data_declaration(hooks, d), dds);
+  hooks.leave_data_declarations(dds);
 }
 
 and iter_data_declaration =
@@ -178,6 +174,7 @@ and iter_data_declaration =
     ) => {
   iter_location(hooks, loc);
   iter_loc(hooks, name);
+  // TODO: Should this be called before the `iter_location` and `iter_loc` above?
   hooks.enter_data_declaration(d);
   List.iter(iter_type(hooks), args);
   Option.iter(iter_type(hooks), manifest);
@@ -187,6 +184,18 @@ and iter_data_declaration =
   | PDataRecord(ldl) => List.iter(iter_label(hooks), ldl)
   };
   hooks.leave_data_declaration(d);
+}
+
+and iter_top_let = (hooks, p, r, m, vbs) => {
+  hooks.enter_top_let(p, r, m, vbs);
+  iter_value_bindings(hooks, vbs);
+  hooks.leave_top_let(p, r, m, vbs);
+}
+
+and iter_module = (hooks, p, d) => {
+  hooks.enter_module(p, d);
+  List.iter(iter_toplevel_stmt(hooks), d.pmod_stmts);
+  hooks.leave_module(p, d);
 }
 
 and iter_value_bindings = (hooks, vbs) => {
@@ -233,10 +242,7 @@ and iter_expression =
     iter_expression(hooks, e);
     iter_loc(hooks, f);
     iter_expression(hooks, v);
-  | PExpLet(r, m, vbs) =>
-    hooks.enter_let(r, m, vbs);
-    iter_value_bindings(hooks, vbs);
-    hooks.leave_let(r, m, vbs);
+  | PExpLet(r, m, vbs) => iter_let(hooks, r, m, vbs)
   | PExpMatch(e, mbs) =>
     iter_expression(hooks, e);
     List.iter(iter_match_branch(hooks), mbs);
@@ -315,6 +321,12 @@ and iter_record_fields = (hooks, es) => {
     },
     es,
   );
+}
+
+and iter_let = (hooks, r, m, vbs) => {
+  hooks.enter_let(r, m, vbs);
+  iter_value_bindings(hooks, vbs);
+  hooks.leave_let(r, m, vbs);
 }
 
 and iter_match_branch = (hooks, {pmb_pat: pat, pmb_body: expr, pmb_loc: loc}) => {
@@ -417,16 +429,6 @@ and iter_record_patterns = (hooks, fs) => {
     },
     fs,
   );
-};
-
-type t = {
-  iter_parsed_program: parsed_program => unit,
-  iter_toplevel_stmt: toplevel_stmt => unit,
-};
-
-let make = hooks => {
-  iter_parsed_program: iter_parsed_program(hooks),
-  iter_toplevel_stmt: iter_toplevel_stmt(hooks),
 };
 
 let default_hooks = {
