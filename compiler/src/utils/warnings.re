@@ -145,12 +145,12 @@ let message =
     )
   | FromNumberLiteralF32(n) =>
     Printf.sprintf(
-      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
+      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%s.f`) instead.",
       n,
     )
   | FromNumberLiteralF64(n) =>
     Printf.sprintf(
-      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
+      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%s.d`) instead.",
       n,
     )
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
