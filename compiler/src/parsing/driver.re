@@ -147,7 +147,9 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
   };
 };
 
-let read_imports = ({Parsetree.comments, Parsetree.statements}) => {
+let read_imports = (program: Parsetree.parsed_program) => {
+  open Parsetree_iter;
+
   let implicit_opens =
     List.map(
       o => {
@@ -156,7 +158,7 @@ let read_imports = ({Parsetree.comments, Parsetree.statements}) => {
         | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc")
         }
       },
-      switch (comments) {
+      switch (program.comments) {
       | [Block({cmt_content}), ..._] =>
         Grain_utils.Config.with_inline_flags(
           ~on_error=_ => (),
@@ -167,10 +169,12 @@ let read_imports = ({Parsetree.comments, Parsetree.statements}) => {
       },
     );
   let found_includes = ref([]);
-  let iter_mod = (self, import) =>
-    found_includes := [import.Parsetree.pinc_path, ...found_includes^];
-  let iterator = {...Ast_iterator.default_iterator, include_: iter_mod};
-  List.iter(iterator.toplevel(iterator), statements);
+
+  let enter_include = inc => {
+    found_includes := [inc.Parsetree.pinc_path, ...found_includes^];
+  };
+
+  iter_parsed_program({...default_hooks, enter_include}, program);
 
   List.sort_uniq(
     (a, b) => String.compare(a.txt, b.txt),

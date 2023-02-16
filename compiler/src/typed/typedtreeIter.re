@@ -14,8 +14,6 @@
 /*                                                                        */
 /**************************************************************************/
 
-open Grain_parsing;
-open Asttypes;
 open Typedtree;
 
 module type IteratorArgument = {

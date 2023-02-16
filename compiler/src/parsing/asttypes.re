@@ -102,4 +102,7 @@ let mknoloc = Location.mknoloc;
 
 /** Addtional expression information that may affect compilation. */
 [@deriving (sexp, yojson)]
-type attributes = list((loc(string), list(loc(string))));
+type attribute = (loc(string), list(loc(string)));
+
+[@deriving (sexp, yojson)]
+type attributes = list(attribute);
