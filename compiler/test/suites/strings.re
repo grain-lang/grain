@@ -291,4 +291,22 @@ bar", 1))|},
     {|include "float64"; from Float64 use *; print(div(-1.0d, 0.0d))|},
     "-Infinity\n",
   );
+
+  // Bytes literals
+  assertRun("bytes_literal", {|print(b"abc")|}, "<bytes: 61 62 63 >\n");
+  assertCompileError(
+    "bytes_literal_err1",
+    {|print(b"abc\u1234")|},
+    "Byte strings may not contain unicode escapes",
+  );
+  assertCompileError(
+    "bytes_literal_err2",
+    {|print(b"abc\u{1234}")|},
+    "Byte strings may not contain unicode escapes",
+  );
+  assertCompileError(
+    "bytes_literal_err3",
+    {|print(b"abc😂")|},
+    "Byte strings may not contain non-ascii unicode characters",
+  );
 });
