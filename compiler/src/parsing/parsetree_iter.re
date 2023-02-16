@@ -172,10 +172,9 @@ and iter_data_declaration =
         pdata_loc: loc,
       } as d,
     ) => {
+  hooks.enter_data_declaration(d);
   iter_location(hooks, loc);
   iter_loc(hooks, name);
-  // TODO: Should this be called before the `iter_location` and `iter_loc` above?
-  hooks.enter_data_declaration(d);
   List.iter(iter_type(hooks), args);
   Option.iter(iter_type(hooks), manifest);
   switch (kind) {
