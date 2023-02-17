@@ -2,6 +2,7 @@ basic functionality › if_one_sided6
 (module
  (type $none_=>_none (func))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (import \"_genv\" \"mem\" (memory $0 0))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
@@ -9,8 +10,12 @@ basic functionality › if_one_sided6
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1118 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$<\" (global $<_1113 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1118 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"<\" (func $<_1113 (param i32 i32 i32) (result i32)))
  (global $x_1110 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
@@ -35,10 +40,12 @@ basic functionality › if_one_sided6
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
+  (local $6 i32)
+  (local $7 i32)
   (return
-   (block $cleanup_locals.7 (result i32)
+   (block $cleanup_locals.11 (result i32)
     (local.set $0
-     (block $compile_block.6 (result i32)
+     (block $compile_block.10 (result i32)
       (block $compile_store.2
        (global.set $x_1110
         (tuple.extract 0
@@ -54,18 +61,57 @@ basic functionality › if_one_sided6
        (block $do_backpatches.1
        )
       )
+      (block $compile_store.4
+       (local.set $7
+        (call $<_1113
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
+          (global.get $<_1113)
+         )
+         (i32.const 7)
+         (i32.const 9)
+        )
+       )
+       (block $do_backpatches.3
+       )
+      )
       (drop
        (if (result i32)
         (i32.shr_u
-         (i32.const -2)
+         (local.get $7)
          (i32.const 31)
         )
-        (block $compile_block.4 (result i32)
-         (block $compile_set.3 (result i32)
+        (block $compile_block.8 (result i32)
+         (block $compile_store.6
+          (local.set $6
+           (tuple.extract 0
+            (tuple.make
+             (call $+_1118
+              (call $incRef_0
+               (global.get $GRAIN$EXPORT$incRef_0)
+               (global.get $+_1118)
+              )
+              (i32.const 5)
+              (i32.const 7)
+             )
+             (call $decRef_0
+              (global.get $GRAIN$EXPORT$decRef_0)
+              (local.get $6)
+             )
+            )
+           )
+          )
+          (block $do_backpatches.5
+          )
+         )
+         (block $compile_set.7 (result i32)
           (global.set $x_1110
            (tuple.extract 0
             (tuple.make
-             (i32.const 11)
+             (call $incRef_0
+              (global.get $GRAIN$EXPORT$incRef_0)
+              (local.get $6)
+             )
              (call $decRef_0
               (global.get $GRAIN$EXPORT$decRef_0)
               (global.get $x_1110)
@@ -76,7 +122,7 @@ basic functionality › if_one_sided6
           (i32.const 1879048190)
          )
         )
-        (block $compile_block.5 (result i32)
+        (block $compile_block.9 (result i32)
          (i32.const 1879048190)
         )
        )
@@ -85,6 +131,12 @@ basic functionality › if_one_sided6
        (global.get $GRAIN$EXPORT$incRef_0)
        (global.get $x_1110)
       )
+     )
+    )
+    (drop
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
+      (local.get $6)
      )
     )
     (local.get $0)
