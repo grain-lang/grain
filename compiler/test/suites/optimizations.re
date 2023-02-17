@@ -641,4 +641,12 @@ describe("optimizations", ({test, testSkip}) => {
     |},
     "5\n",
   );
+  assertRun(
+    "regression_issue_1675",
+    {|
+      let (+) = (a, b) => toString(a) ++ " plus " ++ toString(b)
+      print(1 + 2)
+    |},
+    "1 plus 2\n",
+  );
 });
