@@ -1690,10 +1690,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
               let get_path = name =>
                 switch (path) {
                 | PIdent(_) => PIdent(Ident.create(name))
-                | PExternal(PIdent(mod_), _, level) =>
-                  PExternal(PIdent(mod_), name, level)
-                | PExternal(PExternal(_), _, _) =>
-                  failwith("NYI: Multiple PExternal")
+                | PExternal(p, _, level) => PExternal(p, name, level)
                 };
               let path = get_path(desc.cstr_name);
               let val_desc = {
@@ -1756,10 +1753,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let get_path = name =>
             switch (path) {
             | PIdent(_) => PIdent(Ident.create(name))
-            | PExternal(PIdent(mod_), _, level) =>
-              PExternal(PIdent(mod_), name, level)
-            | PExternal(PExternal(_), _, _) =>
-              failwith("NYI: Multiple PExternal")
+            | PExternal(p, _, level) => PExternal(p, name, level)
             };
           let path = get_path(desc.cstr_name);
           let val_desc = {
