@@ -153,22 +153,18 @@ describe("optimizations", ({test, testSkip}) => {
   assertAnf(
     "test_const_propagation_shadowing",
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
-    AExp.comp(
-      Comp.imm(
-        ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(17L))),
-      ),
-    ),
-  );
-  /* Primarily a constant-folding test, but DAE removes the let bindings as well */
-  assertAnf(
-    "test_const_folding",
-    "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
-    AExp.comp(
-      Comp.imm(
-        ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(30L))),
-      ),
+    Grain_typed.(
+      AExp.comp(
+        Comp.app(
+          ~tail=false,
+          ~allocation_type=Managed,
+          (Imm.id(Ident.create("+")), ([Managed, Managed], Managed)),
+          [
+            Imm.const(Const_number(Const_number_int(5L))),
+            Imm.const(Const_number(Const_number_int(12L))),
+          ],
+        ),
+      )
     ),
   );
   assertAnf(
