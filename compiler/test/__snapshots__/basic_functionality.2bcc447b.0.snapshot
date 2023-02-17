@@ -1,11 +1,25 @@
 basic functionality › assert2
 (module
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (import \"_genv\" \"mem\" (memory $0 0))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"GRAIN$MODULE$runtime/exception\" \"GRAIN$EXPORT$panicWithException\" (global $GRAIN$EXPORT$panicWithException_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1113 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $==_1111 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/exception\" \"panicWithException\" (func $panicWithException_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1113 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"==\" (func $==_1111 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -29,11 +43,204 @@ basic functionality › assert2
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
+  (local $6 i32)
+  (local $7 i32)
+  (local $8 i32)
+  (local $9 i32)
   (return
-   (block $cleanup_locals.2 (result i32)
+   (block $cleanup_locals.15 (result i32)
     (local.set $0
-     (block $compile_block.1 (result i32)
-      (i32.const 1879048190)
+     (block $compile_block.14 (result i32)
+      (block $compile_store.2
+       (local.set $6
+        (tuple.extract 0
+         (tuple.make
+          (call $+_1113
+           (call $incRef_0
+            (global.get $GRAIN$EXPORT$incRef_0)
+            (global.get $+_1113)
+           )
+           (i32.const 7)
+           (i32.const 7)
+          )
+          (call $decRef_0
+           (global.get $GRAIN$EXPORT$decRef_0)
+           (local.get $6)
+          )
+         )
+        )
+       )
+       (block $do_backpatches.1
+       )
+      )
+      (block $compile_store.4
+       (local.set $9
+        (call $==_1111
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
+          (global.get $==_1111)
+         )
+         (call $incRef_0
+          (global.get $GRAIN$EXPORT$incRef_0)
+          (local.get $6)
+         )
+         (i32.const 13)
+        )
+       )
+       (block $do_backpatches.3
+       )
+      )
+      (if (result i32)
+       (i32.shr_u
+        (local.get $9)
+        (i32.const 31)
+       )
+       (block $compile_block.5 (result i32)
+        (i32.const 1879048190)
+       )
+       (block $compile_block.13
+        (block $compile_store.8
+         (local.set $7
+          (tuple.extract 0
+           (tuple.make
+            (block $allocate_string.6 (result i32)
+             (i32.store
+              (local.tee $0
+               (call $malloc_0
+                (global.get $GRAIN$EXPORT$malloc_0)
+                (i32.const 64)
+               )
+              )
+              (i32.const 1)
+             )
+             (i32.store offset=4
+              (local.get $0)
+              (i32.const 51)
+             )
+             (i64.store offset=8
+              (local.get $0)
+              (i64.const 8028075845441778497)
+             )
+             (i64.store offset=16
+              (local.get $0)
+              (i64.const 2322294380849939822)
+             )
+             (i64.store offset=24
+              (local.get $0)
+              (i64.const 8028075845441778497)
+             )
+             (i64.store offset=32
+              (local.get $0)
+              (i64.const 7234307576302018670)
+             )
+             (i64.store offset=40
+              (local.get $0)
+              (i64.const 7310313481145575712)
+             )
+             (i64.store offset=48
+              (local.get $0)
+              (i64.const 7956009102162949234)
+             )
+             (i64.store offset=56
+              (local.get $0)
+              (i64.const 3219557)
+             )
+             (local.get $0)
+            )
+            (call $decRef_0
+             (global.get $GRAIN$EXPORT$decRef_0)
+             (local.get $7)
+            )
+           )
+          )
+         )
+         (block $do_backpatches.7
+         )
+        )
+        (block $compile_store.11
+         (local.set $8
+          (tuple.extract 0
+           (tuple.make
+            (block $allocate_adt.9 (result i32)
+             (i32.store
+              (local.tee $0
+               (call $malloc_0
+                (global.get $GRAIN$EXPORT$malloc_0)
+                (i32.const 24)
+               )
+              )
+              (i32.const 2)
+             )
+             (i32.store offset=4
+              (local.get $0)
+              (i32.mul
+               (global.get $moduleRuntimeId_0)
+               (i32.const 2)
+              )
+             )
+             (i32.store offset=8
+              (local.get $0)
+              (i32.const 45)
+             )
+             (i32.store offset=12
+              (local.get $0)
+              (i32.const 53)
+             )
+             (i32.store offset=16
+              (local.get $0)
+              (i32.const 1)
+             )
+             (i32.store offset=20
+              (local.get $0)
+              (call $incRef_0
+               (global.get $GRAIN$EXPORT$incRef_0)
+               (local.get $7)
+              )
+             )
+             (local.get $0)
+            )
+            (call $decRef_0
+             (global.get $GRAIN$EXPORT$decRef_0)
+             (local.get $8)
+            )
+           )
+          )
+         )
+         (block $do_backpatches.10
+         )
+        )
+        (block $throw.12
+         (drop
+          (call $panicWithException_0
+           (global.get $GRAIN$EXPORT$panicWithException_0)
+           (call $incRef_0
+            (global.get $GRAIN$EXPORT$incRef_0)
+            (local.get $8)
+           )
+          )
+         )
+         (unreachable)
+        )
+       )
+      )
+     )
+    )
+    (drop
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
+      (local.get $6)
+     )
+    )
+    (drop
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
+      (local.get $7)
+     )
+    )
+    (drop
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
+      (local.get $8)
      )
     )
     (local.get $0)
