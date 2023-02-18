@@ -185,5 +185,5 @@ early return › early_return3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 689
+ ;; custom section \"cmi\", size 843
 )

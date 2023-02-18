@@ -36,6 +36,8 @@ type partial =
   | Partial
   | Total;
 
+type provide_flag =
+  Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
@@ -369,6 +371,7 @@ type data_declaration = {
   data_type: Types.type_declaration,
   data_kind,
   data_manifest: option(core_type),
+  data_provided: provide_flag,
   data_loc: Location.t,
 };
 
@@ -512,6 +515,7 @@ type module_declaration = {
   tmod_id: Ident.t,
   tmod_decl: Types.module_declaration,
   tmod_statements: list(toplevel_stmt),
+  tmod_provided: provide_flag,
   [@sexp_drop_if sexp_locs_disabled]
   tmod_loc: Location.t,
 }

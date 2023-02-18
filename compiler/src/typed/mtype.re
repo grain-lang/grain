@@ -567,7 +567,11 @@ and remove_aliases_sig = (env, excl, sg) =>
 
     [
       TSigModule(id, {...md, md_type: mty}, rs),
-      ...remove_aliases_sig(Env.add_module(id, mty, None, env), excl, rem),
+      ...remove_aliases_sig(
+           Env.add_module(id, mty, None, md.md_loc, env),
+           excl,
+           rem,
+         ),
     ];
   | [TSigModType(id, mtd), ...rem] => [
       TSigModType(id, mtd),

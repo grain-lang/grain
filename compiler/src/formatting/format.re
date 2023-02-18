@@ -4013,6 +4013,7 @@ and print_value_bind =
     switch (provide_flag) {
     | NotProvided => Doc.nil
     | Provided => Doc.text("provide ")
+    | Abstract => Doc.text("abstract ")
     };
   let recursive =
     switch (rec_flag) {
@@ -4627,6 +4628,7 @@ let data_print =
           switch ((expt: Asttypes.provide_flag)) {
           | NotProvided => Doc.nil
           | Provided => Doc.text("provide ")
+          | Abstract => Doc.text("abstract ")
           },
           print_data(~original_source, ~comments=data_comments, decl),
         ]);
@@ -4745,6 +4747,7 @@ let rec toplevel_print =
         switch (provide_flag) {
         | NotProvided => Doc.nil
         | Provided => Doc.text("provide ")
+        | Abstract => Doc.text("abstract ")
         };
       Doc.concat([
         provide,
@@ -4760,6 +4763,7 @@ let rec toplevel_print =
         switch (provide_flag) {
         | NotProvided => Doc.nil
         | Provided => Doc.text("provide ")
+        | Abstract => Doc.text("abstract ")
         };
       Doc.concat([
         provide,
@@ -4794,6 +4798,7 @@ let rec toplevel_print =
         switch (provide_flag) {
         | NotProvided => Doc.nil
         | Provided => Doc.text("provide ")
+        | Abstract => Doc.text("abstract ")
         };
       let cstr = type_exception.ptyexn_constructor;
 
@@ -4956,6 +4961,7 @@ let rec toplevel_print =
         switch (provide_flag) {
         | NotProvided => Doc.nil
         | Provided => Doc.text("provide ")
+        | Abstract => Doc.text("abstract ")
         };
 
       let start_after_brace = Doc.concat([Doc.hardLine, top_level_stmts]);

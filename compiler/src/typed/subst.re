@@ -69,18 +69,7 @@ let add_modtype = (id, ty, s) => {
 
 let for_saving = s => {...s, for_saving: true};
 
-let loc = (s, x) =>
-  if (s.for_saving) {
-    Location.dummy_loc;
-  } else {
-    x;
-  };
-
-let remove_loc =
-  Ast_mapper.{
-    ...default_mapper,
-    location: (_this, _loc) => Location.dummy_loc,
-  };
+let loc = (s, x) => x;
 
 let rec module_path = (s, path) =>
   try(PathMap.find(path, s.modules)) {

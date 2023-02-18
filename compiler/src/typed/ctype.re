@@ -2189,7 +2189,7 @@ let nondep_instance = (env, level, id, ty) => {
    list (nl2, tl2). raise Not_found if impossible */
 let complete_type_list = (~allow_absent=false, env, nl1, lv2, mty2, nl2, tl2) => {
   let id2 = Ident.create("Pkg");
-  let env' = Env.add_module(id2, mty2, None, env);
+  let env' = Env.add_module(id2, mty2, None, Location.dummy_loc, env);
   let rec complete = (nl1, ntl2) =>
     switch (nl1, ntl2) {
     | ([], _) => ntl2

@@ -149,7 +149,8 @@ let add_constructor: (Ident.t, constructor_description, t) => t;
 
 /** Adds a constructor with the given name and description. */
 
-let add_module: (~arg: bool=?, Ident.t, module_type, option(string), t) => t;
+let add_module:
+  (~arg: bool=?, Ident.t, module_type, option(string), Location.t, t) => t;
 let add_module_declaration:
   (~arg: bool=?, ~check: bool, Ident.t, module_declaration, t) => t;
 let add_modtype: (Ident.t, modtype_declaration, t) => t;

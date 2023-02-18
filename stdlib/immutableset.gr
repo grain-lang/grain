@@ -23,7 +23,7 @@ record Node<a> {
 /**
  * @section Types: Type declarations included in the ImmutableSet module.
  */
-enum ImmutableSet<a> {
+abstract enum ImmutableSet<a> {
   Empty,
   Tree(Node<a>),
 }

@@ -36,7 +36,7 @@ record PQRoot<a> {
 /**
  * Immutable data structure which maintains a priority order for its elements.
  */
-record ImmutablePriorityQueue<a> {
+abstract record ImmutablePriorityQueue<a> {
   comp: (a, a) -> Number,
   size: Number,
   root: Option<PQRoot<a>>,
