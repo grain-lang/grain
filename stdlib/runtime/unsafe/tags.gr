@@ -30,13 +30,13 @@ provide let _GRAIN_BOXED_NUM_HEAP_TAG = 5n
 provide let _GRAIN_LAMBDA_HEAP_TAG = 6n
 provide let _GRAIN_TUPLE_HEAP_TAG = 7n
 provide let _GRAIN_BYTES_HEAP_TAG = 8n
-provide let _GRAIN_UINT32_HEAP_TAG = 9n
-provide let _GRAIN_UINT64_HEAP_TAG = 10n
+provide let _GRAIN_INT32_HEAP_TAG = 9n
+provide let _GRAIN_FLOAT32_HEAP_TAG = 10n
+provide let _GRAIN_UINT32_HEAP_TAG = 11n
+provide let _GRAIN_UINT64_HEAP_TAG = 12n
 
 // Boxed number types
-provide let _GRAIN_FLOAT32_BOXED_NUM_TAG = 1n
-provide let _GRAIN_FLOAT64_BOXED_NUM_TAG = 2n
-provide let _GRAIN_INT32_BOXED_NUM_TAG = 3n
-provide let _GRAIN_INT64_BOXED_NUM_TAG = 4n
-provide let _GRAIN_RATIONAL_BOXED_NUM_TAG = 5n
-provide let _GRAIN_BIGINT_BOXED_NUM_TAG = 6n
+provide let _GRAIN_FLOAT64_BOXED_NUM_TAG = 1n
+provide let _GRAIN_INT64_BOXED_NUM_TAG = 2n
+provide let _GRAIN_RATIONAL_BOXED_NUM_TAG = 3n
+provide let _GRAIN_BIGINT_BOXED_NUM_TAG = 4n

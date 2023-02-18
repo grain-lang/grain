@@ -130,8 +130,8 @@ provide let parseLongMantissa = (s: String) => {
 
   let mut d = parseDecimal(s)
   let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
-  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
 
   // Short-circuit if the value can only be a literal 0 or infinity.
   if (numDigits == 0n || decimalPoint < -324n) {
@@ -146,7 +146,7 @@ provide let parseLongMantissa = (s: String) => {
       let n = decimalPoint
       let shift = getShift(n)
       Decimal.rightShift(d, shift)
-      decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+      decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
       if (decimalPoint < 0n - _DECIMAL_POINT_RANGE) {
         done = true
         break
@@ -173,7 +173,7 @@ provide let parseLongMantissa = (s: String) => {
           getShift(0n - decimalPoint)
         }
         Decimal.leftShift(d, shift)
-        decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+        decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
         if (decimalPoint > _DECIMAL_POINT_RANGE) {
           done = true
           break

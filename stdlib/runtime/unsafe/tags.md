@@ -150,6 +150,18 @@ _GRAIN_TUPLE_HEAP_TAG : WasmI32
 _GRAIN_BYTES_HEAP_TAG : WasmI32
 ```
 
+### Tags.**_GRAIN_INT32_HEAP_TAG**
+
+```grain
+_GRAIN_INT32_HEAP_TAG : WasmI32
+```
+
+### Tags.**_GRAIN_FLOAT32_HEAP_TAG**
+
+```grain
+_GRAIN_FLOAT32_HEAP_TAG : WasmI32
+```
+
 ### Tags.**_GRAIN_UINT32_HEAP_TAG**
 
 ```grain
@@ -162,22 +174,10 @@ _GRAIN_UINT32_HEAP_TAG : WasmI32
 _GRAIN_UINT64_HEAP_TAG : WasmI32
 ```
 
-### Tags.**_GRAIN_FLOAT32_BOXED_NUM_TAG**
-
-```grain
-_GRAIN_FLOAT32_BOXED_NUM_TAG : WasmI32
-```
-
 ### Tags.**_GRAIN_FLOAT64_BOXED_NUM_TAG**
 
 ```grain
 _GRAIN_FLOAT64_BOXED_NUM_TAG : WasmI32
-```
-
-### Tags.**_GRAIN_INT32_BOXED_NUM_TAG**
-
-```grain
-_GRAIN_INT32_BOXED_NUM_TAG : WasmI32
 ```
 
 ### Tags.**_GRAIN_INT64_BOXED_NUM_TAG**
