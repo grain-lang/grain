@@ -199,7 +199,7 @@ set : (Number, a, Array<a>) -> Void
 
 An alias for normal syntactic array set, i.e. `array[n] = value`.
 
-Sets the element at the specified index in the array to the new value.
+Sets the element in place at the specified index in the array to the new value.
 A negative index is treated as an offset from the end of the array.
 
 Parameters:
@@ -213,7 +213,7 @@ Parameters:
 Examples:
 
 ```grain
-Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
+Array.set(1, 9, [> 1, 2, 3, 4, 5]) // == [> 1, 9, 3, 4, 5]
 ```
 
 ### Array.**append**
