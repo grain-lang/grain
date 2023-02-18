@@ -225,3 +225,75 @@ provide primitive tagChar = "@tag.char"
  */
 @unsafe
 provide primitive untagChar = "@untag.char"
+
+/**
+ * Tag an int8.
+ *
+ * @param num: The int8 to tag
+ * @returns The tagged int8
+ */
+@unsafe
+provide primitive tagInt8 = "@tag.int8"
+
+/**
+ * Untag an int8.
+ *
+ * @param num: The int8 to untag
+ * @returns The untagged int8
+ */
+@unsafe
+provide primitive untagInt8 = "@untag.int8"
+
+/**
+ * Tag an int16.
+ *
+ * @param num: The int16 to tag
+ * @returns The tagged int16
+ */
+@unsafe
+provide primitive tagInt16 = "@tag.int16"
+
+/**
+ * Untag an int16.
+ *
+ * @param num: The int16 to untag
+ * @returns The untagged int16
+ */
+@unsafe
+provide primitive untagInt16 = "@untag.int16"
+
+/**
+ * Tag a uint8.
+ *
+ * @param num: The uint8 to tag
+ * @returns The tagged uint8
+ */
+@unsafe
+provide primitive tagUint8 = "@tag.uint8"
+
+/**
+ * Untag a uint8.
+ *
+ * @param num: The uint8 to untag
+ * @returns The untagged uint8
+ */
+@unsafe
+provide primitive untagUint8 = "@untag.uint8"
+
+/**
+ * Tag a uint16.
+ *
+ * @param num: The uint16 to tag
+ * @returns The tagged uint16
+ */
+@unsafe
+provide primitive tagUint16 = "@tag.uint16"
+
+/**
+ * Untag a uint16.
+ *
+ * @param num: The uint16 to untag
+ * @returns The untagged uint16
+ */
+@unsafe
+provide primitive untagUint16 = "@untag.uint16"

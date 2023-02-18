@@ -465,3 +465,163 @@ Returns:
 |----|-----------|
 |`WasmI32`|The untagged usv|
 
+### DataStructures.**tagInt8**
+
+```grain
+tagInt8 : WasmI32 -> Int8
+```
+
+Tag an int8.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`WasmI32`|The int8 to tag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int8`|The tagged int8|
+
+### DataStructures.**untagInt8**
+
+```grain
+untagInt8 : Int8 -> WasmI32
+```
+
+Untag an int8.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`Int8`|The int8 to untag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The untagged int8|
+
+### DataStructures.**tagInt16**
+
+```grain
+tagInt16 : WasmI32 -> Int16
+```
+
+Tag an int16.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`WasmI32`|The int16 to tag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int16`|The tagged int16|
+
+### DataStructures.**untagInt16**
+
+```grain
+untagInt16 : Int16 -> WasmI32
+```
+
+Untag an int16.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`Int16`|The int16 to untag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The untagged int16|
+
+### DataStructures.**tagUint8**
+
+```grain
+tagUint8 : WasmI32 -> Uint8
+```
+
+Tag a uint8.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`WasmI32`|The uint8 to tag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint8`|The tagged uint8|
+
+### DataStructures.**untagUint8**
+
+```grain
+untagUint8 : Uint8 -> WasmI32
+```
+
+Untag a uint8.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`Uint8`|The uint8 to untag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The untagged uint8|
+
+### DataStructures.**tagUint16**
+
+```grain
+tagUint16 : WasmI32 -> Uint16
+```
+
+Tag a uint16.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`WasmI32`|The uint16 to tag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint16`|The tagged uint16|
+
+### DataStructures.**untagUint16**
+
+```grain
+untagUint16 : Uint16 -> WasmI32
+```
+
+Untag a uint16.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`Uint16`|The uint16 to untag|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`WasmI32`|The untagged uint16|
+

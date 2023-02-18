@@ -24,51 +24,48 @@ from Int16 use {
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
 let fromNumber = fromNumber
 
-// For testing on number with garbage leading bits
-let oneWithGarbage = (1S << 16S) + 1S
-assert oneWithGarbage == 1S
-
 assert fromNumber(5) == 5S
 assert fromNumber(0) == 0S
 assert fromNumber(-1) == -1S
-assert fromNumber(1) == oneWithGarbage
 
 assert toNumber(55S) == 55
 assert toNumber(0S) == 0
 assert toNumber(-1S) == -1
-assert toNumber(oneWithGarbage) == 1
 
 assert 1S + 0S == 1S
-assert oneWithGarbage + oneWithGarbage == 2S
 assert 45S + -4S == 41S
 assert 32767S + 1S == -32768S
 assert -1S + -1S == -2S
 
-assert 2S - oneWithGarbage == 1S
+assert 2S - 1S == 1S
 assert 100S - -5S == 105S
+assert 1S - -1S == 2S
+assert -1S - 1S == -2S
 assert -1S - -1S == 0S
 
 assert 1S * 0S == 0S
-assert 5S * oneWithGarbage == 5S
+assert 5S * 1S == 5S
 assert 10S * 6S == 60S
 assert 256S * 256S == 0S
+assert 20S * -5S == -100S
+assert 32767S * 32767S == 1S
+assert -1S * -1S == 1S
 assert -1S * 32767S == -32767S
 
 assert 4S / 2S == 2S
-assert 4S / oneWithGarbage == 4S
+assert 4S / 1S == 4S
 assert 10S / 100S == 0S
 assert -10S / -5S == 2S
 assert 5S / -10S == 0S
-assert oneWithGarbage / 2S == 0S
+assert -10S / 5S == -2S
+assert 1S / 2S == 0S
 
 assert rem(4S, 1S) == 0S
-assert rem(4S, oneWithGarbage) == 0S
 assert rem(10S, 3S) == 1S
 assert rem(-1S, 10S) == -1S
 assert rem(100S, -10S) == 0S
 
 assert 4S % 1S == 0S
-assert 4S % oneWithGarbage == 0S
 assert 10S % 3S == 1S
 assert -1S % 10S == 9S
 assert 20S % -9S == -7S
@@ -86,53 +83,52 @@ assert (0b1010S | 0S) == 0b1010S
 assert (0b1010S ^ 0b1101S) == 0b0111S
 assert (0b1010S ^ 0S) == 0b1010S
 
-assert (1S << 1S) == 2S
-assert (3S << oneWithGarbage) == 6S
-assert (1S << 2S) == 4S
-assert (1S << 16S) == 0S
-assert (-24S << oneWithGarbage) == -48S
+assert 1S << 1S == 2S
+assert 3S << 1S == 6S
+assert 1S << 2S == 4S
+assert 1S << 16S == 0S
+assert -24S << 1S == -48S
 
-assert (4S >> oneWithGarbage) == 2S
-assert (oneWithGarbage >> 1S) == 0S
-assert (4S >> 2S) == 1S
-assert (-4S >> 1S) == -2S
-assert (4S >> 3S) == 0S
-assert (1S >> 1S) == 0S
+assert 4S >> 1S == 2S
+assert 4S >> 2S == 1S
+assert -4S >> 1S == -2S
+assert 4S >> 3S == 0S
+assert 1S >> 1S == 0S
 
-assert incr(0S) == oneWithGarbage
+assert incr(0S) == 1S
 assert incr(-1S) == 0S
+assert incr(32767S) == -32768S
 assert decr(1S) == 0S
 assert decr(0S) == -1S
+assert decr(-32768S) == 32767S
 
-match (oneWithGarbage) {
-  0S => fail "oneWithGarbage uint16 matched to 0 incorrectly",
+match (1S) {
+  0S => fail "uint16 matched to 0 incorrectly",
   0x1S => void,
-  _ => fail "oneWithGarbage uint16 incorrectly matched",
+  _ => fail "uint16 incorrectly matched",
 }
 
 let arr = [> 1, 2, 3]
-assert arr[toNumber(oneWithGarbage)] == 2
+assert arr[toNumber(1S)] == 2
 
 assert compare(0S, 1S) < 0
-assert compare(2S, oneWithGarbage) > 0
+assert compare(2S, 1S) > 0
 assert compare(0S, 0S) == 0
 assert compare(0S, -1S) > 0
 assert compare(-1S, 0S) < 0
 
 assert toString(123S) == "123"
-assert toString(oneWithGarbage) == "1"
 assert toString(-1S) == "-1"
 
 from Int16 use { (==), (!=), (<), (<=), (>), (>=) }
 
 assert 1S == 1S
-assert oneWithGarbage == 1S
 assert !(1S == 2S)
 
 assert 1S != 2S
 assert !(1S != 1S)
 
-assert 5S > oneWithGarbage
+assert 5S > 1S
 assert 5S >= 5S
 assert 5S < 17S
 assert 5S <= 5S

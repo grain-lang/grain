@@ -13,9 +13,9 @@ No other changes yet.
 include "int8"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Int8 type.
+Functions and constants included in the Int8 module.
 
 ### Int8.**fromNumber**
 
@@ -78,7 +78,7 @@ No other changes yet.
 fromUint8 : Uint8 -> Int8
 ```
 
-Converts an Uint8 to a Int8.
+Converts a Uint8 to an Int8.
 
 Parameters:
 
@@ -90,11 +90,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int8`|The Uint8 represented as a Int8|
-
-## Operations
-
-Mathematical operations for Int8 values.
+|`Int8`|The Uint8 represented as an Int8|
 
 ### Int8.**incr**
 
@@ -309,10 +305,6 @@ Throws:
 
 * When `y` is zero
 
-## Bitwise operations
-
-Functions for operating on bits of Int8 values.
-
 ### Int8.**(<<)**
 
 <details disabled>
@@ -364,10 +356,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int8`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Int8 values.
 
 ### Int8.**(==)**
 
@@ -524,10 +512,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Int8 values.
 
 ### Int8.**lnot**
 

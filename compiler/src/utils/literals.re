@@ -77,7 +77,7 @@ let conv_int8 = s => {
     if (n < int8_min || n > int8_max) {
       None;
     } else {
-      Some(Int32.logand(n, 0xFFl));
+      Some(n);
     }
   };
 };
@@ -92,7 +92,7 @@ let conv_int16 = s => {
     if (n < int16_min || n > int16_max) {
       None;
     } else {
-      Some(Int32.logand(n, 0xFFFFl));
+      Some(n);
     }
   };
 };

@@ -6,6 +6,12 @@ title: Numbers
 
 Functions and constants included in the Numbers module.
 
+### Numbers.**tagSimple**
+
+```grain
+tagSimple : WasmI32 -> WasmI32
+```
+
 ### Numbers.**isBoxedNumber**
 
 ```grain
@@ -564,18 +570,105 @@ Returns:
 |----|-----------|
 |`Number`|The shifted value|
 
-### Numbers.**coerceNumberToShortUint**
+### Numbers.**coerceNumberToInt8**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-coerceNumberToShortUint : (Number, WasmI32, WasmI64, Bool) -> WasmI32
+coerceNumberToInt8 : Number -> Int8
 ```
 
-### Numbers.**coerceNumberToShortInt**
+Converts a Number to an Int8.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int8`|The Number represented as an Int8|
+
+### Numbers.**coerceNumberToInt16**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
-coerceNumberToShortInt :
-  (Number, WasmI32, WasmI32, WasmI64, WasmI64, Bool) -> WasmI32
+coerceNumberToInt16 : Number -> Int16
 ```
+
+Converts a Number to an Int16.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int16`|The Number represented as an Int16|
+
+### Numbers.**coerceNumberToUint8**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+coerceNumberToUint8 : Number -> Uint8
+```
+
+Converts a Number to a Uint8.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint8`|The Number represented as a Uint8|
+
+### Numbers.**coerceNumberToUint16**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+coerceNumberToUint16 : Number -> Uint16
+```
+
+Converts a Number to a Uint16.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint16`|The Number represented as a Uint16|
 
 ### Numbers.**coerceNumberToInt32**
 
@@ -727,6 +820,106 @@ Returns:
 |----|-----------|
 |`Float64`|The Number represented as a Float64|
 
+### Numbers.**coerceInt8ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+coerceInt8ToNumber : Int8 -> Number
+```
+
+Converts an Int8 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int8`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Int8 represented as a Number|
+
+### Numbers.**coerceInt16ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+coerceInt16ToNumber : Int16 -> Number
+```
+
+Converts an Int16 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int16`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Int16 represented as a Number|
+
+### Numbers.**coerceUint8ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+coerceUint8ToNumber : Uint8 -> Number
+```
+
+Converts a Uint8 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Uint8`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Uint8 represented as a Number|
+
+### Numbers.**coerceUint16ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+coerceUint16ToNumber : Uint16 -> Number
+```
+
+Converts a Uint16 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Uint16`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Uint16 represented as a Number|
+
 ### Numbers.**coerceInt32ToNumber**
 
 <details disabled>
@@ -776,18 +969,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The Int64 represented as a Number|
-
-### Numbers.**coerceShortUintToNumber**
-
-```grain
-coerceShortUintToNumber : (WasmI32, Bool) -> Number
-```
-
-### Numbers.**coerceShortIntToNumber**
-
-```grain
-coerceShortIntToNumber : (WasmI32, Bool) -> Number
-```
 
 ### Numbers.**coerceBigIntToNumber**
 

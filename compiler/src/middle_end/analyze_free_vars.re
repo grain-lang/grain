@@ -129,19 +129,14 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
       | CSetTupleItem(_, arg1, arg2) =>
         Ident.Set.union(imm_free_vars(arg1), imm_free_vars(arg2))
       | CNumber(_)
-      | CInt8(_)
-      | CInt16(_)
       | CInt32(_)
       | CInt64(_)
-      | CUint8(_)
-      | CUint16(_)
       | CUint32(_)
       | CUint64(_)
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)
-      | CString(_)
-      | CChar(_) => Ident.Set.empty
+      | CString(_) => Ident.Set.empty
       | CImmExpr(i) => imm_free_vars(i)
       }
     );

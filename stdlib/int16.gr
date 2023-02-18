@@ -10,66 +10,30 @@ module Int16
 include "runtime/unsafe/wasmi32"
 include "runtime/exception"
 include "runtime/numbers"
-from Numbers use { coerceNumberToShortInt, coerceShortIntToNumber }
-include "runtime/unsafe/constants"
-from Constants use { _SMIN16_I32, _SMAX16_I32, _SMIN16_I64, _SMAX16_I64 }
+from Numbers use {
+  coerceNumberToInt16 as fromNumber,
+  coerceInt16ToNumber as toNumber,
+}
+include "runtime/dataStructures"
+from DataStructures use { tagInt16, untagInt16 }
 
 @unsafe
 let _DATA_OFFSET = 8n
 @unsafe
 let _TAG_BYTE = 0b10010n
 @unsafe
-let _REMOVE_EXTRA_MASK = 0x00ffffffn
+let _DATA_MASK = 0xffffff00n
+
+provide { fromNumber, toNumber }
+
 @unsafe
-let _DATA_MASK = 0xffff00n
+let signExtend = x => WasmI32.shrS(WasmI32.shl(x, _DATA_OFFSET), _DATA_OFFSET)
 
 /**
- * @section Conversions: Functions for converting between Numbers and the Int16 type.
- */
-
-/**
- * Converts a Number to an Int16.
+ * Converts a Uint16 to an Int16.
  *
  * @param number: The value to convert
- * @returns The Number represented as an Int16
- *
- * @since v0.6.0
- */
-@unsafe
-provide let fromNumber = (number: Number) => {
-  let val = coerceNumberToShortInt(
-    number,
-    _SMIN16_I32,
-    _SMAX16_I32,
-    _SMIN16_I64,
-    _SMAX16_I64,
-    false
-  )
-  let tagged = WasmI32.or(WasmI32.shl(val, _DATA_OFFSET), _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
-}
-
-/**
- * Converts an Int16 to a Number.
- *
- * @param value: The value to convert
- * @returns The Int16 represented as a Number
- *
- * @since v0.6.0
- */
-@unsafe
-provide let toNumber = (value: Int16) => {
-  coerceShortIntToNumber(
-    WasmI32.shrU(WasmI32.fromGrain(value), _DATA_OFFSET),
-    false
-  )
-}
-
-/**
- * Converts an Uint16 to a Int16.
- *
- * @param number: The value to convert
- * @returns The Uint16 represented as a Int16
+ * @returns The Uint16 represented as an Int16
  * 
  * @since v0.6.0
  */
@@ -78,15 +42,8 @@ provide let fromUint16 = (x: Uint16) => {
   let x = WasmI32.fromGrain(x)
   // Trick: convert from Uint16 tag 100010 to Int16 tag 10010
   let result = WasmI32.xor(x, 0b110000n)
-  WasmI32.toGrain(result): Int16
+  WasmI32.toGrain(signExtend(result)): Int16
 }
-
-/**
- * @section Operations: Mathematical operations for Int16 values.
- */
-
-// Note: most of these operations do not attempt to correct trailing bits after
-// an operation for the sake of efficiency
 
 /**
  * Increments the value by one.
@@ -101,7 +58,7 @@ provide let incr = (value: Int16) => {
   let value = WasmI32.fromGrain(value)
   // Trick: since the data is at offset 8, can just add 1 << 8 == 0x100
   let result = WasmI32.add(value, 0x100n)
-  WasmI32.toGrain(result): Int16
+  WasmI32.toGrain(signExtend(result)): Int16
 }
 
 /**
@@ -117,7 +74,7 @@ provide let decr = (value: Int16) => {
   let value = WasmI32.fromGrain(value)
   // Trick: since the data is at offset 8, can just subtract 1 << 8 == 0x100
   let result = WasmI32.sub(value, 0x100n)
-  WasmI32.toGrain(result): Int16
+  WasmI32.toGrain(signExtend(result)): Int16
 }
 
 /**
@@ -138,7 +95,7 @@ provide let (+) = (x: Int16, y: Int16) => {
   let y = WasmI32.fromGrain(y)
   let val = WasmI32.add(x, y)
   let tagged = WasmI32.xor(val, 0b110110n)
-  WasmI32.toGrain(tagged): Int16
+  WasmI32.toGrain(signExtend(tagged)): Int16
 }
 
 /**
@@ -156,7 +113,7 @@ provide let (-) = (x: Int16, y: Int16) => {
   let y = WasmI32.fromGrain(y)
   let val = WasmI32.sub(x, y)
   let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
+  WasmI32.toGrain(signExtend(tagged)): Int16
 }
 
 /**
@@ -170,11 +127,10 @@ provide let (-) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (*) = (x: Int16, y: Int16) => {
-  let x = WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET)
-  let y = WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET)
-  let val = WasmI32.shl(WasmI32.mul(x, y), _DATA_OFFSET)
-  let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  let val = WasmI32.extendS16(WasmI32.mul(x, y))
+  tagInt16(val)
 }
 
 /**
@@ -188,12 +144,11 @@ provide let (*) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (/) = (x: Int16, y: Int16) => {
-  // Leading bits need to be fixed for division to work properly
-  let x = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let y = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
-  let val = WasmI32.shl(WasmI32.divS(x, y), _DATA_OFFSET)
-  let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  // No need to re-sign-extend
+  let val = WasmI32.divS(x, y)
+  tagInt16(val)
 }
 
 /**
@@ -207,12 +162,11 @@ provide let (/) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let rem = (x: Int16, y: Int16) => {
-  // Leading bits need to be fixed for remainder to work properly
-  let x = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let y = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
-  let val = WasmI32.shl(WasmI32.remS(x, y), _DATA_OFFSET)
-  let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
+  let x = untagInt16(x)
+  let y = untagInt16(y)
+  // No need to re-sign-extend
+  let val = WasmI32.remS(x, y)
+  tagInt16(val)
 }
 
 @unsafe
@@ -235,8 +189,8 @@ let abs = n => {
  */
 @unsafe
 provide let (%) = (x: Int16, y: Int16) => {
-  let xval = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let yval = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
+  let xval = untagInt16(x)
+  let yval = untagInt16(y)
 
   if (WasmI32.eqz(yval)) {
     throw Exception.ModuloByZero
@@ -253,13 +207,8 @@ provide let (%) = (x: Int16, y: Int16) => {
   } else {
     WasmI32.remS(xval, yval)
   }
-  let tagged = WasmI32.or(WasmI32.shl(val, _DATA_OFFSET), _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
+  tagInt16(val)
 }
-
-/**
- * @section Bitwise operations: Functions for operating on bits of Int16 values.
- */
 
 /**
  * Shifts the bits of the value left by the given number of bits.
@@ -272,13 +221,12 @@ provide let (%) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (<<) = (value: Int16, amount: Int16) => {
-  // Leading bits need to be fixed on shift amount for shift to work properly
-  let x = WasmI32.shrU(WasmI32.fromGrain(value), _DATA_OFFSET)
-  let amount = WasmI32.and(WasmI32.fromGrain(amount), _REMOVE_EXTRA_MASK)
-  let y = WasmI32.shrU(amount, _DATA_OFFSET)
-  let val = WasmI32.shl(WasmI32.shl(x, y), _DATA_OFFSET)
+  // Trick: do not shift `value` right, just correct tag afterwards
+  let x = WasmI32.and(WasmI32.fromGrain(value), _DATA_MASK)
+  let y = untagInt16(amount)
+  let val = WasmI32.shl(x, y)
   let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(tagged): Int16
+  WasmI32.toGrain(signExtend(tagged)): Int16
 }
 
 /**
@@ -292,19 +240,13 @@ provide let (<<) = (value: Int16, amount: Int16) => {
  */
 @unsafe
 provide let (>>) = (value: Int16, amount: Int16) => {
-  // Leading bits need to be fixed on shift amount for shift to work properly
-  let value = WasmI32.and(WasmI32.fromGrain(value), _REMOVE_EXTRA_MASK)
-  let x = WasmI32.extendS16(WasmI32.shrU(value, _DATA_OFFSET))
-  let amount = WasmI32.and(WasmI32.fromGrain(amount), _REMOVE_EXTRA_MASK)
-  let y = WasmI32.shrU(amount, _DATA_OFFSET)
+  // Trick: do not shift `value` right, just correct tag afterwards
+  let x = WasmI32.fromGrain(value)
+  let y = untagInt16(amount)
   let val = WasmI32.shrS(x, y)
-  let tagged = WasmI32.or(WasmI32.shl(val, _DATA_OFFSET), _TAG_BYTE)
+  let tagged = WasmI32.or(WasmI32.and(val, _DATA_MASK), _TAG_BYTE)
   WasmI32.toGrain(tagged): Int16
 }
-
-/**
- * @section Comparisons: Functions for comparing Int16 values.
- */
 
 /**
  * Checks if the first value is equal to the second value.
@@ -319,10 +261,7 @@ provide let (>>) = (value: Int16, amount: Int16) => {
 provide let (==) = (x: Int16, y: Int16) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.eq(
-    WasmI32.and(x, _REMOVE_EXTRA_MASK),
-    WasmI32.and(y, _REMOVE_EXTRA_MASK)
-  )
+  WasmI32.eq(x, y)
 }
 
 /**
@@ -338,10 +277,7 @@ provide let (==) = (x: Int16, y: Int16) => {
 provide let (!=) = (x: Int16, y: Int16) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.ne(
-    WasmI32.and(x, _REMOVE_EXTRA_MASK),
-    WasmI32.and(y, _REMOVE_EXTRA_MASK)
-  )
+  WasmI32.ne(x, y)
 }
 
 /**
@@ -355,9 +291,8 @@ provide let (!=) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (<) = (x: Int16, y: Int16) => {
-  // Leading bits need to be fixed for comparisons to work properly.
-  let x = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let y = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
   WasmI32.ltS(x, y)
 }
 
@@ -372,9 +307,8 @@ provide let (<) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (>) = (x: Int16, y: Int16) => {
-  // Leading bits need to be fixed for comparisons to work properly.
-  let x = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let y = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
   WasmI32.gtS(x, y)
 }
 
@@ -389,9 +323,8 @@ provide let (>) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (<=) = (x: Int16, y: Int16) => {
-  // Leading bits need to be fixed for comparisons to work properly.
-  let x = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let y = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
   WasmI32.leS(x, y)
 }
 
@@ -406,15 +339,10 @@ provide let (<=) = (x: Int16, y: Int16) => {
  */
 @unsafe
 provide let (>=) = (x: Int16, y: Int16) => {
-  // Leading bits need to be fixed for comparisons to work properly.
-  let x = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(x), _DATA_OFFSET))
-  let y = WasmI32.extendS16(WasmI32.shrU(WasmI32.fromGrain(y), _DATA_OFFSET))
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
   WasmI32.geS(x, y)
 }
-
-/**
- * @section Bitwise logic: Boolean operations on the bits of Int16 values.
- */
 
 /**
  * Computes the bitwise NOT of the given value.

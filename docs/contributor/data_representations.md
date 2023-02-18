@@ -52,9 +52,13 @@ With this layout, to tag a short value we can shift the value left by 8 bits, se
 
 The Grain `Char` type is represented as a Unicode scalar value. Unicode scalar values exist in the range 0x0-10FFFF, which means it only takes 21 bits to store a USV.
 
-#### Int8/Int16/Uint8/Uint16
+#### Uint8/Uint16
 
-Short integers make use of whatever space they need from the 24 short value data bits. Additionally, the remaining leading bits not used to store data are treated as insignificant overflow space, and do not affect the value of the integer. Since WebAssembly does not have native operations for working with 8-bit and 16-bit numbers, these insignificant bits exist in order to make common operations on short integers more efficient. For example, consider addition on two short integers: since we only care about the bits in the value's data range, we can safely ignore the extraneous bits as they will not affect the outcome of the data bits. Additionally, if we ignore the values of the leading bits we don't have to worry about correcting any overflows outside the bounds of a short integer's data (for example after 8-bit addition of `0x80 + 0x80`), saving an extra few CPU cycles.
+Storing short unsigned short integers is fairly straightforward: `Uint8`s use the trailing 8 bits and `Uint16`s use the trailing 16 bits of the 24 allocated for short value data. The remaining leading bits will all be 0s.
+
+#### Int8/Int16
+
+Short signed integers are stored in a similar manner to short unsigned integers; the only difference is that the leading bits extend the sign of the integer being represented. In other words, for non-negative values the leading bits will all be 0s and for negative values the leading bits will all be 1s. This is done for sake of making certain signed operations (e.g. comparisons, division) on short signed integers more convenient. Since WebAssembly does not natively support 8/16-bit integer operations, this schema allows regular `i32` operations (used on the entire 32-bit stack value) to substitute for native signed 8/16-bit operations.
 
 ## Structure of Heap-Allocated Data
 

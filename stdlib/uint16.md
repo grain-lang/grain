@@ -13,9 +13,9 @@ No other changes yet.
 include "uint16"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Uint16 type.
+Functions and constants included in the Uint16 module.
 
 ### Uint16.**fromNumber**
 
@@ -28,7 +28,7 @@ No other changes yet.
 fromNumber : Number -> Uint16
 ```
 
-Converts a Number to an Uint16.
+Converts a Number to a Uint16.
 
 Parameters:
 
@@ -40,7 +40,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Uint16`|The Number represented as an Uint16|
+|`Uint16`|The Number represented as a Uint16|
 
 ### Uint16.**toNumber**
 
@@ -53,7 +53,7 @@ No other changes yet.
 toNumber : Uint16 -> Number
 ```
 
-Converts an Uint16 to a Number.
+Converts a Uint16 to a Number.
 
 Parameters:
 
@@ -91,10 +91,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|The Int16 represented as a Uint16|
-
-## Operations
-
-Mathematical operations for Uint16 values.
 
 ### Uint16.**incr**
 
@@ -276,10 +272,6 @@ Returns:
 |----|-----------|
 |`Uint16`|The remainder of its operands|
 
-## Bitwise operations
-
-Functions for operating on bits of Uint16 values.
-
 ### Uint16.**(<<)**
 
 <details disabled>
@@ -331,10 +323,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint16`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Uint16 values.
 
 ### Uint16.**(==)**
 
@@ -491,10 +479,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Uint16 values.
 
 ### Uint16.**lnot**
 

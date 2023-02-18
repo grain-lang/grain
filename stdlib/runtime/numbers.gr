@@ -8,6 +8,18 @@ include "runtime/bigint" as BI
 
 include "runtime/unsafe/constants" as Constants
 from Constants use {
+  _SMIN8_I32,
+  _SMAX8_I32,
+  _SMIN8_I64,
+  _SMAX8_I64,
+  _SMIN16_I32,
+  _SMAX16_I32,
+  _SMIN16_I64,
+  _SMAX16_I64,
+  _UMAX8_I32,
+  _UMAX8_I64,
+  _UMAX16_I32,
+  _UMAX16_I64,
   _SMAX32_I64 as _I32_MAX,
   _SMIN32_I64 as _I32_MIN,
   _SMAX_I64 as _I64_MAX,
@@ -35,6 +47,14 @@ from DataStructures use {
   newInt64,
   newFloat32,
   newFloat64,
+  tagInt8,
+  tagInt16,
+  tagUint8,
+  tagUint16,
+  untagInt8,
+  untagInt16,
+  untagUint8,
+  untagUint16,
 }
 
 @unsafe
@@ -50,7 +70,7 @@ let (==) = WasmI32.eq
 let (!=) = WasmI32.ne
 
 @unsafe
-let tagSimple = x => {
+provide let tagSimple = x => {
   WasmI32.xor(WasmI32.shl(x, 1n), 1n)
 }
 
@@ -2048,7 +2068,7 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
 }
 
 @unsafe
-let cmpShortInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
+let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
   let xi = if (is64) {
     boxedInt64Number(x)
   } else {
@@ -2109,10 +2129,10 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpShortInt(y, x, false))
+        WasmI32.sub(0n, cmpSmallInt(y, x, false))
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpShortInt(y, x, true))
+        WasmI32.sub(0n, cmpSmallInt(y, x, true))
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         WasmI32.sub(0n, cmpBigInt(y, x))
@@ -2143,10 +2163,10 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
       let yBoxedNumberTag = boxedNumberTag(y)
       match (yBoxedNumberTag) {
         t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpShortInt(y, x, false))
+          WasmI32.sub(0n, cmpSmallInt(y, x, false))
         },
         t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpShortInt(y, x, true))
+          WasmI32.sub(0n, cmpSmallInt(y, x, true))
         },
         t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
           WasmI32.sub(0n, cmpBigInt(y, x))
@@ -2169,10 +2189,10 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
     let xBoxedNumberTag = boxedNumberTag(x)
     match (xBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        cmpShortInt(x, y, false)
+        cmpSmallInt(x, y, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        cmpShortInt(x, y, true)
+        cmpSmallInt(x, y, true)
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         cmpBigInt(x, y)
@@ -2508,16 +2528,8 @@ provide let (>>) = (x: Number, y: Number) => {
 // [NOTE]: Coercion is a *conservative* process! For example, even if a float is 1.0,
 //         we will fail if attempting to coerce to an int!
 
-/**
- * Converts a Number to an Int32.
- *
- * @param number: The value to convert
- * @returns The Number represented as an Int32
- *
- * @since v0.2.0
- */
 @unsafe
-provide let coerceNumberToShortUint = (x: Number, max32, max64, is8bit) => {
+let coerceNumberToShortUint = (x: Number, max32, max64, is8bit) => {
   let x = WasmI32.fromGrain(x)
   let int32 = if (isSimpleNumber(x)) {
     untagSimple(x)
@@ -2550,7 +2562,7 @@ provide let coerceNumberToShortUint = (x: Number, max32, max64, is8bit) => {
 }
 
 @unsafe
-provide let coerceNumberToShortInt =
+let coerceNumberToShortInt =
   (
     x: Number,
     min32,
@@ -2590,6 +2602,84 @@ provide let coerceNumberToShortInt =
   if (is8bit) WasmI32.extendS8(int32) else WasmI32.extendS16(int32)
 }
 
+/**
+ * Converts a Number to an Int8.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as an Int8
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToInt8 = (number: Number) => {
+  let val = coerceNumberToShortInt(
+    number,
+    _SMIN8_I32,
+    _SMAX8_I32,
+    _SMIN8_I64,
+    _SMAX8_I64,
+    true
+  )
+  tagInt8(val)
+}
+
+/**
+ * Converts a Number to an Int16.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as an Int16
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToInt16 = (number: Number) => {
+  let val = coerceNumberToShortInt(
+    number,
+    _SMIN16_I32,
+    _SMAX16_I32,
+    _SMIN16_I64,
+    _SMAX16_I64,
+    false
+  )
+  tagInt16(val)
+}
+
+/**
+ * Converts a Number to a Uint8.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Uint8
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToUint8 = (number: Number) => {
+  let val = coerceNumberToShortUint(number, _UMAX8_I32, _UMAX8_I64, true)
+  tagUint8(val)
+}
+
+/**
+ * Converts a Number to a Uint16.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Uint16
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToUint16 = (number: Number) => {
+  let val = coerceNumberToShortUint(number, _UMAX16_I32, _UMAX16_I64, false)
+  tagUint16(val)
+}
+
+/**
+ * Converts a Number to an Int32.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as an Int32
+ *
+ * @since v0.2.0
+ */
 @unsafe
 provide let coerceNumberToInt32 = (x: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -2739,6 +2829,62 @@ provide let coerceNumberToFloat64 = (x: Number) => {
 }
 
 /**
+ * Converts an Int8 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Int8 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceInt8ToNumber = (value: Int8) => {
+  let num = untagInt8(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
+ * Converts an Int16 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Int16 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceInt16ToNumber = (value: Int16) => {
+  let num = untagInt16(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
+ * Converts a Uint8 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Uint8 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceUint8ToNumber = (value: Uint8) => {
+  let num = untagUint8(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
+ * Converts a Uint16 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Uint16 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceUint16ToNumber = (value: Uint16) => {
+  let num = untagUint16(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
  * Converts an Int32 to a Number.
  *
  * @param value: The value to convert
@@ -2776,18 +2922,6 @@ provide let coerceInt64ToNumber = (x: Int64) => {
  *
  * @since v0.5.0
  */
-@unsafe
-provide let coerceShortUintToNumber = (x, is8bit) => {
-  let i32 = if (is8bit) WasmI32.and(x, 0xffn) else WasmI32.and(x, 0xffffn)
-  WasmI32.toGrain(tagSimple(i32)): Number
-}
-
-@unsafe
-provide let coerceShortIntToNumber = (x, is8bit) => {
-  let i32 = if (is8bit) WasmI32.extendS8(x) else WasmI32.extendS16(x)
-  WasmI32.toGrain(tagSimple(i32)): Number
-}
-
 @unsafe
 provide let coerceBigIntToNumber = (x: BigInt) => {
   let x = WasmI32.fromGrain(x)

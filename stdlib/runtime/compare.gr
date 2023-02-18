@@ -158,24 +158,13 @@ compareHelp = (x, y) => {
     if ((xtag & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE) {
       // Signed comparisons are necessary for numbers
       if (x < y) -1 else if (x > y) 1 else 0
-    } else if ((xtag & ytag) == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
-      let shortValTag = (x & 0xF8n) >>> 3n
-      if (shortValTag == Tags._GRAIN_INT8_SHORTVAL_TAG) {
-        let x = WasmI32.extendS16(x)
-        let y = WasmI32.extendS16(y)
+    } else if (xtag == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
+      let shortValTag = x & Tags._GRAIN_GENERIC_SHORTVAL_TAG_MASK
+      if (
+        shortValTag == Tags._GRAIN_INT8_TAG_MASK ||
+        shortValTag == Tags._GRAIN_INT16_TAG_MASK
+      ) {
         if (x < y) -1 else if (x > y) 1 else 0
-      } else if (shortValTag == Tags._GRAIN_INT16_SHORTVAL_TAG) {
-        let x = WasmI32.extendS16(WasmI32.shrU(x, 8n))
-        let y = WasmI32.extendS16(WasmI32.shrU(y, 8n))
-        if (x < y) -1 else if (x > y) 1 else 0
-      } else if (shortValTag == Tags._GRAIN_UINT8_SHORTVAL_TAG) {
-        let x = WasmI32.and(x, 0xffffn)
-        let y = WasmI32.and(y, 0xffffn)
-        if (WasmI32.ltU(x, y)) -1 else if (WasmI32.gtU(x, y)) 1 else 0
-      } else if (shortValTag == Tags._GRAIN_UINT16_SHORTVAL_TAG) {
-        let x = WasmI32.and(x, 0xffffffn)
-        let y = WasmI32.and(y, 0xffffffn)
-        if (WasmI32.ltU(x, y)) -1 else if (WasmI32.gtU(x, y)) 1 else 0
       } else {
         if (WasmI32.ltU(x, y)) -1 else if (WasmI32.gtU(x, y)) 1 else 0
       }

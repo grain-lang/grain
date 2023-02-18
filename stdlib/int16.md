@@ -13,9 +13,9 @@ No other changes yet.
 include "int16"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Int16 type.
+Functions and constants included in the Int16 module.
 
 ### Int16.**fromNumber**
 
@@ -78,7 +78,7 @@ No other changes yet.
 fromUint16 : Uint16 -> Int16
 ```
 
-Converts an Uint16 to a Int16.
+Converts a Uint16 to an Int16.
 
 Parameters:
 
@@ -90,11 +90,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int16`|The Uint16 represented as a Int16|
-
-## Operations
-
-Mathematical operations for Int16 values.
+|`Int16`|The Uint16 represented as an Int16|
 
 ### Int16.**incr**
 
@@ -309,10 +305,6 @@ Throws:
 
 * When `y` is zero
 
-## Bitwise operations
-
-Functions for operating on bits of Int16 values.
-
 ### Int16.**(<<)**
 
 <details disabled>
@@ -364,10 +356,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int16`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Int16 values.
 
 ### Int16.**(==)**
 
@@ -524,10 +512,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Int16 values.
 
 ### Int16.**lnot**
 

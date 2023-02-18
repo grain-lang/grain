@@ -13,9 +13,9 @@ No other changes yet.
 include "uint8"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Uint8 type.
+Functions and constants included in the Uint8 module.
 
 ### Uint8.**fromNumber**
 
@@ -28,7 +28,7 @@ No other changes yet.
 fromNumber : Number -> Uint8
 ```
 
-Converts a Number to an Uint8.
+Converts a Number to a Uint8.
 
 Parameters:
 
@@ -40,7 +40,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Uint8`|The Number represented as an Uint8|
+|`Uint8`|The Number represented as a Uint8|
 
 ### Uint8.**toNumber**
 
@@ -53,7 +53,7 @@ No other changes yet.
 toNumber : Uint8 -> Number
 ```
 
-Converts an Uint8 to a Number.
+Converts a Uint8 to a Number.
 
 Parameters:
 
@@ -91,10 +91,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|The Int8 represented as a Uint8|
-
-## Operations
-
-Mathematical operations for Uint8 values.
 
 ### Uint8.**incr**
 
@@ -276,10 +272,6 @@ Returns:
 |----|-----------|
 |`Uint8`|The remainder of its operands|
 
-## Bitwise operations
-
-Functions for operating on bits of Uint8 values.
-
 ### Uint8.**(<<)**
 
 <details disabled>
@@ -331,10 +323,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint8`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Uint8 values.
 
 ### Uint8.**(==)**
 
@@ -491,10 +479,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Uint8 values.
 
 ### Uint8.**lnot**
 

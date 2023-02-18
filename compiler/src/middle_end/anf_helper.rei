@@ -43,23 +43,11 @@ module Comp: {
       Asttypes.number_type
     ) =>
     comp_expression;
-  let int8:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
-    comp_expression;
-  let int16:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
-    comp_expression;
   let int32:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
     comp_expression;
   let int64:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int64) =>
-    comp_expression;
-  let uint8:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
-    comp_expression;
-  let uint16:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
     comp_expression;
   let uint32:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, int32) =>
@@ -336,9 +324,6 @@ module Comp: {
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, bytes) =>
     comp_expression;
   let string:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
-    comp_expression;
-  let char:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
     comp_expression;
 };
