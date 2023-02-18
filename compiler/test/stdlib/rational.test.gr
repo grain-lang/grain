@@ -1,33 +1,51 @@
 module RationalTest
 
-let (===) = (==)
-let (!==) = (!=)
-
 include "rational"
-from Rational use *
+from Rational use {
+  fromNumber,
+  toNumber,
+  numerator,
+  denominator,
+  (+),
+  (-),
+  (*),
+  (/),
+}
 
 assert fromNumber(1/2) == 1/2r
 assert fromNumber(0) == 0/1r
 assert fromNumber(1/1) == 1/1r
 assert fromNumber(-1) == -1/1r
 
-assert toNumber(1/2r) === 1/2
-assert toNumber(0/1r) === 0
-assert toNumber(1/1r) === 1
-assert toNumber(-1/2r) === -1/2
-assert toNumber(1/-2r) === -1/2
+assert toNumber(1/2r) == 1/2
+assert toNumber(0/1r) == 0
+assert toNumber(1/1r) == 1
+assert toNumber(-1/2r) == -1/2
+assert toNumber(1/-2r) == -1/2
 
-assert numerator(123/23r) === 123
-assert denominator(123/23r) === 23
-assert numerator(2/4r) === 1
-assert denominator(2/4r) === 2
-assert numerator(1000000000/1r * 1000000000/1r) === 1000000000000000000
+assert numerator(123/23r) == 123
+assert denominator(123/23r) == 23
+assert numerator(2/4r) == 1
+assert denominator(2/4r) == 2
+assert numerator(1000000000/1r * 1000000000/1r) == 1000000000000000000
 
-assert 1/2r === 1/2r
-assert 1/2r === 2/4r
-assert 1/1r === 2/2r
+assert 1/2r == 1/2r
+assert 1/2r == 2/4r
+assert 1/1r == 2/2r
 assert 1/2r != 3/4r
-assert -1/2r === 1/-2r
+assert -1/2r == 1/-2r
+
+match (1/2r) {
+  1/3r => fail "Impossible: 1/2r matched against 1/3r",
+  1/2r => void,
+  _ => fail "Impossible: 1/2r not matched against 1/2r",
+}
+
+assert compare(1/2r, 1/3r) > 0
+assert compare(1/2r, 2/2r) < 0
+assert compare(1/2r, 1/2r) == 0
+
+from Rational use { (==), (!=), (<), (<=), (>), (>=) }
 
 assert 1/2r == 1/2r
 assert 1/2r == 2/4r
@@ -55,9 +73,3 @@ assert 1/2r >= 1/2r
 assert 1/3r < 1/2r
 assert 1/3r <= 1/2r
 assert 1/2r <= 1/2r
-
-match (1/2r) {
-  1/3r => fail "Impossible: 1/2r matched against 1/3r",
-  1/2r => void,
-  _ => fail "Impossible: 1/2r not matched against 1/2r",
-}
