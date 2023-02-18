@@ -143,15 +143,15 @@ let message =
       "it looks like you are calling Uint64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%suL`) instead.",
       n,
     )
-  | FromNumberLiteralF32(n) =>
+  | FromNumberLiteralF32(n) => 
     Printf.sprintf(
-      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%s.f`) instead.",
-      n,
+      "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
+      String.contains(n, '.') ? n : n ++ ".",
     )
   | FromNumberLiteralF64(n) =>
     Printf.sprintf(
-      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%s.d`) instead.",
-      n,
+      "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
+      String.contains(n, '.') ? n : n ++ ".",
     )
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
 
