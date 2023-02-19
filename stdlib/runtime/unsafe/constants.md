@@ -2,6 +2,10 @@
 title: Constants
 ---
 
+## Values
+
+Functions and constants included in the Constants module.
+
 ### Constants.**_SMIN_I32**
 
 ```grain

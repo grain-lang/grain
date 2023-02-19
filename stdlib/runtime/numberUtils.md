@@ -2,6 +2,10 @@
 title: NumberUtils
 ---
 
+## Values
+
+Functions and constants included in the NumberUtils module.
+
 ### NumberUtils.**_MAX_DOUBLE_LENGTH**
 
 ```grain

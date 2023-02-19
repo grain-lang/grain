@@ -2,6 +2,10 @@
 title: WasmF64
 ---
 
+## Values
+
+Functions and constants included in the WasmF64 module.
+
 ### WasmF64.**load**
 
 ```grain

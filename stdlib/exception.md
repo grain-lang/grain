@@ -17,7 +17,7 @@ include "exception"
 
 ## Values
 
-Functions included in the Exception module.
+Functions and constants included in the Exception module.
 
 ### Exception.**registerPrinter**
 

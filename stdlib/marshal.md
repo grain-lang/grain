@@ -15,7 +15,7 @@ include "marshal"
 
 ## Values
 
-Functions for marshaling and unmarshaling data.
+Functions and constants included in the Marshal module.
 
 ### Marshal.**marshal**
 

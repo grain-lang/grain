@@ -13,9 +13,9 @@ No other changes yet.
 include "pervasives"
 ```
 
-## Boolean operations
+## Values
 
-Infix functions for working with Boolean values.
+Functions and constants included in the Pervasives module.
 
 ### Pervasives.**(!)**
 
@@ -110,10 +110,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|The first operand if it is `true` or the value of the second operand otherwise|
-
-## Comparison operations
-
-Infix functions for comparing values.
 
 ### Pervasives.**(==)**
 
@@ -222,10 +218,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`false` if the values are physically equal or `true` otherwise|
-
-## Number comparisons
-
-Infix functions for comparing Number values.
 
 ### Pervasives.**(<)**
 
@@ -358,10 +350,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|A negative integer if the first operand is less than the second operand, `0` if they are equal, or a positive integer otherwise|
-
-## Math operations
-
-Infix functions for working with Number values.
 
 ### Pervasives.**(+)**
 
@@ -544,10 +532,6 @@ Returns:
 |----|-----------|
 |`Number`|The decremented value|
 
-## String operations
-
-Infix functions for operating on String values.
-
 ### Pervasives.**(++)**
 
 <details disabled>
@@ -579,10 +563,6 @@ Examples:
 ```grain
 "Foo" ++ "Bar" == "FooBar"
 ```
-
-## Bitwise operations
-
-Infix functions for operating on bits of Number values.
 
 ### Pervasives.**lnot**
 
@@ -814,10 +794,6 @@ Returns:
 |----|-----------|
 |`Number`|The shifted value|
 
-## Printing
-
-Functions that deal with printing.
-
 ### Pervasives.**toString**
 
 <details disabled>
@@ -865,10 +841,6 @@ Parameters:
 |-----|----|-----------|
 |`value`|`a`|The operand|
 
-## Type helpers
-
-Functions that help with typechecking.
-
 ### Pervasives.**ignore**
 
 <details disabled>
@@ -887,10 +859,6 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`a`|The value to ignore|
-
-## Assertions
-
-Functions that raise if conditions are not met.
 
 ### Pervasives.**assert**
 
@@ -926,10 +894,6 @@ assert 3 > 2
 ```grain
 assert true
 ```
-
-## Failures
-
-Functions that throw an Exception unconditionally.
 
 ### Pervasives.**throw**
 
@@ -977,10 +941,6 @@ Returns:
 |----|-----------|
 |`a`|Anything and nothing—your program won't continue past a fail expression|
 
-## Other
-
-Other functions on values.
-
 ### Pervasives.**identity**
 
 <details disabled>
@@ -1005,10 +965,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`a`|The value untouched|
-
-## Box operations
-
-Functions for working with Box values.
 
 ### Pervasives.**box**
 

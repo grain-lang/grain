@@ -25,7 +25,7 @@ type ImmutableSet<a>
 
 ## Values
 
-Functions and constants for working with ImmutableSets.
+Functions and constants included in the ImmutableSet module.
 
 ### ImmutableSet.**empty**
 

@@ -2,6 +2,10 @@
 title: String
 ---
 
+## Values
+
+Functions and constants included in the String module.
+
 ### String.**concat**
 
 ```grain

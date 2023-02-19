@@ -2,6 +2,10 @@
 title: Memory
 ---
 
+## Values
+
+Functions and constants included in the Memory module.
+
 ### Memory.**malloc**
 
 ```grain

@@ -2,6 +2,10 @@
 title: Parse
 ---
 
+## Values
+
+Functions and constants included in the Parse module.
+
 ### Parse.**isFastPath**
 
 ```grain

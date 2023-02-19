@@ -25,7 +25,7 @@ type Map<k, v>
 
 ## Values
 
-Functions for working with Maps.
+Functions and constants included in the Map module.
 
 ### Map.**makeSized**
 

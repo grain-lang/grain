@@ -25,7 +25,7 @@ type ImmutableArray<a>
 
 ## Values
 
-Functions and constants for working with immutable arrays.
+Functions and constants included in the ImmutableArray module.
 
 ### ImmutableArray.**empty**
 

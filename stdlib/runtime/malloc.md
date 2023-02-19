@@ -2,6 +2,10 @@
 title: Malloc
 ---
 
+## Values
+
+Functions and constants included in the Malloc module.
+
 ### Malloc.**_RESERVED_RUNTIME_SPACE**
 
 ```grain

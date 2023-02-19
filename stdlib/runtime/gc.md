@@ -2,6 +2,10 @@
 title: GC
 ---
 
+## Values
+
+Functions and constants included in the GC module.
+
 ### GC.**decimalCount32**
 
 ```grain

@@ -2,6 +2,10 @@
 title: Exception
 ---
 
+## Values
+
+Functions and constants included in the Exception module.
+
 ### Exception.**printers**
 
 ```grain

@@ -41,7 +41,7 @@ Byte encodings
 
 ## Values
 
-Functions for working with the String data type.
+Functions and constants included in the String module.
 
 ### String.**concat**
 

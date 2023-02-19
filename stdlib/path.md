@@ -167,7 +167,7 @@ Represents possible errors for the `relativeTo` operation.
 
 ## Values
 
-Functions for working with Paths.
+Functions and constants included in the Path module.
 
 ### Path.**fromString**
 

@@ -2,6 +2,10 @@
 title: WasmI32
 ---
 
+## Values
+
+Functions and constants included in the WasmI32 module.
+
 ### WasmI32.**load**
 
 ```grain

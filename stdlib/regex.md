@@ -13,9 +13,66 @@ No other changes yet.
 include "regex"
 ```
 
+## Types
+
+Type declarations included in the Regex module.
+
+### Regex.**RegularExpression**
+
+```grain
+type RegularExpression
+```
+
+### Regex.**MatchResult**
+
+```grain
+record MatchResult {
+  group: Number -> Option<String>,
+  groupPosition: Number -> Option<(Number, Number)>,
+  numGroups: Number,
+  allGroups: () -> Array<Option<String>>,
+  allGroupPositions: () -> Array<Option<(Number, Number)>>,
+}
+```
+
+This object contains the results
+of a regular expression match. The results can be obtained using
+the following accessors:
+
+```grain
+group : Number -> Option<String>
+```
+
+Returns the contents of the given group. Note that group 0 contains
+the entire matched substring, and group 1 contains the first parenthesized group.
+
+```grain
+groupPosition : Number -> Option<(Number, Number)>
+```
+
+Returns the position of the given group.
+
+```grain
+numGroups : Number
+```
+
+The number of defined groups in this match object (including group 0).
+
+```grain
+allGroups : () -> Array<Option<String>>
+```
+
+Returns the contents of all groups matched in this match object.
+
+```grain
+allGroupPositions : () -> Array<Option<(Number, Number)>>
+```
+
+Returns the positions of all groups matched in this match object.
+
 ## Values
 
-Functions for working with regular expressions.
+Functions and constants included in the Regex module.
 
 ### Regex.**make**
 
@@ -129,53 +186,6 @@ Examples:
 ```grain
 Regex.make("(foo|bar)[0-9]+")
 ```
-
-### Regex.**MatchResult**
-
-```grain
-record MatchResult {
-  group: Number -> Option<String>,
-  groupPosition: Number -> Option<(Number, Number)>,
-  numGroups: Number,
-  allGroups: () -> Array<Option<String>>,
-  allGroupPositions: () -> Array<Option<(Number, Number)>>,
-}
-```
-
-This object contains the results
-of a regular expression match. The results can be obtained using
-the following accessors:
-
-```grain
-group : Number -> Option<String>
-```
-
-Returns the contents of the given group. Note that group 0 contains
-the entire matched substring, and group 1 contains the first parenthesized group.
-
-```grain
-groupPosition : Number -> Option<(Number, Number)>
-```
-
-Returns the position of the given group.
-
-```grain
-numGroups : Number
-```
-
-The number of defined groups in this match object (including group 0).
-
-```grain
-allGroups : () -> Array<Option<String>>
-```
-
-Returns the contents of all groups matched in this match object.
-
-```grain
-allGroupPositions : () -> Array<Option<(Number, Number)>>
-```
-
-Returns the positions of all groups matched in this match object.
 
 ### Regex.**isMatch**
 

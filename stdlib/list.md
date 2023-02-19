@@ -23,7 +23,7 @@ include "list"
 
 ## Values
 
-Functions for working with the List data type.
+Functions and constants included in the List module.
 
 ### List.**init**
 

@@ -2,6 +2,10 @@
 title: Wasi
 ---
 
+## Values
+
+Functions and constants included in the Wasi module.
+
 ### Wasi.**args_get**
 
 ```grain

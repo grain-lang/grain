@@ -25,7 +25,7 @@ type ImmutableMap<k, v>
 
 ## Values
 
-Functions and constants for working with ImmutableMaps.
+Functions and constants included in the ImmutableMap module.
 
 ### ImmutableMap.**empty**
 

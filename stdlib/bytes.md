@@ -15,7 +15,7 @@ include "bytes"
 
 ## Values
 
-Functions for working with the Bytes data type.
+Functions and constants included in the Bytes module.
 
 ### Bytes.**make**
 
@@ -318,10 +318,6 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`bytes`|`Bytes`|The byte sequence to clear|
-
-## Binary operations on integers
-
-Functions for encoding and decoding integers stored in a byte sequence.
 
 ### Bytes.**getInt8S**
 

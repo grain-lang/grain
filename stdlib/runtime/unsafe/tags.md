@@ -2,6 +2,10 @@
 title: Tags
 ---
 
+## Values
+
+Functions and constants included in the Tags module.
+
 ### Tags.**_GRAIN_NUMBER_TAG_TYPE**
 
 ```grain

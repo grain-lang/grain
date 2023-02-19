@@ -2,6 +2,10 @@
 title: Decimal
 ---
 
+## Types
+
+Type declarations included in the Decimal module.
+
 ### Decimal.**Decimal**
 
 ```grain
@@ -12,6 +16,10 @@ record Decimal {
   digits: Bytes,
 }
 ```
+
+## Values
+
+Functions and constants included in the Decimal module.
 
 ### Decimal.**_DECIMAL_POINT_RANGE**
 

@@ -13,9 +13,9 @@ No other changes yet.
 include "float32"
 ```
 
-## Constants
+## Values
 
-Float32 constant values.
+Functions and constants included in the Float32 module.
 
 ### Float32.**infinity**
 
@@ -82,10 +82,6 @@ e : Float32
 
 Euler's number represented as a Float32 value.
 
-## Conversions
-
-Functions for converting between Numbers and the Float32 type.
-
 ### Float32.**fromNumber**
 
 <details disabled>
@@ -135,10 +131,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The Float32 represented as a Number|
-
-## Operations
-
-Mathematical operations for Float32 values.
 
 ### Float32.**add**
 
@@ -243,10 +235,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Float32`|The quotient of the two operands|
-
-## Comparisons
-
-Functions for comparing Float32 values.
 
 ### Float32.**lt**
 

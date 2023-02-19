@@ -13,9 +13,9 @@ No other changes yet.
 include "uint64"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Uint64 type.
+Functions and constants included in the Uint64 module.
 
 ### Uint64.**fromNumber**
 
@@ -91,10 +91,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint64`|The Int64 represented as a Uint64|
-
-## Operations
-
-Mathematical operations for Uint64 values.
 
 ### Uint64.**incr**
 
@@ -276,10 +272,6 @@ Returns:
 |----|-----------|
 |`Uint64`|The remainder of its operands|
 
-## Bitwise operations
-
-Functions for operating on bits of Uint64 values.
-
 ### Uint64.**rotl**
 
 <details disabled>
@@ -383,10 +375,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint64`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Uint64 values.
 
 ### Uint64.**(==)**
 
@@ -568,10 +556,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Uint64 values.
 
 ### Uint64.**lnot**
 
