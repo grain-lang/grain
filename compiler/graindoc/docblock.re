@@ -3,19 +3,68 @@ open Grain_typed;
 open Grain_utils;
 open Grain_diagnostics;
 
-type t = {
-  module_name: string,
-  name: string,
-  type_sig: string,
-  description: option(string),
-  attributes: Comments.Attribute.attributes,
+type param = {
+  param_name: string,
+  param_type: string,
+  param_msg: string,
 };
+
+type since = {since_version: string};
+
+type history = {
+  history_version: string,
+  history_msg: string,
+};
+
+type returns = {
+  returns_type: string,
+  returns_msg: string,
+};
+
+type deprecation = {deprecation_msg: string};
+
+type throw = {
+  throw_type: string,
+  throw_msg: string,
+};
+
+type example = {example_txt: string};
+
+type t =
+  | Type({
+      module_namespace: string,
+      module_name: string,
+      name: string,
+      type_sig: string,
+      description: option(string),
+      deprecations: list(deprecation),
+      since: option(since),
+      history: list(history),
+      examples: list(example),
+    })
+  | Value({
+      module_namespace: string,
+      module_name: string,
+      name: string,
+      type_sig: string,
+      description: option(string),
+      deprecations: list(deprecation),
+      since: option(since),
+      history: list(history),
+      params: list(param),
+      returns: option(returns),
+      throws: list(throw),
+      examples: list(example),
+    });
 
 exception
   MissingFlag({
     flag: string,
     attr: string,
   });
+
+exception MissingType;
+exception InvalidAttribute;
 
 let () =
   Printexc.register_printer(exn => {
@@ -103,21 +152,21 @@ let title_for_api = (~module_name, ident: Ident.t) => {
   Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
 };
 
-let output_for_since = (~current_version, attr_version) => {
+let output_for_since = (~current_version, {since_version}) => {
   let current_version =
     switch (current_version) {
     | Some(version) => version
     | None => raise(MissingFlag({flag: "--current-version", attr: "@since"}))
     };
   let (<) = Version.String.less_than;
-  if (current_version < attr_version) {
+  if (current_version < since_version) {
     Format.sprintf("Added in %s", Html.code("next"));
   } else {
-    Format.sprintf("Added in %s", Html.code(attr_version));
+    Format.sprintf("Added in %s", Html.code(since_version));
   };
 };
 
-let output_for_history = (~current_version, attr_version, attr_desc) => {
+let output_for_history = (~current_version, {history_version, history_msg}) => {
   let current_version =
     switch (current_version) {
     | Some(version) => version
@@ -125,11 +174,59 @@ let output_for_history = (~current_version, attr_version, attr_desc) => {
       raise(MissingFlag({flag: "--current-version", attr: "@history"}))
     };
   let (<) = Version.String.less_than;
-  if (current_version < attr_version) {
-    [Html.code("next"), attr_desc];
+  if (current_version < history_version) {
+    [Html.code("next"), history_msg];
   } else {
-    [Html.code(attr_version), attr_desc];
+    [Html.code(history_version), history_msg];
   };
+};
+
+let output_for_params = params => {
+  Markdown.table(
+    ~headers=["param", "type", "description"],
+    List.map(
+      ({param_name, param_type, param_msg}) => {
+        [Markdown.code(param_name), Markdown.code(param_type), param_msg]
+      },
+      params,
+    ),
+  );
+};
+
+let output_for_returns = ({returns_type, returns_msg}) => {
+  Markdown.table(
+    ~headers=["type", "description"],
+    // Returns is only 1 item but we want to put it in a table, so we wrap in an outer list
+    [[Markdown.code(returns_type), returns_msg]],
+  );
+};
+
+let output_for_throws = throws => {
+  // Used for joining multiple `@throws` annotations with the exact same type
+  module StringMap = Map.Make(String);
+
+  List.fold_left(
+    (map, {throw_type, throw_msg}) => {
+      StringMap.update(
+        throw_type,
+        descs => {
+          switch (descs) {
+          | None => Some([throw_msg])
+          | Some(descs) => Some([throw_msg, ...descs])
+          }
+        },
+        map,
+      )
+    },
+    StringMap.empty,
+    throws,
+  )
+  |> StringMap.bindings
+  |> List.map(((exception_type, exception_descriptions)) => {
+       Markdown.paragraph(Markdown.code(exception_type))
+       ++ Markdown.bullet_list(List.rev(exception_descriptions))
+     })
+  |> String.concat("");
 };
 
 let types_for_function = (~ident, vd: Types.value_description) => {
@@ -148,6 +245,7 @@ let for_value_description =
       ~comments,
       ~provides,
       ~module_name,
+      ~module_namespace,
       ~ident: Ident.t,
       vd: Types.value_description,
     ) => {
@@ -163,25 +261,116 @@ let for_value_description =
     | None => (None, [])
     };
 
-  let (args, returns) = types_for_function(~ident, vd);
-  // This replaces the default `None` for `attr_type` on `Param` and `Returns` attributes
-  let apply_types: (int, Comment_attributes.t) => Comment_attributes.t =
-    (idx, attr) => {
-      switch (attr) {
-      | Param(attr) =>
-        let attr_type =
-          lookup_type_expr(~idx, args)
-          |> Option.map(Printtyp.string_of_type_sch);
-        Param({...attr, attr_type});
-      | Returns(attr) =>
-        let attr_type = Option.map(Printtyp.string_of_type_sch, returns);
-        Returns({...attr, attr_type});
-      | _ => attr
-      };
-    };
-  let attributes = List.mapi(apply_types, attributes);
+  let (arg_types, return_type) = types_for_function(~ident, vd);
 
-  {module_name, name, type_sig, description, attributes};
+  let (deprecations, since, history, params, returns, throws, examples) =
+    List.fold_left(
+      (
+        (deprecations, since, history, params, returns, throws, examples),
+        attr: Comment_attributes.t,
+      ) => {
+        switch (attr) {
+        | Deprecated({attr_desc}) => (
+            [{deprecation_msg: attr_desc}, ...deprecations],
+            since,
+            history,
+            params,
+            returns,
+            throws,
+            examples,
+          )
+        | Since({attr_version}) =>
+          // TODO(#787): Should we fail if more than one `@since` attribute?
+          (
+            deprecations,
+            Some({since_version: attr_version}),
+            history,
+            params,
+            returns,
+            throws,
+            examples,
+          )
+        | History({attr_version: history_version, attr_desc: history_msg}) => (
+            deprecations,
+            since,
+            [{history_version, history_msg}, ...history],
+            params,
+            returns,
+            throws,
+            examples,
+          )
+        | Param({attr_name: param_name, attr_desc: param_msg}) =>
+          // TODO: Use label lookups when labeled parameters are introduced
+
+          let param_type =
+            switch (lookup_type_expr(~idx=List.length(params), arg_types)) {
+            | Some(typ) => Printtyp.string_of_type_sch(typ)
+            | None => raise(MissingType)
+            };
+
+          (
+            deprecations,
+            since,
+            history,
+            [{param_name, param_type, param_msg}, ...params],
+            returns,
+            throws,
+            examples,
+          );
+        | Returns({attr_desc: returns_msg}) =>
+          let returns_type =
+            switch (return_type) {
+            | Some(typ) => Printtyp.string_of_type_sch(typ)
+            | None => raise(MissingType)
+            };
+          (
+            deprecations,
+            since,
+            history,
+            params,
+            Some({returns_msg, returns_type}),
+            throws,
+            examples,
+          );
+        | Throws({attr_type: throw_type, attr_desc: throw_msg}) => (
+            deprecations,
+            since,
+            history,
+            params,
+            returns,
+            [{throw_type, throw_msg}, ...throws],
+            examples,
+          )
+        | Example({attr_desc}) => (
+            deprecations,
+            since,
+            history,
+            params,
+            returns,
+            throws,
+            [{example_txt: attr_desc}, ...examples],
+          )
+        }
+      },
+      // deprecations, since, history, params, returns, throws, examples
+      ([], None, [], [], None, [], []),
+      attributes,
+    );
+
+  Value({
+    module_namespace,
+    module_name,
+    name,
+    type_sig,
+    description,
+    deprecations: List.rev(deprecations),
+    since,
+    history: List.rev(history),
+    params: List.rev(params),
+    returns,
+    throws: List.rev(throws),
+    examples: List.rev(examples),
+  });
 };
 
 let for_type_declaration =
@@ -189,6 +378,7 @@ let for_type_declaration =
       ~comments,
       ~provides,
       ~module_name,
+      ~module_namespace,
       ~ident: Ident.t,
       td: Types.type_declaration,
     ) => {
@@ -204,179 +394,167 @@ let for_type_declaration =
     | None => (None, [])
     };
 
-  {module_name, name, type_sig, description, attributes};
-};
+  let (deprecations, since, history, examples) =
+    List.fold_left(
+      ((deprecations, since, history, examples), attr: Comment_attributes.t) => {
+        switch (attr) {
+        | Deprecated({attr_desc}) => (
+            [{deprecation_msg: attr_desc}, ...deprecations],
+            since,
+            history,
+            examples,
+          )
+        | Since({attr_version}) =>
+          // TODO(#787): Should we fail if more than one `@since` attribute?
+          (
+            deprecations,
+            Some({since_version: attr_version}),
+            history,
+            examples,
+          )
+        | History({attr_version: history_version, attr_desc: history_msg}) => (
+            deprecations,
+            since,
+            [{history_version, history_msg}, ...history],
+            examples,
+          )
+        | Param({attr_name: param_name, attr_desc: param_msg}) =>
+          raise(InvalidAttribute)
+        | Returns({attr_desc: returns_msg}) => raise(InvalidAttribute)
+        | Throws({attr_type: throw_type, attr_desc: throw_msg}) =>
+          raise(InvalidAttribute)
+        | Example({attr_desc}) => (
+            deprecations,
+            since,
+            history,
+            [{example_txt: attr_desc}, ...examples],
+          )
+        }
+      },
+      // deprecations, since, history, examples
+      ([], None, [], []),
+      attributes,
+    );
 
-// Used for joining multiple `@throws` annotations with the exact same type
-module StringMap = Map.Make(String);
+  Type({
+    module_namespace,
+    module_name,
+    name,
+    type_sig,
+    description,
+    deprecations: List.rev(deprecations),
+    since,
+    history: List.rev(history),
+    examples: List.rev(examples),
+  });
+};
 
 let to_markdown = (~current_version, docblock) => {
   let buf = Buffer.create(0);
-  Buffer.add_string(buf, Markdown.heading(~level=3, docblock.name));
-  let deprecations =
-    docblock.attributes
-    |> List.filter(Comments.Attribute.is_deprecated)
-    |> List.map((attr: Comment_attributes.t) => {
-         switch (attr) {
-         | Deprecated({attr_desc}) => attr_desc
-         | _ =>
-           failwith(
-             "Unreachable: Non-`deprecated` attribute can't exist here.",
-           )
-         }
-       });
-  if (List.length(deprecations) > 0) {
+
+  switch (docblock) {
+  | Type({name})
+  | Value({name}) =>
+    Buffer.add_string(buf, Markdown.heading(~level=3, name))
+  };
+
+  switch (docblock) {
+  | Type({deprecations: []})
+  | Value({deprecations: []}) => ()
+  | Type({deprecations})
+  | Value({deprecations}) =>
     List.iter(
-      msg =>
+      ({deprecation_msg}) =>
         Buffer.add_string(
           buf,
-          Markdown.blockquote(Markdown.bold("Deprecated:") ++ " " ++ msg),
+          Markdown.blockquote(
+            Markdown.bold("Deprecated:") ++ " " ++ deprecation_msg,
+          ),
         ),
       deprecations,
-    );
+    )
   };
-  // TODO(#787): Should we fail if more than one `@since` attribute?
-  let since_attr =
-    docblock.attributes
-    |> List.find_opt(Comments.Attribute.is_since)
-    |> Option.map((attr: Comment_attributes.t) => {
-         switch (attr) {
-         | Since({attr_version}) =>
-           output_for_since(~current_version, attr_version)
-         | _ =>
-           failwith("Unreachable: Non-`since` attribute can't exist here.")
-         }
-       });
-  let history_attrs =
-    docblock.attributes
-    |> List.filter(Comments.Attribute.is_history)
-    |> List.map((attr: Comment_attributes.t) => {
-         switch (attr) {
-         | History({attr_version, attr_desc}) =>
-           output_for_history(~current_version, attr_version, attr_desc)
-         | _ =>
-           failwith("Unreachable: Non-`since` attribute can't exist here.")
-         }
-       });
-  if (Option.is_some(since_attr) || List.length(history_attrs) > 0) {
-    let summary = Option.value(~default="History", since_attr);
-    let disabled = List.length(history_attrs) == 0 ? true : false;
+
+  switch (docblock) {
+  | Type({since: None, history: []})
+  | Value({since: None, history: []}) => ()
+  | Type({since, history})
+  | Value({since, history}) =>
+    let summary =
+      Option.fold(
+        ~none="History",
+        ~some=output_for_since(~current_version),
+        since,
+      );
+    let disabled =
+      switch (history) {
+      | [] => true
+      | _ => false
+      };
     let details =
-      if (List.length(history_attrs) == 0) {
-        "No other changes yet.";
-      } else {
-        Html.table(~headers=["version", "changes"], history_attrs);
+      switch (history) {
+      | [] => "No other changes yet."
+      | _ =>
+        Html.table(
+          ~headers=["version", "changes"],
+          List.map(output_for_history(~current_version), history),
+        )
       };
     Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
   };
-  Buffer.add_string(buf, Markdown.code_block(docblock.type_sig));
-  switch (docblock.description) {
+
+  switch (docblock) {
+  | Type({type_sig})
+  | Value({type_sig}) =>
+    Buffer.add_string(buf, Markdown.code_block(type_sig))
+  };
+
+  switch (docblock) {
+  | Type({description: None})
+  | Value({description: None}) => ()
   // Guard isn't be needed because we turn an empty string into None during extraction
-  | Some(description) =>
-    Buffer.add_string(buf, Markdown.paragraph(description))
-  | None => ()
+  | Type({description: Some(desc)})
+  | Value({description: Some(desc)}) =>
+    Buffer.add_string(buf, Markdown.paragraph(desc))
   };
-  let params =
-    docblock.attributes
-    |> List.filter(Comments.Attribute.is_param)
-    |> List.map((attr: Comment_attributes.t) => {
-         switch (attr) {
-         | Param({attr_name, attr_type, attr_desc}) => [
-             Markdown.code(attr_name),
-             Option.fold(~none="", ~some=Markdown.code, attr_type),
-             attr_desc,
-           ]
-         | _ =>
-           failwith("Unreachable: Non-`param` attribute can't exist here.")
-         }
-       });
-  if (List.length(params) > 0) {
+
+  switch (docblock) {
+  | Type(_)
+  | Value({params: []}) => ()
+  | Value({params}) =>
     Buffer.add_string(buf, Markdown.paragraph("Parameters:"));
-    Buffer.add_string(
-      buf,
-      Markdown.table(~headers=["param", "type", "description"], params),
-    );
+    Buffer.add_string(buf, output_for_params(params));
   };
-  let returns =
-    docblock.attributes
-    |> List.filter(Comments.Attribute.is_returns)
-    |> List.map((attr: Comment_attributes.t) => {
-         switch (attr) {
-         | Returns({attr_type, attr_desc}) => [
-             Option.fold(~none="", ~some=Markdown.code, attr_type),
-             attr_desc,
-           ]
-         | _ =>
-           failwith("Unreachable: Non-`returns` attribute can't exist here.")
-         }
-       });
-  if (List.length(returns) > 0) {
+
+  switch (docblock) {
+  | Type(_)
+  | Value({returns: None}) => ()
+  | Value({returns: Some(returns)}) =>
     Buffer.add_string(buf, Markdown.paragraph("Returns:"));
-    Buffer.add_string(
-      buf,
-      Markdown.table(~headers=["type", "description"], returns),
-    );
+    Buffer.add_string(buf, output_for_returns(returns));
   };
-  let throws =
-    docblock.attributes
-    |> List.filter(Comments.Attribute.is_throws)
-    |> List.fold_left(
-         (map, attr: Comment_attributes.t) => {
-           switch (attr) {
-           | Throws({attr_type: Some(attr_type), attr_desc}) =>
-             StringMap.update(
-               attr_type,
-               descs => {
-                 switch (descs) {
-                 | None => Some([attr_desc])
-                 | Some(descs) => Some([attr_desc, ...descs])
-                 }
-               },
-               map,
-             )
-           | Throws({attr_type: None, attr_desc}) =>
-             failwith(
-               "Unreachable: `throws` attribute requires an exception type.",
-             )
-           | _ =>
-             failwith("Unreachable: Non-`throws` attribute can't exist here.")
-           }
-         },
-         StringMap.empty,
-       )
-    |> StringMap.bindings;
-  if (List.length(throws) > 0) {
+
+  switch (docblock) {
+  | Type(_)
+  | Value({throws: []}) => ()
+  | Value({throws}) =>
     Buffer.add_string(buf, Markdown.paragraph("Throws:"));
-    List.iter(
-      ((exception_type, exception_descriptions)) => {
-        Buffer.add_string(
-          buf,
-          Markdown.paragraph(Markdown.code(exception_type)),
-        );
-        Buffer.add_string(
-          buf,
-          Markdown.bullet_list(List.rev(exception_descriptions)),
-        );
-      },
-      throws,
-    );
+
+    Buffer.add_string(buf, output_for_throws(throws));
   };
-  let examples =
-    docblock.attributes
-    |> List.filter(Comments.Attribute.is_example)
-    |> List.map((attr: Comment_attributes.t) => {
-         switch (attr) {
-         | Example({attr_desc}) => attr_desc
-         | _ =>
-           failwith("Unreachable: Non-`example` attribute can't exist here.")
-         }
-       });
-  if (List.length(examples) > 0) {
+
+  switch (docblock) {
+  | Type({examples: []})
+  | Value({examples: []}) => ()
+  | Type({examples})
+  | Value({examples}) =>
     Buffer.add_string(buf, Markdown.paragraph("Examples:"));
     List.iter(
-      example => Buffer.add_string(buf, Markdown.code_block(example)),
+      ({example_txt}) =>
+        Buffer.add_string(buf, Markdown.code_block(example_txt)),
       examples,
     );
   };
+
   buf;
 };

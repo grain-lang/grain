@@ -133,7 +133,10 @@ let generate_docs =
       |> Option.map((attr: Comment_attributes.t) => {
            switch (attr) {
            | Since({attr_version}) =>
-             Docblock.output_for_since(~current_version, attr_version)
+             Docblock.output_for_since(
+               ~current_version,
+               {since_version: attr_version},
+             )
            | _ =>
              failwith("Unreachable: Non-`since` attribute can't exist here.")
            }
@@ -146,8 +149,7 @@ let generate_docs =
            | History({attr_version, attr_desc}) =>
              Docblock.output_for_history(
                ~current_version,
-               attr_version,
-               attr_desc,
+               {history_version: attr_version, history_msg: attr_desc},
              )
            | _ =>
              failwith("Unreachable: Non-`since` attribute can't exist here.")
@@ -216,6 +218,7 @@ let generate_docs =
               ~comments,
               ~provides,
               ~module_name,
+              ~module_namespace="",
               ~ident,
               td,
             );
@@ -264,6 +267,7 @@ let generate_docs =
               ~comments,
               ~provides,
               ~module_name,
+              ~module_namespace="",
               ~ident,
               vd,
             );
