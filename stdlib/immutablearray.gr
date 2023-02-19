@@ -73,10 +73,6 @@ record Builder<a> {
   numNodes: Number,
 }
 
-/**
- * @section Types: Type declarations included in the ImmutableArray module.
- */
-
 // A "tail" of < 32 values at the end of the array is kept as a performance
 // optimization
 abstract record ImmutableArray<a> {
@@ -85,10 +81,6 @@ abstract record ImmutableArray<a> {
   root: Tree<a>,
   tail: Array<a>,
 }
-
-/**
- * @section Values: Functions and constants for working with immutable arrays.
- */
 
 /**
  * An empty array.

@@ -41,10 +41,6 @@ from DataStructures use {
 include "list"
 
 /**
- * @section Types: Type declarations included in the File module.
- */
-
-/**
  * Represents a handle to an open file on the system.
  */
 provide enum FileDescriptor {
@@ -424,10 +420,6 @@ provide record DirectoryEntry {
   filetype: Filetype,
   path: String,
 }
-
-/**
- * @section Values: Functions and constants included in the File module.
- */
 
 /**
  * The `FileDescriptor` for `stdin`.

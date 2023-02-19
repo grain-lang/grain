@@ -236,9 +236,6 @@ let rec hashOne = (val, depth) => {
     hash32(val)
   }
 }
-/**
- * @section Values: Functions for hashing.
- */
 
 /**
  * A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.

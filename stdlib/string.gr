@@ -26,10 +26,6 @@ from DataStructures use {
 }
 
 /**
- * @section Types: Type declarations included in the String module.
- */
-
-/**
  * Byte encodings
  */
 provide enum Encoding {
@@ -41,10 +37,6 @@ provide enum Encoding {
 }
 
 exception MalformedUnicode
-
-/**
- * @section Values: Functions for working with the String data type.
- */
 
 /**
  * Concatenate two strings.

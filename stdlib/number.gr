@@ -32,10 +32,6 @@ include "runtime/unsafe/tags"
 include "runtime/exception"
 
 /**
- * @section Constants: Number constant values.
- */
-
-/**
  * Pi represented as a Number value.
  *
  * @since v0.5.2
@@ -55,10 +51,6 @@ provide let tau = 6.283185307179586
  * @since v0.5.2
  */
 provide let e = 2.718281828459045
-
-/**
- * @section Operations: Functions for operating on values of the Number type.
- */
 
 /**
  * Computes the sum of its operands.

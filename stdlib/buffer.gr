@@ -105,10 +105,6 @@ let addInt32help = (value, buffer) => {
 }
 
 /**
- * @section Values: Functions for working with the Buffer data type.
- */
-
-/**
  * Creates a fresh buffer, initially empty.
  *
  * The `initialSize` parameter is the initial size of the internal byte sequence that holds the buffer contents.
@@ -415,10 +411,6 @@ provide let addBuffer = (srcBuffer, dstBuffer) => {
 provide let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
   addBytesSlice(start, length, srcBuffer.data, dstBuffer)
 }
-
-/**
- * @section Binary operations on integers: Functions for encoding and decoding integers stored in a buffer.
- */
 
 /**
  * Gets a signed 8-bit integer starting at the given byte index.

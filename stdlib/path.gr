@@ -88,10 +88,6 @@ record TBase<a> {
   base: Base,
 },
 /**
- * @section Types: Type declarations included in the Path module.
- */
-
-/**
  * Represents an absolute path's anchor point.
  */
 provide enum AbsoluteRoot {
@@ -193,10 +189,6 @@ provide enum RelativizationError {
   Incompatible(IncompatibilityError),
   ImpossibleRelativization,
 }
-
-/**
- * @section Values: Functions for working with Paths.
- */
 
 let makeToken = str => {
   match (str) {

@@ -22,10 +22,6 @@ module Marshal
   or a "pointer" to a heap-allocated value.
 */
 
-/**
- * @section Values: Functions for marshaling and unmarshaling data.
- */
-
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
   add as (+),

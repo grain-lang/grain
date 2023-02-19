@@ -21,10 +21,6 @@ from Numbers use {
 }
 
 /**
- * @section Conversions: Functions for converting between Numbers and the Int32 type.
- */
-
-/**
  * Converts a Number to an Int32.
  *
  * @param number: The value to convert
@@ -49,7 +45,7 @@ provide { toNumber }
  *
  * @param number: The value to convert
  * @returns The Uint32 represented as a Int32
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -58,10 +54,6 @@ provide let fromUint32 = (x: Uint32) => {
   let result = newInt32(x)
   WasmI32.toGrain(result): Int32
 }
-
-/**
- * @section Operations: Mathematical operations for Int32 values.
- */
 
 /**
  * Increments the value by one.
@@ -222,10 +214,6 @@ provide let mod = (x: Int32, y: Int32) => {
 }
 
 /**
- * @section Bitwise operations: Functions for operating on bits of Int32 values.
- */
-
-/**
  * Rotates the bits of the value left by the given number of bits.
  *
  * @param value: The value to rotate
@@ -292,10 +280,6 @@ provide let shr = (value: Int32, amount: Int32) => {
   let ptr = newInt32(WasmI32.shrS(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
-
-/**
- * @section Comparisons: Functions for comparing Int32 values.
- */
 
 /**
  * Checks if the first value is equal to the second value.
@@ -406,10 +390,6 @@ provide let gte = (x: Int32, y: Int32) => {
   let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
   WasmI32.geS(xv, yv)
 }
-
-/**
- * @section Bitwise logic: Boolean operations on the bits of Int32 values.
- */
 
 /**
  * Computes the bitwise NOT of the given value.

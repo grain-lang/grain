@@ -9,20 +9,12 @@
 module Range
 
 /**
- * @section Types: Type declarations included in the Range module.
- */
-
-/**
  * Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
  */
 provide enum Range {
   Inclusive(Number, Number),
   Exclusive(Number, Number),
 }
-
-/**
- * @section Values: Functions and constants included in the Range module.
- */
 
 /**
  * Checks if the given number is within the range.

@@ -18,10 +18,6 @@ include "runtime/exception"
 include "runtime/numbers"
 from Numbers use { coerceNumberToWasmI32 }
 
-/**
- * @section Values: Functions for working with the Array data type.
- */
-
 @unsafe
 let mut _ARRAY_LENGTH_OFFSET = 4n
 @unsafe

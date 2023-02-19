@@ -12,18 +12,10 @@ module Queue
 
 include "list"
 
-/**
- * @section Types: Type declarations included in the Queue module.
- */
-
 abstract record Queue<a> {
   forwards: List<a>,
   backwards: List<a>,
 }
-
-/**
- * @section Values: Functions and constants for working with queues.
- */
 
 /**
  * An empty queue.

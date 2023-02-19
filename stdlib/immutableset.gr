@@ -20,17 +20,10 @@ record Node<a> {
   left: ImmutableSet<a>,
   right: ImmutableSet<a>,
 },
-/**
- * @section Types: Type declarations included in the ImmutableSet module.
- */
 abstract enum ImmutableSet<a> {
   Empty,
   Tree(Node<a>),
 }
-
-/**
- * @section Values: Functions and constants for working with ImmutableSets.
- */
 
 // semi-arbitrary value chosen for algorithm for determining when to balance
 // trees; no tree can have a left subtree containing this number of times

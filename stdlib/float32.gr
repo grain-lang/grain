@@ -20,10 +20,6 @@ from Numbers use {
 }
 
 /**
- * @section Constants: Float32 constant values.
- */
-
-/**
  * Infinity represented as a Float32 value.
  *
  * @since v0.4.0
@@ -69,9 +65,6 @@ provide let tau = 6.2831853f
  * @since v0.5.2
  */
 provide let e = 2.7182817f
-/**
- * @section Conversions: Functions for converting between Numbers and the Float32 type.
- */
 
 /**
  * Converts a Number to a Float32.
@@ -92,10 +85,6 @@ provide { fromNumber }
  * @since v0.2.0
  */
 provide { toNumber }
-
-/**
- * @section Operations: Mathematical operations for Float32 values.
- */
 
 /**
  * Computes the sum of its operands.
@@ -164,10 +153,6 @@ provide let div = (x: Float32, y: Float32) => {
   let ptr = newFloat32(WasmF32.div(xv, yv))
   WasmI32.toGrain(ptr): Float32
 }
-
-/**
- * @section Comparisons: Functions for comparing Float32 values.
- */
 
 /**
  * Checks if the first value is less than the second value.

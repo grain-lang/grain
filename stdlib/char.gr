@@ -18,10 +18,6 @@ from DataStructures use { tagSimpleNumber, tagChar, untagChar, allocateString }
 exception MalformedUtf8
 
 /**
- * @section Values: Functions and constants included in the Char module.
- */
-
-/**
  * The minimum valid Unicode scalar value.
  *
  * @since 0.3.0

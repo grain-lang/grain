@@ -24,18 +24,10 @@ record Bucket<k, v> {
   mut next: Option<Bucket<k, v>>,
 }
 
-/**
- * @section Types: Type declarations included in the Map module.
- */
-
 abstract record Map<k, v> {
   mut size: Number,
   mut buckets: Array<Option<Bucket<k, v>>>,
 }
-
-/**
- * @section Values: Functions for working with Maps.
- */
 
 /**
  * Creates a new empty map with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your map and can use `Map.make()` instead.
