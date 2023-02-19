@@ -15,10 +15,6 @@
 module Result
 
 /**
- * @section Values: Functions for working with the Result data type.
- */
-
-/**
  * Checks if the Result is the `Ok` variant.
  *
  * @param result: The result to check

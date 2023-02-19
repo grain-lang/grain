@@ -2,6 +2,10 @@
 title: WasmF32
 ---
 
+## Values
+
+Functions and constants included in the WasmF32 module.
+
 ### WasmF32.**load**
 
 ```grain

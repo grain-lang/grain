@@ -2,6 +2,10 @@
 title: Common
 ---
 
+## Types
+
+Type declarations included in the Common module.
+
 ### Common.**BiasedFp**
 
 ```grain
@@ -10,6 +14,10 @@ record BiasedFp {
   e: Int32,
 }
 ```
+
+## Values
+
+Functions and constants included in the Common module.
 
 ### Common.**_MINIMUM_EXPONENT**
 

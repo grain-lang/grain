@@ -13,9 +13,9 @@ No other changes yet.
 include "float64"
 ```
 
-## Constants
+## Values
 
-Float64 constant values.
+Functions and constants included in the Float64 module.
 
 ### Float64.**infinity**
 
@@ -82,10 +82,6 @@ e : Float64
 
 Euler's number represented as a Float64 value.
 
-## Conversions
-
-Functions for converting between Numbers and the Float64 type.
-
 ### Float64.**fromNumber**
 
 <details disabled>
@@ -135,10 +131,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The Float64 represented as a Number|
-
-## Operations
-
-Mathematical operations for Float64 values.
 
 ### Float64.**add**
 
@@ -243,10 +235,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Float64`|The quotient of the two operands|
-
-## Comparisons
-
-Functions for comparing Float64 values.
 
 ### Float64.**lt**
 

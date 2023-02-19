@@ -22,10 +22,6 @@ from Numbers use {
 }
 
 /**
- * @section Conversions: Functions for converting between Numbers and the Int64 type.
- */
-
-/**
  * Converts a Number to an Int64.
  *
  * @param number: The value to convert
@@ -50,7 +46,7 @@ provide { toNumber }
  *
  * @param number: The value to convert
  * @returns The Uint64 represented as a Int64
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -59,10 +55,6 @@ provide let fromUint64 = (x: Uint64) => {
   let result = newInt64(x)
   WasmI32.toGrain(result): Int64
 }
-
-/**
- * @section Operations: Mathematical operations for Int64 values.
- */
 
 /**
  * Increments the value by one.
@@ -223,10 +215,6 @@ provide let mod = (x: Int64, y: Int64) => {
 }
 
 /**
- * @section Bitwise operations: Functions for operating on bits of Int64 values.
- */
-
-/**
  * Rotates the bits of the value left by the given number of bits.
  *
  * @param value: The value to rotate
@@ -293,10 +281,6 @@ provide let shr = (value: Int64, amount: Int64) => {
   let ptr = newInt64(WasmI64.shrS(xv, yv))
   WasmI32.toGrain(ptr): Int64
 }
-
-/**
- * @section Comparisons: Functions for comparing Int64 values.
- */
 
 /**
  * Checks if the first value is equal to the second value.
@@ -407,10 +391,6 @@ provide let gte = (x: Int64, y: Int64) => {
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
   WasmI64.geS(xv, yv)
 }
-
-/**
- * @section Bitwise logic: Boolean operations on the bits of Int64 values.
- */
 
 /**
  * Computes the bitwise NOT of the given value.

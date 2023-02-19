@@ -25,10 +25,6 @@ include "runtime/dataStructures"
 from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
 
 /**
- * @section Types: Type declarations included in the Process module.
- */
-
-/**
  * Signals that can be sent to the host system.
  */
 provide enum Signal {
@@ -89,10 +85,6 @@ provide enum Signal {
   // Bad system call.
   SYS,
 }
-
-/**
- * @section Values: Functions and constants included in the Process module.
- */
 
 /**
  * Access command line arguments.

@@ -90,13 +90,6 @@ module Attribute = {
     };
   };
 
-  let is_section = attr => {
-    switch (attr) {
-    | Section(_) => true
-    | _ => false
-    };
-  };
-
   let is_deprecated = attr => {
     switch (attr) {
     | Deprecated(_) => true
@@ -254,16 +247,6 @@ module Doc = {
       };
     };
     ending_on_lnum_help(lnum, true);
-  };
-
-  let find_sections = (module C: OrderedComments) => {
-    let section_comments = ref([]);
-    C.iter((_, (_comment, _desc, attrs) as comment) =>
-      if (List.exists(Attribute.is_section, attrs)) {
-        section_comments := [comment, ...section_comments^];
-      }
-    );
-    List.rev(section_comments^);
   };
 };
 

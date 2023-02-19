@@ -2,6 +2,10 @@
 title: WasmI64
 ---
 
+## Values
+
+Functions and constants included in the WasmI64 module.
+
 ### WasmI64.**load**
 
 ```grain

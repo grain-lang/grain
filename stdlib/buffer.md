@@ -15,9 +15,19 @@ No other changes yet.
 include "buffer"
 ```
 
+## Types
+
+Type declarations included in the Buffer module.
+
+### Buffer.**Buffer**
+
+```grain
+type Buffer
+```
+
 ## Values
 
-Functions for working with the Buffer data type.
+Functions and constants included in the Buffer module.
 
 ### Buffer.**make**
 
@@ -426,10 +436,6 @@ Parameters:
 |`length`|`Number`|The number of bytes to append|
 |`srcBuffer`|`Buffer`|The buffer to append|
 |`dstBuffer`|`Buffer`|The buffer to mutate|
-
-## Binary operations on integers
-
-Functions for encoding and decoding integers stored in a buffer.
 
 ### Buffer.**getInt8S**
 

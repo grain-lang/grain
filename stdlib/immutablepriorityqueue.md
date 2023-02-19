@@ -27,7 +27,7 @@ Immutable data structure which maintains a priority order for its elements.
 
 ## Values
 
-Functions and constants for working with ImmutablePriorityQueues.
+Functions and constants included in the ImmutablePriorityQueue module.
 
 ### ImmutablePriorityQueue.**empty**
 

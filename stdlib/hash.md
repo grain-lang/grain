@@ -15,7 +15,7 @@ include "hash"
 
 ## Values
 
-Functions for hashing.
+Functions and constants included in the Hash module.
 
 ### Hash.**hash**
 

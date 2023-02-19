@@ -13,9 +13,9 @@ No other changes yet.
 include "uint32"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Uint32 type.
+Functions and constants included in the Uint32 module.
 
 ### Uint32.**fromNumber**
 
@@ -91,10 +91,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint32`|The Int32 represented as a Uint32|
-
-## Operations
-
-Mathematical operations for Uint32 values.
 
 ### Uint32.**incr**
 
@@ -276,10 +272,6 @@ Returns:
 |----|-----------|
 |`Uint32`|The remainder of its operands|
 
-## Bitwise operations
-
-Functions for operating on bits of Uint32 values.
-
 ### Uint32.**rotl**
 
 <details disabled>
@@ -383,10 +375,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Uint32`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Uint32 values.
 
 ### Uint32.**(==)**
 
@@ -568,10 +556,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Uint32 values.
 
 ### Uint32.**lnot**
 

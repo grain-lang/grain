@@ -30,10 +30,6 @@ record PQRoot<a> {
 }
 
 /**
- * @section Types: Type declarations included in the ImmutablePriorityQueue module.
- */
-
-/**
  * Immutable data structure which maintains a priority order for its elements.
  */
 abstract record ImmutablePriorityQueue<a> {
@@ -41,10 +37,6 @@ abstract record ImmutablePriorityQueue<a> {
   size: Number,
   root: Option<PQRoot<a>>,
 }
-
-/**
- * @section Values: Functions and constants for working with ImmutablePriorityQueues.
- */
 
 /**
  * An empty priority queue with the default `compare` comparator.

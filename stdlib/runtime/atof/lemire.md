@@ -2,6 +2,10 @@
 title: Lemire
 ---
 
+## Values
+
+Functions and constants included in the Lemire module.
+
 ### Lemire.**computeFloat**
 
 ```grain

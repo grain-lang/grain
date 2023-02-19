@@ -26,7 +26,7 @@ let failure = Err("Something bad happened") // Creates an unsuccessful Result co
 
 ## Values
 
-Functions for working with the Result data type.
+Functions and constants included in the Result module.
 
 ### Result.**isOk**
 

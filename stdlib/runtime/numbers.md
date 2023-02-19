@@ -2,6 +2,10 @@
 title: Numbers
 ---
 
+## Values
+
+Functions and constants included in the Numbers module.
+
 ### Numbers.**isBoxedNumber**
 
 ```grain

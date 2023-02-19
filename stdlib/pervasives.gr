@@ -44,10 +44,6 @@ include "runtime/string"
 from String use { toString, print, concat as (++) }
 
 /**
- * @section Boolean operations: Infix functions for working with Boolean values.
- */
-
-/**
  * Computes the logical NOT (`!`) of the given operand.
  * Inverts the given Boolean value.
  *
@@ -88,10 +84,6 @@ provide primitive (&&): (Bool, Bool) -> Bool = "@and"
  * @since v0.1.0
  */
 provide primitive (||): (Bool, Bool) -> Bool = "@or"
-
-/**
- * @section Comparison operations: Infix functions for comparing values.
- */
 
 /**
  * Check that two values are equal. This checks for structural equality,
@@ -140,10 +132,6 @@ provide primitive (is): (a, a) -> Bool = "@is"
  * @since v0.2.0
  */
 provide let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
-
-/**
- * @section Number comparisons: Infix functions for comparing Number values.
- */
 
 /**
  * Checks if the first operand is less than the second operand.
@@ -201,10 +189,6 @@ provide { (>=) }
  * @since v0.5.3
  */
 provide { compare }
-
-/**
- * @section Math operations: Infix functions for working with Number values.
- */
 
 /**
  * Computes the sum of its operands.
@@ -283,10 +267,6 @@ provide { incr }
 provide { decr }
 
 /**
- * @section String operations: Infix functions for operating on String values.
- */
-
-/**
  * Concatenate two strings.
  *
  * @param str1: The beginning string
@@ -298,10 +278,6 @@ provide { decr }
  * @since v0.2.0
  */
 provide { (++) }
-
-/**
- * @section Bitwise operations: Infix functions for operating on bits of Number values.
- */
 
 /**
  * Computes the bitwise NOT of the operand.
@@ -399,10 +375,6 @@ provide { (>>) }
 // foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
 
 /**
- * @section Printing: Functions that deal with printing.
- */
-
-/**
  * Converts the given operand to a string.
  * Provides a better representation of data types if those types are provided from the module.
  *
@@ -425,10 +397,6 @@ provide { toString }
 provide { print }
 
 /**
- * @section Type helpers: Functions that help with typechecking.
- */
-
-/**
  * Accepts any value and always returns `void`.
  *
  * @param value: The value to ignore
@@ -436,10 +404,6 @@ provide { print }
  * @since v0.1.0
  */
 provide primitive ignore: a -> Void = "@ignore"
-
-/**
- * @section Assertions: Functions that raise if conditions are not met.
- */
 
 /**
  * Assert that the given Boolean condition is `true`.
@@ -454,10 +418,6 @@ provide primitive ignore: a -> Void = "@ignore"
  * @since v0.1.0
  */
 provide primitive assert: Bool -> Void = "@assert"
-
-/**
- * @section Failures: Functions that throw an Exception unconditionally.
- */
 
 // Exceptions
 provide exception Failure(String)
@@ -483,10 +443,6 @@ provide primitive throw: Exception -> a = "@throw"
 provide let fail: String -> a = msg => throw Failure(msg)
 
 /**
- * @section Other: Other functions on values.
- */
-
-/**
  * Provides the operand untouched.
  *
  * @param value: The value to return
@@ -495,10 +451,6 @@ provide let fail: String -> a = msg => throw Failure(msg)
  * @since v0.2.0
  */
 provide let identity = x => x
-
-/**
- * @section Box operations: Functions for working with Box values.
- */
 
 /**
  * Creates a box containing the given initial value.

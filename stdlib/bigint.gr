@@ -20,10 +20,6 @@ from Numbers use {
 }
 
 /**
- * @section Conversions: Functions for converting between Numbers and the BigInt type.
- */
-
-/**
  * Converts a Number to a BigInt.
  *
  * @param number: The value to convert
@@ -41,10 +37,6 @@ provide { fromNumber }
  * @since v0.5.0
  */
 provide { toNumber }
-
-/**
- * @section Operations: Mathematical operations for BigInt values.
- */
 
 /**
  * Increments the value by one.
@@ -218,10 +210,6 @@ provide let gcd = (num1: BigInt, num2: BigInt) => {
 }
 
 /**
- * @section Bitwise operations: Functions for operating on bits of BigInt values.
- */
-
-/**
  * Shifts the bits of the value left by the given number of bits.
  *
  * @param num: The value to shift
@@ -252,10 +240,6 @@ provide let shr = (num: BigInt, places: Int32) => {
   let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
   WasmI32.toGrain(BI.shrS(num, places)): BigInt
 }
-
-/**
- * @section Comparisons: Functions for comparing BigInt values.
- */
 
 /**
  * Checks if the given value is equal to zero.
@@ -366,10 +350,6 @@ provide let gte = (num1: BigInt, num2: BigInt) => {
   let num2 = WasmI32.fromGrain(num2)
   BI.gte(num1, num2)
 }
-
-/**
- * @section Bitwise logic: Boolean operations on the bits of BigInt values.
- */
 
 /**
  * Computes the bitwise NOT of the given value.
@@ -483,10 +463,6 @@ provide let popcnt = (num: BigInt) => {
     None
   }
 }
-
-/**
- * @section Other: Other functions on BigInts.
- */
 
 /**
  * Converts the given operand to a string.

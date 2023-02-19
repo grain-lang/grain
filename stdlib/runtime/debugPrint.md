@@ -2,6 +2,10 @@
 title: DebugPrint
 ---
 
+## Values
+
+Functions and constants included in the DebugPrint module.
+
 ### DebugPrint.**print**
 
 ```grain

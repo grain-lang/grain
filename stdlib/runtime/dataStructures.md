@@ -2,6 +2,10 @@
 title: DataStructures
 ---
 
+## Values
+
+Functions and constants included in the DataStructures module.
+
 ### DataStructures.**allocateArray**
 
 ```grain

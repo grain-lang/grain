@@ -15,10 +15,6 @@ include "runtime/unsafe/memory"
 include "runtime/exception"
 
 /**
- * @section Values: Functions included in the Exception module.
- */
-
-/**
  * Registers an exception printer. When an exception is thrown, all registered
  * printers are called in order from the most recently registered printer to
  * the least recently registered printer. The first `Some` value returned is

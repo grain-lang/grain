@@ -25,7 +25,7 @@ type Set<k>
 
 ## Values
 
-Functions for working with Sets.
+Functions and constants included in the Set module.
 
 ### Set.**makeSized**
 

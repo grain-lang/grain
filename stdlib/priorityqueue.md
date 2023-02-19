@@ -27,7 +27,7 @@ Mutable data structure which maintains a priority order for its elements.
 
 ## Values
 
-Functions for working with PriorityQueues.
+Functions and constants included in the PriorityQueue module.
 
 ### PriorityQueue.**makeSized**
 

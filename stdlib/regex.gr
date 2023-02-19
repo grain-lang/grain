@@ -3334,10 +3334,6 @@ abstract record RegularExpression {
   reStartRange: Option<RERange>,
 }
 
-/**
- * @section Values: Functions for working with regular expressions.
- */
-
 // TODO(#661): re-add the following pieces of documentation:
 /*
  [Under POSIX character classes]

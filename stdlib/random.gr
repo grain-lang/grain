@@ -17,19 +17,11 @@ include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/memory"
 include "runtime/dataStructures" as DS
 
-/**
- * @section Types: Type declarations included in the Random module.
- */
-
 abstract record Random {
   seed: Uint64,
   mut counter: Uint64,
   mut initialized: Bool,
 }
-
-/**
- * @section Values: Functions for working with pseudo-random number generators.
- */
 
 let incCounter = random => {
   random.counter = Uint64.incr(random.counter)

@@ -57,10 +57,6 @@ let checkIndexIsInBounds = (i, byteSize, max) => {
 let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
 
 /**
- * @section Values: Functions for working with the Bytes data type.
- */
-
-/**
  * Creates a new byte sequence of the input size.
  *
  * @param size: The number of bytes to store
@@ -337,10 +333,6 @@ provide let clear = (bytes: Bytes) => {
   let size = getSize(src)
   Memory.fill(src + _VALUE_OFFSET, 0n, size)
 }
-
-/**
- * @section Binary operations on integers: Functions for encoding and decoding integers stored in a byte sequence.
- */
 
 /**
  * Gets a signed 8-bit integer starting at the given byte index.

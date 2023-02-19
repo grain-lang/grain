@@ -13,9 +13,9 @@ No other changes yet.
 include "int64"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Int64 type.
+Functions and constants included in the Int64 module.
 
 ### Int64.**fromNumber**
 
@@ -91,10 +91,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The Uint64 represented as a Int64|
-
-## Operations
-
-Mathematical operations for Int64 values.
 
 ### Int64.**incr**
 
@@ -309,10 +305,6 @@ Throws:
 
 * When `y` is zero
 
-## Bitwise operations
-
-Functions for operating on bits of Int64 values.
-
 ### Int64.**rotl**
 
 <details disabled>
@@ -416,10 +408,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The shifted value|
-
-## Comparisons
-
-Functions for comparing Int64 values.
 
 ### Int64.**eq**
 
@@ -601,10 +589,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
-
-## Bitwise logic
-
-Boolean operations on the bits of Int64 values.
 
 ### Int64.**lnot**
 

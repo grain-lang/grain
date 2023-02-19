@@ -2,6 +2,10 @@
 title: Conv
 ---
 
+## Values
+
+Functions and constants included in the Conv module.
+
 ### Conv.**toInt32**
 
 ```grain

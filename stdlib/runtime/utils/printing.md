@@ -2,6 +2,10 @@
 title: Printing
 ---
 
+## Values
+
+Functions and constants included in the Printing module.
+
 ### Printing.**numberToString**
 
 ```grain

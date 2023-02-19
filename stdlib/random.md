@@ -25,7 +25,7 @@ type Random
 
 ## Values
 
-Functions for working with pseudo-random number generators.
+Functions and constants included in the Random module.
 
 ### Random.**make**
 

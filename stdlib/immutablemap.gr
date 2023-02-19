@@ -21,17 +21,10 @@ record Node<k, v> {
   left: ImmutableMap<k, v>,
   right: ImmutableMap<k, v>,
 },
-/**
- * @section Types: Type declarations included in the ImmutableMap module.
- */
 abstract enum ImmutableMap<k, v> {
   Empty,
   Tree(Node<k, v>),
 }
-
-/**
- * @section Values: Functions and constants for working with ImmutableMaps.
- */
 
 // semi-arbitrary value chosen for algorithm for determining when to balance
 // trees; no tree can have a left subtree containing this number of times

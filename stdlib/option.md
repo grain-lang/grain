@@ -25,7 +25,7 @@ let noValue = None // Creates an Option containing nothing
 
 ## Values
 
-Functions for working with the Option data type.
+Functions and constants included in the Option module.
 
 ### Option.**isSome**
 

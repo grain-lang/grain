@@ -13,9 +13,9 @@ No other changes yet.
 include "number"
 ```
 
-## Constants
+## Values
 
-Number constant values.
+Functions and constants included in the Number module.
 
 ### Number.**pi**
 
@@ -55,10 +55,6 @@ e : Number
 ```
 
 Euler's number represented as a Number value.
-
-## Operations
-
-Functions for operating on values of the Number type.
 
 ### Number.**add**
 

@@ -23,7 +23,7 @@ include "array"
 
 ## Values
 
-Functions for working with the Array data type.
+Functions and constants included in the Array module.
 
 ### Array.**length**
 

@@ -2,6 +2,10 @@
 title: Bigint
 ---
 
+## Values
+
+Functions and constants included in the Bigint module.
+
 ### Bigint.**debugDumpNumber**
 
 ```grain

@@ -13,9 +13,9 @@ No other changes yet.
 include "bigint"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the BigInt type.
+Functions and constants included in the BigInt module.
 
 ### BigInt.**fromNumber**
 
@@ -66,10 +66,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The BigInt represented as a Number|
-
-## Operations
-
-Mathematical operations for BigInt values.
 
 ### BigInt.**incr**
 
@@ -355,10 +351,6 @@ Returns:
 |----|-----------|
 |`BigInt`|The greatest common divisor of its operands|
 
-## Bitwise operations
-
-Functions for operating on bits of BigInt values.
-
 ### BigInt.**shl**
 
 <details disabled>
@@ -410,10 +402,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|The shifted value|
-
-## Comparisons
-
-Functions for comparing BigInt values.
 
 ### BigInt.**eqz**
 
@@ -596,10 +584,6 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
-## Bitwise logic
-
-Boolean operations on the bits of BigInt values.
-
 ### BigInt.**lnot**
 
 <details disabled>
@@ -779,10 +763,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Option<Int64>`|The amount of 1-bits in its operand|
-
-## Other
-
-Other functions on BigInts.
 
 ### BigInt.**toString**
 

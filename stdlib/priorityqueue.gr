@@ -14,10 +14,6 @@ include "number"
 include "option"
 
 /**
- * @section Types: Type declarations included in the PriorityQueue module.
- */
-
-/**
  * Mutable data structure which maintains a priority order for its elements.
  */
 abstract record PriorityQueue<a> {
@@ -25,10 +21,6 @@ abstract record PriorityQueue<a> {
   mut array: Array<Option<a>>,
   comp: (a, a) -> Number,
 }
-
-/**
- * @section Values: Functions for working with PriorityQueues.
- */
 
 let swap = (i1, i2, array) => {
   let t = array[i2]

@@ -13,19 +13,11 @@ module Stack
 include "list"
 
 /**
- * @section Types: Type declarations included in the Stack module.
- */
-
-/**
  * Stacks are immutable data structures that store their data in a List.
  */
 abstract record Stack<a> {
   data: List<a>,
 }
-
-/**
- * @section Values: Functions and constants included in the Stack module.
- */
 
 /**
  * An empty stack.
