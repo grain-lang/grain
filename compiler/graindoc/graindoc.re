@@ -82,7 +82,7 @@ let generate_docs =
     (~current_version, ~output=?, program: Typedtree.typed_program) => {
   let comments = Comments.to_ordered(program.comments);
 
-  let exports = Docblock.enumerate_exports(program.statements);
+  let provides = Docblock.enumerate_provides(program);
 
   let signature_items = program.signature.cmi_sign;
 
@@ -182,61 +182,99 @@ let generate_docs =
   | None => ()
   };
 
-  let add_docblock = sig_item => {
-    let docblock =
-      Docblock.for_signature_item(
-        ~comments,
-        ~exports,
-        ~module_name,
-        sig_item,
-      );
-    switch (docblock) {
-    | Some(docblock) =>
-      Buffer.add_buffer(
-        buf,
-        Docblock.to_markdown(~current_version, docblock),
-      )
-    | None => ()
-    };
+  let sig_types =
+    List.filter(
+      (sig_item: Types.signature_item) => {
+        switch (sig_item) {
+        | TSigTypeExt(_)
+        | TSigModule(_)
+        | TSigModType(_)
+        | TSigValue(_) => false
+        | TSigType(_) => true
+        }
+      },
+      signature_items,
+    );
+
+  switch (sig_types) {
+  | [] => ()
+  | _ =>
+    Buffer.add_string(buf, Markdown.heading(~level=2, "Types"));
+    Buffer.add_string(
+      buf,
+      Markdown.paragraph(
+        "Type declarations included in the " ++ module_name ++ " module.",
+      ),
+    );
+
+    List.iter(
+      (sig_type: Types.signature_item) => {
+        switch (sig_type) {
+        | TSigType(ident, td, _rec) =>
+          let docblock =
+            Docblock.for_type_declaration(
+              ~comments,
+              ~provides,
+              ~module_name,
+              ~ident,
+              td,
+            );
+          Buffer.add_buffer(
+            buf,
+            Docblock.to_markdown(~current_version, docblock),
+          );
+        | _ => failwith("Unreachable: TSigType-only list")
+        }
+      },
+      sig_types,
+    );
   };
 
-  let section_comments = Comments.Doc.find_sections(comments);
-  if (List.length(section_comments) == 0) {
-    List.iter(add_docblock, signature_items);
-  } else {
-    List.iteri(
-      (idx, (comment, desc, attrs)) => {
-        let next_section_start_line =
-          Option.fold(
-            ~none=max_int,
-            ~some=((comment, _, _)) => Comments.start_line(comment),
-            List.nth_opt(section_comments, idx + 1),
-          );
-        let range =
-          Grain_utils.Range.Exclusive(
-            Comments.end_line(comment),
-            next_section_start_line,
-          );
-        List.iter(
-          (attr: Comment_attributes.t) => {
-            switch (attr) {
-            | Section({attr_name, attr_desc}) =>
-              Buffer.add_string(buf, Markdown.heading(~level=2, attr_name));
-              Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-            | _ => ()
-            }
-          },
-          attrs,
-        );
-        List.iter(
-          sig_item =>
-            if (Docblock.signature_item_in_range(~exports, sig_item, range)) {
-              add_docblock(sig_item);
-            },
-          signature_items,
-        );
+  let sig_values =
+    List.filter(
+      (sig_item: Types.signature_item) => {
+        switch (sig_item) {
+        | TSigType(_)
+        | TSigTypeExt(_)
+        | TSigModule(_)
+        | TSigModType(_) => false
+        | TSigValue(_) => true
+        }
       },
-      section_comments,
+      signature_items,
+    );
+
+  switch (sig_values) {
+  | [] => ()
+  | _ =>
+    Buffer.add_string(buf, Markdown.heading(~level=2, "Values"));
+    Buffer.add_string(
+      buf,
+      Markdown.paragraph(
+        "Functions and constants included in the " ++ module_name ++ " module.",
+      ),
+    );
+
+    List.iter(
+      (sig_value: Types.signature_item) => {
+        switch (sig_value) {
+        | TSigValue(ident, vd) =>
+          let docblock =
+            Docblock.for_value_description(
+              ~comments,
+              ~provides,
+              ~module_name,
+              ~ident,
+              vd,
+            );
+          Buffer.add_buffer(
+            buf,
+            Docblock.to_markdown(~current_version, docblock),
+          );
+        | _ => failwith("Unreachable: TSigValue-only list")
+        }
+      },
+      sig_values,
     );
   };
 

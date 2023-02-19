@@ -32,7 +32,7 @@ let () =
     }
   });
 
-let enumerate_exports = stmts => {
+let enumerate_provides = program => {
   let id_tbl = ref(Ident.empty);
 
   let rec pattern_ids = ({pat_desc, pat_loc}: Typedtree.pattern) => {
@@ -48,7 +48,7 @@ let enumerate_exports = stmts => {
     };
   };
 
-  module ExportIterator =
+  module ProvideIterator =
     TypedtreeIter.MakeIterator({
       include TypedtreeIter.DefaultIteratorArgument;
 
@@ -89,13 +89,14 @@ let enumerate_exports = stmts => {
       };
     });
 
-  List.iter(ExportIterator.iter_toplevel_stmt, stmts);
+  ProvideIterator.iter_typed_program(program);
 
   id_tbl^;
 };
 
-let location_for_ident = (~exports, ident) => {
-  snd(Ident.find_name(Ident.name(ident), exports));
+let location_for_ident =
+    (~provides: Ident.tbl(Grain_parsing.Location.t), ident) => {
+  snd(Ident.find_name(Ident.name(ident), provides));
 };
 
 let title_for_api = (~module_name, ident: Ident.t) => {
@@ -145,11 +146,12 @@ let lookup_type_expr = (~idx, type_exprs) => {
 let for_value_description =
     (
       ~comments,
-      ~loc: Grain_parsing.Location.t,
+      ~provides,
       ~module_name,
       ~ident: Ident.t,
       vd: Types.value_description,
     ) => {
+  let loc = location_for_ident(~provides, ident);
   let name = title_for_api(~module_name, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
@@ -185,11 +187,12 @@ let for_value_description =
 let for_type_declaration =
     (
       ~comments,
-      ~loc: Grain_parsing.Location.t,
+      ~provides,
       ~module_name,
       ~ident: Ident.t,
       td: Types.type_declaration,
     ) => {
+  let loc = location_for_ident(~provides, ident);
   let name = title_for_api(~module_name, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
@@ -202,45 +205,6 @@ let for_type_declaration =
     };
 
   {module_name, name, type_sig, description, attributes};
-};
-
-let for_signature_item =
-    (
-      ~comments,
-      ~exports: Ident.tbl(Grain_parsing.Location.t),
-      ~module_name,
-      sig_item: Types.signature_item,
-    ) => {
-  switch (sig_item) {
-  | TSigValue(ident, vd) =>
-    let loc = location_for_ident(~exports, ident);
-    let docblock =
-      for_value_description(~comments, ~module_name, ~ident, ~loc, vd);
-    Some(docblock);
-  | TSigType(ident, td, _rec) =>
-    let loc = location_for_ident(~exports, ident);
-    let docblock =
-      for_type_declaration(~comments, ~module_name, ~ident, ~loc, td);
-    Some(docblock);
-  | _ => None
-  };
-};
-
-let signature_item_in_range =
-    (
-      ~exports: Ident.tbl(Grain_parsing.Location.t),
-      sig_item: Types.signature_item,
-      range: Grain_utils.Range.t,
-    ) => {
-  switch (sig_item) {
-  | TSigValue(ident, vd) =>
-    let loc = location_for_ident(~exports, ident);
-    Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
-  | TSigType(ident, td, _rec) =>
-    let loc = location_for_ident(~exports, ident);
-    Grain_utils.Range.inRange(loc.loc_start.pos_lnum, range);
-  | _ => false
-  };
 };
 
 // Used for joining multiple `@throws` annotations with the exact same type

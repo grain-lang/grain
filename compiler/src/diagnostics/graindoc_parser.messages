@@ -125,15 +125,6 @@ graindoc: THROWS CONSTRUCTOR THROWS
 ## The known suffix of the stack is as follows:
 ## THROWS CONSTRUCTOR
 ##
-graindoc: SECTION TEXT THROWS
-##
-## Ends in an error in state: 24.
-##
-## attribute -> SECTION TEXT . COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
-##
-## The known suffix of the stack is as follows:
-## SECTION TEXT
-##
 graindoc: PARAM IDENT THROWS
 ##
 ## Ends in an error in state: 30.
@@ -174,15 +165,6 @@ graindoc: DEPRECATED EOL THROWS
 ##
 ## The known suffix of the stack is as follows:
 ## eols
-##
-graindoc: SECTION TEXT COLON THROWS
-##
-## Ends in an error in state: 25.
-##
-## attribute -> SECTION TEXT COLON . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
-##
-## The known suffix of the stack is as follows:
-## SECTION TEXT COLON
 ##
 graindoc: RETURNS THROWS
 ##
@@ -252,18 +234,6 @@ graindoc: HISTORY THROWS
 ##
 
 Expected a version number in Semantic Versioning format, e.g. `v1.2.3`.
-
-graindoc: SECTION THROWS
-##
-## Ends in an error in state: 23.
-##
-## attribute -> SECTION . TEXT COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
-##
-## The known suffix of the stack is as follows:
-## SECTION
-##
-
-Expected a section title.
 
 graindoc: PARAM THROWS
 ##

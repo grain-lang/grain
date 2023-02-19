@@ -17,12 +17,7 @@ type t =
       attr_desc,
       attr_type,
     })
-  // Currently only accepts single-line examples
   | Example({attr_desc})
-  | Section({
-      attr_name,
-      attr_desc,
-    })
   | Deprecated({attr_desc})
   | Since({attr_version})
   | History({

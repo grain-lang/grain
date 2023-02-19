@@ -30,7 +30,6 @@ attribute:
   | PARAM IDENT COLON attribute_text { Param({ attr_name=$2; attr_type=None; attr_desc=$4 }) }
   | RETURNS attribute_text { Returns({ attr_desc=$2; attr_type=None }) }
   | EXAMPLE attribute_text { Example({attr_desc=$2}) }
-  | SECTION TEXT COLON attribute_text { Section({ attr_name=$2; attr_desc=$4; }) }
   | DEPRECATED attribute_text { Deprecated({attr_desc=$2}) }
   | SINCE SEMVER { Since({attr_version=$2}) }
   | HISTORY SEMVER COLON attribute_text { History({ attr_version=$2; attr_desc=$4; }) }

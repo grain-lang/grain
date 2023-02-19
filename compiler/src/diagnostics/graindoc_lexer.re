@@ -60,7 +60,6 @@ and lexer_mode =
   | Start
   | Default
   | Param
-  | Section
   | Since
   | History
   | Throws
@@ -71,7 +70,6 @@ let rec token = (state, lexbuf) => {
   | Start => start(state, lexbuf)
   | Default => default(state, lexbuf)
   | Param => param(state, lexbuf)
-  | Section => section(state, lexbuf)
   | Since => since(state, lexbuf)
   | History => history(state, lexbuf)
   | Throws => throws(state, lexbuf)
@@ -102,9 +100,6 @@ and default = (state, lexbuf) => {
   | "@example" =>
     state.lexer_mode = FreeTextAttribute;
     EXAMPLE;
-  | "@section" =>
-    state.lexer_mode = Section;
-    SECTION;
   | "@deprecated" =>
     state.lexer_mode = FreeTextAttribute;
     DEPRECATED;
