@@ -202,6 +202,17 @@ let reverse = list => {
   iter(list, [])
 }
 
+/**
+ * Concatenate two strings.
+ *
+ * @param str1: The beginning string
+ * @param str2: The ending string
+ * @returns The combined string
+ *
+ * @example "Foo" ++ "Bar" == "FooBar"
+ *
+ * @since v0.2.0
+ */
 @unsafe
 provide let concat = (s1: String, s2: String) => {
   let ptr1 = WasmI32.fromGrain(s1)
@@ -657,12 +668,30 @@ recordToString = (ptr, recordArity, fields, contentOffset, extraIndents) => {
   join(strings)
 }
 
+/**
+ * Converts the given operand to a string.
+ * Provides a better representation of data types if those types are provided from the module.
+ *
+ * @param value: The operand
+ * @returns The operand, as a string
+ *
+ * @since v0.1.0
+ */
 @unsafe
 provide let toString = value => {
   let value = WasmI32.fromGrain(value)
   toStringHelp(value, 0n, true)
 }
 
+/**
+ * Prints the given operand to the console. Works for any type. Internally, calls `toString`
+ * on the operand, so a better representation of data type will be printed if those types
+ * are provided from the module.
+ *
+ * @param value: The operand
+ *
+ * @since v0.1.0
+ */
 @unsafe
 provide let print = value => {
   // First convert the value to string, if it isn't one already.

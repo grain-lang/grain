@@ -66,25 +66,7 @@ provide let tau = 6.2831853f
  */
 provide let e = 2.7182817f
 
-/**
- * Converts a Number to a Float32.
- *
- * @param number: The value to convert
- * @returns The Number represented as a Float32
- *
- * @since v0.2.0
- */
-provide { fromNumber }
-
-/**
- * Converts a Float32 to a Number.
- *
- * @param float: The value to convert
- * @returns The Float32 represented as a Number
- *
- * @since v0.2.0
- */
-provide { toNumber }
+provide { fromNumber, toNumber }
 
 /**
  * Computes the sum of its operands.
