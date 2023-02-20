@@ -32,8 +32,7 @@ type example = {example_txt: string};
 
 type t =
   | Type({
-      module_namespace: string,
-      module_name: string,
+      module_namespace: option(string),
       name: string,
       type_sig: string,
       description: option(string),
@@ -43,8 +42,7 @@ type t =
       examples: list(example),
     })
   | Value({
-      module_namespace: string,
-      module_name: string,
+      module_namespace: option(string),
       name: string,
       type_sig: string,
       description: option(string),
@@ -55,7 +53,23 @@ type t =
       returns: option(returns),
       throws: list(throw),
       examples: list(example),
-    });
+    })
+  | Module({
+      module_namespace: option(string),
+      name: string,
+      description: option(string),
+      deprecations: list(deprecation),
+      since: option(since),
+      history: list(history),
+      examples: list(example),
+      provided,
+    })
+
+and provided = {
+  provided_types: list(t),
+  provided_values: list(t),
+  provided_modules: list(t),
+};
 
 exception
   MissingFlag({
@@ -63,8 +77,13 @@ exception
     attr: string,
   });
 
-exception MissingType;
-exception InvalidAttribute;
+exception MissingParamType({name: string});
+exception MissingReturnType;
+exception
+  InvalidAttribute({
+    name: string,
+    attr: string,
+  });
 
 let () =
   Printexc.register_printer(exn => {
@@ -76,6 +95,19 @@ let () =
           flag,
           attr,
         );
+      Some(msg);
+    | MissingParamType({name}) =>
+      let msg =
+        Printf.sprintf(
+          "Unable to find a type for %s. Did you specify too many @param attributes?",
+          name,
+        );
+      Some(msg);
+    | MissingReturnType =>
+      let msg = "Unable to find a return type. Please file an issue!";
+      Some(msg);
+    | InvalidAttribute({name, attr}) =>
+      let msg = Printf.sprintf("Invalid attribute @%s on %s", attr, name);
       Some(msg);
     | _ => None
     }
@@ -130,7 +162,8 @@ let enumerate_provides = program => {
             },
             vbinds,
           )
-        | TTopModule(_)
+        | TTopModule({tmod_id, tmod_loc}) =>
+          id_tbl := Ident.add(tmod_id, tmod_loc, id_tbl^)
         | TTopInclude(_)
         | TTopException(_)
         | TTopExpr(_) => ()
@@ -148,8 +181,19 @@ let location_for_ident =
   snd(Ident.find_name(Ident.name(ident), provides));
 };
 
-let title_for_api = (~module_name, ident: Ident.t) => {
-  Format.asprintf("%s.**%a**", module_name, Printtyp.ident, ident);
+let title_for_api = (~module_namespace, name) => {
+  switch (module_namespace) {
+  | Some(module_namespace) =>
+    Format.sprintf("%s.**%s**", module_namespace, name)
+  | None => name
+  };
+};
+
+let title_for_namepace = (~module_namespace, name) => {
+  switch (module_namespace) {
+  | Some(module_namespace) => Format.sprintf("%s.%s", module_namespace, name)
+  | None => name
+  };
 };
 
 let output_for_since = (~current_version, {since_version}) => {
@@ -244,13 +288,12 @@ let for_value_description =
     (
       ~comments,
       ~provides,
-      ~module_name,
       ~module_namespace,
       ~ident: Ident.t,
       vd: Types.value_description,
     ) => {
   let loc = location_for_ident(~provides, ident);
-  let name = title_for_api(~module_name, ident);
+  let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
     Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
@@ -301,11 +344,10 @@ let for_value_description =
           )
         | Param({attr_name: param_name, attr_desc: param_msg}) =>
           // TODO: Use label lookups when labeled parameters are introduced
-
           let param_type =
             switch (lookup_type_expr(~idx=List.length(params), arg_types)) {
             | Some(typ) => Printtyp.string_of_type_sch(typ)
-            | None => raise(MissingType)
+            | None => raise(MissingParamType({name: param_name}))
             };
 
           (
@@ -321,7 +363,7 @@ let for_value_description =
           let returns_type =
             switch (return_type) {
             | Some(typ) => Printtyp.string_of_type_sch(typ)
-            | None => raise(MissingType)
+            | None => raise(MissingReturnType)
             };
           (
             deprecations,
@@ -359,7 +401,6 @@ let for_value_description =
 
   Value({
     module_namespace,
-    module_name,
     name,
     type_sig,
     description,
@@ -377,20 +418,19 @@ let for_type_declaration =
     (
       ~comments,
       ~provides,
-      ~module_name,
       ~module_namespace,
       ~ident: Ident.t,
       td: Types.type_declaration,
     ) => {
   let loc = location_for_ident(~provides, ident);
-  let name = title_for_api(~module_name, ident);
+  let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
     Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
 
   let (description, attributes) =
     switch (comment) {
-    | Some((_, description, _)) => (description, [])
+    | Some((_, description, attributes)) => (description, attributes)
     | None => (None, [])
     };
 
@@ -419,10 +459,11 @@ let for_type_declaration =
             examples,
           )
         | Param({attr_name: param_name, attr_desc: param_msg}) =>
-          raise(InvalidAttribute)
-        | Returns({attr_desc: returns_msg}) => raise(InvalidAttribute)
+          raise(InvalidAttribute({name, attr: "param"}))
+        | Returns({attr_desc: returns_msg}) =>
+          raise(InvalidAttribute({name, attr: "returns"}))
         | Throws({attr_type: throw_type, attr_desc: throw_msg}) =>
-          raise(InvalidAttribute)
+          raise(InvalidAttribute({name, attr: "throws"}))
         | Example({attr_desc}) => (
             deprecations,
             since,
@@ -438,7 +479,6 @@ let for_type_declaration =
 
   Type({
     module_namespace,
-    module_name,
     name,
     type_sig,
     description,
@@ -449,20 +489,195 @@ let for_type_declaration =
   });
 };
 
-let to_markdown = (~current_version, docblock) => {
+let rec traverse_signature_items =
+        (~comments, ~provides, ~module_namespace, signature_items) => {
+  let {provided_types, provided_values, provided_modules} =
+    List.fold_left(
+      (
+        {provided_types, provided_values, provided_modules},
+        sig_item: Types.signature_item,
+      ) => {
+        switch (sig_item) {
+        | TSigType(ident, td, _) =>
+          let docblock =
+            for_type_declaration(
+              ~comments,
+              ~provides,
+              ~module_namespace,
+              ~ident,
+              td,
+            );
+          {
+            provided_types: [docblock, ...provided_types],
+            provided_values,
+            provided_modules,
+          };
+        | TSigValue(ident, vd) =>
+          let docblock =
+            for_value_description(
+              ~comments,
+              ~provides,
+              ~module_namespace,
+              ~ident,
+              vd,
+            );
+          {
+            provided_types,
+            provided_values: [docblock, ...provided_values],
+            provided_modules,
+          };
+        | TSigModule(ident, {md_type: TModSignature(signature_items)}, _) =>
+          let loc = location_for_ident(~provides, ident);
+          let name = Format.asprintf("%a", Printtyp.ident, ident);
+          let docblock =
+            for_signature_items(
+              ~comments,
+              ~provides,
+              ~module_namespace,
+              ~name,
+              ~loc,
+              signature_items,
+            );
+          {
+            provided_types,
+            provided_values,
+            provided_modules: [docblock, ...provided_modules],
+          };
+        | TSigTypeExt(_)
+        | TSigModType(_)
+        | TSigModule(_) => {provided_types, provided_values, provided_modules}
+        }
+      },
+      {provided_types: [], provided_values: [], provided_modules: []},
+      signature_items,
+    );
+
+  {
+    provided_types: List.rev(provided_types),
+    provided_values: List.rev(provided_values),
+    provided_modules: List.rev(provided_modules),
+  };
+}
+and for_signature_items =
+    (
+      ~comments,
+      ~provides,
+      ~module_namespace,
+      ~name,
+      ~loc: Grain_parsing.Location.t,
+      signature_items,
+    ) => {
+  let comment =
+    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+
+  let (description, attributes) =
+    switch (comment) {
+    | Some((_, description, attributes)) => (description, attributes)
+    | None => (None, [])
+    };
+
+  let (deprecations, since, history, examples) =
+    List.fold_left(
+      ((deprecations, since, history, examples), attr: Comment_attributes.t) => {
+        switch (attr) {
+        | Deprecated({attr_desc}) => (
+            [{deprecation_msg: attr_desc}, ...deprecations],
+            since,
+            history,
+            examples,
+          )
+        | Since({attr_version}) =>
+          // TODO(#787): Should we fail if more than one `@since` attribute?
+          (
+            deprecations,
+            Some({since_version: attr_version}),
+            history,
+            examples,
+          )
+        | History({attr_version: history_version, attr_desc: history_msg}) => (
+            deprecations,
+            since,
+            [{history_version, history_msg}, ...history],
+            examples,
+          )
+        | Param({attr_name: param_name, attr_desc: param_msg}) =>
+          raise(InvalidAttribute({name, attr: "param"}))
+        | Returns({attr_desc: returns_msg}) =>
+          raise(InvalidAttribute({name, attr: "returns"}))
+        | Throws({attr_type: throw_type, attr_desc: throw_msg}) =>
+          raise(InvalidAttribute({name, attr: "throws"}))
+        | Example({attr_desc}) => (
+            deprecations,
+            since,
+            history,
+            [{example_txt: attr_desc}, ...examples],
+          )
+        }
+      },
+      // deprecations, since, history, examples
+      ([], None, [], []),
+      attributes,
+    );
+
+  let provided =
+    switch (signature_items) {
+    | [] => {provided_types: [], provided_values: [], provided_modules: []}
+    | _ =>
+      let namespace = title_for_namepace(~module_namespace, name);
+
+      traverse_signature_items(
+        ~comments,
+        ~provides,
+        ~module_namespace=Some(namespace),
+        signature_items,
+      );
+    };
+
+  Module({
+    module_namespace,
+    name,
+    description,
+    deprecations: List.rev(deprecations),
+    since,
+    history: List.rev(history),
+    examples: List.rev(examples),
+    provided,
+  });
+};
+
+let rec to_markdown = (~current_version, ~heading_level, docblock) => {
   let buf = Buffer.create(0);
 
+  let next_heading_level = heading_level + 1;
+
   switch (docblock) {
-  | Type({name})
-  | Value({name}) =>
-    Buffer.add_string(buf, Markdown.heading(~level=3, name))
+  | Type({name, module_namespace})
+  | Value({name, module_namespace}) =>
+    Buffer.add_string(
+      buf,
+      Markdown.heading(
+        ~level=next_heading_level,
+        title_for_api(~module_namespace, name),
+      ),
+    )
+  | Module({name, module_namespace: Some(_) as module_namespace}) =>
+    Buffer.add_string(
+      buf,
+      Markdown.heading(
+        ~level=heading_level,
+        title_for_namepace(~module_namespace, name),
+      ),
+    )
+  | Module(_) => () // No title for top-level modules
   };
 
   switch (docblock) {
   | Type({deprecations: []})
-  | Value({deprecations: []}) => ()
+  | Value({deprecations: []})
+  | Module({deprecations: []}) => ()
   | Type({deprecations})
-  | Value({deprecations}) =>
+  | Value({deprecations})
+  | Module({deprecations}) =>
     List.iter(
       ({deprecation_msg}) =>
         Buffer.add_string(
@@ -476,10 +691,21 @@ let to_markdown = (~current_version, docblock) => {
   };
 
   switch (docblock) {
+  // Type and Value descriptions are printed after signature, etc
+  | Type(_)
+  | Value(_)
+  | Module({description: None}) => ()
+  | Module({description: Some(desc)}) =>
+    Buffer.add_string(buf, Markdown.paragraph(desc))
+  };
+
+  switch (docblock) {
   | Type({since: None, history: []})
-  | Value({since: None, history: []}) => ()
+  | Value({since: None, history: []})
+  | Module({since: None, history: []}) => ()
   | Type({since, history})
-  | Value({since, history}) =>
+  | Value({since, history})
+  | Module({since, history}) =>
     let summary =
       Option.fold(
         ~none="History",
@@ -504,6 +730,7 @@ let to_markdown = (~current_version, docblock) => {
   };
 
   switch (docblock) {
+  | Module(_) => ()
   | Type({type_sig})
   | Value({type_sig}) =>
     Buffer.add_string(buf, Markdown.code_block(type_sig))
@@ -511,7 +738,9 @@ let to_markdown = (~current_version, docblock) => {
 
   switch (docblock) {
   | Type({description: None})
-  | Value({description: None}) => ()
+  | Value({description: None})
+  // Module description comes first
+  | Module(_) => ()
   // Guard isn't be needed because we turn an empty string into None during extraction
   | Type({description: Some(desc)})
   | Value({description: Some(desc)}) =>
@@ -520,7 +749,8 @@ let to_markdown = (~current_version, docblock) => {
 
   switch (docblock) {
   | Type(_)
-  | Value({params: []}) => ()
+  | Value({params: []})
+  | Module(_) => ()
   | Value({params}) =>
     Buffer.add_string(buf, Markdown.paragraph("Parameters:"));
     Buffer.add_string(buf, output_for_params(params));
@@ -528,7 +758,8 @@ let to_markdown = (~current_version, docblock) => {
 
   switch (docblock) {
   | Type(_)
-  | Value({returns: None}) => ()
+  | Value({returns: None})
+  | Module(_) => ()
   | Value({returns: Some(returns)}) =>
     Buffer.add_string(buf, Markdown.paragraph("Returns:"));
     Buffer.add_string(buf, output_for_returns(returns));
@@ -536,7 +767,8 @@ let to_markdown = (~current_version, docblock) => {
 
   switch (docblock) {
   | Type(_)
-  | Value({throws: []}) => ()
+  | Value({throws: []})
+  | Module(_) => ()
   | Value({throws}) =>
     Buffer.add_string(buf, Markdown.paragraph("Throws:"));
 
@@ -545,7 +777,8 @@ let to_markdown = (~current_version, docblock) => {
 
   switch (docblock) {
   | Type({examples: []})
-  | Value({examples: []}) => ()
+  | Value({examples: []})
+  | Module({examples: []}) => ()
   | Type({examples})
   | Value({examples}) =>
     Buffer.add_string(buf, Markdown.paragraph("Examples:"));
@@ -554,6 +787,92 @@ let to_markdown = (~current_version, docblock) => {
         Buffer.add_string(buf, Markdown.code_block(example_txt)),
       examples,
     );
+  // No "Examples:" paragraph for module examples
+  | Module({examples}) =>
+    List.iter(
+      ({example_txt}) =>
+        Buffer.add_string(buf, Markdown.code_block(example_txt)),
+      examples,
+    )
+  };
+
+  switch (docblock) {
+  | Type(_)
+  | Value(_)
+  | Module({provided: {provided_types: []}}) => ()
+  | Module({module_namespace, name, provided: {provided_types}}) =>
+    let namespace = title_for_namepace(~module_namespace, name);
+    Buffer.add_string(
+      buf,
+      Markdown.heading(~level=next_heading_level, "Types"),
+    );
+    Buffer.add_string(
+      buf,
+      Markdown.paragraph(
+        "Type declarations included in the " ++ namespace ++ " module.",
+      ),
+    );
+    List.iter(
+      item =>
+        Buffer.add_buffer(
+          buf,
+          to_markdown(
+            ~current_version,
+            ~heading_level=next_heading_level,
+            item,
+          ),
+        ),
+      provided_types,
+    );
+  };
+
+  switch (docblock) {
+  | Type(_)
+  | Value(_)
+  | Module({provided: {provided_values: []}}) => ()
+  | Module({module_namespace, name, provided: {provided_values}}) =>
+    let namespace = title_for_namepace(~module_namespace, name);
+    Buffer.add_string(
+      buf,
+      Markdown.heading(~level=next_heading_level, "Values"),
+    );
+    Buffer.add_string(
+      buf,
+      Markdown.paragraph(
+        "Functions and constants included in the " ++ namespace ++ " module.",
+      ),
+    );
+    List.iter(
+      item =>
+        Buffer.add_buffer(
+          buf,
+          to_markdown(
+            ~current_version,
+            ~heading_level=next_heading_level,
+            item,
+          ),
+        ),
+      provided_values,
+    );
+  };
+
+  switch (docblock) {
+  | Type(_)
+  | Value(_)
+  | Module({provided: {provided_modules: []}}) => ()
+  | Module({module_namespace, name, provided: {provided_modules}}) =>
+    List.iter(
+      item =>
+        Buffer.add_buffer(
+          buf,
+          to_markdown(
+            ~current_version,
+            ~heading_level=next_heading_level,
+            item,
+          ),
+        ),
+      provided_modules,
+    )
   };
 
   buf;

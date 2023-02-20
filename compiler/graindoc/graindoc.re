@@ -88,199 +88,23 @@ let generate_docs =
 
   let buf = Buffer.create(0);
   let module_name = program.module_name.txt;
-  let module_comment =
-    Comments.Doc.ending_on(
-      ~lnum=program.module_name.loc.loc_start.pos_lnum - 1,
-      comments,
-    );
 
   Buffer.add_string(buf, Markdown.frontmatter([("title", module_name)]));
-  switch (module_comment) {
-  | Some((_, desc, attrs)) =>
-    let deprecations =
-      attrs
-      |> List.filter(Comments.Attribute.is_deprecated)
-      |> List.map((attr: Comment_attributes.t) => {
-           switch (attr) {
-           | Deprecated({attr_desc}) => attr_desc
-           | _ =>
-             failwith(
-               "Unreachable: Non-`deprecated` attribute can't exist here.",
-             )
-           }
-         });
 
-    if (List.length(deprecations) > 0) {
-      List.iter(
-        msg =>
-          Buffer.add_string(
-            buf,
-            Markdown.blockquote(Markdown.bold("Deprecated:") ++ " " ++ msg),
-          ),
-        deprecations,
-      );
-    };
-
-    switch (desc) {
-    | Some(desc) => Buffer.add_string(buf, Markdown.paragraph(desc))
-    | None => ()
-    };
-
-    // TODO(#787): Should we fail if more than one `@since` attribute?
-    let since_attr =
-      attrs
-      |> List.find_opt(Comments.Attribute.is_since)
-      |> Option.map((attr: Comment_attributes.t) => {
-           switch (attr) {
-           | Since({attr_version}) =>
-             Docblock.output_for_since(
-               ~current_version,
-               {since_version: attr_version},
-             )
-           | _ =>
-             failwith("Unreachable: Non-`since` attribute can't exist here.")
-           }
-         });
-    let history_attrs =
-      attrs
-      |> List.filter(Comments.Attribute.is_history)
-      |> List.map((attr: Comment_attributes.t) => {
-           switch (attr) {
-           | History({attr_version, attr_desc}) =>
-             Docblock.output_for_history(
-               ~current_version,
-               {history_version: attr_version, history_msg: attr_desc},
-             )
-           | _ =>
-             failwith("Unreachable: Non-`since` attribute can't exist here.")
-           }
-         });
-    if (Option.is_some(since_attr) || List.length(history_attrs) > 0) {
-      let summary = Option.value(~default="History", since_attr);
-      let disabled = List.length(history_attrs) == 0 ? true : false;
-      let details =
-        if (List.length(history_attrs) == 0) {
-          "No other changes yet.";
-        } else {
-          Html.table(~headers=["version", "changes"], history_attrs);
-        };
-      Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
-    };
-
-    let example_attrs = attrs |> List.filter(Comments.Attribute.is_example);
-    if (List.length(example_attrs) > 0) {
-      List.iter(
-        (attr: Comment_attributes.t) => {
-          switch (attr) {
-          | Example({attr_desc}) =>
-            Buffer.add_string(buf, Markdown.code_block(attr_desc))
-          | _ =>
-            failwith("Unreachable: Non-`example` attribute can't exist here.")
-          }
-        },
-        example_attrs,
-      );
-    };
-  | None => ()
-  };
-
-  let sig_types =
-    List.filter(
-      (sig_item: Types.signature_item) => {
-        switch (sig_item) {
-        | TSigTypeExt(_)
-        | TSigModule(_)
-        | TSigModType(_)
-        | TSigValue(_) => false
-        | TSigType(_) => true
-        }
-      },
+  let docblock =
+    Docblock.for_signature_items(
+      ~comments,
+      ~provides,
+      ~module_namespace=None,
+      ~name=module_name,
+      ~loc=program.module_name.loc,
       signature_items,
     );
 
-  switch (sig_types) {
-  | [] => ()
-  | _ =>
-    Buffer.add_string(buf, Markdown.heading(~level=2, "Types"));
-    Buffer.add_string(
-      buf,
-      Markdown.paragraph(
-        "Type declarations included in the " ++ module_name ++ " module.",
-      ),
-    );
-
-    List.iter(
-      (sig_type: Types.signature_item) => {
-        switch (sig_type) {
-        | TSigType(ident, td, _rec) =>
-          let docblock =
-            Docblock.for_type_declaration(
-              ~comments,
-              ~provides,
-              ~module_name,
-              ~module_namespace="",
-              ~ident,
-              td,
-            );
-          Buffer.add_buffer(
-            buf,
-            Docblock.to_markdown(~current_version, docblock),
-          );
-        | _ => failwith("Unreachable: TSigType-only list")
-        }
-      },
-      sig_types,
-    );
-  };
-
-  let sig_values =
-    List.filter(
-      (sig_item: Types.signature_item) => {
-        switch (sig_item) {
-        | TSigType(_)
-        | TSigTypeExt(_)
-        | TSigModule(_)
-        | TSigModType(_) => false
-        | TSigValue(_) => true
-        }
-      },
-      signature_items,
-    );
-
-  switch (sig_values) {
-  | [] => ()
-  | _ =>
-    Buffer.add_string(buf, Markdown.heading(~level=2, "Values"));
-    Buffer.add_string(
-      buf,
-      Markdown.paragraph(
-        "Functions and constants included in the " ++ module_name ++ " module.",
-      ),
-    );
-
-    List.iter(
-      (sig_value: Types.signature_item) => {
-        switch (sig_value) {
-        | TSigValue(ident, vd) =>
-          let docblock =
-            Docblock.for_value_description(
-              ~comments,
-              ~provides,
-              ~module_name,
-              ~module_namespace="",
-              ~ident,
-              vd,
-            );
-          Buffer.add_buffer(
-            buf,
-            Docblock.to_markdown(~current_version, docblock),
-          );
-        | _ => failwith("Unreachable: TSigValue-only list")
-        }
-      },
-      sig_values,
-    );
-  };
+  Buffer.add_buffer(
+    buf,
+    Docblock.to_markdown(~current_version, ~heading_level=1, docblock),
+  );
 
   let contents = Buffer.to_bytes(buf);
   switch (output) {
