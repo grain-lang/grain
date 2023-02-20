@@ -25,6 +25,11 @@ type RegularExpression
 
 ### Regex.**MatchResult**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.4.3</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 record MatchResult {
   group: Number -> Option<String>,
