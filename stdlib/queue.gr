@@ -178,7 +178,8 @@ provide module Immutable {
   /**
    * An empty queue.
    *
-   * @since v0.5.4
+   * @since v0.6.0
+   * @history v0.5.4: Originally a module root API
    */
 
   provide let empty = {
@@ -192,7 +193,8 @@ provide module Immutable {
    * @param queue: The queue to check
    * @returns `true` if the given queue is empty or `false` otherwise
    *
-   * @since v0.2.0
+   * @since v0.6.0
+   * @history v0.2.0: Originally a module root API
    */
 
   provide let isEmpty = queue => {
@@ -208,9 +210,10 @@ provide module Immutable {
    * @param queue: The queue to inspect
    * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
    *
-   * @since v0.3.2
+   * @since v0.6.0
    * @history v0.2.0: Originally named `head`
    * @history v0.3.2: Deprecated `head` function
+   * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `head` function
    */
 
@@ -228,9 +231,10 @@ provide module Immutable {
    * @param queue: The queue to update
    * @returns An updated queue
    *
-   * @since v0.3.2
+   * @since v0.6.0
    * @history v0.2.0: Originally named `enqueue`
    * @history v0.3.2: Deprecated `enqueue` function
+   * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `enqueue` function
    */
 
@@ -247,9 +251,10 @@ provide module Immutable {
    * @param queue: The queue to change
    * @returns An updated queue
    *
-   * @since v0.3.2
+   * @since v0.6.0
    * @history v0.2.0: Originally named `dequeue`
    * @history v0.3.2: Deprecated `dequeue` function
+   * @history v0.3.2: Originally a module root API
    * @history v0.4.0: Removed `dequeue` function
    */
 
@@ -276,7 +281,8 @@ provide module Immutable {
    * @param queue: The queue to inspect
    * @returns The number of values in the queue
    *
-   * @since v0.3.2
+   * @since v0.6.0
+   * @history v0.3.2: Originally a module root API
    */
 
   provide let size = queue => {

@@ -82,9 +82,16 @@ Returns:
 
 ### Queue.**isEmpty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -107,9 +114,16 @@ Returns:
 
 ### Queue.**size**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -133,7 +147,7 @@ Returns:
 ### Queue.**peek**
 
 <details>
-<summary>Added in <code>0.3.2</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -141,6 +155,7 @@ Returns:
 <tbody>
 <tr><td><code>0.2.0</code></td><td>Originally named `head`</td></tr>
 <tr><td><code>0.3.2</code></td><td>Deprecated `head` function</td></tr>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.4.0</code></td><td>Removed `head` function</td></tr>
 </tbody>
 </table>
@@ -167,7 +182,7 @@ Returns:
 ### Queue.**push**
 
 <details>
-<summary>Added in <code>0.3.2</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -175,6 +190,7 @@ Returns:
 <tbody>
 <tr><td><code>0.2.0</code></td><td>Originally named `enqueue`</td></tr>
 <tr><td><code>0.3.2</code></td><td>Deprecated `enqueue` function</td></tr>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.4.0</code></td><td>Removed `enqueue` function</td></tr>
 </tbody>
 </table>
@@ -202,7 +218,7 @@ Returns:
 ### Queue.**pop**
 
 <details>
-<summary>Added in <code>0.3.2</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -210,6 +226,7 @@ Returns:
 <tbody>
 <tr><td><code>0.2.0</code></td><td>Originally named `dequeue`</td></tr>
 <tr><td><code>0.3.2</code></td><td>Deprecated `dequeue` function</td></tr>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.4.0</code></td><td>Removed `dequeue` function</td></tr>
 </tbody>
 </table>
@@ -299,9 +316,16 @@ Functions and constants included in the Queue.Immutable module.
 
 #### Queue.Immutable.**empty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -312,9 +336,16 @@ An empty queue.
 
 #### Queue.Immutable.**isEmpty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -338,7 +369,7 @@ Returns:
 #### Queue.Immutable.**peek**
 
 <details>
-<summary>Added in <code>0.3.2</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -346,6 +377,7 @@ Returns:
 <tbody>
 <tr><td><code>0.2.0</code></td><td>Originally named `head`</td></tr>
 <tr><td><code>0.3.2</code></td><td>Deprecated `head` function</td></tr>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.4.0</code></td><td>Removed `head` function</td></tr>
 </tbody>
 </table>
@@ -372,7 +404,7 @@ Returns:
 #### Queue.Immutable.**push**
 
 <details>
-<summary>Added in <code>0.3.2</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -380,6 +412,7 @@ Returns:
 <tbody>
 <tr><td><code>0.2.0</code></td><td>Originally named `enqueue`</td></tr>
 <tr><td><code>0.3.2</code></td><td>Deprecated `enqueue` function</td></tr>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.4.0</code></td><td>Removed `enqueue` function</td></tr>
 </tbody>
 </table>
@@ -407,7 +440,7 @@ Returns:
 #### Queue.Immutable.**pop**
 
 <details>
-<summary>Added in <code>0.3.2</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
@@ -415,6 +448,7 @@ Returns:
 <tbody>
 <tr><td><code>0.2.0</code></td><td>Originally named `dequeue`</td></tr>
 <tr><td><code>0.3.2</code></td><td>Deprecated `dequeue` function</td></tr>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.4.0</code></td><td>Removed `dequeue` function</td></tr>
 </tbody>
 </table>
@@ -440,9 +474,16 @@ Returns:
 
 #### Queue.Immutable.**size**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain

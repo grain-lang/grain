@@ -82,9 +82,16 @@ Returns:
 
 ### Stack.**isEmpty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -107,9 +114,16 @@ Returns:
 
 ### Stack.**size**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -133,12 +147,13 @@ Returns:
 ### Stack.**peek**
 
 <details>
-<summary>Added in <code>0.3.0</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.3.1</code></td><td>Rename from `head` to `peek`</td></tr>
 </tbody>
 </table>
@@ -164,9 +179,16 @@ Returns:
 
 ### Stack.**push**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -190,9 +212,16 @@ Returns:
 
 ### Stack.**pop**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -279,9 +308,16 @@ Functions and constants included in the Stack.Immutable module.
 
 #### Stack.Immutable.**empty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -292,9 +328,16 @@ An empty stack.
 
 #### Stack.Immutable.**isEmpty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -318,12 +361,13 @@ Returns:
 #### Stack.Immutable.**peek**
 
 <details>
-<summary>Added in <code>0.3.0</code></summary>
+<summary>Added in <code>next</code></summary>
 <table>
 <thead>
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
 <tr><td><code>0.3.1</code></td><td>Rename from `head` to `peek`</td></tr>
 </tbody>
 </table>
@@ -349,9 +393,16 @@ Returns:
 
 #### Stack.Immutable.**push**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -375,9 +426,16 @@ Returns:
 
 #### Stack.Immutable.**pop**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -400,9 +458,16 @@ Returns:
 
 #### Stack.Immutable.**size**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain

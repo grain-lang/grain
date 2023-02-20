@@ -157,7 +157,8 @@ provide module Immutable {
   /**
    * An empty stack.
    *
-   * @since v0.5.4
+   * @since v0.6.0
+   * @history v0.5.4: Originally a module root API
    */
 
   provide let empty = {
@@ -171,7 +172,8 @@ provide module Immutable {
    * @param stack: The stack to check
    * @returns `true` if the stack has no items or `false` otherwise
    *
-   * @since v0.3.0
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
    */
 
   provide let isEmpty = stack => {
@@ -187,7 +189,8 @@ provide module Immutable {
    * @param stack: The stack to inspect
    * @returns `Some(value)` containing the value at the top of the stack or `None` otherwise.
    *
-   * @since v0.3.0
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
    * @history v0.3.1: Rename from `head` to `peek`
    */
 
@@ -205,7 +208,8 @@ provide module Immutable {
    * @param stack: The stack being updated
    * @returns A new stack with the item added to the end
    *
-   * @since v0.3.0
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
    */
 
   provide let push = (value, stack) => {
@@ -221,7 +225,8 @@ provide module Immutable {
    * @param stack: The stack being updated
    * @returns A new stack with the last item removed
    *
-   * @since v0.3.0
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
    */
 
   provide let pop = stack => {
@@ -237,7 +242,8 @@ provide module Immutable {
    * @param stack: The stack to inspect
    * @returns The count of the items in the stack
    *
-   * @since v0.3.2
+   * @since v0.6.0
+   * @history v0.3.2: Originally a module root API
    */
 
   provide let size = stack => {
