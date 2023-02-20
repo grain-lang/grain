@@ -27,13 +27,13 @@ attribute_text:
   | ioption(eols) multiline_text ioption(eols) %prec EOL { $2 }
 
 attribute:
-  | PARAM IDENT COLON attribute_text { Param({ attr_name=$2; attr_type=None; attr_desc=$4 }) }
-  | RETURNS attribute_text { Returns({ attr_desc=$2; attr_type=None }) }
+  | PARAM IDENT COLON attribute_text { Param({ attr_name=$2; attr_desc=$4 }) }
+  | RETURNS attribute_text { Returns({attr_desc=$2}) }
   | EXAMPLE attribute_text { Example({attr_desc=$2}) }
   | DEPRECATED attribute_text { Deprecated({attr_desc=$2}) }
   | SINCE SEMVER { Since({attr_version=$2}) }
   | HISTORY SEMVER COLON attribute_text { History({ attr_version=$2; attr_desc=$4; }) }
-  | THROWS CONSTRUCTOR COLON attribute_text { Throws({ attr_type=Some $2; attr_desc=$4; }); }
+  | THROWS CONSTRUCTOR COLON attribute_text { Throws({ attr_type=$2; attr_desc=$4; }); }
 
 attributes_help:
   | attribute { [$1] }

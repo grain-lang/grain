@@ -1,32 +1,22 @@
 exception InvalidAttribute(string);
 exception MalformedAttribute(string, string);
 
-type attr_name = string;
-type attr_desc = string;
-// The `attr_type` always starts as `None` and is applied later by something like Graindoc
-type attr_type = option(string);
-type attr_version = string;
-
 type t =
   | Param({
-      attr_name,
-      attr_type,
-      attr_desc,
+      attr_name: string,
+      attr_desc: string,
     })
-  | Returns({
-      attr_desc,
-      attr_type,
-    })
-  | Example({attr_desc})
-  | Deprecated({attr_desc})
-  | Since({attr_version})
+  | Returns({attr_desc: string})
+  | Example({attr_desc: string})
+  | Deprecated({attr_desc: string})
+  | Since({attr_version: string})
   | History({
-      attr_version,
-      attr_desc,
+      attr_version: string,
+      attr_desc: string,
     })
   | Throws({
-      attr_type,
-      attr_desc,
+      attr_type: string,
+      attr_desc: string,
     });
 
 type parsed_graindoc = (option(string), list(t));
