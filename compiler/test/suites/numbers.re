@@ -149,7 +149,7 @@ describe("numbers", ({test, testSkip}) => {
   });
   test("float32_fromNumber_warn2", ({expect}) => {
     expect.string(Warnings.message(FromNumberLiteralF32("5."))).toMatch(
-      "5.0f",
+      "5.f",
     )
   });
   test("float32_fromNumber_warn3", ({expect}) => {
@@ -164,7 +164,7 @@ describe("numbers", ({test, testSkip}) => {
   });
   test("float64_fromNumber_warn2", ({expect}) => {
     expect.string(Warnings.message(FromNumberLiteralF64("5."))).toMatch(
-      "5.0d",
+      "5.d",
     )
   });
   test("float64_fromNumber_warn3", ({expect}) => {
