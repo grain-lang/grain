@@ -960,9 +960,9 @@ provide let sort = (comp, array) => {
  * @param arr: The array to be rotated
  *
  * @example
- * let arr = [> 1, 2, 3, 4, 5]
- * Array.rotate(2, arr)
- * assert arr == [> 4, 5, 1, 2, 3]
+ * let array = [> 1, 2, 3, 4, 5]
+ * Array.rotate(2, array)
+ * assert array == [> 4, 5, 1, 2, 3]
  *
  * @example
  * let array = [> 1, 2, 3, 4, 5]
