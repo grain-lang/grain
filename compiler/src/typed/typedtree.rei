@@ -434,6 +434,7 @@ and expression_desc =
     )
   | TExpLet(rec_flag, mut_flag, list(value_binding))
   | TExpMatch(expression, list(match_branch), partial)
+  | TExpUse(loc(Path.t), use_items)
   | TExpPrim0(prim0)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)

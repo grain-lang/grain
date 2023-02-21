@@ -109,8 +109,8 @@ let print_type = (env, ty) => {
   };
 };
 
-let module_lens = (~program: Typedtree.typed_program, path: Path.t) => {
-  let vals = Modules.get_exports(~path, program);
+let module_lens = (decl: Types.module_declaration) => {
+  let vals = Modules.get_exports(decl);
   let signatures =
     List.map(
       (v: Modules.export) =>
@@ -127,14 +127,8 @@ let module_lens = (~program: Typedtree.typed_program, path: Path.t) => {
   grain_code_block(String.concat("\n", signatures));
 };
 
-let expression_lens =
-    (e: Typedtree.expression, desc: option(Types.value_description)) => {
-  let ty =
-    switch (desc) {
-    | Some({val_type}) => val_type
-    | None => e.exp_type
-    };
-  print_type(e.exp_env, ty);
+let value_lens = (env: Env.t, ty: Types.type_expr) => {
+  print_type(env, ty);
 };
 
 let pattern_lens = (p: Typedtree.pattern) => {
@@ -145,10 +139,8 @@ let type_lens = (ty: Typedtree.core_type) => {
   grain_type_code_block(Printtyp.string_of_type_scheme(ty.ctyp_type));
 };
 
-let declaration_lens = (decl: Typedtree.data_declaration) => {
-  grain_type_code_block(
-    Printtyp.string_of_type_declaration(~ident=decl.data_id, decl.data_type),
-  );
+let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
+  grain_type_code_block(Printtyp.string_of_type_declaration(~ident, decl));
 };
 
 let process =
@@ -163,24 +155,20 @@ let process =
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
-    | [Expression(exp, desc), ..._] =>
-      send_hover(
-        ~id,
-        ~range=loc_to_range(exp.exp_loc),
-        expression_lens(exp, desc),
-      )
+    | [Value(env, ty, loc), ..._] =>
+      send_hover(~id, ~range=loc_to_range(loc), value_lens(env, ty))
     | [Pattern(pat), ..._] =>
       send_hover(~id, ~range=loc_to_range(pat.pat_loc), pattern_lens(pat))
     | [Type(ty), ..._] =>
       send_hover(~id, ~range=loc_to_range(ty.ctyp_loc), type_lens(ty))
-    | [Declaration(decl), ..._] =>
+    | [Declaration(ident, decl, loc), ..._] =>
       send_hover(
         ~id,
-        ~range=loc_to_range(decl.data_loc),
-        declaration_lens(decl),
+        ~range=loc_to_range(loc),
+        declaration_lens(ident, decl),
       )
-    | [Module(path, loc), ..._] =>
-      send_hover(~id, ~range=loc_to_range(loc), module_lens(~program, path))
+    | [Module(path, decl, loc), ..._] =>
+      send_hover(~id, ~range=loc_to_range(loc), module_lens(decl))
     | _ => send_no_result(~id)
     };
   };

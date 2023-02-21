@@ -2106,87 +2106,95 @@ let use_partial_signature = (root, items, env0) => {
     comp_modtypes: Tbl.empty,
   };
 
-  List.iter(
-    item => {
-      switch (item) {
-      | Parsetree.PUseValue({name, alias}) =>
-        let (old_name, new_name) = apply_alias(name, alias);
-        switch (Tbl.find(old_name, comps.comp_values)) {
-        | exception Not_found =>
-          error(
-            Value_not_found_in_module(name.loc, old_name, Path.name(root)),
-          )
-        | descr =>
-          new_comps.comp_values =
-            Tbl.add(new_name, descr, new_comps.comp_values)
-        };
-      | PUseModule({name, alias}) =>
-        let (old_name, new_name) = apply_alias(name, alias);
-        switch (Tbl.find(old_name, comps.comp_modules)) {
-        | exception Not_found =>
-          let possible_type =
-            if (Tbl.mem(old_name, comps.comp_types)) {
-              Some(old_name);
-            } else {
-              None;
-            };
-          error(
-            Module_not_found_in_module(
-              name.loc,
-              old_name,
-              Path.name(root),
-              possible_type,
-            ),
-          );
-        | descr =>
-          new_comps.comp_modules =
-            Tbl.add(new_name, descr, new_comps.comp_modules);
-          new_comps.comp_components =
-            Tbl.add(
-              new_name,
-              Tbl.find(old_name, comps.comp_components),
-              new_comps.comp_components,
+  let items =
+    List.map(
+      item => {
+        switch (item) {
+        | Parsetree.PUseValue({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_values)) {
+          | exception Not_found =>
+            error(
+              Value_not_found_in_module(name.loc, old_name, Path.name(root)),
+            )
+          | (descr, pos) as d =>
+            new_comps.comp_values =
+              Tbl.add(new_name, d, new_comps.comp_values);
+            TUseValue({name: new_name, value: descr, loc});
+          };
+        | PUseModule({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_modules)) {
+          | exception Not_found =>
+            let possible_type =
+              if (Tbl.mem(old_name, comps.comp_types)) {
+                Some(old_name);
+              } else {
+                None;
+              };
+            error(
+              Module_not_found_in_module(
+                name.loc,
+                old_name,
+                Path.name(root),
+                possible_type,
+              ),
             );
-        };
-      | PUseType({name, alias}) =>
-        let (old_name, new_name) = apply_alias(name, alias);
-        switch (Tbl.find(old_name, comps.comp_types)) {
-        | exception Not_found =>
-          error(
-            Type_not_found_in_module(name.loc, old_name, Path.name(root)),
-          )
-        | ((_, (constructors, labels)), _) as descr =>
-          new_comps.comp_types =
-            Tbl.add(new_name, descr, new_comps.comp_types);
-          List.iter(
-            ({cstr_name}) => {
-              new_comps.comp_constrs =
-                Tbl.add(
-                  cstr_name,
-                  Tbl.find(cstr_name, comps.comp_constrs),
-                  new_comps.comp_constrs,
-                )
-            },
-            constructors,
-          );
-          List.iter(
-            ({lbl_name}) => {
-              new_comps.comp_labels =
-                Tbl.add(
-                  lbl_name,
-                  Tbl.find(lbl_name, comps.comp_labels),
-                  new_comps.comp_labels,
-                )
-            },
-            labels,
-          );
-        };
-      }
-    },
-    items,
-  );
+          | (descr, pos) as d =>
+            new_comps.comp_modules =
+              Tbl.add(new_name, d, new_comps.comp_modules);
+            new_comps.comp_components =
+              Tbl.add(
+                new_name,
+                Tbl.find(old_name, comps.comp_components),
+                new_comps.comp_components,
+              );
+            TUseModule({
+              name: new_name,
+              declaration: EnvLazy.force(subst_modtype_maker, descr),
+              loc,
+            });
+          };
+        | PUseType({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_types)) {
+          | exception Not_found =>
+            error(
+              Type_not_found_in_module(name.loc, old_name, Path.name(root)),
+            )
+          | ((decl, (constructors, labels)), _) as descr =>
+            new_comps.comp_types =
+              Tbl.add(new_name, descr, new_comps.comp_types);
+            List.iter(
+              ({cstr_name}) => {
+                new_comps.comp_constrs =
+                  Tbl.add(
+                    cstr_name,
+                    Tbl.find(cstr_name, comps.comp_constrs),
+                    new_comps.comp_constrs,
+                  )
+              },
+              constructors,
+            );
+            List.iter(
+              ({lbl_name}) => {
+                new_comps.comp_labels =
+                  Tbl.add(
+                    lbl_name,
+                    Tbl.find(lbl_name, comps.comp_labels),
+                    new_comps.comp_labels,
+                  )
+              },
+              labels,
+            );
+            TUseType({name: new_name, declaration: decl, loc});
+          };
+        }
+      },
+      items,
+    );
 
-  add_components(None, root, env0, new_comps);
+  (add_components(None, root, env0, new_comps), items);
 };
 
 let use_full_signature = (root, env0) => {

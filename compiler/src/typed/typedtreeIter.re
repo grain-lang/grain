@@ -203,6 +203,7 @@ module MakeIterator =
     );
     switch (exp_desc) {
     | TExpNull
+    | TExpUse(_)
     | TExpIdent(_)
     | TExpConstant(_) => ()
     | TExpLet(recflag, mutflag, binds) =>

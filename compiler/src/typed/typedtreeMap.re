@@ -205,6 +205,7 @@ module MakeMap =
     let exp_desc =
       switch (exp.exp_desc) {
       | TExpNull
+      | TExpUse(_)
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc
       | TExpLet(recflag, mutflag, binds) =>
