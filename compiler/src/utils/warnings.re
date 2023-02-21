@@ -143,7 +143,7 @@ let message =
       "it looks like you are calling Uint64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%suL`) instead.",
       n,
     )
-  | FromNumberLiteralF32(n) => 
+  | FromNumberLiteralF32(n) =>
     Printf.sprintf(
       "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
       String.contains(n, '.') ? n : n ++ ".",
