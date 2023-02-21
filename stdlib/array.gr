@@ -42,6 +42,7 @@ let checkLength = length => {
  * @returns The number of elements in the array
  *
  * @example Array.length([> 1, 2, 3, 4, 5]) == 5
+ * 
  * @since v0.1.0
  */
 @unsafe
@@ -129,6 +130,7 @@ provide let init: (Number, Number -> a) -> Array<a> =
  * @param index: The index to access
  * @param array: The array to access
  * @returns The element from the array
+ * 
  * @example Array.get(1,[> 1, 2, 3, 4, 5]) == 2
  *
  * @since v0.1.0
@@ -147,6 +149,7 @@ provide let get = (index, array) => {
  * @param index: The index to update
  * @param value: The value to store
  * @param array: The array to update
+ * 
  * @example Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
  *
  * @since v0.1.0
@@ -163,6 +166,7 @@ provide let set = (index, value, array) => {
  * @param array1: The array containing elements to appear first
  * @param array2: The array containing elements to appear second
  * @returns The new array containing elements from `array1` followed by elements from `array2`
+ * 
  * @example Array.append([> 1, 2], [> 3, 4, 5]) == [> 1, 2, 3, 4, 5]
  *
  * @since v0.1.0
@@ -186,6 +190,7 @@ provide let append = (array1, array2) => {
  *
  * @param arrays: A list containing all arrays to combine
  * @returns The new array
+ * 
  * @example Array.concat([[> 1, 2], [> 3, 4], [> 5, 6]]) == [> 1, 2, 3, 4, 5, 6]
  *
  * @since v0.1.0
@@ -229,7 +234,12 @@ provide let concat = arrays => {
  *
  * @param array: The array to copy
  * @returns The new array containing the elements from the input
- *
+ * 
+ * @example
+ * let array1 = [> 9, 8, 7, 6, 5]
+ * let array2 = Array.copy(array1) 
+ * assert array1 == array2
+ * 
  * @since v0.1.0
  */
 provide let copy = array => {
@@ -242,7 +252,10 @@ provide let copy = array => {
  * @param fn: The iterator function to call with each element
  * @param n: The number of times to iterate the given array
  * @param array: The array to iterate
- *
+ * 
+ * @example
+ * Array.cycle(a => print(a), 2, [> 1, 2, 3]) // sep lines: 1 2 3 1 2 3
+ * 
  * @since v0.4.4
  */
 provide let cycle = (fn, n, array) => {
@@ -259,7 +272,10 @@ provide let cycle = (fn, n, array) => {
  *
  * @param fn: The iterator function to call with each element
  * @param array: The array to iterate
- *
+ * 
+ * @example
+ * Array.forEach(a => print(a), [> 1, 2, 3]) // sep lines: 1 2 3
+ * 
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
@@ -276,7 +292,10 @@ provide let forEach = (fn, array) => {
  *
  * @param fn: The iterator function to call with each element
  * @param array: The array to iterate
- *
+ * 
+ * @example
+ * Array.forEachi((a, i) => print(a + i * 2), [> 1, 2, 3]) // sep lines: 1 4 7
+ * 
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
@@ -294,7 +313,10 @@ provide let forEachi = (fn, array) => {
  * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
  * @param array: The array to iterate
  * @returns The new array with mapped values
- *
+ * 
+ * @example
+ * Array.map(a => a * a, [> 7, 8, 9]) // [> 49, 64, 81]
+ * 
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
@@ -312,7 +334,10 @@ provide let map = (fn, array) => {
  * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
  * @param array: The array to iterate
  * @returns The new array with mapped values
- *
+ * 
+ * @example
+ * Array.mapi((a, i) => a * i, [> 10, 20, 30]) // [> 0, 20, 60]
+ * 
  * @since v0.1.0
  */
 provide let mapi = (fn, array) => {
@@ -386,6 +411,9 @@ provide let reduceRight = (fn, initial, array) => {
  * @param initial: The initial value to use for the accumulator on the first iteration
  * @param array: The array to iterate
  * @returns The final accumulator returned from `fn`
+ * 
+ * @example
+ * Array.reducei((a, b, i) => a + b + i, 100, [> 1, 2, 3, 4]) // 116
  *
  * @since v0.3.0
  */
@@ -404,6 +432,9 @@ provide let reducei = (fn, initial, array) => {
  * @param fn: The function to be called on each element, where the value returned will be an array that gets appended to the new array
  * @param array: The array to iterate
  * @returns The new array
+ * 
+ * @example
+ * Array.flatMap(b => [> b, 2 * b], [> 1, 2, 6, 7]) // [> 1, 2, 2, 4, 6, 12, 7, 14]
  *
  * @since v0.3.0
  */
@@ -430,6 +461,9 @@ provide let flatMap = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to check
  * @returns `true` if all elements satify the condition or `false` otherwise
+ * 
+ * @example
+ * Array.every(a => a > 5, [> 2, 4, 6, 8]) // false
  *
  * @since v0.3.0
  */
@@ -450,6 +484,9 @@ provide let every = (fn, array) => {
  * @param array: The array to iterate
  * @returns `true` if one or more elements satify the condition or `false` otherwise
  *
+ * @example
+ * Array.some(a => a > 5, [> 2, 4, 6, 8]) // true
+ * 
  * @since v0.3.0
  */
 provide let some = (fn, array) => {
@@ -466,6 +503,11 @@ provide let some = (fn, array) => {
  *
  * @param value: The value replacing each element
  * @param array: The array to update
+ * 
+ * @example
+ * let array = [> 1, 2, 3, 4]
+ * Array.fill(9, array)
+ * assert array == [> 9, 9, 9, 9]
  *
  * @since v0.2.0
  */
@@ -485,7 +527,12 @@ provide let fill = (value, array) => {
  * @param start: The index to begin replacement
  * @param stop: The (exclusive) index to end replacement
  * @param array: The array to update
- *
+ * 
+ * @example 
+ * let array = [> 1, 2, 3, 4]
+ * Array.fillRange(9, 1, 3, my_frarray_array)
+ * assert array == [> 1, 9, 9, 4]
+ * 
  * @since v0.2.0
  */
 provide let fillRange = (value, start, stop, array) => {
@@ -516,6 +563,9 @@ provide let fillRange = (value, start, stop, array) => {
  *
  * @param array: The array to reverse
  * @returns The new array
+ * 
+ * @example
+ * Array.reverse([> 1, 2, 3, 4]) // [> 4,3,2,1]
  *
  * @since v0.4.0
  */
@@ -532,6 +582,9 @@ provide let reverse = array => {
  *
  * @param array: The array to convert
  * @returns The list containing all elements from the array
+ * 
+ * @example
+ * Array.toList([> 1, 2, 3, 4]) // [> 1, 2, 3, 4] becomes [1, 2, 3, 4]
  *
  * @since v0.1.0
  */
@@ -552,6 +605,9 @@ provide let toList = array => {
  *
  * @param list: The list to convert
  * @returns The array containing all elements from the list
+ * 
+ * @example
+ * Array.fromList([1, 2, 3, 4]) // [1, 2, 3, 4] becomes [> 1, 2, 3, 4]
  *
  * @since v0.1.0
  */
@@ -583,6 +639,9 @@ provide let fromList = list => {
  * @param search: The value to compare
  * @param array: The array to inspect
  * @returns `true` if the value exists in the array or `false` otherwise
+ * 
+ * @example
+ * Array.contains(9, [> 5, 6, 7, 8, 9]) // true
  *
  * @since v0.2.0
  */
@@ -601,6 +660,9 @@ provide let contains = (search, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
  * @returns `Some(element)` containing the first value found or `None` otherwise
+ * 
+ * @example
+ * Array.find(a => a == 7, [> 5, 6, 7, 8, 9]) // Some(7)
  *
  * @since v0.2.0
  */
@@ -620,6 +682,9 @@ provide let find = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
  * @returns `Some(index)` containing the index of the first element found or `None` otherwise
+ * 
+ * @example
+ * Array.findIndex(a => a == 7, [> 5, 6, 7, 8, 9]) // Some(2)
  *
  * @since v0.2.0
  */
@@ -638,6 +703,9 @@ provide let findIndex = (fn, array) => {
  * @param array1: The array to provide values for the first tuple element
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing all pairs of `(a, b)`
+ * 
+ * @example
+ * Array.product([> 1, 2], [> 11, 12]) // [> (1, 11), (1, 12), (2, 11), (2, 12)]
  *
  * @since v0.2.0
  */
@@ -660,6 +728,9 @@ provide let product = (array1: Array<a>, array2: Array<b>) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
  * @returns The total number of elements that satisfy the condition
+ * 
+ * @example
+ * Array.count(a => a >= 7, [> 5, 6, 7, 8, 9]) // 3
  *
  * @since v0.2.0
  */
@@ -681,6 +752,9 @@ provide let count = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
  * @returns The total number of elements that satisfy the condition
+ * 
+ * @example
+ * Array.counti((a, i) => a >= 7 && i > 2, [> 5, 6, 7, 8, 9]) // 2
  *
  * @since v0.3.0
  */
@@ -703,6 +777,9 @@ provide let counti = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
  * @returns The new array containing elements where `fn` returned `true`
+ * 
+ * @example
+ * Array.filter(a => a < 8, [> 5, 6, 7, 8, 9]) // [> 5, 6, 7]
  *
  * @since v0.3.0
  */
@@ -728,6 +805,9 @@ provide let filter = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
  * @returns The new array containing elements where `fn` returned `true`
+ * 
+ * @example
+ * Array.filteri((a, i) => a < 9 && i > 0, [> 5, 6, 7, 8, 9]) // [> 6, 7, 8]
  *
  * @since v0.3.0
  */
@@ -751,6 +831,9 @@ provide let filteri = (fn, array) => {
  *
  * @param array: The array to filter
  * @returns The new array with only unique values
+ * 
+ * @example
+ * Array.unique([> 1, 1, 1, 2, 3, 3, 4, 5, 6]) // [> 1, 2, 3, 4, 5, 6]
  *
  * @since v0.3.0
  */
@@ -769,6 +852,9 @@ provide let unique = array => {
  * @returns The new array containing indexed pairs of `(a, b)`
  *
  * @throws Failure(String): When the arrays have different sizes
+ * 
+ * @example
+ * Array.zip([> 1, 2, 3], [> 11, 12, 13]) // [> (1, 11), (2, 12), (3, 13)]
  *
  * @since v0.4.0
  * @history v0.6.0: Support zipping arrays of different sizes
@@ -816,6 +902,9 @@ provide let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
  *
  * @param array: The array of tuples to split
  * @returns An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element
+ * 
+ * @example
+ * Array.unzip([> (1, 2), (3, 4), (5, 6)]) // ([> 1, 3, 5], [> 2, 4, 6])
  *
  * @since v0.4.0
  */
@@ -841,6 +930,9 @@ provide let unzip = array => {
  * @param separator: The separator to insert between items in the string
  * @param items: The input strings
  * @returns The concatenated string
+ * 
+ * @example
+ * Array.join(" ", [> "The", "quick", "brown", "fox"]) // The quick brown fox
  *
  * @since v0.4.0
  */
@@ -880,6 +972,9 @@ let wrapNegativeIndex = (arrLen, idx) => {
  * @param endIndex: The index of the array where the slice will end (exclusive)
  * @param array: The array to be sliced
  * @returns The subset of the array that was sliced
+ * 
+ * @example
+ * Array.slice(1, 3, [> 5, 6, 7, 8, 9]) // [> 6, 7]
  *
  * @since v0.4.0
  */
