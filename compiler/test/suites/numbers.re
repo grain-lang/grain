@@ -141,33 +141,33 @@ describe("numbers", ({test, testSkip}) => {
     {|include "uint64"; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
-  // well-formedness errors
-  test("float32_fromNumber_err1", ({expect}) => {
+  // well-formedness warnings
+  test("float32_fromNumber_warn1", ({expect}) => {
     expect.string(Warnings.message(FromNumberLiteralF32("5"))).toMatch(
       "5.f",
     )
   });
-  test("float32_fromNumber_err2", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteralF32("5.0"))).toMatch(
+  test("float32_fromNumber_warn2", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF32("5."))).toMatch(
       "5.0f",
     )
   });
-  test("float32_fromNumber_err3", ({expect}) => {
+  test("float32_fromNumber_warn3", ({expect}) => {
     expect.string(Warnings.message(FromNumberLiteralF32("5.5"))).toMatch(
       "5.5f",
     )
   });
-  test("float64_fromNumber_err1", ({expect}) => {
+  test("float64_fromNumber_warn1", ({expect}) => {
     expect.string(Warnings.message(FromNumberLiteralF64("5"))).toMatch(
       "5.d",
     )
   });
-  test("float64_fromNumber_err2", ({expect}) => {
-    expect.string(Warnings.message(FromNumberLiteralF64("5.0"))).toMatch(
+  test("float64_fromNumber_warn2", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF64("5."))).toMatch(
       "5.0d",
     )
   });
-  test("float64_fromNumber_err3", ({expect}) => {
+  test("float64_fromNumber_warn3", ({expect}) => {
     expect.string(Warnings.message(FromNumberLiteralF64("5.5"))).toMatch(
       "5.5d",
     )
