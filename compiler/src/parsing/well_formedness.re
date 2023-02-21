@@ -18,7 +18,8 @@ type wferr =
   | LoopControlOutsideLoop(string, Location.t)
   | ReturnStatementOutsideFunction(Location.t)
   | MismatchedReturnStyles(Location.t)
-  | LocalIncludeStatement(Location.t);
+  | LocalIncludeStatement(Location.t)
+  | ProvidedMultipleTimes(string, Location.t);
 
 exception Error(wferr);
 
@@ -77,6 +78,12 @@ let prepare_error =
         errorf(
           ~loc,
           "`include` statements may only appear at the file level.",
+        )
+      | ProvidedMultipleTimes(name, loc) =>
+        errorf(
+          ~loc,
+          "%s was provided multiple times, but can only be provided once.",
+          name,
         )
     )
   );
@@ -557,6 +564,194 @@ let no_local_include = (errs, super) => {
   };
 };
 
+type provided_multiple_times_ctx = {
+  modules: Hashtbl.t(string, unit),
+  types: Hashtbl.t(string, unit),
+  values: Hashtbl.t(string, unit),
+};
+
+let provided_multiple_times = (errs, super) => {
+  let rec extract_bindings = (binds, pattern) =>
+    switch (pattern.ppat_desc) {
+    | PPatAny => binds
+    | PPatVar(bind) => [bind, ...binds]
+    | PPatTuple(pats)
+    | PPatArray(pats) => List.fold_left(extract_bindings, binds, pats)
+    | PPatRecord(pats, _) =>
+      List.fold_left(
+        (binds, (_, pat)) => extract_bindings(binds, pat),
+        binds,
+        pats,
+      )
+    | PPatConstant(_) => binds
+    | PPatConstraint(pat, _) => extract_bindings(binds, pat)
+    | PPatConstruct(_, cstr) =>
+      switch (cstr) {
+      | PPatConstrRecord(pats, _) =>
+        List.fold_left(
+          (binds, (_, pat)) => extract_bindings(binds, pat),
+          binds,
+          pats,
+        )
+      | PPatConstrTuple(pats) =>
+        List.fold_left(extract_bindings, binds, pats)
+      }
+    | PPatOr(pat1, pat2) =>
+      extract_bindings([], pat1) @ extract_bindings(binds, pat2)
+    | PPatAlias(pat, bind) => extract_bindings([bind, ...binds], pat)
+    };
+
+  let ctx =
+    ref([
+      {
+        modules: Hashtbl.create(64),
+        types: Hashtbl.create(64),
+        values: Hashtbl.create(64),
+      },
+    ]);
+
+  let enter_module = (p, d) => {
+    ctx :=
+      [
+        {
+          modules: Hashtbl.create(64),
+          types: Hashtbl.create(64),
+          values: Hashtbl.create(64),
+        },
+        ...ctx^,
+      ];
+    super.enter_module(p, d);
+  };
+
+  let leave_module = (p, d) => {
+    ctx := List.tl(ctx^);
+    super.leave_module(p, d);
+  };
+
+  let enter_toplevel_stmt = ({ptop_desc: desc} as top) => {
+    let {values, modules, types} = List.hd(ctx^);
+    switch (desc) {
+    | PTopModule(Provided | Abstract, {pmod_name, pmod_loc}) =>
+      if (Hashtbl.mem(modules, pmod_name.txt)) {
+        errs := [ProvidedMultipleTimes(pmod_name.txt, pmod_loc), ...errs^];
+      } else {
+        Hashtbl.add(modules, pmod_name.txt, ());
+      }
+    | PTopForeign(
+        Provided | Abstract,
+        {pval_name, pval_name_alias, pval_loc},
+      )
+    | PTopPrimitive(
+        Provided | Abstract,
+        {pval_name, pval_name_alias, pval_loc},
+      ) =>
+      let name = Option.value(~default=pval_name, pval_name_alias);
+      if (Hashtbl.mem(values, name.txt)) {
+        errs := [ProvidedMultipleTimes(name.txt, pval_loc), ...errs^];
+      } else {
+        Hashtbl.add(values, name.txt, ());
+      };
+    | PTopData(decls) =>
+      List.iter(
+        decl => {
+          switch (decl) {
+          | (Provided | Abstract, {pdata_name, pdata_loc}) =>
+            if (Hashtbl.mem(types, pdata_name.txt)) {
+              errs :=
+                [ProvidedMultipleTimes(pdata_name.txt, pdata_loc), ...errs^];
+            } else {
+              Hashtbl.add(types, pdata_name.txt, ());
+            }
+          | (NotProvided, _) => ()
+          }
+        },
+        decls,
+      )
+    | PTopLet(Provided | Abstract, _, _, binds) =>
+      List.iter(
+        bind => {
+          let names = extract_bindings([], bind.pvb_pat);
+          List.iter(
+            name =>
+              if (Hashtbl.mem(values, name.txt)) {
+                errs := [ProvidedMultipleTimes(name.txt, name.loc), ...errs^];
+              } else {
+                Hashtbl.add(values, name.txt, ());
+              },
+            names,
+          );
+        },
+        binds,
+      )
+    | PTopException(
+        Provided | Abstract,
+        {ptyexn_constructor: {pext_name, pext_loc}},
+      ) =>
+      if (Hashtbl.mem(values, pext_name.txt)) {
+        errs := [ProvidedMultipleTimes(pext_name.txt, pext_loc), ...errs^];
+      } else {
+        Hashtbl.add(values, pext_name.txt, ());
+      }
+    | PTopProvide(items) =>
+      let apply_alias = (name, alias) => {
+        let old_name = Identifier.string_of_ident(name.txt);
+        let new_name =
+          switch (alias) {
+          | Some(alias) => Identifier.string_of_ident(alias.txt)
+          | None => old_name
+          };
+        (old_name, new_name);
+      };
+      List.iter(
+        item => {
+          switch (item) {
+          | PProvideType({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(types, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(types, name, ());
+            };
+          | PProvideModule({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(modules, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(modules, name, ());
+            };
+          | PProvideValue({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(values, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(values, name, ());
+            };
+          }
+        },
+        items,
+      );
+    | PTopModule(NotProvided, _)
+    | PTopForeign(NotProvided, _)
+    | PTopPrimitive(NotProvided, _)
+    | PTopLet(NotProvided, _, _, _)
+    | PTopException(NotProvided, _)
+    | PTopInclude(_)
+    | PTopExpr(_) => ()
+    };
+    super.enter_toplevel_stmt(top);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_module,
+      leave_module,
+    },
+  };
+};
+
 let compose_well_formedness = ({errs, iter_hooks}, cur) =>
   cur(errs, iter_hooks);
 
@@ -572,6 +767,7 @@ let well_formedness_checks = [
   no_loop_control_statement_outside_of_loop,
   malformed_return_statements,
   no_local_include,
+  provided_multiple_times,
 ];
 
 let well_formedness_checker = () =>

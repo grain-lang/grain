@@ -104,6 +104,50 @@ describe("provides", ({test, testSkip}) => {
     "provide { foo }",
     "Unbound value foo",
   );
+  assertCompileError(
+    "multiple_provides_1",
+    "provide let foo = 1; provide let foo = 2",
+    "provided multiple times",
+  );
+  assertCompileError(
+    "multiple_provides_2",
+    "provide let foo = 1; provide {foo}",
+    "provided multiple times",
+  );
+  assertCompileError(
+    "multiple_provides_3",
+    "provide enum Foo {Foo}; provide enum Foo {Foo}",
+    "provided multiple times",
+  );
+  assertCompileError(
+    "multiple_provides_4",
+    "provide enum Foo {Foo}; provide {type Foo}",
+    "provided multiple times",
+  );
+  assertCompileError(
+    "multiple_provides_5",
+    "provide module Foo {void}; provide module Foo {void}",
+    "provided multiple times",
+  );
+  assertCompileError(
+    "multiple_provides_6",
+    "provide module Foo {void}; provide {Foo}",
+    "provided multiple times",
+  );
+  assertCompileError(
+    "multiple_provides_7",
+    "let foo = 1; provide {foo, foo}",
+    "provided multiple times",
+  );
+  assertSnapshot(
+    "multiple_provides_8",
+    "let foo = 1; provide {foo, foo as bar}",
+  );
+  assertCompileError(
+    "multiple_provides_9",
+    "let foo = 1; let bar = 2; provide {foo, foo as bar, bar as foo}",
+    "provided multiple times",
+  );
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");
 

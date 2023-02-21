@@ -597,7 +597,7 @@ provide let coerceNumberToUnsignedWasmI32 = (x: Number) => {
 }
 
 @unsafe
-provide let coerceNumberToBigInt = (x: Number) => {
+let coerceNumberToBigInt = (x: Number) => {
   let x = WasmI32.fromGrain(x)
   if (isSimpleNumber(x)) {
     BI.makeWrappedInt32(untagSimple(x))
@@ -2521,17 +2521,7 @@ provide let coerceNumberToInt64 = (x: Number) => {
  */
 @unsafe
 provide let coerceNumberToBigInt = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let result = if (isBigInt(x)) {
-    // avoid extra malloc and prevent x from being freed
-    Memory.incRef(x)
-    x
-  } else {
-    // incRef x to reuse it via WasmI32.toGrain
-    Memory.incRef(x)
-    BI.makeWrappedInt64(coerceNumberToWasmI64(WasmI32.toGrain(x): Number))
-  }
-  WasmI32.toGrain(result): BigInt
+  WasmI32.toGrain(coerceNumberToBigInt(x)): BigInt
 }
 
 @unsafe

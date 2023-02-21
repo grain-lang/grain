@@ -22,10 +22,6 @@ describe("includes", ({test, testSkip}) => {
     "include_all_constructor",
     "include \"tlists\" as TLists; from TLists use *; Cons(2, Empty)",
   );
-  assertSnapshot(
-    "include_with_export_multiple",
-    "include \"sameProvide\" as SameProvide; from SameProvide use *; foo()",
-  );
   /* use {} tests */
   assertSnapshot(
     "include_some",
