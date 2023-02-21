@@ -82,23 +82,16 @@ Returns:
 
 ### Queue.**isEmpty**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.2.0</code></td><td>Originally a module root API</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
 isEmpty : Queue<a> -> Bool
 ```
 
-Checks if the given queue contains any values.
+Checks if the given queue contains no items.
 
 Parameters:
 
@@ -110,27 +103,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the given queue is empty or `false` otherwise|
+|`Bool`|`true` if the queue has no items or `false` otherwise|
 
 ### Queue.**size**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
 size : Queue<a> -> Number
 ```
 
-Get the number of values in a queue.
+Computes the size of the input queue.
 
 Parameters:
 
@@ -142,30 +128,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The number of values in the queue|
+|`Number`|The count of the items in the queue|
 
 ### Queue.**peek**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.2.0</code></td><td>Originally named `head`</td></tr>
-<tr><td><code>0.3.2</code></td><td>Deprecated `head` function</td></tr>
-<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
-<tr><td><code>0.4.0</code></td><td>Removed `head` function</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
 peek : Queue<a> -> Option<a>
 ```
 
-Returns the value at the beginning of the queue. It is not removed from the queue.
+Provides the value at the beginning of the queue, if it exists.
 
 Parameters:
 
@@ -177,78 +153,52 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|`Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty|
+|`Option<a>`|`Some(value)` containing the value at the beginning of the queue or `None` otherwise.|
 
 ### Queue.**push**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.2.0</code></td><td>Originally named `enqueue`</td></tr>
-<tr><td><code>0.3.2</code></td><td>Deprecated `enqueue` function</td></tr>
-<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
-<tr><td><code>0.4.0</code></td><td>Removed `enqueue` function</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
 push : (a, Queue<a>) -> Void
 ```
 
-Adds a value to the end of the queue.
+Adds a new item to the end of the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to append|
-|`queue`|`Queue<a>`|The queue to update|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Void`|An updated queue|
+|`value`|`a`|The item to be added|
+|`queue`|`Queue<a>`|The queue being updated|
 
 ### Queue.**pop**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.2.0</code></td><td>Originally named `dequeue`</td></tr>
-<tr><td><code>0.3.2</code></td><td>Deprecated `dequeue` function</td></tr>
-<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
-<tr><td><code>0.4.0</code></td><td>Removed `dequeue` function</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
 pop : Queue<a> -> Option<a>
 ```
 
-Dequeues the next value in the queue.
+Removes the item at the beginning of the queue.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`queue`|`Queue<a>`|The queue to change|
+|`queue`|`Queue<a>`|The queue being updated|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|An updated queue|
+|`Option<a>`|The element removed from the queue|
 
 ### Queue.**clear**
 

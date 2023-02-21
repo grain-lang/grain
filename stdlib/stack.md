@@ -82,16 +82,9 @@ Returns:
 
 ### Stack.**isEmpty**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -114,16 +107,9 @@ Returns:
 
 ### Stack.**size**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.2</code></td><td>Originally a module root API</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -146,17 +132,9 @@ Returns:
 
 ### Stack.**peek**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
-<tr><td><code>0.3.1</code></td><td>Rename from `head` to `peek`</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -179,16 +157,9 @@ Returns:
 
 ### Stack.**push**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -204,24 +175,11 @@ Parameters:
 |`value`|`a`|The item to be added|
 |`stack`|`Stack<a>`|The stack being updated|
 
-Returns:
-
-|type|description|
-|----|-----------|
-|`Void`|A new stack with the item added to the end|
-
 ### Stack.**pop**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -240,7 +198,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Option<a>`|A new stack with the last item removed|
+|`Option<a>`|The element removed from the stack|
 
 ### Stack.**clear**
 
