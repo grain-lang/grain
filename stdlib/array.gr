@@ -965,9 +965,9 @@ provide let sort = (comp, array) => {
  * assert arr == [> 4, 5, 1, 2, 3]
  *
  * @example
- * let arr = [> 1, 2, 3, 4, 5]
- * Array.rotate(-1, arr)
- * assert arr == [> 2, 3, 4, 5, 1]
+ * let array = [> 1, 2, 3, 4, 5]
+ * Array.rotate(-1, array)
+ * assert array == [> 2, 3, 4, 5, 1]
  * 
  * @since v0.4.5
  *
