@@ -148,9 +148,9 @@ provide let get = (index, array) => {
  * @param value: The value to store
  * @param array: The array to update
  * @example
- * let arr = [>3,2,1] 
- * Array.sort((a, b) => a - b, arr)
- * assert arr == [>1,2,3]
+ * let arr = [> 1, 2, 3, 4, 5] 
+ * Array.set(1, 9, arr)
+ * assert arr == [> 1, 9, 3, 4, 5]
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
