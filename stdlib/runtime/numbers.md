@@ -977,3 +977,29 @@ Returns:
 |----|-----------|
 |`WasmF64`|The result of x * 2^n|
 
+### Numbers.**(**)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(**) : (Number, Number) -> Number
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Number`|The base number|
+|`power`|`Number`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The base raised to the given power|
+
