@@ -910,6 +910,9 @@ provide let slice = (startIndex, endIndex, array) => {
  * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
  * @param comp: The comparator function used to indicate sort order
  * @param array: The array to be sorted
+ *
+ * @example Array.sort((a, b) => a - b, my_sort_array) //[> 9, 2, 5] becomes [> 2, 5, 9]
+ *
  * @since v0.4.5
  */
 provide let sort = (comp, array) => {
@@ -950,8 +953,8 @@ provide let sort = (comp, array) => {
  * @param n: The number of elements to rotate by
  * @param arr: The array to be rotated
  *
- * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
- * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
+ * @example let my_rot_array = [> 1, 2, 3, 4, 5]; Array.rotate(2, my_rot_array) // [> 1, 2, 3, 4, 5] becomes [> 4, 5, 1, 2, 3]
+ * @example let array = [> 1, 2, 3, 4, 5]; Array.rotate(-1, my_rot_array2) // [> 1, 2, 3, 4, 5] becomes [> 2, 3, 4, 5, 1]
  * @since v0.4.5
  *
  * @history v0.6.0: Behavior changed from right-rotation to left-rotation
