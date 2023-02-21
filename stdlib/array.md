@@ -213,7 +213,9 @@ Parameters:
 Examples:
 
 ```grain
-Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
+let array = [> 1, 2, 3, 4, 5] 
+Array.set(1, 9, array)
+assert array == [> 1, 9, 3, 4, 5]
 ```
 
 ### Array.**append**
@@ -1187,6 +1189,14 @@ Parameters:
 |`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
 |`array`|`Array<a>`|The array to be sorted|
 
+Examples:
+
+```grain
+let array = [> 3, 2, 1]
+Array.sort(compare, array)
+assert array == [> 1, 2, 3]
+```
+
 ### Array.**rotate**
 
 <details>
@@ -1221,10 +1231,14 @@ Parameters:
 Examples:
 
 ```grain
-let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
+let array = [> 1, 2, 3, 4, 5]
+Array.rotate(2, array)
+assert array == [> 4, 5, 1, 2, 3]
 ```
 
 ```grain
-let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
+let array = [> 1, 2, 3, 4, 5]
+Array.rotate(-1, array)
+assert array == [> 2, 3, 4, 5, 1]
 ```
 
