@@ -20,25 +20,7 @@ from Numbers use {
   coerceInt32ToNumber as toNumber,
 }
 
-/**
- * Converts a Number to an Int32.
- *
- * @param number: The value to convert
- * @returns The Number represented as an Int32
- *
- * @since v0.2.0
- */
-provide { fromNumber }
-
-/**
- * Converts an Int32 to a Number.
- *
- * @param value: The value to convert
- * @returns The Int32 represented as a Number
- *
- * @since v0.2.0
- */
-provide { toNumber }
+provide { fromNumber, toNumber }
 
 /**
  * Converts a Uint32 to an Int32.

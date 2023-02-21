@@ -146,27 +146,107 @@ cmp : (WasmI32, WasmI32) -> WasmI32
 
 ### Numbers.**(<)**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 (<) : (Number, Number) -> Bool
 ```
 
+Checks if the first operand is less than the second operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first operand is less than the second operand or `false` otherwise|
+
 ### Numbers.**(>)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (>) : (Number, Number) -> Bool
 ```
 
+Checks if the first operand is greater than the second operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first operand is greater than the second operand or `false` otherwise|
+
 ### Numbers.**(<=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (<=) : (Number, Number) -> Bool
 ```
 
+Checks if the first operand is less than or equal to the second operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first operand is less than or equal to the second operand or `false` otherwise|
+
 ### Numbers.**(>=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (>=) : (Number, Number) -> Bool
 ```
+
+Checks if the first operand is greater than or equal to the second operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first operand is greater than or equal to the second operand or `false` otherwise|
 
 ### Numbers.**compare**
 
@@ -182,63 +262,308 @@ numberEq : (Number, Number) -> Bool
 
 ### Numbers.**lnot**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 lnot : Number -> Number
 ```
 
+Computes the bitwise NOT of the operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|Containing the inverted bits of the operand|
+
 ### Numbers.**(<<)**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lsl`</td></tr>
+<tr><td><code>0.3.0</code></td><td>Renamed to `<<`</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 (<<) : (Number, Number) -> Number
 ```
 
+Shifts the bits of the value left by the given number of bits.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The value to shift|
+|`amount`|`Number`|The number of bits to shift by|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The shifted value|
+
 ### Numbers.**(>>>)**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lsr`</td></tr>
+<tr><td><code>0.3.0</code></td><td>Renamed to `>>>`</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 (>>>) : (Number, Number) -> Number
 ```
 
+Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The value to shift|
+|`amount`|`Number`|The amount to shift by|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The shifted value|
+
 ### Numbers.**(&)**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `land`</td></tr>
+<tr><td><code>0.3.0</code></td><td>Renamed to `&`</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 (&) : (Number, Number) -> Number
 ```
 
+Computes the bitwise AND (`&`) on the given operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value1`|`Number`|The first operand|
+|`value2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
+
 ### Numbers.**(|)**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lor`</td></tr>
+<tr><td><code>0.3.0</code></td><td>Renamed to `|`</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 (|) : (Number, Number) -> Number
 ```
 
+Computes the bitwise OR (`|`) on the given operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value1`|`Number`|The first operand|
+|`value2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+
 ### Numbers.**(^)**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.1.0</code></td><td>The `^` operator was originally an alias of `unbox`</td></tr>
+<tr><td><code>0.2.0</code></td><td>Originally named `lxor`</td></tr>
+<tr><td><code>0.3.0</code></td><td>Renamed to `^`</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 (^) : (Number, Number) -> Number
 ```
 
+Computes the bitwise XOR (`^`) on the given operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value1`|`Number`|The first operand|
+|`value2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
+
 ### Numbers.**(>>)**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `asr`</td></tr>
+<tr><td><code>0.3.0</code></td><td>Renamed to `>>`</td></tr>
+</tbody>
+</table>
+</details>
 
 ```grain
 (>>) : (Number, Number) -> Number
 ```
 
+Shifts the bits of the value right by the given number of bits.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The value to shift|
+|`amount`|`Number`|The amount to shift by|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The shifted value|
+
 ### Numbers.**coerceNumberToInt32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceNumberToInt32 : Number -> Int32
 ```
 
+Converts a Number to an Int32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int32`|The Number represented as an Int32|
+
 ### Numbers.**coerceNumberToInt64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceNumberToInt64 : Number -> Int64
 ```
 
+Converts a Number to an Int64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The Number represented as an Int64|
+
 ### Numbers.**coerceNumberToBigInt**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceNumberToBigInt : Number -> BigInt
 ```
+
+Converts a Number to a BigInt.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`BigInt`|The Number represented as a BigInt|
 
 ### Numbers.**coerceNumberToRational**
 
@@ -248,33 +573,128 @@ coerceNumberToRational : Number -> Rational
 
 ### Numbers.**coerceNumberToFloat32**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 coerceNumberToFloat32 : Number -> Float32
 ```
 
+Converts a Number to a Float32.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float32`|The Number represented as a Float32|
+
 ### Numbers.**coerceNumberToFloat64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceNumberToFloat64 : Number -> Float64
 ```
 
+Converts a Number to a Float64.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Float64`|The Number represented as a Float64|
+
 ### Numbers.**coerceInt32ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceInt32ToNumber : Int32 -> Number
 ```
 
+Converts an Int32 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Int32 represented as a Number|
+
 ### Numbers.**coerceInt64ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceInt64ToNumber : Int64 -> Number
 ```
 
+Converts an Int64 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Int64 represented as a Number|
+
 ### Numbers.**coerceBigIntToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.5.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceBigIntToNumber : BigInt -> Number
 ```
+
+Converts a BigInt to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num`|`BigInt`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The BigInt represented as a Number|
 
 ### Numbers.**coerceRationalToNumber**
 
@@ -284,15 +704,53 @@ coerceRationalToNumber : Rational -> Number
 
 ### Numbers.**coerceFloat32ToNumber**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 coerceFloat32ToNumber : Float32 -> Number
 ```
 
+Converts a Float32 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`float`|`Float32`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Float32 represented as a Number|
+
 ### Numbers.**coerceFloat64ToNumber**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.2.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 coerceFloat64ToNumber : Float64 -> Number
 ```
+
+Converts a Float64 to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`float`|`Float64`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Float64 represented as a Number|
 
 ### Numbers.**convertExactToInexact**
 
@@ -308,45 +766,184 @@ convertInexactToExact : Number -> Number
 
 ### Numbers.**(+)**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 (+) : (Number, Number) -> Number
 ```
 
+Computes the sum of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The sum of the two operands|
+
 ### Numbers.**(-)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (-) : (Number, Number) -> Number
 ```
 
+Computes the difference of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The difference of the two operands|
+
 ### Numbers.**(*)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (*) : (Number, Number) -> Number
 ```
 
+Computes the product of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The product of the two operands|
+
 ### Numbers.**(/)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (/) : (Number, Number) -> Number
 ```
 
+Computes the quotient of its operands.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The quotient of the two operands|
+
 ### Numbers.**(%)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 (%) : (Number, Number) -> Number
 ```
 
+Computes the remainder of the division of the first operand by the second.
+The result will have the sign of the second operand.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The modulus of its operands|
+
 ### Numbers.**incr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 incr : Number -> Number
 ```
 
+Increments the value by one.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The value to increment|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The incremented value|
+
 ### Numbers.**decr**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>0.1.0</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 decr : Number -> Number
 ```
+
+Decrements the value by one.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The value to decrement|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The decremented value|
 
 ### Numbers.**isBigInt**
 

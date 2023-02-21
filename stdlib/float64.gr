@@ -70,25 +70,7 @@ provide let tau = 6.283185307179586d
  */
 provide let e = 2.718281828459045d
 
-/**
- * Converts a Number to a Float64.
- *
- * @param number: The value to convert
- * @returns The Number represented as a Float64
- *
- * @since v0.2.0
- */
-provide { fromNumber }
-
-/**
- * Converts a Float64 to a Number.
- *
- * @param float: The value to convert
- * @returns The Float64 represented as a Number
- *
- * @since v0.2.0
- */
-provide { toNumber }
+provide { fromNumber, toNumber }
 
 /**
  * Computes the sum of its operands.

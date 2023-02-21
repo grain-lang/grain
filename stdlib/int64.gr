@@ -21,25 +21,7 @@ from Numbers use {
   coerceInt64ToNumber as toNumber,
 }
 
-/**
- * Converts a Number to an Int64.
- *
- * @param number: The value to convert
- * @returns The Number represented as an Int64
- *
- * @since v0.2.0
- */
-provide { fromNumber }
-
-/**
- * Converts an Int64 to a Number.
- *
- * @param value: The value to convert
- * @returns The Int64 represented as a Number
- *
- * @since v0.2.0
- */
-provide { toNumber }
+provide { fromNumber, toNumber }
 
 /**
  * Converts a Uint64 to an Int64.

@@ -80,10 +80,6 @@ let compile_typed = (input: Fp.t(Fp.absolute)) => {
 
 let generate_docs =
     (~current_version, ~output=?, program: Typedtree.typed_program) => {
-  let comments = Comments.to_ordered(program.comments);
-
-  let provides = Docblock.enumerate_provides(program);
-
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
@@ -93,8 +89,6 @@ let generate_docs =
 
   let docblock =
     Docblock.for_signature_items(
-      ~comments,
-      ~provides,
       ~module_namespace=None,
       ~name=module_name,
       ~loc=program.module_name.loc,

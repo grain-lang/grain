@@ -220,6 +220,16 @@ equalHelp = (x, y) => {
   }
 }
 
+/**
+ * Check that two values are equal. This checks for structural equality,
+ * so it also works for comparing things like tuples and lists.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns `true` if the values are structurally equal or `false` otherwise
+ *
+ * @since v0.1.0
+ */
 @unsafe
 provide let equal = (x: a, y: a) => {
   equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))

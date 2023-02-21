@@ -19,24 +19,7 @@ from Numbers use {
   coerceBigIntToNumber as toNumber,
 }
 
-/**
- * Converts a Number to a BigInt.
- *
- * @param number: The value to convert
- * @returns The Number represented as a BigInt
- *
- * @since v0.5.0
- */
-provide { fromNumber }
-/**
- * Converts a BigInt to a Number.
- *
- * @param num: The value to convert
- * @returns The BigInt represented as a Number
- *
- * @since v0.5.0
- */
-provide { toNumber }
+provide { fromNumber, toNumber }
 
 /**
  * Increments the value by one.

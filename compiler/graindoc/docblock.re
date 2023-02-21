@@ -113,74 +113,6 @@ let () =
     }
   });
 
-let enumerate_provides = program => {
-  let id_tbl = ref(Ident.empty);
-
-  let rec pattern_ids = ({pat_desc, pat_loc}: Typedtree.pattern) => {
-    switch (pat_desc) {
-    | TPatVar(id, _) => [(id, pat_loc)]
-    | TPatAlias(subpat, id, _) => [(id, pat_loc), ...pattern_ids(subpat)]
-    | TPatTuple(pats)
-    | TPatArray(pats)
-    | TPatConstruct(_, _, pats) => List.concat(List.map(pattern_ids, pats))
-    | TPatRecord(elts, _) =>
-      List.concat(List.map(((_, _, pat)) => pattern_ids(pat), elts))
-    | _ => []
-    };
-  };
-
-  module ProvideIterator =
-    TypedtreeIter.MakeIterator({
-      include TypedtreeIter.DefaultIteratorArgument;
-
-      let enter_toplevel_stmt =
-          ({ttop_desc, ttop_attributes}: Typedtree.toplevel_stmt) => {
-        switch (ttop_desc) {
-        | TTopData(decls) =>
-          List.iter(
-            ({data_id, data_loc}: Typedtree.data_declaration) => {
-              id_tbl := Ident.add(data_id, data_loc, id_tbl^)
-            },
-            decls,
-          )
-        | TTopProvide(decls) =>
-          List.iter(
-            ({tex_id, tex_loc}: Typedtree.provide_declaration) => {
-              id_tbl := Ident.add(tex_id, tex_loc, id_tbl^)
-            },
-            decls,
-          )
-        | TTopForeign({tvd_id, tvd_loc}) =>
-          id_tbl := Ident.add(tvd_id, tvd_loc, id_tbl^)
-        | TTopLet(_, _, vbinds) =>
-          List.iter(
-            ({vb_pat}: Typedtree.value_binding) => {
-              List.iter(
-                ((id, loc)) => {id_tbl := Ident.add(id, loc, id_tbl^)},
-                pattern_ids(vb_pat),
-              )
-            },
-            vbinds,
-          )
-        | TTopModule({tmod_id, tmod_loc}) =>
-          id_tbl := Ident.add(tmod_id, tmod_loc, id_tbl^)
-        | TTopInclude(_)
-        | TTopException(_)
-        | TTopExpr(_) => ()
-        };
-      };
-    });
-
-  ProvideIterator.iter_typed_program(program);
-
-  id_tbl^;
-};
-
-let location_for_ident =
-    (~provides: Ident.tbl(Grain_parsing.Location.t), ident) => {
-  snd(Ident.find_name(Ident.name(ident), provides));
-};
-
 let title_for_api = (~module_namespace, name) => {
   switch (module_namespace) {
   | Some(module_namespace) =>
@@ -284,15 +216,29 @@ let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
 };
 
+let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
+  open Compile;
+
+  let comments =
+    switch (
+      compile_file(
+        ~is_root_file=true,
+        ~hook=stop_after_parse,
+        loc.loc_start.pos_fname,
+      )
+    ) {
+    | exception exn => []
+    | {cstate_desc: Parsed(parsed_program)} => parsed_program.comments
+    | _ => failwith("Invalid compilation state")
+    };
+
+  Comments.to_ordered(comments);
+};
+
 let for_value_description =
-    (
-      ~comments,
-      ~provides,
-      ~module_namespace,
-      ~ident: Ident.t,
-      vd: Types.value_description,
-    ) => {
-  let loc = location_for_ident(~provides, ident);
+    (~module_namespace, ~ident: Ident.t, vd: Types.value_description) => {
+  let loc = vd.val_loc;
+  let comments = get_comments_from_loc(loc);
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
@@ -415,14 +361,9 @@ let for_value_description =
 };
 
 let for_type_declaration =
-    (
-      ~comments,
-      ~provides,
-      ~module_namespace,
-      ~ident: Ident.t,
-      td: Types.type_declaration,
-    ) => {
-  let loc = location_for_ident(~provides, ident);
+    (~module_namespace, ~ident: Ident.t, td: Types.type_declaration) => {
+  let loc = td.type_loc;
+  let comments = get_comments_from_loc(loc);
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
@@ -489,8 +430,7 @@ let for_type_declaration =
   });
 };
 
-let rec traverse_signature_items =
-        (~comments, ~provides, ~module_namespace, signature_items) => {
+let rec traverse_signature_items = (~module_namespace, signature_items) => {
   let {provided_types, provided_values, provided_modules} =
     List.fold_left(
       (
@@ -499,43 +439,30 @@ let rec traverse_signature_items =
       ) => {
         switch (sig_item) {
         | TSigType(ident, td, _) =>
-          let docblock =
-            for_type_declaration(
-              ~comments,
-              ~provides,
-              ~module_namespace,
-              ~ident,
-              td,
-            );
+          let docblock = for_type_declaration(~module_namespace, ~ident, td);
           {
             provided_types: [docblock, ...provided_types],
             provided_values,
             provided_modules,
           };
         | TSigValue(ident, vd) =>
-          let docblock =
-            for_value_description(
-              ~comments,
-              ~provides,
-              ~module_namespace,
-              ~ident,
-              vd,
-            );
+          let docblock = for_value_description(~module_namespace, ~ident, vd);
           {
             provided_types,
             provided_values: [docblock, ...provided_values],
             provided_modules,
           };
-        | TSigModule(ident, {md_type: TModSignature(signature_items)}, _) =>
-          let loc = location_for_ident(~provides, ident);
+        | TSigModule(
+            ident,
+            {md_type: TModSignature(signature_items), md_loc},
+            _,
+          ) =>
           let name = Format.asprintf("%a", Printtyp.ident, ident);
           let docblock =
             for_signature_items(
-              ~comments,
-              ~provides,
               ~module_namespace,
               ~name,
-              ~loc,
+              ~loc=md_loc,
               signature_items,
             );
           {
@@ -560,13 +487,12 @@ let rec traverse_signature_items =
 }
 and for_signature_items =
     (
-      ~comments,
-      ~provides,
       ~module_namespace,
       ~name,
       ~loc: Grain_parsing.Location.t,
       signature_items,
     ) => {
+  let comments = get_comments_from_loc(loc);
   let comment =
     Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
 
@@ -626,8 +552,6 @@ and for_signature_items =
       let namespace = title_for_namepace(~module_namespace, name);
 
       traverse_signature_items(
-        ~comments,
-        ~provides,
         ~module_namespace=Some(namespace),
         signature_items,
       );
