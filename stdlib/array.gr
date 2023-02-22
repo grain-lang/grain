@@ -690,7 +690,7 @@ provide let find = (fn, array) => {
  * @returns `Some(index)` containing the index of the first element found or `None` otherwise
  * 
  * @example
- * Array.findIndex(a => a == 7, [> 5, 6, 7, 8, 9]) // Some(2)
+ * Array.findIndex(a => a == 7, [> 5, 6, 7, 8, 9]) == Some(2)
  *
  * @since v0.2.0
  */
