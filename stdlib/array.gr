@@ -785,7 +785,7 @@ provide let counti = (fn, array) => {
  * @returns The new array containing elements where `fn` returned `true`
  * 
  * @example
- * Array.filter(a => a < 8, [> 5, 6, 7, 8, 9]) // [> 5, 6, 7]
+ * Array.filter(a => a < 8, [> 5, 6, 7, 8, 9]) == [> 5, 6, 7]
  *
  * @since v0.3.0
  */
