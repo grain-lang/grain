@@ -100,7 +100,7 @@ and type_result = (ok, err) =>
   newgenty(TTyConstr(path_result, [ok, err], ref(TMemNil)))
 and type_list = var => newgenty(TTyConstr(path_list, [var], ref(TMemNil)))
 and type_range = var =>
-  newgenty(TTyRecord([("rangeStart", var), ("rangeEnd", var)]))
+  newgenty(TTyRecord([(Ident.name(ident_range_start), var), (Ident.name(ident_range_end), var)]))
 and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
 and type_uint32 = newgenty(TTyConstr(path_uint32, [], ref(TMemNil)))
