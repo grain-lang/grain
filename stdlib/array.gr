@@ -419,7 +419,7 @@ provide let reduceRight = (fn, initial, array) => {
  * @returns The final accumulator returned from `fn`
  * 
  * @example
- * Array.reducei((a, b, i) => a + b + i, 100, [> 1, 2, 3, 4]) // 116
+ * Array.reducei((a, b, i) => a + b + i, 100, [> 1, 2, 3, 4]) == 116
  *
  * @since v0.3.0
  */
