@@ -95,6 +95,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("pervasives.test");
   assertStdlib("queue.test");
   assertStdlib("range.test");
+  assertStdlib("rational.test");
   assertStdlib("result.test");
   assertStdlib("set.test");
   assertStdlib("immutableset.test");

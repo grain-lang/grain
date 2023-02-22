@@ -142,6 +142,7 @@ let all_coherent = column => {
       | (Const_wasmf32(_), Const_wasmf32(_))
       | (Const_wasmf64(_), Const_wasmf64(_))
       | (Const_bigint(_), Const_bigint(_))
+      | (Const_rational(_), Const_rational(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
       | (Const_bytes(_), Const_bytes(_))
@@ -157,6 +158,7 @@ let all_coherent = column => {
           Const_wasmf32(_) |
           Const_wasmf64(_) |
           Const_bigint(_) |
+          Const_rational(_) |
           Const_bool(_) |
           Const_void |
           Const_bytes(_) |
@@ -280,6 +282,7 @@ let const_compare = (x, y) =>
       Const_wasmf32(_) |
       Const_wasmf64(_) |
       Const_bigint(_) |
+      Const_rational(_) |
       Const_void |
       Const_int32(_) |
       Const_int64(_) |
@@ -1841,6 +1844,8 @@ let untype_constant =
   | Const_wasmf32(f) => Parsetree.PConstWasmF32(Float.to_string(f))
   | Const_wasmf64(f) => Parsetree.PConstWasmF64(Float.to_string(f))
   | Const_bigint({bigint_rep}) => Parsetree.PConstBigInt(bigint_rep)
+  | Const_rational({rational_num_rep, rational_den_rep}) =>
+    Parsetree.PConstRational(rational_num_rep, rational_den_rep)
   | Const_bytes(b) => Parsetree.PConstBytes(Bytes.to_string(b))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_char(c) => Parsetree.PConstChar(c)
@@ -2197,7 +2202,8 @@ let inactive = (~partial, pat) =>
         | Const_wasmi64(_)
         | Const_wasmf32(_)
         | Const_wasmf64(_)
-        | Const_bigint(_) => true
+        | Const_bigint(_)
+        | Const_rational(_) => true
         }
       | TPatTuple(ps)
       | TPatConstruct(_, _, ps) => List.for_all(p => loop(p), ps)

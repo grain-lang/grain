@@ -71,6 +71,7 @@ let type_constant =
   | Const_wasmf32(_) => instance_def(Builtin_types.type_wasmf32)
   | Const_wasmf64(_) => instance_def(Builtin_types.type_wasmf64)
   | Const_bigint(_) => instance_def(Builtin_types.type_bigint)
+  | Const_rational(_) => instance_def(Builtin_types.type_rational)
   | Const_bool(_) => instance_def(Builtin_types.type_bool)
   | Const_void => instance_def(Builtin_types.type_void)
   | Const_bytes(_) => instance_def(Builtin_types.type_bytes)
@@ -267,6 +268,30 @@ let constant:
             ~loc,
             "Unable to parse big-integer literal %st.",
             n,
+          ),
+        )
+      }
+    | PConstRational(n, d) =>
+      // TODO(#1168): allow arbitrary-length arguments in rational constants
+      switch (Literals.conv_number_rational(n, d)) {
+      | Some((n, d)) =>
+        // (until above TODO is done, we keep existing behavior and limit to 32-bits (see #1168))
+        Ok(
+          Const_rational({
+            rational_negative: Int32.compare(n, 0l) < 0, // true if rational is less than 0
+            rational_num_limbs: [|Int64.abs(Int64.of_int32(n))|],
+            rational_den_limbs: [|Int64.abs(Int64.of_int32(d))|],
+            rational_num_rep: Int32.to_string(n),
+            rational_den_rep: Int32.to_string(Int32.abs(d)),
+          }),
+        )
+      | None =>
+        Error(
+          Location.errorf(
+            ~loc,
+            "Rational literal %s/%sr is outside of the rational number range of the Number type.",
+            n,
+            d,
           ),
         )
       }
