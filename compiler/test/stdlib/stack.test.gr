@@ -54,7 +54,10 @@ assert Stack.pop(stack) == None
 // Immutable Stack tests
 
 // 1 <- 2 <- 3
-let sampleStack = ImmStack.push(3, ImmStack.push(2, ImmStack.push(1, ImmStack.empty)))
+let sampleStack = ImmStack.push(
+  3,
+  ImmStack.push(2, ImmStack.push(1, ImmStack.empty))
+)
 
 // ImmStack.isEmpty
 
@@ -77,7 +80,10 @@ assert ImmStack.isEmpty(ImmStack.pop(ImmStack.empty))
 assert ImmStack.isEmpty(ImmStack.pop(ImmStack.push(1, ImmStack.empty)))
 assert ImmStack.isEmpty(ImmStack.pop(ImmStack.pop(ImmStack.pop(sampleStack))))
 assert ImmStack.peek(ImmStack.pop(sampleStack)) == Some(2)
-assert ImmStack.peek(ImmStack.pop(ImmStack.push(4, ImmStack.pop(sampleStack)))) == Some(2)
+assert ImmStack.peek(
+  ImmStack.pop(ImmStack.push(4, ImmStack.pop(sampleStack)))
+) ==
+  Some(2)
 
 // ImmStack.size
 
