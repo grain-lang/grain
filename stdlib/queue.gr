@@ -21,8 +21,8 @@ include "array"
 abstract record Queue<a> {
   mut size: Number,
   mut array: Array<Option<a>>,
-  mut headI: Number,
-  mut tailI: Number, // tail points to where the next element should be inserted
+  mut headIndex: Number,
+  mut tailIndex: Number, // tail points to where the next element should be inserted
 }
 
 /**
@@ -37,7 +37,7 @@ abstract record Queue<a> {
  * @since v0.6.0
  */
 provide let makeSized = size => {
-  { size: 0, array: Array.make(size, None), headI: 0, tailI: 0 }
+  { size: 0, array: Array.make(size, None), headIndex: 0, tailIndex: 0 }
 }
 
 /**
@@ -80,7 +80,7 @@ provide let size = queue => queue.size
  * @since v0.6.0
  */
 provide let peek = queue => {
-  if (queue.size == 0) None else queue.array[queue.headI]
+  if (queue.size == 0) None else queue.array[queue.headIndex]
 }
 
 /**
@@ -97,21 +97,21 @@ provide let push = (value, queue) => {
   if (queue.size == arrLen) {
     let newArray = Array.make(arrLen * 2, None)
 
-    newArray[0] = queue.array[queue.headI]
+    newArray[0] = queue.array[queue.headIndex]
     let mut insertI = 1
-    let mut currI = (queue.headI + 1) % arrLen
-    while (currI != queue.tailI) {
+    let mut currI = (queue.headIndex + 1) % arrLen
+    while (currI != queue.tailIndex) {
       newArray[insertI] = queue.array[currI]
       insertI += 1
       currI = (currI + 1) % arrLen
     }
 
-    queue.headI = 0
-    queue.tailI = arrLen
+    queue.headIndex = 0
+    queue.tailIndex = arrLen
     queue.array = newArray
   }
-  queue.array[queue.tailI] = Some(value)
-  queue.tailI = (queue.tailI + 1) % Array.length(queue.array)
+  queue.array[queue.tailIndex] = Some(value)
+  queue.tailIndex = (queue.tailIndex + 1) % Array.length(queue.array)
   queue.size += 1
 }
 
@@ -127,9 +127,9 @@ provide let pop = queue => {
   if (queue.size == 0) {
     None
   } else {
-    let elem = queue.array[queue.headI]
-    queue.array[queue.headI] = None
-    queue.headI = (queue.headI + 1) % Array.length(queue.array)
+    let elem = queue.array[queue.headIndex]
+    queue.array[queue.headIndex] = None
+    queue.headIndex = (queue.headIndex + 1) % Array.length(queue.array)
     queue.size -= 1
     elem
   }
@@ -145,8 +145,8 @@ provide let pop = queue => {
 provide let clear = queue => {
   queue.size = 0
   Array.fill(None, queue.array)
-  queue.headI = 0
-  queue.tailI = 0
+  queue.headIndex = 0
+  queue.tailIndex = 0
 }
 
 /**
@@ -158,8 +158,8 @@ provide let clear = queue => {
  * @since v0.6.0
  */
 provide let copy = queue => {
-  let { size, array, headI, tailI } = queue
-  { size, array: Array.copy(array), headI, tailI }
+  let { size, array, headIndex, tailIndex } = queue
+  { size, array: Array.copy(array), headIndex, tailIndex }
 }
 
 /**
