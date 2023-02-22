@@ -711,7 +711,7 @@ provide let findIndex = (fn, array) => {
  * @returns The new array containing all pairs of `(a, b)`
  * 
  * @example
- * Array.product([> 1, 2], [> 11, 12]) // [> (1, 11), (1, 12), (2, 11), (2, 12)]
+ * Array.product([> 1, 2], [> 11, 12]) == [> (1, 11), (1, 12), (2, 11), (2, 12)]
  *
  * @since v0.2.0
  */
