@@ -647,7 +647,7 @@ provide let fromList = list => {
  * @returns `true` if the value exists in the array or `false` otherwise
  * 
  * @example
- * Array.contains(9, [> 5, 6, 7, 8, 9]) // true
+ * Array.contains(9, [> 5, 6, 7, 8, 9]) == true
  *
  * @since v0.2.0
  */
