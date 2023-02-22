@@ -156,9 +156,7 @@ and ident_none_cstr = ident_create("None")
 and ident_ok_cstr = ident_create("Ok")
 and ident_err_cstr = ident_create("Err")
 and ident_cons_cstr = ident_create("[...]")
-and ident_empty_cstr = ident_create("[]")
-and ident_inclusive_cstr = ident_create("Inclusive")
-and ident_exclusive_cstr = ident_create("Exclusive");
+and ident_empty_cstr = ident_create("[]");
 
 let decl_exception = {...decl_abstr(path_exception), type_kind: TDataOpen};
 let decl_bool = {
