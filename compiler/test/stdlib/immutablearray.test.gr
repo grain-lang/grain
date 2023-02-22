@@ -22,7 +22,10 @@ let bltArr = fromList(branchingLongTail)
 
 // for testing the case where the tree is about to branch
 let almostBranchingLen = 32 * 32 + 31
-let almostBranching = Range.map(identity, { range_start: 0, range_end: almostBranchingLen })
+let almostBranching = Range.map(
+  identity,
+  { range_start: 0, range_end: almostBranchingLen }
+)
 let abArr = fromList(almostBranching)
 
 assert ImmutableArray.empty == fromList([])
