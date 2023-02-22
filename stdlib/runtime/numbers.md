@@ -979,9 +979,16 @@ Returns:
 
 ### Numbers.**(**)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally existed in Number module</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain

@@ -2947,6 +2947,7 @@ let rec expBySquaring = (y, x, n) => {
  * @returns The base raised to the given power
  *
  * @since v0.6.0
+ * @history v0.5.4: Originally existed in Number module
  */
 @unsafe
 provide let (**) = (base, power) => {
