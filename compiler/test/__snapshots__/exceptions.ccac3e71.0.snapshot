@@ -54,7 +54,7 @@ exceptions › exception_2
       )
       (i64.store offset=32
        (local.get $0)
-       (i64.const 4767413698560)
+       (i64.const 4780298600448)
       )
       (i64.store offset=40
        (local.get $0)
@@ -119,7 +119,7 @@ exceptions › exception_2
        )
        (i32.store offset=12
         (local.get $0)
-        (i32.const 2221)
+        (i32.const 2227)
        )
        (i32.store offset=16
         (local.get $0)
