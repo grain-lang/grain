@@ -12,14 +12,14 @@ basic functionality › assert2
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1113 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $==_1111 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1116 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $==_1114 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/exception\" \"panicWithException\" (func $panicWithException_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1113 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"==\" (func $==_1111 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1116 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"==\" (func $==_1114 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -55,10 +55,10 @@ basic functionality › assert2
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $+_1113
+          (call $+_1116
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1113)
+            (global.get $+_1116)
            )
            (i32.const 7)
            (i32.const 7)
@@ -75,10 +75,10 @@ basic functionality › assert2
       )
       (block $compile_store.4
        (local.set $9
-        (call $==_1111
+        (call $==_1114
          (call $incRef_0
           (global.get $GRAIN$EXPORT$incRef_0)
-          (global.get $==_1111)
+          (global.get $==_1114)
          )
          (call $incRef_0
           (global.get $GRAIN$EXPORT$incRef_0)

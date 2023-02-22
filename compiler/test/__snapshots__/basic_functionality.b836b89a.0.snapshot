@@ -10,14 +10,14 @@ basic functionality › complex1
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1122 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1120 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1117 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1125 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1123 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1120 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1122 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"-\" (func $-_1120 (param i32 i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1117 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1125 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"-\" (func $-_1123 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1120 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -47,10 +47,10 @@ basic functionality › complex1
     (local.set $0
      (block $compile_block.3 (result i32)
       (drop
-       (call $print_1117
+       (call $print_1120
         (call $incRef_0
          (global.get $GRAIN$EXPORT$incRef_0)
-         (global.get $print_1117)
+         (global.get $print_1120)
         )
         (i32.const 7)
        )
@@ -59,10 +59,10 @@ basic functionality › complex1
        (local.set $6
         (tuple.extract 0
          (tuple.make
-          (call $+_1122
+          (call $+_1125
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1122)
+            (global.get $+_1125)
            )
            (i32.const 9)
            (i32.const 5)
@@ -77,10 +77,10 @@ basic functionality › complex1
        (block $do_backpatches.1
        )
       )
-      (call $-_1120
+      (call $-_1123
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $-_1120)
+        (global.get $-_1123)
        )
        (i32.const 7)
        (call $incRef_0

@@ -13,10 +13,10 @@ tuples › big_tup_access
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (global $a_1110 (mut i32) (i32.const 0))
- (global $d_1113 (mut i32) (i32.const 0))
- (global $c_1112 (mut i32) (i32.const 0))
- (global $b_1111 (mut i32) (i32.const 0))
+ (global $a_1113 (mut i32) (i32.const 0))
+ (global $d_1116 (mut i32) (i32.const 0))
+ (global $c_1115 (mut i32) (i32.const 0))
+ (global $b_1114 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -96,13 +96,13 @@ tuples › big_tup_access
        )
       )
       (block $compile_store.5
-       (global.set $a_1110
+       (global.set $a_1113
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $a_1110)
+           (global.get $a_1113)
           )
          )
         )
@@ -111,13 +111,13 @@ tuples › big_tup_access
        )
       )
       (block $compile_store.7
-       (global.set $b_1111
+       (global.set $b_1114
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1111)
+           (global.get $b_1114)
           )
          )
         )
@@ -126,13 +126,13 @@ tuples › big_tup_access
        )
       )
       (block $compile_store.9
-       (global.set $c_1112
+       (global.set $c_1115
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $c_1112)
+           (global.get $c_1115)
           )
          )
         )
@@ -141,13 +141,13 @@ tuples › big_tup_access
        )
       )
       (block $compile_store.11
-       (global.set $d_1113
+       (global.set $d_1116
         (tuple.extract 0
          (tuple.make
           (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $d_1113)
+           (global.get $d_1116)
           )
          )
         )
@@ -239,7 +239,7 @@ tuples › big_tup_access
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.20 (result i32)
-         (global.set $d_1113
+         (global.set $d_1116
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -248,7 +248,7 @@ tuples › big_tup_access
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $d_1113)
+             (global.get $d_1116)
             )
            )
           )
@@ -261,7 +261,7 @@ tuples › big_tup_access
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.21 (result i32)
-         (global.set $c_1112
+         (global.set $c_1115
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -270,7 +270,7 @@ tuples › big_tup_access
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $c_1112)
+             (global.get $c_1115)
             )
            )
           )
@@ -283,7 +283,7 @@ tuples › big_tup_access
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.22 (result i32)
-         (global.set $b_1111
+         (global.set $b_1114
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -292,7 +292,7 @@ tuples › big_tup_access
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $b_1111)
+             (global.get $b_1114)
             )
            )
           )
@@ -305,7 +305,7 @@ tuples › big_tup_access
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
         (block $compile_set.23 (result i32)
-         (global.set $a_1110
+         (global.set $a_1113
           (tuple.extract 0
            (tuple.make
             (call $incRef_0
@@ -314,7 +314,7 @@ tuples › big_tup_access
             )
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (global.get $a_1110)
+             (global.get $a_1113)
             )
            )
           )
@@ -325,7 +325,7 @@ tuples › big_tup_access
       )
       (call $incRef_0
        (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $c_1112)
+       (global.get $c_1115)
       )
      )
     )

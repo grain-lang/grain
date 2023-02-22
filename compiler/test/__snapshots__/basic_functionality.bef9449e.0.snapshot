@@ -9,9 +9,9 @@ basic functionality › comp1
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
- (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$<\" (global $<_1111 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$<\" (global $<_1114 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"<\" (func $<_1111 (param i32 i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"<\" (func $<_1114 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -42,10 +42,10 @@ basic functionality › comp1
      (block $compile_block.5 (result i32)
       (block $compile_store.2
        (local.set $6
-        (call $<_1111
+        (call $<_1114
          (call $incRef_0
           (global.get $GRAIN$EXPORT$incRef_0)
-          (global.get $<_1111)
+          (global.get $<_1114)
          )
          (i32.const 5)
          (i32.const 7)

@@ -482,6 +482,39 @@ Returns:
 |----|-----------|
 |`Number`|The modulus of its operands|
 
+### Pervasives.**(\*\*)**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally existed in Number module</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+(**) : (Number, Number) -> Number
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Number`|The base number|
+|`power`|`Number`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The base raised to the given power|
+
 ### Pervasives.**incr**
 
 <details disabled>

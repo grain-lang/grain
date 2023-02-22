@@ -10,11 +10,11 @@ includes › include_some_mixed
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
- (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $sum_1117 (mut i32)))
+ (import \"GRAIN$MODULE$tlists\" \"GRAIN$EXPORT$sum\" (global $sum_1120 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$tlists\" \"sum\" (func $sum_1117 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$tlists\" \"sum\" (func $sum_1120 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -67,7 +67,7 @@ includes › include_some_mixed
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2221)
+            (i32.const 2227)
            )
            (i32.store offset=12
             (local.get $0)
@@ -112,7 +112,7 @@ includes › include_some_mixed
            )
            (i32.store offset=8
             (local.get $0)
-            (i32.const 2221)
+            (i32.const 2227)
            )
            (i32.store offset=12
             (local.get $0)
@@ -145,10 +145,10 @@ includes › include_some_mixed
        (block $do_backpatches.5
        )
       )
-      (call $sum_1117
+      (call $sum_1120
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $sum_1117)
+        (global.get $sum_1120)
        )
        (call $incRef_0
         (global.get $GRAIN$EXPORT$incRef_0)
