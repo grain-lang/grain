@@ -13,9 +13,9 @@ No other changes yet.
 include "rational"
 ```
 
-## Conversions
+## Values
 
-Functions for converting between Numbers and the Rational type.
+Functions and constants included in the Rational module.
 
 ### Rational.**fromNumber**
 
@@ -67,10 +67,6 @@ Returns:
 |----|-----------|
 |`Number`|The Rational represented as a Number|
 
-## Metadata
-
-Operations for inspecting Rational values.
-
 ### Rational.**numerator**
 
 <details disabled>
@@ -120,10 +116,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The denominator of the rational number|
-
-## Operations
-
-Mathematical operations for Rational values.
 
 ### Rational.**(+)**
 
@@ -228,10 +220,6 @@ Returns:
 |type|description|
 |----|-----------|
 |`Rational`|The quotient of the two operands|
-
-## Comparisons
-
-Functions for comparing Rational values.
 
 ### Rational.**(==)**
 

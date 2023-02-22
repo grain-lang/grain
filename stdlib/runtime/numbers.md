@@ -164,15 +164,53 @@ cmpRationals : (WasmI32, WasmI32) -> WasmI32
 
 ### Numbers.**rationalNumerator**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 rationalNumerator : Rational -> Number
 ```
 
+Finds the numerator of the rational number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Rational`|The rational number to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The numerator of the rational number|
+
 ### Numbers.**rationalDenominator**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 rationalDenominator : Rational -> Number
 ```
+
+Finds the denominator of the rational number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Rational`|The rational number to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The denominator of the rational number|
 
 ### Numbers.**cmp**
 
@@ -603,9 +641,28 @@ Returns:
 
 ### Numbers.**coerceNumberToRational**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 coerceNumberToRational : Number -> Rational
 ```
+
+Converts a Number to a Rational.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`number`|`Number`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Rational`|The Number represented as a Rational|
 
 ### Numbers.**coerceNumberToFloat32**
 
@@ -734,9 +791,28 @@ Returns:
 
 ### Numbers.**coerceRationalToNumber**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 coerceRationalToNumber : Rational -> Number
 ```
+
+Converts a Rational to a Number.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`rational`|`Rational`|The value to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The Rational represented as a Number|
 
 ### Numbers.**coerceFloat32ToNumber**
 

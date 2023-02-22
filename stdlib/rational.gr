@@ -21,59 +21,7 @@ from Numbers use {
   cmpRationals,
 }
 
-/**
- * @section Conversions: Functions for converting between Numbers and the Rational type.
- */
-
-/**
- * Converts a Number to a Rational.
- *
- * @param number: The value to convert
- * @returns The Number represented as a Rational
- * 
- * @since v0.6.0
- */
-provide { fromNumber }
-
-/**
- * Converts a Rational to a Number.
- *
- * @param rational: The value to convert
- * @returns The Rational represented as a Number
- * 
- * @since v0.6.0
- */
-provide { toNumber }
-
-/**
- * @section Metadata: Operations for inspecting Rational values.
- */
-
-/**
- * Finds the numerator of the rational number.
- * 
- * @param x: The rational number to inspect
- * @returns The numerator of the rational number
- * 
- * @since v0.6.0
- */
-@unsafe
-provide { numerator }
-
-/**
- * Finds the denominator of the rational number.
- * 
- * @param x: The rational number to inspect
- * @returns The denominator of the rational number
- * 
- * @since v0.6.0
- */
-@unsafe
-provide { denominator }
-
-/**
- * @section Operations: Mathematical operations for Rational values.
- */
+provide { fromNumber, toNumber, numerator, denominator }
 
 /**
  * Computes the sum of its operands.
@@ -142,10 +90,6 @@ provide let (/) = (x: Rational, y: Rational) => {
   let ptr = timesDivideRational(xptr, yptr, true, true)
   WasmI32.toGrain(ptr): Rational
 }
-
-/**
- * @section Comparisons: Functions for comparing Rational values.
- */
 
 /**
  * Checks if the first value is equal to the second value.

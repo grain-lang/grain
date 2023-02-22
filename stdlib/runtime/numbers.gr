@@ -1327,6 +1327,14 @@ provide let cmpRationals = (x, y) => {
   }
 }
 
+/**
+ * Finds the numerator of the rational number.
+ * 
+ * @param x: The rational number to inspect
+ * @returns The numerator of the rational number
+ * 
+ * @since v0.6.0
+ */
 @unsafe
 provide let rationalNumerator = (x: Rational) => {
   let x = WasmI32.fromGrain(x)
@@ -1335,6 +1343,14 @@ provide let rationalNumerator = (x: Rational) => {
   WasmI32.toGrain(reducedBigInteger(num)): Number
 }
 
+/**
+ * Finds the denominator of the rational number.
+ * 
+ * @param x: The rational number to inspect
+ * @returns The denominator of the rational number
+ * 
+ * @since v0.6.0
+ */
 @unsafe
 provide let rationalDenominator = (x: Rational) => {
   let x = WasmI32.fromGrain(x)
@@ -2558,6 +2574,14 @@ provide let coerceNumberToBigInt = (x: Number) => {
   WasmI32.toGrain(coerceNumberToBigInt(x)): BigInt
 }
 
+/**
+ * Converts a Number to a Rational.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Rational
+ * 
+ * @since v0.6.0
+ */
 @unsafe
 provide let coerceNumberToRational = (x: Number) => {
   let x = WasmI32.fromGrain(x)
@@ -2687,6 +2711,14 @@ provide let coerceBigIntToNumber = (x: BigInt) => {
   WasmI32.toGrain(reducedBigInteger(x)): Number
 }
 
+/**
+ * Converts a Rational to a Number.
+ *
+ * @param rational: The value to convert
+ * @returns The Rational represented as a Number
+ * 
+ * @since v0.6.0
+ */
 @unsafe
 provide let coerceRationalToNumber = (x: Rational) => {
   let x = WasmI32.fromGrain(x)
