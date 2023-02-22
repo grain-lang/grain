@@ -813,7 +813,7 @@ provide let filter = (fn, array) => {
  * @returns The new array containing elements where `fn` returned `true`
  * 
  * @example
- * Array.filteri((a, i) => a < 9 && i > 0, [> 5, 6, 7, 8, 9]) // [> 6, 7, 8]
+ * Array.filteri((a, i) => a < 9 && i > 0, [> 5, 6, 7, 8, 9]) == [> 6, 7, 8]
  *
  * @since v0.3.0
  */
