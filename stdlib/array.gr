@@ -147,6 +147,7 @@ provide let get = (index, array) => {
  * @param index: The index to update
  * @param value: The value to store
  * @param array: The array to update
+ *
  * @example
  * let array = [> 1, 2, 3, 4, 5] 
  * Array.set(1, 9, array)
