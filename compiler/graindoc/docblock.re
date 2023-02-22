@@ -116,7 +116,7 @@ let () =
 let title_for_api = (~module_namespace, name) => {
   switch (module_namespace) {
   | Some(module_namespace) =>
-    Format.sprintf("%s.**%s**", module_namespace, name)
+    Format.sprintf("%s.%s", module_namespace, Markdown.bold(name))
   | None => name
   };
 };
