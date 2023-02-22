@@ -613,7 +613,7 @@ provide let toList = array => {
  * @returns The array containing all elements from the list
  * 
  * @example
- * Array.fromList([1, 2, 3, 4]) // [1, 2, 3, 4] becomes [> 1, 2, 3, 4]
+ * Array.fromList([1, 2, 3, 4]) == [> 1, 2, 3, 4]
  *
  * @since v0.1.0
  */
