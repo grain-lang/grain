@@ -256,7 +256,11 @@ provide let copy = array => {
  * @param array: The array to iterate
  * 
  * @example
- * Array.cycle(a => print(a), 2, [> 1, 2, 3]) // sep lines: 1 2 3 1 2 3
+* @example
+*  let arr = [> 'a', 'b', 'c', 'd', 'e' ]
+*  let mut str = ""
+ * Array.cycle(a =>str = str ++ a, 2, arr)
+ * assert str == "abcdeabcde"
  * 
  * @since v0.4.4
  */
