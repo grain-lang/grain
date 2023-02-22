@@ -2,9 +2,9 @@ module RangeTest
 
 include "range"
 
-let exclusiveAscendingRange = { range_start: 1, range_end: 5 }
-let exclusiveDescendingRange = { range_start: 5, range_end: 1 }
-let exclusiveSameRange = { range_start: 1, range_end: 1 }
+let exclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
+let exclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }
+let exclusiveSameRange = { rangeStart: 1, rangeEnd: 1 }
 
 // Range.inRange
 assert Range.inRange(1, exclusiveAscendingRange)

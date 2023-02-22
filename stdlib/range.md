@@ -57,11 +57,11 @@ Returns:
 Examples:
 
 ```grain
-Range.inRange(1, { range_start: 0, range_end: 2 }) == true
+Range.inRange(1, { rangeStart: 0, rangeEnd: 2 }) == true
 ```
 
 ```grain
-Range.inRange(10, { range_start: 0, range_end: 2 }) == false
+Range.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
 ```
 
 ### Range.**forEach**
@@ -91,7 +91,7 @@ Parameters:
 Examples:
 
 ```grain
-Range.forEach(val => print(val), { range_start: 0, range_end: 2 })
+Range.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
 ```
 
 ### Range.**map**
@@ -127,6 +127,6 @@ Returns:
 Examples:
 
 ```grain
-Range.map(val => val * 2, { range_start: 0, range_end: 3 }) == [0, 2, 4]
+Range.map(val => val * 2, { rangeStart: 0, rangeEnd: 3 }) == [0, 2, 4]
 ```
 

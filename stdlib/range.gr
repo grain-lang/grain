@@ -20,18 +20,18 @@ module Range
  * @param range: The range to check within
  * @returns Whether or not the value is within range
  *
- * @example Range.inRange(1, { range_start: 0, range_end: 2 }) == true
- * @example Range.inRange(10, { range_start: 0, range_end: 2 }) == false
+ * @example Range.inRange(1, { rangeStart: 0, rangeEnd: 2 }) == true
+ * @example Range.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
  *
  * @since v0.3.0
  */
 provide let inRange = (value, range) => {
   match (range) {
-    { range_start: lower, range_end: upper } when (
+    { rangeStart: lower, rangeEnd: upper } when (
       value >= lower && value < upper
     ) =>
       true,
-    { range_start: upper, range_end: lower } when (
+    { rangeStart: upper, rangeEnd: lower } when (
       value >= lower && value < upper
     ) =>
       true,
@@ -49,20 +49,20 @@ provide let inRange = (value, range) => {
  * @param fn: The function to be executed on each number in the range
  * @param range: The range to iterate
  *
- * @example Range.forEach(val => print(val), { range_start: 0, range_end: 2 })
+ * @example Range.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
  *
  * @since v0.3.0
  */
 provide let forEach = (fn: Number -> Void, range) => {
   match (range) {
-    { range_start: lower, range_end: upper } when lower <= upper => {
+    { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
       let mut idx = lower
       while (idx < upper) {
         fn(idx)
         idx += 1
       }
     },
-    { range_start: upper, range_end: lower } => {
+    { rangeStart: upper, rangeEnd: lower } => {
       let mut idx = upper
       while (idx > lower) {
         fn(idx)
@@ -83,21 +83,21 @@ provide let forEach = (fn: Number -> Void, range) => {
  * @param range: The range to iterate
  * @returns A list containing all values returned from the `fn`
  *
- * @example Range.map(val => val * 2, { range_start: 0, range_end: 3 }) == [0, 2, 4]
+ * @example Range.map(val => val * 2, { rangeStart: 0, rangeEnd: 3 }) == [0, 2, 4]
  *
  * @since v0.3.2
  */
 provide let map = (fn, range) => {
   let mut result = []
   match (range) {
-    { range_start: lower, range_end: upper } when lower <= upper => {
+    { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
       let mut idx = upper - 1
       while (idx >= lower) {
         result = [fn(idx), ...result]
         idx -= 1
       }
     },
-    { range_start: upper, range_end: lower } => {
+    { rangeStart: upper, rangeEnd: lower } => {
       let mut idx = lower + 1
       while (idx <= upper) {
         result = [fn(idx), ...result]
