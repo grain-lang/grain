@@ -9,14 +9,14 @@ let fromList = ImmutableArray.fromList
 let arr = fromList([1, 2, 3])
 
 // for testing the case where the tail is empty
-let noTail = Range.map(identity, Range.Exclusive(0, 32))
+let noTail = Range.map(identity, { rangeStart: 0, rangeEnd: 32 })
 let noTailArr = fromList(noTail)
 
 // for testing the case where the tree branches and has a tail of max length
 let branchingLongTailLen = 32 * 33 + 31
 let branchingLongTail = Range.map(
   identity,
-  Range.Exclusive(0, branchingLongTailLen)
+  { rangeStart: 0, rangeEnd: branchingLongTailLen }
 )
 let bltArr = fromList(branchingLongTail)
 
@@ -24,7 +24,7 @@ let bltArr = fromList(branchingLongTail)
 let almostBranchingLen = 32 * 32 + 31
 let almostBranching = Range.map(
   identity,
-  Range.Exclusive(0, almostBranchingLen)
+  { rangeStart: 0, rangeEnd: almostBranchingLen }
 )
 let abArr = fromList(almostBranching)
 
@@ -92,10 +92,10 @@ assert ImmutableArray.append(bltArr, fromList([val, val + 1, val + 2])) ==
   fromList(List.append(branchingLongTail, [val, val + 1, val + 2]))
 assert ImmutableArray.append(fromList([-3, -2, -1]), bltArr) ==
   fromList([-3, -2, -1, ...branchingLongTail])
-let vals = Range.map(x => x + 32, Range.Exclusive(0, 128))
+let vals = Range.map(x => x + 32, { rangeStart: 0, rangeEnd: 128 })
 assert ImmutableArray.append(noTailArr, fromList(vals)) ==
   fromList(List.append(noTail, vals))
-let vals = Range.map(x => x + 32, Range.Exclusive(0, 128 + 31))
+let vals = Range.map(x => x + 32, { rangeStart: 0, rangeEnd: 128 + 31 })
 assert ImmutableArray.append(noTailArr, fromList(vals)) ==
   fromList(List.append(noTail, vals))
 assert ImmutableArray.append(noTailArr, noTailArr) ==
