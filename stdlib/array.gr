@@ -571,7 +571,7 @@ provide let fillRange = (value, start, stop, array) => {
  * @returns The new array
  * 
  * @example
- * Array.reverse([> 1, 2, 3, 4]) // [> 4,3,2,1]
+ * Array.reverse([> 1, 2, 3, 4]) == [> 4,3,2,1]
  *
  * @since v0.4.0
  */
