@@ -114,6 +114,11 @@ describe("numbers", ({test, testSkip}) => {
     "-99999999999999999999999uL",
     "Uint64 literal -99999999999999999999999uL contains a sign but should be unsigned.",
   );
+  assertCompileError(
+    "numbers_rational_zero_denom",
+    "1/0r",
+    "Rational numbers may not have a denominator of zero.",
+  );
   // runtime errors
   assertRunError(
     "unsigned_overflow_err1",

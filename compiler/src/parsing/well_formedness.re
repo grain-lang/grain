@@ -255,7 +255,10 @@ let no_letrec_mut = (errs, super) => {
 let no_zero_denominator_rational = (errs, super) => {
   let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
+    | PExpConstant(
+        PConstNumber(PConstNumberRational(_, d)) | PConstRational(_, d),
+      )
+        when d == "0" =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
@@ -263,7 +266,10 @@ let no_zero_denominator_rational = (errs, super) => {
   };
   let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
+    | PPatConstant(
+        PConstNumber(PConstNumberRational(_, d)) | PConstRational(_, d),
+      )
+        when d == "0" =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };

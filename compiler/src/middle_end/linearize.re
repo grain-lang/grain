@@ -182,6 +182,12 @@ let transl_const =
         [BLet(tmp, Comp.number(Const_number_bigint(data)), Nonglobal)]
       ),
     )
+  | Const_rational(data) =>
+    Right(
+      with_bind("rational", tmp =>
+        [BLet(tmp, Comp.number(Const_number_rational(data)), Nonglobal)]
+      ),
+    )
   | Const_int32(i) =>
     Right(with_bind("int32", tmp => [BLet(tmp, Comp.int32(i), Nonglobal)]))
   | Const_int64(i) =>
