@@ -238,7 +238,9 @@ provide let concat = arrays => {
  * @example
  * let array1 = [> 9, 8, 7, 6, 5]
  * let array2 = Array.copy(array1) 
- * assert array1 == array2
+* array1[0] = 2
+* assert array1 == [> 2, 8, 7, 6, 5]
+* assert array2 == [> 9, 8, 7, 6, 5]
  * 
  * @since v0.1.0
  */
