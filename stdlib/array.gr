@@ -938,7 +938,7 @@ provide let unzip = array => {
  * @returns The concatenated string
  * 
  * @example
- * Array.join(" ", [> "The", "quick", "brown", "fox"]) // The quick brown fox
+ * Array.join(" ", [> "The", "quick", "brown", "fox"]) == "The quick brown fox"
  *
  * @since v0.4.0
  */
