@@ -1089,7 +1089,7 @@ Returns:
 |----|-----------|
 |`WasmF64`|The result of x * 2^n|
 
-### Numbers.**(**)**
+### Numbers.**(\*\*)**
 
 <details>
 <summary>Added in <code>next</code></summary>

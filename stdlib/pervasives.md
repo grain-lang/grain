@@ -482,7 +482,7 @@ Returns:
 |----|-----------|
 |`Number`|The modulus of its operands|
 
-### Pervasives.**(**)**
+### Pervasives.**(\*\*)**
 
 <details>
 <summary>Added in <code>next</code></summary>
