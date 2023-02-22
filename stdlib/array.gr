@@ -860,7 +860,7 @@ provide let unique = array => {
  * @throws Failure(String): When the arrays have different sizes
  * 
  * @example
- * Array.zip([> 1, 2, 3], [> 11, 12, 13]) // [> (1, 11), (2, 12), (3, 13)]
+ * Array.zip([> 1, 2, 3], [> 11, 12, 13]) == [> (1, 11), (2, 12), (3, 13)]
  *
  * @since v0.4.0
  * @history v0.6.0: Support zipping arrays of different sizes
