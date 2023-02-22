@@ -491,7 +491,7 @@ provide let every = (fn, array) => {
  * @returns `true` if one or more elements satify the condition or `false` otherwise
  *
  * @example
- * Array.some(a => a > 5, [> 2, 4, 6, 8]) // true
+ * Array.some(a => a > 5, [> 2, 4, 6, 8]) == true
  * 
  * @since v0.3.0
  */
