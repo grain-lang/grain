@@ -321,7 +321,7 @@ provide let forEachi = (fn, array) => {
  * @returns The new array with mapped values
  * 
  * @example
- * Array.map(a => a * a, [> 7, 8, 9]) // [> 49, 64, 81]
+ * Array.map(a => a * a, [> 7, 8, 9]) == [> 49, 64, 81]
  * 
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
