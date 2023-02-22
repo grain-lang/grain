@@ -469,7 +469,7 @@ provide let flatMap = (fn, array) => {
  * @returns `true` if all elements satify the condition or `false` otherwise
  * 
  * @example
- * Array.every(a => a > 5, [> 2, 4, 6, 8]) // false
+ * Array.every(a => a > 5, [> 2, 4, 6, 8]) == false
  *
  * @since v0.3.0
  */
