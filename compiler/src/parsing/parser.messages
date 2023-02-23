@@ -1268,58 +1268,6 @@ program: MODULE UIDENT EOL LET WASMI64 COLON WHILE
 ## The known suffix of the stack is as follows:
 ## pattern COLON
 ##
-program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON EOL WHILE
-##
-## Ends in an error in state: 807.
-##
-## primitive_stmt -> PRIMITIVE id_str COLON eols . typ equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE id_str COLON eols
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-##
-program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON WHILE
-##
-## Ends in an error in state: 803.
-##
-## primitive_stmt -> PRIMITIVE id_str COLON . typ equal STRING [ SEMI EOL EOF ]
-## primitive_stmt -> PRIMITIVE id_str COLON . eols typ equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE id_str COLON
-##
-program: MODULE UIDENT EOL PRIMITIVE THROW COLON EOL WHILE
-##
-## Ends in an error in state: 798.
-##
-## primitive_stmt -> PRIMITIVE prim COLON eols . typ equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE prim COLON eols
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-##
-program: MODULE UIDENT EOL PRIMITIVE THROW COLON WHILE
-##
-## Ends in an error in state: 794.
-##
-## primitive_stmt -> PRIMITIVE prim COLON . typ equal STRING [ SEMI EOL EOF ]
-## primitive_stmt -> PRIMITIVE prim COLON . eols typ equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE prim COLON
-##
 program: MODULE UIDENT EOL RECORD UIDENT LBRACE LIDENT COLON EOL WHILE
 ##
 ## Ends in an error in state: 857.
@@ -4723,7 +4671,7 @@ program: MODULE UIDENT EOL MATCH WHILE
 
 Expected `(` after the `match` keyword.
 
-program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON EOL UIDENT EQUAL WHILE
+program: MODULE UIDENT EOL PRIMITIVE LIDENT EQUAL WHILE
 ##
 ## Ends in an error in state: 809.
 ##
@@ -4738,22 +4686,7 @@ program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON EOL UIDENT EQUAL WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 217, spurious reduction of production equal -> EQUAL
 ##
-program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON UIDENT EQUAL WHILE
-##
-## Ends in an error in state: 805.
-##
-## primitive_stmt -> PRIMITIVE id_str COLON typ equal . STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE id_str COLON typ equal
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 217, spurious reduction of production equal -> EQUAL
-##
-program: MODULE UIDENT EOL PRIMITIVE THROW COLON EOL UIDENT EQUAL WHILE
+program: MODULE UIDENT EOL PRIMITIVE THROW EQUAL WHILE
 ##
 ## Ends in an error in state: 800.
 ##
@@ -4768,25 +4701,10 @@ program: MODULE UIDENT EOL PRIMITIVE THROW COLON EOL UIDENT EQUAL WHILE
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 217, spurious reduction of production equal -> EQUAL
 ##
-program: MODULE UIDENT EOL PRIMITIVE THROW COLON UIDENT EQUAL WHILE
-##
-## Ends in an error in state: 796.
-##
-## primitive_stmt -> PRIMITIVE prim COLON typ equal . STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE prim COLON typ equal
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 217, spurious reduction of production equal -> EQUAL
-##
 
 Expected a string declaring the primitive's internal name.
 
-program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON EOL UIDENT WHEN
+program: MODULE UIDENT EOL PRIMITIVE LIDENT WHEN
 ##
 ## Ends in an error in state: 808.
 ##
@@ -4803,24 +4721,7 @@ program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON EOL UIDENT WHEN
 ## In state 79, spurious reduction of production data_typ -> type_id
 ## In state 106, spurious reduction of production typ -> data_typ
 ##
-program: MODULE UIDENT EOL PRIMITIVE LIDENT COLON UIDENT WHEN
-##
-## Ends in an error in state: 804.
-##
-## primitive_stmt -> PRIMITIVE id_str COLON typ . equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE id_str COLON typ
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 89, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,type_id_str)
-## In state 79, spurious reduction of production data_typ -> type_id
-## In state 106, spurious reduction of production typ -> data_typ
-##
-program: MODULE UIDENT EOL PRIMITIVE THROW COLON EOL UIDENT WHEN
+program: MODULE UIDENT EOL PRIMITIVE THROW WHEN
 ##
 ## Ends in an error in state: 799.
 ##
@@ -4837,48 +4738,8 @@ program: MODULE UIDENT EOL PRIMITIVE THROW COLON EOL UIDENT WHEN
 ## In state 79, spurious reduction of production data_typ -> type_id
 ## In state 106, spurious reduction of production typ -> data_typ
 ##
-program: MODULE UIDENT EOL PRIMITIVE THROW COLON UIDENT WHEN
-##
-## Ends in an error in state: 795.
-##
-## primitive_stmt -> PRIMITIVE prim COLON typ . equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE prim COLON typ
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 89, spurious reduction of production type_id -> lseparated_nonempty_list_inner(dot,type_id_str)
-## In state 79, spurious reduction of production data_typ -> type_id
-## In state 106, spurious reduction of production typ -> data_typ
-##
 
 Expected `=` followed by a string declaring the primitive's internal name.
-
-program: MODULE UIDENT EOL PRIMITIVE LIDENT WHILE
-##
-## Ends in an error in state: 802.
-##
-## primitive_stmt -> PRIMITIVE id_str . COLON typ equal STRING [ SEMI EOL EOF ]
-## primitive_stmt -> PRIMITIVE id_str . COLON eols typ equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE id_str
-##
-program: MODULE UIDENT EOL PRIMITIVE THROW WHILE
-##
-## Ends in an error in state: 793.
-##
-## primitive_stmt -> PRIMITIVE prim . COLON typ equal STRING [ SEMI EOL EOF ]
-## primitive_stmt -> PRIMITIVE prim . COLON eols typ equal STRING [ SEMI EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## PRIMITIVE prim
-##
-
-Expected a type annotation—a colon followed by a type.
 
 program: MODULE UIDENT EOL PRIMITIVE WHILE
 ##

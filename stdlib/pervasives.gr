@@ -56,7 +56,7 @@ from String use { toString, print, concat as (++) }
  *
  * @since v0.1.0
  */
-provide primitive (!): Bool -> Bool = "@not"
+provide primitive (!) = "@not"
 
 /**
  * Computes the logical AND (`&&`) of the given operands.
@@ -70,7 +70,7 @@ provide primitive (!): Bool -> Bool = "@not"
  *
  * @since v0.1.0
  */
-provide primitive (&&): (Bool, Bool) -> Bool = "@and"
+provide primitive (&&) = "@and"
 
 /**
  * Computes the logical OR `||` of the given operands.
@@ -84,7 +84,7 @@ provide primitive (&&): (Bool, Bool) -> Bool = "@and"
  *
  * @since v0.1.0
  */
-provide primitive (||): (Bool, Bool) -> Bool = "@or"
+provide primitive (||) = "@or"
 
 provide { (==) }
 
@@ -110,7 +110,7 @@ provide let (!=): (a, a) -> Bool = (x, y) => !(x == y)
  *
  * @since v0.1.0
  */
-provide primitive (is): (a, a) -> Bool = "@is"
+provide primitive (is) = "@is"
 
 /**
  * Checks that two values are **not** physically equal.
@@ -163,7 +163,7 @@ provide { toString, print }
  *
  * @since v0.1.0
  */
-provide primitive ignore: a -> Void = "@ignore"
+provide primitive ignore = "@ignore"
 
 /**
  * Assert that the given Boolean condition is `true`.
@@ -177,7 +177,7 @@ provide primitive ignore: a -> Void = "@ignore"
  *
  * @since v0.1.0
  */
-provide primitive assert: Bool -> Void = "@assert"
+provide primitive assert = "@assert"
 
 // Exceptions
 provide exception Failure(String)
@@ -191,7 +191,7 @@ provide exception InvalidArgument(String)
  *
  * @since v0.3.0
  */
-provide primitive throw: Exception -> a = "@throw"
+provide primitive throw = "@throw"
 
 /**
  * Unconditionally throw a `Failure` exception with a message.
@@ -222,7 +222,7 @@ provide let identity = x => x
  *
  * @since v0.1.0
  */
-provide primitive box: a -> Box<a> = "@box"
+provide primitive box = "@box"
 
 /**
  * Retrieves the current value from a box.
@@ -232,10 +232,10 @@ provide primitive box: a -> Box<a> = "@box"
  *
  * @since v0.1.0
  */
-provide primitive unbox: Box<a> -> a = "@unbox"
+provide primitive unbox = "@unbox"
 
 // Setup exception printing
-primitive elideTypeInfo: Bool = "@meta.elide_type_info"
+primitive elideTypeInfo = "@meta.elide_type_info"
 @unsafe
 let rec setupExceptions = () => {
   Exception.dangerouslyRegisterPrinter(e => {

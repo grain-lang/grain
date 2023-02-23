@@ -321,6 +321,7 @@ type prim0 =
   | AllocateFloat32
   | AllocateFloat64
   | AllocateRational
+  | WasmMemorySize
   | Unreachable;
 
 /** Single-argument operators */
@@ -426,7 +427,6 @@ type primn =
   | WasmStoreF64
   | WasmMemoryCopy
   | WasmMemoryFill
-  | WasmMemorySize
   | WasmMemoryCompare;
 
 [@deriving (sexp, yojson)]
@@ -577,13 +577,21 @@ type module_declaration = {
   pmod_loc: Location.t,
 }
 
+[@deriving (sexp, yojson)]
+and primitive_description = {
+  pprim_ident: loc(string),
+  pprim_name: loc(string),
+  [@sexp_drop_if sexp_locs_disabled]
+  pprim_loc: Location.t,
+}
+
 /** Statements which can exist at the top level */
 
 [@deriving (sexp, yojson)]
 and toplevel_stmt_desc =
   | PTopInclude(include_declaration)
   | PTopForeign(provide_flag, value_description)
-  | PTopPrimitive(provide_flag, value_description)
+  | PTopPrimitive(provide_flag, primitive_description)
   | PTopModule(provide_flag, module_declaration)
   | PTopData(list((provide_flag, data_declaration)))
   | PTopLet(provide_flag, rec_flag, mut_flag, list(value_binding))

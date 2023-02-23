@@ -450,6 +450,12 @@ module Toplevel = {
     mk(~loc, ~attributes?, PTopProvide(e));
 };
 
+module PrimitiveDescription = {
+  let mk = (~loc, ~ident, ~name, ()) => {
+    {pprim_ident: ident, pprim_name: name, pprim_loc: loc};
+  };
+};
+
 module ValueDescription = {
   let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim, ()) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);

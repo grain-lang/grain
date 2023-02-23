@@ -908,34 +908,16 @@ let transl_value_decl = (env, loc, valdecl) => {
   let name =
     Option.value(~default=valdecl.pval_name, valdecl.pval_name_alias).txt;
   let id = Ident.create(name);
-  let v =
-    switch (valdecl.pval_prim) {
-    /*[] when Env.is_in_signature env ->
-      { val_type = ty; val_kind = TValReg; Types.val_loc = loc;
-        (*val_attributes = valdecl.pval_attributes*) }*/
-    /* | [] ->
-       raise (Error(valdecl.pval_loc, Val_in_structure)) */
-    | [prim] => {
-        val_type: ty,
-        val_repr: Type_utils.repr_of_type(env, ty),
-        val_kind: TValPrim(prim),
-        Types.val_loc: loc,
-        val_internalpath: PIdent(id),
-        val_fullpath: Path.PIdent(id),
-        val_mutable: false,
-        val_global: true,
-      }
-    | _ => {
-        val_type: ty,
-        val_repr: Type_utils.repr_of_type(env, ty),
-        val_kind: TValReg,
-        Types.val_loc: loc,
-        val_internalpath: PIdent(id),
-        val_fullpath: Path.PIdent(id),
-        val_mutable: false,
-        val_global: true,
-      }
-    };
+  let v = {
+    val_type: ty,
+    val_repr: Type_utils.repr_of_type(env, ty),
+    val_kind: TValReg,
+    Types.val_loc: loc,
+    val_internalpath: PIdent(id),
+    val_fullpath: Path.PIdent(id),
+    val_mutable: false,
+    val_global: true,
+  };
 
   let newenv = Env.add_value(id, v, env);
   /*~check:(fun s -> Warnings.Unused_value_declaration s)*/

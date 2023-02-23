@@ -13,8 +13,8 @@ type hooks = {
   leave_provide: list(provide_item) => unit,
   enter_foreign: (provide_flag, value_description) => unit,
   leave_foreign: (provide_flag, value_description) => unit,
-  enter_primitive: (provide_flag, value_description) => unit,
-  leave_primitive: (provide_flag, value_description) => unit,
+  enter_primitive: (provide_flag, primitive_description) => unit,
+  leave_primitive: (provide_flag, primitive_description) => unit,
   enter_top_let:
     (provide_flag, rec_flag, mut_flag, list(value_binding)) => unit,
   leave_top_let:

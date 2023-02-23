@@ -185,6 +185,7 @@ type prim0 =
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
+    | WasmMemorySize
     | Unreachable;
 
 type prim1 =
@@ -287,7 +288,6 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize
     | WasmMemoryCompare;
 
 type core_type = {

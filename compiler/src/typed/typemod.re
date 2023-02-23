@@ -363,20 +363,18 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
   };
 
   let process_primitive = (env, e, d, attributes, loc) => {
-    let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
+    let (defs, id, desc, newenv) = Translprim.transl_prim(env, d);
     let signature =
       switch (e) {
-      | Provided => Some(TSigValue(desc.tvd_id, desc.tvd_val))
+      | Provided => Some(TSigValue(id, desc))
       | NotProvided => None
       | Abstract => failwith("Impossible: abstract primitive")
       };
-    let (defs, newenv, attrs) = Translprim.transl_prim(newenv, desc);
     let prim = {
       ttop_desc: TTopLet(Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
-      ttop_attributes:
-        List.append(Typetexp.type_attributes(attributes), attrs),
+      ttop_attributes: Typetexp.type_attributes(attributes),
     };
     (newenv, signature, prim);
   };

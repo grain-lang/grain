@@ -28,10 +28,10 @@ include "runtime/dataStructures" as DS
 include "runtime/utils/printing" as RPrint
 
 // things we need which are missing due to --no-pervasives:
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive throw: Exception -> a = "@throw"
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive throw = "@throw"
 
 // Layout:
 // -------------------------------------------------------

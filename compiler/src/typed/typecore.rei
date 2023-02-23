@@ -22,6 +22,11 @@ open Format;
 
 let is_nonexpansive: Typedtree.expression => bool;
 
+let prim0_type: Parsetree.prim0 => type_expr;
+let prim1_type: Parsetree.prim1 => type_expr;
+let prim2_type: Parsetree.prim2 => type_expr;
+let primn_type: Parsetree.primn => type_expr;
+
 let type_binding:
   (Env.t, rec_flag, mut_flag, list(Parsetree.value_binding), option('a)) =>
   (list(Typedtree.value_binding), Env.t);

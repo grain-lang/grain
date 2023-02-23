@@ -2,76 +2,58 @@
 module WasmI32
 
 // WebAssembly Memory Instructions
-provide primitive load: (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_int32"
-provide primitive load8S: (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_s_int32"
-provide primitive load8U: (WasmI32, WasmI32) -> WasmI32 = "@wasm.load_8_u_int32"
-provide primitive load16S: (
-  WasmI32,
-  WasmI32,
-) -> WasmI32 = "@wasm.load_16_s_int32"
-provide primitive load16U: (
-  WasmI32,
-  WasmI32,
-) -> WasmI32 = "@wasm.load_16_u_int32"
-provide primitive store: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) -> Void = "@wasm.store_int32"
-provide primitive store8: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) -> Void = "@wasm.store_8_int32"
-provide primitive store16: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) -> Void = "@wasm.store_16_int32"
+provide primitive load = "@wasm.load_int32"
+provide primitive load8S = "@wasm.load_8_s_int32"
+provide primitive load8U = "@wasm.load_8_u_int32"
+provide primitive load16S = "@wasm.load_16_s_int32"
+provide primitive load16U = "@wasm.load_16_u_int32"
+provide primitive store = "@wasm.store_int32"
+provide primitive store8 = "@wasm.store_8_int32"
+provide primitive store16 = "@wasm.store_16_int32"
 
 // WebAssembly Unary Instructions
-provide primitive clz: WasmI32 -> WasmI32 = "@wasm.clz_int32"
-provide primitive ctz: WasmI32 -> WasmI32 = "@wasm.ctz_int32"
-provide primitive popcnt: WasmI32 -> WasmI32 = "@wasm.popcnt_int32"
-provide primitive eqz: WasmI32 -> Bool = "@wasm.eq_z_int32"
+provide primitive clz = "@wasm.clz_int32"
+provide primitive ctz = "@wasm.ctz_int32"
+provide primitive popcnt = "@wasm.popcnt_int32"
+provide primitive eqz = "@wasm.eq_z_int32"
 
 // WebAssembly Binary Instructions
-provide primitive add: (WasmI32, WasmI32) -> WasmI32 = "@wasm.add_int32"
-provide primitive sub: (WasmI32, WasmI32) -> WasmI32 = "@wasm.sub_int32"
-provide primitive mul: (WasmI32, WasmI32) -> WasmI32 = "@wasm.mul_int32"
-provide primitive divS: (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_s_int32"
-provide primitive divU: (WasmI32, WasmI32) -> WasmI32 = "@wasm.div_u_int32"
-provide primitive remS: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_s_int32"
-provide primitive remU: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rem_u_int32"
-provide primitive and: (WasmI32, WasmI32) -> WasmI32 = "@wasm.and_int32"
-provide primitive or: (WasmI32, WasmI32) -> WasmI32 = "@wasm.or_int32"
-provide primitive xor: (WasmI32, WasmI32) -> WasmI32 = "@wasm.xor_int32"
-provide primitive shl: (WasmI32, WasmI32) -> WasmI32 = "@wasm.shl_int32"
-provide primitive shrS: (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_s_int32"
-provide primitive shrU: (WasmI32, WasmI32) -> WasmI32 = "@wasm.shr_u_int32"
-provide primitive rotl: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_l_int32"
-provide primitive rotr: (WasmI32, WasmI32) -> WasmI32 = "@wasm.rot_r_int32"
-provide primitive eq: (WasmI32, WasmI32) -> Bool = "@wasm.eq_int32"
-provide primitive ne: (WasmI32, WasmI32) -> Bool = "@wasm.ne_int32"
-provide primitive ltS: (WasmI32, WasmI32) -> Bool = "@wasm.lt_s_int32"
-provide primitive ltU: (WasmI32, WasmI32) -> Bool = "@wasm.lt_u_int32"
-provide primitive leS: (WasmI32, WasmI32) -> Bool = "@wasm.le_s_int32"
-provide primitive leU: (WasmI32, WasmI32) -> Bool = "@wasm.le_u_int32"
-provide primitive gtS: (WasmI32, WasmI32) -> Bool = "@wasm.gt_s_int32"
-provide primitive gtU: (WasmI32, WasmI32) -> Bool = "@wasm.gt_u_int32"
-provide primitive geS: (WasmI32, WasmI32) -> Bool = "@wasm.ge_s_int32"
-provide primitive geU: (WasmI32, WasmI32) -> Bool = "@wasm.ge_u_int32"
+provide primitive add = "@wasm.add_int32"
+provide primitive sub = "@wasm.sub_int32"
+provide primitive mul = "@wasm.mul_int32"
+provide primitive divS = "@wasm.div_s_int32"
+provide primitive divU = "@wasm.div_u_int32"
+provide primitive remS = "@wasm.rem_s_int32"
+provide primitive remU = "@wasm.rem_u_int32"
+provide primitive and = "@wasm.and_int32"
+provide primitive or = "@wasm.or_int32"
+provide primitive xor = "@wasm.xor_int32"
+provide primitive shl = "@wasm.shl_int32"
+provide primitive shrS = "@wasm.shr_s_int32"
+provide primitive shrU = "@wasm.shr_u_int32"
+provide primitive rotl = "@wasm.rot_l_int32"
+provide primitive rotr = "@wasm.rot_r_int32"
+provide primitive eq = "@wasm.eq_int32"
+provide primitive ne = "@wasm.ne_int32"
+provide primitive ltS = "@wasm.lt_s_int32"
+provide primitive ltU = "@wasm.lt_u_int32"
+provide primitive leS = "@wasm.le_s_int32"
+provide primitive leU = "@wasm.le_u_int32"
+provide primitive gtS = "@wasm.gt_s_int32"
+provide primitive gtU = "@wasm.gt_u_int32"
+provide primitive geS = "@wasm.ge_s_int32"
+provide primitive geU = "@wasm.ge_u_int32"
 
 // WebAssembly Conversion Instructions
-provide primitive wrapI64: WasmI64 -> WasmI32 = "@wasm.wrap_int64"
-provide primitive truncF32S: WasmF32 -> WasmI32 = "@wasm.trunc_s_float32_to_int32"
-provide primitive truncF32U: WasmF32 -> WasmI32 = "@wasm.trunc_u_float32_to_int32"
-provide primitive truncF64S: WasmF64 -> WasmI32 = "@wasm.trunc_s_float64_to_int32"
-provide primitive truncF64U: WasmF64 -> WasmI32 = "@wasm.trunc_u_float64_to_int32"
-provide primitive reinterpretF32: WasmF32 -> WasmI32 = "@wasm.reinterpret_float32"
-provide primitive extendS8: WasmI32 -> WasmI32 = "@wasm.extend_s8_int32"
-provide primitive extendS16: WasmI32 -> WasmI32 = "@wasm.extend_s16_int32"
+provide primitive wrapI64 = "@wasm.wrap_int64"
+provide primitive truncF32S = "@wasm.trunc_s_float32_to_int32"
+provide primitive truncF32U = "@wasm.trunc_u_float32_to_int32"
+provide primitive truncF64S = "@wasm.trunc_s_float64_to_int32"
+provide primitive truncF64U = "@wasm.trunc_u_float64_to_int32"
+provide primitive reinterpretF32 = "@wasm.reinterpret_float32"
+provide primitive extendS8 = "@wasm.extend_s8_int32"
+provide primitive extendS16 = "@wasm.extend_s16_int32"
 
 // Grain Conversions
-provide primitive fromGrain: a -> WasmI32 = "@wasm.fromGrain"
-provide primitive toGrain: WasmI32 -> a = "@wasm.toGrain"
+provide primitive fromGrain = "@wasm.fromGrain"
+provide primitive toGrain = "@wasm.toGrain"

@@ -8,7 +8,8 @@ let makeGcProgram = (program, heap_size) => {
     include "runtime/malloc"
     include "runtime/unsafe/memory"
 
-    primitive heapBase: WasmI32 = "@heap.base"
+    @disableGC
+    primitive heapBase = "@heap.base"
 
     @disableGC
     let leak = () => {

@@ -48,9 +48,9 @@ from Common use {
   is8Digits,
 }
 
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (!): Bool -> Bool = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive (!) = "@not"
 
 provide record Decimal {
   // The number of significant digits in the decimal.

@@ -106,8 +106,10 @@ let prim0_type =
   | AllocateUint64
   | AllocateFloat32
   | AllocateFloat64
-  | AllocateRational => Builtin_types.type_wasmi32
-  | Unreachable => newvar(~name="a", ());
+  | AllocateRational
+  | WasmMemorySize =>
+    newgenty(TTyArrow([], Builtin_types.type_wasmi32, TComOk))
+  | Unreachable => newgenty(TTyArrow([], newgenvar(~name="a", ()), TComOk));
 
 let prim1_type =
   fun
@@ -118,155 +120,323 @@ let prim1_type =
   | AllocateBigInt
   | LoadAdtVariant
   | StringSize
-  | BytesSize => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
-  | NewInt32 => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
-  | NewInt64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
-  | NewUint32 => (Builtin_types.type_wasmi32, Builtin_types.type_wasmi32)
-  | NewUint64 => (Builtin_types.type_wasmi64, Builtin_types.type_wasmi32)
-  | NewFloat32 => (Builtin_types.type_wasmf32, Builtin_types.type_wasmi32)
-  | NewFloat64 => (Builtin_types.type_wasmf64, Builtin_types.type_wasmi32)
-  | BuiltinId => (Builtin_types.type_string, Builtin_types.type_wasmi32)
-  | TagSimpleNumber => (Builtin_types.type_wasmi32, Builtin_types.type_number)
-  | UntagSimpleNumber => (
-      Builtin_types.type_number,
-      Builtin_types.type_wasmi32,
+  | BytesSize =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
     )
-  | TagChar => (Builtin_types.type_wasmi32, Builtin_types.type_char)
-  | UntagChar => (Builtin_types.type_char, Builtin_types.type_wasmi32)
-  | Not => (Builtin_types.type_bool, Builtin_types.type_bool)
+  | NewInt32 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | NewInt64 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi64],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | NewUint32 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | NewUint64 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi64],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | NewFloat32 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmf32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | NewFloat64 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmf64],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | BuiltinId =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_string],
+        Builtin_types.type_number,
+        TComOk,
+      ),
+    )
+  | TagSimpleNumber =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_number,
+        TComOk,
+      ),
+    )
+  | UntagSimpleNumber =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_number],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | TagChar =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_char,
+        TComOk,
+      ),
+    )
+  | UntagChar =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_char],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | Not =>
+    newgenty(
+      TTyArrow([Builtin_types.type_bool], Builtin_types.type_bool, TComOk),
+    )
   | Box
   | BoxBind => {
-      let var = newvar(~name="a", ());
-      (var, Builtin_types.type_box(var));
+      let var = newgenvar(~name="a", ());
+      newgenty(TTyArrow([var], Builtin_types.type_box(var), TComOk));
     }
   | Unbox
   | UnboxBind => {
-      let var = newvar(~name="a", ());
-      (Builtin_types.type_box(var), var);
+      let var = newgenvar(~name="a", ());
+      newgenty(TTyArrow([Builtin_types.type_box(var)], var, TComOk));
     }
   | Ignore => {
-      let var = newvar(~name="a", ());
-      (var, Builtin_types.type_void);
+      let var = newgenvar(~name="a", ());
+      newgenty(TTyArrow([var], Builtin_types.type_void, TComOk));
     }
   | ArrayLength => {
-      let var = newvar(~name="a", ());
-      (Builtin_types.type_array(var), Builtin_types.type_number);
+      let var = newgenvar(~name="a", ());
+      newgenty(
+        TTyArrow(
+          [Builtin_types.type_array(var)],
+          Builtin_types.type_number,
+          TComOk,
+        ),
+      );
     }
-  | Assert => (Builtin_types.type_bool, Builtin_types.type_void)
-  | Throw => (Builtin_types.type_exception, newvar(~name="a", ()))
-  | WasmFromGrain => (newvar(~name="a", ()), Builtin_types.type_wasmi32)
-  | WasmToGrain => (Builtin_types.type_wasmi32, newvar(~name="a", ()))
+  | Assert =>
+    newgenty(
+      TTyArrow([Builtin_types.type_bool], Builtin_types.type_void, TComOk),
+    )
+  | Throw =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_exception],
+        newgenvar(~name="a", ()),
+        TComOk,
+      ),
+    )
+  | WasmFromGrain =>
+    newgenty(
+      TTyArrow(
+        [newgenvar(~name="a", ())],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | WasmToGrain =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        newgenvar(~name="a", ()),
+        TComOk,
+      ),
+    )
   | WasmUnaryI32({arg_type, ret_type})
   | WasmUnaryI64({arg_type, ret_type})
   | WasmUnaryF32({arg_type, ret_type})
-  | WasmUnaryF64({arg_type, ret_type}) => (
-      grain_type_of_wasm_prim_type(arg_type),
-      grain_type_of_wasm_prim_type(ret_type),
+  | WasmUnaryF64({arg_type, ret_type}) =>
+    newgenty(
+      TTyArrow(
+        [grain_type_of_wasm_prim_type(arg_type)],
+        grain_type_of_wasm_prim_type(ret_type),
+        TComOk,
+      ),
     )
-  | WasmMemoryGrow => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
+  | WasmMemoryGrow =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
     );
 
 let prim2_type =
   fun
-  | NewRational => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
+  | NewRational =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
     )
   | And
-  | Or => (
-      Builtin_types.type_bool,
-      Builtin_types.type_bool,
-      Builtin_types.type_bool,
+  | Or =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_bool, Builtin_types.type_bool],
+        Builtin_types.type_bool,
+        TComOk,
+      ),
     )
   | Is
   | Eq => {
-      let v1 = newvar(~name="equal", ())
-      and v2 = newvar(~name="equal", ());
-      (v1, v2, Builtin_types.type_bool);
+      let v = newgenvar(~name="a", ());
+      newgenty(TTyArrow([v, v], Builtin_types.type_bool, TComOk));
     }
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryF32({arg_types: (arg1_type, arg2_type), ret_type})
-  | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type}) => (
-      grain_type_of_wasm_prim_type(arg1_type),
-      grain_type_of_wasm_prim_type(arg2_type),
-      grain_type_of_wasm_prim_type(ret_type),
+  | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type}) =>
+    newgenty(
+      TTyArrow(
+        [
+          grain_type_of_wasm_prim_type(arg1_type),
+          grain_type_of_wasm_prim_type(arg2_type),
+        ],
+        grain_type_of_wasm_prim_type(ret_type),
+        TComOk,
+      ),
     )
-  | WasmLoadI32(_) => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
+  | WasmLoadI32(_) =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
     )
-  | WasmLoadI64(_) => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi64,
+  | WasmLoadI64(_) =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmi64,
+        TComOk,
+      ),
     )
-  | WasmLoadF32 => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmf32,
+  | WasmLoadF32 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmf32,
+        TComOk,
+      ),
     )
-  | WasmLoadF64 => (
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmi32,
-      Builtin_types.type_wasmf64,
+  | WasmLoadF64 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32, Builtin_types.type_wasmi32],
+        Builtin_types.type_wasmf64,
+        TComOk,
+      ),
     );
 
 let primn_type =
   fun
-  | WasmStoreI32(_) => (
-      [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-      ],
-      Builtin_types.type_void,
+  | WasmStoreI32(_) =>
+    newgenty(
+      TTyArrow(
+        [
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi32,
+        ],
+        Builtin_types.type_void,
+        TComOk,
+      ),
     )
-  | WasmStoreI64(_) => (
-      [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi64,
-        Builtin_types.type_wasmi32,
-      ],
-      Builtin_types.type_void,
+  | WasmStoreI64(_) =>
+    newgenty(
+      TTyArrow(
+        [
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi64,
+          Builtin_types.type_wasmi32,
+        ],
+        Builtin_types.type_void,
+        TComOk,
+      ),
     )
-  | WasmStoreF32 => (
-      [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmf32,
-        Builtin_types.type_wasmi32,
-      ],
-      Builtin_types.type_void,
+  | WasmStoreF32 =>
+    newgenty(
+      TTyArrow(
+        [
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmf32,
+          Builtin_types.type_wasmi32,
+        ],
+        Builtin_types.type_void,
+        TComOk,
+      ),
     )
-  | WasmStoreF64 => (
-      [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmf64,
-        Builtin_types.type_wasmi32,
-      ],
-      Builtin_types.type_void,
+  | WasmStoreF64 =>
+    newgenty(
+      TTyArrow(
+        [
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmf64,
+          Builtin_types.type_wasmi32,
+        ],
+        Builtin_types.type_void,
+        TComOk,
+      ),
     )
-  | WasmMemorySize => ([], Builtin_types.type_wasmi32)
   | WasmMemoryCopy
-  | WasmMemoryFill => (
-      [
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-      ],
-      Builtin_types.type_void,
+  | WasmMemoryFill =>
+    newgenty(
+      TTyArrow(
+        [
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi32,
+        ],
+        Builtin_types.type_void,
+        TComOk,
+      ),
     )
-  | WasmMemoryCompare => (
-      [
+  | WasmMemoryCompare =>
+    newgenty(
+      TTyArrow(
+        [
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi32,
+          Builtin_types.type_wasmi32,
+        ],
         Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-        Builtin_types.type_wasmi32,
-      ],
-      Builtin_types.type_wasmi32,
+        TComOk,
+      ),
     );
 
 let maybe_add_pattern_variables_ghost = (loc_let, env, pv) =>
@@ -1003,7 +1173,13 @@ and type_expect_ =
       exp_env: env,
     });
   | PExpPrim1(p1, sarg) =>
-    let (argtype, rettype) = prim1_type(p1);
+    let (argtypes, rettype) =
+      filter_arrow(1, env, instance(env, prim1_type(p1)));
+    let argtype =
+      switch (argtypes) {
+      | [arg] => arg
+      | _ => failwith("Impossible: invalid prim1 type arity")
+      };
     let arg = type_expect(env, sarg, mk_expected(argtype));
     rue({
       exp_desc: TExpPrim1(p1, arg),
@@ -1014,7 +1190,13 @@ and type_expect_ =
       exp_env: env,
     });
   | PExpPrim2(p2, sarg1, sarg2) =>
-    let (arg1type, arg2type, rettype) = prim2_type(p2);
+    let (argtypes, rettype) =
+      filter_arrow(2, env, instance(env, prim2_type(p2)));
+    let (arg1type, arg2type) =
+      switch (argtypes) {
+      | [arg1, arg2] => (arg1, arg2)
+      | _ => failwith("Impossible: invalid prim2 type arity")
+      };
     let arg1 = type_expect(env, sarg1, mk_expected(arg1type));
     let arg2 = type_expect(env, sarg2, mk_expected(arg2type));
     rue({
@@ -1026,7 +1208,8 @@ and type_expect_ =
       exp_env: env,
     });
   | PExpPrimN(p, sargs) =>
-    let (argtypes, rettype) = primn_type(p);
+    let (argtypes, rettype) =
+      filter_arrow(3, env, instance(env, primn_type(p)));
     let args =
       List.map2(
         (sarg, argtype) => type_expect(env, sarg, mk_expected(argtype)),

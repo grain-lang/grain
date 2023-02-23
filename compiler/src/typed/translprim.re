@@ -136,9 +136,9 @@ let prim_map =
         Primitive2(WasmLoadI64({sz: 4, signed: false})),
       ),
       ("@wasm.store_int64", PrimitiveN(WasmStoreI64({sz: 8}))),
-      ("@wasm.store_8_int64", PrimitiveN(WasmStoreI32({sz: 1}))),
-      ("@wasm.store_16_int64", PrimitiveN(WasmStoreI32({sz: 2}))),
-      ("@wasm.store_32_int64", PrimitiveN(WasmStoreI32({sz: 4}))),
+      ("@wasm.store_8_int64", PrimitiveN(WasmStoreI64({sz: 1}))),
+      ("@wasm.store_16_int64", PrimitiveN(WasmStoreI64({sz: 2}))),
+      ("@wasm.store_32_int64", PrimitiveN(WasmStoreI64({sz: 4}))),
       ("@wasm.load_float32", Primitive2(WasmLoadF32)),
       ("@wasm.store_float32", PrimitiveN(WasmStoreF32)),
       ("@wasm.load_float64", Primitive2(WasmLoadF64)),
@@ -1436,7 +1436,7 @@ let prim_map =
       ("@wasm.fromGrain", Primitive1(WasmFromGrain)),
       ("@wasm.toGrain", Primitive1(WasmToGrain)),
       ("@wasm.memory_grow", Primitive1(WasmMemoryGrow)),
-      ("@wasm.memory_size", PrimitiveN(WasmMemorySize)),
+      ("@wasm.memory_size", Primitive0(WasmMemorySize)),
       ("@wasm.memory_copy", PrimitiveN(WasmMemoryCopy)),
       ("@wasm.memory_fill", PrimitiveN(WasmMemoryFill)),
       ("@wasm.memory_compare", PrimitiveN(WasmMemoryCompare)),
@@ -1451,10 +1451,10 @@ let active_memory_base = () => {
 };
 
 let transl_prim = (env, desc) => {
-  let loc = desc.tvd_loc;
+  let loc = desc.pprim_loc;
 
   let prim =
-    try(PrimMap.find(prim_map, List.hd(desc.tvd_prim))) {
+    try(PrimMap.find(prim_map, desc.pprim_name.txt)) {
     | Not_found => failwith("This primitive does not exist.")
     };
 
@@ -1486,142 +1486,176 @@ let transl_prim = (env, desc) => {
   //
   // Which can pass through the rest of the compilation without issue.
   //
-  let (value, attrs) =
+  let (value, typ) =
     switch (prim) {
     | PrimitiveConstant(const) =>
-      let (value, needs_disablegc) =
+      let (value, typ, attributes) =
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
         | HeapBase => (
             Constant.wasmi32(string_of_int(active_memory_base())),
-            true,
+            Builtin_types.type_wasmi32,
+            disable_gc,
           )
         | HeapStart => (
             Constant.wasmi32(string_of_int(active_memory_base() + 0x10)),
-            true,
+            Builtin_types.type_wasmi32,
+            disable_gc,
           )
         | HeapTypeMetadata => (
             Constant.wasmi32(string_of_int(active_memory_base() + 0x8)),
-            true,
+            Builtin_types.type_wasmi32,
+            disable_gc,
           )
         | ElideTypeInfo => (
             Constant.bool(Grain_utils.Config.elide_type_info^),
-            false,
+            Builtin_types.type_bool,
+            [],
           )
         };
-      let attrs =
-        if (needs_disablegc) {
-          [Location.mknoloc(Typedtree.Disable_gc)];
-        } else {
-          [];
+      (Expression.constant(~loc, ~attributes, value), typ);
+    | Primitive0(p) =>
+      let attributes =
+        switch (p) {
+        | AllocateInt32
+        | AllocateInt64
+        | AllocateUint32
+        | AllocateUint64
+        | AllocateFloat32
+        | AllocateFloat64
+        | AllocateRational
+        | WasmMemorySize
+        | Unreachable => disable_gc
         };
-      (Expression.constant(~loc, ~attributes=disable_gc, value), attrs);
-    | Primitive0(
-        (
-          AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
-          AllocateFloat32 |
-          AllocateFloat64 |
-          AllocateRational |
-          Unreachable
-        ) as p,
-      ) => (
+      (
+        Expression.lambda(~loc, ~attributes, [], Expression.prim0(~loc, p)),
+        Typecore.prim0_type(p),
+      );
+    | Primitive1(BuiltinId as p) =>
+      // This primitive must always be inlined, so we do not generate a lambda
+      (Expression.constant(PConstVoid), Typecore.prim1_type(p))
+    | Primitive1(p) =>
+      let attributes =
+        switch (p) {
+        | WasmUnaryI32(_)
+        | WasmUnaryI64(_)
+        | WasmUnaryF32(_)
+        | WasmUnaryF64(_)
+        | WasmMemoryGrow
+        | WasmFromGrain
+        | WasmToGrain => disable_gc
+        | AllocateArray
+        | AllocateTuple
+        | AllocateBytes
+        | AllocateString
+        | AllocateBigInt
+        | StringSize
+        | BytesSize
+        | ArrayLength
+        | NewInt32
+        | NewInt64
+        | NewUint32
+        | NewUint64
+        | NewFloat32
+        | NewFloat64
+        | LoadAdtVariant
+        | TagSimpleNumber
+        | UntagSimpleNumber
+        | TagChar
+        | UntagChar
+        | Not
+        | Box
+        | BoxBind
+        | Unbox
+        | UnboxBind
+        | Ignore
+        | Assert
+        | Throw
+        | BuiltinId => []
+        };
+      (
         Expression.lambda(
           ~loc,
-          ~attributes=disable_gc,
-          [],
-          Expression.prim0(~loc, p),
-        ),
-        [],
-      )
-    | Primitive1(
-        (
-          WasmUnaryI32(_) | WasmUnaryI64(_) | WasmUnaryF32(_) | WasmUnaryF64(_) |
-          WasmMemoryGrow |
-          WasmFromGrain |
-          WasmToGrain
-        ) as p,
-      ) => (
-        Expression.lambda(
-          ~loc,
-          ~attributes=disable_gc,
+          ~attributes,
           [pat_a],
           Expression.prim1(~loc, p, id_a),
         ),
-        [],
-      )
-    | Primitive1(BuiltinId) =>
-      // This primitive must always be inlined, so we do not generate a lambda
-      (Expression.constant(PConstVoid), [])
-    | Primitive1(p) => (
-        Expression.lambda(~loc, [pat_a], Expression.prim1(~loc, p, id_a)),
-        [],
-      )
-    | Primitive2(
-        (
-          WasmBinaryI32(_) | WasmBinaryI64(_) | WasmBinaryF32(_) |
-          WasmBinaryF64(_) |
-          WasmLoadI32(_) |
-          WasmLoadI64(_) |
-          WasmLoadF32 |
-          WasmLoadF64
-        ) as p,
-      ) => (
+        Typecore.prim1_type(p),
+      );
+    | Primitive2(p) =>
+      let attributes =
+        switch (p) {
+        | WasmBinaryI32(_)
+        | WasmBinaryI64(_)
+        | WasmBinaryF32(_)
+        | WasmBinaryF64(_)
+        | WasmLoadI32(_)
+        | WasmLoadI64(_)
+        | WasmLoadF32
+        | WasmLoadF64
+        | NewRational => disable_gc
+        | Is
+        | Eq
+        | And
+        | Or => []
+        };
+      (
         Expression.lambda(
           ~loc,
-          ~attributes=disable_gc,
+          ~attributes,
           [pat_a, pat_b],
           Expression.prim2(~loc, p, id_a, id_b),
         ),
-        [],
-      )
-    | Primitive2(p) => (
+        Typecore.prim2_type(p),
+      );
+    | PrimitiveN(p) =>
+      let attributes =
+        switch (p) {
+        | WasmStoreI32(_)
+        | WasmStoreI64(_)
+        | WasmStoreF32
+        | WasmStoreF64
+        | WasmMemoryCopy
+        | WasmMemoryFill
+        | WasmMemoryCompare => disable_gc
+        };
+      (
         Expression.lambda(
           ~loc,
-          [pat_a, pat_b],
-          Expression.prim2(~loc, p, id_a, id_b),
-        ),
-        [],
-      )
-    | PrimitiveN(WasmMemorySize as p) => (
-        Expression.lambda(
-          ~loc,
-          ~attributes=disable_gc,
-          [],
-          Expression.primn(~loc, p, []),
-        ),
-        [],
-      )
-    | PrimitiveN(
-        (
-          WasmStoreI32(_) | WasmStoreI64(_) | WasmStoreF32 | WasmStoreF64 |
-          WasmMemoryCopy |
-          WasmMemoryFill |
-          WasmMemoryCompare
-        ) as p,
-      ) => (
-        Expression.lambda(
-          ~loc,
-          ~attributes=disable_gc,
+          ~attributes,
           [pat_a, pat_b, pat_c],
           Expression.primn(~loc, p, [id_a, id_b, id_c]),
         ),
-        [],
-      )
+        Typecore.primn_type(p),
+      );
     };
 
+  let id = Ident.create(desc.pprim_ident.txt);
+  let value_description = {
+    Types.val_type: typ,
+    val_repr: Type_utils.repr_of_type(env, typ),
+    val_kind: TValPrim(desc.pprim_name.txt),
+    val_loc: loc,
+    val_internalpath: PIdent(id),
+    val_fullpath: Path.PIdent(id),
+    val_mutable: false,
+    val_global: true,
+  };
+
   let value = Typecore.type_expression(env, value);
+  let env = Env.add_value(id, value_description, env);
   let binds = [
     {
       vb_pat: {
-        pat_desc: TPatVar(desc.tvd_id, desc.tvd_name),
+        pat_desc: TPatVar(id, desc.pprim_ident),
         pat_loc: loc,
         pat_extra: [],
-        pat_type: desc.tvd_val.val_type,
+        pat_type: typ,
         pat_env: env,
       },
       vb_expr: value,
       vb_loc: loc,
     },
   ];
-  (binds, env, attrs);
+  (binds, id, value_description, env);
 };

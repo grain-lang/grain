@@ -15,6 +15,8 @@ type mapper = {
   provide: (mapper, list(provide_item)) => list(provide_item),
   value_binding: (mapper, value_binding) => value_binding,
   match_branch: (mapper, match_branch) => match_branch,
+  primitive_description:
+    (mapper, primitive_description) => primitive_description,
   value_description: (mapper, value_description) => value_description,
   grain_exception: (mapper, type_exception) => type_exception,
   toplevel: (mapper, toplevel_stmt) => toplevel_stmt,
@@ -390,6 +392,15 @@ module Pr = {
   };
 };
 
+module PD = {
+  let map = (sub, {pprim_ident: ident, pprim_name: name, pprim_loc: loc}) => {
+    let pprim_loc = sub.location(sub, loc);
+    let pprim_ident = map_loc(sub, ident);
+    let pprim_name = map_loc(sub, name);
+    {pprim_ident, pprim_name, pprim_loc};
+  };
+};
+
 module VD = {
   let map = (sub, {pval_mod: vmod, pval_name: vname, pval_loc: loc} as d) => {
     let pval_loc = sub.location(sub, loc);
@@ -415,7 +426,12 @@ module TL = {
     | PTopForeign(e, d) =>
       Toplevel.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
     | PTopPrimitive(e, d) =>
-      Toplevel.primitive(~loc, ~attributes, e, sub.value_description(sub, d))
+      Toplevel.primitive(
+        ~loc,
+        ~attributes,
+        e,
+        sub.primitive_description(sub, d),
+      )
     | PTopData(dd) =>
       Toplevel.data(
         ~loc,
@@ -465,6 +481,7 @@ let default_mapper = {
   provide: Pr.map,
   value_binding: V.map,
   match_branch: MB.map,
+  primitive_description: PD.map,
   value_description: VD.map,
   grain_exception: Exc.map,
   toplevel: TL.map,

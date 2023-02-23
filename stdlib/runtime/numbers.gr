@@ -20,10 +20,10 @@ include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/wasmf32" as WasmF32
 include "runtime/unsafe/wasmf64" as WasmF64
 
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive throw: Exception -> a = "@throw"
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive throw = "@throw"
 
 exception UnknownNumberTag
 exception InvariantViolation
