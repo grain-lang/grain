@@ -82,7 +82,7 @@ describe("garbage collection", ({test, testSkip}) => {
   );
   assertRunGCError(
     "fib_gc_err",
-    512,
+    256,
     {|
     let fib = x => {
       let rec fib_help = (n, acc) => {
@@ -101,7 +101,7 @@ describe("garbage collection", ({test, testSkip}) => {
   );
   assertRunGC(
     "fib_gc",
-    1024,
+    512,
     {|
     let fib = x => {
       let rec fib_help = (n, acc) => {
@@ -118,10 +118,19 @@ describe("garbage collection", ({test, testSkip}) => {
     |},
     "832040\n",
   );
-  /* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
-     tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; */
-  /* I've manually tested this test, but see TODO for automated testing */
-  /* tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true"; */
+  assertRunGC(
+    "loop_gc",
+    256,
+    {|
+    for (let mut i = 0; i < 512; i += 1) {
+      let string = "string"
+      continue
+      ignore(string)
+    }
+    print("OK")
+    |},
+    "OK\n",
+  );
   assertRunGC(
     "long_lists",
     20000,

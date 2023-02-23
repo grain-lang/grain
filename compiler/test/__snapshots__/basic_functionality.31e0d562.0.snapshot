@@ -48,7 +48,7 @@ basic functionality › infinity
        )
        (i32.store offset=4
         (local.get $0)
-        (i32.const 1)
+        (i32.const 2)
        )
        (f64.store offset=8
         (local.get $0)

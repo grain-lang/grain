@@ -555,11 +555,20 @@ let rec transl_imm =
     );
   | TExpBlock([]) => (Imm.const(Const_void), [])
   | TExpBlock([stmt]) => transl_imm(stmt)
-  | TExpBlock([fst, ...rest]) =>
-    let (fst_ans, fst_setup) = transl_comp_expression(fst);
-    let (rest_ans, rest_setup) =
-      transl_imm({...e, exp_desc: TExpBlock(rest)});
-    (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
+  | TExpBlock(stmts) =>
+    let stmts = List.rev_map(transl_comp_expression, stmts);
+    // stmts is non-empty, so this cannot fail
+    let (last_ans, last_setup) = List.hd(stmts);
+    let stmts = List.tl(stmts);
+    let tmp = gensym("block_ans");
+    let setup =
+      List.concat @@
+      List.fold_left(
+        (acc, (ans, setup)) => {[setup, [BSeq(ans)], ...acc]},
+        [last_setup, [BLet(tmp, last_ans, Nonglobal)]],
+        stmts,
+      );
+    (Imm.id(~loc, ~env, tmp), setup);
   | TExpLet(Nonrecursive, _, []) => (Imm.const(Const_void), [])
   | TExpLet(
       Nonrecursive,
@@ -1244,6 +1253,15 @@ and transl_comp_expression =
     failwith("transl_comp_expression: impossible: empty lambda")
   | TExpLambda(_, _) =>
     failwith("transl_comp_expression: NYI: multi-branch lambda")
+  | TExpReturn(value) =>
+    let (value_comp, value_setup) =
+      switch (value) {
+      | Some(value) =>
+        let (value_comp, value_setup) = transl_comp_expression(value);
+        (Some(value_comp), value_setup);
+      | None => (None, [])
+      };
+    (Comp.return(~loc, ~env, value_comp), value_setup);
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})} as func,
       args,

@@ -316,10 +316,23 @@ type binding =
   | MSwapBind(int32, Types.allocation_type); /* Used like a register would be */
 
 [@deriving sexp]
-type immediate =
+type immediate = {
+  immediate_desc,
+  immediate_analyses,
+}
+
+and immediate_desc =
   | MImmConst(constant)
   | MImmBinding(binding)
-  | MImmTrap;
+  | MIncRef(immediate)
+  | MImmTrap
+
+and immediate_analyses = {mutable last_usage}
+
+and last_usage =
+  | Last
+  | NotLast
+  | Unknown;
 
 [@deriving sexp]
 type closure_data = {
@@ -460,8 +473,8 @@ and instr_desc =
   | MClosureOp(closure_op, immediate)
   | MStore(list((binding, instr))) /* Items in the same list have their backpatching delayed until the end of that list */
   | MSet(binding, instr)
-  | MDrop(instr, Types.allocation_type) /* Ignore the result of an expression. Used for sequences. */
-  | MIncRef(instr) /* Apply a GC incRef to the value */
+  | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
+  | MCleanup(option(instr), list(immediate)) /* Calls decRef on items to be cleaned up. instr is evaluated first, cleanup occurs, and the value of instr is returned */
   | MTracepoint(int) /* Prints a message to the console; for compiler debugging */
 
 [@deriving sexp]

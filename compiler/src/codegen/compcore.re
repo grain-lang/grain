@@ -447,44 +447,12 @@ let encoded_const_int32 = n => const_int32(encoded_int32(n));
 
 type bind_action =
   | BindGet
-  | BindSet(Expression.t)
-  | BindTee(Expression.t);
+  | BindSet({
+      value: Expression.t,
+      initial: bool,
+    })
+  | BindTee({value: Expression.t});
 
-let cleanup_local_slot_instructions = (wasm_mod, env: codegen_env, argtypes) => {
-  let arg_instrs =
-    List_utils.filter_mapi(
-      (arg, i) => {
-        // cleanup called on args
-        // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
-        // |-----[env.num_args]-----| |----[len(swap_slots)]------|
-        switch (arg) {
-        | Types.Managed =>
-          let arg = Expression.Local_get.make(wasm_mod, i, Type.int32);
-          Some(
-            singleton @@
-            Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg)),
-          );
-        | _ => None
-        }
-      },
-      argtypes,
-    );
-  let stack_instrs =
-    List.init(
-      env.stack_size.stack_size_ptr,
-      i => {
-        // cleanup called Grain ptr (i32, GC-tracked) locals
-        // <arg0> <arg1> <...> <argN> <swap0> <swap1> <...> <swapN> <local1> <local2> <...> <localN>
-        // |-----[env.num_args]-----| |----[len(swap_slots)]------|
-        let offset = env.num_args + Array.length(swap_slots);
-        let slot_no = i + offset;
-        let arg = Expression.Local_get.make(wasm_mod, slot_no, Type.int32);
-        singleton @@
-        Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg));
-      },
-    );
-  flatten(List.append(arg_instrs, stack_instrs));
-};
 let should_refcount = b =>
   switch (b) {
   | MArgBind(_, Types.Managed)
@@ -513,83 +481,38 @@ let appropriate_decref = (wasm_mod, env, arg, b) =>
   };
 
 let compile_bind =
-    (
-      ~action,
-      ~skip_incref=false,
-      ~skip_decref=false,
-      wasm_mod: Module.t,
-      env: codegen_env,
-      b: binding,
-    )
-    : Expression.t => {
-  let appropriate_incref = (env, arg) =>
-    /* This case is used for storing swap values that have freshly been heap-allocated. */
-    if (skip_incref) {
-      arg;
-    } else {
-      appropriate_incref(wasm_mod, env, arg, b);
-    };
-  let appropriate_decref = (env, arg) =>
-    /* This case is used for storing swap values that have freshly been heap-allocated. */
-    if (skip_decref) {
-      arg;
-    } else {
-      appropriate_decref(wasm_mod, env, arg, b);
-    };
+    (~action, wasm_mod: Module.t, env: codegen_env, b: binding): Expression.t => {
   let get_slot = (slot, typ) => {
-    appropriate_incref(
-      wasm_mod,
-      Expression.Local_get.make(wasm_mod, slot, typ),
-    );
+    Expression.Local_get.make(wasm_mod, slot, typ);
   };
-  let set_slot = (slot, typ, arg) => {
+  let set_slot = (slot, typ, arg, initial) => {
     Expression.Local_set.make(
       wasm_mod,
       slot,
-      if (should_refcount(b)) {
+      if (initial || !should_refcount(b)) {
+        arg;
+      } else {
         Expression.Tuple_extract.make(
           wasm_mod,
           Expression.Tuple_make.make(
             wasm_mod,
             [
-              arg,
+              appropriate_incref(wasm_mod, env, arg, b),
               appropriate_decref(
+                wasm_mod,
                 env,
                 Expression.Local_get.make(wasm_mod, slot, typ),
+                b,
               ),
             ],
           ),
           0,
         );
-      } else {
-        arg;
       },
     );
   };
   let tee_slot = (slot, typ, arg) => {
-    Expression.Local_tee.make(
-      wasm_mod,
-      slot,
-      if (should_refcount(b)) {
-        Expression.Tuple_extract.make(
-          wasm_mod,
-          Expression.Tuple_make.make(
-            wasm_mod,
-            [
-              arg,
-              appropriate_decref(
-                env,
-                Expression.Local_get.make(wasm_mod, slot, typ),
-              ),
-            ],
-          ),
-          0,
-        );
-      } else {
-        arg;
-      },
-      typ,
-    );
+    Expression.Local_tee.make(wasm_mod, slot, arg, typ);
   };
   switch (b) {
   | MArgBind(i, alloc) =>
@@ -605,8 +528,8 @@ let compile_bind =
     let slot = Int32.to_int(i);
     switch (action) {
     | BindGet => get_slot(slot, typ)
-    | BindSet(arg) => set_slot(slot, typ, arg)
-    | BindTee(arg) => tee_slot(slot, typ, arg)
+    | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
+    | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MLocalBind(i, alloc) =>
     /* Local bindings need to be offset to account for arguments and swap variables */
@@ -653,8 +576,8 @@ let compile_bind =
       };
     switch (action) {
     | BindGet => get_slot(slot, typ)
-    | BindSet(arg) => set_slot(slot, typ, arg)
-    | BindTee(arg) => tee_slot(slot, typ, arg)
+    | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
+    | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MSwapBind(i, wasm_ty) =>
     /* Swap bindings need to be offset to account for arguments */
@@ -662,59 +585,44 @@ let compile_bind =
     let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => get_slot(slot, typ)
-    | BindSet(arg) => set_slot(slot, typ, arg)
-    | BindTee(arg) => tee_slot(slot, typ, arg)
+    | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
+    | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MGlobalBind(slot, wasm_ty) =>
     let typ = wasm_type(wasm_ty);
     switch (action) {
-    | BindGet =>
-      appropriate_incref(
-        wasm_mod,
-        Expression.Global_get.make(wasm_mod, slot, typ),
-      )
-    | BindSet(arg) =>
+    | BindGet => Expression.Global_get.make(wasm_mod, slot, typ)
+    | BindSet({value, initial}) =>
       Expression.Global_set.make(
         wasm_mod,
         slot,
-        Expression.Tuple_extract.make(
-          wasm_mod,
-          Expression.Tuple_make.make(
+        if (initial) {
+          value;
+        } else {
+          Expression.Tuple_extract.make(
             wasm_mod,
-            [
-              arg,
-              appropriate_decref(
-                env,
-                Expression.Global_get.make(wasm_mod, slot, typ),
-              ),
-            ],
-          ),
-          0,
-        ),
+            Expression.Tuple_make.make(
+              wasm_mod,
+              [
+                appropriate_incref(wasm_mod, env, value, b),
+                appropriate_decref(
+                  wasm_mod,
+                  env,
+                  Expression.Global_get.make(wasm_mod, slot, typ),
+                  b,
+                ),
+              ],
+            ),
+            0,
+          );
+        },
       )
-    | BindTee(arg) =>
+    | BindTee({value}) =>
       Expression.Block.make(
         wasm_mod,
         gensym_label("BindTee"),
         [
-          Expression.Global_set.make(
-            wasm_mod,
-            slot,
-            Expression.Tuple_extract.make(
-              wasm_mod,
-              Expression.Tuple_make.make(
-                wasm_mod,
-                [
-                  arg,
-                  appropriate_decref(
-                    env,
-                    Expression.Global_get.make(wasm_mod, slot, typ),
-                  ),
-                ],
-              ),
-              0,
-            ),
-          ),
+          Expression.Global_set.make(wasm_mod, slot, value),
           Expression.Global_get.make(wasm_mod, slot, typ),
         ],
       )
@@ -726,29 +634,15 @@ let compile_bind =
         "Internal error: attempted to emit instruction which would mutate closure values",
       );
     };
-    appropriate_incref(
-      env,
-      load(
-        ~offset=4 * (4 + Int32.to_int(i)),
-        wasm_mod,
-        Expression.Local_get.make(wasm_mod, 0, Type.int32),
-      ),
+    load(
+      ~offset=4 * (4 + Int32.to_int(i)),
+      wasm_mod,
+      Expression.Local_get.make(wasm_mod, 0, Type.int32),
     );
   };
 };
 
-let safe_drop = (wasm_mod, env, arg) =>
-  Expression.Drop.make(wasm_mod, call_decref(wasm_mod, env, arg));
-
-let get_swap =
-    (
-      ~ty as typ=Types.Unmanaged(WasmI32),
-      ~skip_incref=true,
-      ~skip_decref=true,
-      wasm_mod,
-      env,
-      idx,
-    ) =>
+let get_swap = (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx) =>
   switch (typ) {
   | Types.Managed
   | Types.Unmanaged(WasmI32) =>
@@ -757,8 +651,6 @@ let get_swap =
     };
     compile_bind(
       ~action=BindGet,
-      ~skip_incref,
-      ~skip_decref,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
@@ -769,8 +661,6 @@ let get_swap =
     };
     compile_bind(
       ~action=BindGet,
-      ~skip_incref,
-      ~skip_decref,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
@@ -781,8 +671,6 @@ let get_swap =
     };
     compile_bind(
       ~action=BindGet,
-      ~skip_incref,
-      ~skip_decref,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
@@ -793,8 +681,6 @@ let get_swap =
     };
     compile_bind(
       ~action=BindGet,
-      ~skip_incref,
-      ~skip_decref,
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
@@ -802,15 +688,8 @@ let get_swap =
   };
 
 let set_swap =
-    (
-      ~skip_incref=true,
-      ~skip_decref=true,
-      ~ty as typ=Types.Unmanaged(WasmI32),
-      wasm_mod,
-      env,
-      idx,
-      arg,
-    ) =>
+    (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx, value) => {
+  let initial = false;
   switch (typ) {
   | Types.Managed
   | Types.Unmanaged(WasmI32) =>
@@ -818,9 +697,7 @@ let set_swap =
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet(arg),
-      ~skip_incref,
-      ~skip_decref,
+      ~action=BindSet({value, initial}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
@@ -830,9 +707,7 @@ let set_swap =
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet(arg),
-      ~skip_incref,
-      ~skip_decref,
+      ~action=BindSet({value, initial}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
@@ -842,9 +717,7 @@ let set_swap =
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet(arg),
-      ~skip_incref,
-      ~skip_decref,
+      ~action=BindSet({value, initial}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
@@ -854,104 +727,67 @@ let set_swap =
       raise(Not_found);
     };
     compile_bind(
-      ~action=BindSet(arg),
-      ~skip_incref,
-      ~skip_decref,
+      ~action=BindSet({value, initial}),
       wasm_mod,
       env,
       MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
     );
-  };
-
-let tee_swap =
-    (
-      ~ty as typ=Types.Unmanaged(WasmI32),
-      ~skip_incref=true,
-      ~skip_decref=true,
-      wasm_mod,
-      env,
-      idx,
-      arg,
-    ) =>
-  switch (typ) {
-  | Types.Managed
-  | Types.Unmanaged(WasmI32) =>
-    if (idx > Array.length(swap_slots_i32)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee(arg),
-      ~skip_incref,
-      ~skip_decref,
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
-    );
-  | Types.Unmanaged(WasmI64) =>
-    if (idx > Array.length(swap_slots_i64)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee(arg),
-      ~skip_incref,
-      ~skip_decref,
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
-    );
-  | Types.Unmanaged(WasmF32) =>
-    if (idx > Array.length(swap_slots_f32)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee(arg),
-      ~skip_incref,
-      ~skip_decref,
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
-    );
-  | Types.Unmanaged(WasmF64) =>
-    if (idx > Array.length(swap_slots_f64)) {
-      raise(Not_found);
-    };
-    compile_bind(
-      ~action=BindTee(arg),
-      ~skip_incref,
-      ~skip_decref,
-      wasm_mod,
-      env,
-      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
-    );
-  };
-
-let cleanup_locals =
-    (wasm_mod, env: codegen_env, arg, argtypes, rtype): Expression.t => {
-  /* Do the following (if GC is enabled):
-        - Move the given argument (the return value) into a swap variable, incrementing its refcount
-        - Call decref() on all non-swap locals (should include return value)
-        - Return the value in the swap variable (which should now have no net change in its refcount)
-     */
-  switch (rtype) {
-  | [_] when Config.no_gc^ => arg
-  | [ty] =>
-    Expression.Block.make(wasm_mod, gensym_label("cleanup_locals")) @@
-    Concatlist.list_of_t(
-      singleton(set_swap(~ty, wasm_mod, env, 0, arg))
-      @ cleanup_local_slot_instructions(wasm_mod, env, argtypes)
-      +@ [get_swap(~ty, wasm_mod, env, 0)],
-    )
-  | _ => failwith("NYI: multiple return types")
   };
 };
 
-let compile_imm =
-    (~skip_incref=?, wasm_mod, env: codegen_env, i: immediate): Expression.t =>
-  switch (i) {
+let tee_swap =
+    (~ty as typ=Types.Unmanaged(WasmI32), wasm_mod, env, idx, value) =>
+  switch (typ) {
+  | Types.Managed
+  | Types.Unmanaged(WasmI32) =>
+    if (idx > Array.length(swap_slots_i32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee({value: value}),
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_i32_offset), typ),
+    );
+  | Types.Unmanaged(WasmI64) =>
+    if (idx > Array.length(swap_slots_i64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee({value: value}),
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_i64_offset), typ),
+    );
+  | Types.Unmanaged(WasmF32) =>
+    if (idx > Array.length(swap_slots_f32)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee({value: value}),
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f32_offset), typ),
+    );
+  | Types.Unmanaged(WasmF64) =>
+    if (idx > Array.length(swap_slots_f64)) {
+      raise(Not_found);
+    };
+    compile_bind(
+      ~action=BindTee({value: value}),
+      wasm_mod,
+      env,
+      MSwapBind(Int32.of_int(idx + swap_f64_offset), typ),
+    );
+  };
+
+let rec compile_imm = (wasm_mod, env: codegen_env, i: immediate): Expression.t =>
+  switch (i.immediate_desc) {
   | MImmConst(c) => Expression.Const.make(wasm_mod, compile_const(c))
-  | MImmBinding(b) =>
-    compile_bind(~action=BindGet, ~skip_incref?, wasm_mod, env, b)
+  | MImmBinding(b) => compile_bind(~action=BindGet, wasm_mod, env, b)
   | MImmTrap => Expression.Unreachable.make(wasm_mod)
+  | MIncRef(imm) =>
+    call_incref(wasm_mod, env, compile_imm(wasm_mod, env, imm))
   };
 
 /** Heap allocations. */
@@ -1100,13 +936,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        heap_allocate(wasm_mod, env, num_elts + 5),
-      ),
+      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, num_elts + 5)),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ADTType)),
@@ -1151,22 +981,33 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
 };
 
 let call_error_handler = (wasm_mod, env, err, args) => {
+  let imm = i => {
+    immediate_desc: i,
+    immediate_analyses: {
+      last_usage: Unknown,
+    },
+  };
+
   let ty_id =
-    MImmConst(
-      MConstI32(Int32.of_int(Path.stamp(Builtin_types.path_exception))),
+    imm(
+      MImmConst(
+        MConstI32(Int32.of_int(Path.stamp(Builtin_types.path_exception))),
+      ),
     );
   let cstr_id =
-    MImmConst(
-      MConstI32(
-        Int32.of_int(
-          switch (err) {
-          | Runtime_errors.MatchFailure =>
-            Builtin_types.ident_match_failure.stamp
-          | Runtime_errors.IndexOutOfBounds =>
-            Builtin_types.ident_index_out_of_bounds.stamp
-          | Runtime_errors.IndexNonInteger =>
-            Builtin_types.ident_index_non_integer.stamp
-          },
+    imm(
+      MImmConst(
+        MConstI32(
+          Int32.of_int(
+            switch (err) {
+            | Runtime_errors.MatchFailure =>
+              Builtin_types.ident_match_failure.stamp
+            | Runtime_errors.IndexOutOfBounds =>
+              Builtin_types.ident_index_out_of_bounds.stamp
+            | Runtime_errors.IndexNonInteger =>
+              Builtin_types.ident_index_non_integer.stamp
+            },
+          ),
         ),
       ),
     );
@@ -1186,11 +1027,7 @@ let error_if_true = (wasm_mod, env, cond, err) =>
   );
 
 let compile_tuple_op = (~is_box=false, wasm_mod, env, tup_imm, op) => {
-  // We skip the incref here as this is akin to using a swap slot (the
-  // reference we create here cannot escape, so there isn't a need to add an
-  // incref/decref pair). Since it won't live in a local, it wouldn't be
-  // cleaned up automatically anyway.
-  let tup = () => compile_imm(~skip_incref=true, wasm_mod, env, tup_imm);
+  let tup = () => compile_imm(wasm_mod, env, tup_imm);
   switch (op) {
   | MTupleGet(idx) =>
     let idx_int = Int32.to_int(idx);
@@ -1257,12 +1094,7 @@ let compile_box_op = (wasm_mod, env, box_imm, op) =>
 let compile_array_op = (wasm_mod, env, arr_imm, op) => {
   let get_swap = n => get_swap(wasm_mod, env, n);
   let set_swap = n => set_swap(wasm_mod, env, n);
-  let get_arr_value = () =>
-    // We skip the incref here as this is akin to using a swap slot (the
-    // reference we create here cannot escape, so there isn't a need to add an
-    // incref/decref pair). Since it won't live in a local, it wouldn't be
-    // cleaned up automatically anyway.
-    compile_imm(~skip_incref=true, wasm_mod, env, arr_imm);
+  let get_arr_value = () => compile_imm(wasm_mod, env, arr_imm);
   let resolve_idx = () => {
     // PRECONDITION: idx is in swap slot 1
     // PRECONDITION: arr is in swap slot 2
@@ -1452,11 +1284,7 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
 };
 
 let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
-  // We skip the incref here as this is akin to using a swap slot (the
-  // reference we create here cannot escape, so there isn't a need to add an
-  // incref/decref pair). Since it won't live in a local, it wouldn't be
-  // cleaned up automatically anyway.
-  let adt = compile_imm(~skip_incref=true, wasm_mod, env, adt_imm);
+  let adt = compile_imm(wasm_mod, env, adt_imm);
   switch (op) {
   | MAdtGet(idx) =>
     let idx_int = Int32.to_int(idx);
@@ -1471,11 +1299,7 @@ let compile_adt_op = (wasm_mod, env, adt_imm, op) => {
 };
 
 let compile_record_op = (wasm_mod, env, rec_imm, op) => {
-  // We skip the incref here as this is akin to using a swap slot (the
-  // reference we create here cannot escape, so there isn't a need to add an
-  // incref/decref pair). Since it won't live in a local, it wouldn't be
-  // cleaned up automatically anyway.
-  let record = () => compile_imm(~skip_incref=true, wasm_mod, env, rec_imm);
+  let record = () => compile_imm(wasm_mod, env, rec_imm);
   switch (op) {
   | MRecordGet(idx) =>
     let idx_int = Int32.to_int(idx);
@@ -1518,12 +1342,7 @@ let compile_record_op = (wasm_mod, env, rec_imm, op) => {
 };
 
 let compile_closure_op = (wasm_mod, env, closure_imm, op) => {
-  // We skip the incref here as this is akin to using a swap slot (the
-  // reference we create here cannot escape, so there isn't a need to add an
-  // incref/decref pair). Since it won't live in a local, it wouldn't be
-  // cleaned up automatically anyway.
-  let closure = () =>
-    compile_imm(~skip_incref=true, wasm_mod, env, closure_imm);
+  let closure = () => compile_imm(wasm_mod, env, closure_imm);
   switch (op) {
   | MClosureSetPtr(idx) =>
     store(
@@ -1814,13 +1633,7 @@ let allocate_tuple = (~is_box=false, wasm_mod, env, elts) => {
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        heap_allocate(wasm_mod, env, num_elts + 2),
-      ),
+      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, num_elts + 2)),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(TupleType)),
@@ -1850,7 +1663,6 @@ let allocate_uninitialized_tuple = (~is_box=false, wasm_mod, env, num_elts) => {
       ~offset=0,
       wasm_mod,
       tee_swap(
-        ~skip_incref=true,
         wasm_mod,
         env,
         0,
@@ -1893,7 +1705,6 @@ let allocate_uninitialized_array = (wasm_mod, env, num_elts) => {
       ~offset=0,
       wasm_mod,
       tee_swap(
-        ~skip_incref=true,
         wasm_mod,
         env,
         0,
@@ -1939,13 +1750,7 @@ let allocate_array = (wasm_mod, env, elts) => {
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        heap_allocate(wasm_mod, env, num_elts + 2),
-      ),
+      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, num_elts + 2)),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(ArrayType)),
@@ -1986,13 +1791,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        heap_allocate(wasm_mod, env, num_elts + 4),
-      ),
+      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, num_elts + 4)),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(RecordType)),
@@ -2051,7 +1850,7 @@ let allocate_alt_num_uninitialized = (wasm_mod, env, tag) => {
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(~skip_incref=true, wasm_mod, env, 0, make_alloc()),
+      tee_swap(wasm_mod, env, 0, make_alloc()),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(tag)),
@@ -2108,13 +1907,7 @@ let allocate_alt_num = (wasm_mod, env, num_value) => {
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(
-        ~skip_incref=true,
-        wasm_mod,
-        env,
-        0,
-        heap_allocate(wasm_mod, env, needed_words),
-      ),
+      tee_swap(wasm_mod, env, 0, heap_allocate(wasm_mod, env, needed_words)),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(tag)),
@@ -2239,7 +2032,6 @@ let allocate_number = (wasm_mod, env, number) => {
       ~offset=0,
       wasm_mod,
       tee_swap(
-        ~skip_incref=true,
         wasm_mod,
         env,
         swap_slot,
@@ -2287,7 +2079,7 @@ let allocate_number_uninitialized =
     store(
       ~offset=0,
       wasm_mod,
-      tee_swap(~skip_incref=true, wasm_mod, env, 0, make_alloc()),
+      tee_swap(wasm_mod, env, 0, make_alloc()),
       Expression.Const.make(
         wasm_mod,
         const_int32(tag_val_of_heap_tag_type(BoxedNumberType)),
@@ -2448,7 +2240,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       wasm_mod,
       gensym_label("Ignore"),
       [
-        safe_drop(wasm_mod, env, compiled_arg),
+        Expression.Drop.make(wasm_mod, compiled_arg),
         Expression.Const.make(wasm_mod, const_void()),
       ],
     )
@@ -2475,8 +2267,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
   | UnboxBind =>
     failwith("Unreachable case; should never get here: UnboxBind")
   | WasmFromGrain =>
-    // no-op, but don't incref as this value should now be considered a raw i32
-    compile_imm(~skip_incref=true, wasm_mod, env, arg)
+    // no-op
+    compile_imm(wasm_mod, env, arg)
   | WasmToGrain => compiled_arg // no-op
   | WasmMemoryGrow => Expression.Memory_grow.make(wasm_mod, compiled_arg)
   | WasmUnaryI32({wasm_op, ret_type})
@@ -2489,7 +2281,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
 
 let compile_wasm_load =
     (~sz=?, ~ty=?, ~signed=?, wasm_mod, compiled_arg1, compiled_arg2, offset) => {
-  switch (offset) {
+  switch (offset.immediate_desc) {
   | MImmConst(MConstLiteral(MConstI32(offset))) =>
     load(
       ~sz?,
@@ -2516,7 +2308,7 @@ let compile_wasm_load =
 };
 
 let compile_wasm_store = (~sz=?, ~ty=?, wasm_mod, env, args) => {
-  switch (List.nth(args, 2)) {
+  switch (List.nth(args, 2).immediate_desc) {
   | MImmConst(MConstLiteral(MConstI32(offset))) =>
     Expression.Block.make(
       wasm_mod,
@@ -2916,8 +2708,13 @@ let loop_stack = ref([]: list((string, string)));
 let rec compile_store = (wasm_mod, env, binds) => {
   let process_binds = env => {
     let process_bind = ((b, instr), acc) => {
-      let store_bind = arg =>
-        compile_bind(~action=BindSet(arg), wasm_mod, env, b);
+      let store_bind = value =>
+        compile_bind(
+          ~action=BindSet({value, initial: true}),
+          wasm_mod,
+          env,
+          b,
+        );
       let compiled_instr =
         switch (instr.instr_desc) {
         // special logic here for letrec
@@ -2926,14 +2723,7 @@ let rec compile_store = (wasm_mod, env, binds) => {
           // reference we create here cannot escape, so there isn't a need to add an
           // incref/decref pair). Since it won't live in a local, it wouldn't be
           // cleaned up automatically anyway.
-          let get_bind =
-            compile_bind(
-              ~action=BindGet,
-              ~skip_incref=true,
-              wasm_mod,
-              env,
-              b,
-            );
+          let get_bind = compile_bind(~action=BindGet, wasm_mod, env, b);
           allocate_closure(
             wasm_mod,
             env,
@@ -2964,7 +2754,8 @@ and compile_set = (wasm_mod, env, b, i) => {
     gensym_label("compile_set"),
     [
       compile_bind(
-        ~action=BindSet(compile_instr(wasm_mod, env, i)),
+        ~action=
+          BindSet({value: compile_instr(wasm_mod, env, i), initial: false}),
         wasm_mod,
         env,
         b,
@@ -3090,26 +2881,8 @@ and compile_block = (~return_type=?, wasm_mod, env, block) => {
 }
 and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
-  | MDrop(arg, ty) =>
-    switch (ty) {
-    | Managed =>
-      Expression.Drop.make(
-        wasm_mod,
-        call_decref(wasm_mod, env, compile_instr(wasm_mod, env, arg)),
-      )
-    | _ => Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
-    }
-  | MIncRef(arg) =>
-    switch (arg.instr_desc) {
-    | MImmediate(MImmBinding(bind)) =>
-      appropriate_incref(
-        wasm_mod,
-        env,
-        compile_instr(wasm_mod, env, arg),
-        bind,
-      )
-    | _ => call_incref(wasm_mod, env, compile_instr(wasm_mod, env, arg))
-    }
+  | MDrop(arg) =>
+    Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
   | MTracepoint(x) => tracepoint(wasm_mod, env, x)
   | MImmediate(imm) => compile_imm(wasm_mod, env, imm)
   | MAllocate(alloc) => compile_allocation(wasm_mod, env, alloc)
@@ -3248,23 +3021,59 @@ and compile_instr = (wasm_mod, env, instr) =>
     );
   | MError(err, args) => call_error_handler(wasm_mod, env, err, args)
   | MReturn(value) =>
-    let current_function = get_current_function();
     let value =
       Option.fold(
         ~none=Expression.Const.make(wasm_mod, const_void()),
         ~some=compile_instr(wasm_mod, env),
         value,
       );
-    Expression.Return.make(
+    Expression.Return.make(wasm_mod, value);
+  | MCleanup(Some(value), items) =>
+    Expression.Tuple_extract.make(
       wasm_mod,
-      cleanup_locals(
+      Expression.Tuple_make.make(
         wasm_mod,
-        env,
-        value,
-        current_function.args,
-        current_function.return_type,
+        [
+          compile_instr(wasm_mod, env, value),
+          Expression.Block.make(
+            wasm_mod,
+            gensym_label("cleanup"),
+            List.fold_left(
+              (acc, item) => {
+                [
+                  Expression.Drop.make(
+                    wasm_mod,
+                    call_decref(
+                      wasm_mod,
+                      env,
+                      compile_imm(wasm_mod, env, item),
+                    ),
+                  ),
+                  ...acc,
+                ]
+              },
+              [Expression.Const.make(wasm_mod, const_void())],
+              items,
+            ),
+          ),
+        ],
       ),
-    );
+      0,
+    )
+  | MCleanup(None, items) =>
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label("cleanup"),
+      List.rev_map(
+        item => {
+          Expression.Drop.make(
+            wasm_mod,
+            call_decref(wasm_mod, env, compile_imm(wasm_mod, env, item)),
+          )
+        },
+        items,
+      ),
+    )
   | MArityOp(_) => failwith("NYI: (compile_instr): MArityOp")
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
@@ -3515,8 +3324,6 @@ let compile_function =
       )
     | None => compile_block(wasm_mod, body_env, body_instrs)
     };
-  let inner_body =
-    cleanup_locals(wasm_mod, body_env, inner_body, args, return_type);
   let body = Expression.Return.make(wasm_mod, inner_body);
   let locals =
     [

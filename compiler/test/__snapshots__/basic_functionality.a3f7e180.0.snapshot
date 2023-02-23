@@ -60,7 +60,7 @@ basic functionality › bigint_1
            )
            (i32.store offset=4
             (local.get $0)
-            (i32.const 2)
+            (i32.const 4)
            )
            (i64.store offset=8
             (local.get $0)
