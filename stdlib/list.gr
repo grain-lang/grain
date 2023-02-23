@@ -922,7 +922,7 @@ provide let sub = (start, length, list) => {
  * @returns The combined elements with the separator between each
  *
  * @example
- * List.join(" ", ["The", "quick", "brown", "fox"]) == The quick brown fox
+ * List.join(" ", ["The", "quick", "brown", "fox"]) == "The quick brown fox"
  *
  * @since v0.4.0
  */
