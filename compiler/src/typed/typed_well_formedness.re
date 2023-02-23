@@ -218,7 +218,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           {
             exp_desc:
               TExpIdent(
-                Path.PExternal(Path.PIdent({name: "Pervasives"}), func, _),
+                Path.PExternal(Path.PIdent({name: "Pervasives"}), func),
                 _,
                 _,
               ),
@@ -240,11 +240,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
           {
             exp_desc:
               TExpIdent(
-                Path.PExternal(
-                  Path.PIdent({name: modname}),
-                  "fromNumber",
-                  _,
-                ),
+                Path.PExternal(Path.PIdent({name: modname}), "fromNumber"),
                 _,
                 _,
               ),

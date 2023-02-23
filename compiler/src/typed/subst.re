@@ -76,7 +76,7 @@ let rec module_path = (s, path) =>
   | Not_found =>
     switch (path) {
     | PIdent(_) => path
-    | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos)
+    | PExternal(p, n) => PExternal(module_path(s, p), n)
     }
   };
 
@@ -91,7 +91,7 @@ let modtype_path = s =>
     ) {
     | Not_found => p
     }
-  | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos);
+  | PExternal(p, n) => PExternal(module_path(s, p), n);
 
 let type_path = (s, path) =>
   switch (PathMap.find(path, s.types)) {
@@ -100,7 +100,7 @@ let type_path = (s, path) =>
   | exception Not_found =>
     switch (path) {
     | PIdent(_) => path
-    | PExternal(p, n, pos) => PExternal(module_path(s, p), n, pos)
+    | PExternal(p, n) => PExternal(module_path(s, p), n)
     }
   };
 
@@ -314,8 +314,7 @@ let rec modtype = s =>
       try(Tbl.find(id, s.modtypes)) {
       | Not_found => mty
       }
-    | PExternal(p, n, pos) =>
-      TModIdent(PExternal(module_path(s, p), n, pos))
+    | PExternal(p, n) => TModIdent(PExternal(module_path(s, p), n))
     }
   | TModSignature(sg) => TModSignature(signature(s, sg))
 

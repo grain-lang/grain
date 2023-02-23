@@ -179,7 +179,7 @@ type adt_constructor_type =
 type type_metadata =
   | ADTMetadata(int, list((int, string, adt_constructor_type)))
   | RecordMetadata(int, list(string))
-  | ExceptionMetadata(int, int, string);
+  | ExceptionMetadata(int, int, string, adt_constructor_type);
 
 [@deriving (sexp, yojson)]
 type value_kind =

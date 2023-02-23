@@ -3,7 +3,7 @@
 [@deriving (sexp, yojson)]
 type t =
   | PIdent(Ident.t)
-  | PExternal(t, string, int);
+  | PExternal(t, string);
 
 let same: (t, t) => bool;
 let compare: (t, t) => int;

@@ -656,6 +656,7 @@ primitive_stmt:
 exception_stmt:
   | EXCEPTION type_id_str { Exception.singleton ~loc:(to_loc $loc) $2 }
   | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Option.value ~default:[] $4) }
+  | EXCEPTION type_id_str data_labels { Exception.record ~loc:(to_loc $loc) $2 $3 }
 
 module_stmt:
   | MODULE UIDENT lbrace toplevel_stmts RBRACE { ModuleDeclaration.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }

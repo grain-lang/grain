@@ -99,6 +99,7 @@ module Exception: {
   let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
   let singleton: (~loc: loc=?, str) => type_exception;
   let tuple: (~loc: loc=?, str, list(parsed_type)) => type_exception;
+  let record: (~loc: loc=?, str, list(label_declaration)) => type_exception;
 };
 
 module Pattern: {

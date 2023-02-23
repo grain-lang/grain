@@ -241,7 +241,7 @@ module Sourcetree: Sourcetree = {
             Path.(
               switch (exp.exp_desc) {
               | TExpIdent(
-                  PExternal(path, _, _),
+                  PExternal(path, _),
                   {txt: IdentExternal(IdentName({loc}), _)},
                   desc,
                 ) =>

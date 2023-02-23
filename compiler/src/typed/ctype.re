@@ -138,7 +138,7 @@ let is_object_type = path => {
   let name =
     switch (path) {
     | Path.PIdent(id) => Ident.name(id)
-    | Path.PExternal(_, s, _) => s
+    | Path.PExternal(_, s) => s
     };
   name.[0] == '#';
 };
@@ -3331,5 +3331,5 @@ let maybe_pointer_type = (env, typ) =>
 let rec lid_of_path = (~hash="") =>
   fun
   | Path.PIdent(id) => Identifier.IdentName(mknoloc(hash ++ Ident.name(id)))
-  | Path.PExternal(p1, s, _) =>
+  | Path.PExternal(p1, s) =>
     Identifier.IdentExternal(lid_of_path(p1), mknoloc(hash ++ s));

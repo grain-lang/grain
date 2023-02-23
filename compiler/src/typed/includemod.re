@@ -905,7 +905,7 @@ let path_of_context =
         fun
         | [] => path
         | [Module(id), ...rem] =>
-          subm(PExternal(path, Ident.name(id), -1), rem)
+          subm(PExternal(path, Ident.name(id)), rem)
         | _ => assert(false)
       );
       subm(PIdent(id), rem);
