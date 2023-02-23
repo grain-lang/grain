@@ -549,6 +549,31 @@ Returns:
 |----|-----------|
 |`Number`|The negated operand|
 
+### Number.**isClose**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isClose : (Number, Number, Option<Number>, Option<Number>) -> Bool
+```
+
+Computes the inverse sine of the given angle
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|A number between -1 and 1, representing the angle's sine value.|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN|
+
 ### Number.**isFloat**
 
 <details disabled>
@@ -873,6 +898,56 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The computed tangent|
+
+### Number.**asin**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+asin : Number -> Number
+```
+
+Computes the inverse sine of the given angle
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|A number between -1 and 1, representing the angle's sine value.|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN|
+
+### Number.**acos**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+acos : Number -> Number
+```
+
+Computes the inverse cosine of the given angle
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|A number between -1 and 1, representing the angle's cosine value.|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN|
 
 ### Number.**gamma**
 

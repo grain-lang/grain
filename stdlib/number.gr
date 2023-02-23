@@ -1,3 +1,15 @@
+/*
+ * ====================================================
+ * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
+ *
+ * Permission to use, copy, modify, and distribute this
+ * software is freely granted, provided that this notice
+ * is preserved.
+ *
+ * Applies to all functions with a comment referring here.
+ * ====================================================
+ */
+
 /**
  * Utilities for working with numbers.
  *
@@ -294,6 +306,32 @@ provide let abs = (x: Number) => if (0 > x) x * -1 else x
 provide let neg = (x: Number) => x * -1
 
 /**
+ * Computes the inverse sine of the given angle
+ *
+ * @param x: A number between -1 and 1, representing the angle's sine value.
+ * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN
+ *
+ * @since v0.6.0
+ */
+provide let isClose = (a, b, rel_tol, abs_tol) => {
+  if (a == Infinity && b == Infinity) {
+    true
+  } else if (a == NaN || b == NaN || a == Infinity || b == Infinity) {
+    false
+  } else {
+    let rel_tol = match (rel_tol) {
+      None => 1e-9,
+      Some(x) => x,
+    }
+    let abs_tol = match (abs_tol) {
+      None => 0.0,
+      Some(x) => x,
+    }
+    abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+  }
+}
+
+/**
  * Checks if a number is a floating point value.
  *
  * @param x: The number to check
@@ -572,6 +610,167 @@ provide let tan = (radians: Number) => {
   } else {
     sin(radians) / cos(radians)
   }
+}
+
+@unsafe
+let rf = z => {
+  // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
+  // Operators
+  from WasmF64 use { add as (+), mul as (*), div as (/) }
+  /* coefficients for R(x^2) */
+  let pS0 = 1.66666666666666657415e-01W /* 0x3FC55555, 0x55555555 */
+  let pS1 = -3.25565818622400915405e-01W /* 0xBFD4D612, 0x03EB6F7D */
+  let pS2 = 2.01212532134862925881e-01W /* 0x3FC9C155, 0x0E884455 */
+  let pS3 = -4.00555345006794114027e-02W /* 0xBFA48228, 0xB5688F3B */
+  let pS4 = 7.91534994289814532176e-04W /* 0x3F49EFE0, 0x7501B288 */
+  let pS5 = 3.47933107596021167570e-05W /* 0x3F023DE1, 0x0DFDF709 */
+  let qS1 = -2.40339491173441421878e+00W /* 0xC0033A27, 0x1C8A2D4B */
+  let qS2 = 2.02094576023350569471e+00W /* 0x40002AE5, 0x9C598AC8 */
+  let qS3 = -6.88283971605453293030e-01W /* 0xBFE6066C, 0x1B8D0159 */
+  let qS4 = 7.70381505559019352791e-02W /* 0x3FB3B8C5, 0xB12E9282 */
+  // Calculations
+  let p = z * (pS0 + z * (pS1 + z * (pS2 + z * (pS3 + z * (pS4 + z * pS5)))))
+  let q = 1.0W + z * (qS1 + z * (qS2 + z * (qS3 + z * qS4)))
+  p / q
+}
+/**
+ * Computes the inverse sine of the given angle
+ *
+ * @param x: A number between -1 and 1, representing the angle's sine value.
+ * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let asin = angle => {
+  // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
+  let origAngle = Numbers.coerceNumberToWasmF64(angle)
+  let mut x = origAngle
+
+  let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
+  let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
+  let ox1p_120f = 7.52316e-37W
+
+  from WasmI32 use { and as (&), or as (|), leU as (<), geU as (>=) }
+  from WasmF64 use { add as (+), sub as (-), mul as (*), div as (/) }
+
+  let hx = WasmI32.wrapI64(WasmI64.shrU(WasmI64.reinterpretF64(x), 32N))
+  let ix = hx & 0x7fffffffn
+  /* |x| >= 1 or nan */
+  if (ix >= 0x3ff00000n) {
+    let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
+    from WasmI32 use { sub as (-) }
+    /* asin(1) = +-pi/2 with inexact */
+    if (WasmI32.eqz(ix - 0x3ff00000n | lx))
+      return WasmI32.toGrain(newFloat64(x * pio2_hi + ox1p_120f)): Number
+    return WasmI32.toGrain(newFloat64(NaNW)): Number
+  }
+  /* |x| < 0.5 */
+  if (ix < 0x3fe00000n) {
+    /* if 0x1p-1022 <= |x| < 0x1p-26, avoid raising underflow */
+    let output =
+      if (ix < 0x3e500000n && ix >= 0x00100000n) x else x + x * rf(x * x)
+    return WasmI32.toGrain(newFloat64(output)): Number
+  }
+  /* 1 > |x| >= 0.5 */
+  let z = (1.0W - WasmF64.abs(x)) * 0.5W
+  let s = WasmF64.sqrt(z)
+  let r = rf(z)
+  /* if |x| > 0.975 */
+  if (ix >= 0x3fef3333n) {
+    x = pio2_hi - (2.0W * (s + s * r) - pio2_lo)
+  } else {
+    from WasmI64 use { and as (&) }
+    /* f+c = sqrt(z) */
+    let f = WasmF64.reinterpretI64(
+      WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
+    )
+    let c = (z - f * f) / (s + f)
+    x = 0.5W * pio2_hi -
+      (2.0W * s * r -
+        (pio2_lo -
+          2.0W * c) -
+        (0.5W * pio2_hi -
+          2.0W * f))
+  }
+  from WasmI32 use { shrU as (>>) }
+  x = WasmF64.copySign(x, origAngle)
+  return WasmI32.toGrain(newFloat64(x)): Number
+}
+
+/**
+ * Computes the inverse cosine of the given angle
+ *
+ * @param x: A number between -1 and 1, representing the angle's cosine value.
+ * @returns The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let acos = angle => {
+  // see: musl/src/math/acos.c and SUN COPYRIGHT NOTICE at top of file
+  let origAngle = Numbers.coerceNumberToWasmF64(angle)
+  let mut x = origAngle
+
+  let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
+  let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
+  let ox1p_120f = 7.52316e-37W
+
+  from WasmI32 use {
+    shrU as (>>),
+    and as (&),
+    or as (|),
+    ne as (!=),
+    leU as (<),
+    geU as (>=),
+    leU as (<=),
+  }
+  from WasmF64 use { add as (+), sub as (-), mul as (*), div as (/) }
+
+  let hx = WasmI32.wrapI64(WasmI64.shrU(WasmI64.reinterpretF64(x), 32N))
+  let ix = hx & 0x7fffffffn
+
+  /* |x| >= 1 or nan */
+  if (ix >= 0x3ff00000n) {
+    let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
+    from WasmI32 use { sub as (-) }
+    if (WasmI32.eqz(ix - 0x3ff00000n | lx)) {
+      /* acos(1)=0, acos(-1)=pi */
+      if (hx >> 31n != 0n)
+        return WasmI32.toGrain(newFloat64(2.0W * pio2_hi + ox1p_120f)): Number
+      else return 0
+    }
+    return WasmI32.toGrain(newFloat64(NaNW)): Number
+  }
+  /* |x| < 0.5 */
+  if (ix < 0x3fe00000n) {
+    /* |x| < 2**-57 */
+    let output =
+      if (ix <= 0x3c600000n) pio2_hi + ox1p_120f
+      else pio2_hi -
+        (x -
+          (pio2_lo -
+            x * rf(x * x)))
+    return WasmI32.toGrain(newFloat64(output)): Number
+  }
+  /* x < -0.5 */
+  if (hx >> 31n != 0n) {
+    let z = (1.0W + x) * 0.5W
+    let s = WasmF64.sqrt(z)
+    let w = rf(z) * s - pio2_lo
+    return WasmI32.toGrain(newFloat64(2.0W * (pio2_hi - (s + w)))): Number
+  }
+
+  /* x > 0.5 */
+  from WasmI64 use { and as (&) }
+  let z = (1.0W - x) * 0.5W
+  let s = WasmF64.sqrt(z)
+  let df = WasmF64.reinterpretI64(
+    WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
+  )
+  let c = (z - df * df) / (s + df)
+  let w = rf(z) * s + c
+  return WasmI32.toGrain(newFloat64(2.0W * (df + w))): Number
 }
 
 // Math.gamma implemented using the Lanczos approximation

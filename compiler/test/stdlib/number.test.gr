@@ -303,6 +303,32 @@ assert Number.neg(BI.toNumber(-1234t)) == BI.toNumber(1234t)
 assert Number.isNaN(-NaN)
 assert Number.neg(Infinity) == -Infinity
 
+// Number.isClose
+assert Number.isClose(1.0, 1.0, None, None)
+assert Number.isClose(1.0, 1.0, Some(0.5), Some(0.5))
+assert Number.isClose(1.0, 1.0, Some(0), Some(0))
+assert Number.isClose(0.0, 0.0, None, None)
+assert Number.isClose(0.0, 0.0, Some(0.5), Some(0.5))
+assert Number.isClose(0.0, 0.0, Some(0), Some(0))
+assert Number.isClose(1, 1, None, None)
+assert Number.isClose(1, 1, Some(0.5), Some(0.5))
+assert Number.isClose(1, 1, Some(0), Some(0))
+assert Number.isClose(1/2, 1/2, None, None)
+assert Number.isClose(1/2, 1/2, Some(0.5), Some(0.5))
+assert Number.isClose(1/2, 1/2, Some(0), Some(0))
+assert Number.isClose(0, 0.1, None, None) == false
+assert Number.isClose(0, 0.000000001, None, None) == false
+assert Number.isClose(0, 0.00000001, None, Some(1e-9)) == false
+assert Number.isClose(0, 0.000000001, None, Some(1e-9))
+assert Number.isClose(-0, 0.000000001, None, None) == false
+assert Number.isClose(-0, 0.00000001, None, Some(1e-9)) == false
+assert Number.isClose(-0, 0.000000001, None, Some(1e-9))
+assert Number.isClose(1.1, 1.10000001, None, Some(1e-9)) == false
+assert Number.isClose(1.1, 1.100000001, None, Some(1e-9))
+assert Number.isClose(Infinity, Infinity, None, None)
+assert Number.isClose(NaN, NaN, None, None) == false
+assert Number.isClose(Infinity, 99999999999999999, None, None) == false
+
 // isFloat
 assert Number.isFloat(0.0)
 assert Number.isFloat(1.5)
@@ -657,6 +683,107 @@ assert Number.tan(1/2) > 0.5463 && Number.tan(1/2) < 0.5464
 assert Number.isNaN(Number.tan(9223372036854775809))
 assert Number.isNaN(Number.tan(Infinity))
 assert Number.isNaN(Number.tan(NaN))
+
+// Number.asin
+assert Number.isNaN(Number.asin(-8.06684839057968084))
+assert Number.isNaN(Number.asin(-1.1))
+assert Number.isNaN(Number.asin(4.06684839057968084))
+assert Number.isNaN(Number.asin(1.1))
+assert Number.isNaN(Number.asin(15/10))
+assert Number.isNaN(Number.asin(-15/10))
+assert Number.isClose(
+  Number.asin(0.661985898099504477),
+  0.723465243951545878,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(
+  Number.asin(0.56175974622072411),
+  0.596511362227406194,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(
+  Number.asin(-0.40660392238535531),
+  -0.418733744293772248,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(Number.asin(1/2), Number.pi / 6, Some(1e-9), None)
+assert Number.isClose(
+  Number.asin(0.77415229659130369),
+  0.885374810931274348,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(
+  Number.asin(-0.678763702639402444),
+  -0.746077811411067326,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(Number.asin(1.0), 1.57079632679489656, Some(1e-9), None)
+assert Number.isClose(Number.asin(1), 1.57079632679489656, Some(1e-9), None)
+assert Number.isClose(Number.asin(-1.0), -1.57079632679489656, Some(1e-9), None)
+assert Number.isClose(Number.asin(-1), -1.57079632679489656, Some(1e-9), None)
+assert Number.asin(0) == 0.0
+assert Number.asin(0.0) == 0.0
+assert Number.asin(-0.0) == -0.0
+assert Number.isNaN(Number.asin(1.00000000000000022))
+assert Number.isNaN(Number.asin(-1.00000000000000022))
+assert Number.isNaN(Number.asin(Infinity))
+assert Number.isNaN(Number.asin(-Infinity))
+assert Number.isNaN(Number.asin(NaN))
+
+// Number.acos
+assert Number.isNaN(Number.acos(-8.06684839057968084))
+assert Number.isNaN(Number.acos(-1.1))
+assert Number.isNaN(Number.acos(4.06684839057968084))
+assert Number.isNaN(Number.acos(1.1))
+assert Number.isNaN(Number.acos(15/10))
+assert Number.isNaN(Number.acos(-15/10))
+assert Number.isClose(
+  Number.acos(0.661985898099504477),
+  0.84733108284335068,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(
+  Number.acos(0.56175974622072411),
+  0.974284964567490364,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(
+  Number.acos(-0.40660392238535531),
+  1.98953007108866897,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(Number.acos(1/2), Number.pi / 3, Some(1e-9), None)
+assert Number.isClose(
+  Number.acos(0.77415229659130369),
+  0.68542151586362221,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(
+  Number.acos(-0.678763702639402444),
+  2.31687413820596388,
+  Some(1e-9),
+  None
+)
+assert Number.isClose(Number.acos(-1.0), Number.pi, Some(1e-9), None)
+assert Number.isClose(Number.acos(-1), Number.pi, Some(1e-9), None)
+assert Number.isClose(Number.acos(0.0), Number.pi / 2, Some(1e-9), None)
+assert Number.isClose(Number.acos(0), Number.pi / 2, Some(1e-9), None)
+assert Number.acos(1) == 0.0
+assert Number.acos(1.0) == 0.0
+assert Number.isNaN(Number.acos(1.00000000000000022))
+assert Number.isNaN(Number.acos(-1.00000000000000022))
+assert Number.isNaN(Number.acos(Infinity))
+assert Number.isNaN(Number.acos(-Infinity))
+assert Number.isNaN(Number.acos(NaN))
 
 // Number.gamma
 // Note: Currently gamma will overflow the memory when using a bigint as such there are no tests for this
