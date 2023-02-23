@@ -326,6 +326,8 @@ assert Number.isClose(-0, 0.000000001, None, Some(1e-9))
 assert Number.isClose(1.1, 1.10000001, None, Some(1e-9)) == false
 assert Number.isClose(1.1, 1.100000001, None, Some(1e-9))
 assert Number.isClose(Infinity, Infinity, None, None)
+assert Number.isClose(-Infinity, -Infinity, None, None)
+assert Number.isClose(Infinity, -Infinity, None, None) == false
 assert Number.isClose(NaN, NaN, None, None) == false
 assert Number.isClose(Infinity, 99999999999999999, None, None) == false
 
