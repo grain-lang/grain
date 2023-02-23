@@ -43,7 +43,7 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
     push_free_vars(analyses) @@
     (
       switch (desc) {
-      | CLambda(_, args, (body, _)) =>
+      | CLambda(_, args, (body, _), _) =>
         Ident.Set.diff(
           anf_free_vars(body),
           Ident.Set.of_list(List.map(((arg, _)) => arg, args)),

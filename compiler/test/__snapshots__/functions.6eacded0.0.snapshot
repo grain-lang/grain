@@ -109,39 +109,16 @@ functions › func_recursive_closure
   (local $6 f64)
   (local $7 i32)
   (return
-   (block $cleanup_locals.8 (result i32)
+   (block $cleanup_locals.7 (result i32)
     (local.set $1
      (tuple.extract 0
       (tuple.make
-       (block $compile_block.7 (result i32)
-        (block $compile_store.6
+       (block $compile_block.6 (result i32)
+        (block $compile_store.5
          (local.set $7
           (tuple.extract 0
            (tuple.make
-            (block $allocate_closure.4 (result i32)
-             (i32.store
-              (local.tee $1
-               (call $malloc_0
-                (global.get $GRAIN$EXPORT$malloc_0)
-                (i32.const 16)
-               )
-              )
-              (i32.const 6)
-             )
-             (i32.store offset=4
-              (local.get $1)
-              (i32.const 2)
-             )
-             (i32.store offset=8
-              (local.get $1)
-              (i32.const -1)
-             )
-             (i32.store offset=12
-              (local.get $1)
-              (i32.const 0)
-             )
-             (local.get $1)
-            )
+            (i32.const 0)
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
              (local.get $7)
@@ -149,10 +126,7 @@ functions › func_recursive_closure
            )
           )
          )
-         (block $do_backpatches.5
-          (local.set $1
-           (local.get $7)
-          )
+         (block $do_backpatches.4
          )
         )
         (call $foo_1117
@@ -191,11 +165,11 @@ functions › func_recursive_closure
   (local $6 f32)
   (local $7 f64)
   (return
-   (block $cleanup_locals.10 (result i32)
+   (block $cleanup_locals.9 (result i32)
     (local.set $2
      (tuple.extract 0
       (tuple.make
-       (block $compile_block.9 (result i32)
+       (block $compile_block.8 (result i32)
         (call $+_1124
          (call $incRef_0
           (global.get $GRAIN$EXPORT$incRef_0)
@@ -246,12 +220,12 @@ functions › func_recursive_closure
   (local $11 i32)
   (local $12 i32)
   (return
-   (block $cleanup_locals.27 (result i32)
+   (block $cleanup_locals.26 (result i32)
     (local.set $2
      (tuple.extract 0
       (tuple.make
-       (block $compile_block.26 (result i32)
-        (block $compile_store.12
+       (block $compile_block.25 (result i32)
+        (block $compile_store.11
          (local.set $8
           (tuple.extract 0
            (tuple.make
@@ -269,14 +243,14 @@ functions › func_recursive_closure
            )
           )
          )
-         (block $do_backpatches.11
+         (block $do_backpatches.10
          )
         )
-        (block $compile_store.15
+        (block $compile_store.14
          (local.set $9
           (tuple.extract 0
            (tuple.make
-            (block $allocate_closure.13 (result i32)
+            (block $allocate_closure.12 (result i32)
              (i32.store
               (local.tee $2
                (call $malloc_0
@@ -307,7 +281,7 @@ functions › func_recursive_closure
            )
           )
          )
-         (block $do_backpatches.14
+         (block $do_backpatches.13
           (local.set $2
            (local.get $9)
           )
@@ -327,7 +301,7 @@ functions › func_recursive_closure
           )
          )
         )
-        (block $compile_store.17
+        (block $compile_store.16
          (local.set $11
           (call $==_1134
            (call $incRef_0
@@ -341,7 +315,7 @@ functions › func_recursive_closure
            (i32.const 1)
           )
          )
-         (block $do_backpatches.16
+         (block $do_backpatches.15
          )
         )
         (if (result i32)
@@ -349,11 +323,11 @@ functions › func_recursive_closure
           (local.get $11)
           (i32.const 31)
          )
-         (block $compile_block.18 (result i32)
+         (block $compile_block.17 (result i32)
           (i32.const 1)
          )
-         (block $compile_block.25 (result i32)
-          (block $compile_store.20
+         (block $compile_block.24 (result i32)
+          (block $compile_store.19
            (local.set $12
             (call $==_1134
              (call $incRef_0
@@ -367,7 +341,7 @@ functions › func_recursive_closure
              (i32.const 3)
             )
            )
-           (block $do_backpatches.19
+           (block $do_backpatches.18
            )
           )
           (if (result i32)
@@ -375,7 +349,7 @@ functions › func_recursive_closure
             (local.get $12)
             (i32.const 31)
            )
-           (block $compile_block.21 (result i32)
+           (block $compile_block.20 (result i32)
             (call $bar_1120
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)
@@ -384,8 +358,8 @@ functions › func_recursive_closure
              (i32.const 3)
             )
            )
-           (block $compile_block.24 (result i32)
-            (block $compile_store.23
+           (block $compile_block.23 (result i32)
+            (block $compile_store.22
              (local.set $10
               (tuple.extract 0
                (tuple.make
@@ -407,7 +381,7 @@ functions › func_recursive_closure
                )
               )
              )
-             (block $do_backpatches.22
+             (block $do_backpatches.21
              )
             )
             (call $foo_1117
@@ -473,12 +447,12 @@ functions › func_recursive_closure
   (local $8 i32)
   (local $9 i32)
   (return
-   (block $cleanup_locals.34 (result i32)
+   (block $cleanup_locals.33 (result i32)
     (local.set $2
      (tuple.extract 0
       (tuple.make
-       (block $compile_block.33 (result i32)
-        (block $compile_store.29
+       (block $compile_block.32 (result i32)
+        (block $compile_store.28
          (local.set $8
           (tuple.extract 0
            (tuple.make
@@ -498,14 +472,14 @@ functions › func_recursive_closure
            )
           )
          )
-         (block $do_backpatches.28
+         (block $do_backpatches.27
          )
         )
-        (block $compile_store.32
+        (block $compile_store.31
          (local.set $9
           (tuple.extract 0
            (tuple.make
-            (block $call_lambda.30 (result i32)
+            (block $call_lambda.29 (result i32)
              (local.set $2
               (call $incRef_0
                (global.get $GRAIN$EXPORT$incRef_0)
@@ -529,7 +503,7 @@ functions › func_recursive_closure
            )
           )
          )
-         (block $do_backpatches.31
+         (block $do_backpatches.30
          )
         )
         (call $+_1124
@@ -596,37 +570,14 @@ functions › func_recursive_closure
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.42 (result i32)
+   (block $cleanup_locals.39 (result i32)
     (local.set $0
-     (block $compile_block.41 (result i32)
-      (block $compile_store.37
+     (block $compile_block.38 (result i32)
+      (block $compile_store.35
        (global.set $makeAdder_1113
         (tuple.extract 0
          (tuple.make
-          (block $allocate_closure.35 (result i32)
-           (i32.store
-            (local.tee $0
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 6)
-           )
-           (i32.store offset=4
-            (local.get $0)
-            (i32.const 2)
-           )
-           (i32.store offset=8
-            (local.get $0)
-            (i32.const -1)
-           )
-           (i32.store offset=12
-            (local.get $0)
-            (i32.const 0)
-           )
-           (local.get $0)
-          )
+          (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
            (global.get $makeAdder_1113)
@@ -634,40 +585,14 @@ functions › func_recursive_closure
          )
         )
        )
-       (block $do_backpatches.36
-        (local.set $0
-         (global.get $makeAdder_1113)
-        )
+       (block $do_backpatches.34
        )
       )
-      (block $compile_store.40
+      (block $compile_store.37
        (global.set $truc_1116
         (tuple.extract 0
          (tuple.make
-          (block $allocate_closure.38 (result i32)
-           (i32.store
-            (local.tee $0
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 6)
-           )
-           (i32.store offset=4
-            (local.get $0)
-            (i32.const 1)
-           )
-           (i32.store offset=8
-            (local.get $0)
-            (i32.const -1)
-           )
-           (i32.store offset=12
-            (local.get $0)
-            (i32.const 0)
-           )
-           (local.get $0)
-          )
+          (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
            (global.get $truc_1116)
@@ -675,10 +600,7 @@ functions › func_recursive_closure
          )
         )
        )
-       (block $do_backpatches.39
-        (local.set $0
-         (global.get $truc_1116)
-        )
+       (block $do_backpatches.36
        )
       )
       (call $truc_1116
@@ -698,5 +620,5 @@ functions › func_recursive_closure
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 868
+ ;; custom section \"cmi\", size 893
 )

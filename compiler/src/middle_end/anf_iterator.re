@@ -99,7 +99,7 @@ module MakeIter = (Iter: IterArgument) => {
       iter_imm_expression(f);
       List.iter(iter_imm_expression, args);
     | CAppBuiltin(_, _, args) => List.iter(iter_imm_expression, args)
-    | CLambda(_, idents, (expr, _)) => iter_anf_expression(expr)
+    | CLambda(_, idents, (expr, _), _) => iter_anf_expression(expr)
     | CBytes(s) => ()
     | CString(s) => ()
     | CChar(c) => ()

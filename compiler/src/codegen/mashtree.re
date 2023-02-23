@@ -499,6 +499,7 @@ type mash_function = {
   name: option(string),
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
+  has_closure: bool,
   body: block,
   stack_size,
   attrs: attributes,

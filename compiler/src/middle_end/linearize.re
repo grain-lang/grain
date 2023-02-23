@@ -70,19 +70,19 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
         Path_tbl.add(include_map, path, fresh);
         let shape =
           switch (repr) {
-          | ReprFunction(args, rets, Direct(_)) =>
+          | ReprFunction(args, rets, Direct({closure: has_closure})) =>
             // Add closure argument
             let args = [
               Managed,
               ...List.map(allocation_type_of_wasm_repr, args),
             ];
             // Add return type for functions that return void
-            let rets =
+            let returns =
               switch (rets) {
               | [] => [Unmanaged(WasmI32)]
               | _ => List.map(allocation_type_of_wasm_repr, rets)
               };
-            FunctionShape(args, rets);
+            FunctionShape({args, returns, has_closure});
           | _ => GlobalShape(allocation_type)
           };
         value_imports :=
@@ -1506,7 +1506,7 @@ let rec transl_anf_statement =
             desc.tvd_id,
             desc.tvd_mod.txt,
             external_name.txt,
-            FunctionShape(argsty, retty),
+            FunctionShape({args: argsty, returns: retty, has_closure: true}),
           ),
         ],
       );

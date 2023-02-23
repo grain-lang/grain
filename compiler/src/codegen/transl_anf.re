@@ -36,6 +36,7 @@ type worklist_elt = {
   env: compilation_env,
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
+  has_closure: bool,
   id: Ident.t,
   name: option(string),
   attrs: attributes,
@@ -574,29 +575,38 @@ let known_function = f =>
   };
 
 let compile_lambda =
-    (~name=?, id, env, args, body, attrs, loc): Mashtree.closure_data => {
+    (~name=?, ~closure_status, id, env, args, body, attrs, loc)
+    : option(Mashtree.closure_data) => {
   register_function(Internal(id));
 
   let (body, return_type) = body;
-  // NOTE: we special-case `id`, since we want to
-  //       have simply-recursive uses of identifiers use
-  //       argument 0 ("$self") rather than do the self-reference
-  //       via a closure variable (this enables a large class
-  //       of recursive functions to be garbage-collectible, since
-  //       Grain's garbage collector does not currently collect
-  //       cyclic reference chains)
-  let used_var_set =
-    Ident.Set.remove(id, Analyze_free_vars.anf_free_vars(body));
-  let arg_vars = List.map(((arg, _)) => arg, args);
-  let global_vars =
-    Ident.fold_all((id, _, acc) => [id, ...acc], global_table^, []);
-  let accessible_var_set =
-    Ident.Set.union(
-      global_imports^,
-      Ident.Set.of_list(arg_vars @ global_vars),
-    );
-  let free_var_set = Ident.Set.diff(used_var_set, accessible_var_set);
-  let free_vars = Ident.Set.elements(free_var_set);
+
+  let (free_vars, has_closure) =
+    switch (closure_status) {
+    | Unnecessary => ([], false)
+    | Precomputed(vars) => (vars, true)
+    | Uncomputed =>
+      // NOTE: we special-case `id`, since we want to
+      //       have simply-recursive uses of identifiers use
+      //       argument 0 ("$self") rather than do the self-reference
+      //       via a closure variable (this enables a large class
+      //       of recursive functions to be garbage-collectible, since
+      //       Grain's garbage collector does not currently collect
+      //       cyclic reference chains)
+      let used_var_set =
+        Ident.Set.remove(id, Analyze_free_vars.anf_free_vars(body));
+      let arg_vars = List.map(((arg, _)) => arg, args);
+      let global_vars =
+        Ident.fold_all((id, _, acc) => [id, ...acc], global_table^, []);
+      let accessible_var_set =
+        Ident.Set.union(
+          global_imports^,
+          Ident.Set.of_list(arg_vars @ global_vars),
+        );
+      let free_var_set = Ident.Set.diff(used_var_set, accessible_var_set);
+      (Ident.Set.elements(free_var_set), true);
+    };
+
   /* Bind all non-arguments in the function body to
      their respective closure slots */
   let free_binds =
@@ -649,6 +659,7 @@ let compile_lambda =
     name,
     args,
     return_type,
+    has_closure,
     attrs,
     stack_size: {
       stack_size_ptr,
@@ -660,11 +671,15 @@ let compile_lambda =
     loc,
   };
   worklist_enqueue(worklist_item);
-  {
-    func_idx,
-    arity: Int32.of_int(arity),
-    /* These variables should be in scope when the lambda is constructed. */
-    variables: List.map(id => MImmBinding(find_id(id, env)), free_vars),
+  if (has_closure || Analyze_function_calls.has_indirect_call(id)) {
+    Some({
+      func_idx,
+      arity: Int32.of_int(arity),
+      /* These variables should be in scope when the lambda is constructed. */
+      variables: List.map(id => MImmBinding(find_id(id, env)), free_vars),
+    });
+  } else {
+    None;
   };
 };
 
@@ -726,6 +741,7 @@ let compile_wrapper =
     name,
     args: [Types.Managed, ...args],
     return_type,
+    has_closure: true,
     stack_size: {
       stack_size_ptr: 0,
       stack_size_i32: 0,
@@ -913,7 +929,7 @@ let rec compile_comp = (~id=?, env, c) => {
         MRecordSet(idx, compile_imm(env, arg)),
         compile_imm(env, record),
       )
-    | CLambda(name, args, body) =>
+    | CLambda(name, args, body, closure_status) =>
       let (body, return_type) = body;
       let body = (body, [return_type]);
       // Functions typically have an identifier associated with them, though
@@ -925,19 +941,21 @@ let rec compile_comp = (~id=?, env, c) => {
         | Some(id) => id
         | None => Ident.create("func")
         };
-      MAllocate(
-        MClosure(
-          compile_lambda(
-            ~name?,
-            id,
-            env,
-            args,
-            body,
-            c.comp_attributes,
-            c.comp_loc,
-          ),
-        ),
-      );
+      let cdata =
+        compile_lambda(
+          ~name?,
+          ~closure_status,
+          id,
+          env,
+          args,
+          body,
+          c.comp_attributes,
+          c.comp_loc,
+        );
+      switch (cdata) {
+      | Some(cdata) => MAllocate(MClosure(cdata))
+      | None => MImmediate(MImmConst(MConstLiteral(MConstI32(0l))))
+      };
     | CApp((f, (argsty, retty)), args, true) =>
       let func_type = (argsty, [retty]);
       let closure = compile_imm(env, f);
@@ -1023,37 +1041,21 @@ and compile_anf_expr = (env, a) =>
       };
     };
     let (new_env, locations) = get_locs(env, binds);
-    switch (recflag) {
-    | Nonrecursive =>
-      let instrs =
-        List.fold_right2(
-          (loc, (id, rhs), acc) =>
-            [
-              {
-                instr_desc: MStore([(loc, compile_comp(~id, env, rhs))]),
-                instr_loc: rhs.comp_loc,
-              },
-              ...acc,
-            ],
-          locations,
-          binds,
-          [],
-        );
-      instrs @ compile_anf_expr(new_env, body);
-    | Recursive =>
-      let binds =
-        List.fold_left2(
-          (acc, loc, (id, rhs)) =>
-            [(loc, compile_comp(~id, new_env, rhs)), ...acc],
-          [],
-          locations,
-          binds,
-        );
-      [
-        {instr_desc: MStore(List.rev(binds)), instr_loc: a.anf_loc},
-        ...compile_anf_expr(new_env, body),
-      ];
-    };
+    let instrs =
+      List.fold_right2(
+        (loc, (id, rhs), acc) =>
+          [
+            {
+              instr_desc: MStore([(loc, compile_comp(~id, env, rhs))]),
+              instr_loc: rhs.comp_loc,
+            },
+            ...acc,
+          ],
+        locations,
+        binds,
+        [],
+      );
+    instrs @ compile_anf_expr(new_env, body);
   | AEComp(c) => [compile_comp(env, c)]
   };
 
@@ -1077,7 +1079,7 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {id, name, args, return_type, stack_size, attrs, loc} as cur: worklist_elt,
+        {id, name, args, return_type, has_closure, stack_size, attrs, loc} as cur: worklist_elt,
       ) => {
     let body = compile_worklist_elt(cur);
     let func = {
@@ -1085,6 +1087,7 @@ let compile_remaining_worklist = () => {
       name,
       args,
       return_type,
+      has_closure,
       body,
       stack_size,
       attrs,
@@ -1099,7 +1102,7 @@ let lift_imports = (env, imports) => {
   let process_shape = (mut, shape) =>
     switch (shape) {
     | GlobalShape(alloc) => MGlobalImport(alloc, mut)
-    | FunctionShape(inputs, outputs) => MFuncImport(inputs, outputs)
+    | FunctionShape({args, returns}) => MFuncImport(args, returns)
     };
 
   let process_import =
@@ -1126,7 +1129,7 @@ let lift_imports = (env, imports) => {
             ],
             [],
           )
-        | FunctionShape(_) =>
+        | FunctionShape({args, has_closure}) =>
           register_function(
             Imported(imp_use_id, Ident.unique_name(imp_use_id)),
           );
@@ -1136,18 +1139,49 @@ let lift_imports = (env, imports) => {
                 next_function_table_index(
                   FuncName(Ident.unique_name(imp_use_id)),
                 );
-              [
-                {
-                  instr_desc:
-                    MClosureOp(
-                      MClosureSetPtr(Int32.of_int(idx)),
-                      MImmBinding(
-                        MGlobalBind(Ident.unique_name(imp_use_id), Managed),
+              if (has_closure) {
+                [
+                  {
+                    instr_desc:
+                      MClosureOp(
+                        MClosureSetPtr(Int32.of_int(idx)),
+                        MImmBinding(
+                          MGlobalBind(
+                            Ident.unique_name(imp_use_id),
+                            Managed,
+                          ),
+                        ),
                       ),
-                    ),
-                  instr_loc: Location.dummy_loc,
-                },
-              ];
+                    instr_loc: Location.dummy_loc,
+                  },
+                ];
+              } else {
+                [
+                  {
+                    instr_desc:
+                      MStore([
+                        (
+                          MGlobalBind(
+                            Ident.unique_name(imp_use_id),
+                            Types.Managed,
+                          ),
+                          {
+                            instr_desc:
+                              MAllocate(
+                                MClosure({
+                                  func_idx: Some(Int32.of_int(idx)),
+                                  arity: Int32.of_int(List.length(args)),
+                                  variables: [],
+                                }),
+                              ),
+                            instr_loc: Location.dummy_loc,
+                          },
+                        ),
+                      ]),
+                    instr_loc: Location.dummy_loc,
+                  },
+                ];
+              };
             } else {
               [];
             };
@@ -1235,8 +1269,8 @@ let lift_imports = (env, imports) => {
         [
           switch (imp_shape) {
           | GlobalShape(_) => []
-          | FunctionShape(inputs, outputs) =>
-            if (List.length(outputs) > 1) {
+          | FunctionShape({args, returns}) =>
+            if (List.length(returns) > 1) {
               failwith("NYI: Multi-result wrapper");
             } else {
               [
@@ -1254,8 +1288,8 @@ let lift_imports = (env, imports) => {
                                   imp_use_id,
                                   env,
                                   Ident.unique_name(mimp_id),
-                                  inputs,
-                                  outputs,
+                                  args,
+                                  returns,
                                 ),
                               ),
                             ),
@@ -1300,7 +1334,11 @@ let transl_signature = (~functions, ~imports, signature) => {
     (func: mash_function) =>
       switch (func.name) {
       | Some(name) =>
-        Ident_tbl.add(func_map, func.id, Ident.unique_name(func.id))
+        Ident_tbl.add(
+          func_map,
+          func.id,
+          (Ident.unique_name(func.id), func.has_closure),
+        )
       | None => ()
       },
     functions,
@@ -1308,9 +1346,13 @@ let transl_signature = (~functions, ~imports, signature) => {
   List.iter(
     imp =>
       switch (imp.imp_shape) {
-      | FunctionShape(_) =>
+      | FunctionShape({has_closure}) =>
         let internal_name = Ident.unique_name(imp.imp_use_id);
-        Ident_tbl.add(func_map, imp.imp_use_id, internal_name);
+        Ident_tbl.add(
+          func_map,
+          imp.imp_use_id,
+          (internal_name, has_closure),
+        );
       | _ => ()
       },
     imports.specs,
@@ -1342,7 +1384,7 @@ let transl_signature = (~functions, ~imports, signature) => {
       switch (val_repr) {
       | ReprFunction(args, rets, _) =>
         switch (Ident_tbl.find_opt(func_map, id)) {
-        | Some(internal_name) =>
+        | Some((internal_name, closure)) =>
           let external_name = Ident.name(vid);
           exports :=
             [
@@ -1356,7 +1398,12 @@ let transl_signature = (~functions, ~imports, signature) => {
             vid,
             {
               ...vd,
-              val_repr: ReprFunction(args, rets, Direct(external_name)),
+              val_repr:
+                ReprFunction(
+                  args,
+                  rets,
+                  Direct({name: external_name, closure}),
+                ),
             },
           );
         | _ =>
@@ -1401,7 +1448,7 @@ let transl_anf_program =
   worklist_reset();
   clear_known_functions();
 
-  Analyze_function_calls.analyze(anf_prog);
+  let anf_prog = Optimize_closures.optimize(anf_prog);
 
   let (imports, setups, env) =
     lift_imports(initial_compilation_env, anf_prog.imports.specs);

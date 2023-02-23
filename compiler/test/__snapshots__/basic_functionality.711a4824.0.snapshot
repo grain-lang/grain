@@ -33,37 +33,14 @@ basic functionality › pattern_match_unsafe_wasm
   (local $6 f64)
   (local $7 i32)
   (return
-   (block $cleanup_locals.5 (result i32)
+   (block $cleanup_locals.4 (result i32)
     (local.set $1
-     (block $compile_block.4 (result i32)
-      (block $compile_store.3
+     (block $compile_block.3 (result i32)
+      (block $compile_store.2
        (local.set $7
         (tuple.extract 0
          (tuple.make
-          (block $allocate_closure.1 (result i32)
-           (i32.store
-            (local.tee $1
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 6)
-           )
-           (i32.store offset=4
-            (local.get $1)
-            (i32.const 2)
-           )
-           (i32.store offset=8
-            (local.get $1)
-            (i32.const -1)
-           )
-           (i32.store offset=12
-            (local.get $1)
-            (i32.const 0)
-           )
-           (local.get $1)
-          )
+          (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
            (local.get $7)
@@ -71,10 +48,7 @@ basic functionality › pattern_match_unsafe_wasm
          )
         )
        )
-       (block $do_backpatches.2
-        (local.set $1
-         (local.get $7)
-        )
+       (block $do_backpatches.1
        )
       )
       (drop
@@ -153,10 +127,10 @@ basic functionality › pattern_match_unsafe_wasm
   (local $13 i32)
   (local $14 i32)
   (return
-   (block $cleanup_locals.45 (result i32)
+   (block $cleanup_locals.44 (result i32)
     (local.set $2
-     (block $compile_block.44 (result i32)
-      (block $compile_store.7
+     (block $compile_block.43 (result i32)
+      (block $compile_store.6
        (local.set $9
         (i32.or
          (i32.shl
@@ -169,21 +143,21 @@ basic functionality › pattern_match_unsafe_wasm
          (i32.const 2147483646)
         )
        )
-       (block $do_backpatches.6
+       (block $do_backpatches.5
        )
       )
-      (block $compile_store.31
+      (block $compile_store.30
        (local.set $10
         (if (result i32)
          (i32.shr_u
           (local.get $9)
           (i32.const 31)
          )
-         (block $compile_block.8 (result i32)
+         (block $compile_block.7 (result i32)
           (i32.const 1)
          )
-         (block $compile_block.29 (result i32)
-          (block $compile_store.10
+         (block $compile_block.28 (result i32)
+          (block $compile_store.9
            (local.set $10
             (i32.or
              (i32.shl
@@ -196,7 +170,7 @@ basic functionality › pattern_match_unsafe_wasm
              (i32.const 2147483646)
             )
            )
-           (block $do_backpatches.9
+           (block $do_backpatches.8
            )
           )
           (if (result i32)
@@ -204,11 +178,11 @@ basic functionality › pattern_match_unsafe_wasm
             (local.get $10)
             (i32.const 31)
            )
-           (block $compile_block.11 (result i32)
+           (block $compile_block.10 (result i32)
             (i32.const 3)
            )
-           (block $compile_block.28 (result i32)
-            (block $compile_store.13
+           (block $compile_block.27 (result i32)
+            (block $compile_store.12
              (local.set $11
               (i32.or
                (i32.shl
@@ -221,7 +195,7 @@ basic functionality › pattern_match_unsafe_wasm
                (i32.const 2147483646)
               )
              )
-             (block $do_backpatches.12
+             (block $do_backpatches.11
              )
             )
             (if (result i32)
@@ -229,11 +203,11 @@ basic functionality › pattern_match_unsafe_wasm
               (local.get $11)
               (i32.const 31)
              )
-             (block $compile_block.14 (result i32)
+             (block $compile_block.13 (result i32)
               (i32.const 5)
              )
-             (block $compile_block.27 (result i32)
-              (block $compile_store.16
+             (block $compile_block.26 (result i32)
+              (block $compile_store.15
                (local.set $12
                 (i32.or
                  (i32.shl
@@ -246,7 +220,7 @@ basic functionality › pattern_match_unsafe_wasm
                  (i32.const 2147483646)
                 )
                )
-               (block $do_backpatches.15
+               (block $do_backpatches.14
                )
               )
               (if (result i32)
@@ -254,11 +228,11 @@ basic functionality › pattern_match_unsafe_wasm
                 (local.get $12)
                 (i32.const 31)
                )
-               (block $compile_block.17 (result i32)
+               (block $compile_block.16 (result i32)
                 (i32.const 7)
                )
-               (block $compile_block.26 (result i32)
-                (block $compile_store.19
+               (block $compile_block.25 (result i32)
+                (block $compile_store.18
                  (local.set $13
                   (i32.or
                    (i32.shl
@@ -271,7 +245,7 @@ basic functionality › pattern_match_unsafe_wasm
                    (i32.const 2147483646)
                   )
                  )
-                 (block $do_backpatches.18
+                 (block $do_backpatches.17
                  )
                 )
                 (if (result i32)
@@ -279,11 +253,11 @@ basic functionality › pattern_match_unsafe_wasm
                   (local.get $13)
                   (i32.const 31)
                  )
-                 (block $compile_block.20 (result i32)
+                 (block $compile_block.19 (result i32)
                   (i32.const 9)
                  )
-                 (block $compile_block.25 (result i32)
-                  (block $compile_store.22
+                 (block $compile_block.24 (result i32)
+                  (block $compile_store.21
                    (local.set $14
                     (i32.or
                      (i32.shl
@@ -296,7 +270,7 @@ basic functionality › pattern_match_unsafe_wasm
                      (i32.const 2147483646)
                     )
                    )
-                   (block $do_backpatches.21
+                   (block $do_backpatches.20
                    )
                   )
                   (if (result i32)
@@ -304,10 +278,10 @@ basic functionality › pattern_match_unsafe_wasm
                     (local.get $14)
                     (i32.const 31)
                    )
-                   (block $compile_block.23 (result i32)
+                   (block $compile_block.22 (result i32)
                     (i32.const 11)
                    )
-                   (block $compile_block.24 (result i32)
+                   (block $compile_block.23 (result i32)
                     (i32.const 13)
                    )
                   )
@@ -322,28 +296,28 @@ basic functionality › pattern_match_unsafe_wasm
          )
         )
        )
-       (block $do_backpatches.30
+       (block $do_backpatches.29
        )
       )
-      (block $switch.32_outer (result i32)
-       (block $switch.32_branch_0 (result i32)
+      (block $switch.31_outer (result i32)
+       (block $switch.31_branch_0 (result i32)
         (drop
-         (block $switch.32_branch_1 (result i32)
+         (block $switch.31_branch_1 (result i32)
           (drop
-           (block $switch.32_branch_2 (result i32)
+           (block $switch.31_branch_2 (result i32)
             (drop
-             (block $switch.32_branch_3 (result i32)
+             (block $switch.31_branch_3 (result i32)
               (drop
-               (block $switch.32_branch_4 (result i32)
+               (block $switch.31_branch_4 (result i32)
                 (drop
-                 (block $switch.32_branch_5 (result i32)
+                 (block $switch.31_branch_5 (result i32)
                   (drop
-                   (block $switch.32_branch_6 (result i32)
+                   (block $switch.31_branch_6 (result i32)
                     (drop
-                     (block $switch.32_branch_7 (result i32)
+                     (block $switch.31_branch_7 (result i32)
                       (drop
-                       (block $switch.32_default (result i32)
-                        (br_table $switch.32_branch_1 $switch.32_branch_2 $switch.32_branch_3 $switch.32_branch_4 $switch.32_branch_5 $switch.32_branch_6 $switch.32_branch_7 $switch.32_default $switch.32_default
+                       (block $switch.31_default (result i32)
+                        (br_table $switch.31_branch_1 $switch.31_branch_2 $switch.31_branch_3 $switch.31_branch_4 $switch.31_branch_5 $switch.31_branch_6 $switch.31_branch_7 $switch.31_default $switch.31_default
                          (i32.const 0)
                          (i32.shr_s
                           (local.get $10)
@@ -352,20 +326,20 @@ basic functionality › pattern_match_unsafe_wasm
                         )
                        )
                       )
-                      (br $switch.32_outer
-                       (block $compile_block.43 (result i32)
+                      (br $switch.31_outer
+                       (block $compile_block.42 (result i32)
                         (unreachable)
                        )
                       )
                      )
                     )
-                    (br $switch.32_outer
-                     (block $compile_block.42 (result i32)
-                      (block $compile_store.41
+                    (br $switch.31_outer
+                     (block $compile_block.41 (result i32)
+                      (block $compile_store.40
                        (local.set $8
                         (tuple.extract 0
                          (tuple.make
-                          (block $allocate_string.39 (result i32)
+                          (block $allocate_string.38 (result i32)
                            (i32.store
                             (local.tee $2
                              (call $malloc_0
@@ -392,7 +366,7 @@ basic functionality › pattern_match_unsafe_wasm
                          )
                         )
                        )
-                       (block $do_backpatches.40
+                       (block $do_backpatches.39
                        )
                       )
                       (call $print_1125
@@ -409,8 +383,8 @@ basic functionality › pattern_match_unsafe_wasm
                     )
                    )
                   )
-                  (br $switch.32_outer
-                   (block $compile_block.38 (result i32)
+                  (br $switch.31_outer
+                   (block $compile_block.37 (result i32)
                     (call $print_1125
                      (call $incRef_0
                       (global.get $GRAIN$EXPORT$incRef_0)
@@ -422,8 +396,8 @@ basic functionality › pattern_match_unsafe_wasm
                   )
                  )
                 )
-                (br $switch.32_outer
-                 (block $compile_block.37 (result i32)
+                (br $switch.31_outer
+                 (block $compile_block.36 (result i32)
                   (call $print_1125
                    (call $incRef_0
                     (global.get $GRAIN$EXPORT$incRef_0)
@@ -435,8 +409,8 @@ basic functionality › pattern_match_unsafe_wasm
                 )
                )
               )
-              (br $switch.32_outer
-               (block $compile_block.36 (result i32)
+              (br $switch.31_outer
+               (block $compile_block.35 (result i32)
                 (call $print_1125
                  (call $incRef_0
                   (global.get $GRAIN$EXPORT$incRef_0)
@@ -448,8 +422,8 @@ basic functionality › pattern_match_unsafe_wasm
               )
              )
             )
-            (br $switch.32_outer
-             (block $compile_block.35 (result i32)
+            (br $switch.31_outer
+             (block $compile_block.34 (result i32)
               (call $print_1125
                (call $incRef_0
                 (global.get $GRAIN$EXPORT$incRef_0)
@@ -461,8 +435,8 @@ basic functionality › pattern_match_unsafe_wasm
             )
            )
           )
-          (br $switch.32_outer
-           (block $compile_block.34 (result i32)
+          (br $switch.31_outer
+           (block $compile_block.33 (result i32)
             (call $print_1125
              (call $incRef_0
               (global.get $GRAIN$EXPORT$incRef_0)
@@ -474,8 +448,8 @@ basic functionality › pattern_match_unsafe_wasm
           )
          )
         )
-        (br $switch.32_outer
-         (block $compile_block.33 (result i32)
+        (br $switch.31_outer
+         (block $compile_block.32 (result i32)
           (call $print_1125
            (call $incRef_0
             (global.get $GRAIN$EXPORT$incRef_0)
@@ -522,37 +496,14 @@ basic functionality › pattern_match_unsafe_wasm
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.50 (result i32)
+   (block $cleanup_locals.48 (result i32)
     (local.set $0
-     (block $compile_block.49 (result i32)
-      (block $compile_store.48
+     (block $compile_block.47 (result i32)
+      (block $compile_store.46
        (global.set $test_1113
         (tuple.extract 0
          (tuple.make
-          (block $allocate_closure.46 (result i32)
-           (i32.store
-            (local.tee $0
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 6)
-           )
-           (i32.store offset=4
-            (local.get $0)
-            (i32.const 1)
-           )
-           (i32.store offset=8
-            (local.get $0)
-            (i32.const -1)
-           )
-           (i32.store offset=12
-            (local.get $0)
-            (i32.const 0)
-           )
-           (local.get $0)
-          )
+          (i32.const 0)
           (call $decRef_0
            (global.get $GRAIN$EXPORT$decRef_0)
            (global.get $test_1113)
@@ -560,10 +511,7 @@ basic functionality › pattern_match_unsafe_wasm
          )
         )
        )
-       (block $do_backpatches.47
-        (local.set $0
-         (global.get $test_1113)
-        )
+       (block $do_backpatches.45
        )
       )
       (call $test_1113

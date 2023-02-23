@@ -238,12 +238,16 @@ module MakeMap = (Iter: MapArgument) => {
       leave_with(
         CAppBuiltin(mod_, f, List.map(process_imm_expression, args)),
       )
-    | CLambda(name, idents, (expr, alloc_ty)) =>
+    | CLambda(name, idents, (expr, alloc_ty), closure_status) =>
       push_input(
         CompMarker(
           Lambda(
             expr =>
-              {...c, comp_desc: CLambda(name, idents, (expr, alloc_ty))},
+              {
+                ...c,
+                comp_desc:
+                  CLambda(name, idents, (expr, alloc_ty), closure_status),
+              },
           ),
         ),
       );
