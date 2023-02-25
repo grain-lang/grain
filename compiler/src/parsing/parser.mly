@@ -23,7 +23,7 @@ module Grain_parsing = struct end
 %token THICKARROW ARROW
 %token EQUAL GETS
 %token UNDERSCORE
-%token COLON QUESTION DOT ELLIPSIS
+%token COLON QUESTION DOT DOTDOT ELLIPSIS
 
 %token ASSERT FAIL EXCEPTION THROW
 
@@ -32,7 +32,7 @@ module Grain_parsing = struct end
 %token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK RETURN
 %token AT
 
-%token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
+%token <string> INFIX_10 INFIX_20 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
 %token <string> INFIX_80 INFIX_90 INFIX_100 INFIX_110 INFIX_120
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
@@ -54,6 +54,7 @@ module Grain_parsing = struct end
 %nonassoc _below_infix
 
 %left AS
+%left INFIX_20 DOTDOT
 %left INFIX_30
 %left INFIX_40
 %left INFIX_50 PIPE
@@ -248,6 +249,7 @@ annotated_expr:
   | non_binop_expr colon typ { Expression.constraint_ ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
 
 binop_expr:
+  | non_stmt_expr DOTDOT non_stmt_expr { Expression.range ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) $1 $3 }
   | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
   | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) ~core_loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
 
@@ -448,6 +450,7 @@ construct_expr:
 
 // These are all inlined to carry over their precedence.
 %inline infix_op:
+  | INFIX_20
   | INFIX_30
   | INFIX_40
   | INFIX_50

@@ -407,6 +407,15 @@ module Expression: {
       list(record_item(expression))
     ) =>
     expression;
+  let range:
+    (
+      ~loc: loc,
+      ~core_loc: loc,
+      ~attributes: attributes=?,
+      expression,
+      expression
+    ) =>
+    expression;
   let binop:
     (
       ~loc: loc,
