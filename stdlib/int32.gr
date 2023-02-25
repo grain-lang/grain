@@ -26,7 +26,7 @@ provide { fromNumber, toNumber }
  * Converts a Uint32 to an Int32.
  *
  * @param number: The value to convert
- * @returns The Uint32 represented as a Int32
+ * @returns The Uint32 represented as an Int32
  *
  * @since v0.6.0
  */

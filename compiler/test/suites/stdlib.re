@@ -81,8 +81,12 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("float32.test");
   assertStdlib("float64.test");
   assertStdlib("hash.test");
+  assertStdlib("int8.test");
+  assertStdlib("int16.test");
   assertStdlib("int32.test");
   assertStdlib("int64.test");
+  assertStdlib("uint8.test");
+  assertStdlib("uint16.test");
   assertStdlib("uint32.test");
   assertStdlib("uint64.test");
   assertStdlib("list.test");

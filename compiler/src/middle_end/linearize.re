@@ -212,8 +212,6 @@ let transl_const =
     Right(with_bind("bytes", tmp => [BLet(tmp, Comp.bytes(b), Nonglobal)]))
   | Const_string(s) =>
     Right(with_bind("str", tmp => [BLet(tmp, Comp.string(s), Nonglobal)]))
-  | Const_char(c) =>
-    Right(with_bind("char", tmp => [BLet(tmp, Comp.char(c), Nonglobal)]))
   | _ => Left(Imm.const(c))
   };
 };

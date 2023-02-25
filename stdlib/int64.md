@@ -90,7 +90,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int64`|The Uint64 represented as a Int64|
+|`Int64`|The Uint64 represented as an Int64|
 
 ### Int64.**incr**
 

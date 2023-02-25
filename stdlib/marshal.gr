@@ -460,7 +460,7 @@ let validateStack = (value, offset) => {
       value == fromGrain(false) ||
       value == fromGrain(void) ||
       (value & Tags._GRAIN_NUMBER_TAG_MASK) == Tags._GRAIN_NUMBER_TAG_TYPE ||
-      (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_CHAR_TAG_TYPE
+      (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_SHORTVAL_TAG_TYPE
     ) =>
       None,
     _ => reportError("Unknown value", offset),
@@ -777,7 +777,8 @@ let validate = (buf, bufSize) => {
           value == fromGrain(void) ||
           (value & Tags._GRAIN_NUMBER_TAG_MASK) ==
           Tags._GRAIN_NUMBER_TAG_TYPE ||
-          (value & Tags._GRAIN_GENERIC_TAG_MASK) == Tags._GRAIN_CHAR_TAG_TYPE
+          (value & Tags._GRAIN_GENERIC_TAG_MASK) ==
+          Tags._GRAIN_SHORTVAL_TAG_TYPE
         ) =>
           None,
         _ => reportError("Unknown value", 0n),

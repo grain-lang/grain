@@ -189,6 +189,14 @@ type prim1 =
     | UntagSimpleNumber
     | TagChar
     | UntagChar
+    | TagInt8
+    | UntagInt8
+    | TagInt16
+    | UntagInt16
+    | TagUint8
+    | UntagUint8
+    | TagUint16
+    | UntagUint16
     | Not
     | Box
     | Unbox
@@ -367,7 +375,6 @@ and comp_expression_desc =
     )
   | CBytes(bytes)
   | CString(string)
-  | CChar(string)
   | CNumber(Asttypes.number_type)
   | CInt32(int32)
   | CInt64(int64)

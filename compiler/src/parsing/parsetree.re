@@ -119,8 +119,12 @@ type data_declaration = {
 [@deriving (sexp, yojson)]
 type constant =
   | PConstNumber(number_type)
+  | PConstInt8(string)
+  | PConstInt16(string)
   | PConstInt32(string)
   | PConstInt64(string)
+  | PConstUint8(bool, string)
+  | PConstUint16(bool, string)
   | PConstUint32(bool, string)
   | PConstUint64(bool, string)
   | PConstFloat32(string)
@@ -346,6 +350,14 @@ type prim1 =
   | UntagSimpleNumber
   | TagChar
   | UntagChar
+  | TagInt8
+  | UntagInt8
+  | TagInt16
+  | UntagInt16
+  | TagUint8
+  | UntagUint8
+  | TagUint16
+  | UntagUint16
   | Not
   | Box
   | Unbox

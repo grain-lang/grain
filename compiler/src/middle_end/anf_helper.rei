@@ -326,9 +326,6 @@ module Comp: {
   let string:
     (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
     comp_expression;
-  let char:
-    (~loc: loc=?, ~attributes: attributes=?, ~env: env=?, string) =>
-    comp_expression;
 };
 
 module AExp: {

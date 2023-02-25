@@ -229,8 +229,6 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CBytes(b));
   let string = (~loc=?, ~attributes=?, ~env=?, s) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CString(s));
-  let char = (~loc=?, ~attributes=?, ~env=?, c) =>
-    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CChar(c));
 };
 
 module AExp = {

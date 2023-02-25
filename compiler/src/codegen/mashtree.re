@@ -203,6 +203,14 @@ type prim1 =
     | UntagSimpleNumber
     | TagChar
     | UntagChar
+    | TagInt8
+    | UntagInt8
+    | TagInt16
+    | UntagInt16
+    | TagUint8
+    | UntagUint8
+    | TagUint16
+    | UntagUint16
     | Not
     | Box
     | Unbox
@@ -286,12 +294,17 @@ type primn =
 
 [@deriving sexp]
 type constant =
+  | MConstI8(int32)
+  | MConstI16(int32)
   | MConstI32(int32)
   | MConstI64(int64)
+  | MConstU8(int32)
+  | MConstU16(int32)
   | MConstU32(int32)
   | MConstU64(int64)
   | MConstF32(float)
   | MConstF64(float)
+  | MConstChar(string)
   | MConstLiteral(constant); /* Special case for things which should not be encoded */
 
 [@deriving sexp]
@@ -325,7 +338,6 @@ type allocation_type =
   | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
   | MBytes(bytes)
   | MString(string)
-  | MChar(string)
   | MInt32(int32)
   | MInt64(int64)
   | MUint32(int32)

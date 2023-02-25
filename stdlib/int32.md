@@ -90,7 +90,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|The Uint32 represented as a Int32|
+|`Int32`|The Uint32 represented as an Int32|
 
 ### Int32.**incr**
 

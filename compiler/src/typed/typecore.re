@@ -216,6 +216,70 @@ let prim1_type =
         TComOk,
       ),
     )
+  | TagInt8 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_int8,
+        TComOk,
+      ),
+    )
+  | UntagInt8 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_int8],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | TagInt16 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_int16,
+        TComOk,
+      ),
+    )
+  | UntagInt16 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_int16],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | TagUint8 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_uint8,
+        TComOk,
+      ),
+    )
+  | UntagUint8 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_uint8],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
+  | TagUint16 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_wasmi32],
+        Builtin_types.type_uint16,
+        TComOk,
+      ),
+    )
+  | UntagUint16 =>
+    newgenty(
+      TTyArrow(
+        [Builtin_types.type_uint16],
+        Builtin_types.type_wasmi32,
+        TComOk,
+      ),
+    )
   | Not =>
     newgenty(
       TTyArrow([Builtin_types.type_bool], Builtin_types.type_bool, TComOk),

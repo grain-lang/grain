@@ -180,11 +180,11 @@ basic functionality › assert2
              )
              (i32.store offset=8
               (local.get $0)
-              (i32.const 51)
+              (i32.const 59)
              )
              (i32.store offset=12
               (local.get $0)
-              (i32.const 59)
+              (i32.const 67)
              )
              (i32.store offset=16
               (local.get $0)

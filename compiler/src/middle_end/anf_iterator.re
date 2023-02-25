@@ -102,7 +102,6 @@ module MakeIter = (Iter: IterArgument) => {
     | CLambda(_, idents, (expr, _), _) => iter_anf_expression(expr)
     | CBytes(s) => ()
     | CString(s) => ()
-    | CChar(c) => ()
     | CNumber(i) => ()
     | CInt32(i) => ()
     | CInt64(i) => ()

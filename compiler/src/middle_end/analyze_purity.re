@@ -64,6 +64,14 @@ module PurityArg: Anf_iterator.IterArgument = {
           UntagSimpleNumber |
           TagChar |
           UntagChar |
+          TagInt8 |
+          UntagInt8 |
+          TagInt16 |
+          UntagInt16 |
+          TagUint8 |
+          UntagUint8 |
+          TagUint16 |
+          UntagUint16 |
           Not |
           Box |
           Unbox |
@@ -145,8 +153,7 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)
-      | CString(_)
-      | CChar(_) => true
+      | CString(_) => true
       }
     );
 

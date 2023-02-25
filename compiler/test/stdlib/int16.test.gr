@@ -1,0 +1,138 @@
+module Int16Test
+
+include "int16"
+from Int16 use {
+  fromNumber,
+  toNumber,
+  fromUint16,
+  incr,
+  decr,
+  lnot,
+  rem,
+  (+),
+  (-),
+  (*),
+  (/),
+  (%),
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>),
+}
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
+
+assert fromNumber(5) == 5S
+assert fromNumber(0) == 0S
+assert fromNumber(-1) == -1S
+
+assert toNumber(55S) == 55
+assert toNumber(0S) == 0
+assert toNumber(-1S) == -1
+
+assert 1S + 0S == 1S
+assert 45S + -4S == 41S
+assert 32767S + 1S == -32768S
+assert -1S + -1S == -2S
+
+assert 2S - 1S == 1S
+assert 100S - -5S == 105S
+assert 1S - -1S == 2S
+assert -1S - 1S == -2S
+assert -1S - -1S == 0S
+
+assert 1S * 0S == 0S
+assert 5S * 1S == 5S
+assert 10S * 6S == 60S
+assert 256S * 256S == 0S
+assert 20S * -5S == -100S
+assert 32767S * 32767S == 1S
+assert -1S * -1S == 1S
+assert -1S * 32767S == -32767S
+
+assert 4S / 2S == 2S
+assert 4S / 1S == 4S
+assert 10S / 100S == 0S
+assert -10S / -5S == 2S
+assert 5S / -10S == 0S
+assert -10S / 5S == -2S
+assert 1S / 2S == 0S
+
+assert rem(4S, 1S) == 0S
+assert rem(10S, 3S) == 1S
+assert rem(-1S, 10S) == -1S
+assert rem(100S, -10S) == 0S
+
+assert 4S % 1S == 0S
+assert 10S % 3S == 1S
+assert -1S % 10S == 9S
+assert 20S % -9S == -7S
+
+assert lnot(-1S) == 0S
+assert lnot(0S) == -1S
+assert lnot(2S) == -3S
+
+assert (0b1010S & 0b10S) == 0b10S
+assert (0b1010S & 0S) == 0S
+
+assert (0b1010S | 0b0101S) == 0b1111S
+assert (0b1010S | 0S) == 0b1010S
+
+assert (0b1010S ^ 0b1101S) == 0b0111S
+assert (0b1010S ^ 0S) == 0b1010S
+
+assert 1S << 1S == 2S
+assert 3S << 1S == 6S
+assert 1S << 2S == 4S
+assert 1S << 16S == 0S
+assert -24S << 1S == -48S
+
+assert 4S >> 1S == 2S
+assert 4S >> 2S == 1S
+assert -4S >> 1S == -2S
+assert 4S >> 3S == 0S
+assert 1S >> 1S == 0S
+
+assert incr(0S) == 1S
+assert incr(-1S) == 0S
+assert incr(32767S) == -32768S
+assert decr(1S) == 0S
+assert decr(0S) == -1S
+assert decr(-32768S) == 32767S
+
+match (1S) {
+  0S => fail "uint16 matched to 0 incorrectly",
+  0x1S => void,
+  _ => fail "uint16 incorrectly matched",
+}
+
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1S)] == 2
+
+assert compare(0S, 1S) < 0
+assert compare(2S, 1S) > 0
+assert compare(0S, 0S) == 0
+assert compare(0S, -1S) > 0
+assert compare(-1S, 0S) < 0
+
+assert toString(123S) == "123"
+assert toString(-1S) == "-1"
+
+from Int16 use { (==), (!=), (<), (<=), (>), (>=) }
+
+assert 1S == 1S
+assert !(1S == 2S)
+
+assert 1S != 2S
+assert !(1S != 1S)
+
+assert 5S > 1S
+assert 5S >= 5S
+assert 5S < 17S
+assert 5S <= 5S
+assert !(5S > 5S)
+assert !(-5S >= 22S)
+assert !(5S < -17S)
+assert !(5S <= 4S)

@@ -1725,12 +1725,11 @@ let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
   );
 };
 
-let create_char = (wasm_mod, env, char) => {
-  let uchar = List.hd @@ Utf8.decodeUtf8String(char);
-  let uchar_int: int = Utf8__Uchar.toInt(uchar);
-  let grain_char = uchar_int lsl 8 lor 0b010;
-  Expression.Const.make(wasm_mod, const_int32(grain_char));
-};
+type int_type =
+  | Int8Type
+  | Int16Type
+  | Uint8Type
+  | Uint16Type;
 
 let allocate_closure =
     (
@@ -2367,6 +2366,20 @@ let allocate_big_int = (wasm_mod, env, n, d) => {
   allocate_number(wasm_mod, env, BigInt(n, d));
 };
 
+let tag_short_value = (wasm_mod, compiled_arg, tag) => {
+  Expression.Binary.make(
+    wasm_mod,
+    Op.xor_int32,
+    Expression.Binary.make(
+      wasm_mod,
+      Op.shl_int32,
+      compiled_arg,
+      Expression.Const.make(wasm_mod, const_int32(0x8)),
+    ),
+    Expression.Const.make(wasm_mod, const_int32(tag)),
+  );
+};
+
 let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   switch (p0) {
   | AllocateInt32 => allocate_number_uninitialized(wasm_mod, env, BoxedInt32)
@@ -2427,19 +2440,16 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       compiled_arg,
       Expression.Const.make(wasm_mod, const_int32(0x1)),
     )
-  | TagChar =>
-    Expression.Binary.make(
-      wasm_mod,
-      Op.xor_int32,
-      Expression.Binary.make(
-        wasm_mod,
-        Op.shl_int32,
-        compiled_arg,
-        Expression.Const.make(wasm_mod, const_int32(0x8)),
-      ),
-      Expression.Const.make(wasm_mod, const_int32(0b10)),
-    )
-  | UntagChar =>
+  | TagChar => tag_short_value(wasm_mod, compiled_arg, 0b10)
+  | TagInt8 => tag_short_value(wasm_mod, compiled_arg, 0b1010)
+  | TagInt16 => tag_short_value(wasm_mod, compiled_arg, 0b10010)
+  | TagUint8 => tag_short_value(wasm_mod, compiled_arg, 0b11010)
+  | TagUint16 => tag_short_value(wasm_mod, compiled_arg, 0b100010)
+  | UntagChar
+  | UntagInt8
+  | UntagInt16
+  | UntagUint8
+  | UntagUint16 =>
     Expression.Binary.make(
       wasm_mod,
       Op.shr_s_int32,
@@ -2802,7 +2812,6 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
   | MBytes(bytes) => allocate_bytes(wasm_mod, env, bytes)
   | MString(str) => allocate_string(wasm_mod, env, str)
-  | MChar(char) => create_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
   | MInt32(i) =>
     allocate_int32(

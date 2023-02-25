@@ -15,7 +15,7 @@ We look at the last 3 bits of an i32 on the stack to determine its type.
 ```plaintext
 simple number    0bxx1
 pointer*         0b000
-chars            0b010
+short values     0b010
 reserved         0b100
 constants        0b110
 
@@ -34,9 +34,31 @@ To avoid overwriting data, we shift simple numbers to the left by 1 bit, then se
 
 31 bits allow us to represent more than 2 billion numbers (from -1073741824 to 1073741823), which is a few more than the 500 million we'd get from 29 bits. If larger numbers (or non-integer numbers) are needed, then Grain will fall back onto one of the other (heap-allocated) number types. The heap-allocated numbers are described in detail later.
 
-### Chars
+### Short values
 
-The Grain `Char` type is represented as a tagged Unicode scalar value. They're similar to simple numbers, though they use a full 3-bit tag, `0b010`. Unicode scalar values exist in the range 0x0-10FFFF, which means it only takes 21 bits to store a USV—that leaves plenty of room for our 3-bit tag, and we cover the full spectrum of USVs. To tag a USV, we shift the value left by 8 bits and set the last 3 bits to our tag value, `0b010`. This means that Grain chars are stored as `(2^8)n + 2`, where `n` is the USV. Just like numbers, there are some tricks we can do to avoid untagging and retagging when manipulating chars.
+Short values (currently `Char`, `Int8`, `Int16`, `Uint8`, and `Uint16`) use the 3-bit tag `0b010`. Since all of these values are relatively compact, they are combined into the same tag for the sake of tag space conservation. The valid values for all of these types require <= 24 bits to store, so the leading 24 bits of the 32-bit stack value are allocated for storing the actual data of the value; the following 5 bits are allocated for tagging the different short value types; and the final 3 bits are of course allocated for the "short values" tag (`0b010`). The short value subtypes and their tags are:
+
+```plaintext
+Char      0b00000
+Int8      0b00001
+Int16     0b00010
+Uint8     0b00011
+Uint16    0b00100
+```
+
+With this layout, to tag a short value we can shift the value left by 8 bits, set the following 5 bits to the short value tag corresponding to the data type, and set the last 3 bits to `0b010`. Just like with simple numbers, there are some tricks we can do to avoid untagging and retagging when manipulating short values.
+
+#### Char
+
+The Grain `Char` type is represented as a Unicode scalar value. Unicode scalar values exist in the range 0x0-10FFFF, which means it only takes 21 bits to store a USV.
+
+#### Uint8/Uint16
+
+Storing short unsigned short integers is fairly straightforward: `Uint8`s use the trailing 8 bits and `Uint16`s use the trailing 16 bits of the 24 allocated for short value data. The remaining leading bits will all be 0s.
+
+#### Int8/Int16
+
+Short signed integers are stored in a similar manner to short unsigned integers; the only difference is that the leading bits extend the sign of the integer being represented. In other words, for non-negative values the leading bits will all be 0s and for negative values the leading bits will all be 1s. This is done for sake of making certain signed operations (e.g. comparisons, division) on short signed integers more convenient. Since WebAssembly does not natively support 8/16-bit integer operations, this schema allows regular `i32` operations (used on the entire 32-bit stack value) to substitute for native signed 8/16-bit operations.
 
 ## Structure of Heap-Allocated Data
 

@@ -76,7 +76,6 @@ let rec analyze_comp_expression =
   | CBreak
   | CBytes(_)
   | CString(_)
-  | CChar(_)
   | CNumber(_)
   | CInt32(_)
   | CInt64(_)
