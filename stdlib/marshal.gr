@@ -143,13 +143,9 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
           let tag = load(heapPtr, 4n)
           match (tag) {
             t when (
-              t == Tags._GRAIN_INT32_BOXED_NUM_TAG ||
               t == Tags._GRAIN_INT64_BOXED_NUM_TAG ||
-              t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG ||
               t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG
             ) => {
-              // The 32-bit values only take 12 bytes of memory, but we report 16
-              // for alignment
               acc + 16n
             },
             t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
@@ -166,7 +162,11 @@ let rec size = (value, acc, valuesSeen, toplevel) => {
             },
           }
         },
-        t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+        t when (
+          t == Tags._GRAIN_INT32_HEAP_TAG ||
+          t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
+          t == Tags._GRAIN_UINT32_HEAP_TAG
+        ) => {
           acc + 8n
         },
         t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
@@ -221,7 +221,7 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           let asInt32 = toGrain(newInt32(value)): Int32
           match (Map.get(asInt32, valuesSeen)) {
             Some(value) => {
-              let ptr = load(fromGrain(value), 8n)
+              let ptr = load(fromGrain(value), 4n)
               store(buf, ptr, offset + i + 20n)
             },
             None => {
@@ -250,7 +250,7 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           let asInt32 = toGrain(newInt32(value)): Int32
           match (Map.get(asInt32, valuesSeen)) {
             Some(value) => {
-              let ptr = load(fromGrain(value), 8n)
+              let ptr = load(fromGrain(value), 4n)
               store(buf, ptr, offset + i + 16n)
             },
             None => {
@@ -279,7 +279,7 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           let asInt32 = toGrain(newInt32(value)): Int32
           match (Map.get(asInt32, valuesSeen)) {
             Some(value) => {
-              let ptr = load(fromGrain(value), 8n)
+              let ptr = load(fromGrain(value), 4n)
               store(buf, ptr, offset + i + 8n)
             },
             None => {
@@ -308,7 +308,7 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           let asInt32 = toGrain(newInt32(value)): Int32
           match (Map.get(asInt32, valuesSeen)) {
             Some(value) => {
-              let ptr = load(fromGrain(value), 8n)
+              let ptr = load(fromGrain(value), 4n)
               store(buf, ptr, offset + i + 8n)
             },
             None => {
@@ -337,7 +337,7 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           let asInt32 = toGrain(newInt32(value)): Int32
           match (Map.get(asInt32, valuesSeen)) {
             Some(value) => {
-              let ptr = load(fromGrain(value), 8n)
+              let ptr = load(fromGrain(value), 4n)
               store(buf, ptr, offset + i + 16n)
             },
             None => {
@@ -355,10 +355,6 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let tag = load(heapPtr, 4n)
       match (tag) {
-        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-          Memory.copy(buf + offset, heapPtr, 12n)
-          offset + 16n
-        },
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           Memory.copy(buf + offset, heapPtr, 16n)
           offset + 16n
@@ -367,10 +363,6 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
           let size = 16n + load(heapPtr, 8n) * 8n
           Memory.copy(buf + offset, heapPtr, size)
           offset + size
-        },
-        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-          Memory.copy(buf + offset, heapPtr, 12n)
-          offset + 16n
         },
         t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
           Memory.copy(buf + offset, heapPtr, 16n)
@@ -400,7 +392,11 @@ let rec marshalHeap = (heapPtr, buf, offset, valuesSeen) => {
         },
       }
     },
-    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+    t when (
+      t == Tags._GRAIN_INT32_HEAP_TAG ||
+      t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
+      t == Tags._GRAIN_UINT32_HEAP_TAG
+    ) => {
       Memory.copy(buf + offset, heapPtr, 8n)
       offset + 8n
     },
@@ -642,16 +638,6 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let tag = load(valuePtr, 4n)
       match (tag) {
-        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-          if (offset + 12n > bufSize) {
-            reportError(
-              "Not enough bytes remaining in buffer for Int32/Number",
-              offset
-            )
-          } else {
-            None
-          }
-        },
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           if (offset + 16n > bufSize) {
             reportError(
@@ -666,16 +652,6 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           let size = 16n + load(valuePtr, 8n) * 8n
           if (offset + size > bufSize) {
             reportError("BigInt/Number payload size exeeds buffer size", offset)
-          } else {
-            None
-          }
-        },
-        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-          if (offset + 12n > bufSize) {
-            reportError(
-              "Not enough bytes remaining in buffer for Float32/Number",
-              offset
-            )
           } else {
             None
           }
@@ -738,6 +714,20 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
         _ => {
           None
         },
+      }
+    },
+    t when t == Tags._GRAIN_INT32_HEAP_TAG => {
+      if (offset + 8n > bufSize) {
+        reportError("Not enough bytes remaining in buffer for Int32", offset)
+      } else {
+        None
+      }
+    },
+    t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
+      if (offset + 8n > bufSize) {
+        reportError("Not enough bytes remaining in buffer for Float32", offset)
+      } else {
+        None
       }
     },
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
@@ -822,7 +812,7 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
           match (Map.get(asInt32, valuesUnmarshaled)) {
             Some(ptr) => {
-              let ptr = load(fromGrain(ptr), 8n)
+              let ptr = load(fromGrain(ptr), 4n)
               store(value + i, Memory.incRef(ptr), 20n)
             },
             None => {
@@ -857,7 +847,7 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
           match (Map.get(asInt32, valuesUnmarshaled)) {
             Some(ptr) => {
-              let ptr = load(fromGrain(ptr), 8n)
+              let ptr = load(fromGrain(ptr), 4n)
               store(value + i, Memory.incRef(ptr), 16n)
             },
             None => {
@@ -892,7 +882,7 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
           match (Map.get(asInt32, valuesUnmarshaled)) {
             Some(ptr) => {
-              let ptr = load(fromGrain(ptr), 8n)
+              let ptr = load(fromGrain(ptr), 4n)
               store(value + i, Memory.incRef(ptr), 8n)
             },
             None => {
@@ -927,7 +917,7 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
           match (Map.get(asInt32, valuesUnmarshaled)) {
             Some(ptr) => {
-              let ptr = load(fromGrain(ptr), 8n)
+              let ptr = load(fromGrain(ptr), 4n)
               store(value + i, Memory.incRef(ptr), 8n)
             },
             None => {
@@ -962,7 +952,7 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           let asInt32 = toGrain(newInt32(subvalue)): Int32
           match (Map.get(asInt32, valuesUnmarshaled)) {
             Some(ptr) => {
-              let ptr = load(fromGrain(ptr), 8n)
+              let ptr = load(fromGrain(ptr), 4n)
               store(value + i, Memory.incRef(ptr), 16n)
             },
             None => {
@@ -983,15 +973,6 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let tag = load(valuePtr, 4n)
       match (tag) {
-        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-          let value = Memory.malloc(12n)
-          Memory.copy(value, valuePtr, 12n)
-
-          let asInt32 = toGrain(newInt32(value)): Int32
-          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
-
-          value
-        },
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           let value = Memory.malloc(16n)
           Memory.copy(value, valuePtr, 16n)
@@ -1005,15 +986,6 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
           let size = 16n + load(valuePtr, 8n) * 8n
           let value = Memory.malloc(size)
           Memory.copy(value, valuePtr, size)
-
-          let asInt32 = toGrain(newInt32(value)): Int32
-          Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
-
-          value
-        },
-        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-          let value = Memory.malloc(12n)
-          Memory.copy(value, valuePtr, 12n)
 
           let asInt32 = toGrain(newInt32(value)): Int32
           Map.set(offsetAsInt32, asInt32, valuesUnmarshaled)
@@ -1047,7 +1019,11 @@ let rec unmarshalHeap = (buf, offset, valuesUnmarshaled) => {
         },
       }
     },
-    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+    t when (
+      t == Tags._GRAIN_INT32_HEAP_TAG ||
+      t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
+      t == Tags._GRAIN_UINT32_HEAP_TAG
+    ) => {
       let value = Memory.malloc(8n)
       Memory.copy(value, valuePtr, 8n)
 

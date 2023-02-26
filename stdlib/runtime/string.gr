@@ -471,9 +471,6 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let numberTag = WasmI32.load(ptr, 4n)
       match (numberTag) {
-        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-          NumberUtils.itoa32(WasmI32.load(ptr, 8n), 10n)
-        },
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           NumberUtils.itoa64(WasmI64.load(ptr, 8n), 10n)
         },
@@ -487,9 +484,6 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let strings = [numerator, slash, denominator]
           join(strings)
         },
-        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-          NumberUtils.dtoa(WasmF64.promoteF32(WasmF32.load(ptr, 8n)))
-        },
         t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
           NumberUtils.dtoa(WasmF64.load(ptr, 8n))
         },
@@ -497,6 +491,12 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           "<unknown boxed number>"
         },
       }
+    },
+    t when t == Tags._GRAIN_INT32_HEAP_TAG => {
+      NumberUtils.itoa32(WasmI32.load(ptr, 4n), 10n)
+    },
+    t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
+      NumberUtils.dtoa(WasmF64.promoteF32(WasmF32.load(ptr, 4n)))
     },
     t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
       NumberUtils.utoa32(WasmI32.load(ptr, 4n), 10n)

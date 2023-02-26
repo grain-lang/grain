@@ -9,6 +9,7 @@
 module Int32
 
 include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
 include "runtime/exception"
 
 include "runtime/dataStructures"
@@ -19,6 +20,9 @@ from Numbers use {
   coerceNumberToInt32 as fromNumber,
   coerceInt32ToNumber as toNumber,
 }
+
+@unsafe
+let _VALUE_OFFSET = 4n
 
 provide { fromNumber, toNumber }
 
@@ -32,7 +36,7 @@ provide { fromNumber, toNumber }
  */
 @unsafe
 provide let fromUint32 = (x: Uint32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 4n)
+  let x = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let result = newInt32(x)
   WasmI32.toGrain(result): Int32
 }
@@ -48,7 +52,7 @@ provide let fromUint32 = (x: Uint32) => {
 @unsafe
 provide let incr = (value: Int32) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newInt32(WasmI32.add(WasmI32.load(value, 8n), 1n))
+  let ptr = newInt32(WasmI32.add(WasmI32.load(value, _VALUE_OFFSET), 1n))
   WasmI32.toGrain(ptr): Int32
 }
 
@@ -63,7 +67,7 @@ provide let incr = (value: Int32) => {
 @unsafe
 provide let decr = (value: Int32) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newInt32(WasmI32.sub(WasmI32.load(value, 8n), 1n))
+  let ptr = newInt32(WasmI32.sub(WasmI32.load(value, _VALUE_OFFSET), 1n))
   WasmI32.toGrain(ptr): Int32
 }
 
@@ -78,8 +82,8 @@ provide let decr = (value: Int32) => {
  */
 @unsafe
 provide let add = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.add(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -95,8 +99,8 @@ provide let add = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let sub = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.sub(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -112,8 +116,8 @@ provide let sub = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let mul = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.mul(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -129,8 +133,8 @@ provide let mul = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let div = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.divS(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -146,8 +150,8 @@ provide let div = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let rem = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.remS(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -172,8 +176,8 @@ let abs = n => {
  */
 @unsafe
 provide let mod = (x: Int32, y: Int32) => {
-  let xval = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yval = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xval = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yval = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
 
   if (WasmI32.eqz(yval)) {
     throw Exception.ModuloByZero
@@ -206,8 +210,8 @@ provide let mod = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let rotl = (value: Int32, amount: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(amount), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.rotl(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -223,8 +227,8 @@ provide let rotl = (value: Int32, amount: Int32) => {
  */
 @unsafe
 provide let rotr = (value: Int32, amount: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(amount), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.rotr(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -240,8 +244,8 @@ provide let rotr = (value: Int32, amount: Int32) => {
  */
 @unsafe
 provide let shl = (value: Int32, amount: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(amount), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.shl(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -257,8 +261,8 @@ provide let shl = (value: Int32, amount: Int32) => {
  */
 @unsafe
 provide let shr = (value: Int32, amount: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(amount), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.shrS(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -274,8 +278,8 @@ provide let shr = (value: Int32, amount: Int32) => {
  */
 @unsafe
 provide let eq = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   WasmI32.eq(xv, yv)
 }
 
@@ -290,8 +294,8 @@ provide let eq = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let ne = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   WasmI32.ne(xv, yv)
 }
 
@@ -305,7 +309,7 @@ provide let ne = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let eqz = (value: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(value), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   WasmI32.eqz(xv)
 }
 
@@ -320,8 +324,8 @@ provide let eqz = (value: Int32) => {
  */
 @unsafe
 provide let lt = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   WasmI32.ltS(xv, yv)
 }
 
@@ -336,8 +340,8 @@ provide let lt = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let gt = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   WasmI32.gtS(xv, yv)
 }
 
@@ -352,8 +356,8 @@ provide let gt = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let lte = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   WasmI32.leS(xv, yv)
 }
 
@@ -368,8 +372,8 @@ provide let lte = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let gte = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   WasmI32.geS(xv, yv)
 }
 
@@ -383,7 +387,7 @@ provide let gte = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let lnot = (value: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(value), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.xor(xv, 0xffffffffn))
   WasmI32.toGrain(ptr): Int32
 }
@@ -399,8 +403,8 @@ provide let lnot = (value: Int32) => {
  */
 @unsafe
 provide let land = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.and(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -416,8 +420,8 @@ provide let land = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let lor = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.or(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -433,8 +437,8 @@ provide let lor = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let lxor = (x: Int32, y: Int32) => {
-  let xv = WasmI32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI32.load(WasmI32.fromGrain(y), 8n)
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.xor(xv, yv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -449,7 +453,7 @@ provide let lxor = (x: Int32, y: Int32) => {
  */
 @unsafe
 provide let clz = (value: Int32) => {
-  let nv = WasmI32.load(WasmI32.fromGrain(value), 8n)
+  let nv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.clz(nv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -464,7 +468,7 @@ provide let clz = (value: Int32) => {
  */
 @unsafe
 provide let ctz = (value: Int32) => {
-  let nv = WasmI32.load(WasmI32.fromGrain(value), 8n)
+  let nv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.ctz(nv))
   WasmI32.toGrain(ptr): Int32
 }
@@ -479,7 +483,7 @@ provide let ctz = (value: Int32) => {
  */
 @unsafe
 provide let popcnt = (value: Int32) => {
-  let nv = WasmI32.load(WasmI32.fromGrain(value), 8n)
+  let nv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let ptr = newInt32(WasmI32.popcnt(nv))
   WasmI32.toGrain(ptr): Int32
 }

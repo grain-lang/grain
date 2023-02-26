@@ -60,7 +60,7 @@ provide let toNumber = (x: Uint32) => {
  */
 @unsafe
 provide let fromInt32 = (x: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 8n)
+  let x = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let result = newUint32(x)
   WasmI32.toGrain(result): Uint32
 }

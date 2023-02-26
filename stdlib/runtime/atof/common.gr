@@ -192,7 +192,7 @@ provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
 @unsafe
 provide let biasedFpToNumber = (fp, negative) => {
   let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
-  let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 8n))
+  let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 4n))
   let word = WasmI64.or(f, WasmI64.shl(e, _MANTISSA_EXPLICIT_BITS_64))
   let mut float = WasmF64.reinterpretI64(word)
   if (negative) {

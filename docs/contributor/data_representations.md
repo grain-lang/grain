@@ -189,18 +189,6 @@ All heap-allocated numbers have the following structure on the heap.
 The boxed number tag describes which variant the structure is an instance of, and, correspondingly,
 what the shape of the rest of the structure is.
 
-#### Int32
-
-The payload for Int32 values is a single, signed, 32-bit integer.
-
-```plaintext
-╔══════╦═══════════╤══════════════════╤══════════════╗
-║ size ║ 32        │ 32               │ 32           ║
-╠══════╬═══════════╪══════════════════╪══════════════╣
-║ what ║ value tag │ boxed number tag │ value (i32)  ║
-╚══════╩═══════════╧══════════════════╧══════════════╝
-```
-
 #### Int64
 
 The payload for Int64 values is a single, signed, 64-bit integer.
@@ -210,18 +198,6 @@ The payload for Int64 values is a single, signed, 64-bit integer.
 ║ size ║ 32        │ 32               │ 64           ║
 ╠══════╬═══════════╪══════════════════╪══════════════╣
 ║ what ║ value tag │ boxed number tag │ value (i64)  ║
-╚══════╩═══════════╧══════════════════╧══════════════╝
-```
-
-#### Float32
-
-The payload for Float32 values is a single, signed, 32-bit float.
-
-```plaintext
-╔══════╦═══════════╤══════════════════╤══════════════╗
-║ size ║ 32        │ 32               │ 32           ║
-╠══════╬═══════════╪══════════════════╪══════════════╣
-║ what ║ value tag │ boxed number tag │ value (f32)  ║
 ╚══════╩═══════════╧══════════════════╧══════════════╝
 ```
 
@@ -265,9 +241,33 @@ bitflag, 16 bits of reserved space, and the 64-bit limbs containing the value.
 ╚══════╩═══════════╧══════════════════╧═════════════════╧═════════════════╧═════════════════════════════════════════╝
 ```
 
-### Unsigned Integers
+### Alternative Heap-Allocated Numbers
 
-Unsigned integers are distinct from `Number`s, which always represent signed numbers.
+Some number types (`Int32`, `Float32`, `Uint32`, and `Uint64`) are not encapsulated into the unified `Number` type and are rather their own unique types.
+
+#### Int32
+
+The payload for Int32 values is a single, signed, 32-bit integer.
+
+```plaintext
+╔══════╦═══════════╤══════════════╗
+║ size ║ 32        │ 32           ║
+╠══════╬═══════════╪══════════════╣
+║ what ║ value tag │ value (i32)  ║
+╚══════╩═══════════╧══════════════╝
+```
+
+#### Float32
+
+The payload for Float32 values is a single, signed, 32-bit float.
+
+```plaintext
+╔══════╦═══════════╤══════════════╗
+║ size ║ 32        │ 32           ║
+╠══════╬═══════════╪══════════════╣
+║ what ║ value tag │ value (f32)  ║
+╚══════╩═══════════╧══════════════╝
+```
 
 #### Uint32
 

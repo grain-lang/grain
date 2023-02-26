@@ -271,7 +271,7 @@ let parseFloatToParts = (string: String) => {
             Ok(exponentNumber) => {
               let exponentNumber = WasmI32.load(
                 WasmI32.fromGrain(exponentNumber),
-                8n
+                4n
               )
               exponent += exponentNumber
 
@@ -524,7 +524,7 @@ provide let parseFloat = (string: String) => {
 
   match (parseFloatToParts(string)) {
     Ok((exponent, mantissa, negative, manyDigits)) => {
-      let exponent = WasmI32.load(WasmI32.fromGrain(exponent), 8n)
+      let exponent = WasmI32.load(WasmI32.fromGrain(exponent), 4n)
       let mantissa = WasmI64.load(WasmI32.fromGrain(mantissa), 8n)
       let floatOpt = if (isFastPath(exponent, mantissa, negative, manyDigits)) {
         let (<=) = WasmI32.leS
@@ -586,14 +586,14 @@ provide let parseFloat = (string: String) => {
 
           let mut fp = computeFloat(WasmI64.extendI32S(exponent), mantissa)
           let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
-          let e = WasmI32.load(WasmI32.fromGrain(fp.e), 8n)
+          let e = WasmI32.load(WasmI32.fromGrain(fp.e), 4n)
           if (manyDigits && WasmI32.geS(e, 0n)) {
             let fp2 = computeFloat(
               WasmI64.extendI32S(exponent),
               WasmI64.add(mantissa, 1N)
             )
             let f2 = WasmI64.load(WasmI32.fromGrain(fp2.f), 8n)
-            let e2 = WasmI32.load(WasmI32.fromGrain(fp2.e), 8n)
+            let e2 = WasmI32.load(WasmI32.fromGrain(fp2.e), 4n)
             if (e != e2 || WasmI64.ne(f, f2)) {
               fp.e = -1l
             }
@@ -601,7 +601,7 @@ provide let parseFloat = (string: String) => {
 
           // Unable to correctly round the float using the Eisel-Lemire algorithm.
           // Fallback to a slower, but always correct algorithm.
-          let e = WasmI32.load(WasmI32.fromGrain(fp.e), 8n)
+          let e = WasmI32.load(WasmI32.fromGrain(fp.e), 4n)
           if (WasmI32.ltS(e, 0n)) {
             fp = parseLongMantissa(string)
           }

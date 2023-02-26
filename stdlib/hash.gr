@@ -188,9 +188,6 @@ let rec hashOne = (val, depth) => {
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
         let tag = WasmI32.load(heapPtr, 4n)
         match (tag) {
-          t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
-          },
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             hash32(WasmI32.load(heapPtr, 8n))
             hash32(WasmI32.load(heapPtr, 12n))
@@ -203,9 +200,6 @@ let rec hashOne = (val, depth) => {
             for (let mut i = 0n; i < size; i += 1n) {
               hash64(BI.getLimb(heapPtr, i))
             }
-          },
-          t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-            hash32(WasmI32.load(heapPtr, 8n))
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
             hash32(WasmI32.load(heapPtr, 8n))
@@ -220,7 +214,11 @@ let rec hashOne = (val, depth) => {
           },
         }
       },
-      t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+      t when (
+        t == Tags._GRAIN_INT32_HEAP_TAG ||
+        t == Tags._GRAIN_FLOAT32_HEAP_TAG ||
+        t == Tags._GRAIN_UINT32_HEAP_TAG
+      ) => {
         hash32(WasmI32.load(heapPtr, 4n))
       },
       t when t == Tags._GRAIN_UINT64_HEAP_TAG => {

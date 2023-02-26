@@ -109,19 +109,13 @@ arrays › array_access3
           (drop
            (if (result i32)
             (i32.or
-             (i32.or
-              (i32.eq
-               (local.get $1)
-               (i32.const 3)
-              )
-              (i32.eq
-               (local.get $1)
-               (i32.const 4)
-              )
+             (i32.eq
+              (local.get $1)
+              (i32.const 2)
              )
              (i32.eq
               (local.get $1)
-              (i32.const 6)
+              (i32.const 4)
              )
             )
             (call $panicWithException_0

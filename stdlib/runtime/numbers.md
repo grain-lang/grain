@@ -66,22 +66,10 @@ reducedUnsignedInteger : WasmI64 -> WasmI32
 boxedNumberTag : WasmI32 -> WasmI32
 ```
 
-### Numbers.**boxedInt32Number**
-
-```grain
-boxedInt32Number : WasmI32 -> WasmI32
-```
-
 ### Numbers.**boxedInt64Number**
 
 ```grain
 boxedInt64Number : WasmI32 -> WasmI64
-```
-
-### Numbers.**boxedFloat32Number**
-
-```grain
-boxedFloat32Number : WasmI32 -> WasmF32
 ```
 
 ### Numbers.**boxedFloat64Number**

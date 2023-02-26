@@ -870,11 +870,6 @@ let rec compile_comp = (~id=?, env, c) => {
     | CNumber(Const_number_int(n))
         when n <= Literals.simple_number_max && n >= Literals.simple_number_min =>
       MImmediate(MImmConst(MConstI32(Int64.to_int32(n))))
-    | CNumber(Const_number_int(n))
-        when
-          n <= Int64.of_int32(Int32.max_int)
-          && n >= Int64.of_int32(Int32.min_int) =>
-      MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
     | CNumber(
