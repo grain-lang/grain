@@ -77,6 +77,14 @@ let prim_map =
       ("@untag.simple_number", Primitive1(UntagSimpleNumber)),
       ("@tag.char", Primitive1(TagChar)),
       ("@untag.char", Primitive1(UntagChar)),
+      ("@tag.int8", Primitive1(TagInt8)),
+      ("@untag.int8", Primitive1(UntagInt8)),
+      ("@tag.int16", Primitive1(TagInt16)),
+      ("@untag.int16", Primitive1(UntagInt16)),
+      ("@tag.uint8", Primitive1(TagUint8)),
+      ("@untag.uint8", Primitive1(UntagUint8)),
+      ("@tag.uint16", Primitive1(TagUint16)),
+      ("@untag.uint16", Primitive1(UntagUint16)),
       ("@not", Primitive1(Not)),
       ("@box", Primitive1(Box)),
       ("@unbox", Primitive1(Unbox)),
@@ -1563,6 +1571,14 @@ let transl_prim = (env, desc) => {
         | UntagSimpleNumber
         | TagChar
         | UntagChar
+        | TagInt8
+        | UntagInt8
+        | TagInt16
+        | UntagInt16
+        | TagUint8
+        | UntagUint8
+        | TagUint16
+        | UntagUint16
         | Not
         | Box
         | BoxBind

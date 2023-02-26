@@ -11,6 +11,8 @@ type heap_tag_type =
   | LambdaType
   | TupleType
   | BytesType
+  | Int32Type
+  | Float32Type
   | Uint32Type
   | Uint64Type;
 
@@ -24,8 +26,10 @@ let tag_val_of_heap_tag_type =
   | LambdaType => 6
   | TupleType => 7
   | BytesType => 8
-  | Uint32Type => 9
-  | Uint64Type => 10;
+  | Int32Type => 9
+  | Float32Type => 10
+  | Uint32Type => 11
+  | Uint64Type => 12;
 
 let heap_tag_type_of_tag_val =
   fun
@@ -37,41 +41,37 @@ let heap_tag_type_of_tag_val =
   | 6 => LambdaType
   | 7 => TupleType
   | 8 => BytesType
-  | 9 => Uint32Type
-  | 10 => Uint64Type
+  | 9 => Int32Type
+  | 10 => Float32Type
+  | 11 => Uint32Type
+  | 12 => Uint64Type
   | x => failwith(Printf.sprintf("Unknown tag type: %d", x));
 
 [@deriving sexp]
 type boxed_number_tag_type =
-  | BoxedInt32
   | BoxedInt64
   | BoxedRational
-  | BoxedFloat32
   | BoxedFloat64
   | BoxedBigInt;
 
 let tag_val_of_boxed_number_tag_type =
   fun
-  | BoxedFloat32 => 1
-  | BoxedFloat64 => 2
-  | BoxedInt32 => 3
-  | BoxedInt64 => 4
-  | BoxedRational => 5
-  | BoxedBigInt => 6;
+  | BoxedFloat64 => 1
+  | BoxedInt64 => 2
+  | BoxedRational => 3
+  | BoxedBigInt => 4;
 
 let boxed_number_tag_type_of_tag_val =
   fun
-  | 1 => BoxedFloat32
-  | 2 => BoxedFloat64
-  | 3 => BoxedInt32
-  | 4 => BoxedInt64
-  | 5 => BoxedRational
-  | 6 => BoxedBigInt
+  | 1 => BoxedFloat64
+  | 2 => BoxedInt64
+  | 3 => BoxedRational
+  | 4 => BoxedBigInt
   | x => failwith(Printf.sprintf("Unknown boxed num tag type: %d", x));
 
 [@deriving sexp]
 type tag_type =
   | NumberTagType
   | ConstTagType
-  | CharTagType
+  | ShortValTagType
   | GenericHeapType(option(heap_tag_type));

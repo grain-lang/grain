@@ -1298,27 +1298,12 @@ let compile_array_op = (wasm_mod, env, arr_imm, op) => {
                     Op.or_int32,
                     Expression.Binary.make(
                       wasm_mod,
-                      Op.or_int32,
-                      Expression.Binary.make(
+                      Op.eq_int32,
+                      get_swap(1),
+                      Expression.Const.make(
                         wasm_mod,
-                        Op.eq_int32,
-                        get_swap(1),
-                        Expression.Const.make(
-                          wasm_mod,
-                          const_int32(
-                            tag_val_of_boxed_number_tag_type(BoxedInt32),
-                          ),
-                        ),
-                      ),
-                      Expression.Binary.make(
-                        wasm_mod,
-                        Op.eq_int32,
-                        get_swap(1),
-                        Expression.Const.make(
-                          wasm_mod,
-                          const_int32(
-                            tag_val_of_boxed_number_tag_type(BoxedInt64),
-                          ),
+                        const_int32(
+                          tag_val_of_boxed_number_tag_type(BoxedInt64),
                         ),
                       ),
                     ),
@@ -1725,12 +1710,11 @@ let allocate_bytes_uninitialized = (wasm_mod, env, size) => {
   );
 };
 
-let create_char = (wasm_mod, env, char) => {
-  let uchar = List.hd @@ Utf8.decodeUtf8String(char);
-  let uchar_int: int = Utf8__Uchar.toInt(uchar);
-  let grain_char = uchar_int lsl 8 lor 0b010;
-  Expression.Const.make(wasm_mod, const_int32(grain_char));
-};
+type int_type =
+  | Int8Type
+  | Int16Type
+  | Uint8Type
+  | Uint16Type;
 
 let allocate_closure =
     (
@@ -2047,17 +2031,21 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
   );
 };
 
-let allocate_uint_uninitialized = (wasm_mod, env, is_32_bit) => {
+// "Alt" number here is defined as one not belonging to the `Number` type
+let allocate_alt_num_uninitialized = (wasm_mod, env, tag) => {
   let get_swap = () => get_swap(wasm_mod, env, 0);
-  let make_alloc = () =>
-    heap_allocate(wasm_mod, env, if (is_32_bit) {2} else {4});
-
-  let (tag, label) =
-    if (is_32_bit) {
-      (Uint32Type, "allocate_unitialized_uint32");
-    } else {
-      (Uint64Type, "allocate_unitialized_uint64");
+  let (num_words, label) =
+    switch (tag) {
+    | Int32Type => (2, "allocate_unitialized_int32")
+    | Float32Type => (2, "allocate_unitialized_float32")
+    | Uint32Type => (2, "allocate_unitialized_uint32")
+    | Uint64Type => (4, "allocate_unitialized_uint64")
+    | _ =>
+      failwith(
+        "Impossible: allocate_alt_num_uninitialized given non-alt-num tag",
+      )
     };
+  let make_alloc = () => heap_allocate(wasm_mod, env, num_words);
 
   let preamble = [
     store(
@@ -2078,15 +2066,29 @@ let allocate_uint_uninitialized = (wasm_mod, env, is_32_bit) => {
   );
 };
 
-type alloc_uint_type =
+type alloc_alt_num_type =
+  | Int32(Expression.t)
+  | Float32(Expression.t)
   | Uint32(Expression.t)
   | Uint64(Expression.t);
 
-let allocate_uint = (wasm_mod, env, uint_value) => {
+let allocate_alt_num = (wasm_mod, env, num_value) => {
   let get_swap = () => get_swap(wasm_mod, env, 0);
 
   let (tag, instrs, needed_words, label) =
-    switch (uint_value) {
+    switch (num_value) {
+    | Int32(int32) => (
+        Int32Type,
+        [store(~offset=4, ~ty=Type.int32, wasm_mod, get_swap(), int32)],
+        2,
+        "allocate_int32",
+      )
+    | Float32(float32) => (
+        Float32Type,
+        [store(~offset=4, ~ty=Type.float32, wasm_mod, get_swap(), float32)],
+        2,
+        "allocate_float32",
+      )
     | Uint32(uint32) => (
         Uint32Type,
         [store(~offset=4, ~ty=Type.int32, wasm_mod, get_swap(), uint32)],
@@ -2127,18 +2129,8 @@ let allocate_uint = (wasm_mod, env, uint_value) => {
   );
 };
 
-let allocate_uint32 = (wasm_mod, env, i) => {
-  allocate_uint(wasm_mod, env, Uint32(i));
-};
-
-let allocate_uint64 = (wasm_mod, env, i) => {
-  allocate_uint(wasm_mod, env, Uint64(i));
-};
-
 type alloc_number_type =
-  | Int32(Expression.t)
   | Int64(Expression.t)
-  | Float32(Expression.t)
   | Float64(Expression.t)
   | Rational(Expression.t, Expression.t)
   | BigInt(Expression.t, list(Expression.t));
@@ -2151,14 +2143,6 @@ let allocate_number = (wasm_mod, env, number) => {
 
   let (number_tag, swap_slot, instrs, needed_words) =
     switch (number) {
-    | Int32(int32) =>
-      let slot = 0;
-      (
-        BoxedInt32,
-        slot,
-        [store(~offset=8, ~ty=Type.int32, wasm_mod, get_swap(slot), int32)],
-        3,
-      );
     | Int64(int64) =>
       let slot = 0;
       (
@@ -2166,22 +2150,6 @@ let allocate_number = (wasm_mod, env, number) => {
         slot,
         [store(~offset=8, ~ty=Type.int64, wasm_mod, get_swap(slot), int64)],
         4,
-      );
-    | Float32(float32) =>
-      let slot = 0;
-      (
-        BoxedFloat32,
-        slot,
-        [
-          store(
-            ~offset=8,
-            ~ty=Type.float32,
-            wasm_mod,
-            get_swap(slot),
-            float32,
-          ),
-        ],
-        3,
       );
     | Float64(float64) =>
       let slot = 0;
@@ -2344,7 +2312,7 @@ let allocate_number_uninitialized =
 };
 
 let allocate_float32 = (wasm_mod, env, i) => {
-  allocate_number(wasm_mod, env, Float32(i));
+  allocate_alt_num(wasm_mod, env, Float32(i));
 };
 
 let allocate_float64 = (wasm_mod, env, i) => {
@@ -2352,7 +2320,7 @@ let allocate_float64 = (wasm_mod, env, i) => {
 };
 
 let allocate_int32 = (wasm_mod, env, i) => {
-  allocate_number(wasm_mod, env, Int32(i));
+  allocate_alt_num(wasm_mod, env, Int32(i));
 };
 
 let allocate_int64 = (wasm_mod, env, i) => {
@@ -2367,18 +2335,42 @@ let allocate_big_int = (wasm_mod, env, n, d) => {
   allocate_number(wasm_mod, env, BigInt(n, d));
 };
 
+let allocate_uint32 = (wasm_mod, env, i) => {
+  allocate_alt_num(wasm_mod, env, Uint32(i));
+};
+
+let allocate_uint64 = (wasm_mod, env, i) => {
+  allocate_alt_num(wasm_mod, env, Uint64(i));
+};
+
+let tag_short_value = (wasm_mod, compiled_arg, tag) => {
+  Expression.Binary.make(
+    wasm_mod,
+    Op.xor_int32,
+    Expression.Binary.make(
+      wasm_mod,
+      Op.shl_int32,
+      compiled_arg,
+      Expression.Const.make(wasm_mod, const_int32(0x8)),
+    ),
+    Expression.Const.make(wasm_mod, const_int32(tag)),
+  );
+};
+
 let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   switch (p0) {
-  | AllocateInt32 => allocate_number_uninitialized(wasm_mod, env, BoxedInt32)
+  | AllocateInt32 => allocate_alt_num_uninitialized(wasm_mod, env, Int32Type)
   | AllocateInt64 => allocate_number_uninitialized(wasm_mod, env, BoxedInt64)
   | AllocateFloat32 =>
-    allocate_number_uninitialized(wasm_mod, env, BoxedFloat32)
+    allocate_alt_num_uninitialized(wasm_mod, env, Float32Type)
   | AllocateFloat64 =>
     allocate_number_uninitialized(wasm_mod, env, BoxedFloat64)
   | AllocateRational =>
     allocate_number_uninitialized(wasm_mod, env, BoxedRational)
-  | AllocateUint32 => allocate_uint_uninitialized(wasm_mod, env, true)
-  | AllocateUint64 => allocate_uint_uninitialized(wasm_mod, env, false)
+  | AllocateUint32 =>
+    allocate_alt_num_uninitialized(wasm_mod, env, Uint32Type)
+  | AllocateUint64 =>
+    allocate_alt_num_uninitialized(wasm_mod, env, Uint64Type)
   | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
   };
@@ -2399,12 +2391,12 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       env,
       BoxedBigInt,
     )
-  | NewInt32 => allocate_number(wasm_mod, env, Int32(compiled_arg))
+  | NewInt32 => allocate_alt_num(wasm_mod, env, Int32(compiled_arg))
   | NewInt64 => allocate_number(wasm_mod, env, Int64(compiled_arg))
-  | NewFloat32 => allocate_number(wasm_mod, env, Float32(compiled_arg))
+  | NewFloat32 => allocate_alt_num(wasm_mod, env, Float32(compiled_arg))
   | NewFloat64 => allocate_number(wasm_mod, env, Float64(compiled_arg))
-  | NewUint32 => allocate_uint(wasm_mod, env, Uint32(compiled_arg))
-  | NewUint64 => allocate_uint(wasm_mod, env, Uint64(compiled_arg))
+  | NewUint32 => allocate_alt_num(wasm_mod, env, Uint32(compiled_arg))
+  | NewUint64 => allocate_alt_num(wasm_mod, env, Uint64(compiled_arg))
   | LoadAdtVariant => load(~offset=12, wasm_mod, compiled_arg)
   | StringSize
   | BytesSize => load(~offset=4, wasm_mod, compiled_arg)
@@ -2427,19 +2419,16 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
       compiled_arg,
       Expression.Const.make(wasm_mod, const_int32(0x1)),
     )
-  | TagChar =>
-    Expression.Binary.make(
-      wasm_mod,
-      Op.xor_int32,
-      Expression.Binary.make(
-        wasm_mod,
-        Op.shl_int32,
-        compiled_arg,
-        Expression.Const.make(wasm_mod, const_int32(0x8)),
-      ),
-      Expression.Const.make(wasm_mod, const_int32(0b10)),
-    )
-  | UntagChar =>
+  | TagChar => tag_short_value(wasm_mod, compiled_arg, 0b10)
+  | TagInt8 => tag_short_value(wasm_mod, compiled_arg, 0b1010)
+  | TagInt16 => tag_short_value(wasm_mod, compiled_arg, 0b10010)
+  | TagUint8 => tag_short_value(wasm_mod, compiled_arg, 0b11010)
+  | TagUint16 => tag_short_value(wasm_mod, compiled_arg, 0b100010)
+  | UntagChar
+  | UntagInt8
+  | UntagInt16
+  | UntagUint8
+  | UntagUint16 =>
     Expression.Binary.make(
       wasm_mod,
       Op.shr_s_int32,
@@ -2802,7 +2791,6 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
   | MBytes(bytes) => allocate_bytes(wasm_mod, env, bytes)
   | MString(str) => allocate_string(wasm_mod, env, str)
-  | MChar(char) => create_char(wasm_mod, env, char)
   | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
   | MInt32(i) =>
     allocate_int32(

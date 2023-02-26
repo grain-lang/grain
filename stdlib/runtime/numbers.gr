@@ -8,6 +8,18 @@ include "runtime/bigint" as BI
 
 include "runtime/unsafe/constants" as Constants
 from Constants use {
+  _SMIN8_I32,
+  _SMAX8_I32,
+  _SMIN8_I64,
+  _SMAX8_I64,
+  _SMIN16_I32,
+  _SMAX16_I32,
+  _SMIN16_I64,
+  _SMAX16_I64,
+  _UMAX8_I32,
+  _UMAX8_I64,
+  _UMAX16_I32,
+  _UMAX16_I64,
   _SMAX32_I64 as _I32_MAX,
   _SMIN32_I64 as _I32_MIN,
   _SMAX_I64 as _I64_MAX,
@@ -35,6 +47,14 @@ from DataStructures use {
   newInt64,
   newFloat32,
   newFloat64,
+  tagInt8,
+  tagInt16,
+  tagUint8,
+  tagUint16,
+  untagInt8,
+  untagInt16,
+  untagUint8,
+  untagUint16,
 }
 
 @unsafe
@@ -50,7 +70,7 @@ let (==) = WasmI32.eq
 let (!=) = WasmI32.ne
 
 @unsafe
-let tagSimple = x => {
+provide let tagSimple = x => {
   WasmI32.xor(WasmI32.shl(x, 1n), 1n)
 }
 
@@ -85,8 +105,7 @@ provide let isBoxedNumber = x => {
 provide let isFloat = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
-    WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) ||
-      WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
+    WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
   } else {
     false
   }
@@ -96,8 +115,7 @@ provide let isFloat = x => {
 provide let isInteger = x => {
   if (isBoxedNumber(x)) {
     let tag = WasmI32.load(x, 4n)
-    WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG) ||
-      WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG) ||
+    WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG) ||
       WasmI32.eq(tag, Tags._GRAIN_BIGINT_BOXED_NUM_TAG)
   } else {
     true
@@ -117,15 +135,12 @@ provide let isRational = x => {
 @unsafe
 provide let isNaN = x => {
   if (isBoxedNumber(x)) {
-    // Boxed numbers can have multiple subtypes, of which float32 and float64 can be NaN.
+    // Boxed numbers can have multiple subtypes, of which float64 can be NaN.
     let tag = WasmI32.load(x, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       // uses the fact that NaN is the only number not equal to itself
       let wf64 = WasmF64.load(x, 8n)
       WasmF64.ne(wf64, wf64)
-    } else if (WasmI32.eq(tag, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)) {
-      let wf32 = WasmF32.load(x, 8n)
-      WasmF32.ne(wf32, wf32)
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
       // Grain doesn't allow creating a rational with denominator of zero either.
@@ -219,13 +234,11 @@ let gcd32 = (x, y) => {
 
 @unsafe
 provide let reducedInteger = x => {
-  if (WasmI64.gtS(x, _I32_MAX) || WasmI64.ltS(x, _I32_MIN)) {
-    newInt64(x)
-  } else if (
+  if (
     WasmI64.gtS(x, WasmI64.shrS(_I32_MAX, 1N)) ||
     WasmI64.ltS(x, WasmI64.shrS(_I32_MIN, 1N))
   ) {
-    newInt32(WasmI32.wrapI64(x))
+    newInt64(x)
   } else {
     tagSimple(WasmI32.wrapI64(x))
   }
@@ -235,10 +248,8 @@ provide let reducedInteger = x => {
 provide let reducedUnsignedInteger = x => {
   if (WasmI64.gtU(x, _I64_MAX)) {
     BI.makeWrappedUint64(x)
-  } else if (WasmI64.gtU(x, _I32_MAX)) {
-    newInt64(x)
   } else if (WasmI64.gtU(x, WasmI64.shrU(_I32_MAX, 1N))) {
-    newInt32(WasmI32.wrapI64(x))
+    newInt64(x)
   } else {
     tagSimple(WasmI32.wrapI64(x))
   }
@@ -361,18 +372,8 @@ provide let boxedNumberTag = xptr => {
 }
 
 @unsafe
-provide let boxedInt32Number = xptr => {
-  WasmI32.load(xptr, 8n)
-}
-
-@unsafe
 provide let boxedInt64Number = xptr => {
   WasmI64.load(xptr, 8n)
-}
-
-@unsafe
-provide let boxedFloat32Number = xptr => {
-  WasmF32.load(xptr, 8n)
 }
 
 @unsafe
@@ -398,9 +399,6 @@ provide let coerceNumberToWasmF32 = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmF32.convertI32S(boxedInt32Number(x))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         WasmF32.convertI64S(boxedInt64Number(x))
       },
@@ -412,9 +410,6 @@ provide let coerceNumberToWasmF32 = (x: Number) => {
           BI.toFloat32(boxedRationalNumerator(x)),
           BI.toFloat32(boxedRationalDenominator(x))
         )
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        boxedFloat32Number(x)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = boxedFloat64Number(x)
@@ -440,9 +435,6 @@ provide let coerceNumberToWasmF64 = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmF64.convertI32S(boxedInt32Number(x))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         WasmF64.convertI64S(boxedInt64Number(x))
       },
@@ -454,9 +446,6 @@ provide let coerceNumberToWasmF64 = (x: Number) => {
           BI.toFloat64(boxedRationalNumerator(x)),
           BI.toFloat64(boxedRationalDenominator(x))
         )
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        WasmF64.promoteF32(boxedFloat32Number(x))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         boxedFloat64Number(x)
@@ -476,9 +465,6 @@ provide let coerceNumberToWasmI64 = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmI64.extendI32S(boxedInt32Number(x))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         boxedInt64Number(x)
       },
@@ -501,9 +487,6 @@ provide let coerceNumberToWasmI32 = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        boxedInt32Number(x)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let int64 = boxedInt64Number(x)
         if (WasmI64.gtS(int64, _I32_MAX) || WasmI64.ltS(int64, _I32_MIN)) {
@@ -534,13 +517,6 @@ provide let coerceNumberToUnsignedWasmI64 = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let int32 = boxedInt32Number(x)
-        if (WasmI32.ltS(int32, 0n)) {
-          throw Exception.Overflow
-        }
-        WasmI64.extendI32U(int32)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let int64 = boxedInt64Number(x)
         if (WasmI64.ltS(int64, 0N)) {
@@ -571,13 +547,6 @@ provide let coerceNumberToUnsignedWasmI32 = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let int32 = boxedInt32Number(x)
-        if (WasmI32.ltS(int32, 0n)) {
-          throw Exception.Overflow
-        }
-        int32
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let int64 = boxedInt64Number(x)
         if (WasmI64.gtS(int64, _U32_MAX) || WasmI64.ltS(int64, _U32_MIN)) {
@@ -604,9 +573,6 @@ let coerceNumberToBigInt = (x: Number) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        BI.makeWrappedInt32(boxedInt32Number(x))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         BI.makeWrappedInt64(boxedInt64Number(x))
       },
@@ -663,10 +629,6 @@ let numberEqualSimpleHelp = (x, y) => {
     let xval = untagSimple(x) // <- actual int value of x
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedInt32Number(y)
-        WasmI32.eq(xval, yBoxedVal)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         WasmI64.eq(WasmI64.extendI32S(xval), yBoxedVal)
@@ -677,11 +639,6 @@ let numberEqualSimpleHelp = (x, y) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         // NOTE: we always store in most reduced form, so a rational and an int are never equal
         false
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedFloat32Number(y)
-        isSafeIntegerF32(yBoxedVal) &&
-          WasmF32.eq(WasmF32.convertI32S(xval), yBoxedVal)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
@@ -705,10 +662,6 @@ let numberEqualInt64Help = (xBoxedVal, y) => {
     // Boxed number:
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedInt32Number(y)
-        WasmI64.eq(xBoxedVal, WasmI64.extendI32S(yBoxedVal))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         WasmI64.eq(xBoxedVal, yBoxedVal)
@@ -719,11 +672,6 @@ let numberEqualInt64Help = (xBoxedVal, y) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         // NOTE: we always store in most reduced form, so a rational and an int are never equal
         false
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedFloat32Number(y)
-        isSafeIntegerF32(yBoxedVal) &&
-          WasmI64.eq(xBoxedVal, WasmI64.truncF32S(yBoxedVal))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
@@ -738,12 +686,6 @@ let numberEqualInt64Help = (xBoxedVal, y) => {
 }
 
 @unsafe
-let numberEqualInt32Help = (xBoxedVal, y) => {
-  // We can just pretend it's 64-bit for the equality check
-  numberEqualInt64Help(WasmI64.extendI32S(xBoxedVal), y)
-}
-
-@unsafe
 let numberEqualRationalHelp = (xptr, y) => {
   // PRECONDITION: x is rational and x !== y and isNumber(y)
   // Basic number: (we know it's not equal, since we never store ints as rationals)
@@ -755,9 +697,6 @@ let numberEqualRationalHelp = (xptr, y) => {
     // Boxed number:
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        false
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         false
       },
@@ -768,15 +707,6 @@ let numberEqualRationalHelp = (xptr, y) => {
         let yNumerator = boxedRationalNumerator(y)
         let yDenominator = boxedRationalDenominator(y)
         BI.eq(xNumerator, yNumerator) && BI.eq(xDenominator, yDenominator)
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedFloat32Number(y)
-        let xAsFloat = WasmF32.div(
-          BI.toFloat32(xNumerator),
-          BI.toFloat32(xDenominator)
-        )
-        // TODO(#303): maybe we should have some sort of tolerance?
-        WasmF32.eq(xAsFloat, yBoxedVal)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
@@ -804,10 +734,6 @@ let numberEqualFloat64Help = (x, y) => {
     // Boxed number
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedInt32Number(y)
-        isSafeIntegerF64(x) && WasmF64.eq(x, WasmF64.convertI32S(yBoxedVal))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         isSafeIntegerF64(x) && WasmF64.eq(x, WasmF64.convertI64S(yBoxedVal))
@@ -824,11 +750,6 @@ let numberEqualFloat64Help = (x, y) => {
         )
         WasmF64.eq(x, yAsFloat)
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedFloat32Number(y)
-        // TODO(#303): maybe we should have some sort of tolerance?
-        WasmF64.eq(x, WasmF64.promoteF32(yBoxedVal))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
         // TODO(#303): maybe we should have some sort of tolerance?
@@ -842,27 +763,6 @@ let numberEqualFloat64Help = (x, y) => {
 }
 
 @unsafe
-let numberEqualFloat32Help = (x, y) => {
-  let xIsInteger = isIntegerF32(x)
-  // Basic number:
-  if (isSimpleNumber(y)) {
-    xIsInteger && WasmF32.eq(x, WasmF32.convertI32S(untagSimple(y)))
-  } else {
-    // Boxed number
-    let yBoxedNumberTag = boxedNumberTag(y)
-    match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        // Special case: f32/f32 equality (need to handle here without promotion)
-        WasmF32.eq(x, boxedFloat32Number(y))
-      },
-      _ => {
-        numberEqualFloat64Help(WasmF64.promoteF32(x), y)
-      },
-    }
-  }
-}
-
-@unsafe
 let numberEqualBigIntHelp = (x, y) => {
   if (isSimpleNumber(y)) {
     WasmI32.eqz(BI.cmpI64(x, WasmI64.extendI32S(untagSimple(y))))
@@ -870,10 +770,6 @@ let numberEqualBigIntHelp = (x, y) => {
     // Boxed number
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedInt32Number(y)
-        WasmI32.eqz(BI.cmpI64(x, WasmI64.extendI32S(yBoxedVal)))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         WasmI32.eqz(BI.cmpI64(x, yBoxedVal))
@@ -884,10 +780,6 @@ let numberEqualBigIntHelp = (x, y) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         // Rationals are reduced, so it must be unequal
         false
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedFloat32Number(y)
-        WasmI32.eqz(BI.cmpF32(x, yBoxedVal))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
@@ -909,19 +801,12 @@ provide let numberEqual = (x, y) => {
     // Boxed number
     let xBoxedNumberTag = boxedNumberTag(x)
     match (xBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let xBoxedVal = boxedInt32Number(x)
-        numberEqualInt32Help(xBoxedVal, y)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let xBoxedVal = boxedInt64Number(x)
         numberEqualInt64Help(xBoxedVal, y)
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         numberEqualRationalHelp(x, y)
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberEqualFloat32Help(boxedFloat32Number(x), y)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         numberEqualFloat64Help(boxedFloat64Number(x), y)
@@ -957,14 +842,6 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
     let xval = untagSimple(x) // <- actual int value of x
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let xval = WasmI64.extendI32S(xval)
-        let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        let result =
-          if (isSub) WasmI64.sub(xval, yBoxedVal)
-          else WasmI64.add(xval, yBoxedVal)
-        reducedInteger(result)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         let xval64 = WasmI64.extendI32S(xval)
@@ -1011,14 +888,6 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         Memory.decRef(result)
         ret
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = boxedFloat32Number(y)
-        let xval = WasmF32.convertI32S(xval)
-        let result =
-          if (isSub) WasmF32.sub(xval, yBoxedVal)
-          else WasmF32.add(xval, yBoxedVal)
-        newFloat32(result)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedFloat64Number(y)
         let xval = WasmF64.convertI32S(xval)
@@ -1060,13 +929,6 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        let result =
-          if (isSub) WasmI64.sub(xval, yBoxedVal)
-          else WasmI64.add(xval, yBoxedVal)
-        reducedInteger(result)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         let xval64 = xval
@@ -1113,14 +975,6 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         Memory.decRef(result)
         ret
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let xval = WasmF32.convertI64S(xval)
-        let yBoxedVal = boxedFloat32Number(y)
-        let result =
-          if (isSub) WasmF32.sub(xval, yBoxedVal)
-          else WasmF32.add(xval, yBoxedVal)
-        newFloat32(result)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
@@ -1137,37 +991,12 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
 }
 
 @unsafe
-let numberAddSubFloat32Help = (xval, y, isSub) => {
-  if (
-    !isSimpleNumber(y) &&
-    WasmI32.eq(boxedNumberTag(y), Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)
-  ) {
-    // Special case: promote to f64 if RHS is f64
-    let xval = WasmF64.promoteF32(xval)
-    let yval = boxedFloat64Number(y)
-    let result = if (isSub) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
-    newFloat64(result)
-  } else {
-    // incRef y to reuse it via WasmI32.toGrain
-    Memory.incRef(y)
-    let yval = coerceNumberToWasmF32(WasmI32.toGrain(y): Number)
-    let result = if (isSub) WasmF32.sub(xval, yval) else WasmF32.add(xval, yval)
-    newFloat32(result)
-  }
-}
-
-@unsafe
 let numberAddSubFloat64Help = (xval, y, isSub) => {
   // incRef y to reuse it via WasmI32.toGrain
   Memory.incRef(y)
   let yval = coerceNumberToWasmF64(WasmI32.toGrain(y): Number)
   let result = if (isSub) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
   newFloat64(result)
-}
-
-@unsafe
-let numberAddSubInt32Help = (xval, y, isSub) => {
-  numberAddSubInt64Help(WasmI64.extendI32S(xval), y, isSub)
 }
 
 @unsafe
@@ -1185,17 +1014,6 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        let yBig = BI.makeWrappedInt64(yBoxedVal)
-        let res = if (isSub) {
-          BI.sub(x, yBig)
-        } else {
-          BI.add(x, yBig)
-        }
-        Memory.decRef(yBig)
-        reducedBigInteger(res)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         let yBig = BI.makeWrappedInt64(yBoxedVal)
@@ -1226,14 +1044,6 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
         let ret = reducedFractionBigInt(result, yDenominator, false)
         Memory.decRef(result)
         ret
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let xval = BI.toFloat32(x)
-        let yBoxedVal = boxedFloat32Number(y)
-        let result =
-          if (isSub) WasmF32.sub(xval, yBoxedVal)
-          else WasmF32.add(xval, yBoxedVal)
-        newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = BI.toFloat64(x)
@@ -1382,18 +1192,6 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
         // The one case we don't delegate is rational +/- rational
         addSubRational(x, y, isSub, false)
       },
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBig = BI.makeWrappedInt32(boxedInt32Number(y))
-        let expandedYNumerator = BI.mul(yBig, xDenominator)
-        Memory.decRef(yBig)
-        let result =
-          if (isSub) BI.sub(xNumerator, expandedYNumerator)
-          else BI.add(xNumerator, expandedYNumerator)
-        let ret = reducedFractionBigInt(result, xDenominator, false)
-        Memory.decRef(expandedYNumerator)
-        Memory.decRef(result)
-        ret
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBig = BI.makeWrappedInt64(boxedInt64Number(y))
         let expandedYNumerator = BI.mul(yBig, xDenominator)
@@ -1415,16 +1213,6 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
         let ret = reducedFractionBigInt(result, xDenominator, false)
         Memory.decRef(result)
         ret
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let xval = WasmF32.div(
-          BI.toFloat32(xNumerator),
-          BI.toFloat32(xDenominator)
-        )
-        let result =
-          if (isSub) WasmF32.sub(xval, boxedFloat32Number(y))
-          else WasmF32.add(xval, boxedFloat32Number(y))
-        newFloat32(result)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xnumfloat = BI.toFloat64(xNumerator)
@@ -1450,9 +1238,6 @@ let numberAddSubHelp = (x, y, isSub) => {
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        numberAddSubInt32Help(boxedInt32Number(x), y, isSub)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         numberAddSubInt64Help(boxedInt64Number(x), y, isSub)
       },
@@ -1461,9 +1246,6 @@ let numberAddSubHelp = (x, y, isSub) => {
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         numberAddSubRationalHelp(x, y, isSub)
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberAddSubFloat32Help(boxedFloat32Number(x), y, isSub)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         numberAddSubFloat64Help(boxedFloat64Number(x), y, isSub)
@@ -1520,14 +1302,6 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        if (isDivide) {
-          reducedFraction64(xval, yBoxedVal)
-        } else {
-          safeI64Multiply(xval, yBoxedVal)
-        }
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         if (isDivide) {
@@ -1566,15 +1340,6 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
         Memory.decRef(xBig)
         ret
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        let xval = WasmF32.convertI64S(xval)
-        let yBoxedVal = boxedFloat32Number(y)
-        if (isDivide) {
-          newFloat32(WasmF32.div(xval, yBoxedVal))
-        } else {
-          newFloat32(WasmF32.mul(xval, yBoxedVal))
-        }
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
@@ -1605,17 +1370,6 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yBoxedVal = WasmI64.extendI32S(boxedInt32Number(y))
-        let yBig = BI.makeWrappedInt64(yBoxedVal)
-        let ret = if (isDivide) {
-          reducedFractionBigInt(x, yBig, false)
-        } else {
-          reducedBigInteger(BI.mul(x, yBig))
-        }
-        Memory.decRef(yBig)
-        ret
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yBoxedVal = boxedInt64Number(y)
         let yBig = BI.makeWrappedInt64(yBoxedVal)
@@ -1651,17 +1405,6 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
           ret
         }
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        // We make the decision to always promote to f64 here, since
-        // we can only fit rather small bigints (<4 limbs) into an F32
-        let xval = BI.toFloat64(x)
-        let yBoxedVal = WasmF64.promoteF32(boxedFloat32Number(y))
-        if (isDivide) {
-          newFloat64(WasmF64.div(xval, yBoxedVal))
-        } else {
-          newFloat64(WasmF64.mul(xval, yBoxedVal))
-        }
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = BI.toFloat64(x)
         let yBoxedVal = boxedFloat64Number(y)
@@ -1682,11 +1425,6 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
 let numberTimesDivideSimpleHelp = (x, y, isDivide) => {
   // PRECONDITION: x is a "simple" number (value tag is 0) and isNumber(y)
   let xval = untagSimple(x) // <- actual int value of x
-  numberTimesDivideInt64Help(WasmI64.extendI32S(xval), y, isDivide)
-}
-
-@unsafe
-let numberTimesDivideInt32Help = (xval, y, isDivide) => {
   numberTimesDivideInt64Help(WasmI64.extendI32S(xval), y, isDivide)
 }
 
@@ -1718,25 +1456,6 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
   } else {
     let ytag = boxedNumberTag(y)
     match (ytag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        // Same idea as above
-        let yBig = BI.makeWrappedInt32(boxedInt32Number(y))
-        let ret = if (isDivide) {
-          // (a / b) / y == a / (b * y)
-          let denominator = BI.mul(xDenominator, yBig)
-          let ret = reducedFractionBigInt(xNumerator, denominator, false)
-          Memory.decRef(denominator)
-          ret
-        } else {
-          // (a / b) * y == (a * y) / b
-          let numerator = BI.mul(xNumerator, yBig)
-          let ret = reducedFractionBigInt(numerator, xDenominator, false)
-          Memory.decRef(numerator)
-          ret
-        }
-        Memory.decRef(yBig)
-        ret
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         // Same idea as above
         let yBig = BI.makeWrappedInt64(boxedInt64Number(y))
@@ -1774,17 +1493,6 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         timesDivideRational(x, y, isDivide, false)
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        // TODO(#1190): We should probably use something more accurate if possible here
-        let asFloat = WasmF32.demoteF64(
-          WasmF64.div(BI.toFloat64(xNumerator), BI.toFloat64(xDenominator))
-        )
-        if (isDivide) {
-          newFloat32(WasmF32.div(asFloat, boxedFloat32Number(y)))
-        } else {
-          newFloat32(WasmF32.mul(asFloat, boxedFloat32Number(y)))
-        }
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         // TODO(#1190): We should probably use something more accurate if possible here
         let asFloat = WasmF64.div(
@@ -1817,39 +1525,12 @@ let numberTimesDivideFloat64Help = (x, y, isDivide) => {
 }
 
 @unsafe
-let numberTimesDivideFloat32Help = (x, y, isDivide) => {
-  if (
-    isBoxedNumber(y) &&
-    WasmI32.eq(boxedNumberTag(y), Tags._GRAIN_INT64_BOXED_NUM_TAG)
-  ) {
-    // Special case: f32->f64 promotion
-    if (isDivide) {
-      newFloat64(WasmF64.div(WasmF64.promoteF32(x), boxedFloat64Number(y)))
-    } else {
-      newFloat64(WasmF64.mul(WasmF64.promoteF32(x), boxedFloat64Number(y)))
-    }
-  } else {
-    // incRef y to reuse it via WasmI32.toGrain
-    Memory.incRef(y)
-    let yAsFloat = coerceNumberToWasmF32(WasmI32.toGrain(y): Number)
-    if (isDivide) {
-      newFloat32(WasmF32.div(x, yAsFloat))
-    } else {
-      newFloat32(WasmF32.mul(x, yAsFloat))
-    }
-  }
-}
-
-@unsafe
 let numberTimesDivideHelp = (x, y, isDivide) => {
   if (isSimpleNumber(x)) {
     numberTimesDivideSimpleHelp(x, y, isDivide)
   } else {
     let xtag = boxedNumberTag(x)
     match (xtag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        numberTimesDivideInt32Help(boxedInt32Number(x), y, isDivide)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         numberTimesDivideInt64Help(boxedInt64Number(x), y, isDivide)
       },
@@ -1858,9 +1539,6 @@ let numberTimesDivideHelp = (x, y, isDivide) => {
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         numberTimesDivideRationalHelp(x, y, isDivide)
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        numberTimesDivideFloat32Help(boxedFloat32Number(x), y, isDivide)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         numberTimesDivideFloat64Help(boxedFloat64Number(x), y, isDivide)
@@ -1940,9 +1618,6 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        BI.cmpI64(x, WasmI64.extendI32S(boxedInt32Number(y)))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         BI.cmpI64(x, boxedInt64Number(y))
       },
@@ -1954,9 +1629,6 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
         let ret = BI.cmp(tmp, boxedRationalNumerator(y))
         Memory.decRef(tmp)
         ret
-      },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        BI.cmpF32(x, boxedFloat32Number(y))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         BI.cmpF64(x, boxedFloat64Number(y))
@@ -1972,12 +1644,8 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
 // unlike regular float logic, NaN is considered equal to itself and
 // smaller than any other number
 @unsafe
-let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
-  let xf = if (is64) {
-    boxedFloat64Number(x)
-  } else {
-    WasmF64.promoteF32(boxedFloat32Number(x))
-  }
+let cmpFloat = (x: WasmI32, y: WasmI32) => {
+  let xf = boxedFloat64Number(x)
   if (isSimpleNumber(y)) {
     let yf = WasmF64.convertI32S(untagSimple(y))
     // special NaN cases
@@ -2002,9 +1670,6 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
       WasmI32.sub(0n, cmpBigInt(y, x))
     } else {
       let yf = match (yBoxedNumberTag) {
-        t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-          WasmF64.convertI32S(boxedInt32Number(y))
-        },
         t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
           WasmF64.convertI64S(boxedInt64Number(y))
         },
@@ -2016,9 +1681,6 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
             BI.toFloat64(boxedRationalNumerator(y)),
             BI.toFloat64(boxedRationalDenominator(y))
           )
-        },
-        t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-          WasmF64.promoteF32(boxedFloat32Number(y))
         },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
           boxedFloat64Number(y)
@@ -2048,22 +1710,14 @@ let cmpFloat = (x: WasmI32, y: WasmI32, is64: Bool) => {
 }
 
 @unsafe
-let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
-  let xi = if (is64) {
-    boxedInt64Number(x)
-  } else {
-    WasmI64.extendI32S(boxedInt32Number(x))
-  }
+let cmpSmallInt = (x: WasmI32, y: WasmI32) => {
+  let xi = boxedInt64Number(x)
   if (isSimpleNumber(y)) {
     let yi = WasmI64.extendI32S(untagSimple(y))
     if (WasmI64.ltS(xi, yi)) -1n else if (WasmI64.gtS(xi, yi)) 1n else 0n
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        let yi = WasmI64.extendI32S(boxedInt32Number(y))
-        if (WasmI64.ltS(xi, yi)) -1n else if (WasmI64.gtS(xi, yi)) 1n else 0n
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
         let yi = boxedInt64Number(y)
         if (WasmI64.ltS(xi, yi)) -1n else if (WasmI64.gtS(xi, yi)) 1n else 0n
@@ -2083,11 +1737,8 @@ let cmpSmallInt = (x: WasmI32, y: WasmI32, is64: Bool) => {
           )
         ) -1n else 1n
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, false))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, true))
+        WasmI32.sub(0n, cmpFloat(y, x))
       },
       _ => {
         throw UnknownNumberTag
@@ -2108,11 +1759,8 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpSmallInt(y, x, false))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpSmallInt(y, x, true))
+        WasmI32.sub(0n, cmpSmallInt(y, x))
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         WasmI32.sub(0n, cmpBigInt(y, x))
@@ -2120,11 +1768,8 @@ let cmpRational = (x: WasmI32, y: WasmI32) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         cmpRationals(x, y)
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, false))
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        WasmI32.sub(0n, cmpFloat(y, x, true))
+        WasmI32.sub(0n, cmpFloat(y, x))
       },
       _ => {
         throw UnknownNumberTag
@@ -2142,11 +1787,8 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
     } else {
       let yBoxedNumberTag = boxedNumberTag(y)
       match (yBoxedNumberTag) {
-        t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpSmallInt(y, x, false))
-        },
         t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpSmallInt(y, x, true))
+          WasmI32.sub(0n, cmpSmallInt(y, x))
         },
         t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
           WasmI32.sub(0n, cmpBigInt(y, x))
@@ -2154,11 +1796,8 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
         t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
           WasmI32.sub(0n, cmpRational(y, x))
         },
-        t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpFloat(y, x, false))
-        },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-          WasmI32.sub(0n, cmpFloat(y, x, true))
+          WasmI32.sub(0n, cmpFloat(y, x))
         },
         _ => {
           throw UnknownNumberTag
@@ -2168,11 +1807,8 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
   } else {
     let xBoxedNumberTag = boxedNumberTag(x)
     match (xBoxedNumberTag) {
-      t when WasmI32.eq(t, Tags._GRAIN_INT32_BOXED_NUM_TAG) => {
-        cmpSmallInt(x, y, false)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
-        cmpSmallInt(x, y, true)
+        cmpSmallInt(x, y)
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         cmpBigInt(x, y)
@@ -2180,11 +1816,8 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
         cmpRational(x, y)
       },
-      t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-        cmpFloat(x, y, false)
-      },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
-        cmpFloat(x, y, true)
+        cmpFloat(x, y)
       },
       _ => {
         throw UnknownNumberTag
@@ -2508,6 +2141,144 @@ provide let (>>) = (x: Number, y: Number) => {
 // [NOTE]: Coercion is a *conservative* process! For example, even if a float is 1.0,
 //         we will fail if attempting to coerce to an int!
 
+@unsafe
+let coerceNumberToShortUint = (x: Number, max32, max64, is8bit) => {
+  let x = WasmI32.fromGrain(x)
+  let int32 = if (isSimpleNumber(x)) {
+    untagSimple(x)
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.gtS(int64, max64) || WasmI64.ltS(int64, 0N)) {
+          throw Exception.Overflow
+        }
+        WasmI32.wrapI64(int64)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        BI.toInt32(x)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      },
+    }
+  }
+  if (WasmI32.gtS(int32, max32) || WasmI32.ltS(int32, 0n)) {
+    throw Exception.Overflow
+  }
+  if (is8bit) WasmI32.and(int32, 0xffffn) else WasmI32.and(int32, 0xffffn)
+}
+
+@unsafe
+let coerceNumberToShortInt =
+  (
+    x: Number,
+    min32,
+    max32,
+    min64,
+    max64,
+    is8bit,
+  ) => {
+  let x = WasmI32.fromGrain(x)
+  let int32 = if (isSimpleNumber(x)) {
+    untagSimple(x)
+  } else {
+    let xtag = boxedNumberTag(x)
+    match (xtag) {
+      t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        let int64 = boxedInt64Number(x)
+        if (WasmI64.gtS(int64, max64) || WasmI64.ltS(int64, min64)) {
+          throw Exception.Overflow
+        }
+        WasmI32.wrapI64(int64)
+      },
+      t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
+        BI.toInt32(x)
+      },
+      _ => {
+        // rationals are never integral, and we refuse to coerce floats to ints
+        throw Exception.NumberNotIntlike
+      },
+    }
+  }
+  if (WasmI32.gtS(int32, max32) || WasmI32.ltS(int32, min32)) {
+    throw Exception.Overflow
+  }
+  if (is8bit) WasmI32.extendS8(int32) else WasmI32.extendS16(int32)
+}
+
+/**
+ * Converts a Number to an Int8.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as an Int8
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToInt8 = (number: Number) => {
+  let val = coerceNumberToShortInt(
+    number,
+    _SMIN8_I32,
+    _SMAX8_I32,
+    _SMIN8_I64,
+    _SMAX8_I64,
+    true
+  )
+  tagInt8(val)
+}
+
+/**
+ * Converts a Number to an Int16.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as an Int16
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToInt16 = (number: Number) => {
+  let val = coerceNumberToShortInt(
+    number,
+    _SMIN16_I32,
+    _SMAX16_I32,
+    _SMIN16_I64,
+    _SMAX16_I64,
+    false
+  )
+  tagInt16(val)
+}
+
+/**
+ * Converts a Number to a Uint8.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Uint8
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToUint8 = (number: Number) => {
+  let val = coerceNumberToShortUint(number, _UMAX8_I32, _UMAX8_I64, true)
+  tagUint8(val)
+}
+
+/**
+ * Converts a Number to a Uint16.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Uint16
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceNumberToUint16 = (number: Number) => {
+  let val = coerceNumberToShortUint(number, _UMAX16_I32, _UMAX16_I64, false)
+  tagUint16(val)
+}
+
 /**
  * Converts a Number to an Int32.
  *
@@ -2518,20 +2289,7 @@ provide let (>>) = (x: Number, y: Number) => {
  */
 @unsafe
 provide let coerceNumberToInt32 = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let result = if (
-    !isSimpleNumber(x) &&
-    WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_INT32_BOXED_NUM_TAG)
-  ) {
-    // avoid extra malloc and prevent x from being freed
-    Memory.incRef(x)
-    x
-  } else {
-    // incRef x to reuse it via WasmI32.toGrain
-    Memory.incRef(x)
-    // can possibly fail
-    newInt32(coerceNumberToWasmI32(WasmI32.toGrain(x): Number))
-  }
+  let result = newInt32(coerceNumberToWasmI32(x))
   WasmI32.toGrain(result): Int32
 }
 
@@ -2593,11 +2351,6 @@ provide let coerceNumberToRational = (x: Number) => {
       // avoid extra malloc and prevent x from being freed
       Memory.incRef(x)
       x
-    } else if (WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG)) {
-      newRational(
-        BI.makeWrappedInt32(boxedInt32Number(x)),
-        BI.makeWrappedInt32(1n)
-      )
     } else if (WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG)) {
       // incRef x to reuse it via WasmI32.toGrain
       Memory.incRef(x)
@@ -2622,19 +2375,7 @@ provide let coerceNumberToRational = (x: Number) => {
  */
 @unsafe
 provide let coerceNumberToFloat32 = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let result = if (
-    !isSimpleNumber(x) &&
-    WasmI32.eq(boxedNumberTag(x), Tags._GRAIN_FLOAT32_BOXED_NUM_TAG)
-  ) {
-    // avoid extra malloc and prevent x from being freed
-    Memory.incRef(x)
-    x
-  } else {
-    // incRef x to reuse it via WasmI32.toGrain
-    Memory.incRef(x)
-    newFloat32(coerceNumberToWasmF32(WasmI32.toGrain(x): Number))
-  }
+  let result = newFloat32(coerceNumberToWasmF32(x))
   WasmI32.toGrain(result): Float32
 }
 
@@ -2665,6 +2406,62 @@ provide let coerceNumberToFloat64 = (x: Number) => {
 }
 
 /**
+ * Converts an Int8 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Int8 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceInt8ToNumber = (value: Int8) => {
+  let num = untagInt8(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
+ * Converts an Int16 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Int16 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceInt16ToNumber = (value: Int16) => {
+  let num = untagInt16(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
+ * Converts a Uint8 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Uint8 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceUint8ToNumber = (value: Uint8) => {
+  let num = untagUint8(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
+ * Converts a Uint16 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Uint16 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let coerceUint16ToNumber = (value: Uint16) => {
+  let num = untagUint16(value)
+  WasmI32.toGrain(tagSimple(num)): Number
+}
+
+/**
  * Converts an Int32 to a Number.
  *
  * @param value: The value to convert
@@ -2674,9 +2471,9 @@ provide let coerceNumberToFloat64 = (x: Number) => {
  */
 @unsafe
 provide let coerceInt32ToNumber = (x: Int32) => {
-  WasmI32.toGrain(
-    reducedInteger(WasmI64.extendI32S(boxedInt32Number(WasmI32.fromGrain(x))))
-  ): Number
+  let x = WasmI32.load(WasmI32.fromGrain(x), 4n)
+  let result = reducedInteger(WasmI64.extendI32S(x))
+  WasmI32.toGrain(result): Number
 }
 
 /**
@@ -2743,9 +2540,9 @@ provide let coerceRationalToNumber = (x: Rational) => {
  */
 @unsafe
 provide let coerceFloat32ToNumber = (x: Float32) => {
-  WasmI32.toGrain(
-    newFloat64(WasmF64.promoteF32(boxedFloat32Number(WasmI32.fromGrain(x))))
-  ): Number
+  let x = WasmF32.load(WasmI32.fromGrain(x), 4n)
+  let x64 = WasmF64.promoteF32(x)
+  WasmI32.toGrain(newFloat64(x64)): Number
 }
 
 /**
@@ -2778,7 +2575,6 @@ let convertInexactToExactHelp = x => {
   } else {
     let tag = boxedNumberTag(x)
     if (
-      WasmI32.eq(tag, Tags._GRAIN_INT32_BOXED_NUM_TAG) ||
       WasmI32.eq(tag, Tags._GRAIN_INT64_BOXED_NUM_TAG) ||
       WasmI32.eq(tag, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) ||
       WasmI32.eq(tag, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG)
@@ -2787,12 +2583,6 @@ let convertInexactToExactHelp = x => {
       x
     } else {
       match (tag) {
-        t when WasmI32.eq(t, Tags._GRAIN_FLOAT32_BOXED_NUM_TAG) => {
-          // TODO(#1191): Investigate if BigInt is more accurate
-          reducedInteger(
-            WasmI64.truncF32S(WasmF32.nearest(boxedFloat32Number(x)))
-          )
-        },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
           // TODO(#1191): Investigate if BigInt is more accurate
           reducedInteger(

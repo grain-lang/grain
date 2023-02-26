@@ -136,8 +136,7 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)
-      | CString(_)
-      | CChar(_) => Ident.Set.empty
+      | CString(_) => Ident.Set.empty
       | CImmExpr(i) => imm_free_vars(i)
       }
     );

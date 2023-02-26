@@ -34,6 +34,12 @@ let wrap_float64 = n => Literal.float64(n);
 let grain_number_max = 0x3fffffff;
 let grain_number_min = (-0x3fffffff); // 0xC0000001
 
+type int_type =
+  | Int8Type
+  | Int16Type
+  | Uint8Type
+  | Uint16Type;
+
 /** Constant compilation */
 
 let rec compile_const = (c): Literal.t => {
@@ -44,20 +50,48 @@ let rec compile_const = (c): Literal.t => {
   let conv_uint64 = n => Int64.(add(mul(2L, n), 1L));
   let conv_float32 = identity;
   let conv_float64 = identity;
+  let conv_char = char => {
+    let uchar = List.hd @@ Utf8.decodeUtf8String(char);
+    let uchar_int: int = Utf8__Uchar.toInt(uchar);
+    Int32.of_int(uchar_int lsl 8 lor 0b010);
+  };
+  let conv_short_int = (int, int_type) => {
+    let tag =
+      switch (int_type) {
+      | Int8Type => 1l
+      | Int16Type => 2l
+      | Uint8Type => 3l
+      | Uint16Type => 4l
+      };
+    let (<<) = Int32.shift_left;
+    let (||) = Int32.logor;
+    let shifted_tag = tag << 3;
+    int << 8 || shifted_tag || 0b010l;
+  };
   switch (c) {
   | MConstLiteral(MConstLiteral(_) as c) => compile_const(c)
+  | MConstI8(n) => Literal.int32(conv_short_int(n, Int8Type))
+  | MConstI16(n) => Literal.int32(conv_short_int(n, Int16Type))
   | MConstI32(n) => Literal.int32(conv_int32(n))
   | MConstI64(n) => Literal.int64(conv_int64(n))
+  | MConstU8(n) => Literal.int32(conv_short_int(n, Uint8Type))
+  | MConstU16(n) => Literal.int32(conv_short_int(n, Uint16Type))
   | MConstU32(n) => Literal.int32(conv_uint32(n))
   | MConstU64(n) => Literal.int64(conv_uint64(n))
   | MConstF32(n) => Literal.float32(conv_float32(n))
   | MConstF64(n) => Literal.float64(conv_float64(n))
+  | MConstChar(c) => Literal.int32(conv_char(c))
+  | MConstLiteral(MConstI8(n))
+  | MConstLiteral(MConstI16(n))
   | MConstLiteral(MConstI32(n)) => Literal.int32(n)
   | MConstLiteral(MConstI64(n)) => Literal.int64(n)
+  | MConstLiteral(MConstU8(n))
+  | MConstLiteral(MConstU16(n))
   | MConstLiteral(MConstU32(n)) => Literal.int32(n)
   | MConstLiteral(MConstU64(n)) => Literal.int64(n)
   | MConstLiteral(MConstF32(n)) => Literal.float32(n)
   | MConstLiteral(MConstF64(n)) => Literal.float64(n)
+  | MConstLiteral(MConstChar(c)) => Literal.int32(conv_char(c))
   };
 };
 

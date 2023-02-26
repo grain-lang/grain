@@ -44,7 +44,7 @@ basic functionality › uint32_1
           (i32.const 8)
          )
         )
-        (i32.const 9)
+        (i32.const 11)
        )
        (i32.store offset=4
         (local.get $0)

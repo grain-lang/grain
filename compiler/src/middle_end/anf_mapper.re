@@ -254,7 +254,6 @@ module MakeMap = (Iter: MapArgument) => {
       push_input(AnfNode(expr));
     | CBytes(b) => leave_with(CBytes(b))
     | CString(s) => leave_with(CString(s))
-    | CChar(c) => leave_with(CChar(c))
     | CNumber(i) => leave_with(CNumber(i))
     | CInt32(i) => leave_with(CInt32(i))
     | CInt64(i) => leave_with(CInt64(i))

@@ -526,11 +526,14 @@ let compile_const = (c: Asttypes.constant) =>
     failwith("compile_const: Const_number float/rational post-ANF")
   | Const_bytes(_) => failwith("compile_const: Const_bytes post-ANF")
   | Const_string(_) => failwith("compile_const: Const_string post-ANF")
-  | Const_char(_) => failwith("compile_const: Const_char post-ANF")
   | Const_bigint(_) => failwith("compile_const: Const_bigint post-ANF")
   | Const_rational(_) => failwith("compile_const: Const_rational post-ANF")
+  | Const_int8(i8) => MConstI8(i8)
+  | Const_int16(i16) => MConstI16(i16)
   | Const_int32(i32) => MConstI32(i32)
   | Const_int64(i64) => MConstI64(i64)
+  | Const_uint8(u8) => MConstU8(u8)
+  | Const_uint16(u16) => MConstU16(u16)
   | Const_uint32(u32) => MConstU32(u32)
   | Const_uint64(u64) => MConstU64(u64)
   | Const_float32(f) => MConstF32(f)
@@ -539,6 +542,7 @@ let compile_const = (c: Asttypes.constant) =>
   | Const_wasmi64(i64) => MConstLiteral(MConstI64(i64))
   | Const_wasmf32(f32) => MConstLiteral(MConstF32(f32))
   | Const_wasmf64(f64) => MConstLiteral(MConstF64(f64))
+  | Const_char(c) => MConstChar(c)
   | Const_bool(b) when b == true => const_true
   | Const_bool(_) => const_false
   | Const_void => const_void
@@ -863,15 +867,9 @@ let rec compile_comp = (~id=?, env, c) => {
       )
     | CBytes(b) => MAllocate(MBytes(b))
     | CString(s) => MAllocate(MString(s))
-    | CChar(c) => MAllocate(MChar(c))
     | CNumber(Const_number_int(n))
         when n <= Literals.simple_number_max && n >= Literals.simple_number_min =>
       MImmediate(MImmConst(MConstI32(Int64.to_int32(n))))
-    | CNumber(Const_number_int(n))
-        when
-          n <= Int64.of_int32(Int32.max_int)
-          && n >= Int64.of_int32(Int32.min_int) =>
-      MAllocate(MInt32(Int64.to_int32(n)))
     | CNumber(Const_number_int(n)) => MAllocate(MInt64(n))
     | CNumber(Const_number_float(f)) => MAllocate(MFloat64(f))
     | CNumber(

@@ -204,7 +204,7 @@ provide let gcd = (num1: BigInt, num2: BigInt) => {
 @unsafe
 provide let shl = (num: BigInt, places: Int32) => {
   let num = WasmI32.fromGrain(num)
-  let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
+  let places = WasmI32.load(WasmI32.fromGrain(places), 4n)
   WasmI32.toGrain(BI.shl(num, places)): BigInt
 }
 
@@ -220,7 +220,7 @@ provide let shl = (num: BigInt, places: Int32) => {
 @unsafe
 provide let shr = (num: BigInt, places: Int32) => {
   let num = WasmI32.fromGrain(num)
-  let places = WasmI32.load(WasmI32.fromGrain(places), 8n)
+  let places = WasmI32.load(WasmI32.fromGrain(places), 4n)
   WasmI32.toGrain(BI.shrS(num, places)): BigInt
 }
 

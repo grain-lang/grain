@@ -15,6 +15,7 @@ from WasmI32 use {
   shl as (<<),
 }
 include "runtime/unsafe/wasmi64" as WasmI64
+include "runtime/unsafe/wasmf32" as WasmF32
 include "runtime/unsafe/tags" as Tags
 include "runtime/numbers" as Numbers
 from Numbers use { isNumber, numberEqual }
@@ -187,11 +188,14 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
-    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+    t when (
+      t == Tags._GRAIN_UINT32_HEAP_TAG || t == Tags._GRAIN_INT32_HEAP_TAG
+    ) => {
       let xval = WasmI32.load(xptr, 4n)
       let yval = WasmI32.load(yptr, 4n)
       WasmI32.eq(xval, yval)
     },
+    // Float32 is handled by equalHelp directly
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
       let xval = WasmI64.load(xptr, 8n)
       let yval = WasmI64.load(yptr, 8n)
@@ -213,6 +217,11 @@ equalHelp = (x, y) => {
   } else if (isNumber(x)) {
     // Numbers have special equality rules, e.g. NaN != NaN
     numberEqual(x, y)
+  } else if (WasmI32.load(x, 0n) == Tags._GRAIN_FLOAT32_HEAP_TAG) {
+    // Short circuit for Float32 to correctly handle NaN != NaN
+    let xval = WasmF32.load(x, 4n)
+    let yval = WasmF32.load(y, 4n)
+    WasmF32.eq(xval, yval)
   } else {
     // Handle all other heap allocated things
     // Can short circuit if pointers are the same

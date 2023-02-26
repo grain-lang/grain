@@ -15,7 +15,7 @@ provide let toInt32 = n => {
 @unsafe
 provide let fromInt32 = (n: Int32) => {
   let ptr = WasmI32.fromGrain(n)
-  WasmI32.load(ptr, 8n)
+  WasmI32.load(ptr, 4n)
 }
 
 @unsafe
@@ -37,7 +37,7 @@ provide let toFloat32 = n => {
 @unsafe
 provide let fromFloat32 = (n: Float32) => {
   let ptr = WasmI32.fromGrain(n)
-  WasmF32.load(ptr, 8n)
+  WasmF32.load(ptr, 4n)
 }
 
 @unsafe
@@ -84,7 +84,7 @@ provide let wasmI32ToNumber = (n: WasmI32) => {
   }
 
   // If it did overflow, then the value differs and we need to discard it and
-  // allocate the number on the heap. A boxed 32 bit number actually is the
-  // same thing as an Int32. It only needs to be cast into Number.
-  return WasmI32.toGrain(newInt32(n)): Number
+  // allocate the number on the heap. We can do this by extending the 32 bit
+  // number to an Int64.
+  return WasmI32.toGrain(newInt64(WasmI64.extendI32S(n))): Number
 }
