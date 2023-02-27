@@ -644,7 +644,7 @@ type_id_str:
   | UIDENT { Location.mkloc $1 (to_loc $loc) }
 
 foreign_stmt:
-  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] () }
+  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 () }
 
 prim:
   | primitive_ { Location.mkloc $1 (to_loc $loc) }

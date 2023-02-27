@@ -311,7 +311,6 @@ module ValueDescription: {
       ~name: str,
       ~alias: option(str),
       ~typ: parsed_type,
-      ~prim: list(string),
       unit
     ) =>
     value_description;

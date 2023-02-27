@@ -513,7 +513,6 @@ type value_description = {
   tvd_name: loc(string),
   tvd_desc: core_type,
   tvd_val: Types.value_description,
-  tvd_prim: list(string),
   [@sexp_drop_if sexp_locs_disabled]
   tvd_loc: Location.t,
 };
