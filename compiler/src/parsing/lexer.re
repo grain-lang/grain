@@ -16,7 +16,8 @@ type error =
   | UnclosedDocComment(int)
   | IllegalUnicodeCodePoint(string)
   | IllegalByteStringUnicodeChar(string)
-  | IllegalByteStringUnicodeEscape(string);
+  | IllegalByteStringUnicodeEscape(string)
+  | FloatWithoutLeadingZero(string);
 
 exception Error(Location.t, error);
 
@@ -45,6 +46,12 @@ let report_error = (ppf, err) =>
       ppf,
       "Byte strings may not contain unicode escapes: %S",
       cp,
+    )
+  | FloatWithoutLeadingZero(f) =>
+    Format.fprintf(
+      ppf,
+      "Floats must contain a leading zero. Use 0%s instead.",
+      f,
     )
   };
 
@@ -134,6 +141,9 @@ let dec_float = [%sedlex.regexp?
 ];
 
 let unsigned_float = [%sedlex.regexp? dec_float];
+let invalid_float = [%sedlex.regexp?
+  (dec_float_decimal, Opt(dec_float_exp))
+];
 
 let uident = [%sedlex.regexp?
   (Intersect(xid_start, lu), Star(xid_continue))
@@ -242,6 +252,13 @@ let rec token = lexbuf => {
   | (unsigned_float, 'd') => positioned(FLOAT64(sub_lexeme(lexbuf, 0, -1)))
   | unsigned_float =>
     positioned(NUMBER_FLOAT(Sedlexing.Utf8.lexeme(lexbuf)))
+  | (invalid_float, Opt('f' | 'd')) =>
+    raise(
+      Error(
+        lexbuf_loc(lexbuf),
+        FloatWithoutLeadingZero(Sedlexing.Utf8.lexeme(lexbuf)),
+      ),
+    )
   | (unsigned_int, 's') => positioned(INT8(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_int, 'S') => positioned(INT16(sub_lexeme(lexbuf, 0, -1)))
   | (unsigned_int, 'l') => positioned(INT32(sub_lexeme(lexbuf, 0, -1)))
