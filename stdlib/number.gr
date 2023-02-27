@@ -346,7 +346,7 @@ provide let isFinite = (x: Number) => {
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
       let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.eq(WasmF64.sub(wf64, wf64), 0.W)
+      WasmF64.eq(WasmF64.sub(wf64, wf64), 0.0W)
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
       // Grain doesn't allow creating a rational with denominator of zero either.
@@ -390,7 +390,7 @@ provide let isInfinite = (x: Number) => {
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.ne(WasmF64.sub(wf64, wf64), 0.W) && WasmF64.eq(wf64, wf64)
+      WasmF64.ne(WasmF64.sub(wf64, wf64), 0.0W) && WasmF64.eq(wf64, wf64)
     } else {
       false
     }

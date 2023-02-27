@@ -544,7 +544,7 @@ provide let toFloat64 = (num: WasmI32) => {
     let factor = WasmF64.reinterpretI64(
       0b0100001111110000000000000000000000000000000000000000000000000000N
     )
-    let mut result = 0.W
+    let mut result = 0.0W
     for (let mut i = 0n; WasmI32.ltU(i, numLimbs); i = WasmI32.add(i, 1n)) {
       if (!WasmI32.eqz(i)) {
         result *= factor
