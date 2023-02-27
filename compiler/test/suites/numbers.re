@@ -1,5 +1,6 @@
 open Grain_tests.TestFramework;
 open Grain_tests.Runner;
+open Grain_utils;
 
 describe("numbers", ({test, testSkip}) => {
   let test_or_skip =
@@ -160,4 +161,36 @@ describe("numbers", ({test, testSkip}) => {
     "-99999us",
     "Uint8 literal -99999us contains a sign but should be unsigned.",
   );
+
+  // well-formedness warnings
+  test("float32_fromNumber_warn1", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF32("5"))).toMatch(
+      "5.f",
+    )
+  });
+  test("float32_fromNumber_warn2", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF32("5."))).toMatch(
+      "5.f",
+    )
+  });
+  test("float32_fromNumber_warn3", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF32("5.5"))).toMatch(
+      "5.5f",
+    )
+  });
+  test("float64_fromNumber_warn1", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF64("5"))).toMatch(
+      "5.d",
+    )
+  });
+  test("float64_fromNumber_warn2", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF64("5."))).toMatch(
+      "5.d",
+    )
+  });
+  test("float64_fromNumber_warn3", ({expect}) => {
+    expect.string(Warnings.message(FromNumberLiteralF64("5.5"))).toMatch(
+      "5.5d",
+    )
+  });
 });
