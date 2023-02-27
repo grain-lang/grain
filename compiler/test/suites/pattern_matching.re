@@ -226,11 +226,11 @@ describe("pattern matching", ({test, testSkip}) => {
   );
   assertSnapshot(
     "low_level_constant_match_3",
-    "@unsafe let _ = print(match (1.w) { 0.w => false, 1.w => true, 2.w => false, _ => false} )",
+    "@unsafe let _ = print(match (1.0w) { 0.0w => false, 1.0w => true, 2.0w => false, _ => false} )",
   );
   assertSnapshot(
     "low_level_constant_match_4",
-    "@unsafe let _ = print(match (1.W) { 0.W => false, 1.W => true, 2.W => false, _ => false} )",
+    "@unsafe let _ = print(match (1.0W) { 0.0W => false, 1.0W => true, 2.0W => false, _ => false} )",
   );
   // Or patterns
   assertSnapshot("or_match_1", "match (true) { true | false => 3 }");

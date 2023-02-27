@@ -5,7 +5,7 @@ from Float32 use *
 
 // Constants Test
 // smoke test:
-assert gt(infinity, 100000000.f)
+assert gt(infinity, 100000000.0f)
 // test infinity-specific semantics:
 assert toNumber(infinity) == toNumber(infinity)
 assert toNumber(infinity) == toNumber(infinity) - 1

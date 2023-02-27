@@ -34,8 +34,10 @@ describe("numbers", ({test, testSkip}) => {
   assertCompileError("numbers14", "9 / 0", "denominator of zero");
   // basic syntax tests
   assertRun("number_syntax1", "print(1.2)", "1.2\n");
-  assertRun("number_syntax2", "print(1.)", "1.0\n");
-  assertRun("number_syntax3", "print(.2)", "0.2\n");
+  assertRun("number_syntax2", "print(1.0)", "1.0\n");
+  assertCompileError("number_syntax2_parse_err", "print(1.)", "Syntax error");
+  assertRun("number_syntax3", "print(0.2)", "0.2\n");
+  assertCompileError("number_syntax3_parse_err", "print(.2)", "Syntax error");
   assertCompileError("number_syntax4", ".", "Syntax error");
   assertRun("number_syntax5", "print(1.2d)", "1.2\n");
   assertRun("number_syntax6", "print(1.2f)", "1.2000000476837159\n");

@@ -5,7 +5,7 @@ from Float64 use *
 
 // Constants Tests
 // smoke test:
-assert gt(infinity, 100000000.d)
+assert gt(infinity, 100000000.0d)
 // test infinity-specific semantics:
 assert toNumber(infinity) == toNumber(infinity) - 1
 assert nan != nan
