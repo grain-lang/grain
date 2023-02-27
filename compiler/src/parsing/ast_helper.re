@@ -461,14 +461,13 @@ module PrimitiveDescription = {
 };
 
 module ValueDescription = {
-  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim, ()) => {
+  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ()) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {
       pval_mod: mod_,
       pval_name: name,
       pval_name_alias: alias,
       pval_type: typ,
-      pval_prim: prim,
       pval_loc: loc,
     };
   };

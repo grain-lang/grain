@@ -559,7 +559,6 @@ type value_description = {
   pval_name: loc(string),
   pval_name_alias: option(loc(string)),
   pval_type: parsed_type,
-  pval_prim: list(string),
   [@sexp_drop_if sexp_locs_disabled]
   pval_loc: Location.t,
 };

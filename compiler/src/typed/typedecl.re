@@ -928,7 +928,6 @@ let transl_value_decl = (env, loc, valdecl) => {
     tvd_name: valdecl.pval_name,
     tvd_desc: cty,
     tvd_val: v,
-    tvd_prim: valdecl.pval_prim,
     tvd_loc: valdecl.pval_loc,
   };
 
