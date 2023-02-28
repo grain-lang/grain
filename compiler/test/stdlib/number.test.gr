@@ -313,7 +313,7 @@ assert Number.neg(Infinity) == -Infinity
 // isFloat
 assert Number.isFloat(0.0)
 assert Number.isFloat(1.5)
-assert Number.isFloat(42.)
+assert Number.isFloat(42.0)
 assert Number.isFloat(9e6)
 assert Number.isFloat(0) == false
 assert Number.isFloat(10) == false
@@ -396,8 +396,8 @@ assert Number.isInfinite(BI.toNumber(-1t)) == false
 // parseFloat
 // tests taken from Go's /src/strconv/atof_test.go
 assert Number.parseFloat("") == Err("Invalid string")
-assert Number.parseFloat("1") == Ok(1.)
-assert Number.parseFloat("+1") == Ok(1.)
+assert Number.parseFloat("1") == Ok(1.0)
+assert Number.parseFloat("+1") == Ok(1.0)
 assert Number.parseFloat("1x") == Err("Invalid float")
 assert Number.parseFloat("1.1.") == Err("Invalid float")
 assert Number.parseFloat("1e23") == Ok(1e+23)
@@ -414,30 +414,30 @@ assert Number.parseFloat("100000000000000016777215") ==
   Ok(1.0000000000000001e+23)
 assert Number.parseFloat("100000000000000016777216") ==
   Ok(1.0000000000000003e+23)
-assert Number.parseFloat("-1") == Ok(-1.)
+assert Number.parseFloat("-1") == Ok(-1.0)
 assert Number.parseFloat("-0.1") == Ok(-0.1)
 assert Number.parseFloat("-0") == Ok(-0.0)
 assert Number.parseFloat("1e-20") == Ok(1e-20)
 assert Number.parseFloat("625e-3") == Ok(0.625)
 // zeros
-assert Number.parseFloat("0") == Ok(0.)
-assert Number.parseFloat("0e0") == Ok(0.)
-assert Number.parseFloat("-0e0") == Ok(-0.)
-assert Number.parseFloat("+0e0") == Ok(0.)
-assert Number.parseFloat("0e-0") == Ok(0.)
-assert Number.parseFloat("-0e-0") == Ok(-0.)
-assert Number.parseFloat("+0e-0") == Ok(0.)
-assert Number.parseFloat("0e+0") == Ok(0.)
-assert Number.parseFloat("-0e+0") == Ok(-0.)
-assert Number.parseFloat("+0e+0") == Ok(0.)
-assert Number.parseFloat("0e+01234567890123456789") == Ok(0.)
-assert Number.parseFloat("0.00e-01234567890123456789") == Ok(0.)
-assert Number.parseFloat("-0e+01234567890123456789") == Ok(-0.)
-assert Number.parseFloat("-0.00e-01234567890123456789") == Ok(-0.)
-assert Number.parseFloat("0e291") == Ok(0.)
-assert Number.parseFloat("0e292") == Ok(0.)
-assert Number.parseFloat("0e347") == Ok(0.)
-assert Number.parseFloat("0e348") == Ok(0.)
+assert Number.parseFloat("0") == Ok(0.0)
+assert Number.parseFloat("0e0") == Ok(0.0)
+assert Number.parseFloat("-0e0") == Ok(-0.0)
+assert Number.parseFloat("+0e0") == Ok(0.0)
+assert Number.parseFloat("0e-0") == Ok(0.0)
+assert Number.parseFloat("-0e-0") == Ok(-0.0)
+assert Number.parseFloat("+0e-0") == Ok(0.0)
+assert Number.parseFloat("0e+0") == Ok(0.0)
+assert Number.parseFloat("-0e+0") == Ok(-0.0)
+assert Number.parseFloat("+0e+0") == Ok(0.0)
+assert Number.parseFloat("0e+01234567890123456789") == Ok(0.0)
+assert Number.parseFloat("0.00e-01234567890123456789") == Ok(0.0)
+assert Number.parseFloat("-0e+01234567890123456789") == Ok(-0.0)
+assert Number.parseFloat("-0.00e-01234567890123456789") == Ok(-0.0)
+assert Number.parseFloat("0e291") == Ok(0.0)
+assert Number.parseFloat("0e292") == Ok(0.0)
+assert Number.parseFloat("0e347") == Ok(0.0)
+assert Number.parseFloat("0e348") == Ok(0.0)
 // NaNs
 assert Number.isNaN(
   Result.expect("float should parse", Number.parseFloat("nan"))
@@ -496,14 +496,14 @@ assert Number.parseFloat("5e-324") == Ok(5e-324)
 assert Number.parseFloat("4e-324") == Ok(5e-324)
 assert Number.parseFloat("3e-324") == Ok(5e-324)
 // too small
-assert Number.parseFloat("2e-324") == Ok(0.)
+assert Number.parseFloat("2e-324") == Ok(0.0)
 // way too small
-assert Number.parseFloat("1e-350") == Ok(0.)
-assert Number.parseFloat("1e-400000") == Ok(0.)
+assert Number.parseFloat("1e-350") == Ok(0.0)
+assert Number.parseFloat("1e-400000") == Ok(0.0)
 // try to overflow exponent
-assert Number.parseFloat("1e-4294967296") == Ok(0.)
+assert Number.parseFloat("1e-4294967296") == Ok(0.0)
 assert Number.parseFloat("1e+4294967296") == Ok(Infinity)
-assert Number.parseFloat("1e-18446744073709551616") == Ok(0.)
+assert Number.parseFloat("1e-18446744073709551616") == Ok(0.0)
 assert Number.parseFloat("1e+18446744073709551616") == Ok(Infinity)
 // Parse errors
 assert Number.parseFloat("1e") == Err("Invalid exponent")
@@ -526,12 +526,12 @@ assert Number.parseFloat(
 assert Number.parseFloat(
   "1.00000000000000011102230246251565404236316680908203125"
 ) ==
-  Ok(1.)
+  Ok(1.0)
 // Slightly lower; still round down.
 assert Number.parseFloat(
   "1.00000000000000011102230246251565404236316680908203124"
 ) ==
-  Ok(1.)
+  Ok(1.0)
 // Slightly higher; round up.
 assert Number.parseFloat(
   "1.00000000000000011102230246251565404236316680908203126"
@@ -555,12 +555,12 @@ assert Number.parseFloat("1090544144181609348671888949248") ==
 assert Number.parseFloat("1090544144181609348835077142190") ==
   Ok(1.0905441441816094e+30)
 // underscores
-assert Number.parseFloat("1__") == Ok(1.)
+assert Number.parseFloat("1__") == Ok(1.0)
 assert Number.parseFloat("1_e2_3_") == Ok(1e+23)
 assert Number.parseFloat("100_000_000_000_000_000_000_000") == Ok(1e+23)
 assert Number.parseFloat("1_2345_6700") == Ok(1.234567e+08)
 assert Number.parseFloat("625e-3__") == Ok(0.625)
-assert Number.parseFloat("0_0e+0_12__3___4____567890123456789") == Ok(0.)
+assert Number.parseFloat("0_0e+0_12__3___4____567890123456789") == Ok(0.0)
 assert Number.parseFloat("1_e400_000") == Ok(Infinity)
 assert Number.parseFloat("-1_e400_000") == Ok(-Infinity)
 assert Number.parseFloat(

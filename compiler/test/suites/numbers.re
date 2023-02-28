@@ -34,11 +34,37 @@ describe("numbers", ({test, testSkip}) => {
   assertCompileError("numbers14", "9 / 0", "denominator of zero");
   // basic syntax tests
   assertRun("number_syntax1", "print(1.2)", "1.2\n");
-  assertRun("number_syntax2", "print(1.)", "1.0\n");
-  assertRun("number_syntax3", "print(.2)", "0.2\n");
+  assertRun("number_syntax2", "print(1.0)", "1.0\n");
+  assertCompileError("number_syntax2_parse_err", "print(1.)", "Syntax error");
+  assertRun("number_syntax3", "print(0.2)", "0.2\n");
+  assertCompileError(
+    "number_syntax3_parse_err",
+    "print(.2)",
+    "Floats must contain a leading zero. Use 0.2 instead.",
+  );
   assertCompileError("number_syntax4", ".", "Syntax error");
   assertRun("number_syntax5", "print(1.2d)", "1.2\n");
+  assertCompileError(
+    "number_syntax5_parse_err_trailing",
+    "print(1.d)",
+    "Unbound record label d",
+  );
+  assertCompileError(
+    "number_syntax5_parse_err_leading",
+    "print(.1d)",
+    "Floats must contain a leading zero. Use 0.1d instead.",
+  );
   assertRun("number_syntax6", "print(1.2f)", "1.2000000476837159\n");
+  assertCompileError(
+    "number_syntax6_parse_err_trailing",
+    "print(1.f)",
+    "Unbound record label f",
+  );
+  assertCompileError(
+    "number_syntax6_parse_err_leading",
+    "print(.1f)",
+    "Floats must contain a leading zero. Use 0.1f instead.",
+  );
   assertRun("number_syntax7", "print(1e2)", "100.0\n");
   assertRun("number_syntax8", "print(1.2e2)", "120.0\n");
   assertRun("number_syntax9", "print(1l)", "1\n");

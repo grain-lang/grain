@@ -5,6 +5,6 @@ provide let _I32_VAL = 42n
 @unsafe
 provide let _I64_VAL = 42N
 @unsafe
-provide let _F32_VAL = 42.w
+provide let _F32_VAL = 42.0w
 @unsafe
-provide let _F64_VAL = 42.W
+provide let _F64_VAL = 42.0W

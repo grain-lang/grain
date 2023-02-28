@@ -62,9 +62,9 @@ let _F32_MAX = 3.40282347e+38W
 @unsafe
 let _F32_MIN = 1.401298464324817e-45W
 @unsafe
-let _F32_MAX_SAFE_INTEGER = 16777215.w
+let _F32_MAX_SAFE_INTEGER = 16777215.0w
 @unsafe
-let _F64_MAX_SAFE_INTEGER = 9007199254740991.W
+let _F64_MAX_SAFE_INTEGER = 9007199254740991.0W
 
 let (==) = WasmI32.eq
 let (!=) = WasmI32.ne
@@ -1139,10 +1139,10 @@ provide let cmpRationals = (x, y) => {
 
 /**
  * Finds the numerator of the rational number.
- * 
+ *
  * @param x: The rational number to inspect
  * @returns The numerator of the rational number
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -1155,10 +1155,10 @@ provide let rationalNumerator = (x: Rational) => {
 
 /**
  * Finds the denominator of the rational number.
- * 
+ *
  * @param x: The rational number to inspect
  * @returns The denominator of the rational number
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -2337,7 +2337,7 @@ provide let coerceNumberToBigInt = (x: Number) => {
  *
  * @param number: The value to convert
  * @returns The Number represented as a Rational
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -2513,7 +2513,7 @@ provide let coerceBigIntToNumber = (x: BigInt) => {
  *
  * @param rational: The value to convert
  * @returns The Rational represented as a Number
- * 
+ *
  * @since v0.6.0
  */
 @unsafe

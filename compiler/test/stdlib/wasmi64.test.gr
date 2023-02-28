@@ -60,7 +60,7 @@ let test = () => {
   assert WasmI64.eq(WasmI64.truncF32U(9.223372e+18w), 0x8000000000000000N)
   assert WasmI64.eq(WasmI64.truncF64S(42.17W), 42N)
   assert WasmI64.eq(WasmI64.truncF64U(9.233372e+18W), 0x802386E9DB09C000N)
-  assert WasmI64.eq(WasmI64.reinterpretF64(42.W), 0x4045000000000000N)
+  assert WasmI64.eq(WasmI64.reinterpretF64(42.0W), 0x4045000000000000N)
   assert WasmI64.eq(WasmI64.extendS8(0x00N), 0x00N)
   assert WasmI64.eq(WasmI64.extendS8(0x80N), 0xffffffffffffff80N)
   assert WasmI64.eq(WasmI64.extendS16(0x0000N), 0x0000N)

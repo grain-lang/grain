@@ -1415,7 +1415,7 @@ let prettify = (buffer, length, k) => {
 @unsafe
 let dtoa_core = (buffer, value) => {
   let mut value = value
-  let hasSign = WasmF64.lt(value, 0.W)
+  let hasSign = WasmF64.lt(value, 0.0W)
   if (hasSign) {
     value = WasmF64.neg(value)
     WasmI32.store8(buffer, _CHAR_CODE_MINUS, 0n)
@@ -1439,7 +1439,7 @@ let get_dtoa_buf = () => {
 
 @unsafe
 let isFinite = value => {
-  WasmF64.eq(WasmF64.sub(value, value), 0.W)
+  WasmF64.eq(WasmF64.sub(value, value), 0.0W)
 }
 
 @unsafe
@@ -1449,7 +1449,7 @@ let isNaN = value => {
 
 @unsafe
 provide let dtoa = value => {
-  let str = if (WasmF64.eq(value, 0.W)) {
+  let str = if (WasmF64.eq(value, 0.0W)) {
     let ret = allocateString(3n)
     WasmI32.store8(ret, _CHAR_CODE_0, 8n)
     WasmI32.store8(ret, _CHAR_CODE_DOT, 9n)
@@ -1460,7 +1460,7 @@ provide let dtoa = value => {
       let ret = allocateString(3n)
       WasmI32.store(ret, 0x4E614En, 8n) // NaN
       ret
-    } else if (WasmF64.lt(value, 0.W)) {
+    } else if (WasmF64.lt(value, 0.0W)) {
       let ret = allocateString(9n)
       WasmI64.store(ret, 0x74696E69666E492DN, 8n) // tinifnI-
       WasmI32.store8(ret, 0x79n, 16n) // y
