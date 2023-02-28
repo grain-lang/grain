@@ -252,7 +252,7 @@ let rec token = lexbuf => {
   | (unsigned_float, 'd') => positioned(FLOAT64(sub_lexeme(lexbuf, 0, -1)))
   | unsigned_float =>
     positioned(NUMBER_FLOAT(Sedlexing.Utf8.lexeme(lexbuf)))
-  | (invalid_float, Opt('f' | 'd')) =>
+  | (invalid_float, Opt('f' | 'd' | 'w' | 'W')) =>
     raise(
       Error(
         lexbuf_loc(lexbuf),
