@@ -457,9 +457,16 @@ Returns:
 
 ### Pervasives.**(%)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.1.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Throws an error if either operand is not an integer</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -481,6 +488,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The modulus of its operands|
+
+Throws:
+
+`ModuloByZero`
+
+* If the second operand is zero
+
+`NonIntegerModulus`
+
+* If either operand is not an integer
 
 ### Pervasives.**(\*\*)**
 

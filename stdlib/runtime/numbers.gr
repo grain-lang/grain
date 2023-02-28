@@ -1139,10 +1139,10 @@ provide let cmpRationals = (x, y) => {
 
 /**
  * Finds the numerator of the rational number.
- * 
+ *
  * @param x: The rational number to inspect
  * @returns The numerator of the rational number
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -1155,10 +1155,10 @@ provide let rationalNumerator = (x: Rational) => {
 
 /**
  * Finds the denominator of the rational number.
- * 
+ *
  * @param x: The rational number to inspect
  * @returns The denominator of the rational number
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -1573,8 +1573,14 @@ let numberMod = (x, y) => {
   // incRef x and y to reuse them via WasmI32.toGrain
   Memory.incRef(x)
   Memory.incRef(y)
-  let xval = coerceNumberToWasmI64(WasmI32.toGrain(x): Number)
-  let yval = coerceNumberToWasmI64(WasmI32.toGrain(y): Number)
+  // If X or Y is a float, give a nicer error
+  let xPtr = WasmI32.toGrain(x)
+  let yPtr = WasmI32.toGrain(y)
+  if (!isInteger(xPtr) && !isInteger(yPtr)) {
+    throw Exception.NonIntegerModulus
+  }
+  let xval = coerceNumberToWasmI64(xPtr: Number)
+  let yval = coerceNumberToWasmI64(yPtr: Number)
   if (WasmI64.eqz(yval)) {
     throw Exception.ModuloByZero
   }
@@ -2337,7 +2343,7 @@ provide let coerceNumberToBigInt = (x: Number) => {
  *
  * @param number: The value to convert
  * @returns The Number represented as a Rational
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -2513,7 +2519,7 @@ provide let coerceBigIntToNumber = (x: BigInt) => {
  *
  * @param rational: The value to convert
  * @returns The Rational represented as a Number
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -2674,7 +2680,11 @@ provide let (/) = (x: Number, y: Number) => {
  * @param num2: The second operand
  * @returns The modulus of its operands
  *
+ * @throws ModuloByZero: If the second operand is zero
+ * @throws NonIntegerModulus: If either operand is not an integer
+ *
  * @since v0.1.0
+ * @history v0.6.0: Throws an error if either operand is not an integer
  */
 @unsafe
 provide let (%) = (x: Number, y: Number) => {

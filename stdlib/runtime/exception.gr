@@ -93,6 +93,7 @@ provide let panicWithException = (e: Exception) => {
 
 provide exception DivisionByZero
 provide exception ModuloByZero
+provide exception NonIntegerModulus
 provide exception Overflow
 provide exception NumberNotIntlike
 provide exception NumberNotRational
@@ -114,6 +115,7 @@ let runtimeErrorPrinter = e => {
     IndexNonInteger => Some("IndexNonInteger: Index not an integer"),
     DivisionByZero => Some("DivisionByZero: Division by zero"),
     ModuloByZero => Some("ModuloByZero: Modulo by zero"),
+    NonIntegerModulus => Some("NonIntegerModulus: Modulo with float"),
     Overflow => Some("Overflow: Number overflow"),
     NumberNotIntlike =>
       Some("NumberNotIntlike: Can't coerce number to integer"),
