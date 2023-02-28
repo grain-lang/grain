@@ -90,6 +90,13 @@ let addInt8help = (value, buffer) => {
   Bytes.setInt8(index, value, buffer.data)
 }
 
+let addUint8help = (value, buffer) => {
+  autogrow(_8BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _8BIT_LEN
+  Bytes.setUint8(index, value, buffer.data)
+}
+
 let addInt16help = (value, buffer) => {
   autogrow(_16BIT_LEN, buffer)
   let index = buffer.len
@@ -97,11 +104,25 @@ let addInt16help = (value, buffer) => {
   Bytes.setInt16(index, value, buffer.data)
 }
 
+let addUint16help = (value, buffer) => {
+  autogrow(_16BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _16BIT_LEN
+  Bytes.setUint16(index, value, buffer.data)
+}
+
 let addInt32help = (value, buffer) => {
   autogrow(_32BIT_LEN, buffer)
   let index = buffer.len
   buffer.len += _32BIT_LEN
   Bytes.setInt32(index, value, buffer.data)
+}
+
+let addUint32help = (value, buffer) => {
+  autogrow(_32BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _32BIT_LEN
+  Bytes.setUint32(index, value, buffer.data)
 }
 
 /**
@@ -417,35 +438,18 @@ provide let addBufferSlice = (start, length, srcBuffer, dstBuffer) => {
  *
  * @param index: The byte index to access
  * @param buffer: The buffer to access
- * @returns A 32-bit integer representing a signed 8-bit integer that starts at the given index
+ * @returns A signed 8-bit integer that starts at the given index
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt8S`, returning an `Int32`
  */
-provide let getInt8S = (index, buffer) => {
+provide let getInt8 = (index, buffer) => {
   checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8S(index, buffer.data)
-}
-
-/**
- * Gets an unsigned 8-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing an unsigned 8-bit integer that starts at the given index
- *
- * @throws IndexOutOfBounds: When `index` is negative
- * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
- * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
- *
- * @since v0.4.0
- */
-provide let getInt8U = (index, buffer) => {
-  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
-  Bytes.getInt8U(index, buffer.data)
+  Bytes.getInt8(index, buffer.data)
 }
 
 /**
@@ -460,6 +464,7 @@ provide let getInt8U = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
  *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int8`
  */
 provide let setInt8 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _8BIT_LEN, buffer)
@@ -473,9 +478,59 @@ provide let setInt8 = (index, value, buffer) => {
  * @param buffer: The buffer to mutate
  *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int8`
  */
 provide let addInt8 = (value, buffer) => {
   addInt8help(value, buffer)
+}
+
+/**
+ * Gets an unsigned 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 8-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt8U`, returning an `Int32`
+ */
+provide let getUint8 = (index, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.getUint8(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 8-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 1` is greater than the buffer size
+ *
+ * @since v0.6.0
+ */
+provide let setUint8 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _8BIT_LEN, buffer)
+  Bytes.setUint8(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 8-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.6.0
+ */
+provide let addUint8 = (value, buffer) => {
+  addUint8help(value, buffer)
 }
 
 /**
@@ -483,35 +538,18 @@ provide let addInt8 = (value, buffer) => {
  *
  * @param index: The byte index to access
  * @param buffer: The buffer to access
- * @returns A 32-bit integer representing a signed 16-bit integer that starts at the given index
+ * @returns A signed 16-bit integer that starts at the given index
  *
  * @throws IndexOutOfBounds: When `index` is negative
  * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt16S`, returning an `Int32`
  */
-provide let getInt16S = (index, buffer) => {
+provide let getInt16 = (index, buffer) => {
   checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16S(index, buffer.data)
-}
-
-/**
- * Gets an unsigned 16-bit integer starting at the given byte index.
- *
- * @param index: The byte index to access
- * @param buffer: The buffer to access
- * @returns A 32-bit integer representing an unsigned 16-bit integer that starts at the given index
- *
- * @throws IndexOutOfBounds: When `index` is negative
- * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
- * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
- *
- * @since v0.4.0
- */
-provide let getInt16U = (index, buffer) => {
-  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
-  Bytes.getInt16U(index, buffer.data)
+  Bytes.getInt16(index, buffer.data)
 }
 
 /**
@@ -526,6 +564,7 @@ provide let getInt16U = (index, buffer) => {
  * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
  *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int16`
  */
 provide let setInt16 = (index, value, buffer) => {
   checkIsIndexInBounds(index, _16BIT_LEN, buffer)
@@ -539,9 +578,59 @@ provide let setInt16 = (index, value, buffer) => {
  * @param buffer: The buffer to mutate
  *
  * @since v0.4.0
+ * @history v0.6.0: `value` argument type changed to `Int16`
  */
 provide let addInt16 = (value, buffer) => {
   addInt16help(value, buffer)
+}
+
+/**
+ * Gets an unsigned 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 16-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
+ * @since v0.6.0
+ * @history v0.4.0: Originally called `getInt16U`, returning an `Int32`
+ */
+provide let getUint16 = (index, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.getUint16(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 16-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 2` is greater than the buffer size
+ *
+ * @since v0.6.0
+ */
+provide let setUint16 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _16BIT_LEN, buffer)
+  Bytes.setUint16(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 16-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.6.0
+ */
+provide let addUint16 = (value, buffer) => {
+  addUint16help(value, buffer)
 }
 
 /**
@@ -590,6 +679,54 @@ provide let setInt32 = (index, value, buffer) => {
  */
 provide let addInt32 = (value, buffer) => {
   addInt32help(value, buffer)
+}
+
+/**
+ * Gets an unsigned 32-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 32-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @since v0.6.0
+ */
+provide let getUint32 = (index, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.getUint32(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 32-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 4` is greater than the buffer size
+ *
+ * @since v0.6.0
+ */
+provide let setUint32 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _32BIT_LEN, buffer)
+  Bytes.setUint32(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 32-bit integer to a buffer.
+ *
+ * @param value: The value to append
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.6.0
+ */
+provide let addUint32 = (value, buffer) => {
+  addUint32help(value, buffer)
 }
 
 /**
@@ -692,6 +829,57 @@ provide let addInt64 = (value, buffer) => {
   let index = buffer.len
   buffer.len += _64BIT_LEN
   setInt64(index, value, buffer)
+}
+
+/**
+ * Gets an unsigned 64-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to access
+ * @param buffer: The buffer to access
+ * @returns An unsigned 64-bit integer that starts at the given index
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
+ *
+ * @since v0.6.0
+ */
+provide let getUint64 = (index, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.getUint64(index, buffer.data)
+}
+
+/**
+ * Sets an unsigned 64-bit integer starting at the given byte index.
+ *
+ * @param index: The byte index to update
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @throws IndexOutOfBounds: When `index` is negative
+ * @throws IndexOutOfBounds: When `index` is greater than or equal to the buffer size
+ * @throws IndexOutOfBounds: When `index + 8` is greater than the buffer size
+ *
+ * @since v0.6.0
+ */
+provide let setUint64 = (index, value, buffer) => {
+  checkIsIndexInBounds(index, _64BIT_LEN, buffer)
+  Bytes.setUint64(index, value, buffer.data)
+}
+
+/**
+ * Appends an unsigned 64-bit integer to a buffer.
+ *
+ * @param value: The value to set
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.6.0
+ */
+provide let addUint64 = (value, buffer) => {
+  autogrow(_64BIT_LEN, buffer)
+  let index = buffer.len
+  buffer.len += _64BIT_LEN
+  setUint64(index, value, buffer)
 }
 
 /**

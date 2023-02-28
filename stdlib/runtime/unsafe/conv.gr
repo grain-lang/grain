@@ -5,7 +5,14 @@ include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/wasmf32"
 include "runtime/unsafe/wasmf64"
 include "runtime/dataStructures"
-from DataStructures use { newInt32, newInt64, newFloat32, newFloat64 }
+from DataStructures use {
+  newInt32,
+  newUint32,
+  newInt64,
+  newUint64,
+  newFloat32,
+  newFloat64,
+}
 
 @unsafe
 provide let toInt32 = n => {
@@ -13,7 +20,18 @@ provide let toInt32 = n => {
 }
 
 @unsafe
+provide let toUint32 = n => {
+  WasmI32.toGrain(newUint32(n)): Uint32
+}
+
+@unsafe
 provide let fromInt32 = (n: Int32) => {
+  let ptr = WasmI32.fromGrain(n)
+  WasmI32.load(ptr, 4n)
+}
+
+@unsafe
+provide let fromUint32 = (n: Uint32) => {
   let ptr = WasmI32.fromGrain(n)
   WasmI32.load(ptr, 4n)
 }
@@ -24,7 +42,18 @@ provide let toInt64 = n => {
 }
 
 @unsafe
+provide let toUint64 = n => {
+  WasmI32.toGrain(newUint64(n)): Uint64
+}
+
+@unsafe
 provide let fromInt64 = (n: Int64) => {
+  let ptr = WasmI32.fromGrain(n)
+  WasmI64.load(ptr, 8n)
+}
+
+@unsafe
+provide let fromUint64 = (n: Uint64) => {
   let ptr = WasmI32.fromGrain(n)
   WasmI64.load(ptr, 8n)
 }

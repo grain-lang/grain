@@ -78,6 +78,8 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("nan_equality3", {|print(0.0 / 0.0 == 0.0 / 0.0)|}, "false\n");
   assertRun("number_equality", {|print(5.0 == 5)|}, "true\n");
   assertRun("number_equality2", {|print(5 == 5.0)|}, "true\n");
+  assertRun("shortnum_parse_equality1", {|print(0xffs == -1s)|}, "true\n");
+  assertRun("shortnum_parse_equality2", {|print(0xffffS == -1S)|}, "true\n");
   // comparison checks
   assertRun(
     "number_compare1",

@@ -71,10 +71,25 @@ let int8_max = 127l;
 let int8_min = (-128l);
 
 let conv_int8 = s => {
+  let hex_or_bin = String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b"]);
   switch (Int32.of_string_opt(s)) {
   | None => None
   | Some(n) =>
-    if (n < int8_min || n > int8_max) {
+    let (&) = Int32.logand;
+    let (>>) = Int32.shift_right;
+    let (<<) = Int32.shift_left;
+    if (n > int8_max) {
+      // Trick to get something like 0xFF to be legal
+      if (hex_or_bin && (n & 0xFFFFFF80l) >> 7 == 1l) {
+        Some((n << 24) >> 24);
+      } else {
+        None;
+      }
+    } else if (n < int8_min) {
+      None;
+    } else if (hex_or_bin && n < 0l) {
+      // Int8 hex/bin literals shouldn't exceed 8 bits, so something like
+      // 0xFFFFFFFFs should be rejected
       None;
     } else {
       Some(n);
@@ -86,10 +101,25 @@ let int16_max = 32767l;
 let int16_min = (-32768l);
 
 let conv_int16 = s => {
+  let hex_or_bin = String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b"]);
   switch (Int32.of_string_opt(s)) {
   | None => None
   | Some(n) =>
-    if (n < int16_min || n > int16_max) {
+    let (&) = Int32.logand;
+    let (>>) = Int32.shift_right;
+    let (<<) = Int32.shift_left;
+    if (n > int16_max) {
+      // Trick to get something like 0xFFFF to be legal
+      if (hex_or_bin && (n & 0xFFFF8000l) >> 15 == 1l) {
+        Some((n << 16) >> 16);
+      } else {
+        None;
+      }
+    } else if (n < int16_min) {
+      None;
+    } else if (hex_or_bin && n < 0l) {
+      // Int16 hex/bin literals shouldn't exceed 16 bits, so something like
+      // 0xFFFFFFFFS should be rejected
       None;
     } else {
       Some(n);

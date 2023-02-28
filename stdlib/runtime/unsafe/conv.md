@@ -12,10 +12,22 @@ Functions and constants included in the Conv module.
 toInt32 : WasmI32 -> Int32
 ```
 
+### Conv.**toUint32**
+
+```grain
+toUint32 : WasmI32 -> Uint32
+```
+
 ### Conv.**fromInt32**
 
 ```grain
 fromInt32 : Int32 -> WasmI32
+```
+
+### Conv.**fromUint32**
+
+```grain
+fromUint32 : Uint32 -> WasmI32
 ```
 
 ### Conv.**toInt64**
@@ -24,10 +36,22 @@ fromInt32 : Int32 -> WasmI32
 toInt64 : WasmI64 -> Int64
 ```
 
+### Conv.**toUint64**
+
+```grain
+toUint64 : WasmI64 -> Uint64
+```
+
 ### Conv.**fromInt64**
 
 ```grain
 fromInt64 : Int64 -> WasmI64
+```
+
+### Conv.**fromUint64**
+
+```grain
+fromUint64 : Uint64 -> WasmI64
 ```
 
 ### Conv.**toFloat32**
