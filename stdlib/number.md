@@ -922,7 +922,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN|
+|`Number`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN|
 
 ### Number.**acos**
 
@@ -947,7 +947,32 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN|
+|`Number`|The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN|
+
+### Number.**atan**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+atan : Number -> Number
+```
+
+Computes the inverse tangent of the given angle
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Number`|A number between -1 and 1, representing the angle's tangent value.|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN|
 
 ### Number.**gamma**
 
