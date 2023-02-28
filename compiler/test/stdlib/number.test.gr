@@ -710,3 +710,79 @@ assert Number.toRadians(1/4) == 0.004363323129985824
 assert Number.toRadians(9223372036854775809) == 160978210179491630.0
 assert Number.toRadians(Infinity) == Infinity
 assert Number.isNaN(Number.toRadians(NaN))
+
+// Number.clamp
+// TODO(#471): Use Range Syntax
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, 1) == 1
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, 0) == 0
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, 0.5) == 0.5
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, 1/2) == 1/2
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1/2 }, 1/2) == 1/2
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, -0.1) == 0
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, -1) == 0
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, 1.1) == 1
+assert Number.clamp({ rangeStart: 0, rangeEnd: 1 }, 2) == 1
+assert Number.clamp({ rangeStart: -1, rangeEnd: 1 }, -1) == -1
+assert Number.clamp({ rangeStart: -2, rangeEnd: -1 }, -1) == -1
+assert Number.clamp({ rangeStart: -2, rangeEnd: -1 }, -2) == -2
+assert Number.clamp({ rangeStart: -1, rangeEnd: -2 }, -2) == -2
+assert Number.clamp({ rangeStart: -1, rangeEnd: -2 }, -2) == -2
+assert Number.clamp({ rangeStart: Infinity, rangeEnd: -Infinity }, 2) == 2
+assert Number.clamp({ rangeStart: -Infinity, rangeEnd: Infinity }, 2) == 2
+assert Number.clamp({ rangeStart: Infinity, rangeEnd: -Infinity }, Infinity) ==
+  Infinity
+assert Number.isNaN(
+  Number.clamp({ rangeStart: -Infinity, rangeEnd: Infinity }, NaN)
+)
+assert Number.isNaN(Number.clamp({ rangeStart: 0, rangeEnd: -1 }, NaN))
+
+// Number.linearInterpolate
+// TODO(#471): Use Range Syntax
+assert Number.linearInterpolate({ rangeStart: 0, rangeEnd: 1 }, 0) == 0
+assert Number.linearInterpolate({ rangeStart: 0, rangeEnd: 1 }, 1) == 1
+assert Number.linearInterpolate({ rangeStart: 0, rangeEnd: 1 }, 0.5) == 0.5
+assert Number.linearInterpolate({ rangeStart: 0, rangeEnd: 1 }, 0.75) == 0.75
+assert Number.linearInterpolate({ rangeStart: 0, rangeEnd: 100 }, 0.75) == 75
+assert Number.linearInterpolate({ rangeStart: 0, rangeEnd: 100 }, 1/4) == 25
+assert Number.linearInterpolate({ rangeStart: -100, rangeEnd: 0 }, 0.5) == -50
+assert Number.linearInterpolate({ rangeStart: -100, rangeEnd: 100 }, 0.5) == 0
+assert Number.linearInterpolate({ rangeStart: -100, rangeEnd: 100 }, 1/2) == 0
+
+// Number.linearMap
+// TODO(#471): Use Range Syntax
+assert Number.linearMap(
+  { rangeStart: 0, rangeEnd: 1 },
+  { rangeStart: 0, rangeEnd: 100 },
+  1/2
+) ==
+  50
+assert Number.linearMap(
+  { rangeStart: 0, rangeEnd: 1 },
+  { rangeStart: 0, rangeEnd: 50 },
+  1/2
+) ==
+  25
+assert Number.linearMap(
+  { rangeStart: -1, rangeEnd: 1 },
+  { rangeStart: 0, rangeEnd: 50 },
+  0
+) ==
+  25
+assert Number.linearMap(
+  { rangeStart: -1, rangeEnd: 1 },
+  { rangeStart: 0, rangeEnd: 50 },
+  2
+) ==
+  50
+assert Number.linearMap(
+  { rangeStart: -1, rangeEnd: 1 },
+  { rangeStart: 0, rangeEnd: 50 },
+  -2
+) ==
+  0
+assert Number.linearMap(
+  { rangeStart: -1, rangeEnd: 1 },
+  { rangeStart: 0, rangeEnd: 200 },
+  0.5
+) ==
+  150

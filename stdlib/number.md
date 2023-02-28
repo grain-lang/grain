@@ -986,3 +986,94 @@ Returns:
 |----|-----------|
 |`Number`|The value in degrees|
 
+### Number.**clamp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+clamp : (Range<Number>, Number) -> Number
+```
+
+Clamps a number to a given range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`range`|`Range<Number>`|The inclusive range to clamp within.|
+|`input`|`Number`|The number to clamp|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The clamped number|
+
+### Number.**linearInterpolate**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+linearInterpolate : (Range<Number>, Number) -> Number
+```
+
+Linearly interpolates across the provided range by the given amount.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`range`|`Range<Number>`|An inclusive Range to interpolate between|
+|`amount`|`Number`|an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The interpolated value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `amount` is not between 0 and 1 or `range` is not finite
+
+### Number.**linearMap**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+linearMap : (Range<Number>, Range<Number>, Number) -> Number
+```
+
+Linearly maps the given number from one range to another.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`inputRange`|`Range<Number>`|The inclusive numeric range you are mapping from.|
+|`outputRange`|`Range<Number>`|The inclusive numeric range you are mapping to.|
+|`current`|`Number`|The number to map|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The interpolated value, if the input is outside the input range, the output will be clamped to the output range.|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `inputRange` or `outputRange` are not finite
+

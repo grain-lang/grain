@@ -670,3 +670,89 @@ provide let toRadians = degrees => degrees * (pi / 180)
  * @since v0.5.4
  */
 provide let toDegrees = radians => radians * (180 / pi)
+
+/**
+ * Clamps a number to a given range.
+ *
+ * @param range: The inclusive range to clamp within.
+ * @param input: The number to clamp
+ * @returns The clamped number
+ *
+ * @since v0.6.0
+ */
+provide let clamp = (range, input) => {
+  if (isNaN(input)) {
+    input
+  } else {
+    let rangeEnd = max(range.rangeStart, range.rangeEnd)
+    let rangeStart = min(range.rangeStart, range.rangeEnd)
+
+    if (input > rangeEnd) rangeEnd else if (input < rangeStart) rangeStart
+    else input
+  }
+}
+
+/**
+ * Linearly interpolates across the provided range by the given amount.
+ *
+ * @param range: An inclusive Range to interpolate between
+ * @param amount: an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200
+ * @returns The interpolated value
+ *
+ * @throws InvalidArgument(String): When `amount` is not between 0 and 1 or `range` is not finite
+ *
+ * @since v0.6.0
+ */
+provide let linearInterpolate = (range, amount) => {
+  if (amount < 0 || amount > 1 || isNaN(amount))
+    throw Exception.InvalidArgument("Amount must be between 0 and 1")
+  if (
+    isInfinite(range.rangeStart) ||
+    isInfinite(range.rangeEnd) ||
+    isNaN(range.rangeStart) ||
+    isNaN(range.rangeEnd)
+  ) throw Exception.InvalidArgument("The Range must be finite and not NaN")
+  (range.rangeEnd - range.rangeStart) * amount + range.rangeStart
+}
+
+/**
+ * Linearly maps the given number from one range to another.
+ *
+ * @param inputRange: The inclusive numeric range you are mapping from.
+ * @param outputRange: The inclusive numeric range you are mapping to.
+ * @param current: The number to map
+ * @returns The interpolated value, if the input is outside the input range, the output will be clamped to the output range.
+ *
+ * @throws InvalidArgument(String): When `inputRange` or `outputRange` are not finite
+ *
+ * @since v0.6.0
+ */
+provide let linearMap = (inputRange, outputRange, current) => {
+  if (isNaN(current)) {
+    current
+  } else {
+    if (
+      isInfinite(inputRange.rangeStart) ||
+      isInfinite(inputRange.rangeEnd) ||
+      isNaN(inputRange.rangeStart) ||
+      isNaN(inputRange.rangeEnd)
+    )
+      throw Exception.InvalidArgument(
+        "The inputRange must be finite and not NaN"
+      )
+    if (
+      isInfinite(outputRange.rangeStart) ||
+      isInfinite(outputRange.rangeEnd) ||
+      isNaN(outputRange.rangeStart) ||
+      isNaN(outputRange.rangeEnd)
+    )
+      throw Exception.InvalidArgument(
+        "The outputRange must be finite and not NaN"
+      )
+    let mapped = (current - inputRange.rangeStart) *
+      (outputRange.rangeEnd - outputRange.rangeStart) /
+      (inputRange.rangeEnd - inputRange.rangeStart) +
+      outputRange.rangeStart
+    clamp(outputRange, mapped)
+  }
+}
