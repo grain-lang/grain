@@ -238,6 +238,7 @@ assert String.replaceAll("/", "\/", "/test/test/test/") ==
   "\/test\/test\/test\/"
 assert String.replaceAll(",", "|", "test,test,test") == "test|test|test"
 
+assert String.replaceAll("MeowMeow", "Meow", "MeowMeowMeowMeow") == "MeowMeow"
 let processBytes = b => {
   let ret = Array.make(Bytes.length(b), 0l)
   for (let mut i = 0; i < Bytes.length(b); i += 1) {

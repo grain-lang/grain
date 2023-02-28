@@ -1035,6 +1035,8 @@ provide let replaceAll =
         found = true
         foundCount += 1n
         foundIndexes = [tagSimpleNumber(foundIndex), ...foundIndexes]
+        foundIndex -= patternLen - 1n
+        i -= patternLen - 1n
       }
     }
     if (found) {
