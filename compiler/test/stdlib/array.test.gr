@@ -426,6 +426,18 @@ let arr9 = [>]
 Array.rotate(1, arr9)
 assert arr9 == [>]
 
+// Array.chunk
+assert Array.chunk(2, false, [>]) == [>]
+assert Array.chunk(2, false, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
+assert Array.chunk(2, false, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4]]
+assert Array.chunk(2, true, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5]]
+assert Array.chunk(3, true, [> 1, 2, 3, 4, 5, 6, 7, 8]) ==
+  [> [> 1, 2, 3], [> 4, 5, 6], [> 7, 8]]
+assert Array.chunk(3, false, [> 1, 2, 3, 4, 5, 6, 7, 8]) ==
+  [> [> 1, 2, 3], [> 4, 5, 6]]
+assert Array.chunk(10, true, [> 1, 2, 3, 4, 5]) == [> [> 1, 2, 3, 4, 5]]
+assert Array.chunk(10, false, [> 1, 2, 3, 4, 5]) == [>]
+
 module Immutable {
   from Array use { Immutable as Array }
 

@@ -1290,6 +1290,45 @@ let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
 
 ## Array.Immutable
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+chunk : (Number, Bool, Array<a>) -> Array<Array<a>>
+```
+
+Splits the given array into chunks of the provided size.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`chunkSize`|`Number`|The size of each chunk|
+|`allowPartial`|`Bool`|Whether to allow partial chunks at the end of the array|
+|`arr`|`Array<a>`|The array to chunk|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Array<Array<a>>`|An array of chunks|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `chunkSize` is not an integer
+* When `chunkSize` is negative
+
+Examples:
+
+```grain
+chunk(2, false, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
+```
+
+
 An immutable array implementation.
 
 <details>

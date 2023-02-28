@@ -1020,6 +1020,41 @@ provide let rotate = (n, arr) => {
   }
 }
 
+let rec _chunk = (chunkSize, allowPartial, arr) => {
+  let arrLen = length(arr)
+  if (arrLen == 0 || chunkSize == 0 || arrLen < chunkSize && !allowPartial) {
+    [>]
+  } else {
+    // create the first chunk of the given array
+    let firstChunk = slice(0, chunkSize, arr)
+    let restChunks = _chunk(
+      chunkSize,
+      allowPartial,
+      slice(chunkSize, arrLen, arr)
+    )
+    append([> firstChunk], restChunks)
+  }
+}
+
+/**
+ * Splits the given array into chunks of the provided size.
+ *
+ * @param chunkSize: The size of each chunk
+ * @param allowPartial: Whether to allow partial chunks at the end of the array
+ * @param arr: The array to chunk
+ * @returns An array of chunks
+ *
+ * @throws InvalidArgument(String): When `chunkSize` is not an integer
+ * @throws InvalidArgument(String): When `chunkSize` is negative
+ *
+ * @example chunk(2, false, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
+ * @since v0.6.0
+ */
+provide let chunk = (chunkSize, allowPartial, arr) => {
+  checkLength(chunkSize)
+  _chunk(chunkSize, allowPartial, arr)
+}
+
 /**
  * An immutable array implementation.
  *
