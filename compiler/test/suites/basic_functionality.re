@@ -165,6 +165,11 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("if_one_sided5", "let mut x = 1; if (3 < 4) x = 2 + 3");
   assertSnapshot("if_one_sided6", "let mut x = 1; if (3 < 4) x = 2 + 3; x");
   assertCompileError(
+    "if_empty_block",
+    "if (false) 1 else {}",
+    "Syntax error",
+  );
+  assertCompileError(
     "if_one_sided_type_err",
     "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
