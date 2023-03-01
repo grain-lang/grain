@@ -1337,8 +1337,8 @@ and type_expect_ =
       );
 
     let (ifso, ifnot) =
-      switch (sifnot.pexp_desc) {
-      | PExpBlock([]) =>
+      switch (sifnot) {
+      | None =>
         let void_exp = {
           exp_desc: TExpConstant(Const_void),
           exp_loc: loc,
@@ -1358,7 +1358,7 @@ and type_expect_ =
           );
         let ifnot = {...void_exp, exp_desc: TExpBlock([void_exp])};
         (ifso, ifnot);
-      | _ =>
+      | Some(sifnot) =>
         let ifso = type_expect(env, sifso, ty_expected_explained);
         let ifnot = type_expect(env, sifnot, ty_expected_explained);
         /* Both types should match */

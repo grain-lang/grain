@@ -112,7 +112,7 @@ module E = {
         ~attributes,
         sub.expr(sub, c),
         sub.expr(sub, t),
-        sub.expr(sub, f),
+        Option.map(sub.expr(sub), f),
       )
     | PExpWhile(c, e) =>
       while_(~loc, ~attributes, sub.expr(sub, c), sub.expr(sub, e))

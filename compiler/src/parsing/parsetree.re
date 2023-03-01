@@ -497,7 +497,7 @@ and expression_desc =
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
   | PExpPrimN(primn, list(expression))
-  | PExpIf(expression, expression, expression)
+  | PExpIf(expression, expression, option(expression))
   | PExpWhile(expression, expression)
   | PExpFor(
       option(expression),

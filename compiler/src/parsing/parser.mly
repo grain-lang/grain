@@ -509,7 +509,7 @@ let_expr:
   | ELSE opt_eols expr { $3 }
 
 if_expr:
-  | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) $3 $6 (Option.value ~default:(Expression.block ~loc:(to_loc $loc($7)) []) $7) }
+  | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) $3 $6 $7 }
 
 while_expr:
   | WHILE lparen expr rparen block { Expression.while_ ~loc:(to_loc $loc) $3 $5 }
