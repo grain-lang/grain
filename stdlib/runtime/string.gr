@@ -28,7 +28,6 @@ include "runtime/unsafe/tags" as Tags
 include "runtime/numberUtils" as NumberUtils
 
 include "runtime/dataStructures" as DataStructures
-
 from DataStructures use { allocateString, allocateArray, untagSimpleNumber }
 
 foreign wasm fd_write: (
