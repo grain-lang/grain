@@ -30,13 +30,8 @@ comments › comment_block
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.2 (result i32)
-    (local.set $0
-     (block $compile_block.1 (result i32)
-      (i32.const 21)
-     )
-    )
-    (local.get $0)
+   (block $compile_block.1 (result i32)
+    (i32.const 21)
    )
   )
  )

@@ -33,32 +33,27 @@ basic functionality › infinity
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.3 (result i32)
-    (local.set $0
-     (block $compile_block.2 (result i32)
-      (block $allocate_number.1 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 16)
-         )
-        )
-        (i32.const 5)
+   (block $compile_block.2 (result i32)
+    (block $allocate_number.1 (result i32)
+     (i32.store
+      (local.tee $0
+       (call $malloc_0
+        (global.get $GRAIN$EXPORT$malloc_0)
+        (i32.const 16)
        )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.const 2)
-       )
-       (f64.store offset=8
-        (local.get $0)
-        (f64.const inf)
-       )
-       (local.get $0)
       )
+      (i32.const 5)
      )
+     (i32.store offset=4
+      (local.get $0)
+      (i32.const 1)
+     )
+     (f64.store offset=8
+      (local.get $0)
+      (f64.const inf)
+     )
+     (local.get $0)
     )
-    (local.get $0)
    )
   )
  )

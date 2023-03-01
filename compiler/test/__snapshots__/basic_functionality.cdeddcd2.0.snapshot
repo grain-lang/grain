@@ -36,20 +36,15 @@ basic functionality › modulo3
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.2 (result i32)
-    (local.set $0
-     (block $compile_block.1 (result i32)
-      (call $%_1113
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $%_1113)
-       )
-       (i32.const -33)
-       (i32.const -7)
-      )
+   (block $compile_block.1 (result i32)
+    (call $%_1113
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $%_1113)
      )
+     (i32.const -33)
+     (i32.const -7)
     )
-    (local.get $0)
    )
   )
  )

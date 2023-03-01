@@ -28,39 +28,27 @@ optimizations › trs1
   (local $7 f32)
   (local $8 f64)
   (return
-   (block $cleanup_locals.2 (result i32)
-    (local.set $3
-     (tuple.extract 0
-      (tuple.make
-       (block $compile_block.1 (result i32)
-        (call $incRef_0
-         (global.get $GRAIN$EXPORT$incRef_0)
-         (local.get $1)
+   (block $compile_block.2 (result i32)
+    (tuple.extract 0
+     (tuple.make
+      (local.get $1)
+      (block $cleanup.1 (result i32)
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $2)
         )
        )
-       (local.get $3)
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $0)
+        )
+       )
+       (i32.const 1879048190)
       )
      )
     )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $0)
-     )
-    )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $1)
-     )
-    )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $2)
-     )
-    )
-    (local.get $3)
    )
   )
  )
@@ -81,35 +69,22 @@ optimizations › trs1
   (local $4 f32)
   (local $5 f64)
   (return
-   (block $cleanup_locals.6 (result i32)
-    (local.set $0
-     (block $compile_block.5 (result i32)
-      (block $compile_store.4
-       (global.set $f1_1113
-        (tuple.extract 0
-         (tuple.make
-          (i32.const 0)
-          (call $decRef_0
-           (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $f1_1113)
-          )
-         )
-        )
-       )
-       (block $do_backpatches.3
-       )
-      )
-      (call $f1_1113
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $f1_1113)
-       )
-       (i32.const 3)
-       (i32.const 5)
-      )
+   (block $compile_block.5 (result i32)
+    (block $compile_store.4
+     (global.set $f1_1113
+      (i32.const 0)
+     )
+     (block $do_backpatches.3
      )
     )
-    (local.get $0)
+    (call $f1_1113
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $f1_1113)
+     )
+     (i32.const 3)
+     (i32.const 5)
+    )
    )
   )
  )

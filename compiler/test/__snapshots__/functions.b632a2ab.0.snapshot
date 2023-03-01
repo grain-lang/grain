@@ -8,10 +8,8 @@ functions › lam_destructure_1
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
@@ -28,30 +26,27 @@ functions › lam_destructure_1
   (local $6 f32)
   (local $7 f64)
   (return
-   (block $cleanup_locals.2 (result i32)
-    (local.set $2
-     (tuple.extract 0
-      (tuple.make
-       (block $compile_block.1 (result i32)
-        (i32.const 11)
+   (block $compile_block.2 (result i32)
+    (tuple.extract 0
+     (tuple.make
+      (i32.const 11)
+      (block $cleanup.1 (result i32)
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $0)
+        )
        )
-       (local.get $2)
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $1)
+        )
+       )
+       (i32.const 1879048190)
       )
      )
     )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $0)
-     )
-    )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $1)
-     )
-    )
-    (local.get $2)
    )
   )
  )
@@ -74,83 +69,44 @@ functions › lam_destructure_1
   (local $6 i32)
   (local $7 i32)
   (return
-   (block $cleanup_locals.9 (result i32)
-    (local.set $0
-     (block $compile_block.8 (result i32)
-      (block $compile_store.4
-       (local.set $6
-        (tuple.extract 0
-         (tuple.make
-          (i32.const 0)
-          (call $decRef_0
-           (global.get $GRAIN$EXPORT$decRef_0)
-           (local.get $6)
-          )
+   (block $compile_block.8 (result i32)
+    (block $compile_store.4
+     (local.set $6
+      (i32.const 0)
+     )
+     (block $do_backpatches.3
+     )
+    )
+    (block $compile_store.7
+     (local.set $7
+      (block $allocate_string.5 (result i32)
+       (i32.store
+        (local.tee $0
+         (call $malloc_0
+          (global.get $GRAIN$EXPORT$malloc_0)
+          (i32.const 16)
          )
         )
+        (i32.const 1)
        )
-       (block $do_backpatches.3
+       (i32.store offset=4
+        (local.get $0)
+        (i32.const 3)
        )
-      )
-      (block $compile_store.7
-       (local.set $7
-        (tuple.extract 0
-         (tuple.make
-          (block $allocate_string.5 (result i32)
-           (i32.store
-            (local.tee $0
-             (call $malloc_0
-              (global.get $GRAIN$EXPORT$malloc_0)
-              (i32.const 16)
-             )
-            )
-            (i32.const 1)
-           )
-           (i32.store offset=4
-            (local.get $0)
-            (i32.const 3)
-           )
-           (i64.store offset=8
-            (local.get $0)
-            (i64.const 7303014)
-           )
-           (local.get $0)
-          )
-          (call $decRef_0
-           (global.get $GRAIN$EXPORT$decRef_0)
-           (local.get $7)
-          )
-         )
-        )
+       (i64.store offset=8
+        (local.get $0)
+        (i64.const 7303014)
        )
-       (block $do_backpatches.6
-       )
-      )
-      (call $lam_lambda_1113
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (local.get $6)
-       )
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (local.get $7)
-       )
+       (local.get $0)
       )
      )
-    )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $6)
+     (block $do_backpatches.6
      )
     )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $7)
-     )
+    (call $lam_lambda_1113
+     (local.get $6)
+     (local.get $7)
     )
-    (local.get $0)
    )
   )
  )
