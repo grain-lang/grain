@@ -267,7 +267,7 @@ and iter_expression =
   | PExpIf(c, t, f) =>
     iter_expression(hooks, c);
     iter_expression(hooks, t);
-    iter_expression(hooks, f);
+    Option.iter(iter_expression(hooks), f);
   | PExpWhile(c, b) =>
     iter_expression(hooks, c);
     iter_expression(hooks, b);

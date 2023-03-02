@@ -3058,11 +3058,19 @@ and print_expression_inner =
         };
 
       let true_trailing_comment =
-        Comment_utils.get_comments_between_locs(
-          ~begin_loc=true_expr.pexp_loc,
-          ~end_loc=false_expr.pexp_loc,
-          comments,
-        );
+        switch (false_expr) {
+        | None =>
+          Comment_utils.get_comments_after_location(
+            ~location=true_expr.pexp_loc,
+            comments,
+          )
+        | Some(false_expr) =>
+          Comment_utils.get_comments_between_locs(
+            ~begin_loc=true_expr.pexp_loc,
+            ~end_loc=false_expr.pexp_loc,
+            comments,
+          )
+        };
 
       let true_is_block =
         switch (true_expr.pexp_desc) {
@@ -3077,14 +3085,14 @@ and print_expression_inner =
         };
 
       let false_is_block =
-        switch (false_expr.pexp_desc) {
-        | PExpBlock(expressions) => List.length(expressions) > 0
+        switch (false_expr) {
+        | Some({pexp_desc: PExpBlock(_)}) => true
         | _ => false
         };
 
       let false_is_if =
-        switch (false_expr.pexp_desc) {
-        | PExpBlock(expressions) =>
+        switch (false_expr) {
+        | Some({pexp_desc: PExpBlock(expressions)}) =>
           switch (expressions) {
           | [] => false
           | [hd, ...tail] =>
@@ -3179,14 +3187,18 @@ and print_expression_inner =
         };
 
       let comments_in_false_statement =
-        Comment_utils.get_comments_inside_location(
-          ~location=false_expr.pexp_loc,
-          comments,
-        );
+        switch (false_expr) {
+        | None => []
+        | Some({pexp_loc}) =>
+          Comment_utils.get_comments_inside_location(
+            ~location=pexp_loc,
+            comments,
+          )
+        };
 
       let false_clause =
-        switch (false_expr.pexp_desc) {
-        | PExpBlock(expressions) =>
+        switch (false_expr) {
+        | Some({pexp_desc: PExpBlock(expressions)} as false_expr) =>
           switch (expressions) {
           | [] => Doc.nil
           | _ =>
@@ -3202,7 +3214,9 @@ and print_expression_inner =
               ),
             ])
           }
-        | PExpIf(_condition, _true_expr, _false_expr) =>
+        | Some(
+            {pexp_desc: PExpIf(_condition, _true_expr, _false_expr)} as false_expr,
+          ) =>
           Doc.concat([
             Doc.space,
             Doc.text("else"),
@@ -3236,7 +3250,7 @@ and print_expression_inner =
               ]);
             },
           ])
-        | _ =>
+        | Some(false_expr) =>
           Doc.concat([
             if (true_is_block) {
               false_made_block := true;
@@ -3274,6 +3288,7 @@ and print_expression_inner =
               ]);
             },
           ])
+        | None => Doc.nil
         };
 
       let inner =

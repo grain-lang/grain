@@ -453,10 +453,10 @@ let malformed_return_statements = (errs, super) => {
         };
       };
       find(expressions);
-    | PExpIf(_, _, {pexp_desc: PExpBlock([])}) =>
+    | PExpIf(_, _, None) =>
       // If expressions with no else branch are not considered
       false
-    | PExpIf(_, ifso, ifnot) =>
+    | PExpIf(_, ifso, Some(ifnot)) =>
       has_returning_branch(ifso) || has_returning_branch(ifnot)
     | PExpMatch(_, branches) =>
       List.exists(branch => has_returning_branch(branch.pmb_body), branches)
@@ -480,7 +480,7 @@ let malformed_return_statements = (errs, super) => {
         };
       };
       collect(expressions);
-    | PExpIf(_, ifso, ifnot) when has_returning_branch(exp) =>
+    | PExpIf(_, ifso, Some(ifnot)) when has_returning_branch(exp) =>
       collect_non_returning_branches(ifso, [])
       @ collect_non_returning_branches(ifnot, acc)
     | PExpMatch(_, branches) when has_returning_branch(exp) =>

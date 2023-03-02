@@ -194,7 +194,7 @@ module Expression: {
       ~attributes: attributes=?,
       expression,
       expression,
-      expression
+      option(expression)
     ) =>
     expression;
   let while_:
