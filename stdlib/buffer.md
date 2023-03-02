@@ -437,15 +437,22 @@ Parameters:
 |`srcBuffer`|`Buffer`|The buffer to append|
 |`dstBuffer`|`Buffer`|The buffer to mutate|
 
-### Buffer.**getInt8S**
+### Buffer.**getInt8**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally called `getInt8S`, returning an `Int32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt8S : (Number, Buffer) -> Int32
+getInt8 : (Number, Buffer) -> Int8
 ```
 
 Gets a signed 8-bit integer starting at the given byte index.
@@ -461,7 +468,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing a signed 8-bit integer that starts at the given index|
+|`Int8`|A signed 8-bit integer that starts at the given index|
 
 Throws:
 
@@ -471,15 +478,85 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
-### Buffer.**getInt8U**
+### Buffer.**setInt8**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Int8`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt8U : (Number, Buffer) -> Int32
+setInt8 : (Number, Int8, Buffer) -> Void
+```
+
+Sets a signed 8-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Int8`|The value to set|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 1` is greater than the buffer size
+
+### Buffer.**addInt8**
+
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Int8`</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+addInt8 : (Int8, Buffer) -> Void
+```
+
+Appends a signed 8-bit integer to a buffer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int8`|The value to append|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+### Buffer.**getUint8**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally called `getInt8U`, returning an `Int32`</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+getUint8 : (Number, Buffer) -> Uint8
 ```
 
 Gets an unsigned 8-bit integer starting at the given byte index.
@@ -495,7 +572,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing an unsigned 8-bit integer that starts at the given index|
+|`Uint8`|An unsigned 8-bit integer that starts at the given index|
 
 Throws:
 
@@ -505,25 +582,25 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
-### Buffer.**setInt8**
+### Buffer.**setUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-setInt8 : (Number, Int32, Buffer) -> Void
+setUint8 : (Number, Uint8, Buffer) -> Void
 ```
 
-Sets a signed 8-bit integer starting at the given byte index.
+Sets an unsigned 8-bit integer starting at the given byte index.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`index`|`Number`|The byte index to update|
-|`value`|`Int32`|The value to set|
+|`value`|`Uint8`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 Throws:
@@ -534,35 +611,42 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 1` is greater than the buffer size
 
-### Buffer.**addInt8**
+### Buffer.**addUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-addInt8 : (Int32, Buffer) -> Void
+addUint8 : (Uint8, Buffer) -> Void
 ```
 
-Appends a signed 8-bit integer to a buffer.
+Appends an unsigned 8-bit integer to a buffer.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`Int32`|The value to append|
+|`value`|`Uint8`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
 
-### Buffer.**getInt16S**
+### Buffer.**getInt16**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally called `getInt16S`, returning an `Int32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt16S : (Number, Buffer) -> Int32
+getInt16 : (Number, Buffer) -> Int16
 ```
 
 Gets a signed 16-bit integer starting at the given byte index.
@@ -578,7 +662,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing a signed 16-bit integer that starts at the given index|
+|`Int16`|A signed 16-bit integer that starts at the given index|
 
 Throws:
 
@@ -588,15 +672,85 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
-### Buffer.**getInt16U**
+### Buffer.**setInt16**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Int16`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt16U : (Number, Buffer) -> Int32
+setInt16 : (Number, Int16, Buffer) -> Void
+```
+
+Sets a signed 16-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Int16`|The value to set|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 2` is greater than the buffer size
+
+### Buffer.**addInt16**
+
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Int16`</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+addInt16 : (Int16, Buffer) -> Void
+```
+
+Appends a signed 16-bit integer to a buffer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Int16`|The value to append|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+### Buffer.**getUint16**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally called `getInt16U`, returning an `Int32`</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+getUint16 : (Number, Buffer) -> Uint16
 ```
 
 Gets an unsigned 16-bit integer starting at the given byte index.
@@ -612,7 +766,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing an unsigned 16-bit integer that starts at the given index|
+|`Uint16`|An unsigned 16-bit integer that starts at the given index|
 
 Throws:
 
@@ -622,25 +776,25 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
-### Buffer.**setInt16**
+### Buffer.**setUint16**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-setInt16 : (Number, Int32, Buffer) -> Void
+setUint16 : (Number, Uint16, Buffer) -> Void
 ```
 
-Sets a signed 16-bit integer starting at the given byte index.
+Sets an unsigned 16-bit integer starting at the given byte index.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`index`|`Number`|The byte index to update|
-|`value`|`Int32`|The value to set|
+|`value`|`Uint16`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 Throws:
@@ -651,24 +805,24 @@ Throws:
 * When `index` is greater than or equal to the buffer size
 * When `index + 2` is greater than the buffer size
 
-### Buffer.**addInt16**
+### Buffer.**addUint16**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-addInt16 : (Int32, Buffer) -> Void
+addUint16 : (Uint16, Buffer) -> Void
 ```
 
-Appends a signed 16-bit integer to a buffer.
+Appends an unsigned 16-bit integer to a buffer.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`Int32`|The value to append|
+|`value`|`Uint16`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 ### Buffer.**getInt32**
@@ -752,6 +906,89 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int32`|The value to append|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+### Buffer.**getUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getUint32 : (Number, Buffer) -> Uint32
+```
+
+Gets an unsigned 32-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`buffer`|`Buffer`|The buffer to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint32`|An unsigned 32-bit integer that starts at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
+
+### Buffer.**setUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+setUint32 : (Number, Uint32, Buffer) -> Void
+```
+
+Sets an unsigned 32-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Uint32`|The value to set|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 4` is greater than the buffer size
+
+### Buffer.**addUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+addUint32 : (Uint32, Buffer) -> Void
+```
+
+Appends an unsigned 32-bit integer to a buffer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Uint32`|The value to append|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 ### Buffer.**getFloat32**
@@ -918,6 +1155,89 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Int64`|The value to set|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+### Buffer.**getUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getUint64 : (Number, Buffer) -> Uint64
+```
+
+Gets an unsigned 64-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`buffer`|`Buffer`|The buffer to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint64`|An unsigned 64-bit integer that starts at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
+
+### Buffer.**setUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+setUint64 : (Number, Uint64, Buffer) -> Void
+```
+
+Sets an unsigned 64-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Uint64`|The value to set|
+|`buffer`|`Buffer`|The buffer to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index` is greater than or equal to the buffer size
+* When `index + 8` is greater than the buffer size
+
+### Buffer.**addUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+addUint64 : (Uint64, Buffer) -> Void
+```
+
+Appends an unsigned 64-bit integer to a buffer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Uint64`|The value to set|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 ### Buffer.**getFloat64**
