@@ -445,10 +445,7 @@ provide let parse = input => {
         Ok(number) => Ok(number),
         Err(_) => {
           // Split the input on a `/` and attempt to parse a rational
-          let (+) = WasmI32.add
-          let (-) = WasmI32.sub
-          let (<) = WasmI32.ltU
-          let (==) = WasmI32.eq
+          from WasmI32 use { add as (+), sub as (-), ltU as (<), eq as (==) }
 
           // Search for `/`
           let input = WasmI32.fromGrain(input)

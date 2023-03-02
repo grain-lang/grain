@@ -70,7 +70,7 @@ let autogrow = (len, buf) => {
 /* Memcopies bytes from a source byte sequence to a destination byte sequence via pointers */
 @unsafe
 let appendBytes = (srcOff, dstOff, len, src, dst) => {
-  let (+) = WasmI32.add
+  from WasmI32 use { add as (+) }
   Memory.copy(dst + _VALUE_OFFSET + dstOff, src + _VALUE_OFFSET + srcOff, len)
 }
 
@@ -199,7 +199,7 @@ provide let reset = buffer => {
 provide let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
-  let (+) = WasmI32.add
+  from WasmI32 use { add as (+) }
   let src = WasmI32.fromGrain(buffer.data)
   let size = getSize(src)
   let off = coerceNumberToWasmI32(length)
