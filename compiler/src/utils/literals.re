@@ -72,7 +72,8 @@ let int8_min = (-128l);
 
 let conv_int8 = s => {
   let non_decimal =
-    String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
+    String.length(s) > 2
+    && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
   switch (Int32.of_string_opt(s)) {
   | None => None
   | Some(n) =>
@@ -101,7 +102,8 @@ let int16_min = (-32768l);
 
 let conv_int16 = s => {
   let non_decimal =
-    String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
+    String.length(s) > 2
+    && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
   switch (Int32.of_string_opt(s)) {
   | None => None
   | Some(n) =>
