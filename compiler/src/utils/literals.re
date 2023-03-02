@@ -71,8 +71,8 @@ let int8_max = 127l;
 let int8_min = (-128l);
 
 let conv_int8 = s => {
-  let hex_or_bin =
-    String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b"]);
+  let non_decimal =
+    String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
   switch (Int32.of_string_opt(s)) {
   | None => None
   | Some(n) =>
@@ -80,15 +80,15 @@ let conv_int8 = s => {
     let (>>) = Int32.shift_right;
     let (<<) = Int32.shift_left;
     if (n > int8_max) {
-      // Trick to get something like 0xFF to be legal
-      if (hex_or_bin && (n & 0xFFFFFF80l) >> 7 == 1l) {
+      // Trick to allow setting the sign bit in representations like 0xFF
+      if (non_decimal && (n & 0xFFFFFF80l) >> 7 == 1l) {
         Some(n << 24 >> 24);
       } else {
         None;
       };
     } else if (n < int8_min) {
       None;
-    } else if (hex_or_bin && n < 0l) {
+    } else if (non_decimal && n < 0l) {
       None; // Reject something like 0xFFFFFFFFs
     } else {
       Some(n);
@@ -100,8 +100,8 @@ let int16_max = 32767l;
 let int16_min = (-32768l);
 
 let conv_int16 = s => {
-  let hex_or_bin =
-    String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b"]);
+  let non_decimal =
+    String.length(s) > 2 && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
   switch (Int32.of_string_opt(s)) {
   | None => None
   | Some(n) =>
@@ -109,15 +109,15 @@ let conv_int16 = s => {
     let (>>) = Int32.shift_right;
     let (<<) = Int32.shift_left;
     if (n > int16_max) {
-      // Trick to get something like 0xFFFF to be legal
-      if (hex_or_bin && (n & 0xFFFF8000l) >> 15 == 1l) {
+      // Trick to allow setting the sign bit in representations like 0xFFFF
+      if (non_decimal && (n & 0xFFFF8000l) >> 15 == 1l) {
         Some(n << 16 >> 16);
       } else {
         None;
       };
     } else if (n < int16_min) {
       None;
-    } else if (hex_or_bin && n < 0l) {
+    } else if (non_decimal && n < 0l) {
       None; // Reject something like 0xFFFFFFFFS
     } else {
       Some(n);
