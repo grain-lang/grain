@@ -471,13 +471,13 @@ pattern matching › alias_match_5
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $8)
+         (local.get $7)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $7)
+         (local.get $8)
         )
        )
        (i32.const 1879048190)

@@ -320,13 +320,13 @@ pattern matching › guarded_match_2
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $11)
+       (local.get $10)
       )
      )
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $10)
+       (local.get $11)
       )
      )
      (drop
@@ -380,6 +380,12 @@ pattern matching › guarded_match_2
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $7)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $8)
         )
        )
@@ -387,12 +393,6 @@ pattern matching › guarded_match_2
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $9)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $7)
         )
        )
        (i32.const 1879048190)

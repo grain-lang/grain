@@ -941,13 +941,13 @@ pattern matching › tuple_match_deep7
            (drop
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (local.get $25)
+             (local.get $24)
             )
            )
            (drop
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (local.get $24)
+             (local.get $25)
             )
            )
            (i32.const 1879048190)
@@ -1016,13 +1016,13 @@ pattern matching › tuple_match_deep7
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $23)
+       (local.get $22)
       )
      )
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $22)
+       (local.get $23)
       )
      )
     )
@@ -1190,6 +1190,48 @@ pattern matching › tuple_match_deep7
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $12)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $13)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $14)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $15)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $16)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $17)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $18)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $19)
         )
        )
@@ -1202,49 +1244,7 @@ pattern matching › tuple_match_deep7
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $14)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $12)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $18)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $17)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $15)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $21)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $13)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $16)
         )
        )
        (i32.const 1879048190)

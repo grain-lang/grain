@@ -36,13 +36,13 @@ optimizations › trs1
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $2)
+         (local.get $0)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $0)
+         (local.get $2)
         )
        )
        (i32.const 1879048190)

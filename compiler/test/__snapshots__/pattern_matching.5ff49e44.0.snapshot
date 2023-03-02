@@ -353,6 +353,12 @@ pattern matching › record_match_4
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $7)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $8)
         )
        )
@@ -360,12 +366,6 @@ pattern matching › record_match_4
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $9)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $7)
         )
        )
        (i32.const 1879048190)

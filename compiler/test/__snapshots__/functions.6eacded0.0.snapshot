@@ -332,13 +332,13 @@ functions › func_recursive_closure
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $9)
+         (local.get $1)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $1)
+         (local.get $9)
         )
        )
        (i32.const 1879048190)

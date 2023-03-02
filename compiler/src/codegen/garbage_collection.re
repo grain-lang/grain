@@ -45,14 +45,26 @@ let instr_produces_value = instr =>
   | MCleanup(_) => failwith("Impossible: MCleanup before GC")
   };
 
-let usage_map = Hashtbl.create(512);
+module BindMap =
+  Map.Make({
+    type t = binding;
+    let compare = Stdlib.compare;
+  });
+
+module BindSet =
+  Set.Make({
+    type t = binding;
+    let compare = Stdlib.compare;
+  });
+
+let usage_map = ref(BindMap.empty);
 
 let register_slot = slot => {
-  Hashtbl.add(usage_map, slot, None);
+  usage_map := BindMap.add(slot, None, usage_map^);
 };
 
 let finalize = () => {
-  Hashtbl.iter(
+  BindMap.iter(
     (_, imm) => {
       switch (imm) {
       // This use of the immediate was the last seen, so mark it as such.
@@ -60,18 +72,14 @@ let finalize = () => {
       | None => ()
       }
     },
-    usage_map,
+    usage_map^,
   );
 };
 
 let register_usage = (slot, imm) => {
   // Here we could mark the old immediate explicitly as NotLast, but this isn't
   // information we use at this time, so we save a few cycles.
-  Hashtbl.replace(
-    usage_map,
-    slot,
-    Some(imm),
-  );
+  usage_map := BindMap.update(slot, _ => Some(Some(imm)), usage_map^);
 };
 
 let rec analyze_usage = instrs => {
@@ -183,7 +191,7 @@ let rec analyze_usage = instrs => {
     | MSet(binding, instr) =>
       // special case: consider this a use of the binding. This prevents a
       // potential double-decref, as MSet always decrefs the old value.
-      Hashtbl.replace(usage_map, binding, None);
+      usage_map := BindMap.update(binding, _ => Some(None), usage_map^);
       process_instr(instr);
     | MDrop(instr) => process_instr(instr)
     | MTracepoint(_) => ()
@@ -205,12 +213,6 @@ let is_last_usage = imm =>
   | _ => false
   };
 
-module BindSet =
-  Set.Make({
-    type t = binding;
-    let compare = Stdlib.compare;
-  });
-
 type bind_state =
   | Alive
   | Dead;
@@ -223,47 +225,47 @@ type cleanup_mode =
   // Cleanup of all bindings created within the current loop, used with `break` and `continue`.
   | CleanUpLoop;
 
-let live_bindings = Hashtbl.create(512);
+let live_bindings = ref(BindMap.empty);
 
 let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
   let apply_gc = (~loop_context=loop_context) =>
     apply_gc(~loop_context, ~level=level + 1);
 
   let get_level_dead_bindings = () => {
-    Hashtbl.fold(
+    BindMap.fold(
       (slot, (lv, state), acc) =>
         switch (state) {
         | Dead when lv == level => [slot, ...acc]
         | _ => acc
         },
-      live_bindings,
+      live_bindings^,
       [],
     );
   };
 
   let get_level_bindings = () => {
-    Hashtbl.fold(
+    BindMap.fold(
       (slot, (lv, _), acc) =>
         if (lv == level) {
           [slot, ...acc];
         } else {
           acc;
         },
-      live_bindings,
+      live_bindings^,
       [],
     );
   };
 
   let get_loop_bindings = () => {
     let loop_level = List.hd(loop_context);
-    Hashtbl.fold(
+    BindMap.fold(
       (slot, (lv, _), acc) =>
         if (lv > loop_level && lv <= level) {
           [slot, ...acc];
         } else {
           acc;
         },
-      live_bindings,
+      live_bindings^,
       [],
     );
   };
@@ -273,24 +275,30 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
     | MImmBinding((MArgBind(_, alloc) | MLocalBind(_, alloc)) as binding) =>
       if (is_last_usage(imm)) {
         let bind_level =
-          switch (Hashtbl.find_opt(live_bindings, binding)) {
+          switch (BindMap.find_opt(binding, live_bindings^)) {
           | Some((level, _)) => level
           | None => failwith("Impossible: Unknown binding")
           };
         if (level == bind_level) {
           if (non_gc_instr) {
             // Still need this to be cleaned up.
-            Hashtbl.replace(
-              live_bindings,
-              binding,
-              (bind_level, Dead),
-            );
+            live_bindings :=
+              BindMap.update(
+                binding,
+                _ => Some((bind_level, Dead)),
+                live_bindings^,
+              );
           } else {
-            Hashtbl.remove(live_bindings, binding);
+            live_bindings := BindMap.remove(binding, live_bindings^);
           };
           imm;
         } else {
-          Hashtbl.replace(live_bindings, binding, (bind_level, Dead));
+          live_bindings :=
+            BindMap.update(
+              binding,
+              _ => Some((bind_level, Dead)),
+              live_bindings^,
+            );
           switch (alloc) {
           | Unmanaged(_) => imm
           | Managed when non_gc_instr || is_return => imm
@@ -447,8 +455,9 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         | MImmBinding(
             (MArgBind(_, Managed) | MLocalBind(_, Managed)) as bind,
           ) =>
-          let (_, dead) = Hashtbl.find(live_bindings, bind);
-          Hashtbl.replace(live_bindings, bind, ((-1), dead));
+          let (_, dead) = BindMap.find(bind, live_bindings^);
+          live_bindings :=
+            BindMap.update(bind, _ => Some(((-1), dead)), live_bindings^);
         | _ => ()
         };
         MPrim1(WasmFromGrain, handle_imm(~non_gc_instr=true, imm));
@@ -505,7 +514,8 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
           List.map(
             ((bind, instr)) => {
               let instr = process_instr(instr);
-              Hashtbl.add(live_bindings, bind, (level, Alive));
+              live_bindings :=
+                BindMap.add(bind, (level, Alive), live_bindings^);
               (bind, instr);
             },
             binds,
@@ -521,7 +531,7 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
 
   let do_full_cleanup = (~skip, instr) => {
     let binds =
-      Hashtbl.fold(
+      BindMap.fold(
         (bind, _, acc) =>
           if (BindSet.mem(bind, skip)) {
             acc;
@@ -540,10 +550,15 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
             | _ => acc
             };
           },
-        live_bindings,
+        live_bindings^,
         [],
       );
-    List.iter(Hashtbl.remove(live_bindings), get_level_dead_bindings());
+    live_bindings :=
+      List.fold_left(
+        (bind, map) => BindMap.remove(map, bind),
+        live_bindings^,
+        get_level_dead_bindings(),
+      );
     switch (binds, instr) {
     | ([], Some(instr)) => [instr]
     | ([], None) => []
@@ -580,7 +595,7 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
       List.filter_map(
         bind => {
           if (remove) {
-            Hashtbl.remove(live_bindings, bind);
+            live_bindings := BindMap.remove(bind, live_bindings^);
           };
           switch (bind) {
           | _ when BindSet.mem(bind, skip) => None
@@ -744,17 +759,18 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
 };
 
 let apply_gc = (args, block) => {
-  Hashtbl.clear(usage_map);
-  Hashtbl.clear(live_bindings);
+  usage_map := BindMap.empty;
+  live_bindings := BindMap.empty;
 
   // Include function arguments as GC targets
   List.iteri(
     (i, arg) => {
-      Hashtbl.add(
-        live_bindings,
-        MArgBind(Int32.of_int(i), arg),
-        (0, Alive),
-      )
+      live_bindings :=
+        BindMap.add(
+          MArgBind(Int32.of_int(i), arg),
+          (0, Alive),
+          live_bindings^,
+        )
     },
     args,
   );

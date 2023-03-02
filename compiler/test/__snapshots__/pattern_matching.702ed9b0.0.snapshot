@@ -802,13 +802,13 @@ pattern matching › tuple_match_deep6
                (drop
                 (call $decRef_0
                  (global.get $GRAIN$EXPORT$decRef_0)
-                 (local.get $26)
+                 (local.get $25)
                 )
                )
                (drop
                 (call $decRef_0
                  (global.get $GRAIN$EXPORT$decRef_0)
-                 (local.get $25)
+                 (local.get $26)
                 )
                )
                (i32.const 1879048190)
@@ -895,13 +895,13 @@ pattern matching › tuple_match_deep6
            (drop
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (local.get $24)
+             (local.get $23)
             )
            )
            (drop
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (local.get $23)
+             (local.get $24)
             )
            )
            (i32.const 1879048190)
@@ -970,13 +970,13 @@ pattern matching › tuple_match_deep6
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $22)
+       (local.get $21)
       )
      )
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $21)
+       (local.get $22)
       )
      )
     )
@@ -1144,25 +1144,7 @@ pattern matching › tuple_match_deep6
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $19)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $20)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $11)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $14)
         )
        )
        (drop
@@ -1174,13 +1156,13 @@ pattern matching › tuple_match_deep6
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $18)
+         (local.get $13)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $17)
+         (local.get $14)
         )
        )
        (drop
@@ -1192,13 +1174,31 @@ pattern matching › tuple_match_deep6
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $13)
+         (local.get $16)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $16)
+         (local.get $17)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $18)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $19)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $20)
         )
        )
        (i32.const 1879048190)

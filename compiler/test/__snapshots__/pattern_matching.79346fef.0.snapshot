@@ -664,13 +664,13 @@ pattern matching › tuple_match_deep3
                (drop
                 (call $decRef_0
                  (global.get $GRAIN$EXPORT$decRef_0)
-                 (local.get $23)
+                 (local.get $22)
                 )
                )
                (drop
                 (call $decRef_0
                  (global.get $GRAIN$EXPORT$decRef_0)
-                 (local.get $22)
+                 (local.get $23)
                 )
                )
                (i32.const 1879048190)
@@ -832,13 +832,13 @@ pattern matching › tuple_match_deep3
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $19)
+       (local.get $18)
       )
      )
      (drop
       (call $decRef_0
        (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $18)
+       (local.get $19)
       )
      )
     )
@@ -1018,19 +1018,13 @@ pattern matching › tuple_match_deep3
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $11)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $10)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $14)
+         (local.get $11)
         )
        )
        (drop
@@ -1042,7 +1036,13 @@ pattern matching › tuple_match_deep3
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $17)
+         (local.get $13)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $14)
         )
        )
        (drop
@@ -1054,13 +1054,13 @@ pattern matching › tuple_match_deep3
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $13)
+         (local.get $16)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $16)
+         (local.get $17)
         )
        )
        (i32.const 1879048190)

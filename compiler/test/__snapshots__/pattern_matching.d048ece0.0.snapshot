@@ -776,13 +776,13 @@ pattern matching › adt_match_5
            (drop
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (local.get $18)
+             (local.get $17)
             )
            )
            (drop
             (call $decRef_0
              (global.get $GRAIN$EXPORT$decRef_0)
-             (local.get $17)
+             (local.get $18)
             )
            )
            (i32.const 1879048190)
@@ -956,25 +956,25 @@ pattern matching › adt_match_5
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $14)
-        )
-       )
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
          (local.get $12)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $15)
+         (local.get $13)
         )
        )
        (drop
         (call $decRef_0
          (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $13)
+         (local.get $14)
+        )
+       )
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $15)
         )
        )
        (drop
