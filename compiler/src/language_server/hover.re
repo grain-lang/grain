@@ -110,7 +110,7 @@ let print_type = (env, ty) => {
 };
 
 let module_lens = (decl: Types.module_declaration) => {
-  let vals = Modules.get_exports(decl);
+  let vals = Modules.get_provides(decl);
   let signatures =
     List.map(
       (v: Modules.export) =>

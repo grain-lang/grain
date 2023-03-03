@@ -14,7 +14,7 @@ type export = {
   signature: string,
 };
 
-let rec get_exports = (md: Types.module_declaration) =>
+let rec get_provides = (md: Types.module_declaration) =>
   try(
     switch (md.md_type) {
     | TModSignature(sigs) =>
