@@ -73,8 +73,7 @@ provide let code = (char: Char) => {
  */
 @unsafe
 provide let fromCode = (usv: Number) => {
-  let (-) = WasmI32.sub
-  let (<<) = WasmI32.shl
+  from WasmI32 use { sub as (-), shl as (<<) }
 
   if (!isValid(usv)) {
     throw InvalidArgument("Invalid character code")
@@ -145,15 +144,17 @@ provide let pred = char => {
  */
 @unsafe
 provide let toString = (char: Char) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (*) = WasmI32.mul
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
-  let (>>>) = WasmI32.shrU
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtU
-  let (<=) = WasmI32.leU
+  from WasmI32 use {
+    add as (+),
+    sub as (-),
+    mul as (*),
+    and as (&),
+    or as (|),
+    shrU as (>>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+  }
 
   let usv = untagChar(char)
 

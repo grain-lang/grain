@@ -11,7 +11,7 @@ let mut _F64_POWERS10_FAST_PATH = -1n
 
 @unsafe
 provide let get_F64_POWERS10_FAST_PATH = () => {
-  let (==) = WasmI32.eq
+  from WasmI32 use { eq as (==) }
   if (_F64_POWERS10_FAST_PATH == -1n) {
     _F64_POWERS10_FAST_PATH = Memory.malloc(256n) // 32 x 64-bit values
 
@@ -56,7 +56,7 @@ let mut _POWERS5 = -1n
 
 @unsafe
 provide let get_POWERS5 = () => {
-  let (==) = WasmI32.eq
+  from WasmI32 use { eq as (==) }
   if (_POWERS5 == -1n) {
     _POWERS5 = Memory.malloc(10416n) // 1302 x 64-bit values
     //5^-342

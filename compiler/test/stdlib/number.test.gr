@@ -22,7 +22,7 @@ assert Number.isNaN(Number.add(Infinity, NaN))
 assert Number.isNaN(Number.add(NaN, NaN))
 // Rational addition tests
 {
-  let (+) = Number.add
+  from Number use { add as (+) }
   assert 2/3 + 4 == 14/3
   assert 2/3 + Int32.toNumber(4l) == 14/3
   assert 2/3 + Int64.toNumber(4L) == 14/3
@@ -39,7 +39,7 @@ assert Number.isNaN(Number.sub(Infinity, NaN))
 assert Number.isNaN(Number.sub(NaN, NaN))
 // Rational subtraction tests
 {
-  let (-) = Number.sub
+  from Number use { sub as (-) }
   assert 2/3 - 4 == -10/3
   assert 2/3 - Int32.toNumber(4l) == -10/3
   assert 2/3 - Int64.toNumber(4L) == -10/3
@@ -60,7 +60,7 @@ assert Number.isNaN(Number.mul(Infinity, NaN))
 assert Number.isNaN(Number.mul(NaN, NaN))
 // Rational mul tests
 {
-  let (*) = Number.mul
+  from Number use { mul as (*) }
   assert 2/3 * 4 == 8/3
   assert 2/3 * Int32.toNumber(4l) == 8/3
   assert 2/3 * Int64.toNumber(4L) == 8/3
@@ -81,7 +81,7 @@ assert Number.isNaN(Number.div(Infinity, NaN))
 assert Number.isNaN(Number.div(NaN, NaN))
 // Rational div tests
 {
-  let (/) = Number.div
+  from Number use { div as (/) }
   assert 2/3 / 4 == 1/6
   assert 2/3 / Int32.toNumber(4l) == 1/6
   assert 2/3 / Int64.toNumber(4L) == 1/6

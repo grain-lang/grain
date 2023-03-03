@@ -66,8 +66,7 @@ let _F32_MAX_SAFE_INTEGER = 16777215.0w
 @unsafe
 let _F64_MAX_SAFE_INTEGER = 9007199254740991.0W
 
-let (==) = WasmI32.eq
-let (!=) = WasmI32.ne
+from WasmI32 use { eq as (==), ne as (!=) }
 
 @unsafe
 provide let tagSimple = x => {

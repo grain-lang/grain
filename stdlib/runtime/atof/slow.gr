@@ -11,11 +11,11 @@
  * the Software, and to permit persons to whom the Software
  * is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice
  * shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
  * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
  * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -59,7 +59,7 @@ let mut _POWERS = -1n
 
 @unsafe
 let get_POWERS = () => {
-  let (==) = WasmI32.eq
+  from WasmI32 use { eq as (==) }
   if (_POWERS == -1n) {
     _POWERS = Memory.malloc(130n)
     WasmI32.store8(_POWERS, 0n, 0n)
@@ -117,16 +117,18 @@ let getShift = n => {
 */
 @unsafe
 provide let parseLongMantissa = (s: String) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltS
-  let (>) = WasmI32.gtS
-  let (>=) = WasmI32.geS
-  let (<=) = WasmI32.leS
-  let (>>) = WasmI32.shrU
-  let (<<) = WasmI32.shl
-  let (==) = WasmI32.eq
+  from WasmI32 use {
+    add as (+),
+    sub as (-),
+    and as (&),
+    ltS as (<),
+    gtS as (>),
+    geS as (>=),
+    leS as (<=),
+    shrU as (>>),
+    shl as (<<),
+    eq as (==),
+  }
 
   let mut d = parseDecimal(s)
   let digits = WasmI32.fromGrain(d.digits)

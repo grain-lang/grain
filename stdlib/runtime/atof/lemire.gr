@@ -13,11 +13,11 @@
  * the Software, and to permit persons to whom the Software
  * is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice
  * shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
  * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
  * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -68,15 +68,17 @@ primitive (!) = "@not"
 // bits and the low part corresponding to the least significant bits.
 @unsafe
 let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
-  let (==) = WasmI64.eq
-  let (&) = WasmI64.and
-  let (>) = WasmI64.gtU
-  let (<) = WasmI64.ltU
-  let (>=) = WasmI64.geS
-  let (<=) = WasmI64.leS
-  let (>>) = WasmI64.shrU
-  let (-) = WasmI64.sub
-  let (+) = WasmI64.add
+  from WasmI64 use {
+    eq as (==),
+    and as (&),
+    gtU as (>),
+    ltU as (<),
+    geS as (>=),
+    leS as (<=),
+    shrU as (>>),
+    sub as (-),
+    add as (+),
+  }
 
   let mask = if (precision < 64N) {
     0xFFFF_FFFF_FFFF_FFFFN >> precision
@@ -125,15 +127,17 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
 // (u64, i32)
 @unsafe
 provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
-  let (==) = WasmI64.eq
-  let (<) = WasmI64.ltS
-  let (<=) = WasmI64.leS
-  let (>) = WasmI64.gtS
-  let (>=) = WasmI64.geS
-  let (<<) = WasmI64.shl
-  let (>>) = WasmI64.shrS
-  let (&) = WasmI64.and
-  let (+) = WasmI64.add
+  from WasmI64 use {
+    eq as (==),
+    ltS as (<),
+    leS as (<=),
+    gtS as (>),
+    geS as (>=),
+    shl as (<<),
+    shrS as (>>),
+    and as (&),
+    add as (+),
+  }
 
   let w = mantissa
   let q = exponent
@@ -172,15 +176,13 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
           hi,
           WasmI64.extendI32S(
             {
-              let (+) = WasmI32.add
-              let (-) = WasmI32.sub
+              from WasmI32 use { add as (+), sub as (-) }
               upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
             }
           )
         )
         let mut power2 = {
-          let (+) = WasmI32.add
-          let (-) = WasmI32.sub
+          from WasmI32 use { add as (+), sub as (-) }
           let q = WasmI32.wrapI64(q)
           let lz = WasmI32.wrapI64(lz)
           power(q) + upperbit - lz - _MINIMUM_EXPONENT
@@ -227,8 +229,7 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             mantissa <<
             WasmI64.extendI32S(
               {
-                let (+) = WasmI32.add
-                let (-) = WasmI32.sub
+                from WasmI32 use { add as (+), sub as (-) }
                 upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
               }
             ) ==

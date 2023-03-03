@@ -324,7 +324,7 @@ provide exception SystemError(Number)
 
 provide let stringOfSystemError = code => {
   let n = WasmI32.shrS(WasmI32.fromGrain(code), 1n)
-  let (==) = WasmI32.eq
+  from WasmI32 use { eq as (==) }
   match (n) {
     n when n == _ESUCCESS =>
       "SystemError: No error occurred. System call completed successfully.",

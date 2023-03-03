@@ -787,10 +787,7 @@ provide let fdStats = (fd: FileDescriptor) => {
     WasmI32.gtU(fdflags & 1n << (WasmI32.fromGrain(i) >> 1n), 0n)
   }
   let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
-
-  let (&) = WasmI64.and
-  let (>) = WasmI64.gtU
-  let (<<) = WasmI64.shl
+  from WasmI64 use { and as (&), gtU as (>), shl as (<<) }
 
   let flagsToWasmVal = (flag, i) => {
     let rights = WasmI64.load(structPtr, 8n)
