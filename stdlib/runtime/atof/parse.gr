@@ -538,7 +538,7 @@ provide let parseFloat = (string: String) => {
         if (exponent <= _MAX_EXPONENT_FAST_PATH) {
           // normal fast path
           from WasmF64 use { mul as (*), div as (/) }
-          from WasmI32 use { leS as (<) }
+          from WasmI32 use { ltS as (<) }
 
           let mantissa = WasmF64.convertI64U(mantissa)
           let n = if (exponent < 0n) {
