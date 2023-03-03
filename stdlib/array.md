@@ -87,7 +87,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When `length` is not an integer
+* When `length` is not an int32
 * When `length` is negative
 
 Examples:
@@ -128,7 +128,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When `length` is not an integer
+* When `length` is not an int32
 * When `length` is negative
 
 Examples:
@@ -173,6 +173,13 @@ Returns:
 |----|-----------|
 |`a`|The element from the array|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is not an int32
+* When `index` is out of bounds
+
 Examples:
 
 ```grain
@@ -210,6 +217,13 @@ Parameters:
 |`value`|`a`|The value to store|
 |`array`|`Array<a>`|The array to update|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is not an int32
+* When `index` is out of bounds
+
 Examples:
 
 ```grain
@@ -243,6 +257,12 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array containing elements from `array1` followed by elements from `array2`|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When the combined length of the two arrays is not an int32
+
 Examples:
 
 ```grain
@@ -274,6 +294,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<a>`|The new array|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When the combined length of the all arrays is not an int32
 
 Examples:
 
@@ -585,6 +611,12 @@ Returns:
 |----|-----------|
 |`Array<a>`|The new array|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When the combined length of the all arrays is not an int32
+
 ### Array.**every**
 
 <details disabled>
@@ -681,6 +713,13 @@ Parameters:
 |`start`|`Number`|The index to begin replacement|
 |`stop`|`Number`|The (exclusive) index to end replacement|
 |`array`|`Array<a>`|The array to update|
+
+Throws:
+
+`Failure(String)`
+
+* When the start index is out of bounds
+* When the start index is greater then the stop index
 
 ### Array.**reverse**
 
@@ -863,6 +902,12 @@ Returns:
 |----|-----------|
 |`Array<(a, b)>`|The new array containing all pairs of `(a, b)`|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When the multiplied array lengths are not an int32
+
 ### Array.**count**
 
 <details disabled>
@@ -1035,7 +1080,7 @@ Returns:
 
 Throws:
 
-`Failure(String)`
+`IndexOutOfBounds(String)`
 
 * When the arrays have different sizes
 
@@ -1072,6 +1117,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<c>`|The new array containing elements derived from applying the function to pairs of input array elements|
+
+Throws:
+
+`IndexOutOfBounds(String)`
+
+* When the arrays have different sizes
 
 Examples:
 
