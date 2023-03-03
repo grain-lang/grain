@@ -1434,7 +1434,7 @@ let bitwiseNotUnsigned = (num: WasmI32) => {
   // but `bitwiseNot` is the user-facing bitwise NOT implementation
   let num1Limbs = getSize(num)
   let ret = init(num1Limbs)
-  from WasmI32 use { and as (+), ltU as (<) }
+  from WasmI32 use { add as (+), ltU as (<) }
   from WasmI64 use { xor as (^) }
   for (let mut i = 0n; i < num1Limbs; i += 1n) {
     setLimb(ret, i, getLimb(num, i) ^ _UMAX_I64)
