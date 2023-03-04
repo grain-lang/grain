@@ -74,8 +74,8 @@ describe("chars", ({test, testSkip}) => {
   assertCompileError(
     "char_illegal2",
     {|'{"test": 1}'|},
-    {|This character literal contains multiple characters: '{"test": 1}'
-Did you mean to create the string "{\"test\": 1}" instead?|},
+    {|This character literal contains multiple characters: '\{"test": 1\}'
+Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
   );
   assertCompileError(
     "unicode_err1",
