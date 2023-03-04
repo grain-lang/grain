@@ -87,7 +87,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When `length` is not an int32
+* When `length` is not an integer
 * When `length` is negative
 
 Examples:
@@ -128,7 +128,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When `length` is not an int32
+* When `length` is not an integer
 * When `length` is negative
 
 Examples:
@@ -177,7 +177,7 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index` is not an int32
+* When `index` is not an integer
 * When `index` is out of bounds
 
 Examples:
@@ -221,7 +221,7 @@ Throws:
 
 `IndexOutOfBounds`
 
-* When `index` is not an int32
+* When `index` is not an integer
 * When `index` is out of bounds
 
 Examples:
@@ -261,7 +261,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the combined length of the two arrays is not an int32
+* When the combined length of the two arrays is not an integer
 
 Examples:
 
@@ -299,7 +299,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the combined length of the all arrays is not an int32
+* When the combined length of the all arrays is not an integer
 
 Examples:
 
@@ -615,7 +615,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the combined length of the all arrays is not an int32
+* When the combined length of the all arrays is not an integer
 
 ### Array.**every**
 
@@ -906,7 +906,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the multiplied array lengths are not an int32
+* When the multiplied array lengths are not an integer
 
 ### Array.**count**
 
