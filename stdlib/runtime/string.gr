@@ -180,9 +180,7 @@ let rec writeStrings = (buf, list) => {
       Memory.copy(buf, hd + 8n, hdSize)
       writeStrings(buf + hdSize, tl)
     },
-    [] => {
-      void
-    },
+    [] => void,
   }
 }
 
