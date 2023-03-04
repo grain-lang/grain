@@ -2803,13 +2803,30 @@ let rec expBySquaring = (y, x, n) => {
 provide let (**) = (base, power) => {
   let (==) = numberEq
   let (!=) = (x, y) => !numberEq(x, y)
+  let basePtr = WasmI32.fromGrain(base)
+  let powerPtr = WasmI32.fromGrain(power)
   if (base == 1 && power != 0) {
     return 1
-  } else if (
-    isInteger(WasmI32.fromGrain(base)) && isInteger(WasmI32.fromGrain(power))
-  ) {
+  } else if (isInteger(basePtr) && isInteger(powerPtr)) {
     if (power < 0) return expBySquaring(1, 1 / base, power * -1)
     else return expBySquaring(1, base, power)
+  } else if (isRational(basePtr) && isInteger(powerPtr)) {
+    // Apply expBySquaring to numerator and denominator
+    let numerator = WasmI32.fromGrain(base)
+    Memory.incRef(numerator)
+    let numerator = WasmI32.toGrain(numerator): Rational
+    let numerator = rationalNumerator(numerator)
+    let denominator = WasmI32.fromGrain(base)
+    Memory.incRef(denominator)
+    let denominator = WasmI32.toGrain(denominator): Rational
+    let denominator = rationalDenominator(denominator)
+    let numerator =
+      if (power < 0) expBySquaring(1, 1 / numerator, power * -1)
+      else expBySquaring(1, numerator, power)
+    let denominator =
+      if (power < 0) expBySquaring(1, 1 / denominator, power * -1)
+      else expBySquaring(1, denominator, power)
+    return numerator / denominator
   } else {
     // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
     from WasmF64 use {
