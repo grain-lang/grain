@@ -241,6 +241,8 @@ bar", 1))|},
     {|print(("foo\"bar", 1))|},
     "(\"foo\\\"bar\", 1)\n",
   );
+  assertRun("toString_boxing1", {|print(box(1))|}, "box(1)\n");
+  assertRun("toString_boxing2", {|print(box(true))|}, "box(true)\n");
   assertCompileError(
     "string_err",
     "let x = \"hello\"; x + \", world\"",
