@@ -1,7 +1,6 @@
 module MapTest
 
 include "map"
-from Map use { Immutable as ImmMap }
 include "list"
 include "array"
 
@@ -413,316 +412,318 @@ Map.update(
 
 assert Map.contains("c", toUpdate) == false
 
-// Immutable map tests
+module Immutable {
+  from Map use { Immutable as Map }
 
-let strKeys = ImmMap.fromList([("🌾", 1), ("🐑", 2), ("🧱", 3)])
-let numKeys = ImmMap.fromList([(1, "🌾"), (2, "🐑"), (3, "🧱")])
-let varKeys = ImmMap.fromList(
-  [(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")]
-)
-let recordKeys = ImmMap.fromList(
-  [
-    ({ name: "Grain", emoji: "🌾" }, 1),
-    ({ name: "Sheep", emoji: "🐑" }, 2),
-    ({ name: "Brick", emoji: "🧱" }, 3),
-  ]
-)
+  let strKeys = Map.fromList([("🌾", 1), ("🐑", 2), ("🧱", 3)])
+  let numKeys = Map.fromList([(1, "🌾"), (2, "🐑"), (3, "🧱")])
+  let varKeys = Map.fromList(
+    [(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")]
+  )
+  let recordKeys = Map.fromList(
+    [
+      ({ name: "Grain", emoji: "🌾" }, 1),
+      ({ name: "Sheep", emoji: "🐑" }, 2),
+      ({ name: "Brick", emoji: "🧱" }, 3),
+    ]
+  )
 
-// ImmMap.isEmpty()
+  // Map.isEmpty()
 
-let mut e = ImmMap.empty
+  let mut e = Map.empty
 
-assert ImmMap.isEmpty(e)
-e = ImmMap.remove("🌾", e)
-assert ImmMap.isEmpty(e)
-let newE = ImmMap.set("🌾", "🌾", e)
-assert !ImmMap.isEmpty(newE)
-assert ImmMap.isEmpty(e)
+  assert Map.isEmpty(e)
+  e = Map.remove("🌾", e)
+  assert Map.isEmpty(e)
+  let newE = Map.set("🌾", "🌾", e)
+  assert !Map.isEmpty(newE)
+  assert Map.isEmpty(e)
 
-// ImmMap.size()
+  // Map.size()
 
-let m = strKeys
+  let m = strKeys
 
-assert ImmMap.size(m) == 3
+  assert Map.size(m) == 3
 
-// ImmMap.contains()
+  // Map.contains()
 
-assert ImmMap.contains("🌾", m)
-assert ImmMap.contains("🐑", m)
-assert ImmMap.contains("🧱", m)
-assert !ImmMap.contains("🌳", m)
+  assert Map.contains("🌾", m)
+  assert Map.contains("🐑", m)
+  assert Map.contains("🧱", m)
+  assert !Map.contains("🌳", m)
 
-// ImmMap.set() & ImmutableMap.get()
+  // Map.set() & ImmutableMap.get()
 
-// With Number keys
-let nums = numKeys
+  // With Number keys
+  let nums = numKeys
 
-assert ImmMap.get(1, nums) == Some("🌾")
-assert ImmMap.get(2, nums) == Some("🐑")
-assert ImmMap.get(3, nums) == Some("🧱")
-assert ImmMap.get(4, nums) == None
+  assert Map.get(1, nums) == Some("🌾")
+  assert Map.get(2, nums) == Some("🐑")
+  assert Map.get(3, nums) == Some("🧱")
+  assert Map.get(4, nums) == None
 
-// With String keys
-let mut strs = strKeys
+  // With String keys
+  let mut strs = strKeys
 
-assert ImmMap.get("🌾", strs) == Some(1)
-assert ImmMap.get("🐑", strs) == Some(2)
-assert ImmMap.get("🧱", strs) == Some(3)
-assert ImmMap.get("🌳", strs) == None
+  assert Map.get("🌾", strs) == Some(1)
+  assert Map.get("🐑", strs) == Some(2)
+  assert Map.get("🧱", strs) == Some(3)
+  assert Map.get("🌳", strs) == None
 
-// With variant keys
-let vars = varKeys
+  // With variant keys
+  let vars = varKeys
 
-assert ImmMap.get(Grain, vars) == Some("🌾")
-assert ImmMap.get(Sheep, vars) == Some("🐑")
-assert ImmMap.get(Brick, vars) == Some("🧱")
-assert ImmMap.get(Wood, vars) == None
+  assert Map.get(Grain, vars) == Some("🌾")
+  assert Map.get(Sheep, vars) == Some("🐑")
+  assert Map.get(Brick, vars) == Some("🧱")
+  assert Map.get(Wood, vars) == None
 
-// With record keys
-let recs = recordKeys
+  // With record keys
+  let recs = recordKeys
 
-assert ImmMap.get({ name: "Grain", emoji: "🌾" }, recs) == Some(1)
-assert ImmMap.get({ name: "Sheep", emoji: "🐑" }, recs) == Some(2)
-assert ImmMap.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3)
-assert ImmMap.get({ name: "Wood", emoji: "🌳" }, recs) == None
+  assert Map.get({ name: "Grain", emoji: "🌾" }, recs) == Some(1)
+  assert Map.get({ name: "Sheep", emoji: "🐑" }, recs) == Some(2)
+  assert Map.get({ name: "Brick", emoji: "🧱" }, recs) == Some(3)
+  assert Map.get({ name: "Wood", emoji: "🌳" }, recs) == None
 
-// Overwriting data
-let mut o = ImmMap.empty
+  // Overwriting data
+  let mut o = Map.empty
 
-o = ImmMap.set(1, "🐑", o)
-o = ImmMap.set(1, "🌾", o)
+  o = Map.set(1, "🐑", o)
+  o = Map.set(1, "🌾", o)
 
-assert ImmMap.get(1, o) == Some("🌾")
+  assert Map.get(1, o) == Some("🌾")
 
-// ImmMap.remove()
+  // Map.remove()
 
-let mut r = strKeys
+  let mut r = strKeys
 
-assert ImmMap.size(r) == 3
+  assert Map.size(r) == 3
 
-r = ImmMap.remove("🐑", r)
+  r = Map.remove("🐑", r)
 
-assert ImmMap.size(r) == 2
-assert ImmMap.get("🐑", r) == None
+  assert Map.size(r) == 2
+  assert Map.get("🐑", r) == None
 
-r = ImmMap.remove("🌳", r)
+  r = Map.remove("🌳", r)
 
-assert ImmMap.size(r) == 2
+  assert Map.size(r) == 2
 
-r = ImmMap.remove("🌾", r)
-assert ImmMap.get("🌾", r) == None
+  r = Map.remove("🌾", r)
+  assert Map.get("🌾", r) == None
 
-r = ImmMap.remove("🧱", r)
-assert ImmMap.get("🧱", r) == None
+  r = Map.remove("🧱", r)
+  assert Map.get("🧱", r) == None
 
-assert ImmMap.isEmpty(r)
+  assert Map.isEmpty(r)
 
-// ImmMap.forEach()
+  // Map.forEach()
 
-let fe = varKeys
+  let fe = varKeys
 
-let mut called = 0
+  let mut called = 0
 
-ImmMap.forEach((key, value) => {
-  called += 1
-  match (key) {
-    Grain => assert value == "🌾",
-    Sheep => assert value == "🐑",
-    Brick => assert value == "🧱",
-    _ => fail "ImmMap.forEach() should not contain this value.",
-  }
-}, fe)
+  Map.forEach((key, value) => {
+    called += 1
+    match (key) {
+      Grain => assert value == "🌾",
+      Sheep => assert value == "🐑",
+      Brick => assert value == "🧱",
+      _ => fail "Map.forEach() should not contain this value.",
+    }
+  }, fe)
 
-assert called == 3
+  assert called == 3
 
-// ImmMap.reduce()
+  // Map.reduce()
 
-let mut r = ImmMap.empty
+  let mut r = Map.empty
 
-r = ImmMap.set(Grain, 1, r)
-r = ImmMap.set(Sheep, 2, r)
-r = ImmMap.set(Brick, 3, r)
+  r = Map.set(Grain, 1, r)
+  r = Map.set(Sheep, 2, r)
+  r = Map.set(Brick, 3, r)
 
-let mut called = 0
+  let mut called = 0
 
-let result = ImmMap.reduce((acc, key, value) => {
-  called += 1
-  match (key) {
-    Grain => assert value == 1,
-    Sheep => assert value == 2,
-    Brick => assert value == 3,
-    _ => fail "ImmMap.reduce() should not contain this value.",
-  }
-  acc + value
-}, 0, r)
+  let result = Map.reduce((acc, key, value) => {
+    called += 1
+    match (key) {
+      Grain => assert value == 1,
+      Sheep => assert value == 2,
+      Brick => assert value == 3,
+      _ => fail "Map.reduce() should not contain this value.",
+    }
+    acc + value
+  }, 0, r)
 
-assert called == 3
-assert result == 6
+  assert called == 3
+  assert result == 6
 
-// ImmMap.keys() & ImmutableMap.values();
+  // Map.keys() & ImmutableMap.values();
 
-let kvs = varKeys
+  let kvs = varKeys
 
-let keys = ImmMap.keys(kvs)
+  let keys = Map.keys(kvs)
 
-assert List.contains(Grain, keys)
-assert List.contains(Sheep, keys)
-assert List.contains(Brick, keys)
-assert !List.contains(Wood, keys)
+  assert List.contains(Grain, keys)
+  assert List.contains(Sheep, keys)
+  assert List.contains(Brick, keys)
+  assert !List.contains(Wood, keys)
 
-let vals = ImmMap.values(kvs)
+  let vals = Map.values(kvs)
 
-assert List.contains("🌾", vals)
-assert List.contains("🐑", vals)
-assert List.contains("🧱", vals)
-assert !List.contains("🌳", vals)
+  assert List.contains("🌾", vals)
+  assert List.contains("🐑", vals)
+  assert List.contains("🧱", vals)
+  assert !List.contains("🌳", vals)
 
-// ImmMap.toList()
+  // Map.toList()
 
-let tl = varKeys
+  let tl = varKeys
 
-let lis = ImmMap.toList(tl)
+  let lis = Map.toList(tl)
 
-// No order is guaranteed
-assert List.contains((Grain, "🌾"), lis)
-assert List.contains((Sheep, "🐑"), lis)
-assert List.contains((Brick, "🧱"), lis)
-assert !List.contains((Wood, "🌳"), lis)
+  // No order is guaranteed
+  assert List.contains((Grain, "🌾"), lis)
+  assert List.contains((Sheep, "🐑"), lis)
+  assert List.contains((Brick, "🧱"), lis)
+  assert !List.contains((Wood, "🌳"), lis)
 
-// ImmMap.fromList()
+  // Map.fromList()
 
-let fl = ImmMap.fromList([(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
+  let fl = Map.fromList([(Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
 
-assert ImmMap.contains(Grain, fl)
-assert ImmMap.contains(Sheep, fl)
-assert ImmMap.contains(Brick, fl)
-assert !ImmMap.contains(Wood, fl)
+  assert Map.contains(Grain, fl)
+  assert Map.contains(Sheep, fl)
+  assert Map.contains(Brick, fl)
+  assert !Map.contains(Wood, fl)
 
-// ImmMap.toArray()
+  // Map.toArray()
 
-let ta = varKeys
+  let ta = varKeys
 
-let arr = ImmMap.toArray(ta)
+  let arr = Map.toArray(ta)
 
-// No order is guaranteed
-assert Array.contains((Grain, "🌾"), arr)
-assert Array.contains((Sheep, "🐑"), arr)
-assert Array.contains((Brick, "🧱"), arr)
-assert !Array.contains((Wood, "🌳"), arr)
+  // No order is guaranteed
+  assert Array.contains((Grain, "🌾"), arr)
+  assert Array.contains((Sheep, "🐑"), arr)
+  assert Array.contains((Brick, "🧱"), arr)
+  assert !Array.contains((Wood, "🌳"), arr)
 
-// ImmMap.fromArray()
+  // Map.fromArray()
 
-let fa = ImmMap.fromArray([> (Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
+  let fa = Map.fromArray([> (Grain, "🌾"), (Sheep, "🐑"), (Brick, "🧱")])
 
-assert ImmMap.contains(Grain, fa)
-assert ImmMap.contains(Sheep, fa)
-assert ImmMap.contains(Brick, fa)
-assert !ImmMap.contains(Wood, fa)
+  assert Map.contains(Grain, fa)
+  assert Map.contains(Sheep, fa)
+  assert Map.contains(Brick, fa)
+  assert !Map.contains(Wood, fa)
 
-// ImmMap.filter()
+  // Map.filter()
 
-let makeFilterTestImmutableMap = () =>
-  ImmMap.fromList([(Grain, "g"), (Sheep, "s"), (Brick, "b")])
+  let makeFilterTestImmutableMap = () =>
+    Map.fromList([(Grain, "g"), (Sheep, "s"), (Brick, "b")])
 
-let mut filterTestImmutableMap = makeFilterTestImmutableMap()
+  let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-filterTestImmutableMap = ImmMap.filter((key, value) =>
-  key == Sheep, filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter((key, value) =>
+    key == Sheep, filterTestImmutableMap)
 
-assert !ImmMap.contains(Grain, filterTestImmutableMap)
-assert ImmMap.contains(Sheep, filterTestImmutableMap)
-assert !ImmMap.contains(Brick, filterTestImmutableMap)
+  assert !Map.contains(Grain, filterTestImmutableMap)
+  assert Map.contains(Sheep, filterTestImmutableMap)
+  assert !Map.contains(Brick, filterTestImmutableMap)
 
-let mut filterTestImmutableMap = makeFilterTestImmutableMap()
+  let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-filterTestImmutableMap = ImmMap.filter((key, value) =>
-  value == "b" || value == "s", filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter((key, value) =>
+    value == "b" || value == "s", filterTestImmutableMap)
 
-assert !ImmMap.contains(Grain, filterTestImmutableMap)
-assert ImmMap.contains(Sheep, filterTestImmutableMap)
-assert ImmMap.contains(Brick, filterTestImmutableMap)
+  assert !Map.contains(Grain, filterTestImmutableMap)
+  assert Map.contains(Sheep, filterTestImmutableMap)
+  assert Map.contains(Brick, filterTestImmutableMap)
 
-let mut filterTestImmutableMap = makeFilterTestImmutableMap()
+  let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-filterTestImmutableMap = ImmMap.filter((key, value) =>
-  value == "invalid", filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter((key, value) =>
+    value == "invalid", filterTestImmutableMap)
 
-assert ImmMap.size(filterTestImmutableMap) == 0
+  assert Map.size(filterTestImmutableMap) == 0
 
-let mut filterTestImmutableMap = makeFilterTestImmutableMap()
+  let mut filterTestImmutableMap = makeFilterTestImmutableMap()
 
-filterTestImmutableMap = ImmMap.filter((key, value) =>
-  true, filterTestImmutableMap)
+  filterTestImmutableMap = Map.filter((key, value) =>
+    true, filterTestImmutableMap)
 
-assert ImmMap.size(filterTestImmutableMap) == 3
+  assert Map.size(filterTestImmutableMap) == 3
 
-// ImmMap.reject()
+  // Map.reject()
 
-let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
+  let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-rejectTestImmutableMap = ImmMap.reject((key, value) =>
-  key == Sheep, rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject((key, value) =>
+    key == Sheep, rejectTestImmutableMap)
 
-assert ImmMap.contains(Grain, rejectTestImmutableMap)
-assert !ImmMap.contains(Sheep, rejectTestImmutableMap)
-assert ImmMap.contains(Brick, rejectTestImmutableMap)
+  assert Map.contains(Grain, rejectTestImmutableMap)
+  assert !Map.contains(Sheep, rejectTestImmutableMap)
+  assert Map.contains(Brick, rejectTestImmutableMap)
 
-let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
+  let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-rejectTestImmutableMap = ImmMap.reject((key, value) =>
-  value == "b" || value == "s", rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject((key, value) =>
+    value == "b" || value == "s", rejectTestImmutableMap)
 
-assert ImmMap.contains(Grain, rejectTestImmutableMap)
-assert !ImmMap.contains(Sheep, rejectTestImmutableMap)
-assert !ImmMap.contains(Brick, rejectTestImmutableMap)
+  assert Map.contains(Grain, rejectTestImmutableMap)
+  assert !Map.contains(Sheep, rejectTestImmutableMap)
+  assert !Map.contains(Brick, rejectTestImmutableMap)
 
-let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
+  let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-rejectTestImmutableMap = ImmMap.reject((key, value) =>
-  true, rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject((key, value) =>
+    true, rejectTestImmutableMap)
 
-assert ImmMap.size(rejectTestImmutableMap) == 0
+  assert Map.size(rejectTestImmutableMap) == 0
 
-let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
+  let mut rejectTestImmutableMap = makeFilterTestImmutableMap()
 
-rejectTestImmutableMap = ImmMap.reject((key, value) =>
-  false, rejectTestImmutableMap)
+  rejectTestImmutableMap = Map.reject((key, value) =>
+    false, rejectTestImmutableMap)
 
-assert ImmMap.size(rejectTestImmutableMap) == 3
+  assert Map.size(rejectTestImmutableMap) == 3
 
-// ImmMap.update()
+  // Map.update()
 
-let mut toUpdate = ImmMap.fromList([("a", 1), ("b", 2), ("c", 3)])
+  let mut toUpdate = Map.fromList([("a", 1), ("b", 2), ("c", 3)])
 
-toUpdate = ImmMap.update(
-  "b",
-  old => {
-    assert old == Some(2)
-    Some(4)
-  },
-  toUpdate
-)
+  toUpdate = Map.update(
+    "b",
+    old => {
+      assert old == Some(2)
+      Some(4)
+    },
+    toUpdate
+  )
 
-assert ImmMap.get("b", toUpdate) == Some(4)
+  assert Map.get("b", toUpdate) == Some(4)
 
-toUpdate = ImmMap.update(
-  "d",
-  old => {
-    assert old == None
-    Some(10)
-  },
-  toUpdate
-)
+  toUpdate = Map.update(
+    "d",
+    old => {
+      assert old == None
+      Some(10)
+    },
+    toUpdate
+  )
 
-assert ImmMap.get("d", toUpdate) == Some(10)
+  assert Map.get("d", toUpdate) == Some(10)
 
-toUpdate = ImmMap.update(
-  "c",
-  old => {
-    assert old == Some(3)
-    None
-  },
-  toUpdate
-)
+  toUpdate = Map.update(
+    "c",
+    old => {
+      assert old == Some(3)
+      None
+    },
+    toUpdate
+  )
 
-assert ImmMap.contains("c", toUpdate) == false
+  assert Map.contains("c", toUpdate) == false
+}

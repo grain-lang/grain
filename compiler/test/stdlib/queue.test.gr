@@ -1,7 +1,6 @@
 module QueueTest
 
 include "queue"
-from Queue use { Immutable as ImmQ }
 include "list"
 
 // Mutable queue tests
@@ -83,36 +82,38 @@ assert Queue.pop(queue) == Some(9)
 assert Queue.pop(queue) == Some(10)
 assert Queue.pop(queue) == None
 
-// Immutable queue tests
+module Immutable {
+  from Queue use { Immutable as Queue }
 
-// 1 <- 2 <- 3
-let sampleQueue = ImmQ.push(3, ImmQ.push(2, ImmQ.push(1, ImmQ.empty)))
+  // 1 <- 2 <- 3
+  let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, Queue.empty)))
 
-// ImmQ.isEmpty
+  // Queue.isEmpty
 
-assert ImmQ.isEmpty(ImmQ.empty)
-assert !ImmQ.isEmpty(sampleQueue)
+  assert Queue.isEmpty(Queue.empty)
+  assert !Queue.isEmpty(sampleQueue)
 
-// ImmQ.peek
+  // Queue.peek
 
-assert ImmQ.peek(ImmQ.empty) == None
-assert ImmQ.peek(sampleQueue) == Some(1)
+  assert Queue.peek(Queue.empty) == None
+  assert Queue.peek(sampleQueue) == Some(1)
 
-// ImmQ.push
+  // Queue.push
 
-assert ImmQ.peek(ImmQ.push(1, ImmQ.empty)) == Some(1)
-assert ImmQ.peek(ImmQ.push(4, sampleQueue)) == Some(1)
+  assert Queue.peek(Queue.push(1, Queue.empty)) == Some(1)
+  assert Queue.peek(Queue.push(4, sampleQueue)) == Some(1)
 
-// ImmQ.pop
+  // Queue.pop
 
-assert ImmQ.isEmpty(ImmQ.pop(ImmQ.empty))
-assert ImmQ.isEmpty(ImmQ.pop(ImmQ.push(1, ImmQ.empty)))
-assert ImmQ.isEmpty(ImmQ.pop(ImmQ.pop(ImmQ.pop(sampleQueue))))
-assert ImmQ.peek(ImmQ.pop(sampleQueue)) == Some(2)
-assert ImmQ.peek(ImmQ.pop(ImmQ.push(4, ImmQ.pop(sampleQueue)))) == Some(3)
+  assert Queue.isEmpty(Queue.pop(Queue.empty))
+  assert Queue.isEmpty(Queue.pop(Queue.push(1, Queue.empty)))
+  assert Queue.isEmpty(Queue.pop(Queue.pop(Queue.pop(sampleQueue))))
+  assert Queue.peek(Queue.pop(sampleQueue)) == Some(2)
+  assert Queue.peek(Queue.pop(Queue.push(4, Queue.pop(sampleQueue)))) == Some(3)
 
-// ImmQ.size
+  // Queue.size
 
-assert ImmQ.size(ImmQ.empty) == 0
-assert ImmQ.size(sampleQueue) == 3
-assert ImmQ.size(ImmQ.pop(ImmQ.pop(sampleQueue))) == 1
+  assert Queue.size(Queue.empty) == 0
+  assert Queue.size(sampleQueue) == 3
+  assert Queue.size(Queue.pop(Queue.pop(sampleQueue))) == 1
+}
