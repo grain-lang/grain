@@ -560,7 +560,7 @@ let rec transl_imm =
     // stmts is non-empty, so this cannot fail
     let (last_ans, last_setup) = List.hd(stmts);
     let stmts = List.tl(stmts);
-    let tmp = gensym("block_ans");
+    let tmp = gensym("block_result");
     let setup =
       List.concat @@
       List.fold_left(
