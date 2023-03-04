@@ -2821,7 +2821,6 @@ provide let (**) = (base, power) => {
     Memory.incRef(denominator)
     let denominator = WasmI32.toGrain(denominator): Rational
     let denominator = rationalDenominator(denominator)
-    // denominator
     let numerator =
       if (power < 0) expBySquaring(1, 1 / numerator, power * -1)
       else expBySquaring(1, numerator, power)
