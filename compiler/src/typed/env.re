@@ -374,7 +374,7 @@ module IdTbl = {
       | Some({using, root, next, components}) =>
         try({
           let (descr, pos) = Tbl.find(name, components);
-          let res = (PExternal(root, name, pos), descr);
+          let res = (PExternal(root, name), descr);
           if (mark) {
             switch (using) {
             | None => ()
@@ -427,7 +427,7 @@ module IdTbl = {
       | Some({root, using: _, next, components}) =>
         try({
           let (desc, pos) = Tbl.find(name, components);
-          [(PExternal(root, name, pos), desc), ...find_all(name, next)];
+          [(PExternal(root, name), desc), ...find_all(name, next)];
         }) {
         | Not_found => find_all(name, next)
         }
@@ -445,8 +445,7 @@ module IdTbl = {
     | Some({root, using: _, next, components}) =>
       acc
       |> Tbl.fold(
-           (name, (desc, pos)) =>
-             f(name, (PExternal(root, name, pos), desc)),
+           (name, (desc, pos)) => f(name, (PExternal(root, name), desc)),
            components,
          )
       |> fold_name(f, next)
@@ -471,7 +470,7 @@ module IdTbl = {
         (s, (x, pos)) =>
           f(
             Ident.hide(Ident.create(s) /* ??? */),
-            (PExternal(root, s, pos), x),
+            (PExternal(root, s), x),
           ),
         components,
       );
@@ -980,7 +979,7 @@ let rec find_module_descr = (path, filename, env) => {
       | _ => raise(Not_found)
       };
     }
-  | PExternal(m, s, pos) =>
+  | PExternal(m, s) =>
     let c = get_components(find_module_descr(m, filename, env));
     let (descr, _pos) = Tbl.find(s, c.comp_components);
     descr;
@@ -990,7 +989,7 @@ let rec find_module_descr = (path, filename, env) => {
 let find = (proj1, proj2, path, env) =>
   switch (path) {
   | PIdent(id) => IdTbl.find_same(id, proj1(env))
-  | PExternal(m, n, _pos) =>
+  | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, None, env));
     let (data, _pos) = Tbl.find(n, proj2(c));
     data;
@@ -999,7 +998,7 @@ let find = (proj1, proj2, path, env) =>
 let find_tycomp = (proj1, proj2, path, env) =>
   switch (path) {
   | PIdent(id) => TycompTbl.find_same(id, proj1(env))
-  | PExternal(m, n, _pos) =>
+  | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, None, env));
     switch (Tbl.find(n, proj2(c))) {
     | [cstr, ..._] => cstr
@@ -1031,18 +1030,40 @@ let type_of_cstr = path =>
   | _ =>
     failwith("Impossible: Env.type_of_cstr called on non-record constructor");
 
+let find_extension_full = (path, env) => {
+  switch (path) {
+  | PIdent(id) => TycompTbl.find_same(id, env.constructors)
+  | PExternal(p, s) =>
+    let comps = get_components(find_module_descr(p, None, env));
+    let cstrs = Tbl.find(s, comps.comp_constrs);
+    List.find(
+      cstr =>
+        switch (cstr.cstr_tag) {
+        | CstrExtension(_) => true
+        | _ => false
+        },
+      cstrs,
+    );
+  };
+};
+
 let rec find_type_full = (path, env) =>
   switch (path) {
   | PIdent(_) =>
     try((PathMap.find(path, env.local_constraints), ([], []))) {
     | Not_found => find_type_data(path, env)
     }
-  | PExternal(p, name, pos) =>
-    try({
-      let cstr = find_cstr(p, name, env);
+  | PExternal(p, name) =>
+    if (name == "#extension#") {
+      let cstr = find_extension_full(p, env);
       type_of_cstr(path, cstr);
-    }) {
-    | Not_found => find_type_data(path, env)
+    } else {
+      try({
+        let cstr = find_cstr(p, name, env);
+        type_of_cstr(path, cstr);
+      }) {
+      | Not_found => find_type_data(path, env)
+      };
     }
   }
 
@@ -1077,7 +1098,7 @@ let find_module = (path, filename, env) =>
         raise(Not_found);
       };
     }
-  | PExternal(m, n, _pos) =>
+  | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, filename, env));
     let (data, _pos) = Tbl.find(n, c.comp_modules);
     EnvLazy.force(subst_modtype_maker, data);
@@ -1092,7 +1113,7 @@ let find_module_chain = (path, env) => {
         [EnvLazy.force(subst_modtype_maker, data)],
         IdTbl.find_same(id, env.components),
       );
-    | PExternal(m, s, pos) =>
+    | PExternal(m, s) =>
       let (data, components) = find(m, env);
       let c = get_components(components);
       let (decl, _pos) = Tbl.find(s, c.comp_modules);
@@ -1107,12 +1128,12 @@ let find_module_chain = (path, env) => {
 let rec normalize_path = (lax, env, path) =>
   switch (path) {
   | PIdent(id) when lax && Ident.persistent(id) => path
-  | PExternal(p, s, pos) =>
+  | PExternal(p, s) =>
     let p' = normalize_path(lax, env, p);
     if (p == p') {
       expand_path(lax, env, path);
     } else {
-      expand_path(lax, env, PExternal(p', s, pos));
+      expand_path(lax, env, PExternal(p', s));
     };
   | PIdent(_) => expand_path(lax, env, path)
   }
@@ -1148,7 +1169,7 @@ let normalize_path = (oloc, env, path) =>
 
 let normalize_path_prefix = (oloc, env, path) =>
   switch (path) {
-  | PExternal(p, s, pos) => PExternal(normalize_path(oloc, env, p), s, pos)
+  | PExternal(p, s) => PExternal(normalize_path(oloc, env, p), s)
   | PIdent(_) => path
   };
 /*| PApply _ -> assert false*/
@@ -1210,7 +1231,7 @@ let rec lookup_module_descr_aux = (~mark, id, env) =>
     | IdentExternal(m, {txt: n}) =>
       let (p, descr) = lookup_module_descr(~mark, m, env);
       let (descr, pos) = Tbl.find(n, get_components(descr).comp_components);
-      (PExternal(p, n, pos), descr);
+      (PExternal(p, n), descr);
     }
   )
 
@@ -1257,12 +1278,11 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
   | Identifier.IdentExternal(l, {txt: s}) =>
     let (p, descr) = lookup_module_descr(~mark, l, env);
     let c = get_components(descr);
-    let (_data, pos) = Tbl.find(s, c.comp_modules);
     let (comps, _) = Tbl.find(s, c.comp_components);
     if (mark) {
       mark_module_used(env, s, comps.loc);
     };
-    let p = PExternal(p, s, pos);
+    let p = PExternal(p, s);
     p;
   };
 
@@ -1273,7 +1293,7 @@ let lookup_idtbl = (~mark, proj1, proj2, id, env) =>
     | IdentExternal(m, {txt: n}) =>
       let (p, desc) = lookup_module_descr(~mark, m, env);
       let (data, pos) = Tbl.find(n, proj2(get_components(desc)));
-      (PExternal(p, n, pos), data);
+      (PExternal(p, n), data);
     }
   );
 
@@ -1428,17 +1448,12 @@ let iter_env = (proj1, proj2, f, env, ()) => {
       } else {
         let comps = get_components(mcomps);
         Tbl.iter(
-          (s, (d, n)) =>
-            f(PExternal(path, s, n), (PExternal(path', s, n), d)),
+          (s, (d, n)) => f(PExternal(path, s), (PExternal(path', s), d)),
           proj2(comps),
         );
         Tbl.iter(
           (s, (c, n)) =>
-            iter_components(
-              PExternal(path, s, n),
-              PExternal(path', s, n),
-              c,
-            ),
+            iter_components(PExternal(path, s), PExternal(path', s), c),
           comps.comp_components,
         );
       };
@@ -1491,7 +1506,7 @@ let find_all_comps = (proj, s, (p, mcomps)) => {
   let comps = get_components(mcomps);
   try({
     let (c, n) = Tbl.find(s, proj(comps));
-    [(PExternal(p, s, n), c)];
+    [(PExternal(p, s), c)];
   }) {
   | Not_found => []
   };
@@ -1500,7 +1515,7 @@ let find_all_comps = (proj, s, (p, mcomps)) => {
 let rec find_shadowed_comps = (path, env) =>
   switch (path) {
   | PIdent(id) => IdTbl.find_all(Ident.name(id), env.components)
-  | PExternal(p, s, _) =>
+  | PExternal(p, s) =>
     let l = find_shadowed_comps(p, env);
     let l' = List.map(find_all_comps(comps => comps.comp_components, s), l);
     List.flatten(l');
@@ -1509,7 +1524,7 @@ let rec find_shadowed_comps = (path, env) =>
 let find_shadowed = (proj1, proj2, path, env) =>
   switch (path) {
   | PIdent(id) => IdTbl.find_all(Ident.name(id), proj1(env))
-  | PExternal(p, s, _) =>
+  | PExternal(p, s) =>
     let l = find_shadowed_comps(p, env);
     let l' = List.map(find_all_comps(proj2, s), l);
     List.flatten(l');
@@ -1538,7 +1553,7 @@ let rec prefix_idents = (root, pos, sub) =>
   fun
   | [] => ([], sub)
   | [TSigValue(id, decl), ...rem] => {
-      let p = PExternal(root, Ident.name(id), pos);
+      let p = PExternal(root, Ident.name(id));
       let nextpos =
         switch (decl.val_kind) {
         | TValPrim(_) => pos
@@ -1548,25 +1563,25 @@ let rec prefix_idents = (root, pos, sub) =>
       ([p, ...pl], final_sub);
     }
   | [TSigType(id, _, _), ...rem] => {
-      let p = PExternal(root, Ident.name(id), nopos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
   | [TSigTypeExt(id, ec, es), ...rem] => {
-      let p = PExternal(root, Ident.name(id), pos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
   | [TSigModule(id, _, _), ...rem] => {
-      let p = PExternal(root, Ident.name(id), pos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(root, pos + 1, Subst.add_module(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
   | [TSigModType(id, _), ...rem] => {
-      let p = PExternal(root, Ident.name(id), nopos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(
           root,
@@ -1690,7 +1705,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
               let get_path = name =>
                 switch (path) {
                 | PIdent(_) => PIdent(Ident.create(name))
-                | PExternal(p, _, level) => PExternal(p, name, level)
+                | PExternal(p, _) => PExternal(p, name)
                 };
               let path = get_path(desc.cstr_name);
               let val_desc = {
@@ -1753,7 +1768,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let get_path = name =>
             switch (path) {
             | PIdent(_) => PIdent(Ident.create(name))
-            | PExternal(p, _, level) => PExternal(p, name, level)
+            | PExternal(p, _) => PExternal(p, name)
             };
           let path = get_path(desc.cstr_name);
           let val_desc = {
@@ -2390,7 +2405,7 @@ let find_all = (proj1, proj2, f, lid, env, acc) =>
     let (p, desc) = lookup_module_descr(~mark=true, l, env);
     let c = get_components(desc);
     Tbl.fold(
-      (s, (data, pos), acc) => f(s, PExternal(p, s, pos), data, acc),
+      (s, (data, pos), acc) => f(s, PExternal(p, s), data, acc),
       proj2(c),
       acc,
     );
@@ -2443,7 +2458,7 @@ let fold_modules = (f, lid, env, acc) =>
       (s, (data, pos), acc) =>
         f(
           s,
-          PExternal(p, s, pos),
+          PExternal(p, s),
           EnvLazy.force(subst_modtype_maker, data),
           acc,
         ),

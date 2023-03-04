@@ -311,7 +311,7 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
       (e, info) => {
         let id = info.data_id;
         let info' = {
-          let p = PExternal(p, Ident.name(id), nopos);
+          let p = PExternal(p, Ident.name(id));
           let decl = info.data_type;
           switch (decl.type_manifest) {
           | Some(_) => decl

@@ -38,7 +38,7 @@ let get_type_id = (typath, env) =>
 let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
   switch (path) {
   | Path.PIdent(id) => id
-  | Path.PExternal(mod_, name, _pos) =>
+  | Path.PExternal(mod_, name) =>
     let mod_map =
       switch (Path_tbl.find_opt(module_symbol_map, mod_)) {
       | Some(map) => map
@@ -1618,6 +1618,20 @@ let rec gather_type_metadata = statements => {
             ty_id,
             compile_constructor_tag(cstr.cstr_tag),
             cstr.cstr_name,
+            switch (cstr.cstr_inlined) {
+            | None => TupleConstructor
+            | Some(t) =>
+              let label_names =
+                switch (t.type_kind) {
+                | TDataRecord(rfs) =>
+                  List.map(rf => Ident.name(rf.Types.rf_name), rfs)
+                | _ =>
+                  failwith(
+                    "Impossible: inlined exception record constructor with non-record underlying type",
+                  )
+                };
+              RecordConstructor(label_names);
+            },
           ),
           ...metadata,
         ];

@@ -164,6 +164,21 @@ module Exception = {
   };
   let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
   let tuple = (~loc=?, n, args) => mk(~loc?, n, PConstrTuple(args));
+  let record = (~loc=?, n, args) => {
+    List.iter(
+      ld =>
+        if (ld.pld_mutable == Mutable) {
+          raise(
+            SyntaxError(
+              ld.pld_loc,
+              "A record exception constructor cannot have mutable fields.",
+            ),
+          );
+        },
+      args,
+    );
+    mk(~loc?, n, PConstrRecord(args));
+  };
 };
 
 module Pattern = {

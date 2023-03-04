@@ -52,4 +52,14 @@ describe("exceptions", ({test, testSkip}) => {
     |},
     "Spooky error 2",
   );
+  assertRun(
+    "record_exception_1",
+    {|exception Foo { msg: String, bar: Number }; print(Foo{msg: "Oops", bar: 1})|},
+    "Foo{\n  msg: \"Oops\",\n  bar: 1\n}\n",
+  );
+  assertRunError(
+    "record_exception_2",
+    {|include "exception"; exception Foo { msg: String, bar: Number }; Exception.registerPrinter(e => match (e) { Foo { msg, bar } => Some(msg ++ toString(bar)), _ => None }); let _ = throw Foo{msg: "Oops", bar: 1}|},
+    "Oops1",
+  );
 });

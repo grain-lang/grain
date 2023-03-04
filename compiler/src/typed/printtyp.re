@@ -48,7 +48,7 @@ let ident_pervasives = Ident.create_persistent("Stdlib");
 let printing_env = ref(Env.empty);
 let non_shadowed_pervasive =
   fun
-  | PExternal(PIdent(id), s, _pos) as path =>
+  | PExternal(PIdent(id), s) as path =>
     Ident.same(id, ident_pervasives)
     && (
       try(
@@ -65,16 +65,16 @@ let non_shadowed_pervasive =
 let rec tree_of_path =
   fun
   | PIdent(id) => Oide_ident(ident_name(id))
-  | PExternal(_, s, _pos) as path when non_shadowed_pervasive(path) =>
+  | PExternal(_, s) as path when non_shadowed_pervasive(path) =>
     Oide_ident(s)
-  | PExternal(p, s, _pos) => Oide_dot(tree_of_path(p), s);
+  | PExternal(p, s) => Oide_dot(tree_of_path(p), s);
 
 let rec path = ppf =>
   fun
   | PIdent(id) => ident(ppf, id)
-  | PExternal(_, s, _pos) as path when non_shadowed_pervasive(path) =>
+  | PExternal(_, s) as path when non_shadowed_pervasive(path) =>
     pp_print_string(ppf, s)
-  | PExternal(p, s, _pos) => {
+  | PExternal(p, s) => {
       path(ppf, p);
       pp_print_string(ppf, "::");
       pp_print_string(ppf, s);
@@ -316,7 +316,7 @@ let penalty = s =>
 let rec path_size =
   fun
   | PIdent(id) => (penalty(Ident.name(id)), - Ident.binding_time(id))
-  | PExternal(p, _, _) => {
+  | PExternal(p, _) => {
       let (l, b) = path_size(p);
       (1 + l, b);
     };
@@ -1454,7 +1454,7 @@ let ident_same_name = (id1, id2) =>
 let rec path_same_name = (p1, p2) =>
   switch (p1, p2) {
   | (PIdent(id1), PIdent(id2)) => ident_same_name(id1, id2)
-  | (PExternal(p1, s1, _), PExternal(p2, s2, _)) when s1 == s2 =>
+  | (PExternal(p1, s1), PExternal(p2, s2)) when s1 == s2 =>
     path_same_name(p1, p2)
   | _ => ()
   };

@@ -114,11 +114,7 @@ let constructor_descrs = (ty_path, decl, cstrs) => {
       };
     let cstr_name = Ident.name(cd_id);
     let (existentials, cstr_args, cstr_inlined) =
-      constructor_args(
-        cd_args,
-        cd_res,
-        Path.PExternal(ty_path, cstr_name, Path.nopos),
-      );
+      constructor_args(cd_args, cd_res, Path.PExternal(ty_path, cstr_name));
 
     let cstr = {
       cstr_name,
@@ -141,7 +137,11 @@ let extension_descr = (path_ext, ext) => {
   let ty_res = newgenconstr(ext.ext_type_path, ext.ext_type_params);
 
   let (existentials, cstr_args, cstr_inlined) =
-    constructor_args(ext.ext_args, Some(ty_res), path_ext);
+    constructor_args(
+      ext.ext_args,
+      Some(ty_res),
+      Path.PExternal(path_ext, "#extension#"),
+    );
 
   let cstr_ext_type =
     if (cstr_args == []) {

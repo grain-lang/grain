@@ -3304,16 +3304,16 @@ let compile_type_metadata = (wasm_mod, env, type_metadata) => {
     );
   let type_metadata =
     switch (exception_meta) {
-    | [ExceptionMetadata(id, _, _), ..._] => [
+    | [ExceptionMetadata(id, _, _, _), ..._] => [
         ADTMeta(
           id,
           List.map(
             meta => {
               switch (meta) {
-              | ExceptionMetadata(_, variant, name) => (
+              | ExceptionMetadata(_, variant, name, cstr_type) => (
                   variant,
                   name,
-                  TupleConstructor,
+                  cstr_type,
                 )
               | _ => failwith("impossible by partition")
               }
