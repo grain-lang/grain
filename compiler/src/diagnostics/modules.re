@@ -14,9 +14,8 @@ type export = {
   signature: string,
 };
 
-let rec get_exports = (~path, compiled_code: Typedtree.typed_program) =>
-  try({
-    let md = Env.find_module(path, None, compiled_code.env);
+let rec get_provides = (md: Types.module_declaration) =>
+  try(
     switch (md.md_type) {
     | TModSignature(sigs) =>
       List.filter_map(
@@ -63,9 +62,8 @@ let rec get_exports = (~path, compiled_code: Typedtree.typed_program) =>
         },
         sigs,
       )
-    | TModAlias(path) => get_exports(~path, compiled_code)
     | _ => []
-    };
-  }) {
+    }
+  ) {
   | e => []
   };

@@ -263,6 +263,7 @@ let rec transl_imm =
     | Left(imm) => (imm, [])
     | Right((name, cexprs)) => (Imm.id(~loc, ~env, name), cexprs)
     }
+  | TExpUse(_)
   | TExpNull => (Imm.const(~loc, ~env, Const_void), [])
   | TExpPrim0(op) =>
     let tmp = gensym("prim0");

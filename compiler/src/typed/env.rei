@@ -174,7 +174,8 @@ let is_runtime_mode: unit => bool;
 /* Insertion of a module */
 let include_module: (Identifier.t, include_declaration, t) => t;
 
-let use_partial_signature: (Path.t, list(Parsetree.use_item), t) => t;
+let use_partial_signature:
+  (Path.t, list(Parsetree.use_item), t) => (t, list(use_item));
 let use_full_signature: (Path.t, t) => t;
 
 let use_full_signature_of_initially_included_module: (Path.t, t) => t;

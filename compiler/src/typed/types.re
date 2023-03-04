@@ -253,6 +253,29 @@ and modtype_declaration = {
   mtd_loc: Location.t,
 };
 
+[@deriving sexp]
+type use_items =
+  | TUseAll
+  | TUseItems(list(use_item))
+
+[@deriving sexp]
+and use_item =
+  | TUseType({
+      name: string,
+      declaration: type_declaration,
+      loc: Location.t,
+    })
+  | TUseModule({
+      name: string,
+      declaration: module_declaration,
+      loc: Location.t,
+    })
+  | TUseValue({
+      name: string,
+      value: value_description,
+      loc: Location.t,
+    });
+
 module TypeOps = {
   type t = type_expr;
   let compare = (t1, t2) => t1.id - t2.id;

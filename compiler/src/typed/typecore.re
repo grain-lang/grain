@@ -1544,13 +1544,15 @@ and type_expect_ =
     });
   | PExpUse(module_, items) =>
     let path = Typetexp.lookup_module(env, module_.loc, module_.txt, None);
-    let newenv =
+    let (newenv, items) =
       switch (items) {
-      | PUseAll => Env.use_full_signature(path, env)
-      | PUseItems(items) => Env.use_partial_signature(path, items, env)
+      | PUseAll => (Env.use_full_signature(path, env), TUseAll)
+      | PUseItems(items) =>
+        let (env, items) = Env.use_partial_signature(path, items, env);
+        (env, TUseItems(items));
       };
     rue({
-      exp_desc: TExpNull,
+      exp_desc: TExpUse(Location.mkloc(path, module_.loc), items),
       exp_loc: loc,
       exp_extra: [],
       exp_attributes: attributes,
