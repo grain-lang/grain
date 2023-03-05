@@ -313,6 +313,9 @@ let charAtHelp = (position, string: String) => {
  * @param string: The string to search
  * @returns The character code at the provided position
  *
+ * @throws MalformedUnicode: When the `string` is malformed
+ * @throws Failure(String): When the `position` is out of bounds
+ *
  * @example String.charCodeAt(5, "Hello world") == 32
  *
  * @since v0.5.3
@@ -328,6 +331,9 @@ provide let charCodeAt = (position, string: String) => {
  * @param position: The position to check
  * @param string: The string to search
  * @returns The character at the provided position
+ *
+ * @throws MalformedUnicode: When the `string` is malformed
+ * @throws Failure(String): When the `position` is out of bounds
  *
  * @example String.charAt(5, "Hello world") == ' '
  *
@@ -392,6 +398,8 @@ let explodeHelp = (s: String, chars) => {
  *
  * @param string: The string to split
  * @returns An array containing all characters in the string
+ *
+ * @throws MalformedUnicode: When the `string` is malformed
  *
  * @example String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o']
  *
@@ -518,6 +526,8 @@ provide let reverse = string => {
  * @param string: The string to split
  * @returns An array of substrings from the initial string
  *
+ * @throws MalformedUnicode: When the `string` is malformed
+ *
  * @example String.split(" ", "Hello world") == [> "Hello", "world"]
  */
 @unsafe
@@ -611,6 +621,12 @@ provide let split = (separator: String, string: String) => {
  * @param to: The end position of the substring, exclusive
  * @param string: The input string
  * @returns The substring from the initial string
+ *
+ * @throws InvalidArgument(String): When the `start` index is not an integer
+ * @throws InvalidArgument(String): When the `to` index is not an integer
+ * @throws IndexOutOfBounds: When `start` is out of bounds
+ * @throws IndexOutOfBounds: When `end` is out of bounds
+ * @throws InvalidArgument(String): When `start` is greater than `end`
  *
  * @example String.slice(0, 5, "Hello world") == "Hello"
  *
@@ -1433,6 +1449,9 @@ let encodeAtHelp =
  * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
  *
+ * @throws InvalidArgument(String): When `destPos` is not an integer
+ * @throws InvalidArgument(String): When `destPos` is negative
+ *
  * @since v0.4.0
  */
 provide let encodeAt = (string, encoding, dest, destPos) => {
@@ -1447,6 +1466,9 @@ provide let encodeAt = (string, encoding, dest, destPos) => {
  * @param dest: The byte sequence that will be copied
  * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
+ *
+ * @throws InvalidArgument(String): When `destPos` is not an integer
+ * @throws InvalidArgument(String): When `destPos` is negative
  *
  * @since v0.4.0
  */
@@ -1911,6 +1933,11 @@ let decodeRangeHelp =
  * @param size: The maximum number of bytes to decode
  * @returns The decoded string
  *
+ * @throws InvalidArgument(String): When `start` is not an integer
+ * @throws InvalidArgument(String): When `start` is negative
+ * @throws InvalidArgument(String): When `size` is not an integer
+ * @throws InvalidArgument(String): When `size` is negative
+ *
  * @since v0.4.0
  */
 provide let decodeRange =
@@ -1931,6 +1958,11 @@ provide let decodeRange =
  * @param start: The byte offset to begin decoding from
  * @param size: The maximum number of bytes to decode
  * @returns The decoded string
+ *
+ * @throws InvalidArgument(String): When `start` is not an integer
+ * @throws InvalidArgument(String): When `start` is negative
+ * @throws InvalidArgument(String): When `size` is not an integer
+ * @throws InvalidArgument(String): When `size` is negative
  *
  * @since v0.4.0
  */
