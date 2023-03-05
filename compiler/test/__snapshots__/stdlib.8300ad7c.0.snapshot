@@ -1,13 +1,14 @@
 stdlib › stdlib_equal_3
 (module
- (type $none_=>_none (func))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
+ (type $none_=>_none (func))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"mem\" (memory $0 0))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$==\" (global $==_1113 (mut i32)))
@@ -18,18 +19,8 @@ stdlib › stdlib_equal_3
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
- (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gtype_metadata
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (nop)
- )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -60,10 +51,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -97,10 +85,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -142,10 +127,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -187,10 +169,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -232,10 +211,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -269,10 +245,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -314,10 +287,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -359,10 +329,7 @@ stdlib › stdlib_equal_3
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1638603609)
       )
       (i32.store offset=8
        (local.get $0)
@@ -405,5 +372,5 @@ stdlib › stdlib_equal_3
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 236
+ ;; custom section \"cmi\", size 317
 )

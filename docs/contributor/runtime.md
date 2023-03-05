@@ -11,4 +11,4 @@ Currently, the Grain runtime heap spans half a WebAssembly page of memory. The l
 There are a handful of static pointers that all modules have access to.
 
 - `0x400`: The next position in the runtime heap to allocate from. When a runtime allocation is done, this value at this address is advanced by the allocation amount.
-- `0x408`: The pointer to the linked list of runtime type information. More information on this can be found in [printing.md](./printing.md).
+- `0x408`: The beginning of the runtime type information section. More information on this can be found in [printing.md](./printing.md).

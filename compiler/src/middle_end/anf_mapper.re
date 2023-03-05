@@ -157,9 +157,10 @@ module MakeMap = (Iter: MapArgument) => {
           process_imm_expression(arg3),
         ),
       )
-    | CRecord(ttag, elts) =>
+    | CRecord(type_hash, ttag, elts) =>
       leave_with(
         CRecord(
+          process_imm_expression(type_hash),
           process_imm_expression(ttag),
           List.map(
             ((name, elt)) => (name, process_imm_expression(elt)),
@@ -167,9 +168,10 @@ module MakeMap = (Iter: MapArgument) => {
           ),
         ),
       )
-    | CAdt(ttag, vtag, elts) =>
+    | CAdt(type_hash, ttag, vtag, elts) =>
       leave_with(
         CAdt(
+          process_imm_expression(type_hash),
           process_imm_expression(ttag),
           process_imm_expression(vtag),
           List.map(process_imm_expression, elts),

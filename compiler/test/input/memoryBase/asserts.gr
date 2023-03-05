@@ -13,7 +13,7 @@ primitive typeMetadata = "@heap.type_metadata"
 @unsafe
 let doTest = () => {
   assert WasmI32.eq(heapBase, 0x110000n)
-  assert WasmI32.eq(heapStart, 0x110010n)
+  assert WasmI32.eq(heapStart(), 0x1101A8n)
   assert WasmI32.eq(typeMetadata, 0x110008n)
 }
 

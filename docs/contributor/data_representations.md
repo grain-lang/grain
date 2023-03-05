@@ -95,14 +95,14 @@ The length is **untagged**, but all other elements are regular Grain values, eve
 Records store a little more information to enable printing.
 
 ```plaintext
-╔══════╦═══════════╤════════════╤══════════╤════════╤═══════╤═════╤═══════╗
-║ size ║ 32        │ 32         │ 32       │ 32     │ 32    │ 32  │ 32    ║
-╠══════╬═══════════╪════════════╪══════════╪════════╪═══════╪═════╪═══════╣
-║ what ║ value tag │ module tag │ type tag │ length │ elt_0 │ ... │ elt_n ║
-╚══════╩═══════════╧════════════╧══════════╧════════╧═══════╧═════╧═══════╝
+╔══════╦═══════════╤═══════════╤══════════╤════════╤═══════╤═════╤═══════╗
+║ size ║ 32        │ 32        │ 32       │ 32     │ 32    │ 32  │ 32    ║
+╠══════╬═══════════╪═══════════╪══════════╪════════╪═══════╪═════╪═══════╣
+║ what ║ value tag │ type hash │ type tag │ length │ elt_0 │ ... │ elt_n ║
+╚══════╩═══════════╧═══════════╧══════════╧════════╧═══════╧═════╧═══════╝
 ```
 
-The module tag tells us which module the record type is defined in, and the type tag tells us which type in the module this record corresponds to.
+The type hash is a unique value for the record type, and the type tag tells us which type in the module this record corresponds to.
 
 The value tag and length are **untagged**, but all other elements are regular Grain values.
 
@@ -111,14 +111,14 @@ The value tag and length are **untagged**, but all other elements are regular Gr
 ADTs also store a little more information to enable printing. All user-defined types and some built-in types are ADTs, including lists.
 
 ```plaintext
-╔══════╦═══════════╤════════════╤══════════╤═════════════╤═══════╤═══════╤═════╤═══════╗
-║ size ║ 32        │ 32         │ 32       │ 32          │ 32    │ 32    │ 32  │ 32    ║
-╠══════╬═══════════╪════════════╪══════════╪═════════════╪═══════╪═══════╪═════╪═══════╣
-║ what ║ value tag │ module tag │ type tag │ variant tag │ arity │ elt_0 │ ... │ elt_n ║
-╚══════╩═══════════╧════════════╧══════════╧═════════════╧═══════╧═══════╧═════╧═══════╝
+╔══════╦═══════════╤═══════════╤══════════╤═════════════╤═══════╤═══════╤═════╤═══════╗
+║ size ║ 32        │ 32        │ 32       │ 32          │ 32    │ 32    │ 32  │ 32    ║
+╠══════╬═══════════╪═══════════╪══════════╪═════════════╪═══════╪═══════╪═════╪═══════╣
+║ what ║ value tag │ type hash │ type tag │ variant tag │ arity │ elt_0 │ ... │ elt_n ║
+╚══════╩═══════════╧═══════════╧══════════╧═════════════╧═══════╧═══════╧═════╧═══════╝
 ```
 
-The module tag tells us which module this ADT is defined in, the type tag tells us which type in the module this ADT corresponds to, and the variant tag tells us which ADT variant is allocated here.
+The type hash is a unique value for the enum type, the type tag tells us which type in the module this ADT corresponds to, and the variant tag tells us which ADT variant is allocated here.
 
 The value tag and arity are **untagged**, but all other elements are regular Grain values.
 

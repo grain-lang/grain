@@ -180,7 +180,8 @@ type prim0 =
     | AllocateFloat64
     | AllocateRational
     | WasmMemorySize
-    | Unreachable;
+    | Unreachable
+    | HeapStart;
 
 type prim1 =
   Parsetree.prim1 =
@@ -347,8 +348,8 @@ type allocation_type =
   | MTuple(list(immediate))
   | MBox(immediate)
   | MArray(list(immediate))
-  | MRecord(immediate, list((option(string), immediate)))
-  | MADT(immediate, immediate, list(immediate)) /* Type Tag, Variant Tag, Elements */
+  | MRecord(immediate, immediate, list((option(string), immediate)))
+  | MADT(immediate, immediate, immediate, list(immediate)) /* Type hash, Type Tag, Variant Tag, Elements */
   | MBytes(bytes)
   | MString(string)
   | MInt32(int32)

@@ -333,7 +333,8 @@ type prim0 =
   | AllocateFloat64
   | AllocateRational
   | WasmMemorySize
-  | Unreachable;
+  | Unreachable
+  | HeapStart;
 
 /** Single-argument operators */
 [@deriving (sexp, yojson)]

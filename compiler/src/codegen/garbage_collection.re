@@ -109,9 +109,9 @@ let rec analyze_usage = instrs => {
       | MTuple(args)
       | MArray(args) => List.iter(process_imm, args)
       | MBox(imm) => process_imm(imm)
-      | MRecord(tag, fields) =>
+      | MRecord(_, tag, fields) =>
         List.iter(((_, value)) => process_imm(value), fields)
-      | MADT(ttag, vtag, args) =>
+      | MADT(_, ttag, vtag, args) =>
         process_imm(ttag);
         process_imm(vtag);
         List.iter(process_imm, args);
@@ -379,16 +379,18 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
           | MTuple(args) => MTuple(List.map(handle_imm, args))
           | MBox(imm) => MBox(handle_imm(imm))
           | MArray(args) => MArray(List.map(handle_imm, args))
-          | MRecord(tag, fields) =>
+          | MRecord(type_hash, tag, fields) =>
             MRecord(
+              handle_imm(type_hash),
               handle_imm(tag),
               List.map(
                 ((field, value)) => (field, handle_imm(value)),
                 fields,
               ),
             )
-          | MADT(ttag, vtag, args) =>
+          | MADT(type_hash, ttag, vtag, args) =>
             MADT(
+              handle_imm(type_hash),
               handle_imm(ttag),
               handle_imm(vtag),
               List.map(handle_imm, args),

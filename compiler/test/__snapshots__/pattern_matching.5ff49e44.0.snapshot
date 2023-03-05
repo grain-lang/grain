@@ -1,13 +1,14 @@
 pattern matching › record_match_4
 (module
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
+ (type $none_=>_none (func))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"mem\" (memory $0 0))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
@@ -20,90 +21,8 @@ pattern matching › record_match_4
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
- (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gtype_metadata
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (block $compile_type_metadata.2
-   (local.set $0
-    (i32.add
-     (block $allocate_string.1 (result i32)
-      (i32.store
-       (local.tee $0
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 80)
-        )
-       )
-       (i32.const 1)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 68)
-      )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 0)
-      )
-      (i64.store offset=16
-       (local.get $0)
-       (i64.const 240518168577)
-      )
-      (i64.store offset=24
-       (local.get $0)
-       (i64.const 68719477849)
-      )
-      (i64.store offset=32
-       (local.get $0)
-       (i64.const 31366206292230147)
-      )
-      (i64.store offset=40
-       (local.get $0)
-       (i64.const 68719476736)
-      )
-      (i64.store offset=48
-       (local.get $0)
-       (i64.const 32195220879704067)
-      )
-      (i64.store offset=56
-       (local.get $0)
-       (i64.const 68719476736)
-      )
-      (i64.store offset=64
-       (local.get $0)
-       (i64.const 34447020693389315)
-      )
-      (i64.store offset=72
-       (local.get $0)
-       (i64.const 0)
-      )
-      (local.get $0)
-     )
-     (i32.const 8)
-    )
-   )
-   (i32.store
-    (local.get $0)
-    (i32.load
-     (i32.const 1032)
-    )
-   )
-   (i32.store offset=4
-    (local.get $0)
-    (global.get $moduleRuntimeId_0)
-   )
-   (i32.store
-    (i32.const 1032)
-    (local.get $0)
-   )
-  )
- )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -119,10 +38,10 @@ pattern matching › record_match_4
   (local $11 i32)
   (local $12 i32)
   (local $13 i32)
-  (block $compile_block.29 (result i32)
-   (block $compile_store.5
+  (block $compile_block.27 (result i32)
+   (block $compile_store.3
     (local.set $6
-     (block $allocate_record.3 (result i32)
+     (block $allocate_record.1 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -134,10 +53,7 @@ pattern matching › record_match_4
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 656589387)
       )
       (i32.store offset=8
        (local.get $0)
@@ -162,31 +78,31 @@ pattern matching › record_match_4
       (local.get $0)
      )
     )
+    (block $do_backpatches.2
+    )
+   )
+   (block $compile_store.5
+    (local.set $7
+     (i32.const 0)
+    )
     (block $do_backpatches.4
     )
    )
    (block $compile_store.7
-    (local.set $7
+    (local.set $8
      (i32.const 0)
     )
     (block $do_backpatches.6
     )
    )
    (block $compile_store.9
-    (local.set $8
+    (local.set $9
      (i32.const 0)
     )
     (block $do_backpatches.8
     )
    )
    (block $compile_store.11
-    (local.set $9
-     (i32.const 0)
-    )
-    (block $do_backpatches.10
-    )
-   )
-   (block $compile_store.13
     (local.set $10
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)
@@ -195,10 +111,10 @@ pattern matching › record_match_4
       )
      )
     )
-    (block $do_backpatches.12
+    (block $do_backpatches.10
     )
    )
-   (block $compile_store.15
+   (block $compile_store.13
     (local.set $11
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)
@@ -207,10 +123,10 @@ pattern matching › record_match_4
       )
      )
     )
-    (block $do_backpatches.14
+    (block $do_backpatches.12
     )
    )
-   (block $compile_store.17
+   (block $compile_store.15
     (local.set $12
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)
@@ -219,10 +135,10 @@ pattern matching › record_match_4
       )
      )
     )
-    (block $do_backpatches.16
+    (block $do_backpatches.14
     )
    )
-   (block $cleanup.18
+   (block $cleanup.16
     (drop
      (call $decRef_0
       (global.get $GRAIN$EXPORT$decRef_0)
@@ -231,7 +147,7 @@ pattern matching › record_match_4
     )
    )
    (drop
-    (block $compile_set.19 (result i32)
+    (block $compile_set.17 (result i32)
      (local.set $9
       (tuple.extract 0
        (tuple.make
@@ -250,7 +166,7 @@ pattern matching › record_match_4
     )
    )
    (drop
-    (block $compile_set.20 (result i32)
+    (block $compile_set.18 (result i32)
      (local.set $8
       (tuple.extract 0
        (tuple.make
@@ -269,7 +185,7 @@ pattern matching › record_match_4
     )
    )
    (drop
-    (block $compile_set.21 (result i32)
+    (block $compile_set.19 (result i32)
      (local.set $7
       (tuple.extract 0
        (tuple.make
@@ -289,13 +205,13 @@ pattern matching › record_match_4
    )
    (tuple.extract 0
     (tuple.make
-     (block $switch.23_outer (result i32)
-      (block $switch.23_branch_0 (result i32)
+     (block $switch.21_outer (result i32)
+      (block $switch.21_branch_0 (result i32)
        (drop
-        (block $switch.23_branch_1 (result i32)
+        (block $switch.21_branch_1 (result i32)
          (drop
-          (block $switch.23_default (result i32)
-           (br_table $switch.23_branch_1 $switch.23_default $switch.23_default
+          (block $switch.21_default (result i32)
+           (br_table $switch.21_branch_1 $switch.21_default $switch.21_default
             (i32.const 0)
             (i32.shr_s
              (i32.const 1)
@@ -304,16 +220,16 @@ pattern matching › record_match_4
            )
           )
          )
-         (br $switch.23_outer
-          (block $compile_block.28 (result i32)
+         (br $switch.21_outer
+          (block $compile_block.26 (result i32)
            (unreachable)
           )
          )
         )
        )
-       (br $switch.23_outer
-        (block $compile_block.27
-         (block $compile_store.25
+       (br $switch.21_outer
+        (block $compile_block.25
+         (block $compile_store.23
           (local.set $13
            (call $+_1126
             (call $incRef_0
@@ -330,10 +246,10 @@ pattern matching › record_match_4
             )
            )
           )
-          (block $do_backpatches.24
+          (block $do_backpatches.22
           )
          )
-         (block $cleanup.26
+         (block $cleanup.24
           (drop
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
@@ -359,7 +275,7 @@ pattern matching › record_match_4
        )
       )
      )
-     (block $cleanup.22 (result i32)
+     (block $cleanup.20 (result i32)
       (drop
        (call $decRef_0
         (global.get $GRAIN$EXPORT$decRef_0)
@@ -389,5 +305,5 @@ pattern matching › record_match_4
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 236
+ ;; custom section \"cmi\", size 592
 )

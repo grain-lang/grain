@@ -50,6 +50,7 @@ let swap_slots =
 /* The Grain environment */
 let grain_env_mod = grain_env_name;
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
+let runtime_heap_start = Ident.create_persistent("runtimeHeapStart");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 
@@ -95,6 +96,15 @@ let required_global_imports = [
     mimp_id: module_runtime_id,
     mimp_mod: grain_env_mod,
     mimp_name: Ident.name(module_runtime_id),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: runtime_heap_start,
+    mimp_mod: grain_env_mod,
+    mimp_name: Ident.name(runtime_heap_start),
     mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -268,8 +278,6 @@ let init_codegen_env = name => {
 // Static pointer to the runtime heap
 // Leaves low 1000 memory unused for Binaryen optimizations
 let runtime_heap_ptr = ref(Grain_utils.Config.default_memory_base);
-// Start pointer for the runtime heap
-let runtime_heap_start = () => runtime_heap_ptr^ + 0x10;
 // Static pointer to runtime type information
 let runtime_type_metadata_ptr = () => runtime_heap_ptr^ + 0x08;
 
@@ -296,6 +304,13 @@ let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
   };
   Ident.unique_name(name);
 };
+
+let get_runtime_heap_start = wasm_mod =>
+  Expression.Global_get.make(
+    wasm_mod,
+    get_wasm_imported_name(grain_env_mod, runtime_heap_start),
+    Type.int32,
+  );
 
 let get_grain_imported_name = (mod_, name) => Ident.unique_name(name);
 
@@ -923,7 +938,7 @@ let heap_allocate_imm =
   call_malloc(wasm_mod, env, [num_bytes]);
 };
 
-let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
+let allocate_adt = (wasm_mod, env, type_hash, ttag, vtag, elts) => {
   /* Heap memory layout of ADT types:
       [ <value type tag>, <module_tag>, <type_tag>, <variant_tag>, <arity>, elts ... ]
      */
@@ -951,16 +966,7 @@ let allocate_adt = (wasm_mod, env, ttag, vtag, elts) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      Expression.Binary.make(
-        wasm_mod,
-        Op.mul_int32,
-        Expression.Global_get.make(
-          wasm_mod,
-          get_wasm_imported_name(grain_env_mod, module_runtime_id),
-          Type.int32,
-        ),
-        Expression.Const.make(wasm_mod, const_int32(2)),
-      ),
+      compile_imm(wasm_mod, env, type_hash),
     ),
     store(~offset=8, wasm_mod, get_swap(), compile_imm(wasm_mod, env, ttag)),
     store(
@@ -993,6 +999,8 @@ let call_error_handler = (wasm_mod, env, err, args) => {
     },
   };
 
+  // Use a special hash value for exceptions
+  let type_hash = imm(MImmConst(MConstI32(0l)));
   let ty_id =
     imm(
       MImmConst(
@@ -1016,7 +1024,7 @@ let call_error_handler = (wasm_mod, env, err, args) => {
         ),
       ),
     );
-  let err = allocate_adt(wasm_mod, env, ty_id, cstr_id, args);
+  let err = allocate_adt(wasm_mod, env, type_hash, ty_id, cstr_id, args);
   call_panic_handler(wasm_mod, env, [err]);
 };
 
@@ -1810,7 +1818,7 @@ let allocate_array = (wasm_mod, env, elts) => {
   );
 };
 
-let allocate_record = (wasm_mod, env, ttag, elts) => {
+let allocate_record = (wasm_mod, env, type_hash, ttag, elts) => {
   let (_, elts) = List.split(elts);
   /* Heap memory layout of records:
       [ <value type tag>, <module_tag>, <type_tag>, <arity> ordered elts ... ]
@@ -1839,17 +1847,7 @@ let allocate_record = (wasm_mod, env, ttag, elts) => {
       ~offset=4,
       wasm_mod,
       get_swap(),
-      /* Tag the runtime id */
-      Expression.Binary.make(
-        wasm_mod,
-        Op.mul_int32,
-        Expression.Global_get.make(
-          wasm_mod,
-          get_wasm_imported_name(grain_env_mod, module_runtime_id),
-          Type.int32,
-        ),
-        Expression.Const.make(wasm_mod, const_int32(2)),
-      ),
+      compile_imm(wasm_mod, env, type_hash),
     ),
     store(~offset=8, wasm_mod, get_swap(), compile_imm(wasm_mod, env, ttag)),
     store(
@@ -2203,6 +2201,7 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
     allocate_alt_num_uninitialized(wasm_mod, env, Uint64Type)
   | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
+  | HeapStart => get_runtime_heap_start(wasm_mod)
   };
 };
 
@@ -2618,10 +2617,12 @@ let compile_allocation = (wasm_mod, env, alloc_type) =>
   | MTuple(elts) => allocate_tuple(wasm_mod, env, elts)
   | MBox(elt) => allocate_box(wasm_mod, env, elt)
   | MArray(elts) => allocate_array(wasm_mod, env, elts)
-  | MRecord(ttag, elts) => allocate_record(wasm_mod, env, ttag, elts)
+  | MRecord(type_hash, ttag, elts) =>
+    allocate_record(wasm_mod, env, type_hash, ttag, elts)
   | MBytes(bytes) => allocate_bytes(wasm_mod, env, bytes)
   | MString(str) => allocate_string(wasm_mod, env, str)
-  | MADT(ttag, vtag, elts) => allocate_adt(wasm_mod, env, ttag, vtag, elts)
+  | MADT(type_hash, ttag, vtag, elts) =>
+    allocate_adt(wasm_mod, env, type_hash, ttag, vtag, elts)
   | MInt32(i) =>
     allocate_int32(
       wasm_mod,
@@ -3116,225 +3117,6 @@ and compile_instr = (wasm_mod, env, instr) =>
   | MTagOp(_) => failwith("NYI: (compile_instr): MTagOp")
   };
 
-type type_metadata =
-  | ADTMeta(int, list((int, string, Types.adt_constructor_type)))
-  | RecordMeta(int, list(string));
-
-let compile_type_metadata = (wasm_mod, env, type_metadata) => {
-  open Types;
-
-  // More information about this function can be found in the printing.md
-  // contributor document.
-
-  // Extension constructors defined by the module must be grouped together.
-  // For now, this only includes exceptions.
-  let (exception_meta, non_exception_meta) =
-    List.fold_left(
-      ((exception_meta, non_exception_meta), meta) => {
-        switch (meta) {
-        | ExceptionMetadata(_) => (
-            [meta, ...exception_meta],
-            non_exception_meta,
-          )
-        | ADTMetadata(id, variants) => (
-            exception_meta,
-            [ADTMeta(id, variants), ...non_exception_meta],
-          )
-        | RecordMetadata(id, fields) => (
-            exception_meta,
-            [RecordMeta(id, fields), ...non_exception_meta],
-          )
-        }
-      },
-      ([], []),
-      type_metadata,
-    );
-  let type_metadata =
-    switch (exception_meta) {
-    | [ExceptionMetadata(id, _, _, _), ..._] => [
-        ADTMeta(
-          id,
-          List.map(
-            meta => {
-              switch (meta) {
-              | ExceptionMetadata(_, variant, name, cstr_type) => (
-                  variant,
-                  name,
-                  cstr_type,
-                )
-              | _ => failwith("impossible by partition")
-              }
-            },
-            exception_meta,
-          ),
-        ),
-        ...non_exception_meta,
-      ]
-    | _ => non_exception_meta
-    };
-
-  let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
-
-  let buf = Buffer.create(256);
-  Buffer.add_int32_le(buf, 0l); // Slot where pointer to next will live
-  Buffer.add_int32_le(buf, 0l); // Slot where module id will live
-  Buffer.add_int32_le(buf, Int32.of_int(List.length(type_metadata)));
-
-  let alignBuffer = amount => {
-    for (_ in 1 to amount) {
-      Buffer.add_int8(buf, 0);
-    };
-  };
-
-  List.iter(
-    meta => {
-      switch (meta) {
-      | ADTMeta(id, cstrs) =>
-        // For inline record constructors, store field names after other ADT info
-        let extra_required =
-          List.map(
-            ((_, _, cstr_type)) =>
-              switch (cstr_type) {
-              | TupleConstructor => 0
-              | RecordConstructor(fields) =>
-                List.fold_left(
-                  (total, field) =>
-                    total + 8 + round_to_8(String.length(field)),
-                  0,
-                  fields,
-                )
-              },
-            cstrs,
-          );
-
-        let section_length =
-          List.fold_left2(
-            (total, (_, cstr, cstr_type), extra) => {
-              total + 16 + round_to_8(String.length(cstr)) + extra
-            },
-            8,
-            cstrs,
-            extra_required,
-          );
-        Buffer.add_int32_le(buf, Int32.of_int(section_length));
-        Buffer.add_int32_le(buf, Int32.of_int(id));
-        List.iter2(
-          ((id, cstr, cstr_type), fields_section_length) => {
-            let length = String.length(cstr);
-            let aligned_length = round_to_8(length);
-            let constr_length = aligned_length + 16;
-            Buffer.add_int32_le(
-              buf,
-              Int32.of_int(constr_length + fields_section_length),
-            );
-            // Indicates offset to field data; special value of 0 can be interpreted
-            // to indicate that this is not a record variant
-            Buffer.add_int32_le(
-              buf,
-              Int32.of_int(
-                if (cstr_type == TupleConstructor) {
-                  0;
-                } else {
-                  constr_length;
-                },
-              ),
-            );
-            Buffer.add_int32_le(buf, Int32.of_int(id));
-            Buffer.add_int32_le(buf, Int32.of_int(length));
-            Buffer.add_string(buf, cstr);
-            alignBuffer(aligned_length - length);
-            switch (cstr_type) {
-            | TupleConstructor => ()
-            | RecordConstructor(fields) =>
-              List.iter(
-                field => {
-                  let length = String.length(field);
-                  let aligned_length = round_to_8(length);
-                  Buffer.add_int32_le(buf, Int32.of_int(aligned_length + 8));
-                  Buffer.add_int32_le(buf, Int32.of_int(length));
-                  Buffer.add_string(buf, field);
-                  alignBuffer(aligned_length - length);
-                },
-                fields,
-              )
-            };
-          },
-          cstrs,
-          extra_required,
-        );
-      | RecordMeta(id, fields) =>
-        let section_length =
-          List.fold_left(
-            (total, field) => total + 8 + round_to_8(String.length(field)),
-            8,
-            fields,
-          );
-        Buffer.add_int32_le(buf, Int32.of_int(section_length));
-        Buffer.add_int32_le(buf, Int32.of_int(id));
-        List.iter(
-          field => {
-            let length = String.length(field);
-            let aligned_length = round_to_8(length);
-            Buffer.add_int32_le(buf, Int32.of_int(aligned_length + 8));
-            Buffer.add_int32_le(buf, Int32.of_int(length));
-            Buffer.add_string(buf, field);
-            alignBuffer(aligned_length - length);
-          },
-          fields,
-        );
-      }
-    },
-    type_metadata,
-  );
-
-  Expression.Block.make(
-    wasm_mod,
-    gensym_label("compile_type_metadata"),
-    [
-      set_swap(
-        wasm_mod,
-        env,
-        0,
-        Expression.Binary.make(
-          wasm_mod,
-          Op.add_int32,
-          allocate_string(wasm_mod, env, Buffer.contents(buf)),
-          Expression.Const.make(wasm_mod, const_int32(8)),
-        ),
-      ),
-      store(
-        wasm_mod,
-        get_swap(wasm_mod, env, 0),
-        load(
-          wasm_mod,
-          Expression.Const.make(
-            wasm_mod,
-            const_int32(runtime_type_metadata_ptr()),
-          ),
-        ),
-      ),
-      store(
-        ~offset=4,
-        wasm_mod,
-        get_swap(wasm_mod, env, 0),
-        Expression.Global_get.make(
-          wasm_mod,
-          get_wasm_imported_name(grain_env_mod, module_runtime_id),
-          Type.int32,
-        ),
-      ),
-      store(
-        wasm_mod,
-        Expression.Const.make(
-          wasm_mod,
-          const_int32(runtime_type_metadata_ptr()),
-        ),
-        get_swap(wasm_mod, env, 0),
-      ),
-    ],
-  );
-};
-
 let compile_function =
     (
       ~name=?,
@@ -3576,12 +3358,6 @@ let compile_exports = (wasm_mod, env, {imports, exports, globals}) => {
   };
   List.iteri(compile_export, exports);
   ignore @@ Export.add_function_export(wasm_mod, grain_main, grain_main);
-  ignore @@
-  Export.add_function_export(
-    wasm_mod,
-    grain_type_metadata,
-    grain_type_metadata,
-  );
   if (! Config.use_start_section^) {
     ignore @@ Export.add_function_export(wasm_mod, grain_start, grain_start);
   };
@@ -3641,24 +3417,6 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
 };
 
 let compile_main = (wasm_mod, env, prog) => {
-  let has_type_metadata =
-    Config.elide_type_info^ || List.length(prog.type_metadata) == 0;
-  let type_metadata =
-    if (has_type_metadata) {
-      None;
-    } else {
-      Some(compile_type_metadata(wasm_mod, env, prog.type_metadata));
-    };
-  ignore @@
-  Function.add_function(
-    wasm_mod,
-    grain_type_metadata,
-    Type.none,
-    Type.none,
-    swap_slots,
-    Option.value(~default=Expression.Nop.make(wasm_mod), type_metadata),
-  );
-
   let preamble =
     if (Env.is_runtime_mode()) {
       Some(
@@ -3678,10 +3436,7 @@ let compile_main = (wasm_mod, env, prog) => {
           store(
             wasm_mod,
             Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
-            Expression.Const.make(
-              wasm_mod,
-              const_int32(runtime_heap_start()),
-            ),
+            get_runtime_heap_start(wasm_mod),
           ),
           Expression.Null.make(),
         ),
