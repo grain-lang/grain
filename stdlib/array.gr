@@ -198,7 +198,7 @@ provide let append = (array1, array2) => {
  * @param arrays: A list containing all arrays to combine
  * @returns The new array
  *
- * @throws InvalidArgument(String): When the combined length of the all arrays is not an integer
+ * @throws InvalidArgument(String): When the combined length of all arrays is not an integer
  *
  * @example Array.concat([[> 1, 2], [> 3, 4], [> 5, 6]]) == [> 1, 2, 3, 4, 5, 6]
  *
@@ -419,7 +419,7 @@ provide let reducei = (fn, initial, array) => {
  * @param array: The array to iterate
  * @returns The new array
  *
- * @throws InvalidArgument(String): When the combined length of the all arrays is not an integer
+ * @throws InvalidArgument(String): When the combined length of all arrays is not an integer
  *
  * @since v0.3.0
  */

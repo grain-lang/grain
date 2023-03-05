@@ -299,7 +299,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the combined length of the all arrays is not an integer
+* When the combined length of all arrays is not an integer
 
 Examples:
 
@@ -615,7 +615,7 @@ Throws:
 
 `InvalidArgument(String)`
 
-* When the combined length of the all arrays is not an integer
+* When the combined length of all arrays is not an integer
 
 ### Array.**every**
 
