@@ -234,8 +234,9 @@ provide let shr = (num: BigInt, places: Int32) => {
  */
 @unsafe
 provide let eqz = (num: BigInt) => {
-  let num = WasmI32.fromGrain(num)
-  BI.eqz(num)
+  let result = BI.eqz(WasmI32.fromGrain(num))
+  ignore(num)
+  result
 }
 
 /**
@@ -249,9 +250,10 @@ provide let eqz = (num: BigInt) => {
  */
 @unsafe
 provide let eq = (num1: BigInt, num2: BigInt) => {
-  let num1 = WasmI32.fromGrain(num1)
-  let num2 = WasmI32.fromGrain(num2)
-  BI.eq(num1, num2)
+  let result = BI.eq(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
+  result
 }
 
 /**
@@ -265,9 +267,10 @@ provide let eq = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let ne = (num1: BigInt, num2: BigInt) => {
-  let num1 = WasmI32.fromGrain(num1)
-  let num2 = WasmI32.fromGrain(num2)
-  BI.ne(num1, num2)
+  let result = BI.ne(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
+  result
 }
 
 /**
@@ -281,9 +284,10 @@ provide let ne = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let lt = (num1: BigInt, num2: BigInt) => {
-  let num1 = WasmI32.fromGrain(num1)
-  let num2 = WasmI32.fromGrain(num2)
-  BI.lt(num1, num2)
+  let result = BI.lt(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
+  result
 }
 
 /**
@@ -297,9 +301,10 @@ provide let lt = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let lte = (num1: BigInt, num2: BigInt) => {
-  let num1 = WasmI32.fromGrain(num1)
-  let num2 = WasmI32.fromGrain(num2)
-  BI.lte(num1, num2)
+  let result = BI.lte(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
+  result
 }
 
 /**
@@ -313,9 +318,10 @@ provide let lte = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let gt = (num1: BigInt, num2: BigInt) => {
-  let num1 = WasmI32.fromGrain(num1)
-  let num2 = WasmI32.fromGrain(num2)
-  BI.gt(num1, num2)
+  let result = BI.gt(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
+  result
 }
 
 /**
@@ -329,9 +335,10 @@ provide let gt = (num1: BigInt, num2: BigInt) => {
  */
 @unsafe
 provide let gte = (num1: BigInt, num2: BigInt) => {
-  let num1 = WasmI32.fromGrain(num1)
-  let num2 = WasmI32.fromGrain(num2)
-  BI.gte(num1, num2)
+  let result = BI.gte(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
+  result
 }
 
 /**
@@ -457,5 +464,7 @@ provide let popcnt = (num: BigInt) => {
  */
 @unsafe
 provide let toString = (num: BigInt) => {
-  BI.bigIntToString10(WasmI32.fromGrain(num))
+  let string = BI.bigIntToString10(WasmI32.fromGrain(num))
+  ignore(num)
+  string
 }

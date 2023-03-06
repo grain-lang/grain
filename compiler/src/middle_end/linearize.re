@@ -224,6 +224,7 @@ type item_get =
 let rec transl_imm =
         (
           ~boxed=false,
+          ~tail=false,
           {
             exp_desc,
             exp_loc: loc,
@@ -499,17 +500,19 @@ let rec transl_imm =
       Imm.const(Const_void),
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
+  | TExpReturn(Some({exp_desc: TExpApp(_)} as return)) =>
+    transl_imm(~boxed, ~tail=true, return)
   | TExpReturn(value) =>
-    let (value_comp, value_setup) =
+    let (value_imm, value_setup) =
       switch (value) {
       | Some(value) =>
-        let (value_comp, value_setup) = transl_comp_expression(value);
-        (Some(value_comp), value_setup);
+        let (value_imm, value_setup) = transl_imm(value);
+        (Some(value_imm), value_setup);
       | None => (None, [])
       };
     (
       Imm.const(Const_void),
-      value_setup @ [BSeq(Comp.return(~loc, ~env, value_comp))],
+      value_setup @ [BSeq(Comp.return(~loc, ~env, value_imm))],
     );
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})},
@@ -518,20 +521,29 @@ let rec transl_imm =
     let (ans, ans_setup) = transl_comp_expression(e);
     (Imm.trap(~loc, ~env, ()), ans_setup @ [BSeq(ans)]);
   | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
-    Translprim.(
-      switch (PrimMap.find_opt(prim_map, prim), args) {
-      | (Some(Primitive0(prim)), []) =>
-        transl_imm({...e, exp_desc: TExpPrim0(prim)})
-      | (Some(Primitive1(prim)), [arg]) =>
-        transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
-      | (Some(Primitive2(prim)), [arg1, arg2]) =>
-        transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
-      | (Some(PrimitiveN(prim)), args) =>
-        transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
-      | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
-      | (None, _) => failwith("transl_imm: unknown primitive")
-      }
-    )
+    let (imm, setup) =
+      Translprim.(
+        switch (PrimMap.find_opt(prim_map, prim), args) {
+        | (Some(Primitive0(prim)), []) =>
+          transl_imm({...e, exp_desc: TExpPrim0(prim)})
+        | (Some(Primitive1(prim)), [arg]) =>
+          transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
+        | (Some(Primitive2(prim)), [arg1, arg2]) =>
+          transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+        | (Some(PrimitiveN(prim)), args) =>
+          transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
+        | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
+        | (None, _) => failwith("transl_imm: unknown primitive")
+        }
+      );
+    if (tail) {
+      (
+        Imm.const(Const_void),
+        setup @ [BSeq(Comp.return(~loc, ~env, Some(imm)))],
+      );
+    } else {
+      (imm, setup);
+    };
   | TExpApp(func, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
@@ -546,6 +558,7 @@ let rec transl_imm =
             ~loc,
             ~env,
             ~allocation_type,
+            ~tail,
             (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
             new_args,
           ),
@@ -899,6 +912,7 @@ let rec transl_imm =
 and transl_comp_expression =
     (
       ~name=?,
+      ~tail=false,
       {
         exp_desc,
         exp_type,
@@ -1253,15 +1267,17 @@ and transl_comp_expression =
     failwith("transl_comp_expression: impossible: empty lambda")
   | TExpLambda(_, _) =>
     failwith("transl_comp_expression: NYI: multi-branch lambda")
+  | TExpReturn(Some({exp_desc: TExpApp(_)} as return)) =>
+    transl_comp_expression(~name?, ~tail=true, return)
   | TExpReturn(value) =>
-    let (value_comp, value_setup) =
+    let (value_imm, value_setup) =
       switch (value) {
       | Some(value) =>
-        let (value_comp, value_setup) = transl_comp_expression(value);
-        (Some(value_comp), value_setup);
+        let (value_imm, value_setup) = transl_imm(value);
+        (Some(value_imm), value_setup);
       | None => (None, [])
       };
-    (Comp.return(~loc, ~env, value_comp), value_setup);
+    (Comp.return(~loc, ~env, value_imm), value_setup);
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})} as func,
       args,
@@ -1274,6 +1290,7 @@ and transl_comp_expression =
         ~attributes,
         ~allocation_type,
         ~env,
+        ~tail,
         (new_func, ([Managed], Unmanaged(WasmI32))),
         new_args,
       ),
@@ -1284,21 +1301,45 @@ and transl_comp_expression =
       ans_setup @ [BSeq(ans)],
     );
   | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
-    Translprim.(
-      switch (PrimMap.find_opt(prim_map, prim), args) {
-      | (Some(Primitive0(prim)), []) =>
-        transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
-      | (Some(Primitive1(prim)), [arg]) =>
-        transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
-      | (Some(Primitive2(prim)), [arg1, arg2]) =>
-        transl_comp_expression({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
-      | (Some(PrimitiveN(prim)), args) =>
-        transl_comp_expression({...e, exp_desc: TExpPrimN(prim, args)})
-      | (Some(_), _) =>
-        failwith("transl_comp_expression: invalid primitive arity")
-      | (None, _) => failwith("transl_comp_expression: unknown primitive")
-      }
-    )
+    if (tail) {
+      let (imm, setup) =
+        Translprim.(
+          switch (PrimMap.find_opt(prim_map, prim), args) {
+          | (Some(Primitive0(prim)), []) =>
+            transl_imm({...e, exp_desc: TExpPrim0(prim)})
+          | (Some(Primitive1(prim)), [arg]) =>
+            transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
+          | (Some(Primitive2(prim)), [arg1, arg2]) =>
+            transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+          | (Some(PrimitiveN(prim)), args) =>
+            transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
+          | (Some(_), _) =>
+            failwith("transl_comp_expression: invalid primitive arity")
+          | (None, _) =>
+            failwith("transl_comp_expression: unknown primitive")
+          }
+        );
+      (Comp.return(~loc, ~attributes, ~env, Some(imm)), setup);
+    } else {
+      Translprim.(
+        switch (PrimMap.find_opt(prim_map, prim), args) {
+        | (Some(Primitive0(prim)), []) =>
+          transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
+        | (Some(Primitive1(prim)), [arg]) =>
+          transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
+        | (Some(Primitive2(prim)), [arg1, arg2]) =>
+          transl_comp_expression({
+            ...e,
+            exp_desc: TExpPrim2(prim, arg1, arg2),
+          })
+        | (Some(PrimitiveN(prim)), args) =>
+          transl_comp_expression({...e, exp_desc: TExpPrimN(prim, args)})
+        | (Some(_), _) =>
+          failwith("transl_comp_expression: invalid primitive arity")
+        | (None, _) => failwith("transl_comp_expression: unknown primitive")
+        }
+      );
+    }
   | TExpApp(func, args) =>
     let (new_func, func_setup) = transl_imm(func);
     let (new_args, new_setup) = List.split(List.map(transl_imm, args));
@@ -1308,6 +1349,7 @@ and transl_comp_expression =
         ~attributes,
         ~allocation_type,
         ~env,
+        ~tail,
         (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
         new_args,
       ),

@@ -274,7 +274,7 @@ module Comp: {
       ~loc: loc=?,
       ~attributes: attributes=?,
       ~env: env=?,
-      option(comp_expression)
+      option(imm_expression)
     ) =>
     comp_expression;
   let switch_:
@@ -296,17 +296,6 @@ module Comp: {
       ~env: env=?,
       ~tail: bool=?,
       (imm_expression, (list(allocation_type), allocation_type)),
-      list(imm_expression)
-    ) =>
-    comp_expression;
-  let app_builtin:
-    (
-      ~loc: loc=?,
-      ~attributes: attributes=?,
-      ~allocation_type: allocation_type,
-      ~env: env=?,
-      string,
-      string,
       list(imm_expression)
     ) =>
     comp_expression;

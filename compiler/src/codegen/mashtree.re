@@ -459,7 +459,7 @@ and instr_desc =
   | MFor(option(block), option(block), block)
   | MContinue
   | MBreak
-  | MReturn(option(instr))
+  | MReturn(option(immediate))
   | MSwitch(immediate, list((int32, block)), block, Types.allocation_type) /* value, branches, default, return type */
   | MPrim0(prim0)
   | MPrim1(prim1, immediate)
@@ -524,7 +524,7 @@ type mash_function = {
   name: option(string),
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
-  has_closure: bool,
+  closure: option(int),
   body: block,
   stack_size,
   attrs: attributes,

@@ -14,6 +14,7 @@ let sources: ref(list((Expression.t, Grain_parsing.Location.t))) = ref([]);
 type codegen_env = {
   name: option(string),
   num_args: int,
+  num_closure_args: int,
   stack_size,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),
@@ -250,6 +251,7 @@ let runtime_imports_tbl = {
 let init_codegen_env = name => {
   name,
   num_args: 0,
+  num_closure_args: 0,
   stack_size: {
     stack_size_ptr: 0,
     stack_size_i32: 0,
@@ -531,17 +533,29 @@ let compile_bind =
     | BindSet({value, initial}) => set_slot(slot, typ, value, initial)
     | BindTee({value}) => tee_slot(slot, typ, value)
     };
+  | MClosureBind(i) =>
+    /* Closure bindings need to be offset to account for arguments */
+    let slot = env.num_args + Int32.to_int(i);
+    switch (action) {
+    | BindGet => get_slot(slot, Type.int32)
+    | BindSet({value, initial}) => set_slot(slot, Type.int32, value, initial)
+    | BindTee({value}) => tee_slot(slot, Type.int32, value)
+    };
   | MLocalBind(i, alloc) =>
-    /* Local bindings need to be offset to account for arguments and swap variables */
+    /* Local bindings need to be offset to account for arguments, closure arguments, and swap variables */
     let (typ, slot) =
       switch (alloc) {
       | Types.Managed => (
           Type.int32,
-          env.num_args + Array.length(swap_slots) + Int32.to_int(i),
+          env.num_args
+          + env.num_closure_args
+          + Array.length(swap_slots)
+          + Int32.to_int(i),
         )
       | Types.Unmanaged(WasmI32) => (
           Type.int32,
           env.num_args
+          + env.num_closure_args
           + Array.length(swap_slots)
           + env.stack_size.stack_size_ptr
           + Int32.to_int(i),
@@ -549,6 +563,7 @@ let compile_bind =
       | Types.Unmanaged(WasmI64) => (
           Type.int64,
           env.num_args
+          + env.num_closure_args
           + Array.length(swap_slots)
           + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
@@ -557,6 +572,7 @@ let compile_bind =
       | Types.Unmanaged(WasmF32) => (
           Type.float32,
           env.num_args
+          + env.num_closure_args
           + Array.length(swap_slots)
           + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
@@ -566,6 +582,7 @@ let compile_bind =
       | Types.Unmanaged(WasmF64) => (
           Type.float64,
           env.num_args
+          + env.num_closure_args
           + Array.length(swap_slots)
           + env.stack_size.stack_size_ptr
           + env.stack_size.stack_size_i32
@@ -580,8 +597,8 @@ let compile_bind =
     | BindTee({value}) => tee_slot(slot, typ, value)
     };
   | MSwapBind(i, wasm_ty) =>
-    /* Swap bindings need to be offset to account for arguments */
-    let slot = env.num_args + Int32.to_int(i);
+    /* Swap bindings need to be offset to account for arguments and closure arguments */
+    let slot = env.num_args + env.num_closure_args + Int32.to_int(i);
     let typ = wasm_type(wasm_ty);
     switch (action) {
     | BindGet => get_slot(slot, typ)
@@ -627,18 +644,6 @@ let compile_bind =
         ],
       )
     };
-  | MClosureBind(i) =>
-    /* Closure bindings need to be calculated */
-    if (!(action == BindGet)) {
-      failwith(
-        "Internal error: attempted to emit instruction which would mutate closure values",
-      );
-    };
-    load(
-      ~offset=4 * (4 + Int32.to_int(i)),
-      wasm_mod,
-      Expression.Local_get.make(wasm_mod, 0, Type.int32),
-    );
   };
 };
 
@@ -1385,13 +1390,46 @@ let call_lambda =
   switch (known) {
   | Some(name) =>
     let instr =
-      if (tail) {Expression.Call.make_return} else {Expression.Call.make};
+      if (tail) {
+        if (Config.experimental_tail_call^) {
+          Expression.Call.make_return;
+        } else {
+          (
+            (wasm_mod, name, args, retty) =>
+              Expression.Return.make(
+                wasm_mod,
+                Expression.Call.make(wasm_mod, name, args, retty),
+              )
+          );
+        };
+      } else {
+        Expression.Call.make;
+      };
     let args = [compiled_func(), ...compiled_args];
     instr(wasm_mod, name, args, retty);
   | None =>
     let instr =
-      if (tail) {Expression.Call_indirect.make_return} else {
-        Expression.Call_indirect.make
+      if (tail) {
+        if (Config.experimental_tail_call^) {
+          Expression.Call_indirect.make_return;
+        } else {
+          (
+            (wasm_mod, table, ptr, args, argty, retty) =>
+              Expression.Return.make(
+                wasm_mod,
+                Expression.Call_indirect.make(
+                  wasm_mod,
+                  table,
+                  ptr,
+                  args,
+                  argty,
+                  retty,
+                ),
+              )
+          );
+        };
+      } else {
+        Expression.Call_indirect.make;
       };
     let get_func_swap = () => get_swap(wasm_mod, env, 0);
     let args = [get_func_swap(), ...compiled_args];
@@ -3024,7 +3062,7 @@ and compile_instr = (wasm_mod, env, instr) =>
     let value =
       Option.fold(
         ~none=Expression.Const.make(wasm_mod, const_void()),
-        ~some=compile_instr(wasm_mod, env),
+        ~some=compile_imm(wasm_mod, env),
         value,
       );
     Expression.Return.make(wasm_mod, value);
@@ -3303,7 +3341,15 @@ let compile_function =
       ~preamble=?,
       wasm_mod,
       env,
-      {id, args, return_type, stack_size, body: body_instrs, func_loc} as func,
+      {
+        id,
+        args,
+        return_type,
+        stack_size,
+        closure,
+        body: body_instrs,
+        func_loc,
+      } as func,
     ) => {
   sources := [];
   set_current_function(func);
@@ -3313,7 +3359,12 @@ let compile_function =
     | Some(name) => name
     | None => Ident.unique_name(id)
     };
-  let body_env = {...env, num_args: arity, stack_size};
+  let body_env = {
+    ...env,
+    num_args: arity,
+    num_closure_args: Option.value(~default=0, closure),
+    stack_size,
+  };
   let inner_body =
     switch (preamble) {
     | Some(preamble) =>
@@ -3324,9 +3375,42 @@ let compile_function =
       )
     | None => compile_block(wasm_mod, body_env, body_instrs)
     };
-  let body = Expression.Return.make(wasm_mod, inner_body);
+  let body =
+    switch (closure) {
+    | Some(num_closure_args) =>
+      Expression.Block.make(
+        wasm_mod,
+        gensym_label("closure_elements"),
+        List.rev_append(
+          List.init(num_closure_args, closure_slot =>
+            compile_bind(
+              ~action=
+                BindSet({
+                  value:
+                    call_incref(
+                      wasm_mod,
+                      body_env,
+                      load(
+                        ~offset=4 * (4 + closure_slot),
+                        wasm_mod,
+                        Expression.Local_get.make(wasm_mod, 0, Type.int32),
+                      ),
+                    ),
+                  initial: true,
+                }),
+              wasm_mod,
+              body_env,
+              MClosureBind(Int32.of_int(closure_slot)),
+            )
+          ),
+          [compile_block(wasm_mod, body_env, body_instrs)],
+        ),
+      )
+    | None => inner_body
+    };
   let locals =
     [
+      Array.make(body_env.num_closure_args, Type.int32),
       swap_slots,
       Array.make(stack_size.stack_size_ptr, Type.int32),
       Array.make(stack_size.stack_size_i32, Type.int32),
@@ -3616,7 +3700,7 @@ let compile_main = (wasm_mod, env, prog) => {
       name: Some(grain_main),
       args: [],
       return_type: [Types.Unmanaged(WasmI32)],
-      has_closure: false,
+      closure: None,
       body: prog.main_body,
       stack_size: prog.main_body_stack_size,
       attrs: [],

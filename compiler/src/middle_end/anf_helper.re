@@ -208,15 +208,6 @@ module Comp = {
         args,
       ) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CApp(func, args, tail));
-  let app_builtin =
-      (~loc=?, ~attributes=?, ~allocation_type, ~env=?, modname, name, args) =>
-    mk(
-      ~loc?,
-      ~attributes?,
-      ~allocation_type,
-      ~env?,
-      CAppBuiltin(modname, name, args),
-    );
   let lambda = (~loc=?, ~attributes=?, ~env=?, ~name=?, args, body) =>
     mk(
       ~loc?,

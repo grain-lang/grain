@@ -10,9 +10,9 @@ let instr_produces_value = instr =>
   | MImmediate(_)
   | MCallRaw({func_type: (_, [_, ..._])})
   | MCallKnown({func_type: (_, [_, ..._])})
-  | MCallIndirect({func_type: (_, [_, ..._])})
+  | MCallIndirect({func_type: (_, [_, ..._])}) => true
   | MReturnCallKnown({func_type: (_, [_, ..._])})
-  | MReturnCallIndirect({func_type: (_, [_, ..._])}) => true
+  | MReturnCallIndirect({func_type: (_, [_, ..._])}) => false
   | MCallRaw(_)
   | MCallKnown(_)
   | MCallIndirect(_)
@@ -138,7 +138,7 @@ let rec analyze_usage = instrs => {
       analyze_usage(body);
     | MContinue
     | MBreak => ()
-    | MReturn(ret) => Option.iter(process_instr, ret)
+    | MReturn(ret) => Option.iter(process_imm, ret)
     | MSwitch(value, branches, default, _) =>
       process_imm(value);
       List.iter(((_, branch)) => analyze_usage(branch), branches);
@@ -181,7 +181,7 @@ let rec analyze_usage = instrs => {
     | MStore(binds) =>
       List.iter(
         ((bind, instr)) => {
-          // The instruction is executed before the slot is available, so we
+          // The instruction is executed before the slot is available, so we're
           // careful to maintain order here.
           process_instr(instr);
           register_slot(bind);
@@ -270,9 +270,24 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
     );
   };
 
+  let incref = imm => {
+    immediate_desc: MIncRef(imm),
+    immediate_analyses: {
+      last_usage: Unknown,
+    },
+  };
+
   let handle_imm = (~non_gc_instr=false, ~is_return=false, imm) => {
     switch (imm.immediate_desc) {
-    | MImmBinding((MArgBind(_, alloc) | MLocalBind(_, alloc)) as binding) =>
+    | MImmBinding((MArgBind(_) | MLocalBind(_) | MClosureBind(_)) as binding) =>
+      let alloc =
+        switch (binding) {
+        | MArgBind(_, alloc)
+        | MLocalBind(_, alloc)
+        | MGlobalBind(_, alloc)
+        | MSwapBind(_, alloc) => alloc
+        | MClosureBind(_) => Managed
+        };
       if (is_last_usage(imm)) {
         let bind_level =
           switch (BindMap.find_opt(binding, live_bindings^)) {
@@ -302,36 +317,20 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
           switch (alloc) {
           | Unmanaged(_) => imm
           | Managed when non_gc_instr || is_return => imm
-          | Managed => {
-              immediate_desc: MIncRef(imm),
-              immediate_analyses: {
-                last_usage: Unknown,
-              },
-            }
+          | Managed => incref(imm)
           };
         };
       } else {
         switch (alloc) {
         | Managed when non_gc_instr || is_return => imm
         | Unmanaged(_) => imm
-        | Managed => {
-            immediate_desc: MIncRef(imm),
-            immediate_analyses: {
-              last_usage: Unknown,
-            },
-          }
+        | Managed => incref(imm)
         };
-      }
+      };
     | MImmBinding(_) when non_gc_instr => imm
     // Return statements will still incref non-owned values.
-    | MImmBinding(
-        MGlobalBind(_, Managed) | MClosureBind(_) | MSwapBind(_, Managed),
-      ) => {
-        immediate_desc: MIncRef(imm),
-        immediate_analyses: {
-          last_usage: Unknown,
-        },
-      }
+    | MImmBinding(MGlobalBind(_, Managed) | MSwapBind(_, Managed)) =>
+      incref(imm)
     | MImmBinding(MGlobalBind(_) | MSwapBind(_))
     | MImmConst(_)
     | MImmTrap
@@ -428,15 +427,9 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         )
       | MContinue
       | MBreak => instr.instr_desc
-      | MReturn(Some({instr_desc: MImmediate(imm)} as instr)) =>
-        // A return will use the argument directly without the need to incref
-        MReturn(
-          Some({
-            ...instr,
-            instr_desc: MImmediate(handle_imm(~is_return=true, imm)),
-          }),
-        )
-      | MReturn(ret) => MReturn(Option.map(process_instr, ret))
+      // A return will use the argument directly without the need to incref
+      | MReturn(ret) =>
+        MReturn(Option.map(handle_imm(~is_return=true), ret))
       | MSwitch(value, branches, default, alloc) =>
         MSwitch(
           handle_imm(value),
@@ -538,7 +531,8 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
           } else {
             switch (bind) {
             | MArgBind(_, Managed)
-            | MLocalBind(_, Managed) => [
+            | MLocalBind(_, Managed)
+            | MClosureBind(_) => [
                 {
                   immediate_desc: MImmBinding(bind),
                   immediate_analyses: {
@@ -569,11 +563,11 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         },
       ]
     | (_, Some(instr)) => [
-        instr,
         {
           instr_desc: MCleanup(None, binds),
           instr_loc: Grain_parsing.Location.dummy_loc,
         },
+        instr,
       ]
     | (_, None) => [
         {
@@ -644,10 +638,18 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
     };
   };
 
+  let is_return_instr = instr =>
+    switch (instr.instr_desc) {
+    | MReturn(_)
+    | MReturnCallKnown(_)
+    | MReturnCallIndirect(_) => true
+    | _ => false
+    };
+
   let rec do_gc = (acc, instrs) => {
     switch (instrs) {
     | [] => acc
-    | [instr] when implicit_return =>
+    | [instr] when implicit_return && !is_return_instr(instr) =>
       // Last value of the function, implicitly returned. Don't clean yourself up!
       let (skip, instr) =
         switch (instr.instr_desc) {
@@ -677,10 +679,10 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
     | [instr, ...instrs] =>
       let instr = process_instr(instr);
       switch (instr.instr_desc) {
-      | MReturn(Some(ret_instr)) =>
+      | MReturn(Some(imm)) =>
         let skip =
-          switch (ret_instr.instr_desc) {
-          | MImmediate({immediate_desc: MImmBinding(bind)}) =>
+          switch (imm.immediate_desc) {
+          | MImmBinding(bind) =>
             // Don't clean up the thing we're about to return.
             BindSet.singleton(bind)
           | _ => BindSet.empty
@@ -725,7 +727,7 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
             ),
           );
         do_gc(
-          [instr, ...List.rev_append(do_full_cleanup(~skip, None), acc)],
+          List.rev_append(do_full_cleanup(~skip, Some(instr)), acc),
           instrs,
         );
       | MDrop({instr_desc: MBreak | MContinue})
@@ -758,7 +760,7 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
   List.rev(do_gc([], instrs));
 };
 
-let apply_gc = (args, block) => {
+let apply_gc = (args, closure, block) => {
   usage_map := BindMap.empty;
   live_bindings := BindMap.empty;
 
@@ -774,6 +776,22 @@ let apply_gc = (args, block) => {
     },
     args,
   );
+
+  // Include closure arguments as GC targets
+  switch (closure) {
+  | Some(num_elements) =>
+    ignore(
+      List.init(num_elements, i => {
+        live_bindings :=
+          BindMap.add(
+            MClosureBind(Int32.of_int(i)),
+            (0, Alive),
+            live_bindings^,
+          )
+      }),
+    )
+  | None => ()
+  };
 
   analyze_usage(block);
 

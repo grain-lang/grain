@@ -156,7 +156,7 @@ describe("optimizations", ({test, testSkip}) => {
     Grain_typed.(
       AExp.comp(
         Comp.app(
-          ~tail=false,
+          ~tail=true,
           ~allocation_type=Managed,
           (Imm.id(Ident.create("+")), ([Managed, Managed], Managed)),
           [
@@ -534,6 +534,7 @@ describe("optimizations", ({test, testSkip}) => {
                   ),
                   AExp.comp(
                     Comp.app(
+                      ~tail=true,
                       ~allocation_type=Unmanaged(WasmI32),
                       (
                         Imm.id(copy),

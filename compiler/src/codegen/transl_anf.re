@@ -23,7 +23,7 @@ type worklist_elt = {
   env: compilation_env,
   args: list(Types.allocation_type),
   return_type: list(Types.allocation_type),
-  has_closure: bool,
+  closure: option(int),
   id: Ident.t,
   name: option(string),
   attrs: attributes,
@@ -226,10 +226,10 @@ let compile_lambda =
 
   let (body, return_type) = body;
 
-  let (free_vars, has_closure) =
+  let (free_vars, closure) =
     switch (closure_status) {
-    | Unnecessary => ([], false)
-    | Precomputed(vars) => (vars, true)
+    | Unnecessary => ([], None)
+    | Precomputed(vars) => (vars, Some(List.length(vars)))
     | Uncomputed =>
       // NOTE: we special-case `id`, since we want to
       //       have simply-recursive uses of identifiers use
@@ -249,7 +249,8 @@ let compile_lambda =
           Ident.Set.of_list(arg_vars @ global_vars),
         );
       let free_var_set = Ident.Set.diff(used_var_set, accessible_var_set);
-      (Ident.Set.elements(free_var_set), true);
+      let elements = Ident.Set.elements(free_var_set);
+      (elements, Some(List.length(elements)));
     };
 
   /* Bind all non-arguments in the function body to
@@ -288,12 +289,12 @@ let compile_lambda =
     name,
     args,
     return_type,
-    has_closure,
+    closure,
     attrs,
     loc,
   };
   worklist_enqueue(worklist_item);
-  if (has_closure || Analyze_function_calls.has_indirect_call(id)) {
+  if (Option.is_some(closure) || Analyze_function_calls.has_indirect_call(id)) {
     Some({
       func_idx,
       arity: Int32.of_int(arity),
@@ -367,7 +368,7 @@ let compile_wrapper =
     name,
     args: [Types.Managed, ...args],
     return_type,
-    has_closure: true,
+    closure: Some(0),
     attrs: [Location.mknoloc(Typedtree.Disable_gc)],
     loc: Location.dummy_loc,
   };
@@ -427,7 +428,7 @@ let rec compile_comp = (~id=?, env, c) => {
       )
     | CContinue => MContinue
     | CBreak => MBreak
-    | CReturn(e) => MReturn(Option.map(compile_comp(env), e))
+    | CReturn(e) => MReturn(Option.map(compile_imm(env), e))
     | CPrim0(p0) => MPrim0(p0)
     | CPrim1(Box, arg)
     | CPrim1(BoxBind, arg) => MAllocate(MBox(compile_imm(env, arg)))
@@ -585,15 +586,6 @@ let rec compile_comp = (~id=?, env, c) => {
       | Some(func) => MCallKnown({func, closure, func_type, args})
       | None => MCallIndirect({func: closure, func_type, args})
       };
-    | CAppBuiltin(modname, name, args) =>
-      MCallRaw({
-        func: "builtin",
-        func_type: (
-          List.map(i => Types.Unmanaged(WasmI32), args),
-          [Types.Unmanaged(WasmI32)],
-        ),
-        args: List.map(compile_imm(env), args),
-      })
     | CImmExpr(i) => MImmediate(compile_imm(env, i))
     };
   {instr_desc: desc, instr_loc: c.comp_loc};
@@ -668,7 +660,7 @@ let compile_remaining_worklist = () => {
   let compile_one =
       (
         funcs,
-        {id, name, args, return_type, has_closure, attrs, loc} as cur: worklist_elt,
+        {id, name, args, return_type, closure, attrs, loc} as cur: worklist_elt,
       ) => {
     let (body, stack_size) = compile_worklist_elt(cur);
     let func = {
@@ -676,7 +668,7 @@ let compile_remaining_worklist = () => {
       name,
       args,
       return_type,
-      has_closure,
+      closure,
       body,
       stack_size,
       attrs,
@@ -928,7 +920,7 @@ let transl_signature = (~functions, ~imports, signature) => {
         Ident_tbl.add(
           func_map,
           func.id,
-          (Ident.unique_name(func.id), func.has_closure),
+          (Ident.unique_name(func.id), Option.is_some(func.closure)),
         )
       | None => ()
       },
@@ -1053,7 +1045,7 @@ let transl_anf_program =
     if (Config.no_gc^) {
       main_body;
     } else {
-      Garbage_collection.apply_gc([], main_body);
+      Garbage_collection.apply_gc([], None, main_body);
     };
   let functions =
     List.map(
@@ -1066,7 +1058,8 @@ let transl_anf_program =
                )) {
           func;
         } else {
-          let body = Garbage_collection.apply_gc(func.args, func.body);
+          let body =
+            Garbage_collection.apply_gc(func.args, func.closure, func.body);
           {...func, body};
         },
       compile_remaining_worklist(),

@@ -143,7 +143,6 @@ module PurityArg: Anf_iterator.IterArgument = {
           );
         List.for_all(x => x, branches_purities);
       | CApp(_) => false
-      | CAppBuiltin(_) => false
       | CLambda(_)
       | CNumber(_)
       | CInt32(_)

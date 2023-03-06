@@ -61,7 +61,7 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
       | CContinue
       | CBreak => Ident.Set.empty
       | CReturn(expr) =>
-        Option.fold(~none=Ident.Set.empty, ~some=comp_free_vars, expr)
+        Option.fold(~none=Ident.Set.empty, ~some=imm_free_vars, expr)
       | CSwitch(arg, branches, _) =>
         List.fold_left(
           (acc, (_, b)) => Ident.Set.union(anf_free_vars(b), acc),
@@ -87,12 +87,6 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
         List.fold_left(
           (acc, a) => Ident.Set.union(imm_free_vars(a), acc),
           imm_free_vars(fn),
-          args,
-        )
-      | CAppBuiltin(_, _, args) =>
-        List.fold_left(
-          (acc, a) => Ident.Set.union(imm_free_vars(a), acc),
-          Ident.Set.empty,
           args,
         )
       | CTuple(args)
