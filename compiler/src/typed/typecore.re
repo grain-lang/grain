@@ -1123,7 +1123,16 @@ and type_expect_ =
   | PExpLet(rec_flag, mut_flag, pats) =>
     let scp = None;
     let (pat_exp_list, new_env, unpacks) =
-      type_let(env, rec_flag, mut_flag, false, pats, scp, true);
+      type_let(
+        ~in_function?,
+        env,
+        rec_flag,
+        mut_flag,
+        false,
+        pats,
+        scp,
+        true,
+      );
     /*let () =
       if rec_flag = Recursive then
         check_recursive_bindings env pat_exp_list
@@ -2125,6 +2134,7 @@ and type_let =
     (
       ~check=s => Warnings.Unused_var(s),
       ~check_strict=s => Warnings.Unused_var_strict(s),
+      ~in_function=?,
       env,
       rec_flag,
       mut_flag,
@@ -2324,7 +2334,7 @@ and type_let =
           let exp =
             /*Builtin_attributes.warning_scope pvb_attributes
               (fun () -> type_expect exp_env sexp (mk_expected ty'))*/
-            type_expect(exp_env, sexp, mk_expected(ty'));
+            type_expect(~in_function?, exp_env, sexp, mk_expected(ty'));
 
           end_def();
           check_univars(env, true, "definition", exp, pat.pat_type, vars);
@@ -2335,7 +2345,12 @@ and type_let =
               Printtyp.raw_type_expr pat.pat_type;*/
           /*Builtin_attributes.warning_scope pvb_attributes (fun () ->
             type_expect exp_env sexp (mk_expected pat.pat_type))*/
-          type_expect(exp_env, sexp, mk_expected(pat.pat_type))
+          type_expect(
+            ~in_function?,
+            exp_env,
+            sexp,
+            mk_expected(pat.pat_type),
+          )
         };
       },
       spat_sexp_list,

@@ -195,4 +195,15 @@ truc()|},
     |},
     "Expected an expression.",
   );
+
+  assertSnapshot(
+    "regression_1725",
+    {|
+    let foo = () => {
+      let bar = return 5
+      return 6
+    }
+    foo()
+    |},
+  );
 });
