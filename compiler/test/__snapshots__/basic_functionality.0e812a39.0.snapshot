@@ -38,22 +38,22 @@ basic functionality › precedence1
   (local $4 f32)
   (local $5 f64)
   (local $6 i32)
-  (return
-   (block $compile_block.3 (result i32)
-    (block $compile_store.2
-     (local.set $6
-      (call $*_1116
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $*_1116)
-       )
-       (i32.const 9)
-       (i32.const 13)
+  (block $compile_block.3
+   (block $compile_store.2
+    (local.set $6
+     (call $*_1116
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $*_1116)
       )
-     )
-     (block $do_backpatches.1
+      (i32.const 9)
+      (i32.const 13)
      )
     )
+    (block $do_backpatches.1
+    )
+   )
+   (return
     (call $+_1113
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)

@@ -45,352 +45,352 @@ stdlib › stdlib_equal_3
   (local $11 i32)
   (local $12 i32)
   (local $13 i32)
-  (return
-   (block $compile_block.25 (result i32)
-    (block $compile_store.3
-     (local.set $6
-      (block $allocate_adt.1 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 20)
-         )
+  (block $compile_block.25
+   (block $compile_store.3
+    (local.set $6
+     (block $allocate_adt.1 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
         )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
         (i32.const 2)
        )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
-        )
-       )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 3)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 0)
-       )
-       (local.get $0)
       )
-     )
-     (block $do_backpatches.2
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.6
-     (local.set $7
-      (block $allocate_adt.4 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 28)
-         )
-        )
-        (i32.const 2)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
+    (block $do_backpatches.2
+    )
+   )
+   (block $compile_store.6
+    (local.set $7
+     (block $allocate_adt.4 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 28)
         )
        )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 1)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 2)
-       )
-       (i32.store offset=20
-        (local.get $0)
-        (i32.const 7)
-       )
-       (i32.store offset=24
-        (local.get $0)
-        (local.get $6)
-       )
-       (local.get $0)
+       (i32.const 2)
       )
-     )
-     (block $do_backpatches.5
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
+        (i32.const 2)
+       )
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 1)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 2)
+      )
+      (i32.store offset=20
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=24
+       (local.get $0)
+       (local.get $6)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.9
-     (local.set $8
-      (block $allocate_adt.7 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 28)
-         )
-        )
-        (i32.const 2)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
+    (block $do_backpatches.5
+    )
+   )
+   (block $compile_store.9
+    (local.set $8
+     (block $allocate_adt.7 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 28)
         )
        )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 1)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 2)
-       )
-       (i32.store offset=20
-        (local.get $0)
-        (i32.const 5)
-       )
-       (i32.store offset=24
-        (local.get $0)
-        (local.get $7)
-       )
-       (local.get $0)
+       (i32.const 2)
       )
-     )
-     (block $do_backpatches.8
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
+        (i32.const 2)
+       )
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 1)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 2)
+      )
+      (i32.store offset=20
+       (local.get $0)
+       (i32.const 5)
+      )
+      (i32.store offset=24
+       (local.get $0)
+       (local.get $7)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.12
-     (local.set $9
-      (block $allocate_adt.10 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 28)
-         )
-        )
-        (i32.const 2)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
+    (block $do_backpatches.8
+    )
+   )
+   (block $compile_store.12
+    (local.set $9
+     (block $allocate_adt.10 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 28)
         )
        )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 1)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 2)
-       )
-       (i32.store offset=20
-        (local.get $0)
-        (i32.const 3)
-       )
-       (i32.store offset=24
-        (local.get $0)
-        (local.get $8)
-       )
-       (local.get $0)
+       (i32.const 2)
       )
-     )
-     (block $do_backpatches.11
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
+        (i32.const 2)
+       )
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 1)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 2)
+      )
+      (i32.store offset=20
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=24
+       (local.get $0)
+       (local.get $8)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.15
-     (local.set $10
-      (block $allocate_adt.13 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 20)
-         )
+    (block $do_backpatches.11
+    )
+   )
+   (block $compile_store.15
+    (local.set $10
+     (block $allocate_adt.13 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 20)
         )
+       )
+       (i32.const 2)
+      )
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
         (i32.const 2)
        )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
-        )
-       )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 3)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 0)
-       )
-       (local.get $0)
       )
-     )
-     (block $do_backpatches.14
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 0)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.18
-     (local.set $11
-      (block $allocate_adt.16 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 28)
-         )
-        )
-        (i32.const 2)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
+    (block $do_backpatches.14
+    )
+   )
+   (block $compile_store.18
+    (local.set $11
+     (block $allocate_adt.16 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 28)
         )
        )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 1)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 2)
-       )
-       (i32.store offset=20
-        (local.get $0)
-        (i32.const 7)
-       )
-       (i32.store offset=24
-        (local.get $0)
-        (local.get $10)
-       )
-       (local.get $0)
+       (i32.const 2)
       )
-     )
-     (block $do_backpatches.17
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
+        (i32.const 2)
+       )
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 1)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 2)
+      )
+      (i32.store offset=20
+       (local.get $0)
+       (i32.const 7)
+      )
+      (i32.store offset=24
+       (local.get $0)
+       (local.get $10)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.21
-     (local.set $12
-      (block $allocate_adt.19 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 28)
-         )
-        )
-        (i32.const 2)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
+    (block $do_backpatches.17
+    )
+   )
+   (block $compile_store.21
+    (local.set $12
+     (block $allocate_adt.19 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 28)
         )
        )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 1)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 2)
-       )
-       (i32.store offset=20
-        (local.get $0)
-        (i32.const 5)
-       )
-       (i32.store offset=24
-        (local.get $0)
-        (local.get $11)
-       )
-       (local.get $0)
+       (i32.const 2)
       )
-     )
-     (block $do_backpatches.20
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
+        (i32.const 2)
+       )
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 1)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 2)
+      )
+      (i32.store offset=20
+       (local.get $0)
+       (i32.const 5)
+      )
+      (i32.store offset=24
+       (local.get $0)
+       (local.get $11)
+      )
+      (local.get $0)
      )
     )
-    (block $compile_store.24
-     (local.set $13
-      (block $allocate_adt.22 (result i32)
-       (i32.store
-        (local.tee $0
-         (call $malloc_0
-          (global.get $GRAIN$EXPORT$malloc_0)
-          (i32.const 28)
-         )
-        )
-        (i32.const 2)
-       )
-       (i32.store offset=4
-        (local.get $0)
-        (i32.mul
-         (global.get $moduleRuntimeId_0)
-         (i32.const 2)
+    (block $do_backpatches.20
+    )
+   )
+   (block $compile_store.24
+    (local.set $13
+     (block $allocate_adt.22 (result i32)
+      (i32.store
+       (local.tee $0
+        (call $malloc_0
+         (global.get $GRAIN$EXPORT$malloc_0)
+         (i32.const 28)
         )
        )
-       (i32.store offset=8
-        (local.get $0)
-        (i32.const 11)
-       )
-       (i32.store offset=12
-        (local.get $0)
-        (i32.const 1)
-       )
-       (i32.store offset=16
-        (local.get $0)
-        (i32.const 2)
-       )
-       (i32.store offset=20
-        (local.get $0)
-        (i32.const 3)
-       )
-       (i32.store offset=24
-        (local.get $0)
-        (local.get $12)
-       )
-       (local.get $0)
+       (i32.const 2)
       )
-     )
-     (block $do_backpatches.23
+      (i32.store offset=4
+       (local.get $0)
+       (i32.mul
+        (global.get $moduleRuntimeId_0)
+        (i32.const 2)
+       )
+      )
+      (i32.store offset=8
+       (local.get $0)
+       (i32.const 11)
+      )
+      (i32.store offset=12
+       (local.get $0)
+       (i32.const 1)
+      )
+      (i32.store offset=16
+       (local.get $0)
+       (i32.const 2)
+      )
+      (i32.store offset=20
+       (local.get $0)
+       (i32.const 3)
+      )
+      (i32.store offset=24
+       (local.get $0)
+       (local.get $12)
+      )
+      (local.get $0)
      )
     )
+    (block $do_backpatches.23
+    )
+   )
+   (return
     (call $==_1113
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)

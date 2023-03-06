@@ -33,57 +33,55 @@ early return › early_return3
   (local $5 f32)
   (local $6 f64)
   (local $7 i32)
-  (return
-   (block $compile_block.7
-    (block $compile_store.2
-     (local.set $7
-      (call $==_1118
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $==_1118)
-       )
-       (i32.const 3)
-       (i32.const 1)
+  (block $compile_block.7
+   (block $compile_store.2
+    (local.set $7
+     (call $==_1118
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $==_1118)
       )
-     )
-     (block $do_backpatches.1
+      (i32.const 3)
+      (i32.const 1)
      )
     )
-    (drop
-     (if (result i32)
-      (i32.shr_u
-       (local.get $7)
-       (i32.const 31)
-      )
-      (block $compile_block.4
-       (block $cleanup.3
-        (drop
-         (call $decRef_0
-          (global.get $GRAIN$EXPORT$decRef_0)
-          (local.get $0)
-         )
+    (block $do_backpatches.1
+    )
+   )
+   (drop
+    (if (result i32)
+     (i32.shr_u
+      (local.get $7)
+      (i32.const 31)
+     )
+     (block $compile_block.4
+      (block $cleanup.3
+       (drop
+        (call $decRef_0
+         (global.get $GRAIN$EXPORT$decRef_0)
+         (local.get $0)
         )
        )
-       (return
-        (i32.const -2)
-       )
       )
-      (block $compile_block.5 (result i32)
-       (i32.const 1879048190)
+      (return
+       (i32.const -2)
       )
      )
-    )
-    (return
-     (i32.const 2147483646)
-    )
-    (block $cleanup.6
-     (drop
-      (call $decRef_0
-       (global.get $GRAIN$EXPORT$decRef_0)
-       (local.get $0)
-      )
+     (block $compile_block.5 (result i32)
+      (i32.const 1879048190)
      )
     )
+   )
+   (block $cleanup.6
+    (drop
+     (call $decRef_0
+      (global.get $GRAIN$EXPORT$decRef_0)
+      (local.get $0)
+     )
+    )
+   )
+   (return
+    (i32.const 2147483646)
    )
   )
  )
@@ -103,17 +101,15 @@ early return › early_return3
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
-  (return
-   (block $compile_block.10 (result i32)
-    (block $compile_store.9
-     (global.set $foo_1113
-      (i32.const 0)
-     )
-     (block $do_backpatches.8
-     )
+  (block $compile_block.10 (result i32)
+   (block $compile_store.9
+    (global.set $foo_1113
+     (i32.const 0)
     )
-    (i32.const 1879048190)
+    (block $do_backpatches.8
+    )
    )
+   (i32.const 1879048190)
   )
  )
  (func $_start

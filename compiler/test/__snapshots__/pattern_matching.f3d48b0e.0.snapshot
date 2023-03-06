@@ -32,95 +32,93 @@ pattern matching › or_match_1
   (local $6 i32)
   (local $7 i32)
   (local $8 i32)
-  (return
-   (block $compile_block.14 (result i32)
-    (block $compile_store.2
-     (local.set $6
-      (i32.or
-       (i32.shl
-        (i32.eq
-         (i32.const -2)
-         (i32.const 2147483646)
-        )
-        (i32.const 31)
+  (block $compile_block.14 (result i32)
+   (block $compile_store.2
+    (local.set $6
+     (i32.or
+      (i32.shl
+       (i32.eq
+        (i32.const -2)
+        (i32.const 2147483646)
        )
-       (i32.const 2147483646)
+       (i32.const 31)
       )
-     )
-     (block $do_backpatches.1
+      (i32.const 2147483646)
      )
     )
-    (block $compile_store.10
-     (local.set $7
-      (if (result i32)
-       (i32.shr_u
-        (local.get $6)
-        (i32.const 31)
-       )
-       (block $compile_block.3 (result i32)
-        (i32.const 1)
-       )
-       (block $compile_block.8 (result i32)
-        (block $compile_store.5
-         (local.set $8
-          (i32.or
-           (i32.shl
-            (i32.eq
-             (i32.const -2)
-             (i32.const -2)
-            )
-            (i32.const 31)
+    (block $do_backpatches.1
+    )
+   )
+   (block $compile_store.10
+    (local.set $7
+     (if (result i32)
+      (i32.shr_u
+       (local.get $6)
+       (i32.const 31)
+      )
+      (block $compile_block.3 (result i32)
+       (i32.const 1)
+      )
+      (block $compile_block.8 (result i32)
+       (block $compile_store.5
+        (local.set $8
+         (i32.or
+          (i32.shl
+           (i32.eq
+            (i32.const -2)
+            (i32.const -2)
            )
-           (i32.const 2147483646)
+           (i32.const 31)
           )
-         )
-         (block $do_backpatches.4
+          (i32.const 2147483646)
          )
         )
-        (if (result i32)
-         (i32.shr_u
-          (local.get $8)
-          (i32.const 31)
-         )
-         (block $compile_block.6 (result i32)
-          (i32.const 1)
-         )
-         (block $compile_block.7
-          (unreachable)
-         )
+        (block $do_backpatches.4
+        )
+       )
+       (if (result i32)
+        (i32.shr_u
+         (local.get $8)
+         (i32.const 31)
+        )
+        (block $compile_block.6 (result i32)
+         (i32.const 1)
+        )
+        (block $compile_block.7
+         (unreachable)
         )
        )
       )
-     )
-     (block $do_backpatches.9
      )
     )
-    (block $switch.11_outer (result i32)
-     (block $switch.11_branch_0 (result i32)
-      (drop
-       (block $switch.11_branch_1 (result i32)
-        (drop
-         (block $switch.11_default (result i32)
-          (br_table $switch.11_branch_1 $switch.11_default $switch.11_default
-           (i32.const 0)
-           (i32.shr_s
-            (local.get $7)
-            (i32.const 1)
-           )
+    (block $do_backpatches.9
+    )
+   )
+   (block $switch.11_outer (result i32)
+    (block $switch.11_branch_0 (result i32)
+     (drop
+      (block $switch.11_branch_1 (result i32)
+       (drop
+        (block $switch.11_default (result i32)
+         (br_table $switch.11_branch_1 $switch.11_default $switch.11_default
+          (i32.const 0)
+          (i32.shr_s
+           (local.get $7)
+           (i32.const 1)
           )
          )
         )
-        (br $switch.11_outer
-         (block $compile_block.13 (result i32)
-          (unreachable)
-         )
+       )
+       (br $switch.11_outer
+        (block $compile_block.13 (result i32)
+         (unreachable)
         )
        )
       )
-      (br $switch.11_outer
-       (block $compile_block.12 (result i32)
-        (i32.const 7)
-       )
+     )
+     (br $switch.11_outer
+      (block $compile_block.12 (result i32)
+       (i32.const 7)
       )
      )
     )

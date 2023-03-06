@@ -34,8 +34,8 @@ basic functionality › incr_3
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
-  (return
-   (block $compile_block.1 (result i32)
+  (block $compile_block.1
+   (return
     (call $incr_1113
      (call $incRef_0
       (global.get $GRAIN$EXPORT$incRef_0)

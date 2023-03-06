@@ -23,20 +23,18 @@ functions › app_1
   (local $5 i64)
   (local $6 f32)
   (local $7 f64)
-  (return
-   (block $compile_block.2 (result i32)
-    (tuple.extract 0
-     (tuple.make
-      (local.get $1)
-      (block $cleanup.1 (result i32)
-       (drop
-        (call $decRef_0
-         (global.get $GRAIN$EXPORT$decRef_0)
-         (local.get $0)
-        )
+  (block $compile_block.2 (result i32)
+   (tuple.extract 0
+    (tuple.make
+     (local.get $1)
+     (block $cleanup.1 (result i32)
+      (drop
+       (call $decRef_0
+        (global.get $GRAIN$EXPORT$decRef_0)
+        (local.get $0)
        )
-       (i32.const 1879048190)
       )
+      (i32.const 1879048190)
      )
     )
    )
@@ -59,15 +57,15 @@ functions › app_1
   (local $4 f32)
   (local $5 f64)
   (local $6 i32)
-  (return
-   (block $compile_block.5 (result i32)
-    (block $compile_store.4
-     (local.set $6
-      (i32.const 0)
-     )
-     (block $do_backpatches.3
-     )
+  (block $compile_block.5
+   (block $compile_store.4
+    (local.set $6
+     (i32.const 0)
     )
+    (block $do_backpatches.3
+    )
+   )
+   (return
     (call $lam_lambda_1114
      (local.get $6)
      (i32.const 3)

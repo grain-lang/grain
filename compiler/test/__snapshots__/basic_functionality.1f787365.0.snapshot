@@ -34,19 +34,17 @@ basic functionality › orshort2
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
-  (return
-   (block $compile_block.1 (result i32)
-    (drop
-     (call $print_1113
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $print_1113)
-      )
-      (i32.const 3)
+  (block $compile_block.1 (result i32)
+   (drop
+    (call $print_1113
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $print_1113)
      )
+     (i32.const 3)
     )
-    (i32.const 2147483646)
    )
+   (i32.const 2147483646)
   )
  )
  (func $_start

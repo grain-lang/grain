@@ -30,17 +30,15 @@ let mut › let-mut1
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
-  (return
-   (block $compile_block.3 (result i32)
-    (block $compile_store.2
-     (global.set $b_1113
-      (i32.const 9)
-     )
-     (block $do_backpatches.1
-     )
+  (block $compile_block.3 (result i32)
+   (block $compile_store.2
+    (global.set $b_1113
+     (i32.const 9)
     )
-    (global.get $b_1113)
+    (block $do_backpatches.1
+    )
    )
+   (global.get $b_1113)
   )
  )
  (func $_start

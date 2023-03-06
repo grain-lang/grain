@@ -29,10 +29,8 @@ chars › char2
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
-  (return
-   (block $compile_block.1 (result i32)
-    (i32.const 16642)
-   )
+  (block $compile_block.1 (result i32)
+   (i32.const 16642)
   )
  )
  (func $_start
