@@ -881,16 +881,16 @@ provide let bigIntToString = (num: WasmI32, base: WasmI32) => {
     let length = computeLength(result, 0n)
     let ret = DS.allocateString(length)
     @unsafe
-    let rec populateString = (lst, idx) => {
+    let rec populateString = (lst, idx, str) => {
       match (lst) {
         [] => void,
         [hd, ...tl] => {
-          WasmI32.store8(WasmI32.add(ret, idx), DS.untagChar(hd), 8n)
-          populateString(tl, WasmI32.add(idx, 1n))
+          WasmI32.store8(WasmI32.add(str, idx), DS.untagChar(hd), 8n)
+          populateString(tl, WasmI32.add(idx, 1n), str)
         },
       }
     }
-    populateString(result, 0n)
+    populateString(result, 0n, ret)
     WasmI32.toGrain(ret): String
   }
 }

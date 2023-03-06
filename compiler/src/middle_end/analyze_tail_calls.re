@@ -48,15 +48,12 @@ let rec analyze_comp_expression =
       push_tail_call(analyses);
     };
     is_tail_callable(id);
-  | CAppBuiltin(_)
   | CApp(_) =>
     if (is_tail) {
       push_tail_call(analyses);
     };
     false;
-  // An explicit return is definitionally in tail position
-  | CReturn(Some(e)) => analyze_comp_expression(true, e)
-  | CReturn(None)
+  | CReturn(_)
   | CBoxAssign(_)
   | CAssign(_)
   | CLocalAssign(_)

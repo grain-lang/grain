@@ -160,12 +160,12 @@ describe("numbers", ({test, testSkip}) => {
     "Overflow: Number overflow",
   );
   assertRunError(
-    "unsigned_overflow_err1",
+    "unsigned_overflow_err3",
     {|include "uint64"; let n = -1; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );
   assertRunError(
-    "unsigned_overflow_err2",
+    "unsigned_overflow_err4",
     {|include "uint64"; let n = 0x1ffffffffffffffff; print(Uint64.fromNumber(n))|},
     "Overflow: Number overflow",
   );

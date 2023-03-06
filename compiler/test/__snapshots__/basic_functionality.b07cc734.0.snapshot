@@ -38,45 +38,40 @@ basic functionality › if_one_sided
   (local $4 f32)
   (local $5 f64)
   (local $6 i32)
-  (return
-   (block $cleanup_locals.6 (result i32)
-    (local.set $0
-     (block $compile_block.5 (result i32)
-      (block $compile_store.2
-       (local.set $6
-        (call $<_1114
-         (call $incRef_0
-          (global.get $GRAIN$EXPORT$incRef_0)
-          (global.get $<_1114)
-         )
-         (i32.const 7)
-         (i32.const 9)
-        )
-       )
-       (block $do_backpatches.1
-       )
+  (block $compile_block.5 (result i32)
+   (block $compile_store.2
+    (local.set $6
+     (call $<_1114
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $<_1114)
       )
-      (if (result i32)
-       (i32.shr_u
-        (local.get $6)
-        (i32.const 31)
+      (i32.const 7)
+      (i32.const 9)
+     )
+    )
+    (block $do_backpatches.1
+    )
+   )
+   (if (result i32)
+    (i32.shr_u
+     (local.get $6)
+     (i32.const 31)
+    )
+    (block $compile_block.3
+     (return
+      (call $print_1117
+       (call $incRef_0
+        (global.get $GRAIN$EXPORT$incRef_0)
+        (global.get $print_1117)
        )
-       (block $compile_block.3 (result i32)
-        (call $print_1117
-         (call $incRef_0
-          (global.get $GRAIN$EXPORT$incRef_0)
-          (global.get $print_1117)
-         )
-         (i32.const 11)
-        )
-       )
-       (block $compile_block.4 (result i32)
-        (i32.const 1879048190)
-       )
+       (i32.const 11)
       )
      )
     )
-    (local.get $0)
+    (block $compile_block.4 (result i32)
+     (i32.const 1879048190)
+    )
    )
   )
  )

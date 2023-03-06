@@ -77,7 +77,6 @@ module PurityArg: Anf_iterator.IterArgument = {
           Unbox |
           BoxBind |
           UnboxBind |
-          Ignore |
           ArrayLength |
           WasmFromGrain |
           WasmToGrain |
@@ -89,7 +88,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           _,
         ) =>
         true
-      | CPrim1(Assert | Throw | AllocateBigInt, _) => false
+      // We consider Ignore to be impure to provide sane semantics around reference holding
+      | CPrim1(Ignore | Assert | Throw | AllocateBigInt, _) => false
       | CPrim2(
           NewRational | Is | Eq | And | Or | WasmLoadI32(_) | WasmLoadI64(_) |
           WasmLoadF32 |
@@ -143,7 +143,6 @@ module PurityArg: Anf_iterator.IterArgument = {
           );
         List.for_all(x => x, branches_purities);
       | CApp(_) => false
-      | CAppBuiltin(_) => false
       | CLambda(_)
       | CNumber(_)
       | CInt32(_)

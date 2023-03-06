@@ -36,6 +36,7 @@ primitive (!) = "@not"
 primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive throw = "@throw"
+primitive ignore = "@ignore"
 
 exception UnknownNumberTag
 exception InvariantViolation
@@ -2612,9 +2613,10 @@ provide let convertInexactToExact = (x: Number) => {
  */
 @unsafe
 provide let (+) = (x: Number, y: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  numberAdd(x, y)
+  let ret = numberAdd(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  ignore(x)
+  ignore(y)
+  ret
 }
 
 /**
@@ -2628,9 +2630,10 @@ provide let (+) = (x: Number, y: Number) => {
  */
 @unsafe
 provide let (-) = (x: Number, y: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  numberSub(x, y)
+  let ret = numberSub(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  ignore(x)
+  ignore(y)
+  ret
 }
 
 /**
@@ -2644,9 +2647,10 @@ provide let (-) = (x: Number, y: Number) => {
  */
 @unsafe
 provide let (*) = (x: Number, y: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  numberTimes(x, y)
+  let ret = numberTimes(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  ignore(x)
+  ignore(y)
+  ret
 }
 
 /**
@@ -2660,9 +2664,10 @@ provide let (*) = (x: Number, y: Number) => {
  */
 @unsafe
 provide let (/) = (x: Number, y: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
-  numberDivide(x, y)
+  let ret = numberDivide(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  ignore(x)
+  ignore(y)
+  ret
 }
 
 /**

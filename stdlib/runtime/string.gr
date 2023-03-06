@@ -41,6 +41,7 @@ primitive (!) = "@not"
 primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive builtinId = "@builtin.id"
+primitive ignore = "@ignore"
 
 @unsafe
 primitive _RUNTIME_TYPE_METADATA_PTR = "@heap.type_metadata"
@@ -693,8 +694,12 @@ recordToString = (ptr, recordArity, fields, contentOffset, extraIndents) => {
  */
 @unsafe
 provide let toString = value => {
-  let value = WasmI32.fromGrain(value)
-  toStringHelp(value, 0n, true)
+  let ptr = WasmI32.fromGrain(value)
+  let string = toStringHelp(ptr, 0n, true)
+  // Prevent the tail call to allow the value to stay alive
+  // while we operate on the raw pointer
+  ignore(value)
+  string
 }
 
 /**

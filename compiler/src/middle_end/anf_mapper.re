@@ -36,8 +36,7 @@ and comp_marker =
       comp_expression,
     )
   | Switch(list((int, anf_expression)) => comp_expression)
-  | Lambda(anf_expression => comp_expression)
-  | Return(option(comp_expression) => comp_expression);
+  | Lambda(anf_expression => comp_expression);
 
 let inputs = ref([]);
 let outputs = ref([]);
@@ -216,10 +215,7 @@ module MakeMap = (Iter: MapArgument) => {
     | CContinue => leave_with(CContinue)
     | CBreak => leave_with(CBreak)
     | CReturn(expr) =>
-      push_input(
-        CompMarker(Return(expr => {...c, comp_desc: CReturn(expr)})),
-      );
-      push_input(OptNode(Option.map(expr => CompNode(expr), expr)));
+      leave_with(CReturn(Option.map(process_imm_expression, expr)))
     | CSwitch(cond, branches, partial) =>
       let cond = process_imm_expression(cond);
       push_input(
@@ -234,10 +230,6 @@ module MakeMap = (Iter: MapArgument) => {
       let f = process_imm_expression(f);
       let args = List.map(process_imm_expression, args);
       leave_with(CApp((f, fty), args, tail));
-    | CAppBuiltin(mod_, f, args) =>
-      leave_with(
-        CAppBuiltin(mod_, f, List.map(process_imm_expression, args)),
-      )
     | CLambda(name, idents, (expr, alloc_ty), closure_status) =>
       push_input(
         CompMarker(
@@ -410,19 +402,6 @@ module MakeMap = (Iter: MapArgument) => {
             | _ => failwith("Impossible: invalid output stack")
             };
           let node = Iter.leave_comp_expression(f(cond, inc, body));
-          outputs := [CompNode(node), ...rest];
-        | _ => failwith("Impossible: invalid output stack")
-        }
-      | CompMarker(Return(f)) =>
-        switch (outputs^) {
-        | [OptNode(expr), ...rest] =>
-          let expr =
-            switch (expr) {
-            | Some(CompNode(expr)) => Some(expr)
-            | None => None
-            | _ => failwith("Impossible: invalid output stack")
-            };
-          let node = Iter.leave_comp_expression(f(expr));
           outputs := [CompNode(node), ...rest];
         | _ => failwith("Impossible: invalid output stack")
         }

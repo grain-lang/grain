@@ -39,76 +39,47 @@ let mut › let-mut_multiplication1
   (local $4 f32)
   (local $5 f64)
   (local $6 i32)
-  (return
-   (block $cleanup_locals.7 (result i32)
-    (local.set $0
-     (block $compile_block.6 (result i32)
-      (block $compile_store.2
-       (global.set $b_1113
-        (tuple.extract 0
-         (tuple.make
-          (i32.const 9)
-          (call $decRef_0
-           (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1113)
-          )
-         )
-        )
-       )
-       (block $do_backpatches.1
-       )
+  (block $compile_block.6 (result i32)
+   (block $compile_store.2
+    (global.set $b_1113
+     (i32.const 9)
+    )
+    (block $do_backpatches.1
+    )
+   )
+   (block $compile_store.4
+    (local.set $6
+     (call $*_1117
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $*_1117)
       )
-      (block $compile_store.4
-       (local.set $6
-        (tuple.extract 0
-         (tuple.make
-          (call $*_1117
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $*_1117)
-           )
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $b_1113)
-           )
-           (i32.const 39)
-          )
-          (call $decRef_0
-           (global.get $GRAIN$EXPORT$decRef_0)
-           (local.get $6)
-          )
-         )
-        )
-       )
-       (block $do_backpatches.3
-       )
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $b_1113)
       )
-      (block $compile_set.5 (result i32)
-       (global.set $b_1113
-        (tuple.extract 0
-         (tuple.make
-          (call $incRef_0
-           (global.get $GRAIN$EXPORT$incRef_0)
-           (local.get $6)
-          )
-          (call $decRef_0
-           (global.get $GRAIN$EXPORT$decRef_0)
-           (global.get $b_1113)
-          )
-         )
-        )
+      (i32.const 39)
+     )
+    )
+    (block $do_backpatches.3
+    )
+   )
+   (block $compile_set.5 (result i32)
+    (global.set $b_1113
+     (tuple.extract 0
+      (tuple.make
+       (call $incRef_0
+        (global.get $GRAIN$EXPORT$incRef_0)
+        (local.get $6)
        )
-       (i32.const 1879048190)
+       (call $decRef_0
+        (global.get $GRAIN$EXPORT$decRef_0)
+        (global.get $b_1113)
+       )
       )
      )
     )
-    (drop
-     (call $decRef_0
-      (global.get $GRAIN$EXPORT$decRef_0)
-      (local.get $6)
-     )
-    )
-    (local.get $0)
+    (i32.const 1879048190)
    )
   )
  )

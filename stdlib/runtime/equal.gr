@@ -23,6 +23,7 @@ from Numbers use { isNumber, numberEqual }
 primitive (!) = "@not"
 primitive (||) = "@or"
 primitive (&&) = "@and"
+primitive ignore = "@ignore"
 
 @unsafe
 let cycleMarker = 0x80000000n
@@ -241,5 +242,8 @@ equalHelp = (x, y) => {
  */
 @unsafe
 provide let equal = (x: a, y: a) => {
-  equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  let value = equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  ignore(x)
+  ignore(y)
+  value
 }
