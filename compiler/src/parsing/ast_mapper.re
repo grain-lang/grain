@@ -149,6 +149,7 @@ module E = {
         ~attributes,
         map_identifier(sub, id),
         switch (e) {
+        | PExpConstrSingleton => PExpConstrSingleton
         | PExpConstrTuple(el) =>
           PExpConstrTuple(List.map(sub.expr(sub), el))
         | PExpConstrRecord(es) =>
@@ -232,6 +233,7 @@ module P = {
             ),
             c,
           )
+        | PPatConstrSingleton => PPatConstrSingleton
         },
       )
     | PPatOr(p1, p2) => or_(~loc, sub.pat(sub, p1), sub.pat(sub, p2))

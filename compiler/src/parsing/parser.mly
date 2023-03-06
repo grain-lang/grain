@@ -262,7 +262,7 @@ pattern:
   | lbrace record_patterns rbrace { Pattern.record ~loc:(to_loc $loc) $2 }
   | qualified_uid lparen patterns rparen { Pattern.tuple_construct ~loc:(to_loc $loc) $1 $3 }
   | qualified_uid lbrace record_patterns rbrace { Pattern.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | qualified_uid { Pattern.tuple_construct ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid { Pattern.singleton_construct ~loc:(to_loc $loc) $1 }
   | lbrack rbrack { Pattern.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item_pat) comma? rbrack { Pattern.list ~loc:(to_loc $loc) $2 }
   | pattern PIPE opt_eols pattern %prec PIPE { Pattern.or_ ~loc:(to_loc $loc) $1 $4 }
@@ -416,7 +416,7 @@ rcaret_rcaret_op:
 construct_expr:
   | qualified_uid lparen lseparated_list(comma, expr) comma? rparen { Expression.tuple_construct ~loc:(to_loc $loc) $1 $3 }
   | qualified_uid lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Expression.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | qualified_uid %prec LPAREN { Expression.tuple_construct ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid %prec LPAREN { Expression.singleton_construct ~loc:(to_loc $loc) $1 }
 
 // These are all inlined to carry over their precedence.
 %inline infix_op:

@@ -115,6 +115,7 @@ module Pattern: {
   let constant: (~loc: loc=?, constant) => pattern;
   let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
   let construct: (~loc: loc, id, constructor_pattern) => pattern;
+  let singleton_construct: (~loc: loc, id) => pattern;
   let tuple_construct: (~loc: loc, id, list(pattern)) => pattern;
   let record_construct:
     (~loc: loc, id, list((option((id, pattern)), Asttypes.closed_flag))) =>
@@ -233,6 +234,9 @@ module Expression: {
     expression;
   let construct:
     (~loc: loc, ~attributes: attributes=?, id, constructor_expression) =>
+    expression;
+  let singleton_construct:
+    (~loc: loc, ~attributes: attributes=?, Location.loc(Identifier.t)) =>
     expression;
   let tuple_construct:
     (~loc: loc, ~attributes: attributes=?, id, list(expression)) => expression;

@@ -1489,6 +1489,10 @@ and print_pattern =
           false,
         );
       };
+    | PPatConstruct(location, PPatConstrSingleton) => (
+        Doc.concat([print_ident(location.txt)]),
+        false,
+      )
     | PPatConstruct(location, PPatConstrRecord(patternlocs, closedflag)) => (
         Doc.concat([
           print_ident(location.txt),
@@ -3629,7 +3633,7 @@ and print_expression_inner =
         PExpConstrTuple(expressions),
       ) =>
       Doc.text("[]")
-    | PExpConstruct({txt: id}, PExpConstrTuple([])) => print_ident(id)
+    | PExpConstruct({txt: id}, PExpConstrSingleton) => print_ident(id)
     | PExpConstruct(constr, PExpConstrTuple(expressions)) =>
       let comments_in_expression =
         Comment_utils.get_comments_inside_location(

@@ -197,6 +197,8 @@ module Pattern = {
   let constant = (~loc=?, a) => mk(~loc?, PPatConstant(a));
   let constraint_ = (~loc=?, a, b) => mk(~loc?, PPatConstraint(a, b));
   let construct = (~loc, a, b) => mk(~loc, PPatConstruct(a, b));
+  let singleton_construct = (~loc, a) =>
+    construct(~loc, a, PPatConstrSingleton);
   let tuple_construct = (~loc, a, b) =>
     construct(~loc, a, PPatConstrTuple(b));
   let record_construct = (~loc, a, b) => {
@@ -337,6 +339,8 @@ module Expression = {
     mk(~loc?, ~attributes?, PExpApp(a, b));
   let construct = (~loc, ~attributes=?, a, b) =>
     mk(~loc, ~attributes?, PExpConstruct(a, b));
+  let singleton_construct = (~loc, ~attributes=?, a) =>
+    construct(~loc, ~attributes?, a, PExpConstrSingleton);
   let tuple_construct = (~loc, ~attributes=?, a, b) =>
     construct(~loc, ~attributes?, a, PExpConstrTuple(b));
   let record_construct = (~loc, ~attributes=?, a, b) => {

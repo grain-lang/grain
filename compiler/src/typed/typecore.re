@@ -1746,6 +1746,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let (sargs, is_record_cstr) =
     switch (sarg) {
+    | PExpConstrSingleton => ([], false)
     | PExpConstrTuple(sargs) => (sargs, false)
     | PExpConstrRecord(rfs) => (
         [

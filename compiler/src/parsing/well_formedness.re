@@ -613,6 +613,7 @@ let provided_multiple_times = (errs, super) => {
         )
       | PPatConstrTuple(pats) =>
         List.fold_left(extract_bindings, binds, pats)
+      | PPatConstrSingleton => []
       }
     | PPatOr(pat1, pat2) =>
       extract_bindings([], pat1) @ extract_bindings(binds, pat2)
