@@ -204,6 +204,18 @@ let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
   });
 };
 
+let makeFilesizeRunner = (test, ~config_fn=?, name, prog, size) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      ignore @@ compile(~config_fn?, name, module_header ++ prog);
+      let ic = open_in_bin(wasmfile(name));
+      let filesize = in_channel_length(ic);
+      close_in(ic);
+      expect.int(filesize).toBe(size);
+    })
+  });
+};
+
 let makeSnapshotFileRunner = (test, name, filename) => {
   test(
     name,

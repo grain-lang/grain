@@ -8,9 +8,14 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertSnapshotFile = makeSnapshotFileRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertFilesize = makeFilesizeRunner(test);
   let assertParse = makeParseRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
+  let smallestFileConfig = () => {
+    Grain_utils.Config.elide_type_info := true;
+    Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
+  };
 
   assertSnapshot("nil", "");
   assertSnapshot("forty", "let x = 40; x");
@@ -296,5 +301,12 @@ describe("basic functionality", ({test, testSkip}) => {
         },
       )
     )
+  );
+
+  assertFilesize(
+    ~config_fn=smallestFileConfig,
+    "smallest_grain_program",
+    "",
+    5056,
   );
 });
