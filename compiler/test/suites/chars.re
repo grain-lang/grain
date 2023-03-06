@@ -78,6 +78,11 @@ describe("chars", ({test, testSkip}) => {
 Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
   );
   assertCompileError(
+    "char_illegal3",
+    "''",
+    "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
+  );
+  assertCompileError(
     "unicode_err1",
     "let x = '\\u{d800}'",
     "Illegal unicode code point",
