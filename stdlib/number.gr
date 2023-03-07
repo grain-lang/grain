@@ -132,10 +132,11 @@ provide let exp = power => {
  */
 @unsafe
 provide let sqrt = (x: Number) => {
+  from WasmF64 use { (==) }
   let xval = coerceNumberToWasmF64(x)
   let x = WasmI32.fromGrain(x)
   let sqrtd = WasmF64.sqrt(xval)
-  if (!isFloat(x) && WasmF64.eq(sqrtd, WasmF64.trunc(sqrtd))) {
+  if (!isFloat(x) && sqrtd == WasmF64.trunc(sqrtd)) {
     WasmI32.toGrain(reducedInteger(WasmI64.truncF64S(sqrtd))): Number
   } else {
     WasmI32.toGrain(newFloat64(sqrtd)): Number
@@ -342,6 +343,7 @@ provide let isRational = (x: Number) => {
  */
 @unsafe
 provide let isFinite = (x: Number) => {
+  from WasmF64 use { (-), (==) }
   let asPtr = WasmI32.fromGrain(x)
   if (isBoxedNumber(asPtr)) {
     // Boxed numbers can have multiple subtypes, of which float32 and float64 can be infinite.
@@ -351,7 +353,7 @@ provide let isFinite = (x: Number) => {
       // (NaN - NaN == NaN, inf - inf == NaN,
       //  -inf - -inf == NaN, inf - -inf == inf, -inf - inf == -inf)
       let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.eq(WasmF64.sub(wf64, wf64), 0.0W)
+      wf64 - wf64 == 0.0W
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
       // Grain doesn't allow creating a rational with denominator of zero either.
@@ -388,6 +390,7 @@ provide let isNaN = (x: Number) => {
  */
 @unsafe
 provide let isInfinite = (x: Number) => {
+  from WasmF64 use { (-), (==), (!=) }
   // The following code is equivalent to (!isFinite(x) && !isNaN(x)),
   // so see those functions to understand what's going on here.
   let asPtr = WasmI32.fromGrain(x)
@@ -395,7 +398,7 @@ provide let isInfinite = (x: Number) => {
     let tag = WasmI32.load(asPtr, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       let wf64 = WasmF64.load(asPtr, 8n)
-      WasmF64.ne(WasmF64.sub(wf64, wf64), 0.0W) && WasmF64.eq(wf64, wf64)
+      wf64 - wf64 != 0.0W && wf64 == wf64
     } else {
       false
     }

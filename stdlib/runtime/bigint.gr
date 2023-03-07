@@ -513,7 +513,7 @@ provide let toFloat64 = (num: WasmI32) => {
   // semi-port of https://github.com/JuliaLang/julia/issues/31293#issuecomment-477220553
   from WasmI64 use { leU as (<=) }
   from WasmI32 use { eq as (==) }
-  from WasmF64 use { add as (+), mul as (*) }
+  from WasmF64 use { (+), (*) }
   let numLimbs = getSize(num)
   let res = if (eqz(num)) {
     0.0W
@@ -625,7 +625,7 @@ provide let cmpU64 = (num1: WasmI32, num2: WasmI64) => {
 @unsafe
 provide let cmpF64 = (num1: WasmI32, num2: WasmF64) => {
   let asf64 = toFloat64(num1)
-  from WasmF64 use { lt as (<), gt as (>) }
+  from WasmF64 use { (<), (>) }
   if (asf64 < num2) {
     -1n
   } else if (asf64 > num2) {

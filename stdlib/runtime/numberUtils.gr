@@ -1336,12 +1336,13 @@ let grisu2 = (value, buffer, sign) => {
   let c = WasmF64.reinterpretI64(
     0x3FD34413509F79FEN
   ) // 1 / lg(10) = 0.30102999566398114
-  let dk = WasmF64.add(
-    WasmF64.mul(WasmF64.convertI32S(-61n - _exp), c),
+  from WasmF64 use { (+) as addWasmF64, (*) as mulWasmF64, (!=) as neWasmF64 }
+  let dk = addWasmF64(
+    mulWasmF64(WasmF64.convertI32S(-61n - _exp), c),
     347.0W
   ) // dk must be positive, so can do ceiling in positive
   let mut k = WasmI32.truncF64S(dk)
-  k += if (WasmF64.ne(WasmF64.convertI32S(k), dk)) 1n
+  k += if (neWasmF64(WasmF64.convertI32S(k), dk)) 1n
     else 0n // conversion with ceil
 
   let index = WasmI32.shrS(k, 3n) + 1n
@@ -1414,8 +1415,9 @@ let prettify = (buffer, length, k) => {
 
 @unsafe
 let dtoa_core = (buffer, value) => {
+  from WasmF64 use { (<) }
   let mut value = value
-  let hasSign = WasmF64.lt(value, 0.0W)
+  let hasSign = value < 0.0W
   if (hasSign) {
     value = WasmF64.neg(value)
     WasmI32.store8(buffer, _CHAR_CODE_MINUS, 0n)
@@ -1439,28 +1441,32 @@ let get_dtoa_buf = () => {
 
 @unsafe
 let isFinite = value => {
-  WasmF64.eq(WasmF64.sub(value, value), 0.0W)
+  from WasmF64 use { (==), (-) }
+  value - value == 0.0W
 }
 
 @unsafe
 let isNaN = value => {
-  WasmF64.ne(value, value)
+  from WasmF64 use { (!=) }
+  value != value
 }
 
 @unsafe
 provide let dtoa = value => {
-  let str = if (WasmF64.eq(value, 0.0W)) {
+  from WasmF64 use { (==) }
+  let str = if (value == 0.0W) {
     let ret = allocateString(3n)
     WasmI32.store8(ret, _CHAR_CODE_0, 8n)
     WasmI32.store8(ret, _CHAR_CODE_DOT, 9n)
     WasmI32.store8(ret, _CHAR_CODE_0, 10n)
     ret
   } else if (!isFinite(value)) {
+    from WasmF64 use { (<) }
     if (isNaN(value)) {
       let ret = allocateString(3n)
       WasmI32.store(ret, 0x4E614En, 8n) // NaN
       ret
-    } else if (WasmF64.lt(value, 0.0W)) {
+    } else if (value < 0.0W) {
       let ret = allocateString(9n)
       WasmI64.store(ret, 0x74696E69666E492DN, 8n) // tinifnI-
       WasmI32.store8(ret, 0x79n, 16n) // y

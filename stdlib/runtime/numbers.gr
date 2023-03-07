@@ -134,13 +134,14 @@ provide let isRational = x => {
 
 @unsafe
 provide let isNaN = x => {
+  from WasmF64 use { (!=) }
   if (isBoxedNumber(x)) {
     // Boxed numbers can have multiple subtypes, of which float64 can be NaN.
     let tag = WasmI32.load(x, 4n)
     if (WasmI32.eq(tag, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG)) {
       // uses the fact that NaN is the only number not equal to itself
       let wf64 = WasmF64.load(x, 8n)
-      WasmF64.ne(wf64, wf64)
+      wf64 != wf64
     } else {
       // Neither rational numbers nor boxed integers can be infinite or NaN.
       // Grain doesn't allow creating a rational with denominator of zero either.
@@ -411,8 +412,9 @@ provide let coerceNumberToWasmF32 = (x: Number) => {
           BI.toFloat32(boxedRationalDenominator(x))
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (<), (>) }
         let xval = boxedFloat64Number(x)
-        if (WasmF64.gt(xval, _F32_MAX) || WasmF64.lt(xval, _F32_MIN)) {
+        if (xval > _F32_MAX || xval < _F32_MIN) {
           // Not an actual return value
           throw Exception.Overflow
         } else {
@@ -441,10 +443,9 @@ provide let coerceNumberToWasmF64 = (x: Number) => {
         BI.toFloat64(x)
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        WasmF64.div(
-          BI.toFloat64(boxedRationalNumerator(x)),
+        from WasmF64 use { (/) }
+        BI.toFloat64(boxedRationalNumerator(x)) /
           BI.toFloat64(boxedRationalDenominator(x))
-        )
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         boxedFloat64Number(x)
@@ -595,7 +596,8 @@ let isIntegerF32 = value => {
 
 @unsafe
 let isIntegerF64 = value => {
-  WasmF64.eq(value, WasmF64.trunc(value))
+  from WasmF64 use { (==) }
+  value == WasmF64.trunc(value)
 }
 
 @unsafe
@@ -606,8 +608,8 @@ let isSafeIntegerF32 = value => {
 
 @unsafe
 let isSafeIntegerF64 = value => {
-  WasmF64.le(WasmF64.abs(value), _F64_MAX_SAFE_INTEGER) &&
-    WasmF64.eq(WasmF64.trunc(value), value)
+  from WasmF64 use { (==), (<=) }
+  WasmF64.abs(value) <= _F64_MAX_SAFE_INTEGER && WasmF64.trunc(value) == value
 }
 
 /** Number-aware equality checking
@@ -641,9 +643,9 @@ let numberEqualSimpleHelp = (x, y) => {
         false
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (==) }
         let yBoxedVal = boxedFloat64Number(y)
-        isSafeIntegerF64(yBoxedVal) &&
-          WasmF64.eq(WasmF64.convertI32S(xval), yBoxedVal)
+        isSafeIntegerF64(yBoxedVal) && WasmF64.convertI32S(xval) == yBoxedVal
       },
       _ => {
         throw UnknownNumberTag
@@ -709,13 +711,11 @@ let numberEqualRationalHelp = (xptr, y) => {
         BI.eq(xNumerator, yNumerator) && BI.eq(xDenominator, yDenominator)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (==), (/) }
         let yBoxedVal = boxedFloat64Number(y)
-        let xAsFloat = WasmF64.div(
-          BI.toFloat64(xNumerator),
-          BI.toFloat64(xDenominator)
-        )
+        let xAsFloat = BI.toFloat64(xNumerator) / BI.toFloat64(xDenominator)
         // TODO(#303): maybe we should have some sort of tolerance?
-        WasmF64.eq(xAsFloat, yBoxedVal)
+        xAsFloat == yBoxedVal
       },
       _ => {
         throw UnknownNumberTag
@@ -729,31 +729,32 @@ let numberEqualFloat64Help = (x, y) => {
   let xIsInteger = isIntegerF64(x)
   // Basic number:
   if (isSimpleNumber(y)) {
-    xIsInteger && WasmF64.eq(x, WasmF64.convertI32S(untagSimple(y)))
+    from WasmF64 use { (==) }
+    xIsInteger && x == WasmF64.convertI32S(untagSimple(y))
   } else {
     // Boxed number
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
       t when WasmI32.eq(t, Tags._GRAIN_INT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (==) }
         let yBoxedVal = boxedInt64Number(y)
-        isSafeIntegerF64(x) && WasmF64.eq(x, WasmF64.convertI64S(yBoxedVal))
+        isSafeIntegerF64(x) && x == WasmF64.convertI64S(yBoxedVal)
       },
       t when WasmI32.eq(t, Tags._GRAIN_BIGINT_BOXED_NUM_TAG) => {
         WasmI32.eqz(BI.cmpF64(y, x))
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+        from WasmF64 use { (==), (/) }
         let yNumerator = boxedRationalNumerator(y)
         let yDenominator = boxedRationalDenominator(y)
-        let yAsFloat = WasmF64.div(
-          BI.toFloat64(yNumerator),
-          BI.toFloat64(yDenominator)
-        )
-        WasmF64.eq(x, yAsFloat)
+        let yAsFloat = BI.toFloat64(yNumerator) / BI.toFloat64(yDenominator)
+        x == yAsFloat
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (==) }
         let yBoxedVal = boxedFloat64Number(y)
         // TODO(#303): maybe we should have some sort of tolerance?
-        WasmF64.eq(x, yBoxedVal)
+        x == yBoxedVal
       },
       _ => {
         throw UnknownNumberTag
@@ -889,11 +890,10 @@ let numberAddSubSimpleHelp = (x, y, isSub) => {
         ret
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (+), (-) }
         let yBoxedVal = boxedFloat64Number(y)
         let xval = WasmF64.convertI32S(xval)
-        let result =
-          if (isSub) WasmF64.sub(xval, yBoxedVal)
-          else WasmF64.add(xval, yBoxedVal)
+        let result = if (isSub) xval - yBoxedVal else xval + yBoxedVal
         newFloat64(result)
       },
       _ => {
@@ -976,11 +976,10 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
         ret
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (+), (-) }
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
-        let result =
-          if (isSub) WasmF64.sub(xval, yBoxedVal)
-          else WasmF64.add(xval, yBoxedVal)
+        let result = if (isSub) xval - yBoxedVal else xval + yBoxedVal
         newFloat64(result)
       },
       _ => {
@@ -992,10 +991,11 @@ let numberAddSubInt64Help = (xval, y, isSub) => {
 
 @unsafe
 let numberAddSubFloat64Help = (xval, y, isSub) => {
+  from WasmF64 use { (+), (-) }
   // incRef y to reuse it via WasmI32.toGrain
   Memory.incRef(y)
   let yval = coerceNumberToWasmF64(WasmI32.toGrain(y): Number)
-  let result = if (isSub) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
+  let result = if (isSub) xval - yval else xval + yval
   newFloat64(result)
 }
 
@@ -1046,11 +1046,10 @@ let numberAddSubBigIntHelp = (x, y, isSub) => {
         ret
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (+), (-) }
         let xval = BI.toFloat64(x)
         let yBoxedVal = boxedFloat64Number(y)
-        let result =
-          if (isSub) WasmF64.sub(xval, yBoxedVal)
-          else WasmF64.add(xval, yBoxedVal)
+        let result = if (isSub) xval - yBoxedVal else xval + yBoxedVal
         newFloat64(result)
       },
       _ => {
@@ -1131,9 +1130,10 @@ provide let cmpRationals = (x, y) => {
   ) {
     0n
   } else {
-    let xf = WasmF64.div(BI.toFloat64(xNumerator), BI.toFloat64(xDenominator))
-    let yf = WasmF64.div(BI.toFloat64(yNumerator), BI.toFloat64(yDenominator))
-    if (WasmF64.lt(xf, yf)) -1n else 1n
+    from WasmF64 use { (/), (<) }
+    let xf = BI.toFloat64(xNumerator) / BI.toFloat64(xDenominator)
+    let yf = BI.toFloat64(yNumerator) / BI.toFloat64(yDenominator)
+    if (xf < yf) -1n else 1n
   }
 }
 
@@ -1215,12 +1215,12 @@ let numberAddSubRationalHelp = (x, y, isSub) => {
         ret
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (/), (+), (-) }
         let xnumfloat = BI.toFloat64(xNumerator)
         let xdenfloat = BI.toFloat64(xDenominator)
-        let xval = WasmF64.div(xnumfloat, xdenfloat)
+        let xval = xnumfloat / xdenfloat
         let yval = boxedFloat64Number(y)
-        let result =
-          if (isSub) WasmF64.sub(xval, yval) else WasmF64.add(xval, yval)
+        let result = if (isSub) xval - yval else xval + yval
         let ret = newFloat64(result)
         ret
       },
@@ -1341,12 +1341,13 @@ let numberTimesDivideInt64Help = (xval, y, isDivide) => {
         ret
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (/), (*) }
         let xval = WasmF64.convertI64S(xval)
         let yBoxedVal = boxedFloat64Number(y)
         if (isDivide) {
-          newFloat64(WasmF64.div(xval, yBoxedVal))
+          newFloat64(xval / yBoxedVal)
         } else {
-          newFloat64(WasmF64.mul(xval, yBoxedVal))
+          newFloat64(xval * yBoxedVal)
         }
       },
       _ => {
@@ -1406,12 +1407,13 @@ let numberTimesDivideBigIntHelp = (x, y, isDivide) => {
         }
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (/), (*) }
         let xval = BI.toFloat64(x)
         let yBoxedVal = boxedFloat64Number(y)
         if (isDivide) {
-          newFloat64(WasmF64.div(xval, yBoxedVal))
+          newFloat64(xval / yBoxedVal)
         } else {
-          newFloat64(WasmF64.mul(xval, yBoxedVal))
+          newFloat64(xval * yBoxedVal)
         }
       },
       _ => {
@@ -1494,15 +1496,13 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
         timesDivideRational(x, y, isDivide, false)
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
+        from WasmF64 use { (/), (*) }
         // TODO(#1190): We should probably use something more accurate if possible here
-        let asFloat = WasmF64.div(
-          BI.toFloat64(xNumerator),
-          BI.toFloat64(xDenominator)
-        )
+        let asFloat = BI.toFloat64(xNumerator) / BI.toFloat64(xDenominator)
         if (isDivide) {
-          newFloat64(WasmF64.div(asFloat, boxedFloat64Number(y)))
+          newFloat64(asFloat / boxedFloat64Number(y))
         } else {
-          newFloat64(WasmF64.mul(asFloat, boxedFloat64Number(y)))
+          newFloat64(asFloat * boxedFloat64Number(y))
         }
       },
       _ => {
@@ -1514,13 +1514,14 @@ let numberTimesDivideRationalHelp = (x, y, isDivide) => {
 
 @unsafe
 let numberTimesDivideFloat64Help = (x, y, isDivide) => {
+  from WasmF64 use { (/), (*) }
   // incRef y to reuse it via WasmI32.toGrain
   Memory.incRef(y)
   let yAsFloat = coerceNumberToWasmF64(WasmI32.toGrain(y): Number)
   if (isDivide) {
-    newFloat64(WasmF64.div(x, yAsFloat))
+    newFloat64(x / yAsFloat)
   } else {
-    newFloat64(WasmF64.mul(x, yAsFloat))
+    newFloat64(x * yAsFloat)
   }
 }
 
@@ -1645,24 +1646,25 @@ let cmpBigInt = (x: WasmI32, y: WasmI32) => {
 // smaller than any other number
 @unsafe
 let cmpFloat = (x: WasmI32, y: WasmI32) => {
+  from WasmF64 use { (!=), (<), (>), (/) }
   let xf = boxedFloat64Number(x)
   if (isSimpleNumber(y)) {
     let yf = WasmF64.convertI32S(untagSimple(y))
     // special NaN cases
-    if (WasmF64.ne(xf, xf)) {
-      if (WasmF64.ne(yf, yf)) {
+    if (xf != xf) {
+      if (yf != yf) {
         0n
       } else {
         -1n
       }
-    } else if (WasmF64.ne(yf, yf)) {
-      if (WasmF64.ne(xf, xf)) {
+    } else if (yf != yf) {
+      if (xf != xf) {
         0n
       } else {
         1n
       }
     } else {
-      if (WasmF64.lt(xf, yf)) -1n else if (WasmF64.gt(xf, yf)) 1n else 0n
+      if (xf < yf) -1n else if (xf > yf) 1n else 0n
     }
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
@@ -1677,10 +1679,8 @@ let cmpFloat = (x: WasmI32, y: WasmI32) => {
           throw InvariantViolation
         },
         t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-          WasmF64.div(
-            BI.toFloat64(boxedRationalNumerator(y)),
+          BI.toFloat64(boxedRationalNumerator(y)) /
             BI.toFloat64(boxedRationalDenominator(y))
-          )
         },
         t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
           boxedFloat64Number(y)
@@ -1690,20 +1690,20 @@ let cmpFloat = (x: WasmI32, y: WasmI32) => {
         },
       }
       // special NaN cases
-      if (WasmF64.ne(xf, xf)) {
-        if (WasmF64.ne(yf, yf)) {
+      if (xf != xf) {
+        if (yf != yf) {
           0n
         } else {
           -1n
         }
-      } else if (WasmF64.ne(yf, yf)) {
-        if (WasmF64.ne(xf, xf)) {
+      } else if (yf != yf) {
+        if (xf != xf) {
           0n
         } else {
           1n
         }
       } else {
-        if (WasmF64.lt(xf, yf)) -1n else if (WasmF64.gt(xf, yf)) 1n else 0n
+        if (xf < yf) -1n else if (xf > yf) 1n else 0n
       }
     }
   }
@@ -1726,15 +1726,12 @@ let cmpSmallInt = (x: WasmI32, y: WasmI32) => {
         WasmI32.sub(0n, cmpBigInt(y, x))
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
+        from WasmF64 use { (<), (/) }
         // Rationals and ints are never considered equal
         if (
-          WasmF64.lt(
-            WasmF64.convertI64S(xi),
-            WasmF64.div(
-              BI.toFloat64(boxedRationalNumerator(y)),
-              BI.toFloat64(boxedRationalDenominator(y))
-            )
-          )
+          WasmF64.convertI64S(xi) <
+          BI.toFloat64(boxedRationalNumerator(y)) /
+          BI.toFloat64(boxedRationalDenominator(y))
         ) -1n else 1n
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
@@ -1750,12 +1747,11 @@ let cmpSmallInt = (x: WasmI32, y: WasmI32) => {
 @unsafe
 let cmpRational = (x: WasmI32, y: WasmI32) => {
   if (isSimpleNumber(y)) {
-    let xf = WasmF64.div(
-      BI.toFloat64(boxedRationalNumerator(x)),
+    from WasmF64 use { (/), (<) }
+    let xf = BI.toFloat64(boxedRationalNumerator(x)) /
       BI.toFloat64(boxedRationalDenominator(x))
-    )
     // Rationals and ints are never considered equal
-    if (WasmF64.lt(xf, WasmF64.convertI32S(untagSimple(y)))) -1n else 1n
+    if (xf < WasmF64.convertI32S(untagSimple(y))) -1n else 1n
   } else {
     let yBoxedNumberTag = boxedNumberTag(y)
     match (yBoxedNumberTag) {
@@ -2741,7 +2737,7 @@ provide let isBigInt = x => {
 @unsafe
 provide let scalbn = (x, n) => {
   from WasmI32 use { gtS as (>), ltS as (<), sub as (-), add as (+) }
-  from WasmF64 use { mul as (*) }
+  from WasmF64 use { (*) }
   from WasmI64 use { shl as (<<) }
   // Constants
   let mut n = n
@@ -2831,14 +2827,7 @@ provide let (**) = (base, power) => {
     return numerator / denominator
   } else {
     // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
-    from WasmF64 use {
-      eq as (==),
-      ne as (!=),
-      le as (<=),
-      div as (/),
-      mul as (*),
-      add as (+),
-    }
+    from WasmF64 use { (==), (!=), (<=), (/), (*), (+) }
     // Constants
     let infinity = 1.0W / 0.0W
     let nan = 0.0W / 0.0W
@@ -2919,7 +2908,8 @@ provide let (**) = (base, power) => {
       iy > 0x7FF00000n ||
       iy == 0x7FF00000n && ly != 0n
     ) {
-      return WasmI32.toGrain(newFloat64(WasmF64.add(x, y))): Number
+      from WasmF64 use { (+) }
+      return WasmI32.toGrain(newFloat64(x + y)): Number
     }
     let mut yisint = 0n
     let mut k = 0n
@@ -2970,7 +2960,8 @@ provide let (**) = (base, power) => {
       if (hy < 0n) z = 1.0W / z
       if (hx < 0n) {
         if ((ix - 0x3FF00000n | yisint) == 0n) {
-          let d = WasmF64.sub(z, z)
+          from WasmF64 use { (-) }
+          let d = z - z
           z = d / d
         } else if (yisint == 1n) z *= -1.0W
       }
@@ -2979,7 +2970,8 @@ provide let (**) = (base, power) => {
     let mut s = 1.0W
     if (hx < 0n) {
       if (yisint == 0n) {
-        let d = WasmF64.sub(x, x)
+        from WasmF64 use { (-) }
+        let d = x - x
         return WasmI32.toGrain(newFloat64(d / d)): Number
       } else if (yisint == 1n) s = -1.0W
     }
@@ -3016,13 +3008,13 @@ provide let (**) = (base, power) => {
           return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
         }
       } else {
-        from WasmF64 use { sub as (-) }
+        from WasmF64 use { (-), (+) }
         from WasmI64 use { and as (&) }
         t = ax - 1.0W
         w = t * t * (0.5W - t * (inv3 - t * 0.25W))
         u = ivln2_h * t
         v = t * ivln2_l - w * ivln2
-        t1 = WasmF64.add(u, v)
+        t1 = u + v
         t1 = WasmF64.reinterpretI64(
           WasmI64.reinterpretF64(t1) & 0xFFFFFFFF00000000N
         )
@@ -3059,13 +3051,15 @@ provide let (**) = (base, power) => {
         WasmI64.reinterpretF64(ax) & 0xFFFFFFFFN | WasmI64.extendI32S(ix) << 32N
       )
       let bp = if (k != 0n) 1.5W else 1.0W
-      u = WasmF64.sub(ax, bp)
-      v = 1.0W / WasmF64.add(ax, bp)
+      from WasmF64 use { (+), (-) }
+      u = ax - bp
+      v = 1.0W / (ax + bp)
       ss = u * v
       s_h = ss
       s_h = WasmF64.reinterpretI64(
         WasmI64.reinterpretF64(s_h) & 0xFFFFFFFF00000000N
       )
+      from WasmI32 use { add as (+) }
       t_h = WasmF64.reinterpretI64(
         WasmI64.shl(
           WasmI64.extendI32S(
@@ -3076,7 +3070,7 @@ provide let (**) = (base, power) => {
           32N
         )
       )
-      from WasmF64 use { sub as (-), add as (+) }
+      from WasmF64 use { (+) }
       t_l = ax - (t_h - bp)
       s_l = v * (u - s_h * t_h - s_h * t_l)
       s2 = ss * ss
@@ -3107,7 +3101,7 @@ provide let (**) = (base, power) => {
       )
       t2 = z_l - (t1 - t - dp_h - z_h)
     }
-    from WasmF64 use { gt as (>), sub as (-), add as (+) }
+    from WasmF64 use { (>), (-), (+) }
     from WasmI64 use { and as (&), shrS as (>>) }
     let y1 = WasmF64.reinterpretI64(
       WasmI64.reinterpretF64(y) & 0xFFFFFFFF00000000N
@@ -3125,9 +3119,10 @@ provide let (**) = (base, power) => {
         return WasmI32.toGrain(newFloat64(s * huge * huge)): Number
       }
     } else if (WasmI32.and(j, 0x7FFFFFFFn) >= 0x4090CC00n) {
+      from WasmF64 use { (<=) }
       if (WasmI32.sub(j, 0xC090CC00n | i) != 0n) {
         return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
-      } else if (WasmF64.le(p_l, z - p_h)) {
+      } else if (p_l <= z - p_h) {
         return WasmI32.toGrain(newFloat64(s * tiny * tiny)): Number
       }
     }
@@ -3154,11 +3149,12 @@ provide let (**) = (base, power) => {
       )
       n = (n & 0x000FFFFFn | 0x00100000n) >> 20n - k
       if (j < 0n) n *= -1n
-      p_h = WasmF64.sub(p_h, t)
+      from WasmF64 use { (-) }
+      p_h -= t
     }
     from WasmI64 use { and as (&), or as (|) }
-    from WasmF64 use { mul as (*), add as (+), sub as (-) }
-    t = WasmF64.add(p_l, p_h)
+    from WasmF64 use { (*), (+), (-) }
+    t = p_l + p_h
     t = WasmF64.reinterpretI64(WasmI64.reinterpretF64(t) & 0xFFFFFFFF00000000N)
     u = t * lg2_h
     v = (p_l - (t - p_h)) * lg2 + t * lg2_l
