@@ -222,7 +222,8 @@ equalHelp = (x, y) => {
     // Short circuit for Float32 to correctly handle NaN != NaN
     let xval = WasmF32.load(x, 4n)
     let yval = WasmF32.load(y, 4n)
-    WasmF32.eq(xval, yval)
+    from WasmF32 use { (==) }
+    xval == yval
   } else {
     // Handle all other heap allocated things
     // Can short circuit if pointers are the same

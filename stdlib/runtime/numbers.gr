@@ -406,10 +406,9 @@ provide let coerceNumberToWasmF32 = (x: Number) => {
         BI.toFloat32(x)
       },
       t when WasmI32.eq(t, Tags._GRAIN_RATIONAL_BOXED_NUM_TAG) => {
-        WasmF32.div(
-          BI.toFloat32(boxedRationalNumerator(x)),
+        from WasmF32 use { (/) }
+        BI.toFloat32(boxedRationalNumerator(x)) /
           BI.toFloat32(boxedRationalDenominator(x))
-        )
       },
       t when WasmI32.eq(t, Tags._GRAIN_FLOAT64_BOXED_NUM_TAG) => {
         let xval = boxedFloat64Number(x)
@@ -590,7 +589,8 @@ let coerceNumberToBigInt = (x: Number) => {
 
 @unsafe
 let isIntegerF32 = value => {
-  WasmF32.eq(value, WasmF32.trunc(value))
+  from WasmF32 use { (==) }
+  value == WasmF32.trunc(value)
 }
 
 @unsafe
@@ -600,8 +600,8 @@ let isIntegerF64 = value => {
 
 @unsafe
 let isSafeIntegerF32 = value => {
-  WasmF32.le(WasmF32.abs(value), _F32_MAX_SAFE_INTEGER) &&
-    WasmF32.eq(WasmF32.trunc(value), value)
+  from WasmF32 use { (==), (<=) }
+  WasmF32.abs(value) <= _F32_MAX_SAFE_INTEGER && WasmF32.trunc(value) == value
 }
 
 @unsafe
