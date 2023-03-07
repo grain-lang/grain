@@ -30,18 +30,6 @@ incRef : WasmI32 -> WasmI32
 decRef : WasmI32 -> WasmI32
 ```
 
-### Memory.**utoa32Buffered**
-
-```grain
-utoa32Buffered : Box<(WasmI32, WasmI32, WasmI32) -> Void>
-```
-
-### Memory.**decimalCount32**
-
-```grain
-decimalCount32 : Box<WasmI32 -> WasmI32>
-```
-
 ### Memory.**copy**
 
 ```grain
