@@ -32,7 +32,7 @@ provide { fromNumber, toNumber }
  *
  * @param number: The value to convert
  * @returns The Int8 represented as a Uint8
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -132,7 +132,7 @@ provide let (*) = (x: Uint8, y: Uint8) => {
 }
 
 /**
- * Computes the quotient of its operands using signed division.
+ * Computes the quotient of its operands.
  *
  * @param x: The first operand
  * @param y: The second operand
@@ -149,7 +149,7 @@ provide let (/) = (x: Uint8, y: Uint8) => {
 }
 
 /**
- * Computes the remainder of the division of its operands using signed division.
+ * Computes the remainder of the division of its operands.
  *
  * @param x: The first operand
  * @param y: The second operand
@@ -185,7 +185,7 @@ provide let (<<) = (value: Uint8, amount: Uint8) => {
 }
 
 /**
- * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+ * Shifts the bits of the value right by the given number of bits.
  *
  * @param value: The value to shift
  * @param amount: The amount to shift by

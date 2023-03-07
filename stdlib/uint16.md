@@ -231,7 +231,7 @@ No other changes yet.
 (/) : (Uint16, Uint16) -> Uint16
 ```
 
-Computes the quotient of its operands using signed division.
+Computes the quotient of its operands.
 
 Parameters:
 
@@ -257,7 +257,7 @@ No other changes yet.
 (%) : (Uint16, Uint16) -> Uint16
 ```
 
-Computes the remainder of the division of its operands using signed division.
+Computes the remainder of the division of its operands.
 
 Parameters:
 
@@ -309,7 +309,7 @@ No other changes yet.
 (>>) : (Uint16, Uint16) -> Uint16
 ```
 
-Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+Shifts the bits of the value right by the given number of bits.
 
 Parameters:
 
