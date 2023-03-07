@@ -251,6 +251,7 @@ let _RIGHT_SOCK_SHUTDOWN = 268435456N
 // TODO(#775): This has specific ordering requirements because of ambiguous type inference
 @unsafe
 let rec combineRightsHelp = (acc, dirflags) => {
+  from WasmI64 use { (|) }
   match (dirflags) {
     [] => acc,
     [hd, ...tl] => {
@@ -291,7 +292,7 @@ let rec combineRightsHelp = (acc, dirflags) => {
           0N
         },
       }
-      combineRightsHelp(WasmI64.or(flag, acc), tl)
+      combineRightsHelp(flag | acc, tl)
     },
   }
 }
@@ -831,7 +832,7 @@ provide let fdStats = (fd: FileDescriptor) => {
     WasmI32.gtU(fdflags & 1n << (WasmI32.fromGrain(i) >> 1n), 0n)
   }
   let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
-  from WasmI64 use { and as (&), gtU as (>), shl as (<<) }
+  from WasmI64 use { (&), gtU as (>), (<<) }
 
   let flagsToWasmVal = (flag, i) => {
     let rights = WasmI64.load(structPtr, 8n)

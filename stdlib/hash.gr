@@ -79,9 +79,10 @@ let hash32 = k => {
 
 @unsafe
 let hash64 = k => {
+  from WasmI64 use { (>>>) }
   // convenience function for hashing 64-bit values
   hash32(WasmI32.wrapI64(k))
-  hash32(WasmI32.wrapI64(WasmI64.shrU(k, 32N)))
+  hash32(WasmI32.wrapI64(k >>> 32N))
 }
 
 @unsafe

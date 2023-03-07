@@ -125,10 +125,9 @@ provide let parseLongMantissa = (s: String) => {
     gtS as (>),
     geS as (>=),
     leS as (<=),
-    shrU as (>>),
-    shl as (<<),
     eq as (==),
   }
+  from WasmI64 use { (+) as addWasmI64, (<<) }
 
   let mut d = parseDecimal(s)
   let digits = WasmI32.fromGrain(d.digits)
@@ -206,7 +205,7 @@ provide let parseLongMantissa = (s: String) => {
           if (
             WasmI64.geU(
               mantissa,
-              WasmI64.shl(1N, WasmI64.add(_MANTISSA_EXPLICIT_BITS_64, 1N))
+              1N << addWasmI64(_MANTISSA_EXPLICIT_BITS_64, 1N)
             )
           ) {
             // Rounding up overflowed to the carry bit, need to
@@ -222,16 +221,12 @@ provide let parseLongMantissa = (s: String) => {
             fpInf()
           } else {
             let mut power2 = exp2 - _MINIMUM_EXPONENT
-            if (
-              WasmI64.ltU(mantissa, WasmI64.shl(1N, _MANTISSA_EXPLICIT_BITS_64))
-            ) {
+            if (WasmI64.ltU(mantissa, 1N << _MANTISSA_EXPLICIT_BITS_64)) {
               power2 -= 1n
             }
+            from WasmI64 use { (-), (&) }
             // Zero out all the bits above the explicit mantissa bits.
-            mantissa = WasmI64.and(
-              mantissa,
-              WasmI64.sub(WasmI64.shl(1N, _MANTISSA_EXPLICIT_BITS_64), 1N)
-            )
+            mantissa = mantissa & (1N << _MANTISSA_EXPLICIT_BITS_64) - 1N
             {
               f: WasmI32.toGrain(newInt64(mantissa)): Int64,
               e: WasmI32.toGrain(newInt32(power2)): Int32,

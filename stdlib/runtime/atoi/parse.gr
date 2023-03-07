@@ -14,6 +14,7 @@ from WasmI32 use {
   and as (&),
 }
 include "runtime/unsafe/wasmi64"
+from WasmI64 use { (+) as addWasmI64 }
 include "runtime/unsafe/memory"
 include "runtime/unsafe/tags"
 include "runtime/bigint" as BI
@@ -66,7 +67,7 @@ provide let parseInt = (string: String, radix: Number) => {
 
   let mut char = WasmI32.load8U(offset, 0n)
 
-  let mut limit = WasmI64.add(_INT_MIN, 1N)
+  let mut limit = addWasmI64(_INT_MIN, 1N)
 
   // Check for a sign
   let mut negative = false
@@ -133,14 +134,15 @@ provide let parseInt = (string: String, radix: Number) => {
     let digit = WasmI64.extendI32U(digit)
 
     if (WasmI32.eqz(isBigInt)) {
+      from WasmI64 use { (*), (<) }
       let prevValue = value
-      value = WasmI64.mul(value, radix)
+      value *= radix
       // Check for overflow
       // 64-bit int min + 1
-      if (WasmI64.ltS(value, WasmI64.add(limit, digit))) {
+      if (value < addWasmI64(limit, digit)) {
         // we overflowed. allocate BigInt and use instead
         isBigInt = 1n
-        valueBigInt = BI.makeWrappedUint64(WasmI64.mul(prevValue, -1N))
+        valueBigInt = BI.makeWrappedUint64(prevValue * -1N)
         radixBigInt = BI.makeWrappedUint64(radix)
         let newvalue = BI.mul(valueBigInt, radixBigInt)
         Memory.decRef(valueBigInt)
@@ -149,6 +151,7 @@ provide let parseInt = (string: String, radix: Number) => {
         Memory.decRef(valueBigInt)
         valueBigInt = newvalue
       } else {
+        from WasmI64 use { (-) }
         // To quote the OpenJDK,
         // "Accumulating negatively avoids surprises near MAX_VALUE"
         // The minimum value of a 64-bit integer (-9223372036854775808) can't be
@@ -157,7 +160,7 @@ provide let parseInt = (string: String, radix: Number) => {
         // parse negatives as positives and multiply by the sign at the end.
         // Instead, we represent all positive numbers as negative numbers since
         // we have one unit more headroom.
-        value = WasmI64.sub(value, digit)
+        value -= digit
       }
     } else {
       let newvalue = BI.mul(valueBigInt, radixBigInt)
@@ -168,12 +171,12 @@ provide let parseInt = (string: String, radix: Number) => {
       valueBigInt = newvalue
     }
   }
-
+  from WasmI64 use { (*) }
   // TODO: Verify this is suitable for handling "_"
   if (WasmI32.eqz(sawDigit)) return Err("Invalid digit in input")
 
   if (WasmI32.eqz(isBigInt)) {
-    let value = if (negative) value else WasmI64.mul(value, -1N)
+    let value = if (negative) value else value * -1N
     let number = WasmI32.toGrain(Memory.incRef(reducedInteger(value))): Number
     return Ok(number)
   }

@@ -72,24 +72,16 @@ from Slow use { parseLongMantissa }
 // https://johnnylee-sde.github.io/Fast-numeric-string-to-int/
 @unsafe
 let parse8Digits = (digits: WasmI64) => {
-  from WasmI64 use {
-    add as (+),
-    sub as (-),
-    mul as (*),
-    shrU as (>>),
-    and as (&),
-    or as (|),
-    eq as (==),
-  }
+  from WasmI64 use { (+), (-), (*), (>>>), (&), (|), (==) }
 
   let _MASK = 0x0000_00FF_0000_00FFN
 
   let a = digits - 0x3030_3030_3030_3030N
-  let b = a * 10N + (a >> 8N)
+  let b = a * 10N + (a >>> 8N)
   let c = (b & _MASK) * 0x000F_4240_0000_0064N
-  let d = (b >> 16N & _MASK) * 0x0000_2710_0000_0001N
+  let d = (b >>> 16N & _MASK) * 0x0000_2710_0000_0001N
 
-  (c + d) >> 32N
+  (c + d) >>> 32N
 }
 
 @unsafe
@@ -159,6 +151,7 @@ let parseFloatToParts = (string: String) => {
     eq as (==),
     ne as (!=),
   }
+  from WasmI64 use { (+) as addWasmI64, (*) }
 
   let ptr = WasmI32.fromGrain(string)
   match (WasmI32.load(ptr, 4n)) {
@@ -194,10 +187,7 @@ let parseFloatToParts = (string: String) => {
         let char = WasmI32.load8U(ptr, i)
         let digit = char - _CHAR_CODE_0
         if (digit >= 0n && digit < 10n) {
-          mantissa = WasmI64.add(
-            WasmI64.mul(mantissa, 10N),
-            WasmI64.extendI32U(digit)
-          )
+          mantissa = addWasmI64(mantissa * 10N, WasmI64.extendI32U(digit))
           numDigits += 1n
           i += 1n
         } else if (char == _CHAR_CODE_UNDERSCORE) {
@@ -218,10 +208,7 @@ let parseFloatToParts = (string: String) => {
           while (WasmI32.leU(i + 8n, len)) {
             let digits = WasmI64.load(ptr, i)
             if (is8Digits(digits)) {
-              mantissa = WasmI64.add(
-                parse8Digits(digits),
-                WasmI64.mul(mantissa, 100000000N)
-              )
+              mantissa = addWasmI64(parse8Digits(digits), mantissa * 100000000N)
               i += 8n
               numDigitsAfterDot += 8n
             } else {
@@ -233,10 +220,7 @@ let parseFloatToParts = (string: String) => {
             let char = WasmI32.load8U(ptr, i)
             let digit = char - _CHAR_CODE_0
             if (digit >= 0n && digit < 10n) {
-              mantissa = WasmI64.add(
-                WasmI64.extendI32U(digit),
-                WasmI64.mul(mantissa, 10N)
-              )
+              mantissa = addWasmI64(WasmI64.extendI32U(digit), mantissa * 10N)
               i += 1n
               numDigitsAfterDot += 1n
             } else if (char == _CHAR_CODE_UNDERSCORE) {
@@ -317,8 +301,8 @@ let parseFloatToParts = (string: String) => {
                       let char = WasmI32.load8U(ptr, i)
                       let digit = char - _CHAR_CODE_0
                       if (digit >= 0n && digit < 10n) {
-                        mantissa = WasmI64.add(
-                          WasmI64.mul(mantissa, 10N),
+                        mantissa = addWasmI64(
+                          mantissa * 10N,
                           WasmI64.extendI32U(digit)
                         )
                         i += 1n
@@ -350,8 +334,8 @@ let parseFloatToParts = (string: String) => {
                         let char = WasmI32.load8U(ptr, i)
                         let digit = char - _CHAR_CODE_0
                         if (digit < 10n) {
-                          mantissa = WasmI64.add(
-                            WasmI64.mul(mantissa, 10N),
+                          mantissa = addWasmI64(
+                            mantissa * 10N,
                             WasmI64.extendI32U(digit)
                           )
                           i += 1n
@@ -518,7 +502,7 @@ provide let isFastPath =
     manyDigits: Bool,
   ) => {
   from WasmI32 use { leS as (<=) }
-  from WasmI64 use { shl as (<<) }
+  from WasmI64 use { (<<) }
 
   _MIN_EXPONENT_FAST_PATH <= exponent &&
     exponent <= _MAX_EXPONENT_DISGUISED_FAST_PATH &&
@@ -531,6 +515,7 @@ provide let parseFloat = (string: String) => {
   from WasmI32 use { ne as (!=) }
   match (parseFloatToParts(string)) {
     Ok((exponent, mantissa, negative, manyDigits)) => {
+      from WasmI64 use { (+), (>) }
       let exponent = WasmI32.load(WasmI32.fromGrain(exponent), 4n)
       let mantissa = WasmI64.load(WasmI32.fromGrain(mantissa), 8n)
       let floatOpt = if (isFastPath(exponent, mantissa, negative, manyDigits)) {
@@ -554,18 +539,16 @@ provide let parseFloat = (string: String) => {
         } else {
           // disguised fast path
           from WasmI32 use { sub as (-) }
-          from WasmF64 use { (*) }
-          from WasmI64 use { gtS as (>) }
+          from WasmI64 use { (*), (<=) }
 
           let shift = exponent - _MAX_EXPONENT_FAST_PATH
 
-          let mantissa = WasmI64.mul(
-            mantissa,
-            WasmI64.extendI32U(getPowers10(shift))
-          )
+          let mantissa = mantissa * WasmI64.extendI32U(getPowers10(shift))
           if (mantissa > _MAX_MANTISSA_FAST_PATH) {
             None
           } else {
+            from WasmF64 use { (*) }
+
             let mantissa = WasmF64.convertI64U(mantissa)
             let n = mantissa * getPowers10FastPath(_MAX_EXPONENT_FAST_PATH)
             if (negative) {
@@ -592,13 +575,11 @@ provide let parseFloat = (string: String) => {
           let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
           let e = WasmI32.load(WasmI32.fromGrain(fp.e), 4n)
           if (manyDigits && WasmI32.geS(e, 0n)) {
-            let fp2 = computeFloat(
-              WasmI64.extendI32S(exponent),
-              WasmI64.add(mantissa, 1N)
-            )
+            from WasmI64 use { (!=) as neWasmI64 }
+            let fp2 = computeFloat(WasmI64.extendI32S(exponent), mantissa + 1N)
             let f2 = WasmI64.load(WasmI32.fromGrain(fp2.f), 8n)
             let e2 = WasmI32.load(WasmI32.fromGrain(fp2.e), 4n)
-            if (e != e2 || WasmI64.ne(f, f2)) {
+            if (e != e2 || neWasmI64(f, f2)) {
               fp.e = -1l
             }
           }

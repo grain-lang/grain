@@ -140,9 +140,8 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let first = xlength - extra
         let mut result = true
         for (let mut i = 0n; i < first; i += 8n) {
-          if (
-            WasmI64.ne(WasmI64.load(xptr + i, 8n), WasmI64.load(yptr + i, 8n))
-          ) {
+          from WasmI64 use { (!=) }
+          if (WasmI64.load(xptr + i, 8n) != WasmI64.load(yptr + i, 8n)) {
             result = false
             break
           }
@@ -198,9 +197,10 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
     },
     // Float32 is handled by equalHelp directly
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      from WasmI64 use { (==) }
       let xval = WasmI64.load(xptr, 8n)
       let yval = WasmI64.load(yptr, 8n)
-      WasmI64.eq(xval, yval)
+      xval == yval
     },
     _ => {
       // No other implementation
