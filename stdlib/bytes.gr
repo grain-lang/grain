@@ -75,7 +75,10 @@ let getSize = ptr => WasmI32.load(ptr, _SIZE_OFFSET)
  */
 @unsafe
 provide let make = (size: Number) => {
-  let bytes = allocateBytes(coerceNumberToWasmI32(size))
+  from WasmI32 use { add as (+) }
+  let size = coerceNumberToWasmI32(size)
+  let bytes = allocateBytes(size)
+  Memory.fill(bytes + 8n, 0n, size)
   WasmI32.toGrain(bytes): Bytes
 }
 
