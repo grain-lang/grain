@@ -566,8 +566,6 @@ provide let parseFloat = (string: String) => {
           if (mantissa > _MAX_MANTISSA_FAST_PATH) {
             None
           } else {
-            assert WasmI64.leS(mantissa, _MAX_MANTISSA_FAST_PATH)
-
             let mantissa = WasmF64.convertI64U(mantissa)
             let n = mantissa * getPowers10FastPath(_MAX_EXPONENT_FAST_PATH)
             if (negative) {
