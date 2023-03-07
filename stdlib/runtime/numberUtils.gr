@@ -1478,6 +1478,3 @@ provide let dtoa = value => {
   }
   WasmI32.toGrain(str): String
 }
-
-Memory.utoa32Buffered := utoa32Buffered
-Memory.decimalCount32 := decimalCount32
