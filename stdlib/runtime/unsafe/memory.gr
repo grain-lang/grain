@@ -2,7 +2,7 @@
 module Memory
 
 include "runtime/gc" as GC
-from GC use { malloc, free, incRef, decRef, utoa32Buffered, decimalCount32 }
+from GC use { malloc, free, incRef, decRef }
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use {
   add as (+),
@@ -13,7 +13,7 @@ from WasmI32 use {
   ltU as (<),
 }
 
-provide { malloc, free, incRef, decRef, utoa32Buffered, decimalCount32 }
+provide { malloc, free, incRef, decRef }
 
 provide let copy = (dest, src, n) => {
   let mut dest = dest
