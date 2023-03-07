@@ -246,7 +246,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The quotient of its operands|
 
-### Uint64.**(%)**
+### Uint64.**rem**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (Uint64, Uint64) -> Uint64
+rem : (Uint64, Uint64) -> Uint64
 ```
 
 Computes the remainder of the division of its operands.
@@ -350,7 +350,7 @@ Returns:
 |----|-----------|
 |`Uint64`|The shifted value|
 
-### Uint64.**(>>)**
+### Uint64.**(>>>)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -358,7 +358,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>) : (Uint64, Uint64) -> Uint64
+(>>>) : (Uint64, Uint64) -> Uint64
 ```
 
 Shifts the bits of the value right by the given number of bits.

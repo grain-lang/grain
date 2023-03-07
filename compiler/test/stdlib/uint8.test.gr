@@ -12,12 +12,12 @@ from Uint8 use {
   (-),
   (*),
   (/),
-  (%),
+  rem as (%),
   (&),
   (|),
   (^),
   (<<),
-  (>>),
+  (>>>),
 }
 
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
@@ -69,9 +69,9 @@ assert 1us << 1us == 2us
 assert 1us << 8us == 0us
 assert 24us << 1us == 48us
 
-assert 4us >> 1us == 2us
-assert 4us >> 2us == 1us
-assert 4us >> 3us == 0us
+assert 4us >>> 1us == 2us
+assert 4us >>> 2us == 1us
+assert 4us >>> 3us == 0us
 
 assert incr(0us) == 1us
 assert incr(0xffus) == 0us
