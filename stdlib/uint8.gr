@@ -32,7 +32,7 @@ provide { fromNumber, toNumber }
  *
  * @param number: The value to convert
  * @returns The Int8 represented as a Uint8
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -158,7 +158,7 @@ provide let (/) = (x: Uint8, y: Uint8) => {
  * @since v0.6.0
  */
 @unsafe
-provide let (%) = (x: Uint8, y: Uint8) => {
+provide let rem = (x: Uint8, y: Uint8) => {
   let x = untagUint8(x)
   let y = untagUint8(y)
   let val = WasmI32.remU(x, y)
@@ -194,7 +194,7 @@ provide let (<<) = (value: Uint8, amount: Uint8) => {
  * @since v0.6.0
  */
 @unsafe
-provide let (>>) = (value: Uint8, amount: Uint8) => {
+provide let (>>>) = (value: Uint8, amount: Uint8) => {
   // Trick: do not shift `value` right, just correct tag afterwards
   let x = WasmI32.fromGrain(value)
   let y = untagUint8(amount)
