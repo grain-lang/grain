@@ -1098,7 +1098,6 @@ let rec resugar_list_patterns =
     Doc.concat([
       Doc.lbracket,
       Doc.indent(printed_patterns_after_bracket),
-      Doc.ifBreaks(Doc.comma, Doc.nil),
       Doc.softLine,
       Doc.rbracket,
     ]),
