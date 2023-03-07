@@ -33,7 +33,7 @@ let prepare_error =
           ~loc,
           "This character literal contains multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
           cl,
-          cl,
+          Str.global_replace(Str.regexp({|"|}), {|\"|}, cl),
         )
       | ExternalAlias(name, loc) =>
         errorf(~loc, "Alias '%s' should be at most one level deep.", name)
