@@ -51,7 +51,8 @@ let iter_ppat = (f, p) =>
   switch (p.ppat_desc) {
   | PPatAny
   | PPatVar(_)
-  | PPatConstant(_) => ()
+  | PPatConstant(_)
+  | PPatConstruct(_, PPatConstrSingleton) => ()
   | PPatTuple(lst) => List.iter(f, lst)
   | PPatArray(lst) => List.iter(f, lst)
   | PPatRecord(fs, _)
@@ -744,6 +745,7 @@ and type_pat_aux =
   | PPatConstruct(lid, sarg) =>
     let (sargs, is_record_pat) =
       switch (sarg) {
+      | PPatConstrSingleton => ([], false)
       | PPatConstrTuple(sargs) => (sargs, false)
       | PPatConstrRecord(rfs, c) =>
         let desc =

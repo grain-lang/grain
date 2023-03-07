@@ -165,7 +165,8 @@ type pattern_desc =
 [@deriving (sexp, yojson)]
 and constructor_pattern =
   | PPatConstrRecord(list((loc(Identifier.t), pattern)), closed_flag)
-  | PPatConstrTuple(list(pattern)) // Empty list used to represent singleton constructors
+  | PPatConstrTuple(list(pattern))
+  | PPatConstrSingleton
 
 [@deriving (sexp, yojson)]
 and pattern = {
@@ -523,6 +524,7 @@ and expression_desc =
 and constructor_expression =
   | PExpConstrTuple(list(expression))
   | PExpConstrRecord(list((loc(Identifier.t), expression)))
+  | PExpConstrSingleton
 
 /** let-binding form */
 

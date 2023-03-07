@@ -312,6 +312,7 @@ and iter_expression =
     switch (e) {
     | PExpConstrTuple(el) => iter_expressions(hooks, el)
     | PExpConstrRecord(es) => iter_record_fields(hooks, es)
+    | PExpConstrSingleton => ()
     };
   | PExpBlock(el) => iter_expressions(hooks, el)
   | PExpNull => ()
@@ -414,6 +415,7 @@ and iter_pattern = (hooks, {ppat_desc: desc, ppat_loc: loc} as pat) => {
   | PPatConstruct(id, p) =>
     iter_ident(hooks, id);
     switch (p) {
+    | PPatConstrSingleton => ()
     | PPatConstrTuple(pl) => iter_patterns(hooks, pl)
     | PPatConstrRecord(fs, _) => iter_record_patterns(hooks, fs)
     };

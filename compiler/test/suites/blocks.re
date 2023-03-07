@@ -16,12 +16,11 @@ describe("blocks", ({test}) => {
           statements: [
             Toplevel.expr(
               Expression.block([
-                Expression.tuple_construct(
+                Expression.singleton_construct(
                   ~loc=Location.dummy_loc,
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("Foo")),
                   ),
-                  [],
                 ),
               ]),
             ),
