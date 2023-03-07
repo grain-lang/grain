@@ -37,7 +37,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : (Number, ((a, a) -> Number)) -> PriorityQueue<a>
+makeSized : (size: Number, comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Creates a new priority queue with a given internal storage size and a
@@ -70,7 +70,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : ((a, a) -> Number) -> PriorityQueue<a>
+make : (comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -108,7 +108,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : PriorityQueue<a> -> Number
+size : (pq: PriorityQueue<a>) -> Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -133,7 +133,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : PriorityQueue<a> -> Bool
+isEmpty : (pq: PriorityQueue<a>) -> Bool
 ```
 
 Determines if the priority queue contains no elements.
@@ -158,7 +158,7 @@ No other changes yet.
 </details>
 
 ```grain
-push : (a, PriorityQueue<a>) -> Void
+push : (val: a, pq: PriorityQueue<a>) -> Void
 ```
 
 Adds a new element to the priority queue.
@@ -178,7 +178,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : PriorityQueue<a> -> Option<a>
+peek : (pq: PriorityQueue<a>) -> Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -204,7 +204,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : PriorityQueue<a> -> Option<a>
+pop : (pq: PriorityQueue<a>) -> Option<a>
 ```
 
 Removes and retrieves the highest priority element in the priority queue.
@@ -229,7 +229,7 @@ No other changes yet.
 </details>
 
 ```grain
-drain : PriorityQueue<a> -> List<a>
+drain : (pq: PriorityQueue<a>) -> List<a>
 ```
 
 Clears the priority queue and produces a list of all of the elements in the priority
@@ -255,7 +255,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : (Array<a>, ((a, a) -> Number)) -> PriorityQueue<a>
+fromArray : (array: Array<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array
@@ -285,7 +285,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (List<a>, ((a, a) -> Number)) -> PriorityQueue<a>
+fromList : (list: List<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list

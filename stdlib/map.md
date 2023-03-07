@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : Number -> Map<a, b>
+makeSized : (size: Number) -> Map<a, b>
 ```
 
 Creates a new empty map with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your map and can use `Map.make()` instead.
@@ -79,7 +79,7 @@ No other changes yet.
 </details>
 
 ```grain
-set : (a, b, Map<a, b>) -> Void
+set : (key: a, value: b, map: Map<a, b>) -> Void
 ```
 
 Adds a new key-value pair to the map. If the key already exists in the map, the value is replaced.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-get : (a, Map<a, b>) -> Option<b>
+get : (key: a, map: Map<a, b>) -> Option<b>
 ```
 
 Retrieves the value for the given key.
@@ -126,7 +126,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (a, Map<a, b>) -> Bool
+contains : (key: a, map: Map<a, b>) -> Bool
 ```
 
 Determines if the map contains the given key. In such a case, it will always contain a value for the given key.
@@ -152,7 +152,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove : (a, Map<a, b>) -> Void
+remove : (key: a, map: Map<a, b>) -> Void
 ```
 
 Removes the given key from the map, which also removes the value. If the key pair doesn't exist, nothing happens.
@@ -172,7 +172,7 @@ No other changes yet.
 </details>
 
 ```grain
-update : (a, (Option<b> -> Option<b>), Map<a, b>) -> Void
+update : (key: a, fn: (Option<b> -> Option<b>), map: Map<a, b>) -> Void
 ```
 
 Updates a value in the map by calling an updater function that receives the previously stored value as an `Option` and returns the new value to be stored as an `Option`. If the key didn't exist previously, the value will be `None`. If `None` is returned from the updater function, the key-value pair is removed.
@@ -193,7 +193,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : Map<a, b> -> Number
+size : (map: Map<a, b>) -> Number
 ```
 
 Provides the count of key-value pairs stored within the map.
@@ -218,7 +218,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : Map<a, b> -> Bool
+isEmpty : (map: Map<a, b>) -> Bool
 ```
 
 Determines if the map contains no key-value pairs.
@@ -243,7 +243,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : Map<a, b> -> Void
+clear : (map: Map<a, b>) -> Void
 ```
 
 Resets the map by removing all key-value pairs.
@@ -269,7 +269,7 @@ Parameters:
 </details>
 
 ```grain
-forEach : (((a, b) -> Void), Map<a, b>) -> Void
+forEach : (fn: ((a, b) -> Void), map: Map<a, b>) -> Void
 ```
 
 Iterates the map, calling an iterator function with each key and value.
@@ -289,7 +289,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (((a, b, c) -> a), a, Map<b, c>) -> a
+reduce : (fn: ((a, b, c) -> a), init: a, map: Map<b, c>) -> a
 ```
 
 Combines all key-value pairs of a map using a reducer function.
@@ -316,7 +316,7 @@ No other changes yet.
 </details>
 
 ```grain
-keys : Map<a, b> -> List<a>
+keys : (map: Map<a, b>) -> List<a>
 ```
 
 Enumerates all keys in the given map.
@@ -341,7 +341,7 @@ No other changes yet.
 </details>
 
 ```grain
-values : Map<a, b> -> List<b>
+values : (map: Map<a, b>) -> List<b>
 ```
 
 Enumerates all values in the given map.
@@ -366,7 +366,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : Map<a, b> -> List<(a, b)>
+toList : (map: Map<a, b>) -> List<(a, b)>
 ```
 
 Enumerates all key-value pairs in the given map.
@@ -391,7 +391,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : List<(a, b)> -> Map<a, b>
+fromList : (list: List<(a, b)>) -> Map<a, b>
 ```
 
 Creates a map from a list.
@@ -441,7 +441,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : Array<(a, b)> -> Map<a, b>
+fromArray : (array: Array<(a, b)>) -> Map<a, b>
 ```
 
 Creates a map from an array.
@@ -466,7 +466,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (((a, b) -> Bool), Map<a, b>) -> Void
+filter : (predicate: ((a, b) -> Bool), map: Map<a, b>) -> Void
 ```
 
 Removes key-value pairs from a map where a predicate function returns `false`.
@@ -486,7 +486,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : (((a, b) -> Bool), Map<a, b>) -> Void
+reject : (predicate: ((a, b) -> Bool), map: Map<a, b>) -> Void
 ```
 
 Removes key-value pairs from a map where a predicate function returns `true`.
@@ -506,7 +506,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInternalStats : Map<a, b> -> (Number, Number)
+getInternalStats : (map: Map<a, b>) -> (Number, Number)
 ```
 
 Provides data representing the internal state state of the map.

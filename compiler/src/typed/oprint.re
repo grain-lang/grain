@@ -354,13 +354,17 @@ let rec print_out_type = ppf =>
 and print_out_type_1 = ppf =>
   fun
   | Otyp_arrow(al, ty2) => {
-      let args_length = List.length(al);
+      let parens =
+        switch (al) {
+        | [("", _)] => false
+        | _ => true
+        };
       pp_open_box(ppf, 1);
-      if (args_length != 1) {
+      if (parens) {
         pp_print_char(ppf, '(');
       };
       fprintf(ppf, "@[<0>%a@]", print_argtyplist(print_out_type_2, ","), al);
-      if (args_length != 1) {
+      if (parens) {
         pp_print_char(ppf, ')');
       };
       pp_print_string(ppf, " ->");

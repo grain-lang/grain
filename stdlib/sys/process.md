@@ -88,7 +88,7 @@ Returns:
 ### Process.**exit**
 
 ```grain
-exit : Number -> Result<Void, Exception>
+exit : (code: Number) -> Result<Void, Exception>
 ```
 
 Terminate the process normally.
@@ -108,7 +108,7 @@ Returns:
 ### Process.**sigRaise**
 
 ```grain
-sigRaise : Signal -> Result<Void, Exception>
+sigRaise : (signalPtr: Signal) -> Result<Void, Exception>
 ```
 
 Send a signal to the process of the calling thread.

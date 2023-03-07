@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : Number -> Int8
+fromNumber : (number: Number) -> Int8
 ```
 
 Converts a Number to an Int8.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : Int8 -> Number
+toNumber : (value: Int8) -> Number
 ```
 
 Converts an Int8 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint8 : Uint8 -> Int8
+fromUint8 : (x: Uint8) -> Int8
 ```
 
 Converts a Uint8 to an Int8.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : Int8 -> Int8
+incr : (value: Int8) -> Int8
 ```
 
 Increments the value by one.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : Int8 -> Int8
+decr : (value: Int8) -> Int8
 ```
 
 Decrements the value by one.
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (Int8, Int8) -> Int8
+(+) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the sum of its operands.
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (Int8, Int8) -> Int8
+(-) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the difference of its operands.
@@ -202,7 +202,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (Int8, Int8) -> Int8
+(*) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the product of its operands.
@@ -228,7 +228,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (Int8, Int8) -> Int8
+(/) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the quotient of its operands using signed division.
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (Int8, Int8) -> Int8
+rem : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the remainder of the division of its operands using signed division.
@@ -280,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (Int8, Int8) -> Int8
+(%) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -313,7 +313,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<<) : (Int8, Int8) -> Int8
+(<<) : (value: Int8, amount: Int8) -> Int8
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>) : (Int8, Int8) -> Int8
+(>>) : (value: Int8, amount: Int8) -> Int8
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -365,7 +365,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (Int8, Int8) -> Bool
+(==) : (x: Int8, y: Int8) -> Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -391,7 +391,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (Int8, Int8) -> Bool
+(!=) : (x: Int8, y: Int8) -> Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -417,7 +417,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (Int8, Int8) -> Bool
+(<) : (x: Int8, y: Int8) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -443,7 +443,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (Int8, Int8) -> Bool
+(>) : (x: Int8, y: Int8) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -469,7 +469,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (Int8, Int8) -> Bool
+(<=) : (x: Int8, y: Int8) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -495,7 +495,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (Int8, Int8) -> Bool
+(>=) : (x: Int8, y: Int8) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -521,7 +521,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : Int8 -> Int8
+lnot : (value: Int8) -> Int8
 ```
 
 Computes the bitwise NOT of the given value.
@@ -546,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&) : (Int8, Int8) -> Int8
+(&) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -572,7 +572,7 @@ No other changes yet.
 </details>
 
 ```grain
-(|) : (Int8, Int8) -> Int8
+(|) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -598,7 +598,7 @@ No other changes yet.
 </details>
 
 ```grain
-(^) : (Int8, Int8) -> Int8
+(^) : (x: Int8, y: Int8) -> Int8
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
