@@ -90,8 +90,6 @@ let debug_expression = (expr: Parsetree.expression) => {
   | PExpAssign(expression, expression1) =>
     print_loc("PExpAssign", expr.pexp_loc)
   | PExpUse(module_, items) => print_loc("PExpUse", expr.pexp_loc)
-  | /** Used for modules without body expressions */ PExpNull =>
-    print_loc("PExpNull", expr.pexp_loc)
   };
 };
 let debug_pattern = (pat: Parsetree.pattern) => {

@@ -437,8 +437,6 @@ module Expression = {
       };
     {...list, pexp_loc: loc};
   };
-  let null = (~loc=?, ~attributes=?, ()) =>
-    mk(~loc?, ~attributes?, PExpNull);
 
   let ignore = e =>
     switch (e.pexp_desc) {

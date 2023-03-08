@@ -315,7 +315,6 @@ and iter_expression =
     | PExpConstrSingleton => ()
     };
   | PExpBlock(el) => iter_expressions(hooks, el)
-  | PExpNull => ()
   };
   hooks.leave_expression(expr);
 }

@@ -1568,15 +1568,6 @@ and type_expect_ =
       exp_type: instance(env, Builtin_types.type_void),
       exp_env: newenv,
     });
-  | PExpNull =>
-    rue({
-      exp_desc: TExpNull,
-      exp_loc: loc,
-      exp_extra: [],
-      exp_attributes: attributes,
-      exp_type: instance(env, Builtin_types.type_void),
-      exp_env: env,
-    })
   };
 }
 
