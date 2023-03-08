@@ -227,6 +227,16 @@ Returns:
 |----|-----------|
 |`Number`|The character code at the provided position|
 
+Throws:
+
+`Failure(String)`
+
+* When the `position` is out of bounds
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -259,6 +269,16 @@ Returns:
 |----|-----------|
 |`Char`|The character at the provided position|
 
+Throws:
+
+`Failure(String)`
+
+* When the `position` is out of bounds
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -289,6 +309,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Array<Char>`|An array containing all characters in the string|
+
+Throws:
+
+`MalformedUnicode`
+
+* When the `string` is malformed
 
 Examples:
 
@@ -379,6 +405,12 @@ Returns:
 |----|-----------|
 |`Array<String>`|An array of substrings from the initial string|
 
+Throws:
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -411,6 +443,19 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|The substring from the initial string|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `start` is out of bounds
+* When `end` is out of bounds
+
+`InvalidArgument(String)`
+
+* When the `start` index is not an integer
+* When the `to` index is not an integer
+* When `start` is greater than `end`
 
 Examples:
 
@@ -641,6 +686,13 @@ Returns:
 |----|-----------|
 |`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `destPos` is not an integer
+* When `destPos` is negative
+
 ### String.**encodeAtWithBom**
 
 <details disabled>
@@ -668,6 +720,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `destPos` is not an integer
+* When `destPos` is negative
 
 ### String.**encode**
 
@@ -749,6 +808,15 @@ Returns:
 |----|-----------|
 |`String`|The decoded string|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `start` is not an integer
+* When `start` is negative
+* When `size` is not an integer
+* When `size` is negative
+
 ### String.**decodeRangeKeepBom**
 
 <details disabled>
@@ -776,6 +844,15 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|The decoded string|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `start` is not an integer
+* When `start` is negative
+* When `size` is not an integer
+* When `size` is negative
 
 ### String.**decode**
 
