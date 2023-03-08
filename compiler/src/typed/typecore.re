@@ -601,8 +601,7 @@ let rec is_nonexpansive = exp =>
   switch (exp.exp_desc) {
   | TExpIdent(_)
   | TExpConstant(_)
-  | TExpLambda(_)
-  | TExpNull => true
+  | TExpLambda(_) => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
   | TExpLet(rec_flag, Immutable, binds) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
@@ -1568,15 +1567,6 @@ and type_expect_ =
       exp_type: instance(env, Builtin_types.type_void),
       exp_env: newenv,
     });
-  | PExpNull =>
-    rue({
-      exp_desc: TExpNull,
-      exp_loc: loc,
-      exp_extra: [],
-      exp_attributes: attributes,
-      exp_type: instance(env, Builtin_types.type_void),
-      exp_env: env,
-    })
   };
 }
 

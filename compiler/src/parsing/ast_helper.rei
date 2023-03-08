@@ -247,7 +247,6 @@ module Expression: {
     expression;
   let block:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
-  let null: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
   let ignore: expression => expression;
 };
 

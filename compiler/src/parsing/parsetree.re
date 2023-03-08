@@ -517,8 +517,6 @@ and expression_desc =
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
-  | /** Used for modules without body expressions */
-    PExpNull
 
 [@deriving (sexp, yojson)]
 and constructor_expression =

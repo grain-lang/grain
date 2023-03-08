@@ -202,7 +202,6 @@ module MakeIterator =
       exp_extra,
     );
     switch (exp_desc) {
-    | TExpNull
     | TExpUse(_)
     | TExpIdent(_)
     | TExpConstant(_) => ()
