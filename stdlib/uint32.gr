@@ -8,6 +8,7 @@
 module Uint32
 
 include "runtime/unsafe/wasmi32"
+from WasmI32 use { (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
 include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/memory"
 include "runtime/exception"
@@ -76,7 +77,7 @@ provide let fromInt32 = (x: Int32) => {
 @unsafe
 provide let incr = (value: Uint32) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newUint32(WasmI32.add(WasmI32.load(value, _VALUE_OFFSET), 1n))
+  let ptr = newUint32(WasmI32.load(value, _VALUE_OFFSET) + 1n)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -91,7 +92,7 @@ provide let incr = (value: Uint32) => {
 @unsafe
 provide let decr = (value: Uint32) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newUint32(WasmI32.sub(WasmI32.load(value, _VALUE_OFFSET), 1n))
+  let ptr = newUint32(WasmI32.load(value, _VALUE_OFFSET) - 1n)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -108,7 +109,7 @@ provide let decr = (value: Uint32) => {
 provide let (+) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.add(xv, yv))
+  let ptr = newUint32(xv + yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -125,7 +126,7 @@ provide let (+) = (x: Uint32, y: Uint32) => {
 provide let (-) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.sub(xv, yv))
+  let ptr = newUint32(xv - yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -142,7 +143,7 @@ provide let (-) = (x: Uint32, y: Uint32) => {
 provide let (*) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.mul(xv, yv))
+  let ptr = newUint32(xv * yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -227,7 +228,7 @@ provide let rotr = (value: Uint32, amount: Uint32) => {
 provide let (<<) = (value: Uint32, amount: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.shl(xv, yv))
+  let ptr = newUint32(xv << yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -244,7 +245,7 @@ provide let (<<) = (value: Uint32, amount: Uint32) => {
 provide let (>>>) = (value: Uint32, amount: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.shrU(xv, yv))
+  let ptr = newUint32(xv >>> yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -261,7 +262,7 @@ provide let (>>>) = (value: Uint32, amount: Uint32) => {
 provide let (==) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmI32.eq(xv, yv)
+  xv == yv
 }
 
 /**
@@ -277,7 +278,7 @@ provide let (==) = (x: Uint32, y: Uint32) => {
 provide let (!=) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmI32.ne(xv, yv)
+  xv != yv
 }
 
 /**
@@ -369,7 +370,7 @@ provide let (>=) = (x: Uint32, y: Uint32) => {
 @unsafe
 provide let lnot = (value: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.xor(xv, 0xffffffffn))
+  let ptr = newUint32(xv ^ 0xffffffffn)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -386,7 +387,7 @@ provide let lnot = (value: Uint32) => {
 provide let (&) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.and(xv, yv))
+  let ptr = newUint32(xv & yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -403,7 +404,7 @@ provide let (&) = (x: Uint32, y: Uint32) => {
 provide let (|) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.or(xv, yv))
+  let ptr = newUint32(xv | yv)
   WasmI32.toGrain(ptr): Uint32
 }
 
@@ -420,7 +421,7 @@ provide let (|) = (x: Uint32, y: Uint32) => {
 provide let (^) = (x: Uint32, y: Uint32) => {
   let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint32(WasmI32.xor(xv, yv))
+  let ptr = newUint32(xv ^ yv)
   WasmI32.toGrain(ptr): Uint32
 }
 

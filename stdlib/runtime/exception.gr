@@ -2,7 +2,7 @@
 module Exception
 
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use { eq as (==), add as (+) }
+from WasmI32 use { (==), (+), (-) }
 
 foreign wasm fd_write: (
   WasmI32,
@@ -50,8 +50,8 @@ provide let dangerouslyRegisterPrinter = f => {
 
 // avoid cirular dependency on gc
 let incRef = v => {
-  let ptr = WasmI32.sub(WasmI32.fromGrain(v), 8n)
-  WasmI32.store(ptr, WasmI32.add(WasmI32.load(ptr, 0n), 1n), 0n)
+  let ptr = WasmI32.fromGrain(v) - 8n
+  WasmI32.store(ptr, WasmI32.load(ptr, 0n) + 1n, 0n)
   v
 }
 

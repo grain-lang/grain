@@ -59,7 +59,7 @@ let mut _POWERS = -1n
 
 @unsafe
 let get_POWERS = () => {
-  from WasmI32 use { eq as (==) }
+  from WasmI32 use { (==) }
   if (_POWERS == -1n) {
     _POWERS = Memory.malloc(130n)
     WasmI32.store8(_POWERS, 0n, 0n)
@@ -87,7 +87,8 @@ let get_POWERS = () => {
 
 @unsafe
 let getShift = n => {
-  if (WasmI32.ltS(n, _NUM_POWERS)) {
+  from WasmI32 use { (<) }
+  if (n < _NUM_POWERS) {
     WasmI32.load8U(get_POWERS(), n)
   } else {
     _MAX_SHIFT
@@ -117,16 +118,7 @@ let getShift = n => {
 */
 @unsafe
 provide let parseLongMantissa = (s: String) => {
-  from WasmI32 use {
-    add as (+),
-    sub as (-),
-    and as (&),
-    ltS as (<),
-    gtS as (>),
-    geS as (>=),
-    leS as (<=),
-    eq as (==),
-  }
+  from WasmI32 use { (+), (-), (&), (<), (>), (>=), (<=), (==) }
   from WasmI64 use { (+) as addWasmI64, (<<) }
 
   let mut d = parseDecimal(s)

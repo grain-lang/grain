@@ -10,20 +10,20 @@ module File
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
-  add as (+),
-  sub as (-),
-  mul as (*),
-  shl as (<<),
-  shrS as (>>),
-  shrU as (>>>),
-  eq as (==),
-  ne as (!=),
-  ltS as (<),
-  leS as (<=),
-  gtS as (>),
-  geS as (>=),
-  and as (&),
-  or as (|),
+  (+),
+  (-),
+  (*),
+  (<<),
+  (>>),
+  (>>>),
+  (==),
+  (!=),
+  (<),
+  (<=),
+  (>),
+  (>=),
+  (&),
+  (|),
 }
 include "runtime/unsafe/wasmi64"
 include "runtime/wasi"

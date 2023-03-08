@@ -88,6 +88,7 @@ provide let fromFloat64 = (n: Float64) => {
  */
 @unsafe
 provide let wasmI32ToNumber = (n: WasmI32) => {
+  from WasmI32 use { (^), (<<), (>>), (==) }
   // Follows a little optimization. Instead of testing if n is range of allowed
   // non heap allocated simple numbers (-1073741824n..1073741823n), actually
   // make a simple number, convert it back to WasmI32, and test if it stayed
@@ -100,12 +101,12 @@ provide let wasmI32ToNumber = (n: WasmI32) => {
 
   // First step: naively convert to simple number, just like tagSimpleNumber.
   // This will overflow for values not in the range, but it's fine.
-  let simple = WasmI32.xor(WasmI32.shl(n, 1n), 1n)
+  let simple = n << 1n ^ 1n
 
   // Untag it, just like numbers.untagSimple.
-  let untagged = WasmI32.shrS(simple, 1n)
+  let untagged = simple >> 1n
 
-  if (WasmI32.eq(untagged, n)) {
+  if (untagged == n) {
     // Just test if the untagged number is the same. If it didn't overflow, then
     // we're good. We just need to cast the raw value into a Number at the type
     // system level.

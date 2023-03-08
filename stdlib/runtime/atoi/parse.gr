@@ -3,15 +3,15 @@ module Parse
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
-  add as (+),
-  sub as (-),
+  (+),
+  (-),
   gtU as (>),
   geU as (>=),
   ltU as (<),
-  shrS as (>>),
-  eq as (==),
-  ne as (!=),
-  and as (&),
+  (>>),
+  (==),
+  (!=),
+  (&),
 }
 include "runtime/unsafe/wasmi64"
 from WasmI64 use { (+) as addWasmI64 }

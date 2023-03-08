@@ -122,12 +122,14 @@ provide let fpNan = () => { f: 1L, e: -1l }
 
 @unsafe
 provide let getPowers10 = (i: WasmI32) => {
-  WasmI32.load(get_POWERS10(), WasmI32.mul(4n, i))
+  from WasmI32 use { (*) }
+  WasmI32.load(get_POWERS10(), 4n * i)
 }
 
 @unsafe
 provide let getPowers10FastPath = (i: WasmI32) => {
-  WasmF64.load(get_F64_POWERS10_FAST_PATH(), WasmI32.mul(8n, i))
+  from WasmI32 use { (*) }
+  WasmF64.load(get_F64_POWERS10_FAST_PATH(), 8n * i)
 }
 
 // https://stdrs.dev/nightly/x86_64-unknown-linux-gnu/src/core/num/dec2flt/common.rs.html#165
@@ -149,7 +151,7 @@ provide let is8Digits = (value: WasmI64) => {
 // entire range of non-finite decimal exponents.
 @unsafe
 provide let power = (q: WasmI32) => {
-  from WasmI32 use { add as (+), mul as (*), shrS as (>>) }
+  from WasmI32 use { (+), (*), (>>) }
 
   ((q * (152_170n + 65536n)) >> 16n) + 63n
 }

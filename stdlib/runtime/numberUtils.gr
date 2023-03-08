@@ -8,13 +8,13 @@ module NumberUtils
 include "runtime/unsafe/memory" as Memory
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use {
-  eq as (==),
-  ne as (!=),
-  add as (+),
-  sub as (-),
-  shl as (<<),
-  and as (&),
-  or as (|),
+  (==),
+  (!=),
+  (+),
+  (-),
+  (<<),
+  (&),
+  (|),
   // no signed imports, as care should be taken to use signed or unsigned operators
 }
 include "runtime/unsafe/wasmi64" as WasmI64
@@ -772,6 +772,7 @@ let decimalCount64High = value => {
 
 @unsafe
 let ulog_base = (num, base) => {
+  from WasmI32 use { (<<) }
   from WasmI64 use { (*) }
   if (isPowerOf2(base)) {
     WasmI32.divU(
@@ -787,7 +788,7 @@ let ulog_base = (num, base) => {
     while (WasmI64.geU(num, b)) {
       num = WasmI64.divU(num, b)
       b *= b
-      e = WasmI32.shl(e, 1n)
+      e = e << 1n
     }
     while (WasmI64.geU(num, 1N)) {
       num = WasmI64.divU(num, b64)
@@ -845,7 +846,7 @@ let utoa64_dec_lut = (buffer, num, offset) => {
     let t = WasmI64.divU(num, 100000000N)
     from WasmI64 use { (-), (*) }
     let r = WasmI32.wrapI64(num - t * 100000000N)
-    from WasmI32 use { sub as (-) }
+    from WasmI32 use { (-) }
     num = t
 
     let b = WasmI32.divU(r, 10000n)
@@ -887,7 +888,7 @@ let utoa_hex_lut = (buffer, num, offset) => {
     )
     num = num >>> 8N
   }
-  if (WasmI32.ne(offset & 1n, 0n)) {
+  if ((offset & 1n) != 0n) {
     WasmI32.store8(
       buffer,
       WasmI32.load8U(lut + (WasmI32.wrapI64(num) << 5n), 0n),
@@ -928,7 +929,7 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
     from WasmI64 use { (-), (&) }
     let mask = base - 1N
     for (;;) {
-      from WasmI32 use { sub as (-) }
+      from WasmI32 use { (-) }
       offset -= 1n
       WasmI32.store8(
         buffer + offset,
@@ -956,7 +957,8 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
 
 @unsafe
 provide let utoa32Buffered = (buf, value, radix) => {
-  if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
+  from WasmI32 use { (>>>), (<), (>) }
+  if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
     )
@@ -967,7 +969,7 @@ provide let utoa32Buffered = (buf, value, radix) => {
     let decimals = decimalCount32(value)
     utoa32_dec_core(buf, value, decimals)
   } else if (radix == 16n) {
-    let decimals = WasmI32.shrU(31n - WasmI32.clz(value), 2n) + 1n
+    let decimals = ((31n - WasmI32.clz(value)) >>> 2n) + 1n
     utoa32_hex_core(buf, value, decimals)
   } else {
     let decimals = ulog_base(WasmI64.extendI32U(value), radix)
@@ -978,7 +980,8 @@ provide let utoa32Buffered = (buf, value, radix) => {
 
 @unsafe
 provide let utoa32 = (value, radix) => {
-  if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
+  from WasmI32 use { (>>>), (<), (>) }
+  if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
     )
@@ -991,7 +994,7 @@ provide let utoa32 = (value, radix) => {
     utoa32_dec_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
   } else if (radix == 16n) {
-    let decimals = WasmI32.shrU(31n - WasmI32.clz(value), 2n) + 1n
+    let decimals = ((31n - WasmI32.clz(value)) >>> 2n) + 1n
     let out = allocateString(decimals)
     utoa32_hex_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
@@ -1006,15 +1009,16 @@ provide let utoa32 = (value, radix) => {
 
 @unsafe
 provide let itoa32 = (value, radix) => {
+  from WasmI32 use { (>>>), (<), (>) }
   let mut value = value
-  if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
+  if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
     )
   }
-  let sign = WasmI32.shrU(value, 31n)
+  let sign = value >>> 31n
 
-  if (WasmI32.ne(sign, 0n)) value = 0n - value
+  if (sign != 0n) value = 0n - value
 
   let out = if (WasmI32.eqz(value)) {
     "0"
@@ -1024,7 +1028,7 @@ provide let itoa32 = (value, radix) => {
     utoa32_dec_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
   } else if (radix == 16n) {
-    let decimals = WasmI32.shrU(31n - WasmI32.clz(value), 2n) + 1n + sign
+    let decimals = ((31n - WasmI32.clz(value)) >>> 2n) + 1n + sign
     let out = allocateString(decimals)
     utoa32_hex_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
@@ -1035,14 +1039,14 @@ provide let itoa32 = (value, radix) => {
     utoa64_any_core(out + 8n, val64, decimals, radix)
     WasmI32.toGrain(out): String
   }
-  if (WasmI32.ne(sign, 0n))
-    WasmI32.store8(WasmI32.fromGrain(out), _CHAR_CODE_MINUS, 8n)
+  if (sign != 0n) WasmI32.store8(WasmI32.fromGrain(out), _CHAR_CODE_MINUS, 8n)
   out
 }
 
 @unsafe
 provide let utoa64 = (value, radix) => {
-  if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
+  from WasmI32 use { (>>>), (<), (>) }
+  if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
     )
@@ -1063,8 +1067,7 @@ provide let utoa64 = (value, radix) => {
       WasmI32.toGrain(out): String
     }
   } else if (radix == 16n) {
-    let decimals = WasmI32.shrU(63n - WasmI32.wrapI64(WasmI64.clz(value)), 2n) +
-      1n
+    let decimals = ((63n - WasmI32.wrapI64(WasmI64.clz(value))) >>> 2n) + 1n
     let out = allocateString(decimals)
     utoa64_hex_core(out + 8n, value, decimals)
     WasmI32.toGrain(out): String
@@ -1078,8 +1081,9 @@ provide let utoa64 = (value, radix) => {
 
 @unsafe
 provide let itoa64 = (value, radix) => {
+  from WasmI32 use { (<), (>) }
   from WasmI64 use { (>>>) }
-  if (WasmI32.ltS(radix, 2n) || WasmI32.gtS(radix, 36n)) {
+  if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
       "toString() radix argument must be between 2 and 36"
     )
@@ -1092,7 +1096,7 @@ provide let itoa64 = (value, radix) => {
     from WasmI64 use { (-) }
     value = 0N - value
   }
-
+  from WasmI32 use { (>>>) }
   let out = if (WasmI64.eqz(value)) {
     "0"
   } else if (radix == 10n) {
@@ -1109,7 +1113,7 @@ provide let itoa64 = (value, radix) => {
       WasmI32.toGrain(out): String
     }
   } else if (radix == 16n) {
-    let decimals = WasmI32.shrU(63n - WasmI32.wrapI64(WasmI64.clz(value)), 2n) +
+    let decimals = ((63n - WasmI32.wrapI64(WasmI64.clz(value))) >>> 2n) +
       1n +
       sign
     let out = allocateString(decimals)
@@ -1167,7 +1171,7 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
     (WasmI64.ltU(rest + ten_kappa, wp_w) ||
       WasmI64.gtU(wp_w - rest, rest + ten_kappa - wp_w))
   ) {
-    from WasmI32 use { sub as (-) }
+    from WasmI32 use { (-) }
     digit -= 1n
     rest += ten_kappa
   }
@@ -1176,12 +1180,13 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
 
 @unsafe
 let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
-  from WasmI64 use { (>>>) }
+  from WasmI32 use { (>) }
   from WasmI64 use {
     (+) as addWasmI64,
     (-) as subWasmI64,
     (&) as andWasmI64,
     (<<),
+    (>>>),
   }
   let mut delta = delta
   let one_exp = 0n - mp_exp
@@ -1198,7 +1203,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
 
   let mut done = false
 
-  while (WasmI32.gtS(kappa, 0n)) {
+  while (kappa > 0n) {
     let mut d = 0n
     match (kappa) {
       10n => {
@@ -1246,7 +1251,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
       },
     }
 
-    if (WasmI32.ne(d | len, 0n)) {
+    if ((d | len) != 0n) {
       WasmI32.store8(buffer + len, _CHAR_CODE_0 + (d & 0xffn), 0n)
       len += 1n
     }
@@ -1257,7 +1262,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
       p2
     )
     if (WasmI64.leU(tmp, delta)) {
-      from WasmI32 use { shl as shlWasmI32 }
+      from WasmI32 use { (<<) as shlWasmI32 }
       _K += kappa
       grisuRound(
         buffer,
@@ -1293,7 +1298,7 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
       p2 = andWasmI64(p2, mask)
       kappa -= 1n
       if (WasmI64.ltU(p2, delta)) {
-        from WasmI32 use { shl as (<<) }
+        from WasmI32 use { (<<) }
         _K += kappa
         wp_w_frc *= WasmI64.extendI32U(
           WasmI32.load(get_POWERS10() + ((0n - kappa) << 2n), 0n)
@@ -1307,8 +1312,9 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
 
 @unsafe
 let genExponent = (buffer, k) => {
+  from WasmI32 use { (<) }
   let mut k = k
-  let sign = WasmI32.ltS(k, 0n)
+  let sign = k < 0n
   if (sign) k = 0n - k
   let decimals = decimalCount32(k) + 1n
   utoa32_dec_core(buffer, k, decimals)
@@ -1318,6 +1324,7 @@ let genExponent = (buffer, k) => {
 
 @unsafe
 let grisu2 = (value, buffer, sign) => {
+  from WasmI32 use { (>>) }
   from WasmI64 use {
     (==),
     (+) as addWasmI64,
@@ -1360,8 +1367,8 @@ let grisu2 = (value, buffer, sign) => {
   k += if (neWasmF64(WasmF64.convertI32S(k), dk)) 1n
     else 0n // conversion with ceil
 
-  let index = WasmI32.shrS(k, 3n) + 1n
-  from WasmI32 use { shl as (<<) }
+  let index = (k >> 3n) + 1n
+  from WasmI32 use { (<<) }
   _K = 348n - (index << 3n) // decimal exponent doesn't need lookup table
   let _frc_pow = WasmI64.load(get_FRC_POWERS() + (index << 3n), 0n)
   let _exp_pow = WasmI32.load16S(get_EXP_POWERS() + (index << 1n), 0n)
@@ -1387,30 +1394,31 @@ let grisu2 = (value, buffer, sign) => {
 
 @unsafe
 let prettify = (buffer, length, k) => {
+  from WasmI32 use { (<), (<=), (>) }
   let mut length = length
   let kk = length + k
   if (WasmI32.eqz(k)) {
     WasmI32.store16(buffer + length, _CHAR_CODE_DOT | _CHAR_CODE_0 << 8n, 0n)
     length + 2n
-  } else if (WasmI32.leS(length, kk) && WasmI32.leS(kk, 21n)) {
+  } else if (length <= kk && kk <= 21n) {
     // 1234e7 -> 12340000000
-    for (let mut i = length; WasmI32.ltS(i, kk); i += 1n) {
+    for (let mut i = length; i < kk; i += 1n) {
       WasmI32.store8(buffer + i, _CHAR_CODE_0, 0n)
     }
     WasmI32.store16(buffer + kk, _CHAR_CODE_DOT | _CHAR_CODE_0 << 8n, 0n)
     kk + 2n
-  } else if (WasmI32.gtS(kk, 0n) && WasmI32.leS(kk, 21n)) {
+  } else if (kk > 0n && kk <= 21n) {
     // 1234e-2 -> 12.34
     let ptr = buffer + kk
     Memory.copy(ptr + 1n, ptr, 0n - k)
     WasmI32.store8(buffer + kk, _CHAR_CODE_DOT, 0n)
     length + 1n
-  } else if (WasmI32.ltS(-6n, kk) && WasmI32.leS(kk, 0n)) {
+  } else if (-6n < kk && kk <= 0n) {
     // 1234e-6 -> 0.001234
     let offset = 2n - kk
     Memory.copy(buffer + offset, buffer, length)
     WasmI32.store16(buffer, _CHAR_CODE_0 | _CHAR_CODE_DOT << 8n, 0n)
-    for (let mut i = 2n; WasmI32.ltS(i, offset); i += 1n) {
+    for (let mut i = 2n; i < offset; i += 1n) {
       WasmI32.store8(buffer + i, _CHAR_CODE_0, 0n)
     }
     length + offset

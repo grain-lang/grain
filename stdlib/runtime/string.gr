@@ -3,22 +3,22 @@ module String
 
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use {
-  add as (+),
-  sub as (-),
-  mul as (*),
-  divS as (/),
+  (+),
+  (-),
+  (*),
+  (/),
   remS as (%),
-  shl as (<<),
-  shrS as (>>),
-  shrU as (>>>),
-  and as (&),
-  or as (|),
-  eq as (==),
-  ne as (!=),
-  geS as (>=),
-  gtS as (>),
-  leS as (<=),
-  ltS as (<),
+  (<<),
+  (>>),
+  (&),
+  (>>>),
+  (|),
+  (==),
+  (!=),
+  (>=),
+  (>),
+  (<=),
+  (<),
 }
 include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/wasmf32" as WasmF32

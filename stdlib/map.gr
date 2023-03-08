@@ -428,16 +428,18 @@ provide let fromList = list => {
  */
 @unsafe
 provide let toArray: Map<a, b> -> Array<(a, b)> = map => {
+  from WasmI32 use { (*) }
   let length = untagSimpleNumber(map.size)
   let array = WasmI32.toGrain(allocateArray(length))
   @unsafe
   let reducer = (i, key, value) => {
+    from WasmI32 use { (+) as addWasmI32 }
     // Assign the values into the array.
     // We store them directly to prevent GC on uninitialized array data.
     let array = WasmI32.fromGrain(array)
     let item = (key, value)
     WasmI32.store(
-      WasmI32.add(array, WasmI32.mul(untagSimpleNumber(i), 4n)),
+      addWasmI32(array, untagSimpleNumber(i) * 4n),
       Memory.incRef(WasmI32.fromGrain(item)),
       8n
     )

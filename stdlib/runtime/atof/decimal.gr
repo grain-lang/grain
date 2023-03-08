@@ -100,8 +100,9 @@ provide let _DECIMAL_POINT_RANGE = 2047n
 
 @unsafe
 let new = () => {
+  from WasmI32 use { (+) }
   let digits = allocateBytes(_MAX_DIGITS)
-  Memory.fill(WasmI32.add(digits, 8n), 0n, _MAX_DIGITS)
+  Memory.fill(digits + 8n, 0n, _MAX_DIGITS)
   let digits = WasmI32.toGrain(digits)
   { numDigits: 0l, decimalPoint: 0l, truncated: false, digits }
 }
@@ -109,19 +110,19 @@ let new = () => {
 // Append a digit to the buffer.
 @unsafe
 provide let tryAddDigit = (d, digit) => {
-  from WasmI32 use { add as (+) }
+  from WasmI32 use { (+) }
   let numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
   if (WasmI32.ltU(numDigits, _MAX_DIGITS)) {
     let digits = WasmI32.fromGrain(d.digits)
     WasmI32.store8(digits + numDigits, digit, 8n)
   }
-  d.numDigits = WasmI32.toGrain(newInt32(WasmI32.add(numDigits, 1n)))
+  d.numDigits = WasmI32.toGrain(newInt32(numDigits + 1n))
 }
 
 // Trim trailing zeros from the buffer.
 @unsafe
 let trim = d => {
-  from WasmI32 use { add as (+), sub as (-), eq as (==), ne as (!=) }
+  from WasmI32 use { (+), (-), (==), (!=) }
   // Calls to `trim` in this module are fine because:
   //
   //  1. `parseDecimal` sets `numDigits` to a max of `_MAX_DIGITS`.
@@ -142,16 +143,7 @@ let trim = d => {
 
 @unsafe
 provide let round = d => {
-  from WasmI32 use {
-    add as (+),
-    sub as (-),
-    and as (&),
-    ltS as (<),
-    gtS as (>),
-    geS as (>=),
-    eq as (==),
-    ne as (!=),
-  }
+  from WasmI32 use { (+), (-), (&), (<), (>), (>=), (==), (!=) }
   from WasmI64 use { (+) as addWasmI64, (*) }
   let digits = WasmI32.fromGrain(d.digits)
   let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
@@ -190,7 +182,7 @@ let mut _TABLE = -1n
 
 @unsafe
 provide let get_TABLE = () => {
-  from WasmI32 use { eq as (==) }
+  from WasmI32 use { (==) }
   if (_TABLE == -1n) {
     _TABLE = Memory.malloc(130n)
     WasmI32.store16(_TABLE, 0x0000n, 0n)
@@ -267,7 +259,7 @@ let mut _TABLE_POW5 = -1n
 
 @unsafe
 provide let get_TABLE_POW5 = () => {
-  from WasmI32 use { eq as (==) }
+  from WasmI32 use { (==) }
   // formatter-ignore
   if (_TABLE_POW5 == -1n) {
     _TABLE_POW5 = Memory.malloc(0x051Cn)
@@ -321,16 +313,7 @@ provide let get_TABLE_POW5 = () => {
 
 @unsafe
 let numberOfDigitsDecimalLeftShift = (d, shift) => {
-  from WasmI32 use {
-    add as (+),
-    sub as (-),
-    and as (&),
-    ltU as (<),
-    geU as (>=),
-    eq as (==),
-    shrU as (>>),
-    shl as (<<),
-  }
+  from WasmI32 use { (+), (-), (&), ltU as (<), geU as (>=), (==), (>>>), (<<) }
 
   let table = get_TABLE()
   let tablePow5 = get_TABLE_POW5()
@@ -341,7 +324,7 @@ let numberOfDigitsDecimalLeftShift = (d, shift) => {
   let shift = (shift & 63n) << 1n
   let x_a = WasmI32.load16U(table + shift, 0n)
   let x_b = WasmI32.load16U(table + shift, 2n)
-  let mut numNewDigits = x_a >> 11n
+  let mut numNewDigits = x_a >>> 11n
   let pow5_a = 0x7FFn & x_a
   let pow5_b = 0x7FFn & x_b
   let offset = pow5_a
@@ -366,15 +349,7 @@ let numberOfDigitsDecimalLeftShift = (d, shift) => {
 // Computes decimal * 2^shift.
 @unsafe
 provide let leftShift = (d, shift) => {
-  from WasmI32 use {
-    add as (+),
-    sub as (-),
-    and as (&),
-    ltS as (<),
-    geS as (>=),
-    eq as (==),
-    ne as (!=),
-  }
+  from WasmI32 use { (+), (-), (&), (<), (>=), (==), (!=) }
 
   from WasmI64 use {
     (+) as addWasmI64,
@@ -423,7 +398,7 @@ provide let leftShift = (d, shift) => {
       n = quotient
     }
     numDigits += numNewDigits
-    from WasmI32 use { gtS as (>) }
+    from WasmI32 use { (>) }
     if (numDigits > _MAX_DIGITS) {
       numDigits = _MAX_DIGITS
     }
@@ -438,16 +413,7 @@ provide let leftShift = (d, shift) => {
 // Computes decimal * 2^-shift.
 @unsafe
 provide let rightShift = (d, shift) => {
-  from WasmI32 use {
-    add as (+),
-    sub as (-),
-    and as (&),
-    ltS as (<),
-    gtS as (>),
-    geS as (>=),
-    eq as (==),
-    ne as (!=),
-  }
+  from WasmI32 use { (+), (-), (&), (<), (>), (>=), (==), (!=) }
 
   from WasmI64 use {
     (+) as addWasmI64,
@@ -528,17 +494,7 @@ provide let rightShift = (d, shift) => {
 // Parse a big integer representation of the float as a decimal.
 @unsafe
 provide let parseDecimal = (s: String) => {
-  from WasmI32 use {
-    add as (+),
-    sub as (-),
-    mul as (*),
-    and as (&),
-    ltS as (<),
-    gtS as (>),
-    geS as (>=),
-    eq as (==),
-    ne as (!=),
-  }
+  from WasmI32 use { (+), (-), (*), (&), (<), (>), (>=), (==), (!=) }
 
   let d = new()
   let s = WasmI32.fromGrain(s)
