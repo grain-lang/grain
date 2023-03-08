@@ -1080,7 +1080,7 @@ Returns:
 
 Throws:
 
-`IndexOutOfBounds(String)`
+`IndexOutOfBounds`
 
 * When the arrays have different sizes
 
@@ -1120,7 +1120,7 @@ Returns:
 
 Throws:
 
-`IndexOutOfBounds(String)`
+`IndexOutOfBounds`
 
 * When the arrays have different sizes
 

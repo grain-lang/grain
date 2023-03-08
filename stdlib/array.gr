@@ -789,7 +789,7 @@ provide let unique = array => {
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing indexed pairs of `(a, b)`
  *
- * @throws IndexOutOfBounds(String): When the arrays have different sizes
+ * @throws IndexOutOfBounds: When the arrays have different sizes
  *
  * @since v0.4.0
  * @history v0.6.0: Support zipping arrays of different sizes
@@ -818,7 +818,7 @@ provide let zip = (array1: Array<a>, array2: Array<b>) => {
  * @param array2: The array whose elements will each be passed to the function as the second argument
  * @returns The new array containing elements derived from applying the function to pairs of input array elements
  *
- * @throws IndexOutOfBounds(String): When the arrays have different sizes
+ * @throws IndexOutOfBounds: When the arrays have different sizes
  *
  * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
  * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
