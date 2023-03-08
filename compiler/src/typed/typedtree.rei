@@ -468,7 +468,6 @@ and expression_desc =
       constructor_expression,
     )
   | TExpBlock(list(expression))
-  | TExpNull
 
 and constructor_expression =
   | TExpConstrTuple(list(expression))

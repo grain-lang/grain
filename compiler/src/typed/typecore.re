@@ -601,8 +601,7 @@ let rec is_nonexpansive = exp =>
   switch (exp.exp_desc) {
   | TExpIdent(_)
   | TExpConstant(_)
-  | TExpLambda(_)
-  | TExpNull => true
+  | TExpLambda(_) => true
   | TExpTuple(es) => List.for_all(is_nonexpansive, es)
   | TExpLet(rec_flag, Immutable, binds) =>
     List.for_all(vb => is_nonexpansive(vb.vb_expr), binds)
