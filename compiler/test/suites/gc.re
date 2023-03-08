@@ -13,15 +13,16 @@ let makeGcProgram = (program, heap_size) => {
 
     @disableGC
     let leak = () => {
+      from WasmI32 use { (+), (-) }
       // find current memory pointer, subtract space for two malloc headers + 1 GC header
-      let offset = WasmI32.sub(Memory.malloc(8n), 24n)
+      let offset = Memory.malloc(8n) - 24n
       // Calculate how much memory is left
-      let availableMemory = WasmI32.sub(offset, WasmI32.add(Malloc._RESERVED_RUNTIME_SPACE, heapBase))
+      let availableMemory = offset - (Malloc._RESERVED_RUNTIME_SPACE + heapBase)
       // Calculate how much memory to leak
-      let toLeak = WasmI32.sub(availableMemory, %dn)
+      let toLeak = availableMemory - %dn
       // Memory is not reclaimed due to no gc context
       // This will actually leak 16 extra bytes because of the headers
-      Memory.malloc(WasmI32.sub(toLeak, 16n));
+      Memory.malloc(toLeak - 16n);
       void
     }
     leak();
