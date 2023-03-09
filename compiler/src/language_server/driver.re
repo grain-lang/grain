@@ -43,6 +43,9 @@ let process = msg => {
   | Formatting(id, params) when is_initialized^ =>
     Formatting.process(~id, ~compiled_code, ~documents, params);
     Reading;
+  | Definition(id, params) when is_initialized^ =>
+    Definition.process(~id, ~compiled_code, ~documents, params);
+    Reading;
   | SetTrace(trace_value) =>
     Trace.set_level(trace_value);
     Reading;

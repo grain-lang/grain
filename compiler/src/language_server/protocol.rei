@@ -40,6 +40,19 @@ type location = {
   range,
 };
 
+// https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#locationLink
+[@deriving yojson]
+type location_link = {
+  [@key "originSelectionRange"]
+  origin_selection_range: range,
+  [@key "targetUri"]
+  target_uri: uri,
+  [@key "targetRange"]
+  target_range: range,
+  [@key "targetSelectionRange"]
+  target_selection_range: range,
+};
+
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#diagnosticRelatedInformation
 [@deriving yojson]
 type diagnostic_related_information = {
@@ -140,6 +153,13 @@ type notification_message = {
   jsonrpc: version,
   method: string,
   params: Yojson.Safe.t,
+};
+
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#definitionClientCapabilities
+[@deriving yojson({strict: false})]
+type definition_client_capabilities = {
+  [@key "linkSupport"]
+  link_support: bool,
 };
 
 let request: unit => result(request_message, string);

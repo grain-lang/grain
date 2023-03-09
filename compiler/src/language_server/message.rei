@@ -7,6 +7,7 @@ type t =
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
+  | Definition(Protocol.message_id, Definition.RequestParams.t)
   | SetTrace(Protocol.trace_value)
   | Unsupported
   | Error(string);
