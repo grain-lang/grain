@@ -204,7 +204,6 @@ module MakeMap =
     let exp_extra = List.map(map_exp_extra, exp.exp_extra);
     let exp_desc =
       switch (exp.exp_desc) {
-      | TExpNull
       | TExpUse(_)
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc

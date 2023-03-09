@@ -157,7 +157,6 @@ module E = {
         },
       )
     | PExpBlock(el) => block(~loc, ~attributes, List.map(sub.expr(sub), el))
-    | PExpNull => null(~loc, ~attributes, ())
     | PExpConstraint(e, t) =>
       constraint_(~loc, ~attributes, sub.expr(sub, e), sub.typ(sub, t))
     | PExpUse(id, u) =>

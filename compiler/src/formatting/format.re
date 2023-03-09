@@ -3845,7 +3845,6 @@ and print_expression_inner =
         Doc.space,
         use,
       ]);
-    | /** Used for modules without body expressions */ PExpNull => Doc.nil
     };
 
   expression_doc;
