@@ -120,10 +120,7 @@ let parse = (~name=?, lexbuf, source): Parsetree.parsed_program => {
     let token = _ => Wrapped_lexer.token(lexer);
     Lexer.reset();
     let program =
-      try({
-        ...parse_program(token, lexbuf),
-        comments: Lexer.consume_comments(),
-      }) {
+      try({...parse_program(token), comments: Lexer.consume_comments()}) {
       | Sedlexing.MalFormed =>
         raise(Ast_helper.BadEncoding(Location.curr(lexbuf)))
       | Parser.Error =>

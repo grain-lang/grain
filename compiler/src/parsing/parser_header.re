@@ -4,10 +4,6 @@ open Parsetree;
 open Ast_helper;
 open Grain_utils;
 
-/* Used for error messages. */
-let first_loc = ref(Location.dummy_loc);
-let last_loc = ref(Location.dummy_loc);
-
 let make_line_comment = (source, loc) => {
   let content = String_utils.slice(~first=2, source) |> String.trim;
   Line({cmt_content: content, cmt_source: source, cmt_loc: loc});
@@ -35,9 +31,7 @@ let make_doc_comment = (source, loc) => {
 };
 
 let to_loc = ((loc_start, loc_end)) => {
-  let ret = {loc_start, loc_end, loc_ghost: false};
-  last_loc := ret;
-  ret;
+  {loc_start, loc_end, loc_ghost: false};
 };
 
 let fix_tyvar_mapper = super => {
@@ -107,16 +101,19 @@ let make_module_alias = ident => {
   };
 };
 
-let make_program = (module_name, statements) => {
+let make_program = (~loc, module_name, statements) => {
+  // We manually set the first location to the explicit start of the program
+  // rather than at the first token. The end is coverted by the EOF token.
   let prog_loc = {
-    loc_start: first_loc^.loc_end,
-    loc_end: last_loc^.loc_end,
-    loc_ghost: false,
+    ...loc,
+    loc_start: {
+      ...Location.start_pos,
+      pos_fname: loc.loc_end.pos_fname,
+    },
   };
   fix_blocks({module_name, statements, comments: [], prog_loc});
 };
 
-let parse_program = (program, token, lexbuf) => {
-  first_loc := Location.curr(lexbuf);
+let parse_program = (program, token) => {
   program(token);
 };

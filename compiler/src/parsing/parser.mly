@@ -682,5 +682,5 @@ module_header:
   | MODULE UIDENT { mkstr $loc($2) $2 }
 
 program:
-  | opt_eols module_header eos toplevel_stmts EOF { make_program $2 $4 }
-  | opt_eols module_header eos? EOF { make_program $2 [] }
+  | opt_eols module_header eos toplevel_stmts EOF { make_program ~loc:(to_loc $loc) $2 $4 }
+  | opt_eols module_header eos? EOF { make_program ~loc:(to_loc $loc) $2 [] }

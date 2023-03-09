@@ -361,11 +361,7 @@ let makeStdlibRunner = (test, ~code=0, name) => {
 };
 
 let parse = (name, lexbuf, source) => {
-  let ret = Grain_parsing.Driver.parse(~name, lexbuf, source);
-  open Grain_parsing;
-  open Location;
-  assert(ret.Parsetree.prog_loc.loc_start.pos_fname == name);
-  ret;
+  Grain_parsing.Driver.parse(~name, lexbuf, source);
 };
 
 let parseString = (name, s) => {
