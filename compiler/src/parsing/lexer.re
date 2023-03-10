@@ -126,6 +126,14 @@ let unsigned_int = [%sedlex.regexp? dec_int | hex_int | oct_int | bin_int];
 let dec_float_exp = [%sedlex.regexp?
   ('e' | 'E', Opt('+' | '-'), dec_digit, Star(dec_digit | '_'))
 ];
+let hex_float_exp = [%sedlex.regexp?
+  ('p' | 'P', Opt('+' | '-'), dec_digit, Star(dec_digit | '_'))
+];
+
+let hex_float_decimal = [%sedlex.regexp? ('.', hex_digit, Star(hex_digit))];
+
+let hex_float_integral = [%sedlex.regexp? hex_int];
+
 let dec_float_decimal = [%sedlex.regexp?
   ('.', dec_digit, Star(dec_digit | '_'))
 ];
@@ -135,6 +143,8 @@ let dec_float_integral = [%sedlex.regexp?
 let dec_float_alphabetic = [%sedlex.regexp? "Infinity" | "NaN"];
 
 let dec_float = [%sedlex.regexp?
+  (hex_float_integral, hex_float_decimal, hex_float_exp) |
+  (hex_int, hex_float_exp) |
   (dec_float_integral, dec_float_decimal, Opt(dec_float_exp)) |
   (dec_float_integral, dec_float_exp) |
   dec_float_alphabetic
