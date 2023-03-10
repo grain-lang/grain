@@ -56,15 +56,22 @@ e : Number
 
 Euler's number represented as a Number value.
 
-### Number.**add**
+### Number.**(+)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (Number, Number) -> Number
+(+) : (Number, Number) -> Number
 ```
 
 Computes the sum of its operands.
@@ -82,15 +89,22 @@ Returns:
 |----|-----------|
 |`Number`|The sum of the two operands|
 
-### Number.**sub**
+### Number.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (Number, Number) -> Number
+(-) : (Number, Number) -> Number
 ```
 
 Computes the difference of its operands.
@@ -108,15 +122,22 @@ Returns:
 |----|-----------|
 |`Number`|The difference of the two operands|
 
-### Number.**mul**
+### Number.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (Number, Number) -> Number
+(*) : (Number, Number) -> Number
 ```
 
 Computes the product of its operands.
@@ -134,15 +155,22 @@ Returns:
 |----|-----------|
 |`Number`|The product of the two operands|
 
-### Number.**div**
+### Number.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (Number, Number) -> Number
+(/) : (Number, Number) -> Number
 ```
 
 Computes the quotient of its operands.
@@ -160,15 +188,22 @@ Returns:
 |----|-----------|
 |`Number`|The quotient of the two operands|
 
-### Number.**pow**
+### Number.**(\*\*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally named `pow`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-pow : (Number, Number) -> Number
+(**) : (Number, Number) -> Number
 ```
 
 Computes the exponentiation of the given base and power.

@@ -167,15 +167,22 @@ Returns:
 |----|-----------|
 |`BigInt`|The operand's absolute value|
 
-### BigInt.**add**
+### BigInt.**(+)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (BigInt, BigInt) -> BigInt
+(+) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the sum of its operands.
@@ -193,15 +200,22 @@ Returns:
 |----|-----------|
 |`BigInt`|The sum of the two operands|
 
-### BigInt.**sub**
+### BigInt.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (BigInt, BigInt) -> BigInt
+(-) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the difference of its operands.
@@ -219,15 +233,22 @@ Returns:
 |----|-----------|
 |`BigInt`|The difference of the two operands|
 
-### BigInt.**mul**
+### BigInt.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (BigInt, BigInt) -> BigInt
+(*) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the product of its operands.
@@ -245,15 +266,22 @@ Returns:
 |----|-----------|
 |`BigInt`|The product of the two operands|
 
-### BigInt.**div**
+### BigInt.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (BigInt, BigInt) -> BigInt
+(/) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the quotient of its operands using signed (truncated) division
@@ -351,15 +379,22 @@ Returns:
 |----|-----------|
 |`BigInt`|The greatest common divisor of its operands|
 
-### BigInt.**shl**
+### BigInt.**(<<)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `shl`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-shl : (BigInt, Int32) -> BigInt
+(<<) : (BigInt, Int32) -> BigInt
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -377,15 +412,22 @@ Returns:
 |----|-----------|
 |`BigInt`|The shifted value|
 
-### BigInt.**shr**
+### BigInt.**(>>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `shr`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-shr : (BigInt, Int32) -> BigInt
+(>>) : (BigInt, Int32) -> BigInt
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -428,15 +470,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### BigInt.**eq**
+### BigInt.**(==)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `eq`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-eq : (BigInt, BigInt) -> Bool
+(==) : (BigInt, BigInt) -> Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -454,15 +503,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### BigInt.**ne**
+### BigInt.**(!=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `ne`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-ne : (BigInt, BigInt) -> Bool
+(!=) : (BigInt, BigInt) -> Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -480,15 +536,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
-### BigInt.**lt**
+### BigInt.**(<)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `lt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lt : (BigInt, BigInt) -> Bool
+(<) : (BigInt, BigInt) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -506,15 +569,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### BigInt.**lte**
+### BigInt.**(<=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `lte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lte : (BigInt, BigInt) -> Bool
+(<=) : (BigInt, BigInt) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -532,15 +602,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### BigInt.**gt**
+### BigInt.**(>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `gt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gt : (BigInt, BigInt) -> Bool
+(>) : (BigInt, BigInt) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -558,15 +635,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### BigInt.**gte**
+### BigInt.**(>=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `gte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gte : (BigInt, BigInt) -> Bool
+(>=) : (BigInt, BigInt) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -609,15 +693,22 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing the inverted bits of the given value|
 
-### BigInt.**land**
+### BigInt.**(&)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `land`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-land : (BigInt, BigInt) -> BigInt
+(&) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -635,15 +726,22 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### BigInt.**lor**
+### BigInt.**(|)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `lor`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lor : (BigInt, BigInt) -> BigInt
+(|) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -661,15 +759,22 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### BigInt.**lxor**
+### BigInt.**(^)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.0</code></td><td>Originally named `lxor`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lxor : (BigInt, BigInt) -> BigInt
+(^) : (BigInt, BigInt) -> BigInt
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.

@@ -80,10 +80,11 @@ provide let abs = (num: BigInt) => {
  * @param num2: The second operand
  * @returns The sum of the two operands
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `add`
  */
 @unsafe
-provide let add = (num1: BigInt, num2: BigInt) => {
+provide let (+) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.add(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -96,10 +97,11 @@ provide let add = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The difference of the two operands
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `sub`
  */
 @unsafe
-provide let sub = (num1: BigInt, num2: BigInt) => {
+provide let (-) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.sub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -112,10 +114,11 @@ provide let sub = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The product of the two operands
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `mul`
  */
 @unsafe
-provide let mul = (num1: BigInt, num2: BigInt) => {
+provide let (*) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.mul(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -131,10 +134,11 @@ provide let mul = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The quotient of its operands
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `div`
  */
 @unsafe
-provide let div = (num1: BigInt, num2: BigInt) => {
+provide let (/) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.quot(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -199,10 +203,11 @@ provide let gcd = (num1: BigInt, num2: BigInt) => {
  * @param places: The number of bits to shift by
  * @returns The shifted value
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `shl`
  */
 @unsafe
-provide let shl = (num: BigInt, places: Int32) => {
+provide let (<<) = (num: BigInt, places: Int32) => {
   let num = WasmI32.fromGrain(num)
   let places = WasmI32.load(WasmI32.fromGrain(places), 4n)
   WasmI32.toGrain(BI.shl(num, places)): BigInt
@@ -215,10 +220,11 @@ provide let shl = (num: BigInt, places: Int32) => {
  * @param places: The amount to shift by
  * @returns The shifted value
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `shr`
  */
 @unsafe
-provide let shr = (num: BigInt, places: Int32) => {
+provide let (>>) = (num: BigInt, places: Int32) => {
   let num = WasmI32.fromGrain(num)
   let places = WasmI32.load(WasmI32.fromGrain(places), 4n)
   WasmI32.toGrain(BI.shrS(num, places)): BigInt
@@ -246,10 +252,11 @@ provide let eqz = (num: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is equal to the second value or `false` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `eq`
  */
 @unsafe
-provide let eq = (num1: BigInt, num2: BigInt) => {
+provide let (==) = (num1: BigInt, num2: BigInt) => {
   let result = BI.eq(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ignore(num1)
   ignore(num2)
@@ -263,10 +270,11 @@ provide let eq = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `ne`
  */
 @unsafe
-provide let ne = (num1: BigInt, num2: BigInt) => {
+provide let (!=) = (num1: BigInt, num2: BigInt) => {
   let result = BI.ne(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ignore(num1)
   ignore(num2)
@@ -280,10 +288,11 @@ provide let ne = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `lt`
  */
 @unsafe
-provide let lt = (num1: BigInt, num2: BigInt) => {
+provide let (<) = (num1: BigInt, num2: BigInt) => {
   let result = BI.lt(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ignore(num1)
   ignore(num2)
@@ -297,10 +306,11 @@ provide let lt = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `lte`
  */
 @unsafe
-provide let lte = (num1: BigInt, num2: BigInt) => {
+provide let (<=) = (num1: BigInt, num2: BigInt) => {
   let result = BI.lte(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ignore(num1)
   ignore(num2)
@@ -314,10 +324,11 @@ provide let lte = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `gt`
  */
 @unsafe
-provide let gt = (num1: BigInt, num2: BigInt) => {
+provide let (>) = (num1: BigInt, num2: BigInt) => {
   let result = BI.gt(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ignore(num1)
   ignore(num2)
@@ -331,10 +342,11 @@ provide let gt = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `gte`
  */
 @unsafe
-provide let gte = (num1: BigInt, num2: BigInt) => {
+provide let (>=) = (num1: BigInt, num2: BigInt) => {
   let result = BI.gte(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ignore(num1)
   ignore(num2)
@@ -361,10 +373,11 @@ provide let lnot = (num: BigInt) => {
  * @param num2: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `land`
  */
 @unsafe
-provide let land = (num1: BigInt, num2: BigInt) => {
+provide let (&) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseAnd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -377,10 +390,11 @@ provide let land = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `lor`
  */
 @unsafe
-provide let lor = (num1: BigInt, num2: BigInt) => {
+provide let (|) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseOr(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
@@ -393,10 +407,11 @@ provide let lor = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
  *
- * @since v0.5.0
+ * @since v0.6.0
+ * @history v0.5.0: Originally named `lxor`
  */
 @unsafe
-provide let lxor = (num1: BigInt, num2: BigInt) => {
+provide let (^) = (num1: BigInt, num2: BigInt) => {
   WasmI32.toGrain(
     BI.bitwiseXor(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
   ): BigInt
