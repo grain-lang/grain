@@ -2,7 +2,6 @@
 module Asserts
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { (==) }
 @unsafe
 primitive heapBase = "@heap.base"
 @unsafe
@@ -12,6 +11,7 @@ primitive typeMetadata = "@heap.type_metadata"
 
 @unsafe
 let doTest = () => {
+  from WasmI32 use { (==) }
   assert heapBase == 0x110000n
   assert heapStart() == 0x1101A8nn
   assert typeMetadata == 0x110008n

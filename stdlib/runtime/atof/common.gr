@@ -32,7 +32,6 @@ module Common
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmi64"
-from WasmI64 use { (<<) }
 include "runtime/unsafe/wasmf64"
 include "runtime/dataStructures"
 from DataStructures use { newInt32, newInt64, newFloat64 }
@@ -63,7 +62,10 @@ provide let _MAX_EXPONENT_FAST_PATH = 22n
 @unsafe
 provide let _MAX_EXPONENT_DISGUISED_FAST_PATH = 37n
 @unsafe
-provide let _MAX_MANTISSA_FAST_PATH = 2N << 52N
+provide let _MAX_MANTISSA_FAST_PATH = {
+  from WasmI64 use { (<<) }
+  2N << 52N
+}
 @unsafe
 provide let _MANTISSA_EXPLICIT_BITS_64 = 52N
 @unsafe
@@ -159,7 +161,7 @@ provide let power = (q: WasmI32) => {
 @unsafe
 provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
   // Adapted from https://www.codeproject.com/Tips/618570/UInt-Multiplication-Squaring
-  from WasmI64 use { (+), (*), (&), (>>>) }
+  from WasmI64 use { (+), (*), (&), (>>>), (<<) }
 
   let aLo = a & 0xffffffffN
   let bLo = b & 0xffffffffN
@@ -184,7 +186,7 @@ provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
 
 @unsafe
 provide let biasedFpToNumber = (fp, negative) => {
-  from WasmI64 use { (|) }
+  from WasmI64 use { (|), (<<) }
   let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
   let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 4n))
   let word = f | e << _MANTISSA_EXPLICIT_BITS_64

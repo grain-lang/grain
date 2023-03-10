@@ -14,7 +14,6 @@ from WasmI32 use {
   (&),
 }
 include "runtime/unsafe/wasmi64"
-from WasmI64 use { (+) as addWasmI64 }
 include "runtime/unsafe/memory"
 include "runtime/unsafe/tags"
 include "runtime/bigint" as BI
@@ -26,6 +25,7 @@ primitive (||) = "@or"
 
 @unsafe
 provide let parseInt = (string: String, radix: Number) => {
+  from WasmI64 use { (+) as addWasmI64 }
   let _CHAR_0 = 0x30n
   let _CHAR_B = 0x42n
   let _CHAR_b = 0x62n
@@ -134,12 +134,13 @@ provide let parseInt = (string: String, radix: Number) => {
     let digit = WasmI64.extendI32U(digit)
 
     if (WasmI32.eqz(isBigInt)) {
+      from WasmI64 use { (+) }
       from WasmI64 use { (*), (<) }
       let prevValue = value
       value *= radix
       // Check for overflow
       // 64-bit int min + 1
-      if (value < addWasmI64(limit, digit)) {
+      if (value < limit + digit) {
         // we overflowed. allocate BigInt and use instead
         isBigInt = 1n
         valueBigInt = BI.makeWrappedUint64(prevValue * -1N)

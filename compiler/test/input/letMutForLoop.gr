@@ -2,10 +2,10 @@ module LetMutForLoop
 
 include "runtime/unsafe/wasmi64"
 include "runtime/debugPrint"
-from WasmI64 use { (+), (<) }
 
 @unsafe
 let foo = () => {
+  from WasmI64 use { (+), (<) }
   for (let mut x = 0N; x < 5N; x += 1N) {
     DebugPrint.printI64(x)
   }
