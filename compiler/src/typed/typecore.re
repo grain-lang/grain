@@ -402,7 +402,7 @@ let option_none = (env, ty, loc) => {
 let extract_option_type = (env, ty) => {
   switch (expand_head(env, ty).desc) {
   | TTyConstr(path, [ty], _) when Path.same(path, Builtin_types.path_option) => ty
-  | _ => assert(false)
+  | _ => failwith("Impossible: option type was not an option")
   };
 };
 
