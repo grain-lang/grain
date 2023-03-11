@@ -519,9 +519,8 @@ module IncludeDeclaration = {
 };
 
 module LambdaArgument = {
-  let mk = (~loc=?, pattern, default) => {
+  let mk = (~loc, pattern, default) => {
     open Asttypes;
-    let pla_loc = Option.value(~default=Location.dummy_loc, loc);
     let label =
       switch (pattern.ppat_desc) {
       | PPatVar(name)
@@ -544,11 +543,11 @@ module LambdaArgument = {
       | (Some(name), None) => Labeled(name)
       | (None, None) => Unlabeled
       | (None, Some(_)) =>
-        raise(SyntaxError(pla_loc, "Default arguments must be named."))
+        raise(SyntaxError(loc, "Default arguments must be named."))
       };
     let pla_pattern = pattern;
     let pla_default = default;
-    {pla_label, pla_default, pla_pattern, pla_loc};
+    {pla_label, pla_default, pla_pattern, pla_loc: loc};
   };
 };
 

@@ -351,7 +351,7 @@ module IncludeDeclaration: {
 };
 
 module LambdaArgument: {
-  let mk: (~loc: loc=?, pattern, option(expression)) => lambda_argument;
+  let mk: (~loc: loc, pattern, option(expression)) => lambda_argument;
 };
 
 module ModuleDeclaration: {
