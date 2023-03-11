@@ -296,6 +296,14 @@ truc()|},
     |},
     "12\n",
   );
+  assertRun(
+    "default_args6",
+    {|
+      let concat = (a=b ++ b, b) => a ++ b
+      print(concat(b="9"))
+    |},
+    "999\n",
+  );
 
   assertRun(
     "labeled_args_typecheck1",
