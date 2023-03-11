@@ -298,8 +298,8 @@ data_typ:
   | qualified_uid %prec _below_infix { Type.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
-  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [{ptyp_arg_label=Unlabeled; ptyp_arg_type=$1; ptyp_arg_loc=(to_loc $loc($1))}] $3 }
-  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [{ptyp_arg_label=Unlabeled; ptyp_arg_type=Type.var $2; ptyp_arg_loc=(to_loc $loc($2))}] $4 }
+  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($1)) Unlabeled $1] $3 }
+  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var $2)] $4 }
   | FUN lparen arg_typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
@@ -307,9 +307,9 @@ typ:
   | data_typ { $1 }
 
 arg_typ:
-  | LIDENT colon typ { {ptyp_arg_label=Labeled (mkstr $loc($1) $1); ptyp_arg_type=$3; ptyp_arg_loc=(to_loc $loc)} }
-  | QUESTION LIDENT colon typ { {ptyp_arg_label=Default (mkstr $loc($2) $2); ptyp_arg_type=$4; ptyp_arg_loc=(to_loc $loc)} }
-  | typ { {ptyp_arg_label=Unlabeled; ptyp_arg_type=$1; ptyp_arg_loc=(to_loc $loc)} }
+  | LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Labeled (mkstr $loc($1) $1)) $3 }
+  | QUESTION LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Default (mkstr $loc($2) $2)) $4 }
+  | typ { TypeArgument.mk ~loc:(to_loc $loc) Unlabeled $1 }
 
 typs:
   | lseparated_nonempty_list(comma, typ) comma? { $1 }

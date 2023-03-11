@@ -350,6 +350,11 @@ module IncludeDeclaration: {
   let mk: (~loc: loc, str, option(str)) => include_declaration;
 };
 
+module TypeArgument: {
+  let mk:
+    (~loc: loc, Asttypes.argument_label, parsed_type) => parsed_type_argument;
+};
+
 module LambdaArgument: {
   let mk: (~loc: loc, pattern, option(expression)) => lambda_argument;
 };

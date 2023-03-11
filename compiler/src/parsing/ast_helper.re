@@ -518,6 +518,12 @@ module IncludeDeclaration = {
   };
 };
 
+module TypeArgument = {
+  let mk = (~loc, label, typ) => {
+    {ptyp_arg_label: label, ptyp_arg_type: typ, ptyp_arg_loc: loc};
+  };
+};
+
 module LambdaArgument = {
   let mk = (~loc, pattern, default) => {
     open Asttypes;
