@@ -58,9 +58,10 @@ provide let e = 2.718281828459045
  * @param y: The second operand
  * @returns The sum of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `add`
  */
-provide let add = (+)
+provide let (+) = (+)
 
 /**
  * Computes the difference of its operands.
@@ -69,9 +70,10 @@ provide let add = (+)
  * @param y: The second operand
  * @returns The difference of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `sub`
  */
-provide let sub = (-)
+provide let (-) = (-)
 
 /**
  * Computes the product of its operands.
@@ -80,9 +82,10 @@ provide let sub = (-)
  * @param y: The second operand
  * @returns The product of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `mul`
  */
-provide let mul = (*)
+provide let (*) = (*)
 
 /**
  * Computes the quotient of its operands.
@@ -91,9 +94,10 @@ provide let mul = (*)
  * @param y: The divisor
  * @returns The quotient of the two operands
  *
- * @since v0.4.0
+ * @since v0.6.0
+ * @history v0.4.0: Originally named `div`
  */
-provide let div = (/)
+provide let (/) = (/)
 
 /**
  * Computes the exponentiation of the given base and power.
@@ -102,9 +106,10 @@ provide let div = (/)
  * @param power: The exponent number
  * @returns The base raised to the given power
  *
- * @since v0.5.4
+ * @since v0.6.0
+ * @history v0.5.4: Originally named `pow`
  */
-provide let pow = (**)
+provide let (**) = (**)
 
 /**
  * Computes the exponentiation of Euler's number to the given power.
@@ -115,7 +120,7 @@ provide let pow = (**)
  * @since v0.5.4
  */
 provide let exp = power => {
-  if (power == 0) 1 else pow(e, power)
+  if (power == 0) 1 else e ** power
 }
 /**
  * Computes the square root of its operand.
@@ -613,7 +618,7 @@ provide let rec gamma = z => {
       }
 
       let t = z + g + 0.5
-      output = sqrt(2 * pi) * pow(t, z + 0.5) * exp(t * -1) * x
+      output = sqrt(2 * pi) * (t ** (z + 0.5)) * exp(t * -1) * x
     }
     if (abs(output) == Infinity) Infinity else output
   }
