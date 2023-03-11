@@ -12,7 +12,7 @@ from Uint64 use {
   (|),
   (^),
   (<<),
-  (>>),
+  (>>>),
   clz,
   ctz,
   popcnt,
@@ -57,12 +57,12 @@ assert 1uL << 3uL == 8uL
 assert 2uL << 63uL == 0uL
 assert 24uL << 1uL == 48uL
 
-assert 4uL >> 1uL == 2uL
-assert 4uL >> 2uL == 1uL
-assert 4uL >> 3uL == 0uL
-assert 4uL >> 4uL == 0uL
-assert 24uL >> 1uL == 12uL
-assert 0xffffffffffffffffuL >> 63uL == 1uL
+assert 4uL >>> 1uL == 2uL
+assert 4uL >>> 2uL == 1uL
+assert 4uL >>> 3uL == 0uL
+assert 4uL >>> 4uL == 0uL
+assert 24uL >>> 1uL == 12uL
+assert 0xffffffffffffffffuL >>> 63uL == 1uL
 
 assert clz(0b11uL) == 62uL
 assert ctz(0b11000uL) == 3uL

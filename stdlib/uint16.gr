@@ -158,7 +158,7 @@ provide let (/) = (x: Uint16, y: Uint16) => {
  * @since v0.6.0
  */
 @unsafe
-provide let (%) = (x: Uint16, y: Uint16) => {
+provide let rem = (x: Uint16, y: Uint16) => {
   let x = untagUint16(x)
   let y = untagUint16(y)
   let val = WasmI32.remU(x, y)
@@ -194,7 +194,7 @@ provide let (<<) = (value: Uint16, amount: Uint16) => {
  * @since v0.6.0
  */
 @unsafe
-provide let (>>) = (value: Uint16, amount: Uint16) => {
+provide let (>>>) = (value: Uint16, amount: Uint16) => {
   // Trick: do not shift `value` right, just correct tag afterwards
   let x = WasmI32.fromGrain(value)
   let y = untagUint16(amount)

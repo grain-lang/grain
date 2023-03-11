@@ -155,7 +155,7 @@ provide let nextUint32InRange = (random: Random, low: Uint32, high: Uint32) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
   from Uint32 use *
   let range = high - low - 1ul
-  let mask = lnot(0ul) >> clz(range | 1ul)
+  let mask = lnot(0ul) >>> clz(range | 1ul)
   let mut x = nextUint32(random) & mask
   let mut iters = 0ul
   while (x > range) {
@@ -181,7 +181,7 @@ provide let nextUint64InRange = (random: Random, low: Uint64, high: Uint64) => {
   // Algorithm source: https://www.pcg-random.org/posts/bounded-rands.html#bitmask-with-rejection-unbiased-apples-method
   from Uint64 use *
   let range = high - low - 1uL
-  let mask = lnot(0uL) >> clz(range | 1uL)
+  let mask = lnot(0uL) >>> clz(range | 1uL)
   let mut x = nextUint64(random) & mask
   while (x > range) {
     x = nextUint64(random) & mask

@@ -246,7 +246,7 @@ Returns:
 |----|-----------|
 |`Uint16`|The quotient of its operands|
 
-### Uint16.**(%)**
+### Uint16.**rem**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (Uint16, Uint16) -> Uint16
+rem : (Uint16, Uint16) -> Uint16
 ```
 
 Computes the remainder of the division of its operands.
@@ -298,7 +298,7 @@ Returns:
 |----|-----------|
 |`Uint16`|The shifted value|
 
-### Uint16.**(>>)**
+### Uint16.**(>>>)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -306,7 +306,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>) : (Uint16, Uint16) -> Uint16
+(>>>) : (Uint16, Uint16) -> Uint16
 ```
 
 Shifts the bits of the value right by the given number of bits.

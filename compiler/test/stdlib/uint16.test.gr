@@ -12,12 +12,12 @@ from Uint16 use {
   (-),
   (*),
   (/),
-  (%),
+  rem as (%),
   (&),
   (|),
   (^),
   (<<),
-  (>>),
+  (>>>),
 }
 
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
@@ -70,9 +70,9 @@ assert 1uS << 1uS == 2uS
 assert 1uS << 16uS == 0uS
 assert 24uS << 1uS == 48uS
 
-assert 4uS >> 1uS == 2uS
-assert 4uS >> 2uS == 1uS
-assert 4uS >> 3uS == 0uS
+assert 4uS >>> 1uS == 2uS
+assert 4uS >>> 2uS == 1uS
+assert 4uS >>> 3uS == 0uS
 
 assert incr(0uS) == 1uS
 assert incr(0xffffuS) == 0uS

@@ -172,7 +172,7 @@ provide let (/) = (x: Uint64, y: Uint64) => {
  * @since v0.6.0
  */
 @unsafe
-provide let (%) = (x: Uint64, y: Uint64) => {
+provide let rem = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
   let ptr = newUint64(WasmI64.remU(xv, yv))
@@ -240,7 +240,7 @@ provide let (<<) = (value: Uint64, amount: Uint64) => {
  * @since v0.6.0
  */
 @unsafe
-provide let (>>) = (value: Uint64, amount: Uint64) => {
+provide let (>>>) = (value: Uint64, amount: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
   let ptr = newUint64(WasmI64.shrU(xv, yv))

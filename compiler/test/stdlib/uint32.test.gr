@@ -12,7 +12,7 @@ from Uint32 use {
   (|),
   (^),
   (<<),
-  (>>),
+  (>>>),
   clz,
   ctz,
   popcnt,
@@ -55,11 +55,11 @@ assert 1ul << 3ul == 8ul
 assert 2ul << 63ul == 0ul
 assert 24ul << 1ul == 48ul
 
-assert 4ul >> 1ul == 2ul
-assert 4ul >> 2ul == 1ul
-assert 4ul >> 3ul == 0ul
-assert 1ul >> 63ul == 0ul
-assert 0xfffffffful >> 63ul == 1ul
+assert 4ul >>> 1ul == 2ul
+assert 4ul >>> 2ul == 1ul
+assert 4ul >>> 3ul == 0ul
+assert 1ul >>> 63ul == 0ul
+assert 0xfffffffful >>> 63ul == 1ul
 
 assert clz(0b11ul) == 30ul
 assert ctz(0b11000ul) == 3ul
