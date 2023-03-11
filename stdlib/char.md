@@ -213,3 +213,107 @@ Returns:
 |----|-----------|
 |`String`|A string containing the given character|
 
+### Char.**(<)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<) : (Char, Char) -> Bool
+```
+
+Checks if the first value is less than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first value|
+|`y`|`Char`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+### Char.**(<=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<=) : (Char, Char) -> Bool
+```
+
+Checks if the first value is less than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first value|
+|`y`|`Char`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+### Char.**(>)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>) : (Char, Char) -> Bool
+```
+
+Checks if the first value is greater than the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first value|
+|`y`|`Char`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+
+### Char.**(>=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>=) : (Char, Char) -> Bool
+```
+
+Checks if the first value is greater than or equal to the second value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first value|
+|`y`|`Char`|The second value|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
