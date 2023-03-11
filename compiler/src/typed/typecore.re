@@ -1016,7 +1016,7 @@ and type_expect_ =
         (arg, (args, labels, prelude)) => {
           switch (arg.pla_default) {
           | Some(default) =>
-            let default_value_name = mknoloc("<default_value>");
+            let default_value_name = mknoloc("$default_value");
             let default_loc = default.pexp_loc;
             let scases = [
               MatchBranch.mk(
