@@ -1002,10 +1002,14 @@ and type_expect_ =
     });
   | PExpLambda(args, body) =>
     open Ast_helper;
-    let opt_counter = ref(0);
-    let gen_opt = () => {
-      incr(opt_counter);
-      "$option_" ++ string_of_int(opt_counter^);
+    let gen_opt = label => {
+      let label =
+        switch (label) {
+        | Unlabeled => failwith("Impossible: default argument with no label")
+        | Labeled({txt: name})
+        | Default({txt: name}) => name
+        };
+      "$default_option_" ++ label;
     };
     let (args, labels, prelude) =
       List.fold_right(
@@ -1044,7 +1048,7 @@ and type_expect_ =
               loc_end: default_loc.Location.loc_end,
               loc_ghost: true,
             };
-            let opt_name = mknoloc(gen_opt());
+            let opt_name = mknoloc(gen_opt(arg.pla_label));
             let smatch =
               Expression.match(
                 ~loc=sloc,
