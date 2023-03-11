@@ -335,8 +335,8 @@ let construct_type_metadata_table = metas => {
     };
   let num_entries = List.length(hash_to_offset);
   // Choose number of buckets to be the greatest power of 2 <= # table entries
-  // (limit 512) as a memory/lookup speed tradeoff (expect 1-2 entries/bucket)
-  let num_buckets = min(512, next_pow_of_2(num_entries, 0));
+  // (limit 4K) as a memory/lookup speed tradeoff (expect 1-2 entries/bucket)
+  let num_buckets = min(4096, next_pow_of_2(num_entries, 0));
   let buckets = Array.make(num_buckets, []);
   List.iter(
     ((hash, _) as hash_and_offset) => {
