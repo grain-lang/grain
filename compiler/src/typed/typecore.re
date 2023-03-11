@@ -2794,7 +2794,7 @@ let report_error = (env, ppf) =>
       | labels =>
         fprintf(
           ppf,
-          "@ @[Did you mean to supply an optional argument with label %a?@]@]",
+          "@ @[Did you mean to supply an argument with label %a?@]@]",
           oxford,
           unused_optional_arguments,
         )
@@ -3008,17 +3008,20 @@ let report_error = (env, ppf) =>
       if (is_optional(got)) {
         fprintf(
           ppf,
-          "This function contains the optional, default argument %s@ ",
+          "This function contains the argument %s@ ",
           qualified_label_name(got),
         );
       } else {
         fprintf(
           ppf,
-          "The expected function type contains the optional, default argument %s@ ",
+          "The expected function type contains the argument %s@ ",
           qualified_label_name(expected),
         );
       };
-      fprintf(ppf, "but the matching argument is not optional.@ ");
+      fprintf(
+        ppf,
+        "which has a default value, but the matching argument does not.@ ",
+      );
       fprintf(
         ppf,
         "The expected type is@ %a%t",

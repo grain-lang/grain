@@ -312,7 +312,7 @@ truc()|},
       let concat = (a, b) => a ++ b
       print(concat(c="3"))
     |},
-    "This argument cannot be applied with label c",
+    "This argument cannot be supplied with label c",
   );
   assertCompileError(
     "labeled_args_err2",
@@ -320,7 +320,7 @@ truc()|},
       let concat = (a, b) => a ++ b
       print(concat("1", "2", c="3"))
     |},
-    "This argument cannot be applied with label c",
+    "This argument cannot be supplied with label c",
   );
   assertCompileError(
     "labeled_args_err3",
@@ -328,7 +328,7 @@ truc()|},
       let concat = (a="1", b) => a ++ b
       print(concat("1", "2"))
     |},
-    "Did you mean to supply an optional argument with label a?",
+    "Did you mean to supply an argument with label a?",
   );
   assertCompileError(
     "labeled_args_err4",
@@ -336,7 +336,7 @@ truc()|},
       let apply = (f: (?arg1: Number) -> Number) => f(arg1=5)
       print(apply(notarg1 => notarg1))
     |},
-    "The expected function type contains the optional, default argument \\?arg1",
+    "The expected function type contains the argument \\?arg1",
   );
   assertCompileError(
     "labeled_args_err5",
@@ -344,6 +344,6 @@ truc()|},
       let apply = (f: (?arg1: Number) -> Number) => f(arg1=5)
       print(apply(notarg1 => notarg1))
     |},
-    "but the matching argument is not optional.",
+    "which has a default value, but the matching argument does not.",
   );
 });
