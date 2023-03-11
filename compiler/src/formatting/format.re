@@ -2675,7 +2675,6 @@ and print_application_argument =
       ~original_source: array(string),
       argument: Parsetree.application_argument,
     ) => {
-  // FIXME: Comments?
   let expr_doc =
     print_expression(
       ~expression_parent,
