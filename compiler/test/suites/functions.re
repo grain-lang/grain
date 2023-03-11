@@ -255,6 +255,14 @@ truc()|},
     |},
     "12\n",
   );
+  assertRun(
+    "labeled_args6",
+    {|
+      let nothing = (a, b) => void
+      nothing(b=print(1), print(2))
+    |},
+    "1\n2\n",
+  );
 
   assertRun(
     "default_args1",
