@@ -74,15 +74,13 @@ optimizations › trs1
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $f1_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $f1_1113)
-     )
-     (i32.const 3)
-     (i32.const 5)
+   (return_call $f1_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $f1_1113)
     )
+    (i32.const 3)
+    (i32.const 5)
    )
   )
  )

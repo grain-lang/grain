@@ -59,15 +59,13 @@ basic functionality › precedence5
      (i32.const 31)
     )
     (block $compile_block.3
-     (return
-      (call $<_1117
-       (call $incRef_0
-        (global.get $GRAIN$EXPORT$incRef_0)
-        (global.get $<_1117)
-       )
-       (i32.const 19)
-       (i32.const 27)
+     (return_call $<_1117
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $<_1117)
       )
+      (i32.const 19)
+      (i32.const 27)
      )
     )
     (block $compile_block.4 (result i32)

@@ -92,15 +92,13 @@ strings › concat
     (block $do_backpatches.5
     )
    )
-   (return
-    (call $++_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $++_1113)
-     )
-     (local.get $6)
-     (local.get $7)
+   (return_call $++_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $++_1113)
     )
+    (local.get $6)
+    (local.get $7)
    )
   )
  )

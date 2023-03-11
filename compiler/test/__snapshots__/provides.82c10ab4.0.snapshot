@@ -74,14 +74,12 @@ provides › provide12
       )
      )
     )
-    (return
-     (call $print_1161
-      (call $incRef_0
-       (global.get $GRAIN$EXPORT$incRef_0)
-       (global.get $print_1161)
-      )
-      (local.get $8)
+    (return_call $print_1161
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $print_1161)
      )
+     (local.get $8)
     )
    )
   )
@@ -140,14 +138,12 @@ provides › provide12
      )
     )
    )
-   (return
-    (call $apply_1159
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $apply_1159)
-     )
-     (local.get $6)
+   (return_call $apply_1159
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $apply_1159)
     )
+    (local.get $6)
    )
   )
  )

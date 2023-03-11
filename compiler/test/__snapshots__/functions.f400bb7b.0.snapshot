@@ -301,15 +301,13 @@ functions › lam_destructure_6
      )
     )
    )
-   (return
-    (call $+_1119
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $+_1119)
-     )
-     (local.get $21)
-     (local.get $16)
+   (return_call $+_1119
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1119)
     )
+    (local.get $21)
+    (local.get $16)
    )
   )
  )
@@ -403,15 +401,13 @@ functions › lam_destructure_6
     (block $do_backpatches.42
     )
    )
-   (return
-    (call $foo_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $foo_1113)
-     )
-     (local.get $6)
-     (local.get $7)
+   (return_call $foo_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $foo_1113)
     )
+    (local.get $6)
+    (local.get $7)
    )
   )
  )

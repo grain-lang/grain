@@ -728,15 +728,13 @@ pattern matching › tuple_match_deep2
            )
           )
          )
-         (return
-          (call $+_1149
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $+_1149)
-           )
-           (local.get $33)
-           (local.get $17)
+         (return_call $+_1149
+          (call $incRef_0
+           (global.get $GRAIN$EXPORT$incRef_0)
+           (global.get $+_1149)
           )
+          (local.get $33)
+          (local.get $17)
          )
         )
        )

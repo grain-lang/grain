@@ -975,15 +975,13 @@ pattern matching › tuple_match_deep3
                  )
                 )
                )
-               (return
-                (call $+_1151
-                 (call $incRef_0
-                  (global.get $GRAIN$EXPORT$incRef_0)
-                  (global.get $+_1151)
-                 )
-                 (local.get $28)
-                 (local.get $17)
+               (return_call $+_1151
+                (call $incRef_0
+                 (global.get $GRAIN$EXPORT$incRef_0)
+                 (global.get $+_1151)
                 )
+                (local.get $28)
+                (local.get $17)
                )
               )
              )
@@ -1067,15 +1065,13 @@ pattern matching › tuple_match_deep3
                )
               )
              )
-             (return
-              (call $+_1151
-               (call $incRef_0
-                (global.get $GRAIN$EXPORT$incRef_0)
-                (global.get $+_1151)
-               )
-               (local.get $26)
-               (local.get $13)
+             (return_call $+_1151
+              (call $incRef_0
+               (global.get $GRAIN$EXPORT$incRef_0)
+               (global.get $+_1151)
               )
+              (local.get $26)
+              (local.get $13)
              )
             )
            )
@@ -1133,15 +1129,13 @@ pattern matching › tuple_match_deep3
              )
             )
            )
-           (return
-            (call $+_1151
-             (call $incRef_0
-              (global.get $GRAIN$EXPORT$incRef_0)
-              (global.get $+_1151)
-             )
-             (local.get $9)
-             (local.get $10)
+           (return_call $+_1151
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
+             (global.get $+_1151)
             )
+            (local.get $9)
+            (local.get $10)
            )
           )
          )

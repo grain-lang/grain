@@ -489,14 +489,12 @@ enums › enum_recursive_data_definition
     (block $do_backpatches.28
     )
    )
-   (return
-    (call $print_1129
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $print_1129)
-     )
-     (local.get $14)
+   (return_call $print_1129
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $print_1129)
     )
+    (local.get $14)
    )
   )
  )

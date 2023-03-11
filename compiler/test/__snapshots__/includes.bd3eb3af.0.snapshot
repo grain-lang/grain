@@ -121,14 +121,12 @@ includes › include_some_mixed
     (block $do_backpatches.5
     )
    )
-   (return
-    (call $sum_1120
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $sum_1120)
-     )
-     (local.get $7)
+   (return_call $sum_1120
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $sum_1120)
     )
+    (local.get $7)
    )
   )
  )

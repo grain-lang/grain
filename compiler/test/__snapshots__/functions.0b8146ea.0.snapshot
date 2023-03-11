@@ -75,12 +75,10 @@ functions › regression_1725
     (block $do_backpatches.5
     )
    )
-   (return
-    (call $foo_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $foo_1113)
-     )
+   (return_call $foo_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $foo_1113)
     )
    )
   )

@@ -177,14 +177,12 @@ basic functionality › func_shadow
     (block $do_backpatches.13
     )
    )
-   (return
-    (call $print_1118
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $print_1118)
-     )
-     (local.get $7)
+   (return_call $print_1118
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $print_1118)
     )
+    (local.get $7)
    )
   )
  )

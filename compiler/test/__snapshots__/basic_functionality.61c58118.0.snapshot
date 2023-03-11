@@ -68,12 +68,10 @@ basic functionality › block_no_expression
     (block $do_backpatches.3
     )
    )
-   (return
-    (call $f_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $f_1113)
-     )
+   (return_call $f_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $f_1113)
     )
    )
   )

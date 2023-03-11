@@ -84,11 +84,9 @@ basic functionality › pattern_match_unsafe_wasm
      )
     )
    )
-   (return
-    (call $foo_1114
-     (local.get $7)
-     (i32.const 42)
-    )
+   (return_call $foo_1114
+    (local.get $7)
+    (i32.const 42)
    )
   )
  )
@@ -349,14 +347,12 @@ basic functionality › pattern_match_unsafe_wasm
                        )
                       )
                      )
-                     (return
-                      (call $print_1125
-                       (call $incRef_0
-                        (global.get $GRAIN$EXPORT$incRef_0)
-                        (global.get $print_1125)
-                       )
-                       (local.get $8)
+                     (return_call $print_1125
+                      (call $incRef_0
+                       (global.get $GRAIN$EXPORT$incRef_0)
+                       (global.get $print_1125)
                       )
+                      (local.get $8)
                      )
                     )
                    )
@@ -372,14 +368,12 @@ basic functionality › pattern_match_unsafe_wasm
                      )
                     )
                    )
-                   (return
-                    (call $print_1125
-                     (call $incRef_0
-                      (global.get $GRAIN$EXPORT$incRef_0)
-                      (global.get $print_1125)
-                     )
-                     (i32.const 13)
+                   (return_call $print_1125
+                    (call $incRef_0
+                     (global.get $GRAIN$EXPORT$incRef_0)
+                     (global.get $print_1125)
                     )
+                    (i32.const 13)
                    )
                   )
                  )
@@ -395,14 +389,12 @@ basic functionality › pattern_match_unsafe_wasm
                    )
                   )
                  )
-                 (return
-                  (call $print_1125
-                   (call $incRef_0
-                    (global.get $GRAIN$EXPORT$incRef_0)
-                    (global.get $print_1125)
-                   )
-                   (i32.const 11)
+                 (return_call $print_1125
+                  (call $incRef_0
+                   (global.get $GRAIN$EXPORT$incRef_0)
+                   (global.get $print_1125)
                   )
+                  (i32.const 11)
                  )
                 )
                )
@@ -418,14 +410,12 @@ basic functionality › pattern_match_unsafe_wasm
                  )
                 )
                )
-               (return
-                (call $print_1125
-                 (call $incRef_0
-                  (global.get $GRAIN$EXPORT$incRef_0)
-                  (global.get $print_1125)
-                 )
-                 (i32.const 9)
+               (return_call $print_1125
+                (call $incRef_0
+                 (global.get $GRAIN$EXPORT$incRef_0)
+                 (global.get $print_1125)
                 )
+                (i32.const 9)
                )
               )
              )
@@ -441,14 +431,12 @@ basic functionality › pattern_match_unsafe_wasm
                )
               )
              )
-             (return
-              (call $print_1125
-               (call $incRef_0
-                (global.get $GRAIN$EXPORT$incRef_0)
-                (global.get $print_1125)
-               )
-               (i32.const 7)
+             (return_call $print_1125
+              (call $incRef_0
+               (global.get $GRAIN$EXPORT$incRef_0)
+               (global.get $print_1125)
               )
+              (i32.const 7)
              )
             )
            )
@@ -464,14 +452,12 @@ basic functionality › pattern_match_unsafe_wasm
              )
             )
            )
-           (return
-            (call $print_1125
-             (call $incRef_0
-              (global.get $GRAIN$EXPORT$incRef_0)
-              (global.get $print_1125)
-             )
-             (i32.const 5)
+           (return_call $print_1125
+            (call $incRef_0
+             (global.get $GRAIN$EXPORT$incRef_0)
+             (global.get $print_1125)
             )
+            (i32.const 5)
            )
           )
          )
@@ -487,14 +473,12 @@ basic functionality › pattern_match_unsafe_wasm
            )
           )
          )
-         (return
-          (call $print_1125
-           (call $incRef_0
-            (global.get $GRAIN$EXPORT$incRef_0)
-            (global.get $print_1125)
-           )
-           (i32.const 3)
+         (return_call $print_1125
+          (call $incRef_0
+           (global.get $GRAIN$EXPORT$incRef_0)
+           (global.get $print_1125)
           )
+          (i32.const 3)
          )
         )
        )
@@ -537,12 +521,10 @@ basic functionality › pattern_match_unsafe_wasm
     (block $do_backpatches.52
     )
    )
-   (return
-    (call $test_1113
-     (call $incRef_0
-      (global.get $GRAIN$EXPORT$incRef_0)
-      (global.get $test_1113)
-     )
+   (return_call $test_1113
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $test_1113)
     )
    )
   )
