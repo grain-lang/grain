@@ -2676,7 +2676,7 @@ let report_error = (env, ppf) =>
   | Constructor_arity_mismatch(lid, expected, provided) =>
     fprintf(
       ppf,
-      "@[The constructor %a@ expects %i argument(s),@ but is applied here to %i argument(s)@]",
+      "@[The constructor %a@ expects %i argument(s),@ but is called with %i argument(s)@]",
       identifier,
       lid,
       expected,
@@ -2756,13 +2756,13 @@ let report_error = (env, ppf) =>
         "@[<v>@[<2>This expression has type@ %a@]@ %s@]",
         type_expr,
         typ,
-        "This is not a function; it cannot be applied.",
+        "This is not a function; it cannot be called.",
       );
     }
   | Apply_too_many_arguments(typ, unused_tyargs) => {
       reset_and_mark_loops(typ);
       fprintf(ppf, "@[<v>@[<2>This function has type@ %a@]", type_expr, typ);
-      fprintf(ppf, "@ @[It is applied to too many arguments.@]@]");
+      fprintf(ppf, "@ @[It is called with too many arguments.@]@]");
       let unused_optional_arguments =
         List.filter_map(
           ((l, _)) =>
@@ -2838,7 +2838,7 @@ let report_error = (env, ppf) =>
       };
     }
   | Apply_unknown_label(label, valid_labels) => {
-      fprintf(ppf, "This argument cannot be applied with label %s.", label);
+      fprintf(ppf, "This argument cannot be supplied with label %s.", label);
       spellcheck(ppf, label, valid_labels);
     }
   | Label_multiply_defined(s) =>
@@ -3062,7 +3062,7 @@ let report_error = (env, ppf) =>
   | Not_a_variant_type(lid) =>
     fprintf(ppf, "The type %a@ is not a variant type", identifier, lid)
   | Incoherent_label_order => {
-      fprintf(ppf, "This function is applied to arguments@ ");
+      fprintf(ppf, "This function is called with arguments@ ");
       fprintf(ppf, "in an order different from other calls.@ ");
       fprintf(ppf, "This is only allowed when the real type is known.");
     }
