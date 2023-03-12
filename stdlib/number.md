@@ -1030,7 +1030,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`range`|`Range<Number>`|An inclusive Range to interpolate between|
-|`amount`|`Number`|an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200|
+|`amount`|`Number`|an amount between 0 and 1, anything outside the range will produce an extrapolation, i.e. `lerp(0, 100, 2)` will produce 200|
 
 Returns:
 
