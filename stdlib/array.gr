@@ -1020,19 +1020,22 @@ provide let rotate = (n, arr) => {
   }
 }
 
-let rec _chunk = (chunkSize, allowPartial, arr) => {
-  let arrLen = length(arr)
-  if (arrLen == 0 || chunkSize == 0 || arrLen < chunkSize && !allowPartial) {
-    [>]
+let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
+  if (arrLen == 0 || arrLen < chunkSize && !allowPartial) {
+    []
+  } else if (arrLen < chunkSize) {
+    [slice(chunkStartIndex, length(arr), arr)]
   } else {
     // create the first chunk of the given array
-    let firstChunk = slice(0, chunkSize, arr)
+    let firstChunk = slice(chunkStartIndex, chunkStartIndex + chunkSize, arr)
     let restChunks = _chunk(
       chunkSize,
       allowPartial,
-      slice(chunkSize, arrLen, arr)
+      arr,
+      arrLen - chunkSize,
+      chunkStartIndex + chunkSize
     )
-    append([> firstChunk], restChunks)
+    [firstChunk, ...restChunks]
   }
 }
 
@@ -1047,12 +1050,20 @@ let rec _chunk = (chunkSize, allowPartial, arr) => {
  * @throws InvalidArgument(String): When `chunkSize` is not an integer
  * @throws InvalidArgument(String): When `chunkSize` is negative
  *
- * @example chunk(2, false, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
+ * @example chunk(2, false, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
+ * @example chunk(2, false, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4] ]
+ * @example chunk(2, true, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
  * @since v0.6.0
  */
 provide let chunk = (chunkSize, allowPartial, arr) => {
-  checkLength(chunkSize)
-  _chunk(chunkSize, allowPartial, arr)
+  if (chunkSize == 0) {
+    [>]
+  } else {
+    checkLength(chunkSize)
+    let arrLen = length(arr)
+    let chunks = _chunk(chunkSize, allowPartial, arr, arrLen, 0)
+    fromList(chunks)
+  }
 }
 
 /**
