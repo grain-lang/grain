@@ -117,6 +117,57 @@ Returns:
 |----|-----------|
 |`Number`|The denominator of the rational number|
 
+### Rational.**toIntegerRatio**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toIntegerRatio : Rational -> (Number, Number)
+```
+
+Gets the numerator and denominator of the rational as a tuple
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Rational`|The rational to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`(Number, Number)`|The numerator and denominator of the rational|
+
+### Rational.**fromIntegerRatio**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromIntegerRatio : (Number, Number) -> Rational
+```
+
+Makes a rational from the numerator and denominator
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`numerator`|`Number`|The numerator|
+|`denominator`|`Number`|The denominator|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Rational`|The built rational|
+
 ### Rational.**(+)**
 
 <details disabled>

@@ -24,6 +24,32 @@ from Numbers use {
 provide { fromNumber, toNumber, numerator, denominator }
 
 /**
+ * Gets the numerator and denominator of the rational as a tuple
+ *
+ * @param x: The rational to convert
+ * @returns The numerator and denominator of the rational
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let toIntegerRatio = (x: Rational) => {
+  (numerator(x), denominator(x))
+}
+
+/**
+ * Makes a rational from the numerator and denominator
+ *
+ * @param numerator: The numerator
+ * @param denominator: The denominator
+ * @returns The built rational
+ *
+ * @since v0.6.0
+ */
+provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
+  fromNumber(numerator / denominator)
+}
+
+/**
  * Computes the sum of its operands.
  *
  * @param x: The first operand
