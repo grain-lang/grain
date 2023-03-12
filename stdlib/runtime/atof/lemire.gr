@@ -129,7 +129,7 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
 // (u64, i32)
 @unsafe
 provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
-  from WasmI64 use { (==), (<), (<=), (>), (>=), (<<), (>>), (&), (+) }
+  from WasmI64 use { (==), (<), (<=), (>), (>=), (<<), (>>), (&), (+), (>>>) }
 
   let w = mantissa
   let q = exponent
@@ -163,7 +163,6 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
     match (lo == 0xFFFF_FFFF_FFFF_FFFFN && !(q >= -27N && q <= 55N)) {
       true => fpErr(),
       false => {
-        from WasmI64 use { (>>>) }
         let upperbit = WasmI32.wrapI64(hi >>> 63N)
         let mut mantissa = hi >>>
           WasmI64.extendI32S(

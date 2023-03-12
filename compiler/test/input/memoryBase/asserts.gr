@@ -2,6 +2,7 @@
 module Asserts
 
 include "runtime/unsafe/wasmi32"
+
 @unsafe
 primitive heapBase = "@heap.base"
 @unsafe

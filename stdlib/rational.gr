@@ -123,7 +123,6 @@ provide let (!=) = (x: Rational, y: Rational) => {
   !rationalsEqual(x, y)
 }
 
-from WasmI32 use { (<), (>), (<=), (>=) }
 /**
  * Checks if the first value is less than the second value.
  *
@@ -135,6 +134,7 @@ from WasmI32 use { (<), (>), (<=), (>=) }
  */
 @unsafe
 provide let (<) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (<) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) < 0n
@@ -151,6 +151,7 @@ provide let (<) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (>) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (>) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) > 0n
@@ -167,6 +168,7 @@ provide let (>) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (<=) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (<=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) <= 0n
@@ -183,6 +185,7 @@ provide let (<=) = (x: Rational, y: Rational) => {
  */
 @unsafe
 provide let (>=) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (>=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   cmpRationals(x, y) >= 0n
