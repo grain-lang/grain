@@ -696,7 +696,7 @@ provide let clamp = (range, input) => {
  * Linearly interpolates across the provided range by the given amount.
  *
  * @param range: An inclusive Range to interpolate between
- * @param amount: an amount between 0 and 1, anything outside the range will produce an extrapolation i.e `lerp(0, 100, 2)` will produce 200
+ * @param amount: an amount between 0 and 1, anything outside the range will produce an extrapolation, i.e. `lerp(0, 100, 2)` will produce 200
  * @returns The interpolated value
  *
  * @throws InvalidArgument(String): When `amount` is not between 0 and 1 or `range` is not finite
