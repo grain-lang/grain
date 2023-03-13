@@ -158,7 +158,7 @@ basic functionality › assert2
         )
         (i32.store offset=12
          (local.get $0)
-         (i32.const 67)
+         (i32.const 65)
         )
         (i32.store offset=16
          (local.get $0)
