@@ -63,7 +63,6 @@ and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
 and ident_array = ident_create("Array")
-and ident_fd = ident_create("FileDescriptor")
 and ident_assertion_error = ident_create_predef_exn("AssertionError")
 and ident_index_out_of_bounds = ident_create_predef_exn("IndexOutOfBounds")
 and ident_index_non_integer = ident_create_predef_exn("IndexNonInteger")
@@ -97,8 +96,7 @@ and path_bytes = PIdent(ident_bytes)
 and path_char = PIdent(ident_char)
 and path_void = PIdent(ident_void)
 and path_box = PIdent(ident_box)
-and path_array = PIdent(ident_array)
-and path_fd = PIdent(ident_fd);
+and path_array = PIdent(ident_array);
 
 let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
 and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
@@ -138,7 +136,6 @@ and type_void = newgenty(TTyConstr(path_void, [], ref(TMemNil)))
 and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
 and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
-and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
 and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
 let decl_abstr = path => {
@@ -306,7 +303,6 @@ let initial_env = (add_type, add_extension, empty_env) =>
   |> add_type(ident_char, decl_abstr_imm(WasmI32, path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
-  |> add_type(ident_fd, decl_abstr(path_fd))
   |> add_type(ident_bytes, decl_abstr(path_bytes))
   |> add_extension(ident_assertion_error, decl_assertion_error)
   |> add_extension(ident_index_out_of_bounds, decl_index_out_of_bounds)
