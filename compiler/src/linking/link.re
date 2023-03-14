@@ -5,30 +5,41 @@ open Grain_utils;
 open Cmi_format;
 open Binaryen;
 
-let modules: Hashtbl.t(string, Module.t) = Hashtbl.create(10);
-let hard_dependencies: Hashtbl.t(string, unit) = Hashtbl.create(10);
-
-let grain_module_name = mod_name => {
-  // Remove GRAIN$MODULE$
-  Str.string_after(mod_name, 13);
-};
-
-let resolve = (~base_dir=?, mod_name) => {
-  let mod_name = grain_module_name(mod_name);
-  Module_resolution.locate_unit_object_file(~base_dir?, mod_name);
-};
+let modules: Hashtbl.t(Digest.t, Module.t) = Hashtbl.create(10);
+let crc_map: Hashtbl.t(string, Digest.t) = Hashtbl.create(10);
+let hard_dependencies: Hashtbl.t(Digest.t, unit) = Hashtbl.create(10);
 
 let load_module = fullpath => {
+  let crc = Digest.to_hex(Cmi_format.read_cmi(fullpath).cmi_crc);
   let ic = open_in_bin(fullpath);
   let length = in_channel_length(ic);
   let module_bytes = Bytes.create(length);
   really_input(ic, module_bytes, 0, length);
   close_in(ic);
-  Module.read(module_bytes);
+  Hashtbl.add(modules, crc, Module.read(module_bytes));
+  Hashtbl.add(crc_map, fullpath, crc);
+};
+let load_modules = paths => {
+  List.iter(load_module, paths);
 };
 
+let grain_module_crc = mod_name =>
+  if (String.starts_with(~prefix="GRAIN$MODULE$implicit", mod_name)) {
+    // Portion after GRAIN$MODULE$implicit$
+    let mod_name = Str.string_after(mod_name, 22);
+    let fullpath = Module_resolution.locate_unit_object_file(mod_name);
+    Hashtbl.find(crc_map, fullpath);
+  } else {
+    // Immediately following GRAIN$MODULE$ and 32 characters long
+    String.sub(
+      mod_name,
+      13,
+      32,
+    );
+  };
+
 let is_grain_module = mod_name => {
-  Str.string_match(Str.regexp_string("GRAIN$MODULE$"), mod_name, 0);
+  String.starts_with(~prefix="GRAIN$MODULE$", mod_name);
 };
 
 let wasi_polyfill_module = () => {
@@ -44,53 +55,31 @@ let is_wasi_polyfill_module = mod_path => {
   mod_path == wasi_polyfill_module();
 };
 
-let new_base_dir = Filepath.String.dirname;
-
-let rec load_hard_dependencies = (~base_dir, mod_path) => {
-  let wasm_mod = Hashtbl.find(modules, mod_path);
+let rec discover_hard_dependencies = mod_crc => {
+  let wasm_mod = Hashtbl.find(modules, mod_crc);
   let num_globals = Global.get_num_globals(wasm_mod);
   for (i in 0 to num_globals - 1) {
     let global = Global.get_global_by_index(wasm_mod, i);
     let imported_module = Import.global_import_get_module(global);
     if (is_grain_module(imported_module)) {
-      let resolved_import = resolve(~base_dir, imported_module);
-      Hashtbl.add(hard_dependencies, resolved_import, ());
-      if (!Hashtbl.mem(modules, resolved_import)) {
-        Hashtbl.add(modules, resolved_import, load_module(resolved_import));
-        load_hard_dependencies(
-          ~base_dir=new_base_dir(resolved_import),
-          resolved_import,
-        );
+      let resolved_import = grain_module_crc(imported_module);
+      let checked = Hashtbl.mem(hard_dependencies, resolved_import);
+      if (!checked) {
+        Hashtbl.add(hard_dependencies, resolved_import, ());
+        discover_hard_dependencies(resolved_import);
       };
     };
   };
   let num_funcs = Function.get_num_functions(wasm_mod);
-  let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
   for (i in 0 to num_funcs - 1) {
     let func = Function.get_function_by_index(wasm_mod, i);
     let imported_module = Import.function_import_get_module(func);
     if (is_grain_module(imported_module)) {
-      let resolved_import = resolve(~base_dir, imported_module);
-      Hashtbl.add(hard_dependencies, resolved_import, ());
-      if (!Hashtbl.mem(modules, resolved_import)) {
-        Hashtbl.add(modules, resolved_import, load_module(resolved_import));
-        load_hard_dependencies(
-          ~base_dir=new_base_dir(resolved_import),
-          resolved_import,
-        );
-      };
-    } else if (has_wasi_polyfill
-               && is_wasi_module(imported_module)
-               && !is_wasi_polyfill_module(mod_path)) {
-      // Perform any WASI polyfilling. Note that we skip this step if we are compiling the polyfill module itself.
-      let imported_module = wasi_polyfill_module();
-      Hashtbl.add(hard_dependencies, imported_module, ());
-      if (!Hashtbl.mem(modules, imported_module)) {
-        Hashtbl.add(modules, imported_module, load_module(imported_module));
-        load_hard_dependencies(
-          ~base_dir=new_base_dir(imported_module),
-          imported_module,
-        );
+      let resolved_import = grain_module_crc(imported_module);
+      let checked = Hashtbl.mem(hard_dependencies, resolved_import);
+      if (!checked) {
+        Hashtbl.add(hard_dependencies, resolved_import, ());
+        discover_hard_dependencies(resolved_import);
       };
     };
   };
@@ -299,11 +288,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     let global_names: Hashtbl.t(string, string) = Hashtbl.create(128);
     let label_names: Hashtbl.t(string, string) = Hashtbl.create(128);
 
-    let wasm_mod =
-      switch (Hashtbl.find_opt(modules, dep)) {
-      | Some(mod_) => mod_
-      | None => load_module(dep)
-      };
+    let wasm_mod = Hashtbl.find(modules, Hashtbl.find(crc_map, dep));
 
     let num_globals = Global.get_num_globals(wasm_mod);
     for (i in 0 to num_globals - 1) {
@@ -311,16 +296,11 @@ let link_all = (linked_mod, dependencies, signature) => {
       if (is_global_imported(global)) {
         let imported_module = Import.global_import_get_module(global);
         if (is_grain_module(imported_module)) {
+          let crc = grain_module_crc(imported_module);
           let imported_name = Import.global_import_get_base(global);
           let internal_name = Global.get_name(global);
           let new_name =
-            Hashtbl.find(
-              Hashtbl.find(
-                exported_names,
-                resolve(~base_dir=new_base_dir(dep), imported_module),
-              ),
-              imported_name,
-            );
+            Hashtbl.find(Hashtbl.find(exported_names, crc), imported_name);
           Hashtbl.add(global_names, internal_name, new_name);
         } else {
           let imported_name = Import.global_import_get_base(global);
@@ -387,16 +367,11 @@ let link_all = (linked_mod, dependencies, signature) => {
       func => {
         let imported_module = Import.function_import_get_module(func);
         if (is_grain_module(imported_module)) {
+          let crc = grain_module_crc(imported_module);
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
           let new_name =
-            Hashtbl.find(
-              Hashtbl.find(
-                exported_names,
-                resolve(~base_dir=new_base_dir(dep), imported_module),
-              ),
-              imported_name,
-            );
+            Hashtbl.find(Hashtbl.find(exported_names, crc), imported_name);
           Hashtbl.add(function_names, internal_name, new_name);
         } else if (has_wasi_polyfill
                    && is_wasi_module(imported_module)
@@ -405,7 +380,7 @@ let link_all = (linked_mod, dependencies, signature) => {
           // If we are importing a foreign from WASI, then we swap it out for the foreign from the polyfill.
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
-          let wasi_polyfill = wasi_polyfill_module();
+          let wasi_polyfill = Hashtbl.find(crc_map, wasi_polyfill_module());
           let new_name =
             Hashtbl.find_opt(
               Hashtbl.find(exported_names, wasi_polyfill),
@@ -481,7 +456,11 @@ let link_all = (linked_mod, dependencies, signature) => {
 
     let local_exported_names =
       Comp_utils.get_exported_names(~function_names, ~global_names, wasm_mod);
-    Hashtbl.add(exported_names, dep, local_exported_names);
+    Hashtbl.add(
+      exported_names,
+      Hashtbl.find(crc_map, dep),
+      local_exported_names,
+    );
 
     let num_element_segments = Table.get_num_element_segments(wasm_mod);
     for (i in 0 to num_element_segments - 1) {
@@ -511,15 +490,20 @@ let link_all = (linked_mod, dependencies, signature) => {
   let main = Module_resolution.current_filename^();
 
   if (has_wasi_polyfill) {
-    link_one(wasi_polyfill_module());
+    let wasi_polyfill = wasi_polyfill_module();
+    load_module(wasi_polyfill);
+    discover_hard_dependencies(Hashtbl.find(crc_map, wasi_polyfill));
+    link_one(wasi_polyfill);
   };
   List.iter(link_one, dependencies);
   link_one(main);
 
+  let main_crc = Hashtbl.find(crc_map, main);
+
   Comp_utils.write_universal_exports(
     linked_mod,
     signature,
-    Hashtbl.find(exported_names, main),
+    Hashtbl.find(exported_names, main_crc),
   );
 
   ignore @@
@@ -554,24 +538,25 @@ let link_all = (linked_mod, dependencies, signature) => {
   let starts =
     List.filter_map(
       dep => {
+        let dep_crc = Hashtbl.find(crc_map, dep);
         let load_type_metadata =
           Expression.Call.make(
             linked_mod,
             Hashtbl.find(
-              Hashtbl.find(exported_names, dep),
+              Hashtbl.find(exported_names, dep_crc),
               Comp_utils.grain_type_metadata,
             ),
             [],
             Type.none,
           );
-        if (Hashtbl.mem(hard_dependencies, dep)) {
+        if (Hashtbl.mem(hard_dependencies, dep_crc)) {
           let call_main =
             Expression.Drop.make(
               linked_mod,
               Expression.Call.make(
                 linked_mod,
                 Hashtbl.find(
-                  Hashtbl.find(exported_names, dep),
+                  Hashtbl.find(exported_names, dep_crc),
                   Comp_utils.grain_main,
                 ),
                 [],
@@ -619,18 +604,19 @@ let link_all = (linked_mod, dependencies, signature) => {
 
 let link_modules = ({asm: wasm_mod, signature}) => {
   Hashtbl.clear(modules);
+  Hashtbl.clear(crc_map);
   Hashtbl.clear(hard_dependencies);
 
-  let main_module = Module_resolution.current_filename^();
-  Hashtbl.add(modules, main_module, wasm_mod);
-  Hashtbl.add(hard_dependencies, main_module, ());
-
-  load_hard_dependencies(
-    ~base_dir=Filepath.String.dirname(main_module),
-    main_module,
-  );
-
   let dependencies = Module_resolution.get_dependencies();
+  load_modules(dependencies);
+
+  let main_module = Module_resolution.current_filename^();
+  let crc = signature.cmi_crc;
+  Hashtbl.add(modules, crc, wasm_mod);
+  Hashtbl.add(hard_dependencies, crc, ());
+  Hashtbl.add(crc_map, main_module, crc);
+
+  discover_hard_dependencies(crc);
 
   let linked_mod = Module.create();
   link_all(linked_mod, dependencies, signature);

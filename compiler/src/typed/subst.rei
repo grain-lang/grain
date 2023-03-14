@@ -42,6 +42,7 @@ let add_module: (Ident.t, Path.t, t) => t;
 let add_module_path: (Path.t, Path.t, t) => t;
 let add_modtype: (Ident.t, module_type, t) => t;
 let for_saving: t => t;
+let without_locs: t => t;
 let reset_for_saving: unit => unit;
 
 let module_path: (t, Path.t) => Path.t;

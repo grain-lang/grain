@@ -36,6 +36,7 @@ type t = {
   modules: PathMap.t(Path.t),
   modtypes: Tbl.t(Ident.t, module_type),
   for_saving: bool,
+  keep_locs: bool,
 };
 
 let identity = {
@@ -43,6 +44,7 @@ let identity = {
   modules: PathMap.empty,
   modtypes: Tbl.empty,
   for_saving: false,
+  keep_locs: true,
 };
 
 let add_type_path = (id, p, s) => {
@@ -68,8 +70,14 @@ let add_modtype = (id, ty, s) => {
 };
 
 let for_saving = s => {...s, for_saving: true};
+let without_locs = s => {...s, for_saving: false, keep_locs: false};
 
-let loc = (s, x) => x;
+let loc = (s, x) =>
+  if (s.keep_locs) {
+    x;
+  } else {
+    Location.dummy_loc;
+  };
 
 let rec module_path = (s, path) =>
   try(PathMap.find(path, s.modules)) {
@@ -376,4 +384,5 @@ let compose = (s1, s2) => {
   modules: merge_path_maps(module_path(s2), s1.modules, s2.modules),
   modtypes: merge_tbls(modtype(s2), s1.modtypes, s2.modtypes),
   for_saving: s1.for_saving || s2.for_saving,
+  keep_locs: s1.keep_locs || s2.keep_locs,
 };

@@ -692,7 +692,8 @@ let lift_imports = (env, imports) => {
         {imp_use_id, imp_desc, imp_shape, imp_exported},
       ) => {
     switch (imp_desc) {
-    | GrainValue(mimp_mod, mimp_name) =>
+    | GrainValue(mimp_mod_crc, mimp_mod, mimp_name) =>
+      let mimp_mod_crc = Some(mimp_mod_crc);
       let (alloc, mods, closure_setups) =
         switch (imp_shape) {
         | GlobalShape(alloc) => (
@@ -701,6 +702,7 @@ let lift_imports = (env, imports) => {
               {
                 mimp_id: imp_use_id,
                 mimp_mod,
+                mimp_mod_crc,
                 mimp_name,
                 mimp_type: process_shape(true, imp_shape),
                 mimp_kind: MImportGrain,
@@ -774,6 +776,7 @@ let lift_imports = (env, imports) => {
               {
                 mimp_id: imp_use_id,
                 mimp_mod,
+                mimp_mod_crc,
                 mimp_name,
                 mimp_type: process_shape(true, GlobalShape(Managed)),
                 mimp_kind: MImportGrain,
@@ -783,6 +786,7 @@ let lift_imports = (env, imports) => {
               {
                 mimp_id: imp_use_id,
                 mimp_mod,
+                mimp_mod_crc,
                 mimp_name,
                 mimp_type: process_shape(true, imp_shape),
                 mimp_kind: MImportGrain,
@@ -816,6 +820,7 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_id: imp_use_id,
         mimp_mod,
+        mimp_mod_crc: None,
         mimp_name,
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,
@@ -841,6 +846,7 @@ let lift_imports = (env, imports) => {
       let new_mod = {
         mimp_id,
         mimp_mod: mod_,
+        mimp_mod_crc: None,
         mimp_name: name,
         mimp_type: process_shape(false, imp_shape),
         mimp_kind: MImportWasm,

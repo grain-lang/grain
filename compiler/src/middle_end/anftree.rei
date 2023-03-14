@@ -397,7 +397,7 @@ type import_shape =
 
 [@deriving sexp]
 type import_desc =
-  | GrainValue(string, string)
+  | GrainValue(string, string, string)
   | WasmFunction(string, string)
   | WasmValue(string, string)
   | JSFunction(string, string);

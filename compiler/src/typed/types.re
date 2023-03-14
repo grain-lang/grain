@@ -242,7 +242,7 @@ and module_type =
 
 and module_declaration = {
   md_type: module_type,
-  md_filepath: option(string),
+  md_filepath: option(module_file_info),
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   md_loc: Location.t,
 }
@@ -251,6 +251,11 @@ and modtype_declaration = {
   mtd_type: option(module_type),
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   mtd_loc: Location.t,
+}
+
+and module_file_info = {
+  filename: string,
+  crc: string,
 };
 
 [@deriving sexp]

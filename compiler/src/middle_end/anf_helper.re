@@ -268,8 +268,8 @@ module IncludeDeclaration = {
     imp_exported: e,
     imp_analyses: ref([]),
   };
-  let grain_value = (~global=Nonglobal, a, md, name, s) =>
-    mk(a, GrainValue(md, name), s, global);
+  let grain_value = (~global=Nonglobal, a, ~module_crc, md, name, s) =>
+    mk(a, GrainValue(module_crc, md, name), s, global);
   let wasm_func = (~global=Nonglobal, a, md, name, s) =>
     mk(a, WasmFunction(md, name), s, global);
   let wasm_value = (~global=Nonglobal, a, md, name, s) =>

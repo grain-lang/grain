@@ -398,12 +398,7 @@ module Dependency_graph =
                          switch (crc) {
                          | None => false
                          | Some(crc) =>
-                           try(
-                             Cmi_format.cmi_to_crc(
-                               read_file_cmi(out_file_name),
-                             )
-                             == crc
-                           ) {
+                           try(read_file_cmi(out_file_name).cmi_crc == crc) {
                            | _ => false
                            }
                          }

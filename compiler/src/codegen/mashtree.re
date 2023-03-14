@@ -500,6 +500,7 @@ type import_setup =
 type import = {
   mimp_id: Ident.t,
   mimp_mod: string,
+  mimp_mod_crc: option(string),
   mimp_name: string,
   mimp_type: import_type,
   mimp_kind: import_kind,

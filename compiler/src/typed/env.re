@@ -684,6 +684,7 @@ type pers_struct = {
   ps_name: string,
   ps_sig: Lazy.t(signature),
   ps_comps: module_components,
+  ps_crc: Digest.t,
   ps_crcs: list((string, option(Digest.t))),
   ps_filename: string,
   ps_flags: list(pers_flags),
@@ -833,6 +834,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
   let sign = cmi.cmi_sign;
   let crcs = cmi.cmi_crcs;
   let flags = cmi.cmi_flags;
+  let crc = cmi.cmi_crc;
   let comps =
     components_of_module'^(
       ~deprecated=None,
@@ -847,6 +849,7 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
     ps_name: name,
     ps_sig: lazy(Subst.signature(Subst.identity, sign)),
     ps_comps: comps,
+    ps_crc: Digest.to_hex(crc),
     ps_crcs: crcs,
     ps_filename: filename,
     ps_flags: flags,
@@ -1091,7 +1094,7 @@ let find_module = (path, filename, env) =>
         let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
         md(
           TModSignature(Lazy.force(ps.ps_sig)),
-          Some(filename),
+          Some({filename, crc: Digest.to_hex(ps.ps_crc)}),
           Location.dummy_loc,
         );
       } else {
@@ -2051,9 +2054,13 @@ let check_opened = (mod_: Parsetree.include_declaration, env) => {
   let rec find_open = summary =>
     switch (summary) {
     | Env_empty => None
-    | Env_module(summary, {name} as id, {md_filepath: Some(filepath)})
-        when same_filepath(filepath, mod_.pinc_path.txt) =>
-      Some(PIdent(id))
+    | Env_module(
+        summary,
+        {name} as id,
+        {md_filepath: Some({filename} as md_info)},
+      )
+        when same_filepath(filename, mod_.pinc_path.txt) =>
+      Some((PIdent(id), md_info))
     | Env_module(summary, _, _)
     | Env_value(summary, _, _)
     | Env_type(summary, _, _)
@@ -2085,17 +2092,18 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
     };
 
   let mod_ident = Ident.create_persistent(name.txt);
-  let filename = Some(mod_.pinc_path.txt);
+  let filename = mod_.pinc_path.txt;
   switch (check_opened(mod_, env0)) {
-  | Some(path) =>
+  | Some((path, md_info)) =>
     if (Path.same(path, PIdent(mod_ident))) {
       env0;
     } else {
       let mod_type = TModAlias(path);
-      env0 |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
+      env0 |> add_module(mod_ident, mod_type, Some(md_info), mod_.pinc_loc);
     }
   | _ =>
-    let {ps_sig} = find_pers_struct(~loc=mod_.pinc_loc, mod_.pinc_path.txt);
+    let {ps_sig, ps_crc} =
+      find_pers_struct(~loc=mod_.pinc_loc, mod_.pinc_path.txt);
     let sign = Lazy.force(ps_sig);
     let sign = Translsig.translate_signature(sign);
     let mod_type = TModSignature(sign);
@@ -2104,7 +2112,12 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
       {mtd_type: Some(mod_type), mtd_loc: mod_.pinc_loc},
       env0,
     )
-    |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
+    |> add_module(
+         mod_ident,
+         mod_type,
+         Some({filename, crc: ps_crc}),
+         mod_.pinc_loc,
+       );
   };
 };
 
@@ -2256,7 +2269,7 @@ let imports = () => {
             Module_resolution.read_file_cmi(
               Module_resolution.locate_unit_object_file(unit),
             );
-          (unit, Some(Cmi_format.cmi_to_crc(cmi)));
+          (unit, Some(cmi.cmi_crc));
         }) {
         | _ => (unit, crc)
         }
@@ -2319,12 +2332,14 @@ let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
 
 /* Build a module signature */
 let build_signature_with_imports =
-    (~deprecated=?, sg, modname, filename, imports) => {
+    (~deprecated=?, initial_sg, modname, filename, imports) => {
   /*prerr_endline filename;
     List.iter (fun (name, crc) -> prerr_endline name) imports;*/
   Btype.cleanup_abbrev();
   Subst.reset_for_saving();
-  let sg = Subst.signature(Subst.for_saving(Subst.identity), sg);
+  let sg = Subst.signature(Subst.for_saving(Subst.identity), initial_sg);
+  let sg_without_locs =
+    Subst.signature(Subst.without_locs(Subst.identity), initial_sg);
   let flags =
     List.concat([
       if (Grain_utils.Config.recursive_types^) {
@@ -2339,22 +2354,23 @@ let build_signature_with_imports =
     let full_cmi =
       Cmi_format.build_full_cmi(
         ~name=modname,
-        ~sign=sg,
+        ~sign=sg_without_locs,
         ~crcs=imports,
         ~flags,
       );
-    let cmi = {
-      cmi_name: modname,
-      cmi_sign: sg,
-      cmi_crcs: imports,
-      cmi_flags: flags,
-      cmi_config_sum: full_cmi.cmi_config_sum,
-    };
-    let crc =
-      switch (full_cmi.cmi_crcs) {
-      | [(_, Some(crc)), ..._] => crc
-      | _ => failwith("Impossible")
-      };
+    let full_cmi = {...full_cmi, cmi_sign: sg};
+    // let cmi = {
+    //   cmi_name: modname,
+    //   cmi_sign: sg,
+    //   cmi_crcs: imports,
+    //   cmi_flags: flags,
+    //   cmi_config_sum: full_cmi.cmi_config_sum,
+    // };
+    // let crc =
+    //   switch (full_cmi.cmi_crcs) {
+    //   | [(_, Some(crc)), ..._] => crc
+    //   | _ => failwith("Impossible")
+    //   };
 
     /* Enter signature in persistent table so that imported_unit()
        will also return its crc */
@@ -2371,12 +2387,13 @@ let build_signature_with_imports =
       ps_name: modname,
       ps_sig: lazy(Subst.signature(Subst.identity, sg)),
       ps_comps: comps,
+      ps_crc: Digest.to_hex(full_cmi.cmi_crc),
       ps_crcs: full_cmi.cmi_crcs,
       ps_filename: filename,
-      ps_flags: cmi.cmi_flags,
+      ps_flags: full_cmi.cmi_flags,
     };
-    save_pers_struct(crc, ps);
-    cmi;
+    save_pers_struct(full_cmi.cmi_crc, ps);
+    full_cmi;
   }) {
   | exn => raise(exn)
   };

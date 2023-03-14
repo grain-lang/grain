@@ -53,19 +53,19 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
       let (path_hd, path_tl) = Path.flatten(mod_);
       let mod_names = [Ident.name(path_hd), ...path_tl];
       let module_chain = Env.find_module_chain(mod_, env);
-      let (file, prefix) =
+      let (file_info, prefix) =
         List.fold_left(
           ((file, prefix), (decl, name)) => {
             switch (decl.md_filepath) {
-            | Some(filepath) => (Some(filepath), "")
+            | Some(file_info) => (Some(file_info), "")
             | None => (file, prefix ++ name ++ ".")
             }
           },
           (None, ""),
           List.combine(List.rev(module_chain), mod_names),
         );
-      switch (file) {
-      | Some(filepath) =>
+      switch (file_info) {
+      | Some({filename, crc: module_crc}) =>
         let fresh = gensym(name);
         Path_tbl.add(include_map, path, fresh);
         let shape =
@@ -89,7 +89,8 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
           [
             IncludeDeclaration.grain_value(
               fresh,
-              filepath,
+              ~module_crc,
+              filename,
               prefix ++ name,
               shape,
             ),
