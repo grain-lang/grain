@@ -27,6 +27,12 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("heap_number_i32_wrapper", "1073741824");
   assertSnapshot("heap_number_i32_wrapper_max", "2147483647");
   assertSnapshot("heap_number_i64_wrapper", "2147483648");
+  assertSnapshot("hex_dec_exp1", "0x1p5");
+  assertSnapshot("hex_dec_exp2", "0x1.4p5");
+  assertSnapshot("hex_dec_exp3", "0x1p-5");
+  assertSnapshot("hex_dec_exp4", "0x1Ap5");
+  assertSnapshot("hex_dec_exp5", "0x1A.4p5");
+  assertSnapshot("hex_dec_exp5", "0x1A.4Ap5");
   assertSnapshot("hex", "0xff");
   assertSnapshot("hex_neg", "-0xff");
   assertSnapshot("bin", "0b1010");
