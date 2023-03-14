@@ -3529,7 +3529,7 @@ let checkMustString = (ms, buf: MatchBuf, pos, endPos) => {
       ) {
         buf.matchInput
       } else {
-        String.slice(pos, endPos, buf.matchInput)
+        String.slice(pos, end=endPos, buf.matchInput)
       }
       Option.isSome(String.indexOf(ms, toCheck))
     },
@@ -3656,7 +3656,7 @@ let makeMatchResult = (origString, start, end, state) => {
   }
   let getMatchGroup = n => {
     match (getMatchGroupPosition(n)) {
-      Some((start, end)) => Some(String.slice(start, end, origString)),
+      Some((start, end)) => Some(String.slice(start, end=end, origString)),
       None => None,
     }
   }
@@ -3671,7 +3671,7 @@ let makeMatchResult = (origString, start, end, state) => {
   let getAllMatchGroups = () => {
     Array.map(o => match (o) {
       None => None,
-      Some((start, end)) => Some(String.slice(start, end, origString)),
+      Some((start, end)) => Some(String.slice(start, end=end, origString)),
     }, getAllMatchGroupPositions())
   }
   {
@@ -3691,7 +3691,7 @@ let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
     else Array.make(0, None)
   let toWrap =
     if (startOffset == 0 && endOffset == String.length(string)) string
-    else String.slice(startOffset, endOffset, string)
+    else String.slice(startOffset, end=endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
@@ -3705,7 +3705,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
     let state = Array.make(rx.reNumGroups, None)
     let toWrap =
       if (startOffset == 0 && endOffset == String.length(string)) string
-      else String.slice(startOffset, endOffset, string)
+      else String.slice(startOffset, end=endOffset, string)
     let buf = makeMatchBuffer(toWrap)
     match (searchMatch(
       rx,
@@ -3745,7 +3745,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
   let toWrap =
     if (startOffset == 0 && endOffset == String.length(string)) string
-    else String.slice(startOffset, endOffset, string)
+    else String.slice(startOffset, end=endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   match (searchMatch(
     rx,
@@ -3893,15 +3893,14 @@ let computeReplacement =
   let replacementExploded = String.explode(replacementString)
   let len = Array.length(replacementExploded)
   let mut acc = []
-  let getBeforeMatch = () => String.slice(0, start, matchBuf.matchInput)
-  let getAfterMatch = () =>
-    String.slice(end, String.length(matchBuf.matchInput), matchBuf.matchInput)
+  let getBeforeMatch = () => String.slice(0, end=start, matchBuf.matchInput)
+  let getAfterMatch = () => String.slice(end, matchBuf.matchInput)
   let getInputSubstr = n => {
     if (n == 0) {
-      String.slice(start, end, matchBuf.matchInput)
+      String.slice(start, end=end, matchBuf.matchInput)
     } else if (n - 1 < Array.length(state)) {
       match (state[n - 1]) {
-        Some((start, end)) => String.slice(start, end, matchBuf.matchInput),
+        Some((start, end)) => String.slice(start, end=end, matchBuf.matchInput),
         None => "",
       }
     } else {
@@ -3910,7 +3909,7 @@ let computeReplacement =
   }
   let consRange = (start, end, lst) => {
     if (start == end) lst
-    else [String.slice(start, end, replacementString), ...lst]
+    else [String.slice(start, end=end, replacementString), ...lst]
   }
   let rec loop = (pos, since) => {
     if (pos == len) {
@@ -3986,7 +3985,7 @@ let regexReplaceHelp =
           ""
         } else {
           String.concat(
-            String.slice(searchPos, searchPos + 1, toSearch),
+            String.slice(searchPos, end=searchPos + 1, toSearch),
             loop(searchPos + 1)
           )
         }
@@ -3996,15 +3995,13 @@ let regexReplaceHelp =
     }
     match (poss) {
       None =>
-        if (searchPos == 0) toSearch
-        else String.slice(searchPos, String.length(toSearch), toSearch),
+        if (searchPos == 0) toSearch else String.slice(searchPos, toSearch),
       Some((start, end)) =>
         String.concat(
-          String.slice(searchPos, start, toSearch),
+          String.slice(searchPos, end=start, toSearch),
           String.concat(
             computeReplacement(buf, replacement, start, end, state),
-            if (all) recur(start, end)
-            else String.slice(end, String.length(toSearch), toSearch)
+            if (all) recur(start, end) else String.slice(end, toSearch)
           )
         ),
     }
@@ -4083,10 +4080,10 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
         Some((start, end)) => {
           if (i == 0) {
             // Add the string between this match and the last match
-            out = [String.slice(currentLocation, start, str), ...out]
+            out = [String.slice(currentLocation, end=start, str), ...out]
           } else {
             // This adds the groups back in
-            out = [String.slice(start, end, str), ...out]
+            out = [String.slice(start, end=end, str), ...out]
           }
           if (end > currentLocation) currentLocation = end
         },
@@ -4094,7 +4091,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
       }
     }, locations)
   }, regexMatches)
-  out = [String.slice(currentLocation, String.length(str), str), ...out]
+  out = [String.slice(currentLocation, str), ...out]
   List.reverse(out)
 }
 

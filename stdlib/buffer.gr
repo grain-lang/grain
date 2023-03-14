@@ -335,7 +335,7 @@ provide let addChar = (char, buffer) => {
  */
 @unsafe
 provide let addStringSlice = (start: Number, end, string, buffer) => {
-  let slice = String.slice(start, end, string)
+  let slice = String.slice(start, end=end, string)
 
   let bytelen = String.byteLength(slice)
 
