@@ -38,5 +38,5 @@ tuples › no_non_trailing_comma_singleton_tup
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 236
+ ;; custom section \"cmi\", size 281
 )

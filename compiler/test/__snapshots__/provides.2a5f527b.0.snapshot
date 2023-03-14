@@ -48,5 +48,5 @@ provides › multiple_provides_8
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1303
+ ;; custom section \"cmi\", size 1348
 )

@@ -38,5 +38,5 @@ modules › smallest_submodule
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 236
+ ;; custom section \"cmi\", size 281
 )

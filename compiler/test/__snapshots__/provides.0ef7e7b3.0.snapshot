@@ -6,7 +6,7 @@ provides › provide7
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
- (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$x\" (global $x_1122 (mut i32)))
+ (import \"GRAIN$MODULE$3e349400c1f34738d1222e41212bfd06$provideAll\" \"GRAIN$EXPORT$x\" (global $x_1122 (mut i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
@@ -39,5 +39,5 @@ provides › provide7
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 286
+ ;; custom section \"cmi\", size 331
 )
