@@ -51,7 +51,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (String, String) -> String
+concat : (s1: String, s2: String) -> String
 ```
 
 Concatenate two strings.
@@ -83,7 +83,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : String -> Number
+length : (string: String) -> Number
 ```
 
 Returns the character length of the input string.
@@ -114,7 +114,7 @@ No other changes yet.
 </details>
 
 ```grain
-byteLength : String -> Number
+byteLength : (string: String) -> Number
 ```
 
 Returns the byte length of the input string.
@@ -145,7 +145,7 @@ No other changes yet.
 </details>
 
 ```grain
-indexOf : (String, String) -> Option<Number>
+indexOf : (search: String, string: String) -> Option<Number>
 ```
 
 Finds the first position of a substring in the input string.
@@ -177,7 +177,7 @@ No other changes yet.
 </details>
 
 ```grain
-lastIndexOf : (String, String) -> Option<Number>
+lastIndexOf : (search: String, string: String) -> Option<Number>
 ```
 
 Finds the last position of a substring in the input string.
@@ -209,7 +209,7 @@ No other changes yet.
 </details>
 
 ```grain
-charCodeAt : (Number, String) -> Number
+charCodeAt : (position: Number, string: String) -> Number
 ```
 
 Get the Unicode code point at the position in the input string.
@@ -251,7 +251,7 @@ No other changes yet.
 </details>
 
 ```grain
-charAt : (Number, String) -> Char
+charAt : (position: Number, string: String) -> Char
 ```
 
 Get the character at the position in the input string.
@@ -293,7 +293,7 @@ No other changes yet.
 </details>
 
 ```grain
-explode : String -> Array<Char>
+explode : (string: String) -> Array<Char>
 ```
 
 Split a string into its Unicode characters.
@@ -330,7 +330,7 @@ No other changes yet.
 </details>
 
 ```grain
-implode : Array<Char> -> String
+implode : (arr: Array<Char>) -> String
 ```
 
 Create a string from an array of characters.
@@ -361,7 +361,7 @@ No other changes yet.
 </details>
 
 ```grain
-reverse : String -> String
+reverse : (string: String) -> String
 ```
 
 Create a string that is the given string reversed.
@@ -387,7 +387,7 @@ String.reverse("olleH") == "Hello"
 ### String.**split**
 
 ```grain
-split : (String, String) -> Array<String>
+split : (separator: String, string: String) -> Array<String>
 ```
 
 Split a string by the given separator.
@@ -425,7 +425,7 @@ No other changes yet.
 </details>
 
 ```grain
-slice : (Number, Number, String) -> String
+slice : (start: Number, to: Number, string: String) -> String
 ```
 
 Get a portion of a string.
@@ -471,7 +471,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (String, String) -> Bool
+contains : (search: String, string: String) -> Bool
 ```
 
 Check if a string contains a substring.
@@ -503,7 +503,7 @@ No other changes yet.
 </details>
 
 ```grain
-startsWith : (String, String) -> Bool
+startsWith : (search: String, string: String) -> Bool
 ```
 
 Check if a string begins with another string.
@@ -535,7 +535,7 @@ No other changes yet.
 </details>
 
 ```grain
-endsWith : (String, String) -> Bool
+endsWith : (search: String, string: String) -> Bool
 ```
 
 Check if a string ends with another string.
@@ -567,7 +567,8 @@ No other changes yet.
 </details>
 
 ```grain
-replaceFirst : (String, String, String) -> String
+replaceFirst :
+  (searchPattern: String, replacement: String, string: String) -> String
 ```
 
 Replaces the first appearance of the search pattern in the string with the replacement value.
@@ -600,7 +601,8 @@ No other changes yet.
 </details>
 
 ```grain
-replaceLast : (String, String, String) -> String
+replaceLast :
+  (searchPattern: String, replacement: String, string: String) -> String
 ```
 
 Replaces the last appearance of the search pattern in the string with the replacement value.
@@ -633,7 +635,8 @@ No other changes yet.
 </details>
 
 ```grain
-replaceAll : (String, String, String) -> String
+replaceAll :
+  (searchPattern: String, replacement: String, string: String) -> String
 ```
 
 Replaces every appearance of the search pattern in the string with the replacement value.
@@ -666,7 +669,8 @@ No other changes yet.
 </details>
 
 ```grain
-encodeAt : (String, Encoding, Bytes, Number) -> Bytes
+encodeAt :
+  (string: String, encoding: Encoding, dest: Bytes, destPos: Number) -> Bytes
 ```
 
 Encodes the given string into a byte sequence at the supplied position, excluding any byte-order marker, using the encoding scheme provided.
@@ -701,7 +705,8 @@ No other changes yet.
 </details>
 
 ```grain
-encodeAtWithBom : (String, Encoding, Bytes, Number) -> Bytes
+encodeAtWithBom :
+  (string: String, encoding: Encoding, dest: Bytes, destPos: Number) -> Bytes
 ```
 
 Encodes the given string into a byte sequence at the supplied position, including any byte-order marker, using the encoding scheme provided.
@@ -736,7 +741,7 @@ No other changes yet.
 </details>
 
 ```grain
-encode : (String, Encoding) -> Bytes
+encode : (string: String, encoding: Encoding) -> Bytes
 ```
 
 Encodes the given string using the given encoding scheme, excluding any byte-order marker.
@@ -762,7 +767,7 @@ No other changes yet.
 </details>
 
 ```grain
-encodeWithBom : (String, Encoding) -> Bytes
+encodeWithBom : (string: String, encoding: Encoding) -> Bytes
 ```
 
 Encodes the given string using the given encoding scheme, including any byte-order marker.
@@ -788,7 +793,8 @@ No other changes yet.
 </details>
 
 ```grain
-decodeRange : (Bytes, Encoding, Number, Number) -> String
+decodeRange :
+  (bytes: Bytes, encoding: Encoding, start: Number, size: Number) -> String
 ```
 
 Decodes the given byte sequence of the specified range into a string, excluding any byte-order marker, using encoding scheme provided.
@@ -825,7 +831,8 @@ No other changes yet.
 </details>
 
 ```grain
-decodeRangeKeepBom : (Bytes, Encoding, Number, Number) -> String
+decodeRangeKeepBom :
+  (bytes: Bytes, encoding: Encoding, start: Number, size: Number) -> String
 ```
 
 Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
@@ -862,7 +869,7 @@ No other changes yet.
 </details>
 
 ```grain
-decode : (Bytes, Encoding) -> String
+decode : (bytes: Bytes, encoding: Encoding) -> String
 ```
 
 Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
@@ -888,7 +895,7 @@ No other changes yet.
 </details>
 
 ```grain
-decodeKeepBom : (Bytes, Encoding) -> String
+decodeKeepBom : (bytes: Bytes, encoding: Encoding) -> String
 ```
 
 Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
@@ -914,7 +921,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachCodePoint : ((Number -> Void), String) -> Void
+forEachCodePoint : (fn: (Number -> Void), str: String) -> Void
 ```
 
 Iterates over Unicode code points in a string.
@@ -940,7 +947,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachCodePointi : (((Number, Number) -> Void), String) -> Void
+forEachCodePointi : (fn: ((Number, Number) -> Void), str: String) -> Void
 ```
 
 Iterates over Unicode code points in a string. This is the same as
@@ -968,7 +975,7 @@ No other changes yet.
 </details>
 
 ```grain
-trimStart : String -> String
+trimStart : (string: String) -> String
 ```
 
 Trims the beginning of a string—removing any leading whitespace characters.
@@ -999,7 +1006,7 @@ No other changes yet.
 </details>
 
 ```grain
-trimEnd : String -> String
+trimEnd : (string: String) -> String
 ```
 
 Trims the end of a string—removing any trailing whitespace characters.
@@ -1030,7 +1037,7 @@ No other changes yet.
 </details>
 
 ```grain
-trim : String -> String
+trim : (string: String) -> String
 ```
 
 Trims a string—removing all leading and trailing whitespace characters.

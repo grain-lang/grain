@@ -842,6 +842,6 @@ _ENOTCAPABLE : WasmI32
 ### Wasi.**stringOfSystemError**
 
 ```grain
-stringOfSystemError : a -> String
+stringOfSystemError : (code: a) -> String
 ```
 

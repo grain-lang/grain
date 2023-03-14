@@ -43,7 +43,11 @@ describe("functions", ({test, testSkip}) => {
     "let rec foo = (() => {5});\nlet bar = (() => { 7 });\nlet rec foo = (() => {9});\nfoo()",
   );
   assertCompileError("arity_1", "let foo = (() => {5});\nfoo(6)", "type");
-  assertCompileError("arity_2", "let foo = ((x) => {x + 5});\nfoo()", "type");
+  assertCompileError(
+    "arity_2",
+    "let foo = ((x) => {x + 5});\nfoo()",
+    "missing an argument of type x: Number",
+  );
   assertCompileError(
     "arity_3",
     "let foo = ((x) => {x});\nfoo(1, 2, 3)",
@@ -122,7 +126,11 @@ describe("functions", ({test, testSkip}) => {
     "((x, y, x) => {5})",
     "Variable x is bound several times",
   );
-  assertCompileError("lambda_arity_1", "((x) => {6})()", "type");
+  assertCompileError(
+    "lambda_arity_1",
+    "((x) => {6})()",
+    "missing an argument",
+  );
   assertCompileError("lambda_arity_2", "((x) => {5})(1, 2)", "type");
   assertCompileError(
     "letrec_nonstatic_const",
@@ -192,5 +200,153 @@ truc()|},
     }
     foo()
     |},
+  );
+
+  assertRun(
+    "labeled_args1",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat(a="1", b="2"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "labeled_args2",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat(a="1", "2"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "labeled_args3",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat("2", a="1"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "labeled_args4",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat("1", b="2"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "labeled_args5",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat(b="2", "1"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "labeled_args6",
+    {|
+      let nothing = (a, b) => void
+      nothing(b=print(1), print(2))
+    |},
+    "1\n2\n",
+  );
+
+  assertRun(
+    "default_args1",
+    {|
+      let concat = (a="1", b) => a ++ b
+      print(concat(a="3", "2"))
+    |},
+    "32\n",
+  );
+  assertRun(
+    "default_args2",
+    {|
+      let concat = (a="1", b) => a ++ b
+      print(concat(a="3", b="2"))
+    |},
+    "32\n",
+  );
+  assertRun(
+    "default_args3",
+    {|
+      let concat = (a="1", b) => a ++ b
+      print(concat(b="2", a="3"))
+    |},
+    "32\n",
+  );
+  assertRun(
+    "default_args4",
+    {|
+      let concat = (a="1", b) => a ++ b
+      print(concat("2"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "default_args5",
+    {|
+      let concat = (a="1", b) => a ++ b
+      print(concat(b="2"))
+    |},
+    "12\n",
+  );
+  assertRun(
+    "default_args6",
+    {|
+      let concat = (a=b ++ b, b) => a ++ b
+      print(concat(b="9"))
+    |},
+    "999\n",
+  );
+
+  assertRun(
+    "labeled_args_typecheck1",
+    {|
+      let apply = (f: (arg1: Number) -> Number) => f(arg1=5)
+      print(apply(notarg1 => notarg1))
+    |},
+    "5\n",
+  );
+
+  assertCompileError(
+    "labeled_args_err1",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat(c="3"))
+    |},
+    "This argument cannot be supplied with label c",
+  );
+  assertCompileError(
+    "labeled_args_err2",
+    {|
+      let concat = (a, b) => a ++ b
+      print(concat("1", "2", c="3"))
+    |},
+    "This argument cannot be supplied with label c",
+  );
+  assertCompileError(
+    "labeled_args_err3",
+    {|
+      let concat = (a="1", b) => a ++ b
+      print(concat("1", "2"))
+    |},
+    "Did you mean to supply an argument with label a?",
+  );
+  assertCompileError(
+    "labeled_args_err4",
+    {|
+      let apply = (f: (?arg1: Number) -> Number) => f(arg1=5)
+      print(apply(notarg1 => notarg1))
+    |},
+    "The expected function type contains the argument \\?arg1",
+  );
+  assertCompileError(
+    "labeled_args_err5",
+    {|
+      let apply = (f: (?arg1: Number) -> Number) => f(arg1=5)
+      print(apply(notarg1 => notarg1))
+    |},
+    "which has a default value, but the matching argument does not.",
   );
 });

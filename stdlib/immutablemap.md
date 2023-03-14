@@ -48,7 +48,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : ImmutableMap<a, b> -> Number
+size : (map: ImmutableMap<a, b>) -> Number
 ```
 
 Provides the count of key-value pairs stored within the map.
@@ -73,7 +73,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : ImmutableMap<a, b> -> Bool
+isEmpty : (map: ImmutableMap<a, b>) -> Bool
 ```
 
 Determines if the map contains no key-value pairs.
@@ -98,7 +98,7 @@ No other changes yet.
 </details>
 
 ```grain
-set : (a, b, ImmutableMap<a, b>) -> ImmutableMap<a, b>
+set : (key: a, val: b, map: ImmutableMap<a, b>) -> ImmutableMap<a, b>
 ```
 
 Produces a new map containing a new key-value pair. If the key already exists in the map, the value is replaced.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-get : (a, ImmutableMap<a, b>) -> Option<b>
+get : (key: a, map: ImmutableMap<a, b>) -> Option<b>
 ```
 
 Retrieves the value for the given key.
@@ -151,7 +151,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (a, ImmutableMap<a, b>) -> Bool
+contains : (key: a, map: ImmutableMap<a, b>) -> Bool
 ```
 
 Determines if the map contains the given key. In such a case, it will always contain a value for the given key.
@@ -177,7 +177,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove : (a, ImmutableMap<a, b>) -> ImmutableMap<a, b>
+remove : (key: a, map: ImmutableMap<a, b>) -> ImmutableMap<a, b>
 ```
 
 Produces a new map without the key-value pair corresponding to the given
@@ -205,7 +205,8 @@ No other changes yet.
 
 ```grain
 update :
-  (a, (Option<b> -> Option<b>), ImmutableMap<a, b>) -> ImmutableMap<a, b>
+  (key: a, fn: (Option<b> -> Option<b>), map: ImmutableMap<a, b>) ->
+   ImmutableMap<a, b>
 ```
 
 Produces a new map by calling an updater function that receives the
@@ -236,7 +237,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : (((a, b) -> Void), ImmutableMap<a, b>) -> Void
+forEach : (fn: ((a, b) -> Void), map: ImmutableMap<a, b>) -> Void
 ```
 
 Iterates the map, calling an iterator function with each key and value.
@@ -256,7 +257,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (((a, b, c) -> a), a, ImmutableMap<b, c>) -> a
+reduce : (fn: ((a, b, c) -> a), init: a, map: ImmutableMap<b, c>) -> a
 ```
 
 Combines all key-value pairs of a map using a reducer function.
@@ -283,7 +284,7 @@ No other changes yet.
 </details>
 
 ```grain
-keys : ImmutableMap<a, b> -> List<a>
+keys : (map: ImmutableMap<a, b>) -> List<a>
 ```
 
 Enumerates all keys in the given map.
@@ -308,7 +309,7 @@ No other changes yet.
 </details>
 
 ```grain
-values : ImmutableMap<a, b> -> List<b>
+values : (map: ImmutableMap<a, b>) -> List<b>
 ```
 
 Enumerates all values in the given map.
@@ -333,7 +334,8 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (((a, b) -> Bool), ImmutableMap<a, b>) -> ImmutableMap<a, b>
+filter :
+  (fn: ((a, b) -> Bool), map: ImmutableMap<a, b>) -> ImmutableMap<a, b>
 ```
 
 Produces a new map excluding the key-value pairs where a predicate function returns `false`.
@@ -359,7 +361,8 @@ No other changes yet.
 </details>
 
 ```grain
-reject : (((a, b) -> Bool), ImmutableMap<a, b>) -> ImmutableMap<a, b>
+reject :
+  (fn: ((a, b) -> Bool), map: ImmutableMap<a, b>) -> ImmutableMap<a, b>
 ```
 
 Produces a new map excluding the key-value pairs where a predicate function returns `true`.
@@ -385,7 +388,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : List<(a, b)> -> ImmutableMap<a, b>
+fromList : (list: List<(a, b)>) -> ImmutableMap<a, b>
 ```
 
 Creates a map from a list.
@@ -410,7 +413,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : ImmutableMap<a, b> -> List<(a, b)>
+toList : (map: ImmutableMap<a, b>) -> List<(a, b)>
 ```
 
 Enumerates all key-value pairs in the given map.
@@ -435,7 +438,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : Array<(a, b)> -> ImmutableMap<a, b>
+fromArray : (array: Array<(a, b)>) -> ImmutableMap<a, b>
 ```
 
 Creates a map from an array.
@@ -460,7 +463,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : ImmutableMap<a, b> -> Array<(a, b)>
+toArray : (map: ImmutableMap<a, b>) -> Array<(a, b)>
 ```
 
 Converts a map into an array of its key-value pairs.

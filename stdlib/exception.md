@@ -27,7 +27,7 @@ No other changes yet.
 </details>
 
 ```grain
-registerPrinter : (Exception -> Option<String>) -> Void
+registerPrinter : (printer: (Exception -> Option<String>)) -> Void
 ```
 
 Registers an exception printer. When an exception is thrown, all registered

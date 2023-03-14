@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : Uint64 -> Random
+make : (seed: Uint64) -> Random
 ```
 
 Creates a new pseudo-random number generator with the given seed.
@@ -86,7 +86,7 @@ Returns:
 </details>
 
 ```grain
-nextUint32 : Random -> Uint32
+nextUint32 : (random: Random) -> Uint32
 ```
 
 Generates a random 32-bit integer from the given pseudo-random number generator.
@@ -118,7 +118,7 @@ Returns:
 </details>
 
 ```grain
-nextUint64 : Random -> Uint64
+nextUint64 : (random: Random) -> Uint64
 ```
 
 Generates a random 64-bit integer from the given pseudo-random number generator.
@@ -150,7 +150,7 @@ Returns:
 </details>
 
 ```grain
-nextUint32InRange : (Random, Uint32, Uint32) -> Uint32
+nextUint32InRange : (random: Random, low: Uint32, high: Uint32) -> Uint32
 ```
 
 Generates a random 32-bit integer from the given pseudo-random number generator
@@ -185,7 +185,7 @@ Returns:
 </details>
 
 ```grain
-nextUint64InRange : (Random, Uint64, Uint64) -> Uint64
+nextUint64InRange : (random: Random, low: Uint64, high: Uint64) -> Uint64
 ```
 
 Generates a random 64-bit integer from the given pseudo-random number generator

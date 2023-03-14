@@ -41,7 +41,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : Number -> Queue<a>
+makeSized : (size: Number) -> Queue<a>
 ```
 
 Creates a new queue with an initial storage of the given size. As values are
@@ -88,7 +88,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : Queue<a> -> Bool
+isEmpty : (queue: Queue<a>) -> Bool
 ```
 
 Checks if the given queue contains no items.
@@ -113,7 +113,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : Queue<a> -> Number
+size : (queue: Queue<a>) -> Number
 ```
 
 Computes the size of the input queue.
@@ -138,7 +138,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : Queue<a> -> Option<a>
+peek : (queue: Queue<a>) -> Option<a>
 ```
 
 Provides the value at the beginning of the queue, if it exists.
@@ -163,7 +163,7 @@ No other changes yet.
 </details>
 
 ```grain
-push : (a, Queue<a>) -> Void
+push : (value: a, queue: Queue<a>) -> Void
 ```
 
 Adds a new item to the end of the queue.
@@ -183,7 +183,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : Queue<a> -> Option<a>
+pop : (queue: Queue<a>) -> Option<a>
 ```
 
 Removes the item at the beginning of the queue.
@@ -208,7 +208,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : Queue<a> -> Void
+clear : (queue: Queue<a>) -> Void
 ```
 
 Clears the queue by removing all of its elements
@@ -227,7 +227,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : Queue<a> -> Queue<a>
+copy : (queue: Queue<a>) -> Queue<a>
 ```
 
 Produces a shallow copy of the input queue.
@@ -299,7 +299,7 @@ An empty queue.
 </details>
 
 ```grain
-isEmpty : ImmutableQueue<a> -> Bool
+isEmpty : (queue: ImmutableQueue<a>) -> Bool
 ```
 
 Checks if the given queue contains any values.
@@ -334,7 +334,7 @@ Returns:
 </details>
 
 ```grain
-peek : ImmutableQueue<a> -> Option<a>
+peek : (queue: ImmutableQueue<a>) -> Option<a>
 ```
 
 Returns the value at the beginning of the queue. It is not removed from the queue.
@@ -369,7 +369,7 @@ Returns:
 </details>
 
 ```grain
-push : (a, ImmutableQueue<a>) -> ImmutableQueue<a>
+push : (value: a, queue: ImmutableQueue<a>) -> ImmutableQueue<a>
 ```
 
 Adds a value to the end of the queue.
@@ -405,7 +405,7 @@ Returns:
 </details>
 
 ```grain
-pop : ImmutableQueue<a> -> ImmutableQueue<a>
+pop : (queue: ImmutableQueue<a>) -> ImmutableQueue<a>
 ```
 
 Dequeues the next value in the queue.
@@ -437,7 +437,7 @@ Returns:
 </details>
 
 ```grain
-size : ImmutableQueue<a> -> Number
+size : (queue: ImmutableQueue<a>) -> Number
 ```
 
 Get the number of values in a queue.

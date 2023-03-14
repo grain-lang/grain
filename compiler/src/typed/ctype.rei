@@ -159,7 +159,21 @@ let unify_var: (Env.t, type_expr, type_expr) => unit;
    is a variable. */
 let with_passive_variants: ('a => 'b, 'a) => 'b;
 /* Call [f] in passive_variants mode, for exhaustiveness check. */
-let filter_arrow: (int, Env.t, type_expr) => (list(type_expr), type_expr);
+
+type filter_arrow_failure =
+  | Unification_error(list((type_expr, type_expr)))
+  | Label_mismatch({
+      got: argument_label,
+      expected: argument_label,
+      expected_type: type_expr,
+    })
+  | Arity_mismatch
+  | Not_a_function;
+
+exception Filter_arrow_failed(filter_arrow_failure);
+
+let filter_arrow:
+  (Env.t, type_expr, list(argument_label)) => (list(type_expr), type_expr);
 /* A special case of unification (with l:'a -> 'b). */
 let occur_in: (Env.t, type_expr, type_expr) => bool;
 let deep_occur: (type_expr, type_expr) => bool;

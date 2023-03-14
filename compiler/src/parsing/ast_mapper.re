@@ -133,7 +133,16 @@ module E = {
       lambda(
         ~loc,
         ~attributes,
-        List.map(sub.pat(sub), pl),
+        List.map(
+          arg =>
+            {
+              pla_label: arg.pla_label,
+              pla_pattern: sub.pat(sub, arg.pla_pattern),
+              pla_default: Option.map(sub.expr(sub), arg.pla_default),
+              pla_loc: sub.location(sub, arg.pla_loc),
+            },
+          pl,
+        ),
         sub.expr(sub, e),
       )
     | PExpApp(e, el) =>
@@ -141,7 +150,15 @@ module E = {
         ~loc,
         ~attributes,
         sub.expr(sub, e),
-        List.map(sub.expr(sub), el),
+        List.map(
+          arg =>
+            {
+              paa_label: arg.paa_label,
+              paa_expr: sub.expr(sub, arg.paa_expr),
+              paa_loc: sub.location(sub, arg.paa_loc),
+            },
+          el,
+        ),
       )
     | PExpConstruct(id, e) =>
       construct(
@@ -325,7 +342,19 @@ module T = {
     | PTyAny => any(~loc, ())
     | PTyVar(v) => var(~loc, v)
     | PTyArrow(args, ret) =>
-      arrow(~loc, List.map(sub.typ(sub), args), sub.typ(sub, ret))
+      arrow(
+        ~loc,
+        List.map(
+          arg =>
+            {
+              ptyp_arg_label: arg.ptyp_arg_label,
+              ptyp_arg_type: sub.typ(sub, arg.ptyp_arg_type),
+              ptyp_arg_loc: sub.location(sub, arg.ptyp_arg_loc),
+            },
+          args,
+        ),
+        sub.typ(sub, ret),
+      )
     | PTyTuple(ts) => tuple(~loc, List.map(sub.typ(sub), ts))
     | PTyConstr(name, ts) =>
       constr(~loc, map_identifier(sub, name), List.map(sub.typ(sub), ts))

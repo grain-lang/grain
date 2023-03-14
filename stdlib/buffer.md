@@ -37,7 +37,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : Number -> Buffer
+make : (initialSize: Number) -> Buffer
 ```
 
 Creates a fresh buffer, initially empty.
@@ -71,7 +71,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : Buffer -> Number
+length : (buffer: Buffer) -> Number
 ```
 
 Gets the number of bytes currently contained in a buffer.
@@ -96,7 +96,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : Buffer -> Void
+clear : (buffer: Buffer) -> Void
 ```
 
 Clears data in the buffer and sets its length to zero.
@@ -117,7 +117,7 @@ No other changes yet.
 </details>
 
 ```grain
-reset : Buffer -> Void
+reset : (buffer: Buffer) -> Void
 ```
 
 Empty a buffer and deallocate the internal byte sequence holding the buffer contents.
@@ -138,7 +138,7 @@ No other changes yet.
 </details>
 
 ```grain
-truncate : (Number, Buffer) -> Void
+truncate : (length: Number, buffer: Buffer) -> Void
 ```
 
 Shortens a buffer to the given length.
@@ -167,7 +167,7 @@ No other changes yet.
 </details>
 
 ```grain
-toBytes : Buffer -> Bytes
+toBytes : (buffer: Buffer) -> Bytes
 ```
 
 Returns a copy of the current contents of the buffer as a byte sequence.
@@ -192,7 +192,7 @@ No other changes yet.
 </details>
 
 ```grain
-toBytesSlice : (Number, Number, Buffer) -> Bytes
+toBytesSlice : (start: Number, length: Number, buffer: Buffer) -> Bytes
 ```
 
 Returns a slice of the current contents of the buffer as a byte sequence.
@@ -227,7 +227,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : Buffer -> String
+toString : (buffer: Buffer) -> String
 ```
 
 Returns a copy of the current contents of the buffer as a string.
@@ -252,7 +252,7 @@ No other changes yet.
 </details>
 
 ```grain
-toStringSlice : (Number, Number, Buffer) -> String
+toStringSlice : (start: Number, length: Number, buffer: Buffer) -> String
 ```
 
 Returns a copy of a subset of the current contents of the buffer as a string.
@@ -279,7 +279,7 @@ No other changes yet.
 </details>
 
 ```grain
-addBytes : (Bytes, Buffer) -> Void
+addBytes : (bytes: Bytes, buffer: Buffer) -> Void
 ```
 
 Appends a byte sequence to a buffer.
@@ -299,7 +299,7 @@ No other changes yet.
 </details>
 
 ```grain
-addString : (String, Buffer) -> Void
+addString : (string: String, buffer: Buffer) -> Void
 ```
 
 Appends the bytes of a string to a buffer.
@@ -319,7 +319,7 @@ No other changes yet.
 </details>
 
 ```grain
-addChar : (Char, Buffer) -> Void
+addChar : (char: Char, buffer: Buffer) -> Void
 ```
 
 Appends the bytes of a char to a buffer.
@@ -346,7 +346,8 @@ Parameters:
 </details>
 
 ```grain
-addStringSlice : (Number, Number, String, Buffer) -> Void
+addStringSlice :
+  (start: Number, end: Number, string: String, buffer: Buffer) -> Void
 ```
 
 Appends the bytes of a subset of a string to a buffer.
@@ -368,7 +369,8 @@ No other changes yet.
 </details>
 
 ```grain
-addBytesSlice : (Number, Number, Bytes, Buffer) -> Void
+addBytesSlice :
+  (start: Number, length: Number, bytes: Bytes, buffer: Buffer) -> Void
 ```
 
 Appends the bytes of a subset of a byte sequence to a buffer.
@@ -399,7 +401,7 @@ No other changes yet.
 </details>
 
 ```grain
-addBuffer : (Buffer, Buffer) -> Void
+addBuffer : (srcBuffer: Buffer, dstBuffer: Buffer) -> Void
 ```
 
 Appends the bytes of a source buffer to destination buffer.
@@ -421,7 +423,9 @@ No other changes yet.
 </details>
 
 ```grain
-addBufferSlice : (Number, Number, Buffer, Buffer) -> Void
+addBufferSlice :
+  (start: Number, length: Number, srcBuffer: Buffer, dstBuffer: Buffer) ->
+   Void
 ```
 
 Appends the bytes of a part of a buffer to the end of the buffer
@@ -452,7 +456,7 @@ Parameters:
 </details>
 
 ```grain
-getInt8 : (Number, Buffer) -> Int8
+getInt8 : (index: Number, buffer: Buffer) -> Int8
 ```
 
 Gets a signed 8-bit integer starting at the given byte index.
@@ -493,7 +497,7 @@ Throws:
 </details>
 
 ```grain
-setInt8 : (Number, Int8, Buffer) -> Void
+setInt8 : (index: Number, value: Int8, buffer: Buffer) -> Void
 ```
 
 Sets a signed 8-bit integer starting at the given byte index.
@@ -529,7 +533,7 @@ Throws:
 </details>
 
 ```grain
-addInt8 : (Int8, Buffer) -> Void
+addInt8 : (value: Int8, buffer: Buffer) -> Void
 ```
 
 Appends a signed 8-bit integer to a buffer.
@@ -556,7 +560,7 @@ Parameters:
 </details>
 
 ```grain
-getUint8 : (Number, Buffer) -> Uint8
+getUint8 : (index: Number, buffer: Buffer) -> Uint8
 ```
 
 Gets an unsigned 8-bit integer starting at the given byte index.
@@ -590,7 +594,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint8 : (Number, Uint8, Buffer) -> Void
+setUint8 : (index: Number, value: Uint8, buffer: Buffer) -> Void
 ```
 
 Sets an unsigned 8-bit integer starting at the given byte index.
@@ -619,7 +623,7 @@ No other changes yet.
 </details>
 
 ```grain
-addUint8 : (Uint8, Buffer) -> Void
+addUint8 : (value: Uint8, buffer: Buffer) -> Void
 ```
 
 Appends an unsigned 8-bit integer to a buffer.
@@ -646,7 +650,7 @@ Parameters:
 </details>
 
 ```grain
-getInt16 : (Number, Buffer) -> Int16
+getInt16 : (index: Number, buffer: Buffer) -> Int16
 ```
 
 Gets a signed 16-bit integer starting at the given byte index.
@@ -687,7 +691,7 @@ Throws:
 </details>
 
 ```grain
-setInt16 : (Number, Int16, Buffer) -> Void
+setInt16 : (index: Number, value: Int16, buffer: Buffer) -> Void
 ```
 
 Sets a signed 16-bit integer starting at the given byte index.
@@ -723,7 +727,7 @@ Throws:
 </details>
 
 ```grain
-addInt16 : (Int16, Buffer) -> Void
+addInt16 : (value: Int16, buffer: Buffer) -> Void
 ```
 
 Appends a signed 16-bit integer to a buffer.
@@ -750,7 +754,7 @@ Parameters:
 </details>
 
 ```grain
-getUint16 : (Number, Buffer) -> Uint16
+getUint16 : (index: Number, buffer: Buffer) -> Uint16
 ```
 
 Gets an unsigned 16-bit integer starting at the given byte index.
@@ -784,7 +788,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint16 : (Number, Uint16, Buffer) -> Void
+setUint16 : (index: Number, value: Uint16, buffer: Buffer) -> Void
 ```
 
 Sets an unsigned 16-bit integer starting at the given byte index.
@@ -813,7 +817,7 @@ No other changes yet.
 </details>
 
 ```grain
-addUint16 : (Uint16, Buffer) -> Void
+addUint16 : (value: Uint16, buffer: Buffer) -> Void
 ```
 
 Appends an unsigned 16-bit integer to a buffer.
@@ -833,7 +837,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInt32 : (Number, Buffer) -> Int32
+getInt32 : (index: Number, buffer: Buffer) -> Int32
 ```
 
 Gets a signed 32-bit integer starting at the given byte index.
@@ -867,7 +871,7 @@ No other changes yet.
 </details>
 
 ```grain
-setInt32 : (Number, Int32, Buffer) -> Void
+setInt32 : (index: Number, value: Int32, buffer: Buffer) -> Void
 ```
 
 Sets a signed 32-bit integer starting at the given byte index.
@@ -896,7 +900,7 @@ No other changes yet.
 </details>
 
 ```grain
-addInt32 : (Int32, Buffer) -> Void
+addInt32 : (value: Int32, buffer: Buffer) -> Void
 ```
 
 Appends a signed 32-bit integer to a buffer.
@@ -916,7 +920,7 @@ No other changes yet.
 </details>
 
 ```grain
-getUint32 : (Number, Buffer) -> Uint32
+getUint32 : (index: Number, buffer: Buffer) -> Uint32
 ```
 
 Gets an unsigned 32-bit integer starting at the given byte index.
@@ -950,7 +954,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint32 : (Number, Uint32, Buffer) -> Void
+setUint32 : (index: Number, value: Uint32, buffer: Buffer) -> Void
 ```
 
 Sets an unsigned 32-bit integer starting at the given byte index.
@@ -979,7 +983,7 @@ No other changes yet.
 </details>
 
 ```grain
-addUint32 : (Uint32, Buffer) -> Void
+addUint32 : (value: Uint32, buffer: Buffer) -> Void
 ```
 
 Appends an unsigned 32-bit integer to a buffer.
@@ -999,7 +1003,7 @@ No other changes yet.
 </details>
 
 ```grain
-getFloat32 : (Number, Buffer) -> Float32
+getFloat32 : (index: Number, buffer: Buffer) -> Float32
 ```
 
 Gets a 32-bit float starting at the given byte index.
@@ -1033,7 +1037,7 @@ No other changes yet.
 </details>
 
 ```grain
-setFloat32 : (Number, Float32, Buffer) -> Void
+setFloat32 : (index: Number, value: Float32, buffer: Buffer) -> Void
 ```
 
 Sets a 32-bit float starting at the given byte index.
@@ -1062,7 +1066,7 @@ No other changes yet.
 </details>
 
 ```grain
-addFloat32 : (Float32, Buffer) -> Void
+addFloat32 : (value: Float32, buffer: Buffer) -> Void
 ```
 
 Appends a 32-bit float to a buffer.
@@ -1082,7 +1086,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInt64 : (Number, Buffer) -> Int64
+getInt64 : (index: Number, buffer: Buffer) -> Int64
 ```
 
 Gets a signed 64-bit integer starting at the given byte index.
@@ -1116,7 +1120,7 @@ No other changes yet.
 </details>
 
 ```grain
-setInt64 : (Number, Int64, Buffer) -> Void
+setInt64 : (index: Number, value: Int64, buffer: Buffer) -> Void
 ```
 
 Sets a signed 64-bit integer starting at the given byte index.
@@ -1145,7 +1149,7 @@ No other changes yet.
 </details>
 
 ```grain
-addInt64 : (Int64, Buffer) -> Void
+addInt64 : (value: Int64, buffer: Buffer) -> Void
 ```
 
 Appends a signed 64-bit integer to a buffer.
@@ -1165,7 +1169,7 @@ No other changes yet.
 </details>
 
 ```grain
-getUint64 : (Number, Buffer) -> Uint64
+getUint64 : (index: Number, buffer: Buffer) -> Uint64
 ```
 
 Gets an unsigned 64-bit integer starting at the given byte index.
@@ -1199,7 +1203,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint64 : (Number, Uint64, Buffer) -> Void
+setUint64 : (index: Number, value: Uint64, buffer: Buffer) -> Void
 ```
 
 Sets an unsigned 64-bit integer starting at the given byte index.
@@ -1228,7 +1232,7 @@ No other changes yet.
 </details>
 
 ```grain
-addUint64 : (Uint64, Buffer) -> Void
+addUint64 : (value: Uint64, buffer: Buffer) -> Void
 ```
 
 Appends an unsigned 64-bit integer to a buffer.
@@ -1248,7 +1252,7 @@ No other changes yet.
 </details>
 
 ```grain
-getFloat64 : (Number, Buffer) -> Float64
+getFloat64 : (index: Number, buffer: Buffer) -> Float64
 ```
 
 Gets a 64-bit float starting at the given byte index.
@@ -1282,7 +1286,7 @@ No other changes yet.
 </details>
 
 ```grain
-setFloat64 : (Number, Float64, Buffer) -> Void
+setFloat64 : (index: Number, value: Float64, buffer: Buffer) -> Void
 ```
 
 Sets a 64-bit float starting at the given byte index.
@@ -1311,7 +1315,7 @@ No other changes yet.
 </details>
 
 ```grain
-addFloat64 : (Float64, Buffer) -> Void
+addFloat64 : (value: Float64, buffer: Buffer) -> Void
 ```
 
 Appends a 64-bit float to a buffer.

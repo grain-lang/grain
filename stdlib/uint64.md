@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : Number -> Uint64
+fromNumber : (x: Number) -> Uint64
 ```
 
 Converts a Number to a Uint64.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : Uint64 -> Number
+toNumber : (x: Uint64) -> Number
 ```
 
 Converts a Uint64 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromInt64 : Int64 -> Uint64
+fromInt64 : (x: Int64) -> Uint64
 ```
 
 Converts an Int64 to a Uint64.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : Uint64 -> Uint64
+incr : (value: Uint64) -> Uint64
 ```
 
 Increments the value by one.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : Uint64 -> Uint64
+decr : (value: Uint64) -> Uint64
 ```
 
 Decrements the value by one.
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (Uint64, Uint64) -> Uint64
+(+) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the sum of its operands.
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (Uint64, Uint64) -> Uint64
+(-) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the difference of its operands.
@@ -202,7 +202,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (Uint64, Uint64) -> Uint64
+(*) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the product of its operands.
@@ -228,7 +228,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (Uint64, Uint64) -> Uint64
+(/) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the quotient of its operands.
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (Uint64, Uint64) -> Uint64
+rem : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the remainder of the division of its operands.
@@ -280,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotl : (Uint64, Uint64) -> Uint64
+rotl : (value: Uint64, amount: Uint64) -> Uint64
 ```
 
 Rotates the bits of the value left by the given number of bits.
@@ -306,7 +306,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotr : (Uint64, Uint64) -> Uint64
+rotr : (value: Uint64, amount: Uint64) -> Uint64
 ```
 
 Rotates the bits of the value right by the given number of bits.
@@ -332,7 +332,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<<) : (Uint64, Uint64) -> Uint64
+(<<) : (value: Uint64, amount: Uint64) -> Uint64
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -358,7 +358,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>>) : (Uint64, Uint64) -> Uint64
+(>>>) : (value: Uint64, amount: Uint64) -> Uint64
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -384,7 +384,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (Uint64, Uint64) -> Bool
+(==) : (x: Uint64, y: Uint64) -> Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -410,7 +410,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (Uint64, Uint64) -> Bool
+(!=) : (x: Uint64, y: Uint64) -> Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -436,7 +436,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : Uint64 -> Bool
+eqz : (value: Uint64) -> Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -461,7 +461,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (Uint64, Uint64) -> Bool
+(<) : (x: Uint64, y: Uint64) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -487,7 +487,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (Uint64, Uint64) -> Bool
+(>) : (x: Uint64, y: Uint64) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -513,7 +513,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (Uint64, Uint64) -> Bool
+(<=) : (x: Uint64, y: Uint64) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -539,7 +539,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (Uint64, Uint64) -> Bool
+(>=) : (x: Uint64, y: Uint64) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -565,7 +565,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : Uint64 -> Uint64
+lnot : (value: Uint64) -> Uint64
 ```
 
 Computes the bitwise NOT of the given value.
@@ -590,7 +590,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&) : (Uint64, Uint64) -> Uint64
+(&) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -616,7 +616,7 @@ No other changes yet.
 </details>
 
 ```grain
-(|) : (Uint64, Uint64) -> Uint64
+(|) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -642,7 +642,7 @@ No other changes yet.
 </details>
 
 ```grain
-(^) : (Uint64, Uint64) -> Uint64
+(^) : (x: Uint64, y: Uint64) -> Uint64
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -668,7 +668,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : Uint64 -> Uint64
+clz : (value: Uint64) -> Uint64
 ```
 
 Counts the number of leading zero bits in the value.
@@ -693,7 +693,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : Uint64 -> Uint64
+ctz : (value: Uint64) -> Uint64
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -718,7 +718,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : Uint64 -> Uint64
+popcnt : (value: Uint64) -> Uint64
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.

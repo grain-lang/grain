@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : ((a, a) -> Number) -> ImmutablePriorityQueue<a>
+make : (comp: ((a, a) -> Number)) -> ImmutablePriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -88,7 +88,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : ImmutablePriorityQueue<a> -> Number
+size : (pq: ImmutablePriorityQueue<a>) -> Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -113,7 +113,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : ImmutablePriorityQueue<a> -> Bool
+isEmpty : (pq: ImmutablePriorityQueue<a>) -> Bool
 ```
 
 Determines if the priority queue contains no elements.
@@ -133,7 +133,7 @@ Returns:
 ### ImmutablePriorityQueue.**push**
 
 ```grain
-push : (a, ImmutablePriorityQueue<a>) -> ImmutablePriorityQueue<a>
+push : (val: a, pq: ImmutablePriorityQueue<a>) -> ImmutablePriorityQueue<a>
 ```
 
 Produces a new priority queue by inserting the given element into the given priority queue.
@@ -159,7 +159,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : ImmutablePriorityQueue<a> -> Option<a>
+peek : (pq: ImmutablePriorityQueue<a>) -> Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -185,7 +185,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : ImmutablePriorityQueue<a> -> ImmutablePriorityQueue<a>
+pop : (pq: ImmutablePriorityQueue<a>) -> ImmutablePriorityQueue<a>
 ```
 
 Produces a new priority queue without the highest priority element in the
@@ -212,7 +212,7 @@ No other changes yet.
 </details>
 
 ```grain
-drain : ImmutablePriorityQueue<a> -> List<a>
+drain : (pq: ImmutablePriorityQueue<a>) -> List<a>
 ```
 
 Produces a list of all elements in the priority queue in priority order.
@@ -237,7 +237,8 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (List<a>, ((a, a) -> Number)) -> ImmutablePriorityQueue<a>
+fromList :
+  (list: List<a>, comp: ((a, a) -> Number)) -> ImmutablePriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -267,7 +268,8 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : (Array<a>, ((a, a) -> Number)) -> ImmutablePriorityQueue<a>
+fromArray :
+  (array: Array<a>, comp: ((a, a) -> Number)) -> ImmutablePriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array

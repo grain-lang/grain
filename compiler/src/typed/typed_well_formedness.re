@@ -89,7 +89,7 @@ let ensure_no_escaped_types = (signature, statements) => {
     | TTyVar(_)
     | TTyUniVar(_) => ()
     | TTyArrow(args, res, _) =>
-      List.iter(check_type, args);
+      List.iter(((_, arg)) => check_type(arg), args);
       check_type(res);
     | TTyTuple(args) => List.iter(check_type, args)
     | TTyRecord(fields) =>
@@ -223,10 +223,11 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
                 _,
               ),
           },
+          _,
           args,
         )
           when func == "==" || func == "!=" =>
-        if (List.exists(exp_is_wasm_unsafe, args)) {
+        if (List.exists(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
           let warning =
             Grain_utils.Warnings.FuncWasmUnsafe(
               Printf.sprintf("Pervasives.(%s)", func),
@@ -245,15 +246,19 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
                 _,
               ),
           },
+          _,
           [
-            {
-              exp_desc:
-                TExpConstant(
-                  Const_number(
-                    (Const_number_int(_) | Const_number_float(_)) as n,
+            (
+              Unlabeled,
+              {
+                exp_desc:
+                  TExpConstant(
+                    Const_number(
+                      (Const_number_int(_) | Const_number_float(_)) as n,
+                    ),
                   ),
-                ),
-            },
+              },
+            ),
           ],
         )
           when

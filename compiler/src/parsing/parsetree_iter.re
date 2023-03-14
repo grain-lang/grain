@@ -302,11 +302,24 @@ and iter_expression =
     | PUseAll => ()
     };
   | PExpLambda(pl, e) =>
-    iter_patterns(hooks, pl);
+    List.iter(
+      arg => {
+        iter_pattern(hooks, arg.pla_pattern);
+        Option.iter(iter_expression(hooks), arg.pla_default);
+        iter_location(hooks, arg.pla_loc);
+      },
+      pl,
+    );
     iter_expression(hooks, e);
   | PExpApp(e, el) =>
     iter_expression(hooks, e);
-    iter_expressions(hooks, el);
+    List.iter(
+      arg => {
+        iter_expression(hooks, arg.paa_expr);
+        iter_location(hooks, arg.paa_loc);
+      },
+      el,
+    );
   | PExpConstruct(c, e) =>
     iter_ident(hooks, c);
     switch (e) {
@@ -364,7 +377,13 @@ and iter_type = (hooks, {ptyp_desc: desc, ptyp_loc: loc} as typ) => {
   | PTyAny => ()
   | PTyVar(v) => ()
   | PTyArrow(args, ret) =>
-    List.iter(iter_type(hooks), args);
+    List.iter(
+      arg => {
+        iter_type(hooks, arg.ptyp_arg_type);
+        iter_location(hooks, arg.ptyp_arg_loc);
+      },
+      args,
+    );
     iter_type(hooks, ret);
   | PTyTuple(ts) => List.iter(iter_type(hooks), ts)
   | PTyConstr(name, ts) =>

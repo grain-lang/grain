@@ -48,7 +48,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : ImmutableSet<a> -> Number
+size : (set: ImmutableSet<a>) -> Number
 ```
 
 Provides the count of values within the set.
@@ -73,7 +73,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : ImmutableSet<a> -> Bool
+isEmpty : (set: ImmutableSet<a>) -> Bool
 ```
 
 Determines if the set contains no elements.
@@ -98,7 +98,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (a, ImmutableSet<a>) -> ImmutableSet<a>
+add : (key: a, set: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Produces a new set by inserting the given value into the set. If the value
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (a, ImmutableSet<a>) -> Bool
+contains : (key: a, set: ImmutableSet<a>) -> Bool
 ```
 
 Determines if the set contains the given value.
@@ -151,7 +151,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove : (a, ImmutableSet<a>) -> ImmutableSet<a>
+remove : (key: a, set: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Produces a new set without the given element. If the value doesn't exist in
@@ -178,7 +178,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : ((a -> Void), ImmutableSet<a>) -> Void
+forEach : (fn: (a -> Void), set: ImmutableSet<a>) -> Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -198,7 +198,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (((a, b) -> a), a, ImmutableSet<b>) -> a
+reduce : (fn: ((a, b) -> a), init: a, set: ImmutableSet<b>) -> a
 ```
 
 Combines all elements of a set using a reducer function.
@@ -225,7 +225,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : ((a -> Bool), ImmutableSet<a>) -> ImmutableSet<a>
+filter : (fn: (a -> Bool), set: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Produces a new set without the elements from the input set where a predicate function returns `false`.
@@ -251,7 +251,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : ((a -> Bool), ImmutableSet<a>) -> ImmutableSet<a>
+reject : (fn: (a -> Bool), set: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Produces a new set without the elements from the input set where a predicate function returns `true`.
@@ -277,7 +277,7 @@ No other changes yet.
 </details>
 
 ```grain
-union : (ImmutableSet<a>, ImmutableSet<a>) -> ImmutableSet<a>
+union : (set1: ImmutableSet<a>, set2: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Combines two sets into a single set containing all elements from both sets.
@@ -303,7 +303,7 @@ No other changes yet.
 </details>
 
 ```grain
-diff : (ImmutableSet<a>, ImmutableSet<a>) -> ImmutableSet<a>
+diff : (set1: ImmutableSet<a>, set2: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Combines two sets into a single set containing only the elements not shared between both sets.
@@ -329,7 +329,7 @@ No other changes yet.
 </details>
 
 ```grain
-intersect : (ImmutableSet<a>, ImmutableSet<a>) -> ImmutableSet<a>
+intersect : (set1: ImmutableSet<a>, set2: ImmutableSet<a>) -> ImmutableSet<a>
 ```
 
 Combines two sets into a single set containing only the elements shared between both sets.
@@ -355,7 +355,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : List<a> -> ImmutableSet<a>
+fromList : (list: List<a>) -> ImmutableSet<a>
 ```
 
 Creates a set from a list.
@@ -380,7 +380,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : ImmutableSet<a> -> List<a>
+toList : (set: ImmutableSet<a>) -> List<a>
 ```
 
 Converts a set into a list of its elements.
@@ -405,7 +405,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : Array<a> -> ImmutableSet<a>
+fromArray : (array: Array<a>) -> ImmutableSet<a>
 ```
 
 Creates a set from an array.
@@ -430,7 +430,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : ImmutableSet<a> -> Array<a>
+toArray : (set: ImmutableSet<a>) -> Array<a>
 ```
 
 Converts a set into an array of its elements.

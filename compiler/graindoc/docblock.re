@@ -207,7 +207,10 @@ let output_for_throws = throws => {
 
 let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
-  | TTyArrow(args, returns, _) => (Some(args), Some(returns))
+  | TTyArrow(args, returns, _) => (
+      Some(List.map(snd, args)),
+      Some(returns),
+    )
   | _ => (None, None)
   };
 };

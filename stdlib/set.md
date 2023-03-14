@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : Number -> Set<a>
+makeSized : (size: Number) -> Set<a>
 ```
 
 Creates a new empty set with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your set and can use `Set.make()` instead.
@@ -79,7 +79,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (a, Set<a>) -> Void
+add : (key: a, set: Set<a>) -> Void
 ```
 
 Adds a new value to the set. If the value already exists, nothing happens.
@@ -99,7 +99,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (a, Set<a>) -> Bool
+contains : (key: a, set: Set<a>) -> Bool
 ```
 
 Determines if the set contains the given value.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove : (a, Set<a>) -> Void
+remove : (key: a, set: Set<a>) -> Void
 ```
 
 Removes the given value from the set. If the value doesn't exist, nothing happens.
@@ -145,7 +145,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : Set<a> -> Number
+size : (set: Set<a>) -> Number
 ```
 
 Provides the count of values within the set.
@@ -170,7 +170,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : Set<a> -> Bool
+isEmpty : (set: Set<a>) -> Bool
 ```
 
 Determines if the set contains no elements.
@@ -195,7 +195,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : Set<a> -> Void
+clear : (set: Set<a>) -> Void
 ```
 
 Resets the set by removing all values.
@@ -221,7 +221,7 @@ Parameters:
 </details>
 
 ```grain
-forEach : ((a -> Void), Set<a>) -> Void
+forEach : (fn: (a -> Void), set: Set<a>) -> Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -241,7 +241,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (((a, b) -> a), a, Set<b>) -> a
+reduce : (fn: ((a, b) -> a), init: a, set: Set<b>) -> a
 ```
 
 Combines all elements of a set using a reducer function.
@@ -268,7 +268,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : ((a -> Bool), Set<a>) -> Void
+filter : (fn: (a -> Bool), set: Set<a>) -> Void
 ```
 
 Removes elements from a set where a predicate function returns `false`.
@@ -288,7 +288,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : ((a -> Bool), Set<a>) -> Void
+reject : (fn: (a -> Bool), set: Set<a>) -> Void
 ```
 
 Removes elements from a set where a predicate function returns `true`.
@@ -308,7 +308,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : Set<a> -> List<a>
+toList : (set: Set<a>) -> List<a>
 ```
 
 Converts a set into a list of its elements.
@@ -333,7 +333,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : List<a> -> Set<a>
+fromList : (list: List<a>) -> Set<a>
 ```
 
 Creates a set from a list.
@@ -358,7 +358,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : Set<a> -> Array<a>
+toArray : (set: Set<a>) -> Array<a>
 ```
 
 Converts a set into an array of its elements.
@@ -383,7 +383,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : Array<a> -> Set<a>
+fromArray : (array: Array<a>) -> Set<a>
 ```
 
 Creates a set from an array.
@@ -408,7 +408,7 @@ No other changes yet.
 </details>
 
 ```grain
-union : (Set<a>, Set<a>) -> Set<a>
+union : (set1: Set<a>, set2: Set<a>) -> Set<a>
 ```
 
 Combines two sets into a single set containing all elements from both sets.
@@ -434,7 +434,7 @@ No other changes yet.
 </details>
 
 ```grain
-diff : (Set<a>, Set<a>) -> Set<a>
+diff : (set1: Set<a>, set2: Set<a>) -> Set<a>
 ```
 
 Combines two sets into a single set containing only the elements not shared between both sets.
@@ -460,7 +460,7 @@ No other changes yet.
 </details>
 
 ```grain
-intersect : (Set<a>, Set<a>) -> Set<a>
+intersect : (set1: Set<a>, set2: Set<a>) -> Set<a>
 ```
 
 Combines two sets into a single set containing only the elements shared between both sets.
@@ -486,7 +486,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInternalStats : Set<a> -> (Number, Number)
+getInternalStats : (set: Set<a>) -> (Number, Number)
 ```
 
 Provides data representing the internal state state of the set.

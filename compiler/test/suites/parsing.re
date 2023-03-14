@@ -2,6 +2,7 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_parsing;
 open Grain_parsing.Ast_helper;
+open Grain_parsing.Parsetree;
 
 describe("parsing", ({test, testSkip}) => {
   let test_or_skip =
@@ -28,6 +29,11 @@ describe("parsing", ({test, testSkip}) => {
     Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("c"))),
     );
+  let unlabled_expr = expr => {
+    paa_label: Unlabeled,
+    paa_expr: expr,
+    paa_loc: Location.dummy_loc,
+  };
   let testOp = op =>
     assertParse(
       op,
@@ -42,7 +48,7 @@ describe("parsing", ({test, testSkip}) => {
                   Identifier.IdentName(Location.mknoloc(op)),
                 ),
               ),
-              [a, b],
+              [unlabled_expr(a), unlabled_expr(b)],
             ),
           ),
         ],
@@ -112,14 +118,16 @@ describe("parsing", ({test, testSkip}) => {
               ),
             ),
             [
-              a,
-              Expression.apply(
-                Expression.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("***")),
+              unlabled_expr(a),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("***")),
+                    ),
                   ),
+                  [unlabled_expr(b), unlabled_expr(c)],
                 ),
-                [b, c],
               ),
             ],
           ),
@@ -143,14 +151,16 @@ describe("parsing", ({test, testSkip}) => {
               ),
             ),
             [
-              a,
-              Expression.apply(
-                Expression.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("&--")),
+              unlabled_expr(a),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("&--")),
+                    ),
                   ),
+                  [unlabled_expr(b), unlabled_expr(c)],
                 ),
-                [b, c],
               ),
             ],
           ),
@@ -174,14 +184,16 @@ describe("parsing", ({test, testSkip}) => {
               ),
             ),
             [
-              a,
-              Expression.apply(
-                Expression.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("|--")),
+              unlabled_expr(a),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("|--")),
+                    ),
                   ),
+                  [unlabled_expr(b), unlabled_expr(c)],
                 ),
-                [b, c],
               ),
             ],
           ),
@@ -205,15 +217,17 @@ describe("parsing", ({test, testSkip}) => {
               ),
             ),
             [
-              Expression.apply(
-                Expression.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("<<")),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("<<")),
+                    ),
                   ),
+                  [unlabled_expr(a), unlabled_expr(b)],
                 ),
-                [a, b],
               ),
-              c,
+              unlabled_expr(c),
             ],
           ),
         ),

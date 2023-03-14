@@ -164,6 +164,31 @@ let convert_binds = anf_binds => {
   List.fold_left(convert_bind, ans, top_binds);
 };
 
+// reorder arguments according to labels
+let reorder_arguments = (args, order) => {
+  let rec reorder = (reordered_args, args, order) => {
+    let rec extract_label = (l, arg) => {
+      switch (arg) {
+      | [] => failwith("Impossible: no argument matching label")
+      | [(argl, arg), ...rest_args] when Btype.same_label_name(argl, l) => (
+          arg,
+          rest_args,
+        )
+      | [arg, ...rest_args] =>
+        let (res, rest_args) = extract_label(l, rest_args);
+        (res, [arg, ...rest_args]);
+      };
+    };
+    switch (order) {
+    | [] => reordered_args
+    | [tyl, ...order] =>
+      let (value, args) = extract_label(tyl, args);
+      reorder([value, ...reordered_args], args, order);
+    };
+  };
+  List.rev(reorder([], args, order));
+};
+
 let transl_const =
     (~loc=Location.dummy_loc, ~env=Env.empty, c: Types.constant)
     : Either.t(imm_expression, (ident, list(anf_bind))) => {
@@ -516,21 +541,26 @@ let rec transl_imm =
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})},
       _,
+      _,
     ) =>
     let (ans, ans_setup) = transl_comp_expression(e);
     (Imm.trap(~loc, ~env, ()), ans_setup @ [BSeq(ans)]);
-  | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})},
+      _,
+      args,
+    ) =>
     let (imm, setup) =
       Translprim.(
         switch (PrimMap.find_opt(prim_map, prim), args) {
         | (Some(Primitive0(prim)), []) =>
           transl_imm({...e, exp_desc: TExpPrim0(prim)})
-        | (Some(Primitive1(prim)), [arg]) =>
+        | (Some(Primitive1(prim)), [(_, arg)]) =>
           transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
-        | (Some(Primitive2(prim)), [arg1, arg2]) =>
+        | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
           transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
         | (Some(PrimitiveN(prim)), args) =>
-          transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
+          transl_imm({...e, exp_desc: TExpPrimN(prim, List.map(snd, args))})
         | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
         | (None, _) => failwith("transl_imm: unknown primitive")
         }
@@ -543,10 +573,20 @@ let rec transl_imm =
     } else {
       (imm, setup);
     };
-  | TExpApp(func, args) =>
+  | TExpApp(func, order, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          ((l, arg)) => {
+            let (arg, setup) = transl_imm(arg);
+            ((l, arg), setup);
+          },
+          args,
+        ),
+      );
+    let new_args = reorder_arguments(new_args, order);
     (
       Imm.id(~loc, ~env, tmp),
       (func_setup @ List.concat(new_setup))
@@ -1279,10 +1319,21 @@ and transl_comp_expression =
     (Comp.return(~loc, ~env, value_imm), value_setup);
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})} as func,
+      order,
       args,
     ) =>
     let (new_func, func_setup) = transl_imm(func);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          ((l, arg)) => {
+            let (arg, setup) = transl_imm(arg);
+            ((l, arg), setup);
+          },
+          args,
+        ),
+      );
+    let new_args = reorder_arguments(new_args, order);
     let (ans, ans_setup) = (
       Comp.app(
         ~loc,
@@ -1299,19 +1350,26 @@ and transl_comp_expression =
       Comp.imm(~attributes, ~allocation_type, ~env, Imm.trap(~loc, ~env, ())),
       ans_setup @ [BSeq(ans)],
     );
-  | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})},
+      _,
+      args,
+    ) =>
     if (tail) {
       let (imm, setup) =
         Translprim.(
           switch (PrimMap.find_opt(prim_map, prim), args) {
           | (Some(Primitive0(prim)), []) =>
             transl_imm({...e, exp_desc: TExpPrim0(prim)})
-          | (Some(Primitive1(prim)), [arg]) =>
+          | (Some(Primitive1(prim)), [(_, arg)]) =>
             transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
-          | (Some(Primitive2(prim)), [arg1, arg2]) =>
+          | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
             transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
           | (Some(PrimitiveN(prim)), args) =>
-            transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
+            transl_imm({
+              ...e,
+              exp_desc: TExpPrimN(prim, List.map(snd, args)),
+            })
           | (Some(_), _) =>
             failwith("transl_comp_expression: invalid primitive arity")
           | (None, _) =>
@@ -1324,24 +1382,37 @@ and transl_comp_expression =
         switch (PrimMap.find_opt(prim_map, prim), args) {
         | (Some(Primitive0(prim)), []) =>
           transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
-        | (Some(Primitive1(prim)), [arg]) =>
+        | (Some(Primitive1(prim)), [(_, arg)]) =>
           transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
-        | (Some(Primitive2(prim)), [arg1, arg2]) =>
+        | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
           transl_comp_expression({
             ...e,
             exp_desc: TExpPrim2(prim, arg1, arg2),
           })
         | (Some(PrimitiveN(prim)), args) =>
-          transl_comp_expression({...e, exp_desc: TExpPrimN(prim, args)})
+          transl_comp_expression({
+            ...e,
+            exp_desc: TExpPrimN(prim, List.map(snd, args)),
+          })
         | (Some(_), _) =>
           failwith("transl_comp_expression: invalid primitive arity")
         | (None, _) => failwith("transl_comp_expression: unknown primitive")
         }
       );
     }
-  | TExpApp(func, args) =>
+  | TExpApp(func, order, args) =>
     let (new_func, func_setup) = transl_imm(func);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          ((l, arg)) => {
+            let (arg, setup) = transl_imm(arg);
+            ((l, arg), setup);
+          },
+          args,
+        ),
+      );
+    let new_args = reorder_arguments(new_args, order);
     (
       Comp.app(
         ~loc,

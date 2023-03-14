@@ -752,7 +752,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           ...expr,
           desc:
             TTyArrow(
-              List.map(resolve_type_expr, args),
+              List.map(((l, arg)) => (l, resolve_type_expr(arg)), args),
               resolve_type_expr(result),
               c,
             ),

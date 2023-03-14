@@ -152,16 +152,20 @@ let rec raw_type = (ppf, ty) => {
     );
   };
 }
+and raw_argtype = (ppf, (l, ty)) => {
+  fprintf(ppf, "@[<1>%s: %a@]", qualified_label_name(l), raw_type, ty);
+}
 and raw_type_list = tl => raw_list(raw_type, tl)
+and raw_argtype_list = al => raw_list(raw_argtype, al)
 and raw_type_desc = ppf =>
   fun
   | TTyVar(name) => fprintf(ppf, "TTyVar %a", print_name, name)
-  | TTyArrow(t1, t2, c) =>
+  | TTyArrow(a1, t2, c) =>
     fprintf(
       ppf,
       "@[<hov1>TTyArrow(@,%a,@,%a,@,%s)@]",
-      raw_type_list,
-      t1,
+      raw_argtype_list,
+      a1,
       raw_type,
       t2,
       safe_commu_repr([], c),
@@ -581,8 +585,8 @@ let rec mark_loops_rec = (visited, ty) => {
     let visited = [px, ...visited];
     switch (ty.desc) {
     | TTyVar(_) => add_named_var(ty)
-    | TTyArrow(ty1, ty2, _) =>
-      List.iter(mark_loops_rec(visited), ty1);
+    | TTyArrow(a1, ty2, _) =>
+      List.iter(((_, t)) => mark_loops_rec(visited, t), a1);
       mark_loops_rec(visited, ty2);
     | TTyTuple(tyl) => List.iter(mark_loops_rec(visited), tyl)
     | TTyRecord(tyl) =>
@@ -659,12 +663,12 @@ let rec tree_of_typexp = (sch, ty) => {
             new_name;
           };
         Otyp_var(non_gen, name_of_type(name_gen, ty));
-      | TTyArrow(ty1, ty2, _) =>
-        let pr_arrow = (ty1, ty2) => {
-          let t1 = tree_of_typlist(sch, ty1);
-          Otyp_arrow(t1, tree_of_typexp(sch, ty2));
+      | TTyArrow(a1, ty2, _) =>
+        let pr_arrow = (a1, ty2) => {
+          let a1 = tree_of_argtyplist(sch, a1);
+          Otyp_arrow(a1, tree_of_typexp(sch, ty2));
         };
-        pr_arrow(ty1, ty2);
+        pr_arrow(a1, ty2);
       | TTyTuple(tyl) => Otyp_tuple(tree_of_typlist(sch, tyl))
       | TTyRecord(tyl) =>
         Otyp_record(
@@ -719,6 +723,23 @@ let rec tree_of_typexp = (sch, ty) => {
 }
 
 and tree_of_typlist = (sch, tyl) => List.map(tree_of_typexp(sch), tyl)
+and tree_of_argtyplist = (sch, al) =>
+  List.map(
+    ((l, ty)) => {
+      let ty =
+        switch (l) {
+        | Default(_) =>
+          switch (ty.desc) {
+          | TTyConstr(_, [ty], _) => ty
+          | _ =>
+            failwith("Impossible: optional argument with non-option type")
+          }
+        | _ => ty
+        };
+      (qualified_label_name(l), tree_of_typexp(sch, ty));
+    },
+    al,
+  )
 
 and is_non_gen = (sch, ty) => sch && is_Tvar(ty) && ty.level != generic_level
 

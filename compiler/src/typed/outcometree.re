@@ -54,7 +54,7 @@ type out_type =
   | Otyp_abstract
   | Otyp_open
   | Otyp_alias(out_type, string)
-  | Otyp_arrow(list(out_type), out_type)
+  | Otyp_arrow(list((string, out_type)), out_type)
   | Otyp_class(bool, out_ident, list(out_type))
   | Otyp_constr(out_ident, list(out_type))
   | Otyp_manifest(out_type, out_type)

@@ -40,6 +40,9 @@ type provide_flag =
   Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
+type argument_label =
+  Asttypes.argument_label =
+    | Unlabeled | Labeled(loc(string)) | Default(loc(string));
 
 type wasm_prim_type =
   Parsetree.wasm_prim_type =
@@ -308,7 +311,7 @@ type core_type = {
 and core_type_desc =
   | TTyAny
   | TTyVar(string)
-  | TTyArrow(list(core_type), core_type)
+  | TTyArrow(list((argument_label, core_type)), core_type)
   | TTyTuple(list(core_type))
   | TTyRecord(list((loc(Identifier.t), core_type)))
   | TTyConstr(Path.t, loc(Identifier.t), list(core_type))
@@ -461,7 +464,11 @@ and expression_desc =
   | TExpBreak
   | TExpReturn(option(expression))
   | TExpLambda(list(match_branch), partial)
-  | TExpApp(expression, list(expression))
+  | TExpApp(
+      expression,
+      list(argument_label),
+      list((argument_label, expression)),
+    )
   | TExpConstruct(
       loc(Identifier.t),
       constructor_description,

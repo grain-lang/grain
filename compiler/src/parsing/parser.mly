@@ -23,7 +23,7 @@ module Grain_parsing = struct end
 %token THICKARROW ARROW
 %token EQUAL GETS
 %token UNDERSCORE
-%token COLON DOT ELLIPSIS
+%token COLON QUESTION DOT ELLIPSIS
 
 %token ASSERT FAIL EXCEPTION THROW
 
@@ -64,7 +64,7 @@ module Grain_parsing = struct end
 %left INFIX_110 DASH
 %left INFIX_120 STAR SLASH
 
-%right SEMI EOL COMMA DOT COLON LPAREN
+%right SEMI EOL COMMA DOT COLON LPAREN EQUAL
 
 %nonassoc _if
 %nonassoc ELSE
@@ -103,8 +103,11 @@ module Grain_parsing = struct end
   const
   pattern
   qualified_uid
+  qualified_lid
   value_binds
   construct_expr
+  app_arg
+  arg_default
 
 %%
 
@@ -240,8 +243,8 @@ annotated_expr:
   | non_binop_expr colon typ { Expression.constraint_ ~loc:(to_loc $loc) $1 $3 }
 
 binop_expr:
-  | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
-  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
+  | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
+  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
 
 ellipsis_prefix(X):
   | ELLIPSIS X {$2}
@@ -295,16 +298,24 @@ data_typ:
   | qualified_uid %prec _below_infix { Type.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
-  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [$1] $3 }
-  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [(Type.var $2)] $4 }
-  | FUN lparen typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($1)) Unlabeled $1] $3 }
+  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var $2)] $4 }
+  | FUN lparen arg_typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
   | LIDENT { Type.var ~loc:(to_loc $loc) $1 }
   | data_typ { $1 }
 
+arg_typ:
+  | LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Labeled (mkstr $loc($1) $1)) $3 }
+  | QUESTION LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Default (mkstr $loc($2) $2)) $4 }
+  | typ { TypeArgument.mk ~loc:(to_loc $loc) Unlabeled $1 }
+
 typs:
   | lseparated_nonempty_list(comma, typ) comma? { $1 }
+
+arg_typs:
+  | lseparated_nonempty_list(comma, arg_typ) comma? { $1 }
 
 %inline tuple_typ_ending:
   | ioption(eols) lseparated_nonempty_list(comma, typ) ioption(comma) { $2 }
@@ -402,13 +413,17 @@ data_declaration:
   | RECORD UIDENT id_vec? data_labels { DataDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
 unop_expr:
-  | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [$2] }
+  | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
 
 paren_expr:
   | lparen expr rparen { $2 }
 
+app_arg:
+  | expr { {paa_label=Unlabeled; paa_expr=$1; paa_loc=to_loc $loc} }
+  | id_str EQUAL expr { {paa_label=(Labeled $1); paa_expr=$3; paa_loc=to_loc $loc} }
+
 app_expr:
-  | left_accessor_expr lparen lseparated_list(comma, expr) comma? rparen { Expression.apply ~loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.apply ~loc:(to_loc $loc) $1 $3 }
 
 rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
@@ -456,7 +471,7 @@ special_op:
 
 qualified_lid:
   | modid dot id_str { mkid (List.append $1 [$3]) (to_loc $loc) }
-  | id_str { (mkid [$1]) (to_loc $loc) }
+  | id_str %prec EQUAL { (mkid [$1]) (to_loc $loc) }
 
 qualified_uid:
   | lseparated_nonempty_list(dot, type_id_str) %prec DOT { (mkid $1) (to_loc $loc) }
@@ -483,9 +498,18 @@ braced_expr:
 block:
   | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) $2 }
 
+arg_default:
+  | EQUAL non_stmt_expr { $2 }
+
+lam_arg:
+  | pattern arg_default? { LambdaArgument.mk ~loc:(to_loc $loc) $1 $2 }
+
+lam_args:
+  | lseparated_nonempty_list(comma, lam_arg) comma? { $1 }
+
 lam_expr:
-  | FUN lparen patterns? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
-  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) [Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)] $4 }
+  | FUN lparen lam_args? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) [LambdaArgument.mk ~loc:(to_loc $loc($2)) (Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)) None] $4 }
 
 attribute_argument:
   | STRING { mkstr $loc $1 }
@@ -546,9 +570,9 @@ array_expr:
   | lbrackrcaret opt_eols lseparated_nonempty_list(comma, expr) comma? rbrack { Expression.array ~loc:(to_loc $loc) $3 }
 
 stmt_expr:
-  | THROW expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [$2] }
-  | ASSERT expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [$2] }
-  | FAIL expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [$2] }
+  | THROW expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | ASSERT expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | FAIL expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   // allow DASH to cause a shift instead of the usual reduction of the left side for subtraction
   | RETURN ioption(expr) %prec _below_infix { Expression.return ~loc:(to_loc $loc) $2 }
   | CONTINUE { Expression.continue ~loc:(to_loc $loc) () }
@@ -561,7 +585,7 @@ assign_binop_op:
 assign_expr:
   | left_accessor_expr GETS opt_eols expr { Expression.box_assign ~loc:(to_loc $loc) $1 $4 }
   | id_expr equal expr { Expression.assign ~loc:(to_loc $loc) $1 $3 }
-  | id_expr assign_binop_op opt_eols expr { Expression.assign ~loc:(to_loc $loc) $1 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [$1; $4]) }
+  | id_expr assign_binop_op opt_eols expr { Expression.assign ~loc:(to_loc $loc) $1 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [{paa_label=Unlabeled; paa_expr=$1; paa_loc=(to_loc $loc($1))}; {paa_label=Unlabeled; paa_expr=$4; paa_loc=(to_loc $loc($4))}]) }
   | record_set { $1 }
   | array_set { $1 }
 
@@ -605,7 +629,7 @@ record_get:
 
 record_set:
   | left_accessor_expr dot lid equal expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 $5 }
-  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [Expression.record_get ~loc:(to_loc $loc) $1 $3; $6]) }
+  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [{paa_label=Unlabeled; paa_expr=Expression.record_get ~loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
 
 %inline record_field_value:
   | colon expr {$2}

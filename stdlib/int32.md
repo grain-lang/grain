@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : Number -> Int32
+fromNumber : (x: Number) -> Int32
 ```
 
 Converts a Number to an Int32.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : Int32 -> Number
+toNumber : (x: Int32) -> Number
 ```
 
 Converts an Int32 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint32 : Uint32 -> Int32
+fromUint32 : (x: Uint32) -> Int32
 ```
 
 Converts a Uint32 to an Int32.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : Int32 -> Int32
+incr : (value: Int32) -> Int32
 ```
 
 Increments the value by one.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : Int32 -> Int32
+decr : (value: Int32) -> Int32
 ```
 
 Decrements the value by one.
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (Int32, Int32) -> Int32
+add : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the sum of its operands.
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (Int32, Int32) -> Int32
+sub : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the difference of its operands.
@@ -202,7 +202,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (Int32, Int32) -> Int32
+mul : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the product of its operands.
@@ -228,7 +228,7 @@ No other changes yet.
 </details>
 
 ```grain
-div : (Int32, Int32) -> Int32
+div : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the quotient of its operands using signed division.
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (Int32, Int32) -> Int32
+rem : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the remainder of the division of its operands using signed division.
@@ -280,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-mod : (Int32, Int32) -> Int32
+mod : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -313,7 +313,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotl : (Int32, Int32) -> Int32
+rotl : (value: Int32, amount: Int32) -> Int32
 ```
 
 Rotates the bits of the value left by the given number of bits.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotr : (Int32, Int32) -> Int32
+rotr : (value: Int32, amount: Int32) -> Int32
 ```
 
 Rotates the bits of the value right by the given number of bits.
@@ -365,7 +365,7 @@ No other changes yet.
 </details>
 
 ```grain
-shl : (Int32, Int32) -> Int32
+shl : (value: Int32, amount: Int32) -> Int32
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -391,7 +391,7 @@ No other changes yet.
 </details>
 
 ```grain
-shr : (Int32, Int32) -> Int32
+shr : (value: Int32, amount: Int32) -> Int32
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -417,7 +417,7 @@ No other changes yet.
 </details>
 
 ```grain
-eq : (Int32, Int32) -> Bool
+eq : (x: Int32, y: Int32) -> Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -443,7 +443,7 @@ No other changes yet.
 </details>
 
 ```grain
-ne : (Int32, Int32) -> Bool
+ne : (x: Int32, y: Int32) -> Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -469,7 +469,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : Int32 -> Bool
+eqz : (value: Int32) -> Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -494,7 +494,7 @@ No other changes yet.
 </details>
 
 ```grain
-lt : (Int32, Int32) -> Bool
+lt : (x: Int32, y: Int32) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -520,7 +520,7 @@ No other changes yet.
 </details>
 
 ```grain
-gt : (Int32, Int32) -> Bool
+gt : (x: Int32, y: Int32) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -546,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-lte : (Int32, Int32) -> Bool
+lte : (x: Int32, y: Int32) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -572,7 +572,7 @@ No other changes yet.
 </details>
 
 ```grain
-gte : (Int32, Int32) -> Bool
+gte : (x: Int32, y: Int32) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -598,7 +598,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : Int32 -> Int32
+lnot : (value: Int32) -> Int32
 ```
 
 Computes the bitwise NOT of the given value.
@@ -623,7 +623,7 @@ No other changes yet.
 </details>
 
 ```grain
-land : (Int32, Int32) -> Int32
+land : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -649,7 +649,7 @@ No other changes yet.
 </details>
 
 ```grain
-lor : (Int32, Int32) -> Int32
+lor : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -675,7 +675,7 @@ No other changes yet.
 </details>
 
 ```grain
-lxor : (Int32, Int32) -> Int32
+lxor : (x: Int32, y: Int32) -> Int32
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -701,7 +701,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : Int32 -> Int32
+clz : (value: Int32) -> Int32
 ```
 
 Counts the number of leading zero bits in the value.
@@ -726,7 +726,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : Int32 -> Int32
+ctz : (value: Int32) -> Int32
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -751,7 +751,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : Int32 -> Int32
+popcnt : (value: Int32) -> Int32
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.
