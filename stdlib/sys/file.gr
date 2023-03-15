@@ -605,10 +605,6 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
 
-  if (WasmI32.load8U(dir, 0n) != 0n) {
-    fail "Unknown prestat type"
-  }
-
   let prefixLen = WasmI32.load(dir, 4n)
   Memory.free(dir)
 
