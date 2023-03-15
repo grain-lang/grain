@@ -589,7 +589,9 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
  * Get information about a preopened directory.
  *
  * @param fd: The file descriptor to check
- * @returns `Ok(Dir{name})` if successful or `Err(exception)` otherwise
+ * @returns `Ok(Dir{prefix, fd})` if successful or `Err(exception)` otherwise
+ *
+ * @since v0.6.0
  */
 @unsafe
 provide let fdPrestatGet = (fd: FileDescriptor) => {
