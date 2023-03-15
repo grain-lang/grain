@@ -557,7 +557,7 @@ No other changes yet.
 </details>
 
 ```grain
-isClose : (Number, Number, Option<Number>, Option<Number>) -> Bool
+isClose : (a: Number, b: Number, ?rel_tol: Number, ?abs_tol: Number) -> Bool
 ```
 
 Computes the inverse sine of the given angle
@@ -907,7 +907,7 @@ No other changes yet.
 </details>
 
 ```grain
-asin : Number -> Number
+asin : (angle: Number) -> Number
 ```
 
 Computes the inverse sine of the given angle
@@ -932,7 +932,7 @@ No other changes yet.
 </details>
 
 ```grain
-acos : Number -> Number
+acos : (angle: Number) -> Number
 ```
 
 Computes the inverse cosine of the given angle
@@ -957,7 +957,7 @@ No other changes yet.
 </details>
 
 ```grain
-atan : Number -> Number
+atan : (angle: Number) -> Number
 ```
 
 Computes the inverse tangent of the given angle
