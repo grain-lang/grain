@@ -1,5 +1,7 @@
 /**
- * A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue. An immutable priority queue implementation is available in the `Immutable` submodule.
+ * A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+ *
+ * An immutable priority queue implementation is available in the `Immutable` submodule.
  *
  * @example include "priorityqueue"
  *

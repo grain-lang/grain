@@ -1,5 +1,7 @@
 /**
- * A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned. An immutable set implementation is available in the `Immutable` submodule.
+ * A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
+ *
+ * An immutable set implementation is available in the `Immutable` submodule.
  * @example include "set"
  *
  * @since v0.3.0

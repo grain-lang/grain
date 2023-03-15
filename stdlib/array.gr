@@ -1,5 +1,7 @@
 /**
- * Utilities for working with arrays. An immutable array implementation is available in the `Immutable` submodule
+ * Utilities for working with arrays.
+ *
+ * An immutable array implementation is available in the `Immutable` submodule.
  *
  * @example include "array"
  *

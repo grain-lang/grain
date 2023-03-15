@@ -1,5 +1,7 @@
 /**
- * A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned. An immutable map implementation is available in the `Immutable` submodule
+ * A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
+ *
+ * An immutable map implementation is available in the `Immutable` submodule.
  * @example include "map"
  *
  * @since v0.2.0
@@ -536,6 +538,7 @@ provide module Immutable {
    * An empty map
    *
    * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablemap"` module
    */
 
   provide let empty = Empty
@@ -556,7 +559,7 @@ provide module Immutable {
    * @returns The count of key-value pairs in the map
    *
    * @since v0.6.0
-   * @history v0.5.4: Originally in `"immutableset"` module
+   * @history v0.5.4: Originally in `"immutablemap"` module
    */
 
   provide let size = map => {
@@ -573,6 +576,7 @@ provide module Immutable {
    * @returns `true` if the given map is empty or `false` otherwise
    *
    * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablemap"` module
    */
 
   provide let isEmpty = map => {
