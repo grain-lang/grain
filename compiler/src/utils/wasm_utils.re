@@ -21,7 +21,8 @@ type wasm_bin_section_type =
   | Start
   | Element
   | Code
-  | Data;
+  | Data
+  | DataCount;
 
 [@deriving sexp]
 type wasm_bin_section = {
@@ -212,6 +213,7 @@ let section_type_of_int = (~pos=?, ~name=?) =>
   | 9 => Element
   | 10 => Code
   | 11 => Data
+  | 12 => DataCount
   | n => raise(MalformedSectionType(n, pos));
 
 let int_of_section_type =
@@ -227,7 +229,8 @@ let int_of_section_type =
   | Start => 8
   | Element => 9
   | Code => 10
-  | Data => 11;
+  | Data => 11
+  | DataCount => 12;
 
 let get_wasm_sections = (~reset=false, inchan) => {
   let orig_pos = pos_in(inchan);

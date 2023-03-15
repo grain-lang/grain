@@ -174,6 +174,7 @@ module Comp: {
       ~attributes: attributes=?,
       ~env: env=?,
       imm_expression,
+      imm_expression,
       list((option(str), imm_expression))
     ) =>
     comp_expression;
@@ -182,6 +183,7 @@ module Comp: {
       ~loc: loc=?,
       ~attributes: attributes=?,
       ~env: env=?,
+      imm_expression,
       imm_expression,
       imm_expression,
       list(imm_expression)

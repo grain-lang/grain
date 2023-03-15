@@ -459,9 +459,10 @@ let rec compile_comp = (~id=?, env, c) => {
         MArraySet(compile_imm(env, idx), compile_imm(env, arg)),
         compile_imm(env, arr),
       )
-    | CRecord(ttag, args) =>
+    | CRecord(type_hash, ttag, args) =>
       MAllocate(
         MRecord(
+          compile_imm(env, type_hash),
           compile_imm(env, ttag),
           List.map(
             ((name, arg)) =>
@@ -473,9 +474,10 @@ let rec compile_comp = (~id=?, env, c) => {
           ),
         ),
       )
-    | CAdt(ttag, vtag, args) =>
+    | CAdt(type_hash, ttag, vtag, args) =>
       MAllocate(
         MADT(
+          compile_imm(env, type_hash),
           compile_imm(env, ttag),
           compile_imm(env, vtag),
           List.map(compile_imm(env), args),

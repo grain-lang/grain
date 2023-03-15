@@ -949,7 +949,11 @@ let type_implementation = prog => {
 
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);
-  let signature = Env.build_signature(normalized_sig, module_name, filename);
+  // Use placeholder for now; will be populated later in compilation
+  let type_metadata =
+    Cmi_format.{ctm_metadata: "", ctm_exceptions: "", ctm_offsets_tbl: []};
+  let signature =
+    Env.build_signature(normalized_sig, module_name, filename, type_metadata);
   {
     module_name: prog.module_name,
     statements,

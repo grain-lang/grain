@@ -5,7 +5,6 @@ open Parsetree;
 
 type primitive_constant =
   | HeapBase
-  | HeapStart
   | HeapTypeMetadata
   | ElideTypeInfo;
 
@@ -48,7 +47,7 @@ let prim_map =
   PrimMap.of_seq(
     List.to_seq([
       ("@heap.base", PrimitiveConstant(HeapBase)),
-      ("@heap.start", PrimitiveConstant(HeapStart)),
+      ("@heap.start", Primitive0(HeapStart)),
       ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
       ("@meta.elide_type_info", PrimitiveConstant(ElideTypeInfo)),
       ("@allocate.int32", Primitive0(AllocateInt32)),
@@ -1512,11 +1511,6 @@ let transl_prim = (env, desc) => {
             Builtin_types.type_wasmi32,
             disable_gc,
           )
-        | HeapStart => (
-            Constant.wasmi32(string_of_int(active_memory_base() + 0x10)),
-            Builtin_types.type_wasmi32,
-            disable_gc,
-          )
         | HeapTypeMetadata => (
             Constant.wasmi32(string_of_int(active_memory_base() + 0x8)),
             Builtin_types.type_wasmi32,
@@ -1540,7 +1534,8 @@ let transl_prim = (env, desc) => {
         | AllocateFloat64
         | AllocateRational
         | WasmMemorySize
-        | Unreachable => disable_gc
+        | Unreachable
+        | HeapStart => disable_gc
         };
       (
         Expression.lambda(~loc, ~attributes, [], Expression.prim0(~loc, p)),

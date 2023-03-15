@@ -7,6 +7,7 @@ from WasmI32 use {
   sub as (-),
   mul as (*),
   divS as (/),
+  remS as (%),
   shl as (<<),
   shrS as (>>),
   shrU as (>>>),
@@ -44,25 +45,25 @@ primitive builtinId = "@builtin.id"
 primitive ignore = "@ignore"
 
 @unsafe
-primitive _RUNTIME_TYPE_METADATA_PTR = "@heap.type_metadata"
+primitive _TYPE_METADATA_SECTION = "@heap.type_metadata"
 
 @unsafe
-let findTypeMetadata = typeId => {
-  let mut metadataPtr = WasmI32.load(_RUNTIME_TYPE_METADATA_PTR, 0n)
-  let mut modData = -1n
-  let mut modTypesCount = 0n
-  while (metadataPtr != 0n) {
-    modData = metadataPtr + 12n
-    modTypesCount = WasmI32.load(metadataPtr, 8n)
-    for (let mut i = 0n; i < modTypesCount; i += 1n) {
-      if (WasmI32.load(modData, 4n) == typeId) {
-        return modData
-      }
-      modData += WasmI32.load(modData, 0n)
+let findTypeMetadata = typeHash => {
+  let numBuckets = WasmI32.load(_TYPE_METADATA_SECTION, 0n)
+  let hashHash = typeHash % numBuckets
+  // First 8 bytes of metadata are for table size
+  let bucketPtr = _TYPE_METADATA_SECTION +
+    8n +
+    (hashHash << 3n) // 8 bytes/bucket
+  let bucketDataOffset = WasmI32.load(bucketPtr, 0n)
+  let bucketSize = WasmI32.load(bucketPtr, 4n)
+  let beginDataPtr = _TYPE_METADATA_SECTION + bucketDataOffset
+  let endDataPtr = beginDataPtr + (bucketSize << 3n)
+  for (let mut ptr = beginDataPtr; ptr < endDataPtr; ptr += 8n) {
+    if (WasmI32.load(ptr, 0n) == typeHash) {
+      return _TYPE_METADATA_SECTION + WasmI32.load(ptr, 4n)
     }
-    metadataPtr = WasmI32.load(metadataPtr, 0n)
   }
-
   return -1n
 }
 
@@ -128,15 +129,15 @@ let getFieldArray = (fields, arity) => {
 
 @unsafe
 let getVariantMetadata = variant => {
-  let typeId = WasmI32.load(variant, 8n) >> 1n
+  let typeHash = WasmI32.load(variant, 4n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
 
-  let mut block = findTypeMetadata(typeId)
+  let mut block = findTypeMetadata(typeHash)
 
   if (block == -1n) return -1n
 
   let sectionLength = WasmI32.load(block, 0n)
-  block += 8n
+  block += 4n
 
   let end = block + sectionLength
   while (block < end) {
@@ -151,14 +152,14 @@ let getVariantMetadata = variant => {
 
 @unsafe
 let getRecordFieldNames = record_ => {
-  let typeId = WasmI32.load(record_, 8n) >> 1n
+  let typeHash = WasmI32.load(record_, 4n) >> 1n
   let arity = WasmI32.load(record_, 12n)
 
-  let mut fields = findTypeMetadata(typeId)
+  let mut fields = findTypeMetadata(typeHash)
 
   if (fields == -1n) return -1n
 
-  fields += 8n
+  fields += 4n
   return getFieldArray(fields, arity)
 }
 

@@ -64,10 +64,12 @@ module MakeIter = (Iter: IterArgument) => {
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
       iter_imm_expression(arg3);
-    | CRecord(ttag, elts) =>
+    | CRecord(type_hash, ttag, elts) =>
+      iter_imm_expression(type_hash);
       iter_imm_expression(ttag);
       List.iter(((_, elt)) => iter_imm_expression(elt), elts);
-    | CAdt(ttag, vtag, elts) =>
+    | CAdt(type_hash, ttag, vtag, elts) =>
+      iter_imm_expression(type_hash);
       iter_imm_expression(ttag);
       iter_imm_expression(vtag);
       List.iter(iter_imm_expression, elts);

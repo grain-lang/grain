@@ -185,7 +185,14 @@ let use_full_signature_of_initially_included_module: (Path.t, t) => t;
 let read_signature: string => signature;
 /* Arguments: module name, file name. Results: signature. */
 let build_signature:
-  (~deprecated: string=?, signature, string, string) => Cmi_format.cmi_infos;
+  (
+    ~deprecated: string=?,
+    signature,
+    string,
+    string,
+    Cmi_format.cmi_type_metadata
+  ) =>
+  Cmi_format.cmi_infos;
 /* Arguments: signature, module name, file name. */
 let build_signature_with_imports:
   (
@@ -193,7 +200,8 @@ let build_signature_with_imports:
     signature,
     string,
     string,
-    list((string, option(Digest.t)))
+    list((string, option(Digest.t))),
+    Cmi_format.cmi_type_metadata
   ) =>
   Cmi_format.cmi_infos;
 /* Arguments: signature, module name, file name,

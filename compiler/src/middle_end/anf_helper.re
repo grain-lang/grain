@@ -79,21 +79,21 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CArrayGet(arr, i));
   let array_set = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, arr, i, a) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CArraySet(arr, i, a));
-  let record = (~loc=?, ~attributes=?, ~env=?, ttag, elts) =>
+  let record = (~loc=?, ~attributes=?, ~env=?, type_hash, ttag, elts) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CRecord(ttag, elts),
+      CRecord(type_hash, ttag, elts),
     );
-  let adt = (~loc=?, ~attributes=?, ~env=?, ttag, vtag, elts) =>
+  let adt = (~loc=?, ~attributes=?, ~env=?, type_hash, ttag, vtag, elts) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CAdt(ttag, vtag, elts),
+      CAdt(type_hash, ttag, vtag, elts),
     );
   let tuple_get = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, idx, tup) =>
     mk(

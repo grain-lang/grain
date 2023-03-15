@@ -44,7 +44,8 @@ module PurityArg: Anf_iterator.IterArgument = {
           AllocateInt32 | AllocateInt64 | AllocateUint32 | AllocateUint64 |
           AllocateFloat32 |
           AllocateFloat64 |
-          AllocateRational,
+          AllocateRational |
+          HeapStart,
         ) =>
         true
       | CPrim0(WasmMemorySize | Unreachable) => false

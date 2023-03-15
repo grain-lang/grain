@@ -1,12 +1,13 @@
 enums › enum_recursive_data_definition
 (module
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
- (type $none_=>_none (func))
  (type $none_=>_i32 (func (result i32)))
+ (type $none_=>_none (func))
  (import \"_genv\" \"mem\" (memory $0 0))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1129 (mut i32)))
@@ -17,118 +18,8 @@ enums › enum_recursive_data_definition
  (elem $elem (global.get $relocBase_0))
  (export \"memory\" (memory $0))
  (export \"_gmain\" (func $_gmain))
- (export \"_gtype_metadata\" (func $_gtype_metadata))
  (export \"_start\" (func $_start))
  (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
- (func $_gtype_metadata
-  (local $0 i32)
-  (local $1 i32)
-  (local $2 i32)
-  (local $3 i64)
-  (local $4 f32)
-  (local $5 f64)
-  (block $compile_type_metadata.2
-   (local.set $0
-    (i32.add
-     (block $allocate_string.1 (result i32)
-      (i32.store
-       (local.tee $0
-        (call $malloc_0
-         (global.get $GRAIN$EXPORT$malloc_0)
-         (i32.const 136)
-        )
-       )
-       (i32.const 1)
-      )
-      (i32.store offset=4
-       (local.get $0)
-       (i32.const 124)
-      )
-      (i64.store offset=8
-       (local.get $0)
-       (i64.const 0)
-      )
-      (i64.store offset=16
-       (local.get $0)
-       (i64.const 240518168578)
-      )
-      (i64.store offset=24
-       (local.get $0)
-       (i64.const 103079216218)
-      )
-      (i64.store offset=32
-       (local.get $0)
-       (i64.const 0)
-      )
-      (i64.store offset=40
-       (local.get $0)
-       (i64.const 30515081213116419)
-      )
-      (i64.store offset=48
-       (local.get $0)
-       (i64.const 103079215104)
-      )
-      (i64.store offset=56
-       (local.get $0)
-       (i64.const 4294967296)
-      )
-      (i64.store offset=64
-       (local.get $0)
-       (i64.const 8317707895353376772)
-      )
-      (i64.store offset=72
-       (local.get $0)
-       (i64.const 240518168576)
-      )
-      (i64.store offset=80
-       (local.get $0)
-       (i64.const 103079216217)
-      )
-      (i64.store offset=88
-       (local.get $0)
-       (i64.const 0)
-      )
-      (i64.store offset=96
-       (local.get $0)
-       (i64.const 8390326248911405061)
-      )
-      (i64.store offset=104
-       (local.get $0)
-       (i64.const 103079215225)
-      )
-      (i64.store offset=112
-       (local.get $0)
-       (i64.const 4294967296)
-      )
-      (i64.store offset=120
-       (local.get $0)
-       (i64.const 7306086876299919364)
-      )
-      (i64.store offset=128
-       (local.get $0)
-       (i64.const 0)
-      )
-      (local.get $0)
-     )
-     (i32.const 8)
-    )
-   )
-   (i32.store
-    (local.get $0)
-    (i32.load
-     (i32.const 1032)
-    )
-   )
-   (i32.store offset=4
-    (local.get $0)
-    (global.get $moduleRuntimeId_0)
-   )
-   (i32.store
-    (i32.const 1032)
-    (local.get $0)
-   )
-  )
- )
  (func $_gmain (result i32)
   (local $0 i32)
   (local $1 i32)
@@ -145,10 +36,10 @@ enums › enum_recursive_data_definition
   (local $12 i32)
   (local $13 i32)
   (local $14 i32)
-  (block $compile_block.30
-   (block $compile_store.5
+  (block $compile_block.28
+   (block $compile_store.3
     (local.set $6
-     (block $allocate_string.3 (result i32)
+     (block $allocate_string.1 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -169,12 +60,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.4
+    (block $do_backpatches.2
     )
    )
-   (block $compile_store.8
+   (block $compile_store.6
     (local.set $7
-     (block $allocate_string.6 (result i32)
+     (block $allocate_string.4 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -195,12 +86,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.7
+    (block $do_backpatches.5
     )
    )
-   (block $compile_store.11
+   (block $compile_store.9
     (local.set $8
-     (block $allocate_adt.9 (result i32)
+     (block $allocate_adt.7 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -212,10 +103,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1215441249)
       )
       (i32.store offset=8
        (local.get $0)
@@ -232,12 +120,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.10
+    (block $do_backpatches.8
     )
    )
-   (block $compile_store.14
+   (block $compile_store.12
     (local.set $9
-     (block $allocate_adt.12 (result i32)
+     (block $allocate_adt.10 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -249,10 +137,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1675317329)
       )
       (i32.store offset=8
        (local.get $0)
@@ -277,12 +162,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.13
+    (block $do_backpatches.11
     )
    )
-   (block $compile_store.17
+   (block $compile_store.15
     (local.set $10
-     (block $allocate_adt.15 (result i32)
+     (block $allocate_adt.13 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -294,10 +179,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1215441249)
       )
       (i32.store offset=8
        (local.get $0)
@@ -314,12 +196,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.16
+    (block $do_backpatches.14
     )
    )
-   (block $compile_store.20
+   (block $compile_store.18
     (local.set $11
-     (block $allocate_adt.18 (result i32)
+     (block $allocate_adt.16 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -331,10 +213,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1215441249)
       )
       (i32.store offset=8
        (local.get $0)
@@ -359,12 +238,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.19
+    (block $do_backpatches.17
     )
    )
-   (block $compile_store.23
+   (block $compile_store.21
     (local.set $12
-     (block $allocate_adt.21 (result i32)
+     (block $allocate_adt.19 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -376,10 +255,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1675317329)
       )
       (i32.store offset=8
        (local.get $0)
@@ -404,12 +280,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.22
+    (block $do_backpatches.20
     )
    )
-   (block $compile_store.26
+   (block $compile_store.24
     (local.set $13
-     (block $allocate_adt.24 (result i32)
+     (block $allocate_adt.22 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -421,10 +297,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1215441249)
       )
       (i32.store offset=8
        (local.get $0)
@@ -441,12 +314,12 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.25
+    (block $do_backpatches.23
     )
    )
-   (block $compile_store.29
+   (block $compile_store.27
     (local.set $14
-     (block $allocate_adt.27 (result i32)
+     (block $allocate_adt.25 (result i32)
       (i32.store
        (local.tee $0
         (call $malloc_0
@@ -458,10 +331,7 @@ enums › enum_recursive_data_definition
       )
       (i32.store offset=4
        (local.get $0)
-       (i32.mul
-        (global.get $moduleRuntimeId_0)
-        (i32.const 2)
-       )
+       (i32.const 1215441249)
       )
       (i32.store offset=8
        (local.get $0)
@@ -486,7 +356,7 @@ enums › enum_recursive_data_definition
       (local.get $0)
      )
     )
-    (block $do_backpatches.28
+    (block $do_backpatches.26
     )
    )
    (return_call $print_1129
@@ -503,5 +373,5 @@ enums › enum_recursive_data_definition
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 236
+ ;; custom section \"cmi\", size 879
 )

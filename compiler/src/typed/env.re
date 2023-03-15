@@ -2332,7 +2332,7 @@ let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
 
 /* Build a module signature */
 let build_signature_with_imports =
-    (~deprecated=?, sg, modname, filename, imports) => {
+    (~deprecated=?, sg, modname, filename, imports, type_metadata) => {
   /*prerr_endline filename;
     List.iter (fun (name, crc) -> prerr_endline name) imports;*/
   Btype.cleanup_abbrev();
@@ -2355,12 +2355,14 @@ let build_signature_with_imports =
         ~sign=sg,
         ~crcs=imports,
         ~flags,
+        ~type_metadata,
       );
     let cmi = {
       cmi_name: modname,
       cmi_sign: sg,
       cmi_crcs: imports,
       cmi_flags: flags,
+      cmi_type_metadata: type_metadata,
       cmi_config_sum: full_cmi.cmi_config_sum,
     };
     let crc =
@@ -2395,13 +2397,14 @@ let build_signature_with_imports =
   };
 };
 
-let build_signature = (~deprecated=?, sg, modname, filename) =>
+let build_signature = (~deprecated=?, sg, modname, filename, type_metadata) =>
   build_signature_with_imports(
     ~deprecated?,
     sg,
     modname,
     filename,
     imports(),
+    type_metadata,
   );
 
 /* Folding on environments */
