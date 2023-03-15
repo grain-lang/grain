@@ -290,8 +290,13 @@ Returns:
 
 ### File.**fdPrestatGet**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
-fdPrestatGet : FileDescriptor -> Result<Prestat, Exception>
+fdPrestatGet : (fd: FileDescriptor) -> Result<Prestat, Exception>
 ```
 
 Get information about a preopened directory.
@@ -306,7 +311,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Prestat, Exception>`|`Ok(Dir{name})` if successful or `Err(exception)` otherwise|
+|`Result<Prestat, Exception>`|`Ok(Dir{prefix, fd})` if successful or `Err(exception)` otherwise|
 
 ### File.**fdWrite**
 
@@ -1002,9 +1007,15 @@ Returns:
 
 ### File.**open**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 open :
-  (String, List<OpenFlag>, List<Rights>, List<Rights>, List<FdFlag>) ->
+  (path: String, openFlags: List<OpenFlag>, rights: List<Rights>,
+   rightsInheriting: List<Rights>, flags: List<FdFlag>) ->
    Result<FileDescriptor, Exception>
 ```
 

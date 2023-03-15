@@ -1930,6 +1930,8 @@ let makeAbsolute = (path: String) => {
  * @param rightsInheriting: The rights that dictate what may be done with file descriptors derived from this file descriptor
  * @param flags: Flags which affect read/write operations on this file descriptor
  * @returns `Ok(fd)` of the opened file or directory if successful or `Err(exception)` otherwise
+ *
+ * @since v0.6.0
  */
 @unsafe
 provide let open =
