@@ -1,7 +1,6 @@
 module StackTest
 
 include "stack"
-from Stack use { Immutable as ImmStack }
 
 // Mutable stack tests
 
@@ -51,42 +50,38 @@ assert Stack.pop(stack) == Some(2)
 assert Stack.pop(stack) == Some(1)
 assert Stack.pop(stack) == None
 
-// Immutable Stack tests
+module Immutable {
+  from Stack use { Immutable as Stack }
 
-// 1 <- 2 <- 3
-let sampleStack = ImmStack.push(
-  3,
-  ImmStack.push(2, ImmStack.push(1, ImmStack.empty))
-)
+  // 1 <- 2 <- 3
+  let sampleStack = Stack.push(3, Stack.push(2, Stack.push(1, Stack.empty)))
 
-// ImmStack.isEmpty
+  // Stack.isEmpty
 
-assert ImmStack.isEmpty(ImmStack.empty)
-assert !ImmStack.isEmpty(sampleStack)
+  assert Stack.isEmpty(Stack.empty)
+  assert !Stack.isEmpty(sampleStack)
 
-// ImmStack.peek
+  // Stack.peek
 
-assert ImmStack.peek(ImmStack.empty) == None
-assert ImmStack.peek(sampleStack) == Some(3)
+  assert Stack.peek(Stack.empty) == None
+  assert Stack.peek(sampleStack) == Some(3)
 
-// ImmStack.push
+  // Stack.push
 
-assert ImmStack.peek(ImmStack.push(1, ImmStack.empty)) == Some(1)
-assert ImmStack.peek(ImmStack.push(4, sampleStack)) == Some(4)
+  assert Stack.peek(Stack.push(1, Stack.empty)) == Some(1)
+  assert Stack.peek(Stack.push(4, sampleStack)) == Some(4)
 
-// ImmStack.pop
+  // Stack.pop
 
-assert ImmStack.isEmpty(ImmStack.pop(ImmStack.empty))
-assert ImmStack.isEmpty(ImmStack.pop(ImmStack.push(1, ImmStack.empty)))
-assert ImmStack.isEmpty(ImmStack.pop(ImmStack.pop(ImmStack.pop(sampleStack))))
-assert ImmStack.peek(ImmStack.pop(sampleStack)) == Some(2)
-assert ImmStack.peek(
-  ImmStack.pop(ImmStack.push(4, ImmStack.pop(sampleStack)))
-) ==
-  Some(2)
+  assert Stack.isEmpty(Stack.pop(Stack.empty))
+  assert Stack.isEmpty(Stack.pop(Stack.push(1, Stack.empty)))
+  assert Stack.isEmpty(Stack.pop(Stack.pop(Stack.pop(sampleStack))))
+  assert Stack.peek(Stack.pop(sampleStack)) == Some(2)
+  assert Stack.peek(Stack.pop(Stack.push(4, Stack.pop(sampleStack)))) == Some(2)
 
-// ImmStack.size
+  // Stack.size
 
-assert ImmStack.size(ImmStack.empty) == 0
-assert ImmStack.size(sampleStack) == 3
-assert ImmStack.size(ImmStack.pop(ImmStack.pop(sampleStack))) == 1
+  assert Stack.size(Stack.empty) == 0
+  assert Stack.size(sampleStack) == 3
+  assert Stack.size(Stack.pop(Stack.pop(sampleStack))) == 1
+}
