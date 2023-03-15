@@ -2,7 +2,9 @@
 title: Map
 ---
 
-A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned. An immutable map implementation is available in the `Immutable` submodule
+A Map holds key-value pairs. Any value may be used as a key or value. Operations on a Map mutate the internal state, so it never needs to be re-assigned.
+
+An immutable map implementation is available in the `Immutable` submodule.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.2.0</code></summary>
@@ -555,9 +557,16 @@ Functions and constants included in the Map.Immutable module.
 
 #### Map.Immutable.**empty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally in `"immutablemap"` module</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
@@ -575,13 +584,13 @@ An empty map
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.4</code></td><td>Originally in `"immutableset"` module</td></tr>
+<tr><td><code>0.5.4</code></td><td>Originally in `"immutablemap"` module</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
-size : Map<a, b> -> Number
+size : (map: Map<a, b>) -> Number
 ```
 
 Provides the count of key-value pairs stored within the map.
@@ -600,13 +609,20 @@ Returns:
 
 #### Map.Immutable.**isEmpty**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally in `"immutablemap"` module</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-isEmpty : Map<a, b> -> Bool
+isEmpty : (map: Map<a, b>) -> Bool
 ```
 
 Determines if the map contains no key-value pairs.
@@ -638,7 +654,7 @@ Returns:
 </details>
 
 ```grain
-set : (a, b, Map<a, b>) -> Map<a, b>
+set : (key: a, val: b, map: Map<a, b>) -> Map<a, b>
 ```
 
 Produces a new map containing a new key-value pair. If the key already exists in the map, the value is replaced.
@@ -672,7 +688,7 @@ Returns:
 </details>
 
 ```grain
-get : (a, Map<a, b>) -> Option<b>
+get : (key: a, map: Map<a, b>) -> Option<b>
 ```
 
 Retrieves the value for the given key.
@@ -705,7 +721,7 @@ Returns:
 </details>
 
 ```grain
-contains : (a, Map<a, b>) -> Bool
+contains : (key: a, map: Map<a, b>) -> Bool
 ```
 
 Determines if the map contains the given key. In such a case, it will always contain a value for the given key.
@@ -738,7 +754,7 @@ Returns:
 </details>
 
 ```grain
-remove : (a, Map<a, b>) -> Map<a, b>
+remove : (key: a, map: Map<a, b>) -> Map<a, b>
 ```
 
 Produces a new map without the key-value pair corresponding to the given
@@ -772,7 +788,7 @@ Returns:
 </details>
 
 ```grain
-update : (a, (Option<b> -> Option<b>), Map<a, b>) -> Map<a, b>
+update : (key: a, fn: (Option<b> -> Option<b>), map: Map<a, b>) -> Map<a, b>
 ```
 
 Produces a new map by calling an updater function that receives the
@@ -810,7 +826,7 @@ Returns:
 </details>
 
 ```grain
-forEach : (((a, b) -> Void), Map<a, b>) -> Void
+forEach : (fn: ((a, b) -> Void), map: Map<a, b>) -> Void
 ```
 
 Iterates the map, calling an iterator function with each key and value.
@@ -837,7 +853,7 @@ Parameters:
 </details>
 
 ```grain
-reduce : (((a, b, c) -> a), a, Map<b, c>) -> a
+reduce : (fn: ((a, b, c) -> a), init: a, map: Map<b, c>) -> a
 ```
 
 Combines all key-value pairs of a map using a reducer function.
@@ -871,7 +887,7 @@ Returns:
 </details>
 
 ```grain
-keys : Map<a, b> -> List<a>
+keys : (map: Map<a, b>) -> List<a>
 ```
 
 Enumerates all keys in the given map.
@@ -903,7 +919,7 @@ Returns:
 </details>
 
 ```grain
-values : Map<a, b> -> List<b>
+values : (map: Map<a, b>) -> List<b>
 ```
 
 Enumerates all values in the given map.
@@ -935,7 +951,7 @@ Returns:
 </details>
 
 ```grain
-filter : (((a, b) -> Bool), Map<a, b>) -> Map<a, b>
+filter : (fn: ((a, b) -> Bool), map: Map<a, b>) -> Map<a, b>
 ```
 
 Produces a new map excluding the key-value pairs where a predicate function returns `false`.
@@ -968,7 +984,7 @@ Returns:
 </details>
 
 ```grain
-reject : (((a, b) -> Bool), Map<a, b>) -> Map<a, b>
+reject : (fn: ((a, b) -> Bool), map: Map<a, b>) -> Map<a, b>
 ```
 
 Produces a new map excluding the key-value pairs where a predicate function returns `true`.
@@ -1001,7 +1017,7 @@ Returns:
 </details>
 
 ```grain
-fromList : List<(a, b)> -> Map<a, b>
+fromList : (list: List<(a, b)>) -> Map<a, b>
 ```
 
 Creates a map from a list.
@@ -1033,7 +1049,7 @@ Returns:
 </details>
 
 ```grain
-toList : Map<a, b> -> List<(a, b)>
+toList : (map: Map<a, b>) -> List<(a, b)>
 ```
 
 Enumerates all key-value pairs in the given map.
@@ -1065,7 +1081,7 @@ Returns:
 </details>
 
 ```grain
-fromArray : Array<(a, b)> -> Map<a, b>
+fromArray : (array: Array<(a, b)>) -> Map<a, b>
 ```
 
 Creates a map from an array.
@@ -1097,7 +1113,7 @@ Returns:
 </details>
 
 ```grain
-toArray : Map<a, b> -> Array<(a, b)>
+toArray : (map: Map<a, b>) -> Array<(a, b)>
 ```
 
 Converts a map into an array of its key-value pairs.

@@ -2,7 +2,9 @@
 title: PriorityQueue
 ---
 
-A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue. An immutable priority queue implementation is available in the `Immutable` submodule.
+A priority queue is a data structure that maintains elements in a priority order. Elements with higher priority are served before elements with lower priority when extracting from the priority queue.
+
+An immutable priority queue implementation is available in the `Immutable` submodule.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.5.3</code></summary>
@@ -374,7 +376,7 @@ An empty priority queue with the default `compare` comparator.
 </details>
 
 ```grain
-make : ((a, a) -> Number) -> PriorityQueue<a>
+make : (comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -483,7 +485,7 @@ Returns:
 </details>
 
 ```grain
-push : (a, PriorityQueue<a>) -> PriorityQueue<a>
+push : (val: a, pq: PriorityQueue<a>) -> PriorityQueue<a>
 ```
 
 Produces a new priority queue by inserting the given element into the given priority queue.
@@ -516,7 +518,7 @@ Returns:
 </details>
 
 ```grain
-peek : PriorityQueue<a> -> Option<a>
+peek : (pq: PriorityQueue<a>) -> Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -549,7 +551,7 @@ Returns:
 </details>
 
 ```grain
-pop : PriorityQueue<a> -> PriorityQueue<a>
+pop : (pq: PriorityQueue<a>) -> PriorityQueue<a>
 ```
 
 Produces a new priority queue without the highest priority element in the
@@ -583,7 +585,7 @@ Returns:
 </details>
 
 ```grain
-drain : PriorityQueue<a> -> List<a>
+drain : (pq: PriorityQueue<a>) -> List<a>
 ```
 
 Produces a list of all elements in the priority queue in priority order.
@@ -615,7 +617,7 @@ Returns:
 </details>
 
 ```grain
-fromList : (List<a>, ((a, a) -> Number)) -> PriorityQueue<a>
+fromList : (list: List<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -652,7 +654,7 @@ Returns:
 </details>
 
 ```grain
-fromArray : (Array<a>, ((a, a) -> Number)) -> PriorityQueue<a>
+fromArray : (array: Array<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array

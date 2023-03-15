@@ -2,7 +2,9 @@
 title: Set
 ---
 
-A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned. An immutable set implementation is available in the `Immutable` submodule.
+A Set is an unordered collection of unique values. Operations on a Set mutate the internal state, so it never needs to be re-assigned.
+
+An immutable set implementation is available in the `Immutable` submodule.
 
 <details disabled>
 <summary tabindex="-1">Added in <code>0.3.0</code></summary>
@@ -568,7 +570,7 @@ An empty set
 </details>
 
 ```grain
-size : Set<a> -> Number
+size : (set: Set<a>) -> Number
 ```
 
 Provides the count of values within the set.
@@ -600,7 +602,7 @@ Returns:
 </details>
 
 ```grain
-isEmpty : Set<a> -> Bool
+isEmpty : (set: Set<a>) -> Bool
 ```
 
 Determines if the set contains no elements.
@@ -632,7 +634,7 @@ Returns:
 </details>
 
 ```grain
-add : (a, Set<a>) -> Set<a>
+add : (key: a, set: Set<a>) -> Set<a>
 ```
 
 Produces a new set by inserting the given value into the set. If the value
@@ -666,7 +668,7 @@ Returns:
 </details>
 
 ```grain
-contains : (a, Set<a>) -> Bool
+contains : (key: a, set: Set<a>) -> Bool
 ```
 
 Determines if the set contains the given value.
@@ -699,7 +701,7 @@ Returns:
 </details>
 
 ```grain
-remove : (a, Set<a>) -> Set<a>
+remove : (key: a, set: Set<a>) -> Set<a>
 ```
 
 Produces a new set without the given element. If the value doesn't exist in
@@ -733,7 +735,7 @@ Returns:
 </details>
 
 ```grain
-forEach : ((a -> Void), Set<a>) -> Void
+forEach : (fn: (a -> Void), set: Set<a>) -> Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -760,7 +762,7 @@ Parameters:
 </details>
 
 ```grain
-reduce : (((a, b) -> a), a, Set<b>) -> a
+reduce : (fn: ((a, b) -> a), init: a, set: Set<b>) -> a
 ```
 
 Combines all elements of a set using a reducer function.
@@ -794,7 +796,7 @@ Returns:
 </details>
 
 ```grain
-filter : ((a -> Bool), Set<a>) -> Set<a>
+filter : (fn: (a -> Bool), set: Set<a>) -> Set<a>
 ```
 
 Produces a new set without the elements from the input set where a predicate function returns `false`.
@@ -827,7 +829,7 @@ Returns:
 </details>
 
 ```grain
-reject : ((a -> Bool), Set<a>) -> Set<a>
+reject : (fn: (a -> Bool), set: Set<a>) -> Set<a>
 ```
 
 Produces a new set without the elements from the input set where a predicate function returns `true`.
@@ -860,7 +862,7 @@ Returns:
 </details>
 
 ```grain
-union : (Set<a>, Set<a>) -> Set<a>
+union : (set1: Set<a>, set2: Set<a>) -> Set<a>
 ```
 
 Combines two sets into a single set containing all elements from both sets.
@@ -893,7 +895,7 @@ Returns:
 </details>
 
 ```grain
-diff : (Set<a>, Set<a>) -> Set<a>
+diff : (set1: Set<a>, set2: Set<a>) -> Set<a>
 ```
 
 Combines two sets into a single set containing only the elements not shared between both sets.
@@ -926,7 +928,7 @@ Returns:
 </details>
 
 ```grain
-intersect : (Set<a>, Set<a>) -> Set<a>
+intersect : (set1: Set<a>, set2: Set<a>) -> Set<a>
 ```
 
 Combines two sets into a single set containing only the elements shared between both sets.
@@ -959,7 +961,7 @@ Returns:
 </details>
 
 ```grain
-fromList : List<a> -> Set<a>
+fromList : (list: List<a>) -> Set<a>
 ```
 
 Creates a set from a list.
@@ -991,7 +993,7 @@ Returns:
 </details>
 
 ```grain
-toList : Set<a> -> List<a>
+toList : (set: Set<a>) -> List<a>
 ```
 
 Converts a set into a list of its elements.
@@ -1023,7 +1025,7 @@ Returns:
 </details>
 
 ```grain
-fromArray : Array<a> -> Set<a>
+fromArray : (array: Array<a>) -> Set<a>
 ```
 
 Creates a set from an array.
@@ -1055,7 +1057,7 @@ Returns:
 </details>
 
 ```grain
-toArray : Set<a> -> Array<a>
+toArray : (set: Set<a>) -> Array<a>
 ```
 
 Converts a set into an array of its elements.

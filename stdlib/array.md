@@ -2,7 +2,9 @@
 title: Array
 ---
 
-Utilities for working with arrays. An immutable array implementation is available in the `Immutable` submodule
+Utilities for working with arrays.
+
+An immutable array implementation is available in the `Immutable` submodule.
 
 <details>
 <summary>Added in <code>0.2.0</code></summary>
@@ -1344,7 +1346,7 @@ An empty array.
 </details>
 
 ```grain
-isEmpty : ImmutableArray<a> -> Bool
+isEmpty : (array: ImmutableArray<a>) -> Bool
 ```
 
 Determines if the array contains no elements.
@@ -1376,7 +1378,7 @@ Returns:
 </details>
 
 ```grain
-length : ImmutableArray<a> -> Number
+length : (array: ImmutableArray<a>) -> Number
 ```
 
 Provides the length of the input array.
@@ -1414,7 +1416,7 @@ length(fromList([1, 2, 3, 4, 5])) == 5
 </details>
 
 ```grain
-get : (Number, ImmutableArray<a>) -> a
+get : (index: Number, array: ImmutableArray<a>) -> a
 ```
 
 Retrieves the element from the array at the specified index.
@@ -1464,7 +1466,8 @@ get(-1, fromList([1, 2, 3, 4])) == 4
 </details>
 
 ```grain
-set : (Number, a, ImmutableArray<a>) -> ImmutableArray<a>
+set :
+  (index: Number, value: a, array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Creates a new array in which the element at the specified index is set to a
@@ -1511,7 +1514,8 @@ set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
 </details>
 
 ```grain
-append : (ImmutableArray<a>, ImmutableArray<a>) -> ImmutableArray<a>
+append :
+  (array1: ImmutableArray<a>, array2: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Creates a new array with the elements of the first array followed by
@@ -1551,7 +1555,7 @@ append(fromList([1, 2]), fromList([3, 4, 5])) == fromList([1, 2, 3, 4, 5])
 </details>
 
 ```grain
-concat : List<ImmutableArray<a>> -> ImmutableArray<a>
+concat : (arrays: List<ImmutableArray<a>>) -> ImmutableArray<a>
 ```
 
 Creates a single array containing the elements of all arrays in the
@@ -1590,7 +1594,7 @@ concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2
 </details>
 
 ```grain
-init : (Number, (Number -> a)) -> ImmutableArray<a>
+init : (length: Number, fn: (Number -> a)) -> ImmutableArray<a>
 ```
 
 Creates a new array of the specified length where each element is
@@ -1631,7 +1635,7 @@ init(5, i => i + 3) == fromList([3, 4, 5, 6, 7])
 </details>
 
 ```grain
-make : (Number, a) -> ImmutableArray<a>
+make : (length: Number, value: a) -> ImmutableArray<a>
 ```
 
 Creates a new array of the specified length with each element being
@@ -1671,7 +1675,7 @@ make(5, "foo") == fromList(["foo", "foo", "foo", "foo", "foo"])
 </details>
 
 ```grain
-forEach : ((a -> Void), ImmutableArray<a>) -> Void
+forEach : (fn: (a -> Void), array: ImmutableArray<a>) -> Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -1698,7 +1702,7 @@ Parameters:
 </details>
 
 ```grain
-cycle : ((a -> Void), Number, ImmutableArray<a>) -> Void
+cycle : (fn: (a -> Void), n: Number, array: ImmutableArray<a>) -> Void
 ```
 
 Iterates an array a given number of times, calling an iterator function on each element.
@@ -1726,7 +1730,7 @@ Parameters:
 </details>
 
 ```grain
-map : ((a -> b), ImmutableArray<a>) -> ImmutableArray<b>
+map : (fn: (a -> b), array: ImmutableArray<a>) -> ImmutableArray<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -1760,7 +1764,7 @@ Returns:
 </details>
 
 ```grain
-reduce : (((a, b) -> a), a, ImmutableArray<b>) -> a
+reduce : (fn: ((a, b) -> a), initial: a, array: ImmutableArray<b>) -> a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -1806,7 +1810,7 @@ reduce((acc, x) => acc + x, 0, fromList([1, 2, 3])) == 6
 </details>
 
 ```grain
-reduceRight : (((a, b) -> b), b, ImmutableArray<a>) -> b
+reduceRight : (fn: ((a, b) -> b), initial: b, array: ImmutableArray<a>) -> b
 ```
 
 Combines all elements of an array using a reducer function,
@@ -1852,7 +1856,9 @@ reduceRight((x, acc) => acc ++ x, "", fromList(["baz", "bar", "foo"])) == "fooba
 </details>
 
 ```grain
-flatMap : ((a -> ImmutableArray<b>), ImmutableArray<a>) -> ImmutableArray<b>
+flatMap :
+  (fn: (a -> ImmutableArray<b>), array: ImmutableArray<a>) ->
+   ImmutableArray<b>
 ```
 
 Produces a new array by calling a function on each element
@@ -1894,7 +1900,7 @@ flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4,
 </details>
 
 ```grain
-fromList : List<a> -> ImmutableArray<a>
+fromList : (list: List<a>) -> ImmutableArray<a>
 ```
 
 Converts the input list to an array.
@@ -1926,7 +1932,7 @@ Returns:
 </details>
 
 ```grain
-toList : ImmutableArray<a> -> List<a>
+toList : (array: ImmutableArray<a>) -> List<a>
 ```
 
 Converts the input array to a list.
@@ -1958,7 +1964,7 @@ Returns:
 </details>
 
 ```grain
-filter : ((a -> Bool), ImmutableArray<a>) -> ImmutableArray<a>
+filter : (fn: (a -> Bool), array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -1993,7 +1999,7 @@ Returns:
 </details>
 
 ```grain
-every : ((a -> Bool), ImmutableArray<a>) -> Bool
+every : (fn: (a -> Bool), array: ImmutableArray<a>) -> Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -2027,7 +2033,7 @@ Returns:
 </details>
 
 ```grain
-some : ((a -> Bool), ImmutableArray<a>) -> Bool
+some : (fn: (a -> Bool), array: ImmutableArray<a>) -> Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -2061,7 +2067,7 @@ Returns:
 </details>
 
 ```grain
-reverse : ImmutableArray<a> -> ImmutableArray<a>
+reverse : (array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Creates a new array with all elements in reverse order.
@@ -2093,7 +2099,7 @@ Returns:
 </details>
 
 ```grain
-contains : (a, ImmutableArray<a>) -> Bool
+contains : (value: a, array: ImmutableArray<a>) -> Bool
 ```
 
 Checks if the value is an element of the input array.
@@ -2127,7 +2133,7 @@ Returns:
 </details>
 
 ```grain
-find : ((a -> Bool), ImmutableArray<a>) -> Option<a>
+find : (fn: (a -> Bool), array: ImmutableArray<a>) -> Option<a>
 ```
 
 Finds the first element in an array that satifies the given condition.
@@ -2160,7 +2166,7 @@ Returns:
 </details>
 
 ```grain
-findIndex : ((a -> Bool), ImmutableArray<a>) -> Option<Number>
+findIndex : (fn: (a -> Bool), array: ImmutableArray<a>) -> Option<Number>
 ```
 
 Finds the first index in an array where the element satifies the given condition.
@@ -2193,7 +2199,9 @@ Returns:
 </details>
 
 ```grain
-product : (ImmutableArray<a>, ImmutableArray<b>) -> ImmutableArray<(a, b)>
+product :
+  (array1: ImmutableArray<a>, array2: ImmutableArray<b>) ->
+   ImmutableArray<(a, b)>
 ```
 
 Combines two arrays into a Cartesian product of tuples containing
@@ -2227,7 +2235,7 @@ Returns:
 </details>
 
 ```grain
-count : ((a -> Bool), ImmutableArray<a>) -> Number
+count : (fn: (a -> Bool), array: ImmutableArray<a>) -> Number
 ```
 
 Counts the number of elements in an array that satisfy the given condition.
@@ -2260,7 +2268,7 @@ Returns:
 </details>
 
 ```grain
-unique : ImmutableArray<a> -> ImmutableArray<a>
+unique : (array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Produces a new array with any duplicates removed.
@@ -2293,7 +2301,9 @@ Returns:
 </details>
 
 ```grain
-zip : (ImmutableArray<a>, ImmutableArray<b>) -> ImmutableArray<(a, b)>
+zip :
+  (array1: ImmutableArray<a>, array2: ImmutableArray<b>) ->
+   ImmutableArray<(a, b)>
 ```
 
 Produces a new array filled with tuples of elements from both given arrays.
@@ -2332,7 +2342,8 @@ Returns:
 
 ```grain
 zipWith :
-  (((a, b) -> c), ImmutableArray<a>, ImmutableArray<b>) -> ImmutableArray<c>
+  (fn: ((a, b) -> c), array1: ImmutableArray<a>, array2: ImmutableArray<b>) ->
+   ImmutableArray<c>
 ```
 
 Produces a new array filled with elements defined by applying a function on
@@ -2383,7 +2394,8 @@ zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 
 </details>
 
 ```grain
-unzip : ImmutableArray<(a, b)> -> (ImmutableArray<a>, ImmutableArray<b>)
+unzip :
+  (array: ImmutableArray<(a, b)>) -> (ImmutableArray<a>, ImmutableArray<b>)
 ```
 
 Produces two arrays by splitting apart an array of tuples.
@@ -2415,7 +2427,7 @@ Returns:
 </details>
 
 ```grain
-join : (String, ImmutableArray<String>) -> String
+join : (separator: String, array: ImmutableArray<String>) -> String
 ```
 
 Concatenates an array of strings into a single string, separated by a separator string.
@@ -2448,7 +2460,8 @@ Returns:
 </details>
 
 ```grain
-slice : (Number, Number, ImmutableArray<a>) -> ImmutableArray<a>
+slice :
+  (start: Number, end: Number, array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Slices an array given zero-based start and end indexes. The value
@@ -2496,7 +2509,8 @@ slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
 </details>
 
 ```grain
-sort : (((a, a) -> Number), ImmutableArray<a>) -> ImmutableArray<a>
+sort :
+  (comp: ((a, a) -> Number), array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Sorts the given array based on a given comparator function.
@@ -2531,7 +2545,7 @@ Returns:
 </details>
 
 ```grain
-rotate : (Number, ImmutableArray<a>) -> ImmutableArray<a>
+rotate : (n: Number, array: ImmutableArray<a>) -> ImmutableArray<a>
 ```
 
 Rotates array elements by the specified amount to the left, such that the
