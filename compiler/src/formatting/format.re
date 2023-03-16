@@ -4458,7 +4458,7 @@ let rec print_data =
         Doc.concat([
           Doc.text(d.pcd_name.txt),
           switch (d.pcd_args) {
-          | PConstrTuple(parsed_types) =>
+          | PConstrTuple({txt: parsed_types}) =>
             switch (parsed_types) {
             | [] => Doc.nil
             | [first, ...rem] =>
@@ -4508,7 +4508,7 @@ let rec print_data =
                 ]),
               );
             }
-          | PConstrRecord(label_declarations) =>
+          | PConstrRecord({txt: label_declarations}) =>
             let get_loc = (lbl: Parsetree.label_declaration) => {
               lbl.pld_loc;
             };
@@ -4976,7 +4976,7 @@ let rec toplevel_print =
         | PExtDecl(sargs) =>
           switch (sargs) {
           | PConstrSingleton => Doc.nil
-          | PConstrTuple(parsed_types) =>
+          | PConstrTuple({txt: parsed_types}) =>
             if (List.length(parsed_types) > 0) {
               Doc.concat([
                 Doc.lparen,

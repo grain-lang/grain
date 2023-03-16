@@ -388,8 +388,8 @@ provide_stmt:
 
 data_constructor:
   | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
-  | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Option.value ~default:[] $3) }
-  | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc $1) $2 }
+  | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Location.mkloc (Option.value ~default:[] $3) (to_loc $loc($3))) }
+  | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc $1) (Location.mkloc $2 (to_loc $loc($2))) }
 
 data_constructors:
   | lbrace lseparated_nonempty_list(comma, data_constructor) comma? rbrace { $2 }
@@ -679,8 +679,8 @@ primitive_stmt:
 
 exception_stmt:
   | EXCEPTION type_id_str { Exception.singleton ~loc:(to_loc $loc) $2 }
-  | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Option.value ~default:[] $4) }
-  | EXCEPTION type_id_str data_labels { Exception.record ~loc:(to_loc $loc) $2 $3 }
+  | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Location.mkloc (Option.value ~default:[] $4) (to_loc $loc($4))) }
+  | EXCEPTION type_id_str data_labels { Exception.record ~loc:(to_loc $loc) $2 (Location.mkloc $3 (to_loc $loc($3))) }
 
 module_stmt:
   | MODULE UIDENT lbrace toplevel_stmts RBRACE { ModuleDeclaration.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }

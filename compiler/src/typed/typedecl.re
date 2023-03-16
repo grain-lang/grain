@@ -186,11 +186,11 @@ let transl_labels = (env, closed, lbls) => {
 let transl_constructor_arguments = (env, closed) =>
   fun
   | PConstrTuple(l) => {
-      let l = List.map(transl_simple_type(env, closed), l);
+      let l = List.map(transl_simple_type(env, closed), l.txt);
       (Types.TConstrTuple(List.map(t => t.ctyp_type, l)), TConstrTuple(l));
     }
   | PConstrRecord(l) => {
-      let (lbls, lbls') = transl_labels(env, closed, l);
+      let (lbls, lbls') = transl_labels(env, closed, l.txt);
       (Types.TConstrRecord(lbls'), TConstrRecord(lbls));
     }
   | PConstrSingleton => (Types.TConstrSingleton, TConstrSingleton);

@@ -362,8 +362,12 @@ and iter_exception = (hooks, {ptyexn_constructor: ext, ptyexn_loc: loc}) => {
   switch (k) {
   | PExtDecl(args) =>
     switch (args) {
-    | PConstrTuple(ptl) => List.iter(iter_type(hooks), ptl)
-    | PConstrRecord(ldl) => List.iter(iter_label(hooks), ldl)
+    | PConstrTuple(ptl) =>
+      iter_loc(hooks, ptl);
+      List.iter(iter_type(hooks), ptl.txt);
+    | PConstrRecord(ldl) =>
+      iter_loc(hooks, ldl);
+      List.iter(iter_label(hooks), ldl.txt);
     | PConstrSingleton => ()
     }
   | PExtRebind(id) => iter_loc(hooks, id)
@@ -401,8 +405,12 @@ and iter_constructor =
   iter_location(hooks, loc);
   iter_loc(hooks, name);
   switch (args) {
-  | PConstrTuple(ptl) => List.iter(iter_type(hooks), ptl)
-  | PConstrRecord(ldl) => List.iter(iter_label(hooks), ldl)
+  | PConstrTuple(ptl) =>
+    iter_loc(hooks, ptl);
+    List.iter(iter_type(hooks), ptl.txt);
+  | PConstrRecord(ldl) =>
+    iter_loc(hooks, ldl);
+    List.iter(iter_label(hooks), ldl.txt);
   | PConstrSingleton => ()
   };
 }
