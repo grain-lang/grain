@@ -1447,8 +1447,7 @@ let merge = (r, b) =>
   };
 
 let occur = (env, ty0, ty) => {
-  let allow_recursive =
-    Grain_utils.Config.recursive_types^ || umode^ == Pattern;
+  let allow_recursive = umode^ == Pattern;
   let old = type_changed^;
   try(
     {

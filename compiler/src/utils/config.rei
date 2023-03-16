@@ -94,10 +94,6 @@ let statically_link: ref(bool);
 
 let no_tail_call: ref(bool);
 
-/** Whether to allow cyclic types. */
-
-let recursive_types: ref(bool);
-
 /** Whether non-terminal block expressions should be forced to return void */
 
 let strict_sequence: ref(bool);

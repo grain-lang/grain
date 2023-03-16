@@ -473,9 +473,6 @@ let no_tail_call =
     false,
   );
 
-// TODO(#612): Add compiler flag when feature is complete or remove entirely
-let recursive_types = ref(false);
-
 let strict_sequence =
   toggle_flag(
     ~names=["strict-sequence"],

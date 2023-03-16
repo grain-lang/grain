@@ -448,24 +448,12 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
     if (fini) {
       ();
     } else {
-      let rec_ok =
-        switch (ty.desc) {
-        | TTyConstr(p, _, _) =>
-          Grain_utils.Config.recursive_types^ && Ctype.is_contractive(env, p)
-        | _ => Grain_utils.Config.recursive_types^
-        };
-
       let visited' = TypeMap.add(ty, parents, visited^);
       let arg_exn =
         try(
           {
             visited := visited';
-            let parents =
-              if (rec_ok) {
-                TypeSet.empty;
-              } else {
-                TypeSet.add(ty, parents);
-              };
+            let parents = TypeSet.add(ty, parents);
             Btype.iter_type_expr(check(ty0, parents), ty);
             None;
           }
