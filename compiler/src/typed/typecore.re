@@ -1108,14 +1108,7 @@ and type_expect_ =
     );
   | PExpApp(func, args) =>
     begin_def(); /* one more level for non-returning functions */
-    if (Grain_utils.Config.principal^) {
-      begin_def();
-    };
     let funct = type_exp(env, func);
-    if (Grain_utils.Config.principal^) {
-      end_def();
-      generalize_structure(funct.exp_type);
-    };
     // TODO: Determine what this does
     /*let rec lower_args seen ty_fun =
         let ty = expand_head env ty_fun in
@@ -1525,8 +1518,7 @@ and type_function =
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let (loc_fun, ty_fun) = (loc, instance(env, ty_expected));
 
-  let separate =
-    Grain_utils.Config.principal^ || Env.has_local_constraints(env);
+  let separate = Env.has_local_constraints(env);
   if (separate) {
     begin_def();
   };
@@ -1820,11 +1812,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let opath =
     try({
       let (p0, p, _) = extract_concrete_variant(env, ty_expected);
-      Some((
-        p0,
-        p,
-        ty_expected.level == generic_level || ! Grain_utils.Config.principal^,
-      ));
+      Some((p0, p, ty_expected.level == generic_level || true));
     }) {
     | Not_found => None
     };
@@ -1863,8 +1851,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
       ),
     );
   };
-  let separate =
-    Grain_utils.Config.principal^ || Env.has_local_constraints(env);
+  let separate = Env.has_local_constraints(env);
   if (separate) {
     begin_def();
     begin_def();
@@ -2019,8 +2006,7 @@ and type_cases =
       Format.printf "lev = %d@.%a@." lev Printtyp.raw_type_expr ty_res; */
   /* Do we need to propagate polymorphism */
   let propagate =
-    Grain_utils.Config.principal^  /*has_gadts ||*/
-    || repr(ty_arg).level == generic_level
+    repr(ty_arg).level == generic_level
     || (
       switch (caselist) {
       | [{pmb_pat}] when is_var(pmb_pat) => false
@@ -2036,31 +2022,14 @@ and type_cases =
   let pat_env_list =
     List.map(
       ({pmb_pat, pmb_body}) => {
-        if (Grain_utils.Config.principal^) {
-          begin_def();
-        }; /* propagation of pattern */
         let scope = None /*Some (Annot.Idef loc)*/;
         let (pat, ext_env, force, unpacks) = {
-          let partial =
-            if (Grain_utils.Config.principal^) {
-              /* || erase_either*/
-              Some(false);
-            } else {
-              None;
-            };
+          let partial = None;
           let ty_arg = instance(~partial?, env, ty_arg);
           Typepat.type_pattern(~lev, env, pmb_pat, scope, ty_arg);
         };
 
         pattern_force := force @ pattern_force^;
-        let pat =
-          if (Grain_utils.Config.principal^) {
-            end_def();
-            iter_pattern(({pat_type: t}) => generalize_structure(t), pat);
-            {...pat, pat_type: instance(ext_env, pat.pat_type)};
-          } else {
-            pat;
-          };
 
         (pat, (ext_env, unpacks));
       },
@@ -2099,17 +2068,7 @@ and type_cases =
     List.map2(
       ((pat, (ext_env, unpacks)), {pmb_pat, pmb_body, pmb_guard, pmb_loc}) => {
         let sexp = pmb_body /*wrap_unpacks pmb_body unpacks*/;
-        let ty_res' =
-          if (Grain_utils.Config.principal^) {
-            begin_def();
-            let ty = instance(~partial=true, env, ty_res);
-            end_def();
-            generalize_structure(ty);
-            ty;
-          } else {
-            /*else if contains_gadt env pmb_body then correct_levels ty_res*/
-            ty_res;
-          };
+
         /*Format.eprintf "@[%i %i, ty_res' =@ %a@]@." lev (get_current_level())
           Printtyp.raw_type_expr ty_res';*/
         let guard =
@@ -2126,12 +2085,12 @@ and type_cases =
             )
           };
         let exp =
-          type_expect(~in_function?, ext_env, sexp, mk_expected(ty_res'));
+          type_expect(~in_function?, ext_env, sexp, mk_expected(ty_res));
         {
           mb_pat: pat,
           mb_body: {
             ...exp,
-            exp_type: instance(env, ty_res'),
+            exp_type: instance(env, ty_res),
           },
           mb_guard: guard,
           mb_loc: pmb_loc,
@@ -2141,10 +2100,6 @@ and type_cases =
       caselist,
     );
 
-  if (Grain_utils.Config.principal^) /*|| has_gadts*/ {
-    let ty_res' = instance(env, ty_res);
-    List.iter(c => unify_exp(env, c.mb_body, ty_res'), cases);
-  };
   let do_init = /*has_gadts ||*/ needs_exhaust_check;
   let (lev, env) =
     if (do_init) {
@@ -2209,9 +2164,6 @@ and type_let =
     ) => {
   open Ast_helper;
   begin_def();
-  if (Grain_utils.Config.principal^) {
-    begin_def();
-  };
   /*let is_fake_let =
       match spat_sexp_list with
       | [{pvb_expr={pexp_desc=PExpMatch(
@@ -2221,25 +2173,7 @@ and type_let =
           false
     in*/
   /*let check = if is_fake_let then check_strict else check in*/
-  let spatl =
-    List.map(
-      ({pvb_pat: spat, pvb_expr: sexp}) =>
-        (
-          [],
-          switch (spat.ppat_desc, sexp.pexp_desc) {
-          | (PPatAny | PPatConstraint(_), _) => spat
-          /*| _, PExpConstraint (_, sty) when !Grain_utils.Config.principal ->
-            (* propagate type annotation to pattern,
-               to allow it to be generalized in -principal mode *)
-            Pattern.constraint_
-              ~loc:{spat.ppat_loc with Location.loc_ghost=true}
-              spat
-              sty*/
-          | _ => spat
-          },
-        ),
-      spat_sexp_list,
-    );
+  let spatl = List.map(({pvb_pat: spat}) => ([], spat), spat_sexp_list);
   let nvs = List.map(_ => newvar(), spatl);
   let mut = mut_flag == Mutable;
   let (pat_list, new_env, force, unpacks, pv) =
@@ -2280,20 +2214,7 @@ and type_let =
         iter_pattern finalize_variant pat
       end)
     pat_list;*/
-  /* Generalize the structure */
-  let pat_list =
-    if (Grain_utils.Config.principal^) {
-      end_def();
-      List.map(
-        pat => {
-          iter_pattern(pat => generalize_structure(pat.pat_type), pat);
-          {...pat, pat_type: instance(env, pat.pat_type)};
-        },
-        pat_list,
-      );
-    } else {
-      pat_list;
-    };
+
   /* Only bind pattern variables after generalizing */
   List.iter(f => f(), force);
   let exp_env =
@@ -2387,14 +2308,7 @@ and type_let =
         | TTyPoly(ty, tl) =>
           /*Printf.eprintf "type_let: TTyPoly\n";*/
           begin_def();
-          if (Grain_utils.Config.principal^) {
-            begin_def();
-          };
           let (vars, ty') = instance_poly(~keep_names=true, true, tl, ty);
-          if (Grain_utils.Config.principal^) {
-            end_def();
-            generalize_structure(ty');
-          };
           let exp =
             /*Builtin_attributes.warning_scope pvb_attributes
               (fun () -> type_expect exp_env sexp (mk_expected ty'))*/
@@ -2482,21 +2396,12 @@ and type_let =
 }
 
 and type_label_access = (env, srecord, lid) => {
-  /* if !Clflags.principal then begin_def (); */
   let record = type_exp(~recarg=Allowed, env, srecord);
-  /* if !Clflags.principal then begin */
-  /* end_def (); */
-  /* generalize_structure record.exp_type */
-  /* end; */
   let ty_exp = record.exp_type;
   let opath =
     try({
       let (p0, p, _) = extract_concrete_record(env, ty_exp);
-      Some((
-        p0,
-        p,
-        repr(ty_exp).level == generic_level /*|| not !Clflags.principal*/,
-      ));
+      Some((p0, p, repr(ty_exp).level == generic_level));
     }) {
     | Not_found => None
     };
@@ -2515,7 +2420,7 @@ and type_label_access = (env, srecord, lid) => {
 and type_label_exp = (create, env, loc, ty_expected, (lid, label, sarg)) => {
   /* Here also ty_expected may be at generic_level */
   begin_def();
-  let separate = Clflags.principal^ || Env.has_local_constraints(env);
+  let separate = Env.has_local_constraints(env);
   if (separate) {
     begin_def();
     begin_def();

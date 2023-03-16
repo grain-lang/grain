@@ -66,10 +66,6 @@ let stdlib_dir: ref(option(string));
 
 let color_enabled: ref(bool);
 
-/** Whether to use principal types when compiling */
-
-let principal: ref(bool);
-
 /** Initial number of WebAssembly memory pages */
 
 let initial_memory_pages: ref(int);

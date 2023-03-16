@@ -426,9 +426,6 @@ let stdlib_dir =
 let color_enabled =
   toggle_flag(~names=["no-color"], ~doc="Disable colored output", true);
 
-// TODO(#612): Add compiler flag when feature is complete or remove entirely
-let principal = ref(false);
-
 let initial_memory_pages =
   opt(
     ~names=["initial-memory-pages"],
