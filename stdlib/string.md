@@ -419,13 +419,20 @@ String.split(" ", "Hello world") == [> "Hello", "world"]
 
 ### String.**slice**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.1.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Default `end` to the String length</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-slice : (start: Number, to: Number, string: String) -> String
+slice : (start: Number, ?end: Number, string: String) -> String
 ```
 
 Get a portion of a string.
@@ -435,7 +442,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`start`|`Number`|The start position of the substring|
-|`to`|`Number`|The end position of the substring, exclusive|
+|`end`|`Option<Number>`|The end position of the substring, exclusive|
 |`string`|`String`|The input string|
 
 Returns:
@@ -460,7 +467,11 @@ Throws:
 Examples:
 
 ```grain
-String.slice(0, 5, "Hello world") == "Hello"
+String.slice(0, end=5, "Hello world") == "Hello"
+```
+
+```grain
+String.slice(0, "Hello world") == "Hello world"
 ```
 
 ### String.**contains**

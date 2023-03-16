@@ -129,24 +129,25 @@ assert String.split("🚀 ", emojis) ==
 assert String.split(" ", " foo bar baz ") == [> "", "foo", "bar", "baz", ""]
 
 // slice tests
-assert String.slice(0, 0, empty) == empty
-assert String.slice(0, 1, fox) == "T"
-assert String.slice(0, 2, fox) == "Th"
-assert String.slice(0, 3, fox) == "The"
-assert String.slice(0, 4, fox) == "The "
-assert String.slice(0, 5, fox) == "The q"
-assert String.slice(35, 39, fox) == "lazy"
-assert String.slice(35, 44, fox) == "lazy dog."
-assert String.slice(-9, -1, fox) == "lazy dog"
-assert String.slice(35, -1, fox) == "lazy dog"
-assert String.slice(35, -5, fox) == "lazy"
-assert String.slice(0, 44, fox) == fox
-assert String.slice(44, 44, fox) == empty
-assert String.slice(0, 1, emoji) == emoji
-assert String.slice(-2, 1, emoji) == emoji
-assert String.slice(-1, -1, emoji) == empty
-assert String.slice(0, 1, "💪🏾") == "💪"
-assert String.slice(1, 2, "💪🏾") == "🏾"
+assert String.slice(0, end=0, empty) == empty
+assert String.slice(0, end=1, fox) == "T"
+assert String.slice(0, end=2, fox) == "Th"
+assert String.slice(0, end=3, fox) == "The"
+assert String.slice(0, end=4, fox) == "The "
+assert String.slice(0, end=5, fox) == "The q"
+assert String.slice(35, end=39, fox) == "lazy"
+assert String.slice(35, end=44, fox) == "lazy dog."
+assert String.slice(-9, end=-1, fox) == "lazy dog"
+assert String.slice(35, end=-1, fox) == "lazy dog"
+assert String.slice(35, end=-5, fox) == "lazy"
+assert String.slice(0, end=44, fox) == fox
+assert String.slice(44, end=44, fox) == empty
+assert String.slice(0, end=1, emoji) == emoji
+assert String.slice(-2, end=1, emoji) == emoji
+assert String.slice(-1, end=-1, emoji) == empty
+assert String.slice(0, end=1, "💪🏾") == "💪"
+assert String.slice(1, end=2, "💪🏾") == "🏾"
+assert String.slice(start=0, fox) == fox
 
 // contains tests
 assert String.contains("", short)

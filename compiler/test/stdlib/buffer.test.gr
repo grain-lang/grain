@@ -271,7 +271,7 @@ for (let mut i = 0; i < Array.length(slices); i += 1) {
   let (str, start, end) = slices[i]
   let buf = Buffer.make(0)
   Buffer.addStringSlice(start, end, str, buf)
-  assert Buffer.toString(buf) == String.slice(start, end, str)
+  assert Buffer.toString(buf) == String.slice(start, end=end, str)
 }
 
 // addBytesSlice

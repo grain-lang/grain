@@ -618,7 +618,7 @@ provide let split = (separator: String, string: String) => {
  * Get a portion of a string.
  *
  * @param start: The start position of the substring
- * @param to: The end position of the substring, exclusive
+ * @param end: The end position of the substring, exclusive
  * @param string: The input string
  * @returns The substring from the initial string
  *
@@ -628,12 +628,14 @@ provide let split = (separator: String, string: String) => {
  * @throws IndexOutOfBounds: When `end` is out of bounds
  * @throws InvalidArgument(String): When `start` is greater than `end`
  *
- * @example String.slice(0, 5, "Hello world") == "Hello"
+ * @example String.slice(0, end=5, "Hello world") == "Hello"
+ * @example String.slice(0, "Hello world") == "Hello world"
  *
  * @since v0.1.0
+ * @history v0.6.0: Default `end` to the String length
  */
 @unsafe
-provide let slice = (start: Number, to: Number, string: String) => {
+provide let slice = (start: Number, end=length(string), string: String) => {
   from WasmI32 use {
     add as (+),
     sub as (-),
@@ -645,8 +647,6 @@ provide let slice = (start: Number, to: Number, string: String) => {
     eq as (==),
     ne as (!=),
   }
-  let startOrig = start
-  let toOrig = to
 
   let len = WasmI32.fromGrain(length(string)) >> 1n
   let size = WasmI32.fromGrain(byteLength(string)) >> 1n
@@ -659,7 +659,7 @@ provide let slice = (start: Number, to: Number, string: String) => {
   }
   start = start >> 1n
 
-  let mut to = WasmI32.fromGrain(to)
+  let mut to = WasmI32.fromGrain(end)
   if ((to & 1n) != 1n) {
     throw InvalidArgument("Invalid end index")
   }
