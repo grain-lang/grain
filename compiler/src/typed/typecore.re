@@ -1812,7 +1812,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
   let opath =
     try({
       let (p0, p, _) = extract_concrete_variant(env, ty_expected);
-      Some((p0, p, ty_expected.level == generic_level || true));
+      Some((p0, p, true));
     }) {
     | Not_found => None
     };
