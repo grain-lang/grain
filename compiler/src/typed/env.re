@@ -69,7 +69,6 @@ type dependency_chain = list(Location.loc(string));
 type error =
   | Illegal_renaming(string, string, string)
   | Inconsistent_import(string, string, string)
-  | Need_recursive_types(string, string)
   | Depend_on_unsafe_string_unit(string, string)
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
@@ -678,7 +677,7 @@ let is_runtime_mode = () => {
 
 /* Persistent structure descriptions */
 
-type pers_flags = Cmi_format.pers_flags = | Rectypes | Opaque | Unsafe_string;
+type pers_flags = Cmi_format.pers_flags = | Opaque | Unsafe_string;
 
 type pers_struct = {
   ps_name: string,
@@ -765,7 +764,6 @@ let save_pers_struct = (crc, ps) => {
   Hashtbl.add(persistent_structures, filename, Some(ps));
   List.iter(
     fun
-    | Rectypes => ()
     | Unsafe_string => ()
     | Opaque => add_imported_opaque(filename),
     ps.ps_flags,
@@ -854,11 +852,6 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
 
   List.iter(
     fun
-    | Rectypes =>
-      if (! Clflags.recursive_types^) {
-        let (unit_name, _, _) = get_unit();
-        error(Need_recursive_types(ps.ps_name, unit_name));
-      }
     | Unsafe_string =>
       if (Config.safe_string^) {
         let (unit_name, _, _) = get_unit();
@@ -929,8 +922,6 @@ let check_pers_struct = (~loc, name, filename) =>
           name,
         )
       | Inconsistent_import(_) => assert(false)
-      | Need_recursive_types(name, _) =>
-        Format.sprintf("%s uses recursive types", name)
       | Depend_on_unsafe_string_unit(name, _) =>
         Printf.sprintf("%s uses -unsafe-string", name)
       | Unbound_label(_) => assert(false)
@@ -2289,11 +2280,7 @@ let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
    Btype.cleanup_abbrev ();
    Subst.reset_for_saving ();
    let sg = Subst.signature (Subst.for_saving Subst.identity) sg in
-   let flags =
-     List.concat [
-       if !Grain_utils.Config.recursive_types then [Cmi_format.Rectypes] else [];
-       (*if !Grain_utils.Config.opaque then [Cmi_format.Opaque] else [];*)
-     ]
+   let flags = []
    in
    try
      let cmi = {
@@ -2338,15 +2325,7 @@ let build_signature_with_imports =
   Btype.cleanup_abbrev();
   Subst.reset_for_saving();
   let sg = Subst.signature(Subst.for_saving(Subst.identity), sg);
-  let flags =
-    List.concat([
-      if (Grain_utils.Config.recursive_types^) {
-        [Cmi_format.Rectypes];
-      } else {
-        [];
-      },
-      /*if !Grain_utils.Config.opaque then [Cmi_format.Opaque] else [];*/
-    ]);
+  let flags = [];
 
   try({
     let full_cmi =
@@ -2551,14 +2530,6 @@ let report_error = ppf =>
       Location.print_filename,
       source2,
       name,
-    )
-  | Need_recursive_types(import, export) =>
-    fprintf(
-      ppf,
-      "@[<hov>Unit %s imports from %s, which uses recursive types.@ %s@]",
-      export,
-      import,
-      "The compilation flag -rectypes is required",
     )
   | Depend_on_unsafe_string_unit(import, export) =>
     fprintf(

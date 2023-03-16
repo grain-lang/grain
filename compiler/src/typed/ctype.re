@@ -149,7 +149,7 @@ let is_object_type = path => {
 let simple_abbrevs = ref(TMemNil);
 
 let proper_abbrevs = (path, tl, abbrev) =>
-  if (tl != [] || Grain_utils.Config.principal^ || is_object_type(path)) {
+  if (tl != [] || is_object_type(path)) {
     abbrev;
   } else {
     simple_abbrevs;
@@ -1447,8 +1447,7 @@ let merge = (r, b) =>
   };
 
 let occur = (env, ty0, ty) => {
-  let allow_recursive =
-    Grain_utils.Config.recursive_types^ || umode^ == Pattern;
+  let allow_recursive = umode^ == Pattern;
   let old = type_changed^;
   try(
     {
@@ -2400,24 +2399,6 @@ and unify2 = (env, t1, t2) => {
       if lv1 > lv2 then Env.add_gadt_instance_chain !env lv1 t2 else
       if lv2 > lv1 then Env.add_gadt_instance_chain !env lv2 t1
       end;*/
-    let (t1, t2) =
-      if (Grain_utils.Config.principal^
-          && (find_lowest_level(t1') < lv || find_lowest_level(t2') < lv)) {
-        (
-          /* Expand abbreviations hiding a lower level */
-          /* Should also do it for parameterized types, after unification... */
-          switch (t1.desc) {
-          | TTyConstr(_, [], _) => t1'
-          | _ => t1
-          },
-          switch (t2.desc) {
-          | TTyConstr(_, [], _) => t2'
-          | _ => t2
-          },
-        );
-      } else {
-        (t1, t2);
-      };
 
     if (unify_eq(t1, t1') || !unify_eq(t2, t2')) {
       unify3(env, t1, t1', t2, t2');

@@ -927,21 +927,14 @@ and type_pat_aux =
       };
     };
   | PPatConstraint(sp, sty) =>
-    /* Separate when not already separated by !principal */
-    let separate = true;
-    if (separate) {
-      begin_def();
-    };
+    begin_def();
     let (cty, force) = Typetexp.transl_simple_type_delayed(env^, sty);
     let ty = cty.ctyp_type;
-    let (ty, expected_ty') =
-      if (separate) {
-        end_def();
-        generalize_structure(ty);
-        (instance(env^, ty), instance(env^, ty));
-      } else {
-        (ty, ty);
-      };
+    let (ty, expected_ty') = {
+      end_def();
+      generalize_structure(ty);
+      (instance(env^, ty), instance(env^, ty));
+    };
 
     unify_pat_types(loc, env^, ty, expected_ty);
     type_pat(
@@ -954,19 +947,16 @@ and type_pat_aux =
         pattern_force := [force, ...pattern_force^];
         let extra = (TPatConstraint(cty), loc);
         let p =
-          if (!separate) {
-            p;
-          } else {
-            switch (p.pat_desc) {
-            | TPatVar(id, s) => {
-                ...p,
-                pat_type: ty,
-                pat_desc: TPatAlias({...p, pat_desc: TPatAny}, id, s),
-                pat_extra: [extra],
-              }
-            | _ => {...p, pat_type: ty, pat_extra: [extra, ...p.pat_extra]}
-            };
+          switch (p.pat_desc) {
+          | TPatVar(id, s) => {
+              ...p,
+              pat_type: ty,
+              pat_desc: TPatAlias({...p, pat_desc: TPatAny}, id, s),
+              pat_extra: [extra],
+            }
+          | _ => {...p, pat_type: ty, pat_extra: [extra, ...p.pat_extra]}
           };
+
         k(p);
       },
     );

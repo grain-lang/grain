@@ -19,7 +19,6 @@ open Wasm_utils;
 
 [@deriving (sexp, yojson)]
 type pers_flags =
-  | Rectypes
   | Opaque
   | Unsafe_string;
 

@@ -66,10 +66,6 @@ let stdlib_dir: ref(option(string));
 
 let color_enabled: ref(bool);
 
-/** Whether to use principal types when compiling */
-
-let principal: ref(bool);
-
 /** Initial number of WebAssembly memory pages */
 
 let initial_memory_pages: ref(int);
@@ -93,10 +89,6 @@ let statically_link: ref(bool);
 /** Disables tail-call optimizations */
 
 let no_tail_call: ref(bool);
-
-/** Whether to allow cyclic types. */
-
-let recursive_types: ref(bool);
 
 /** Whether non-terminal block expressions should be forced to return void */
 
