@@ -387,9 +387,9 @@ provide_stmt:
   | attributes PROVIDE module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 Provided $3 }
 
 data_constructor:
-  | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
-  | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Location.mkloc (Option.value ~default:[] $3) (to_loc $loc($3))) }
-  | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc $1) (Location.mkloc $2 (to_loc $loc($2))) }
+  | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc($1) $1) }
+  | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc (Option.value ~default:[] $3) (to_loc $loc($3))) }
+  | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc $2 (to_loc $loc($2))) }
 
 data_constructors:
   | lbrace lseparated_nonempty_list(comma, data_constructor) comma? rbrace { $2 }
