@@ -28,6 +28,8 @@ type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
 
+type location('a) = loc('a);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
@@ -125,7 +127,7 @@ module ConstructorDeclaration = {
             ),
           );
         },
-      a,
+      a.txt,
     );
     mk(~loc?, n, PConstrRecord(a));
   };
@@ -175,7 +177,7 @@ module Exception = {
             ),
           );
         },
-      args,
+      args.txt,
     );
     mk(~loc?, n, PConstrRecord(args));
   };

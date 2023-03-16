@@ -28,6 +28,8 @@ type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
 
+type location('a) = loc('a);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
@@ -72,9 +74,12 @@ module Type: {
 module ConstructorDeclaration: {
   let mk: (~loc: loc=?, str, constructor_arguments) => constructor_declaration;
   let singleton: (~loc: loc=?, str) => constructor_declaration;
-  let tuple: (~loc: loc=?, str, list(parsed_type)) => constructor_declaration;
+  let tuple:
+    (~loc: loc=?, str, location(list(parsed_type))) =>
+    constructor_declaration;
   let record:
-    (~loc: loc=?, str, list(label_declaration)) => constructor_declaration;
+    (~loc: loc=?, str, location(list(label_declaration))) =>
+    constructor_declaration;
 };
 
 module LabelDeclaration: {
@@ -99,8 +104,10 @@ module DataDeclaration: {
 module Exception: {
   let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
   let singleton: (~loc: loc=?, str) => type_exception;
-  let tuple: (~loc: loc=?, str, list(parsed_type)) => type_exception;
-  let record: (~loc: loc=?, str, list(label_declaration)) => type_exception;
+  let tuple:
+    (~loc: loc=?, str, location(list(parsed_type))) => type_exception;
+  let record:
+    (~loc: loc=?, str, location(list(label_declaration))) => type_exception;
 };
 
 module Pattern: {

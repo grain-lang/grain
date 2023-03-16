@@ -264,9 +264,24 @@ module C = {
     let loc = sub.location(sub, loc);
     let sname = map_loc(sub, name);
     switch (args) {
-    | PConstrTuple(ptl) => tuple(~loc, sname, List.map(sub.typ(sub), ptl))
+    | PConstrTuple(ptl) =>
+      tuple(
+        ~loc,
+        sname,
+        {
+          txt: List.map(sub.typ(sub), ptl.txt),
+          loc: sub.location(sub, ptl.loc),
+        },
+      )
     | PConstrRecord(ldl) =>
-      record(~loc, sname, List.map(sub.label(sub), ldl))
+      record(
+        ~loc,
+        sname,
+        {
+          txt: List.map(sub.label(sub), ldl.txt),
+          loc: sub.location(sub, ldl.loc),
+        },
+      )
     | PConstrSingleton => singleton(~loc, sname)
     };
   };
@@ -321,9 +336,16 @@ module Exc = {
       | PExtDecl(args) =>
         PExtDecl(
           switch (args) {
-          | PConstrTuple(ptl) => PConstrTuple(List.map(sub.typ(sub), ptl))
+          | PConstrTuple(ptl) =>
+            PConstrTuple({
+              txt: List.map(sub.typ(sub), ptl.txt),
+              loc: sub.location(sub, ptl.loc),
+            })
           | PConstrRecord(ldl) =>
-            PConstrRecord(List.map(sub.label(sub), ldl))
+            PConstrRecord({
+              txt: List.map(sub.label(sub), ldl.txt),
+              loc: sub.location(sub, ldl.loc),
+            })
           | PConstrSingleton => PConstrSingleton
           },
         )

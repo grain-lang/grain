@@ -57,8 +57,8 @@ type label_declaration = {
 
 [@deriving (sexp, yojson)]
 type constructor_arguments =
-  | PConstrTuple(list(parsed_type))
-  | PConstrRecord(list(label_declaration))
+  | PConstrTuple(loc(list(parsed_type)))
+  | PConstrRecord(loc(list(label_declaration)))
   | PConstrSingleton
 
 [@deriving (sexp, yojson)]
