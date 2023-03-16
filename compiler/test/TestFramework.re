@@ -23,6 +23,7 @@ let () =
 
 let test_dir = Fp.At.(Filepath.get_cwd() / "test");
 let test_libs_dir = Fp.At.(test_dir / "test-libs");
+let test_data_dir = Fp.At.(test_dir / "test-data");
 let test_input_dir = Fp.At.(test_dir / "input");
 let test_output_dir = Fp.At.(test_dir / "output");
 let test_stdlib_dir = Fp.At.(test_dir / "stdlib");

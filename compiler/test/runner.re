@@ -166,11 +166,18 @@ let run = (~num_pages=?, file) => {
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
+  let preopen =
+    Printf.sprintf(
+      "--dir=%s=%s",
+      "/test/test-data",
+      Filepath.to_string(test_data_dir),
+    );
+
   let cmd =
     Array.concat([
       [|"grain", "run"|],
       mem_flags,
-      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir)|],
+      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), preopen|],
       [|file|],
     ]);
 

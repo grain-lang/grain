@@ -119,6 +119,7 @@ class GrainCommand extends commander.Command {
       num
     );
     cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
+    cmd.option("--dir <dir...>", "directory to preopen");
     cmd.forwardOption(
       "--compilation-mode <mode>",
       "compilation mode (advanced use only)"

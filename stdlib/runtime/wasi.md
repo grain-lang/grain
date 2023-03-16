@@ -80,6 +80,18 @@ fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
 fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32
 ```
 
+### Wasi.**fd_prestat_get**
+
+```grain
+fd_prestat_get : (WasmI32, WasmI32) -> WasmI32
+```
+
+### Wasi.**fd_prestat_dir_name**
+
+```grain
+fd_prestat_dir_name : (WasmI32, WasmI32, WasmI32) -> WasmI32
+```
+
 ### Wasi.**fd_write**
 
 ```grain

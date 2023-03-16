@@ -31,9 +31,11 @@ include "runtime/unsafe/memory"
 include "runtime/dataStructures"
 from DataStructures use {
   tagSimpleNumber,
+  untagSimpleNumber,
   allocateArray,
   allocateBytes,
   allocateString,
+  newInt32,
   newInt64,
   allocateInt64,
 }
@@ -422,6 +424,16 @@ provide record DirectoryEntry {
 }
 
 /**
+ * Information about a preopened directory
+ */
+provide enum Prestat {
+  Dir{
+    prefix: String,
+    fd: FileDescriptor,
+  },
+}
+
+/**
  * The `FileDescriptor` for `stdin`.
  */
 provide let stdin = FileDescriptor(0)
@@ -433,10 +445,6 @@ provide let stdout = FileDescriptor(1)
  * The `FileDescriptor` for `stderr`.
  */
 provide let stderr = FileDescriptor(2)
-/**
- * The `FileDescriptor` for the current working directory of the process.
- */
-provide let pwdfd = FileDescriptor(3)
 
 /**
  * Open a file or directory.
@@ -575,6 +583,42 @@ provide let fdPread = (fd: FileDescriptor, offset: Int64, size: Number) => {
   WasmI32.store(strPtr, nread, 4n)
   Memory.free(iovs)
   return Ok((WasmI32.toGrain(strPtr): Bytes, tagSimpleNumber(nread)))
+}
+
+/**
+ * Get information about a preopened directory.
+ *
+ * @param fd: The file descriptor to check
+ * @returns `Ok(Dir{prefix, fd})` if successful or `Err(exception)` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let fdPrestatGet = (fd: FileDescriptor) => {
+  let fdArg = fd
+  let fd = match (fd) { FileDescriptor(n) => WasmI32.fromGrain(n) >> 1n }
+
+  let dir = Memory.malloc(8n)
+  let err = Wasi.fd_prestat_get(fd, dir)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(dir)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+  }
+
+  let prefixLen = WasmI32.load(dir, 4n)
+  Memory.free(dir)
+
+  let prefix = allocateString(prefixLen)
+  let err = Wasi.fd_prestat_dir_name(fd, prefix + 8n, prefixLen)
+  if (err != Wasi._ESUCCESS) {
+    Memory.free(prefix)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+  }
+
+  let prefix = WasmI32.toGrain(prefix): String
+  let fd = fdArg
+
+  return Ok(Dir{ prefix, fd })
 }
 
 /**
@@ -1663,4 +1707,253 @@ provide let pathRename =
   }
 
   return Ok(void)
+}
+
+@unsafe
+let _CHAR_SLASH = 0x2fn
+@unsafe
+let _CHAR_DOT = 0x2en
+
+@unsafe
+let stripPrefixes = (path: String) => {
+  let origPathPtr = WasmI32.fromGrain(path)
+  let mut pathPtr = origPathPtr
+  let mut pathLen = WasmI32.load(pathPtr, 4n)
+  pathPtr += 8n
+
+  while (true) {
+    if (WasmI32.load8U(pathPtr, 0n) == _CHAR_SLASH) {
+      pathPtr += 1n
+      pathLen -= 1n
+    } else if (
+      WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT &&
+      WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
+    ) {
+      pathPtr += 2n
+      pathLen -= 2n
+    } else if (WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT && pathLen == 1n) {
+      pathPtr += 1n
+      pathLen -= 1n
+      break
+    } else {
+      break
+    }
+  }
+
+  if (pathPtr == origPathPtr) {
+    path
+  } else {
+    let strippedPath = allocateString(pathLen)
+    Memory.copy(strippedPath + 8n, pathPtr, pathLen)
+    WasmI32.toGrain(strippedPath): String
+  }
+}
+
+let mut preopens = None
+@unsafe
+let populatePreopens = () => {
+  let mut preopenedDirs = []
+  // Skip stdin, stdout, and stderr.
+  for (let mut fd = 3n; fd != 0n; fd += 1n) {
+    let fd = FileDescriptor(tagSimpleNumber(fd))
+    match (fdPrestatGet(fd)) {
+      Ok(Dir{ prefix, fd }) =>
+        preopenedDirs = [(fd, stripPrefixes(prefix)), ...preopenedDirs],
+      // We've reached a bad file descriptor; we're done.
+      Err(Wasi.SystemError(e)) when untagSimpleNumber(e) == Wasi._EBADF =>
+        break,
+      Err(_) => fail "Failed to populate preopens",
+    }
+  }
+  preopens = Some(preopenedDirs)
+  preopenedDirs
+}
+
+@unsafe
+let prefixMatches = (prefix, prefixLen, path, pathLen) => {
+  // Allow an empty string as a prefix of any relative path.
+  if (WasmI32.load8U(path, 0n) != _CHAR_SLASH && prefixLen == 0n) {
+    return true
+  }
+
+  // Check whether any bytes of the prefix differ.
+  if (Memory.compare(path, prefix, prefixLen) != 0n) {
+    return false
+  }
+
+  // Ignore trailing slashes in directory names.
+  let mut i = prefixLen
+  while (i > 0n && WasmI32.load8U(prefix + i - 1n, 0n) == _CHAR_SLASH) {
+    i -= 1n
+  }
+
+  // Match only complete path components.
+  let last = WasmI32.load8U(path + i, 0n)
+  return last == _CHAR_SLASH || i == pathLen
+}
+
+@unsafe
+let rec findPath = (path, pathLen, preopens, bestMatch) => {
+  match (preopens) {
+    [(fd, prefix) as preopen, ...preopens] => {
+      let prefix = WasmI32.fromGrain(prefix)
+      let prefixLen = WasmI32.load(prefix, 4n)
+      let prefix = prefix + 8n
+
+      let (hasBestMatch, matchLen) = match (bestMatch) {
+        Some((matchPrefix, _)) =>
+          (
+            true,
+            tagSimpleNumber(WasmI32.load(WasmI32.fromGrain(matchPrefix), 4n)),
+          ),
+        None => (false, 0),
+      }
+
+      let bestMatch = if (
+        (!hasBestMatch || pathLen > untagSimpleNumber(matchLen)) &&
+        prefixMatches(prefix, prefixLen, path, pathLen)
+      ) {
+        Some(preopen)
+      } else {
+        bestMatch
+      }
+
+      findPath(path, pathLen, preopens, bestMatch)
+    },
+    [] => {
+      match (bestMatch) {
+        Some((fd, prefix)) => {
+          let matchLen = WasmI32.load(WasmI32.fromGrain(prefix), 4n)
+          let mut computed = path + matchLen
+          while (WasmI32.load8U(computed, 0n) == _CHAR_SLASH) {
+            computed += 1n
+          }
+          let computedPath = if (computed == path + pathLen) {
+            "."
+          } else {
+            let computedLen = path + pathLen - computed
+            let computedPath = allocateString(computedLen)
+            Memory.copy(computedPath + 8n, computed, computedLen)
+            WasmI32.toGrain(computedPath): String
+          }
+          Ok((fd, computedPath))
+        },
+        None => Err(Wasi.SystemError(tagSimpleNumber(Wasi._ENOENT))),
+      }
+    },
+  }
+}
+
+@unsafe
+let findPath = (path: String) => {
+  let pathPtr = WasmI32.fromGrain(path)
+  let mut pathLen = WasmI32.load(pathPtr, 4n)
+  let mut pathPtr = pathPtr + 8n
+
+  // ignore leading `/` characters
+  while (WasmI32.load8U(pathPtr, 0n) == _CHAR_SLASH) {
+    pathPtr += 1n
+    pathLen -= 1n
+  }
+
+  let preopens = match (preopens) {
+    Some(preopens) => preopens,
+    None => populatePreopens(),
+  }
+
+  let matchingPath = findPath(pathPtr, pathLen, preopens, None)
+  ignore(path)
+  matchingPath
+}
+
+// explicit just in case we ever want to support changing directories
+let cwd = "/"
+
+@unsafe
+let makeAbsolute = (path: String) => {
+  let origPathPtr = WasmI32.fromGrain(path)
+  let mut pathPtr = origPathPtr
+  let mut pathLen = WasmI32.load(pathPtr, 4n)
+  pathPtr += 8n
+
+  // already absolute
+  if (WasmI32.load8U(pathPtr, 0n) == _CHAR_SLASH) {
+    return path
+  }
+
+  // pointing at the current dirextory
+  if (
+    pathLen == 0n ||
+    pathLen == 1n && WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT ||
+    pathLen == 2n &&
+    WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT &&
+    WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
+  ) {
+    return cwd
+  }
+
+  // strip leading ./
+  if (
+    WasmI32.load8U(pathPtr, 0n) == _CHAR_DOT &&
+    WasmI32.load8U(pathPtr, 1n) == _CHAR_SLASH
+  ) {
+    pathPtr += 2n
+    pathLen -= 2n
+  }
+
+  let mut cwdPtr = WasmI32.fromGrain(cwd)
+  let cwdLen = WasmI32.load(cwdPtr, 4n)
+  cwdPtr += 8n
+
+  let needSlash = WasmI32.load8U(cwdPtr + cwdLen - 1n, 0n) != _CHAR_SLASH
+
+  if (needSlash) {
+    let fullPath = allocateString(cwdLen + 1n + pathLen)
+    Memory.copy(fullPath + 8n, cwdPtr, cwdLen)
+    WasmI32.store8(fullPath + 8n + cwdLen, _CHAR_SLASH, 0n)
+    Memory.copy(fullPath + 8n + cwdLen + 1n, pathPtr, pathLen)
+    return WasmI32.toGrain(fullPath): String
+  } else {
+    let fullPath = allocateString(cwdLen + pathLen)
+    Memory.copy(fullPath + 8n, cwdPtr, cwdLen)
+    Memory.copy(fullPath + 8n + cwdLen, pathPtr, pathLen)
+    return WasmI32.toGrain(fullPath): String
+  }
+}
+
+/**
+ * Similar to `pathOpen`, but resolves the path relative to preopened directories.
+ *
+ * @param path: The path to the file or directory
+ * @param openFlags: Flags that decide how the path will be opened
+ * @param rights: The rights that dictate what may be done with the returned file descriptor
+ * @param rightsInheriting: The rights that dictate what may be done with file descriptors derived from this file descriptor
+ * @param flags: Flags which affect read/write operations on this file descriptor
+ * @returns `Ok(fd)` of the opened file or directory if successful or `Err(exception)` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let open =
+  (
+    path: String,
+    openFlags: List<OpenFlag>,
+    rights: List<Rights>,
+    rightsInheriting: List<Rights>,
+    flags: List<FdFlag>,
+  ) => {
+  match (findPath(makeAbsolute(path))) {
+    Ok((fd, relativePath)) => {
+      pathOpen(
+        fd,
+        [SymlinkFollow],
+        relativePath,
+        openFlags,
+        rights,
+        rightsInheriting,
+        flags
+      )
+    },
+    Err(e) => Err(e),
+  }
 }

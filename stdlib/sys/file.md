@@ -171,6 +171,19 @@ record DirectoryEntry {
 
 An entry in a directory.
 
+### File.**Prestat**
+
+```grain
+enum Prestat {
+  Dir{
+    prefix: String,
+    fd: FileDescriptor,
+  },
+}
+```
+
+Information about a preopened directory
+
 ## Values
 
 Functions and constants included in the File module.
@@ -198,14 +211,6 @@ stderr : FileDescriptor
 ```
 
 The `FileDescriptor` for `stderr`.
-
-### File.**pwdfd**
-
-```grain
-pwdfd : FileDescriptor
-```
-
-The `FileDescriptor` for the current working directory of the process.
 
 ### File.**pathOpen**
 
@@ -282,6 +287,31 @@ Returns:
 |type|description|
 |----|-----------|
 |`Result<(Bytes, Number), Exception>`|`Ok((contents, numBytes))` of bytes read and the number of bytes read if successful or `Err(exception)` otherwise|
+
+### File.**fdPrestatGet**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fdPrestatGet : (fd: FileDescriptor) -> Result<Prestat, Exception>
+```
+
+Get information about a preopened directory.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fd`|`FileDescriptor`|The file descriptor to check|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<Prestat, Exception>`|`Ok(Dir{prefix, fd})` if successful or `Err(exception)` otherwise|
 
 ### File.**fdWrite**
 
@@ -974,4 +1004,36 @@ Returns:
 |type|description|
 |----|-----------|
 |`Result<Void, Exception>`|`Ok(void)` if successful or `Err(exception)` otherwise|
+
+### File.**open**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+open :
+  (path: String, openFlags: List<OpenFlag>, rights: List<Rights>,
+   rightsInheriting: List<Rights>, flags: List<FdFlag>) ->
+   Result<FileDescriptor, Exception>
+```
+
+Similar to `pathOpen`, but resolves the path relative to preopened directories.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`path`|`String`|The path to the file or directory|
+|`openFlags`|`List<OpenFlag>`|Flags that decide how the path will be opened|
+|`rights`|`List<Rights>`|The rights that dictate what may be done with the returned file descriptor|
+|`rightsInheriting`|`List<Rights>`|The rights that dictate what may be done with file descriptors derived from this file descriptor|
+|`flags`|`List<FdFlag>`|Flags which affect read/write operations on this file descriptor|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Result<FileDescriptor, Exception>`|`Ok(fd)` of the opened file or directory if successful or `Err(exception)` otherwise|
 
