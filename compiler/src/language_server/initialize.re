@@ -60,7 +60,7 @@ module ResponseResult = {
     [@key "renameProvider"]
     rename_provider: bool,
     [@key "inlayHintProvider"]
-    inlay_hint_provider: Protocol.inlay_hint_options
+    inlay_hint_provider: Protocol.inlay_hint_options,
   };
   [@deriving yojson]
   type t = {capabilities: lsp_capabilities};
@@ -82,7 +82,7 @@ module ResponseResult = {
     rename_provider: false,
     inlay_hint_provider: {
       resolve_provider: false,
-    }
+    },
   };
 };
 

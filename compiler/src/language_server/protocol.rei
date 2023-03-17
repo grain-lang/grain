@@ -4,9 +4,8 @@ open Grain_utils;
 [@deriving yojson]
 type inlay_hint_options = {
   [@key "resolveProvider"]
-  resolve_provider: bool
+  resolve_provider: bool,
 };
-
 
 [@deriving yojson]
 type version;
@@ -149,8 +148,6 @@ type notification_message = {
   method: string,
   params: Yojson.Safe.t,
 };
-
-
 
 let request: unit => result(request_message, string);
 
