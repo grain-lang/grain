@@ -641,8 +641,65 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           let type_ = Env.find_type(type_id, env);
           ([TSigType(Path.head(type_id), type_, TRecNot), ...sigs], stmts);
         | PProvideModule({name: {txt: IdentName(name)}, alias, loc}) =>
-          let (mod_id, mod_decl) =
+          let (mod_path, mod_decl) =
             Typetexp.find_module(env, loc, IdentName(name));
+          let create_path = (mod_path, id) => {
+            Path.PExternal(mod_path, Ident.name(id));
+          };
+          let provided_values = ref([]);
+          let rec process_module_items = (mod_path, signature) => {
+            List.map(
+              item => {
+                switch (item) {
+                | TSigValue(id, {val_internalpath, val_loc} as vd) =>
+                  let path = create_path(mod_path, id);
+                  provided_values :=
+                    [
+                      {tex_id: id, tex_path: path, tex_loc: val_loc},
+                      ...provided_values^,
+                    ];
+                  // If this module was imported, we'll set the internal path
+                  // to be picked up later to be re-exported. Otherwise, these
+                  // values originated in this module.
+                  let val_internalpath =
+                    switch (mod_decl.md_filepath) {
+                    | Some(_) => path
+                    | _ => val_internalpath
+                    };
+                  TSigValue(id, {...vd, val_internalpath});
+                | TSigModule(
+                    id,
+                    {md_type: TModSignature(signature)} as md,
+                    rs,
+                  ) =>
+                  let signature =
+                    process_module_items(
+                      create_path(mod_path, id),
+                      signature,
+                    );
+                  TSigModule(
+                    id,
+                    {...md, md_type: TModSignature(signature)},
+                    rs,
+                  );
+                | TSigModule(_)
+                | TSigType(_)
+                | TSigTypeExt(_)
+                | TSigModType(_) => item
+                }
+              },
+              signature,
+            );
+          };
+          let mod_decl =
+            switch (mod_decl.md_type) {
+            | TModSignature(signature) => {
+                ...mod_decl,
+                md_type:
+                  TModSignature(process_module_items(mod_path, signature)),
+              }
+            | _ => mod_decl
+            };
           let sig_ =
             switch (alias) {
             | Some({txt: IdentName(alias)}) =>
@@ -650,7 +707,18 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
             | Some(_) => failwith("Impossible: invalid alias")
             | None => TSigModule(Ident.create(name.txt), mod_decl, TRecNot)
             };
-          ([sig_, ...sigs], stmts);
+          (
+            [sig_, ...sigs],
+            [
+              {
+                ttop_desc: TTopProvide(provided_values^),
+                ttop_loc: loc,
+                ttop_env: env,
+                ttop_attributes: Typetexp.type_attributes(attributes),
+              },
+              ...stmts,
+            ],
+          );
         | _ => failwith("Impossible: non-value provide")
         },
       items,
