@@ -221,10 +221,10 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (Char, Char) -> Bool
+(<) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is less than the second value.
+Checks if the first value is less than the second value by Unicode scalar value.
 
 Parameters:
 
@@ -247,10 +247,10 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (Char, Char) -> Bool
+(<=) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is less than or equal to the second value.
+Checks if the first value is less than or equal to the second value by Unicode scalar value.
 
 Parameters:
 
@@ -273,10 +273,10 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (Char, Char) -> Bool
+(>) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is greater than the second value.
+Checks if the first value is greater than the second value by Unicode scalar value.
 
 Parameters:
 
@@ -299,10 +299,10 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (Char, Char) -> Bool
+(>=) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is greater than or equal to the second value.
+Checks if the first value is greater than or equal to the second value by Unicode scalar value.
 
 Parameters:
 
