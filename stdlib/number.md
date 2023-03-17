@@ -1097,7 +1097,7 @@ No other changes yet.
 </details>
 
 ```grain
-parseInt : (string: String, radix: Number) => Result<Number, String>
+parseInt : (string: String, radix: Number) => Result<Number, Exception>
 ```
 
 Parses a string representation of an integer into a `Number` using the
@@ -1119,7 +1119,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Exception>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
 Examples:
 
@@ -1183,7 +1183,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : (input: String) => Result<Number, String>
+parse : (input: String) => Result<Number, Exception>
 ```
 
 Parses a string representation of an integer, float, or rational into a `Number`.
@@ -1199,7 +1199,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<Number, String>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
+|`Result<Number, Exception>`|`Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise|
 
 Examples:
 

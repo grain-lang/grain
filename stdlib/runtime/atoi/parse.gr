@@ -20,6 +20,10 @@ from "runtime/bigint" include Bigint as BI
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
 
+provide exception EmptyString
+provide exception InvalidDigit
+provide exception InvalidRadix
+
 primitive (&&) = "@and"
 primitive (||) = "@or"
 
@@ -58,11 +62,11 @@ provide let parseInt = (string: String, radix: Number) => {
     radix < WasmI32.fromGrain(2) ||
     radix > WasmI32.fromGrain(36)
   ) {
-    return Err("Radix must be an integer between 2 and 36")
+    return Err(InvalidRadix)
   }
 
   if (WasmI32.eqz(strLen)) {
-    return Err("Invalid input")
+    return Err(EmptyString)
   }
 
   let mut char = WasmI32.load8U(offset, 0n)
@@ -123,12 +127,12 @@ provide let parseInt = (string: String, radix: Number) => {
       c when c - _CHAR_A < 26n => digit = char - _CHAR_A + 10n,
       c when c - _CHAR_a < 26n => digit = char - _CHAR_a + 10n,
       _ => {
-        return Err("Invalid digit in input")
+        return Err(InvalidDigit)
       },
     }
 
     if (digit >= WasmI32.wrapI64(radix)) {
-      return Err("Invalid digit in input")
+      return Err(InvalidDigit)
     }
 
     let digit = WasmI64.extendI32U(digit)
@@ -174,7 +178,7 @@ provide let parseInt = (string: String, radix: Number) => {
   }
   use WasmI64.{ (*) }
   // TODO: Verify this is suitable for handling "_"
-  if (WasmI32.eqz(sawDigit)) return Err("Invalid digit in input")
+  if (WasmI32.eqz(sawDigit)) return Err(InvalidDigit)
 
   if (WasmI32.eqz(isBigInt)) {
     let value = if (negative) value else value * -1N

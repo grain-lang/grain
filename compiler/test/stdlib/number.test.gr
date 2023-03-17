@@ -627,7 +627,7 @@ assert Result.isErr(Number.parseInt("10", 2/3))
 
 // Number.parse
 // These tests primarily focus on rational parsing
-assert Number.parse("") == Err("Invalid input")
+assert Result.isErr(Number.parse(""))
 assert Number.parse("42") == Ok(42)
 assert Number.parse("123.45") == Ok(123.45)
 assert Number.parse("1/1") == Ok(1)
@@ -639,9 +639,9 @@ assert Number.parse("-3/-9") == Ok(1/3)
 assert Number.parse("0x3/-9") == Ok(-1/3)
 assert Number.parse("3/-0x9") == Ok(-1/3)
 assert Number.parse("9223372036854775808/27_670_116_110_564_327_424") == Ok(1/3)
-assert Number.parse("1/2/") == Err("Invalid digit in input")
-assert Number.parse("1/") == Err("Invalid input")
-assert Number.parse("1//") == Err("Invalid digit in input")
+assert Result.isErr(Number.parse("1/2/"))
+assert Result.isErr(Number.parse("1/"))
+assert Result.isErr(Number.parse("1//"))
 
 // Number.sign
 assert Number.sign(-10000) == -1
