@@ -59,6 +59,8 @@ module ResponseResult = {
     document_range_formatting_provider: bool,
     [@key "renameProvider"]
     rename_provider: bool,
+    [@key "inlayHintProvider"]
+    inlay_hint_provider: Protocol.inlay_hint_options
   };
   [@deriving yojson]
   type t = {capabilities: lsp_capabilities};
@@ -78,6 +80,9 @@ module ResponseResult = {
     document_highlight_provider: false,
     document_range_formatting_provider: false,
     rename_provider: false,
+    inlay_hint_provider: {
+      resolve_provider: false,
+    }
   };
 };
 

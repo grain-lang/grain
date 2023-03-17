@@ -1,5 +1,13 @@
 open Grain_utils;
 
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions[@deriving yojson]
+[@deriving yojson]
+type inlay_hint_options = {
+  [@key "resolveProvider"]
+  resolve_provider: bool
+};
+
+
 [@deriving yojson]
 type version;
 
@@ -141,6 +149,8 @@ type notification_message = {
   method: string,
   params: Yojson.Safe.t,
 };
+
+
 
 let request: unit => result(request_message, string);
 

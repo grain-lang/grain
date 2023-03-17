@@ -5,6 +5,13 @@ let uri_to_yojson = (uri: Uri.t): Yojson.Safe.t =>
 let uri_of_yojson = (json: Yojson.Safe.t) =>
   json |> [%of_yojson: string] |> Result.map(Uri.of_string);
 
+//https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions
+[@deriving yojson]
+type inlay_hint_options = {
+  [@key "resolveProvider"]
+  resolve_provider: bool
+};
+
 type uri = [@to_yojson uri_to_yojson] [@of_yojson uri_of_yojson] Uri.t;
 
 [@deriving yojson]
