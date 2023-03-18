@@ -31,6 +31,12 @@ let formatter_out_file = name =>
 let formatter_in_file = name =>
   Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
 
+let graindoc_out_file = name =>
+  Filepath.to_string(Fp.At.(test_gaindoc_out_dir / (name ++ ".md")));
+
+let gaindoc_in_file = name =>
+  Filepath.to_string(Fp.At.(test_gaindoc_in_dir / (name ++ ".gr")));
+
 let read_channel = channel => {
   let buf = Buffer.create(2048);
   try(
@@ -188,6 +194,14 @@ let run = (~num_pages=?, file) => {
 
 let format = file => {
   let cmd = [|"grain", "format", file|];
+
+  let (code, out, err) = open_process(cmd);
+
+  (out ++ err, code);
+};
+
+let doc = file => {
+  let cmd = [|"grain", "doc", file|];
 
   let (code, out, err) = open_process(cmd);
 
@@ -445,6 +459,20 @@ let makeFormatterRunner = (test, name, filename) => {
       // we need do a binary content comparison to ensure the EOL is correct
 
       expect.ext.binaryFile(result).toBinaryMatch(formatter_out_file(name));
+    },
+  );
+};
+
+let makeGrainDocRunner = (test, name, filename) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = gaindoc_in_file(filename);
+      let (result, _) = doc(infile);
+
+      // we need do a binary content comparison to ensure the EOL is correct
+
+      expect.ext.binaryFile(result).toBinaryMatch(graindoc_out_file(name));
     },
   );
 };
