@@ -391,6 +391,8 @@ let link_all = (linked_mod, dependencies, signature) => {
   table_offset := 0;
   module_id := Comp_utils.encoded_int32(0);
 
+  let start_name = gensym(Comp_utils.grain_start);
+
   let main = Module_resolution.current_filename^();
   let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
 
@@ -440,53 +442,64 @@ let link_all = (linked_mod, dependencies, signature) => {
         } else {
           let imported_name = Import.global_import_get_base(global);
           let internal_name = Global.get_name(global);
-          let new_name = gensym(internal_name);
-          Hashtbl.add(global_names, internal_name, new_name);
-
-          if (Comp_utils.is_grain_env(imported_module)) {
-            let value =
-              switch (imported_name) {
-              | "relocBase" =>
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(table_offset^)),
-                )
-              | "moduleRuntimeId" =>
-                // Module id is tagged; incrementing by 2 is the equivalent of an untagged increment by 1
-                module_id := module_id^ + 2;
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(module_id^)),
-                );
-              | "runtimeHeapStart" =>
-                let size =
-                  Option.value(
-                    ~default=0,
-                    Option.map(Bytes.length, metadata_tbl_data),
-                  );
-                let runtime_heap_start = metadata_heap_loc + size;
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(runtime_heap_start)),
-                );
-              | value =>
-                failwith(
-                  Printf.sprintf("Unknown Grain runtime value `%s`", value),
-                )
-              };
-            ignore @@
-            Global.add_global(linked_mod, new_name, Type.int32, false, value);
+          if (imported_name == "programStarted"
+              && Comp_utils.is_grain_env(imported_module)) {
+            Hashtbl.add(global_names, internal_name, imported_name);
           } else {
-            let ty = Global.get_type(global);
-            let mut = Global.is_mutable(global);
-            Import.add_global_import(
-              linked_mod,
-              new_name,
-              imported_module,
-              imported_name,
-              ty,
-              mut,
-            );
+            let new_name = gensym(internal_name);
+            Hashtbl.add(global_names, internal_name, new_name);
+
+            if (Comp_utils.is_grain_env(imported_module)) {
+              let value =
+                switch (imported_name) {
+                | "relocBase" =>
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(table_offset^)),
+                  )
+                | "moduleRuntimeId" =>
+                  // Module id is tagged; incrementing by 2 is the equivalent of an untagged increment by 1
+                  module_id := module_id^ + 2;
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(module_id^)),
+                  );
+                | "runtimeHeapStart" =>
+                  let size =
+                    Option.value(
+                      ~default=0,
+                      Option.map(Bytes.length, metadata_tbl_data),
+                    );
+                  let runtime_heap_start = metadata_heap_loc + size;
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(runtime_heap_start)),
+                  );
+                | value =>
+                  failwith(
+                    Printf.sprintf("Unknown Grain runtime value `%s`", value),
+                  )
+                };
+              ignore @@
+              Global.add_global(
+                linked_mod,
+                new_name,
+                Type.int32,
+                false,
+                value,
+              );
+            } else {
+              let ty = Global.get_type(global);
+              let mut = Global.is_mutable(global);
+              Import.add_global_import(
+                linked_mod,
+                new_name,
+                imported_module,
+                imported_name,
+                ty,
+                mut,
+              );
+            };
           };
         };
       } else {
@@ -512,7 +525,20 @@ let link_all = (linked_mod, dependencies, signature) => {
     List.iter(
       func => {
         let imported_module = Import.function_import_get_module(func);
-        if (is_grain_module(imported_module)) {
+        if (is_function_imported(func)
+            && Comp_utils.is_grain_env(imported_module)) {
+          let imported_name = Import.function_import_get_base(func);
+          let internal_name = Function.get_name(func);
+          let new_name =
+            switch (imported_name) {
+            | "programStart" => start_name
+            | value =>
+              failwith(
+                Printf.sprintf("Unknown Grain runtime value `%s`", value),
+              )
+            };
+          Hashtbl.add(function_names, internal_name, new_name);
+        } else if (is_grain_module(imported_module)) {
           let imported_name = Import.function_import_get_base(func);
           let internal_name = Function.get_name(func);
           let new_name =
@@ -694,6 +720,15 @@ let link_all = (linked_mod, dependencies, signature) => {
     false,
   );
 
+  ignore @@
+  Global.add_global(
+    linked_mod,
+    "programStarted",
+    Type.int32,
+    true,
+    Expression.Const.make(linked_mod, Literal.int32(Int32.of_int(0))),
+  );
+
   let starts =
     List.filter_map(
       dep =>
@@ -718,7 +753,6 @@ let link_all = (linked_mod, dependencies, signature) => {
       dependencies @ [main],
     );
 
-  let start_name = gensym(Comp_utils.grain_start);
   let start =
     Function.add_function(
       linked_mod,
@@ -726,7 +760,21 @@ let link_all = (linked_mod, dependencies, signature) => {
       Type.none,
       Type.none,
       [||],
-      Expression.Block.make(linked_mod, gensym("start"), starts),
+      Expression.Block.make(
+        linked_mod,
+        gensym("start"),
+        [
+          Expression.Global_set.make(
+            linked_mod,
+            "programStarted",
+            Expression.Const.make(
+              linked_mod,
+              Literal.int32(Int32.of_int(1)),
+            ),
+          ),
+          ...starts,
+        ],
+      ),
     );
 
   if (Grain_utils.Config.use_start_section^) {

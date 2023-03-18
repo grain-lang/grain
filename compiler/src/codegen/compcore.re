@@ -54,6 +54,9 @@ let runtime_heap_start = Ident.create_persistent("runtimeHeapStart");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 
+let program_started = Ident.create_persistent("programStarted");
+let program_start = Ident.create_persistent("programStart");
+
 /* Memory allocation */
 let malloc_mod = "GRAIN$MODULE$runtime/malloc";
 let malloc_ident = Ident.create_persistent("malloc");
@@ -115,6 +118,24 @@ let required_global_imports = [
     mimp_mod: exception_mod,
     mimp_name: Ident.name(panic_with_exception_closure_ident),
     mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: program_started,
+    mimp_mod: grain_env_mod,
+    mimp_name: Ident.name(program_started),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: program_start,
+    mimp_mod: grain_env_mod,
+    mimp_name: Ident.name(program_start),
+    mimp_type: MFuncImport([], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -3122,6 +3143,7 @@ let compile_function =
     (
       ~name=?,
       ~preamble=?,
+      ~exported=false,
       wasm_mod,
       env,
       {
@@ -3191,6 +3213,35 @@ let compile_function =
       )
     | None => inner_body
     };
+  let body =
+    Expression.Block.make(
+      wasm_mod,
+      gensym_label("function_body"),
+      exported
+        ? [
+          Expression.If.make(
+            wasm_mod,
+            Expression.Unary.make(
+              wasm_mod,
+              Op.eq_z_int32,
+              Expression.Global_get.make(
+                wasm_mod,
+                get_wasm_imported_name(grain_env_mod, program_started),
+                Type.int32,
+              ),
+            ),
+            Expression.Call.make(
+              wasm_mod,
+              get_wasm_imported_name(grain_env_mod, program_start),
+              [],
+              Type.none,
+            ),
+            Expression.Null.make(),
+          ),
+          body,
+        ]
+        : [body],
+    );
   let locals =
     [
       Array.make(body_env.num_closure_args, Type.int32),
@@ -3479,19 +3530,38 @@ let compile_main = (wasm_mod, env, prog) => {
   };
 };
 
-let compile_functions = (wasm_mod, env, {functions} as prog) => {
-  let handle_attrs = ({attrs} as func) =>
+let compile_functions = (wasm_mod, env, {functions, exports} as prog) => {
+  let handle_attrs = ({name, attrs} as func) => {
+    let exported =
+      switch (name) {
+      | Some(name) =>
+        List.exists(
+          export =>
+            switch (export) {
+            | WasmFunctionExport({
+                ex_function_name: exportName,
+                ex_function_internal_name: _,
+              })
+                when exportName == name =>
+              true
+            | _ => false
+            },
+          exports,
+        )
+      | None => false
+      };
     if (List.exists(
           ({Grain_parsing.Location.txt}) => txt == Typedtree.Disable_gc,
           attrs,
         )) {
       Config.preserve_config(() => {
         Config.no_gc := true;
-        compile_function(wasm_mod, env, func);
+        compile_function(~exported, wasm_mod, env, func);
       });
     } else {
-      compile_function(wasm_mod, env, func);
+      compile_function(~exported, wasm_mod, env, func);
     };
+  };
   ignore @@ List.map(handle_attrs, functions);
   ignore @@ compile_main(wasm_mod, env, prog);
 };
