@@ -1305,7 +1305,11 @@ provide module Immutable {
     let newArray = replaceTail(appended, array)
     if (numNotAppended > 0) {
       let appendLen = mutLength(toAppend)
-      let newTail = mutSlice(appendLen - numNotAppended, end=appendLen, toAppend)
+      let newTail = mutSlice(
+        appendLen - numNotAppended,
+        end=appendLen,
+        toAppend
+      )
       replaceTail(newTail, newArray)
     } else {
       newArray
