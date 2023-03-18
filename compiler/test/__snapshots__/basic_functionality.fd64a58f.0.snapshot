@@ -1,7 +1,7 @@
 basic functionality › int64_pun_2
 (module
- (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
  (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
  (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"mem\" (memory $0 0))
@@ -9,9 +9,11 @@ basic functionality › int64_pun_2
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
+ (import \"_genv\" \"programStarted\" (global $programStarted_0 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1113 (mut i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"_genv\" \"programStart\" (func $programStart_0))
  (import \"GRAIN$MODULE$pervasives\" \"-\" (func $-_1113 (param i32 i32 i32) (result i32)))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (elem $elem (global.get $relocBase_0))
