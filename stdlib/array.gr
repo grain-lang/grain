@@ -904,17 +904,18 @@ let wrapNegativeIndex = (arrLen, idx) => {
  * If either index is a negative number, it will be treated as a reverse index from
  * the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
  *
- * @param startIndex: The index of the array where the slice will begin (inclusive)
- * @param endIndex: The index of the array where the slice will end (exclusive)
+ * @param start: The index of the array where the slice will begin (inclusive)
+ * @param end: The index of the array where the slice will end (exclusive)
  * @param array: The array to be sliced
  * @returns The subset of the array that was sliced
  *
  * @since v0.4.0
+ * @history v0.6.0: Default `end` to the Array length
  */
-provide let slice = (startIndex, endIndex, array) => {
+provide let slice = (start, end=length(array), array) => {
   let arrayLength = length(array)
-  let startIndex = wrapNegativeIndex(arrayLength, startIndex)
-  let endIndex = wrapNegativeIndex(arrayLength, endIndex)
+  let startIndex = wrapNegativeIndex(arrayLength, start)
+  let endIndex = wrapNegativeIndex(arrayLength, end)
   // Ensure we aren't working with an `end` value that is too big
   let endIndex = if (endIndex > arrayLength) {
     arrayLength
@@ -1016,7 +1017,7 @@ provide let rotate = (n, arr) => {
 
 /**
  * An immutable array implementation.
- * 
+ *
  * @since v0.6.0
  * @history v0.5.4: Originally in `"immutablearray"` module
  */
@@ -1103,7 +1104,7 @@ provide module Immutable {
 
   /**
    * An empty array.
-   * 
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1115,7 +1116,7 @@ provide module Immutable {
 
   /**
    * Determines if the array contains no elements.
-   * 
+   *
    * @param array: The array to check
    * @returns `true` if the array is empty and `false` otherwise
    *
@@ -1161,7 +1162,7 @@ provide module Immutable {
 
     let numToAppend = Number.min(len2, branchingFactor - len1)
     let toAppend = if (numToAppend < len2) {
-      mutSlice(0, numToAppend, array2)
+      mutSlice(0, end=numToAppend, array2)
     } else {
       array2
     }
@@ -1188,7 +1189,7 @@ provide module Immutable {
    * @param array: The array to access
    * @returns The element from the array
    * @throws IndexOutOfBounds: When the index being accessed is outside the array's bounds
-   * 
+   *
    * @example get(1, fromList([1, 2, 3, 4])) == 2
    * @example get(-1, fromList([1, 2, 3, 4])) == 4
    *
@@ -1226,7 +1227,7 @@ provide module Immutable {
    * @param array: The array to update
    * @returns A new array containing the new element at the given index
    * @throws IndexOutOfBounds: When the index being updated is outside the array's bounds
-   * 
+   *
    * @example set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
    *
    * @since v0.6.0
@@ -1304,7 +1305,7 @@ provide module Immutable {
     let newArray = replaceTail(appended, array)
     if (numNotAppended > 0) {
       let appendLen = mutLength(toAppend)
-      let newTail = mutSlice(appendLen - numNotAppended, appendLen, toAppend)
+      let newTail = mutSlice(appendLen - numNotAppended, end=appendLen, toAppend)
       replaceTail(newTail, newArray)
     } else {
       newArray
@@ -1378,7 +1379,7 @@ provide module Immutable {
     if (numNotAppended >= 0) {
       let appendLen = mutLength(toAppend)
       {
-        btail: mutSlice(appendLen - numNotAppended, appendLen, toAppend),
+        btail: mutSlice(appendLen - numNotAppended, end=appendLen, toAppend),
         nodes: [Leaf(appended), ...nodes],
         numNodes: numNodes + 1,
       }
@@ -1432,7 +1433,7 @@ provide module Immutable {
    *
    * @param arrays: A list containing all arrays to combine
    * @returns The new array
-   * 
+   *
    * @example concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2, 3, 4, 5, 6])
    *
    * @since v0.6.0
@@ -1628,7 +1629,7 @@ provide module Immutable {
    * @param fn: The function to be called on each element, where the value returned will be an array that gets appended to the new array
    * @param array: The array to iterate
    * @returns The new array
-   * 
+   *
    * @example flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4, 5, 6])
    *
    * @since v0.6.0
@@ -1850,7 +1851,7 @@ provide module Immutable {
    *
    * Calling this function with arrays of different sizes will cause the returned
    * array to have the length of the smaller array.
-   * 
+   *
    * @param array1: The array to provide values for the first tuple element
    * @param array2: The array to provide values for the second tuple element
    * @returns The new array containing indexed pairs of `(a, b)`
@@ -1869,7 +1870,7 @@ provide module Immutable {
    * applying the function to the first elements of each array, the second element
    * will contain the result of applying the function to the second elements of
    * each array, and so on.
-   * 
+   *
    * Calling this function with arrays of different sizes will cause the returned
    * array to have the length of the smaller array.
    *
@@ -1880,7 +1881,7 @@ provide module Immutable {
    *
    * @example zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) == fromList([5, 7, 9])
    * @example zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 10])
-   * 
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1944,15 +1945,16 @@ provide module Immutable {
    * @param end: The index of the array where the slice will end (exclusive)
    * @param array: The array to be sliced
    * @returns The subset of the array that was sliced
-   * 
+   *
    * @example slice(0, 2, fromList(['a', 'b', 'c'])) == fromList(['a', 'b'])
    * @example slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
+   * @history v0.6.0: Default `end` to the Array length
    */
 
-  provide let slice = (start, end, array) => {
+  provide let slice = (start, end=length(array), array) => {
     let begin = clampIndex(array.length, start)
     let end = clampIndex(array.length, end)
     let mut i = array.length
@@ -1999,8 +2001,8 @@ provide module Immutable {
 
   provide let rotate = (n, array) => {
     let sliceI = if (array.length == 0) 0 else n % array.length
-    let before = slice(0, sliceI, array)
-    let after = slice(sliceI, array.length, array)
+    let before = slice(0, end=sliceI, array)
+    let after = slice(sliceI, end=array.length, array)
     append(after, before)
   }
 }
