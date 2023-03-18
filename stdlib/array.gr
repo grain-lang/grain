@@ -1048,7 +1048,7 @@ let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
  * @returns An array of chunks
  *
  * @throws InvalidArgument(String): When `chunkSize` is not an integer
- * @throws InvalidArgument(String): When `chunkSize` is negative
+ * @throws InvalidArgument(String): When `chunkSize` is less than zero
  *
  * @example chunk(2, false, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
  * @example chunk(2, false, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4] ]
@@ -1057,7 +1057,7 @@ let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
  */
 provide let chunk = (chunkSize, allowPartial, arr) => {
   if (chunkSize == 0) {
-    [>]
+    throw Exception.InvalidArgument("chunkSize must be greater than 0")
   } else {
     checkLength(chunkSize)
     let arrLen = length(arr)

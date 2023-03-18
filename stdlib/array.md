@@ -1288,7 +1288,7 @@ let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
 let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
 ```
 
-## Array.Immutable
+### Array.**chunk**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -1296,7 +1296,8 @@ No other changes yet.
 </details>
 
 ```grain
-chunk : (Number, Bool, Array<a>) -> Array<Array<a>>
+chunk :
+  (chunkSize: Number, allowPartial: Bool, arr: Array<a>) -> Array<Array<a>>
 ```
 
 Splits the given array into chunks of the provided size.
@@ -1320,7 +1321,7 @@ Throws:
 `InvalidArgument(String)`
 
 * When `chunkSize` is not an integer
-* When `chunkSize` is negative
+* When `chunkSize` is less than zero
 
 Examples:
 
@@ -1336,6 +1337,7 @@ chunk(2, false, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4] ]
 chunk(2, true, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
 ```
 
+## Array.Immutable
 
 An immutable array implementation.
 
