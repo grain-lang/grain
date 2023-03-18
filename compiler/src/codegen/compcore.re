@@ -131,15 +131,6 @@ let required_global_imports = [
     mimp_setup: MSetupNone,
     mimp_used: false,
   },
-  {
-    mimp_id: program_start,
-    mimp_mod: grain_env_mod,
-    mimp_name: Ident.name(program_start),
-    mimp_type: MFuncImport([], []),
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
 ];
 
 let grain_runtime_imports = [
@@ -194,6 +185,15 @@ let required_function_imports = [
         [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
         [Types.Unmanaged(WasmI32)],
       ),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: program_start,
+    mimp_mod: grain_env_mod,
+    mimp_name: Ident.name(program_start),
+    mimp_type: MFuncImport([], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -3214,34 +3214,36 @@ let compile_function =
     | None => inner_body
     };
   let body =
-    Expression.Block.make(
-      wasm_mod,
-      gensym_label("function_body"),
-      exported
-        ? [
-          Expression.If.make(
-            wasm_mod,
-            Expression.Unary.make(
-              wasm_mod,
-              Op.eq_z_int32,
-              Expression.Global_get.make(
+    Config.call_start^
+      ? Expression.Block.make(
+          wasm_mod,
+          gensym_label("function_body"),
+          exported
+            ? [
+              Expression.If.make(
                 wasm_mod,
-                get_wasm_imported_name(grain_env_mod, program_started),
-                Type.int32,
+                Expression.Unary.make(
+                  wasm_mod,
+                  Op.eq_z_int32,
+                  Expression.Global_get.make(
+                    wasm_mod,
+                    get_wasm_imported_name(grain_env_mod, program_started),
+                    Type.int32,
+                  ),
+                ),
+                Expression.Call.make(
+                  wasm_mod,
+                  get_wasm_imported_name(grain_env_mod, program_start),
+                  [],
+                  Type.none,
+                ),
+                Expression.Null.make(),
               ),
-            ),
-            Expression.Call.make(
-              wasm_mod,
-              get_wasm_imported_name(grain_env_mod, program_start),
-              [],
-              Type.none,
-            ),
-            Expression.Null.make(),
-          ),
-          body,
-        ]
-        : [body],
-    );
+              body,
+            ]
+            : [body],
+        )
+      : body;
   let locals =
     [
       Array.make(body_env.num_closure_args, Type.int32),
@@ -3533,23 +3535,25 @@ let compile_main = (wasm_mod, env, prog) => {
 let compile_functions = (wasm_mod, env, {functions, exports} as prog) => {
   let handle_attrs = ({name, attrs} as func) => {
     let exported =
-      switch (name) {
-      | Some(name) =>
-        List.exists(
-          export =>
-            switch (export) {
-            | WasmFunctionExport({
-                ex_function_name: exportName,
-                ex_function_internal_name: _,
-              })
-                when exportName == name =>
-              true
-            | _ => false
-            },
-          exports,
-        )
-      | None => false
-      };
+      Config.call_start^
+        ? switch (name) {
+          | Some(name) =>
+            List.exists(
+              export =>
+                switch (export) {
+                | WasmFunctionExport({
+                    ex_function_name: exportName,
+                    ex_function_internal_name: _,
+                  })
+                    when exportName == name =>
+                  true
+                | _ => false
+                },
+              exports,
+            )
+          | None => false
+          }
+        : false;
     if (List.exists(
           ({Grain_parsing.Location.txt}) => txt == Typedtree.Disable_gc,
           attrs,

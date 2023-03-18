@@ -159,6 +159,10 @@ class GrainCommand extends commander.Command {
       "--use-start-section",
       "replaces the _start export with a start section during linking"
     );
+    cmd.forwardOption(
+      "--call-start",
+      "initiates the grain module when invoking a wasm export"
+    );
     cmd.forwardOption("--no-link", "disable static linking");
     cmd.forwardOption(
       "--no-pervasives",

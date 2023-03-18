@@ -40,6 +40,10 @@ let wasi_polyfill: ref(option(string));
 
 let use_start_section: ref(bool);
 
+/* Whether to initiate the grain module when invoking a wasm export */
+
+let call_start: ref(bool);
+
 /** Compilation profile, e.g. release for production builds */
 
 let profile: ref(option(profile));

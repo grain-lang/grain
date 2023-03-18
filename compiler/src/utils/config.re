@@ -545,6 +545,13 @@ let use_start_section =
     false,
   );
 
+let call_start =
+  toggle_flag(
+    ~names=["call-start"],
+    ~doc="Initiates the grain module when invoking a wasm export",
+    false,
+  );
+
 let elide_type_info =
   toggle_flag(
     ~names=["elide-type-info"],

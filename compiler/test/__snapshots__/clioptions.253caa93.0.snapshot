@@ -1,0 +1,224 @@
+cli_options › call_start
+(module
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
+ (type $i32_=>_i32 (func (param i32) (result i32)))
+ (type $none_=>_none (func))
+ (type $none_=>_i32 (func (result i32)))
+ (import \"_genv\" \"mem\" (memory $0 0))
+ (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
+ (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
+ (import \"_genv\" \"programStarted\" (global $programStarted_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$malloc\" (global $GRAIN$EXPORT$malloc_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$decRef\" (global $GRAIN$EXPORT$decRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$print\" (global $print_1119 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
+ (import \"_genv\" \"programStart\" (func $programStart_0))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1119 (param i32 i32) (result i32)))
+ (global $shouldNotCallStart_1115 (mut i32) (i32.const 0))
+ (global $callStart_1113 (mut i32) (i32.const 0))
+ (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
+ (elem $elem (global.get $relocBase_0))
+ (export \"memory\" (memory $0))
+ (export \"callStart\" (func $callStart_1113))
+ (export \"GRAIN$EXPORT$callStart\" (global $callStart_1113))
+ (export \"_gmain\" (func $_gmain))
+ (export \"_start\" (func $_start))
+ (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (func $callStart_1113 (param $0 i32) (result i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i32)
+  (local $4 i64)
+  (local $5 f32)
+  (local $6 f64)
+  (local $7 i32)
+  (block $function_body.6
+   (if
+    (i32.eqz
+     (global.get $programStarted_0)
+    )
+    (call $programStart_0)
+   )
+   (block $compile_block.5
+    (block $compile_store.3
+     (local.set $7
+      (block $allocate_string.1 (result i32)
+       (i32.store
+        (local.tee $1
+         (call $malloc_0
+          (global.get $GRAIN$EXPORT$malloc_0)
+          (i32.const 16)
+         )
+        )
+        (i32.const 1)
+       )
+       (i32.store offset=4
+        (local.get $1)
+        (i32.const 2)
+       )
+       (i64.store offset=8
+        (local.get $1)
+        (i64.const 26952)
+       )
+       (local.get $1)
+      )
+     )
+     (block $do_backpatches.2
+     )
+    )
+    (block $cleanup.4
+     (drop
+      (call $decRef_0
+       (global.get $GRAIN$EXPORT$decRef_0)
+       (local.get $0)
+      )
+     )
+    )
+    (return_call $print_1119
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $print_1119)
+     )
+     (local.get $7)
+    )
+   )
+  )
+ )
+ (func $shouldNotCallStart_1115 (param $0 i32) (result i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i32)
+  (local $4 i64)
+  (local $5 f32)
+  (local $6 f64)
+  (local $7 i32)
+  (block $function_body.12
+   (block $compile_block.11
+    (block $compile_store.9
+     (local.set $7
+      (block $allocate_string.7 (result i32)
+       (i32.store
+        (local.tee $1
+         (call $malloc_0
+          (global.get $GRAIN$EXPORT$malloc_0)
+          (i32.const 16)
+         )
+        )
+        (i32.const 1)
+       )
+       (i32.store offset=4
+        (local.get $1)
+        (i32.const 6)
+       )
+       (i64.store offset=8
+        (local.get $1)
+        (i64.const 55454141801800)
+       )
+       (local.get $1)
+      )
+     )
+     (block $do_backpatches.8
+     )
+    )
+    (block $cleanup.10
+     (drop
+      (call $decRef_0
+       (global.get $GRAIN$EXPORT$decRef_0)
+       (local.get $0)
+      )
+     )
+    )
+    (return_call $print_1119
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $print_1119)
+     )
+     (local.get $7)
+    )
+   )
+  )
+ )
+ (func $_gmain (result i32)
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (local $6 i32)
+  (block $function_body.21
+   (block $compile_block.20
+    (block $compile_store.15
+     (local.set $6
+      (block $allocate_string.13 (result i32)
+       (i32.store
+        (local.tee $0
+         (call $malloc_0
+          (global.get $GRAIN$EXPORT$malloc_0)
+          (i32.const 24)
+         )
+        )
+        (i32.const 1)
+       )
+       (i32.store offset=4
+        (local.get $0)
+        (i32.const 11)
+       )
+       (i64.store offset=8
+        (local.get $0)
+        (i64.const 8022916924116329800)
+       )
+       (i64.store offset=16
+        (local.get $0)
+        (i64.const 6581362)
+       )
+       (local.get $0)
+      )
+     )
+     (block $do_backpatches.14
+     )
+    )
+    (drop
+     (call $print_1119
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $print_1119)
+      )
+      (local.get $6)
+     )
+    )
+    (block $compile_store.17
+     (global.set $callStart_1113
+      (i32.const 0)
+     )
+     (block $do_backpatches.16
+     )
+    )
+    (block $compile_store.19
+     (global.set $shouldNotCallStart_1115
+      (i32.const 0)
+     )
+     (block $do_backpatches.18
+     )
+    )
+    (return_call $shouldNotCallStart_1115
+     (call $incRef_0
+      (global.get $GRAIN$EXPORT$incRef_0)
+      (global.get $shouldNotCallStart_1115)
+     )
+    )
+   )
+  )
+ )
+ (func $_start
+  (drop
+   (call $_gmain)
+  )
+ )
+ ;; custom section \"cmi\", size 1113
+)

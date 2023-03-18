@@ -1,0 +1,11 @@
+/* grainc-flags --call-start */
+module CallStart
+
+print("Hello World")
+provide let callStart = () => {
+  print("Hi")
+}
+let shouldNotCallStart = () => {
+  print("Hello2")
+}
+shouldNotCallStart()

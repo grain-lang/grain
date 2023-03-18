@@ -719,15 +719,16 @@ let link_all = (linked_mod, dependencies, signature) => {
     data_segments,
     false,
   );
-
-  ignore @@
-  Global.add_global(
-    linked_mod,
-    "programStarted",
-    Type.int32,
-    true,
-    Expression.Const.make(linked_mod, Literal.int32(Int32.of_int(0))),
-  );
+  if (Config.call_start^) {
+    ignore @@
+    Global.add_global(
+      linked_mod,
+      "programStarted",
+      Type.int32,
+      true,
+      Expression.Const.make(linked_mod, Literal.int32(Int32.of_int(0))),
+    );
+  };
 
   let starts =
     List.filter_map(
@@ -763,17 +764,19 @@ let link_all = (linked_mod, dependencies, signature) => {
       Expression.Block.make(
         linked_mod,
         gensym("start"),
-        [
-          Expression.Global_set.make(
-            linked_mod,
-            "programStarted",
-            Expression.Const.make(
+        Config.call_start^
+          ? [
+            Expression.Global_set.make(
               linked_mod,
-              Literal.int32(Int32.of_int(1)),
+              "programStarted",
+              Expression.Const.make(
+                linked_mod,
+                Literal.int32(Int32.of_int(1)),
+              ),
             ),
-          ),
-          ...starts,
-        ],
+            ...starts,
+          ]
+          : starts,
       ),
     );
 
