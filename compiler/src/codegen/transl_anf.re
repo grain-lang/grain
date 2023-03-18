@@ -1004,9 +1004,10 @@ let transl_signature = (~functions, ~imports, signature) => {
         switch (decl.md_type) {
         | TModIdent(_)
         | TModAlias(_) => decl
-        | TModSignature(_) when Option.is_some(decl.md_filepath) => decl
         | TModSignature(signature) => {
             ...decl,
+            // This module will provide all exports for all submodules
+            md_filepath: None,
             md_type:
               TModSignature(
                 List.map(
