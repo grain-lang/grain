@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-toIntegerRatio : Rational -> (Number, Number)
+toIntegerRatio : (x: Rational) -> (Number, Number)
 ```
 
 Gets the numerator and denominator of the rational as a tuple
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromIntegerRatio : (Number, Number) -> Rational
+fromIntegerRatio : (numerator: Number, denominator: Number) -> Rational
 ```
 
 Makes a rational from the numerator and denominator
@@ -167,6 +167,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Rational`|The built rational|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* If the numerator or denominator are not integers
 
 ### Rational.**(+)**
 

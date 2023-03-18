@@ -8,7 +8,7 @@
 module Rational
 
 include "runtime/unsafe/wasmi32"
-
+include "runtime/exception"
 include "runtime/numbers"
 from Numbers use {
   coerceNumberToRational as fromNumber,
@@ -19,6 +19,7 @@ from Numbers use {
   timesDivideRational,
   rationalsEqual,
   cmpRationals,
+  isInteger,
 }
 
 provide { fromNumber, toNumber, numerator, denominator }
@@ -43,9 +44,17 @@ provide let toIntegerRatio = (x: Rational) => {
  * @param denominator: The denominator
  * @returns The built rational
  *
+ * @throws InvalidArgument(String): If the numerator or denominator are not integers
+ *
  * @since v0.6.0
  */
+@unsafe
 provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
+  let numeratorptr = WasmI32.fromGrain(numerator)
+  let denominatorptr = WasmI32.fromGrain(denominator)
+  if (!isInteger(numeratorptr) || !isInteger(denominatorptr)) {
+    throw Exception.InvalidArgument("Numerator and denominator must be integers")
+  }
   fromNumber(numerator / denominator)
 }
 
