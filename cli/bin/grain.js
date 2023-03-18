@@ -133,8 +133,8 @@ class GrainCommand extends commander.Command {
       "compile using the release profile (production mode)"
     );
     cmd.forwardOption(
-      "--experimental-wasm-tail-call",
-      "enables tail-call optimization"
+      "--no-wasm-tail-call",
+      "disables tail-call optimization"
     );
     cmd.forwardOption("--debug", "compile with debugging information");
     cmd.forwardOption(
