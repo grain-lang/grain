@@ -49,6 +49,9 @@ from "runtime/atof/parse" include Parse as Atof
 from "runtime/unsafe/tags" include Tags
 from "runtime/exception" include Exception
 
+from Atoi use { type ParseIntError }
+
+provide { type ParseIntError }
 /**
  * Pi represented as a Number value.
  *

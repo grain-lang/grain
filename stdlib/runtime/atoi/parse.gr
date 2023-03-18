@@ -20,9 +20,14 @@ from "runtime/bigint" include Bigint as BI
 from "runtime/numbers" include Numbers
 use Numbers.{ reducedInteger }
 
-provide exception EmptyString
-provide exception InvalidDigit
-provide exception InvalidRadix
+/**
+ * Represents an error that can occur when parsing ints.
+ */
+provide enum ParseIntError {
+  EmptyString,
+  InvalidDigit,
+  InvalidRadix,
+}
 
 primitive (&&) = "@and"
 primitive (||) = "@or"
