@@ -2295,6 +2295,7 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
         Expression.Unreachable.make(wasm_mod),
       ],
     )
+  | Magic => failwith("Unreachable case; should never get here: Magic")
   | Assert => failwith("Unreachable case; should never get here: Assert")
   | BuiltinId =>
     failwith("Unreachable case; should never get here: BuiltinId")

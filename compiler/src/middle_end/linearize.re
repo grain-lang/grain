@@ -341,6 +341,7 @@ let rec transl_imm =
       }
     | _ => failwith("Builtin must be a string literal")
     }
+  | TExpPrim1(Magic, arg) => transl_imm(~boxed, ~tail, arg)
   | TExpPrim1(op, arg) =>
     let tmp = gensym("unary");
     let (comp, comp_setup) = transl_comp_expression(e);
@@ -1034,6 +1035,7 @@ and transl_comp_expression =
       }
     | _ => failwith("Builtin must be a string literal")
     }
+  | TExpPrim1(Magic, arg) => transl_comp_expression(~name?, ~tail, arg)
   | TExpPrim1(Assert, arg) =>
     let (arg_imm, arg_setup) = transl_imm(arg);
     let assertion_error =

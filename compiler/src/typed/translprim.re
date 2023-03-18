@@ -90,6 +90,7 @@ let prim_map =
       ("@ignore", Primitive1(Ignore)),
       ("@assert", Primitive1(Assert)),
       ("@throw", Primitive1(Throw)),
+      ("@magic", Primitive1(Magic)),
       ("@unreachable", Primitive0(Unreachable)),
       ("@is", Primitive2(Is)),
       ("@eq", Primitive2(Eq)),
@@ -1589,6 +1590,7 @@ let transl_prim = (env, desc) => {
         | Ignore
         | Assert
         | Throw
+        | Magic
         | BuiltinId => []
         };
       (
