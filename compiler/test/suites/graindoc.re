@@ -10,5 +10,12 @@ describe("graindoc", ({test, testSkip}) => {
 
   let assertGrianDocOutput = makeGrainDocRunner(test_or_skip);
   ();
-  assertGrianDocOutput("noDoc", "noDoc");
+  assertGrianDocOutput("noDoc", "noDoc", [||]);
+  assertGrianDocOutput(
+    "descriptions",
+    "descriptions",
+    [|"--current-version=v0.2.0"|],
+  );
+  assertGrianDocOutput("since", "since", [|"--current-version=v0.2.0"|]);
+  assertGrianDocOutput("example", "example", [|"--current-version=v0.2.0"|]);
 });

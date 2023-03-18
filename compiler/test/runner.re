@@ -200,8 +200,8 @@ let format = file => {
   (out ++ err, code);
 };
 
-let doc = file => {
-  let cmd = [|"grain", "doc", file|];
+let doc = (file, arguments) => {
+  let cmd = Array.concat([[|"grain", "doc", file|], arguments]);
 
   let (code, out, err) = open_process(cmd);
 
@@ -463,12 +463,12 @@ let makeFormatterRunner = (test, name, filename) => {
   );
 };
 
-let makeGrainDocRunner = (test, name, filename) => {
+let makeGrainDocRunner = (test, name, filename, arguments) => {
   test(
     name,
     ({expect}) => {
       let infile = gaindoc_in_file(filename);
-      let (result, _) = doc(infile);
+      let (result, _) = doc(infile, arguments);
 
       // we need do a binary content comparison to ensure the EOL is correct
 
