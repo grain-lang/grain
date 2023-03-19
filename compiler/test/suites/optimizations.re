@@ -68,7 +68,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertRun(
     "regression_no_elim_impure_call",
-    "let foo = (f) => { let g = f(5); 5 }; foo(print)",
+    "let foo = (f) => { let g = print(f(5)); 5 }; foo(toString)",
     "5\n",
   );
   assertAnf(

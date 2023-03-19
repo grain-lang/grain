@@ -50,6 +50,14 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("nan", "let x = NaN; x");
   assertRun("nan_2", "assert NaN != NaN", "");
 
+  assertSnapshot("print_line_ending1", "print(1, lineEnding=\"\")");
+  assertRun("print_line_ending2", "print(123, lineEnding=\"\")", "123");
+  assertRun(
+    "print_line_ending3",
+    "print(1, lineEnding=\"\"); print(2, lineEnding=\"    \"); print(\"3\", lineEnding=\"end\")",
+    "12    3end",
+  );
+
   assertSnapshot(
     "complex1",
     "\n    let x = 2 and y = 3 and z = if (true) { 4 } else { 5 };\n    if (true) {\n      print(y)\n      y - (z + x)\n    } else {\n      print(8)\n      8\n    }\n    ",

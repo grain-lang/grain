@@ -4,6 +4,7 @@ basic functionality › pattern_match_unsafe_wasm
  (type $i32_=>_i32 (func (param i32) (result i32)))
  (type $none_=>_i32 (func (result i32)))
  (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
  (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
@@ -17,7 +18,7 @@ basic functionality › pattern_match_unsafe_wasm
  (import \"GRAIN$MODULE$runtime/gc\" \"malloc\" (func $malloc_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
  (import \"GRAIN$MODULE$runtime/gc\" \"decRef\" (func $decRef_0 (param i32 i32) (result i32)))
- (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1125 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"print\" (func $print_1125 (param i32 i32 i32) (result i32)))
  (global $test_1113 (mut i32) (i32.const 0))
  (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
  (memory $0 0)
@@ -107,9 +108,16 @@ basic functionality › pattern_match_unsafe_wasm
   (local $13 i32)
   (local $14 i32)
   (local $15 i32)
-  (block $compile_block.51 (result i32)
+  (local $16 i32)
+  (local $17 i32)
+  (local $18 i32)
+  (local $19 i32)
+  (local $20 i32)
+  (local $21 i32)
+  (local $22 i32)
+  (block $compile_block.72 (result i32)
    (block $compile_store.6
-    (local.set $9
+    (local.set $16
      (i32.or
       (i32.shl
        (i32.eq
@@ -125,10 +133,10 @@ basic functionality › pattern_match_unsafe_wasm
     )
    )
    (block $compile_store.30
-    (local.set $10
+    (local.set $17
      (if (result i32)
       (i32.shr_u
-       (local.get $9)
+       (local.get $16)
        (i32.const 31)
       )
       (block $compile_block.7 (result i32)
@@ -136,7 +144,7 @@ basic functionality › pattern_match_unsafe_wasm
       )
       (block $compile_block.28 (result i32)
        (block $compile_store.9
-        (local.set $11
+        (local.set $18
          (i32.or
           (i32.shl
            (i32.eq
@@ -153,7 +161,7 @@ basic functionality › pattern_match_unsafe_wasm
        )
        (if (result i32)
         (i32.shr_u
-         (local.get $11)
+         (local.get $18)
          (i32.const 31)
         )
         (block $compile_block.10 (result i32)
@@ -161,7 +169,7 @@ basic functionality › pattern_match_unsafe_wasm
         )
         (block $compile_block.27 (result i32)
          (block $compile_store.12
-          (local.set $12
+          (local.set $19
            (i32.or
             (i32.shl
              (i32.eq
@@ -178,7 +186,7 @@ basic functionality › pattern_match_unsafe_wasm
          )
          (if (result i32)
           (i32.shr_u
-           (local.get $12)
+           (local.get $19)
            (i32.const 31)
           )
           (block $compile_block.13 (result i32)
@@ -186,7 +194,7 @@ basic functionality › pattern_match_unsafe_wasm
           )
           (block $compile_block.26 (result i32)
            (block $compile_store.15
-            (local.set $13
+            (local.set $20
              (i32.or
               (i32.shl
                (i32.eq
@@ -203,7 +211,7 @@ basic functionality › pattern_match_unsafe_wasm
            )
            (if (result i32)
             (i32.shr_u
-             (local.get $13)
+             (local.get $20)
              (i32.const 31)
             )
             (block $compile_block.16 (result i32)
@@ -211,7 +219,7 @@ basic functionality › pattern_match_unsafe_wasm
             )
             (block $compile_block.25 (result i32)
              (block $compile_store.18
-              (local.set $14
+              (local.set $21
                (i32.or
                 (i32.shl
                  (i32.eq
@@ -228,7 +236,7 @@ basic functionality › pattern_match_unsafe_wasm
              )
              (if (result i32)
               (i32.shr_u
-               (local.get $14)
+               (local.get $21)
                (i32.const 31)
               )
               (block $compile_block.19 (result i32)
@@ -236,7 +244,7 @@ basic functionality › pattern_match_unsafe_wasm
               )
               (block $compile_block.24 (result i32)
                (block $compile_store.21
-                (local.set $15
+                (local.set $22
                  (i32.or
                   (i32.shl
                    (i32.eq
@@ -253,7 +261,7 @@ basic functionality › pattern_match_unsafe_wasm
                )
                (if (result i32)
                 (i32.shr_u
-                 (local.get $15)
+                 (local.get $22)
                  (i32.const 31)
                 )
                 (block $compile_block.22 (result i32)
@@ -300,24 +308,58 @@ basic functionality › pattern_match_unsafe_wasm
                        (br_table $switch.32_branch_1 $switch.32_branch_2 $switch.32_branch_3 $switch.32_branch_4 $switch.32_branch_5 $switch.32_branch_6 $switch.32_branch_7 $switch.32_default $switch.32_default
                         (i32.const 0)
                         (i32.shr_s
-                         (local.get $10)
+                         (local.get $17)
                          (i32.const 1)
                         )
                        )
                       )
                      )
                      (br $switch.32_outer
-                      (block $compile_block.50 (result i32)
+                      (block $compile_block.71 (result i32)
                        (unreachable)
                       )
                      )
                     )
                    )
                    (br $switch.32_outer
-                    (block $compile_block.49
-                     (block $compile_store.47
-                      (local.set $8
-                       (block $allocate_string.45 (result i32)
+                    (block $compile_block.70
+                     (block $compile_store.65
+                      (local.set $14
+                       (block $allocate_adt.63 (result i32)
+                        (i32.store
+                         (local.tee $2
+                          (call $malloc_0
+                           (global.get $GRAIN$EXPORT$malloc_0)
+                           (i32.const 20)
+                          )
+                         )
+                         (i32.const 2)
+                        )
+                        (i32.store offset=4
+                         (local.get $2)
+                         (i32.const 501102191)
+                        )
+                        (i32.store offset=8
+                         (local.get $2)
+                         (i32.const 7)
+                        )
+                        (i32.store offset=12
+                         (local.get $2)
+                         (i32.const 3)
+                        )
+                        (i32.store offset=16
+                         (local.get $2)
+                         (i32.const 0)
+                        )
+                        (local.get $2)
+                       )
+                      )
+                      (block $do_backpatches.64
+                      )
+                     )
+                     (block $compile_store.68
+                      (local.set $15
+                       (block $allocate_string.66 (result i32)
                         (i32.store
                          (local.tee $2
                           (call $malloc_0
@@ -338,10 +380,10 @@ basic functionality › pattern_match_unsafe_wasm
                         (local.get $2)
                        )
                       )
-                      (block $do_backpatches.46
+                      (block $do_backpatches.67
                       )
                      )
-                     (block $cleanup.48
+                     (block $cleanup.69
                       (drop
                        (call $decRef_0
                         (global.get $GRAIN$EXPORT$decRef_0)
@@ -354,15 +396,50 @@ basic functionality › pattern_match_unsafe_wasm
                        (global.get $GRAIN$EXPORT$incRef_0)
                        (global.get $print_1125)
                       )
-                      (local.get $8)
+                      (local.get $15)
+                      (local.get $14)
                      )
                     )
                    )
                   )
                  )
                  (br $switch.32_outer
-                  (block $compile_block.44
-                   (block $cleanup.43
+                  (block $compile_block.62
+                   (block $compile_store.60
+                    (local.set $13
+                     (block $allocate_adt.58 (result i32)
+                      (i32.store
+                       (local.tee $2
+                        (call $malloc_0
+                         (global.get $GRAIN$EXPORT$malloc_0)
+                         (i32.const 20)
+                        )
+                       )
+                       (i32.const 2)
+                      )
+                      (i32.store offset=4
+                       (local.get $2)
+                       (i32.const 501102191)
+                      )
+                      (i32.store offset=8
+                       (local.get $2)
+                       (i32.const 7)
+                      )
+                      (i32.store offset=12
+                       (local.get $2)
+                       (i32.const 3)
+                      )
+                      (i32.store offset=16
+                       (local.get $2)
+                       (i32.const 0)
+                      )
+                      (local.get $2)
+                     )
+                    )
+                    (block $do_backpatches.59
+                    )
+                   )
+                   (block $cleanup.61
                     (drop
                      (call $decRef_0
                       (global.get $GRAIN$EXPORT$decRef_0)
@@ -376,14 +453,49 @@ basic functionality › pattern_match_unsafe_wasm
                      (global.get $print_1125)
                     )
                     (i32.const 13)
+                    (local.get $13)
                    )
                   )
                  )
                 )
                )
                (br $switch.32_outer
-                (block $compile_block.42
-                 (block $cleanup.41
+                (block $compile_block.57
+                 (block $compile_store.55
+                  (local.set $12
+                   (block $allocate_adt.53 (result i32)
+                    (i32.store
+                     (local.tee $2
+                      (call $malloc_0
+                       (global.get $GRAIN$EXPORT$malloc_0)
+                       (i32.const 20)
+                      )
+                     )
+                     (i32.const 2)
+                    )
+                    (i32.store offset=4
+                     (local.get $2)
+                     (i32.const 501102191)
+                    )
+                    (i32.store offset=8
+                     (local.get $2)
+                     (i32.const 7)
+                    )
+                    (i32.store offset=12
+                     (local.get $2)
+                     (i32.const 3)
+                    )
+                    (i32.store offset=16
+                     (local.get $2)
+                     (i32.const 0)
+                    )
+                    (local.get $2)
+                   )
+                  )
+                  (block $do_backpatches.54
+                  )
+                 )
+                 (block $cleanup.56
                   (drop
                    (call $decRef_0
                     (global.get $GRAIN$EXPORT$decRef_0)
@@ -397,14 +509,49 @@ basic functionality › pattern_match_unsafe_wasm
                    (global.get $print_1125)
                   )
                   (i32.const 11)
+                  (local.get $12)
                  )
                 )
                )
               )
              )
              (br $switch.32_outer
-              (block $compile_block.40
-               (block $cleanup.39
+              (block $compile_block.52
+               (block $compile_store.50
+                (local.set $11
+                 (block $allocate_adt.48 (result i32)
+                  (i32.store
+                   (local.tee $2
+                    (call $malloc_0
+                     (global.get $GRAIN$EXPORT$malloc_0)
+                     (i32.const 20)
+                    )
+                   )
+                   (i32.const 2)
+                  )
+                  (i32.store offset=4
+                   (local.get $2)
+                   (i32.const 501102191)
+                  )
+                  (i32.store offset=8
+                   (local.get $2)
+                   (i32.const 7)
+                  )
+                  (i32.store offset=12
+                   (local.get $2)
+                   (i32.const 3)
+                  )
+                  (i32.store offset=16
+                   (local.get $2)
+                   (i32.const 0)
+                  )
+                  (local.get $2)
+                 )
+                )
+                (block $do_backpatches.49
+                )
+               )
+               (block $cleanup.51
                 (drop
                  (call $decRef_0
                   (global.get $GRAIN$EXPORT$decRef_0)
@@ -418,14 +565,49 @@ basic functionality › pattern_match_unsafe_wasm
                  (global.get $print_1125)
                 )
                 (i32.const 9)
+                (local.get $11)
                )
               )
              )
             )
            )
            (br $switch.32_outer
-            (block $compile_block.38
-             (block $cleanup.37
+            (block $compile_block.47
+             (block $compile_store.45
+              (local.set $10
+               (block $allocate_adt.43 (result i32)
+                (i32.store
+                 (local.tee $2
+                  (call $malloc_0
+                   (global.get $GRAIN$EXPORT$malloc_0)
+                   (i32.const 20)
+                  )
+                 )
+                 (i32.const 2)
+                )
+                (i32.store offset=4
+                 (local.get $2)
+                 (i32.const 501102191)
+                )
+                (i32.store offset=8
+                 (local.get $2)
+                 (i32.const 7)
+                )
+                (i32.store offset=12
+                 (local.get $2)
+                 (i32.const 3)
+                )
+                (i32.store offset=16
+                 (local.get $2)
+                 (i32.const 0)
+                )
+                (local.get $2)
+               )
+              )
+              (block $do_backpatches.44
+              )
+             )
+             (block $cleanup.46
               (drop
                (call $decRef_0
                 (global.get $GRAIN$EXPORT$decRef_0)
@@ -439,14 +621,49 @@ basic functionality › pattern_match_unsafe_wasm
                (global.get $print_1125)
               )
               (i32.const 7)
+              (local.get $10)
              )
             )
            )
           )
          )
          (br $switch.32_outer
-          (block $compile_block.36
-           (block $cleanup.35
+          (block $compile_block.42
+           (block $compile_store.40
+            (local.set $9
+             (block $allocate_adt.38 (result i32)
+              (i32.store
+               (local.tee $2
+                (call $malloc_0
+                 (global.get $GRAIN$EXPORT$malloc_0)
+                 (i32.const 20)
+                )
+               )
+               (i32.const 2)
+              )
+              (i32.store offset=4
+               (local.get $2)
+               (i32.const 501102191)
+              )
+              (i32.store offset=8
+               (local.get $2)
+               (i32.const 7)
+              )
+              (i32.store offset=12
+               (local.get $2)
+               (i32.const 3)
+              )
+              (i32.store offset=16
+               (local.get $2)
+               (i32.const 0)
+              )
+              (local.get $2)
+             )
+            )
+            (block $do_backpatches.39
+            )
+           )
+           (block $cleanup.41
             (drop
              (call $decRef_0
               (global.get $GRAIN$EXPORT$decRef_0)
@@ -460,14 +677,49 @@ basic functionality › pattern_match_unsafe_wasm
              (global.get $print_1125)
             )
             (i32.const 5)
+            (local.get $9)
            )
           )
          )
         )
        )
        (br $switch.32_outer
-        (block $compile_block.34
-         (block $cleanup.33
+        (block $compile_block.37
+         (block $compile_store.35
+          (local.set $8
+           (block $allocate_adt.33 (result i32)
+            (i32.store
+             (local.tee $2
+              (call $malloc_0
+               (global.get $GRAIN$EXPORT$malloc_0)
+               (i32.const 20)
+              )
+             )
+             (i32.const 2)
+            )
+            (i32.store offset=4
+             (local.get $2)
+             (i32.const 501102191)
+            )
+            (i32.store offset=8
+             (local.get $2)
+             (i32.const 7)
+            )
+            (i32.store offset=12
+             (local.get $2)
+             (i32.const 3)
+            )
+            (i32.store offset=16
+             (local.get $2)
+             (i32.const 0)
+            )
+            (local.get $2)
+           )
+          )
+          (block $do_backpatches.34
+          )
+         )
+         (block $cleanup.36
           (drop
            (call $decRef_0
             (global.get $GRAIN$EXPORT$decRef_0)
@@ -481,6 +733,7 @@ basic functionality › pattern_match_unsafe_wasm
            (global.get $print_1125)
           )
           (i32.const 3)
+          (local.get $8)
          )
         )
        )
@@ -506,12 +759,12 @@ basic functionality › pattern_match_unsafe_wasm
   (local $3 i64)
   (local $4 f32)
   (local $5 f64)
-  (block $compile_block.54
-   (block $compile_store.53
+  (block $compile_block.75
+   (block $compile_store.74
     (global.set $test_1113
      (i32.const 0)
     )
-    (block $do_backpatches.52
+    (block $do_backpatches.73
     )
    )
    (return_call $test_1113
