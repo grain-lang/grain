@@ -1189,13 +1189,20 @@ Returns:
 
 ### Array.**slice**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Default `end` to the Array length</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-slice : (startIndex: Number, endIndex: Number, array: Array<a>) -> Array<a>
+slice : (start: Number, ?end: Number, array: Array<a>) -> Array<a>
 ```
 
 Slices an array given zero-based start and end indexes. The value
@@ -1208,8 +1215,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`startIndex`|`Number`|The index of the array where the slice will begin (inclusive)|
-|`endIndex`|`Number`|The index of the array where the slice will end (exclusive)|
+|`start`|`Number`|The index of the array where the slice will begin (inclusive)|
+|`end`|`Option<Number>`|The index of the array where the slice will end (exclusive)|
 |`array`|`Array<a>`|The array to be sliced|
 
 Returns:
@@ -2455,13 +2462,15 @@ Returns:
 </thead>
 <tbody>
 <tr><td><code>0.5.4</code></td><td>Originally in `"immutablearray"` module</td></tr>
+<tr><td><code>next</code></td><td>Default `end` to the Array length</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
 slice :
-  (start: Number, end: Number, array: ImmutableArray<a>) -> ImmutableArray<a>
+  (start: Number, ?end: Number, array: ImmutableArray<a>) ->
+   ImmutableArray<a>
 ```
 
 Slices an array given zero-based start and end indexes. The value
@@ -2475,7 +2484,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`start`|`Number`|The index of the array where the slice will begin (inclusive)|
-|`end`|`Number`|The index of the array where the slice will end (exclusive)|
+|`end`|`Option<Number>`|The index of the array where the slice will end (exclusive)|
 |`array`|`ImmutableArray<a>`|The array to be sliced|
 
 Returns:
