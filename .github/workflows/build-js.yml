@@ -64,7 +64,7 @@ jobs:
         run: |
           npm run compiler test:js
 
-      # This will log a warning because we removed don't have a native exe files
+      # This will log a warning because we didn't build the native exe files
       - name: Build pkg binary for Windows
         if: inputs.os == 'ubuntu-latest'
         run: |
@@ -78,7 +78,7 @@ jobs:
           path: ./grain.tar
           name: grain-win-x64
 
-      # This will log a warning because we removed don't have a native exe files
+      # This will log a warning because we didn't build the native exe files
       - name: Build pkg binary for Mac
         if: inputs.os == 'ubuntu-latest'
         run: |
@@ -92,7 +92,7 @@ jobs:
           path: ./grain.tar
           name: grain-mac-x64
 
-      # This will log a warning because we removed don't have a native exe files
+      # This will log a warning because we didn't build the native exe files
       - name: Build pkg binary for Linux
         if: inputs.os == 'ubuntu-latest'
         run: |
