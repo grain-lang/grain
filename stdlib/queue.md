@@ -33,34 +33,6 @@ A mutable FIFO (first-in-first-out) data structure.
 
 Functions and constants included in the Queue module.
 
-### Queue.**makeSized**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-makeSized : (size: Number) => Queue<a>
-```
-
-Creates a new queue with an initial storage of the given size. As values are
-added or removed, the internal storage may grow or shrink. Generally, you
-won’t need to care about the storage size of your map and can use
-`Queue.make()` instead.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`size`|`Number`|The initial storage size of the queue|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Queue<a>`|An empty queue|
-
 ### Queue.**make**
 
 <details disabled>
@@ -69,10 +41,19 @@ No other changes yet.
 </details>
 
 ```grain
-make : () => Queue<a>
+make : (?size: Number) => Queue<a>
 ```
 
-Creates a new queue.
+Creates a new queue with an initial storage of the given size. As values are
+added or removed, the internal storage may grow or shrink. Generally, you
+won’t need to care about the storage size of your map and can use the
+default size.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`?size`|`Number`|The initial storage size of the queue|
 
 Returns:
 

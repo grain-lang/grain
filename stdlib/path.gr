@@ -367,23 +367,6 @@ let fromStringHelper = (pathStr, platform) => {
 }
 
 /**
- * Parses a path string into a `Path`. Paths will be parsed as file paths
- * rather than directory paths if there is ambiguity.
- *
- * @param pathStr: The string to parse as a path
- * @returns The path wrapped with details encoded within the type
- *
- * @example fromString("/bin/") // an absolute Path referencing the directory /bin/
- * @example fromString("file.txt") // a relative Path referencing the file ./file.txt
- * @example fromString(".") // a relative Path referencing the current directory
- *
- * @since v0.5.5
- */
-provide let fromString = pathStr => {
-  fromStringHelper(pathStr, Posix)
-}
-
-/**
  * Parses a path string into a `Path` using the path separators appropriate to
  * the given platform (`/` for `Posix` and either `/` or `\` for `Windows`).
  * Paths will be parsed as file paths rather than directory paths if there is
@@ -393,12 +376,15 @@ provide let fromString = pathStr => {
  * @param platform: The platform whose path separators should be used for parsing
  * @returns The path wrapped with details encoded within the type
  *
- * @example fromPlatformString("/bin/", Posix) // an absolute Path referencing the directory /bin/
- * @example fromPlatformString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
+ * @example fromString("file.txt") // a relative Path referencing the file ./file.txt
+ * @example fromString(".") // a relative Path referencing the current directory
+ * @example fromString("/bin/", Posix) // an absolute Path referencing the directory /bin/
+ * @example fromString("C:\\file.txt", Windows) // a relative Path referencing the file C:\file.txt
  *
  * @since v0.5.5
+ * @history v0.6.0: Merged with `fromPlatformString`; modified signature to accept platform
  */
-provide let fromPlatformString = (pathStr, platform) => {
+provide let fromString = (pathStr, platform=Posix) => {
   fromStringHelper(pathStr, platform)
 }
 
@@ -430,22 +416,6 @@ let toStringHelper = (path, platform) => {
 }
 
 /**
- * Converts the given `Path` into a string, using the `/` path separator.
- * A trailing slash is added to directory paths.
- *
- * @param path: The path to convert to a string
- * @returns A string representing the given path
- *
- * @example toString(fromString("/file.txt")) == "/file.txt"
- * @example toString(fromString("dir/")) == "./dir/"
- *
- * @since v0.5.5
- */
-provide let toString = path => {
-  toStringHelper(pathInfo(path), Posix)
-}
-
-/**
  * Converts the given `Path` into a string, using the canonical path separator
  * appropriate to the given platform (`/` for `Posix` and `\` for `Windows`).
  * A trailing slash is added to directory paths.
@@ -454,12 +424,14 @@ provide let toString = path => {
  * @param platform: The `Platform` to use to represent the path as a string
  * @returns A string representing the given path
  *
- * @example toPlatformString(fromString("dir/"), Posix) == "./dir/"
- * @example toPlatformString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
+ * @example toString(fromString("/file.txt")) == "/file.txt"
+ * @example toString(fromString("dir/"), Posix) == "./dir/"
+ * @example toString(fromString("C:/file.txt"), Windows) == "C:\\file.txt"
  *
  * @since v0.5.5
+ * @history v0.6.0: Merged with `toPlatformString`; modified signature to accept platform
  */
-provide let toPlatformString = (path, platform) => {
+provide let toString = (path, platform=Posix) => {
   toStringHelper(pathInfo(path), platform)
 }
 

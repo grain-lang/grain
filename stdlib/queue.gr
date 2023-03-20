@@ -28,27 +28,16 @@ abstract record Queue<a> {
 /**
  * Creates a new queue with an initial storage of the given size. As values are
  * added or removed, the internal storage may grow or shrink. Generally, you
- * won’t need to care about the storage size of your map and can use
- * `Queue.make()` instead.
+ * won’t need to care about the storage size of your map and can use the
+ * default size.
  *
  * @param size: The initial storage size of the queue
  * @returns An empty queue
  *
  * @since v0.6.0
  */
-provide let makeSized = size => {
+provide let make = (size=16) => {
   { size: 0, array: Array.make(size, None), headIndex: 0, tailIndex: 0 }
-}
-
-/**
- * Creates a new queue.
- *
- * @returns An empty queue
- *
- * @since v0.6.0
- */
-provide let make = () => {
-  makeSized(16)
 }
 
 /**
@@ -165,7 +154,7 @@ provide let toList = queue => {
  * @since v0.6.0
  */
 provide let fromList = list => {
-  let queue = makeSized(List.length(list))
+  let queue = make(size=List.length(list))
   List.forEach(e => push(e, queue), list)
   queue
 }

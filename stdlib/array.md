@@ -1466,13 +1466,20 @@ Array.slice(1, [> 1, 2, 3, 4]) == [> 2, 3, 4]
 
 ### Array.**sort**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.5</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.4.5</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Made `compare` a default argument</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sort : (comp: ((a, a) => Number), array: Array<a>) => Void
+sort : (?compare: ((num1: a, num2: a) => Number), array: Array<a>) => Void
 ```
 
 Sorts an array in-place.
@@ -1483,14 +1490,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
+|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
 |`array`|`Array<a>`|The array to be sorted|
 
 Examples:
 
 ```grain
 let arr = [> 3, 2, 4, 1]
-Array.sort((a, b) => a - b, arr)
+Array.sort(compare=(a, b) => a - b, arr)
 assert arr == [> 1, 2, 3, 4]
 ```
 
@@ -3063,14 +3070,15 @@ assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>0.5.4</code></td><td>Originally in `"immutablearray"` module</td></tr>
+<tr><td><code>0.5.4</code></td><td>Originally in `"immutablearray"` module, with `compare` being a required argument</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
 sort :
-  (comp: ((a, a) => Number), array: ImmutableArray<a>) => ImmutableArray<a>
+  (?compare: ((num1: a, num2: a) => Number), array: ImmutableArray<a>) =>
+   ImmutableArray<a>
 ```
 
 Sorts the given array based on a given comparator function.
@@ -3081,7 +3089,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
+|`?compare`|`(num1: a, num2: a) => Number`|The comparator function used to indicate sort order|
 |`array`|`ImmutableArray<a>`|The array to be sorted|
 
 Returns:
@@ -3095,7 +3103,7 @@ Examples:
 ```grain
 from Array use { module Immutable }
 let arr = Immutable.fromList([2, 3, 1, 4])
-assert Immutable.sort((a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
+assert Immutable.sort(compare=(a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
 ```
 
 #### Array.Immutable.**rotate**

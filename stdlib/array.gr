@@ -1033,22 +1033,23 @@ provide let slice = (start, end=length(array), array) => {
  * Sorts an array in-place.
  *
  * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
- * @param comp: The comparator function used to indicate sort order
+ * @param compare: The comparator function used to indicate sort order
  * @param array: The array to be sorted
  *
  * @example
  * let arr = [> 3, 2, 4, 1]
- * Array.sort((a, b) => a - b, arr)
+ * Array.sort(compare=(a, b) => a - b, arr)
  * assert arr == [> 1, 2, 3, 4]
  *
  * @since v0.4.5
+ * @history v0.6.0: Made `compare` a default argument
  */
-provide let sort = (comp, array) => {
+provide let sort = (compare=compare, array) => {
   let partition = (low, high) => {
     let pivot = array[high]
     let mut i = low - 1
     for (let mut j = low; j < high; j += 1) {
-      if (comp(array[j], pivot) < 0) {
+      if (compare(array[j], pivot) < 0) {
         i += 1
         let temp = array[i]
         array[i] = array[j]
@@ -2322,21 +2323,21 @@ provide module Immutable {
    * Sorts the given array based on a given comparator function.
    *
    * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
-   * @param comp: The comparator function used to indicate sort order
+   * @param compare: The comparator function used to indicate sort order
    * @param array: The array to be sorted
    * @returns The sorted array
    *
    * @example
    * from Array use { module Immutable }
    * let arr = Immutable.fromList([2, 3, 1, 4])
-   * assert Immutable.sort((a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
+   * assert Immutable.sort(compare=(a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
    *
    * @since v0.6.0
-   * @history v0.5.4: Originally in `"immutablearray"` module
+   * @history v0.5.4: Originally in `"immutablearray"` module, with `compare` being a required argument
    */
 
-  provide let sort = (comp, array) => {
-    fromList(List.sort(comp, toList(array)))
+  provide let sort = (compare=compare, array) => {
+    fromList(List.sort(compare=compare, toList(array)))
   }
 
   /**

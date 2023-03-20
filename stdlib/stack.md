@@ -33,34 +33,6 @@ A mutable LIFO (last-in-first-out) data structure.
 
 Functions and constants included in the Stack module.
 
-### Stack.**makeSized**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-makeSized : (size: Number) => Stack<a>
-```
-
-Creates a new stack with an initial storage of the given size. As values are
-added or removed, the internal storage may grow or shrink. Generally, you
-won’t need to care about the storage size of your map and can use
-`Stack.make()` instead.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`size`|`Number`|The initial storage size of the stack|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Stack<a>`|An empty stack|
-
 ### Stack.**make**
 
 <details disabled>
@@ -69,10 +41,19 @@ No other changes yet.
 </details>
 
 ```grain
-make : () => Stack<a>
+make : (?size: Number) => Stack<a>
 ```
 
-Creates a new stack.
+Creates a new stack with an initial storage of the given size. As values are
+added or removed, the internal storage may grow or shrink. Generally, you
+won’t need to care about the storage size of your map and can use the
+default size.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`?size`|`Number`|The initial storage size of the stack|
 
 Returns:
 

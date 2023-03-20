@@ -270,7 +270,7 @@ assert !Map.contains(Wood, fa)
 
 // Resizes the map when it grows
 
-let resize = Map.makeSized(1)
+let resize = Map.make(size=1)
 
 assert Map.getInternalStats(resize) == { currentSize: 0, bucketCount: 1 }
 

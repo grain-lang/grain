@@ -40,27 +40,23 @@ provide record InternalMapStats {
 }
 
 /**
- * Creates a new empty map with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your map and can use `Map.make()` instead.
+ * Creates a new empty map with an initial storage of the given size. As
+ * values are added or removed, the internal storage may grow or shrink.
+ * Generally, you won't need to care about the storage size of your map and
+ * can use the default size.
  *
  * @param size: The initial storage size of the map
  * @returns An empty map with the given initial storage size
  *
  * @since v0.2.0
+ * @history v0.6.0: Merged with `makeSized`; modified signature to accept size
  */
-provide let makeSized = size => { // TODO: This could take an `eq` function to custom comparisons
+provide let make =
+  (
+    size=16,
+  ) => { // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
   { size: 0, buckets }
-}
-
-/**
- * Creates a new, empty map.
- *
- * @returns An empty map
- *
- * @since v0.2.0
- */
-provide let make = () => {
-  makeSized(16)
 }
 
 let getBucketIndex = (key, buckets) => {
