@@ -53,7 +53,9 @@ provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
   let numeratorptr = WasmI32.fromGrain(numerator)
   let denominatorptr = WasmI32.fromGrain(denominator)
   if (!isInteger(numeratorptr) || !isInteger(denominatorptr)) {
-    throw Exception.InvalidArgument("Numerator and denominator must be integers")
+    throw Exception.InvalidArgument(
+      "Numerator and denominator must be integers"
+    )
   }
   fromNumber(numerator / denominator)
 }
