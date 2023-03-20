@@ -1,0 +1,20 @@
+name: Nightly
+
+on:
+  schedule:
+    # run at 8 AM UTC because west coast folks might work until midnight
+    - cron: "0 8 * * *"
+
+jobs:
+  release-please:
+    name: Create nightly release
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v3.2.5
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          command: manifest-pr
+          draft-pull-request: true
