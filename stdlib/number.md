@@ -71,7 +71,7 @@ Euler's number represented as a Number value.
 </details>
 
 ```grain
-(+) : (x: Number, y: Number) => Number
+(+) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the sum of its operands.
@@ -80,8 +80,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
 
 Returns:
 
@@ -104,7 +104,7 @@ Returns:
 </details>
 
 ```grain
-(-) : (x: Number, y: Number) => Number
+(-) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the difference of its operands.
@@ -113,8 +113,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
 
 Returns:
 
@@ -137,7 +137,7 @@ Returns:
 </details>
 
 ```grain
-(*) : (x: Number, y: Number) => Number
+(*) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the product of its operands.
@@ -146,8 +146,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The first operand|
-|`y`|`Number`|The second operand|
+|`num1`|`Number`|The first operand|
+|`num2`|`Number`|The second operand|
 
 Returns:
 
@@ -170,7 +170,7 @@ Returns:
 </details>
 
 ```grain
-(/) : (x: Number, y: Number) => Number
+(/) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the quotient of its operands.
@@ -179,8 +179,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|The dividend|
-|`y`|`Number`|The divisor|
+|`num1`|`Number`|The dividend|
+|`num2`|`Number`|The divisor|
 
 Returns:
 
@@ -724,7 +724,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to parse|
+|`string`|`String`|The string to parse|
 |`radix`|`Number`|The number system base to use when parsing the input string|
 
 Returns:
@@ -751,7 +751,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`input`|`String`|The string to parse|
+|`string`|`String`|The string to parse|
 
 Returns:
 

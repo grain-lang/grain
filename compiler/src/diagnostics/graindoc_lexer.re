@@ -52,6 +52,9 @@ let newline = [%sedlex.regexp? 0x0A | 0x0C | 0x0D | 0x85 | 0x2028 | 0x2029];
 // A colon eats whitespace after it
 let colon = [%sedlex.regexp? (':', Star(blank))];
 
+// "unlabeled" eats whitespace after it
+let unlabeled = [%sedlex.regexp? ("unlabeled", Star(blank))];
+
 // A asterisk eats whitespace before it and up to 1 after it
 let asterisk = [%sedlex.regexp? (Star(blank), '*', Opt(blank))];
 
@@ -130,6 +133,7 @@ and free_text_attribute = (state, lexbuf) => {
 and param = (state, lexbuf) => {
   switch%sedlex (lexbuf) {
   | blank => param(state, lexbuf)
+  | unlabeled => UNLABELED
   | ident => IDENT(Sedlexing.Utf8.lexeme(lexbuf))
   | colon =>
     state.lexer_mode = Default;

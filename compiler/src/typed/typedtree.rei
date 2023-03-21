@@ -41,8 +41,10 @@ type provide_flag =
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 type argument_label =
-  Asttypes.argument_label =
-    | Unlabeled | Labeled(loc(string)) | Default(loc(string));
+  Parsetree.argument_label =
+    | Unlabeled
+    | Labeled(loc(string))
+    | Default(loc(string), Parsetree.expression);
 
 type wasm_prim_type =
   Parsetree.wasm_prim_type =

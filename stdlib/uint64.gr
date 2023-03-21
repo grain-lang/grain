@@ -30,8 +30,8 @@ let _VALUE_OFFSET = 8n
  * @since v0.6.0
  */
 @unsafe
-provide let fromNumber = (x: Number) => {
-  let result = newUint64(coerceNumberToUnsignedWasmI64(x))
+provide let fromNumber = (number: Number) => {
+  let result = newUint64(coerceNumberToUnsignedWasmI64(number))
   WasmI32.toGrain(result): Uint64
 }
 
@@ -44,9 +44,11 @@ provide let fromNumber = (x: Number) => {
  * @since v0.6.0
  */
 @unsafe
-provide let toNumber = (x: Uint64) => {
+provide let toNumber = (value: Uint64) => {
   WasmI32.toGrain(
-    reducedUnsignedInteger(WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET))
+    reducedUnsignedInteger(
+      WasmI64.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+    )
   ): Number
 }
 
@@ -59,8 +61,8 @@ provide let toNumber = (x: Uint64) => {
  * @since v0.6.0
  */
 @unsafe
-provide let fromInt64 = (x: Int64) => {
-  let x = WasmI64.load(WasmI32.fromGrain(x), 8n)
+provide let fromInt64 = (number: Int64) => {
+  let x = WasmI64.load(WasmI32.fromGrain(number), 8n)
   let result = newUint64(x)
   WasmI32.toGrain(result): Uint64
 }

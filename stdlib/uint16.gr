@@ -37,8 +37,8 @@ provide { fromNumber, toNumber }
  * @since v0.6.0
  */
 @unsafe
-provide let fromInt16 = (x: Int16) => {
-  let x = WasmI32.fromGrain(x)
+provide let fromInt16 = (number: Int16) => {
+  let x = WasmI32.fromGrain(number)
   // Trick: convert from Int16 tag 10010 to Uint16 tag 100010
   let result = x ^ 0b110000n
   WasmI32.toGrain(result & _REMOVE_EXTRA_MASK): Uint16

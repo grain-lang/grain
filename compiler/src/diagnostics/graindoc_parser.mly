@@ -1,4 +1,4 @@
-%token PARAM SECTION SINCE HISTORY THROWS RETURNS EXAMPLE DEPRECATED COLON EOL EOF
+%token PARAM UNLABELED SECTION SINCE HISTORY THROWS RETURNS EXAMPLE DEPRECATED COLON EOL EOF
 %token <string> TEXT IDENT SEMVER CONSTRUCTOR
 
 %right EOL
@@ -27,7 +27,7 @@ attribute_text:
   | ioption(eols) multiline_text ioption(eols) %prec EOL { $2 }
 
 attribute:
-  | PARAM IDENT COLON attribute_text { Param({ attr_name=$2; attr_desc=$4 }) }
+  | PARAM UNLABELED? IDENT COLON attribute_text { Param({ attr_name=$3; attr_desc=$5; attr_unlabeled=(Option.is_some $2) }) }
   | RETURNS attribute_text { Returns({attr_desc=$2}) }
   | EXAMPLE attribute_text { Example({attr_desc=$2}) }
   | DEPRECATED attribute_text { Deprecated({attr_desc=$2}) }

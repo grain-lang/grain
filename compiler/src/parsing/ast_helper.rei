@@ -369,8 +369,7 @@ module IncludeDeclaration: {
 };
 
 module TypeArgument: {
-  let mk:
-    (~loc: loc, Asttypes.argument_label, parsed_type) => parsed_type_argument;
+  let mk: (~loc: loc, argument_label, parsed_type) => parsed_type_argument;
 };
 
 module LambdaArgument: {

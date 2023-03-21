@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => Rational
+fromNumber : (number: Number) => Rational
 ```
 
 Converts a Number to a Rational.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Rational) => Number
+toNumber : (rational: Rational) => Number
 ```
 
 Converts a Rational to a Number.

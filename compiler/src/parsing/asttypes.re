@@ -115,9 +115,3 @@ type attribute = (loc(string), list(loc(string)));
 
 [@deriving (sexp, yojson)]
 type attributes = list(attribute);
-
-[@deriving (sexp, yojson)]
-type argument_label =
-  | Unlabeled
-  | Labeled(loc(string))
-  | Default(loc(string));

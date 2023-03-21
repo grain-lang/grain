@@ -66,7 +66,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (Number, a) => Array<a>
+make : (length: Number, item: a) => Array<a>
 ```
 
 Creates a new array of the specified length with each element being
@@ -106,7 +106,7 @@ No other changes yet.
 </details>
 
 ```grain
-init : (Number, (Number => a)) => Array<a>
+init : (length: Number, fn: (Number => a)) => Array<a>
 ```
 
 Creates a new array of the specified length where each element is
@@ -1213,11 +1213,11 @@ the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The index of the array where the slice will begin (inclusive)|
-|`end`|`Option<Number>`|The index of the array where the slice will end (exclusive)|
-|`array`|`Array<a>`|The array to be sliced|
+|param|type|description|default value|
+|-----|----|-----------|-------------|
+|`start`|`Number`|The index of the array where the slice will begin (inclusive)|N/A|
+|`end`|`Number`|The index of the array where the slice will end (exclusive)|`length(array)`|
+|`array`|`Array<a>`|The array to be sliced|N/A|
 
 Returns:
 
@@ -2150,7 +2150,7 @@ Returns:
 </details>
 
 ```grain
-contains : (value: a, array: ImmutableArray<a>) => Bool
+contains : (search: a, array: ImmutableArray<a>) => Bool
 ```
 
 Checks if the value is an element of the input array.
@@ -2525,11 +2525,11 @@ the end of the array.
 
 Parameters:
 
-|param|type|description|
-|-----|----|-----------|
-|`start`|`Number`|The index of the array where the slice will begin (inclusive)|
-|`end`|`Option<Number>`|The index of the array where the slice will end (exclusive)|
-|`array`|`ImmutableArray<a>`|The array to be sliced|
+|param|type|description|default value|
+|-----|----|-----------|-------------|
+|`start`|`Number`|The index of the array where the slice will begin (inclusive)|N/A|
+|`end`|`Number`|The index of the array where the slice will end (exclusive)|`length(array)`|
+|`array`|`ImmutableArray<a>`|The array to be sliced|N/A|
 
 Returns:
 

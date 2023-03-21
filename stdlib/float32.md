@@ -90,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => Float32
+fromNumber : (number: Number) => Float32
 ```
 
 Converts a Number to a Float32.
@@ -115,7 +115,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Float32) => Number
+toNumber : (float: Float32) => Number
 ```
 
 Converts a Float32 to a Number.

@@ -48,7 +48,7 @@ from String use { toString, print, concat as (++) }
  * Computes the logical NOT (`!`) of the given operand.
  * Inverts the given Boolean value.
  *
- * @param value: The operand
+ * @param unlabeled value: The operand
  * @returns The inverted value
  *
  * @example !true // false
@@ -64,8 +64,8 @@ provide primitive (!) = "@not"
  * If the first operand is `false`, returns `false` without evaluating the second operand.
  * If the first operand is `true`, returns the value of the second operand.
  *
- * @param value1: The first operand
- * @param value2: The second operand
+ * @param unlabeled value1: The first operand
+ * @param unlabeled value2: The second operand
  * @returns The first operand if it is `false` or the value of the second operand otherwise
  *
  * @since v0.1.0
@@ -78,8 +78,8 @@ provide primitive (&&) = "@and"
  * If the first operand is `true`, returns `true` without evaluating the second operand.
  * If the first operand is `false`, returns the value of the second operand.
  *
- * @param value1: The first operand
- * @param value2: The second operand
+ * @param unlabeled value1: The first operand
+ * @param unlabeled value2: The second operand
  * @returns The first operand if it is `true` or the value of the second operand otherwise
  *
  * @since v0.1.0
@@ -98,14 +98,14 @@ provide { (==) }
  *
  * @since v0.2.0
  */
-provide let (!=): (a, a) => Bool = (x, y) => !(x == y)
+provide let (!=) = (value1, value2) => !(value1 == value2)
 
 /**
  * Checks that two values are physically equal.
  * Use this operator if you don’t need or want structural equality.
  *
- * @param value1: The first operand
- * @param value2: The second operand
+ * @param unlabeled value1: The first operand
+ * @param unlabeled value2: The second operand
  * @returns `true` if the values are physically equal or `false` otherwise
  *
  * @since v0.1.0
@@ -122,7 +122,7 @@ provide primitive (is) = "@is"
  *
  * @since v0.2.0
  */
-provide let (isnt): (a, a) => Bool = (x, y) => !(x is y)
+provide let (isnt) = (value1, value2) => !(value1 is value2)
 
 provide {
   (<),
@@ -159,7 +159,7 @@ provide { toString, print }
 /**
  * Accepts any value and always returns `void`.
  *
- * @param value: The value to ignore
+ * @param unlabeled value: The value to ignore
  *
  * @since v0.1.0
  */
@@ -168,7 +168,7 @@ provide primitive ignore = "@ignore"
 /**
  * Assert that the given Boolean condition is `true`.
  *
- * @param condition: The condition to assert
+ * @param unlabeled condition: The condition to assert
  *
  * @throws AssertionError: When the `condition` is false
  *
@@ -186,7 +186,7 @@ provide exception InvalidArgument(String)
 /**
  * Throw an exception. Currently, exceptions cannot be caught and will crash your program.
  *
- * @param exception: The exception to be thrown
+ * @param unlabeled exception: The exception to be thrown
  * @returns Anything and nothing—your program won't continue past a throw
  *
  * @since v0.3.0
@@ -200,7 +200,7 @@ provide primitive throw = "@throw"
  * @param message: The reason for the failure
  * @returns Anything and nothing—your program won't continue past a fail expression
  */
-provide let fail: String => a = msg => throw Failure(msg)
+provide let fail = message => throw Failure(message)
 
 /**
  * Provides the operand untouched.
@@ -210,14 +210,14 @@ provide let fail: String => a = msg => throw Failure(msg)
  *
  * @since v0.2.0
  */
-provide let identity = x => x
+provide let identity = value => value
 
 /**
  * Creates a box containing the given initial value.
  * Values inside a box can be swapped out with the `:=` operator.
  * Generally, `let mut` expressions are preferable to using a Box.
  *
- * @param initial: The initial value inside the box
+ * @param unlabeled initial: The initial value inside the box
  * @returns The box containing the initial value
  *
  * @since v0.1.0
@@ -227,7 +227,7 @@ provide primitive box = "@box"
 /**
  * Retrieves the current value from a box.
  *
- * @param box: The box to unwrap
+ * @param unlabeled box: The box to unwrap
  * @returns The value inside the box
  *
  * @since v0.1.0

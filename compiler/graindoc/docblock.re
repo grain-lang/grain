@@ -7,6 +7,7 @@ type param = {
   param_name: string,
   param_type: string,
   param_msg: string,
+  param_default_value: option(string) // For default arguments
 };
 
 type since = {since_version: string};
@@ -77,7 +78,8 @@ exception
     attr: string,
   });
 
-exception MissingParamType({name: string});
+exception MissingLabeledParamType({name: string});
+exception MissingUnlabeledParamType({name: string});
 exception MissingReturnType;
 exception
   InvalidAttribute({
@@ -96,7 +98,15 @@ let () =
           attr,
         );
       Some(msg);
-    | MissingParamType({name}) =>
+    | MissingLabeledParamType({name}) =>
+      let msg =
+        Printf.sprintf(
+          "Unable to find a matching function parameter for %s. Make sure a parameter exists with this label or use `@param unlabeled %s` for unlabeled parameters.",
+          name,
+          name,
+        );
+      Some(msg);
+    | MissingUnlabeledParamType({name}) =>
       let msg =
         Printf.sprintf(
           "Unable to find a type for %s. Did you specify too many @param attributes?",
@@ -157,17 +167,38 @@ let output_for_history = (~current_version, {history_version, history_msg}) => {
   };
 };
 
-let output_for_params = params => {
-  Markdown.table(
-    ~headers=["param", "type", "description"],
-    List.map(
-      ({param_name, param_type, param_msg}) => {
-        [Markdown.code(param_name), Markdown.code(param_type), param_msg]
-      },
-      params,
-    ),
-  );
-};
+let output_for_params = params =>
+  if (List.exists(param => Option.is_some(param.param_default_value), params)) {
+    Markdown.table(
+      ~headers=["param", "type", "description", "default value"],
+      List.map(
+        ({param_name, param_type, param_msg, param_default_value}) => {
+          let default =
+            switch (param_default_value) {
+            | Some(default) => Markdown.code(default)
+            | None => "N/A"
+            };
+          [
+            Markdown.code(param_name),
+            Markdown.code(param_type),
+            param_msg,
+            default,
+          ];
+        },
+        params,
+      ),
+    );
+  } else {
+    Markdown.table(
+      ~headers=["param", "type", "description"],
+      List.map(
+        ({param_name, param_type, param_msg}) => {
+          [Markdown.code(param_name), Markdown.code(param_type), param_msg]
+        },
+        params,
+      ),
+    );
+  };
 
 let output_for_returns = ({returns_type, returns_msg}) => {
   Markdown.table(
@@ -207,16 +238,44 @@ let output_for_throws = throws => {
 
 let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
-  | TTyArrow(args, returns, _) => (
-      Some(List.map(snd, args)),
-      Some(returns),
-    )
+  | TTyArrow(args, returns, _) => (Some(args), Some(returns))
   | _ => (None, None)
   };
 };
 
+let lookup_arg_by_label = (name, args_opt) => {
+  Option.bind(args_opt, args =>
+    List.find_opt(
+      ((label: Grain_parsing.Parsetree.argument_label, _)) =>
+        switch (label) {
+        | Default(l, _)
+        | Labeled(l) => l.txt == name
+        | _ => false
+        },
+      args,
+    )
+  );
+};
+
 let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
+};
+
+let get_argument_default = (input_path, default_expr) => {
+  open Grain_formatting.Format;
+  let ic = open_in_bin(input_path);
+  let source = really_input_string(ic, in_channel_length(ic));
+  close_in(ic);
+  // We have already compiled this file so we know it exists
+  let (_, lines, _) = Result.get_ok(parse_source(source));
+  let expr_doc =
+    print_expression(
+      ~expression_parent=GenericExpression,
+      ~original_source=lines,
+      ~comments=[],
+      default_expr,
+    );
+  Doc.toString(~width=1000, ~eol=Fs_access.LF, expr_doc);
 };
 
 let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
@@ -239,7 +298,12 @@ let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
 };
 
 let for_value_description =
-    (~module_namespace, ~ident: Ident.t, vd: Types.value_description) => {
+    (
+      ~module_namespace,
+      ~ident: Ident.t,
+      ~input_path: string,
+      vd: Types.value_description,
+    ) => {
   let loc = vd.val_loc;
   let comments = get_comments_from_loc(loc);
   let name = Format.asprintf("%a", Printtyp.ident, ident);
@@ -253,7 +317,7 @@ let for_value_description =
     | None => (None, [])
     };
 
-  let (arg_types, return_type) = types_for_function(~ident, vd);
+  let (args, return_type) = types_for_function(~ident, vd);
 
   let (deprecations, since, history, params, returns, throws, examples) =
     List.fold_left(
@@ -291,19 +355,38 @@ let for_value_description =
             throws,
             examples,
           )
-        | Param({attr_name: param_name, attr_desc: param_msg}) =>
-          // TODO: Use label lookups when labeled parameters are introduced
-          let param_type =
-            switch (lookup_type_expr(~idx=List.length(params), arg_types)) {
-            | Some(typ) => Printtyp.string_of_type_sch(typ)
-            | None => raise(MissingParamType({name: param_name}))
+        | Param({attr_name: param_name, attr_desc: param_msg, attr_unlabeled}) =>
+          let (param_type, param_default_value) =
+            if (attr_unlabeled) {
+              switch (lookup_type_expr(~idx=List.length(params), args)) {
+              | Some((_, typ)) => (Printtyp.string_of_type_sch(typ), None)
+              | None => raise(MissingUnlabeledParamType({name: param_name}))
+              };
+            } else {
+              switch (lookup_arg_by_label(param_name, args)) {
+              | Some((Labeled(_), typ)) => (
+                  Printtyp.string_of_type_sch(typ),
+                  None,
+                )
+              // Default parameters have the type Option<a>; extract the type from the Option
+              | Some((
+                  Default(_, default_expr),
+                  {desc: TTyConstr(_, [typ], _)},
+                )) =>
+                let default = get_argument_default(input_path, default_expr);
+                (Printtyp.string_of_type_sch(typ), Some(default));
+              | _ => raise(MissingLabeledParamType({name: param_name}))
+              };
             };
 
           (
             deprecations,
             since,
             history,
-            [{param_name, param_type, param_msg}, ...params],
+            [
+              {param_name, param_type, param_msg, param_default_value},
+              ...params,
+            ],
             returns,
             throws,
             examples,
@@ -433,7 +516,8 @@ let for_type_declaration =
   });
 };
 
-let rec traverse_signature_items = (~module_namespace, signature_items) => {
+let rec traverse_signature_items =
+        (~module_namespace, ~input_path, signature_items) => {
   let {provided_types, provided_values, provided_modules} =
     List.fold_left(
       (
@@ -449,7 +533,8 @@ let rec traverse_signature_items = (~module_namespace, signature_items) => {
             provided_modules,
           };
         | TSigValue(ident, vd) =>
-          let docblock = for_value_description(~module_namespace, ~ident, vd);
+          let docblock =
+            for_value_description(~module_namespace, ~ident, ~input_path, vd);
           {
             provided_types,
             provided_values: [docblock, ...provided_values],
@@ -466,6 +551,7 @@ let rec traverse_signature_items = (~module_namespace, signature_items) => {
               ~module_namespace,
               ~name,
               ~loc=md_loc,
+              ~input_path,
               signature_items,
             );
           {
@@ -493,6 +579,7 @@ and for_signature_items =
       ~module_namespace,
       ~name,
       ~loc: Grain_parsing.Location.t,
+      ~input_path,
       signature_items,
     ) => {
   let comments = get_comments_from_loc(loc);
@@ -556,6 +643,7 @@ and for_signature_items =
 
       traverse_signature_items(
         ~module_namespace=Some(namespace),
+        ~input_path,
         signature_items,
       );
     };

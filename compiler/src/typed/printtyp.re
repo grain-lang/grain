@@ -735,7 +735,7 @@ and tree_of_argtyplist = (sch, al) =>
     ((l, ty)) => {
       let ty =
         switch (l) {
-        | Default(_) => get_arg_type(ty)
+        | Parsetree.Default(_) => get_arg_type(ty)
         | _ => ty
         };
       (qualified_label_name(l), tree_of_typexp(sch, ty));

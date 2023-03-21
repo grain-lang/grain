@@ -1760,14 +1760,14 @@ and print_type =
                     ({Parsetree.ptyp_arg_label: label, ptyp_arg_type: t}) => {
                       let label =
                         switch (label) {
-                        | Asttypes.Unlabeled => Doc.nil
+                        | Unlabeled => Doc.nil
                         | Labeled(name) =>
                           Doc.concat([
                             Doc.text(name.txt),
                             Doc.text(":"),
                             Doc.space,
                           ])
-                        | Default(name) =>
+                        | Default(name, _) =>
                           Doc.concat([
                             Doc.question,
                             Doc.text(name.txt),
@@ -2125,7 +2125,7 @@ and print_arg_lambda =
       switch (lambda.paa_label) {
       | Unlabeled => Doc.nil
       | Labeled(name)
-      | Default(name) => Doc.concat([Doc.text(name.txt), Doc.equal])
+      | Default(name, _) => Doc.concat([Doc.text(name.txt), Doc.equal])
       };
 
     let args =
@@ -2683,8 +2683,8 @@ and print_application_argument =
       argument.paa_expr,
     );
   switch (argument.paa_label, argument.paa_expr.pexp_desc) {
-  | (Asttypes.Unlabeled, _) => expr_doc
-  | (Labeled(name) | Default(name), _) =>
+  | (Unlabeled, _) => expr_doc
+  | (Labeled(name) | Default(name, _), _) =>
     Doc.concat([Doc.text(name.txt), Doc.equal, expr_doc])
   };
 }

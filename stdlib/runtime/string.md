@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (s1: String, s2: String) => String
+concat : (str1: String, str2: String) => String
 ```
 
 Concatenate two strings.

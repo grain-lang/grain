@@ -108,7 +108,7 @@ Returns:
 ### Process.**sigRaise**
 
 ```grain
-sigRaise : (signalPtr: Signal) => Result<Void, Exception>
+sigRaise : (signal: Signal) => Result<Void, Exception>
 ```
 
 Send a signal to the process of the calling thread.

@@ -81,8 +81,11 @@ type error =
       option(Checkertypes.type_forcing_context),
     )
   | Apply_non_function(type_expr)
-  | Apply_too_many_arguments(type_expr, list((argument_label, type_expr)))
-  | Apply_too_few_arguments(list((argument_label, type_expr)))
+  | Apply_too_many_arguments(
+      type_expr,
+      list((Parsetree.argument_label, type_expr)),
+    )
+  | Apply_too_few_arguments(list((Parsetree.argument_label, type_expr)))
   | Apply_unknown_label(string, list(string))
   | Label_multiply_defined(string)
   | Label_missing(list(Ident.t))
@@ -124,8 +127,8 @@ type error =
     )
   | Not_a_function(type_expr, option(Checkertypes.type_forcing_context))
   | Function_label_mismatch({
-      got: argument_label,
-      expected: argument_label,
+      got: Parsetree.argument_label,
+      expected: Parsetree.argument_label,
       expected_type: type_expr,
       explanation: option(Checkertypes.type_forcing_context),
     })

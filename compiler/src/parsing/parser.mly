@@ -313,7 +313,7 @@ typ:
 
 arg_typ:
   | LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Labeled (mkstr $loc($1) $1)) $3 }
-  | QUESTION LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Default (mkstr $loc($2) $2)) $4 }
+  | QUESTION LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Default ((mkstr $loc($2) $2), (Expression.constant Constant.void) (* dummy value *))) $4 }
   | typ { TypeArgument.mk ~loc:(to_loc $loc) Unlabeled $1 }
 
 typs:

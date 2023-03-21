@@ -29,7 +29,7 @@ Parameters:
 ### Malloc.**malloc**
 
 ```grain
-malloc : (nb: WasmI32) => WasmI32
+malloc : (nbytes: WasmI32) => WasmI32
 ```
 
 Allocates the requested number of bytes, returning a pointer.

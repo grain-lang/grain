@@ -5,6 +5,7 @@ type t =
   | Param({
       attr_name: string,
       attr_desc: string,
+      attr_unlabeled: bool,
     })
   | Returns({attr_desc: string})
   | Example({attr_desc: string})
