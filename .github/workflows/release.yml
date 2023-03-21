@@ -19,7 +19,7 @@ jobs:
       stdlib-tag-name: ${{ steps.release.outputs.stdlib--tag_name }}
       js-runner-tag-name: ${{ steps.release.outputs.js-runner--tag_name }}
     steps:
-      - uses: GoogleCloudPlatform/release-please-action@v3.2.5
+      - uses: GoogleCloudPlatform/release-please-action@v3.7.5
         id: release
         with:
           # Explicitly use GITHUB_TOKEN here so Release Please doesn't start a CI run that will fail
@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload stdlib
         id: stdlib-upload
-        uses: grain-lang/upload-release-action@v3.0.1
+        uses: grain-lang/upload-release-action@v3.0.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           file: ./stdlib/${{ env.STDLIB_TAR }}
@@ -127,7 +127,7 @@ jobs:
 
       - name: Upload js-runner
         id: js-runner-upload
-        uses: grain-lang/upload-release-action@v3.0.1
+        uses: grain-lang/upload-release-action@v3.0.2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           file: ./js-runner/${{ env.RUNNER_TAR }}
@@ -140,7 +140,7 @@ jobs:
     name: Dispatch website release
     runs-on: ubuntu-latest
     steps:
-      - uses: grain-lang/workflow-dispatch-action@v1.0.0
+      - uses: grain-lang/workflow-dispatch-action@v1.0.1
         with:
           workflow: Grain Release
           token: ${{ secrets.WORKFLOW_TOKEN }}
@@ -154,7 +154,7 @@ jobs:
     name: Dispatch homebrew release
     runs-on: ubuntu-latest
     steps:
-      - uses: grain-lang/workflow-dispatch-action@v1.0.0
+      - uses: grain-lang/workflow-dispatch-action@v1.0.1
         with:
           workflow: Grain Release
           token: ${{ secrets.WORKFLOW_TOKEN }}
@@ -168,7 +168,7 @@ jobs:
     name: Dispatch Docker builds
     runs-on: ubuntu-latest
     steps:
-      - uses: grain-lang/workflow-dispatch-action@v1.0.0
+      - uses: grain-lang/workflow-dispatch-action@v1.0.1
         with:
           workflow: Publish Docker images
           token: ${{ secrets.WORKFLOW_TOKEN }}
