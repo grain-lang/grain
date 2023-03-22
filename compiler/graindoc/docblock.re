@@ -4,7 +4,7 @@ open Grain_utils;
 open Grain_diagnostics;
 
 type param = {
-  param_name: string,
+  param_id: string,
   param_type: string,
   param_msg: string,
   param_default_value: option(string) // For default arguments
@@ -79,7 +79,7 @@ exception
   });
 
 exception MissingLabeledParamType({name: string});
-exception MissingUnlabeledParamType({name: string});
+exception MissingUnlabeledParamType({idx: int});
 exception MissingReturnType;
 exception
   InvalidAttribute({
@@ -106,11 +106,11 @@ let () =
           name,
         );
       Some(msg);
-    | MissingUnlabeledParamType({name}) =>
+    | MissingUnlabeledParamType({idx}) =>
       let msg =
         Printf.sprintf(
-          "Unable to find a type for %s. Did you specify too many @param attributes?",
-          name,
+          "Unable to find a type for parameter at index %d. Make sure a parameter exists at this index in the parameter list.",
+          idx,
         );
       Some(msg);
     | MissingReturnType =>
@@ -170,19 +170,19 @@ let output_for_history = (~current_version, {history_version, history_msg}) => {
 let output_for_params = params =>
   if (List.exists(param => Option.is_some(param.param_default_value), params)) {
     Markdown.table(
-      ~headers=["param", "type", "description", "default value"],
+      ~headers=["param", "type", "default", "description"],
       List.map(
-        ({param_name, param_type, param_msg, param_default_value}) => {
+        ({param_id, param_type, param_msg, param_default_value}) => {
           let default =
             switch (param_default_value) {
             | Some(default) => Markdown.code(default)
-            | None => "N/A"
+            | None => ""
             };
           [
-            Markdown.code(param_name),
+            Markdown.code(param_id),
             Markdown.code(param_type),
-            param_msg,
             default,
+            param_msg,
           ];
         },
         params,
@@ -192,8 +192,8 @@ let output_for_params = params =>
     Markdown.table(
       ~headers=["param", "type", "description"],
       List.map(
-        ({param_name, param_type, param_msg}) => {
-          [Markdown.code(param_name), Markdown.code(param_type), param_msg]
+        ({param_id, param_type, param_msg}) => {
+          [Markdown.code(param_id), Markdown.code(param_type), param_msg]
         },
         params,
       ),
@@ -355,16 +355,22 @@ let for_value_description =
             throws,
             examples,
           )
-        | Param({attr_name: param_name, attr_desc: param_msg, attr_unlabeled}) =>
-          let (param_type, param_default_value) =
-            if (attr_unlabeled) {
-              switch (lookup_type_expr(~idx=List.length(params), args)) {
-              | Some((_, typ)) => (Printtyp.string_of_type_sch(typ), None)
-              | None => raise(MissingUnlabeledParamType({name: param_name}))
-              };
-            } else {
-              switch (lookup_arg_by_label(param_name, args)) {
+        | Param({attr_id: param_id, attr_desc: param_msg}) =>
+          let (param_id, param_type, param_default_value) =
+            switch (param_id) {
+            | PositionalParam(idx) =>
+              switch (lookup_type_expr(~idx, args)) {
+              | Some((_, typ)) => (
+                  string_of_int(idx),
+                  Printtyp.string_of_type_sch(typ),
+                  None,
+                )
+              | None => raise(MissingUnlabeledParamType({idx: idx}))
+              }
+            | LabeledParam(name) =>
+              switch (lookup_arg_by_label(name, args)) {
               | Some((Labeled(_), typ)) => (
+                  name,
                   Printtyp.string_of_type_sch(typ),
                   None,
                 )
@@ -374,9 +380,9 @@ let for_value_description =
                   {desc: TTyConstr(_, [typ], _)},
                 )) =>
                 let default = get_argument_default(input_path, default_expr);
-                (Printtyp.string_of_type_sch(typ), Some(default));
-              | _ => raise(MissingLabeledParamType({name: param_name}))
-              };
+                (name, Printtyp.string_of_type_sch(typ), Some(default));
+              | _ => raise(MissingLabeledParamType({name: name}))
+              }
             };
 
           (
@@ -384,7 +390,7 @@ let for_value_description =
             since,
             history,
             [
-              {param_name, param_type, param_msg, param_default_value},
+              {param_id, param_type, param_msg, param_default_value},
               ...params,
             ],
             returns,
@@ -485,7 +491,7 @@ let for_type_declaration =
             [{history_version, history_msg}, ...history],
             examples,
           )
-        | Param({attr_name: param_name, attr_desc: param_msg}) =>
+        | Param({attr_id: param_id, attr_desc: param_msg}) =>
           raise(InvalidAttribute({name, attr: "param"}))
         | Returns({attr_desc: returns_msg}) =>
           raise(InvalidAttribute({name, attr: "returns"}))
@@ -616,7 +622,7 @@ and for_signature_items =
             [{history_version, history_msg}, ...history],
             examples,
           )
-        | Param({attr_name: param_name, attr_desc: param_msg}) =>
+        | Param({attr_id: param_id, attr_desc: param_msg}) =>
           raise(InvalidAttribute({name, attr: "param"}))
         | Returns({attr_desc: returns_msg}) =>
           raise(InvalidAttribute({name, attr: "returns"}))

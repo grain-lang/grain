@@ -1213,11 +1213,11 @@ the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
 
 Parameters:
 
-|param|type|description|default value|
-|-----|----|-----------|-------------|
-|`start`|`Number`|The index of the array where the slice will begin (inclusive)|N/A|
-|`end`|`Number`|The index of the array where the slice will end (exclusive)|`length(array)`|
-|`array`|`Array<a>`|The array to be sliced|N/A|
+|param|type|default|description|
+|-----|----|-------|-----------|
+|`start`|`Number`||The index of the array where the slice will begin (inclusive)|
+|`end`|`Number`|`length(array)`|The index of the array where the slice will end (exclusive)|
+|`array`|`Array<a>`||The array to be sliced|
 
 Returns:
 
@@ -2525,11 +2525,11 @@ the end of the array.
 
 Parameters:
 
-|param|type|description|default value|
-|-----|----|-----------|-------------|
-|`start`|`Number`|The index of the array where the slice will begin (inclusive)|N/A|
-|`end`|`Number`|The index of the array where the slice will end (exclusive)|`length(array)`|
-|`array`|`ImmutableArray<a>`|The array to be sliced|N/A|
+|param|type|default|description|
+|-----|----|-------|-----------|
+|`start`|`Number`||The index of the array where the slice will begin (inclusive)|
+|`end`|`Number`|`length(array)`|The index of the array where the slice will end (exclusive)|
+|`array`|`ImmutableArray<a>`||The array to be sliced|
 
 Returns:
 

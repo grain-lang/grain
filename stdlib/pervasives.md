@@ -35,7 +35,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`Bool`|The operand|
+|`0`|`Bool`|The operand|
 
 Returns:
 
@@ -73,8 +73,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`Bool`|The first operand|
-|`value2`|`Bool`|The second operand|
+|`0`|`Bool`|The first operand|
+|`1`|`Bool`|The second operand|
 
 Returns:
 
@@ -102,8 +102,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`Bool`|The first operand|
-|`value2`|`Bool`|The second operand|
+|`0`|`Bool`|The first operand|
+|`1`|`Bool`|The second operand|
 
 Returns:
 
@@ -183,8 +183,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`a`|The first operand|
-|`value2`|`a`|The second operand|
+|`0`|`a`|The first operand|
+|`1`|`a`|The second operand|
 
 Returns:
 
@@ -891,7 +891,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to ignore|
+|`0`|`a`|The value to ignore|
 
 ### Pervasives.**assert**
 
@@ -910,7 +910,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`condition`|`Bool`|The condition to assert|
+|`0`|`Bool`|The condition to assert|
 
 Throws:
 
@@ -945,7 +945,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`exception`|`Exception`|The exception to be thrown|
+|`0`|`Exception`|The exception to be thrown|
 
 Returns:
 
@@ -1018,7 +1018,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`initial`|`a`|The initial value inside the box|
+|`0`|`a`|The initial value inside the box|
 
 Returns:
 
@@ -1043,7 +1043,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`box`|`Box<a>`|The box to unwrap|
+|`0`|`Box<a>`|The box to unwrap|
 
 Returns:
 

@@ -18,7 +18,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`numElts`|`WasmI32`|The number of elements to be contained in this array|
+|`0`|`WasmI32`|The number of elements to be contained in this array|
 
 Returns:
 
@@ -38,7 +38,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`numElts`|`WasmI32`|The number of elements to be contained in this tuple|
+|`0`|`WasmI32`|The number of elements to be contained in this tuple|
 
 Returns:
 
@@ -58,7 +58,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`WasmI32`|The number of bytes to be contained in this buffer|
+|`0`|`WasmI32`|The number of bytes to be contained in this buffer|
 
 Returns:
 
@@ -78,7 +78,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`size`|`WasmI32`|The size (in bytes) of the string to allocate|
+|`0`|`WasmI32`|The size (in bytes) of the string to allocate|
 
 Returns:
 
@@ -112,7 +112,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmI32`|The value to store|
+|`0`|`WasmI32`|The value to store|
 
 Returns:
 
@@ -146,7 +146,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmI32`|The value to store|
+|`0`|`WasmI32`|The value to store|
 
 Returns:
 
@@ -180,7 +180,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmI64`|The value to store|
+|`0`|`WasmI64`|The value to store|
 
 Returns:
 
@@ -214,7 +214,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmI64`|The value to store|
+|`0`|`WasmI64`|The value to store|
 
 Returns:
 
@@ -248,7 +248,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmF32`|The value to store|
+|`0`|`WasmF32`|The value to store|
 
 Returns:
 
@@ -282,7 +282,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmF64`|The value to store|
+|`0`|`WasmF64`|The value to store|
 
 Returns:
 
@@ -316,8 +316,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`WasmI32`|The numerator value to store|
-|`value`|`WasmI32`|The denominator value to store|
+|`0`|`WasmI32`|The numerator value to store|
+|`1`|`WasmI32`|The denominator value to store|
 
 Returns:
 
@@ -337,7 +337,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`ptr`|`WasmI32`|Untagged pointer to the ADT|
+|`0`|`WasmI32`|Untagged pointer to the ADT|
 
 Returns:
 
@@ -357,7 +357,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`ptr`|`WasmI32`|Untagged pointer to the string|
+|`0`|`WasmI32`|Untagged pointer to the string|
 
 Returns:
 
@@ -377,7 +377,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`ptr`|`WasmI32`|Untagged pointer to the Bytes|
+|`0`|`WasmI32`|Untagged pointer to the Bytes|
 
 Returns:
 
@@ -397,7 +397,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`WasmI32`|The number to tag|
+|`0`|`WasmI32`|The number to tag|
 
 Returns:
 
@@ -417,7 +417,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`Number`|The number to untag|
+|`0`|`Number`|The number to untag|
 
 Returns:
 
@@ -437,7 +437,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`WasmI32`|The usv to tag|
+|`0`|`WasmI32`|The usv to tag|
 
 Returns:
 
@@ -457,7 +457,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`Char`|The char to untag|
+|`0`|`Char`|The char to untag|
 
 Returns:
 
@@ -477,7 +477,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`WasmI32`|The int8 to tag|
+|`0`|`WasmI32`|The int8 to tag|
 
 Returns:
 
@@ -497,7 +497,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`Int8`|The int8 to untag|
+|`0`|`Int8`|The int8 to untag|
 
 Returns:
 
@@ -517,7 +517,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`WasmI32`|The int16 to tag|
+|`0`|`WasmI32`|The int16 to tag|
 
 Returns:
 
@@ -537,7 +537,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`Int16`|The int16 to untag|
+|`0`|`Int16`|The int16 to untag|
 
 Returns:
 
@@ -557,7 +557,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`WasmI32`|The uint8 to tag|
+|`0`|`WasmI32`|The uint8 to tag|
 
 Returns:
 
@@ -577,7 +577,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`Uint8`|The uint8 to untag|
+|`0`|`Uint8`|The uint8 to untag|
 
 Returns:
 
@@ -597,7 +597,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`WasmI32`|The uint16 to tag|
+|`0`|`WasmI32`|The uint16 to tag|
 
 Returns:
 
@@ -617,7 +617,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`num`|`Uint16`|The uint16 to untag|
+|`0`|`Uint16`|The uint16 to untag|
 
 Returns:
 
