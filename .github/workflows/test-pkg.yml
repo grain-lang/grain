@@ -1,6 +1,12 @@
 name: Test pkg binaries
 
-on: [workflow_call]
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git reference to checkout
+        type: string
+        required: false
 
 jobs:
   test-pkg:
@@ -20,6 +26,8 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Fetch pkg binary
         uses: actions/download-artifact@v3
