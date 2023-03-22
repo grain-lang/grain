@@ -1,5 +1,8 @@
 name: Grain CI Workflow
 
+# This is to avoid unnecessary runs.
+# e.g. push AND pull_request against a PR or push against a tag from workflow runs
+# If you need CI to run, you can open a Draft PR to trigger the CI.
 on:
   push:
     branches: [main]
