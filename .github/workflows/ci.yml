@@ -1,6 +1,10 @@
 name: Grain CI Workflow
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  merge_group:
 
 # This will cancel previous runs when a branch or PR is updated
 concurrency:
