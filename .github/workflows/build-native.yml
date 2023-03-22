@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       os:
-        description: "Operating system to run CI on"
+        description: Operating system to run CI on
         type: choice
         required: true
         default: "ubuntu-latest"
@@ -16,17 +16,17 @@ on:
           - macos-latest
           - windows-latest
       ref:
-        description: "Git reference to checkout"
+        description: Git reference to checkout
         type: string
         required: false
   workflow_call:
     inputs:
       os:
-        description: "Operating system to run CI on"
+        description: Operating system to run CI on
         type: string
         required: true
       ref:
-        description: "Git reference to checkout"
+        description: Git reference to checkout
         type: string
         required: false
 

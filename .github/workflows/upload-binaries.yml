@@ -7,11 +7,11 @@ on:
   workflow_call:
     inputs:
       ref:
-        description: "Git reference to checkout"
+        description: Git reference to checkout
         type: string
         required: false
       tag:
-        description: "Git tag to attach binaries"
+        description: Git tag to attach binaries
         type: string
         required: true
     secrets:
