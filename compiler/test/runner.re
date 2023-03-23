@@ -32,10 +32,10 @@ let formatter_in_file = name =>
   Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
 
 let graindoc_out_file = name =>
-  Filepath.to_string(Fp.At.(test_gaindoc_out_dir / (name ++ ".md")));
+  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".expected.md")));
 
 let gaindoc_in_file = name =>
-  Filepath.to_string(Fp.At.(test_gaindoc_in_dir / (name ++ ".gr")));
+  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
 let read_channel = channel => {
   let buf = Buffer.create(2048);
