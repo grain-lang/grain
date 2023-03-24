@@ -309,6 +309,16 @@ describe("basic functionality", ({test, testSkip}) => {
     )
   );
 
+  assertRun(
+    "magic",
+    {|
+      primitive magic = "@magic"
+      let helloBytes = b"hello"
+      print(magic(helloBytes) ++ " world")
+    |},
+    "hello world\n",
+  );
+
   assertFilesize(
     ~config_fn=smallestFileConfig,
     "smallest_grain_program",

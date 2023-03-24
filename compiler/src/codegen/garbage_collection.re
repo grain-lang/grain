@@ -456,7 +456,7 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         | _ => ()
         };
         MPrim1(WasmFromGrain, handle_imm(~non_gc_instr=true, imm));
-      | MPrim1((Box | BoxBind | Throw) as prim1, imm) =>
+      | MPrim1((Box | BoxBind | Throw | Magic) as prim1, imm) =>
         MPrim1(prim1, handle_imm(imm))
       | MPrim1(prim1, imm) =>
         MPrim1(prim1, handle_imm(~non_gc_instr=true, imm))

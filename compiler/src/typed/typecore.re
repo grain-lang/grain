@@ -194,6 +194,8 @@ let prim1_type =
   | Assert => prim_type([Builtin_types.type_bool], Builtin_types.type_void)
   | Throw =>
     prim_type([Builtin_types.type_exception], newgenvar(~name="a", ()))
+  | Magic =>
+    prim_type([newgenvar(~name="a", ())], newgenvar(~name="b", ()))
   | WasmFromGrain =>
     prim_type([newgenvar(~name="a", ())], Builtin_types.type_wasmi32)
   | WasmToGrain =>
