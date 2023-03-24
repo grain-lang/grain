@@ -44,9 +44,6 @@ exception InlineFlagsError(Location.t, error);
 let default_output_filename = name =>
   Filepath.String.remove_extension(name) ++ ".gr.wasm";
 
-let default_assembly_filename = name =>
-  Filepath.String.remove_extension(name) ++ ".wast";
-
 let default_mashtree_filename = name =>
   Filepath.String.remove_extension(name) ++ ".mashtree";
 

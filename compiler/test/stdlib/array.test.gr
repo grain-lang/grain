@@ -347,19 +347,20 @@ assert Array.join(", ", [>]) == ""
 // Array.slice
 let testChars = [> 'a', 'b', 'c']
 
-assert Array.slice(0, 1, testChars) == [> 'a']
-assert Array.slice(1, Array.length(testChars), testChars) == [> 'b', 'c']
-assert Array.slice(0, 0, testChars) == [>]
+assert Array.slice(0, end=1, testChars) == [> 'a']
+assert Array.slice(1, end=Array.length(testChars), testChars) == [> 'b', 'c']
+assert Array.slice(1, testChars) == [> 'b', 'c']
+assert Array.slice(0, end=0, testChars) == [>]
 // Purposefully huge number
-assert Array.slice(1, 10000, testChars) == [> 'b', 'c']
+assert Array.slice(1, end=10000, testChars) == [> 'b', 'c']
 // Negative indexing
-assert Array.slice(1, -1, testChars) == [> 'b']
-assert Array.slice(-2, -1, testChars) == [> 'b']
+assert Array.slice(1, end=-1, testChars) == [> 'b']
+assert Array.slice(-2, end=-1, testChars) == [> 'b']
 // Bad order
-assert Array.slice(2, 1, testChars) == [>]
-assert Array.slice(-1, -2, testChars) == [>]
+assert Array.slice(2, end=1, testChars) == [>]
+assert Array.slice(-1, end=-2, testChars) == [>]
 // Empty
-assert Array.slice(1, 4, [>]) == [>]
+assert Array.slice(1, end=4, [>]) == [>]
 
 // Array.sort
 // Numbers
@@ -780,20 +781,21 @@ module Immutable {
   // Array.slice
   let testChars = fromList(['a', 'b', 'c'])
 
-  assert Array.slice(0, 1, testChars) == fromList(['a'])
-  assert Array.slice(1, Array.length(testChars), testChars) ==
+  assert Array.slice(0, end=1, testChars) == fromList(['a'])
+  assert Array.slice(1, end=Array.length(testChars), testChars) ==
     fromList(['b', 'c'])
-  assert Array.slice(0, 0, testChars) == fromList([])
+  assert Array.slice(1, testChars) == fromList(['b', 'c'])
+  assert Array.slice(0, end=0, testChars) == fromList([])
   // Purposefully huge number
-  assert Array.slice(1, 10000, testChars) == fromList(['b', 'c'])
+  assert Array.slice(1, end=10000, testChars) == fromList(['b', 'c'])
   // Negative indexing
-  assert Array.slice(1, -1, testChars) == fromList(['b'])
-  assert Array.slice(-2, -1, testChars) == fromList(['b'])
+  assert Array.slice(1, end=-1, testChars) == fromList(['b'])
+  assert Array.slice(-2, end=-1, testChars) == fromList(['b'])
   // Bad order
-  assert Array.slice(2, 1, testChars) == fromList([])
-  assert Array.slice(-1, -2, testChars) == fromList([])
+  assert Array.slice(2, end=1, testChars) == fromList([])
+  assert Array.slice(-1, end=-2, testChars) == fromList([])
   // Empty
-  assert Array.slice(1, 4, fromList([])) == fromList([])
+  assert Array.slice(1, end=4, fromList([])) == fromList([])
 
   // Array.sort
   // Numbers
