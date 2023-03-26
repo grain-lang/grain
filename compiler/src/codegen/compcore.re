@@ -1399,17 +1399,13 @@ let call_lambda =
   | Some(name) =>
     let instr =
       if (tail) {
-        if (Config.no_tail_call^) {
-          (
-            (wasm_mod, name, args, retty) =>
-              Expression.Return.make(
-                wasm_mod,
-                Expression.Call.make(wasm_mod, name, args, retty),
-              )
-          );
-        } else {
-          Expression.Call.make_return;
-        };
+        (
+          (wasm_mod, name, args, retty) =>
+            Expression.Return.make(
+              wasm_mod,
+              Expression.Call.make(wasm_mod, name, args, retty),
+            )
+        );
       } else {
         Expression.Call.make;
       };
@@ -1418,24 +1414,20 @@ let call_lambda =
   | None =>
     let instr =
       if (tail) {
-        if (Config.no_tail_call^) {
-          (
-            (wasm_mod, table, ptr, args, argty, retty) =>
-              Expression.Return.make(
+        (
+          (wasm_mod, table, ptr, args, argty, retty) =>
+            Expression.Return.make(
+              wasm_mod,
+              Expression.Call_indirect.make(
                 wasm_mod,
-                Expression.Call_indirect.make(
-                  wasm_mod,
-                  table,
-                  ptr,
-                  args,
-                  argty,
-                  retty,
-                ),
-              )
-          );
-        } else {
-          Expression.Call_indirect.make_return;
-        };
+                table,
+                ptr,
+                args,
+                argty,
+                retty,
+              ),
+            )
+        );
       } else {
         Expression.Call_indirect.make;
       };

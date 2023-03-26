@@ -18,6 +18,7 @@ _build/
 notes.org
 node_modules/
 *.wasm
+*.gr.mjs
 *.wasm.map
 *.wat
 *.modsig

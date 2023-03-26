@@ -132,7 +132,6 @@ class GrainCommand extends commander.Command {
       "--release",
       "compile using the release profile (production mode)"
     );
-    cmd.forwardOption("--no-wasm-tail-call", "disables tail-call optimization");
     cmd.forwardOption("--debug", "compile with debugging information");
     cmd.forwardOption(
       "--wat",
@@ -196,7 +195,7 @@ program
     if (options.o) {
       run(options.o, options);
     } else {
-      run(file.replace(/\.gr$/, ".gr.wasm"), options);
+      run(file.replace(/\.gr$/, ".gr.mjs"), options);
     }
   });
 

@@ -463,13 +463,6 @@ let compilation_mode =
 let statically_link =
   toggle_flag(~names=["no-link"], ~doc="Disable static linking", true);
 
-let no_tail_call =
-  toggle_flag(
-    ~names=["no-wasm-tail-call"],
-    ~doc="Disables tail-call optimization",
-    false,
-  );
-
 let strict_sequence =
   toggle_flag(
     ~names=["strict-sequence"],

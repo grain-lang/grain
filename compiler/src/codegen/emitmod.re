@@ -38,3 +38,28 @@ let emit_module = ({asm, signature}, outfile) => {
   | None => ()
   };
 };
+
+let emit_module_js = ({asm, signature}, outfile) => {
+  let outfile = Filepath.String.replace_extension(outfile, "mjs");
+  Fs_access.ensure_parent_directory_exists(outfile);
+  if (Config.debug^) {
+    let sig_string =
+      Sexplib.Sexp.to_string_hum(Cmi_format.sexp_of_cmi_infos(signature));
+    let sig_file = Filepath.String.replace_extension(outfile, "modsig");
+    let oc = open_out(sig_file);
+    output_string(oc, sig_string);
+    close_out(oc);
+  };
+  if (Config.wat^) {
+    Binaryen.Settings.set_colors_enabled(Grain_utils.Config.color_enabled^);
+    let asm_string = Binaryen.Module.write_text(asm);
+    let wat_file = Filepath.String.replace_extension(outfile, "wat");
+    let oc = open_out(wat_file);
+    output_string(oc, asm_string);
+    close_out(oc);
+  };
+  let encoded = Binaryen.Module.write_asmjs(asm);
+  let oc = Fs_access.open_file_for_writing(outfile);
+  output_string(oc, encoded);
+  close_out(oc);
+};

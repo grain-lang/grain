@@ -60,6 +60,7 @@
   "resolutions": {
     "ocaml": "phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017",
     "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#9c37a9e4814eb122d13fbe2402d4c1c6403f5d3f",
     "@opam/dune": "3.6.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",

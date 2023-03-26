@@ -182,7 +182,7 @@ let next_state = (~is_root_file=false, {cstate_desc, cstate_filename} as cs) => 
       Linked(Linkmod.statically_link_wasm_module(compiled))
     | Linked(linked) =>
       switch (cs.cstate_outfile) {
-      | Some(outfile) => Emitmod.emit_module(linked, outfile)
+      | Some(outfile) => Emitmod.emit_module_js(linked, outfile)
       | None => ()
       };
       Assembled;

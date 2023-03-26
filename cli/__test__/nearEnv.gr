@@ -1,4 +1,4 @@
-/* grainc-flags --no-gc --no-bulk-memory --no-wasm-tail-call */
+/* grainc-flags --no-gc --no-bulk-memory */
 module NearEnv
 
 provide foreign wasm storage_read: (

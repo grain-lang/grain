@@ -1,29 +1,16 @@
 const path = require("path");
-const runner = require("@grain/js-runner");
+const { execSync } = require("child_process");
 require("./pkg");
 
 module.exports = async function run(filename, options) {
-  let basePath = path.dirname(filename);
-  let includeDirs = [basePath, ...options.includeDirs, options.stdlib];
-  let locator = runner.defaultFileLocator(includeDirs);
-
-  let preopens = {};
-  options.dir?.forEach((preopen) => {
-    let [guestDir, hostDir = guestDir] = preopen.split("=");
-    preopens[guestDir] = hostDir;
+  execSync(`${process.execPath} ${path.join(__dirname, 'runner.mjs')} ${filename}`, {
+    stdio: "inherit",
+    env: {
+      __WASI_DIR: JSON.stringify(options.dir ?? []),
+      NODE_OPTIONS: [
+        `--experimental-loader=${path.join(__dirname, 'hook.mjs')}`,
+        "--no-warnings",
+      ].join(" "),
+    },
   });
-
-  let GrainRunner = runner.buildGrainRunner(locator, {
-    initialMemoryPages: options.initialMemoryPages,
-    maximumMemoryPages: options.maximumMemoryPages,
-    preopenDirs: preopens,
-  });
-
-  if (options.printOutput) {
-    let result = await GrainRunner.runFileUnboxed(filename);
-    await GrainRunner.ensureStringModule();
-    console.log(GrainRunner.grainValueToString(result));
-  } else {
-    await GrainRunner.runFile(filename);
-  }
 };

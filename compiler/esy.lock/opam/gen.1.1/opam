@@ -1,0 +1,31 @@
+opam-version: "2.0"
+maintainer: "simon.cruanes.2007@m4x.org"
+synopsis: "Iterators for OCaml, both restartable and consumable"
+license: "BSD-2-Clause"
+build: [
+  ["dune" "build" "@install" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
+  ["dune" "build" "@doc" "-p" name "-j" jobs] {with-doc}
+]
+depends: [
+  "dune" {>= "1.1"}
+  "seq"
+  "odoc" {with-doc}
+  "qcheck" {with-test}
+  "qtest" {with-test}
+  "ounit2" {with-test}
+  "ocaml" { >= "4.03.0" }
+]
+tags: [ "gen" "iterator" "iter" "fold" ]
+homepage: "https://github.com/c-cube/gen/"
+doc: "https://c-cube.github.io/gen/"
+bug-reports: "https://github.com/c-cube/gen/issues"
+dev-repo: "git+https://github.com/c-cube/gen.git"
+authors: ["Simon Cruanes" "ELLIOTTCABLE"]
+url {
+  src: "https://github.com/c-cube/gen/archive/v1.1.tar.gz"
+  checksum: [
+    "md5=fa8066511b693815fe659fd022f4c6bc"
+    "sha512=71a4b5c3666a7c11935398a78feea7383f61d2c549dfb96e324d40783ffa87b5ec492c5ec468803aabfb9b48e7d0ebaa30b24d2b974540afc7cca5feea3121c1"
+  ]
+}

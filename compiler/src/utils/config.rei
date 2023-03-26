@@ -86,10 +86,6 @@ let compilation_mode: ref(option(string));
 
 let statically_link: ref(bool);
 
-/** Disables tail-call optimizations */
-
-let no_tail_call: ref(bool);
-
 /** Whether non-terminal block expressions should be forced to return void */
 
 let strict_sequence: ref(bool);
