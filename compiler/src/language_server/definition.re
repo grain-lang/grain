@@ -112,87 +112,21 @@ let process =
       ~documents: Hashtbl.t(Protocol.uri, string),
       params: RequestParams.t,
     ) => {
-  Trace.log("Processing go to definition");
   switch (Hashtbl.find_opt(compiled_code, params.text_document.uri)) {
   | None => send_no_result(~id)
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
 
-    let loc_start: Lexing.position = {
-      pos_fname: "",
-      pos_lnum: 1,
-      pos_bol: 0,
-      pos_cnum: 0,
-    };
-
-    let loc_end: Lexing.position = {
-      pos_fname: "",
-      pos_lnum: 1,
-      pos_bol: 0,
-      pos_cnum: 1,
-    };
-
-    let target_location: Location.t = {loc_start, loc_end, loc_ghost: false};
-
-    let target_range = loc_to_range(target_location);
-
     switch (results) {
-    | [Expression(exp, desc), ..._] =>
-      // send_definition(
-      //   ~id,
-      //   ~range=loc_to_range(exp.exp_loc),
-      //   ~target_uri=params.text_document.uri,
-      //   target_range,
-      // )
-      Trace.log("is an expression");
-      switch (desc) {
-      | None =>
-        Trace.log("no expression desc");
-        send_no_result(~id);
-      | Some(d) =>
-        let lstart = d.val_loc.loc_start;
-        let fname = lstart.pos_fname;
-        let uri = Protocol.filename_to_uri(fname);
-
-        send_definition(
-          ~id,
-          ~range=loc_to_range(exp.exp_loc),
-          ~target_uri=uri,
-          loc_to_range(d.val_loc),
-        );
-      };
-    | [Pattern(pat), ..._] =>
-      // send_definition(
-      //   ~id,
-      //   ~range=loc_to_range(pat.pat_loc),
-      //   ~target_uri=params.text_document.uri,
-      //   target_range,
-      // )
-      Trace.log("is a pattern");
-      send_no_result(~id);
-    | [Type(ty), ..._] =>
-      // send_definition(
-      //   ~id,
-      //   ~range=loc_to_range(ty.ctyp_loc),
-      //   ~target_uri=params.text_document.uri,
-      //   target_range,
-      // )
-      Trace.log("is a type");
-
-      switch (ty.ctyp_type.desc) {
-      | TTyConstr(path, _, _) =>
-        Trace.log("is a TTyConstr");
-
-        let search = Env.find_type(path, program.env);
-        Trace.log(
-          print_loc_string("Type location from search", search.type_loc),
-        );
-
-        let loc = search.type_loc;
-        let lstart = loc.loc_start;
-        let fname = lstart.pos_fname;
-        let uri = Protocol.filename_to_uri(fname);
-        Trace.log("type uri is " ++ fname);
+    | [Value({definition}), ..._]
+    | [Pattern({definition}), ..._]
+    | [Type({definition}), ..._]
+    | [Declaration({definition}), ..._]
+    | [Module({definition}), ..._] =>
+      switch (definition) {
+      | None => send_no_result(~id)
+      | Some(loc) =>
+        let uri = Protocol.filename_to_uri(loc.loc_start.pos_fname);
 
         send_definition(
           ~id,
@@ -200,48 +134,8 @@ let process =
           ~target_uri=uri,
           loc_to_range(loc),
         );
-      | _ =>
-        Trace.log("Is not a TTyConstr");
-        send_no_result(~id);
-      };
-    | [Declaration(decl), ..._] =>
-      Trace.log("is a declaration");
-      send_definition(
-        ~id,
-        ~range=loc_to_range(decl.data_loc),
-        ~target_uri=params.text_document.uri,
-        target_range,
-      );
-    | [Module(path, loc), ..._] =>
-      // send_definition(
-      //   ~id,
-      //   ~range=loc_to_range(loc),
-      //   ~target_uri=params.text_document.uri,
-      //   target_range,
-      // )
-      Trace.log("is a module");
-      Trace.log(print_loc_string("Module location from search", loc));
-      let lstart = loc.loc_start;
-      let fname = lstart.pos_fname;
-      Trace.log("module loc uri is " ++ fname);
-
-      let modsearch = Env.find_module(path, None, program.env);
-
-      let loc = modsearch.md_loc;
-      Trace.log(print_loc_string("Module location from search", loc));
-      let fname = loc.loc_start.pos_fname;
-      Trace.log("fpath is  " ++ fname);
-      let uri = Protocol.filename_to_uri(fname);
-      send_definition(
-        ~id,
-        ~range=loc_to_range(loc),
-        ~target_uri=uri,
-        target_range,
-      );
-    | _ =>
-      Trace.log("nothing we process for definitions");
-
-      send_no_result(~id);
+      }
+    | _ => send_no_result(~id)
     };
   };
 };

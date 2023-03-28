@@ -137,11 +137,32 @@ module Make = (Ord: OrderableSegment) => {
 module type Sourcetree = {
   include SegmentTree with type point = Protocol.position;
   type node =
-    | Value(Env.t, Types.type_expr, Location.t)
-    | Type(Typedtree.core_type)
-    | Pattern(Typedtree.pattern)
-    | Declaration(Ident.t, Types.type_declaration, Location.t)
-    | Module(Path.t, Types.module_declaration, Location.t);
+    | Value({
+        env: Env.t,
+        value_type: Types.type_expr,
+        loc: Location.t,
+        definition: option(Location.t),
+      })
+    | Type({
+        core_type: Typedtree.core_type,
+        definition: option(Location.t),
+      })
+    | Pattern({
+        pattern: Typedtree.pattern,
+        definition: option(Location.t),
+      })
+    | Declaration({
+        ident: Ident.t,
+        decl: Types.type_declaration,
+        loc: Location.t,
+        definition: option(Location.t),
+      })
+    | Module({
+        path: Path.t,
+        decl: Types.module_declaration,
+        loc: Location.t,
+        definition: option(Location.t),
+      });
 
   type sourcetree = t(node);
 
@@ -195,11 +216,32 @@ module Sourcetree: Sourcetree = {
   });
 
   type node =
-    | Value(Env.t, Types.type_expr, Location.t)
-    | Type(Typedtree.core_type)
-    | Pattern(Typedtree.pattern)
-    | Declaration(Ident.t, Types.type_declaration, Location.t)
-    | Module(Path.t, Types.module_declaration, Location.t);
+    | Value({
+        env: Env.t,
+        value_type: Types.type_expr,
+        loc: Location.t,
+        definition: option(Location.t),
+      })
+    | Type({
+        core_type: Typedtree.core_type,
+        definition: option(Location.t),
+      })
+    | Pattern({
+        pattern: Typedtree.pattern,
+        definition: option(Location.t),
+      })
+    | Declaration({
+        ident: Ident.t,
+        decl: Types.type_declaration,
+        loc: Location.t,
+        definition: option(Location.t),
+      })
+    | Module({
+        path: Path.t,
+        decl: Types.module_declaration,
+        loc: Location.t,
+        definition: option(Location.t),
+      });
 
   type sourcetree = t(node);
 
@@ -245,53 +287,72 @@ module Sourcetree: Sourcetree = {
                   {txt: IdentExternal(IdentName({loc}), _)},
                   desc,
                 ) =>
+                let mod_decl = Env.find_module(path, None, exp.exp_env);
+                let mod_def = Some(mod_decl.md_loc);
                 segments :=
                   [
                     (
                       loc_to_interval(loc),
-                      Module(
+                      Module({
                         path,
-                        Env.find_module(path, None, exp.exp_env),
+                        decl: mod_decl,
                         loc,
-                      ),
+                        definition: mod_def,
+                      }),
                     ),
                     (
                       loc_to_interval(exp.exp_loc),
-                      Value(exp.exp_env, desc.val_type, exp.exp_loc),
+                      Value({
+                        env: exp.exp_env,
+                        value_type: desc.val_type,
+                        loc: exp.exp_loc,
+                        definition: Some(desc.val_loc),
+                      }),
                     ),
                     ...segments^,
-                  ]
+                  ];
               | TExpIdent(_, id, desc) =>
                 segments :=
                   [
                     (
                       loc_to_interval(exp.exp_loc),
-                      Value(
-                        exp.exp_env,
-                        process_value_description(
-                          id,
-                          exp.exp_type,
-                          desc.val_type,
-                        ),
-                        exp.exp_loc,
-                      ),
+                      Value({
+                        env: exp.exp_env,
+                        value_type:
+                          process_value_description(
+                            id,
+                            exp.exp_type,
+                            desc.val_type,
+                          ),
+                        loc: exp.exp_loc,
+                        definition: Some(desc.val_loc),
+                      }),
                     ),
                     ...segments^,
                   ]
               | TExpUse(module_, items) =>
+                let mod_decl =
+                  Env.find_module(module_.txt, None, exp.exp_env);
+                let mod_def = Some(mod_decl.md_loc);
                 segments :=
                   [
                     (
                       loc_to_interval(module_.loc),
-                      Module(
-                        module_.txt,
-                        Env.find_module(module_.txt, None, exp.exp_env),
-                        module_.loc,
-                      ),
+                      Module({
+                        path: module_.txt,
+                        decl: mod_decl,
+                        loc: module_.loc,
+                        definition: mod_def,
+                      }),
                     ),
                     (
                       loc_to_interval(exp.exp_loc),
-                      Value(exp.exp_env, exp.exp_type, exp.exp_loc),
+                      Value({
+                        env: exp.exp_env,
+                        value_type: exp.exp_type,
+                        loc: exp.exp_loc,
+                        definition: None,
+                      }),
                     ),
                     ...switch (items) {
                        | TUseAll => []
@@ -301,23 +362,30 @@ module Sourcetree: Sourcetree = {
                              switch (item) {
                              | Types.TUseType({name, declaration, loc}) => (
                                  loc_to_interval(loc),
-                                 Declaration(
-                                   Ident.create(name),
-                                   declaration,
+                                 Declaration({
+                                   ident: Ident.create(name),
+                                   decl: declaration,
                                    loc,
-                                 ),
+                                   definition: Some(declaration.type_loc),
+                                 }),
                                )
                              | TUseModule({name, declaration, loc}) => (
                                  loc_to_interval(loc),
-                                 Module(
-                                   PIdent(Ident.create(name)),
-                                   declaration,
+                                 Module({
+                                   path: PIdent(Ident.create(name)),
+                                   decl: declaration,
                                    loc,
-                                 ),
+                                   definition: Some(declaration.md_loc),
+                                 }),
                                )
                              | TUseValue({value, loc}) => (
                                  loc_to_interval(loc),
-                                 Value(exp.exp_env, value.val_type, loc),
+                                 Value({
+                                   env: exp.exp_env,
+                                   value_type: value.val_type,
+                                   loc,
+                                   definition: Some(value.val_loc),
+                                 }),
                                )
                              }
                            },
@@ -325,13 +393,18 @@ module Sourcetree: Sourcetree = {
                          )
                        },
                   ]
-                  @ segments^
+                  @ segments^;
               | _ =>
                 segments :=
                   [
                     (
                       loc_to_interval(exp.exp_loc),
-                      Value(exp.exp_env, exp.exp_type, exp.exp_loc),
+                      Value({
+                        env: exp.exp_env,
+                        value_type: exp.exp_type,
+                        loc: exp.exp_loc,
+                        definition: None,
+                      }),
                     ),
                     ...segments^,
                   ]
@@ -340,19 +413,68 @@ module Sourcetree: Sourcetree = {
           );
         };
         let enter_pattern = pat => {
+          let rec get_type_path = pat_type => {
+            Types.(
+              switch (pat_type.desc) {
+              | TTyConstr(path, _, _) => Some(path)
+              | TTyLink(inner)
+              | TTySubst(inner) => get_type_path(inner)
+              | _ => None
+              }
+            );
+          };
+          let definition =
+            switch (get_type_path(pat.pat_type)) {
+            | Some(path) =>
+              let decl = Env.find_type(path, pat.pat_env);
+              if (decl.type_loc == Location.dummy_loc) {
+                None;
+              } else {
+                Some(decl.type_loc);
+              };
+            | _ => None
+            };
           segments :=
-            [(loc_to_interval(pat.pat_loc), Pattern(pat)), ...segments^];
+            [
+              (
+                loc_to_interval(pat.pat_loc),
+                Pattern({pattern: pat, definition}),
+              ),
+              ...segments^,
+            ];
         };
         let enter_core_type = ty => {
+          let definition =
+            switch (ty.ctyp_desc) {
+            | TTyConstr(path, _, _) =>
+              let decl = Env.find_type(path, ty.ctyp_env);
+              if (decl.type_loc == Location.dummy_loc) {
+                None;
+              } else {
+                Some(decl.type_loc);
+              };
+            | _ => None
+            };
           segments :=
-            [(loc_to_interval(ty.ctyp_loc), Type(ty)), ...segments^];
+            [
+              (
+                loc_to_interval(ty.ctyp_loc),
+                Type({core_type: ty, definition}),
+              ),
+              ...segments^,
+            ];
         };
         let enter_data_declaration = decl => {
           segments :=
             [
               (
                 loc_to_interval(decl.data_loc),
-                Declaration(decl.data_id, decl.data_type, decl.data_loc),
+                Declaration({
+                  ident: decl.data_id,
+                  decl: decl.data_type,
+                  loc: decl.data_loc,
+                  definition: Some(decl.data_loc),
+                }),
               ),
               ...segments^,
             ];

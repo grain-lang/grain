@@ -155,19 +155,27 @@ let process =
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
-    | [Value(env, ty, loc), ..._] =>
-      send_hover(~id, ~range=loc_to_range(loc), value_lens(env, ty))
-    | [Pattern(pat), ..._] =>
-      send_hover(~id, ~range=loc_to_range(pat.pat_loc), pattern_lens(pat))
-    | [Type(ty), ..._] =>
-      send_hover(~id, ~range=loc_to_range(ty.ctyp_loc), type_lens(ty))
-    | [Declaration(ident, decl, loc), ..._] =>
+    | [Value({env, value_type, loc}), ..._] =>
+      send_hover(~id, ~range=loc_to_range(loc), value_lens(env, value_type))
+    | [Pattern({pattern}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=loc_to_range(pattern.pat_loc),
+        pattern_lens(pattern),
+      )
+    | [Type({core_type}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=loc_to_range(core_type.ctyp_loc),
+        type_lens(core_type),
+      )
+    | [Declaration({ident, decl, loc}), ..._] =>
       send_hover(
         ~id,
         ~range=loc_to_range(loc),
         declaration_lens(ident, decl),
       )
-    | [Module(path, decl, loc), ..._] =>
+    | [Module({path, decl, loc}), ..._] =>
       send_hover(~id, ~range=loc_to_range(loc), module_lens(decl))
     | _ => send_no_result(~id)
     };
