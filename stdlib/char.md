@@ -224,7 +224,7 @@ No other changes yet.
 (<) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is less than the second value by Unicode scalar value.
+Checks if the first character is less than the second character by Unicode scalar value.
 
 Parameters:
 
@@ -250,7 +250,7 @@ No other changes yet.
 (<=) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is less than or equal to the second value by Unicode scalar value.
+Checks if the first character is less than or equal to the second character by Unicode scalar value.
 
 Parameters:
 
@@ -276,7 +276,7 @@ No other changes yet.
 (>) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is greater than the second value by Unicode scalar value.
+Checks if the first character is greater than the second character by Unicode scalar value.
 
 Parameters:
 
@@ -302,7 +302,7 @@ No other changes yet.
 (>=) : (x: Char, y: Char) -> Bool
 ```
 
-Checks if the first value is greater than or equal to the second value by Unicode scalar value.
+Checks if the first character is greater than or equal to the second character by Unicode scalar value.
 
 Parameters:
 
