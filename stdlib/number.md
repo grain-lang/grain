@@ -549,31 +549,6 @@ Returns:
 |----|-----------|
 |`Number`|The negated operand|
 
-### Number.**isClose**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-isClose : (a: Number, b: Number, ?rel_tol: Number, ?abs_tol: Number) -> Bool
-```
-
-Computes the inverse sine of the given angle
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`x`|`Number`|A number between -1 and 1, representing the angle's sine value.|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Bool`|The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN|
-
 ### Number.**isFloat**
 
 <details disabled>
@@ -725,6 +700,36 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the value is infinite or `false` otherwise|
+
+### Number.**isClose**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isClose :
+  (a: Number, b: Number, ?relativeTolerance: Number,
+   ?absoluteTolerance: Number) -> Bool
+```
+
+Determines weather two values are considered close to each other using a relative and absolute tolerance.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`a`|`Number`|The first value|
+|`b`|`Number`|The second value|
+|`relativeTolerance`|`Option<Number>`|The relative tolerance to use|
+|`absoluteTolerance`|`Option<Number>`|The absolute tolerance to use|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the values are considered close to each other or `false` otherwise|
 
 ### Number.**parseInt**
 

@@ -1,12 +1,13 @@
 /*
  * ====================================================
+ * Applies to all functions with a comment referring here.
+ *
  * Copyright (C) 2004 by Sun Microsystems, Inc. All rights reserved.
  *
  * Permission to use, copy, modify, and distribute this
  * software is freely granted, provided that this notice
  * is preserved.
  *
- * Applies to all functions with a comment referring here.
  * ====================================================
  */
 
@@ -306,31 +307,6 @@ provide let abs = (x: Number) => if (0 > x) x * -1 else x
 provide let neg = (x: Number) => x * -1
 
 /**
- * Computes the inverse sine of the given angle
- *
- * @param x: A number between -1 and 1, representing the angle's sine value.
- * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, return NaN
- *
- * @since v0.6.0
- */
-provide let isClose = (a, b, rel_tol=1e-9, abs_tol=0.0) => {
-  if (a == Infinity && b == Infinity || a == -Infinity && b == -Infinity) {
-    true
-  } else if (
-    a == NaN ||
-    b == NaN ||
-    a == Infinity ||
-    b == Infinity ||
-    a == -Infinity ||
-    b == -Infinity
-  ) {
-    false
-  } else {
-    abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
-  }
-}
-
-/**
  * Checks if a number is a floating point value.
  *
  * @param x: The number to check
@@ -442,6 +418,29 @@ provide let isInfinite = (x: Number) => {
       false
     }
   } else {
+    false
+  }
+}
+
+/**
+ * Determines weather two values are considered close to each other using a relative and absolute tolerance.
+ *
+ * @param a: The first value
+ * @param b: The second value
+ * @param relativeTolerance: The relative tolerance to use
+ * @param absoluteTolerance: The absolute tolerance to use
+ *
+ * @returns `true` if the values are considered close to each other or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+provide let isClose = (a, b, relativeTolerance=1e-9, absoluteTolerance=0.0) => {
+  if (a == b) {
+    true
+  } else if (isFinite(a) && isFinite(b)) {
+    abs(a - b) <= max(relativeTolerance * max(abs(a), abs(b)), absoluteTolerance)
+  } else {
+    // NaN and infinities which were not equal
     false
   }
 }
