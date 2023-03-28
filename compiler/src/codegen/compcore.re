@@ -3220,24 +3220,11 @@ let compile_function =
           gensym_label("function_body"),
           exported
             ? [
-              Expression.If.make(
+              Expression.Call.make(
                 wasm_mod,
-                Expression.Unary.make(
-                  wasm_mod,
-                  Op.eq_z_int32,
-                  Expression.Global_get.make(
-                    wasm_mod,
-                    get_wasm_imported_name(grain_env_mod, program_started),
-                    Type.int32,
-                  ),
-                ),
-                Expression.Call.make(
-                  wasm_mod,
-                  get_wasm_imported_name(grain_env_mod, program_start),
-                  [],
-                  Type.none,
-                ),
-                Expression.Null.make(),
+                get_wasm_imported_name(grain_env_mod, program_start),
+                [],
+                Type.none,
               ),
               body,
             ]

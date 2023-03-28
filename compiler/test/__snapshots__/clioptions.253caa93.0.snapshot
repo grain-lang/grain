@@ -38,12 +38,7 @@ cli_options › call_start
   (local $6 f64)
   (local $7 i32)
   (block $function_body.6
-   (if
-    (i32.eqz
-     (global.get $programStarted_0)
-    )
-    (call $programStart_0)
-   )
+   (call $programStart_0)
    (block $compile_block.5
     (block $compile_store.3
      (local.set $7

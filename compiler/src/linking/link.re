@@ -1,5 +1,6 @@
 open Grain_codegen;
 open Compmod;
+open Comp_utils;
 open Grain_typed;
 open Grain_utils;
 open Cmi_format;
@@ -761,23 +762,33 @@ let link_all = (linked_mod, dependencies, signature) => {
       Type.none,
       Type.none,
       [||],
-      Expression.Block.make(
-        linked_mod,
-        gensym("start"),
-        Config.call_start^
-          ? [
-            Expression.Global_set.make(
+      Config.call_start^
+        ? Expression.If.make(
+            linked_mod,
+            Expression.Unary.make(
               linked_mod,
-              "programStarted",
-              Expression.Const.make(
+              Op.eq_z_int32,
+              Expression.Global_get.make(
                 linked_mod,
-                Literal.int32(Int32.of_int(1)),
+                "programStarted",
+                Type.int32,
               ),
             ),
-            ...starts,
-          ]
-          : starts,
-      ),
+            Expression.Block.make(
+              linked_mod,
+              gensym("start"),
+              [
+                Expression.Global_set.make(
+                  linked_mod,
+                  "programStarted",
+                  Expression.Const.make(linked_mod, const_int32(1)),
+                ),
+                ...starts,
+              ],
+            ),
+            Expression.Null.make(),
+          )
+        : Expression.Block.make(linked_mod, gensym("start"), starts),
     );
 
   if (Grain_utils.Config.use_start_section^) {
