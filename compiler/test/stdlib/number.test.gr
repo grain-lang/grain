@@ -719,10 +719,26 @@ assert Number.isClose(
   -0.746077811411067326,
   relativeTolerance=1e-9
 )
-assert Number.isClose(Number.asin(1.0), 1.57079632679489656, relativeTolerance=1e-9)
-assert Number.isClose(Number.asin(1), 1.57079632679489656, relativeTolerance=1e-9)
-assert Number.isClose(Number.asin(-1.0), -1.57079632679489656, relativeTolerance=1e-9)
-assert Number.isClose(Number.asin(-1), -1.57079632679489656, relativeTolerance=1e-9)
+assert Number.isClose(
+  Number.asin(1.0),
+  1.57079632679489656,
+  relativeTolerance=1e-9
+)
+assert Number.isClose(
+  Number.asin(1),
+  1.57079632679489656,
+  relativeTolerance=1e-9
+)
+assert Number.isClose(
+  Number.asin(-1.0),
+  -1.57079632679489656,
+  relativeTolerance=1e-9
+)
+assert Number.isClose(
+  Number.asin(-1),
+  -1.57079632679489656,
+  relativeTolerance=1e-9
+)
 assert Number.asin(0) == 0.0
 assert Number.asin(0.0) == 0.0
 assert Number.asin(-0.0) == -0.0
@@ -793,7 +809,11 @@ assert Number.isClose(
   -0.386186417755213118,
   relativeTolerance=1e-9
 )
-assert Number.isClose(Number.atan(1/2), 0.4636476090008061, relativeTolerance=1e-9)
+assert Number.isClose(
+  Number.atan(1/2),
+  0.4636476090008061,
+  relativeTolerance=1e-9
+)
 assert Number.isClose(
   Number.atan(0.77415229659130369),
   0.658780243165382196,
@@ -811,8 +831,16 @@ assert Number.isClose(Number.atan(-1), Number.pi / -4, relativeTolerance=1e-9)
 assert Number.atan(0) == 0.0
 assert Number.atan(0.0) == 0.0
 assert Number.atan(-0.0) == -0.0
-assert Number.isClose(Number.atan(Infinity), Number.pi / 2, relativeTolerance=1e-9)
-assert Number.isClose(Number.atan(-Infinity), Number.pi / -2, relativeTolerance=1e-9)
+assert Number.isClose(
+  Number.atan(Infinity),
+  Number.pi / 2,
+  relativeTolerance=1e-9
+)
+assert Number.isClose(
+  Number.atan(-Infinity),
+  Number.pi / -2,
+  relativeTolerance=1e-9
+)
 assert Number.isNaN(Number.atan(NaN))
 
 // Number.gamma
