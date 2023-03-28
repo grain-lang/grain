@@ -1027,7 +1027,11 @@ let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
     [slice(chunkStartIndex, arr)]
   } else {
     // create the first chunk of the given array
-    let firstChunk = slice(chunkStartIndex, end=chunkStartIndex + chunkSize, arr)
+    let firstChunk = slice(
+      chunkStartIndex,
+      end=chunkStartIndex + chunkSize,
+      arr
+    )
     let restChunks = _chunk(
       chunkSize,
       allowPartial,
