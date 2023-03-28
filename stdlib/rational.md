@@ -128,7 +128,7 @@ No other changes yet.
 toIntegerRatio : (x: Rational) -> (Number, Number)
 ```
 
-Gets the numerator and denominator of the rational as a tuple
+Gets the numerator and denominator of the rational as a tuple.
 
 Parameters:
 
@@ -153,7 +153,7 @@ No other changes yet.
 fromIntegerRatio : (numerator: Number, denominator: Number) -> Rational
 ```
 
-Makes a rational from the numerator and denominator
+Creates a rational from a numerator and denominator.
 
 Parameters:
 

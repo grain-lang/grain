@@ -25,20 +25,19 @@ from Numbers use {
 provide { fromNumber, toNumber, numerator, denominator }
 
 /**
- * Gets the numerator and denominator of the rational as a tuple
+ * Gets the numerator and denominator of the rational as a tuple.
  *
  * @param x: The rational to convert
  * @returns The numerator and denominator of the rational
  *
  * @since v0.6.0
  */
-@unsafe
-provide let toIntegerRatio = (x: Rational) => {
+provide let toIntegerRatio = x => {
   (numerator(x), denominator(x))
 }
 
 /**
- * Makes a rational from the numerator and denominator
+ * Creates a rational from a numerator and denominator.
  *
  * @param numerator: The numerator
  * @param denominator: The denominator
