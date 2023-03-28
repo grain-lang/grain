@@ -199,11 +199,11 @@ provide let reset = buffer => {
 provide let truncate = (length, buffer) => {
   if (length < 0 || length > buffer.len) throw IndexOutOfBounds
 
-  from WasmI32 use { add as (+) }
+  from WasmI32 use { add as (+), sub as (-) }
   let src = WasmI32.fromGrain(buffer.data)
   let size = getSize(src)
   let off = coerceNumberToWasmI32(length)
-  let ret = Memory.fill(src + _VALUE_OFFSET + off, 0n, size)
+  let ret = Memory.fill(src + _VALUE_OFFSET + off, 0n, size - off)
   buffer.len = length
 }
 
