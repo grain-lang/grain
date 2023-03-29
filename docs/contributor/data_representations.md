@@ -6,7 +6,7 @@ There are two places that Grain data can live—on the stack or on the heap. All
 
 Values in Grain are tagged. This means that we reserve a number of bits to signal the type of the value. Conveniently, 32-bit pointers are multiples of 8, so we know that anything that isn't a multiple of 8 isn't a pointer. This leaves us with 7 possible tag values, as long as the data can fit into 29 bits (with one exception, which you can see in the section on numbers). Normally, since Grain is a statically typed language, we wouldn't need to tag the values because the types are guaranteed at compile-time. However, since our values are tagged, at runtime we can determine the type of a value. This is what allows us to have generic `print` and `==` functions that work for any data type—even user defined types.
 
-You can find all of the tags in the code in [codegen/value_tags.re](https://github.com/grain-lang/grain/blob/master/compiler/src/codegen/value_tags.re), but they'll be broken down here.
+You can find all of the tags in the code in [codegen/value_tags.re](https://github.com/grain-lang/grain/blob/main/compiler/src/codegen/value_tags.re), but they'll be broken down here.
 
 ### Stack tags
 
