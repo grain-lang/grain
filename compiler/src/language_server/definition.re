@@ -17,15 +17,6 @@ module RequestParams = {
   };
 };
 
-// // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#location
-// module ResponseResult = {
-//   [@deriving yojson]
-//   type t = {
-//     uri: Protocol.uri,
-//     range: Protocol.range,
-//   };
-// };
-
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#locationLink
 
 module ResponseResult = {
@@ -62,25 +53,6 @@ let send_definition =
       target_selection_range: target_range,
     }),
   );
-};
-
-// copied from hover, make a util function
-let loc_to_range = (pos: Location.t): Protocol.range => {
-  let (_, startline, startchar, _) =
-    Locations.get_raw_pos_info(pos.loc_start);
-  let (_, endline, endchar) =
-    Grain_parsing.Location.get_pos_info(pos.loc_end);
-
-  {
-    range_start: {
-      line: startline - 1,
-      character: startchar,
-    },
-    range_end: {
-      line: endline - 1,
-      character: endchar,
-    },
-  };
 };
 
 let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
@@ -130,9 +102,9 @@ let process =
 
         send_definition(
           ~id,
-          ~range=loc_to_range(loc),
+          ~range=Protocol.loc_to_range(loc),
           ~target_uri=uri,
-          loc_to_range(loc),
+          Protocol.loc_to_range(loc),
         );
       }
     | _ => send_no_result(~id)

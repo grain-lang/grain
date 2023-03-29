@@ -32,23 +32,23 @@ module ResponseResult = {
   };
 };
 
-let loc_to_range = (pos: Location.t): Protocol.range => {
-  let (_, startline, startchar, _) =
-    Locations.get_raw_pos_info(pos.loc_start);
-  let (_, endline, endchar) =
-    Grain_parsing.Location.get_pos_info(pos.loc_end);
+// let loc_to_range = (pos: Location.t): Protocol.range => {
+//   let (_, startline, startchar, _) =
+//     Locations.get_raw_pos_info(pos.loc_start);
+//   let (_, endline, endchar) =
+//     Grain_parsing.Location.get_pos_info(pos.loc_end);
 
-  {
-    range_start: {
-      line: startline - 1,
-      character: startchar,
-    },
-    range_end: {
-      line: endline - 1,
-      character: endchar,
-    },
-  };
-};
+//   {
+//     range_start: {
+//       line: startline - 1,
+//       character: startchar,
+//     },
+//     range_end: {
+//       line: endline - 1,
+//       character: endchar,
+//     },
+//   };
+// };
 
 // We need to use the "grain-type" markdown syntax to have correct coloring on hover items
 let grain_type_code_block = Markdown.code_block(~syntax="grain-type");
@@ -156,27 +156,31 @@ let process =
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
     | [Value({env, value_type, loc}), ..._] =>
-      send_hover(~id, ~range=loc_to_range(loc), value_lens(env, value_type))
+      send_hover(
+        ~id,
+        ~range=Protocol.loc_to_range(loc),
+        value_lens(env, value_type),
+      )
     | [Pattern({pattern}), ..._] =>
       send_hover(
         ~id,
-        ~range=loc_to_range(pattern.pat_loc),
+        ~range=Protocol.loc_to_range(pattern.pat_loc),
         pattern_lens(pattern),
       )
     | [Type({core_type}), ..._] =>
       send_hover(
         ~id,
-        ~range=loc_to_range(core_type.ctyp_loc),
+        ~range=Protocol.loc_to_range(core_type.ctyp_loc),
         type_lens(core_type),
       )
     | [Declaration({ident, decl, loc}), ..._] =>
       send_hover(
         ~id,
-        ~range=loc_to_range(loc),
+        ~range=Protocol.loc_to_range(loc),
         declaration_lens(ident, decl),
       )
     | [Module({path, decl, loc}), ..._] =>
-      send_hover(~id, ~range=loc_to_range(loc), module_lens(decl))
+      send_hover(~id, ~range=Protocol.loc_to_range(loc), module_lens(decl))
     | _ => send_no_result(~id)
     };
   };

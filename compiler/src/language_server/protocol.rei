@@ -1,4 +1,5 @@
 open Grain_utils;
+open Grain_diagnostics;
 
 [@deriving yojson]
 type version;
@@ -174,3 +175,5 @@ let notification: (~method: string, Yojson.Safe.t) => unit;
 
 let uri_to_filename: uri => string;
 let filename_to_uri: string => uri;
+
+let loc_to_range: Grain_parsing.Location.t => range;
