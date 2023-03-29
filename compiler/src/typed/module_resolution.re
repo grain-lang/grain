@@ -552,8 +552,15 @@ let report_error = ppf =>
         "was not found",
       );
     }
-  | No_module_file(_, m, None) =>
-    fprintf(ppf, "Missing file for module %s", m)
+  | No_module_file(_, m, None) => {
+      let m =
+        if (String.ends_with(~suffix=".gr", m)) {
+          m ++ " did you mean " ++ String.sub(m, 0, String.length(m) - 3);
+        } else {
+          m;
+        };
+      fprintf(ppf, "Missing file for module %s", m);
+    }
   | No_module_file(_, m, Some(msg)) =>
     fprintf(ppf, "Missing file for module %s: %s", m, msg);
 

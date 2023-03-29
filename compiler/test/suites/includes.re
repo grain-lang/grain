@@ -137,6 +137,11 @@ describe("includes", ({test, testSkip}) => {
     "include \"foo\" as Foo; 2",
     "Missing file for module foo",
   );
+  assertCompileError(
+    "include_missing_file_gr",
+    "include \"foo.gr\" as Foo; 2",
+    "Missing file for module foo.gr did you mean foo",
+  );
   /* Unbound module tests */
   assertCompileError(
     "test_unbound_module",
