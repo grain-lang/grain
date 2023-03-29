@@ -32,24 +32,6 @@ module ResponseResult = {
   };
 };
 
-// let loc_to_range = (pos: Location.t): Protocol.range => {
-//   let (_, startline, startchar, _) =
-//     Locations.get_raw_pos_info(pos.loc_start);
-//   let (_, endline, endchar) =
-//     Grain_parsing.Location.get_pos_info(pos.loc_end);
-
-//   {
-//     range_start: {
-//       line: startline - 1,
-//       character: startchar,
-//     },
-//     range_end: {
-//       line: endline - 1,
-//       character: endchar,
-//     },
-//   };
-// };
-
 // We need to use the "grain-type" markdown syntax to have correct coloring on hover items
 let grain_type_code_block = Markdown.code_block(~syntax="grain-type");
 // Used for module hovers
