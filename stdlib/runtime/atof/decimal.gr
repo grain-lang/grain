@@ -1,5 +1,3 @@
-/* grainc-flags --no-pervasives */
-
 // This module was based on Rust's dec2flt
 // https://github.com/rust-lang/rust/blob/1cbc45942d5c0f6eb5d94e3b10762ba541958035/library/core/src/num/dec2flt/decimal.rs
 // Rust's MIT license is provided below:
@@ -28,6 +26,7 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
 */
+@noPervasives
 module Decimal
 
 from "runtime/unsafe/wasmi32" include WasmI32

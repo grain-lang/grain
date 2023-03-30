@@ -12,6 +12,7 @@ describe("comments", ({test}) => {
     "comment_parse_1",
     "// Test\nmodule Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -22,12 +23,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_2",
     "/* Test */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -38,12 +41,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_block_multiline_trim",
     "/* Test\n    Weird indent\n  Normal indent */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -54,12 +59,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_block_multiline_trim2",
     "/* Test\r\n    Weird indent\r\n  Normal indent */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -70,12 +77,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_3",
     "/** Test */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -86,12 +95,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_doc_multiline_trim_all_same_indent",
     "/**\n  Test\n  Weird indent\n  Normal indent */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -102,12 +113,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_doc_multiline_trim_keeps_differnt_indent",
     "/** Test\n    Weird indent\n  Normal indent */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -118,6 +131,7 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
@@ -125,6 +139,7 @@ describe("comments", ({test}) => {
     // Note: There are explicit tab characters in this string to test them
     "/**\n		Test\r\n	 Weird indent\r\n  Normal indent */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -135,12 +150,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_4",
     "#!/bin/grain\nmodule Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -151,12 +168,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_block_deasterisk",
     "/* Test\n* no space before\n * space before\n  * tab before\n *no space after */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -167,12 +186,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_doc_deasterisk",
     "/** Test\n* no space before\n * space before\n  * tab before\n *no space after */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -183,12 +204,14 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertParse(
     "comment_parse_doc_deasterisk2",
     "/** Test\n* no space before\n * space before\n  * tab before\n * trailing space after */module Test",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name: Location.mknoloc("Test"),
       statements: [],
       comments: [
@@ -199,6 +222,7 @@ describe("comments", ({test}) => {
         }),
       ],
       prog_loc: Location.dummy_loc,
+      prog_core_loc: Location.dummy_loc,
     },
   );
   assertCompileError(

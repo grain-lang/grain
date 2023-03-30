@@ -668,11 +668,7 @@ let get_components = c =>
   | Some(c) => c
   };
 
-type compilation_mode =
-  | Normal /* Standard compilation with regular bells and whistles */
-  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
-
-let current_unit = ref(("", "", Normal));
+let current_unit = ref(("", "", Grain_utils.Config.Normal));
 
 let set_unit = unit => current_unit := unit;
 

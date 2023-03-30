@@ -91,6 +91,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
     "char_loc_simple",
     "module Test\n'a'",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -105,12 +106,14 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       ],
       comments: [],
       prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (2, 15, 12)),
+      prog_core_loc: mk_loc("char_loc_simple", (1, 0, 0), (2, 15, 12)),
     },
   );
   assertParseWithLocs(
     "char_loc_code",
     "module Test\n'\\u{1F3F4}'",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -125,12 +128,14 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       ],
       comments: [],
       prog_loc: mk_loc("char_loc_code", (1, 0, 0), (2, 23, 12)),
+      prog_core_loc: mk_loc("char_loc_code", (1, 0, 0), (2, 23, 12)),
     },
   );
   assertParseWithLocs(
     "char_loc_emoji",
     "module Test\n'💯'",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -145,6 +150,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       ],
       comments: [],
       prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (2, 15, 12)),
+      prog_core_loc: mk_loc("char_loc_emoji", (1, 0, 0), (2, 15, 12)),
     },
   );
 });

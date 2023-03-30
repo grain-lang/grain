@@ -337,11 +337,10 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
       };
       // For now, we only raise the error inside of functions.
       if (exp_is_wasm_unsafe(exp)
-          && !(
-               Grain_utils.Config.no_gc^
-               || Grain_utils.Config.compilation_mode^ == Some("runtime")
-               || is_unsafe()
-             )) {
+          && !
+               Grain_utils.Config.(
+                 no_gc^ || compilation_mode^ == Runtime || is_unsafe()
+               )) {
         raise(Error(exp_loc, WasmOutsideDisableGc));
       };
     };

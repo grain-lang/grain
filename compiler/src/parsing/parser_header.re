@@ -89,13 +89,47 @@ let make_include_alias = ident => {
   };
 };
 
-let make_program = (~loc, module_name, statements) => {
+let make_program = (~loc, ~core_loc, ~attributes, module_name, statements) => {
   // Ensure the program loc starts at the beginning of the file even if
   // there's whitespace or comments
   let loc_start = {...loc.loc_start, pos_lnum: 1, pos_cnum: 0, pos_bol: 0};
   let prog_loc = {...loc, loc_start};
+  let (no_pervasives, runtime_mode) =
+    List.fold_left(
+      ((no_pervasives, runtime_mode), attr) => {
+        switch (attr) {
+        | Asttypes.{attr_name: {txt: "noPervasives"}, attr_args: []} => (
+            Some(attr),
+            runtime_mode,
+          )
+        | {attr_name: {txt: "runtimeMode"}, attr_args: []} => (
+            no_pervasives,
+            Some(attr),
+          )
+        | {attr_name: {loc}} =>
+          raise(
+            SyntaxError(
+              loc,
+              "@noPervasives and @runtimeMode are the only valid top-level module attributes.",
+            ),
+          )
+        }
+      },
+      (None, None),
+      attributes,
+    );
 
-  {module_name, statements, comments: [], prog_loc};
+  {
+    attributes: {
+      no_pervasives,
+      runtime_mode,
+    },
+    module_name,
+    statements,
+    comments: [],
+    prog_loc,
+    prog_core_loc: core_loc,
+  };
 };
 
 let parse_program = (program, token, lexbuf) => {

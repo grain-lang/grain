@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=runtime */
+@runtimeMode
 module Constants
 
 // Signed/Unsigned Min/Max Constants

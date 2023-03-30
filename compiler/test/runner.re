@@ -215,6 +215,12 @@ let doc = (file, arguments) => {
 
 let module_header = "module Test; ";
 
+let create_module_attributes = attributes =>
+  Grain_parsing.Parsetree.(
+    (Option.is_some(attributes.no_pervasives) ? "@noPervasives\n" : "")
+    ++ (Option.is_some(attributes.runtime_mode) ? "@runtimeMode\n" : "")
+  );
+
 let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
@@ -242,18 +248,22 @@ let makeFilesizeRunner = (test, ~config_fn=?, name, prog, size) => {
   });
 };
 
-let makeSnapshotFileRunner = (test, name, filename) => {
-  test(
-    name,
-    ({expect}) => {
+let makeSnapshotFileRunner = (test, ~config_fn=?, name, filename) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
       let infile = grainfile(filename);
       let outfile = wasmfile(name);
       ignore @@
-      compile_file(~hook=stop_after_object_file_emitted, infile, outfile);
+      compile_file(
+        ~hook=stop_after_object_file_emitted,
+        ~config_fn?,
+        infile,
+        outfile,
+      );
       let file = watfile(name);
       expect.file(file).toMatchSnapshot();
-    },
-  );
+    })
+  });
 };
 
 let makeCompileErrorRunner = (test, name, prog, msg) => {
@@ -295,10 +305,25 @@ let makeNoWarningRunner = (test, name, prog) => {
 };
 
 let makeRunner =
-    (test, ~num_pages=?, ~config_fn=?, ~extra_args=?, name, prog, expected) => {
+    (
+      test,
+      ~num_pages=?,
+      ~config_fn=?,
+      ~extra_args=?,
+      ~attributes=Test_utils.default_module_attributes,
+      name,
+      prog,
+      expected,
+    ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
+      ignore @@
+      compile(
+        ~num_pages?,
+        ~config_fn?,
+        name,
+        create_module_attributes(attributes) ++ module_header ++ prog,
+      );
       let (result, _) = run(~num_pages?, ~extra_args?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
@@ -442,8 +467,11 @@ let makeParseRunner =
           };
         };
       let strip_locs =
-          ({module_name, statements, comments}: Parsetree.parsed_program) =>
+          (
+            {attributes, module_name, statements, comments}: Parsetree.parsed_program,
+          ) =>
         Parsetree.{
+          attributes,
           module_name: {
             ...module_name,
             loc: Location.dummy_loc,
@@ -455,6 +483,7 @@ let makeParseRunner =
             ),
           comments: List.map(comment_loc_stripper, comments),
           prog_loc: Location.dummy_loc,
+          prog_core_loc: Location.dummy_loc,
         };
       let parsed =
         if (keep_locs) {

@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=runtime */
+@runtimeMode
 module Memory
 
 from "runtime/gc" include GC

@@ -9,16 +9,33 @@ describe("memory_base", ({test, testSkip}) => {
   // Non-snapshots since we want to track functional issues.
   assertFileRun("basecase", "memoryBase/basecase", "HelloWorld\n");
   assertFileRun(
+    ~config_fn=() => {Grain_utils.Config.memory_base := Some(0x400)},
     "same_as_default",
     "memoryBase/sameAsDefault",
     "HelloWorld\n",
   );
-  assertFileRun("zero", "memoryBase/zero", "HelloWorld\n");
   assertFileRun(
+    ~config_fn=() => {Grain_utils.Config.memory_base := Some(0x0)},
+    "zero",
+    "memoryBase/zero",
+    "HelloWorld\n",
+  );
+  assertFileRun(
+    ~config_fn=() => {Grain_utils.Config.memory_base := Some(0x800)},
     "slightly_higher",
     "memoryBase/slightlyHigher",
     "HelloWorld\n",
   );
-  assertFileRun("very_large", "memoryBase/veryLarge", "HelloWorld\n");
-  assertFileRun("asserts", "memoryBase/asserts", "");
+  assertFileRun(
+    ~config_fn=() => {Grain_utils.Config.memory_base := Some(0x110000)},
+    "very_large",
+    "memoryBase/veryLarge",
+    "HelloWorld\n",
+  );
+  assertFileRun(
+    ~config_fn=() => {Grain_utils.Config.memory_base := Some(0x110000)},
+    "asserts",
+    "memoryBase/asserts",
+    "",
+  );
 });

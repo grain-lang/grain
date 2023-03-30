@@ -1,4 +1,3 @@
-/* grainc-flags --memory-base 0x110000 */
 module Asserts
 
 from "runtime/unsafe/wasmi32" include WasmI32

@@ -39,3 +39,6 @@ let mk_loc =
     loc_ghost: false,
   };
 };
+
+let default_module_attributes =
+  Grain_parsing.Parsetree.{no_pervasives: None, runtime_mode: None};

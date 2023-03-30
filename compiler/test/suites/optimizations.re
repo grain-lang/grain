@@ -22,42 +22,34 @@ describe("optimizations", ({test, testSkip}) => {
         expected: Grain_middle_end.Anftree.anf_expression,
       ) => {
     test(outfile, ({expect}) => {
-      Grain_utils.Config.preserve_all_configs(() => {
-        Config.with_config(
-          Config.empty,
-          () => {
-            switch (config_fn) {
-            | None => ()
-            | Some(fn) => fn()
-            };
-            open Grain_middle_end;
-            let final_anf =
-              Anf_utils.clear_locations @@
-              compile_string_to_final_anf(
-                outfile,
-                "module Test; " ++ program_str,
-              );
-            let saved_disabled = Grain_typed.Ident.disable_stamps^;
-            let (result, expected) =
-              try(
-                {
-                  Grain_typed.Ident.disable_stamps := true;
-                  let result =
-                    Sexplib.Sexp.to_string_hum @@
-                    Anftree.sexp_of_anf_expression(final_anf.body);
-                  let expected =
-                    Sexplib.Sexp.to_string_hum @@
-                    Anftree.sexp_of_anf_expression(expected);
-                  (result, expected);
-                }
-              ) {
-              | e =>
-                Grain_typed.Ident.disable_stamps := saved_disabled;
-                raise(e);
-              };
-            expect.string(result).toEqual(expected);
-          },
-        )
+      Config.preserve_all_configs(() => {
+        switch (config_fn) {
+        | None => ()
+        | Some(fn) => fn()
+        };
+        open Grain_middle_end;
+        let final_anf =
+          Anf_utils.clear_locations @@
+          compile_string_to_final_anf(outfile, "module Test; " ++ program_str);
+        let saved_disabled = Grain_typed.Ident.disable_stamps^;
+        let (result, expected) =
+          try(
+            {
+              Grain_typed.Ident.disable_stamps := true;
+              let result =
+                Sexplib.Sexp.to_string_hum @@
+                Anftree.sexp_of_anf_expression(final_anf.body);
+              let expected =
+                Sexplib.Sexp.to_string_hum @@
+                Anftree.sexp_of_anf_expression(expected);
+              (result, expected);
+            }
+          ) {
+          | e =>
+            Grain_typed.Ident.disable_stamps := saved_disabled;
+            raise(e);
+          };
+        expect.string(result).toEqual(expected);
       })
     });
   };
@@ -414,8 +406,8 @@ describe("optimizations", ({test, testSkip}) => {
   // Removal of manual memory management calls
   assertAnf(
     "test_manual_gc_calls_removed.gr",
+    ~config_fn=() => {Grain_utils.Config.no_gc := true},
     {|
-      /* grainc-flags --no-gc */
       from "runtime/unsafe/memory" include Memory
       from "runtime/unsafe/wasmi32" include WasmI32
       @disableGC

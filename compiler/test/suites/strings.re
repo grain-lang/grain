@@ -23,6 +23,7 @@ describe("strings", ({test, testSkip}) => {
     "string_parse_dqs1",
     "module Test; \"foo\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -36,12 +37,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_dqs1", (1, 0, 0), (1, 18, 0)),
+      prog_core_loc: mk_loc("string_parse_dqs1", (1, 0, 0), (1, 18, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_dqs2",
     "module Test; \"bar\\nbaz\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -55,12 +58,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_dqs2", (1, 0, 0), (1, 23, 0)),
+      prog_core_loc: mk_loc("string_parse_dqs2", (1, 0, 0), (1, 23, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_sqs1",
     "module Test; \"foobar\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -74,12 +79,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_sqs1", (1, 0, 0), (1, 21, 0)),
+      prog_core_loc: mk_loc("string_parse_sqs1", (1, 0, 0), (1, 21, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_sqs2",
     "module Test; \"bar\\u{41}\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -93,12 +100,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_sqs2", (1, 0, 0), (1, 24, 0)),
+      prog_core_loc: mk_loc("string_parse_sqs2", (1, 0, 0), (1, 24, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_sqs3",
     "module Test; \"bar\\x41\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -112,12 +121,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_sqs3", (1, 0, 0), (1, 22, 0)),
+      prog_core_loc: mk_loc("string_parse_sqs3", (1, 0, 0), (1, 22, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_sqs4",
     "module Test; \"bar\\101\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -131,12 +142,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_sqs4", (1, 0, 0), (1, 22, 0)),
+      prog_core_loc: mk_loc("string_parse_sqs4", (1, 0, 0), (1, 22, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_sqs5",
     "module Test; \"bar\\u0041\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -150,12 +163,14 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_sqs5", (1, 0, 0), (1, 24, 0)),
+      prog_core_loc: mk_loc("string_parse_sqs5", (1, 0, 0), (1, 24, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_emoji_escape",
     "module Test; \"😂\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -169,12 +184,15 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_emoji_escape", (1, 0, 0), (1, 16, 0)),
+      prog_core_loc:
+        mk_loc("string_parse_emoji_escape", (1, 0, 0), (1, 16, 0)),
     },
   );
   assertParseWithLocs(
     "string_parse_emoji_literal",
     "module Test; \"💯\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -188,6 +206,8 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_parse_emoji_literal", (1, 0, 0), (1, 16, 0)),
+      prog_core_loc:
+        mk_loc("string_parse_emoji_literal", (1, 0, 0), (1, 16, 0)),
     },
   );
   /* String parse locations */
@@ -195,6 +215,7 @@ describe("strings", ({test, testSkip}) => {
     "string_loc_single_line",
     "module Test\n\"foo\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -208,12 +229,15 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_loc_single_line", (1, 0, 0), (2, 17, 12)),
+      prog_core_loc:
+        mk_loc("string_loc_single_line", (1, 0, 0), (2, 17, 12)),
     },
   );
   assertParseWithLocs(
     "string_loc_multi_line",
     "module Test\n\"foo\nbar\nbaz\nqux\nquux\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -227,12 +251,15 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc: mk_loc("string_loc_multi_line", (1, 0, 0), (6, 34, 29)),
+      prog_core_loc:
+        mk_loc("string_loc_multi_line", (1, 0, 0), (6, 34, 29)),
     },
   );
   assertParseWithLocs(
     "string_loc_single_line_emoji",
     "module Test\n\"💯\"",
     {
+      attributes: Grain_tests.Test_utils.default_module_attributes,
       module_name:
         Location.mkloc(
           "Test",
@@ -251,6 +278,8 @@ describe("strings", ({test, testSkip}) => {
       ],
       comments: [],
       prog_loc:
+        mk_loc("string_loc_single_line_emoji", (1, 0, 0), (2, 15, 12)),
+      prog_core_loc:
         mk_loc("string_loc_single_line_emoji", (1, 0, 0), (2, 15, 12)),
     },
   );

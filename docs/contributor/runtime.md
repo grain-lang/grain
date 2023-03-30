@@ -1,6 +1,6 @@
 # The Grain Runtime
 
-When we speak of the Grain runtime, we largely mean the memory allocator, garbage collector, and anything else that needs to exist before these faculties are available (those are the modules in the stdlib/runtime folder). These are essential to all Grain programs, and some care must be taken to compile them. For that reason, these modules are compiled with the `--compilation-mode=runtime` flag. In this mode, there is no access to Pervasives and all allocations happen in the runtime heap.
+When we speak of the Grain runtime, we largely mean the memory allocator, garbage collector, and anything else that needs to exist before these faculties are available (those are the modules in the stdlib/runtime folder). These are essential to all Grain programs, and some care must be taken to compile them. For that reason, these modules are compiled with the `@runtimeMode` module attribute. In this mode, there is no access to Pervasives and all allocations happen in the runtime heap.
 
 ## The Runtime Heap
 

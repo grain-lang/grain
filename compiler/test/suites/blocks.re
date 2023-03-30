@@ -12,6 +12,7 @@ describe("blocks", ({test}) => {
         "block_parse_lone_no_args_enum",
         "module Test; { Foo }",
         {
+          attributes: Grain_tests.Test_utils.default_module_attributes,
           module_name: Location.mknoloc("Test"),
           statements: [
             Toplevel.expr(
@@ -34,6 +35,7 @@ describe("blocks", ({test}) => {
           ],
           comments: [],
           prog_loc: Location.dummy_loc,
+          prog_core_loc: Location.dummy_loc,
         },
       )
     )

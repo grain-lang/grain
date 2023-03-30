@@ -130,6 +130,7 @@ describe("arrays", ({test, testSkip}) => {
           state[0] =
             5",
         {
+          attributes: Grain_tests.Test_utils.default_module_attributes,
           module_name: Location.mknoloc("Test"),
           statements: [
             Toplevel.expr(
@@ -180,6 +181,7 @@ describe("arrays", ({test, testSkip}) => {
           ],
           comments: [],
           prog_loc: Location.dummy_loc,
+          prog_core_loc: Location.dummy_loc,
         },
       )
     )

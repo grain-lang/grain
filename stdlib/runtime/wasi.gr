@@ -1,8 +1,9 @@
-/* grainc-flags --no-gc */
 module Wasi
 
 from "runtime/unsafe/wasmi32" include WasmI32
 from "exception" include Exception
+from "runtime/string" include String
+use String.{ concat as (++), toString }
 
 // env
 provide foreign wasm args_get:
@@ -108,120 +109,219 @@ provide foreign wasm path_rename:
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 // clocks
+@unsafe
 provide let _CLOCK_REALTIME = 0n
+@unsafe
 provide let _CLOCK_MONOTONIC = 1n
+@unsafe
 provide let _CLOCK_PROCESS_CPUTIME = 2n
+@unsafe
 provide let _CLOCK_THREAD_CPUTIME = 3n
 
 // time
 
+@unsafe
 provide let _TIME_SET_ATIM = 1n
+@unsafe
 provide let _TIME_SET_ATIM_NOW = 2n
+@unsafe
 provide let _TIME_SET_MTIM = 4n
+@unsafe
 provide let _TIME_SET_MTIM_NOW = 8n
 
 // lookup flags
+@unsafe
 provide let _LOOKUP_FLAG_SYMLINK_FOLLOW = 1n
 
 // open flags
+@unsafe
 provide let _OPEN_FLAG_CREAT = 1n
+@unsafe
 provide let _OPEN_FLAG_DIRECTORY = 2n
+@unsafe
 provide let _OPEN_FLAG_EXCL = 4n
+@unsafe
 provide let _OPEN_FLAG_TRUNC = 8n
 
 // fdflags
+@unsafe
 provide let _FDFLAG_APPEND = 1n
+@unsafe
 provide let _FDFLAG_DSYNC = 2n
+@unsafe
 provide let _FDFLAG_NONBLOCK = 4n
+@unsafe
 provide let _FDFLAG_RSYNC = 8n
+@unsafe
 provide let _FDFLAG_SYNC = 16n
 
 // whence
+@unsafe
 provide let _WHENCE_SET = 0n
+@unsafe
 provide let _WHENCE_CUR = 1n
+@unsafe
 provide let _WHENCE_END = 2n
 
 // error codes
+@unsafe
 provide let _ESUCCESS = 0n
+@unsafe
 provide let _ETOOBIG = 1n
+@unsafe
 provide let _EACCES = 2n
+@unsafe
 provide let _EADDRINUSE = 3n
+@unsafe
 provide let _EADDRNOTAVAIL = 4n
+@unsafe
 provide let _EAFNOSUPPORT = 5n
+@unsafe
 provide let _EAGAIN = 6n
+@unsafe
 provide let _EALREADY = 7n
+@unsafe
 provide let _EBADF = 8n
+@unsafe
 provide let _EBADMSG = 9n
+@unsafe
 provide let _EBUSY = 10n
+@unsafe
 provide let _ECANCELED = 11n
+@unsafe
 provide let _ECHILD = 12n
+@unsafe
 provide let _ECONNABORTED = 13n
+@unsafe
 provide let _ECONNREFUSED = 14n
+@unsafe
 provide let _ECONNRESET = 15n
+@unsafe
 provide let _EDEADLK = 16n
+@unsafe
 provide let _EDESTADDRREQ = 17n
+@unsafe
 provide let _EDOM = 18n
+@unsafe
 provide let _EDQUOT = 19n
+@unsafe
 provide let _EEXIST = 20n
+@unsafe
 provide let _EFAULT = 21n
+@unsafe
 provide let _EFBIG = 22n
+@unsafe
 provide let _EHOSTUNREACH = 23n
+@unsafe
 provide let _EIDRM = 24n
+@unsafe
 provide let _EILSEQ = 25n
+@unsafe
 provide let _EINPROGRESS = 26n
+@unsafe
 provide let _EINTR = 27n
+@unsafe
 provide let _EINVAL = 28n
+@unsafe
 provide let _EIO = 29n
+@unsafe
 provide let _EISCONN = 30n
+@unsafe
 provide let _EISDIR = 31n
+@unsafe
 provide let _ELOOP = 32n
+@unsafe
 provide let _EMFILE = 33n
+@unsafe
 provide let _EMLINK = 34n
+@unsafe
 provide let _EMSGSIZE = 35n
+@unsafe
 provide let _EMULTIHOP = 36n
+@unsafe
 provide let _ENAMETOOLONG = 37n
+@unsafe
 provide let _ENETDOWN = 38n
+@unsafe
 provide let _ENETRESET = 39n
+@unsafe
 provide let _ENETUNREACH = 40n
+@unsafe
 provide let _ENFILE = 41n
+@unsafe
 provide let _ENOBUFS = 42n
+@unsafe
 provide let _ENODEV = 43n
+@unsafe
 provide let _ENOENT = 44n
+@unsafe
 provide let _ENOEXEC = 45n
+@unsafe
 provide let _ENOLCK = 46n
+@unsafe
 provide let _ENOLINK = 47n
+@unsafe
 provide let _ENOMEM = 48n
+@unsafe
 provide let _ENOMSG = 49n
+@unsafe
 provide let _ENOPROTOOPT = 50n
+@unsafe
 provide let _ENOSPC = 51n
+@unsafe
 provide let _ENOSYS = 52n
+@unsafe
 provide let _ENOTCONN = 53n
+@unsafe
 provide let _ENOTDIR = 54n
+@unsafe
 provide let _ENOTEMPTY = 55n
+@unsafe
 provide let _ENOTRECOVERABLE = 56n
+@unsafe
 provide let _ENOTSOCK = 57n
+@unsafe
 provide let _ENOTSUP = 58n
+@unsafe
 provide let _ENOTTY = 59n
+@unsafe
 provide let _ENXIO = 60n
+@unsafe
 provide let _EOVERFLOW = 61n
+@unsafe
 provide let _EOWNERDEAD = 62n
+@unsafe
 provide let _EPERM = 63n
+@unsafe
 provide let _EPIPE = 64n
+@unsafe
 provide let _EPROTO = 65n
+@unsafe
 provide let _EPROTONOSUPPORT = 66n
+@unsafe
 provide let _EPROTOTYPE = 67n
+@unsafe
 provide let _ERANGE = 68n
+@unsafe
 provide let _EROFS = 69n
+@unsafe
 provide let _ESPIPE = 70n
+@unsafe
 provide let _ESRCH = 71n
+@unsafe
 provide let _ESTALE = 72n
+@unsafe
 provide let _ETIMEDOUT = 73n
+@unsafe
 provide let _ETXTBSY = 74n
+@unsafe
 provide let _EXDEV = 75n
+@unsafe
 provide let _ENOTCAPABLE = 76n
 
 provide exception SystemError(Number)
 
+@disableGC
 provide let stringOfSystemError = code => {
   use WasmI32.{ (==), (>>) }
   let n = WasmI32.fromGrain(code) >> 1n

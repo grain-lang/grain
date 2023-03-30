@@ -305,73 +305,6 @@ let preserve_config = thunk => {
 let preserve_all_configs = thunk =>
   preserve_root_config(() => preserve_config(thunk));
 
-let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
-  open Cmdliner;
-  open Term;
-  let process_option = acc =>
-    fun
-    | Spec(arg, names, box) =>
-      const((a, b) => {
-        box := a;
-        b;
-      })
-      $ Arg.value(arg)
-      $ acc;
-  let folded = List.fold_left(process_option, const(term), specs^);
-  folded;
-};
-
-let with_unapplied_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
-  open Cmdliner;
-  open Term;
-  let process_option = acc =>
-    fun
-    | Spec(arg, names, box) => const((a, b) => {b}) $ Arg.value(arg) $ acc;
-  let folded = List.fold_left(process_option, const(term), specs^);
-  folded;
-};
-
-let process_used_cli_options = term => {
-  open Cmdliner;
-  open Term;
-  let process_option = acc =>
-    fun
-    | Spec(arg, names, box) => {
-        const((a, (_, used), b) => {
-          if (List.fold_left(
-                (acc, name) =>
-                  acc
-                  || List.mem("--" ++ name, used)
-                  || List.mem("-" ++ name, used),
-                false,
-                names,
-              )) {
-            box := a;
-          };
-          b;
-        })
-        $ Arg.value(arg)
-        $ with_used_args(term)
-        $ acc;
-      };
-  let folded = List.fold_left(process_option, term, specs^);
-  folded;
-};
-
-let apply_inline_flags = (~err, flag_string) => {
-  open Cmdliner;
-  let cmd =
-    Cmd.v(
-      Cmd.info("grainc"),
-      process_used_cli_options(with_unapplied_cli_options(Term.const())),
-    );
-  // Remove grainc-flags prefix
-  let len = String.length(flag_string) - 12;
-  let flag_string = String.sub(flag_string, 12, len);
-  let argv = Array.of_list(String.split_on_char(' ', flag_string));
-  Cmd.eval_value(~argv, ~err, cmd);
-};
-
 let option_conv = ((prsr, prntr)) => (
   x =>
     switch (prsr(x)) {
@@ -449,16 +382,11 @@ let import_memory =
     false,
   );
 
-let compilation_mode =
-  opt(
-    ~names=["compilation-mode"],
-    ~conv=
-      option_conv(
-        Cmdliner.Arg.enum([("normal", "normal"), ("runtime", "runtime")]),
-      ),
-    ~doc="Compilation mode (advanced use only)",
-    None,
-  );
+type compilation_mode =
+  | Normal /* Standard compilation with regular bells and whistles */
+  | Runtime /* GC doesn't exist yet, allocations happen in runtime heap */;
+
+let compilation_mode = internal_opt(Normal, Digestable);
 
 let statically_link =
   toggle_flag(~names=["no-link"], ~doc="Disable static linking", true);
@@ -557,6 +485,23 @@ let source_map =
 
 let print_warnings = internal_opt(true, NotDigestable);
 
+let with_cli_options = (term: 'a): Cmdliner.Term.t('a) => {
+  open Cmdliner;
+  open Term;
+  let process_option = acc =>
+    fun
+    | Spec(arg, names, box) =>
+      const((a, b) => {
+        box := a;
+        b;
+      })
+      $ Arg.value(arg)
+      $ acc;
+  let folded = List.fold_left(process_option, const(term), specs^);
+  compilation_mode := Normal;
+  folded;
+};
+
 let stdlib_directory = (): option(string) =>
   Option.map(
     path => Filepath.(to_string(String.derelativize(path))),
@@ -576,24 +521,21 @@ let module_search_path = () => {
   };
 };
 
-let apply_inline_flags = (~on_error, cmt_content) =>
-  if (Str.string_match(Str.regexp_string("grainc-flags"), cmt_content, 0)) {
-    let err_buf = Buffer.create(80);
-    let err = Format.formatter_of_buffer(err_buf);
-    let result = apply_inline_flags(~err, cmt_content);
-    switch (result) {
-    | Ok(`Ok(_)) => ()
-    | Ok(`Version)
-    | Ok(`Help) => on_error(`Help)
-    | Error(_) =>
-      Format.pp_print_flush(err, ());
-      on_error(`Message(Buffer.contents(err_buf)));
-    };
+let apply_attribute_flags = (~no_pervasives as np, ~runtime_mode as rm) => {
+  // Only apply options if attributes were explicitly given so as to not
+  // unintentionally override options set previously e.g. compiling a
+  // wasi-polyfill file in non-runtime-mode if @runtimeMode is not specified
+  if (np) {
+    no_pervasives := true;
   };
+  if (rm) {
+    compilation_mode := Runtime;
+  };
+};
 
-let with_inline_flags = (~on_error, cmt_content, thunk) => {
+let with_attribute_flags = (~on_error, ~no_pervasives, ~runtime_mode, thunk) => {
   preserve_config(() => {
-    apply_inline_flags(~on_error, cmt_content);
+    apply_attribute_flags(~no_pervasives, ~runtime_mode);
     thunk();
   });
 };
@@ -609,7 +551,7 @@ let get_implicit_opens = () => {
     } else {
       [Pervasives_mod];
     };
-  if (compilation_mode^ == Some("runtime")) {
+  if (compilation_mode^ == Runtime) {
     [];
   } else {
     // Pervasives goes first, just for good measure.

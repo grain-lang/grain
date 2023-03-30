@@ -1,4 +1,4 @@
-/* grainc-flags --compilation-mode=runtime */
+@runtimeMode
 module Tags
 
 provide let _GRAIN_NUMBER_TAG_TYPE = 0b0001n

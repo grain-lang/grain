@@ -1,4 +1,3 @@
-/* grainc-flags --memory-base 0x400 */
 module SameAsDefault
 
 enum Thing {

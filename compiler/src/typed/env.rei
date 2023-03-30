@@ -162,13 +162,8 @@ let add_local_type: (Path.t, type_declaration, t) => t;
 let add_item: (signature_item, t) => t;
 let add_signature: (signature, t) => t;
 
-/* Remember the current compilation unit: modname * filename * compilation mode. */
-type compilation_mode =
-  | Normal
-  | Runtime;
-
-let set_unit: ((string, string, compilation_mode)) => unit;
-let get_unit: unit => (string, string, compilation_mode);
+let set_unit: ((string, string, Grain_utils.Config.compilation_mode)) => unit;
+let get_unit: unit => (string, string, Grain_utils.Config.compilation_mode);
 let is_runtime_mode: unit => bool;
 
 /* Insertion of a module */

@@ -1,3 +1,9 @@
+// Comment before first attr
+/* Block comment before attr */@noPervasives // Line comment on attr
+// Comment after first attr
+@runtimeMode
+// Comment after second attr
+
 module Comments
 
 /* Let's start with a block 
@@ -276,6 +282,13 @@ match (5) {
   },
 }
 
+// comment before attr
+@attr("foo", "bar") // line comment on attr
+// comment after attr
+/* block comment attr2 */
+@attr2
+// comment after second attr
+let _ = 1
 @attr(/* foo */ "foo", /* bar */ "bar")
 let _ = 1
 @attr( // foo

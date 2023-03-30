@@ -1049,17 +1049,14 @@ let initial_env = () => {
   );
 };
 
-let get_compilation_mode = () => {
-  switch (Grain_utils.Config.compilation_mode^) {
-  | Some("runtime") => Env.Runtime
-  | _ => Env.Normal
-  };
-};
-
 let type_implementation = prog => {
   let sourcefile = prog.prog_loc.loc_start.pos_fname;
   let module_name = prog.module_name.txt;
-  Env.set_unit((module_name, sourcefile, get_compilation_mode()));
+  Env.set_unit((
+    module_name,
+    sourcefile,
+    Grain_utils.Config.compilation_mode^,
+  ));
   let initenv = initial_env();
   let (statements, sg, finalenv) = type_module(initenv, prog.statements);
   let simple_sg = simplify_signature(sg);

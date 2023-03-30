@@ -159,15 +159,12 @@ let read_imports = (program: Parsetree.parsed_program) => {
         | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc.gr")
         }
       },
-      switch (program.comments) {
-      | [Block({cmt_content}), ..._] =>
-        Grain_utils.Config.with_inline_flags(
-          ~on_error=_ => (),
-          cmt_content,
-          Grain_utils.Config.get_implicit_opens,
-        )
-      | _ => Grain_utils.Config.get_implicit_opens()
-      },
+      Grain_utils.Config.with_attribute_flags(
+        ~on_error=_ => (),
+        ~no_pervasives=Option.is_some(program.attributes.no_pervasives),
+        ~runtime_mode=Option.is_some(program.attributes.runtime_mode),
+        Grain_utils.Config.get_implicit_opens,
+      ),
     );
   let found_includes = ref([]);
 
