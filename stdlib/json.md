@@ -2,7 +2,11 @@
 title: Json
 ---
 
-JSON (JavaScript Object Notation) parsing and printing.
+@module Json: JSON (JavaScript Object Notation) parsing and printing.
+
+## Types
+
+Type declarations included in the Json module.
 
 ### Json.**JSON**
 
@@ -23,8 +27,8 @@ JSON.
 For example this object
 ```grain
 JSONObject([
-("currency", JSONString("€")),
-("price", JSONNumber(99.99)),
+  ("currency", JSONString("€")),
+  ("price", JSONNumber(99.99)),
 ])
 ```
 is equivalent to the following JSON:
@@ -41,8 +45,8 @@ For example parsing the following JSON text will also result in the same
 `JSON` object as above.
 ```json
 {
-"currency": "\u20ac",
-"price": 99.99
+  "currency": "\u20ac",
+  "price": 99.99
 }
 ```
 
@@ -227,6 +231,22 @@ record FormattingSettings {
 
 Allows fine grained control of formatting in JSON printing.
 
+### Json.**JSONParseError**
+
+```grain
+enum JSONParseError {
+  UnexpectedEndOfInput(String),
+  UnexpectedToken(String),
+  InvalidUTF16SurrogatePair(String),
+}
+```
+
+Represents errors for JSON parsing along with a human readable text message.
+
+## Values
+
+Functions and constants included in the Json module.
+
 ### Json.**defaultCompactFormat**
 
 ```grain
@@ -310,53 +330,15 @@ replaced with visible characters.
 }
 ```
 
-### Json.**JSONWriterCompactImplHelper**
-
-```grain
-record JSONWriterCompactImplHelper {
-  buffer: Buffer.Buffer,
-  emitEscapedQuotedString: String -> Void,
-}
-```
-
-### Json.**JSONWriterPrettyImplHelper**
-
-```grain
-record JSONWriterPrettyImplHelper {
-  format: FormattingSettings,
-  bufferPretty: Buffer.Buffer,
-  emitEscapedQuotedStringPretty: String -> Void,
-  printNewLine: () -> Void,
-  printIndentation: Number -> Void,
-}
-```
-
-### Json.**JSONWriter**
-
-```grain
-record JSONWriter {
-  emit: JSON -> Option<JSONToStringError>,
-}
-```
-
 ### Json.**toString**
 
 ```grain
-toString : (JSON, FormattingSettings) -> Result<String, JSONToStringError>
+toString :
+  (json: JSON, format: FormattingSettings) ->
+   Result<String, JSONToStringError>
 ```
 
 Prints the JSON object into a string with specific formatting settings.
-
-
-
-
-
-
-
-Example output:
-```json
-{"currency":"\u20ac","price":99.9}
-```
 
 Parameters:
 
@@ -375,12 +357,17 @@ Examples:
 
 ```grain
 print(Result.unwrap(toString(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]), defaultCompactAndSafeFormat())))
+
+Example output:
+```json
+{"currency":"\u20ac","price":99.9}
+```
 ```
 
 ### Json.**toStringCompact**
 
 ```grain
-toStringCompact : JSON -> Result<String, JSONToStringError>
+toStringCompact : (json: JSON) -> Result<String, JSONToStringError>
 ```
 
 Prints the JSON object into a string with compact formatting optimized for
@@ -389,16 +376,6 @@ machine program. For example in REST APIs.
 
 Using this function can be preferred over `toString` with compact formatting
 settings since it can be slightly faster.
-
-
-
-
-
-
-Example output:
-```json
-{"currency":"€","price":99.9}
-```
 
 Parameters:
 
@@ -416,29 +393,23 @@ Examples:
 
 ```grain
 print(Result.unwrap(toStringCompact(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
+
+Example output:
+```json
+{"currency":"€","price":99.9}
+```
 ```
 
 ### Json.**toStringPretty**
 
 ```grain
-toStringPretty : JSON -> Result<String, JSONToStringError>
+toStringPretty : (json: JSON) -> Result<String, JSONToStringError>
 ```
 
 Prints the JSON object into a string with default pretty formatting
 settings. Recommended for uses where the intended consumer is a person or
 the text should be easily inspectable. For example configuration files or
 document file formats.
-
-
-
-
-Example output:
-```json
-{
-"currency": "€",
-"price": 99.9
-}
-```
 
 Parameters:
 
@@ -450,35 +421,20 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<String, JSONToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.|
+|`Result<String, JSONToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
+
+Example output:
+```json
+{
+  "currency": "€",
+  "price": 99.9
+}
+```|
 
 Examples:
 
 ```grain
 print(Result.unwrap(toStringPretty(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
-```
-
-### Json.**JSONParseError**
-
-```grain
-enum JSONParseError {
-  UnexpectedEndOfInput(String),
-  UnexpectedToken(String),
-  InvalidUTF16SurrogatePair(String),
-}
-```
-
-Represents errors for JSON parsing along with a human readable text message.
-
-### Json.**JSONParserImplHelper**
-
-```grain
-record JSONParserImplHelper {
-  reader: StringReader.StringReader,
-  bufferParse: Buffer.Buffer,
-  currentCodePoint: Number,
-  pos: Number,
-}
 ```
 
 ### Json.**parse**
@@ -488,14 +444,6 @@ parse : String -> Result<JSON, JSONParseError>
 ```
 
 Parses JSON input from a string into a `JSON` object.
-
-
-
-
-Example output:
-```
-Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
-```
 
 Parameters:
 
@@ -507,7 +455,12 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<JSON, JSONParseError>`|A `Result` object with either the parsed `JSON` object or an error.|
+|`Result<JSON, JSONParseError>`|A `Result` object with either the parsed `JSON` object or an error.
+
+Example output:
+```
+Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
+```|
 
 Examples:
 

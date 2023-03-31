@@ -2,28 +2,36 @@
  * @module Json: JSON (JavaScript Object Notation) parsing and printing.
  */
 
-import String from "string"
-import Char from "char"
-import List from "list"
-import Option from "option"
-import Number from "number"
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import NumberUtils from "runtime/numberUtils"
-import Tags from "runtime/unsafe/tags"
-import Numbers from "runtime/numbers"
-import Memory from "runtime/unsafe/memory"
-import Buffer from "buffer"
-import { toString as runtimeToString } from "runtime/string"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
-import { tagSimpleNumber } from "runtime/dataStructures"
+module Json
+
+include "string"
+include "char"
+include "list"
+include "option"
+include "number"
+include "uint8"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf32"
+include "runtime/unsafe/wasmf64"
+include "runtime/numberUtils"
+include "runtime/unsafe/tags"
+include "runtime/numbers"
+include "runtime/unsafe/memory"
+include "buffer"
+include "runtime/string" as RunTimeString
+include "runtime/numbers"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures"
+include "runtime/bigint" as BI
+from RunTimeString use { toString as runtimeToString }
+from Numbers use { coerceNumberToWasmI32 }
+from DataStructures use { tagSimpleNumber, newFloat64 }
 
 /**
  * Data structure representing the result of parsing and the input of printing
  * JSON.
- * 
+ *
  * For example this object
  * ```grain
  * JSONObject([
@@ -35,12 +43,12 @@ import { tagSimpleNumber } from "runtime/dataStructures"
  * ```json
  * {"currency":"€","price":99.99}
  * ```
- * 
+ *
  * This data structure is semantically equivalent to the JSON format allowing
  * mostly lossless round trips of printing and parsing. Exceptions to this are
  * white spaces, multiple ways JSON allows escaping characters in strings and
  * some edge-cases related to Grain's `Number` type.
- * 
+ *
  * For example parsing the following JSON text will also result in the same
  * `JSON` object as above.
  * ```json
@@ -50,7 +58,7 @@ import { tagSimpleNumber } from "runtime/dataStructures"
  * }
  * ```
  */
-export enum JSON {
+provide enum JSON {
   JSONNull,
   JSONBoolean(Bool),
   JSONNumber(Number),
@@ -71,16 +79,16 @@ export enum JSON {
  * JSON format along with a human readable text message. This can happen when
  * it contains number values `NaN`, `Infinity` or `-Infinity`.
  */
-export enum JSONToStringError {
+provide enum JSONToStringError {
   InvalidNumber(String),
 }
 
 /**
  * Controls how indentation is performed in custom formatting.
- * 
+ *
  * Following examples have whitespaces and line breaks replaced with visible
  * charactes for illustrative purposes.
- * 
+ *
  * `NoIndentation`
  * ```
  * {↵
@@ -88,7 +96,7 @@ export enum JSONToStringError {
  * "price":·99.9↵
  * }
  * ```
- * 
+ *
  * `IndentWithTab`
  * ```
  * {↵
@@ -96,7 +104,7 @@ export enum JSONToStringError {
  * →"price":·99.9↵
  * }
  * ```
- * 
+ *
  * `IndentWithSpaces(2)`
  * ```
  * {↵
@@ -104,7 +112,7 @@ export enum JSONToStringError {
  * ··"price":·99.9↵
  * }
  * ```
- * 
+ *
  * `IndentWithSpaces(4)`
  * ```
  * {↵
@@ -113,7 +121,7 @@ export enum JSONToStringError {
  * }
  * ```
  */
-export enum IndentationFormat {
+provide enum IndentationFormat {
   NoIndentation,
   IndentWithTab,
   IndentWithSpaces(Number),
@@ -121,34 +129,34 @@ export enum IndentationFormat {
 
 /**
  * Controls how arrays are printed in custom formatting.
- * 
+ *
  * Following examples have whitespaces and line breaks replaced with visible
  * charactes for illustrative purposes.
- * 
+ *
  * `CompactArrayEntries`
  * ```
  * []
  * ```
- * 
+ *
  * ```
  * [1]
  * ```
- * 
+ *
  * ```
  * [1,2,3]
  * ```
- * 
+ *
  * `OneArrayEntryPerLine`
  * ```
  * []
  * ```
- * 
+ *
  * ```
  * [↵
  * ··1↵
  * ]
  * ```
- * 
+ *
  * ```
  * [↵
  * ··1,↵
@@ -157,41 +165,41 @@ export enum IndentationFormat {
  * ]
  * ```
  */
-export enum ArrayFormat {
+provide enum ArrayFormat {
   CompactArrayEntries,
   OneArrayEntryPerLine,
 }
 
 /**
  * Controls how objects are printed in custom formatting.
- * 
+ *
  * Following examples have whitespaces and line breaks replaced with visible
  * charactes for illustrative purposes.
- * 
+ *
  * `CompactObjectEntries`
  * ```
  * {}
  * ```
- * 
+ *
  * ```
  * {"a":1}
  * ```
- * 
+ *
  * ```
  * {"a":1,"b":2,"c":3}
  * ```
- * 
+ *
  * `OneObjectEntryPerLine`
  * ```
  * {}
  * ```
- * 
+ *
  * ```
  * {↵
  * ··"a":·1↵
  * }
  * ```
- * 
+ *
  * ```
  * {↵
  * ··"a":·1,↵
@@ -200,7 +208,7 @@ export enum ArrayFormat {
  * }
  * ```
  */
-export enum ObjectFormat {
+provide enum ObjectFormat {
   CompactObjectEntries,
   OneObjectEntryPerLine,
 }
@@ -208,7 +216,7 @@ export enum ObjectFormat {
 /**
  * Controls line ending type in custom formatting.
  */
-export enum LineEnding {
+provide enum LineEnding {
   NoLineEnding,
   LineFeed,
   CarriageReturnLineFeed,
@@ -218,7 +226,7 @@ export enum LineEnding {
 /**
  * Allows fine grained control of formatting in JSON printing.
  */
-export record FormattingSettings {
+provide record FormattingSettings {
   indentation: IndentationFormat,
   arrayFormat: ArrayFormat,
   objectFormat: ObjectFormat,
@@ -232,18 +240,18 @@ export record FormattingSettings {
 /**
  * Compact formatting that minimizes the size of resulting JSON at cost of not
  * being easily human readable.
- * 
+ *
  * Only performs minimal string escaping as required by the ECMA-404 standard,
  * so the result needs to be treated as proper unicode and is not safe to be
  * transported in ASCII encoding.
- * 
+ *
  * The following example have whitespaces, line breaks and control points
  * replaced with visible characters.
  * ```
  * {"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
  * ```
  */
-export let defaultCompactFormat = () =>
+provide let defaultCompactFormat = () =>
   {
     indentation: NoIndentation,
     arrayFormat: CompactArrayEntries,
@@ -257,11 +265,11 @@ export let defaultCompactFormat = () =>
 
 /**
  * Recommended human readable formatting.
- * 
+ *
  * Escapes all control points for the sake of clarity, but prints unicode
  * codepoints directly so the result needs to be treated as proper unicode and
  * is not safe to be transported in ASCII encoding.
- * 
+ *
  * The following example have whitespaces, line breaks and control points
  * replaced with visible characters.
  * ```
@@ -273,7 +281,7 @@ export let defaultCompactFormat = () =>
  * }
  * ```
  */
-export let defaultPrettyFormat = () =>
+provide let defaultPrettyFormat = () =>
   {
     indentation: IndentWithSpaces(2),
     arrayFormat: OneArrayEntryPerLine,
@@ -288,17 +296,17 @@ export let defaultPrettyFormat = () =>
 /**
  * Compact and conservative formatting to maximize compatibility and
  * embeddability of the resulting JSON.
- * 
+ *
  * Should be safe to copy and paste directly into HTML and to transported in
  * plain ASCII.
- * 
+ *
  * The following example have whitespaces, line breaks and control points
  * replaced with visible characters.
  * ```
  * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
  * ```
  */
-export let defaultCompactAndSafeFormat = () =>
+provide let defaultCompactAndSafeFormat = () =>
   {
     indentation: NoIndentation,
     arrayFormat: CompactArrayEntries,
@@ -313,10 +321,10 @@ export let defaultCompactAndSafeFormat = () =>
 /**
  * Pretty and conservative formatting to maximize compatibility and
  * embeddability of the resulting JSON.
- * 
+ *
  * Should be safe to copy and paste directly into HTML and to transported in
  * plain ASCII.
- * 
+ *
  * The following example have whitespaces, line breaks and control points
  * replaced with visible characters.
  * ```
@@ -328,7 +336,7 @@ export let defaultCompactAndSafeFormat = () =>
  * }
  * ```
  */
-export let defaultPrettyAndSafeFormat = () =>
+provide let defaultPrettyAndSafeFormat = () =>
   {
     indentation: IndentWithSpaces(2),
     arrayFormat: OneArrayEntryPerLine,
@@ -498,12 +506,14 @@ let printNumberWasmI64 = (value: WasmI64, buffer: Buffer.Buffer) => {
 
 @unsafe
 let isFinite = (value: WasmF64) => {
-  WasmF64.eq(WasmF64.sub(value, value), 0.W)
+  from WasmF64 use { eq as (==), sub as (-) }
+  value - value == 0.0W
 }
 
 @unsafe
 let isNaN = (value: WasmF64) => {
-  WasmF64.ne(value, value)
+  from WasmF64 use { ne as (!=) }
+  value != value
 }
 
 @unsafe
@@ -513,6 +523,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     Buffer.addString(s, buffer)
     None
   } else {
+    from WasmF64 use { lt as (<) }
     // JSON standard doesn't allow NaN or infinite values in numbers,
     // but WASM f64 (IEEE 754-2008), as well as Grain's number types do
     // (Float64 as well as Number). This is the only reason that the
@@ -522,7 +533,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     // (like JavaScript's JSON.stringify).
     if (isNaN(value)) {
       Some(InvalidNumber("NaN is not allowed in JSONNumber"))
-    } else if (WasmF64.lt(value, 0.0W)) {
+    } else if (value < 0.0W) {
       Some(InvalidNumber("-Infinity is not allowed in JSONNumber"))
     } else {
       Some(InvalidNumber("Infinity is not allowed in JSONNumber"))
@@ -532,11 +543,13 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
 
 @unsafe
 let printNumber = (value: Number, buffer: Buffer.Buffer) => {
-  let (&) = WasmI32.and
-  let (==) = WasmI32.eq
-  let (!=) = WasmI32.ne
-  let (<<) = WasmI32.shl
-  let (>>) = WasmI32.shrS
+  from WasmI32 use {
+    and as (&),
+    eq as (==),
+    ne as (!=),
+    shl as (<<),
+    shrS as (>>),
+  }
 
   let ptr = WasmI32.fromGrain(value)
   if ((ptr & 1n) != 0n) {
@@ -550,19 +563,18 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
       t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
         let numberTag = WasmI32.load(ptr, 4n)
         match (numberTag) {
-          t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-            let asWasmI32 = WasmI32.load(ptr, 8n)
-            // FIXME magic numbers
-            printNumberWasmI32(asWasmI32, buffer)
-            None
-          },
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             let asWasmI64 = WasmI64.load(ptr, 8n)
             // FIXME magic numbers
             printNumberWasmI64(asWasmI64, buffer)
             None
           },
+          t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
+            Buffer.addString(BI.bigIntToString10(ptr), buffer)
+            None
+          },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
+            from WasmF64 use { div as (/) }
             // As a compromnise, convert the rational into a float
             // and then print that. This means there can be
             // precision loss even for values that could be printed
@@ -576,17 +588,11 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             // least for some numbers try printing the exact
             // number. For example those that have a power of 10
             // in the denominator.
-            let asWasmF64 = WasmF64.div(
-              WasmF64.convertI32S(Numbers.boxedRationalNumerator(ptr)),
+            let asWasmF64 = WasmF64.convertI32S(
+              Numbers.boxedRationalNumerator(ptr)
+            ) /
               WasmF64.convertI32S(Numbers.boxedRationalDenominator(ptr))
-            )
 
-            printNumberWasmF64(asWasmF64, buffer)
-          },
-          t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-            let asWasmF32 = WasmF32.load(ptr, 8n)
-            // FIXME magic numbers
-            let asWasmF64 = WasmF64.promoteF32(asWasmF32)
             printNumberWasmF64(asWasmF64, buffer)
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
@@ -1030,7 +1036,7 @@ let rec printElementPretty =
 
 let isCodePointInBasicMultilingualPlane = (code: Number) =>
   code >= 0x0000 &&
-  code <= 0xFFFF
+    code <= 0xFFFF
 
 let isHighSurrogate = (code: Number) => code >= 0xD800 && code <= 0xDBFF
 
@@ -1044,7 +1050,7 @@ let combineSurrogatePairToCodePoint =
   // If this was a method exposed by itself in a library then it should check the
   // ranges of the input surrogates, but here it's necessary because checks are made
   // as part of the parsing logic.
-  (highSurrogate - 0xD800 << 10) + (lowSurrogate - 0xDC00) + 0x10000
+  ((highSurrogate - 0xD800) << 10) + (lowSurrogate - 0xDC00) + 0x10000
 }
 
 let makePrettyPrintJSONWriter =
@@ -1242,19 +1248,19 @@ let makePrettyPrintJSONWriter =
 
 /**
  * Prints the JSON object into a string with specific formatting settings.
- * 
+ *
  * @param json: The JSON object to print
  * @param format: Custom formatting setttings
  * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
  *
  * @example print(Result.unwrap(toString(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]), defaultCompactAndSafeFormat())))
- * 
+ *
  * Example output:
  * ```json
  * {"currency":"\u20ac","price":99.9}
  * ```
  */
-export let toString = (json: JSON, format: FormattingSettings) => {
+provide let toString = (json: JSON, format: FormattingSettings) => {
   let buf = Buffer.make(16)
 
   let writer = makePrettyPrintJSONWriter(format, buf)
@@ -1271,21 +1277,21 @@ export let toString = (json: JSON, format: FormattingSettings) => {
  * Prints the JSON object into a string with compact formatting optimized for
  * small size. Recommended for all uses where the intended consumer is a
  * machine program. For example in REST APIs.
- * 
+ *
  * Using this function can be preferred over `toString` with compact formatting
  * settings since it can be slightly faster.
- * 
+ *
  * @param json: The JSON object to print
  * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
  *
  * @example print(Result.unwrap(toStringCompact(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
- * 
+ *
  * Example output:
  * ```json
  * {"currency":"€","price":99.9}
  * ```
  */
-export let toStringCompact = (json: JSON) => {
+provide let toStringCompact = (json: JSON) => {
   let buf = Buffer.make(16)
 
   let writer = makeCompactJSONWriter(buf)
@@ -1303,10 +1309,10 @@ export let toStringCompact = (json: JSON) => {
  * settings. Recommended for uses where the intended consumer is a person or
  * the text should be easily inspectable. For example configuration files or
  * document file formats.
- * 
+ *
  * @param json: The JSON object to print
  * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
- * 
+ *
  * Example output:
  * ```json
  * {
@@ -1317,13 +1323,13 @@ export let toStringCompact = (json: JSON) => {
  *
  * @example print(Result.unwrap(toStringPretty(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
  */
-export let toStringPretty = (json: JSON) =>
+provide let toStringPretty = (json: JSON) =>
   toString(json, defaultPrettyFormat())
 
 /**
  * Represents errors for JSON parsing along with a human readable text message.
  */
-export enum JSONParseError {
+provide enum JSONParseError {
   UnexpectedEndOfInput(String),
   UnexpectedToken(String),
   InvalidUTF16SurrogatePair(String),
@@ -1357,16 +1363,18 @@ exception MalformedUnicode
 // This function has been copied from the String module as a temporary
 // solution. This will likely be replaced by a more robust solution for
 // iterating over strings in the near future.
-@disableGC
+@unsafe
 let getCodePoint = (ptr: WasmI32) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
-  let (+) = WasmI32.add
-  let (==) = WasmI32.eq
-  let (>=) = WasmI32.geU
-  let (<=) = WasmI32.leU
-  let (<<) = WasmI32.shl
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
+  from WasmI32 use {
+    add as (+),
+    and as (&),
+    or as (|),
+    shl as (<<),
+    leU as (<=),
+    geU as (>=),
+    eq as (==),
+  }
 
   let mut codePoint = 0n
   let mut bytesSeen = 0n
@@ -1376,15 +1384,12 @@ let getCodePoint = (ptr: WasmI32) => {
 
   let mut offset = 0n
 
-  let mut result = 0n
-
   while (true) {
     let byte = WasmI32.load8U(ptr + offset, 0n)
     offset += 1n
     if (bytesNeeded == 0n) {
       if (byte >= 0x00n && byte <= 0x7Fn) {
-        result = byte
-        break
+        return byte
       } else if (byte >= 0xC2n && byte <= 0xDFn) {
         bytesNeeded = 1n
         codePoint = byte & 0x1Fn
@@ -1411,17 +1416,15 @@ let getCodePoint = (ptr: WasmI32) => {
     codePoint = codePoint << 6n | byte & 0x3Fn
     bytesSeen += 1n
     if (bytesSeen == bytesNeeded) {
-      result = codePoint
-      break
+      return codePoint
     }
   }
-  result: WasmI32
+  return 0n
 }
 
 @unsafe
 let rec readCodePoint = (bytePosition: Number, string: String) => {
-  let (+) = WasmI32.add
-  let (<) = WasmI32.ltU
+  from WasmI32 use { add as (+), ltU as (<) }
 
   let strPtr = WasmI32.fromGrain(string)
 
@@ -1432,7 +1435,7 @@ let rec readCodePoint = (bytePosition: Number, string: String) => {
   let ptr = strPtr + 8n + bytePositionW32
 
   let mut idx = 0n
-  
+
   if (bytePositionW32 < byteSize) {
     let codePoint = getCodePoint(ptr)
     tagSimpleNumber(codePoint)
@@ -1464,13 +1467,12 @@ let isAtEndOfInput = (parserState: JSONParserState) => {
 let next = (parserState: JSONParserState) => {
   let mut c = parserState.currentCodePoint
   if (c != _END_OF_INPUT) {
-    parserState.bytePos = parserState.bytePos +
-    codePointUTF8ByteCount(c)
+    parserState.bytePos += codePointUTF8ByteCount(c)
 
     c = readCodePoint(parserState.bytePos, parserState.string)
 
     parserState.currentCodePoint = c
-    parserState.pos = parserState.pos + 1
+    parserState.pos += 1
   }
   c
 }
@@ -1553,7 +1555,17 @@ let expectCodePointAndAdvance =
     Some(buildUnexpectedTokenError(parserState, detail))
   }
 }
-
+let atoiFast = buffer => {
+  let bufLen = Buffer.length(buffer)
+  let mut result = 0
+  for (let mut i = 0; i < bufLen; i += 1) {
+    from Uint8 use { (-) }
+    result = (result << 1) +
+      (result << 3) +
+      Uint8.toNumber(Buffer.getUint8(i, buffer) - 48us)
+  }
+  result
+}
 let rec parseValue = (parserState: JSONParserState) => {
   skipWhiteSpace(parserState)
 
@@ -1564,9 +1576,18 @@ let rec parseValue = (parserState: JSONParserState) => {
     0x74 => parseTrueValue(parserState), // 't'
     0x66 => parseFalseValue(parserState), // 'f'
     0x6E => parseNullValue(parserState), // 'n'
-    // TODO Check if having a match case for each digit would be faster or not.
-    c when c >= 0x30 && c <= 0x39 || c == 0x2D =>
-      parseNumberValue(parserState), // '0'..'9' or '-'
+    // Numbers
+    0x30 => parseNumberValue(parserState), // '0'
+    0x31 => parseNumberValue(parserState), // '1'
+    0x32 => parseNumberValue(parserState), // '2'
+    0x33 => parseNumberValue(parserState), // '3'
+    0x34 => parseNumberValue(parserState), // '4'
+    0x35 => parseNumberValue(parserState), // '5'
+    0x36 => parseNumberValue(parserState), // '6'
+    0x37 => parseNumberValue(parserState), // '7'
+    0x38 => parseNumberValue(parserState), // '8'
+    0x39 => parseNumberValue(parserState), // '9'
+    0x2D => parseNumberValue(parserState), // '-'
     c => {
       let detail = "expected start of a JSON value, found " ++
         formatCodePointOrEOF(c)
@@ -1577,7 +1598,8 @@ let rec parseValue = (parserState: JSONParserState) => {
   skipWhiteSpace(parserState)
 
   result
-}, parseNullValue = (parserState: JSONParserState) => {
+},
+parseNullValue = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x6E, parserState)) {
     // 'n'
     Some(e) => Err(e),
@@ -1601,7 +1623,8 @@ let rec parseValue = (parserState: JSONParserState) => {
       }
     },
   }
-}, parseTrueValue = (parserState: JSONParserState) => {
+},
+parseTrueValue = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x74, parserState)) {
     // 't'
     Some(e) => Err(e),
@@ -1625,7 +1648,8 @@ let rec parseValue = (parserState: JSONParserState) => {
       }
     },
   }
-}, parseFalseValue = (parserState: JSONParserState) => {
+},
+parseFalseValue = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x66, parserState)) {
     // 'f'
     Some(e) => Err(e),
@@ -1655,7 +1679,8 @@ let rec parseValue = (parserState: JSONParserState) => {
       }
     },
   }
-}, parseString = (parserState: JSONParserState) => {
+},
+parseString = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x22, parserState)) {
     // '"'
     Some(e) => Err(e),
@@ -1772,9 +1797,7 @@ let rec parseValue = (parserState: JSONParserState) => {
                       let digitsSoFar = 3 - digitIndex
                       let detail = "expected exactly 4 hexadecimal digits in the UTF-16 escape sequence, found only " ++
                         runtimeToString(digitsSoFar)
-                      err = Some(
-                        buildUnexpectedTokenError(parserState, detail)
-                      )
+                      err = Some(buildUnexpectedTokenError(parserState, detail))
                       break
                     }
 
@@ -1854,6 +1877,15 @@ let rec parseValue = (parserState: JSONParserState) => {
             }
           },
           c => {
+            if (c >= 0x00 && c <= 0x1F) {
+              err = Some(
+                buildUnexpectedTokenError(
+                  parserState,
+                  "Bad control character in string literal"
+                )
+              )
+              break
+            }
             // Finally the happy case of a simple unescaped code point.
             next(parserState)
             addCharFromCodePoint(c, buffer)
@@ -1879,14 +1911,20 @@ let rec parseValue = (parserState: JSONParserState) => {
       }
     },
   }
-}, parseStringValue = (parserState: JSONParserState) => {
+},
+parseStringValue = (parserState: JSONParserState) => {
   match (parseString(parserState)) {
     Ok(s) => Ok(JSONString(s)),
     Err(e) => Err(e),
   }
-}, parseNumberValue = (parserState: JSONParserState) => {
+},
+parseNumberValue = (parserState: JSONParserState) => {
+  // TODO: Use A Streaming Optimized Way For Parsing The Numbers
+  let buffer = parserState.bufferParse
+  Buffer.clear(buffer)
   // First char can optionally be a minus sign.
   let mut c = parserState.currentCodePoint
+  let mut isFloat = false
   let isNegative = c == 0x2D
   // '-'
   if (isNegative) {
@@ -1894,21 +1932,6 @@ let rec parseValue = (parserState: JSONParserState) => {
   }
 
   let mut err = None
-
-  let mut significand = 0
-  let mut exponent = 0
-  let mut isExponentNegative = false
-
-  // Note on performance: the hope here is to keep calculations in a way to
-  // do at least the intermediate operations with Simple Numbers (non heap
-  // allocated). If there's no fractional part then the resulting number
-  // itself is packed into the "pointer" / value and only an instance of
-  // JSONNumber is allocated on the heap. If the number has a fractional part
-  // or a negative exponent then the final number will be heap allocated.
-  // If the number doesn't fit 31 bits then intermetdiate calculations will
-  // allocate numbers on the heap. This could be alleviated by doing
-  // intermediate calculations with raw wasm numbers, but it would add some
-  // complexity.
 
   // After that, the first/second char can only be a decimal digit ('0'..'9').
   match (c) {
@@ -1923,21 +1946,17 @@ let rec parseValue = (parserState: JSONParserState) => {
       // this function finishes with the parser positioned on a digit
       // and not on a token expected after a number like ',', ']', '}' or
       // EOF.
+      addCharFromCodePoint(c, buffer)
       c = next(parserState)
     },
     x when x >= 0x31 && x <= 0x39 => { // '1'..'9'
       for (;;) {
-        let digit = c - 0x30
-
-        significand = significand * 10 + digit
-
+        addCharFromCodePoint(c, buffer)
         c = next(parserState)
-
         if (c < 0x30 || c > 0x39) {
           break
         }
       }
-
       void
     },
     unexpectedCodePoint => {
@@ -1948,115 +1967,107 @@ let rec parseValue = (parserState: JSONParserState) => {
       err = Some(buildUnexpectedTokenError(parserState, detail))
     },
   }
-
   // Optional fractional part of the number.
   if (Option.isNone(err) && c == 0x2E) { // '.'
+    isFloat = true
+    Buffer.addChar('.', buffer)
     c = next(parserState)
-
-    // let mut decimalPos = 10
-    // let mut denominator = 1
+    let mut hasHitDigit = false
     for (; c >= 0x30 && c <= 0x39;) {
-      let digit = c - 0x30
-
-      significand = significand * 10 + digit
-
-      // denominator = denominator * 10
-
+      hasHitDigit = true
+      addCharFromCodePoint(c, buffer)
       c = next(parserState)
-
-      exponent -= 1
     }
-    // result /= denominator
+    if (!hasHitDigit)
+      err = Some(
+        buildUnexpectedTokenError(
+          parserState,
+          "exponent part is missing in number"
+        )
+      )
   }
-
   // Optional exponential part of the number.
   if (Option.isNone(err) && (c == 0x65 || c == 0x45)) { // 'e' or 'E'
+    isFloat = true
+    Buffer.addChar('e', buffer)
     c = next(parserState)
-
     // can start with optional plus or minus sign
-    isExponentNegative = match (c) {
+    match (c) {
       0x2D => { // '-'
         c = next(parserState)
-        true
+        Buffer.addChar('-', buffer)
       },
       0x2B => { // '+'
         c = next(parserState)
-        false
       },
-      _ => {
-        false
-      },
+      _ => void,
     }
-
     // followed by one or more digits (0-9)
-
-    let mut explicitExponent = 0
+    let mut hasHitDigit = false
     for (; c >= 0x30 && c <= 0x39;) {
-      let digit = c - 0x30
-
-      explicitExponent = explicitExponent * 10 + digit
-
+      hasHitDigit = true
+      addCharFromCodePoint(c, buffer)
       c = next(parserState)
     }
-
-    if (isExponentNegative) {
-      exponent -= explicitExponent
-    } else {
-      exponent += explicitExponent
-    }
+    if (!hasHitDigit)
+      err = Some(
+        buildUnexpectedTokenError(
+          parserState,
+          "exponent part is missing in number"
+        )
+      )
 
     void
   }
-
   // Note that unlike all other JSON value types there's no explicit ending
   // character like ('"' for strings, ']' for arrays,'}' for objects etc). We
   // just leave the parser state at current position and the reading of next
   // token will succeed or fail, but number parsing just ends here.
-
   match (err) {
     Some(e) => Err(e),
     None => {
-      let mut result = significand
-
-      if (exponent != 0) {
-        // This is just a temporary naive implementation.
-
-        if (exponent > 0) {
-          let mut factor = 1
-          for (let mut i = 0; i < exponent; i += 1) {
-            factor *= 10
+      let result = match (isFloat) {
+        false => atoiFast(buffer),
+        true => {
+          let str = Buffer.toString(buffer)
+          match (Number.parseFloat(str)) {
+            Err(err) => fail "Impossible",
+            Ok(n) => n,
           }
-          result *= factor
-        } else {
-          let mut factor = 1
-          for (let mut i = 0; i < 0 - exponent; i += 1) {
-            factor *= 10
-          }
-          result /= factor
-        }
+        },
       }
-
-      if (isNegative) {
-        result = 0 - result
-      }
-      Ok(JSONNumber(result))
+      if (result == 0 && isNegative) Ok(JSONNumber(-0.0))
+      else Ok(JSONNumber(if (isNegative) result * -1 else result))
     },
   }
-}, parseArray = (parserState: JSONParserState) => {
+},
+parseArray = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x5B, parserState)) {
     // '['
     Some(e) => Err(e),
     None => {
+      skipWhiteSpace(parserState)
       let mut err = None
 
       let mut elems = []: List<JSON>
 
       let mut done = false
-
+      let mut first = true
+      let mut trailingComma = false
       while (!done) {
         let c = parserState.currentCodePoint
         match (c) {
           0x2C => { // ','
+            trailingComma = true
+            if (first) {
+              err = Some(
+                buildUnexpectedTokenError(
+                  parserState,
+                  "unexpected comma at beginning of array"
+                )
+              )
+              break
+            }
             next(parserState)
             skipWhiteSpace(parserState)
           },
@@ -2070,6 +2081,8 @@ let rec parseValue = (parserState: JSONParserState) => {
             break
           },
           _ => {
+            first = false
+            trailingComma = false
             // note that parseValue skips initial and final whitespace
             match (parseValue(parserState)) {
               Ok(elem) => {
@@ -2088,21 +2101,23 @@ let rec parseValue = (parserState: JSONParserState) => {
       match (err) {
         Some(e) => Err(e),
         None => {
-          if (done) {
+          if (trailingComma) {
+            Err(
+              buildUnexpectedTokenError(parserState, "unexpected end of array")
+            )
+          } else if (done) {
             Ok(JSONArray(List.reverse(elems)))
           } else {
             Err(
-              buildUnexpectedTokenError(
-                parserState,
-                "unexpected end of array"
-              )
+              buildUnexpectedTokenError(parserState, "unexpected end of array")
             )
           }
         },
       }
     },
   }
-}, parseObject = (parserState: JSONParserState) => {
+},
+parseObject = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x7B, parserState)) {
     // '{'
     Some(e) => Err(e),
@@ -2115,6 +2130,7 @@ let rec parseValue = (parserState: JSONParserState) => {
       let mut first = true
 
       // one iteration of this loop should correspond to a key-value pair
+      let mut trailingComma = false
       while (!done) {
         skipWhiteSpace(parserState)
 
@@ -2126,6 +2142,7 @@ let rec parseValue = (parserState: JSONParserState) => {
             break
           },
           0x2C => { // ','
+            trailingComma = true
             if (first) {
               let detail = "expected a key-value pair or the end of the object, found ','"
               err = Some(buildUnexpectedTokenError(parserState, detail))
@@ -2136,11 +2153,17 @@ let rec parseValue = (parserState: JSONParserState) => {
             }
           },
           0x7D => { // '}'
+            if (trailingComma) {
+              let detail = "unexpected trailing comma in object"
+              err = Some(buildUnexpectedTokenError(parserState, detail))
+              break
+            }
             next(parserState)
             done = true
             break
           },
           _ => {
+            trailingComma = false
             // A new entry in current object.
             // Just call parseString directly. In case the current character id not '"', it will return an error we can pass along.
             match (parseString(parserState)) {
@@ -2188,10 +2211,7 @@ let rec parseValue = (parserState: JSONParserState) => {
             // This brand is not expected to actually execute,
             // but in case it does, may just as well do the right thing.
             Err(
-              buildUnexpectedTokenError(
-                parserState,
-                "unexpected end of object"
-              )
+              buildUnexpectedTokenError(parserState, "unexpected end of object")
             )
           }
         },
@@ -2202,7 +2222,7 @@ let rec parseValue = (parserState: JSONParserState) => {
 
 /**
  * Parses JSON input from a string into a `JSON` object.
- * 
+ *
  * @param str: The JSON text string
  * @returns A `Result` object with either the parsed `JSON` object or an error.
  *
@@ -2210,10 +2230,10 @@ let rec parseValue = (parserState: JSONParserState) => {
  * ```
  * Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
  * ```
- * 
+ *
  * @example print(parse("{\"currency\":\"$\",\"price\":119}"))
  */
-export let parse: String -> Result<JSON, JSONParseError> = (str: String) => {
+provide let parse: String -> Result<JSON, JSONParseError> = (str: String) => {
   let parserState = {
     string: str,
     bufferParse: Buffer.make(16),
