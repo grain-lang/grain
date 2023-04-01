@@ -408,7 +408,7 @@ describe("recursive types", ({test, testSkip}) => {
     "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
   );
   assertRun(
-    "type_rec_correct",
+    "type_rec_correct_1",
     {|
       record rec T {
         x: T
@@ -420,5 +420,16 @@ describe("recursive types", ({test, testSkip}) => {
       print(T2(T2(Val(1))))
     |},
     "T2(T2(Val(1)))\n",
+  );
+  assertRun(
+    "type_rec_correct_2",
+    {|
+      record T {
+        x: Number
+      }
+      type T = T
+      print({ x: 1 }: T)
+    |},
+    "{\n  x: 1\n}\n",
   );
 });
