@@ -11,7 +11,6 @@ let determine_eol = line => {
   switch (line) {
   | Some(line) when String.length(line) > 0 =>
     // check what the last char was
-    // TODO: Replace with `String.ends_with` in OCaml 4.13
     if (String.ends_with(~suffix="\r", line)) {
       CRLF;
     } else {
