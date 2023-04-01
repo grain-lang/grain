@@ -1,0 +1,6 @@
+module Simple
+
+provide module Simple {
+  provide let foo = 5
+  provide let func = () => 5
+}

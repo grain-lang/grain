@@ -73,6 +73,7 @@ module PurityArg: Anf_iterator.IterArgument = {
           UntagUint8 |
           TagUint16 |
           UntagUint16 |
+          Magic |
           Not |
           Box |
           Unbox |

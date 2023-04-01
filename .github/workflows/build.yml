@@ -1,0 +1,34 @@
+# This workflow exists so a dependency cache can be built for a
+# single OS and then its native & js builds can be run in parallel.
+#
+# If we instead built the dependency cache with a matrix in `ci.yml`,
+# it'd block every build until all caches were built for all our targets.
+name: Build and test
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        required: true
+
+jobs:
+  dependencies:
+    name: Dependencies
+    uses: ./.github/workflows/dependencies.yml
+    with:
+      os: ${{ inputs.os }}
+
+  build-native:
+    name: (native) Build and test
+    needs: [dependencies]
+    uses: ./.github/workflows/build-native.yml
+    with:
+      os: ${{ inputs.os }}
+
+  build-js:
+    name: (js) Build and test
+    needs: [dependencies]
+    uses: ./.github/workflows/build-js.yml
+    with:
+      os: ${{ inputs.os }}
