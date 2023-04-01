@@ -109,7 +109,7 @@ let charList = Array.toList(chars)
 assert uniq(List.map(Hash.hash, charList))
 Array.forEach(c => assert Hash.hash(c) == Hash.hash(c), chars)
 
-enum Variants {
+enum rec Variants {
   A,
   B,
   C,
