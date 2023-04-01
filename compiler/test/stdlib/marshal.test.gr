@@ -31,7 +31,7 @@ assert roundtripOk([> 1l, 2l, 3l])
 assert roundtripOk([1, 2, 3])
 assert roundtripOk([1l, 2l, 3l])
 
-enum Foo<a> {
+enum rec Foo<a> {
   Bar,
   Baz(a),
   Qux(String, a),
@@ -67,7 +67,7 @@ let closureTest = () => {
 
 closureTest()
 
-record Cyclic {
+record rec Cyclic {
   mut self: List<Cyclic>,
 }
 

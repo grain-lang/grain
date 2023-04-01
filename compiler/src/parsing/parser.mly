@@ -411,9 +411,9 @@ id_vec:
   | lcaret lseparated_nonempty_list(comma, id_typ) comma? rcaret {$2}
 
 data_declaration:
-  | TYPE UIDENT id_vec? equal typ { DataDeclaration.abstract ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) (Some $5) }
-  | ENUM UIDENT id_vec? data_constructors { DataDeclaration.variant ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
-  | RECORD UIDENT id_vec? data_record_body { DataDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
+  | TYPE REC? UIDENT id_vec? equal typ { DataDeclaration.abstract ~loc:(to_loc $loc) (if Option.is_some $2 then Recursive else Nonrecursive) (mkstr $loc($3) $3) (Option.value ~default:[] $4) (Some $6) }
+  | ENUM REC? UIDENT id_vec? data_constructors { DataDeclaration.variant ~loc:(to_loc $loc) (if Option.is_some $2 then Recursive else Nonrecursive) (mkstr $loc($3) $3) (Option.value ~default:[] $4) $5 }
+  | RECORD REC? UIDENT id_vec? data_record_body { DataDeclaration.record ~loc:(to_loc $loc) (if Option.is_some $2 then Recursive else Nonrecursive) (mkstr $loc($3) $3) (Option.value ~default:[] $4) $5 }
 
 unop_expr:
   | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }

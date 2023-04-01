@@ -1,6 +1,6 @@
 module BasicNum
 
-enum List<a> {
+enum rec List<a> {
   Empty,
   Cons(a, List<a>),
 }

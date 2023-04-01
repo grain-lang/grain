@@ -8,7 +8,7 @@ provide record Rec {
   bar: String,
 }
 
-provide enum Poly {
+provide enum rec Poly {
   PList(List<Number>),
   PArray(Array<Poly>),
   PAssoc(Rec),
