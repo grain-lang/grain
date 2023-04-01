@@ -264,7 +264,7 @@ provide module Immutable {
   // as described in the paper "Optimal Purely Functional Priority Queues" by Chris Okasaki.
 
   // rank is a stand-in for height of this skew binomial tree
-  record Node<a> {
+  record rec Node<a> {
     val: a,
     rank: Number,
     children: List<Node<a>>,

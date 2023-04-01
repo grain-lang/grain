@@ -1,6 +1,6 @@
 module RecursiveEqualBox
 
-provide enum R {
+provide enum rec R {
   Atom,
   Recursive(Box<Option<R>>),
 }
@@ -18,7 +18,7 @@ u := Some(w)
 
 assert x == w
 
-provide record Rec {
+provide record rec Rec {
   int: Number,
   r: Box<Option<Rec>>,
 }

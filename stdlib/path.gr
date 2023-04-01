@@ -79,7 +79,7 @@ record TFileType<a> {
 }
 
 // Rel(Number) represents the number of directories up from the base point
-enum Base {
+enum rec Base {
   Rel(Number),
   Abs(AbsoluteRoot),
 },
@@ -129,7 +129,7 @@ abstract record Directory {
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
  * `Directory`)
  */
-abstract type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
+abstract type rec TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
  * Represents a system path.
  */

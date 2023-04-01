@@ -23,7 +23,7 @@ describe("enums", ({test, testSkip}) => {
   );
   // Taken from https://en.wikipedia.org/wiki/Recursive_data_type#Mutually_recursive_data_types
   let recursive_contents = {|
-    enum Tree<a> {
+    enum rec Tree<a> {
       Empty,
       Node(a, Forest<a>)
     },

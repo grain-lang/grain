@@ -28,7 +28,8 @@ type error =
   | Scoping_pack(Identifier.t, type_expr)
   | Recursive_module_require_explicit_type
   | Apply_generative
-  | Cannot_scrape_alias(Path.t);
+  | Cannot_scrape_alias(Path.t)
+  | Nonrecursive_type_with_recursion(Identifier.t);
 
 exception Error(Location.t, Env.t, error);
 exception Error_forward(Location.error);
