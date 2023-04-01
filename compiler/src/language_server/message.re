@@ -26,7 +26,7 @@ let of_request = (msg: Protocol.request_message): t => {
     | Ok(params) => TextDocumentHover(id, params)
     | Error(msg) => Error(msg)
     }
-   | {method: "textDocument/inlayHint", id: Some(id), params: Some(params)} =>
+  | {method: "textDocument/inlayHint", id: Some(id), params: Some(params)} =>
     switch (Inlayhint.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentInlayHint(id, params)
     | Error(msg) => Error(msg)
