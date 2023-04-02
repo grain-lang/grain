@@ -144,7 +144,7 @@ jobs:
         with:
           workflow: Grain Release
           token: ${{ secrets.WORKFLOW_TOKEN }}
-          ref: master
+          ref: main
           repo: grain-lang/grain-lang.org
           tag_input: ${{ needs.release-please.outputs.tag-name }}
 
