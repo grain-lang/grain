@@ -231,6 +231,18 @@ record FormattingSettings {
 
 Allows fine grained control of formatting in JSON printing.
 
+### Json.**FormattingChoices**
+
+```grain
+enum FormattingChoices {
+  Pretty,
+  Compact,
+  Custom(FormattingSettings),
+}
+```
+
+Allows control of formatting in JSON printing.
+
 ### Json.**JSONParseError**
 
 ```grain
@@ -249,8 +261,13 @@ Functions and constants included in the Json module.
 
 ### Json.**defaultCompactFormat**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
-defaultCompactFormat : () -> FormattingSettings
+defaultCompactFormat : FormattingSettings
 ```
 
 Compact formatting that minimizes the size of resulting JSON at cost of not
@@ -268,8 +285,13 @@ replaced with visible characters.
 
 ### Json.**defaultPrettyFormat**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
-defaultPrettyFormat : () -> FormattingSettings
+defaultPrettyFormat : FormattingSettings
 ```
 
 Recommended human readable formatting.
@@ -291,8 +313,13 @@ replaced with visible characters.
 
 ### Json.**defaultCompactAndSafeFormat**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
-defaultCompactAndSafeFormat : () -> FormattingSettings
+defaultCompactAndSafeFormat : FormattingSettings
 ```
 
 Compact and conservative formatting to maximize compatibility and
@@ -309,8 +336,13 @@ replaced with visible characters.
 
 ### Json.**defaultPrettyAndSafeFormat**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
-defaultPrettyAndSafeFormat : () -> FormattingSettings
+defaultPrettyAndSafeFormat : FormattingSettings
 ```
 
 Pretty and conservative formatting to maximize compatibility and
@@ -332,9 +364,14 @@ replaced with visible characters.
 
 ### Json.**toString**
 
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
 ```grain
 toString :
-  (json: JSON, format: FormattingSettings) ->
+  (json: JSON, ?format: FormattingChoices) ->
    Result<String, JSONToStringError>
 ```
 
@@ -345,7 +382,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`json`|`JSON`|The JSON object to print|
-|`format`|`FormattingSettings`|Custom formatting setttings|
+|`format`|`Option<FormattingChoices>`|formatting option|
 
 Returns:
 
@@ -356,88 +393,62 @@ Returns:
 Examples:
 
 ```grain
-print(Result.unwrap(toString(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]), defaultCompactAndSafeFormat())))
-
-Example output:
-```json
-{"currency":"\u20ac","price":99.9}
+print(
+  Result.unwrap(
+    toString(
+      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+      format=Custom(defaultCompactAndSafeFormat)
+    )
+  )
+)
+// Output: {"currency":"\u20ac","price":99.9}"
 ```
-```
-
-### Json.**toStringCompact**
 
 ```grain
-toStringCompact : (json: JSON) -> Result<String, JSONToStringError>
+print(
+  Result.unwrap(
+    toString(
+      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]
+    )
+  )
+)
+// Output: {"currency":"€","price":99.9}
 ```
-
-Prints the JSON object into a string with compact formatting optimized for
-small size. Recommended for all uses where the intended consumer is a
-machine program. For example in REST APIs.
-
-Using this function can be preferred over `toString` with compact formatting
-settings since it can be slightly faster.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`json`|`JSON`|The JSON object to print|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Result<String, JSONToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.|
-
-Examples:
 
 ```grain
-print(Result.unwrap(toStringCompact(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
-
-Example output:
-```json
-{"currency":"€","price":99.9}
+print(
+  Result.unwrap(
+    toString(
+      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+      format=Compact
+     )
+  )
+)
+// Output: {"currency":"€","price":99.9}
 ```
-```
-
-### Json.**toStringPretty**
 
 ```grain
-toStringPretty : (json: JSON) -> Result<String, JSONToStringError>
-```
-
-Prints the JSON object into a string with default pretty formatting
-settings. Recommended for uses where the intended consumer is a person or
-the text should be easily inspectable. For example configuration files or
-document file formats.
-
-Parameters:
-
-|param|type|description|
-|-----|----|-----------|
-|`json`|`JSON`|The JSON object to print|
-
-Returns:
-
-|type|description|
-|----|-----------|
-|`Result<String, JSONToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
-
-Example output:
-```json
-{
-  "currency": "€",
-  "price": 99.9
-}
-```|
-
-Examples:
-
-```grain
-print(Result.unwrap(toStringPretty(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
+print(
+  Result.unwrap(
+    toString(
+      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+      format=Pretty
+    )
+  )
+)
+// Output:
+// {
+// "currency": "€",
+// "price": 99.9
+//}
 ```
 
 ### Json.**parse**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
 
 ```grain
 parse : String -> Result<JSON, JSONParseError>
@@ -455,16 +466,16 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<JSON, JSONParseError>`|A `Result` object with either the parsed `JSON` object or an error.
-
-Example output:
-```
-Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
-```|
+|`Result<JSON, JSONParseError>`|A `Result` object with either the parsed `JSON` object or an error.|
 
 Examples:
 
 ```grain
 print(parse("{\"currency\":\"$\",\"price\":119}"))
+
+Example output:
+```
+Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
+```
 ```
 

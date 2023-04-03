@@ -531,28 +531,32 @@ module ToString {
   // Emitting
 
   // Simple values of each type
-  assert toStringCompact(JSONNull) == Ok("null")
-  assert toStringCompact(JSONBoolean(true)) == Ok("true")
-  assert toStringCompact(JSONBoolean(false)) == Ok("false")
-  assert toStringCompact(JSONString("")) == Ok("\"\"")
-  assert toStringCompact(JSONNumber(0)) == Ok("0")
-  assert toStringCompact(JSONArray([])) == Ok("[]")
-  assert toStringCompact(JSONObject([])) == Ok("{}")
+  assert toString(JSONNull, format=Compact) == Ok("null")
+  assert toString(JSONBoolean(true), format=Compact) == Ok("true")
+  assert toString(JSONBoolean(false), format=Compact) == Ok("false")
+  assert toString(JSONString(""), format=Compact) == Ok("\"\"")
+  assert toString(JSONNumber(0), format=Compact) == Ok("0")
+  assert toString(JSONArray([]), format=Compact) == Ok("[]")
+  assert toString(JSONObject([]), format=Compact) == Ok("{}")
 
   // Various strings. Escapes, emojis etc.
-  assert toStringCompact(JSONString("ASCII Hello world!")) ==
+  assert toString(JSONString("ASCII Hello world!"), format=Compact) ==
     Ok("\"ASCII Hello world!\"")
 
-  assert toStringCompact(JSONString("Unicode こんにちは世界!")) ==
+  assert toString(
+    JSONString("Unicode こんにちは世界!"),
+    format=Compact
+  ) ==
     Ok("\"Unicode こんにちは世界!\"")
-  assert toStringCompact(JSONString("A \"quoted\" string")) ==
+  assert toString(JSONString("A \"quoted\" string"), format=Compact) ==
     Ok("\"A \\\"quoted\\\" string\"")
-  assert toStringCompact(JSONString("🤘🏻")) == Ok("\"🤘🏻\"")
-  assert toStringCompact(JSONString("🤘🏻")) == Ok("\"🤘🏻\"")
-  assert toStringCompact(JSONString("🏴󠁧󠁢󠁷󠁬󠁳󠁿")) ==
+  assert toString(JSONString("🤘🏻"), format=Compact) == Ok("\"🤘🏻\"")
+  assert toString(JSONString("🤘🏻"), format=Compact) == Ok("\"🤘🏻\"")
+  assert toString(JSONString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"), format=Compact) ==
     Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
-  assert toStringCompact(
-    JSONString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿")
+  assert toString(
+    JSONString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿"),
+    format=Compact
   ) ==
     Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
 
@@ -561,47 +565,47 @@ module ToString {
   // and internal details of JSON formatting. We definetely want them to fail
   // when the latter changes. The former shouldn't be an issue assuming here
   // constants with decimal point or exponentials are float64.
-  assert toStringCompact(JSONNumber(-10)) == Ok("-10")
-  assert toStringCompact(JSONNumber(-2)) == Ok("-2")
-  assert toStringCompact(JSONNumber(-1)) == Ok("-1")
-  assert toStringCompact(JSONNumber(1)) == Ok("1")
-  assert toStringCompact(JSONNumber(2)) == Ok("2")
-  assert toStringCompact(JSONNumber(10)) == Ok("10")
-  assert toStringCompact(JSONNumber(100)) == Ok("100")
-  assert toStringCompact(JSONNumber(1000)) == Ok("1000")
-  assert toStringCompact(JSONNumber(0.0)) == Ok("0.0")
-  assert toStringCompact(JSONNumber(0.1)) == Ok("0.1")
-  assert toStringCompact(JSONNumber(0.123)) == Ok("0.123")
-  assert toStringCompact(JSONNumber(0.9)) == Ok("0.9")
-  assert toStringCompact(JSONNumber(1.123)) == Ok("1.123")
-  assert toStringCompact(JSONNumber(0e0)) == Ok("0.0")
-  assert toStringCompact(JSONNumber(1e0)) == Ok("1.0")
-  assert toStringCompact(JSONNumber(1e1)) == Ok("10.0")
-  assert toStringCompact(JSONNumber(1E1)) == Ok("10.0")
-  assert toStringCompact(JSONNumber(1e2)) == Ok("100.0")
-  assert toStringCompact(JSONNumber(1e3)) == Ok("1000.0")
-  assert toStringCompact(JSONNumber(-1e2)) == Ok("-100.0")
-  assert toStringCompact(JSONNumber(1e-1)) == Ok("0.1")
-  assert toStringCompact(JSONNumber(1.23e-4)) == Ok("0.000123")
+  assert toString(JSONNumber(-10), format=Compact) == Ok("-10")
+  assert toString(JSONNumber(-2), format=Compact) == Ok("-2")
+  assert toString(JSONNumber(-1), format=Compact) == Ok("-1")
+  assert toString(JSONNumber(1), format=Compact) == Ok("1")
+  assert toString(JSONNumber(2), format=Compact) == Ok("2")
+  assert toString(JSONNumber(10), format=Compact) == Ok("10")
+  assert toString(JSONNumber(100), format=Compact) == Ok("100")
+  assert toString(JSONNumber(1000), format=Compact) == Ok("1000")
+  assert toString(JSONNumber(0.0), format=Compact) == Ok("0.0")
+  assert toString(JSONNumber(0.1), format=Compact) == Ok("0.1")
+  assert toString(JSONNumber(0.123), format=Compact) == Ok("0.123")
+  assert toString(JSONNumber(0.9), format=Compact) == Ok("0.9")
+  assert toString(JSONNumber(1.123), format=Compact) == Ok("1.123")
+  assert toString(JSONNumber(0e0), format=Compact) == Ok("0.0")
+  assert toString(JSONNumber(1e0), format=Compact) == Ok("1.0")
+  assert toString(JSONNumber(1e1), format=Compact) == Ok("10.0")
+  assert toString(JSONNumber(1E1), format=Compact) == Ok("10.0")
+  assert toString(JSONNumber(1e2), format=Compact) == Ok("100.0")
+  assert toString(JSONNumber(1e3), format=Compact) == Ok("1000.0")
+  assert toString(JSONNumber(-1e2), format=Compact) == Ok("-100.0")
+  assert toString(JSONNumber(1e-1), format=Compact) == Ok("0.1")
+  assert toString(JSONNumber(1.23e-4), format=Compact) == Ok("0.000123")
 
   // Big numbers
-  assert toStringCompact(JSONNumber(1152921504606846976)) ==
+  assert toString(JSONNumber(1152921504606846976), format=Compact) ==
     Ok("1152921504606846976")
-  assert toStringCompact(JSONNumber(1152921504606847000.0)) ==
+  assert toString(JSONNumber(1152921504606847000.0), format=Compact) ==
     Ok("1152921504606847000.0")
 
   // Invalid numbers
-  assert match (toStringCompact(JSONNumber(NaN))) {
+  assert match (toString(JSONNumber(NaN), format=Compact)) {
     Err(InvalidNumber(_)) => true,
     _ => false,
   }
 
-  assert match (toStringCompact(JSONNumber(Infinity))) {
+  assert match (toString(JSONNumber(Infinity), format=Compact)) {
     Err(InvalidNumber(_)) => true,
     _ => false,
   }
 
-  assert match (toStringCompact(JSONNumber(-Infinity))) {
+  assert match (toString(JSONNumber(-Infinity), format=Compact)) {
     Err(InvalidNumber(_)) => true,
     _ => false,
   }
@@ -678,16 +682,18 @@ module ToString {
   assert List.map(json =>
     toString(
       json,
-      {
-        indentation: IndentWithSpaces(2),
-        arrayFormat: CompactArrayEntries,
-        objectFormat: CompactObjectEntries,
-        lineEnding: LineFeed,
-        finishWithNewLine: false,
-        escapeAllControlPoints: false,
-        escapeHTMLUnsafeSequences: false,
-        escapeNonASCII: false,
-      }
+      format=Custom(
+        {
+          indentation: IndentWithSpaces(2),
+          arrayFormat: CompactArrayEntries,
+          objectFormat: CompactObjectEntries,
+          lineEnding: LineFeed,
+          finishWithNewLine: false,
+          escapeAllControlPoints: false,
+          escapeHTMLUnsafeSequences: false,
+          escapeNonASCII: false,
+        }
+      )
     ), comprehensiveNestingCombinations) ==
     [
       Ok("[]"),
@@ -709,16 +715,18 @@ module ToString {
   assert List.map(json =>
     toString(
       json,
-      {
-        indentation: IndentWithSpaces(2),
-        arrayFormat: OneArrayEntryPerLine,
-        objectFormat: OneObjectEntryPerLine,
-        lineEnding: LineFeed,
-        finishWithNewLine: false,
-        escapeAllControlPoints: false,
-        escapeHTMLUnsafeSequences: false,
-        escapeNonASCII: false,
-      }
+      format=Custom(
+        {
+          indentation: IndentWithSpaces(2),
+          arrayFormat: OneArrayEntryPerLine,
+          objectFormat: OneObjectEntryPerLine,
+          lineEnding: LineFeed,
+          finishWithNewLine: false,
+          escapeAllControlPoints: false,
+          escapeHTMLUnsafeSequences: false,
+          escapeNonASCII: false,
+        }
+      )
     ), comprehensiveNestingCombinations) ==
     [
       Ok("[]"),
@@ -740,9 +748,12 @@ module ToString {
     ]
 
   // Round trips
-  assert Result.map(parse, toStringCompact(comprehensiveJSONObject)) ==
+  assert Result.map(parse, toString(comprehensiveJSONObject)) ==
     Ok(Ok(comprehensiveJSONObject))
 
-  assert Result.map(parse, toStringPretty(comprehensiveJSONObject)) ==
+  assert Result.map(parse, toString(comprehensiveJSONObject, format=Compact)) ==
+    Ok(Ok(comprehensiveJSONObject))
+
+  assert Result.map(parse, toString(comprehensiveJSONObject, format=Pretty)) ==
     Ok(Ok(comprehensiveJSONObject))
 }
