@@ -2,7 +2,7 @@
 title: Json
 ---
 
-@module Json: JSON (JavaScript Object Notation) parsing and printing.
+JSON (JavaScript Object Notation) parsing and printing.
 
 ## Types
 
@@ -280,7 +280,7 @@ transported in ASCII encoding.
 The following example have whitespaces, line breaks and control points
 replaced with visible characters.
 ```
-{"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
+{"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
 ```
 
 ### Json.**defaultPrettyFormat**
@@ -307,7 +307,7 @@ replaced with visible characters.
 ··"currency":·"€",↵
 ··"price":·99.9,↵
 ··"currencyDescription":·"EURO\u007f",↵
-··"script·unembeddable":·"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"↵
+··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"↵
 }
 ```
 
@@ -331,7 +331,7 @@ plain ASCII.
 The following example have whitespaces, line breaks and control points
 replaced with visible characters.
 ```
-{"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
+{"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
 ```
 
 ### Json.**defaultPrettyAndSafeFormat**
@@ -358,7 +358,7 @@ replaced with visible characters.
 ··"currency":·"\u20ac",↵
 ··"price":·99.9,↵
 ··"currencyDescription":·"EURO\u007f",↵
-··"script·unembeddable":·"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"↵
+··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"↵
 }
 ```
 
