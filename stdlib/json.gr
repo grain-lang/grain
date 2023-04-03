@@ -26,8 +26,14 @@ include "runtime/dataStructures"
 include "runtime/bigint" as BI
 from RunTimeString use { toString as runtimeToString }
 from Numbers use { coerceNumberToWasmI32 }
-from DataStructures use { tagSimpleNumber, newFloat64 }
+from DataStructures use { tagSimpleNumber, newFloat64, untagSimpleNumber }
 
+// Primitive Offsets
+// TODO(703): Get these offsets from the runtime
+@unsafe
+let _INT64_BOXED_VALUE_OFFSET = 8n
+@unsafe
+let _Float64_BOXED_VALUE_OFFSET = 8n
 /**
  * Data structure representing the result of parsing and the input of printing
  * JSON.
@@ -238,6 +244,14 @@ provide record FormattingSettings {
 }
 
 /**
+ * Allows control of formatting in JSON printing.
+ */
+provide enum FormattingChoices {
+  Pretty,
+  Compact,
+  Custom(FormattingSettings),
+}
+/**
  * Compact formatting that minimizes the size of resulting JSON at cost of not
  * being easily human readable.
  *
@@ -250,18 +264,19 @@ provide record FormattingSettings {
  * ```
  * {"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
  * ```
+ *
+ * @since v0.6.0
  */
-provide let defaultCompactFormat = () =>
-  {
-    indentation: NoIndentation,
-    arrayFormat: CompactArrayEntries,
-    objectFormat: CompactObjectEntries,
-    lineEnding: NoLineEnding,
-    finishWithNewLine: false,
-    escapeAllControlPoints: false,
-    escapeHTMLUnsafeSequences: false,
-    escapeNonASCII: false,
-  }: FormattingSettings
+provide let defaultCompactFormat = {
+  indentation: NoIndentation,
+  arrayFormat: CompactArrayEntries,
+  objectFormat: CompactObjectEntries,
+  lineEnding: NoLineEnding,
+  finishWithNewLine: false,
+  escapeAllControlPoints: false,
+  escapeHTMLUnsafeSequences: false,
+  escapeNonASCII: false,
+}: FormattingSettings
 
 /**
  * Recommended human readable formatting.
@@ -280,18 +295,19 @@ provide let defaultCompactFormat = () =>
  * ··"script·unembeddable":·"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"↵
  * }
  * ```
+ *
+ * @since v0.6.0
  */
-provide let defaultPrettyFormat = () =>
-  {
-    indentation: IndentWithSpaces(2),
-    arrayFormat: OneArrayEntryPerLine,
-    objectFormat: OneObjectEntryPerLine,
-    lineEnding: LineFeed,
-    finishWithNewLine: true,
-    escapeAllControlPoints: true,
-    escapeHTMLUnsafeSequences: false,
-    escapeNonASCII: false,
-  }: FormattingSettings
+provide let defaultPrettyFormat = {
+  indentation: IndentWithSpaces(2),
+  arrayFormat: OneArrayEntryPerLine,
+  objectFormat: OneObjectEntryPerLine,
+  lineEnding: LineFeed,
+  finishWithNewLine: true,
+  escapeAllControlPoints: true,
+  escapeHTMLUnsafeSequences: false,
+  escapeNonASCII: false,
+}: FormattingSettings
 
 /**
  * Compact and conservative formatting to maximize compatibility and
@@ -305,18 +321,19 @@ provide let defaultPrettyFormat = () =>
  * ```
  * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
  * ```
+ *
+ * @since v0.6.0
  */
-provide let defaultCompactAndSafeFormat = () =>
-  {
-    indentation: NoIndentation,
-    arrayFormat: CompactArrayEntries,
-    objectFormat: CompactObjectEntries,
-    lineEnding: NoLineEnding,
-    finishWithNewLine: false,
-    escapeAllControlPoints: true,
-    escapeHTMLUnsafeSequences: true,
-    escapeNonASCII: true,
-  }: FormattingSettings
+provide let defaultCompactAndSafeFormat = {
+  indentation: NoIndentation,
+  arrayFormat: CompactArrayEntries,
+  objectFormat: CompactObjectEntries,
+  lineEnding: NoLineEnding,
+  finishWithNewLine: false,
+  escapeAllControlPoints: true,
+  escapeHTMLUnsafeSequences: true,
+  escapeNonASCII: true,
+}: FormattingSettings
 
 /**
  * Pretty and conservative formatting to maximize compatibility and
@@ -335,18 +352,19 @@ provide let defaultCompactAndSafeFormat = () =>
  * ··"script·unembeddable":·"You·cannot·pase·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"↵
  * }
  * ```
+ *
+ * @since v0.6.0
  */
-provide let defaultPrettyAndSafeFormat = () =>
-  {
-    indentation: IndentWithSpaces(2),
-    arrayFormat: OneArrayEntryPerLine,
-    objectFormat: OneObjectEntryPerLine,
-    lineEnding: LineFeed,
-    finishWithNewLine: true,
-    escapeAllControlPoints: true,
-    escapeHTMLUnsafeSequences: true,
-    escapeNonASCII: true,
-  }: FormattingSettings
+provide let defaultPrettyAndSafeFormat = {
+  indentation: IndentWithSpaces(2),
+  arrayFormat: OneArrayEntryPerLine,
+  objectFormat: OneObjectEntryPerLine,
+  lineEnding: LineFeed,
+  finishWithNewLine: true,
+  escapeAllControlPoints: true,
+  escapeHTMLUnsafeSequences: true,
+  escapeNonASCII: true,
+}: FormattingSettings
 
 record JSONWriterCompactImplHelper {
   buffer: Buffer.Buffer,
@@ -553,9 +571,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
 
   let ptr = WasmI32.fromGrain(value)
   if ((ptr & 1n) != 0n) {
-    // FIXME expose runtime/numbers.untagSimple?
-    let asWasmI32 = ptr >> 1n
-    printNumberWasmI32(asWasmI32, buffer)
+    printNumberWasmI32(untagSimpleNumber(value), buffer)
     None
   } else if ((ptr & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
     let tag = WasmI32.load(ptr, 0n)
@@ -564,8 +580,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
         let numberTag = WasmI32.load(ptr, 4n)
         match (numberTag) {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
-            let asWasmI64 = WasmI64.load(ptr, 8n)
-            // FIXME magic numbers
+            let asWasmI64 = WasmI64.load(ptr, _INT64_BOXED_VALUE_OFFSET)
             printNumberWasmI64(asWasmI64, buffer)
             None
           },
@@ -596,8 +611,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             printNumberWasmF64(asWasmF64, buffer)
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
-            let asWasmF64 = WasmF64.load(ptr, 8n)
-            // FIXME magic numbers
+            let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
             printNumberWasmF64(asWasmF64, buffer)
           },
           _ => {
@@ -626,16 +640,16 @@ let rec printElementCompact =
   match (json) {
     JSONNull => {
       printNull(buffer)
-      None
+      return None
     },
     JSONBoolean(b) => {
       printBool(b, buffer)
-      None
+      return None
     },
-    JSONNumber(n) => printNumber(n, buffer),
+    JSONNumber(n) => return printNumber(n, buffer),
     JSONString(s) => {
       implHelper.emitEscapedQuotedString(s)
-      None
+      return None
     },
     JSONArray(elems) => {
       // Here I'm not using List.forEachi or similar in order to avoid
@@ -648,18 +662,15 @@ let rec printElementCompact =
         [] => {
           Buffer.addChar('[', buffer)
           Buffer.addChar(']', buffer)
-          None
+          return None
         },
         [e] => {
           Buffer.addChar('[', buffer)
 
           let err = printElementCompact(e, implHelper)
-
-          if (Option.isNone(err)) {
-            Buffer.addChar(']', buffer)
-          }
-
-          err
+          if (Option.isSome(err)) return err
+          Buffer.addChar(']', buffer)
+          return None
         },
         [initialHead, ...initialRest] => {
           Buffer.addChar('[', buffer)
@@ -667,15 +678,13 @@ let rec printElementCompact =
           let mut currentHead = initialHead
           let mut currentRest = initialRest
 
-          let mut err = None
-
           for (let mut index = 0; ; index += 1) {
             if (index > 0) {
               Buffer.addChar(',', buffer)
             }
 
-            err = printElementCompact(currentHead, implHelper)
-            if (Option.isSome(err)) break
+            let err = printElementCompact(currentHead, implHelper)
+            if (Option.isSome(err)) return err
 
             match (currentRest) {
               [] => break,
@@ -686,11 +695,9 @@ let rec printElementCompact =
             }
           }
 
-          if (Option.isNone(err)) {
-            Buffer.addChar(']', buffer)
-          }
+          Buffer.addChar(']', buffer)
 
-          err
+          return None
         },
       }
     },
@@ -699,7 +706,7 @@ let rec printElementCompact =
         [] => {
           Buffer.addChar('{', buffer)
           Buffer.addChar('}', buffer)
-          None
+          return None
         },
         [(key, value)] => {
           Buffer.addChar('{', buffer)
@@ -709,20 +716,17 @@ let rec printElementCompact =
           Buffer.addChar(':', buffer)
 
           let err = printElementCompact(value, implHelper)
+          if (Option.isSome(err)) return err
 
-          if (Option.isNone(err)) {
-            Buffer.addChar('}', buffer)
-          }
+          Buffer.addChar('}', buffer)
 
-          err
+          return None
         },
         [initialHead, ...initialRest] => {
           Buffer.addChar('{', buffer)
 
           let mut currentHead = initialHead
           let mut currentRest = initialRest
-
-          let mut err = None
 
           for (let mut index = 0; ; index += 1) {
             if (index > 0) {
@@ -735,11 +739,9 @@ let rec printElementCompact =
 
             Buffer.addChar(':', buffer)
 
-            err = printElementCompact(value, implHelper)
+            let err = printElementCompact(value, implHelper)
 
-            if (Option.isSome(err)) {
-              break
-            }
+            if (Option.isSome(err)) return err
 
             match (currentRest) {
               [] => break,
@@ -750,11 +752,9 @@ let rec printElementCompact =
             }
           }
 
-          if (Option.isNone(err)) {
-            Buffer.addChar('}', buffer)
-          }
+          Buffer.addChar('}', buffer)
 
-          err
+          return None
         },
       }
     },
@@ -814,23 +814,23 @@ let rec printElementPretty =
   match (json) {
     JSONNull => {
       printNull(buffer)
-      None
+      return None
     },
     JSONBoolean(b) => {
       printBool(b, buffer)
-      None
+      return None
     },
-    JSONNumber(n) => printNumber(n, buffer),
+    JSONNumber(n) => return printNumber(n, buffer),
     JSONString(s) => {
       implHelper.emitEscapedQuotedStringPretty(s)
-      None
+      return None
     },
     JSONArray(elems) => {
       match (elems) {
         [] => {
           Buffer.addChar('[', buffer)
           Buffer.addChar(']', buffer)
-          None
+          return None
         },
         [e] => {
           let format = implHelper.format
@@ -848,17 +848,16 @@ let rec printElementPretty =
           }
 
           let err = printElementPretty(e, implHelper, elemLevel)
+          if (Option.isSome(err)) return err
 
-          if (Option.isNone(err)) {
-            if (format.arrayFormat == OneArrayEntryPerLine) {
-              implHelper.printNewLine()
-              implHelper.printIndentation(indentationLevel)
-            }
-
-            Buffer.addChar(']', buffer)
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            implHelper.printNewLine()
+            implHelper.printIndentation(indentationLevel)
           }
 
-          err
+          Buffer.addChar(']', buffer)
+
+          return None
         },
         [initialHead, ...initialRest] => {
           let format = implHelper.format
@@ -871,8 +870,6 @@ let rec printElementPretty =
 
           let mut currentHead = initialHead
           let mut currentRest = initialRest
-
-          let mut err = None
 
           let elemLevel = indentationLevel + 1
 
@@ -889,10 +886,8 @@ let rec printElementPretty =
               implHelper.printIndentation(elemLevel)
             }
 
-            err = printElementPretty(currentHead, implHelper, elemLevel)
-            if (Option.isSome(err)) {
-              break
-            }
+            let err = printElementPretty(currentHead, implHelper, elemLevel)
+            if (Option.isSome(err)) return err
 
             match (currentRest) {
               [] => break,
@@ -903,16 +898,14 @@ let rec printElementPretty =
             }
           }
 
-          if (Option.isNone(err)) {
-            if (format.arrayFormat == OneArrayEntryPerLine) {
-              implHelper.printNewLine()
-              implHelper.printIndentation(indentationLevel)
-            }
-
-            Buffer.addChar(']', buffer)
+          if (format.arrayFormat == OneArrayEntryPerLine) {
+            implHelper.printNewLine()
+            implHelper.printIndentation(indentationLevel)
           }
 
-          err
+          Buffer.addChar(']', buffer)
+
+          return None
         },
       }
     },
@@ -921,7 +914,7 @@ let rec printElementPretty =
         [] => {
           Buffer.addChar('{', buffer)
           Buffer.addChar('}', buffer)
-          None
+          return None
         },
         [(key, value)] => {
           let format = implHelper.format
@@ -948,17 +941,16 @@ let rec printElementPretty =
           }
 
           let err = printElementPretty(value, implHelper, elemLevel)
+          if (Option.isSome(err)) return err
 
-          if (Option.isNone(err)) {
-            if (format.objectFormat == OneObjectEntryPerLine) {
-              implHelper.printNewLine()
-              implHelper.printIndentation(indentationLevel)
-            }
-
-            Buffer.addChar('}', buffer)
+          if (format.objectFormat == OneObjectEntryPerLine) {
+            implHelper.printNewLine()
+            implHelper.printIndentation(indentationLevel)
           }
 
-          err
+          Buffer.addChar('}', buffer)
+
+          return None
         },
         [initialHead, ...initialRest] => {
           let format = implHelper.format
@@ -971,8 +963,6 @@ let rec printElementPretty =
 
           let mut currentHead = initialHead
           let mut currentRest = initialRest
-
-          let mut err = None
 
           let elemLevel = indentationLevel + 1
 
@@ -1003,11 +993,8 @@ let rec printElementPretty =
               },
             }
 
-            err = printElementPretty(value, implHelper, elemLevel)
-
-            if (Option.isSome(err)) {
-              break
-            }
+            let err = printElementPretty(value, implHelper, elemLevel)
+            if (Option.isSome(err)) return err
 
             match (currentRest) {
               [] => break,
@@ -1018,16 +1005,14 @@ let rec printElementPretty =
             }
           }
 
-          if (Option.isNone(err)) {
-            if (format.objectFormat == OneObjectEntryPerLine) {
-              implHelper.printNewLine()
-              implHelper.printIndentation(indentationLevel)
-            }
-
-            Buffer.addChar('}', buffer)
+          if (format.objectFormat == OneObjectEntryPerLine) {
+            implHelper.printNewLine()
+            implHelper.printIndentation(indentationLevel)
           }
 
-          err
+          Buffer.addChar('}', buffer)
+
+          return None
         },
       }
     },
@@ -1236,12 +1221,9 @@ let makePrettyPrintJSONWriter =
   {
     emit: json => {
       let error = printElementPretty(json, implHelper, 0)
-
-      if (format.finishWithNewLine && Option.isNone(error)) {
-        printNewLine()
-      }
-
-      error
+      if (Option.isSome(error)) return error
+      if (format.finishWithNewLine) printNewLine()
+      return None
     },
   }: JSONWriter
 }
@@ -1250,21 +1232,62 @@ let makePrettyPrintJSONWriter =
  * Prints the JSON object into a string with specific formatting settings.
  *
  * @param json: The JSON object to print
- * @param format: Custom formatting setttings
+ * @param format: formatting option
  * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
  *
- * @example print(Result.unwrap(toString(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]), defaultCompactAndSafeFormat())))
+ * @example
+ * print(
+ *   Result.unwrap(
+ *     toString(
+ *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+ *       format=Custom(defaultCompactAndSafeFormat)
+ *     )
+ *   )
+ * )
+ * // Output: {"currency":"\u20ac","price":99.9}"
+ * @example
+ * print(
+ *   Result.unwrap(
+ *     toString(
+ *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]
+ *     )
+ *   )
+ * )
+ * // Output: {"currency":"€","price":99.9}
+ * @example
+ * print(
+ *   Result.unwrap(
+ *     toString(
+ *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+ *       format=Compact
+ *      )
+ *   )
+ * )
+ * // Output: {"currency":"€","price":99.9}
+ * @example
+ * print(
+ *   Result.unwrap(
+ *     toString(
+ *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+ *       format=Pretty
+ *     )
+ *   )
+ * )
+ * // Output:
+ * // {
+ * // "currency": "€",
+ * // "price": 99.9
+ * //}
  *
- * Example output:
- * ```json
- * {"currency":"\u20ac","price":99.9}
- * ```
+ * @since v0.6.0
  */
-provide let toString = (json: JSON, format: FormattingSettings) => {
+provide let toString = (json: JSON, format=Compact) => {
   let buf = Buffer.make(16)
-
-  let writer = makePrettyPrintJSONWriter(format, buf)
-
+  let writer = match (format) {
+    Pretty => makePrettyPrintJSONWriter(defaultPrettyFormat, buf),
+    Compact => makeCompactJSONWriter(buf),
+    Custom(format) => makePrettyPrintJSONWriter(format, buf),
+  }
   let error = writer.emit(json)
 
   match (error) {
@@ -1272,59 +1295,6 @@ provide let toString = (json: JSON, format: FormattingSettings) => {
     Some(e) => Err(e),
   }
 }
-
-/**
- * Prints the JSON object into a string with compact formatting optimized for
- * small size. Recommended for all uses where the intended consumer is a
- * machine program. For example in REST APIs.
- *
- * Using this function can be preferred over `toString` with compact formatting
- * settings since it can be slightly faster.
- *
- * @param json: The JSON object to print
- * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
- *
- * @example print(Result.unwrap(toStringCompact(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
- *
- * Example output:
- * ```json
- * {"currency":"€","price":99.9}
- * ```
- */
-provide let toStringCompact = (json: JSON) => {
-  let buf = Buffer.make(16)
-
-  let writer = makeCompactJSONWriter(buf)
-
-  let error = writer.emit(json)
-
-  match (error) {
-    None => Ok(Buffer.toString(buf)),
-    Some(e) => Err(e),
-  }
-}
-
-/**
- * Prints the JSON object into a string with default pretty formatting
- * settings. Recommended for uses where the intended consumer is a person or
- * the text should be easily inspectable. For example configuration files or
- * document file formats.
- *
- * @param json: The JSON object to print
- * @returns A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.
- *
- * Example output:
- * ```json
- * {
- *   "currency": "€",
- *   "price": 99.9
- * }
- * ```
- *
- * @example print(Result.unwrap(toStringPretty(JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]))))
- */
-provide let toStringPretty = (json: JSON) =>
-  toString(json, defaultPrettyFormat())
 
 /**
  * Represents errors for JSON parsing along with a human readable text message.
@@ -1931,8 +1901,6 @@ parseNumberValue = (parserState: JSONParserState) => {
     c = next(parserState)
   }
 
-  let mut err = None
-
   // After that, the first/second char can only be a decimal digit ('0'..'9').
   match (c) {
     0x30 => { // '0'
@@ -1964,11 +1932,11 @@ parseNumberValue = (parserState: JSONParserState) => {
       // JSON doesn't allow numbers starting with decimal separator like ".1".
       let detail = "expected a decimal digit, found " ++
         formatCodePointOrEOF(unexpectedCodePoint)
-      err = Some(buildUnexpectedTokenError(parserState, detail))
+      return Err(buildUnexpectedTokenError(parserState, detail))
     },
   }
   // Optional fractional part of the number.
-  if (Option.isNone(err) && c == 0x2E) { // '.'
+  if (c == 0x2E) { // '.'
     isFloat = true
     Buffer.addChar('.', buffer)
     c = next(parserState)
@@ -1979,7 +1947,7 @@ parseNumberValue = (parserState: JSONParserState) => {
       c = next(parserState)
     }
     if (!hasHitDigit)
-      err = Some(
+      return Err(
         buildUnexpectedTokenError(
           parserState,
           "exponent part is missing in number"
@@ -1987,7 +1955,7 @@ parseNumberValue = (parserState: JSONParserState) => {
       )
   }
   // Optional exponential part of the number.
-  if (Option.isNone(err) && (c == 0x65 || c == 0x45)) { // 'e' or 'E'
+  if (c == 0x65 || c == 0x45) { // 'e' or 'E'
     isFloat = true
     Buffer.addChar('e', buffer)
     c = next(parserState)
@@ -2010,7 +1978,7 @@ parseNumberValue = (parserState: JSONParserState) => {
       c = next(parserState)
     }
     if (!hasHitDigit)
-      err = Some(
+      return Err(
         buildUnexpectedTokenError(
           parserState,
           "exponent part is missing in number"
@@ -2023,23 +1991,18 @@ parseNumberValue = (parserState: JSONParserState) => {
   // character like ('"' for strings, ']' for arrays,'}' for objects etc). We
   // just leave the parser state at current position and the reading of next
   // token will succeed or fail, but number parsing just ends here.
-  match (err) {
-    Some(e) => Err(e),
-    None => {
-      let result = match (isFloat) {
-        false => atoiFast(buffer),
-        true => {
-          let str = Buffer.toString(buffer)
-          match (Number.parseFloat(str)) {
-            Err(err) => fail "Impossible",
-            Ok(n) => n,
-          }
-        },
+  let result = match (isFloat) {
+    false => atoiFast(buffer),
+    true => {
+      let str = Buffer.toString(buffer)
+      match (Number.parseFloat(str)) {
+        Err(err) => fail "Impossible",
+        Ok(n) => n,
       }
-      if (result == 0 && isNegative) Ok(JSONNumber(-0.0))
-      else Ok(JSONNumber(if (isNegative) result * -1 else result))
     },
   }
+  if (result == 0 && isNegative) return Ok(JSONNumber(-0.0))
+  else return Ok(JSONNumber(if (isNegative) result * -1 else result))
 },
 parseArray = (parserState: JSONParserState) => {
   match (expectCodePointAndAdvance(0x5B, parserState)) {
@@ -2226,12 +2189,15 @@ parseObject = (parserState: JSONParserState) => {
  * @param str: The JSON text string
  * @returns A `Result` object with either the parsed `JSON` object or an error.
  *
+ *
+ * @example print(parse("{\"currency\":\"$\",\"price\":119}"))
+ *
  * Example output:
  * ```
  * Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
  * ```
  *
- * @example print(parse("{\"currency\":\"$\",\"price\":119}"))
+ * @since v0.6.0
  */
 provide let parse: String -> Result<JSON, JSONParseError> = (str: String) => {
   let parserState = {
