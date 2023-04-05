@@ -297,9 +297,9 @@ bar", 1))|},
   // Bytes literals
   assertRun("bytes_literal", {|print(b"abc")|}, "<bytes: 61 62 63>\n");
   assertRun(
-    "bytes_literal",
-    {|print(b"111111111111111111111111111111111111111111111111111111111111111111111111")|},
-    "<bytes: 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31 31...>\n",
+    "bytes_literal_long",
+    {|print(b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")|},
+    "<bytes: 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 50 51 52 53 54 55 56 57 58 59 5a 61 62 63 64 65 66 67...>\n",
   );
   assertCompileError(
     "bytes_literal_err1",
