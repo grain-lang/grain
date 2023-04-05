@@ -295,7 +295,7 @@ bar", 1))|},
   );
 
   // Bytes literals
-  assertRun("bytes_literal", {|print(b"abc")|}, "<bytes: 61 62 63 >\n");
+  assertRun("bytes_literal", {|print(b"abc")|}, "<bytes: 61 62 63>\n");
   assertCompileError(
     "bytes_literal_err1",
     {|print(b"abc\u1234")|},
