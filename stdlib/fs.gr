@@ -1,0 +1,1045 @@
+/**
+ * High-level file system interactions. Utilizes WASI Preview 1 for underlying API
+ * 
+ * @example from "fs" include Fs
+ * 
+ * @since v0.6.0
+ */
+module Fs
+
+from "array" include Array
+from "bytes" include Bytes
+from "int64" include Int64
+from "option" include Option
+from "path" include Path
+from "result" include Result
+from "string" include String
+from "wasi/file" include File
+from "runtime/wasi" include Wasi
+from "runtime/unsafe/wasmi32" include WasmI32
+from "runtime/dataStructures" include DataStructures
+
+/**
+ * Potential errors that can be raised from system interactions.
+ */
+provide enum FileError {
+  NoPreopenedDirectories,
+  PermissionDenied,
+  AddressInUse,
+  AddressNotAvailable,
+  AddressFamilyNotSupported,
+  ResourceUnavailableOrOperationWouldBlock,
+  ConnectionAlreadyInProgress,
+  BadFileDescriptor,
+  BadMessage,
+  DeviceOrResourceBusy,
+  OperationCanceled,
+  NoChildProcesses,
+  ConnectionAborted,
+  ConnectionRefused,
+  ConnectionReset,
+  ResourceDeadlockWouldOccur,
+  DestinationAddressRequired,
+  MathematicsArgumentOutOfDomainOfFunction,
+  FileExists,
+  BadAddress,
+  FileTooLarge,
+  HostIsUnreachable,
+  IdentifierRemoved,
+  IllegalByteSequence,
+  OperationInProgress,
+  InterruptedFunction,
+  InvalidArgument,
+  IOError,
+  SocketIsConnected,
+  IsADirectory,
+  TooManyLevelsOfSymbolicLinks,
+  FileDescriptorValueTooLarge,
+  TooManyLinks,
+  MessageTooLarge,
+  FilenameTooLong,
+  NetworkIsDown,
+  ConnectionAbortedByNetwork,
+  NetworkUnreachable,
+  TooManyFilesOpenInSystem,
+  NoBufferSpaceAvailable,
+  NoSuchDevice,
+  NoSuchFileOrDirectory,
+  ExecutableFileFormatError,
+  NoLocksAvailable,
+  NotEnoughSpace,
+  NoMessageOfTheDesiredType,
+  ProtocolNotAvailable,
+  NoSpaceLeftOnDevice,
+  FunctionNotSupported,
+  TheSocketIsNotConnected,
+  NotADirectoryOrASymbolicLinkToADirectory,
+  DirectoryNotEmpty,
+  StateNotRecoverable,
+  NotASocket,
+  NotSupportedOrOperationNotSupportedOnSocket,
+  InappropriateIOControlOperation,
+  NoSuchDeviceOrAddress,
+  ValueTooLargeToBeStoredInDataType,
+  PreviousOwnerDied,
+  OperationNotPermitted,
+  BrokenPipe,
+  ProtocolError,
+  ProtocolNotSupported,
+  ProtocolWrongTypeForSocket,
+  ResultTooLarge,
+  ReadOnlyFileSystem,
+  InvalidSeek,
+  NoSuchProcess,
+  ConnectionTimedOut,
+  TextFileBusy,
+  CrossDeviceLink,
+  ExtensionCapabilitiesInsufficient,
+  UnknownFileError(Number),
+}
+
+let errnoToFileError = errno => {
+  match (errno) {
+    2 => PermissionDenied,
+    3 => AddressInUse,
+    4 => AddressNotAvailable,
+    5 => AddressFamilyNotSupported,
+    6 => ResourceUnavailableOrOperationWouldBlock,
+    7 => ConnectionAlreadyInProgress,
+    8 => BadFileDescriptor,
+    9 => BadMessage,
+    10 => DeviceOrResourceBusy,
+    11 => OperationCanceled,
+    12 => NoChildProcesses,
+    13 => ConnectionAborted,
+    14 => ConnectionRefused,
+    15 => ConnectionReset,
+    16 => ResourceDeadlockWouldOccur,
+    17 => DestinationAddressRequired,
+    18 => MathematicsArgumentOutOfDomainOfFunction,
+    20 => FileExists,
+    21 => BadAddress,
+    22 => FileTooLarge,
+    23 => HostIsUnreachable,
+    24 => IdentifierRemoved,
+    25 => IllegalByteSequence,
+    26 => OperationInProgress,
+    27 => InterruptedFunction,
+    28 => InvalidArgument,
+    29 => IOError,
+    30 => SocketIsConnected,
+    31 => IsADirectory,
+    32 => TooManyLevelsOfSymbolicLinks,
+    33 => FileDescriptorValueTooLarge,
+    34 => TooManyLinks,
+    35 => MessageTooLarge,
+    37 => FilenameTooLong,
+    38 => NetworkIsDown,
+    39 => ConnectionAbortedByNetwork,
+    40 => NetworkUnreachable,
+    41 => TooManyFilesOpenInSystem,
+    42 => NoBufferSpaceAvailable,
+    43 => NoSuchDevice,
+    44 => NoSuchFileOrDirectory,
+    45 => ExecutableFileFormatError,
+    46 => NoLocksAvailable,
+    48 => NotEnoughSpace,
+    49 => NoMessageOfTheDesiredType,
+    50 => ProtocolNotAvailable,
+    51 => NoSpaceLeftOnDevice,
+    52 => FunctionNotSupported,
+    53 => TheSocketIsNotConnected,
+    54 => NotADirectoryOrASymbolicLinkToADirectory,
+    55 => DirectoryNotEmpty,
+    56 => StateNotRecoverable,
+    57 => NotASocket,
+    58 => NotSupportedOrOperationNotSupportedOnSocket,
+    59 => InappropriateIOControlOperation,
+    60 => NoSuchDeviceOrAddress,
+    61 => ValueTooLargeToBeStoredInDataType,
+    62 => PreviousOwnerDied,
+    63 => OperationNotPermitted,
+    64 => BrokenPipe,
+    65 => ProtocolError,
+    66 => ProtocolNotSupported,
+    67 => ProtocolWrongTypeForSocket,
+    68 => ResultTooLarge,
+    69 => ReadOnlyFileSystem,
+    70 => InvalidSeek,
+    71 => NoSuchProcess,
+    73 => ConnectionTimedOut,
+    74 => TextFileBusy,
+    75 => CrossDeviceLink,
+    76 => ExtensionCapabilitiesInsufficient,
+    _ => UnknownFileError(errno),
+  }
+}
+
+/**
+ * Represents non-standard system file types.
+ */
+provide enum SpecialFileType {
+  Unknown,
+  BlockDevice,
+  CharacterDevice,
+  SocketDatagram,
+  SocketStream,
+}
+
+/**
+ * Represents different system file types.
+ */
+provide enum FileType {
+  File,
+  Directory,
+  SymbolicLink,
+  Special(SpecialFileType),
+}
+
+/**
+ * Represents metadata about a file.
+ */
+provide record Stats {
+  fileType: FileType,
+  /** File size in bytes */
+  size: Number,
+  /** Last accessed timestamp in nanoseconds */
+  accessedTimestamp: Number,
+  /** Last modified timestamp in nanoseconds */
+  modifiedTimestamp: Number,
+  /** Last file status change timestamp in nanoseconds */
+  changedTimestamp: Number,
+}
+
+/**
+ * Represents information about an item in a directory
+ */
+provide record DirectoryEntry {
+  name: String,
+  fileType: FileType,
+}
+
+/**
+ * The type of removal operation to perform when calling `remove`.
+ */
+provide enum RemoveMode {
+  RemoveFile,
+  RemoveEmptyDirectory,
+  RemoveRecursive,
+}
+
+/**
+ * The type of copy operation to perform when calling `copy`.
+ */
+provide enum CopyMode {
+  CopyFile,
+  CopyRecursive,
+}
+
+/**
+ * The type of write operation to perform when calling `writeFile`.
+ */
+provide enum WriteMode {
+  Truncate,
+  Append,
+}
+
+enum OpenMode {
+  Unlink,
+  RmDir,
+  RmrfDir,
+  CopySourceBase,
+  CopyTargetBase,
+  CopySource,
+  CopyTarget,
+  RenameSource,
+  RenameTarget,
+  ReadDir,
+  MakeDir,
+  MakeSymlink,
+  ReadLink,
+  Stats,
+  Read,
+  WriteFile,
+  AppendFile,
+}
+
+let fileResult = result => {
+  match (result) {
+    Ok(ok) => Ok(ok),
+    Err(Wasi.SystemError(err)) => Err(errnoToFileError(err)),
+    _ => fail "Impossible: non-wasi error",
+  }
+}
+
+let openInfo = openMode => {
+  match (openMode) {
+    Unlink => ([File.Directory: File.OpenFlag], [File.PathUnlinkFile], [], []),
+    RmDir => ([File.Directory], [File.PathRemoveDirectory], [], []),
+    RmrfDir => {
+      let rights = [
+        File.PathOpen,
+        File.PathFilestats,
+        File.PathRemoveDirectory,
+        File.PathUnlinkFile,
+        File.FdReaddir,
+      ]
+      ([File.Directory], rights, rights, [])
+    },
+    CopySourceBase => {
+      let rightsInheriting = [
+        File.PathOpen,
+        File.FdReaddir,
+        File.PathFilestats,
+        File.PathReadlink,
+      ]
+      (
+        [File.Directory],
+        rightsInheriting,
+        [File.FdRead, ...rightsInheriting],
+        [],
+      )
+    },
+    CopyTargetBase => {
+      let rightsInheriting = [
+        File.PathOpen,
+        File.PathCreateDirectory,
+        File.PathCreateFile,
+        File.PathSetSize,
+        File.PathSymlink,
+      ]
+      (
+        [File.Directory],
+        rightsInheriting,
+        [File.FdWrite, ...rightsInheriting],
+        [],
+      )
+    },
+    CopySource => ([], [File.FdRead], [], []),
+    CopyTarget => ([File.Create, File.Truncate], [File.FdWrite], [], []),
+    RenameSource => ([File.Directory], [File.PathRenameSource], [], []),
+    RenameTarget =>
+      ([File.Directory], [File.PathRenameTarget, File.PathFilestats], [], []),
+    ReadDir => ([File.Directory], [File.FdReaddir], [], []),
+    MakeDir => ([File.Directory], [File.PathCreateDirectory], [], []),
+    MakeSymlink => ([File.Directory], [File.PathSymlink], [], []),
+    ReadLink =>
+      ([File.Directory], [File.PathFilestats, File.PathReadlink], [], []),
+    Stats => ([File.Directory], [File.PathFilestats], [], []),
+    Read => ([], [File.FdRead, File.FdFilestats], [], [File.Rsync]),
+    WriteFile =>
+      ([File.Create, File.Truncate], [File.FdWrite], [], [File.Sync]),
+    AppendFile =>
+      ([File.Create], [File.FdWrite, File.FdSeek], [], [File.Append]),
+  }
+}
+
+let open = (parentFd=None, path, openInfo) => {
+  let (openFlags, rights, rightsInheriting, flags) = openInfo
+  let noPreopens = Result.isErr(File.fdPrestatGet(File.FileDescriptor(3)))
+  if (noPreopens) {
+    // Exists for UX purposes, to let the user know if they forgot to specify preopens
+    Err(NoPreopenedDirectories)
+  } else {
+    fileResult(match (parentFd) {
+      None =>
+        File.open(
+          Path.toString(path),
+          openFlags,
+          rights,
+          rightsInheriting,
+          flags
+        ),
+      Some(parentFd) =>
+        File.pathOpen(
+          parentFd,
+          [File.SymlinkFollow],
+          Path.toString(path),
+          openFlags,
+          rights,
+          rightsInheriting,
+          flags
+        ),
+    })
+  }
+}
+
+let applyFileOp = (fileDescrResult, fn) => {
+  Result.flatMap(fd => {
+    let result = fn(fd)
+    File.fdClose(fd)
+    result
+  }, fileDescrResult)
+}
+
+// Opens the specified file and applies a "wasi/file" function to the resulting FD, yielding a wrapped FileError
+let fileOp = (
+  parentFd=None,
+  path,
+  openMode,
+  fn: File.FileDescriptor => Result<a, Exception>,
+) => {
+  let fdResult = open(parentFd=parentFd, path, openInfo(openMode))
+  applyFileOp(fdResult, fd => fileResult(fn(fd)))
+}
+
+// Similar to the above function, but for when the passed in function yields a FileError rather than a "wasi/file" error
+let wrappingFileOp = (
+  parentFd=None,
+  path,
+  openMode,
+  fn: File.FileDescriptor => Result<a, FileError>,
+) => {
+  let fdResult = open(parentFd=parentFd, path, openInfo(openMode))
+  applyFileOp(fdResult, fn)
+}
+
+// Convenience function for when 2 files need to be opened in tandem for an operation
+let fileOp2 = (
+  firstParentFd=None,
+  firstPath,
+  firstOpenType,
+  secondParentFd=None,
+  secondPath,
+  secondOpenType,
+  fn,
+) => {
+  wrappingFileOp(
+    parentFd=firstParentFd,
+    firstPath,
+    firstOpenType,
+    firstFd => {
+      fileOp(
+        parentFd=secondParentFd,
+        secondPath,
+        secondOpenType,
+        secondFd => {
+          fn(firstFd, secondFd)
+        }
+      )
+    }
+  )
+}
+
+let wrappingFileOp2 = (
+  firstParentFd=None,
+  firstPath,
+  firstOpenType,
+  secondParentFd=None,
+  secondPath,
+  secondOpenType,
+  fn,
+) => {
+  wrappingFileOp(
+    parentFd=firstParentFd,
+    firstPath,
+    firstOpenType,
+    firstFd => {
+      wrappingFileOp(
+        parentFd=secondParentFd,
+        secondPath,
+        secondOpenType,
+        secondFd => {
+          fn(firstFd, secondFd)
+        }
+      )
+    }
+  )
+}
+
+let joinPathOnBaseDir = (baseDirPath, path) => {
+  match (baseDirPath) {
+    None => path,
+    Some(base) => {
+      // Provide leniency if the base dir path does not contain a trailing slash
+      let base = if (!Path.isDirectory(base))
+        Path.fromString(Path.toString(base) ++ "/")
+      else
+        base
+
+      match (Path.append(base, path)) {
+        Ok(appended) => appended,
+        Err(Path.AppendAbsolute) => path,
+        Err(Path.AppendToFile) =>
+          fail "Impossible: getPathWithBaseDir append to directory failed with AppendToFile",
+      }
+    },
+  }
+}
+
+// This function is used rather than the above one when the base dir is needed
+let getBaseDirAndPath = (baseDirPath, path) => {
+  match (baseDirPath) {
+    None =>
+      (
+        Path.parent(path),
+        Path.fromString(Option.unwrapWithDefault(".", Path.basename(path))),
+      ),
+    Some(base) => (base, path),
+  }
+}
+
+let wrapFileType = (filetype: File.Filetype) => match (filetype) {
+  x when x == File.Directory => Directory,
+  File.RegularFile => File,
+  File.SymbolicLink => SymbolicLink,
+  File.Unknown => Special(Unknown),
+  File.BlockDevice => Special(BlockDevice),
+  File.CharacterDevice => Special(CharacterDevice),
+  File.SocketDatagram => Special(SocketDatagram),
+  File.SocketStream => Special(SocketStream),
+  _ => fail "Impossible: filetype match",
+}
+
+let rec removeRecursive = (parentFd, path) => {
+  let statsResult = fileResult(File.pathFilestats(parentFd, [], path))
+  // Attempt remove on all directory items but keep track of success
+  Result.flatMap((stats: File.Filestats) => {
+    if (stats.filetype == File.Directory) {
+      wrappingFileOp(
+        parentFd=Some(parentFd),
+        Path.fromString(path),
+        RmrfDir,
+        fd => {
+          use Result.{ (&&) }
+          let removeEntries = entries => {
+            Array.reduce(
+              (acc, entry: File.DirectoryEntry) => {
+                let result = removeRecursive(fd, entry.path)
+                acc && result
+              },
+              Ok(void),
+              entries
+            )
+          }
+          Result.flatMap(removeEntries, fileResult(File.fdReaddir(fd))) &&
+            fileResult(File.pathRemoveDirectory(parentFd, path))
+        }
+      )
+    } else {
+      fileResult(File.pathUnlink(parentFd, path))
+    }
+  }, statsResult)
+}
+
+/**
+ * Removes a file or directory.
+ * 
+ * @param baseDirPath: The path to the directory in which path resolution starts
+ * @param path: The path of the file or directory to remove
+ * @param removeMode: The type of removal to perform; `RemoveFile` by default
+ * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
+ * 
+ * @example Fs.remove(Path.fromString("file.txt")) // removes a file
+ * @example Fs.remove(Path.fromString("dir"), removeMode=Fs.RemoveEmptyDirectory) // removes an empty directory
+ * @example Fs.remove(Path.fromString("dir"), removeMode=Fs.RemoveRecursive) // removes the directory and its contents
+ * 
+ * @since v0.6.0
+ */
+provide let remove = (baseDirPath=None, path, removeMode=RemoveFile) => {
+  let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
+  match (removeMode) {
+    RemoveFile =>
+      fileOp(
+        baseDirPath,
+        Unlink,
+        baseDirFd => File.pathUnlink(baseDirFd, Path.toString(path))
+      ),
+    RemoveEmptyDirectory =>
+      fileOp(
+        baseDirPath,
+        RmDir,
+        baseDirFd => File.pathRemoveDirectory(baseDirFd, Path.toString(path))
+      ),
+    RemoveRecursive =>
+      wrappingFileOp(
+        baseDirPath,
+        RmrfDir,
+        baseDirFd => removeRecursive(baseDirFd, Path.toString(path))
+      ),
+  }
+}
+
+/**
+ * Reads the contents of a directory.
+ * 
+ * @param baseDirPath: The path to the directory in which resolution should begin
+ * @param path: The path to the directory to read
+ * @returns `Ok(contents)` containing the directory contents or `Err(err)` if a file system error is encountered
+ * 
+ * @since v0.6.0
+ */
+provide let readDir = (baseDirPath=None, path) => {
+  let path = joinPathOnBaseDir(baseDirPath, path)
+  let result = fileOp(path, ReadDir, File.fdReaddir)
+  Result.map(entries => {
+    let entries = Array.map(
+      (entry: File.DirectoryEntry) =>
+        { name: entry.path, fileType: wrapFileType(entry.filetype) },
+      entries
+    )
+    Array.toList(entries)
+  }, result)
+}
+
+/**
+ * Creates a new empty directory at the given path.
+ * 
+ * @param baseDirPath: The path to the directory in which resolution should begin
+ * @param path: The path to create the new directory, relative to the base directory
+ * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
+ * 
+ * @since v0.6.0
+ */
+provide let makeDir = (baseDirPath=None, path) => {
+  let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
+  fileOp(
+    baseDirPath,
+    MakeDir,
+    dirFd => File.pathCreateDirectory(dirFd, Path.toString(path))
+  )
+}
+
+/**
+ * Creates a new symbolic link with the given contents.
+ * 
+ * @param linkContents: The path to store into the link
+ * @param targetBaseDirPath: The path to the directory in which the target path resolution starts
+ * @param targetPath: The path to the target of the link
+ * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error or relativization error is encountered
+ * 
+ * @since v0.6.0
+ */
+provide let makeSymlink = (linkContents, targetBaseDirPath=None, targetPath) => {
+  let (targetBaseDirPath, targetPath) = getBaseDirAndPath(
+    targetBaseDirPath,
+    targetPath
+  )
+  fileOp(
+    targetBaseDirPath,
+    MakeSymlink,
+    dirFd =>
+      File.pathSymlink(
+        dirFd,
+        Path.toString(linkContents),
+        Path.toString(targetPath)
+      )
+  )
+}
+
+/**
+ * Queries information about a file.
+ * 
+ * @param baseDirPath: The path to the directory in which the path resolution starts
+ * @param path: The path of the file to query
+ * @param followSymlink: Whether to follow symlinks or not; if `true` then the stats of a valid symlink's underlying file will be returned. `true` by default
+ * @returns `Ok(stats)` containing metadata or `Err(err)` if a file system error is encountered
+ * 
+ * @since v0.6.0
+ */
+provide let stats = (baseDirPath=None, path, followSymlink=true) => {
+  let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
+  let statsResult = fileOp(baseDirPath, Stats, dirFd => {
+    File.pathFilestats(
+      dirFd,
+      if (followSymlink) [File.SymlinkFollow] else [],
+      Path.toString(path)
+    )
+  })
+  Result.map(
+    (stats: File.Filestats) =>
+      {
+        size: Int64.toNumber(stats.size),
+        fileType: wrapFileType(stats.filetype),
+        accessedTimestamp: Int64.toNumber(stats.accessed),
+        modifiedTimestamp: Int64.toNumber(stats.modified),
+        changedTimestamp: Int64.toNumber(stats.changed),
+      },
+    statsResult
+  )
+}
+
+/**
+ * Polls whether or not a file or directory exists at the given path.
+ * 
+ * @param baseDirPath: The path to the directory in which the path resolution starts
+ * @param path: The path of the file to query
+ * @returns `true` if a file or directory exists at the path or `false` otherwise
+ * 
+ * @since v0.6.0
+ */
+provide let exists = (baseDirPath=None, path) => {
+  stats(baseDirPath=baseDirPath, path, followSymlink=false) !=
+    Err(NoSuchFileOrDirectory)
+}
+
+let readLinkHelper = (dirFd, path, stats: File.Filestats) => {
+  // Need to strip trailing null terminator
+  let linkContentsResult = File.pathReadlink(
+    dirFd,
+    Path.toString(path),
+    Int64.toNumber(stats.size) + 1
+  )
+  let fst = ((contents, _)) =>
+    String.slice(0, end=String.byteLength(contents) - 1, contents)
+  Result.map(fst, linkContentsResult)
+}
+
+/**
+ * Reads the contents of a symbolic link.
+ * 
+ * @param baseDirPath: The path to the directory to begin path resolution
+ * @param path: The path to the link to read
+ * @returns `Ok(path)` containing the link contents or `Err(err)` if a file system error is encountered
+ * 
+ * @since v0.6.0
+ */
+provide let readLink = (baseDirPath=None, path) => {
+  let (baseDirPath, path) = getBaseDirAndPath(baseDirPath, path)
+  wrappingFileOp(baseDirPath, ReadLink, dirFd => {
+    let statsResult = File.pathFilestats(dirFd, [], Path.toString(path))
+    let linkContentsResult = fileResult(
+      Result.flatMap(stats => readLinkHelper(dirFd, path, stats), statsResult)
+    )
+    Result.map(x => Path.fromString(x), linkContentsResult)
+  })
+}
+
+let copySymlink = (
+  sourceParentFd,
+  sourcePath,
+  targetParentFd,
+  targetPath,
+  stats,
+) => {
+  let linkContentsResult = readLinkHelper(sourceParentFd, sourcePath, stats)
+  fileResult(Result.flatMap(contents => {
+    File.pathSymlink(targetParentFd, contents, Path.toString(targetPath))
+  }, linkContentsResult))
+}
+
+let copyFile = (
+  sourceParentFd,
+  sourcePath,
+  targetParentFd,
+  targetPath,
+  followSymlink,
+) => {
+  if (!followSymlink) {
+    match (File.pathFilestats(sourceParentFd, [], Path.toString(sourcePath))) {
+      Ok(stats) when stats.filetype == File.SymbolicLink => {
+        return copySymlink(
+          sourceParentFd,
+          sourcePath,
+          targetParentFd,
+          targetPath,
+          stats
+        )
+      },
+      _ => void,
+    }
+  }
+
+  return fileOp2(
+    firstParentFd=Some(sourceParentFd),
+    sourcePath,
+    CopySource,
+    secondParentFd=Some(targetParentFd),
+    targetPath,
+    CopyTarget,
+    (srcFd, targetFd) => {
+      let _BUFSIZE = 8192
+      let rec copyChunk = () => {
+        match (File.fdRead(srcFd, _BUFSIZE)) {
+          Ok((data, numRead)) => {
+            if (numRead == 0) {
+              Ok(void)
+            } else {
+              let bufLen = Bytes.length(data)
+              let rec writeRemaining = startPos => {
+                if (startPos >= bufLen) {
+                  Ok(void)
+                } else {
+                  let toWrite = Bytes.slice(startPos, bufLen - startPos, data)
+                  match (File.fdWrite(targetFd, toWrite)) {
+                    Ok(numWritten) => writeRemaining(startPos + numWritten),
+                    Err(err) => Err(err),
+                  }
+                }
+              }
+              use Result.{ (&&) }
+              writeRemaining(0) && copyChunk()
+            }
+          },
+          Err(err) => Err(err),
+        }
+      }
+      copyChunk()
+    }
+  )
+}
+
+let rec copyRecursive = (
+  sourceParentFd,
+  sourcePath,
+  targetParentFd,
+  targetPath,
+  followSymlink,
+) => {
+  let copyDirectoryContents = () => {
+    wrappingFileOp2(
+      firstParentFd=Some(sourceParentFd),
+      sourcePath,
+      CopySourceBase,
+      secondParentFd=Some(targetParentFd),
+      targetPath,
+      CopyTargetBase,
+      (sourceDirFd, targetDirFd) => {
+        let entries = fileResult(File.fdReaddir(sourceDirFd))
+        match (entries) {
+          Ok(entries) => {
+            Array.reduce(
+              (acc, entry: File.DirectoryEntry) => {
+                use Result.{ (&&) }
+                acc &&
+                  copyRecursive(
+                    sourceDirFd,
+                    Path.fromString(entry.path),
+                    targetDirFd,
+                    Path.fromString(entry.path),
+                    false
+                  )
+              },
+              Ok(void),
+              entries
+            )
+          },
+          Err(err) => Err(err),
+        }
+      }
+    )
+  }
+
+  match (
+    fileResult(
+      File.pathFilestats(
+        sourceParentFd,
+        if (followSymlink) [File.SymlinkFollow] else [],
+        Path.toString(sourcePath)
+      )
+    )
+  ) {
+    Ok(stats) => {
+      match (stats.filetype) {
+        x when x == File.Directory => {
+          use Result.{ (&&) }
+          fileResult(
+            File.pathCreateDirectory(targetParentFd, Path.toString(targetPath))
+          ) &&
+            copyDirectoryContents()
+        },
+        File.SymbolicLink =>
+          copySymlink(
+            sourceParentFd,
+            sourcePath,
+            targetParentFd,
+            targetPath,
+            stats
+          ),
+        _ =>
+          copyFile(
+            sourceParentFd,
+            sourcePath,
+            targetParentFd,
+            targetPath,
+            false
+          ),
+      }
+    },
+    Err(err) => Err(err),
+  }
+}
+
+/**
+ * Copies a file or directory.
+ * 
+ * @param sourceBaseDirPath: The path to the directory in which the source path resolution starts
+ * @param sourcePath: The path of the file or directory to copy
+ * @param targetBaseDirPath: The path to the directory in which the target path resolution starts
+ * @param targetPath: The path to copy the file or directory to
+ * @param copyMode: The type of copy to perform; `CopyFile` by default
+ * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
+ */
+provide let copy = (
+  sourceBaseDirPath=None,
+  sourcePath,
+  targetBaseDirPath=None,
+  targetPath,
+  copyMode=CopyFile,
+  followSymlink=true,
+) => {
+  let (sourceBaseDirPath, sourcePath) = getBaseDirAndPath(
+    sourceBaseDirPath,
+    sourcePath
+  )
+  let (targetBaseDirPath, targetPath) = getBaseDirAndPath(
+    targetBaseDirPath,
+    targetPath
+  )
+  wrappingFileOp2(
+    sourceBaseDirPath,
+    CopySourceBase,
+    targetBaseDirPath,
+    CopyTargetBase,
+    (sourceDirFd, targetDirFd) => {
+      let fn = match (copyMode) {
+        CopyFile => copyFile,
+        CopyRecursive => copyRecursive,
+      }
+      fn(sourceDirFd, sourcePath, targetDirFd, targetPath, followSymlink)
+    }
+  )
+}
+
+/**
+ * Renames a file or directory.
+ * 
+ * @param sourceBaseDirPath: The path to the directory in which the source path resolution starts
+ * @param sourcePath: The path of the file to rename
+ * @param targetBaseDirPath: The path to the directory in which the target path resolution starts
+ * @param targetPath: The new path of the file
+ * @returns `Ok(void)` if the operation succeeds, `Err(err)` if a file system error is encountered
+ * 
+ * @since v0.6.0
+ */
+provide let rename = (
+  sourceBaseDirPath=None,
+  sourcePath,
+  targetBaseDirPath=None,
+  targetPath,
+) => {
+  let (sourceBaseDirPath, sourcePath) = getBaseDirAndPath(
+    sourceBaseDirPath,
+    sourcePath
+  )
+  let (targetBaseDirPath, targetPath) = getBaseDirAndPath(
+    targetBaseDirPath,
+    targetPath
+  )
+  wrappingFileOp2(
+    sourceBaseDirPath,
+    RenameSource,
+    targetBaseDirPath,
+    RenameTarget,
+    (srcDirFd, targetDirFd) => {
+      fileResult(
+        File.pathRename(
+          srcDirFd,
+          Path.toString(sourcePath),
+          targetDirFd,
+          Path.toString(targetPath)
+        )
+      )
+    }
+  )
+}
+
+/**
+ * Functionality for reading and writing `Bytes` to files.
+ * 
+ * @since v0.6.0
+ */
+provide module Binary {
+  /**
+   * Read the contents of a file as `Bytes`.
+   * 
+   * @param baseDirPath: The path to the directory to begin path resolution
+   * @param path: The file path to read from
+   * @returns `Ok(contents)` containing the bytes read if successful or `Err(err)` if a file system error is encountered
+   * 
+   * @since v0.6.0
+   */
+  provide let readFile = (baseDirPath=None, path) => {
+    let path = joinPathOnBaseDir(baseDirPath, path)
+    fileOp(path, Read, fd => {
+      match (File.fdFilestats(fd)) {
+        Ok(stats) => {
+          let fst = ((contents, _)) => contents
+          Result.map(fst, File.fdRead(fd, Int64.toNumber(stats.size)))
+        },
+        Err(err) => Err(err),
+      }
+    })
+  }
+
+  /**
+   * Write `Bytes` to a file.
+   * 
+   * @param baseDirPath: The path to the directory to begin path resolution
+   * @param path: The file path to write to
+   * @param data: The bytes to write to the file
+   * @param writeMode: The type of write operation to perform; `Truncate` by default
+   * @returns `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered
+   * 
+   * @since v0.6.0
+   */
+  provide let writeFile = (baseDirPath=None, path, data, writeMode=Truncate) => {
+    let path = joinPathOnBaseDir(baseDirPath, path)
+    let openMode = match (writeMode) {
+      Truncate => WriteFile,
+      Append => AppendFile,
+    }
+    let len = Bytes.length(data)
+    Result.map(ignore, fileOp(path, openMode, fd => {
+      let rec writeRemaining = startPos => {
+        if (startPos >= len) {
+          Ok(void)
+        } else {
+          let toWrite = Bytes.slice(startPos, len - startPos, data)
+          match (File.fdWrite(fd, toWrite)) {
+            Ok(numWritten) => writeRemaining(startPos + numWritten),
+            Err(err) => Err(err),
+          }
+        }
+      }
+      writeRemaining(0)
+    }))
+  }
+}
+
+/**
+ * Functionality for reading and writing `String`s to files.
+ * 
+ * @since v0.6.0
+ */
+provide module Utf8 {
+  /**
+   * Read the contents of a file as a `String`.
+   * 
+   * @param baseDirPath: The path to the directory to begin path resolution
+   * @param path: The file path to read from
+   * @returns `Ok(contents)` containing the string read if successful or `Err(err)` if a file system error is encountered
+   * 
+   * @since v0.6.0
+   */
+  provide let readFile = (baseDirPath=None, path) => {
+    let bytes = Binary.readFile(baseDirPath=baseDirPath, path)
+    Result.map(bytes => String.decode(bytes, String.UTF8), bytes)
+  }
+
+  /**
+   * Write a `String` to a file.
+   * 
+   * @param baseDirPath: The path to the directory to begin path resolution
+   * @param path: The file path to write to
+   * @param data: The string to write to the file
+   * @param writeMode: The type of write operation to perform; `Truncate` by default
+   * @returns `Ok(void)` if the operation is successful or `Err(err)` if a file system error is encountered
+   * 
+   * @since v0.6.0
+   */
+  provide let writeFile = (baseDirPath=None, path, data, writeMode=Truncate) => {
+    let bytes = String.encode(data, String.UTF8)
+    Binary.writeFile(baseDirPath=baseDirPath, path, bytes, writeMode=writeMode)
+  }
+}

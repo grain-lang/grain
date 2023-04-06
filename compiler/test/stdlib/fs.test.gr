@@ -1,0 +1,286 @@
+module FsTest
+
+from "fs" include Fs
+from "path" include Path
+from "bytes" include Bytes
+from "result" include Result
+from "list" include List
+
+let path = Path.fromString
+let testPath = str => path("test/test-data/" ++ str)
+
+// readFile
+assert Fs.Binary.readFile(testPath("foo.txt")) == Ok(b"foo, bar, & baz")
+assert Fs.Utf8.readFile(testPath("foo.txt")) == Ok("foo, bar, & baz")
+assert Fs.Binary.readFile(path("/test/test-data/foo.txt")) ==
+  Ok(b"foo, bar, & baz")
+assert Fs.Binary.readFile(path("./test/test-data/foo.txt")) ==
+  Ok(b"foo, bar, & baz")
+assert Fs.Binary.readFile(path("/test/test-data/../test-data/foo.txt")) ==
+  Ok(b"foo, bar, & baz")
+assert Fs.Binary.readFile(
+  baseDirPath=Some(testPath("test-dir")),
+  path("file1.txt")
+) ==
+  Ok(b"File 1")
+assert Fs.Binary.readFile(path("blahblah")) == Err(Fs.NoSuchFileOrDirectory)
+
+// writeFile
+assert Fs.Binary.readFile(testPath("baz.txt")) == Err(Fs.NoSuchFileOrDirectory)
+assert Fs.Binary.writeFile(testPath("baz.txt"), b"some stuff") == Ok(void)
+assert Fs.Binary.readFile(testPath("baz.txt")) == Ok(b"some stuff")
+
+assert Fs.Utf8.writeFile(testPath("baz.txt"), "some other stuff 🌾") == Ok(void)
+assert Fs.Utf8.readFile(testPath("baz.txt")) == Ok("some other stuff 🌾")
+
+assert Fs.Binary.writeFile(
+  testPath("baz.txt"),
+  b"\nmore stuff",
+  writeMode=Fs.Append
+) ==
+  Ok(void)
+assert Fs.Utf8.readFile(testPath("baz.txt")) ==
+  Ok("some other stuff 🌾\nmore stuff")
+
+assert Fs.Utf8.writeFile(
+  testPath("baz.txt"),
+  "\neven more stuff 😳",
+  writeMode=Fs.Append
+) ==
+  Ok(void)
+assert Fs.Utf8.readFile(testPath("baz.txt")) ==
+  Ok("some other stuff 🌾\nmore stuff\neven more stuff 😳")
+
+assert Fs.Utf8.readFile(testPath("foobar.txt")) == Err(Fs.NoSuchFileOrDirectory)
+assert Fs.Utf8.writeFile(
+  testPath("foobar.txt"),
+  "new content",
+  writeMode=Fs.Append
+) ==
+  Ok(void)
+assert Fs.Utf8.readFile(testPath("foobar.txt")) == Ok("new content")
+
+assert Fs.Binary.writeFile(
+  baseDirPath=Some(testPath("test-dir")),
+  path("in-directory.txt"),
+  b"some stuff in a directory"
+) ==
+  Ok(void)
+assert Fs.Binary.readFile(testPath("test-dir/in-directory.txt")) ==
+  Ok(b"some stuff in a directory")
+
+// stats
+let stats = Result.unwrap(Fs.stats(testPath("foo.txt")))
+assert stats.fileType == Fs.File
+assert stats.size == 15
+
+assert Result.unwrap(Fs.stats(testPath("test-dir"))).fileType == Fs.Directory
+assert Result.unwrap(
+  Fs.stats(baseDirPath=Some(testPath("test-dir")), path("link"))
+).fileType ==
+  Fs.File
+assert Result.unwrap(
+  Fs.stats(
+    baseDirPath=Some(testPath("test-dir")),
+    path("link"),
+    followSymlink=false
+  )
+).fileType ==
+  Fs.SymbolicLink
+assert Fs.stats(testPath("blahblah")) == Err(Fs.NoSuchFileOrDirectory)
+
+// exists
+assert Fs.exists(testPath("foo.txt"))
+assert !Fs.exists(testPath("blahblah"))
+assert !Fs.exists(path(".."))
+
+// readDir
+use Fs.{ type DirectoryEntry }
+assert Result.map(
+  x => List.sort(compare=(x, y) => compare(x.name, y.name), x),
+  Fs.readDir(testPath("test-dir"))
+) ==
+  Ok(
+    [
+      { name: "dir", fileType: Fs.Directory },
+      { name: "file1.txt", fileType: Fs.File },
+      { name: "file2.txt", fileType: Fs.File },
+      { name: "file3.txt", fileType: Fs.File },
+      { name: "in-directory.txt", fileType: Fs.File },
+      { name: "link", fileType: Fs.SymbolicLink },
+    ],
+  )
+assert Fs.readDir(baseDirPath=Some(testPath("test-dir")), path("dir")) ==
+  Ok([{ name: "nested.txt", fileType: Fs.File }])
+assert Fs.readDir(path("test/nonexisting")) == Err(Fs.NoSuchFileOrDirectory)
+
+// makeDir
+assert !Fs.exists(testPath("dir2"))
+assert Fs.makeDir(testPath("dir2")) == Ok(void)
+assert Fs.readDir(testPath("dir2")) == Ok([])
+
+assert Fs.makeDir(baseDirPath=Some(testPath("dir2")), path("inner")) == Ok(void)
+assert Fs.readDir(testPath("dir2")) ==
+  Ok([{ name: "inner", fileType: Fs.Directory }])
+
+assert Fs.makeDir(testPath("dir2")) == Err(Fs.FileExists)
+
+// readLink
+assert Fs.readLink(testPath("test-dir/link")) == Ok(path("file1.txt"))
+assert Fs.readLink(baseDirPath=Some(testPath("test-dir")), path("link")) ==
+  Ok(path("file1.txt"))
+assert Fs.readLink(testPath("blahblah")) == Err(Fs.NoSuchFileOrDirectory)
+assert Fs.readLink(testPath("foo.txt")) == Err(Fs.InvalidArgument)
+
+// makeSymlink
+assert !Fs.exists(testPath("symlink"))
+assert Fs.makeSymlink(path("foo.txt"), testPath("symlink")) == Ok(void)
+assert Fs.readLink(testPath("symlink")) == Ok(path("foo.txt"))
+assert Result.unwrap(Fs.stats(testPath("symlink"), followSymlink=false)).fileType ==
+  Fs.SymbolicLink
+assert Result.unwrap(Fs.stats(testPath("symlink"), followSymlink=true)).fileType ==
+  Fs.File
+assert Fs.makeSymlink(path("bar.txt"), testPath("symlink")) ==
+  Err(Fs.FileExists)
+assert Fs.makeSymlink(
+  path("bar.txt"),
+  targetBaseDirPath=Some(testPath("test-dir")),
+  path("symlink")
+) ==
+  Ok(void)
+assert Fs.readLink(testPath("test-dir/symlink")) == Ok(path("bar.txt"))
+
+// copy
+assert Fs.copy(testPath("foo.txt"), testPath("foocopy.txt")) == Ok(void)
+assert Fs.Utf8.readFile(testPath("foocopy.txt")) == Ok("foo, bar, & baz")
+
+assert Fs.copy(
+  testPath("test-dir"),
+  testPath("copied-dir"),
+  copyMode=Fs.CopyRecursive
+) ==
+  Ok(void)
+
+assert Fs.readDir(testPath("copied-dir")) == Fs.readDir(testPath("test-dir"))
+assert Fs.Utf8.writeFile(testPath("test-dir/newfile.txt"), "New contents") ==
+  Ok(void)
+assert Fs.copy(
+  sourceBaseDirPath=Some(testPath("test-dir")),
+  path("file1.txt"),
+  targetBaseDirPath=Some(testPath("test-dir")),
+  path("newfile.txt")
+) ==
+  Ok(void)
+assert Fs.Utf8.readFile(testPath("test-dir/newfile.txt")) == Ok("File 1")
+
+assert Fs.copy(
+  testPath("test-dir"),
+  testPath("copied-dir"),
+  copyMode=Fs.CopyRecursive
+) ==
+  Err(Fs.FileExists)
+
+assert Fs.copy(
+  testPath("test-dir/link"),
+  testPath("linkcopy"),
+  followSymlink=false
+) ==
+  Ok(void)
+assert Fs.readLink(testPath("linkcopy")) == Ok(path("file1.txt"))
+
+assert Fs.copy(
+  testPath("test-dir/link"),
+  testPath("contentscopy.txt"),
+  followSymlink=true
+) ==
+  Ok(void)
+assert Result.unwrap(
+  Fs.stats(testPath("contentscopy.txt"), followSymlink=false)
+).fileType ==
+  Fs.File
+
+assert Fs.makeSymlink(path("test-dir"), testPath("linktodir")) == Ok(void)
+assert Fs.copy(
+  testPath("linktodir"),
+  testPath("copied-link-to-dir"),
+  copyMode=Fs.CopyRecursive,
+  followSymlink=true
+) ==
+  Ok(void)
+assert Result.unwrap(
+  Fs.stats(testPath("copied-link-to-dir"), followSymlink=false)
+).fileType ==
+  Fs.Directory
+
+assert Fs.copy(
+  testPath("linktodir"),
+  testPath("copied-link"),
+  copyMode=Fs.CopyRecursive,
+  followSymlink=false
+) ==
+  Ok(void)
+assert Result.unwrap(Fs.stats(testPath("copied-link"), followSymlink=false)).fileType ==
+  Fs.SymbolicLink
+
+// rename
+assert Fs.rename(testPath("foobar.txt"), testPath("boofar.txt")) == Ok(void)
+assert !Fs.exists(testPath("foobar.txt"))
+assert Fs.Utf8.readFile(testPath("boofar.txt")) == Ok("new content")
+
+assert Fs.rename(testPath("dir2"), testPath("newdir")) == Ok(void)
+assert !Fs.exists(testPath("dir2"))
+assert Fs.readDir(testPath("newdir")) ==
+  Ok([{ name: "inner", fileType: Fs.Directory }])
+
+assert Fs.rename(
+  sourceBaseDirPath=Some(testPath("test-dir")),
+  path("in-directory.txt"),
+  targetBaseDirPath=Some(testPath("test-dir")),
+  path("renamed.txt")
+) ==
+  Ok(void)
+assert !Fs.exists(testPath("test-dir/in-directory.txt"))
+assert Fs.Utf8.readFile(testPath("test-dir/renamed.txt")) ==
+  Ok("some stuff in a directory")
+
+assert Fs.rename(
+  sourceBaseDirPath=Some(testPath("test-dir")),
+  path("renamed.txt"),
+  testPath("boofar.txt")
+) ==
+  Ok(void)
+assert Fs.Utf8.readFile(testPath("boofar.txt")) ==
+  Ok("some stuff in a directory")
+
+// remove
+assert Fs.remove(testPath("baz.txt")) == Ok(void)
+assert Fs.remove(testPath("newdir")) == Err(Fs.IsADirectory)
+assert Fs.makeDir(testPath("newdir/innerdir")) == Ok(void)
+assert Fs.remove(testPath("newdir"), removeMode=Fs.RemoveEmptyDirectory) ==
+  Err(Fs.DirectoryNotEmpty)
+assert Fs.remove(
+  baseDirPath=Some(testPath("newdir")),
+  path("innerdir"),
+  removeMode=Fs.RemoveEmptyDirectory
+) ==
+  Ok(void)
+assert Fs.makeDir(testPath("newdir/innerdir")) == Ok(void)
+assert Fs.Utf8.writeFile(testPath("newdir/innerdir/file.txt"), "content") ==
+  Ok(void)
+assert Fs.remove(testPath("newdir"), removeMode=Fs.RemoveRecursive) == Ok(void)
+assert !Fs.exists(testPath("newdir"))
+
+// clean up created files through tests
+assert Fs.remove(testPath("boofar.txt")) == Ok(void)
+assert Fs.remove(testPath("symlink")) == Ok(void)
+assert Fs.remove(testPath("linkcopy")) == Ok(void)
+assert Fs.remove(testPath("foocopy.txt")) == Ok(void)
+assert Fs.remove(testPath("contentscopy.txt")) == Ok(void)
+assert Fs.remove(testPath("copied-link")) == Ok(void)
+assert Fs.remove(testPath("linktodir")) == Ok(void)
+assert Fs.remove(testPath("test-dir/symlink")) == Ok(void)
+assert Fs.remove(testPath("test-dir/newfile.txt")) == Ok(void)
+assert Fs.remove(testPath("copied-dir"), removeMode=Fs.RemoveRecursive) ==
+  Ok(void)
+assert Fs.remove(testPath("copied-link-to-dir"), removeMode=Fs.RemoveRecursive) ==
+  Ok(void)
