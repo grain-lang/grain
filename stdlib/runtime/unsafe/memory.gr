@@ -4,14 +4,7 @@ module Memory
 include "runtime/gc" as GC
 from GC use { malloc, free, incRef, decRef }
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use {
-  add as (+),
-  sub as (-),
-  shl as (<<),
-  eq as (==),
-  ne as (!=),
-  ltU as (<),
-}
+from WasmI32 use { (+), (-), (<<), (==), (!=), ltU as (<) }
 
 provide { malloc, free, incRef, decRef }
 

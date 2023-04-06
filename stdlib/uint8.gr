@@ -8,6 +8,7 @@
 module Uint8
 
 include "runtime/unsafe/wasmi32"
+from WasmI32 use { (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
 include "runtime/numbers"
 from Numbers use {
   coerceNumberToUint8 as fromNumber,
@@ -39,8 +40,8 @@ provide { fromNumber, toNumber }
 provide let fromInt8 = (x: Int8) => {
   let x = WasmI32.fromGrain(x)
   // Trick: convert from Int8 tag 1010 to Uint8 tag 11010
-  let result = WasmI32.or(x, 0b10000n)
-  WasmI32.toGrain(WasmI32.and(result, _REMOVE_EXTRA_MASK)): Uint8
+  let result = x | 0b10000n
+  WasmI32.toGrain(result & _REMOVE_EXTRA_MASK): Uint8
 }
 
 /**
@@ -55,8 +56,8 @@ provide let fromInt8 = (x: Int8) => {
 provide let incr = (value: Uint8) => {
   let value = WasmI32.fromGrain(value)
   // Trick: since the data is at offset 8, can just add 1 << 8 == 0x100
-  let result = WasmI32.add(value, 0x100n)
-  WasmI32.toGrain(WasmI32.and(result, _REMOVE_EXTRA_MASK)): Uint8
+  let result = value + 0x100n
+  WasmI32.toGrain(result & _REMOVE_EXTRA_MASK): Uint8
 }
 
 /**
@@ -71,8 +72,8 @@ provide let incr = (value: Uint8) => {
 provide let decr = (value: Uint8) => {
   let value = WasmI32.fromGrain(value)
   // Trick: since the data is at offset 8, can just subtract 1 << 8 == 0x100
-  let result = WasmI32.sub(value, 0x100n)
-  WasmI32.toGrain(WasmI32.and(result, _REMOVE_EXTRA_MASK)): Uint8
+  let result = value - 0x100n
+  WasmI32.toGrain(result & _REMOVE_EXTRA_MASK): Uint8
 }
 
 /**
@@ -91,9 +92,9 @@ provide let (+) = (x: Uint8, y: Uint8) => {
   // 11010 + 11010 = 110100; xor with 101110 to correct to 11010
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  let val = WasmI32.add(x, y)
-  let tagged = WasmI32.xor(val, 0b101110n)
-  WasmI32.toGrain(WasmI32.and(tagged, _REMOVE_EXTRA_MASK)): Uint8
+  let val = x + y
+  let tagged = val ^ 0b101110n
+  WasmI32.toGrain(tagged & _REMOVE_EXTRA_MASK): Uint8
 }
 
 /**
@@ -109,9 +110,9 @@ provide let (+) = (x: Uint8, y: Uint8) => {
 provide let (-) = (x: Uint8, y: Uint8) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  let val = WasmI32.sub(x, y)
-  let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(WasmI32.and(tagged, _REMOVE_EXTRA_MASK)): Uint8
+  let val = x - y
+  let tagged = val | _TAG_BYTE
+  WasmI32.toGrain(tagged & _REMOVE_EXTRA_MASK): Uint8
 }
 
 /**
@@ -127,7 +128,7 @@ provide let (-) = (x: Uint8, y: Uint8) => {
 provide let (*) = (x: Uint8, y: Uint8) => {
   let x = untagUint8(x)
   let y = untagUint8(y)
-  let val = WasmI32.and(WasmI32.mul(x, y), _UNTAGGED_DATA_MASK)
+  let val = x * y & _UNTAGGED_DATA_MASK
   tagUint8(val)
 }
 
@@ -177,11 +178,11 @@ provide let rem = (x: Uint8, y: Uint8) => {
 @unsafe
 provide let (<<) = (value: Uint8, amount: Uint8) => {
   // Trick: do not shift `value` right, just correct tag afterwards
-  let x = WasmI32.and(WasmI32.fromGrain(value), _DATA_MASK)
+  let x = WasmI32.fromGrain(value) & _DATA_MASK
   let y = untagUint8(amount)
-  let val = WasmI32.shl(x, y)
-  let tagged = WasmI32.or(val, _TAG_BYTE)
-  WasmI32.toGrain(WasmI32.and(tagged, _REMOVE_EXTRA_MASK)): Uint8
+  let val = x << y
+  let tagged = val | _TAG_BYTE
+  WasmI32.toGrain(tagged & _REMOVE_EXTRA_MASK): Uint8
 }
 
 /**
@@ -198,8 +199,8 @@ provide let (>>>) = (value: Uint8, amount: Uint8) => {
   // Trick: do not shift `value` right, just correct tag afterwards
   let x = WasmI32.fromGrain(value)
   let y = untagUint8(amount)
-  let val = WasmI32.shrU(x, y)
-  let tagged = WasmI32.or(WasmI32.and(val, _DATA_MASK), _TAG_BYTE)
+  let val = x >>> y
+  let tagged = val & _DATA_MASK | _TAG_BYTE
   WasmI32.toGrain(tagged): Uint8
 }
 
@@ -216,7 +217,7 @@ provide let (>>>) = (value: Uint8, amount: Uint8) => {
 provide let (==) = (x: Uint8, y: Uint8) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.eq(x, y)
+  x == y
 }
 
 /**
@@ -232,7 +233,7 @@ provide let (==) = (x: Uint8, y: Uint8) => {
 provide let (!=) = (x: Uint8, y: Uint8) => {
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.ne(x, y)
+  x != y
 }
 
 /**
@@ -310,7 +311,7 @@ provide let (>=) = (x: Uint8, y: Uint8) => {
 @unsafe
 provide let lnot = (value: Uint8) => {
   let x = WasmI32.fromGrain(value)
-  WasmI32.toGrain(WasmI32.xor(x, _DATA_MASK)): Uint8
+  WasmI32.toGrain(x ^ _DATA_MASK): Uint8
 }
 
 /**
@@ -327,7 +328,7 @@ provide let (&) = (x: Uint8, y: Uint8) => {
   // Tags getting `and`ed together is not a problem
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  let val = WasmI32.and(x, y)
+  let val = x & y
   WasmI32.toGrain(val): Uint8
 }
 
@@ -345,7 +346,7 @@ provide let (|) = (x: Uint8, y: Uint8) => {
   // Tags getting `or`ed together is not a problem
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  let val = WasmI32.or(x, y)
+  let val = x | y
   WasmI32.toGrain(val): Uint8
 }
 
@@ -360,9 +361,10 @@ provide let (|) = (x: Uint8, y: Uint8) => {
  */
 @unsafe
 provide let (^) = (x: Uint8, y: Uint8) => {
+  from WasmI32 use { (|) }
   // Tags getting `xor`ed together will cancel each other out; add back tag with or
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  let val = WasmI32.xor(x, y)
-  WasmI32.toGrain(WasmI32.or(val, _TAG_BYTE)): Uint8
+  let val = x ^ y
+  WasmI32.toGrain(val | _TAG_BYTE): Uint8
 }

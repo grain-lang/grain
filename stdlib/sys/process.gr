@@ -9,16 +9,7 @@
 module Process
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
-  add as (+),
-  mul as (*),
-  shrS as (>>),
-  shrU as (>>>),
-  and as (&),
-  eq as (==),
-  ne as (!=),
-  ltS as (<),
-}
+from WasmI32 use { (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
 include "runtime/unsafe/memory"
 include "runtime/wasi"
 include "runtime/dataStructures"

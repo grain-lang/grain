@@ -7,7 +7,7 @@
 module Random
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { eq as (==), ne as (!=) }
+from WasmI32 use { (==), (!=) }
 include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/memory"
 include "runtime/wasi"

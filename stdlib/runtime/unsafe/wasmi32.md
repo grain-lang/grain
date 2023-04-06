@@ -78,28 +78,28 @@ popcnt : WasmI32 -> WasmI32
 eqz : WasmI32 -> Bool
 ```
 
-### WasmI32.**add**
+### WasmI32.**(+)**
 
 ```grain
-add : (WasmI32, WasmI32) -> WasmI32
+(+) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**sub**
+### WasmI32.**(-)**
 
 ```grain
-sub : (WasmI32, WasmI32) -> WasmI32
+(-) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**mul**
+### WasmI32.**(*)**
 
 ```grain
-mul : (WasmI32, WasmI32) -> WasmI32
+(*) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**divS**
+### WasmI32.**(/)**
 
 ```grain
-divS : (WasmI32, WasmI32) -> WasmI32
+(/) : (WasmI32, WasmI32) -> WasmI32
 ```
 
 ### WasmI32.**divU**
@@ -120,40 +120,40 @@ remS : (WasmI32, WasmI32) -> WasmI32
 remU : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**and**
+### WasmI32.**(&)**
 
 ```grain
-and : (WasmI32, WasmI32) -> WasmI32
+(&) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**or**
+### WasmI32.**(|)**
 
 ```grain
-or : (WasmI32, WasmI32) -> WasmI32
+(|) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**xor**
+### WasmI32.**(^)**
 
 ```grain
-xor : (WasmI32, WasmI32) -> WasmI32
+(^) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**shl**
+### WasmI32.**(<<)**
 
 ```grain
-shl : (WasmI32, WasmI32) -> WasmI32
+(<<) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**shrS**
+### WasmI32.**(>>)**
 
 ```grain
-shrS : (WasmI32, WasmI32) -> WasmI32
+(>>) : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**shrU**
+### WasmI32.**(>>>)**
 
 ```grain
-shrU : (WasmI32, WasmI32) -> WasmI32
+(>>>) : (WasmI32, WasmI32) -> WasmI32
 ```
 
 ### WasmI32.**rotl**
@@ -168,22 +168,22 @@ rotl : (WasmI32, WasmI32) -> WasmI32
 rotr : (WasmI32, WasmI32) -> WasmI32
 ```
 
-### WasmI32.**eq**
+### WasmI32.**(==)**
 
 ```grain
-eq : (WasmI32, WasmI32) -> Bool
+(==) : (WasmI32, WasmI32) -> Bool
 ```
 
-### WasmI32.**ne**
+### WasmI32.**(!=)**
 
 ```grain
-ne : (WasmI32, WasmI32) -> Bool
+(!=) : (WasmI32, WasmI32) -> Bool
 ```
 
-### WasmI32.**ltS**
+### WasmI32.**(<)**
 
 ```grain
-ltS : (WasmI32, WasmI32) -> Bool
+(<) : (WasmI32, WasmI32) -> Bool
 ```
 
 ### WasmI32.**ltU**
@@ -192,10 +192,10 @@ ltS : (WasmI32, WasmI32) -> Bool
 ltU : (WasmI32, WasmI32) -> Bool
 ```
 
-### WasmI32.**leS**
+### WasmI32.**(<=)**
 
 ```grain
-leS : (WasmI32, WasmI32) -> Bool
+(<=) : (WasmI32, WasmI32) -> Bool
 ```
 
 ### WasmI32.**leU**
@@ -204,10 +204,10 @@ leS : (WasmI32, WasmI32) -> Bool
 leU : (WasmI32, WasmI32) -> Bool
 ```
 
-### WasmI32.**gtS**
+### WasmI32.**(>)**
 
 ```grain
-gtS : (WasmI32, WasmI32) -> Bool
+(>) : (WasmI32, WasmI32) -> Bool
 ```
 
 ### WasmI32.**gtU**
@@ -216,10 +216,10 @@ gtS : (WasmI32, WasmI32) -> Bool
 gtU : (WasmI32, WasmI32) -> Bool
 ```
 
-### WasmI32.**geS**
+### WasmI32.**(>=)**
 
 ```grain
-geS : (WasmI32, WasmI32) -> Bool
+(>=) : (WasmI32, WasmI32) -> Bool
 ```
 
 ### WasmI32.**geU**
