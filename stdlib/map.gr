@@ -525,8 +525,8 @@ provide module Immutable {
     size: Number,
     left: Map<k, v>,
     right: Map<k, v>,
-  },
-  abstract enum Map<k, v> {
+  }
+  and abstract enum Map<k, v> {
     Empty,
     Tree(Node<k, v>),
   }

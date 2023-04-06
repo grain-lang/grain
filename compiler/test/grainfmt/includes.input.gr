@@ -28,7 +28,7 @@ include "runtime/unsafe/wasmi32"
 from WasmI32 use {
   eq, // comment1
   // comment 3
-  and as (&), // comment 2
+  and_ as (&), // comment 2
   or as (|)
   // no signed imports, as care should be taken to use signed or unsigned operators
 }

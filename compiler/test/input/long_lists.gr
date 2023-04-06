@@ -12,8 +12,8 @@ let rec make_list = (x, n) => {
     }
   }
   helper(n, x, [])
-},
-loop = n => {
+}
+and loop = n => {
   if (n == 0) {
     true
   } else {

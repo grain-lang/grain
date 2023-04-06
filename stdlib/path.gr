@@ -82,15 +82,15 @@ record TFileType<a> {
 enum Base {
   Rel(Number),
   Abs(AbsoluteRoot),
-},
-type PathInfo = (Base, FileType, List<String>),
-record TBase<a> {
+}
+and type PathInfo = (Base, FileType, List<String>)
+and record TBase<a> {
   base: Base,
-},
+}
 /**
  * Represents an absolute path's anchor point.
  */
-provide enum AbsoluteRoot {
+and provide enum AbsoluteRoot {
   Root,
   Drive(Char),
 }
@@ -129,11 +129,11 @@ abstract record Directory {
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
  * `Directory`)
  */
-abstract type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
+abstract type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>)
 /**
  * Represents a system path.
  */
-provide enum Path {
+and provide enum Path {
   AbsoluteFile(TypedPath<Absolute, File>),
   AbsoluteDir(TypedPath<Absolute, Directory>),
   RelativeFile(TypedPath<Relative, File>),

@@ -1,6 +1,6 @@
 module Lets
 
-let rec myFun1 = x => x + 1, myFun2 = x => x + 1
+let rec myFun1 = x => x + 1 and myFun2 = x => x + 1
 
 let myBlock = {
   "some string"
@@ -10,9 +10,9 @@ let myBlock = {
 let myFunction2 = (x) => {
   let inter = x + 1
   "some string"
-},
+}
 
-myFunction3 = (y) =>  {
+and myFunction3 = (y) =>  {
   let myVal = 5
   "some string"
 }
@@ -34,7 +34,7 @@ let rotate = (count, list) => {
   append(end, beginning)
 }
 
-let qsize = (if (WasmI32.eqz(WasmI32.and(m + 1n, 1n))) {
+let qsize = (if (WasmI32.eqz(WasmI32.and_(m + 1n, 1n))) {
     m + 1n
   } else {
     m + 2n

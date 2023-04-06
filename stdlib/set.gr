@@ -480,8 +480,8 @@ provide module Immutable {
     size: Number,
     left: Set<a>,
     right: Set<a>,
-  },
-  abstract enum Set<a> {
+  }
+  and abstract enum Set<a> {
     Empty,
     Tree(Node<a>),
   }

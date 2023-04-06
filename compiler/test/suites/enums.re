@@ -26,8 +26,8 @@ describe("enums", ({test, testSkip}) => {
     enum Tree<a> {
       Empty,
       Node(a, Forest<a>)
-    },
-    enum Forest<a> {
+    }
+    and enum Forest<a> {
       Nil,
       Cons(Tree<a>, Forest<a>)
     }

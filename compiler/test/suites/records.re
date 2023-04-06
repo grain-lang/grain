@@ -167,8 +167,8 @@ describe("records", ({test, testSkip}) => {
     {|
       record Bar {
         mut foo: Option<Foo>
-      },
-      record Foo {
+      }
+      and record Foo {
         mut bar: Option<Bar>
       }
 

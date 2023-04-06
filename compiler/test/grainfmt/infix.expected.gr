@@ -1,8 +1,10 @@
 module Infix
 
 let trimString = (str: String, end: Bool) => {
-  let chars = [>], charsLength = 0
-  let mut i = 0, offset = 1
+  let chars = [>]
+  and charsLength = 0
+  let mut i = 0
+  and offset = 1
 
   for (; i < charsLength && i > -1; i += offset) {
     let currentChar = chars[i]

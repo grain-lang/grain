@@ -64,7 +64,7 @@ describe("optimizations", ({test, testSkip}) => {
 
   assertSnapshot(
     "trs1",
-    "let f1 = ((x, y) => {x}),\n         f2 = ((x, y) => {y});\n       f1(1, 2)",
+    "let f1 = ((x, y) => {x})\n         and f2 = ((x, y) => {y});\n       f1(1, 2)",
   );
   assertRun(
     "regression_no_elim_impure_call",

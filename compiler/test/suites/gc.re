@@ -148,8 +148,8 @@ describe("garbage collection", ({test, testSkip}) => {
         }
       }
       helper(n, x, [])
-    },
-    loop = n => {
+    }
+    and loop = n => {
       if (n == 0) {
         true
       } else {
