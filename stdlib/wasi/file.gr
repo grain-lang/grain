@@ -956,6 +956,7 @@ provide let fdStats = (fd: FileDescriptor) => {
 
   let filetype = filetypeFromNumber(filetype)
 
+  @unsafe
   let flagsToWasmVal = (flag, i) => {
     let fdflags = WasmI32.load16U(structPtr, 4n)
     WasmI32.gtU(fdflags & 1n << untagSimpleNumber(i), 0n)
@@ -963,12 +964,14 @@ provide let fdStats = (fd: FileDescriptor) => {
   let fdflagsList = List.filteri(flagsToWasmVal, orderedFdflags)
   use WasmI64.{ (&), gtU as (>), (<<) }
 
+  @unsafe
   let flagsToWasmVal = (flag, i) => {
     let rights = WasmI64.load(structPtr, 8n)
     (rights & 1N << WasmI64.extendI32U(untagSimpleNumber(i))) > 0N
   }
   let rightsList = List.filteri(flagsToWasmVal, orderedRights)
 
+  @unsafe
   let flagsToWasmVal = (flag, i) => {
     let rightsInheriting = WasmI64.load(structPtr, 16n)
     (rightsInheriting & 1N << WasmI64.extendI32U(untagSimpleNumber(i))) > 0N
@@ -1723,13 +1726,19 @@ provide let pathSymlink = (
   let sourceSize = WasmI32.load(sourcePtr, 4n)
   let targetSize = WasmI32.load(targetPtr, 4n)
 
+  // TODO this workaround can be deleted once a uvwasi release with PR https://github.com/nodejs/uvwasi/pull/234 is released
+  let sourceBuf = Memory.malloc(sourceSize + 1n)
+  Memory.copy(sourceBuf, sourcePtr + 8n, sourceSize)
+  WasmI32.store8(sourceBuf + sourceSize, 0n, 0n)
+
   let err = Wasi.path_symlink(
-    sourcePtr + 8n,
+    sourceBuf,
     sourceSize,
     fd,
     targetPtr + 8n,
     targetSize
   )
+  Memory.free(sourceBuf)
   if (err != Wasi._ESUCCESS) {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
@@ -1788,7 +1797,7 @@ provide let pathReadlink = (fd: FileDescriptor, path: String, size: Number) => {
 
   let nread = Memory.malloc(4n)
 
-  let err = Wasi.path_readlink(fd, pathPtr, pathSize + 8n, strPtr, size, nread)
+  let err = Wasi.path_readlink(fd, pathPtr + 8n, pathSize, strPtr, size, nread)
   if (err != Wasi._ESUCCESS) {
     Memory.free(grainStrPtr)
     Memory.free(nread)
