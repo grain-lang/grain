@@ -120,7 +120,8 @@ let prim0_type =
   | AllocateFloat64
   | AllocateRational
   | WasmMemorySize
-  | HeapStart => prim_type([], Builtin_types.type_wasmi32)
+  | HeapStart
+  | HeapTypeMetadata => prim_type([], Builtin_types.type_wasmi32)
   | Unreachable => prim_type([], newgenvar(~name="a", ()));
 
 let prim1_type =

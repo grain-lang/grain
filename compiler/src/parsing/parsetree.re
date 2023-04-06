@@ -334,7 +334,8 @@ type prim0 =
   | AllocateRational
   | WasmMemorySize
   | Unreachable
-  | HeapStart;
+  | HeapStart
+  | HeapTypeMetadata;
 
 /** Single-argument operators */
 [@deriving (sexp, yojson)]

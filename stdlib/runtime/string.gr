@@ -45,23 +45,22 @@ primitive builtinId = "@builtin.id"
 primitive ignore = "@ignore"
 
 @unsafe
-primitive _TYPE_METADATA_SECTION = "@heap.type_metadata"
+primitive typeMetadata = "@heap.type_metadata"
 
 @unsafe
 let findTypeMetadata = typeHash => {
-  let numBuckets = WasmI32.load(_TYPE_METADATA_SECTION, 0n)
+  let typeMetadata = typeMetadata()
+  let numBuckets = WasmI32.load(typeMetadata, 0n)
   let hashHash = typeHash % numBuckets
   // First 8 bytes of metadata are for table size
-  let bucketPtr = _TYPE_METADATA_SECTION +
-    8n +
-    (hashHash << 3n) // 8 bytes/bucket
+  let bucketPtr = typeMetadata + 8n + (hashHash << 3n) // 8 bytes/bucket
   let bucketDataOffset = WasmI32.load(bucketPtr, 0n)
   let bucketSize = WasmI32.load(bucketPtr, 4n)
-  let beginDataPtr = _TYPE_METADATA_SECTION + bucketDataOffset
+  let beginDataPtr = typeMetadata + bucketDataOffset
   let endDataPtr = beginDataPtr + (bucketSize << 3n)
   for (let mut ptr = beginDataPtr; ptr < endDataPtr; ptr += 8n) {
     if (WasmI32.load(ptr, 0n) == typeHash) {
-      return _TYPE_METADATA_SECTION + WasmI32.load(ptr, 4n)
+      return typeMetadata + WasmI32.load(ptr, 4n)
     }
   }
   return -1n

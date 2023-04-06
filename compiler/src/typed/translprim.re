@@ -4,7 +4,6 @@ open Typedtree;
 open Parsetree;
 
 type primitive_constant =
-  | HeapBase
   | HeapTypeMetadata
   | ElideTypeInfo;
 
@@ -46,9 +45,8 @@ let pat_c = mkpatvar("c");
 let prim_map =
   PrimMap.of_seq(
     List.to_seq([
-      ("@heap.base", PrimitiveConstant(HeapBase)),
       ("@heap.start", Primitive0(HeapStart)),
-      ("@heap.type_metadata", PrimitiveConstant(HeapTypeMetadata)),
+      ("@heap.type_metadata", Primitive0(HeapTypeMetadata)),
       ("@meta.elide_type_info", PrimitiveConstant(ElideTypeInfo)),
       ("@allocate.int32", Primitive0(AllocateInt32)),
       ("@allocate.int64", Primitive0(AllocateInt64)),
@@ -1475,43 +1473,12 @@ let transl_prim = (env, desc) => {
     pla_loc: Location.dummy_loc,
   };
 
-  // `attrs` are attributes which should be applied to the `let` which gets implicitly generated.
-  //
-  // Specifically, consider:
-  //
-  // primitive equal: (a, a) -> Bool = "@equal"
-  //
-  // This will get pseudo-generated into something like (note: not syntactically correct):
-  //
-  // let equal = @disableGC (a, b) => <@equal>(a, b)
-  //
-  // For *constant* values, this is not good enough. Consider:
-  //
-  // primitive heapBase = "@heap.base"
-  //
-  // Since the RHS is just the constant value (inlined here), this binding effectively becomes
-  //
-  // let heapBase = 0x400n
-  //
-  // which means that we need to put the `@disableGC` on the *outside* of the `heapBase` binding.
-  // This is what the `attrs` list here controls; by returning `attrs == [Typedtree.Disable_gc]`,
-  // we will generate
-  //
-  // @disableGC let heapBase = 0x400n
-  //
-  // Which can pass through the rest of the compilation without issue.
-  //
   let (value, typ) =
     switch (prim) {
     | PrimitiveConstant(const) =>
       let (value, typ, attributes) =
         switch (const) {
         // [NOTE] should be kept in sync with `runtime_heap_ptr` and friends in `compcore.re`
-        | HeapBase => (
-            Constant.wasmi32(string_of_int(active_memory_base())),
-            Builtin_types.type_wasmi32,
-            disable_gc,
-          )
         | HeapTypeMetadata => (
             Constant.wasmi32(string_of_int(active_memory_base() + 0x8)),
             Builtin_types.type_wasmi32,
@@ -1536,7 +1503,8 @@ let transl_prim = (env, desc) => {
         | AllocateRational
         | WasmMemorySize
         | Unreachable
-        | HeapStart => disable_gc
+        | HeapStart
+        | HeapTypeMetadata => disable_gc
         };
       (
         Expression.lambda(~loc, ~attributes, [], Expression.prim0(~loc, p)),

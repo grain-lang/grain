@@ -8,7 +8,7 @@ from WasmI32 use { (+), (-), (*), (==), (!=) }
 primitive assert = "@assert"
 primitive ignore = "@ignore"
 
-primitive heapBase = "@heap.base"
+primitive heapStart = "@heap.start"
 
 // Because we're in runtime mode, malloc has yet to be called
 // This provides us with a clean slate to test malloc
@@ -18,7 +18,7 @@ ignore(Malloc.malloc(8n))
 
 // The free list should be pointing at the base
 let base = Malloc.getFreePtr()
-assert base == Malloc._RESERVED_RUNTIME_SPACE + heapBase
+assert base == Malloc._RESERVED_RUNTIME_SPACE + heapStart()
 
 // grab the next (and only) block in the free list
 let block = WasmI32.load(Malloc.getFreePtr(), 0n)
