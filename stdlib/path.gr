@@ -571,7 +571,7 @@ provide let relativeTo = (source, dest) => {
   let pathInfo2 = pathInfo(dest)
   let (base2, _, _) = pathInfo2
   match ((base1, base2)) {
-    (Abs(_), Rel(_)) | (Abs(_), Rel(_)) => Err(Incompatible(DifferentBases)),
+    (Abs(_), Rel(_)) | (Rel(_), Abs(_)) => Err(Incompatible(DifferentBases)),
     _ => Result.map(toPath, relativeToHelper(pathInfo1, pathInfo2)),
   }
 }
