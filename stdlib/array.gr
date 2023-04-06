@@ -1121,8 +1121,8 @@ provide module Immutable {
   // To be applied to numbers to bring them within the range [0, 32)
   let bitmask = branchingFactor - 1
 
-  type rec Tree<a> = Array<Node<a>>,
-  enum Node<a> {
+  type Tree<a> = Array<Node<a>>
+  and enum Node<a> {
     Tree(Tree<a>),
     Leaf(Array<a>),
   }

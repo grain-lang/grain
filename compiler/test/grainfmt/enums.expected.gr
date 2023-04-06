@@ -20,7 +20,7 @@ provide enum Ship {
   Ship(Number, Number, Number),
 }
 
-enum ParsedRegularExpression {
+enum rec ParsedRegularExpression {
   RENever,
   REEmpty,
   REAny,
@@ -79,8 +79,8 @@ enum ParsedRegularExpression {
 
 record Node {
   node: AstValue,
-},
-enum AstValue {
+}
+and enum AstValue {
   NodeValue(Node),
   StringValue(String),
 }

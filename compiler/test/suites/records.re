@@ -165,10 +165,10 @@ describe("records", ({test, testSkip}) => {
   assertSnapshot(
     "record_recursive_data_definition",
     {|
-      record rec Bar {
+      record Bar {
         mut foo: Option<Foo>
-      },
-      record Foo {
+      }
+      and record Foo {
         mut bar: Option<Bar>
       }
 

@@ -475,13 +475,13 @@ provide module Immutable {
   // implementation based on the paper "Implementing Sets Efficiently in a
   // Functional Language" by Stephen Adams
 
-  record rec Node<a> {
+  record Node<a> {
     key: a,
     size: Number,
     left: Set<a>,
     right: Set<a>,
-  },
-  abstract enum Set<a> {
+  }
+  and abstract enum Set<a> {
     Empty,
     Tree(Node<a>),
   }

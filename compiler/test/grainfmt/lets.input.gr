@@ -34,7 +34,7 @@ let rotate = (count, list) => {
   append(end, beginning)
 }
 
-let qsize = (if (WasmI32.eqz(WasmI32.and(m + 1n, 1n))) {
+let qsize = (if (WasmI32.eqz(WasmI32.and_(m + 1n, 1n))) {
     m + 1n
   } else {
     m + 2n

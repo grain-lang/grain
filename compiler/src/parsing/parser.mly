@@ -38,6 +38,7 @@ module Grain_parsing = struct end
 %token <string> INFIX_ASSIGNMENT_10
 
 %token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
+%token AND
 %token EXCEPT FROM STAR
 %token SLASH DASH PIPE
 %token EOL EOF
@@ -362,7 +363,7 @@ data_declaration_stmt:
   | data_declaration { (NotProvided, $1) }
 
 data_declaration_stmts:
-  | separated_nonempty_list(comma, data_declaration_stmt) { $1 }
+  | separated_nonempty_list(AND, data_declaration_stmt) { $1 }
 
 provide_item:
   | TYPE aliasable(uid) { PProvideType { name=fst $2; alias = snd $2; loc=to_loc $loc} }

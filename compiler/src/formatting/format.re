@@ -4353,6 +4353,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("type"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.text(data.pdata_name.txt),
         Doc.group(
           Doc.concat([
@@ -4597,6 +4602,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("enum"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.text(nameloc.txt),
         switch (data.pdata_params) {
         | [] => Doc.space
@@ -4712,6 +4722,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("record"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.text(nameloc.txt),
         switch (data.pdata_params) {
         | [] => Doc.space
@@ -4768,9 +4783,9 @@ let data_print =
     ) => {
   let previous_data: ref(option(Parsetree.data_declaration)) = ref(None);
   Doc.join(
-    ~sep=Doc.concat([Doc.comma, Doc.hardLine]),
-    List.map(
-      data => {
+    ~sep=Doc.concat([Doc.hardLine]),
+    List.mapi(
+      (i, data) => {
         let (expt, decl: Parsetree.data_declaration) = data;
 
         let leading_comments =
@@ -4797,6 +4812,11 @@ let data_print =
 
         Doc.concat([
           leading_comment_docs,
+          if (i != 0) {
+            Doc.text("and ");
+          } else {
+            Doc.nil;
+          },
           switch ((expt: Asttypes.provide_flag)) {
           | NotProvided => Doc.nil
           | Provided => Doc.text("provide ")

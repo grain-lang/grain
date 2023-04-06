@@ -316,7 +316,7 @@ let token = state => {
 };
 
 let token = state => {
-  // if-else and or-patterns hack
+  // if-else, or-patterns, and `and` hack
   let (tok, _, _) as triple = token(state);
   if (tok == EOL) {
     let fst = ((a, _, _)) => a;
@@ -328,6 +328,7 @@ let token = state => {
     };
 
     switch (fst(next_triple^)) {
+    | AND
     | ELSE
     | PIPE => next_triple^
     | _ =>
