@@ -9,6 +9,8 @@ basic functionality › complex1
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
+ (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
+ (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1125 (mut i32)))
  (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$-\" (global $-_1123 (mut i32)))

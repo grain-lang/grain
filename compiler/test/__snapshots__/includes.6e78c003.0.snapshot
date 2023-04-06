@@ -8,6 +8,8 @@ includes › include_some_multiple_trailing
  (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
  (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
  (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
+ (import \"_genv\" \"runtimeHeapNextPtr\" (global $runtimeHeapNextPtr_0 (mut i32)))
+ (import \"_genv\" \"metadataPtr\" (global $metadataPtr_0 i32))
  (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
  (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$x\" (global $x_1123 (mut i32)))
  (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$y\" (global $y_1122 (mut i32)))
