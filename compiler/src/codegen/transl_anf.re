@@ -618,19 +618,37 @@ and compile_anf_expr = (env, a) =>
     };
     let (new_env, locations) = get_locs(env, binds);
     let instrs =
-      List.fold_right2(
-        (loc, (id, rhs), acc) =>
-          [
-            {
-              instr_desc: MStore([(loc, compile_comp(~id, env, rhs))]),
-              instr_loc: rhs.comp_loc,
-            },
-            ...acc,
-          ],
-        locations,
-        binds,
-        [],
-      );
+      switch (recflag) {
+      | Nonrecursive =>
+        List.fold_right2(
+          (loc, (id, rhs), acc) =>
+            [
+              {
+                instr_desc: MStore([(loc, compile_comp(~id, env, rhs))]),
+                instr_loc: rhs.comp_loc,
+              },
+              ...acc,
+            ],
+          locations,
+          binds,
+          [],
+        )
+      | Recursive => [
+          {
+            instr_desc:
+              MStore(
+                List.fold_right2(
+                  (loc, (id, rhs), acc) =>
+                    [(loc, compile_comp(~id, new_env, rhs)), ...acc],
+                  locations,
+                  binds,
+                  [],
+                ),
+              ),
+            instr_loc: a.anf_loc,
+          },
+        ]
+      };
     instrs @ compile_anf_expr(new_env, body);
   | AEComp(c) => [compile_comp(env, c)]
   };
