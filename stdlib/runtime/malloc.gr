@@ -76,7 +76,7 @@ let logMallocHeaderSize = 3n
  */
 let mut heapSize = 0n
 
-provide let _RESERVED_RUNTIME_SPACE = 0x4000n
+provide let _RESERVED_RUNTIME_SPACE = 0x800n
 
 /**
  * The base the heap. The block at this address will be size 0 and
