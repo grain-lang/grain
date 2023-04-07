@@ -10,6 +10,7 @@ module Float32
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmf32"
+from WasmF32 use { (+), (-), (*), (/), (<), (<=), (>), (>=) }
 include "runtime/dataStructures"
 from DataStructures use { newFloat32 }
 
@@ -84,7 +85,7 @@ provide { fromNumber, toNumber }
 provide let add = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newFloat32(WasmF32.add(xv, yv))
+  let ptr = newFloat32(xv + yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -101,7 +102,7 @@ provide let add = (x: Float32, y: Float32) => {
 provide let sub = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newFloat32(WasmF32.sub(xv, yv))
+  let ptr = newFloat32(xv - yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -118,7 +119,7 @@ provide let sub = (x: Float32, y: Float32) => {
 provide let mul = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newFloat32(WasmF32.mul(xv, yv))
+  let ptr = newFloat32(xv * yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -135,7 +136,7 @@ provide let mul = (x: Float32, y: Float32) => {
 provide let div = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newFloat32(WasmF32.div(xv, yv))
+  let ptr = newFloat32(xv / yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -152,7 +153,7 @@ provide let div = (x: Float32, y: Float32) => {
 provide let lt = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmF32.lt(xv, yv)
+  xv < yv
 }
 
 /**
@@ -168,7 +169,7 @@ provide let lt = (x: Float32, y: Float32) => {
 provide let gt = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmF32.gt(xv, yv)
+  xv > yv
 }
 
 /**
@@ -184,7 +185,7 @@ provide let gt = (x: Float32, y: Float32) => {
 provide let lte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmF32.le(xv, yv)
+  xv <= yv
 }
 
 /**
@@ -200,5 +201,5 @@ provide let lte = (x: Float32, y: Float32) => {
 provide let gte = (x: Float32, y: Float32) => {
   let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmF32.ge(xv, yv)
+  xv >= yv
 }

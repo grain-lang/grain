@@ -2,7 +2,7 @@ module DebugPrint
 
 include "runtime/numberUtils" as Utils
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { add as (+) }
+from WasmI32 use { (+) }
 include "runtime/unsafe/wasmf64"
 include "runtime/unsafe/memory"
 

@@ -2,18 +2,7 @@
 module Equal
 
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use {
-  eq as (==),
-  ne as (!=),
-  and as (&),
-  xor as (^),
-  add as (+),
-  sub as (-),
-  mul as (*),
-  ltS as (<),
-  remS as (%),
-  shl as (<<),
-}
+from WasmI32 use { (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
 include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/wasmf32" as WasmF32
 include "runtime/unsafe/tags" as Tags
@@ -140,9 +129,8 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let first = xlength - extra
         let mut result = true
         for (let mut i = 0n; i < first; i += 8n) {
-          if (
-            WasmI64.ne(WasmI64.load(xptr + i, 8n), WasmI64.load(yptr + i, 8n))
-          ) {
+          from WasmI64 use { (!=) }
+          if (WasmI64.load(xptr + i, 8n) != WasmI64.load(yptr + i, 8n)) {
             result = false
             break
           }
@@ -194,13 +182,14 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
     ) => {
       let xval = WasmI32.load(xptr, 4n)
       let yval = WasmI32.load(yptr, 4n)
-      WasmI32.eq(xval, yval)
+      xval == yval
     },
     // Float32 is handled by equalHelp directly
     t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      from WasmI64 use { (==) }
       let xval = WasmI64.load(xptr, 8n)
       let yval = WasmI64.load(yptr, 8n)
-      WasmI64.eq(xval, yval)
+      xval == yval
     },
     _ => {
       // No other implementation
@@ -222,7 +211,8 @@ equalHelp = (x, y) => {
     // Short circuit for Float32 to correctly handle NaN != NaN
     let xval = WasmF32.load(x, 4n)
     let yval = WasmF32.load(y, 4n)
-    WasmF32.eq(xval, yval)
+    from WasmF32 use { (==) }
+    xval == yval
   } else {
     // Handle all other heap allocated things
     // Can short circuit if pointers are the same
