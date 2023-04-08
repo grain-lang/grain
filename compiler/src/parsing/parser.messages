@@ -788,7 +788,7 @@ program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT LPAREN WHILE
 ## In state 2, spurious reduction of production lparen -> LPAREN
 ##
 
-Expected a type or `)` to complete the variant definition.
+Expected one or more types to complete the variant definition.
 
 program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT RBRACE COMMA EOL WHILE
 ##
