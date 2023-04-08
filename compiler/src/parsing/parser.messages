@@ -6216,19 +6216,6 @@ program: MODULE UIDENT EOL UIDENT LPAREN WHEN
 
 Expected a comma-separated list of expressions or `)` to complete the constructor.
 
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT LPAREN RPAREN YIELD
-##
-## Ends in an error in state: 778.
-##
-## data_constructors -> lbrace lseparated_nonempty_list_inner(comma,data_constructor) . option(comma) rbrace [ SEMI RBRACE EOL EOF COMMA ]
-## lseparated_nonempty_list_inner(comma,data_constructor) -> lseparated_nonempty_list_inner(comma,data_constructor) . comma data_constructor [ RBRACE EOL COMMA ]
-##
-## The known suffix of the stack is as follows:
-## lbrace lseparated_nonempty_list_inner(comma,data_constructor)
-##
-
-Expected a comma followed by more constructors or `}` to complete the enum declaration.
-
 program: MODULE UIDENT EOL FUN LPAREN NUMBER_INT EQUAL UIDENT YIELD
 ##
 ## Ends in an error in state: 660.
