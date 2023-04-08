@@ -388,8 +388,8 @@ provide_stmt:
 
 data_constructor:
   | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc($1) $1) }
-  | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc (Option.value ~default:[] $3) (to_loc $loc($3))) }
-  | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc $2 (to_loc $loc($2))) }
+  | UIDENT data_tuple_body { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc $2 (to_loc $loc($2))) }
+  | UIDENT data_record_body { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc $2 (to_loc $loc($2))) }
 
 data_constructors:
   | lbrace lseparated_nonempty_list(comma, data_constructor) comma? rbrace { $2 }
@@ -398,7 +398,10 @@ data_label:
   | lid colon typ { LabelDeclaration.mk ~loc:(to_loc $loc) $1 $3 Immutable }
   | MUT lid colon typ { LabelDeclaration.mk ~loc:(to_loc $loc) $2 $4 Mutable }
 
-data_labels:
+data_tuple_body:
+  | lparen typs rparen { $2 }
+
+data_record_body:
   | lbrace lseparated_nonempty_list(comma, data_label) comma? rbrace { $2 }
 
 id_typ:
@@ -410,7 +413,7 @@ id_vec:
 data_declaration:
   | TYPE UIDENT id_vec? equal typ { DataDeclaration.abstract ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) (Some $5) }
   | ENUM UIDENT id_vec? data_constructors { DataDeclaration.variant ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
-  | RECORD UIDENT id_vec? data_labels { DataDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
+  | RECORD UIDENT id_vec? data_record_body { DataDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
 unop_expr:
   | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
@@ -680,7 +683,7 @@ primitive_stmt:
 exception_stmt:
   | EXCEPTION type_id_str { Exception.singleton ~loc:(to_loc $loc) $2 }
   | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Location.mkloc (Option.value ~default:[] $4) (to_loc $loc($4))) }
-  | EXCEPTION type_id_str data_labels { Exception.record ~loc:(to_loc $loc) $2 (Location.mkloc $3 (to_loc $loc($3))) }
+  | EXCEPTION type_id_str data_record_body { Exception.record ~loc:(to_loc $loc) $2 (Location.mkloc $3 (to_loc $loc($3))) }
 
 module_stmt:
   | MODULE UIDENT lbrace toplevel_stmts RBRACE { ModuleDeclaration.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }
