@@ -10,6 +10,7 @@ module Float64
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmf64"
+from WasmF64 use { (-), (+), (*), (/), (<), (<=), (>), (>=) }
 include "runtime/dataStructures"
 from DataStructures use { newFloat64 }
 
@@ -85,7 +86,7 @@ provide { fromNumber, toNumber }
 provide let add = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat64(WasmF64.add(xv, yv))
+  let ptr = newFloat64(xv + yv)
   WasmI32.toGrain(ptr): Float64
 }
 
@@ -102,7 +103,7 @@ provide let add = (x: Float64, y: Float64) => {
 provide let sub = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat64(WasmF64.sub(xv, yv))
+  let ptr = newFloat64(xv - yv)
   WasmI32.toGrain(ptr): Float64
 }
 
@@ -119,7 +120,7 @@ provide let sub = (x: Float64, y: Float64) => {
 provide let mul = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat64(WasmF64.mul(xv, yv))
+  let ptr = newFloat64(xv * yv)
   WasmI32.toGrain(ptr): Float64
 }
 
@@ -136,7 +137,7 @@ provide let mul = (x: Float64, y: Float64) => {
 provide let div = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat64(WasmF64.div(xv, yv))
+  let ptr = newFloat64(xv / yv)
   WasmI32.toGrain(ptr): Float64
 }
 
@@ -153,7 +154,7 @@ provide let div = (x: Float64, y: Float64) => {
 provide let lt = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  WasmF64.lt(xv, yv)
+  xv < yv
 }
 
 /**
@@ -169,7 +170,7 @@ provide let lt = (x: Float64, y: Float64) => {
 provide let gt = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  WasmF64.gt(xv, yv)
+  xv > yv
 }
 
 /**
@@ -185,7 +186,7 @@ provide let gt = (x: Float64, y: Float64) => {
 provide let lte = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  WasmF64.le(xv, yv)
+  xv <= yv
 }
 
 /**
@@ -201,5 +202,5 @@ provide let lte = (x: Float64, y: Float64) => {
 provide let gte = (x: Float64, y: Float64) => {
   let xv = WasmF64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmF64.load(WasmI32.fromGrain(y), 8n)
-  WasmF64.ge(xv, yv)
+  xv >= yv
 }

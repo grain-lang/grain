@@ -24,11 +24,11 @@ module Marshal
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
-  add as (+),
-  mul as (*),
-  and as (&),
-  eq as (==),
-  ne as (!=),
+  (+),
+  (*),
+  (&),
+  (==),
+  (!=),
   gtU as (>),
   ltU as (<),
   leU as (<=),

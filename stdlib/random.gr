@@ -30,25 +30,24 @@ let incCounter = random => {
 // https://arxiv.org/pdf/2004.06278v3.pdf
 @unsafe
 let squares = (ctr: Uint64, key: Uint64) => {
+  from WasmI64 use { (+), (*), (|), (<<), (>>>) }
   // Implemented with @unsafe to boost efficiency
   // and have fine-grained control over overflow semantics
   let ctr = WasmI64.load(WasmI32.fromGrain(ctr), 8n)
   let key = WasmI64.load(WasmI32.fromGrain(key), 8n)
-  let mut x = WasmI64.mul(ctr, key)
+  let mut x = ctr * key
   let mut y = x
-  let mut z = WasmI64.add(y, key)
+  let mut z = y + key
   // round 1
-  x = WasmI64.add(WasmI64.mul(x, x), y)
-  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  x = x * x + y
+  x = x >>> 32N | x << 32N
   // round 2
-  x = WasmI64.add(WasmI64.mul(x, x), z)
-  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
+  x = x * x + z
+  x = x >>> 32N | x << 32N
   // round 3
-  x = WasmI64.add(WasmI64.mul(x, x), y)
-  x = WasmI64.or(WasmI64.shrU(x, 32N), WasmI64.shl(x, 32N))
-  let ret = WasmI32.wrapI64(
-    WasmI64.shrU(WasmI64.add(WasmI64.mul(x, x), z), 32N)
-  )
+  x = x * x + y
+  x = x >>> 32N | x << 32N
+  let ret = WasmI32.wrapI64((x * x + z) >>> 32N)
   WasmI32.toGrain(DS.newUint32(ret)): Uint32
 }
 

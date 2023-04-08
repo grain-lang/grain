@@ -69,19 +69,20 @@ primitive (!) = "@not"
 @unsafe
 let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   from WasmI64 use {
-    eq as (==),
-    and as (&),
+    (==),
+    (&),
     gtU as (>),
     ltU as (<),
-    geS as (>=),
-    leS as (<=),
-    shrU as (>>),
-    sub as (-),
-    add as (+),
+    (>=),
+    (<=),
+    (>>>),
+    (-),
+    (+),
   }
+  from WasmI32 use { (*) }
 
   let mask = if (precision < 64N) {
-    0xFFFF_FFFF_FFFF_FFFFN >> precision
+    0xFFFF_FFFF_FFFF_FFFFN >>> precision
   } else {
     0xFFFF_FFFF_FFFF_FFFFN
   }
@@ -91,10 +92,11 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   // That means whenever we need to round ties to even, we always have
   // an exact value.
   let index = q - _SMALLEST_POWER_OF_FIVE
-  let n = WasmI32.mul(16n, WasmI32.wrapI64(index))
+  let n = 16n * WasmI32.wrapI64(index)
+  from WasmI32 use { (+) }
   let lo5 = WasmI64.load(get_POWERS5(), n),
-    hi5 = WasmI64.load(get_POWERS5(), WasmI32.add(n, 8n))
-
+    hi5 = WasmI64.load(get_POWERS5(), n + 8n)
+  from WasmI64 use { (+) }
   // From Rust:
   // Only need one multiplication as long as there is 1 zero but
   // in the explicit mantissa bits, +1 for the hidden bit, +1 to
@@ -127,17 +129,7 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
 // (u64, i32)
 @unsafe
 provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
-  from WasmI64 use {
-    eq as (==),
-    ltS as (<),
-    leS as (<=),
-    gtS as (>),
-    geS as (>=),
-    shl as (<<),
-    shrS as (>>),
-    and as (&),
-    add as (+),
-  }
+  from WasmI64 use { (==), (<), (<=), (>), (>=), (<<), (>>), (&), (+), (>>>) }
 
   let w = mantissa
   let q = exponent
@@ -171,31 +163,33 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
     match (lo == 0xFFFF_FFFF_FFFF_FFFFN && !(q >= -27N && q <= 55N)) {
       true => fpErr(),
       false => {
-        let upperbit = WasmI32.wrapI64(WasmI64.shrU(hi, 63N))
-        let mut mantissa = WasmI64.shrU(
-          hi,
+        let upperbit = WasmI32.wrapI64(hi >>> 63N)
+        let mut mantissa = hi >>>
           WasmI64.extendI32S(
             {
-              from WasmI32 use { add as (+), sub as (-) }
+              from WasmI32 use { (+), (-) }
               upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
             }
           )
-        )
         let mut power2 = {
-          from WasmI32 use { add as (+), sub as (-) }
+          from WasmI32 use { (+), (-) }
           let q = WasmI32.wrapI64(q)
           let lz = WasmI32.wrapI64(lz)
           power(q) + upperbit - lz - _MINIMUM_EXPONENT
         }
-        if (WasmI32.leS(power2, 0n)) {
+
+        from WasmI32 use { (<=) }
+        if (power2 <= 0n) {
+          from WasmI32 use { (+), (*), (>=) }
           // -power2 + 1 >= 64
-          if (WasmI32.geS(WasmI32.add(WasmI32.mul(-1n, power2), 1n), 64n)) {
+          if (-1n * power2 + 1n >= 64n) {
             // Have more than 64 bits below the minimum exponent, must be 0.
             fpZero()
           } else {
+            from WasmI64 use { (>=) }
             // Have a subnormal value.
-            mantissa = mantissa >>
-              WasmI64.extendI32S(WasmI32.add(WasmI32.mul(-1n, power2), 1n))
+            mantissa = mantissa >> WasmI64.extendI32S(-1n * power2 + 1n)
+            from WasmI64 use { (+) }
             mantissa += mantissa & 1N
             mantissa = mantissa >> 1N
             power2 = if (mantissa >= 1N << _MANTISSA_EXPLICIT_BITS_64) {
@@ -210,6 +204,7 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             }
           }
         } else {
+          from WasmI64 use { (<=) }
           // Need to handle rounding ties. Normally, we need to round up,
           // but if we fall right in between and and we have an even basis, we
           // need to round down.
@@ -229,30 +224,34 @@ provide let computeFloat = (exponent: WasmI64, mantissa: WasmI64) => {
             mantissa <<
             WasmI64.extendI32S(
               {
-                from WasmI32 use { add as (+), sub as (-) }
+                from WasmI32 use { (+), (-) }
                 upperbit + 64n - _MANTISSA_EXPLICIT_BITS_32 - 3n
               }
             ) ==
             hi
           ) {
+            from WasmI64 use { (^) }
             // Zero the lowest bit, so we don't round up.
             // mantissa &= !1N;
-            mantissa = mantissa & WasmI64.xor(1N, -1N)
+            mantissa = mantissa & (1N ^ -1N)
           }
           // Round-to-even, then shift the significant digits into place.
           mantissa += mantissa & 1N
-          mantissa = WasmI64.shrU(mantissa, 1N)
+          from WasmI64 use { (>>>) }
+          mantissa = mantissa >>> 1N
           if (WasmI64.geU(mantissa, 2N << _MANTISSA_EXPLICIT_BITS_64)) {
+            from WasmI32 use { (+) }
             // Rounding up overflowed, so the carry bit is set. Set the
             // mantissa to 1 (only the implicit, hidden bit is set) and
             // increase the exponent.
             mantissa = 1N << _MANTISSA_EXPLICIT_BITS_64
-            power2 = WasmI32.add(power2, 1n)
+            power2 += 1n
           }
+          from WasmI32 use { (>=) }
+          from WasmI64 use { (^) }
           // Zero out the hidden bit.
-          mantissa = mantissa &
-            WasmI64.xor(1N << _MANTISSA_EXPLICIT_BITS_64, -1N)
-          if (WasmI32.geS(power2, _INFINITE_POWER)) {
+          mantissa = mantissa & (1N << _MANTISSA_EXPLICIT_BITS_64 ^ -1N)
+          if (power2 >= _INFINITE_POWER) {
             // Exponent is above largest normal value, must be infinite.
             fpInf()
           } else {

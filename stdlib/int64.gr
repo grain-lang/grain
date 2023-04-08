@@ -10,6 +10,23 @@ module Int64
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmi64"
+from WasmI64 use {
+  (==),
+  (!=),
+  (&),
+  (|),
+  (^),
+  (+),
+  (-),
+  (*),
+  (/),
+  (<<),
+  (>>),
+  (<),
+  (<=),
+  (>),
+  (>=),
+}
 include "runtime/exception"
 
 include "runtime/dataStructures"
@@ -49,7 +66,7 @@ provide let fromUint64 = (x: Uint64) => {
 @unsafe
 provide let incr = (value: Int64) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newInt64(WasmI64.add(WasmI64.load(value, 8n), 1N))
+  let ptr = newInt64(WasmI64.load(value, 8n) + 1N)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -64,7 +81,7 @@ provide let incr = (value: Int64) => {
 @unsafe
 provide let decr = (value: Int64) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newInt64(WasmI64.sub(WasmI64.load(value, 8n), 1N))
+  let ptr = newInt64(WasmI64.load(value, 8n) - 1N)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -81,7 +98,7 @@ provide let decr = (value: Int64) => {
 provide let add = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.add(xv, yv))
+  let ptr = newInt64(xv + yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -98,7 +115,7 @@ provide let add = (x: Int64, y: Int64) => {
 provide let sub = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.sub(xv, yv))
+  let ptr = newInt64(xv - yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -115,7 +132,7 @@ provide let sub = (x: Int64, y: Int64) => {
 provide let mul = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.mul(xv, yv))
+  let ptr = newInt64(xv * yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -132,7 +149,7 @@ provide let mul = (x: Int64, y: Int64) => {
 provide let div = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.divS(xv, yv))
+  let ptr = newInt64(xv / yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -155,8 +172,8 @@ provide let rem = (x: Int64, y: Int64) => {
 
 @unsafe
 let abs = n => {
-  let mask = WasmI64.shrS(n, 63N)
-  WasmI64.sub(WasmI64.xor(n, mask), mask)
+  let mask = n >> 63N
+  (n ^ mask) - mask
 }
 
 /**
@@ -180,16 +197,12 @@ provide let mod = (x: Int64, y: Int64) => {
     throw Exception.ModuloByZero
   }
 
-  let ptr = if (WasmI64.ltS(WasmI64.xor(xval, yval), 0N)) {
+  let ptr = if ((xval ^ yval) < 0N) {
     let xabs = abs(xval)
     let yabs = abs(yval)
     let mval = WasmI64.remS(xabs, yabs)
-    let mres = WasmI64.sub(yabs, mval)
-    newInt64(
-      if (WasmI64.ne(mval, 0N)) (
-        if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres
-      ) else 0N
-    )
+    let mres = yabs - mval
+    newInt64(if (mval != 0N) (if (yval < 0N) 0N - mres else mres) else 0N)
   } else {
     newInt64(WasmI64.remS(xval, yval))
   }
@@ -243,7 +256,7 @@ provide let rotr = (value: Int64, amount: Int64) => {
 provide let shl = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
-  let ptr = newInt64(WasmI64.shl(xv, yv))
+  let ptr = newInt64(xv << yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -260,7 +273,7 @@ provide let shl = (value: Int64, amount: Int64) => {
 provide let shr = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
-  let ptr = newInt64(WasmI64.shrS(xv, yv))
+  let ptr = newInt64(xv >> yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -277,7 +290,7 @@ provide let shr = (value: Int64, amount: Int64) => {
 provide let eq = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.eq(xv, yv)
+  xv == yv
 }
 
 /**
@@ -293,7 +306,7 @@ provide let eq = (x: Int64, y: Int64) => {
 provide let ne = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.ne(xv, yv)
+  xv != yv
 }
 
 /**
@@ -323,7 +336,7 @@ provide let eqz = (value: Int64) => {
 provide let lt = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.ltS(xv, yv)
+  xv < yv
 }
 
 /**
@@ -339,7 +352,7 @@ provide let lt = (x: Int64, y: Int64) => {
 provide let gt = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.gtS(xv, yv)
+  xv > yv
 }
 
 /**
@@ -355,7 +368,7 @@ provide let gt = (x: Int64, y: Int64) => {
 provide let lte = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.leS(xv, yv)
+  xv <= yv
 }
 
 /**
@@ -371,7 +384,7 @@ provide let lte = (x: Int64, y: Int64) => {
 provide let gte = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.geS(xv, yv)
+  xv >= yv
 }
 
 /**
@@ -385,7 +398,7 @@ provide let gte = (x: Int64, y: Int64) => {
 @unsafe
 provide let lnot = (value: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let ptr = newInt64(WasmI64.xor(xv, 0xffffffffffffffffN))
+  let ptr = newInt64(xv ^ 0xffffffffffffffffN)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -402,7 +415,7 @@ provide let lnot = (value: Int64) => {
 provide let land = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.and(xv, yv))
+  let ptr = newInt64(xv & yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -419,7 +432,7 @@ provide let land = (x: Int64, y: Int64) => {
 provide let lor = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.or(xv, yv))
+  let ptr = newInt64(xv | yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -436,7 +449,7 @@ provide let lor = (x: Int64, y: Int64) => {
 provide let lxor = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.xor(xv, yv))
+  let ptr = newInt64(xv ^ yv)
   WasmI32.toGrain(ptr): Int64
 }
 

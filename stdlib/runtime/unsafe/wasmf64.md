@@ -60,28 +60,28 @@ nearest : WasmF64 -> WasmF64
 sqrt : WasmF64 -> WasmF64
 ```
 
-### WasmF64.**add**
+### WasmF64.**(+)**
 
 ```grain
-add : (WasmF64, WasmF64) -> WasmF64
+(+) : (WasmF64, WasmF64) -> WasmF64
 ```
 
-### WasmF64.**sub**
+### WasmF64.**(-)**
 
 ```grain
-sub : (WasmF64, WasmF64) -> WasmF64
+(-) : (WasmF64, WasmF64) -> WasmF64
 ```
 
-### WasmF64.**mul**
+### WasmF64.**(*)**
 
 ```grain
-mul : (WasmF64, WasmF64) -> WasmF64
+(*) : (WasmF64, WasmF64) -> WasmF64
 ```
 
-### WasmF64.**div**
+### WasmF64.**(/)**
 
 ```grain
-div : (WasmF64, WasmF64) -> WasmF64
+(/) : (WasmF64, WasmF64) -> WasmF64
 ```
 
 ### WasmF64.**copySign**
@@ -102,40 +102,40 @@ min : (WasmF64, WasmF64) -> WasmF64
 max : (WasmF64, WasmF64) -> WasmF64
 ```
 
-### WasmF64.**eq**
+### WasmF64.**(==)**
 
 ```grain
-eq : (WasmF64, WasmF64) -> Bool
+(==) : (WasmF64, WasmF64) -> Bool
 ```
 
-### WasmF64.**ne**
+### WasmF64.**(!=)**
 
 ```grain
-ne : (WasmF64, WasmF64) -> Bool
+(!=) : (WasmF64, WasmF64) -> Bool
 ```
 
-### WasmF64.**lt**
+### WasmF64.**(<)**
 
 ```grain
-lt : (WasmF64, WasmF64) -> Bool
+(<) : (WasmF64, WasmF64) -> Bool
 ```
 
-### WasmF64.**le**
+### WasmF64.**(<=)**
 
 ```grain
-le : (WasmF64, WasmF64) -> Bool
+(<=) : (WasmF64, WasmF64) -> Bool
 ```
 
-### WasmF64.**gt**
+### WasmF64.**(>)**
 
 ```grain
-gt : (WasmF64, WasmF64) -> Bool
+(>) : (WasmF64, WasmF64) -> Bool
 ```
 
-### WasmF64.**ge**
+### WasmF64.**(>=)**
 
 ```grain
-ge : (WasmF64, WasmF64) -> Bool
+(>=) : (WasmF64, WasmF64) -> Bool
 ```
 
 ### WasmF64.**reinterpretI64**

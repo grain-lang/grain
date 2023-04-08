@@ -22,7 +22,7 @@ module GC
 include "runtime/malloc" as Malloc
 include "runtime/unsafe/tags" as Tags
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use { add as (+), sub as (-), mul as (*), and as (&), eq as (==) }
+from WasmI32 use { (+), (-), (*), (&), (==), (!=) }
 
 // Using foreigns directly here to avoid cyclic dependency
 foreign wasm fd_write: (
@@ -71,10 +71,7 @@ provide let free = (userPtr: WasmI32) => {
 }
 
 provide let incRef = (userPtr: WasmI32) => {
-  if (
-    WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
-    WasmI32.ne(userPtr, 0n)
-  ) {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && userPtr != 0n) {
     // if (_DEBUG) {
     //   logIncRef(userPtr, getRefCount(userPtr))
     //   void;
@@ -85,10 +82,7 @@ provide let incRef = (userPtr: WasmI32) => {
 }
 
 let rec decRef = (userPtr: WasmI32, ignoreZeros: Bool) => {
-  if (
-    WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) &&
-    WasmI32.ne(userPtr, 0n)
-  ) {
+  if (WasmI32.eqz(userPtr & Tags._GRAIN_GENERIC_TAG_MASK) && userPtr != 0n) {
     let refCount = getRefCount(userPtr)
     // if (_DEBUG) {
     //   logDecRef(userPtr, refCount, ignoreZeros)

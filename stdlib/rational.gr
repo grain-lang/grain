@@ -1,7 +1,7 @@
 /**
  * Utilities for working with the Rational type.
  * @example include "rational"
- * 
+ *
  * @since v0.6.0
  */
 
@@ -29,7 +29,7 @@ provide { fromNumber, toNumber, numerator, denominator }
  * @param x: The first operand
  * @param y: The second operand
  * @returns The sum of the two operands
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -46,7 +46,7 @@ provide let (+) = (x: Rational, y: Rational) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The difference of the two operands
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -63,7 +63,7 @@ provide let (-) = (x: Rational, y: Rational) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The product of the two operands
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -80,7 +80,7 @@ provide let (*) = (x: Rational, y: Rational) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of the two operands
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -129,14 +129,15 @@ provide let (!=) = (x: Rational, y: Rational) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
 provide let (<) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (<) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.ltS(cmpRationals(x, y), 0n)
+  cmpRationals(x, y) < 0n
 }
 
 /**
@@ -145,14 +146,15 @@ provide let (<) = (x: Rational, y: Rational) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
 provide let (>) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (>) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.gtS(cmpRationals(x, y), 0n)
+  cmpRationals(x, y) > 0n
 }
 
 /**
@@ -161,14 +163,15 @@ provide let (>) = (x: Rational, y: Rational) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
 provide let (<=) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (<=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.leS(cmpRationals(x, y), 0n)
+  cmpRationals(x, y) <= 0n
 }
 
 /**
@@ -177,12 +180,13 @@ provide let (<=) = (x: Rational, y: Rational) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
- * 
+ *
  * @since v0.6.0
  */
 @unsafe
 provide let (>=) = (x: Rational, y: Rational) => {
+  from WasmI32 use { (>=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
-  WasmI32.geS(cmpRationals(x, y), 0n)
+  cmpRationals(x, y) >= 0n
 }

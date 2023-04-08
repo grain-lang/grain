@@ -9,6 +9,7 @@ module Uint64
 
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmi64"
+from WasmI64 use { (==), (!=), (&), (|), (^), (+), (-), (*), (<<), (>>>) }
 include "runtime/unsafe/memory"
 include "runtime/exception"
 include "runtime/numbers"
@@ -75,7 +76,7 @@ provide let fromInt64 = (x: Int64) => {
 @unsafe
 provide let incr = (value: Uint64) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newUint64(WasmI64.add(WasmI64.load(value, _VALUE_OFFSET), 1N))
+  let ptr = newUint64(WasmI64.load(value, _VALUE_OFFSET) + 1N)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -90,7 +91,7 @@ provide let incr = (value: Uint64) => {
 @unsafe
 provide let decr = (value: Uint64) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newUint64(WasmI64.sub(WasmI64.load(value, _VALUE_OFFSET), 1N))
+  let ptr = newUint64(WasmI64.load(value, _VALUE_OFFSET) - 1N)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -107,7 +108,7 @@ provide let decr = (value: Uint64) => {
 provide let (+) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.add(xv, yv))
+  let ptr = newUint64(xv + yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -124,7 +125,7 @@ provide let (+) = (x: Uint64, y: Uint64) => {
 provide let (-) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.sub(xv, yv))
+  let ptr = newUint64(xv - yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -141,7 +142,7 @@ provide let (-) = (x: Uint64, y: Uint64) => {
 provide let (*) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.mul(xv, yv))
+  let ptr = newUint64(xv * yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -226,7 +227,7 @@ provide let rotr = (value: Uint64, amount: Uint64) => {
 provide let (<<) = (value: Uint64, amount: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.shl(xv, yv))
+  let ptr = newUint64(xv << yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -243,7 +244,7 @@ provide let (<<) = (value: Uint64, amount: Uint64) => {
 provide let (>>>) = (value: Uint64, amount: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.shrU(xv, yv))
+  let ptr = newUint64(xv >>> yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -260,7 +261,7 @@ provide let (>>>) = (value: Uint64, amount: Uint64) => {
 provide let (==) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmI64.eq(xv, yv)
+  xv == yv
 }
 
 /**
@@ -276,7 +277,7 @@ provide let (==) = (x: Uint64, y: Uint64) => {
 provide let (!=) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  WasmI64.ne(xv, yv)
+  xv != yv
 }
 
 /**
@@ -368,7 +369,7 @@ provide let (>=) = (x: Uint64, y: Uint64) => {
 @unsafe
 provide let lnot = (value: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.xor(xv, 0xffffffffffffffffN))
+  let ptr = newUint64(xv ^ 0xffffffffffffffffN)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -385,7 +386,7 @@ provide let lnot = (value: Uint64) => {
 provide let (&) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.and(xv, yv))
+  let ptr = newUint64(xv & yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -402,7 +403,7 @@ provide let (&) = (x: Uint64, y: Uint64) => {
 provide let (|) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.or(xv, yv))
+  let ptr = newUint64(xv | yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
@@ -419,7 +420,7 @@ provide let (|) = (x: Uint64, y: Uint64) => {
 provide let (^) = (x: Uint64, y: Uint64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
   let yv = WasmI64.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
-  let ptr = newUint64(WasmI64.xor(xv, yv))
+  let ptr = newUint64(xv ^ yv)
   WasmI32.toGrain(ptr): Uint64
 }
 
