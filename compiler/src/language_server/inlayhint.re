@@ -45,11 +45,7 @@ let find_hints = program => {
         switch (stmt.ttop_desc) {
         | TTopInclude(inc) =>
           let path = inc.tinc_path;
-          let name =
-            switch (path) {
-            | PIdent(i) => i.name
-            | _ => ""
-            };
+          let name = Path.name(inc.tinc_path);
 
           let stmt_loc = stmt.ttop_loc;
           let stmt_end = stmt_loc.loc_end;
@@ -60,7 +56,7 @@ let find_hints = program => {
           };
 
           let r: ResponseResult.inlay_hint = {
-            label: " : " ++ name,
+            label: ": " ++ name,
             position: p,
           };
           hints := [r, ...hints^];
