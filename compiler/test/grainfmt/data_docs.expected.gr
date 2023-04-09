@@ -1,9 +1,6 @@
 module DataDocs
 
-enum EventType {
-  Enter,
-  Exit,
-}
+enum EventType { Enter, Exit }
 /**
  *   An event is the start or end of a token amongst other events.
  *   Tokens can “contain” other tokens, even though they are stored in a flat
@@ -15,9 +12,6 @@ and type Event = (EventType, Token, TokenizeContext)
  *   Tokens can “contain” other tokens, even though they are stored in a flat
  *   list, through `enter`ing before them, and `exit`ing after them.
  */
-and enum EventType2 {
-  Enter2,
-  Exit2,
-}
+and enum EventType2 { Enter2, Exit2 }
 // line comment
 and type Event2 = (EventType2, Token, TokenizeContext)

@@ -4,276 +4,139 @@ open Grain_parsing;
 open Grain_utils;
 open Grain_diagnostics;
 
-module Doc = Res_doc;
-
-type iterator_item_type =
-  | IteratedListPattern
-  | IteratedRecordPattern
-  | IteratedRecord
-  | IteratedTypeConstructor
-  | IteratedPatterns
-  | IteratedArgs
-  | IteratedMatchItem
-  | IteratedDataDeclarations
-  | IteratedRecordLabels
-  | IteratedTupleExpression
-  | IteratedArrayExpression
-  | IteratedListExpression
-  | IteratedTypeItems
-  | IteratedTupleConstructor
-  | IteratedEnum
-  | IteratedRecordData
-  | IteratedValueBindings;
-type expression_parent_type =
-  | InfixExpression
-  | GenericExpression
-  | AccessExpression;
-
-let exception_primitives = [|"throw", "fail", "assert"|];
-
-let is_shift_or_concat_op = fn =>
-  if (String.length(fn) > 1) {
-    switch (String.sub(fn, 0, 2)) {
-    | "<<"
-    | ">>"
-    | "++"
-    | "||" => true
-    | _ => false
-    };
-  } else {
-    false;
-  };
-
-let is_logic_op = fn =>
-  if (String.length(fn) > 1) {
-    switch (String.sub(fn, 0, 2)) {
-    | "<="
-    | ">="
-    | "=="
-    | "!="
-    | "is"
-    | "isnt"
-    | "&&"
-    | "||" => true
-    | _ => false
-    };
-  } else {
-    false;
-  };
-let is_math_op = fn =>
-  if (is_logic_op(fn) || is_shift_or_concat_op(fn)) {
-    false;
-  } else if (String.length(fn) > 0) {
-    switch (fn.[0]) {
-    | '*'
-    | '/'
-    | '%'
-    | '+'
-    | '-'
-    | '<'
-    | '>'
-    | '&'
-    | '^'
-    | '|' => true
-    | _ => false
-    };
-  } else {
-    false;
-  };
-
-let op_precedence = fn => {
-  let op_precedence = fn =>
-    switch (fn) {
-    | '*'
-    | '/'
-    | '%' => 120
-    | '+'
-    | '-' => 110
-    | '<'
-    | '>' => 90
-    | '&' => 70
-    | '^' => 60
-    | '|' => 50
-    | '_' => 10
-    | _ => 9999
-    };
-  if (String.length(fn) > 1) {
-    switch (String.sub(fn, 0, 2)) {
-    | "++" => 110
-    | "<<"
-    | ">>" => 100
-    | "=="
-    | "!="
-    | "is" => 80
-    | "&&" => 40
-    | "||"
-    | "??" => 30
-    | _ => op_precedence(fn.[0])
-    };
-  } else if (String.length(fn) > 0) {
-    op_precedence(fn.[0]);
-  } else {
-    9999;
-  };
+/**
+  This takes a location and makes the loc_end the same as loc_start.
+  Its main purpose is to find comments between the start of an enclosing location and the first item inside.
+*/
+let enclosing_start_location = (loc: Location.t) => {
+  {...loc, loc_end: loc.loc_start};
 };
 
-exception IllegalParse(string);
-exception FormatterError(string);
+/**
+  This takes a location and makes the loc_start the same as loc_end.
+  Its main purpose is to find comments between the end of an enclosing location and the last item inside.
+*/
+let enclosing_end_location = (loc: Location.t) => {
+  {...loc, loc_start: loc.loc_end};
+};
 
-type compilation_error =
-  | ParseError(exn)
-  | InvalidCompilationState;
+let is_same_op = (expr1: Parsetree.expression, expr2: Parsetree.expression) =>
+  switch (expr1.pexp_desc, expr2.pexp_desc) {
+  | (
+      PExpId({txt: Identifier.IdentName({txt: op1})}),
+      PExpId({txt: Identifier.IdentName({txt: op2})}),
+    ) =>
+    op1 == op2
+  | _ => false
+  };
 
-type record_item =
-  | Field((Location.loc(Identifier.t), Parsetree.expression))
-  | RecordSpread(Parsetree.expression);
-
-let get_original_code = (location: Location.t, source: array(string)) => {
-  let (_, start_line, startc, _) =
-    Locations.get_raw_pos_info(location.loc_start);
-  let (_, end_line, endc, _) = Locations.get_raw_pos_info(location.loc_end);
-
-  if (Array.length(source) > end_line - 1) {
-    if (start_line == end_line) {
-      String_utils.Utf8.sub(source[start_line - 1], startc, endc - startc);
-    } else {
-      let text = ref("");
-      for (line in start_line - 1 to end_line - 1) {
-        if (line + 1 == start_line) {
-          text :=
-            text^
-            ++ String_utils.Utf8.string_after(source[line], startc)
-            ++ "\n";
-        } else if (line + 1 == end_line) {
-          text := text^ ++ String_utils.Utf8.sub(source[line], 0, endc);
-        } else {
-          text := text^ ++ source[line] ++ "\n";
-        };
+let is_shift_or_concat_op = (expr: Parsetree.expression) =>
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    if (String.length(op) > 1) {
+      switch (String.sub(op, 0, 2)) {
+      | "<<"
+      | ">>"
+      | "++"
+      | "||" => true
+      | _ => false
       };
-      text^;
-    };
-  } else {
-    raise(FormatterError("Requested beyond end of original source"));
-  };
-};
-
-// Be AWARE!  This is only to be called when you know the comments list is not empty.
-// Moved here in case we want to change the implementation in future
-let get_last_item_in_list = comments =>
-  List.nth(comments, List.length(comments) - 1);
-
-let is_disable_formatting_comment = (comment: Parsetree.comment) => {
-  switch (comment) {
-  | Line(cmt) =>
-    if (cmt.cmt_content == "formatter-ignore") {
-      true;
     } else {
       false;
     }
   | _ => false
   };
-};
 
-let print_attributes = attributes =>
-  switch (attributes) {
-  | [] => Doc.nil
-  | _ =>
-    Doc.concat([
-      Doc.join(
-        ~sep=Doc.space,
-        List.map(
-          ((a: Location.loc(string), args: list(Location.loc(string)))) => {
-            switch (args) {
-            | [] => Doc.concat([Doc.text("@"), Doc.text(a.txt)])
-            | _ =>
-              Doc.concat([
-                Doc.text("@"),
-                Doc.text(a.txt),
-                Doc.text("("),
-                Doc.join(
-                  ~sep=Doc.concat([Doc.comma, Doc.space]),
-                  List.map(
-                    (b: Location.loc(string)) =>
-                      Doc.concat([
-                        Doc.text("\""),
-                        Doc.text(b.txt),
-                        Doc.text("\""),
-                      ]),
-                    args,
-                  ),
-                ),
-                Doc.text(")"),
-              ])
-            }
-          },
-          attributes,
-        ),
-      ),
-      Doc.hardLine,
-    ])
+let is_logic_op = (expr: Parsetree.expression) =>
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    if (String.length(op) > 1) {
+      switch (String.sub(op, 0, 2)) {
+      | "<="
+      | ">="
+      | "=="
+      | "!="
+      | "is"
+      | "isnt"
+      | "&&"
+      | "||" => true
+      | _ => false
+      };
+    } else {
+      false;
+    }
+  | _ => false
   };
-let force_break_if_line_comment =
-    (~separator, comments: list(Parsetree.comment)) => {
-  switch (comments) {
-  | [] => separator
-  | _ =>
-    let last_comment = get_last_item_in_list(comments);
 
-    switch (last_comment) {
-    | Line(_) => Doc.hardLine
-    | _ => separator
-    };
-  };
-};
-
-let break_parent_if_line_comment =
-    (~separator, comments: list(Parsetree.comment)) => {
-  switch (comments) {
-  | [] => separator
-  | _ =>
-    let last_comment = get_last_item_in_list(comments);
-
-    switch (last_comment) {
-    | Line(_) => Doc.breakParent
-    | _ => separator
-    };
-  };
-};
-
-let item_separator = (~this_line: int, ~line_above: int, break_separator) =>
-  if (this_line - line_above > 1) {
-    Doc.concat([break_separator, Doc.hardLine]);
+let is_math_op = (expr: Parsetree.expression) =>
+  if (is_logic_op(expr) || is_shift_or_concat_op(expr)) {
+    false;
   } else {
-    break_separator;
+    switch (expr.pexp_desc) {
+    | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+      if (String.length(op) > 0) {
+        switch (op.[0]) {
+        | '*'
+        | '/'
+        | '%'
+        | '+'
+        | '-'
+        | '<'
+        | '>'
+        | '&'
+        | '^'
+        | '|' => true
+        | _ => false
+        };
+      } else {
+        false;
+      }
+    | _ => false
+    };
   };
 
-let comment_separator =
-    (~this_line: int, ~line_above: int, comment: Parsetree.comment) =>
-  if (this_line - line_above > 1) {
-    switch (comment) {
-    | Line(_) => Doc.hardLine
-    | Shebang(_) => Doc.hardLine
-    | Doc(_) => Doc.hardLine
-    | _ => Doc.concat([Doc.hardLine, Doc.hardLine])
-    };
-  } else {
-    switch (comment) {
-    | Line(_)
-    | Shebang(_) => Doc.nil
-    | Doc(_) => Doc.softLine
-    | Block(_) => Doc.hardLine
-    };
+let op_precedence = startsWith =>
+  switch (startsWith) {
+  | '*'
+  | '/'
+  | '%' => 120
+  | '+'
+  | '-' => 110
+  | '<'
+  | '>' => 90
+  | '&' => 70
+  | '^' => 60
+  | '|' => 50
+  | '_' => 10
+  | _ => 9999
   };
 
-let add_parens = (doc: Doc.t) =>
-  Doc.concat([
-    Doc.lparen,
-    Doc.indent(Doc.concat([Doc.softLine, doc])),
-    Doc.softLine,
-    Doc.rparen,
-  ]);
+let precedence = (expr: Parsetree.expression) => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    if (String.length(op) > 1) {
+      switch (String.sub(op, 0, 2)) {
+      | "++" => 110
+      | "<<"
+      | ">>" => 100
+      | "=="
+      | "!="
+      | "is" => 80
+      | "&&" => 40
+      | "||"
+      | "??" => 30
+      | _ => op_precedence(op.[0])
+      };
+    } else if (String.length(op) > 0) {
+      op_precedence(op.[0]);
+    } else {
+      9999;
+    }
+  | _ => 9999
+  };
+};
 
-let infixop = (op: string) => {
+let infixop = op => {
   switch (op.[0]) {
   | '+'
   | '-'
@@ -295,4753 +158,48 @@ let infixop = (op: string) => {
   };
 };
 
-let prefixop = (op: string) => {
-  switch (op.[0]) {
-  | '!' => true
+let is_infix = (expr: Parsetree.expression) => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) => infixop(op)
   | _ => false
-  | exception _ => false
   };
 };
 
-let no_attribute = _ => Doc.nil;
-
-let remove_used_comments =
-    (
-      ~remove_comments: list(Parsetree.comment),
-      all_comments: list(Parsetree.comment),
-    ) => {
-  List.filter(c => !List.mem(c, remove_comments), all_comments);
-};
-
-type prev_item_t =
-  | PreviousItem(Location.t)
-  | Block(Location.t)
-  | TopOfFile;
-
-let before_comments_break_line =
-    (~previous: prev_item_t, ~this_line, comments) =>
-  switch (previous) {
-  | TopOfFile => Doc.nil
-  | Block(block) =>
-    let (_, bracket_line, _, _) =
-      Locations.get_raw_pos_info(block.loc_start);
-    switch (comments) {
-    | [] => Doc.nil
-    | [first_comment, ...rem] =>
-      let (_, first_comment_line, _, _) =
-        Locations.get_raw_pos_info(
-          Locations.get_comment_loc(first_comment).loc_start,
-        );
-      if (first_comment_line - bracket_line > 1) {
-        Doc.line;
-      } else {
-        Doc.nil;
-      };
-    };
-
-  | PreviousItem(prev) =>
-    let (_, prev_stmt_line, _, _) = Locations.get_raw_pos_info(prev.loc_end);
-    switch (comments) {
-    | [] => item_separator(~this_line, ~line_above=prev_stmt_line, Doc.line)
-
-    | [first_comment, ...rem] =>
-      let (_, first_comment_line, _, _) =
-        Locations.get_raw_pos_info(
-          Locations.get_comment_loc(first_comment).loc_start,
-        );
-
-      if (first_comment_line == prev_stmt_line) {
-        Doc.space;
-      } else {
-        item_separator(
-          ~this_line=first_comment_line,
-          ~line_above=prev_stmt_line,
-          Doc.line,
-        );
-      };
-    };
-  };
-
-let handle_after_comments_break = (~this_line, leading_comments) =>
-  switch (leading_comments) {
-  | [] => Doc.nil
-  | in_comments =>
-    let last_comment = get_last_item_in_list(in_comments);
-    let (_, last_comment_line, _, _) =
-      Locations.get_raw_pos_info(
-        Locations.get_comment_loc(last_comment).loc_end,
-      );
-
-    if (last_comment_line == this_line) {
-      Doc.line;
-    } else {
-      comment_separator(
-        ~this_line,
-        ~line_above=last_comment_line,
-        last_comment,
-      );
-    };
-  };
-
-let before_comments_break = (~previous: prev_item_t, ~this_line, comments) =>
-  switch (previous) {
-  | TopOfFile => Doc.nil
-  | Block(block) =>
-    let (_, bracket_line, _, _) =
-      Locations.get_raw_pos_info(block.loc_start);
-    switch (comments) {
-    | [] => Doc.nil
-    | [first_comment, ...rem] =>
-      let (_, first_comment_line, _, _) =
-        Locations.get_raw_pos_info(
-          Locations.get_comment_loc(first_comment).loc_start,
-        );
-      if (first_comment_line - bracket_line > 1) {
-        Doc.hardLine;
-      } else {
-        Doc.nil;
-      };
-    };
-
-  | PreviousItem(prev) =>
-    let (_, prev_stmt_line, _, _) = Locations.get_raw_pos_info(prev.loc_end);
-    switch (comments) {
-    | [] =>
-      item_separator(~this_line, ~line_above=prev_stmt_line, Doc.hardLine)
-
-    | [first_comment, ...rem] =>
-      let (_, first_comment_line, _, _) =
-        Locations.get_raw_pos_info(
-          Locations.get_comment_loc(first_comment).loc_start,
-        );
-
-      if (first_comment_line == prev_stmt_line) {
-        Doc.space;
-      } else {
-        item_separator(
-          ~this_line=first_comment_line,
-          ~line_above=prev_stmt_line,
-          Doc.hardLine,
-        );
-      };
-    };
-  };
-
-let rec block_item_iterator_line =
-        (
-          ~previous: prev_item_t,
-          ~get_loc: 'a => Location.t,
-          ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
-          ~comments: list(Parsetree.comment),
-          ~original_source,
-          ~separator: option(Doc.t)=?,
-          items: list('a),
-        ) => {
-  switch (items) {
-  | [] => Doc.nil
-  | [item, ...remainder] =>
-    let leading_comments =
-      switch (previous) {
-      | Block(prev_node) =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
-      | PreviousItem(prev_node) =>
-        Comment_utils.get_comments_between_locations(
-          ~loc1=prev_node,
-          ~loc2=get_loc(item),
-          comments,
-        )
-      | TopOfFile =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
-      };
-
-    let leading_comment_docs =
-      Comment_utils.new_comments_to_docs(leading_comments);
-
-    let this_loc = get_loc(item);
-    let (_, this_line, this_char, _) =
-      Locations.get_raw_pos_info(this_loc.loc_start);
-
-    let after_comments_break =
-      handle_after_comments_break(~this_line, leading_comments);
-
-    let bcb =
-      before_comments_break_line(~previous, ~this_line, leading_comments);
-
-    let block_top_spacing =
-      switch (previous) {
-      | Block(block_loc) =>
-        switch (leading_comments) {
-        | [] =>
-          let (_, block_line, _, _) =
-            Locations.get_raw_pos_info(block_loc.loc_start);
-          if (this_line - block_line > 1) {
-            Doc.hardLine;
-          } else {
-            Doc.nil;
-          };
-        | _ => Doc.nil
-        }
-      | _ => Doc.nil
-      };
-
-    let item_comments =
-      Comment_utils.get_comments_inside_location(
-        ~location=get_loc(item),
-        comments,
-      );
-    let comments_without_leading =
-      remove_used_comments(~remove_comments=leading_comments, comments);
-
-    switch (remainder) {
-    | [] =>
-      let trailing_comments =
-        remove_used_comments(
-          ~remove_comments=item_comments,
-          comments_without_leading,
-        );
-
-      let trailing_comment_docs =
-        Comment_utils.block_trailing_comments_docs(trailing_comments);
-
-      let (_, last_stmt_line, _, _) =
-        Locations.get_raw_pos_info(get_loc(item).loc_end);
-      let trailing_comment_separator =
-        switch (trailing_comments) {
-        | [] => Doc.nil
-
-        | [first_comment, ...rem] =>
-          let (_, first_comment_line, _, _) =
-            Locations.get_raw_pos_info(
-              Locations.get_comment_loc(first_comment).loc_start,
-            );
-
-          if (first_comment_line == last_stmt_line) {
-            Doc.space;
-          } else {
-            Doc.line;
-          };
-        };
-
-      let this_item =
-        Doc.concat([
-          bcb,
-          leading_comment_docs,
-          after_comments_break,
-          print_item(~comments=item_comments, item),
-          Doc.ifBreaks(Option.value(~default=Doc.nil, separator), Doc.nil),
-          trailing_comment_separator,
-          trailing_comment_docs,
-        ]);
-
-      this_item;
-
-    | _more =>
-      let this_item =
-        Doc.concat([
-          bcb,
-          block_top_spacing,
-          leading_comment_docs,
-          after_comments_break,
-          print_item(~comments=item_comments, item),
-          Option.value(~default=Doc.nil, separator),
-        ]);
-
-      let comments_without_item_comments =
-        remove_used_comments(
-          ~remove_comments=item_comments,
-          comments_without_leading,
-        );
-
-      Doc.concat([
-        this_item,
-        block_item_iterator_line(
-          ~previous=PreviousItem(get_loc(item)),
-          ~get_loc,
-          ~print_item,
-          ~comments=comments_without_item_comments,
-          ~original_source,
-          ~separator?,
-          remainder,
-        ),
-      ]);
-    };
-  };
-};
-
-let rec block_item_iterator =
-        (
-          ~previous: prev_item_t,
-          ~get_loc: 'a => Location.t,
-          ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
-          ~comments: list(Parsetree.comment),
-          ~print_attribute: 'a => Doc.t,
-          ~original_source,
-          items: list('a),
-        ) => {
-  switch (items) {
-  | [] => Doc.nil
-  | [item, ...remainder] =>
-    let attribute_text = print_attribute(item);
-    let leading_comments =
-      switch (previous) {
-      | Block(prev_node) =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
-      | PreviousItem(prev_node) =>
-        Comment_utils.get_comments_between_locations(
-          ~loc1=prev_node,
-          ~loc2=get_loc(item),
-          comments,
-        )
-      | TopOfFile =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(item),
-          comments,
-        )
-      };
-    let leading_comment_docs =
-      Comment_utils.new_comments_to_docs(leading_comments);
-
-    let this_loc = get_loc(item);
-    let (_, this_line, this_char, _) =
-      Locations.get_raw_pos_info(this_loc.loc_start);
-
-    let after_comments_break =
-      handle_after_comments_break(~this_line, leading_comments);
-
-    let bcb = before_comments_break(~previous, ~this_line, leading_comments);
-
-    let block_top_spacing =
-      switch (previous) {
-      | Block(block_loc) =>
-        switch (leading_comments) {
-        | [] =>
-          let (_, block_line, _, _) =
-            Locations.get_raw_pos_info(block_loc.loc_start);
-          if (this_line - block_line > 1) {
-            Doc.hardLine;
-          } else {
-            Doc.nil;
-          };
-        | _ => Doc.nil
-        }
-      | _ => Doc.nil
-      };
-
-    let disable_formatting =
-      switch (leading_comments) {
-      | [] => false
-      | cmts =>
-        let last_comment = get_last_item_in_list(cmts);
-
-        is_disable_formatting_comment(last_comment);
-      };
-
-    if (disable_formatting) {
-      let original_code = get_original_code(get_loc(item), original_source);
-
-      let orig_doc =
-        Doc.concat([
-          before_comments_break(~previous, ~this_line, leading_comments),
-          leading_comment_docs,
-          Doc.group(Doc.text(original_code)),
-        ]);
-
-      let included_comments =
-        Comment_utils.get_comments_inside_location(
-          ~location=get_loc(item),
-          comments,
-        );
-
-      let cleaned_comments =
-        remove_used_comments(~remove_comments=included_comments, comments);
-
-      switch (items) {
-      | [last_item] =>
-        let block_trailing_comments =
-          Comment_utils.get_comments_after_location(
-            ~location=get_loc(last_item),
-            cleaned_comments,
-          );
-
-        switch (block_trailing_comments) {
-        | [] => orig_doc
-        | _ =>
-          let block_trailing_comment_docs =
-            Comment_utils.block_trailing_comments_docs(
-              block_trailing_comments,
-            );
-
-          Doc.concat([
-            orig_doc,
-            before_comments_break(
-              ~previous=PreviousItem(get_loc(last_item)),
-              ~this_line,
-              block_trailing_comments,
-            ),
-            block_trailing_comment_docs,
-          ]);
-        };
-      | _ =>
-        let item_comments =
-          Comment_utils.get_comments_inside_location(
-            ~location=get_loc(item),
-            comments,
-          );
-        let comments_without_leading =
-          remove_used_comments(~remove_comments=leading_comments, comments);
-        let comments_without_item_comments =
-          remove_used_comments(
-            ~remove_comments=item_comments,
-            comments_without_leading,
-          );
-        Doc.concat([
-          orig_doc,
-          block_item_iterator(
-            ~previous=PreviousItem(get_loc(item)),
-            ~get_loc,
-            ~print_item,
-            ~comments=comments_without_item_comments,
-            ~print_attribute,
-            ~original_source,
-            remainder,
-          ),
-        ]);
-      };
-    } else {
-      // regular formatting
-
-      let item_comments =
-        Comment_utils.get_comments_inside_location(
-          ~location=get_loc(item),
-          comments,
-        );
-
-      let comments_without_leading =
-        remove_used_comments(~remove_comments=leading_comments, comments);
-
-      switch (remainder) {
-      | [] =>
-        let trailing_comments =
-          remove_used_comments(
-            ~remove_comments=item_comments,
-            comments_without_leading,
-          );
-
-        let trailing_comment_docs =
-          Comment_utils.block_trailing_comments_docs(trailing_comments);
-
-        let (_, last_stmt_line, _, _) =
-          Locations.get_raw_pos_info(get_loc(item).loc_end);
-        let trailing_comment_separator =
-          switch (trailing_comments) {
-          | [] => Doc.nil
-
-          | [first_comment, ...rem] =>
-            let (_, first_comment_line, _, _) =
-              Locations.get_raw_pos_info(
-                Locations.get_comment_loc(first_comment).loc_start,
-              );
-
-            if (first_comment_line == last_stmt_line) {
-              Doc.space;
-            } else {
-              item_separator(
-                ~this_line=first_comment_line,
-                ~line_above=last_stmt_line,
-                Doc.hardLine,
-              );
-            };
-          };
-
-        let this_item =
-          Doc.concat([
-            bcb,
-            block_top_spacing,
-            leading_comment_docs,
-            after_comments_break,
-            attribute_text,
-            print_item(~comments=item_comments, item),
-            trailing_comment_separator,
-            trailing_comment_docs,
-          ]);
-
-        this_item;
-
-      | _more =>
-        let this_item =
-          Doc.concat([
-            bcb,
-            block_top_spacing,
-            leading_comment_docs,
-            after_comments_break,
-            attribute_text,
-            print_item(~comments=item_comments, item),
-          ]);
-
-        let comments_without_item_comments =
-          remove_used_comments(
-            ~remove_comments=item_comments,
-            comments_without_leading,
-          );
-
-        Doc.concat([
-          this_item,
-          block_item_iterator(
-            ~previous=PreviousItem(get_loc(item)),
-            ~get_loc,
-            ~print_item,
-            ~comments=comments_without_item_comments,
-            ~print_attribute,
-            ~original_source,
-            remainder,
-          ),
-        ]);
-      };
-    };
-  };
-};
-
-let print_trailing_comments = (~separator, ~itemloc: Location.t, comments) => {
-  let next_comment = ref(None);
-
-  let items =
-    List.fold_right(
-      (comment: Parsetree.comment, acc) => {
-        let (_, this_comment_line, _, _) =
-          Locations.get_raw_pos_info(
-            Locations.get_comment_loc(comment).loc_start,
-          );
-
-        switch (next_comment^) {
-        | None =>
-          let (_, code_line, _, _) =
-            Locations.get_raw_pos_info(itemloc.loc_end);
-          if (this_comment_line > code_line) {
-            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
-          } else {
-            [Comment_utils.comment_to_doc(comment), ...acc];
-          };
-        | Some(next) =>
-          let (_, next_comment_line, _, _) =
-            Locations.get_raw_pos_info(
-              Locations.get_comment_loc(next).loc_end,
-            );
-
-          next_comment := Some(comment);
-
-          if (this_comment_line <= next_comment_line) {
-            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
-          } else {
-            [Comment_utils.comment_to_doc(comment), ...acc];
-          };
-        };
-      },
-      comments,
-      [],
-    );
-
-  switch (items) {
-  | [] => Doc.nil
-  | items => Doc.concat([Doc.space, ...items])
-  };
-};
-
-let mix_comments_and_separator =
-    (~item_location: Location.t, ~separator, comments) => {
-  let separated = ref(false);
-
-  let next_comment = ref(None);
-
-  let force_break_for_comment = (comment, acc) =>
-    switch ((comment: Parsetree.comment)) {
-    | Line(_) =>
-      separated := true;
-      [
-        separator,
-        Doc.space,
-        Comment_utils.comment_to_doc(comment),
-        Doc.breakParent, // forces the lines to break, and so make this line comment force a new line
-        ...acc,
-      ];
-
-    | _ => [Doc.space, Comment_utils.comment_to_doc(comment), ...acc]
-    };
-
-  let items =
-    List.fold_right(
-      (comment: Parsetree.comment, acc) => {
-        let (_, this_comment_line, _, _) =
-          Locations.get_raw_pos_info(
-            Locations.get_comment_loc(comment).loc_start,
-          );
-
-        switch (next_comment^) {
-        | None =>
-          let (_, code_line, _, _) =
-            Locations.get_raw_pos_info(item_location.loc_end);
-
-          if (this_comment_line > code_line) {
-            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
-          } else {
-            force_break_for_comment(comment, acc);
-          };
-
-        | Some(next) =>
-          let (_, next_comment_line, _, _) =
-            Locations.get_raw_pos_info(
-              Locations.get_comment_loc(next).loc_end,
-            );
-
-          next_comment := Some(comment);
-
-          if (this_comment_line < next_comment_line) {
-            [Doc.hardLine, Comment_utils.comment_to_doc(comment), ...acc];
-          } else {
-            force_break_for_comment(comment, acc);
-          };
-        };
-      },
-      comments,
-      [],
-    );
-
-  if (separated^) {
-    Doc.concat(items);
-  } else {
-    Doc.ifBreaks(
-      Doc.concat([separator, Doc.concat(items)]),
-      Doc.concat([Doc.concat(items), separator]),
-    );
-  };
-};
-
-let rec item_iterator =
-        (
-          ~previous: option(Location.t)=?,
-          ~get_loc: 'a => Location.t,
-          ~print_item: (~comments: list(Parsetree.comment), 'a) => Doc.t,
-          ~comments: list(Parsetree.comment),
-          ~followed_by_arrow: option(bool)=?,
-          ~iterated_item: iterator_item_type,
-          items: list('a),
-        ) => {
-  let trailing_separator =
-    switch (iterated_item) {
-    | IteratedListPattern
-    | IteratedDataDeclarations
-    | IteratedMatchItem
-    | IteratedRecordPattern
-    | IteratedTupleExpression
-    | IteratedArrayExpression
-    | IteratedListExpression
-    | IteratedRecord
-    | IteratedRecordData
-    | IteratedRecordLabels => true
-    | IteratedTypeItems
-    | IteratedEnum
-    | IteratedTypeConstructor
-    | IteratedArgs
-    | IteratedPatterns // we don't apply separators here as we may also need to apply type annotatins
-    | IteratedTupleConstructor
-    | IteratedValueBindings => false
-    };
-
-  let separator = Doc.comma;
-
-  switch (items) {
-  | [] => []
-  | [first_item, ...rest] =>
-    // special case for the first item, we look for leading comments
-    // for all others, we look at the comments that come after them as that has the
-    // impact on where to place comments and separators
-
-    let leading_comments =
-      Comment_utils.get_comments_before_location(
-        ~location=get_loc(first_item),
-        comments,
-      );
-    let leading_comments_docs =
-      switch (leading_comments) {
-      | [] => Doc.nil
-      | _ =>
-        Doc.group(
-          Doc.concat([
-            Comment_utils.new_comments_to_docs(leading_comments),
-            Doc.ifBreaks(Doc.nil, Doc.space),
-          ]),
-        )
-      };
-
-    let number_items = List.length(items);
-
-    List.mapi(
-      (index, item) => {
-        let itemdoc =
-          print_item(
-            ~comments=
-              Comment_utils.get_comments_inside_location(
-                ~location=get_loc(item),
-                comments,
-              ),
-            item,
-          );
-
-        let trailing_comments =
-          if (index == number_items - 1) {
-            Comment_utils.get_comments_after_location(
-              ~location=get_loc(item),
-              comments,
-            );
-          } else {
-            let next_item = List.nth(items, index + 1);
-            Comment_utils.get_comments_between_locations(
-              ~loc1=get_loc(item),
-              ~loc2=get_loc(next_item),
-              comments,
-            );
-          };
-
-        let cmts =
-          if (index == number_items - 1) {
-            // last item
-            Doc.concat([
-              Doc.ifBreaks(
-                if (trailing_separator) {separator} else {Doc.nil},
-                Doc.nil,
-              ),
-              print_trailing_comments(
-                ~separator,
-                ~itemloc=get_loc(item),
-                trailing_comments,
-              ),
-            ]);
-          } else {
-            mix_comments_and_separator(
-              ~item_location=get_loc(item),
-              ~separator,
-              trailing_comments,
-            );
-          };
-
-        // we only have leading comments for the first item
-        if (index == 0) {
-          Doc.concat([leading_comments_docs, itemdoc, cmts]);
-        } else {
-          Doc.concat([itemdoc, cmts]);
-        };
-      },
-      items,
-    );
-  };
-};
-
-let rec check_for_pattern_pun = (pat: Parsetree.pattern) =>
-  switch (pat.ppat_desc) {
-  | PPatVar({txt, _}) => Doc.text(txt)
-  | _ => Doc.nil
-  }
-
-and print_record_pattern =
-    (
-      ~patternlocs: list((Location.loc(Identifier.t), Parsetree.pattern)),
-      ~closedflag: Asttypes.closed_flag,
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      ~next_loc: Location.t,
-      patloc: Location.t,
-    ) => {
-  let close =
-    switch (closedflag) {
-    | Open when patternlocs == [] => Doc.text("_")
-    | Open => Doc.concat([Doc.text(","), Doc.space, Doc.text("_")])
-    | Closed => Doc.nil
-    };
-
-  let get_loc =
-      (patternloc: (Location.loc(Identifier.t), Parsetree.pattern)) => {
-    let (_, pat) = patternloc;
-    pat.ppat_loc;
-  };
-
-  let print_item =
-      (
-        ~comments,
-        patternloc: (Location.loc(Identifier.t), Parsetree.pattern),
-      ) => {
-    let (loc, pat) = patternloc;
-    let printed_ident: Doc.t = print_ident(loc.txt);
-
-    let printed_pat =
-      print_pattern(~original_source, ~comments, ~next_loc, pat);
-
-    let punned_pat = check_for_pattern_pun(pat);
-
-    let pun =
-      switch (printed_ident, punned_pat: Doc.t) {
-      | (Text(i), Text(e)) => i == e
-      | _ => false
-      };
-
-    if (pun) {
-      printed_ident;
-    } else {
-      Doc.concat([printed_ident, Doc.text(":"), Doc.space, printed_pat]);
-    };
-  };
-
-  let after_brace_comments =
-    Comment_utils.get_after_brace_comments(~loc=patloc, comments);
-  let cleaned_comments =
-    remove_used_comments(~remove_comments=after_brace_comments, comments);
-
-  let items =
-    item_iterator(
-      ~get_loc,
-      ~print_item,
-      ~comments=cleaned_comments,
-      ~iterated_item=IteratedRecordPattern,
-      patternlocs,
-    );
-  let printed_fields = Doc.join(~sep=Doc.line, items);
-
-  let printed_fields_after_brace =
-    Doc.concat([
-      force_break_if_line_comment(~separator=Doc.line, after_brace_comments),
-      printed_fields,
-    ]);
-
-  Doc.concat([
-    Doc.lbrace,
-    Comment_utils.single_line_of_comments(after_brace_comments),
-    Doc.indent(Doc.concat([printed_fields_after_brace, close])),
-    Doc.line,
-    Doc.rbrace,
-  ]);
-}
-
-and print_pattern =
-    (
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      ~next_loc: Location.t,
-      pat: Parsetree.pattern,
-    ) => {
-  let printed_pattern: (Doc.t, bool) =
-    switch (pat.ppat_desc) {
-    | PPatAny => (Doc.text("_"), false)
-    | PPatConstant(c) => (
-        print_constant(~original_source, ~loc=pat.ppat_loc, c),
-        false,
-      )
-    | PPatVar({txt, _}) =>
-      if (infixop(txt) || prefixop(txt)) {
-        (Doc.concat([Doc.lparen, Doc.text(txt), Doc.rparen]), false);
-      } else {
-        (Doc.text(txt), false);
-      }
-    | PPatTuple(patterns) => (
-        Doc.group(
-          print_patterns(~next_loc, ~comments, ~original_source, patterns),
-        ),
-        true,
-      )
-    | PPatList(patterns) => (
-        Doc.group(
-          Doc.concat([
-            Doc.lbracket,
-            Doc.softLine,
-            Doc.indent(
-              print_list_patterns(
-                ~next_loc,
-                ~comments,
-                ~original_source,
-                patterns,
-              ),
-            ),
-            Doc.softLine,
-            Doc.rbracket,
-          ]),
-        ),
-        false,
-      )
-    | PPatArray(patterns) => (
-        Doc.group(
-          Doc.concat([
-            Doc.lbracket,
-            Doc.text(">"),
-            Doc.space,
-            print_patterns(~next_loc, ~comments, ~original_source, patterns),
-            Doc.rbracket,
-          ]),
-        ),
-        false,
-      )
-    | PPatRecord(patternlocs, closedflag) => (
-        print_record_pattern(
-          ~patternlocs,
-          ~closedflag,
-          ~original_source,
-          ~comments,
-          ~next_loc,
-          pat.ppat_loc,
-        ),
-        false,
-      )
-    | PPatConstraint(pattern, parsed_type) => (
-        Doc.concat([
-          print_patterns(~next_loc, ~comments, ~original_source, [pattern]),
-          Doc.text(":"),
-          Doc.space,
-          print_type(~original_source, ~comments, parsed_type),
-        ]),
-        false,
-      )
-    | PPatConstruct(location, PPatConstrTuple(patterns)) => (
-        Doc.concat([
-          print_ident(location.txt),
-          switch (patterns) {
-          | [] => Doc.nil
-          | _patterns =>
-            add_parens(
-              print_patterns(
-                ~next_loc,
-                ~comments,
-                ~original_source,
-                patterns,
-              ),
-            )
-          },
-        ]),
-        false,
-      )
-    | PPatConstruct(location, PPatConstrSingleton) => (
-        Doc.concat([print_ident(location.txt)]),
-        false,
-      )
-    | PPatConstruct(location, PPatConstrRecord(patternlocs, closedflag)) => (
-        Doc.concat([
-          print_ident(location.txt),
-          print_record_pattern(
-            ~patternlocs,
-            ~closedflag,
-            ~original_source,
-            ~comments,
-            ~next_loc,
-            pat.ppat_loc,
-          ),
-        ]),
-        false,
-      )
-    | PPatOr(pattern1, pattern2) => (
-        Doc.group(
-          Doc.concat([
-            Doc.group(
-              print_pattern(~original_source, ~comments, ~next_loc, pattern1),
-            ),
-            Doc.space,
-            Doc.text("|"),
-            Doc.line,
-            Doc.group(
-              print_pattern(~original_source, ~comments, ~next_loc, pattern2),
-            ),
-          ]),
-        ),
-        false,
-      )
-
-    | PPatAlias(pattern, loc) => (
-        Doc.group(
-          Doc.concat([
-            print_pattern(~original_source, ~comments, ~next_loc, pattern),
-            Doc.space,
-            Doc.text("as"),
-            Doc.space,
-            Doc.text(loc.txt),
-          ]),
-        ),
-        false,
-      )
-    };
-
-  let (pattern, parens) = printed_pattern;
-
-  let with_leading = [pattern];
-
-  let after_parens_comments =
-    Comment_utils.get_comments_to_end_of_line(
-      ~location=pat.ppat_loc,
-      comments,
-    );
-  let after_parens_comments_docs =
-    Comment_utils.inbetween_comments_to_docs(
-      ~offset=true,
-      after_parens_comments,
-    );
-
-  let with_trailing =
-    if (after_parens_comments_docs == Doc.nil) {
-      with_leading;
-    } else {
-      List.append(with_leading, [after_parens_comments_docs]);
-    };
-
-  let clean_pattern =
-    switch (with_trailing) {
-    | [fst] => fst
-    | _ => Doc.concat(with_trailing)
-    };
-
-  if (parens) {
-    Doc.concat([
-      Doc.lparen,
-      Doc.indent(Doc.concat([Doc.softLine, clean_pattern])),
-      Doc.ifBreaks(Doc.comma, Doc.nil),
-      Doc.softLine,
-      Doc.rparen,
-    ]);
-  } else {
-    clean_pattern;
-  };
-}
-
-and print_constant =
-    (
-      ~original_source: array(string),
-      ~loc: Location.t,
-      c: Parsetree.constant,
-    ) => {
-  // we get the original code here to ensure it's well formatted and retains the
-  // approach of the original code, e.g. char format, number format
-  Doc.text(
-    get_original_code(loc, original_source),
-  );
-}
-
-and print_ident = (ident: Identifier.t) => {
-  switch (ident) {
-  | IdentName({txt: name}) =>
-    if (infixop(name) || prefixop(name)) {
-      Doc.concat([Doc.lparen, Doc.text(name), Doc.rparen]);
-    } else {
-      Doc.text(name);
-    }
-  | IdentExternal(externalIdent, {txt: second}) =>
-    Doc.concat([
-      print_ident(externalIdent),
-      Doc.text("."),
-      Doc.text(second),
-    ])
-  };
-}
-
-and print_record =
-    (
-      ~base: option(Parsetree.expression),
-      ~fields: list((Location.loc(Identifier.t), Parsetree.expression)),
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      recloc: Location.t,
-    ) => {
-  let get_loc = item => {
-    switch (item) {
-    | Field((_, expr)) => expr.pexp_loc
-    | RecordSpread(base) => base.pexp_loc
-    };
-  };
-
-  let print_item = (~comments, item) => {
-    switch (item) {
-    | Field(field) =>
-      let (locidentifier, expr) = field;
-      let ident = locidentifier.txt;
-      let printed_ident = print_ident(ident);
-      let printed_expr =
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          expr,
-        );
-      let punned_expr = check_for_pun(expr);
-
-      let pun =
-        switch (printed_ident, punned_expr: Doc.t) {
-        | (Text(i), Text(e)) => i == e
-        | _ => false
-        };
-
-      if (!pun) {
-        Doc.group(
-          Doc.concat([
-            printed_ident,
-            Doc.text(":"),
-            Doc.space,
-            printed_expr,
-          ]),
-        );
-      } else {
-        Doc.group(printed_ident);
-      };
-    | RecordSpread(base) =>
-      Doc.concat([
-        Doc.text("..."),
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          base,
-        ),
-      ])
-    };
-  };
-
-  let items =
-    Option.to_list(Option.map(x => RecordSpread(x), base))
-    @ List.map(x => Field(x), fields);
-
-  let after_brace_comments =
-    switch (items) {
-    | [item, ..._] =>
-      let loc =
-        switch (item) {
-        | Field((ident, _)) => ident.loc
-        | RecordSpread(exp) => exp.pexp_loc
-        };
-
-      Comment_utils.get_after_brace_comments(
-        ~loc=recloc,
-        ~first=loc,
-        comments,
-      );
-
-    | _ => Comment_utils.get_after_brace_comments(~loc=recloc, comments) // let s = {}  is not legal syntax, but we can use all the comments
-    };
-
-  let cleaned_comments =
-    remove_used_comments(~remove_comments=after_brace_comments, comments);
-
-  let items =
-    item_iterator(
-      ~get_loc,
-      ~print_item,
-      ~comments=cleaned_comments,
-      ~iterated_item=IteratedRecord,
-      items,
-    );
-  let printed_fields = Doc.join(~sep=Doc.line, items);
-
-  let printed_fields_after_brace =
-    Doc.concat([
-      force_break_if_line_comment(~separator=Doc.line, after_brace_comments),
-      printed_fields,
-    ]);
-
-  Doc.concat([
-    Doc.lbrace,
-    Comment_utils.single_line_of_comments(after_brace_comments),
-    Doc.indent(
-      Doc.concat([
-        printed_fields_after_brace,
-        Doc.ifBreaks(
-          Doc.nil,
-          switch (items) {
-          | [_one] =>
-            // TODO: not needed once we annotate with ::
-            Doc.comma // append a comma as single argument record look like block {data:val}
-          | _ => Doc.nil
-          },
-        ),
-      ]),
-    ),
-    Doc.line,
-    Doc.rbrace,
-  ]);
-}
-
-and print_type =
-    (
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      p: Parsetree.parsed_type,
-    ) => {
-  switch (p.ptyp_desc) {
-  | PTyAny => Doc.text("_")
-  | PTyVar(name) => Doc.text(name)
-  | PTyArrow(types, parsed_type) =>
-    Doc.concat([
-      Doc.group(
-        switch (types) {
-        | [] => Doc.concat([Doc.lparen, Doc.rparen])
-        | [{ptyp_arg_label: Unlabeled, ptyp_arg_type: t}] =>
-          print_type(~original_source, ~comments, t)
-        | _types =>
-          Doc.concat([
-            Doc.lparen,
-            Doc.indent(
-              Doc.concat([
-                Doc.softLine,
-                Doc.join(
-                  ~sep=Doc.concat([Doc.comma, Doc.line]),
-                  List.map(
-                    ({Parsetree.ptyp_arg_label: label, ptyp_arg_type: t}) => {
-                      let label =
-                        switch (label) {
-                        | Asttypes.Unlabeled => Doc.nil
-                        | Labeled(name) =>
-                          Doc.concat([
-                            Doc.text(name.txt),
-                            Doc.text(":"),
-                            Doc.space,
-                          ])
-                        | Default(name) =>
-                          Doc.concat([
-                            Doc.question,
-                            Doc.text(name.txt),
-                            Doc.text(":"),
-                            Doc.space,
-                          ])
-                        };
-                      Doc.concat([
-                        label,
-                        print_type(~original_source, ~comments, t),
-                      ]);
-                    },
-                    types,
-                  ),
-                ),
-              ]),
-            ),
-            Doc.ifBreaks(Doc.comma, Doc.nil),
-            Doc.softLine,
-            Doc.rparen,
-          ])
-        },
-      ),
-      Doc.space,
-      Doc.text("=>"),
-      Doc.space,
-      print_type(~original_source, ~comments, parsed_type),
-    ])
-
-  | PTyTuple(parsed_types) =>
-    Doc.concat([
-      Doc.lparen,
-      Doc.indent(
-        Doc.concat([
-          Doc.softLine,
-          Doc.join(
-            ~sep=Doc.concat([Doc.comma, Doc.line]),
-            List.map(
-              t => print_type(~original_source, ~comments, t),
-              parsed_types,
-            ),
-          ),
-        ]),
-      ),
-      Doc.softLine,
-      Doc.rparen,
-    ])
-
-  | PTyConstr(locidentifier, parsedtypes) =>
-    let ident = locidentifier.txt;
-    switch (parsedtypes) {
-    | [] => print_ident(ident)
-    | [first, ...rem] =>
-      let get_loc = (t: Parsetree.parsed_type) => {
-        t.ptyp_loc;
-      };
-      let print_item = (~comments, t: Parsetree.parsed_type) => {
-        print_type(~original_source, ~comments, t);
-      };
-
-      let after_angle_comments =
-        Comment_utils.get_after_brace_comments(
-          ~loc=get_loc(first),
-          comments,
-        );
-      let cleaned_comments =
-        remove_used_comments(~remove_comments=after_angle_comments, comments);
-
-      let type_items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments=cleaned_comments,
-          ~iterated_item=IteratedTypeConstructor,
-          parsedtypes,
-        );
-      let printed_types = Doc.join(~sep=Doc.line, type_items);
-      let printed_types_after_angle =
-        Doc.concat([
-          force_break_if_line_comment(
-            ~separator=Doc.softLine,
-            after_angle_comments,
-          ),
-          printed_types,
-        ]);
-
-      Doc.group(
-        Doc.concat([
-          print_ident(ident),
-          Doc.text("<"),
-          Doc.indent(Doc.group(printed_types_after_angle)),
-          Doc.softLine,
-          Doc.text(">"),
-        ]),
-      );
-    };
-
-  | PTyPoly(locationstrings, parsed_type) =>
-    let original_code = get_original_code(p.ptyp_loc, original_source);
-    Doc.text(original_code);
-  };
-}
-
-and print_application =
-    (
-      ~expression_parent: expression_parent_type,
-      ~expressions: list(Parsetree.application_argument),
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      func: Parsetree.expression,
-    ) => {
-  let function_name = get_function_name(func);
-
-  switch (expressions) {
-  | [first, second] when infixop(function_name) =>
-    print_infix_application(
-      ~expression_parent,
-      ~expressions,
-      ~original_source,
-      ~comments,
-      func,
-    )
-  | _ =>
-    print_other_application(
-      ~expression_parent,
-      ~expressions,
-      ~original_source,
-      ~comments,
-      func,
-    )
-  };
-}
-
-and print_infix_application =
-    (
-      ~expression_parent: expression_parent_type,
-      ~expressions: list(Parsetree.application_argument),
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      func: Parsetree.expression,
-    ) => {
-  let function_name = get_function_name(func);
-
-  switch (expressions) {
-  | [first, second] =>
-    let next_comments =
-      Comment_utils.get_comments_between_locations(
-        ~loc1=first.paa_loc,
-        ~loc2=second.paa_loc,
-        comments,
-      );
-
-    let (_, line, _, _) = Locations.get_raw_pos_info(first.paa_loc.loc_end);
-
-    let line_comments =
-      Comment_utils.get_comments_on_line(line, next_comments);
-
-    let after_comments =
-      remove_used_comments(~remove_comments=line_comments, next_comments);
-
-    let after_comments_docs =
-      Comment_utils.block_trailing_comments_docs(after_comments);
-
-    let line_comment_docs =
-      Comment_utils.single_line_of_comments(line_comments);
-
-    let left_is_if =
-      switch (first.paa_expr.pexp_desc) {
-      | PExpIf(_) => true
-      | _ => false
-      };
-
-    let right_is_if =
-      switch (second.paa_expr.pexp_desc) {
-      | PExpIf(_) => true
-      | _ => false
-      };
-
-    let parent_prec = op_precedence(function_name);
-    let left_is_leaf =
-      switch (first.paa_expr.pexp_desc) {
-      | PExpApp(fn, expr) =>
-        let child_name = get_function_name(fn);
-        let this_prec = op_precedence(child_name);
-
-        this_prec < parent_prec || child_name != function_name;
-      | _ => true
-      };
-
-    let right_is_leaf =
-      switch (second.paa_expr.pexp_desc) {
-      | PExpApp(fn, expr) =>
-        let child_name = get_function_name(fn);
-        let this_prec = op_precedence(child_name);
-
-        this_prec < parent_prec || child_name != function_name;
-      | _ => true
-      };
-
-    let left_grouping_required =
-      switch (first.paa_expr.pexp_desc) {
-      | PExpApp(fn1, _) =>
-        op_precedence(get_function_name(fn1)) < parent_prec
-      | PExpConstant(PConstNumber(PConstNumberRational(_, _))) =>
-        op_precedence("/") < parent_prec
-      | _ => false
-      };
-
-    let right_grouping_required =
-      // the equality check is needed for the value on the right
-      // as we process from the left by default when the same prededence
-      switch (second.paa_expr.pexp_desc) {
-      | PExpApp(fn1, _) =>
-        op_precedence(get_function_name(fn1)) <= parent_prec
-      | PExpConstant(PConstNumber(PConstNumberRational(_, _))) =>
-        op_precedence("/") <= parent_prec
-      | _ => false
-      };
-
-    // Put parens around different operators for clarity, except
-    // math and logic operations where precedence is well-known
-    let left_is_different_op =
-      switch (first.paa_expr.pexp_desc) {
-      | PExpApp(fn1, _) =>
-        let fn = get_function_name(fn1);
-        if (infixop(fn)) {
-          (!is_math_op(function_name) && !is_logic_op(function_name))
-          && fn != function_name;
-        } else {
-          false;
-        };
-      | _ => false
-      };
-
-    let left_needs_parens =
-      left_is_if || left_grouping_required || left_is_different_op;
-    let right_needs_parens = right_is_if || right_grouping_required;
-
-    let lhs =
-      if (left_needs_parens) {
-        let l1 =
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            first.paa_expr,
-          );
-        Doc.concat([
-          Doc.lparen,
-          if (Doc.willBreak(l1)) {
-            Doc.indent(l1);
-          } else {
-            l1;
-          },
-          Doc.rparen,
-        ]);
-      } else {
-        print_expression(
-          ~expression_parent,
-          ~original_source,
-          ~comments,
-          first.paa_expr,
-        );
-      };
-
-    let rhs_expr =
-      if (right_needs_parens) {
-        Doc.concat([
-          Doc.lparen,
-          Doc.concat([
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              second.paa_expr,
-            ),
-          ]),
-          Doc.rparen,
-        ]);
-      } else {
-        Doc.concat([
-          print_expression(
-            ~expression_parent,
-            ~original_source,
-            ~comments,
-            second.paa_expr,
-          ),
-        ]);
-      };
-
-    Doc.concat([
-      if (left_is_leaf) {
-        Doc.group(lhs);
-      } else {
-        lhs;
-      },
-      Doc.space,
-      Doc.text(function_name),
-      line_comment_docs,
-      if (after_comments_docs == Doc.nil) {
-        Doc.nil;
-      } else {
-        force_break_if_line_comment(~separator=Doc.nil, line_comments);
-      },
-      after_comments_docs,
-      switch (expression_parent) {
-      | InfixExpression =>
-        Doc.concat([
-          Doc.line,
-          if (right_is_leaf) {
-            Doc.group(rhs_expr);
-          } else {
-            rhs_expr;
-          },
-        ])
-      | GenericExpression
-      | AccessExpression =>
-        Doc.indent(
-          Doc.concat([
-            Doc.line,
-            if (right_is_leaf) {
-              Doc.group(rhs_expr);
-            } else {
-              rhs_expr;
-            },
-          ]),
-        )
-      },
-    ]);
-
-  | _ => raise(IllegalParse("Formatter error, wrong number of args "))
-  };
-}
-
-and print_arg_lambda =
-    (~comments, ~original_source, lambda: Parsetree.application_argument) => {
-  switch (lambda.paa_expr.pexp_desc) {
-  | PExpLambda(patterns, expression) =>
-    let comments_in_expression =
-      Comment_utils.get_comments_inside_location(
-        ~location=expression.pexp_loc,
-        comments,
-      );
-
-    let raw_args =
-      print_lambda_arguments(
-        ~next_loc=expression.pexp_loc,
-        ~comments,
-        ~original_source,
-        ~followed_by_arrow=true,
-        patterns,
-      );
-
-    let label =
-      switch (lambda.paa_label) {
-      | Unlabeled => Doc.nil
-      | Labeled(name)
-      | Default(name) => Doc.concat([Doc.text(name.txt), Doc.equal])
-      };
-
-    let args =
-      Doc.concat([
-        label,
-        Doc.group(
-          switch (patterns) {
-          | [
-              {
-                pla_label: Labeled(name),
-                pla_pattern: {ppat_desc: PPatVar(var)},
-              },
-            ]
-              when name.txt == var.txt => raw_args
-          | _patterns =>
-            Doc.concat([
-              Doc.lparen,
-              Doc.indent(Doc.concat([Doc.softLine, raw_args])),
-              Doc.softLine,
-              Doc.rparen,
-            ])
-          },
-        ),
-      ]);
-
-    Doc.group(
-      switch (expression.pexp_desc) {
-      | PExpBlock(block_expressions) =>
-        let body =
-          switch (block_expressions) {
-          | [] =>
-            // Not legal syntax so we shouldn't ever hit it, but we'll handle
-            // it just in case.
-            Doc.group(Doc.concat([Doc.lbrace, Doc.rbrace]))
-          | _ =>
-            let get_loc = (expr: Parsetree.expression) => {
-              expr.pexp_loc;
-            };
-            let print_item = (~comments, expr: Parsetree.expression) => {
-              Doc.group(
-                print_expression(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments,
-                  expr,
-                ),
-              );
-            };
-            let after_brace_comments =
-              Comment_utils.get_after_brace_comments(
-                ~loc=expression.pexp_loc,
-                comments_in_expression,
-              );
-            let cleaned_comments =
-              remove_used_comments(
-                ~remove_comments=after_brace_comments,
-                comments_in_expression,
-              );
-
-            let print_attribute = (expr: Parsetree.expression) =>
-              print_attributes(expr.pexp_attributes);
-            let printed_expressions =
-              block_item_iterator(
-                ~previous=Block(expression.pexp_loc),
-                ~get_loc,
-                ~print_item,
-                ~comments=cleaned_comments,
-                ~print_attribute,
-                ~original_source,
-                block_expressions,
-              );
-            let start_after_brace =
-              Doc.concat([Doc.hardLine, printed_expressions]);
-
-            Doc.concat([
-              Doc.lbrace,
-              Comment_utils.single_line_of_comments(after_brace_comments),
-              Doc.indent(start_after_brace),
-              Doc.hardLine,
-              Doc.rbrace,
-            ]);
-          };
-        Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space, body]);
-
-      | _ =>
-        let body =
-          Doc.group(
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments=comments_in_expression,
-              expression,
-            ),
-          );
-        if (Doc.willBreak(body)) {
-          Doc.concat([
-            args,
-            Doc.space,
-            Doc.text("=>"),
-            Doc.concat([Doc.space, body]),
-          ]);
-        } else {
-          Doc.concat([
-            args,
-            Doc.space,
-            Doc.text("=>"),
-            Doc.indent(Doc.concat([Doc.line, body])),
-          ]);
-        };
-      },
-    );
-
-  | _ => raise(IllegalParse("Called on a non-lambda"))
-  };
-}
-
-and print_arg =
-    (~original_source, ~comments, arg: Parsetree.application_argument) => {
-  switch (arg.paa_expr.pexp_desc) {
-  | PExpLambda(patterns, expression) =>
-    print_arg_lambda(~comments, ~original_source, arg)
-  | _ =>
-    Doc.group(
-      print_application_argument(
-        ~expression_parent=InfixExpression,
-        ~original_source,
-        ~comments,
-        arg,
-      ),
-    )
-  };
-}
-
-and print_args_with_comments =
-    (
-      ~comments: list(Parsetree.comment),
-      ~original_source,
-      args: list(Parsetree.application_argument),
-    ) => {
-  let get_loc = (e: Parsetree.application_argument) => e.paa_loc;
-  let print_item = (~comments, e: Parsetree.application_argument) => {
-    Doc.group(
-      print_application_argument(
-        ~expression_parent=InfixExpression,
-        ~original_source,
-        ~comments,
-        e,
-      ),
-    );
-  };
-
-  let args =
-    item_iterator(
-      ~get_loc,
-      ~print_item,
-      ~comments,
-      ~followed_by_arrow=false,
-      ~iterated_item=IteratedArgs,
-      args,
-    );
-
-  Doc.join(~sep=Doc.line, args);
-}
-
-and print_arguments_with_callback_in_first_position =
-    (~original_source, ~comments, args: list(Parsetree.application_argument)) => {
-  switch (args) {
-  | [] => Doc.nil
-  | [callback] =>
-    // we handle the special case of just one callback here as we call this if the first arg is a callback
-
-    print_arg_lambda(~comments, ~original_source, callback)
-
-  | [callback, expr] =>
-    let printed_callback =
-      print_arg_lambda(~comments, ~original_source, callback);
-
-    let printed_arg = print_arg(~comments, ~original_source, expr);
-
-    Doc.ifBreaks(
-      Doc.concat([printed_callback, Doc.comma, Doc.space, printed_arg]),
-      Doc.concat([
-        Doc.indent(
-          Doc.concat([
-            Doc.softLine,
-            printed_callback,
-            Doc.comma,
-            Doc.line,
-            printed_arg,
-          ]),
-        ),
-        Doc.softLine,
-      ]),
-    );
-  | [callback, ...remainder] =>
-    let printed_callback =
-      print_arg_lambda(~comments, ~original_source, callback);
-
-    let printed_args =
-      print_args_with_comments(~comments, ~original_source, remainder);
-
-    Doc.concat([
-      printed_callback,
-      Doc.comma,
-      Doc.group(
-        Doc.concat([
-          Doc.line,
-          printed_args,
-          Doc.ifBreaks(Doc.line, Doc.nil),
-        ]),
-      ),
-    ]);
-  };
-}
-
-and print_arguments_with_callback_in_last_position =
-    (~original_source, ~comments, args: list(Parsetree.application_argument)) =>
-  switch (args) {
-  | [] => Doc.nil
-  | [expr, callback] =>
-    let printed_callback =
-      print_arg_lambda(~comments, ~original_source, callback);
-    let printed_first_arg = print_arg(~comments, ~original_source, expr);
-
-    Doc.concat([printed_first_arg, Doc.comma, Doc.space, printed_callback]);
-
-  | _ =>
-    let last_expression = get_last_item_in_list(args);
-    let printed_callback =
-      print_arg_lambda(~comments, ~original_source, last_expression);
-
-    let remainderArr =
-      Array.sub(Array.of_list(args), 0, List.length(args) - 1);
-
-    let printed_args =
-      print_args_with_comments(
-        ~comments,
-        ~original_source,
-        Array.to_list(remainderArr),
-      );
-
-    Doc.concat([
-      Doc.indent(
-        Doc.concat([
-          Doc.softLine,
-          printed_args,
-          Doc.comma,
-          Doc.line,
-          printed_callback,
-        ]),
-      ),
-      Doc.softLine,
-    ]);
-  }
-
-and print_other_application =
-    (
-      ~expression_parent: expression_parent_type,
-      ~expressions: list(Parsetree.application_argument),
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      func: Parsetree.expression,
-    ) => {
-  let function_name = get_function_name(func);
-
-  switch (expressions) {
-  | [first] when prefixop(function_name) =>
-    switch (first.paa_expr.pexp_desc) {
-    | PExpApp(fn, _) =>
-      let inner_fn = get_function_name(fn);
-      if (infixop(inner_fn)) {
-        Doc.concat([
-          Doc.text(function_name),
-          Doc.lparen,
-          Doc.group(
-            print_application_argument(
-              ~expression_parent,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ),
-          Doc.rparen,
-        ]);
-      } else {
-        Doc.concat([
-          Doc.text(function_name),
-          Doc.group(
-            print_application_argument(
-              ~expression_parent,
-              ~original_source,
-              ~comments,
-              first,
-            ),
-          ),
-        ]);
-      };
-
-    | _ =>
-      Doc.concat([
-        Doc.text(function_name),
-        Doc.group(
-          print_application_argument(
-            ~expression_parent,
-            ~original_source,
-            ~comments,
-            first,
-          ),
-        ),
-      ])
-    }
-
-  | [first, second] when infixop(function_name) =>
-    print_infix_application(
-      ~expression_parent,
-      ~expressions,
-      ~original_source,
-      ~comments,
-      func,
-    )
-  | _ when infixop(function_name) =>
-    raise(IllegalParse("Formatter error, wrong number of args "))
-  | [first_expr, ..._]
-      when Array.exists(fn => function_name == fn, exception_primitives) =>
-    Doc.concat([
-      print_expression(
-        ~expression_parent=GenericExpression,
-        ~original_source,
-        ~comments,
-        func,
-      ),
-      Doc.space,
-      print_application_argument(
-        ~expression_parent=GenericExpression,
-        ~original_source,
-        ~comments,
-        first_expr,
-      ),
-    ])
-  | [first_expr, ..._] =>
-    // standard function application
-    // look out for special cases of callbacks in first or last position
-
-    let first_arg_is_callback =
-      switch (first_expr.paa_expr.pexp_desc) {
-      | PExpLambda(_) => true
-      | _ => false
-      };
-
-    let last_arg_is_callback =
-      switch (expressions) {
-      | [] => false
-      | _ =>
-        let last_expression = get_last_item_in_list(expressions);
-
-        switch (last_expression.paa_expr.pexp_desc) {
-        | PExpLambda(_) => true
-        | _ => false
-        };
-      };
-
-    if (first_arg_is_callback) {
-      let printed_args =
-        print_arguments_with_callback_in_first_position(
-          ~original_source,
-          ~comments,
-          expressions,
-        );
-      Doc.concat([
-        print_expression(
-          ~expression_parent=AccessExpression,
-          ~original_source,
-          ~comments,
-          func,
-        ),
-        Doc.lparen,
-        printed_args,
-        Doc.rparen,
-      ]);
-    } else if (last_arg_is_callback) {
-      let printed_args =
-        print_arguments_with_callback_in_last_position(
-          ~original_source,
-          ~comments,
-          expressions,
-        );
-      Doc.concat([
-        print_expression(
-          ~expression_parent=AccessExpression,
-          ~original_source,
-          ~comments,
-          func,
-        ),
-        Doc.lparen,
-        printed_args,
-        Doc.rparen,
-      ]);
-    } else {
-      let printed_args =
-        print_args_with_comments(~comments, ~original_source, expressions);
-
-      Doc.group(
-        Doc.concat([
-          print_expression(
-            ~expression_parent=AccessExpression,
-            ~original_source,
-            ~comments,
-            func,
-          ),
-          Doc.lparen,
-          Doc.indent(Doc.concat([Doc.softLine, printed_args])),
-          Doc.softLine,
-          Doc.rparen,
-        ]),
-      );
-    };
-
-  | [] =>
-    Doc.group(
-      Doc.concat([
-        print_expression(
-          ~expression_parent=AccessExpression,
-          ~original_source,
-          ~comments,
-          func,
-        ),
-        Doc.lparen,
-        Doc.softLine,
-        Doc.rparen,
-      ]),
-    )
-  };
-}
-
-and get_function_name = (expr: Parsetree.expression) => {
+let is_prefix = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
-  | PExpConstant(x) =>
-    switch (x) {
-    | PConstString(str) => str
-    | _ => ""
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    switch (op.[0]) {
+    | '!' => true
+    | _ => false
+    | exception _ => false
     }
-
-  | PExpId({txt: id}) =>
-    switch (id) {
-    | IdentName(name) => name.txt
-    | _ => ""
-    }
-  | _ => ""
+  | _ => false
   };
-}
+};
 
-and check_for_pun = (expr: Parsetree.expression) =>
+let is_keyword = (expr: Parsetree.expression) => {
   switch (expr.pexp_desc) {
-  | PExpId({txt: id}) => print_ident(id)
-  | _ => Doc.nil
-  }
-
-and print_patterns =
-    (
-      ~next_loc: Location.t,
-      ~comments: list(Parsetree.comment),
-      ~original_source: array(string),
-      ~followed_by_arrow: option(bool)=?,
-      patterns: list(Parsetree.pattern),
-    ) => {
-  let get_loc = (p: Parsetree.pattern) => p.ppat_loc;
-  let print_item = (~comments, p: Parsetree.pattern) => {
-    print_pattern(~original_source, ~comments, ~next_loc, p);
+  | PExpId({txt: Identifier.IdentName({txt: "assert"})})
+  | PExpId({txt: Identifier.IdentName({txt: "throw"})})
+  | PExpId({txt: Identifier.IdentName({txt: "fail"})}) => true
+  | _ => false
   };
-
-  let comments_in_scope =
-    Comment_utils.get_comments_before_location(~location=next_loc, comments);
-
-  switch (patterns) {
-  | [] => Doc.nil
-  | _ =>
-    let items =
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments=comments_in_scope,
-        ~followed_by_arrow?,
-        ~iterated_item=IteratedPatterns,
-        patterns,
-      );
-    Doc.join(~sep=Doc.line, items);
-  };
-}
-and print_list_patterns =
-    (
-      ~next_loc: Location.t,
-      ~comments: list(Parsetree.comment),
-      ~original_source: array(string),
-      ~followed_by_arrow: option(bool)=?,
-      patterns: list(Parsetree.list_item(Parsetree.pattern)),
-    ) => {
-  let get_loc = (p: Parsetree.list_item(Parsetree.pattern)) => {
-    switch (p) {
-    | ListItem(p) => p.ppat_loc
-    | ListSpread(_, loc) => loc
-    };
-  };
-  let print_item = (~comments, p: Parsetree.list_item(Parsetree.pattern)) => {
-    switch (p) {
-    | ListItem(p) => print_pattern(~original_source, ~comments, ~next_loc, p)
-    | ListSpread(p, _) =>
-      Doc.concat([
-        Doc.text("..."),
-        print_pattern(~original_source, ~comments, ~next_loc, p),
-      ])
-    };
-  };
-
-  let comments_in_scope =
-    Comment_utils.get_comments_before_location(~location=next_loc, comments);
-
-  switch (patterns) {
-  | [] => Doc.nil
-  | _ =>
-    let items =
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments=comments_in_scope,
-        ~followed_by_arrow?,
-        ~iterated_item=IteratedPatterns,
-        patterns,
-      );
-    Doc.concat([
-      Doc.join(~sep=Doc.line, items),
-      Doc.ifBreaks(Doc.comma, Doc.nil),
-    ]);
-  };
-}
-
-and print_lambda_arguments =
-    (
-      ~next_loc: Location.t,
-      ~comments: list(Parsetree.comment),
-      ~original_source: array(string),
-      ~followed_by_arrow: option(bool)=?,
-      arguments: list(Parsetree.lambda_argument),
-    ) => {
-  let get_loc = (l: Parsetree.lambda_argument) => l.pla_loc;
-  let print_item =
-      (
-        ~comments,
-        {pla_pattern: pattern, pla_default: default, pla_loc}: Parsetree.lambda_argument,
-      ) => {
-    let pattern_doc =
-      print_pattern(~original_source, ~comments, ~next_loc, pattern);
-    let default_doc =
-      switch (default) {
-      | None => Doc.nil
-      | Some(expr) =>
-        Doc.concat([
-          Doc.equal,
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            expr,
-          ),
-        ])
-      };
-
-    Doc.concat([pattern_doc, default_doc]);
-  };
-
-  let comments_in_scope =
-    Comment_utils.get_comments_before_location(~location=next_loc, comments);
-
-  switch (arguments) {
-  | [] => Doc.nil
-  | _ =>
-    let items =
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments=comments_in_scope,
-        ~followed_by_arrow?,
-        ~iterated_item=IteratedPatterns,
-        arguments,
-      );
-    Doc.join(~sep=Doc.line, items);
-  };
-}
-
-and print_application_argument =
-    (
-      ~comments: list(Parsetree.comment),
-      ~expression_parent: expression_parent_type,
-      ~original_source: array(string),
-      argument: Parsetree.application_argument,
-    ) => {
-  let expr_doc =
-    print_expression(
-      ~expression_parent,
-      ~original_source,
-      ~comments,
-      argument.paa_expr,
-    );
-  switch (argument.paa_label, argument.paa_expr.pexp_desc) {
-  | (Asttypes.Unlabeled, _) => expr_doc
-  | (Labeled(name) | Default(name), _) =>
-    Doc.concat([Doc.text(name.txt), Doc.equal, expr_doc])
-  };
-}
-
-and print_application_arguments =
-    (
-      ~next_loc: Location.t,
-      ~comments: list(Parsetree.comment),
-      ~expression_parent: expression_parent_type,
-      ~original_source: array(string),
-      ~followed_by_arrow: option(bool)=?,
-      arguments: list(Parsetree.application_argument),
-    ) => {
-  let get_loc = (l: Parsetree.application_argument) => l.paa_loc;
-  let print_item = (~comments, argument: Parsetree.application_argument) => {
-    print_application_argument(
-      ~comments,
-      ~expression_parent,
-      ~original_source,
-      argument,
-    );
-  };
-
-  let comments_in_scope =
-    Comment_utils.get_comments_before_location(~location=next_loc, comments);
-
-  switch (arguments) {
-  | [] => Doc.nil
-  | _ =>
-    let items =
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments=comments_in_scope,
-        ~followed_by_arrow?,
-        ~iterated_item=IteratedPatterns,
-        arguments,
-      );
-    Doc.join(~sep=Doc.line, items);
-  };
-}
-
-and paren_wrap_patterns =
-    (
-      ~wrapper: Location.t,
-      ~next_loc: Location.t,
-      ~comments: list(Parsetree.comment),
-      ~original_source: array(string),
-      ~followed_by_arrow: bool,
-      patterns: list(Parsetree.lambda_argument),
-    ) => {
-  let args =
-    print_lambda_arguments(
-      ~next_loc,
-      ~comments,
-      ~original_source,
-      ~followed_by_arrow,
-      patterns,
-    );
-
-  switch (patterns) {
-  | [] => Doc.concat([Doc.lparen, args, Doc.rparen])
-  | [{pla_label: Labeled(name), pla_pattern: {ppat_desc: PPatVar(var)}}]
-      when name.txt == var.txt => args
-  | _patterns =>
-    let trail_sep = Doc.ifBreaks(Doc.comma, Doc.nil);
-
-    Doc.group(
-      Doc.indent(
-        Doc.concat([
-          Doc.softLine,
-          Doc.lparen,
-          Doc.indent(Doc.concat([Doc.softLine, args, trail_sep])),
-          Doc.softLine,
-          Doc.rparen,
-        ]),
-      ),
-    );
-  };
-}
-and print_expression_inner =
-    (
-      ~expression_parent: expression_parent_type,
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      expr: Parsetree.expression,
-    ) => {
-  let expression_doc =
-    switch (expr.pexp_desc) {
-    | PExpConstant(x) =>
-      print_constant(~original_source, ~loc=expr.pexp_loc, x)
-    | PExpId({txt: id}) => print_ident(id)
-    | PExpLet(rec_flag, mut_flag, vbs) =>
-      print_value_bind(
-        ~provide_flag=Asttypes.NotProvided,
-        ~rec_flag,
-        ~mut_flag,
-        ~original_source,
-        ~comments,
-        vbs,
-      )
-    | PExpTuple(expressions) =>
-      let get_loc = (e: Parsetree.expression) => {
-        e.pexp_loc;
-      };
-      let print_item = (~comments, e: Parsetree.expression) => {
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          e,
-        );
-      };
-
-      let after_paren_comments =
-        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
-      let cleaned_comments =
-        remove_used_comments(~remove_comments=after_paren_comments, comments);
-      let expr_items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments=cleaned_comments,
-          ~iterated_item=IteratedTupleExpression,
-          expressions,
-        );
-
-      let printed_expr_items = Doc.join(~sep=Doc.line, expr_items);
-      let printed_expr_items_after_paren =
-        Doc.concat([Doc.softLine, printed_expr_items]);
-      Doc.group(
-        Doc.concat([
-          Doc.lparen,
-          Comment_utils.single_line_of_comments(after_paren_comments),
-          Doc.indent(printed_expr_items_after_paren),
-          Doc.ifBreaks(
-            Doc.nil,
-            switch (expressions) {
-            | [_one] => Doc.comma
-            | _ => Doc.nil
-            },
-          ),
-          Doc.softLine,
-          Doc.rparen,
-        ]),
-      );
-
-    | PExpList(expressions) =>
-      let get_loc = (item: Parsetree.list_item(Parsetree.expression)) => {
-        switch (item) {
-        | ListItem(e) => e.pexp_loc
-        | ListSpread(_, loc) => loc
-        };
-      };
-      let print_item =
-          (~comments, item: Parsetree.list_item(Parsetree.expression)) => {
-        switch (item) {
-        | ListItem(e) =>
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            e,
-          )
-        | ListSpread(e, _) =>
-          Doc.concat([
-            Doc.text("..."),
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              e,
-            ),
-          ])
-        };
-      };
-
-      let after_bracket_comments =
-        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
-      let cleaned_comments =
-        remove_used_comments(
-          ~remove_comments=after_bracket_comments,
-          comments,
-        );
-      let items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments=cleaned_comments,
-          ~iterated_item=IteratedListExpression,
-          expressions,
-        );
-      Doc.group(
-        switch (expressions) {
-        | [] => Doc.text("[]")
-        | _ =>
-          Doc.concat([
-            Doc.lbracket,
-            Doc.softLine,
-            Comment_utils.single_line_of_comments(after_bracket_comments),
-            Doc.indent(
-              Doc.concat([
-                force_break_if_line_comment(
-                  ~separator=Doc.softLine,
-                  after_bracket_comments,
-                ),
-                Doc.join(~sep=Doc.line, items),
-              ]),
-            ),
-            Doc.softLine,
-            Doc.rbracket,
-          ])
-        },
-      );
-
-    | PExpArray(expressions) =>
-      let get_loc = (e: Parsetree.expression) => {
-        e.pexp_loc;
-      };
-      let print_item = (~comments, e: Parsetree.expression) => {
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          e,
-        );
-      };
-
-      let after_bracket_comments =
-        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
-      let cleaned_comments =
-        remove_used_comments(
-          ~remove_comments=after_bracket_comments,
-          comments,
-        );
-      let items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments=cleaned_comments,
-          ~iterated_item=IteratedArrayExpression,
-          expressions,
-        );
-      Doc.group(
-        switch (expressions) {
-        | [] => Doc.text("[>]")
-        | _ =>
-          Doc.concat([
-            Doc.lbracket,
-            Doc.text("> "),
-            Comment_utils.single_line_of_comments(after_bracket_comments),
-            Doc.indent(
-              Doc.concat([
-                force_break_if_line_comment(
-                  ~separator=Doc.softLine,
-                  after_bracket_comments,
-                ),
-                Doc.join(~sep=Doc.line, items),
-              ]),
-            ),
-            Doc.softLine,
-            Doc.rbracket,
-          ])
-        },
-      );
-    | PExpArrayGet(expression1, expression2) =>
-      Doc.concat([
-        print_expression(
-          ~expression_parent=AccessExpression,
-          ~original_source,
-          ~comments,
-          expression1,
-        ),
-        Doc.lbracket,
-        Doc.group(
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            expression2,
-          ),
-        ),
-        Doc.rbracket,
-      ])
-    | PExpArraySet(expression1, expression2, expression3) =>
-      Doc.group(
-        Doc.concat([
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            expression1,
-          ),
-          Doc.lbracket,
-          Doc.group(
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              expression2,
-            ),
-          ),
-          Doc.rbracket,
-          Doc.space,
-          Doc.text("="),
-          Doc.indent(
-            Doc.concat([
-              Doc.space,
-              print_expression(
-                ~expression_parent=GenericExpression,
-                ~original_source,
-                ~comments,
-                expression3,
-              ),
-            ]),
-          ),
-        ]),
-      )
-
-    | PExpRecord(base, record) =>
-      print_record(
-        ~base,
-        ~fields=record,
-        ~original_source,
-        ~comments,
-        expr.pexp_loc,
-      )
-    | PExpRecordGet(expression, {txt, _}) =>
-      Doc.concat([
-        print_expression(
-          ~expression_parent=AccessExpression,
-          ~original_source,
-          ~comments,
-          expression,
-        ),
-        Doc.dot,
-        print_ident(txt),
-      ])
-    | PExpRecordSet(expression, {txt, _}, expression2) =>
-      let left =
-        Doc.concat([
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            expression,
-          ),
-          Doc.dot,
-          print_ident(txt),
-        ]);
-      print_assignment(~original_source, ~comments, left, expression2);
-    | PExpMatch(expression, match_branches) =>
-      let arg =
-        Doc.concat([
-          Doc.lparen,
-          Doc.group(
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              expression,
-            ),
-          ),
-          Doc.rparen,
-        ]);
-
-      let get_loc = (branch: Parsetree.match_branch) => {
-        branch.pmb_loc;
-      };
-
-      let print_item = (~comments, branch: Parsetree.match_branch) => {
-        let branch_comments =
-          Comment_utils.get_comments_inside_location(
-            ~location=branch.pmb_loc,
-            comments,
-          );
-
-        let branch_pattern_comments =
-          Comment_utils.get_comments_inside_location(
-            ~location=branch.pmb_pat.ppat_loc,
-            comments,
-          );
-
-        Doc.group(
-          Doc.concat([
-            Doc.group(
-              print_pattern(
-                ~original_source,
-                ~comments=branch_pattern_comments,
-                ~next_loc=
-                  switch (branch.pmb_guard) {
-                  | None => branch.pmb_body.pexp_loc
-                  | Some(b) => b.pexp_loc
-                  },
-                branch.pmb_pat,
-              ),
-            ),
-            switch (branch.pmb_guard) {
-            | None =>
-              Doc.concat([
-                Doc.space,
-                Doc.text("=>"),
-                switch (branch.pmb_body.pexp_desc) {
-                | PExpBlock(expressions) =>
-                  Doc.concat([
-                    Doc.space,
-                    print_expression(
-                      ~expression_parent=GenericExpression,
-                      ~original_source,
-                      ~comments=branch_comments,
-                      branch.pmb_body,
-                    ),
-                  ])
-                | _ =>
-                  Doc.indent(
-                    Doc.concat([
-                      Doc.line,
-                      print_expression(
-                        ~expression_parent=GenericExpression,
-                        ~original_source,
-                        ~comments=branch_comments,
-                        branch.pmb_body,
-                      ),
-                    ]),
-                  )
-                },
-              ])
-            | Some(guard) =>
-              let branch_guard_comments =
-                Comment_utils.get_comments_inside_location(
-                  ~location=guard.pexp_loc,
-                  comments,
-                );
-              let guard_doc =
-                Doc.group(
-                  print_expression(
-                    ~expression_parent=InfixExpression,
-                    ~original_source,
-                    ~comments=branch_guard_comments,
-                    guard,
-                  ),
-                );
-              Doc.concat([
-                Doc.space,
-                Doc.text("when"),
-                Doc.space,
-                Doc.group(
-                  Doc.concat([
-                    Doc.ifBreaks(Doc.lparen, Doc.nil),
-                    Doc.indent(Doc.concat([Doc.softLine, guard_doc])),
-                    Doc.softLine,
-                    Doc.ifBreaks(Doc.rparen, Doc.nil),
-                  ]),
-                ),
-                Doc.space,
-                Doc.text("=>"),
-                switch (branch.pmb_body.pexp_desc) {
-                | PExpBlock(_)
-                | PExpIf(_) =>
-                  Doc.concat([
-                    Doc.space,
-                    Doc.group(
-                      print_expression(
-                        ~expression_parent=GenericExpression,
-                        ~original_source,
-                        ~comments=branch_comments,
-                        branch.pmb_body,
-                      ),
-                    ),
-                  ])
-
-                | _ =>
-                  Doc.indent(
-                    Doc.concat([
-                      Doc.line,
-                      Doc.group(
-                        print_expression(
-                          ~expression_parent=GenericExpression,
-                          ~original_source,
-                          ~comments=branch_comments,
-                          branch.pmb_body,
-                        ),
-                      ),
-                    ]),
-                  )
-                },
-              ]);
-            },
-          ]),
-        );
-      };
-
-      let after_brace_comments =
-        Comment_utils.get_after_brace_comments(~loc=expr.pexp_loc, comments);
-      let cleaned_comments =
-        remove_used_comments(~remove_comments=after_brace_comments, comments);
-
-      let items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments=cleaned_comments,
-          ~iterated_item=IteratedMatchItem,
-          match_branches,
-        );
-      let printed_branches = Doc.join(~sep=Doc.hardLine, items);
-
-      let printed_branches_after_brace =
-        Doc.concat([
-          force_break_if_line_comment(
-            ~separator=Doc.line,
-            after_brace_comments,
-          ),
-          printed_branches,
-        ]);
-
-      Doc.group(
-        Doc.concat([
-          Doc.text("match"),
-          Doc.space,
-          arg,
-          Doc.space,
-          Doc.lbrace,
-          Comment_utils.single_line_of_comments(after_brace_comments),
-          Doc.indent(printed_branches_after_brace),
-          Doc.line,
-          Doc.rbrace,
-        ]),
-      );
-
-    | PExpPrim0(prim0) =>
-      let original_code = get_original_code(expr.pexp_loc, original_source);
-      Doc.text(original_code);
-    | PExpPrim1(prim1, expression) =>
-      let original_code = get_original_code(expr.pexp_loc, original_source);
-      Doc.text(original_code);
-    | PExpPrim2(prim2, expression, expression1) =>
-      let original_code = get_original_code(expr.pexp_loc, original_source);
-      Doc.text(original_code);
-    | PExpPrimN(primn, expressions) =>
-      let original_code = get_original_code(expr.pexp_loc, original_source);
-      Doc.text(original_code);
-    | PExpIf(condition, true_expr, false_expr) =>
-      let cond_leading_comment =
-        Comment_utils.get_comments_from_start_of_enclosing_location(
-          ~enclosing_location=expr.pexp_loc,
-          ~location=condition.pexp_loc,
-          comments,
-        );
-
-      let cond_trailing_comment =
-        Comment_utils.get_comments_between_locs(
-          ~begin_loc=condition.pexp_loc,
-          ~end_loc=true_expr.pexp_loc,
-          comments,
-        );
-
-      let last_comment_different_line =
-        switch (cond_trailing_comment) {
-        | [] => false
-        | [first, ...rest] =>
-          let (_, first_comment_line, _, _) =
-            Locations.get_raw_pos_info(
-              Locations.get_comment_loc(first).loc_start,
-            );
-
-          let (_, condition_line, _, _) =
-            Locations.get_raw_pos_info(condition.pexp_loc.loc_end);
-
-          first_comment_line > condition_line;
-        };
-
-      let same_line_comments =
-        last_comment_different_line ? [] : cond_trailing_comment;
-      let later_line_comments =
-        last_comment_different_line ? cond_trailing_comment : [];
-
-      let print_later_comments = (~default, later_line_comments) =>
-        switch (later_line_comments) {
-        | [] => default
-        | cmts =>
-          Doc.concat([
-            Doc.line,
-            Comment_utils.new_comments_to_docs(later_line_comments),
-          ])
-        };
-
-      let true_trailing_comment =
-        switch (false_expr) {
-        | None =>
-          Comment_utils.get_comments_after_location(
-            ~location=true_expr.pexp_loc,
-            comments,
-          )
-        | Some(false_expr) =>
-          Comment_utils.get_comments_between_locs(
-            ~begin_loc=true_expr.pexp_loc,
-            ~end_loc=false_expr.pexp_loc,
-            comments,
-          )
-        };
-
-      let true_is_block =
-        switch (true_expr.pexp_desc) {
-        | PExpBlock(_) => true
-        | _ => false
-        };
-
-      let true_is_if =
-        switch (true_expr.pexp_desc) {
-        | PExpIf(_) => true
-        | _ => false
-        };
-
-      let false_is_block =
-        switch (false_expr) {
-        | Some({pexp_desc: PExpBlock(_)}) => true
-        | _ => false
-        };
-
-      let false_is_if =
-        switch (false_expr) {
-        | Some({pexp_desc: PExpBlock(expressions)}) =>
-          switch (expressions) {
-          | [] => false
-          | [hd, ...tail] =>
-            switch (hd.pexp_desc) {
-            | PExpIf(_) => true
-            | _ => false
-            }
-          }
-        | _ => false
-        };
-
-      let commentsInCondition =
-        Comment_utils.get_comments_inside_location(
-          ~location=condition.pexp_loc,
-          comments,
-        );
-
-      let comments_in_true_statement =
-        Comment_utils.get_comments_inside_location(
-          ~location=true_expr.pexp_loc,
-          comments,
-        );
-
-      let true_made_block = ref(false);
-      let false_made_block = ref(false);
-
-      let true_clause =
-        switch (true_expr.pexp_desc) {
-        | PExpBlock(expressions) =>
-          Doc.concat([
-            Doc.space,
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments=comments_in_true_statement,
-              true_expr,
-            ),
-          ])
-
-        | _ =>
-          if (false_is_block) {
-            true_made_block := true;
-            Doc.concat([
-              Doc.space,
-              Doc.lbrace,
-              // no comment to add here as this was a single line expression
-              Doc.indent(
-                Doc.concat([
-                  Doc.hardLine,
-                  print_expression(
-                    ~expression_parent=GenericExpression,
-                    ~original_source,
-                    ~comments=comments_in_true_statement,
-                    true_expr,
-                  ),
-                ]),
-              ),
-              Doc.hardLine,
-              Doc.rbrace,
-            ]);
-          } else if (true_is_if) {
-            Doc.concat([
-              print_later_comments(~default=Doc.space, later_line_comments),
-              Doc.lparen,
-              Doc.indent(
-                Doc.concat([
-                  Doc.softLine,
-                  print_expression(
-                    ~expression_parent=GenericExpression,
-                    ~original_source,
-                    ~comments=comments_in_true_statement,
-                    true_expr,
-                  ),
-                ]),
-              ),
-              Doc.softLine,
-              Doc.rparen,
-            ]);
-          } else {
-            Doc.indent(
-              Doc.concat([
-                print_later_comments(~default=Doc.line, later_line_comments),
-                print_expression(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments=comments_in_true_statement,
-                  true_expr,
-                ),
-              ]),
-            );
-          }
-        };
-
-      let comments_in_false_statement =
-        switch (false_expr) {
-        | None => []
-        | Some({pexp_loc}) =>
-          Comment_utils.get_comments_inside_location(
-            ~location=pexp_loc,
-            comments,
-          )
-        };
-
-      let false_clause =
-        switch (false_expr) {
-        | Some({pexp_desc: PExpBlock(expressions)} as false_expr) =>
-          switch (expressions) {
-          | [] => Doc.nil
-          | _ =>
-            Doc.concat([
-              Doc.space,
-              Doc.text("else"),
-              Doc.space,
-              print_expression(
-                ~expression_parent=GenericExpression,
-                ~original_source,
-                ~comments=comments_in_false_statement,
-                false_expr,
-              ),
-            ])
-          }
-        | Some(
-            {pexp_desc: PExpIf(_condition, _true_expr, _false_expr)} as false_expr,
-          ) =>
-          Doc.concat([
-            Doc.space,
-            Doc.text("else"),
-            if (false_is_if) {
-              Doc.concat([
-                Doc.space,
-                Doc.lparen,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.softLine,
-                    print_expression(
-                      ~expression_parent=GenericExpression,
-                      ~original_source,
-                      ~comments=comments_in_false_statement,
-                      false_expr,
-                    ),
-                  ]),
-                ),
-                Doc.softLine,
-                Doc.rparen,
-              ]);
-            } else {
-              Doc.concat([
-                Doc.space,
-                print_expression(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments=comments_in_false_statement,
-                  false_expr,
-                ),
-              ]);
-            },
-          ])
-        | Some(false_expr) =>
-          Doc.concat([
-            if (true_is_block) {
-              false_made_block := true;
-              Doc.concat([
-                Doc.space,
-                Doc.text("else"),
-                Doc.space,
-                Doc.lbrace,
-                // no comments to add here as original was single line
-                Doc.indent(
-                  Doc.concat([
-                    Doc.hardLine,
-                    print_expression(
-                      ~expression_parent=GenericExpression,
-                      ~original_source,
-                      ~comments=comments_in_false_statement,
-                      false_expr,
-                    ),
-                  ]),
-                ),
-                Doc.hardLine,
-                Doc.rbrace,
-              ]);
-            } else {
-              Doc.concat([
-                Doc.line,
-                Doc.text("else"),
-                Doc.space,
-                print_expression(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments=comments_in_false_statement,
-                  false_expr,
-                ),
-              ]);
-            },
-          ])
-        | None => Doc.nil
-        };
-
-      let inner =
-        Doc.concat([
-          Doc.softLine,
-          Comment_utils.inbetween_comments_to_docs(
-            ~offset=false,
-            cond_leading_comment,
-          ),
-          switch (cond_leading_comment) {
-          | [] => Doc.nil
-          | _ => Doc.ifBreaks(Doc.nil, Doc.space)
-          },
-          Doc.group(
-            print_expression(
-              ~expression_parent=InfixExpression,
-              ~original_source,
-              ~comments=commentsInCondition,
-              condition,
-            ),
-          ),
-          switch (same_line_comments) {
-          | [] => Doc.nil
-          | _ =>
-            Doc.concat([
-              Doc.concat(
-                List.mapi(
-                  (index, c) =>
-                    Doc.concat([
-                      Doc.space,
-                      Comment_utils.comment_to_doc(c),
-                      switch (c) {
-                      | Line(_) => Doc.breakParent
-                      | _ => Doc.nil
-                      },
-                    ]),
-                  same_line_comments,
-                ),
-              ),
-            ])
-          },
-        ]);
-
-      Doc.concat([
-        Doc.group(
-          Doc.concat([
-            Doc.text("if"),
-            Doc.space,
-            Doc.group(
-              Doc.concat([
-                Doc.lparen,
-                Doc.indent(inner),
-                Doc.softLine,
-                Doc.rparen,
-              ]),
-            ),
-          ]),
-        ),
-        Doc.group(true_clause),
-        Comment_utils.inbetween_comments_to_docs(
-          ~offset=true,
-          true_trailing_comment,
-        ),
-        Doc.group(false_clause),
-      ]);
-    | PExpWhile(expression, expression1) =>
-      let comments_in_expression =
-        Comment_utils.get_comments_inside_location(
-          ~location=expression.pexp_loc,
-          comments,
-        );
-      let comments_in_expression_1 =
-        Comment_utils.get_comments_inside_location(
-          ~location=expression1.pexp_loc,
-          comments,
-        );
-      Doc.concat([
-        Doc.text("while"),
-        Doc.space,
-        Doc.group(
-          Doc.concat([
-            Doc.lparen,
-            Doc.indent(
-              Doc.concat([
-                Doc.softLine,
-                print_expression(
-                  ~expression_parent=InfixExpression,
-                  ~original_source,
-                  ~comments=comments_in_expression,
-                  expression,
-                ),
-              ]),
-            ),
-            Doc.softLine,
-            Doc.rparen,
-          ]),
-        ),
-        Doc.space,
-        Doc.group(
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments=comments_in_expression_1,
-            expression1,
-          ),
-        ),
-      ]);
-
-    | PExpFor(optexpression1, optexpression2, optexpression3, expression4) =>
-      let comments_in_expression4 =
-        Comment_utils.get_comments_inside_location(
-          ~location=expression4.pexp_loc,
-          comments,
-        );
-      let comments_before_loop_expression =
-        Comment_utils.get_comments_enclosed_and_before_location(
-          ~loc1=expr.pexp_loc,
-          ~loc2=expression4.pexp_loc,
-          comments,
-        );
-      Doc.concat([
-        Doc.group(
-          Doc.concat([
-            Doc.text("for"),
-            Doc.space,
-            Doc.lparen,
-            Doc.indent(
-              Doc.concat([
-                Doc.softLine,
-                switch (optexpression1) {
-                | Some(expr) =>
-                  Doc.group(
-                    print_expression(
-                      ~expression_parent=InfixExpression,
-                      ~original_source,
-                      ~comments=comments_before_loop_expression,
-                      expr,
-                    ),
-                  )
-                | None => Doc.nil
-                },
-                Doc.text(";"),
-                switch (optexpression2, optexpression3) {
-                | (None, None) => Doc.nil
-                | (None, Some(_)) => Doc.space
-                | (Some(expr), _) =>
-                  Doc.concat([
-                    Doc.line,
-                    Doc.group(
-                      print_expression(
-                        ~expression_parent=InfixExpression,
-                        ~original_source,
-                        ~comments=comments_before_loop_expression,
-                        expr,
-                      ),
-                    ),
-                  ])
-                },
-                Doc.text(";"),
-                switch (optexpression3) {
-                | Some(expr) =>
-                  Doc.concat([
-                    switch (expr.pexp_desc) {
-                    | PExpBlock(_) => Doc.space
-                    | _ => Doc.line
-                    },
-                    Doc.group(
-                      print_expression(
-                        ~expression_parent=InfixExpression,
-                        ~original_source,
-                        ~comments=comments_before_loop_expression,
-                        expr,
-                      ),
-                    ),
-                  ])
-                | None => Doc.nil
-                },
-              ]),
-            ),
-            Doc.softLine,
-            Doc.rparen,
-          ]),
-        ),
-        Doc.space,
-        Doc.group(
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments=comments_in_expression4,
-            expression4,
-          ),
-        ),
-      ]);
-    | PExpContinue => Doc.text("continue")
-    | PExpBreak => Doc.text("break")
-    | PExpReturn(expr) =>
-      Doc.concat([
-        Doc.text("return"),
-        switch (expr) {
-        | Some(expr) =>
-          Doc.concat([
-            Doc.space,
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              expr,
-            ),
-          ])
-        | None => Doc.nil
-        },
-      ])
-    | PExpConstraint(expression, parsed_type) =>
-      let comments_in_expression =
-        Comment_utils.get_comments_inside_location(
-          ~location=expression.pexp_loc,
-          comments,
-        );
-
-      Doc.group(
-        Doc.concat([
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments=comments_in_expression,
-            expression,
-          ),
-          Doc.text(":"),
-          Doc.space,
-          print_type(
-            ~original_source,
-            ~comments=
-              Comment_utils.get_comments_inside_location(
-                ~location=parsed_type.ptyp_loc,
-                comments,
-              ),
-            parsed_type,
-          ),
-        ]),
-      );
-    | PExpLambda(patterns, expression) =>
-      let comments_in_expression =
-        Comment_utils.get_comments_inside_location(
-          ~location=expression.pexp_loc,
-          comments,
-        );
-
-      let patterns_comments =
-        Comment_utils.get_comments_enclosed_and_before_location(
-          ~loc1=expr.pexp_loc,
-          ~loc2=expression.pexp_loc,
-          comments,
-        );
-
-      let args =
-        paren_wrap_patterns(
-          ~wrapper=expr.pexp_loc,
-          ~next_loc=expression.pexp_loc,
-          ~comments=patterns_comments,
-          ~original_source,
-          ~followed_by_arrow=true,
-          patterns,
-        );
-
-      switch (expression.pexp_desc) {
-      | PExpBlock(_)
-      | PExpLambda(_) =>
-        Doc.concat([
-          Doc.group(
-            Doc.concat([args, Doc.space, Doc.text("=>"), Doc.space]),
-          ),
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments=comments_in_expression,
-            expression,
-          ),
-        ])
-      | PExpIf(_) =>
-        let out =
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments=comments_in_expression,
-            expression,
-          );
-
-        Doc.concat([
-          Doc.group(
-            Doc.concat([
-              args,
-              Doc.space,
-              Doc.text("=>"),
-              Doc.ifBreaks(Doc.space, Doc.line),
-            ]),
-          ),
-          out,
-        ]);
-      | _ =>
-        Doc.concat([
-          args,
-          Doc.space,
-          Doc.text("=>"),
-          Doc.indent(
-            Doc.concat([
-              Doc.line,
-              print_expression(
-                ~expression_parent=GenericExpression,
-                ~original_source,
-                ~comments=comments_in_expression,
-                expression,
-              ),
-            ]),
-          ),
-        ])
-      };
-
-    | PExpApp(func, expressions) =>
-      let comments_in_expression =
-        Comment_utils.get_comments_inside_location(
-          ~location=expr.pexp_loc,
-          comments,
-        );
-      print_application(
-        ~expression_parent,
-        ~expressions,
-        ~original_source,
-        ~comments=comments_in_expression,
-        func,
-      );
-    | PExpConstruct({txt: id}, PExpConstrSingleton) => print_ident(id)
-    | PExpConstruct({txt: id}, PExpConstrTuple([])) => print_ident(id)
-    | PExpConstruct(constr, PExpConstrTuple(expressions)) =>
-      let comments_in_expression =
-        Comment_utils.get_comments_inside_location(
-          ~location=expr.pexp_loc,
-          comments,
-        );
-      // Treat constructors as function calls
-      let expressions =
-        List.map(
-          expr =>
-            {
-              Parsetree.paa_label: Unlabeled,
-              paa_expr: expr,
-              paa_loc: expr.pexp_loc,
-            },
-          expressions,
-        );
-      print_application(
-        ~expression_parent,
-        ~expressions,
-        ~original_source,
-        ~comments=comments_in_expression,
-        Ast_helper.Expression.ident(constr),
-      );
-    | PExpConstruct(id, PExpConstrRecord(record)) =>
-      Doc.concat([
-        print_ident(id.txt),
-        print_record(
-          ~base=None,
-          ~fields=record,
-          ~original_source,
-          ~comments,
-          expr.pexp_loc,
-        ),
-      ])
-    | PExpBlock(expressions) =>
-      switch (expressions) {
-      | [] =>
-        // Not legal syntax so we shouldn't ever hit it, but we'll handle
-        // it just in case.
-        Doc.breakableGroup(
-          ~forceBreak=true,
-          Doc.concat([Doc.lbrace, Doc.indent(Doc.line), Doc.rbrace]),
-        )
-      | _ =>
-        let get_loc = (expr: Parsetree.expression) => {
-          expr.pexp_loc;
-        };
-
-        let print_item = (~comments, expr: Parsetree.expression) => {
-          Doc.group(
-            print_expression(
-              ~expression_parent=GenericExpression,
-              ~original_source,
-              ~comments,
-              expr,
-            ),
-          );
-        };
-
-        let after_brace_comments =
-          Comment_utils.get_after_brace_comments(
-            ~loc=expr.pexp_loc,
-            comments,
-          );
-
-        let cleaned_comments =
-          remove_used_comments(
-            ~remove_comments=after_brace_comments,
-            comments,
-          );
-
-        let print_attribute = (expr: Parsetree.expression) =>
-          print_attributes(expr.pexp_attributes);
-
-        let printed_expressions =
-          block_item_iterator(
-            ~previous=Block(expr.pexp_loc),
-            ~get_loc,
-            ~print_item,
-            ~comments=cleaned_comments,
-            ~print_attribute,
-            ~original_source,
-            expressions,
-          );
-
-        let start_after_brace =
-          Doc.concat([Doc.hardLine, printed_expressions]);
-
-        Doc.breakableGroup(
-          ~forceBreak=true,
-          Doc.concat([
-            Doc.lbrace,
-            Comment_utils.single_line_of_comments(after_brace_comments),
-            Doc.indent(start_after_brace),
-            Doc.hardLine,
-            Doc.rbrace,
-          ]),
-        );
-      }
-
-    | PExpBoxAssign(expression, expression1) =>
-      Doc.concat([
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          expression,
-        ),
-        Doc.space,
-        Doc.text(":="),
-        Doc.space,
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          expression1,
-        ),
-      ])
-    | PExpAssign(expression, expression1) =>
-      let left =
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          expression,
-        );
-      print_assignment(~original_source, ~comments, left, expression1);
-    | PExpUse(module_, items) =>
-      let use =
-        switch (items) {
-        | PUseAll => Doc.text("*")
-        | PUseItems(items) =>
-          switch (items) {
-          | [] => Doc.concat([Doc.lbrace, Doc.rbrace])
-          | _ =>
-            let get_loc = (item: Parsetree.use_item) => {
-              switch (item) {
-              | PUseValue({loc})
-              | PUseModule({loc})
-              | PUseType({loc}) => loc
-              };
-            };
-
-            let comments_in_expression =
-              Comment_utils.get_comments_inside_location(
-                ~location=expr.pexp_loc,
-                comments,
-              );
-
-            let after_brace_comments =
-              Comment_utils.get_after_brace_comments(
-                ~loc=expr.pexp_loc,
-                comments_in_expression,
-              );
-            let cleaned_comments =
-              remove_used_comments(
-                ~remove_comments=after_brace_comments,
-                comments_in_expression,
-              );
-
-            let print_item = (~comments, item: Parsetree.use_item) => {
-              let item_name = (name, alias) => {
-                Location.(
-                  switch (alias) {
-                  | None => print_ident(name.txt)
-                  | Some(alias) =>
-                    Doc.concat([
-                      print_ident(name.txt),
-                      Doc.space,
-                      Doc.text("as"),
-                      Doc.space,
-                      print_ident(alias.txt),
-                    ])
-                  }
-                );
-              };
-
-              switch (item) {
-              | PUseValue({name, alias}) => item_name(name, alias)
-              | PUseModule({name, alias}) =>
-                Doc.concat([Doc.text("module "), item_name(name, alias)])
-              | PUseType({name, alias}) =>
-                Doc.concat([Doc.text("type "), item_name(name, alias)])
-              };
-            };
-
-            let printed_items =
-              block_item_iterator_line(
-                ~previous=Block(expr.pexp_loc),
-                ~get_loc,
-                ~print_item,
-                ~comments=cleaned_comments,
-                ~separator=Doc.comma,
-                ~original_source,
-                items,
-              );
-
-            Doc.concat([
-              Doc.lbrace,
-              Comment_utils.single_line_of_comments(after_brace_comments),
-              Doc.indent(
-                Doc.concat([
-                  force_break_if_line_comment(
-                    ~separator=Doc.line,
-                    after_brace_comments,
-                  ),
-                  printed_items,
-                ]),
-              ),
-              Doc.line,
-              Doc.rbrace,
-            ]);
-          }
-        };
-      Doc.concat([
-        Doc.text("from"),
-        Doc.space,
-        print_ident(module_.txt),
-        Doc.space,
-        Doc.text("use"),
-        Doc.space,
-        use,
-      ]);
-    };
-
-  expression_doc;
-}
-
-and is_grouped_access_expression = (expr: Parsetree.expression) => {
-  switch (expr.pexp_desc) {
-  | PExpConstant(_)
-  | PExpConstruct(_)
-  | PExpTuple(_)
-  | PExpList(_)
-  | PExpId(_)
-  | PExpArrayGet(_)
-  | PExpArraySet(_)
-  | PExpRecordGet(_)
-  | PExpRecordSet(_)
-  | PExpRecord(_)
-  | PExpBlock(_)
-  | PExpArray(_) => false
-  | PExpApp(func, _) =>
-    let func_name = get_function_name(func);
-    infixop(func_name);
-  | _ => true
-  };
-}
-
-and print_expression =
-    (
-      ~expression_parent: expression_parent_type,
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      expr: Parsetree.expression,
-    ) => {
-  let printed_expr =
-    print_expression_inner(
-      ~expression_parent,
-      ~original_source,
-      ~comments,
-      expr,
-    );
-  switch (expression_parent) {
-  | AccessExpression =>
-    if (is_grouped_access_expression(expr)) {
-      Doc.concat([Doc.lparen, printed_expr, Doc.rparen]);
+};
+
+type compilation_error =
+  | ParseError(exn)
+  | InvalidCompilationState;
+
+let is_disable_formatting_comment = (comment: Parsetree.comment) => {
+  switch (comment) {
+  | Line(cmt) =>
+    if (cmt.cmt_content == "formatter-ignore") {
+      true;
     } else {
-      printed_expr;
+      false;
     }
-
-  | GenericExpression
-  | InfixExpression => printed_expr
+  | _ => false
   };
-}
-and print_assignment = (~original_source, ~comments, left, value) => {
-  switch (value.pexp_desc) {
-  | PExpApp(func, expressions) =>
-    let function_name = get_function_name(func);
-
-    let trimmed_operator = String.trim(function_name);
-
-    let left_matches_first =
-      switch (expressions) {
-      | [expr, ...remainder] =>
-        print_application_argument(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          expr,
-        )
-        == left
-      | _ => false
-      };
-
-    if (left_matches_first) {
-      // +=, -=, *=, /=, and %=
-      switch (trimmed_operator) {
-      | "+"
-      | "-"
-      | "*"
-      | "/"
-      | "%" =>
-        let sugared_op = Doc.text(" " ++ trimmed_operator ++ "= ");
-        Doc.concat([
-          left,
-          sugared_op,
-          switch (expressions) {
-          | [] =>
-            raise(IllegalParse("Sugared op needs at least one expression"))
-          | [expression] =>
-            let expr =
-              print_application_argument(
-                ~expression_parent=GenericExpression,
-                ~original_source,
-                ~comments,
-                expression,
-              );
-            switch (expression.paa_expr.pexp_desc) {
-            | PExpIf(_) =>
-              Doc.indent(
-                print_application_argument(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments,
-                  expression,
-                ),
-              )
-            | _ => expr
-            };
-          | [expression1, expression2, ...rest] =>
-            let expr =
-              print_application_argument(
-                ~expression_parent=GenericExpression,
-                ~original_source,
-                ~comments,
-                expression2,
-              );
-            switch (expression2.paa_expr.pexp_desc) {
-            | PExpIf(_) =>
-              Doc.indent(
-                print_application_argument(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments,
-                  expression2,
-                ),
-              )
-            | _ => expr
-            };
-          },
-        ]);
-      | _ =>
-        Doc.concat([
-          left,
-          Doc.space,
-          Doc.equal,
-          Doc.space,
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments,
-            value,
-          ),
-        ])
-      };
-    } else {
-      Doc.concat([
-        left,
-        Doc.space,
-        Doc.equal,
-        Doc.space,
-        print_expression(
-          ~expression_parent=GenericExpression,
-          ~original_source,
-          ~comments,
-          value,
-        ),
-      ]);
-    };
-
-  | _ =>
-    Doc.concat([
-      left,
-      Doc.space,
-      Doc.equal,
-      Doc.space,
-      print_expression(
-        ~expression_parent=GenericExpression,
-        ~original_source,
-        ~comments,
-        value,
-      ),
-    ])
-  };
-}
-and print_value_bind =
-    (
-      ~provide_flag: Asttypes.provide_flag,
-      ~rec_flag: Asttypes.rec_flag,
-      ~mut_flag: Asttypes.mut_flag,
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      vbs: list(Parsetree.value_binding),
-    ) => {
-  let exported =
-    switch (provide_flag) {
-    | NotProvided => Doc.nil
-    | Provided => Doc.text("provide ")
-    | Abstract => Doc.text("abstract ")
-    };
-  let recursive =
-    switch (rec_flag) {
-    | Nonrecursive => Doc.nil
-    | Recursive => Doc.text("rec ")
-    };
-  let mutble =
-    switch (mut_flag) {
-    | Immutable => Doc.nil
-    | Mutable => Doc.text("mut ")
-    };
-
-  let value_bindings =
-    switch (vbs) {
-    | [] => Doc.nil
-    | [first, ...rem] =>
-      let leading_comments =
-        Comment_utils.get_comments_before_location(
-          ~location=first.pvb_loc,
-          comments,
-        );
-      let leading_comments_docs =
-        switch (leading_comments) {
-        | [] => Doc.nil
-        | _ =>
-          Doc.group(
-            Doc.concat([
-              Comment_utils.new_comments_to_docs(leading_comments),
-              Doc.ifBreaks(Doc.nil, Doc.space),
-            ]),
-          )
-        };
-
-      let previous_bind: ref(option(Parsetree.value_binding)) = ref(None);
-      let docs =
-        Doc.join(
-          ~sep=Doc.concat([Doc.hardLine]),
-          List.mapi(
-            (i, vb: Parsetree.value_binding) => {
-              let leading_comments =
-                switch (previous_bind^) {
-                | None => []
-                | Some(prev) =>
-                  Comment_utils.get_comments_between_locations(
-                    ~loc1=prev.pvb_loc,
-                    ~loc2=vb.pvb_loc,
-                    comments,
-                  )
-                };
-
-              let leading_comment_docs =
-                switch (leading_comments) {
-                | [] => Doc.nil
-                | _ =>
-                  Doc.group(
-                    Doc.concat([
-                      Comment_utils.new_comments_to_docs(leading_comments),
-                      Doc.ifBreaks(Doc.nil, Doc.space),
-                    ]),
-                  )
-                };
-
-              let after_let_comments =
-                Comment_utils.get_comments_enclosed_and_before_location(
-                  ~loc1=vb.pvb_loc,
-                  ~loc2=vb.pvb_pat.ppat_loc,
-                  comments,
-                );
-
-              let after_let_comments_docs =
-                switch (after_let_comments) {
-                | [] => Doc.nil
-                | _ =>
-                  Comment_utils.inbetween_comments_to_docs(
-                    ~offset=false,
-                    after_let_comments,
-                  )
-                };
-
-              let expr_comments =
-                Comment_utils.get_comments_inside_location(
-                  ~location=vb.pvb_expr.pexp_loc,
-                  comments,
-                );
-              let printed =
-                print_expression(
-                  ~expression_parent=GenericExpression,
-                  ~original_source,
-                  ~comments=expr_comments,
-                  vb.pvb_expr,
-                );
-
-              let expression =
-                switch (vb.pvb_expr.pexp_desc) {
-                | PExpIf(_) =>
-                  if (Doc.willBreak(printed)) {
-                    Doc.concat([Doc.space, printed]);
-                  } else {
-                    Doc.indent(Doc.concat([Doc.line, printed]));
-                  }
-                | _ => Doc.concat([Doc.space, printed])
-                };
-
-              let pattern_comments =
-                Comment_utils.get_comments_enclosed_and_before_location(
-                  ~loc1=vb.pvb_loc,
-                  ~loc2=vb.pvb_expr.pexp_loc,
-                  comments,
-                );
-
-              previous_bind := Some(vb);
-
-              Doc.concat([
-                leading_comment_docs,
-                if (i != 0) {
-                  Doc.text("and ");
-                } else {
-                  Doc.nil;
-                },
-                Doc.group(
-                  print_pattern(
-                    ~original_source,
-                    ~comments=pattern_comments,
-                    ~next_loc=vb.pvb_loc,
-                    vb.pvb_pat,
-                  ),
-                ),
-                after_let_comments_docs,
-                switch (after_let_comments) {
-                | [] => Doc.space
-                | _ => Doc.nil
-                },
-                Doc.equal,
-                expression,
-              ]);
-            },
-            vbs,
-          ),
-        );
-
-      Doc.concat([leading_comments_docs, docs]);
-    };
-
-  Doc.group(
-    Doc.concat([
-      exported,
-      Doc.text("let"),
-      Doc.space,
-      recursive,
-      mutble,
-      value_bindings,
-    ]),
-  );
-};
-
-let rec print_data =
-        (
-          ~original_source: array(string),
-          ~comments: list(Parsetree.comment),
-          data: Parsetree.data_declaration,
-        ) => {
-  let nameloc = data.pdata_name;
-  switch (data.pdata_kind) {
-  | PDataAbstract =>
-    let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
-    let print_item = (~comments, t: Parsetree.parsed_type) => {
-      print_type(~original_source, ~comments, t);
-    };
-
-    let after_angle_cmts =
-      switch (data.pdata_params) {
-      | [hd, ...rem] =>
-        Comment_utils.get_comments_before_location(
-          ~location=get_loc(hd),
-          comments,
-        )
-      | [] =>
-        Comment_utils.get_comments_to_end_of_line(
-          ~location=nameloc.loc,
-          comments,
-        )
-      };
-
-    switch (data.pdata_params) {
-    | [] =>
-      let type_comments =
-        switch (after_angle_cmts) {
-        | [] => Doc.nil
-        | cmts => Comment_utils.single_line_of_comments(cmts)
-        };
-      Doc.concat([
-        Doc.text("type"),
-        Doc.space,
-        if (data.pdata_rec == Recursive) {
-          Doc.text("rec ");
-        } else {
-          Doc.nil;
-        },
-        Doc.text(data.pdata_name.txt),
-        Doc.group(
-          Doc.concat([
-            switch (data.pdata_manifest) {
-            | Some(manifest) =>
-              Doc.concat([
-                Doc.space,
-                Doc.equal,
-                Doc.indent(
-                  Doc.concat([
-                    Doc.line,
-                    print_type(~original_source, ~comments, manifest),
-                    type_comments,
-                  ]),
-                ),
-              ])
-            | None => Doc.nil
-            },
-          ]),
-        ),
-      ]);
-
-    | [hd, ...rem] =>
-      let after_angle_comments =
-        switch (after_angle_cmts) {
-        | [] => Doc.softLine
-        | cmts =>
-          Doc.concat([
-            Doc.space,
-            Comment_utils.new_comments_to_docs(cmts),
-            Doc.ifBreaks(Doc.nil, Doc.space),
-          ])
-        };
-      let type_comments =
-        switch (data.pdata_manifest) {
-        | None => comments
-        | Some(manifest) =>
-          let tcomments =
-            Comment_utils.get_comments_between_locs(
-              ~begin_loc=nameloc.loc,
-              ~end_loc=manifest.ptyp_loc,
-              comments,
-            );
-
-          remove_used_comments(~remove_comments=after_angle_cmts, tcomments);
-        };
-
-      let items =
-        item_iterator(
-          ~get_loc,
-          ~print_item,
-          ~comments=type_comments,
-          ~iterated_item=IteratedTypeItems,
-          data.pdata_params,
-        );
-      let printed_types = Doc.join(~sep=Doc.line, items);
-      let printed_types_after_angle = printed_types;
-      let params = [
-        Doc.text("<"),
-        Doc.indent(
-          Doc.concat([after_angle_comments, printed_types_after_angle]),
-        ),
-        Doc.softLine,
-        Doc.text(">"),
-      ];
-
-      Doc.concat([
-        Doc.text("type"),
-        Doc.space,
-        if (data.pdata_rec == Recursive) {
-          Doc.text("rec ");
-        } else {
-          Doc.nil;
-        },
-        Doc.group(Doc.concat([Doc.text(data.pdata_name.txt), ...params])),
-        switch (data.pdata_manifest) {
-        | Some(manifest) =>
-          let manifest_comments =
-            Comment_utils.get_comments_inside_location(
-              ~location=manifest.ptyp_loc,
-              comments,
-            );
-
-          Doc.group(
-            Doc.concat([
-              Doc.space,
-              Doc.equal,
-              Doc.space,
-              print_type(
-                ~original_source,
-                ~comments=manifest_comments,
-                manifest,
-              ),
-            ]),
-          );
-        | None => Doc.nil
-        },
-      ]);
-    };
-
-  | PDataVariant(constr_declarations) =>
-    let get_loc = (lbl: Parsetree.constructor_declaration) => {
-      lbl.pcd_loc;
-    };
-
-    let print_item = (~comments, d: Parsetree.constructor_declaration) => {
-      Doc.group(
-        Doc.concat([
-          Doc.text(d.pcd_name.txt),
-          switch (d.pcd_args) {
-          | PConstrTuple({txt: parsed_types}) =>
-            switch (parsed_types) {
-            | [] => Doc.nil
-            | [first, ...rem] =>
-              let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
-              let print_item = (~comments, t: Parsetree.parsed_type) => {
-                Doc.concat([print_type(~original_source, ~comments, t)]);
-              };
-
-              let after_paren_comments =
-                Comment_utils.get_after_brace_comments(
-                  ~first=first.ptyp_loc,
-                  ~loc=get_loc(first),
-                  comments,
-                );
-              let cleaned_comments =
-                remove_used_comments(
-                  ~remove_comments=after_paren_comments,
-                  comments,
-                );
-
-              let type_items =
-                item_iterator(
-                  ~get_loc,
-                  ~print_item,
-                  ~comments=cleaned_comments,
-                  ~iterated_item=IteratedTupleConstructor,
-                  parsed_types,
-                );
-              let printed_type_items = Doc.join(~sep=Doc.line, type_items);
-
-              let printed_type_items_after_parens =
-                Doc.concat([
-                  force_break_if_line_comment(
-                    ~separator=Doc.softLine,
-                    after_paren_comments,
-                  ),
-                  printed_type_items,
-                ]);
-
-              Doc.group(
-                Doc.concat([
-                  Doc.lparen,
-                  Comment_utils.single_line_of_comments(after_paren_comments),
-                  Doc.indent(printed_type_items_after_parens),
-                  Doc.softLine,
-                  Doc.rparen,
-                ]),
-              );
-            }
-          | PConstrRecord({txt: label_declarations}) =>
-            let get_loc = (lbl: Parsetree.label_declaration) => {
-              lbl.pld_loc;
-            };
-
-            let print_item = (~comments, lbl: Parsetree.label_declaration) => {
-              Doc.concat([
-                print_ident(lbl.pld_name.txt),
-                Doc.text(":"),
-                Doc.space,
-                print_type(~original_source, ~comments, lbl.pld_type),
-              ]);
-            };
-
-            let pre_brace_comments = []; // We can't determine from AST if comment comes before or after brace
-
-            let remaining_comments =
-              remove_used_comments(
-                ~remove_comments=pre_brace_comments,
-                comments,
-              );
-
-            let after_brace_comments =
-              Comment_utils.get_after_brace_comments(
-                ~loc=data.pdata_loc,
-                remaining_comments,
-              );
-
-            let cleaned_comments =
-              remove_used_comments(
-                ~remove_comments=after_brace_comments,
-                remaining_comments,
-              );
-
-            let decl_items =
-              item_iterator(
-                ~get_loc,
-                ~print_item,
-                ~comments=cleaned_comments,
-                ~iterated_item=IteratedRecordLabels,
-                label_declarations,
-              );
-            let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
-            let printed_decls_after_brace =
-              Doc.concat([Doc.hardLine, printed_decls]);
-
-            Doc.group(
-              Doc.concat([
-                Doc.lbrace,
-                Comment_utils.single_line_of_comments(after_brace_comments),
-                Doc.indent(printed_decls_after_brace),
-                Doc.hardLine,
-                Doc.rbrace,
-              ]),
-            );
-          | PConstrSingleton => Doc.nil
-          },
-        ]),
-      );
-    };
-
-    let after_brace_comments =
-      Comment_utils.get_after_brace_comments(~loc=data.pdata_loc, comments);
-    let cleaned_comments =
-      remove_used_comments(~remove_comments=after_brace_comments, comments);
-
-    let decl_items =
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments=cleaned_comments,
-        ~iterated_item=IteratedDataDeclarations,
-        constr_declarations,
-      );
-    let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
-
-    let printed_decls_after_brace =
-      Doc.concat([
-        force_break_if_line_comment(
-          ~separator=Doc.hardLine,
-          after_brace_comments,
-        ),
-        printed_decls,
-      ]);
-
-    Doc.group(
-      Doc.concat([
-        Doc.text("enum"),
-        Doc.space,
-        if (data.pdata_rec == Recursive) {
-          Doc.text("rec ");
-        } else {
-          Doc.nil;
-        },
-        Doc.text(nameloc.txt),
-        switch (data.pdata_params) {
-        | [] => Doc.space
-        | [first, ...rem] =>
-          let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
-          let print_item = (~comments, t: Parsetree.parsed_type) => {
-            print_type(~original_source, ~comments, t);
-          };
-
-          let after_angle_comments =
-            Comment_utils.get_after_brace_comments(
-              ~loc=get_loc(first),
-              comments,
-            );
-          let cleaned_comments =
-            remove_used_comments(
-              ~remove_comments=after_angle_comments,
-              comments,
-            );
-
-          let params =
-            item_iterator(
-              ~get_loc,
-              ~print_item,
-              ~comments=cleaned_comments,
-              ~iterated_item=IteratedEnum,
-              data.pdata_params,
-            );
-
-          let printed_data_params = Doc.join(~sep=Doc.line, params);
-
-          let printed_data_params_after_angle =
-            Doc.concat([
-              force_break_if_line_comment(
-                ~separator=Doc.softLine,
-                after_angle_comments,
-              ),
-              printed_data_params,
-            ]);
-
-          Doc.group(
-            Doc.concat([
-              Doc.group(
-                Doc.concat([
-                  Doc.text("<"),
-                  Comment_utils.single_line_of_comments(after_angle_comments),
-                  Doc.indent(printed_data_params_after_angle),
-                  Doc.softLine,
-                  Doc.text(">"),
-                ]),
-              ),
-              Doc.space,
-            ]),
-          );
-        },
-        Doc.lbrace,
-        Comment_utils.single_line_of_comments(after_brace_comments),
-        Doc.indent(printed_decls_after_brace),
-        Doc.hardLine,
-        Doc.rbrace,
-      ]),
-    );
-
-  | PDataRecord(label_declarations) =>
-    let get_loc = (lbl: Parsetree.label_declaration) => {
-      lbl.pld_loc;
-    };
-
-    let print_item = (~comments, lbl: Parsetree.label_declaration) => {
-      let is_mutable =
-        switch (lbl.pld_mutable) {
-        | Mutable => Doc.text("mut ")
-        | Immutable => Doc.nil
-        };
-      Doc.concat([
-        is_mutable,
-        print_ident(lbl.pld_name.txt),
-        Doc.text(":"),
-        Doc.space,
-        print_type(~original_source, ~comments, lbl.pld_type),
-      ]);
-    };
-
-    let pre_brace_comments = []; // We can't determine from AST if comment comes before or after brace
-
-    let remaining_comments =
-      remove_used_comments(~remove_comments=pre_brace_comments, comments);
-
-    let after_brace_comments =
-      Comment_utils.get_after_brace_comments(
-        ~loc=data.pdata_loc,
-        remaining_comments,
-      );
-
-    let cleaned_comments =
-      remove_used_comments(
-        ~remove_comments=after_brace_comments,
-        remaining_comments,
-      );
-
-    let decl_items =
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments=cleaned_comments,
-        ~iterated_item=IteratedRecordLabels,
-        label_declarations,
-      );
-    let printed_decls = Doc.join(~sep=Doc.hardLine, decl_items);
-    let printed_decls_after_brace = Doc.concat([Doc.hardLine, printed_decls]);
-
-    Doc.group(
-      Doc.concat([
-        Doc.text("record"),
-        Doc.space,
-        if (data.pdata_rec == Recursive) {
-          Doc.text("rec ");
-        } else {
-          Doc.nil;
-        },
-        Doc.text(nameloc.txt),
-        switch (data.pdata_params) {
-        | [] => Doc.space
-        | [first, ...rem] =>
-          let get_loc = (t: Parsetree.parsed_type) => t.ptyp_loc;
-          let print_item = (~comments, t: Parsetree.parsed_type) => {
-            print_type(~original_source, ~comments, t);
-          };
-
-          let param_items =
-            item_iterator(
-              ~get_loc,
-              ~print_item,
-              ~comments=[],
-              ~iterated_item=IteratedRecordData,
-              data.pdata_params,
-            );
-          let printed_param_items = Doc.join(~sep=Doc.line, param_items);
-          let printed_params_after_angle =
-            Doc.concat([
-              force_break_if_line_comment(
-                ~separator=Doc.softLine,
-                pre_brace_comments,
-              ),
-              printed_param_items,
-            ]);
-          Doc.group(
-            Doc.concat([
-              Doc.text("<"),
-              Comment_utils.single_line_of_comments(pre_brace_comments),
-              Doc.indent(printed_params_after_angle),
-              Doc.softLine,
-              Doc.text(">"),
-              Doc.space,
-            ]),
-          );
-        },
-        Doc.concat([
-          Doc.lbrace,
-          Comment_utils.single_line_of_comments(after_brace_comments),
-          Doc.indent(printed_decls_after_brace),
-          Doc.hardLine,
-          Doc.rbrace,
-        ]),
-      ]),
-    );
-  };
-};
-let data_print =
-    (
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      datas: list((Parsetree.provide_flag, Parsetree.data_declaration)),
-    ) => {
-  let previous_data: ref(option(Parsetree.data_declaration)) = ref(None);
-  Doc.join(
-    ~sep=Doc.concat([Doc.hardLine]),
-    List.mapi(
-      (i, data) => {
-        let (expt, decl: Parsetree.data_declaration) = data;
-
-        let leading_comments =
-          switch (previous_data^) {
-          | None => []
-          | Some(prev) =>
-            Comment_utils.get_comments_between_locations(
-              ~loc1=prev.pdata_loc,
-              ~loc2=decl.pdata_loc,
-              comments,
-            )
-          };
-
-        let leading_comment_docs =
-          Comment_utils.new_comments_to_docs(leading_comments);
-
-        let data_comments =
-          Comment_utils.get_comments_inside_location(
-            ~location=decl.pdata_loc,
-            comments,
-          );
-
-        previous_data := Some(decl);
-
-        Doc.concat([
-          leading_comment_docs,
-          if (i != 0) {
-            Doc.text("and ");
-          } else {
-            Doc.nil;
-          },
-          switch ((expt: Asttypes.provide_flag)) {
-          | NotProvided => Doc.nil
-          | Provided => Doc.text("provide ")
-          | Abstract => Doc.text("abstract ")
-          },
-          print_data(~original_source, ~comments=data_comments, decl),
-        ]);
-      },
-      datas,
-    ),
-  );
-};
-let include_print =
-    (
-      ~comments: list(Parsetree.comment),
-      ~original_source: array(string),
-      inc: Parsetree.include_declaration,
-    ) => {
-  let path = inc.pinc_path.txt;
-
-  let alias =
-    switch (inc.pinc_alias) {
-    | Some({txt: name}) =>
-      Doc.concat([Doc.space, Doc.text("as"), Doc.space, Doc.text(name)])
-    | None => Doc.nil
-    };
-
-  Doc.group(
-    Doc.concat([
-      Doc.text("include"),
-      Doc.space,
-      Doc.doubleQuote,
-      Doc.text(path),
-      Doc.doubleQuote,
-      alias,
-    ]),
-  );
-};
-
-let print_foreign_value_description =
-    (
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      vd: Parsetree.value_description,
-    ) => {
-  let ident = vd.pval_name.txt;
-
-  let fixed_ident =
-    if (infixop(ident) || prefixop(ident)) {
-      Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
-    } else {
-      Doc.text(ident);
-    };
-
-  Doc.concat([
-    fixed_ident,
-    Doc.text(":"),
-    Doc.space,
-    print_type(~original_source, ~comments, vd.pval_type),
-    switch (vd.pval_name_alias) {
-    | None => Doc.space
-    | Some(alias) =>
-      Doc.concat([
-        Doc.space,
-        Doc.text("as"),
-        Doc.space,
-        Doc.text(alias.txt),
-        Doc.space,
-      ])
-    },
-    Doc.text("from"),
-    Doc.space,
-    Doc.text("\""),
-    Doc.text(vd.pval_mod.txt),
-    Doc.text("\""),
-  ]);
-};
-
-let print_primitive_description =
-    (
-      ~original_source: array(string),
-      ~comments: list(Parsetree.comment),
-      pd: Parsetree.primitive_description,
-    ) => {
-  let ident = pd.pprim_ident.txt;
-
-  let fixed_ident =
-    if (infixop(ident) || prefixop(ident)) {
-      Doc.concat([Doc.lparen, Doc.text(ident), Doc.rparen]);
-    } else {
-      Doc.text(ident);
-    };
-
-  Doc.concat([
-    fixed_ident,
-    Doc.space,
-    Doc.equal,
-    Doc.space,
-    Doc.text("\""),
-    Doc.text(pd.pprim_name.txt),
-    Doc.text("\""),
-  ]);
-};
-
-let rec toplevel_print =
-        (
-          ~original_source: array(string),
-          ~comments: list(Parsetree.comment),
-          data: Parsetree.toplevel_stmt,
-        ) => {
-  let without_comments =
-    switch (data.ptop_desc) {
-    | PTopInclude(include_declaration) =>
-      include_print(~comments, ~original_source, include_declaration)
-    | PTopForeign(provide_flag, value_description) =>
-      let provide =
-        switch (provide_flag) {
-        | NotProvided => Doc.nil
-        | Provided => Doc.text("provide ")
-        | Abstract => Doc.text("abstract ")
-        };
-      Doc.concat([
-        provide,
-        Doc.text("foreign wasm "),
-        print_foreign_value_description(
-          ~original_source,
-          ~comments,
-          value_description,
-        ),
-      ]);
-    | PTopPrimitive(provide_flag, primitive_description) =>
-      let provide =
-        switch (provide_flag) {
-        | NotProvided => Doc.nil
-        | Provided => Doc.text("provide ")
-        | Abstract => Doc.text("abstract ")
-        };
-      Doc.concat([
-        provide,
-        Doc.text("primitive "),
-        print_primitive_description(
-          ~original_source,
-          ~comments,
-          primitive_description,
-        ),
-      ]);
-    | PTopData(data_declarations) =>
-      data_print(~original_source, ~comments, data_declarations)
-
-    | PTopLet(provide_flag, rec_flag, mut_flag, value_bindings) =>
-      print_value_bind(
-        ~provide_flag,
-        ~rec_flag,
-        ~mut_flag,
-        ~original_source,
-        ~comments,
-        value_bindings,
-      )
-    | PTopExpr(expression) =>
-      print_expression(
-        ~expression_parent=GenericExpression,
-        ~original_source,
-        ~comments,
-        expression,
-      )
-    | PTopException(provide_flag, type_exception) =>
-      let provide =
-        switch (provide_flag) {
-        | NotProvided => Doc.nil
-        | Provided => Doc.text("provide ")
-        | Abstract => Doc.text("abstract ")
-        };
-      let cstr = type_exception.ptyexn_constructor;
-
-      let kind =
-        switch (cstr.pext_kind) {
-        | PExtDecl(sargs) =>
-          switch (sargs) {
-          | PConstrSingleton => Doc.nil
-          | PConstrTuple({txt: parsed_types}) =>
-            if (List.length(parsed_types) > 0) {
-              Doc.concat([
-                Doc.lparen,
-                Doc.join(
-                  ~sep=Doc.comma,
-                  List.map(
-                    t => print_type(~original_source, ~comments, t),
-                    parsed_types,
-                  ),
-                ),
-                Doc.rparen,
-              ]);
-            } else {
-              Doc.nil;
-            }
-          | PConstrRecord(_) =>
-            failwith(
-              "Impossible: exception should not have a record constructor",
-            )
-          }
-
-        | PExtRebind(lid) => print_ident(lid.txt)
-        };
-
-      Doc.concat([
-        provide,
-        Doc.text("exception "),
-        Doc.text(cstr.pext_name.txt),
-        kind,
-      ]);
-    | PTopProvide(items) =>
-      let items =
-        switch (items) {
-        | [] => Doc.concat([Doc.lbrace, Doc.rbrace])
-        | _ =>
-          let get_loc = (item: Parsetree.provide_item) => {
-            switch (item) {
-            | PProvideValue({loc})
-            | PProvideModule({loc})
-            | PProvideType({loc}) => loc
-            };
-          };
-
-          let comments_in_expression =
-            Comment_utils.get_comments_inside_location(
-              ~location=data.ptop_loc,
-              comments,
-            );
-
-          let after_brace_comments =
-            Comment_utils.get_after_brace_comments(
-              ~loc=data.ptop_loc,
-              comments_in_expression,
-            );
-          let cleaned_comments =
-            remove_used_comments(
-              ~remove_comments=after_brace_comments,
-              comments_in_expression,
-            );
-
-          let print_item = (~comments, item: Parsetree.provide_item) => {
-            let item_name = (name, alias) => {
-              Location.(
-                switch (alias) {
-                | None => print_ident(name.txt)
-                | Some(alias) =>
-                  Doc.concat([
-                    print_ident(name.txt),
-                    Doc.space,
-                    Doc.text("as"),
-                    Doc.space,
-                    print_ident(alias.txt),
-                  ])
-                }
-              );
-            };
-
-            switch (item) {
-            | PProvideValue({name, alias}) => item_name(name, alias)
-            | PProvideModule({name, alias}) =>
-              Doc.concat([Doc.text("module "), item_name(name, alias)])
-            | PProvideType({name, alias}) =>
-              Doc.concat([Doc.text("type "), item_name(name, alias)])
-            };
-          };
-
-          let printed_items =
-            block_item_iterator_line(
-              ~previous=Block(data.ptop_loc),
-              ~get_loc,
-              ~print_item,
-              ~comments=cleaned_comments,
-              ~separator=Doc.comma,
-              ~original_source,
-              items,
-            );
-
-          Doc.concat([
-            Doc.lbrace,
-            Comment_utils.single_line_of_comments(after_brace_comments),
-            Doc.indent(
-              Doc.concat([
-                force_break_if_line_comment(
-                  ~separator=Doc.line,
-                  after_brace_comments,
-                ),
-                printed_items,
-              ]),
-            ),
-            Doc.line,
-            Doc.rbrace,
-          ]);
-        };
-      Doc.concat([Doc.text("provide"), Doc.space, items]);
-    | PTopModule(provide_flag, md) =>
-      let get_loc = (stmt: Parsetree.toplevel_stmt) => {
-        stmt.ptop_loc;
-      };
-
-      let print_item = (~comments, stmt: Parsetree.toplevel_stmt) => {
-        toplevel_print(~original_source, ~comments, stmt);
-      };
-
-      let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
-        let attributes = stmt.ptop_attributes;
-        print_attributes(attributes);
-      };
-
-      let comments =
-        Comment_utils.get_comments_inside_location(
-          ~location=data.ptop_loc,
-          comments,
-        );
-
-      let after_brace_comments =
-        Comment_utils.get_after_brace_comments(~loc=data.ptop_loc, comments);
-      let cleaned_comments =
-        remove_used_comments(~remove_comments=after_brace_comments, comments);
-
-      let top_level_stmts =
-        block_item_iterator(
-          ~previous=TopOfFile,
-          ~get_loc,
-          ~print_item,
-          ~comments=cleaned_comments,
-          ~print_attribute=get_attributes,
-          ~original_source,
-          md.pmod_stmts,
-        );
-
-      let provide =
-        switch (provide_flag) {
-        | NotProvided => Doc.nil
-        | Provided => Doc.text("provide ")
-        | Abstract => Doc.text("abstract ")
-        };
-
-      let start_after_brace = Doc.concat([Doc.hardLine, top_level_stmts]);
-
-      Doc.concat([
-        provide,
-        Doc.text("module "),
-        Doc.text(md.pmod_name.txt),
-        Doc.space,
-        Doc.lbrace,
-        Comment_utils.single_line_of_comments(after_brace_comments),
-        Doc.indent(start_after_brace),
-        Doc.hardLine,
-        Doc.rbrace,
-      ]);
-    };
-  Doc.group(without_comments);
 };
 
 let parse_source = (program_str: string) => {
@@ -5067,73 +225,1273 @@ let parse_source = (program_str: string) => {
   };
 };
 
+open Doc;
+
+let comment_tree = ref(Commenttree.from_comments([]));
+
+let needs_grouping =
+    (~parent: Parsetree.expression, expr: Parsetree.expression) => {
+  switch (expr.pexp_desc) {
+  | PExpIf(_) => true
+  | PExpApp(fn1, _) when precedence(fn1) < precedence(parent) => true
+  | PExpApp(fn1, _) =>
+    if (is_infix(fn1)) {
+      (!is_math_op(parent) && !is_logic_op(parent))
+      && !is_same_op(fn1, parent);
+    } else {
+      false;
+    }
+  | PExpConstant(PConstNumber(PConstNumberRational(_, _))) =>
+    op_precedence('/') < precedence(parent)
+  | _ => false
+  };
+};
+
+let rec print_constant = (constant: Parsetree.constant) => {
+  // TODO: Our parsetree is bad and we don't have written values for constants
+  switch (constant) {
+  | PConstNumber(PConstNumberInt(value)) => string(value)
+  | PConstNumber(PConstNumberFloat(value)) => string(value)
+  | PConstNumber(PConstNumberRational(numerator, denominator)) =>
+    string(numerator) ++ string("/") ++ string(denominator)
+  | PConstInt8(value) => empty
+  | PConstUint8(_, value) => empty
+  | PConstInt16(value) => empty
+  | PConstUint16(_, value) => empty
+  | PConstInt32(value) => string(value) ++ string("l")
+  | PConstUint32(_, value) => string(value) ++ string("ul")
+  | PConstInt64(value) => string(value) ++ string("L")
+  | PConstUint64(_, value) => string(value) ++ string("uL")
+  | PConstFloat32(value) => string(value) ++ string("f")
+  | PConstFloat64(value) => string(value) ++ string("d")
+  | PConstWasmI32(value) => string(value) ++ string("n")
+  | PConstWasmI64(value) => string(value) ++ string("N")
+  | PConstWasmF32(value) => string(value) ++ string("w")
+  | PConstWasmF64(value) => string(value) ++ string("W")
+  | PConstBigInt(value) => string(value) ++ string("t")
+  | PConstRational(numerator, denominator) => empty
+  | PConstBool(value) => string(value ? "true" : "false")
+  | PConstVoid => string("void")
+  | PConstBytes(value) =>
+    string("b") ++ string("\"") ++ string(value) ++ string("\"")
+  | PConstString(value) => string("\"") ++ string(value) ++ string("\"")
+  | PConstChar(value) => string("\'") ++ string(value) ++ string("\'")
+  };
+}
+and print_punnable_pattern =
+    (({txt: ident}, pat): (Location.loc(Identifier.t), Parsetree.pattern)) => {
+  switch (pat.ppat_desc) {
+  | PPatVar({txt: name}) when Identifier.string_of_ident(ident) == name =>
+    string(name)
+  | _ =>
+    concat([print_identifier(ident), string(": "), print_pattern(pat)])
+  };
+}
+and print_lambda_argument = (arg: Parsetree.lambda_argument) => {
+  concat([
+    // TODO: Figure out how to print these
+    // switch (arg.pla_label) {
+    // | Unlabeled => string("_") // TODO: is this correct?
+    // | Labeled({txt: label})
+    // | Default({txt: label}) => string(label)
+    // },
+    // string(":"),
+    // space,
+    print_pattern(arg.pla_pattern),
+    switch (arg.pla_default) {
+    | Some(expr) => concat([string("="), print_expression(expr)])
+    | None => empty
+    },
+  ]);
+}
+and print_pattern = ({ppat_desc}: Parsetree.pattern) => {
+  switch (ppat_desc) {
+  | PPatAny => string("_")
+  | PPatVar({txt: name}) when infixop(name) => parens(string(name))
+  | PPatVar({txt: name}) => string(name)
+  | PPatAlias(pat, {txt: alias}) =>
+    print_pattern(pat) ++ string(" as ") ++ string(alias)
+  | PPatOr(lhs, rhs) =>
+    concat([
+      print_pattern(lhs),
+      string(" |"),
+      breakable_space,
+      print_pattern(rhs),
+    ])
+  | PPatConstruct({txt: ident}, cstr_pat) =>
+    concat([
+      print_identifier(ident),
+      switch (cstr_pat) {
+      | PPatConstrRecord([], closed_flag) =>
+        braces(
+          switch (closed_flag) {
+          | Open => string("_")
+          | Closed => empty
+          },
+        )
+      | PPatConstrRecord(pats, closed_flag) =>
+        braces(
+          concat_map(
+            ~sep=
+              ((_, prev_pat), (_, next_pat)) => {
+                concat([
+                  comma_breakable_space,
+                  print_comments(
+                    prev_pat.Parsetree.ppat_loc,
+                    next_pat.ppat_loc,
+                  ),
+                ])
+              },
+            ~trail=
+              last =>
+                switch (closed_flag) {
+                | Open => comma_breakable_space ++ string("_")
+                | Closed => empty
+                },
+            ~f=print_punnable_pattern,
+            pats,
+          ),
+        )
+      | PPatConstrSingleton => empty
+      | PPatConstrTuple(pats) =>
+        parens(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_pattern,
+            pats,
+          ),
+        )
+      },
+    ])
+  | PPatConstraint(pat, typ) =>
+    concat([print_pattern(pat), string(": "), print_type(typ)])
+  | PPatConstant(constant) => print_constant(constant)
+  | PPatRecord(pats, closed_flag) =>
+    braces(
+      concat_map(
+        ~sep=(prev, next) => comma_breakable_space,
+        ~trail=
+          last =>
+            switch (closed_flag) {
+            | Open when pats == [] => string("_")
+            | Open => comma_breakable_space ++ string("_")
+            | Closed => empty
+            },
+        ~f=print_punnable_pattern,
+        pats,
+      ),
+    )
+  | PPatArray(pats) =>
+    array_brakets(
+      concat_map(
+        ~sep=(prev, next) => comma_breakable_space,
+        ~f=print_pattern,
+        pats,
+      ),
+    )
+  | PPatList(pats) =>
+    list_brakets(
+      concat_map(
+        ~sep=(prev, next) => comma_breakable_space,
+        ~trail=last => ifBreaks(","),
+        ~f=
+          (item: Parsetree.list_item(Parsetree.pattern)) => {
+            switch (item) {
+            | ListItem(pat) => print_pattern(pat)
+            | ListSpread(pat, _) => string("...") ++ print_pattern(pat)
+            }
+          },
+        pats,
+      ),
+    )
+  | PPatTuple(pats) =>
+    parens(
+      concat_map(
+        ~sep=(prev, next) => comma_breakable_space,
+        ~f=print_pattern,
+        pats,
+      ),
+    )
+  };
+}
+and print_identifier = (ident: Identifier.t) => {
+  let name = Identifier.string_of_ident(ident);
+  string(name);
+}
+and print_punnable_expression =
+    (
+      ({txt: ident}, expr): (
+        Location.loc(Identifier.t),
+        Parsetree.expression,
+      ),
+    ) => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: name}) when Identifier.equal(ident, name) =>
+    print_identifier(name)
+  | _ =>
+    concat([print_identifier(ident), string(": "), print_expression(expr)])
+  };
+}
+and print_grouped_access_expression = (expr: Parsetree.expression) =>
+  switch (expr.pexp_desc) {
+  | PExpConstant(_)
+  | PExpConstruct(_)
+  | PExpTuple(_)
+  | PExpId(_)
+  | PExpArrayGet(_)
+  | PExpArraySet(_)
+  | PExpRecordGet(_)
+  | PExpRecordSet(_)
+  | PExpRecord(_)
+  | PExpBlock(_)
+  | PExpArray(_)
+  | PExpList(_) => print_expression(expr)
+  | PExpApp(func, _) when is_infix(func) => parens(print_expression(expr))
+  | _ => parens(print_expression(expr))
+  }
+and print_use_item = (use_item: Parsetree.use_item) => {
+  switch (use_item) {
+  | PUseType({name, alias}) =>
+    concat([
+      string("type "),
+      print_identifier(name.txt),
+      switch (alias) {
+      | None => empty
+      | Some({txt: alias}) => string(" as ") ++ print_identifier(alias)
+      },
+    ])
+  | PUseModule({name, alias}) =>
+    concat([
+      print_identifier(name.txt),
+      switch (alias) {
+      | None => empty
+      | Some({txt: alias}) => string(" as ") ++ print_identifier(alias)
+      },
+    ])
+  | PUseValue({name, alias}) =>
+    concat([
+      print_identifier(name.txt),
+      switch (alias) {
+      | None => empty
+      | Some({txt: alias}) => string(" as ") ++ print_identifier(alias)
+      },
+    ])
+  };
+}
+and print_match_branch =
+    ({pmb_pat, pmb_body, pmb_guard}: Parsetree.match_branch) => {
+  concat([
+    group_all(print_pattern(pmb_pat)),
+    switch (pmb_guard) {
+    | None => empty
+    | Some(guard) => string(" when ") ++ print_expression(guard)
+    },
+    string(" =>"),
+    breakable_space,
+    print_expression(pmb_body),
+  ]);
+}
+and print_attribute = (attr: Asttypes.attribute) => {
+  switch (attr) {
+  | ({txt: attr_name}, []) => concat([string("@"), string(attr_name)])
+  | ({txt: attr_name}, attr_args) =>
+    concat([
+      string("@"),
+      string(attr_name),
+      parens(
+        concat_map(
+          ~sep=(prev, next) => comma_breakable_space,
+          ~f=attr_arg => string(attr_arg.Location.txt),
+          attr_args,
+        ),
+      ),
+    ])
+  };
+}
+and print_application_argument = (arg: Parsetree.application_argument) => {
+  concat([
+    switch (arg.paa_label) {
+    | Unlabeled => empty
+    | Labeled({txt: label})
+    | Default({txt: label}) => concat([string(label), string("=")])
+    },
+    print_expression(arg.paa_expr),
+  ]);
+}
+and print_expression = (expr: Parsetree.expression) => {
+  concat([
+    // print_comments(expr.pexp_loc),
+    concat_map(
+      ~sep=(prev, next) => hardline,
+      ~trail=last => hardline,
+      ~f=print_attribute,
+      expr.pexp_attributes,
+    ),
+    switch (expr.pexp_desc) {
+    | PExpId({txt: ident}) => print_identifier(ident)
+    | PExpConstant(constant) => print_constant(constant)
+    | PExpConstruct({txt: ident}, cstr_expr) =>
+      concat([
+        print_identifier(ident),
+        switch (cstr_expr) {
+        | PExpConstrSingleton => empty
+        | PExpConstrTuple(exprs) =>
+          parens(
+            concat_map(
+              ~sep=(prev, next) => comma_breakable_space,
+              ~f=print_expression,
+              exprs,
+            ),
+          )
+        | PExpConstrRecord(exprs) =>
+          braces(
+            concat_map(
+              ~sep=(prev, next) => comma_breakable_space,
+              ~f=print_punnable_expression,
+              exprs,
+            ),
+          )
+        },
+      ])
+    | PExpBlock(exprs) =>
+      block_braces(
+        concat_map(
+          ~lead=
+            first =>
+              print_comments(
+                enclosing_start_location(expr.pexp_loc),
+                first.pexp_loc,
+              ),
+          ~sep=
+            (prev: Parsetree.expression, next: Parsetree.expression) =>
+              switch (print_comments(prev.pexp_loc, next.pexp_loc)) {
+              | Empty =>
+                switch (
+                  next.pexp_loc.loc_start.pos_lnum
+                  - prev.pexp_loc.loc_end.pos_lnum
+                ) {
+                | 0 => string(";") ++ breakable_space
+                | 1 => hardline
+                | _ => hardline ++ hardline
+                }
+              | docs => docs
+              },
+          ~trail=
+            last =>
+              concat([
+                breakable_space,
+                print_comments(
+                  last.pexp_loc,
+                  enclosing_end_location(expr.pexp_loc),
+                ),
+              ]),
+          ~f=print_expression,
+          exprs,
+        ),
+      )
+    | PExpLet(rec_flag, mut_flag, vbs) =>
+      concat([
+        string("let "),
+        switch (rec_flag) {
+        | Nonrecursive => empty
+        | Recursive => string("rec ")
+        },
+        switch (mut_flag) {
+        | Immutable => empty
+        | Mutable => string("mut ")
+        },
+        concat_map(
+          ~sep=(prev, next) => comma_breakable_space,
+          ~f=print_value_binding,
+          vbs,
+        ),
+      ])
+    | PExpApp(fn, [lhs, rhs]) when is_infix(fn) =>
+      concat([
+        print_application_argument(lhs)
+        |> (
+          // TODO: fix this
+          if (needs_grouping(~parent=fn, lhs.paa_expr)) {
+            parens;
+          } else {
+            Fun.id;
+          }
+        ),
+        space,
+        print_expression(fn),
+        breakable_space,
+        print_application_argument(rhs)
+        |> (
+          // TODO: fix this
+          if (needs_grouping(~parent=fn, rhs.paa_expr)) {
+            parens;
+          } else {
+            Fun.id;
+          }
+        ),
+      ])
+    | PExpApp(fn, [rhs]) when is_keyword(fn) =>
+      concat([print_expression(fn), space, print_expression(rhs.paa_expr)])
+    | PExpApp(fn, exprs) =>
+      group(
+        concat([
+          print_grouped_access_expression(fn),
+          parens(
+            concat_map(
+              ~sep=(prev, next) => comma_breakable_space,
+              ~f=print_application_argument,
+              exprs,
+            ),
+          ),
+        ]),
+      )
+    | PExpLambda([single_param], body) =>
+      concat([
+        print_lambda_argument(single_param),
+        string(" =>"),
+        nest_all(
+          (
+            // TODO: Is there a better way to do this?
+            switch (body.pexp_desc) {
+            | PExpBlock(_) => space
+            | _ => breakable_space
+            }
+          )
+          ++ print_expression(body),
+        ),
+      ])
+    | PExpLambda(params, body) =>
+      concat([
+        parens(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_lambda_argument,
+            params,
+          ),
+        ),
+        string(" =>"),
+        nest_all(
+          (
+            // TODO: Is there a better way to do this?
+            switch (body.pexp_desc) {
+            | PExpBlock(_) => space
+            | _ => breakable_space
+            }
+          )
+          ++ print_expression(body),
+        ),
+      ])
+    | PExpContinue => string("continue")
+    | PExpBreak => string("break")
+    | PExpTuple(exprs) =>
+      parens(
+        concat_map(
+          ~sep=(prev, next) => comma_breakable_space,
+          ~f=print_expression,
+          exprs,
+        ),
+      )
+    | PExpArray(exprs) =>
+      array_brakets(
+        concat_map(
+          ~sep=(prev, next) => comma_breakable_space,
+          ~f=print_expression,
+          exprs,
+        ),
+      )
+    | PExpList(items) =>
+      list_brakets(
+        concat_map(
+          ~sep=(prev, next) => comma_breakable_space,
+          ~f=
+            (item: Parsetree.list_item(Parsetree.expression)) => {
+              switch (item) {
+              | ListItem(expr) => print_expression(expr)
+              | ListSpread(expr, _) =>
+                string("...") ++ print_expression(expr)
+              }
+            },
+          items,
+        ),
+      )
+    | PExpArrayGet(arr, elem) =>
+      concat([
+        print_grouped_access_expression(arr),
+        brackets(print_expression(elem)),
+      ])
+    | PExpArraySet(arr, elem, new_value) =>
+      concat([
+        print_grouped_access_expression(arr),
+        brackets(print_expression(elem)),
+        string(" = "),
+        print_expression(new_value),
+      ])
+    | PExpRecord(base, labels) =>
+      braces(
+        concat([
+          switch (base) {
+          | None => empty
+          | Some(expr) => string("...") ++ print_expression(expr)
+          },
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_punnable_expression,
+            labels,
+          ),
+        ]),
+      )
+    | PExpRecordGet(record, elem) =>
+      concat([
+        print_grouped_access_expression(record),
+        string("."),
+        print_identifier(elem.txt),
+      ])
+    | PExpRecordSet(record, elem, new_value) =>
+      concat([
+        print_grouped_access_expression(record),
+        string("."),
+        print_identifier(elem.txt),
+        string(" = "),
+        print_expression(new_value),
+      ])
+    // Ignore the prims because they shouldn't be in the parsetree
+    | PExpPrim0(_) => failwith("Impossible: PExpPrim0 in parsetree")
+    | PExpPrim1(_) => failwith("Impossible: PExpPrim1 in parsetree")
+    | PExpPrim2(_) => failwith("Impossible: PExpPrim2 in parsetree")
+    | PExpPrimN(_) => failwith("Impossible: PExpPrimN in parsetree")
+    | PExpAssign(binding, new_value) =>
+      concat([
+        print_expression(binding),
+        switch (new_value.pexp_desc) {
+        | PExpApp(
+            {pexp_desc: PExpId({txt: Identifier.IdentName({txt: op})})},
+            [lhs, rhs],
+          ) =>
+          switch (op) {
+          | "+" => string(" += ") ++ print_application_argument(rhs)
+          | "-" => string(" -= ") ++ print_application_argument(rhs)
+          | "*" => string(" *= ") ++ print_application_argument(rhs)
+          | "/" => string(" /= ") ++ print_application_argument(rhs)
+          | "%" => string(" %= ") ++ print_application_argument(rhs)
+          | _ => string(" = ") ++ print_expression(new_value)
+          }
+        | _ => string(" = ") ++ print_expression(new_value)
+        },
+      ])
+    | PExpBoxAssign(binding, new_value) =>
+      concat([
+        print_expression(binding),
+        string(" := "),
+        print_expression(new_value),
+      ])
+    | PExpReturn(expr) =>
+      concat([
+        string("return"),
+        switch (expr) {
+        | None => empty
+        | Some(expr) => breakable_space ++ print_expression(expr)
+        },
+      ])
+    | PExpUse(ident, use_items) =>
+      concat([
+        string("from "),
+        print_identifier(ident.txt),
+        string(" use "),
+        switch (use_items) {
+        | PUseAll => string("*")
+        | PUseItems(items) =>
+          braces(
+            concat_map(
+              ~sep=(prev, next) => comma_breakable_space,
+              ~f=print_use_item,
+              items,
+            ),
+          )
+        },
+      ])
+    | PExpIf(cond, if_true, if_false) =>
+      concat([
+        string("if "),
+        parens(print_expression(cond)),
+        space,
+        print_expression(if_true),
+        switch (if_false) {
+        | None => empty
+        | Some(if_false) => string(" else ") ++ print_expression(if_false)
+        },
+      ])
+    | PExpWhile(cond, body) =>
+      concat([
+        string("while "),
+        parens(print_expression(cond)),
+        breakable_space,
+        print_expression(body),
+      ])
+    | PExpFor(init, cond, inc, body) =>
+      concat([
+        string("for "),
+        parens(
+          concat([
+            switch (init) {
+            | None => empty
+            | Some(init) => print_expression(init)
+            },
+            string("; "),
+            switch (cond) {
+            | None => empty
+            | Some(cond) => print_expression(cond)
+            },
+            string("; "),
+            switch (inc) {
+            | None => empty
+            | Some(inc) => print_expression(inc)
+            },
+            braces(print_expression(body)),
+          ]),
+        ),
+      ])
+    | PExpMatch(value, branches) =>
+      concat([
+        string("match "),
+        parens(print_expression(value)),
+        space,
+        block_braces(
+          concat_map(
+            ~sep=(prev, next) => comma_hardline,
+            ~trail=last => comma,
+            ~f=print_match_branch,
+            branches,
+          ),
+        ),
+      ])
+    | PExpConstraint(expr, typ) =>
+      concat([print_expression(expr), string(": "), print_type(typ)])
+    },
+  ]);
+}
+and print_value_binding = ({pvb_pat, pvb_expr}: Parsetree.value_binding) => {
+  concat([
+    print_pattern(pvb_pat),
+    string(" = "),
+    print_expression(pvb_expr)
+    |> (is_infix(pvb_expr) || is_prefix(pvb_expr) ? parens : Fun.id),
+  ]);
+}
+and print_parsed_type_argument = (arg: Parsetree.parsed_type_argument) => {
+  concat([
+    switch (arg.ptyp_arg_label) {
+    | Unlabeled => string("_") // TODO: is this correct?
+    | Labeled({txt: label})
+    | Default({txt: label}) => string(label)
+    },
+    string(":"),
+    space,
+    print_type(arg.ptyp_arg_type),
+  ]);
+}
+and print_type = ({ptyp_desc}: Parsetree.parsed_type) => {
+  switch (ptyp_desc) {
+  | PTyAny => string("_")
+  | PTyVar(name) => string(name)
+  | PTyConstr({txt: ident}, params) =>
+    let name = Identifier.string_of_ident(ident);
+    concat([
+      string(name),
+      switch (params) {
+      | [] => empty
+      | typs =>
+        angle_brakets(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_type,
+            typs,
+          ),
+        )
+      },
+    ]);
+  | PTyTuple(typs) =>
+    parens(
+      concat_map(
+        ~sep=(prev, next) => comma_breakable_space,
+        ~f=print_type,
+        typs,
+      ),
+    )
+  | PTyArrow(params, return) =>
+    concat([
+      parens(
+        concat_map(
+          ~sep=(prev, next) => comma_breakable_space,
+          ~f=print_parsed_type_argument,
+          params,
+        ),
+      ),
+      string(" -> "),
+      print_type(return),
+    ])
+  | PTyPoly(_) => failwith("Impossible: PTyPoly in the parsetree")
+  };
+}
+and print_label_declaration =
+    ({pld_name, pld_type, pld_mutable}: Parsetree.label_declaration) => {
+  concat([
+    switch (pld_mutable) {
+    | Mutable => string("mut ")
+    | Immutable => empty
+    },
+    print_identifier(pld_name.txt),
+    string(": "),
+    print_type(pld_type),
+  ]);
+}
+and print_constructor_arguments = (args: Parsetree.constructor_arguments) => {
+  switch (args) {
+  | PConstrTuple({txt: typs, loc}) =>
+    parens(
+      concat_map(
+        ~lead=
+          first =>
+            switch (
+              print_comments(enclosing_start_location(loc), first.ptyp_loc)
+            ) {
+            | Empty => empty
+            | comments => concat([breakable_space, comments, breakable_space])
+            },
+        ~sep=
+          (prev: Parsetree.parsed_type, next: Parsetree.parsed_type) =>
+            concat([
+              comma_breakable_space,
+              print_comments(prev.ptyp_loc, next.ptyp_loc),
+              breakable_space,
+            ]),
+        ~trail=
+          last =>
+            concat([
+              switch (
+                print_comments(last.ptyp_loc, enclosing_end_location(loc))
+              ) {
+              | Empty => empty
+              | comments =>
+                concat([breakable_space, comments, breakable_space])
+              },
+            ]),
+        ~f=print_type,
+        typs,
+      ),
+    )
+  | PConstrRecord({txt: labels, loc}) =>
+    braces(
+      concat_map(
+        ~lead=
+          first =>
+            concat([
+              print_comments(enclosing_start_location(loc), first.pld_loc),
+              breakable_space,
+            ]),
+        ~sep=
+          (
+            prev: Parsetree.label_declaration,
+            next: Parsetree.label_declaration,
+          ) =>
+            concat([
+              comma_breakable_space,
+              print_comments(prev.pld_loc, next.pld_loc),
+              breakable_space,
+            ]),
+        ~trail=
+          last =>
+            concat([
+              comma_breakable_space,
+              print_comments(last.pld_loc, enclosing_end_location(loc)),
+            ]),
+        ~f=print_label_declaration,
+        labels,
+      ),
+    )
+  | PConstrSingleton => empty
+  };
+}
+and print_exception = ({ptyexn_constructor}: Parsetree.type_exception) => {
+  concat([
+    string("exception "),
+    string(ptyexn_constructor.pext_name.txt),
+    switch (ptyexn_constructor.pext_kind) {
+    | PExtDecl(args) => print_constructor_arguments(args)
+    | PExtRebind(_) => empty
+    },
+  ]);
+}
+and print_constructor_declaration =
+    ({pcd_name, pcd_args}: Parsetree.constructor_declaration) => {
+  concat([
+    string(pcd_name.txt),
+    switch (pcd_args) {
+    | PConstrTuple({loc})
+    | PConstrRecord({loc}) =>
+      switch (print_comments(pcd_name.loc, loc)) {
+      | SmartPrint.Empty => empty
+      | comments => concat([space, comments, space])
+      }
+    | PConstrSingleton => empty
+    },
+    print_constructor_arguments(pcd_args),
+  ]);
+}
+and print_data_declaration = (decl: Parsetree.data_declaration) => {
+  switch (decl) {
+  | {pdata_name, pdata_params, pdata_manifest, pdata_kind: PDataAbstract} =>
+    concat([
+      string("type "),
+      string(pdata_name.txt),
+      switch (pdata_params) {
+      | [] => empty
+      | typs =>
+        angle_brakets(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_type,
+            pdata_params,
+          ),
+        )
+      },
+      switch (pdata_manifest) {
+      | None => empty
+      | Some(typ) => string(" = ") ++ print_type(typ)
+      },
+    ])
+  | {
+      pdata_name,
+      pdata_params,
+      pdata_kind: PDataVariant(cstr_decls),
+      pdata_loc,
+    } =>
+    concat([
+      string("enum "),
+      string(pdata_name.txt),
+      switch (pdata_params) {
+      | [] => empty
+      | typs =>
+        angle_brakets(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_type,
+            pdata_params,
+          ),
+        )
+      },
+      space,
+      braces(
+        concat_map(
+          ~sep=
+            (
+              prev: Parsetree.constructor_declaration,
+              next: Parsetree.constructor_declaration,
+            ) =>
+              concat([
+                comma_breakable_space,
+                print_comments(prev.pcd_loc, next.pcd_loc),
+                breakable_space,
+              ]),
+          ~trail=
+            last =>
+              concat([
+                // TODO: get ifBreaks working in all situations
+                ifBreaks(","),
+                breakable_space,
+                print_comments(
+                  last.pcd_loc,
+                  enclosing_end_location(pdata_loc),
+                ),
+                breakable_space,
+              ]),
+          ~f=print_constructor_declaration,
+          cstr_decls,
+        ),
+      ),
+    ])
+  | {pdata_name, pdata_params, pdata_kind: PDataRecord(labels)} =>
+    concat([
+      string("record "),
+      string(pdata_name.txt),
+      switch (pdata_params) {
+      | [] => empty
+      | typs =>
+        angle_brakets(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_type,
+            pdata_params,
+          ),
+        )
+      },
+      block_braces(
+        concat_map(
+          ~sep=(prev, next) => comma_hardline,
+          ~f=print_label_declaration,
+          labels,
+        ),
+      ),
+    ])
+  };
+}
+and print_primitive_description =
+    ({pprim_ident, pprim_name}: Parsetree.primitive_description) => {
+  concat([
+    string("primitive "),
+    string(pprim_ident.txt),
+    string(" = "),
+    double_quotes(string(pprim_name.txt)),
+  ]);
+}
+and print_include_declaration =
+    ({pinc_path, pinc_alias}: Parsetree.include_declaration) => {
+  concat([
+    string("include "),
+    double_quotes(string(pinc_path.txt)),
+    switch (pinc_alias) {
+    | None => empty
+    | Some({txt: alias}) => string(" as ") ++ string(alias)
+    },
+  ]);
+}
+and print_module_declaration =
+    ({pmod_name, pmod_stmts}: Parsetree.module_declaration) => {
+  concat([
+    string("module "),
+    string(pmod_name.txt),
+    block_braces(
+      concat_map(
+        ~sep=(prev, next) => hardline ++ hardline,
+        ~f=print_toplevel_stmt,
+        pmod_stmts,
+      ),
+    ),
+  ]);
+}
+and print_value_description =
+    (
+      {pval_mod, pval_name, pval_name_alias, pval_type}: Parsetree.value_description,
+    ) => {
+  concat([
+    string(pval_name.txt),
+    string(": "),
+    print_type(pval_type),
+    switch (pval_name_alias) {
+    | None => empty
+    | Some(alias) => string(" as ") ++ string(alias.txt)
+    },
+    string(" from "),
+    string(pval_mod.txt),
+  ]);
+}
+and print_provide_item = (provide_item: Parsetree.provide_item) => {
+  switch (provide_item) {
+  | PProvideType({name, alias}) =>
+    concat([
+      string("type "),
+      print_identifier(name.txt),
+      switch (alias) {
+      | None => empty
+      | Some(alias) => print_identifier(alias.txt)
+      },
+    ])
+  | PProvideModule({name, alias}) =>
+    concat([
+      print_identifier(name.txt),
+      switch (alias) {
+      | None => empty
+      | Some(alias) => print_identifier(alias.txt)
+      },
+    ])
+  | PProvideValue({name, alias}) =>
+    concat([
+      print_identifier(name.txt),
+      switch (alias) {
+      | None => empty
+      | Some(alias) => print_identifier(alias.txt)
+      },
+    ])
+  };
+}
+and print_toplevel_stmt = (stmt: Parsetree.toplevel_stmt) => {
+  concat([
+    concat_map(
+      ~sep=(prev, next) => hardline,
+      ~trail=last => hardline,
+      ~f=print_attribute,
+      stmt.ptop_attributes,
+    ),
+    switch (stmt.ptop_desc) {
+    | PTopExpr(expr) => group(print_expression(expr))
+    | PTopException(provide_flag, ex) => print_exception(ex)
+    | PTopData(datas) =>
+      concat_map(
+        ~sep=
+          ((_, prev), (_, next)) => {
+            concat([
+              switch (
+                next.Parsetree.pdata_loc.loc_start.pos_lnum
+                - prev.pdata_loc.loc_end.pos_lnum
+              ) {
+              | 0 => comma ++ space
+              | _ => comma ++ hardline
+              },
+              print_comments(prev.Parsetree.pdata_loc, next.pdata_loc),
+            ])
+          },
+        ~f=
+          ((provide_flag, decl)) =>
+            concat([
+              switch (provide_flag) {
+              | Asttypes.NotProvided => empty
+              | Asttypes.Abstract => string("abstract ")
+              | Asttypes.Provided => string("provide ")
+              },
+              print_data_declaration(decl),
+            ]),
+        datas,
+      )
+    | PTopLet(provide_flag, rec_flag, mut_flag, vbs) =>
+      concat([
+        switch (provide_flag) {
+        | NotProvided => empty
+        | Abstract => string("abstract ")
+        | Provided => string("provide ")
+        },
+        string("let "),
+        switch (rec_flag) {
+        | Nonrecursive => empty
+        | Recursive => string("rec ")
+        },
+        switch (mut_flag) {
+        | Immutable => empty
+        | Mutable => string("mut ")
+        },
+        nest(
+          concat_map(
+            ~sep=
+              (prev: Parsetree.value_binding, next: Parsetree.value_binding) =>
+                concat([
+                  comma,
+                  breakable_space,
+                  print_comments(prev.pvb_loc, next.pvb_loc),
+                ]),
+            ~f=print_value_binding,
+            vbs,
+          ),
+        ),
+      ])
+    | PTopPrimitive(provide_flag, prim_desc) =>
+      concat([
+        switch (provide_flag) {
+        | NotProvided => empty
+        | Abstract => string("abstract ")
+        | Provided => string("provide ")
+        },
+        print_primitive_description(prim_desc),
+      ])
+    | PTopInclude(include_decl) => print_include_declaration(include_decl)
+    | PTopForeign(provide_flag, value_desc) =>
+      concat([
+        switch (provide_flag) {
+        | NotProvided => empty
+        | Abstract => string("abstract ")
+        | Provided => string("provide ")
+        },
+        string("foreign wasm "),
+        print_value_description(value_desc),
+      ])
+    | PTopModule(provide_flag, module_decl) =>
+      concat([
+        switch (provide_flag) {
+        | NotProvided => empty
+        | Abstract => string("abstract ")
+        | Provided => string("provide ")
+        },
+        print_module_declaration(module_decl),
+      ])
+    | PTopProvide(provide_items) =>
+      concat([
+        string("provide "),
+        braces(
+          concat_map(
+            ~sep=(prev, next) => comma_breakable_space,
+            ~f=print_provide_item,
+            provide_items,
+          ),
+        ),
+      ])
+    },
+  ]);
+}
+and print_comments = (prev: Location.t, next: Location.t) => {
+  // prerr_endline(
+  //   String.cat(
+  //     "prev loc",
+  //     Location.to_yojson(prev) |> Yojson.Safe.to_string,
+  //   ),
+  // );
+  // prerr_endline(
+  //   String.cat(
+  //     "next loc",
+  //     Location.to_yojson(next) |> Yojson.Safe.to_string,
+  //   ),
+  // );
+  let between_loc =
+    Location.{
+      loc_start: prev.loc_end,
+      loc_end: next.loc_start,
+      loc_ghost: true,
+    };
+
+  let print_comment = (cmt: Parsetree.comment) => {
+    switch (cmt) {
+    | Doc({cmt_source})
+    | Block({cmt_source})
+    | Line({cmt_source})
+    | Shebang({cmt_source}) => string(cmt_source)
+    };
+  };
+
+  // let print_leading = (cmt: Parsetree.comment) => {
+  //   switch (cmt) {
+  //   | Doc({cmt_loc})
+  //   | Block({cmt_loc})
+  //   | Line({cmt_loc})
+  //   | Shebang({cmt_loc}) =>
+  //     switch (prev.loc_end.pos_lnum - cmt_loc.loc_start.pos_lnum) {
+  //     // | 0 => breakable_space
+  //     | _ => empty
+  //     }
+  //   };
+  // };
+
+  let print_trailing = (cmt: Parsetree.comment) => {
+    switch (cmt) {
+    | Block({cmt_loc}) =>
+      switch (next.loc_start.pos_lnum - cmt_loc.loc_end.pos_lnum) {
+      // | 0 => breakable_space
+      | 0 => empty
+      | 1 => hardline
+      | _ => hardline ++ hardline
+      }
+    | Doc({cmt_loc}) => hardline
+    | Line({cmt_loc})
+    | Shebang({cmt_loc}) =>
+      switch (next.loc_start.pos_lnum - cmt_loc.loc_end.pos_lnum) {
+      | 0 => hardline
+      | 1 => hardline
+      | _ => hardline ++ hardline
+      }
+    };
+  };
+
+  switch (Commenttree.query(comment_tree^, between_loc)) {
+  | [] => empty
+  | comments =>
+    concat_map(
+      // ~lead=print_leadsing,
+      ~sep=
+        (prev_cmt: Parsetree.comment, next_cmt: Parsetree.comment) => {
+          switch (prev_cmt, next_cmt) {
+          | (Block(prev_cmt), Doc(next_cmt))
+          | (Block(prev_cmt), Block(next_cmt))
+          | (Block(prev_cmt), Line(next_cmt))
+          | (Block(prev_cmt), Shebang(next_cmt))
+          | (Line(prev_cmt), Doc(next_cmt))
+          | (Line(prev_cmt), Block(next_cmt))
+          | (Line(prev_cmt), Line(next_cmt))
+          | (Line(prev_cmt), Shebang(next_cmt))
+          | (Doc(prev_cmt), Doc(next_cmt))
+          | (Doc(prev_cmt), Block(next_cmt))
+          | (Doc(prev_cmt), Line(next_cmt))
+          | (Doc(prev_cmt), Shebang(next_cmt))
+          | (Shebang(prev_cmt), Doc(next_cmt))
+          | (Shebang(prev_cmt), Block(next_cmt))
+          | (Shebang(prev_cmt), Line(next_cmt))
+          | (Shebang(prev_cmt), Shebang(next_cmt)) =>
+            switch (
+              next_cmt.cmt_loc.loc_start.pos_lnum
+              - prev_cmt.cmt_loc.loc_end.pos_lnum
+            ) {
+            | 0 => breakable_space
+            | 1 => hardline
+            | _ => hardline ++ hardline
+            }
+          }
+        },
+      ~trail=print_trailing,
+      ~f=print_comment,
+      comments,
+    )
+  };
+};
+
 let format_ast =
     (
       ~original_source: array(string),
       ~eol: Fs_access.eol,
       parsed_program: Parsetree.parsed_program,
     ) => {
-  let get_loc = (stmt: Parsetree.toplevel_stmt) => {
-    stmt.ptop_loc;
-  };
-
-  let print_item = (~comments, stmt: Parsetree.toplevel_stmt) => {
-    toplevel_print(~original_source, ~comments, stmt);
-  };
-
-  let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
-    let attributes = stmt.ptop_attributes;
-    print_attributes(attributes);
-  };
-
-  let leading_comments =
-    Comment_utils.get_comments_before_location(
-      ~location=parsed_program.module_name.loc,
-      parsed_program.comments,
-    );
-  let remaining_comments =
-    Comment_utils.get_comments_after_location(
-      ~location=parsed_program.module_name.loc,
-      parsed_program.comments,
-    );
-
-  let module_header =
-    Doc.concat([
-      Comment_utils.new_comments_to_docs(leading_comments),
-      if (leading_comments == []) {
-        Doc.nil;
-      } else {
-        Doc.hardLine;
-      },
-      Doc.text("module"),
-      Doc.space,
-      Doc.text(parsed_program.module_name.txt),
-      Doc.hardLine,
-      Doc.hardLine,
-    ]);
-
-  // special case where we have no code, we still format the comments
+  comment_tree := Commenttree.from_comments(parsed_program.comments);
 
   let final_doc =
-    switch (parsed_program.statements) {
-    | [] =>
-      Doc.concat([
-        module_header,
-        Comment_utils.new_comments_to_docs(remaining_comments),
-      ])
-    | _ =>
-      let top_level_stmts =
-        block_item_iterator(
-          ~previous=TopOfFile,
-          ~get_loc,
-          ~print_item,
-          ~comments=remaining_comments,
-          ~print_attribute=get_attributes,
-          ~original_source,
-          parsed_program.statements,
-        );
-      Doc.concat([module_header, top_level_stmts, Doc.hardLine]);
-    };
+    concat([
+      print_comments(
+        {
+          loc_start: parsed_program.prog_loc.loc_start,
+          loc_end: parsed_program.prog_loc.loc_start,
+          loc_ghost: true,
+        },
+        parsed_program.module_name.loc,
+      ),
+      string("module "),
+      string(parsed_program.module_name.txt),
+      hardline,
+      hardline,
+      concat_map(
+        ~lead=
+          first =>
+            print_comments(parsed_program.module_name.loc, first.ptop_loc),
+        ~sep=
+          (prev: Parsetree.toplevel_stmt, next: Parsetree.toplevel_stmt) => {
+            concat([
+              switch (
+                next.ptop_loc.loc_start.pos_lnum
+                - prev.ptop_loc.loc_end.pos_lnum
+              ) {
+              | 0 => space
+              | 1 => hardline
+              | _ => hardline ++ hardline
+              },
+              print_comments(prev.ptop_loc, next.ptop_loc),
+            ])
+          },
+        ~trail=
+          last =>
+            switch (
+              // TODO: Not sure I like this type of switch
+              print_comments(
+                last.ptop_loc,
+                {
+                  loc_start: parsed_program.prog_loc.loc_end,
+                  loc_end: parsed_program.prog_loc.loc_end,
+                  loc_ghost: true,
+                },
+              )
+            ) {
+            | Empty => hardline
+            | comments => concat([hardline, hardline, comments])
+            },
+        ~f=print_toplevel_stmt,
+        parsed_program.statements,
+      ),
+    ]);
 
-  Doc.toString(~width=80, ~eol, final_doc);
+  let newline =
+    switch (eol) {
+    | CRLF => "\r\n"
+    | LF => "\n"
+    };
+  to_string(~width=80, ~tab=2, ~newline, final_doc);
 };

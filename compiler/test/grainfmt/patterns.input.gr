@@ -29,7 +29,12 @@ match (list) {
   _ => None,
 }
 
-enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ } /* fifth */, Tup(Number, Number) }
+match (list) {
+  [_, alongidentalongident1234567, _] | [_, _, alongidentalongident1234567, _, _] => Some(alongidentalongident1234567),
+  _ => None,
+}
+
+enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ } /* fifth */, Tup /* sixth */ ( /* seventh */ Number /* eighth */, Number/* ninth */ /* tenth */) /* eleventh */ }
 
 match (Rec { x: 1, y: 2 }) {
   Rec  {x: 3, _} => 3,
