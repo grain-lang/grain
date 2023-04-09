@@ -1,5 +1,5 @@
 {
-  "checksum": "b568bc63e0c96535498218378ab30dac",
+  "checksum": "4a96afd32f7e554211390e3dc9ed6be2",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9": {
@@ -132,20 +132,20 @@
         "@opam/dune@opam:3.7.1@40db2f22"
       ]
     },
-    "@opam/yojson@opam:2.0.2@eb65f292": {
-      "id": "@opam/yojson@opam:2.0.2@eb65f292",
+    "@opam/yojson@opam:2.1.0@157478b0": {
+      "id": "@opam/yojson@opam:2.1.0@157478b0",
       "name": "@opam/yojson",
-      "version": "opam:2.0.2",
+      "version": "opam:2.1.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/87/876bb6f38af73a84a29438a3da35e4857c60a14556a606525b148c6fdbe5461b#sha256:876bb6f38af73a84a29438a3da35e4857c60a14556a606525b148c6fdbe5461b",
-          "archive:https://github.com/ocaml-community/yojson/releases/download/2.0.2/yojson-2.0.2.tbz#sha256:876bb6f38af73a84a29438a3da35e4857c60a14556a606525b148c6fdbe5461b"
+          "archive:https://opam.ocaml.org/cache/sha256/9f/9fcb1ff2db58ab259f9228796b0ada4794eae97177b1833371380c4e4f90b15d#sha256:9fcb1ff2db58ab259f9228796b0ada4794eae97177b1833371380c4e4f90b15d",
+          "archive:https://github.com/ocaml-community/yojson/releases/download/2.1.0/yojson-2.1.0.tbz#sha256:9fcb1ff2db58ab259f9228796b0ada4794eae97177b1833371380c4e4f90b15d"
         ],
         "opam": {
           "name": "yojson",
-          "version": "2.0.2",
-          "path": "esy.lock/opam/yojson.2.0.2"
+          "version": "2.1.0",
+          "path": "esy.lock/opam/yojson.2.1.0"
         }
       },
       "overrides": [],
@@ -565,6 +565,28 @@
         "@opam/dune@opam:3.7.1@40db2f22"
       ]
     },
+    "@opam/smart-print@github:phated/smart-print:smart-print.opam#0b93be3b61c2a76ba3ce1823952392c5fabf8628@d41d8cd9": {
+      "id":
+        "@opam/smart-print@github:phated/smart-print:smart-print.opam#0b93be3b61c2a76ba3ce1823952392c5fabf8628@d41d8cd9",
+      "name": "@opam/smart-print",
+      "version":
+        "github:phated/smart-print:smart-print.opam#0b93be3b61c2a76ba3ce1823952392c5fabf8628",
+      "source": {
+        "type": "install",
+        "source": [
+          "github:phated/smart-print:smart-print.opam#0b93be3b61c2a76ba3ce1823952392c5fabf8628"
+        ]
+      },
+      "overrides": [],
+      "dependencies": [
+        "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
+        "@opam/dune@opam:3.7.1@40db2f22", "@esy-ocaml/substs@0.0.1@d41d8cd9"
+      ],
+      "devDependencies": [
+        "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
+        "@opam/dune@opam:3.7.1@40db2f22"
+      ]
+    },
     "@opam/sexplib0@opam:v0.15.1@51111c0c": {
       "id": "@opam/sexplib0@opam:v0.15.1@51111c0c",
       "name": "@opam/sexplib0",
@@ -662,12 +684,12 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/ppxlib@opam:0.29.1@8414c948", "@opam/gen@opam:1.1@059b2731",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506", "@opam/gen@opam:1.1@059b2731",
         "@opam/dune@opam:3.7.1@40db2f22", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/ppxlib@opam:0.29.1@8414c948", "@opam/gen@opam:1.1@059b2731",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506", "@opam/gen@opam:1.1@059b2731",
         "@opam/dune@opam:3.7.1@40db2f22"
       ]
     },
@@ -788,8 +810,8 @@
         "@opam/seq@opam:base@d8d7de1d", "@opam/dune@opam:3.7.1@40db2f22"
       ]
     },
-    "@opam/ppxlib@opam:0.29.1@8414c948": {
-      "id": "@opam/ppxlib@opam:0.29.1@8414c948",
+    "@opam/ppxlib@opam:0.29.1@a8bb9506": {
+      "id": "@opam/ppxlib@opam:0.29.1@a8bb9506",
       "name": "@opam/ppxlib",
       "version": "opam:0.29.1",
       "source": {
@@ -841,12 +863,12 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292", "@opam/dune@opam:3.7.1@40db2f22",
+        "@opam/yojson@opam:2.1.0@157478b0", "@opam/dune@opam:3.7.1@40db2f22",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292", "@opam/dune@opam:3.7.1@40db2f22"
+        "@opam/yojson@opam:2.1.0@157478b0", "@opam/dune@opam:3.7.1@40db2f22"
       ]
     },
     "@opam/ppx_sexp_conv@opam:v0.15.1@0f138aac": {
@@ -869,14 +891,14 @@
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/sexplib0@opam:v0.15.1@51111c0c",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/dune@opam:3.7.1@40db2f22", "@opam/base@opam:v0.15.1@e8a71f35",
         "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/sexplib0@opam:v0.15.1@51111c0c",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/dune@opam:3.7.1@40db2f22", "@opam/base@opam:v0.15.1@e8a71f35"
       ]
     },
@@ -899,15 +921,15 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292", "@opam/result@opam:1.5@1c6a6533",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/yojson@opam:2.1.0@157478b0", "@opam/result@opam:1.5@1c6a6533",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ppx_deriving@opam:5.2.1@2315fdd0",
         "@opam/dune@opam:3.7.1@40db2f22", "@esy-ocaml/substs@0.0.1@d41d8cd9"
       ],
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292", "@opam/result@opam:1.5@1c6a6533",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/yojson@opam:2.1.0@157478b0", "@opam/result@opam:1.5@1c6a6533",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ppx_deriving@opam:5.2.1@2315fdd0",
         "@opam/dune@opam:3.7.1@40db2f22"
       ]
@@ -928,7 +950,7 @@
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/result@opam:1.5@1c6a6533",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ppx_deriving@opam:5.2.1@2315fdd0",
         "@opam/dune@opam:3.7.1@40db2f22",
         "@opam/cmdliner@opam:1.2.0@b0c6143c",
@@ -937,7 +959,7 @@
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/result@opam:1.5@1c6a6533",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ppx_deriving@opam:5.2.1@2315fdd0",
         "@opam/dune@opam:3.7.1@40db2f22",
         "@opam/cmdliner@opam:1.2.0@b0c6143c"
@@ -963,7 +985,7 @@
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/result@opam:1.5@1c6a6533",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ppx_derivers@opam:1.2.1@e2cbad12",
         "@opam/ocamlfind@opam:1.9.6@da5169c7",
         "@opam/dune@opam:3.7.1@40db2f22", "@opam/cppo@opam:1.6.9@db929a12",
@@ -972,7 +994,7 @@
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/result@opam:1.5@1c6a6533",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ppx_derivers@opam:1.2.1@e2cbad12",
         "@opam/ocamlfind@opam:1.9.6@da5169c7",
         "@opam/dune@opam:3.7.1@40db2f22"
@@ -1331,7 +1353,7 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292", "@opam/xdg@opam:3.7.1@387cb889",
+        "@opam/yojson@opam:2.1.0@157478b0", "@opam/xdg@opam:3.7.1@387cb889",
         "@opam/uutf@opam:1.0.3@47c95a18", "@opam/stdune@opam:3.6.2@47d75c4b",
         "@opam/spawn@opam:v0.15.1@85e9d6f1", "@opam/re@opam:1.10.4@c4910ba6",
         "@opam/ppx_yojson_conv_lib@opam:v0.15.0@773058a7",
@@ -1348,7 +1370,7 @@
       ],
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292", "@opam/xdg@opam:3.7.1@387cb889",
+        "@opam/yojson@opam:2.1.0@157478b0", "@opam/xdg@opam:3.7.1@387cb889",
         "@opam/uutf@opam:1.0.3@47c95a18", "@opam/stdune@opam:3.6.2@47d75c4b",
         "@opam/spawn@opam:v0.15.1@85e9d6f1", "@opam/re@opam:1.10.4@c4910ba6",
         "@opam/ppx_yojson_conv_lib@opam:v0.15.0@773058a7",
@@ -1731,8 +1753,8 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/yojson@opam:2.1.0@157478b0",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ocamlfind@opam:1.9.6@da5169c7",
         "@opam/menhirSdk@opam:20220210@fe146ed3",
         "@opam/menhirLib@opam:20220210@9afeb270",
@@ -1743,8 +1765,8 @@
       ],
       "devDependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292",
-        "@opam/ppxlib@opam:0.29.1@8414c948",
+        "@opam/yojson@opam:2.1.0@157478b0",
+        "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/menhirSdk@opam:20220210@fe146ed3",
         "@opam/menhirLib@opam:20220210@9afeb270",
         "@opam/menhir@opam:20220210@ff5ea9a7",
@@ -2338,9 +2360,10 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/yojson@opam:2.0.2@eb65f292",
+        "@opam/yojson@opam:2.1.0@157478b0",
         "@opam/utf8@github:reasonml/reason-native:utf8.opam#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9",
         "@opam/uri@opam:4.2.0@9c45eeb8",
+        "@opam/smart-print@github:phated/smart-print:smart-print.opam#0b93be3b61c2a76ba3ce1823952392c5fabf8628@d41d8cd9",
         "@opam/sexplib@opam:v0.15.1@1824bfd6",
         "@opam/sedlex@opam:3.1@d4f1d2e2", "@opam/reason@opam:3.8.2@19b5db6d",
         "@opam/ppx_sexp_conv@opam:v0.15.1@0f138aac",

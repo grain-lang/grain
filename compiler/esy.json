@@ -2,9 +2,7 @@
   "name": "@grain/compiler",
   "version": "0.5.13",
   "esy": {
-    "build": [
-      "dune build @native --no-buffer"
-    ],
+    "build": ["dune build @native --no-buffer"],
     "buildEnv": {
       "DUNE_BUILD_DIR": "#{self.target_dir}",
       "GRAIN_STDLIB": "#{self.root / '..' / 'stdlib'}",
@@ -47,6 +45,7 @@
     "@opam/reason": ">= 3.8.2 < 4.0.0",
     "@opam/sedlex": ">= 3.0 < 4.0",
     "@opam/sexplib": "v0.15.1",
+    "@opam/smart-print": "0.3.0",
     "@opam/uri": ">= 4.2.0 < 5.0.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 2.0.2 < 3.0.0",
@@ -60,6 +59,7 @@
   "resolutions": {
     "ocaml": "phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017",
     "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
+    "@opam/smart-print": "phated/smart-print:smart-print.opam#0b93be3b61c2a76ba3ce1823952392c5fabf8628",
     "@opam/dune": "3.7.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",

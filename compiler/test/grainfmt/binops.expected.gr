@@ -1,8 +1,8 @@
 module Binops
 
 fofdfdfdfdfdfdfdfdfdfdfdo &&
-  bafdfdfdfdfdfdddefdfdfdfdfdr &&
-  badfdfdfdfdfdfdffdffdfdfdz
+bafdfdfdfdfdfdddefdfdfdfdfdr &&
+badfdfdfdfdfdfdffdffdfdfdz
 
 let x = fofdfdfdfdfdfdfdfdfdfdfdo &&
   bafdfdfdfdfdfdddefdfdfdfdfdr &&
@@ -28,11 +28,11 @@ let p = 1 + 2 - 3
 
 let p2 = 1 - 2 + 3
 
-let y = 1 / 2 + 3
+let y = 1/2 + 3
 
 let ya = 1 / (2 + 3)
 
-let y1 = 1 + 2 /3
+let y1 = 1 + 2/3
 
 let c = 1 < 2 || 2 < 3 || 3 < 4
 

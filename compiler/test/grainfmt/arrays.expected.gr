@@ -40,4 +40,4 @@ let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
 }
 
 provide let getBefore = (array, index) => if (array == [>]) "nope"
-else array[index - 1]
+  else array[index - 1]
