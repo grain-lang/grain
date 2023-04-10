@@ -8,7 +8,6 @@ open Sourcetree;
 open Lsp_types;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintParams
-
 module RequestParams = {
   [@deriving yojson({strict: false})]
   type t = {
