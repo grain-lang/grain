@@ -134,7 +134,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Rational`|The rational to convert|
+|`x`|`Rational`|The rational to split|
 
 Returns:
 
@@ -166,7 +166,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Rational`|The built rational|
+|`Rational`|The newly constructed rational|
 
 Throws:
 
