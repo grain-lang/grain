@@ -27,7 +27,7 @@ provide { fromNumber, toNumber, numerator, denominator }
 /**
  * Gets the numerator and denominator of the rational as a tuple.
  *
- * @param x: The rational to convert
+ * @param x: The rational to split
  * @returns The numerator and denominator of the rational
  *
  * @since v0.6.0
@@ -41,7 +41,7 @@ provide let toIntegerRatio = x => {
  *
  * @param numerator: The numerator
  * @param denominator: The denominator
- * @returns The built rational
+ * @returns The newly constructed rational
  *
  * @throws InvalidArgument(String): If the numerator or denominator are not integers
  *
