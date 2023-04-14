@@ -195,8 +195,8 @@ truc()|},
           } else {
             isOdd(n - 1)
           }
-        },
-        isOdd = n => {
+        }
+        and isOdd = n => {
           if (n <= 1) {
             n == 1
           } else {
