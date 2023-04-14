@@ -386,31 +386,31 @@ describe("recursive types", ({test, testSkip}) => {
   assertCompileError(
     "type_rec_incorrect_2",
     {|
-      record rec T {
+      record T {
         x: Number
       }
       and enum T2 {
         T2(Number)
       }
     |},
-    "Types in a mutually recursive type group are already self-recursive so `rec` should be removed.",
+    "Mutually recursive type groups must include `rec` on the first type in the group.",
   );
   assertCompileError(
     "type_rec_incorrect_3",
     {|
-      record T {
+      record rec T {
         x: Number
       }
       and enum rec T2 {
         T2(Number)
       }
     |},
-    "Types in a mutually recursive type group are already self-recursive so `rec` should be removed.",
+    "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
   );
   assertRun(
     "type_rec_correct_1",
     {|
-      record T {
+      record rec T {
         x: T
       }
       and enum T2 {

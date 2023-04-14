@@ -20,7 +20,8 @@ type wferr =
   | MismatchedReturnStyles(Location.t)
   | LocalIncludeStatement(Location.t)
   | ProvidedMultipleTimes(string, Location.t)
-  | MutualRecTypesWithRec(Location.t);
+  | MutualRecTypesMissingRec(Location.t)
+  | MutualRecExtraneousNonfirstRec(Location.t);
 
 exception Error(wferr);
 
@@ -93,10 +94,15 @@ let prepare_error =
           "%s was provided multiple times, but can only be provided once.",
           name,
         )
-      | MutualRecTypesWithRec(loc) =>
+      | MutualRecTypesMissingRec(loc) =>
         errorf(
           ~loc,
-          "Types in a mutually recursive type group are already self-recursive so `rec` should be removed.",
+          "Mutually recursive type groups must include `rec` on the first type in the group.",
+        )
+      | MutualRecExtraneousNonfirstRec(loc) =>
+        errorf(
+          ~loc,
+          "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
         )
     )
   );
@@ -782,16 +788,20 @@ let provided_multiple_times = (errs, super) => {
 let mutual_rec_type_improper_rec_keyword = (errs, super) => {
   let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
-    | PTopData(decls) when List.length(decls) >= 2 =>
-      List.iter(
-        ((_, decl)) =>
-          switch (decl) {
-          | {pdata_rec: Recursive} =>
-            errs := [MutualRecTypesWithRec(loc), ...errs^]
-          | _ => ()
-          },
-        decls,
-      )
+    | PTopData([(_, first_decl), ...[_, ..._] as rest_decls]) =>
+      if (first_decl.pdata_rec != Recursive) {
+        errs := [MutualRecTypesMissingRec(loc), ...errs^];
+      } else {
+        List.iter(
+          ((_, decl)) =>
+            switch (decl) {
+            | {pdata_rec: Recursive} =>
+              errs := [MutualRecExtraneousNonfirstRec(loc), ...errs^]
+            | _ => ()
+            },
+          rest_decls,
+        );
+      }
     | _ => ()
     };
     super.enter_toplevel_stmt(e);

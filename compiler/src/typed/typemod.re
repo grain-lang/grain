@@ -394,10 +394,11 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
   };
 
   let process_datas = (env, data_decls, attributes, loc) => {
+    // A well-formedness check would have detected issues with improper use of
+    // `rec` on mutually-recursive types
     let rec_flag =
       switch (data_decls) {
-      | [(_, {pdata_rec: Recursive})] => Recursive
-      | decls when List.length(decls) >= 2 => Recursive
+      | [(_, {pdata_rec: Recursive}), ..._] => Recursive
       | _ => Nonrecursive
       };
     let (decls, newenv) =

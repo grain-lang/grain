@@ -9,7 +9,7 @@ provide enum Test {
   String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String > ),
 }
 
-enum EvenNumber {
+enum rec EvenNumber {
   Zero, // comment 0
   OddPlusOne(OddNumber), // comment 1
   // comment 2

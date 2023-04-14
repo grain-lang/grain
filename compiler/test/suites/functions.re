@@ -25,17 +25,17 @@ describe("functions", ({test, testSkip}) => {
   assertRun("func_no_args", "let foo = (() => {print(5)});\nfoo()", "5\n");
   assertCompileError(
     "multi_bind",
-    "let x = 2, y = x + 1; y",
+    "let x = 2 and y = x + 1; y",
     "Unbound value x",
   );
-  assertSnapshot("multi_bind2", "let x = 2, y = 3; y");
+  assertSnapshot("multi_bind2", "let x = 2 and y = 3; y");
   assertSnapshot("curried_func", "let add = a => b => a + b; add(2)(3)");
   assertCompileError("unbound_fun", "2 + foo()", "unbound");
   assertCompileError("unbound_id_simple", "5 - x", "unbound");
   assertCompileError("unbound_id_let", "let x = x; 2 + 2", "unbound");
   assertCompileError(
     "shadow_multi",
-    "let x = 12, x = 14; x",
+    "let x = 12 and x = 14; x",
     "Variable x is bound several times",
   );
   assertSnapshot(
@@ -102,23 +102,23 @@ describe("functions", ({test, testSkip}) => {
   assertSnapshot("app_1", "((x) => {x})(1)");
   assertRun(
     "letrec_1",
-    "let rec x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),\n                        y = ((n) => {x(n + 1)});\n                 print(y(2))",
+    "let rec x = ((n) => {if (n > 3) {n} else {x(n + 2)}})\n                        and y = ((n) => {x(n + 1)});\n                 print(y(2))",
     "5\n",
   );
   /* Check that recursion is order-independent */
   assertRun(
     "letrec_2",
-    "let rec y = ((n) => {x(n + 1)}),\n                        x = ((n) => {if (n > 3) {n} else {x(n + 2)}});\n                 print(y(2))",
+    "let rec y = ((n) => {x(n + 1)})\n                        and x = ((n) => {if (n > 3) {n} else {x(n + 2)}});\n                 print(y(2))",
     "5\n",
   );
   assertRun(
     "let_1",
-    "let rec x = ((n) => {n + 1}),\n                     y = (() => x(3)),\n                     z = ((n) => {x(n) + y()});\n               print(z(5))",
+    "let rec x = ((n) => {n + 1})\n                     and y = (() => x(3))\n                     and z = ((n) => {x(n) + y()});\n               print(z(5))",
     "10\n",
   );
   assertCompileError(
     "let_norec_1",
-    "let x = ((n) => {if (n > 3) {n} else {x(n + 2)}}),\n                        y = ((n) => {x(n + 1)});\n                 print(y(2))",
+    "let x = ((n) => {if (n > 3) {n} else {x(n + 2)}})\n                        and y = ((n) => {x(n + 1)});\n                 print(y(2))",
     "Unbound value x.",
   );
   assertCompileError(
@@ -144,7 +144,7 @@ describe("functions", ({test, testSkip}) => {
   );
   assertCompileError(
     "letrec_nonstatic_other",
-    "let rec x = ((z) => {z + 1}), y = x; y(2)",
+    "let rec x = ((z) => {z + 1}) and y = x; y(2)",
     "let rec may only be used with recursive function definitions",
   );
   assertCompileError("nonfunction_1", "let x = 5; x(3)", "type");

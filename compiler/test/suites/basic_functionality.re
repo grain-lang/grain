@@ -52,7 +52,7 @@ describe("basic functionality", ({test, testSkip}) => {
 
   assertSnapshot(
     "complex1",
-    "\n    let x = 2, y = 3, z = if (true) { 4 } else { 5 };\n    if (true) {\n      print(y)\n      y - (z + x)\n    } else {\n      print(8)\n      8\n    }\n    ",
+    "\n    let x = 2 and y = 3 and z = if (true) { 4 } else { 5 };\n    if (true) {\n      print(y)\n      y - (z + x)\n    } else {\n      print(8)\n      8\n    }\n    ",
   );
   assertSnapshot("complex2", "print(2 + 3)");
   assertSnapshot("binop1", "2 + 2");
@@ -123,7 +123,7 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("comp7", "if (2 == 2) {8} else {9}");
   assertSnapshot("comp8", "if (2 <= 2) {10} else {11}");
   assertSnapshot("comp9", "if (2 >= 2) {10} else {11}");
-  assertSnapshot("comp10", "let x = 2, y = 4; (y - 2) == x");
+  assertSnapshot("comp10", "let x = 2 and y = 4; (y - 2) == x");
   assertCompileError("comp11", "true == 2", "has type Number but");
   assertCompileError("comp12", "2 == false", "has type Bool but");
   assertSnapshot("comp13", "true == true");

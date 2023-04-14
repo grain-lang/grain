@@ -156,8 +156,8 @@ let rec heapCompareHelp = (heapTag, xptr, yptr) => {
       return tagSimpleNumber(xptr - yptr)
     },
   }
-},
-compareHelp = (x, y) => {
+}
+and compareHelp = (x, y) => {
   let xtag = x & Tags._GRAIN_GENERIC_TAG_MASK
   let ytag = y & Tags._GRAIN_GENERIC_TAG_MASK
   if ((xtag & ytag) != Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {

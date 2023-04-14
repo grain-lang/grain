@@ -245,8 +245,8 @@ let rec rangeAdd = (rng: CharRange, v: CharRangeElt) => {
     _ when rangeContains(rng, v) => rng,
     _ => rangeUnion(rng, [(v, v)]),
   }
-},
-rangeUnion = (rng1, rng2) => {
+}
+and rangeUnion = (rng1, rng2) => {
   match ((rng1, rng2)) {
     ([], _) => rng2,
     (_, []) => rng1,
@@ -643,8 +643,8 @@ let rec parseRangeNot = (buf: RegExBuf) => {
       Ok(_) => parseRange(buf),
     }
   }
-},
-parseRange = (buf: RegExBuf) => {
+}
+and parseRange = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing closing `]`", 0))
   } else {
@@ -667,8 +667,8 @@ parseRange = (buf: RegExBuf) => {
       Ok(_) => parseRangeRest(buf, [], None, None),
     }
   }
-},
-parseClass = (buf: RegExBuf) => {
+}
+and parseClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(
       "no chars"
@@ -703,8 +703,8 @@ parseClass = (buf: RegExBuf) => {
       Ok(c) => Err("unknown class: " ++ toString(c)),
     }
   }
-},
-parsePosixCharClass = (buf: RegExBuf) => {
+}
+and parsePosixCharClass = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Missing POSIX character class after `[`", 0))
   } else {
@@ -820,8 +820,8 @@ parsePosixCharClass = (buf: RegExBuf) => {
         ),
     }
   }
-},
-parseRangeRest =
+}
+and parseRangeRest =
   (
     buf: RegExBuf,
     rng: CharRange,
@@ -973,8 +973,8 @@ parseRangeRest =
       },
     }
   }
-},
-parseRangeRestSpan =
+}
+and parseRangeRestSpan =
   (
     buf: RegExBuf,
     c,
@@ -1223,8 +1223,8 @@ let rec parseAtom = (buf: RegExBuf) => {
         _ => parseLiteral(buf),
       },
   }
-},
-parseLook = (buf: RegExBuf) => {
+}
+and parseLook = (buf: RegExBuf) => {
   let preNumGroups = unbox(buf.config.groupNumber)
   let spanNumGroups = () => unbox(buf.config.groupNumber) - preNumGroups
   // (isMatch, isAhead)
@@ -1290,8 +1290,8 @@ parseLook = (buf: RegExBuf) => {
       }
     },
   }
-},
-parseTest = (buf: RegExBuf) => {
+}
+and parseTest = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected test", 0))
   } else {
@@ -1328,8 +1328,8 @@ parseTest = (buf: RegExBuf) => {
         ),
     }
   }
-},
-parseInteger = (buf: RegExBuf, n) => {
+}
+and parseInteger = (buf: RegExBuf, n) => {
   if (!more(buf)) {
     Ok(n)
   } else {
@@ -1344,8 +1344,8 @@ parseInteger = (buf: RegExBuf, n) => {
       Ok(_) => Ok(n),
     }
   }
-},
-parseMode = (buf: RegExBuf) => {
+}
+and parseMode = (buf: RegExBuf) => {
   let processState = ((cs, ml)) => {
     let withCs = match (cs) {
       None => buf.config,
@@ -1404,8 +1404,8 @@ parseMode = (buf: RegExBuf) => {
     }
   }
   help((None, None))
-},
-parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
+}
+and parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected unicode category", 0))
   } else {
@@ -1573,8 +1573,8 @@ parseUnicodeCategories = (buf: RegExBuf, pC: String) => {
       Ok(_) => Err(parseErr(buf, "Expected `{` after `\\" ++ pC ++ "`", 0)),
     }
   }
-},
-parseLiteral = (buf: RegExBuf) => {
+}
+and parseLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     Err(parseErr(buf, "Expected literal", 0))
   } else {
@@ -1608,8 +1608,8 @@ parseLiteral = (buf: RegExBuf) => {
       },
     }
   }
-},
-parseBackslashLiteral = (buf: RegExBuf) => {
+}
+and parseBackslashLiteral = (buf: RegExBuf) => {
   if (!more(buf)) {
     // Special case: EOS after backslash matches null
     Err(parseErr(buf, "Expected to find escaped value after backslash", 0))
@@ -1672,8 +1672,8 @@ parseBackslashLiteral = (buf: RegExBuf) => {
       },
     }
   }
-},
-parseNonGreedy = (buf: RegExBuf) => {
+}
+and parseNonGreedy = (buf: RegExBuf) => {
   let checkNotNested = res => {
     if (!more(buf)) {
       res
@@ -1699,8 +1699,8 @@ parseNonGreedy = (buf: RegExBuf) => {
       Ok(_) => checkNotNested(Ok(false)),
     }
   }
-},
-parsePCE = (buf: RegExBuf) => {
+}
+and parsePCE = (buf: RegExBuf) => {
   match (parseAtom(buf)) {
     Err(e) => Err(e),
     Ok(atom) => {
@@ -1794,8 +1794,8 @@ parsePCE = (buf: RegExBuf) => {
       }
     },
   }
-},
-parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
+}
+and parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
   if (!more(buf)) {
     Ok([])
   } else {
@@ -1821,8 +1821,8 @@ parsePCEs = (buf: RegExBuf, toplevel: Bool) => {
       },
     }
   }
-},
-parseRegex = (buf: RegExBuf) => {
+}
+and parseRegex = (buf: RegExBuf) => {
   if (!more(buf)) {
     Ok(REEmpty)
   } else {
@@ -1857,8 +1857,8 @@ parseRegex = (buf: RegExBuf) => {
       },
     }
   }
-},
-parseRegexNonEmpty = (buf: RegExBuf) => {
+}
+and parseRegexNonEmpty = (buf: RegExBuf) => {
   match (parsePCEs(buf, false)) {
     Err(e) => Err(e),
     Ok(pces) => {

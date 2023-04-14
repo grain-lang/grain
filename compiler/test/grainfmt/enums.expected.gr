@@ -77,7 +77,7 @@ enum rec ParsedRegularExpression {
   REUnicodeCategories(Bool), // symlist, true=match/false=does-not-match
 }
 
-record Node {
+record rec Node {
   node: AstValue,
 }
 and enum AstValue {

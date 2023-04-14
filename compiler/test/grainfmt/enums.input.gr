@@ -48,6 +48,6 @@ enum rec ParsedRegularExpression {
 }
 
 
-record Node { node: AstValue }
+record rec Node { node: AstValue }
 
 and enum AstValue { NodeValue(Node), StringValue(String) }

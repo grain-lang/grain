@@ -165,7 +165,7 @@ describe("records", ({test, testSkip}) => {
   assertSnapshot(
     "record_recursive_data_definition",
     {|
-      record Bar {
+      record rec Bar {
         mut foo: Option<Foo>
       }
       and record Foo {

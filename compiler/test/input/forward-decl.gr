@@ -8,8 +8,8 @@ let rec isEvenHelp = (n, b) => {
   } else {
     isOddHelp(n - 1, !b)
   }
-},
-isOddHelp = (n, b) => {
+}
+and isOddHelp = (n, b) => {
   if (n == 1) {
     b
   } else {
@@ -19,8 +19,8 @@ isOddHelp = (n, b) => {
 
 let isEven = n => {
   isEvenHelp(n, true)
-},
-isOdd = n => {
+}
+and isOdd = n => {
   isOddHelp(n, true)
 }
 

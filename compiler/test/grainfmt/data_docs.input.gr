@@ -1,6 +1,6 @@
 module DataDocs
 
-enum EventType {
+enum rec EventType {
   Enter,
   Exit,
 }

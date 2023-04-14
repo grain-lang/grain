@@ -3007,16 +3007,16 @@ provide let (**) = (base, power) => {
         return WasmI32.toGrain(newFloat64(d / d)): Number
       } else if (yisint == 1n) s = -1.0W
     }
-    let mut t1 = 0.0W,
-      t2 = 0.0W,
-      p_h = 0.0W,
-      p_l = 0.0W,
-      r = 0.0W,
-      t = 0.0W,
-      u = 0.0W,
-      v = 0.0W,
-      w = 0.0W
-    let mut j = 0n, n = 0n
+    let mut t1 = 0.0W
+    and t2 = 0.0W
+    and p_h = 0.0W
+    and p_l = 0.0W
+    and r = 0.0W
+    and t = 0.0W
+    and u = 0.0W
+    and v = 0.0W
+    and w = 0.0W
+    let mut j = 0n and n = 0n
     if (iy > 0x41E00000n) {
       if (iy > 0x43F00000n) {
         if (ix <= 0x3FEFFFFFn) {
@@ -3053,12 +3053,12 @@ provide let (**) = (base, power) => {
         t2 = v - (t1 - u)
       }
     } else {
-      let mut ss = 0.0W,
-        s2 = 0.0W,
-        s_h = 0.0W,
-        s_l = 0.0W,
-        t_h = 0.0W,
-        t_l = 0.0W
+      let mut ss = 0.0W
+      and s2 = 0.0W
+      and s_h = 0.0W
+      and s_l = 0.0W
+      and t_h = 0.0W
+      and t_l = 0.0W
       n = 0n
       if (ix < 0x00100000n) {
         from WasmI64 use { (>>>) }

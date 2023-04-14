@@ -475,7 +475,7 @@ provide module Immutable {
   // implementation based on the paper "Implementing Sets Efficiently in a
   // Functional Language" by Stephen Adams
 
-  record Node<a> {
+  record rec Node<a> {
     key: a,
     size: Number,
     left: Set<a>,

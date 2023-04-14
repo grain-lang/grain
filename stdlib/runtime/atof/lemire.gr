@@ -94,8 +94,8 @@ let computeProductApprox = (q: WasmI64, w: WasmI64, precision: WasmI64) => {
   let index = q - _SMALLEST_POWER_OF_FIVE
   let n = 16n * WasmI32.wrapI64(index)
   from WasmI32 use { (+) }
-  let lo5 = WasmI64.load(get_POWERS5(), n),
-    hi5 = WasmI64.load(get_POWERS5(), n + 8n)
+  let lo5 = WasmI64.load(get_POWERS5(), n)
+  and hi5 = WasmI64.load(get_POWERS5(), n + 8n)
   from WasmI64 use { (+) }
   // From Rust:
   // Only need one multiplication as long as there is 1 zero but

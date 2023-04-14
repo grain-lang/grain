@@ -328,7 +328,7 @@ value_bind:
   | pattern equal expr { ValueBinding.mk ~loc:(to_loc $loc) $1 $3 }
 
 value_binds:
-  | lseparated_nonempty_list(comma, value_bind) { $1 }
+  | lseparated_nonempty_list(AND, value_bind) { $1 }
 
 as_prefix(X):
   | AS opt_eols X {$3}

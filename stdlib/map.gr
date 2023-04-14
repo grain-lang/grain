@@ -519,7 +519,7 @@ provide let getInternalStats = map => {
 provide module Immutable {
   // implementation based on the paper "Implementing Sets Efficiently in a
   // Functional Language" by Stephen Adams
-  record Node<k, v> {
+  record rec Node<k, v> {
     key: k,
     val: v,
     size: Number,
