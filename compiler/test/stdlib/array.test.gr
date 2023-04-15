@@ -221,6 +221,10 @@ let arr = [> 1, 2, 3]
 Array.fillRange(10, -3, -1, arr)
 assert arr == [> 10, 10, 3]
 
+let arr = [> 1, 2, 3]
+Array.fillRange(10, -3, -10, arr)
+assert arr == [> 10, 10, 10]
+
 // Array.product
 
 let arrA = [> 1, 2]

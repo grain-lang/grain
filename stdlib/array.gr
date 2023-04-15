@@ -41,6 +41,18 @@ let checkLength = length => {
 }
 
 /**
+ * A simple helper function to convert a negative array index
+ * number to its positive positional equivalent.
+ */
+let wrapNegativeIndex = (arrLen, idx) => {
+  if (idx >= 0) {
+    idx
+  } else {
+    arrLen + idx
+  }
+}
+
+/**
  * Provides the length of the input array.
  *
  * @param array: The array to inspect
@@ -509,29 +521,31 @@ provide let fill = (value, array) => {
  * @param stop: The (exclusive) index to end replacement
  * @param array: The array to update
  *
- * @throws Failure(String): When the start index is out of bounds
- * @throws Failure(String): When the start index is greater then the stop index
+ * @throws IndexOutOfBounds: When the start index is out of bounds
+ * @throws IndexOutOfBounds: When the start index is greater then the stop index
  *
  * @since v0.2.0
  */
 provide let fillRange = (value, start, stop, array) => {
   let length = length(array)
-  let startIndex = if (start < 0) length + start else start
-  let stopIndex = if (stop < 0) length + stop else stop
+  let startIndex = wrapNegativeIndex(length, start)
+  let stopIndex = wrapNegativeIndex(length, stop)
+  // Ensure we aren't working with a `stop` value that is too big
+  let stopIndex = if (stopIndex < 0 || stopIndex > length) {
+    length
+  } else {
+    stopIndex
+  }
 
   if (startIndex > length) {
-    fail "The start index is outside the array"
+    throw IndexOutOfBounds
   }
   if (startIndex > stopIndex) {
-    fail "The start index cannot be higher than the stop index"
+    throw IndexOutOfBounds
   }
 
   let mut index = startIndex
-  for (
-    let mut index = startIndex;
-    index < stopIndex && index < length;
-    index += 1
-  ) {
+  for (let mut index = startIndex; index < stopIndex; index += 1) {
     array[index] = value
   }
   void
@@ -885,18 +899,6 @@ provide let join = (separator: String, items: Array<String>) => {
   match (reduce(iter, None, items)) {
     None => "",
     Some(s) => s,
-  }
-}
-
-/**
- * A simple helper function to convert a negative array index
- * number to its positive positional equivalent.
- */
-let wrapNegativeIndex = (arrLen, idx) => {
-  if (idx >= 0) {
-    idx
-  } else {
-    arrLen + idx
   }
 }
 
