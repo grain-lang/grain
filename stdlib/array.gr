@@ -527,7 +527,7 @@ provide let fillRange = (value, start, stop, array) => {
   let length = length(array)
   let startIndex = wrapNegativeIndex(length, start)
   let stopIndex = wrapNegativeIndex(length, stop)
-  // Ensure we aren't working with an `stop` value that is too big
+  // Ensure we aren't working with a `stop` value that is too big
   let stopIndex = if (stopIndex < 0 || stopIndex > length) {
     length
   } else {
