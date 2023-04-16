@@ -367,9 +367,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         needsEllipsis = true
       }
       let headBytes = 8n // <bytes:
-      let hexBytes = numBytes * 3n
+      // This is two digits and a space for each byte, minus one space for the last byte
+      let hexBytes = numBytes * 3n - 1n
       let tailBytes = if (needsEllipsis) {
-        5n // ...>
+        4n // ...>
       } else {
         1n // >
       }

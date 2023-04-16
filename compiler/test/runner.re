@@ -25,11 +25,17 @@ let wasmfile = name =>
 let watfile = name =>
   Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wat")));
 
-let formatter_out_file = name =>
-  Filepath.to_string(Fp.At.(test_formatter_out_dir / (name ++ ".gr")));
+let grainfmt_out_file = name =>
+  Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".expected.gr")));
 
-let formatter_in_file = name =>
-  Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
+let grainfmt_in_file = name =>
+  Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".input.gr")));
+
+let graindoc_out_file = name =>
+  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".expected.md")));
+
+let gaindoc_in_file = name =>
+  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
 let read_channel = channel => {
   let buf = Buffer.create(2048);
@@ -188,6 +194,14 @@ let run = (~num_pages=?, file) => {
 
 let format = file => {
   let cmd = [|"grain", "format", file|];
+
+  let (code, out, err) = open_process(cmd);
+
+  (out ++ err, code);
+};
+
+let doc = (file, arguments) => {
+  let cmd = Array.concat([[|"grain", "doc", file|], arguments]);
 
   let (code, out, err) = open_process(cmd);
 
@@ -439,12 +453,26 @@ let makeFormatterRunner = (test, name, filename) => {
   test(
     name,
     ({expect}) => {
-      let infile = formatter_in_file(filename);
+      let infile = grainfmt_in_file(filename);
       let (result, _) = format(infile);
 
       // we need do a binary content comparison to ensure the EOL is correct
 
-      expect.ext.binaryFile(result).toBinaryMatch(formatter_out_file(name));
+      expect.ext.binaryFile(result).toBinaryMatch(grainfmt_out_file(name));
+    },
+  );
+};
+
+let makeGrainDocRunner = (test, name, filename, arguments) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = gaindoc_in_file(filename);
+      let (result, _) = doc(infile, arguments);
+
+      // we need do a binary content comparison to ensure the EOL is correct
+
+      expect.ext.binaryFile(result).toBinaryMatch(graindoc_out_file(name));
     },
   );
 };

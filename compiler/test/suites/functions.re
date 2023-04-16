@@ -182,6 +182,36 @@ provide let truc = () => {
 }
 truc()|},
   );
+
+  assertRun(
+    "func_mutually_recursive_closure",
+    {|
+      let main = () => {
+        let closureScope = "closureScope"
+        let rec isEven = n => {
+          print(closureScope)
+          if (n <= 1) {
+            n == 0
+          } else {
+            isOdd(n - 1)
+          }
+        },
+        isOdd = n => {
+          if (n <= 1) {
+            n == 1
+          } else {
+            isEven(n - 1)
+          }
+        }
+
+        print(isOdd(3))
+      }
+
+    main()
+  |},
+    "closureScope\ntrue\n",
+  );
+
   assertCompileError(
     "newline_before_arrow",
     {|

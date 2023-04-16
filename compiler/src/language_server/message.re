@@ -8,6 +8,7 @@ type t =
   | Exit(Protocol.message_id, Exit.RequestParams.t)
   | TextDocumentDidOpen(Protocol.uri, Code_file.DidOpen.RequestParams.t)
   | TextDocumentDidChange(Protocol.uri, Code_file.DidChange.RequestParams.t)
+  | TextDocumentInlayHint(Protocol.message_id, Inlayhint.RequestParams.t)
   | Formatting(Protocol.message_id, Formatting.RequestParams.t)
   | Definition(Protocol.message_id, Definition.RequestParams.t)
   | SetTrace(Protocol.trace_value)
@@ -24,6 +25,11 @@ let of_request = (msg: Protocol.request_message): t => {
   | {method: "textDocument/hover", id: Some(id), params: Some(params)} =>
     switch (Hover.RequestParams.of_yojson(params)) {
     | Ok(params) => TextDocumentHover(id, params)
+    | Error(msg) => Error(msg)
+    }
+  | {method: "textDocument/inlayHint", id: Some(id), params: Some(params)} =>
+    switch (Inlayhint.RequestParams.of_yojson(params)) {
+    | Ok(params) => TextDocumentInlayHint(id, params)
     | Error(msg) => Error(msg)
     }
   | {method: "textDocument/codeLens", id: Some(id), params: Some(params)} =>

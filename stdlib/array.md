@@ -718,7 +718,7 @@ Parameters:
 
 Throws:
 
-`Failure(String)`
+`IndexOutOfBounds`
 
 * When the start index is out of bounds
 * When the start index is greater then the stop index

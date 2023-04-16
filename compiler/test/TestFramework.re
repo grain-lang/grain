@@ -29,8 +29,9 @@ let test_output_dir = Fp.At.(test_dir / "output");
 let test_stdlib_dir = Fp.At.(test_dir / "stdlib");
 let test_snapshots_dir = Fp.At.(test_dir / "__snapshots__");
 
-let test_formatter_in_dir = Fp.At.(test_dir / "formatter_inputs");
-let test_formatter_out_dir = Fp.At.(test_dir / "formatter_outputs");
+let test_grainfmt_dir = Fp.At.(test_dir / "grainfmt");
+
+let test_gaindoc_dir = Fp.At.(test_dir / "graindoc");
 
 let clean_grain_output = stdlib_dir =>
   Array.iter(

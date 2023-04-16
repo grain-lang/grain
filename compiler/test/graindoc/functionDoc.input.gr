@@ -1,0 +1,17 @@
+module FunctionGrainDoc
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * Retrieves the element from the array at the specified index.
+ * A negative index is treated as an offset from the end of the array.
+ *
+ * @param index: The index to access
+ * @param array: The array to access
+ * @returns The element from the array
+ *
+ * @since v0.1.0
+ * @history v0.2.0: Argument order changed to data-last
+ */
+provide let get = (index, array) => {
+  array[index]
+}
