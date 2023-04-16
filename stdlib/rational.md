@@ -128,7 +128,7 @@ No other changes yet.
 toIntegerRatio : (x: Rational) -> (Number, Number)
 ```
 
-Gets the numerator and denominator of the rational as a tuple.
+Gets the numerator and denominator of the rational.
 
 Parameters:
 
@@ -166,13 +166,14 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Rational`|The newly constructed rational|
+|`Rational`|The reduced rational|
 
 Throws:
 
 `InvalidArgument(String)`
 
-* If the numerator or denominator are not integers
+* If the numerator is not an integer
+* If the denominator is not an integer
 
 ### Rational.**(+)**
 

@@ -25,7 +25,7 @@ from Numbers use {
 provide { fromNumber, toNumber, numerator, denominator }
 
 /**
- * Gets the numerator and denominator of the rational as a tuple.
+ * Gets the numerator and denominator of the rational.
  *
  * @param x: The rational to split
  * @returns The numerator and denominator of the rational
@@ -41,9 +41,10 @@ provide let toIntegerRatio = x => {
  *
  * @param numerator: The numerator
  * @param denominator: The denominator
- * @returns The newly constructed rational
+ * @returns The reduced rational
  *
- * @throws InvalidArgument(String): If the numerator or denominator are not integers
+ * @throws InvalidArgument(String): If the numerator is not an integer
+ * @throws InvalidArgument(String): If the denominator is not an integer
  *
  * @since v0.6.0
  */
@@ -51,10 +52,11 @@ provide let toIntegerRatio = x => {
 provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
   let numeratorptr = WasmI32.fromGrain(numerator)
   let denominatorptr = WasmI32.fromGrain(denominator)
-  if (!isInteger(numeratorptr) || !isInteger(denominatorptr)) {
-    throw Exception.InvalidArgument(
-      "Numerator and denominator must be integers"
-    )
+  if (!isInteger(numeratorptr)) {
+    throw Exception.InvalidArgument("Numerator must be an integer")
+  }
+  if (!isInteger(denominatorptr)) {
+    throw Exception.InvalidArgument("Denominator must be an integer")
   }
   fromNumber(numerator / denominator)
 }
