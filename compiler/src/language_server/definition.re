@@ -75,13 +75,13 @@ let process =
       switch (definition) {
       | None => send_no_result(~id)
       | Some(loc) =>
-        let uri = Protocol.filename_to_uri(loc.loc_start.pos_fname);
+        let uri = Utils.filename_to_uri(loc.loc_start.pos_fname);
 
         send_definition(
           ~id,
-          ~range=Protocol.loc_to_range(loc),
+          ~range=Utils.loc_to_range(loc),
           ~target_uri=uri,
-          Protocol.loc_to_range(loc),
+          Utils.loc_to_range(loc),
         );
       }
     | _ => send_no_result(~id)

@@ -140,29 +140,29 @@ let process =
     | [Value({env, value_type, loc}), ..._] =>
       send_hover(
         ~id,
-        ~range=Protocol.loc_to_range(loc),
+        ~range=Utils.loc_to_range(loc),
         value_lens(env, value_type),
       )
     | [Pattern({pattern}), ..._] =>
       send_hover(
         ~id,
-        ~range=Protocol.loc_to_range(pattern.pat_loc),
+        ~range=Utils.loc_to_range(pattern.pat_loc),
         pattern_lens(pattern),
       )
     | [Type({core_type}), ..._] =>
       send_hover(
         ~id,
-        ~range=Protocol.loc_to_range(core_type.ctyp_loc),
+        ~range=Utils.loc_to_range(core_type.ctyp_loc),
         type_lens(core_type),
       )
     | [Declaration({ident, decl, loc}), ..._] =>
       send_hover(
         ~id,
-        ~range=Protocol.loc_to_range(loc),
+        ~range=Utils.loc_to_range(loc),
         declaration_lens(ident, decl),
       )
     | [Module({path, decl, loc}), ..._] =>
-      send_hover(~id, ~range=Protocol.loc_to_range(loc), module_lens(decl))
+      send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
     | _ => send_no_result(~id)
     };
   };

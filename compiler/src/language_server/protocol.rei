@@ -15,7 +15,7 @@ type version;
 type message_id;
 
 [@deriving yojson]
-type uri;
+type uri = Uri.t;
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#position
 [@deriving yojson({strict: false})]
@@ -179,8 +179,3 @@ let empty_response: message_id => unit;
 let error: (~id: message_id=?, response_error) => unit;
 
 let notification: (~method: string, Yojson.Safe.t) => unit;
-
-let uri_to_filename: uri => string;
-let filename_to_uri: string => uri;
-
-let loc_to_range: Grain_parsing.Location.t => range;
