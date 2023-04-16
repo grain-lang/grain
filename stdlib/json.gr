@@ -24,7 +24,7 @@ include "runtime/numbers"
 include "runtime/unsafe/memory"
 include "runtime/dataStructures"
 include "runtime/bigint" as BI
-from RunTimeString use { toString as runtimeToString }
+from RunTimeString use { toString as runtimeToString, getCodePoint }
 from Numbers use { coerceNumberToWasmI32 }
 from DataStructures use { tagSimpleNumber, newFloat64, untagSimpleNumber }
 
@@ -524,13 +524,13 @@ let printNumberWasmI64 = (value: WasmI64, buffer: Buffer.Buffer) => {
 
 @unsafe
 let isFinite = (value: WasmF64) => {
-  from WasmF64 use { eq as (==), sub as (-) }
+  from WasmF64 use { (==), (-) }
   value - value == 0.0W
 }
 
 @unsafe
 let isNaN = (value: WasmF64) => {
-  from WasmF64 use { ne as (!=) }
+  from WasmF64 use { (!=) }
   value != value
 }
 
@@ -541,7 +541,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     Buffer.addString(s, buffer)
     None
   } else {
-    from WasmF64 use { lt as (<) }
+    from WasmF64 use { (<) }
     // JSON standard doesn't allow NaN or infinite values in numbers,
     // but WASM f64 (IEEE 754-2008), as well as Grain's number types do
     // (Float64 as well as Number). This is the only reason that the
@@ -561,13 +561,7 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
 
 @unsafe
 let printNumber = (value: Number, buffer: Buffer.Buffer) => {
-  from WasmI32 use {
-    and as (&),
-    eq as (==),
-    ne as (!=),
-    shl as (<<),
-    shrS as (>>),
-  }
+  from WasmI32 use { (&), (==), (!=), (<<), (>>) }
 
   let ptr = WasmI32.fromGrain(value)
   if ((ptr & 1n) != 0n) {
@@ -589,7 +583,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             None
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            from WasmF64 use { div as (/) }
+            from WasmF64 use { (/) }
             // As a compromnise, convert the rational into a float
             // and then print that. This means there can be
             // precision loss even for values that could be printed
@@ -1328,73 +1322,9 @@ let isInterTokenWhiteSpace = (codePoint: Number) => {
 
 let _END_OF_INPUT = -1
 
-exception MalformedUnicode
-
-// This function has been copied from the String module as a temporary
-// solution. This will likely be replaced by a more robust solution for
-// iterating over strings in the near future.
-@unsafe
-let getCodePoint = (ptr: WasmI32) => {
-  // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
-  from WasmI32 use {
-    add as (+),
-    and as (&),
-    or as (|),
-    shl as (<<),
-    leU as (<=),
-    geU as (>=),
-    eq as (==),
-  }
-
-  let mut codePoint = 0n
-  let mut bytesSeen = 0n
-  let mut bytesNeeded = 0n
-  let mut lowerBoundary = 0x80n
-  let mut upperBoundary = 0xBFn
-
-  let mut offset = 0n
-
-  while (true) {
-    let byte = WasmI32.load8U(ptr + offset, 0n)
-    offset += 1n
-    if (bytesNeeded == 0n) {
-      if (byte >= 0x00n && byte <= 0x7Fn) {
-        return byte
-      } else if (byte >= 0xC2n && byte <= 0xDFn) {
-        bytesNeeded = 1n
-        codePoint = byte & 0x1Fn
-      } else if (byte >= 0xE0n && byte <= 0xEFn) {
-        if (byte == 0xE0n) lowerBoundary = 0xA0n
-        if (byte == 0xEDn) upperBoundary = 0x9Fn
-        bytesNeeded = 2n
-        codePoint = byte & 0xFn
-      } else if (byte >= 0xF0n && byte <= 0xF4n) {
-        if (byte == 0xF0n) lowerBoundary = 0x90n
-        if (byte == 0xF4n) upperBoundary = 0x8Fn
-        bytesNeeded = 3n
-        codePoint = byte & 0x7n
-      } else {
-        throw MalformedUnicode
-      }
-      continue
-    }
-    if (!(lowerBoundary <= byte && byte <= upperBoundary)) {
-      throw MalformedUnicode
-    }
-    lowerBoundary = 0x80n
-    upperBoundary = 0xBFn
-    codePoint = codePoint << 6n | byte & 0x3Fn
-    bytesSeen += 1n
-    if (bytesSeen == bytesNeeded) {
-      return codePoint
-    }
-  }
-  return 0n
-}
-
 @unsafe
 let rec readCodePoint = (bytePosition: Number, string: String) => {
-  from WasmI32 use { add as (+), ltU as (<) }
+  from WasmI32 use { (+), (<) }
 
   let strPtr = WasmI32.fromGrain(string)
 
@@ -1419,11 +1349,11 @@ let codePointUTF8ByteCount = (usv: Number) => {
     throw InvalidArgument("Invalid unicode scalar value")
   }
 
-  if (usv <= 127) {
+  if (usv <= 0x7f) {
     1
-  } else if (usv <= 2047) {
+  } else if (usv <= 0x7ff) {
     2
-  } else if (usv <= 65535) {
+  } else if (usv <= 0xffff) {
     3
   } else {
     4
