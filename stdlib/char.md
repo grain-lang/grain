@@ -213,3 +213,107 @@ Returns:
 |----|-----------|
 |`String`|A string containing the given character|
 
+### Char.**(<)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is less than the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is less than the second character or `false` otherwise|
+
+### Char.**(<=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<=) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is less than or equal to the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is less than or equal to the second character or `false` otherwise|
+
+### Char.**(>)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is greater than the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is greater than the second character or `false` otherwise|
+
+### Char.**(>=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>=) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is greater than or equal to the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is greater than or equal to the second character or `false` otherwise|
+
