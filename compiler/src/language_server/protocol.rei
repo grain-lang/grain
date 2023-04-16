@@ -1,5 +1,4 @@
 open Grain_utils;
-open Grain_diagnostics;
 
 //https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#inlayHintOptions
 [@deriving yojson]

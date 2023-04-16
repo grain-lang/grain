@@ -1,5 +1,4 @@
 open Grain_utils;
-open Grain_diagnostics;
 
 let uri_to_yojson = (uri: Uri.t): Yojson.Safe.t =>
   Uri.to_string(uri) |> [%to_yojson: string];
