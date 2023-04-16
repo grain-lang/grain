@@ -1020,8 +1020,8 @@ provide let rotate = (n, arr) => {
   }
 }
 
-let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
-  if (arrLen == 0 || arrLen < chunkSize && !allowPartial) {
+let rec chunkHelp = (chunkSize, arr, arrLen, chunkStartIndex) => {
+  if (arrLen == 0) {
     []
   } else if (arrLen < chunkSize) {
     [slice(chunkStartIndex, arr)]
@@ -1032,9 +1032,8 @@ let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
       end=chunkStartIndex + chunkSize,
       arr
     )
-    let restChunks = _chunk(
+    let restChunks = chunkHelp(
       chunkSize,
-      allowPartial,
       arr,
       arrLen - chunkSize,
       chunkStartIndex + chunkSize
@@ -1045,24 +1044,27 @@ let rec _chunk = (chunkSize, allowPartial, arr, arrLen, chunkStartIndex) => {
 
 /**
  * Splits the given array into chunks of the provided size.
+ * If the array cannot be split evenly, the final chunk will contain the remaining elements.
  *
- * @param chunkSize: The size of each chunk
+ * @param chunkSize: The maximum size of each chunk
  * @param arr: The array to chunk
  * @returns An array of chunks
  *
  * @throws InvalidArgument(String): When `chunkSize` is not an integer
- * @throws InvalidArgument(String): When `chunkSize` is less than zero
+ * @throws InvalidArgument(String): When `chunkSize` is less than one
  *
- * @example chunk(2, true, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+ * @example chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+ * @example chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
+ *
  * @since v0.6.0
  */
 provide let chunk = (chunkSize, arr) => {
-  if (chunkSize == 0) {
+  if (chunkSize <= 0) {
     throw Exception.InvalidArgument("chunkSize must be greater than 0")
   } else {
     checkLength(chunkSize)
     let arrLen = length(arr)
-    let chunks = _chunk(chunkSize, true, arr, arrLen, 0)
+    let chunks = chunkHelp(chunkSize, arr, arrLen, 0)
     fromList(chunks)
   }
 }

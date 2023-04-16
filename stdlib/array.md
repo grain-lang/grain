@@ -1300,12 +1300,13 @@ chunk : (chunkSize: Number, arr: Array<a>) -> Array<Array<a>>
 ```
 
 Splits the given array into chunks of the provided size.
+If the array cannot be split evenly, the final chunk will contain the remaining elements.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`chunkSize`|`Number`|The size of each chunk|
+|`chunkSize`|`Number`|The maximum size of each chunk|
 |`arr`|`Array<a>`|The array to chunk|
 
 Returns:
@@ -1319,12 +1320,16 @@ Throws:
 `InvalidArgument(String)`
 
 * When `chunkSize` is not an integer
-* When `chunkSize` is less than zero
+* When `chunkSize` is less than one
 
 Examples:
 
 ```grain
-chunk(2, true, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+```
+
+```grain
+chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
 ```
 
 ## Array.Immutable
