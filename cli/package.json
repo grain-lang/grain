@@ -11,8 +11,7 @@
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain",
-    "build:test": "grain compile --release --wasi-polyfill __test__/wasi.gr --use-start-section __test__/index.gr"
+    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain"
   },
   "pkg": {
     "assets": "bin/*.js"
