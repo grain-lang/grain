@@ -615,7 +615,7 @@ provide let tan = (radians: Number) => {
 let rf = z => {
   // see: musl/src/math/asin.c and SUN COPYRIGHT NOTICE at top of file
   // Operators
-  from WasmF64 use { add as (+), mul as (*), div as (/) }
+  from WasmF64 use { (+), (*), (/) }
   /* coefficients for R(x^2) */
   let pS0 = 1.66666666666666657415e-01W /* 0x3FC55555, 0x55555555 */
   let pS1 = -3.25565818622400915405e-01W /* 0xBFD4D612, 0x03EB6F7D */
@@ -649,15 +649,16 @@ provide let asin = angle => {
   let pio2_hi = 1.57079632679489655800e+00W /* 0x3FF921FB, 0x54442D18 */
   let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
 
-  from WasmI32 use { and as (&), or as (|), leU as (<), geU as (>=) }
-  from WasmF64 use { add as (+), sub as (-), mul as (*), div as (/) }
+  from WasmI32 use { (&), (|), leU as (<), geU as (>=) }
+  from WasmI64 use { (>>>) }
+  from WasmF64 use { (+), (-), (*), (/) }
 
-  let hx = WasmI32.wrapI64(WasmI64.shrU(WasmI64.reinterpretF64(x), 32N))
+  let hx = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
   let ix = hx & 0x7fffffffn
   /* |x| >= 1 or nan */
   if (ix >= 0x3ff00000n) {
     let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
-    from WasmI32 use { sub as (-) }
+    from WasmI32 use { (-) }
     /* asin(1) = +-pi/2 with inexact */
     if (WasmI32.eqz(ix - 0x3ff00000n | lx))
       return WasmI32.toGrain(newFloat64(x * pio2_hi + 0x1p-120W)): Number
@@ -678,7 +679,7 @@ provide let asin = angle => {
   if (ix >= 0x3fef3333n) {
     x = pio2_hi - (2.0W * (s + s * r) - pio2_lo)
   } else {
-    from WasmI64 use { and as (&) }
+    from WasmI64 use { (&) }
     /* f+c = sqrt(z) */
     let f = WasmF64.reinterpretI64(
       WasmI64.reinterpretF64(s) & 0xFFFFFFFF00000000N
@@ -691,7 +692,6 @@ provide let asin = angle => {
         (0.5W * pio2_hi -
           2.0W * f))
   }
-  from WasmI32 use { shrU as (>>) }
   x = WasmF64.copySign(x, origAngle)
   return WasmI32.toGrain(newFloat64(x)): Number
 }
@@ -714,23 +714,24 @@ provide let acos = angle => {
   let pio2_lo = 6.12323399573676603587e-17W /* 0x3C91A626, 0x33145C07 */
 
   from WasmI32 use {
-    shrU as (>>),
-    and as (&),
-    or as (|),
-    ne as (!=),
+    (>>),
+    (&),
+    (|),
+    (!=),
     leU as (<),
     geU as (>=),
     leU as (<=),
   }
-  from WasmF64 use { add as (+), sub as (-), mul as (*), div as (/) }
+  from WasmI64 use { (>>>) }
+  from WasmF64 use { (+), (-), (*), (/) }
 
-  let hx = WasmI32.wrapI64(WasmI64.shrU(WasmI64.reinterpretF64(x), 32N))
+  let hx = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
   let ix = hx & 0x7fffffffn
 
   /* |x| >= 1 or nan */
   if (ix >= 0x3ff00000n) {
     let lx = WasmI32.wrapI64(WasmI64.reinterpretF64(x))
-    from WasmI32 use { sub as (-) }
+    from WasmI32 use { (-) }
     if (WasmI32.eqz(ix - 0x3ff00000n | lx)) {
       /* acos(1)=0, acos(-1)=pi */
       if (hx >> 31n != 0n)
@@ -759,7 +760,7 @@ provide let acos = angle => {
   }
 
   /* x > 0.5 */
-  from WasmI64 use { and as (&) }
+  from WasmI64 use { (&) }
   let z = (1.0W - x) * 0.5W
   let s = WasmF64.sqrt(z)
   let df = WasmF64.reinterpretI64(
@@ -804,16 +805,11 @@ provide let atan = angle => {
   let aT9 = -3.65315727442169155270e-02W // 0xBFA2B444, 0x2C6A6C2F
   let aT10 = 1.62858201153657823623e-02W // 0x3F90AD3A, 0xE322DA11
   // Operators
-  from WasmI32 use {
-    shrU as (>>),
-    and as (&),
-    ltU as (<),
-    geU as (>=),
-    eq as (==),
-  }
-  from WasmF64 use { add as (+), sub as (-), mul as (*), div as (/) }
+  from WasmI32 use { (&), (<), (>=), (==) }
+  from WasmI64 use { (>>>) }
+  from WasmF64 use { (+), (-), (*), (/) }
   // Calculations
-  let ix = WasmI32.wrapI64(WasmI64.shrU(WasmI64.reinterpretF64(x), 32N))
+  let ix = WasmI32.wrapI64(WasmI64.reinterpretF64(x) >>> 32N)
   let sx = x
   let ix = ix & 0x7FFFFFFFn
   /* if |x| >= 2^66 */
@@ -855,7 +851,7 @@ provide let atan = angle => {
   let s1 = z * (aT0 + w * (aT2 + w * (aT4 + w * (aT6 + w * (aT8 + w * aT10)))))
   let s2 = w * (aT1 + w * (aT3 + w * (aT5 + w * (aT7 + w * aT9))))
   let s3 = x * (s1 + s2)
-  from WasmI32 use { ltS as (<) }
+  from WasmI32 use { (<) }
   if (id < 0n)
     return WasmI32.toGrain(newFloat64(WasmF64.copySign(x - s3, sx))): Number
   let mut z = 0.0W
