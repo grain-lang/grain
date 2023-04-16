@@ -203,7 +203,7 @@ provide let toString = (char: Char) => {
  */
 @unsafe
 provide let (<) = (x: Char, y: Char) => {
-  from WasmI32 use { ltU as (<) }
+  from WasmI32 use { (<) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x < y
@@ -220,7 +220,7 @@ provide let (<) = (x: Char, y: Char) => {
  */
 @unsafe
 provide let (<=) = (x: Char, y: Char) => {
-  from WasmI32 use { leU as (<=) }
+  from WasmI32 use { (<=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x <= y
@@ -237,7 +237,7 @@ provide let (<=) = (x: Char, y: Char) => {
  */
 @unsafe
 provide let (>) = (x: Char, y: Char) => {
-  from WasmI32 use { gtU as (>) }
+  from WasmI32 use { (>) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x > y
@@ -254,7 +254,7 @@ provide let (>) = (x: Char, y: Char) => {
  */
 @unsafe
 provide let (>=) = (x: Char, y: Char) => {
-  from WasmI32 use { geU as (>=) }
+  from WasmI32 use { (>=) }
   let x = WasmI32.fromGrain(x)
   let y = WasmI32.fromGrain(y)
   x >= y
