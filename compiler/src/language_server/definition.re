@@ -54,7 +54,6 @@ let send_definition =
   );
 };
 
-
 let process =
     (
       ~id: Protocol.message_id,
