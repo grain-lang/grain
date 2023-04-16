@@ -18,7 +18,6 @@ module RequestParams = {
 };
 
 // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#locationLink
-
 module ResponseResult = {
   [@deriving yojson]
   type t = {
