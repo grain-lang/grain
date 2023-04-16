@@ -17,7 +17,7 @@ let rec collect_type_vars = typ =>
         Tbl.add(typ.id, ref([typ]), used_type_variables^)
     }
   | TTyArrow(ty_args, ty_res, _) =>
-    List.iter(collect_type_vars, ty_args);
+    List.iter(((_, arg)) => collect_type_vars(arg), ty_args);
     collect_type_vars(ty_res);
   | TTyTuple(ty_args) => List.iter(collect_type_vars, ty_args)
   | TTyRecord(ty_args) =>
@@ -46,7 +46,11 @@ let link_type_vars = ty => {
         | Not_found => ty
         }
       | TTyArrow(tyl, ret, c) =>
-        TTyArrow(List.map(link_types, tyl), link_types(ret), c)
+        TTyArrow(
+          List.map(((l, arg)) => (l, link_types(arg)), tyl),
+          link_types(ret),
+          c,
+        )
       | TTyTuple(l) => TTyTuple(List.map(link_types, l))
       | TTyRecord(l) =>
         TTyRecord(List.map(((name, arg)) => (name, link_types(arg)), l))

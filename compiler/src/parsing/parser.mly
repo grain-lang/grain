@@ -12,17 +12,18 @@ module Grain_parsing = struct end
 %}
 
 
+%token <string> RATIONAL
 %token <string> NUMBER_INT NUMBER_FLOAT
-%token <string> INT32 INT64 FLOAT32 FLOAT64 BIGINT
+%token <string> INT8 INT16 INT32 INT64 UINT8 UINT16 UINT32 UINT64 FLOAT32 FLOAT64 BIGINT
 %token <string> WASMI32 WASMI64 WASMF32 WASMF64
 %token <string> LIDENT UIDENT
-%token <string> STRING CHAR
+%token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW
 %token EQUAL GETS
 %token UNDERSCORE
-%token COLON DOT ELLIPSIS
+%token COLON QUESTION DOT ELLIPSIS
 
 %token ASSERT FAIL EXCEPTION THROW
 
@@ -36,7 +37,7 @@ module Grain_parsing = struct end
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
 
-%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE FOREIGN WASM PRIMITIVE
+%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
 %token EXCEPT FROM STAR
 %token SLASH DASH PIPE
 %token EOL EOF
@@ -63,7 +64,7 @@ module Grain_parsing = struct end
 %left INFIX_110 DASH
 %left INFIX_120 STAR SLASH
 
-%right SEMI EOL COMMA DOT COLON LPAREN
+%right SEMI EOL COMMA DOT COLON LPAREN EQUAL
 
 %nonassoc _if
 %nonassoc ELSE
@@ -102,8 +103,11 @@ module Grain_parsing = struct end
   const
   pattern
   qualified_uid
+  qualified_lid
   value_binds
   construct_expr
+  app_arg
+  arg_default
 
 %%
 
@@ -197,8 +201,14 @@ const:
   // Rational literals are a special case of the division binop_expr.
   | DASH? NUMBER_INT { Constant.number (PConstNumberInt (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
   | DASH? NUMBER_FLOAT { Constant.number (PConstNumberFloat (if Option.is_some $1 then "-" ^ $2 else $2)), $sloc }
+  | DASH? INT8 { Constant.int8 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? INT16 { Constant.int16 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? INT32 { Constant.int32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? INT64 { Constant.int64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? UINT8 { Constant.uint8 (Option.is_some $1) $2, $sloc }
+  | DASH? UINT16 { Constant.uint16 (Option.is_some $1) $2, $sloc }
+  | DASH? UINT32 { Constant.uint32 (Option.is_some $1) $2, $sloc }
+  | DASH? UINT64 { Constant.uint64 (Option.is_some $1) $2, $sloc }
   | DASH? FLOAT32 { Constant.float32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? FLOAT64 { Constant.float64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? WASMI32 { Constant.wasmi32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
@@ -206,10 +216,12 @@ const:
   | DASH? WASMF32 { Constant.wasmf32 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? WASMF64 { Constant.wasmf64 (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | DASH? BIGINT { Constant.bigint (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
+  | DASH? RATIONAL { Constant.rational (if Option.is_some $1 then "-" ^ $2 else $2), $sloc }
   | TRUE { Constant.bool true, $loc }
   | FALSE { Constant.bool false, $loc }
   | VOID { Constant.void, $loc }
   | STRING { Constant.string $1, $loc }
+  | BYTES { Constant.bytes $1, $loc }
   | CHAR { Constant.char $1, $loc }
 
 expr:
@@ -231,8 +243,8 @@ annotated_expr:
   | non_binop_expr colon typ { Expression.constraint_ ~loc:(to_loc $loc) $1 $3 }
 
 binop_expr:
-  | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
-  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) [$1; $4] }
+  | non_stmt_expr infix_op opt_eols non_stmt_expr { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
+  | non_stmt_expr rcaret_rcaret_op opt_eols non_stmt_expr %prec INFIX_100 { Expression.binop ~loc:(to_loc $loc) (mkid_expr $loc($2) [mkstr $loc($2) $2]) $1 $4 }
 
 ellipsis_prefix(X):
   | ELLIPSIS X {$2}
@@ -253,7 +265,7 @@ pattern:
   | lbrace record_patterns rbrace { Pattern.record ~loc:(to_loc $loc) $2 }
   | qualified_uid lparen patterns rparen { Pattern.tuple_construct ~loc:(to_loc $loc) $1 $3 }
   | qualified_uid lbrace record_patterns rbrace { Pattern.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | qualified_uid { Pattern.tuple_construct ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid { Pattern.singleton_construct ~loc:(to_loc $loc) $1 }
   | lbrack rbrack { Pattern.list ~loc:(to_loc $loc) [] }
   | lbrack lseparated_nonempty_list(comma, list_item_pat) comma? rbrack { Pattern.list ~loc:(to_loc $loc) $2 }
   | pattern PIPE opt_eols pattern %prec PIPE { Pattern.or_ ~loc:(to_loc $loc) $1 $4 }
@@ -286,16 +298,24 @@ data_typ:
   | qualified_uid %prec _below_infix { Type.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
-  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [$1] $3 }
-  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [(Type.var $2)] $4 }
-  | FUN lparen typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($1)) Unlabeled $1] $3 }
+  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var $2)] $4 }
+  | FUN lparen arg_typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
   | LIDENT { Type.var ~loc:(to_loc $loc) $1 }
   | data_typ { $1 }
 
+arg_typ:
+  | LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Labeled (mkstr $loc($1) $1)) $3 }
+  | QUESTION LIDENT colon typ { TypeArgument.mk ~loc:(to_loc $loc) (Default (mkstr $loc($2) $2)) $4 }
+  | typ { TypeArgument.mk ~loc:(to_loc $loc) Unlabeled $1 }
+
 typs:
   | lseparated_nonempty_list(comma, typ) comma? { $1 }
+
+arg_typs:
+  | lseparated_nonempty_list(comma, arg_typ) comma? { $1 }
 
 %inline tuple_typ_ending:
   | ioption(eols) lseparated_nonempty_list(comma, typ) ioption(comma) { $2 }
@@ -337,6 +357,7 @@ include_stmt:
   | INCLUDE file_path include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
 
 data_declaration_stmt:
+  | ABSTRACT data_declaration { (Abstract, $2) }
   | PROVIDE data_declaration { (Provided, $2) }
   | data_declaration { (NotProvided, $1) }
 
@@ -366,9 +387,9 @@ provide_stmt:
   | attributes PROVIDE module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 Provided $3 }
 
 data_constructor:
-  | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc $1) }
-  | UIDENT lparen typs? rparen { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc $1) (Option.value ~default:[] $3) }
-  | UIDENT data_labels { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc $1) $2 }
+  | UIDENT { ConstructorDeclaration.singleton ~loc:(to_loc $loc) (mkstr $loc($1) $1) }
+  | UIDENT data_tuple_body { ConstructorDeclaration.tuple ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc $2 (to_loc $loc($2))) }
+  | UIDENT data_record_body { ConstructorDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($1) $1) (Location.mkloc $2 (to_loc $loc($2))) }
 
 data_constructors:
   | lbrace lseparated_nonempty_list(comma, data_constructor) comma? rbrace { $2 }
@@ -377,7 +398,10 @@ data_label:
   | lid colon typ { LabelDeclaration.mk ~loc:(to_loc $loc) $1 $3 Immutable }
   | MUT lid colon typ { LabelDeclaration.mk ~loc:(to_loc $loc) $2 $4 Mutable }
 
-data_labels:
+data_tuple_body:
+  | lparen typs rparen { $2 }
+
+data_record_body:
   | lbrace lseparated_nonempty_list(comma, data_label) comma? rbrace { $2 }
 
 id_typ:
@@ -389,16 +413,20 @@ id_vec:
 data_declaration:
   | TYPE UIDENT id_vec? equal typ { DataDeclaration.abstract ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) (Some $5) }
   | ENUM UIDENT id_vec? data_constructors { DataDeclaration.variant ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
-  | RECORD UIDENT id_vec? data_labels { DataDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
+  | RECORD UIDENT id_vec? data_record_body { DataDeclaration.record ~loc:(to_loc $loc) (mkstr $loc($2) $2) (Option.value ~default:[] $3) $4 }
 
 unop_expr:
-  | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [$2] }
+  | prefix_op non_assign_expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) $1]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
 
 paren_expr:
   | lparen expr rparen { $2 }
 
+app_arg:
+  | expr { {paa_label=Unlabeled; paa_expr=$1; paa_loc=to_loc $loc} }
+  | id_str EQUAL expr { {paa_label=(Labeled $1); paa_expr=$3; paa_loc=to_loc $loc} }
+
 app_expr:
-  | left_accessor_expr lparen lseparated_list(comma, expr) comma? rparen { Expression.apply ~loc:(to_loc $loc) $1 $3 }
+  | left_accessor_expr lparen lseparated_list(comma, app_arg) comma? rparen { Expression.apply ~loc:(to_loc $loc) $1 $3 }
 
 rcaret_rcaret_op:
   | lnonempty_list(RCARET) RCARET { (String.init (1 + List.length $1) (fun _ -> '>')) }
@@ -406,7 +434,7 @@ rcaret_rcaret_op:
 construct_expr:
   | qualified_uid lparen lseparated_list(comma, expr) comma? rparen { Expression.tuple_construct ~loc:(to_loc $loc) $1 $3 }
   | qualified_uid lbrace lseparated_nonempty_list(comma, record_field) comma? rbrace { Expression.record_construct ~loc:(to_loc $loc) $1 $3 }
-  | qualified_uid %prec LPAREN { Expression.tuple_construct ~loc:(to_loc $loc) $1 [] }
+  | qualified_uid %prec LPAREN { Expression.singleton_construct ~loc:(to_loc $loc) $1 }
 
 // These are all inlined to carry over their precedence.
 %inline infix_op:
@@ -446,7 +474,7 @@ special_op:
 
 qualified_lid:
   | modid dot id_str { mkid (List.append $1 [$3]) (to_loc $loc) }
-  | id_str { (mkid [$1]) (to_loc $loc) }
+  | id_str %prec EQUAL { (mkid [$1]) (to_loc $loc) }
 
 qualified_uid:
   | lseparated_nonempty_list(dot, type_id_str) %prec DOT { (mkid $1) (to_loc $loc) }
@@ -473,9 +501,18 @@ braced_expr:
 block:
   | lbrace block_body rbrace { Expression.block ~loc:(to_loc $loc) $2 }
 
+arg_default:
+  | EQUAL non_stmt_expr { $2 }
+
+lam_arg:
+  | pattern arg_default? { LambdaArgument.mk ~loc:(to_loc $loc) $1 $2 }
+
+lam_args:
+  | lseparated_nonempty_list(comma, lam_arg) comma? { $1 }
+
 lam_expr:
-  | FUN lparen patterns? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
-  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) [Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)] $4 }
+  | FUN lparen lam_args? rparen thickarrow expr { Expression.lambda ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | FUN LIDENT thickarrow expr { Expression.lambda ~loc:(to_loc $loc) [LambdaArgument.mk ~loc:(to_loc $loc($2)) (Pattern.var ~loc:(to_loc $loc($2)) (mkstr $loc($2) $2)) None] $4 }
 
 attribute_argument:
   | STRING { mkstr $loc $1 }
@@ -499,7 +536,7 @@ let_expr:
   | ELSE opt_eols expr { $3 }
 
 if_expr:
-  | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) $3 $6 (Option.value ~default:(Expression.block ~loc:(to_loc $loc($7)) []) $7) }
+  | IF lparen expr rparen opt_eols expr ioption(else_expr) %prec _if { Expression.if_ ~loc:(to_loc $loc) $3 $6 $7 }
 
 while_expr:
   | WHILE lparen expr rparen block { Expression.while_ ~loc:(to_loc $loc) $3 $5 }
@@ -536,9 +573,9 @@ array_expr:
   | lbrackrcaret opt_eols lseparated_nonempty_list(comma, expr) comma? rbrack { Expression.array ~loc:(to_loc $loc) $3 }
 
 stmt_expr:
-  | THROW expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [$2] }
-  | ASSERT expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [$2] }
-  | FAIL expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [$2] }
+  | THROW expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "throw"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | ASSERT expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "assert"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
+  | FAIL expr { Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($1) [mkstr $loc($1) "fail"]) [{paa_label=Unlabeled; paa_expr=$2; paa_loc=(to_loc $loc($2))}] }
   // allow DASH to cause a shift instead of the usual reduction of the left side for subtraction
   | RETURN ioption(expr) %prec _below_infix { Expression.return ~loc:(to_loc $loc) $2 }
   | CONTINUE { Expression.continue ~loc:(to_loc $loc) () }
@@ -551,7 +588,7 @@ assign_binop_op:
 assign_expr:
   | left_accessor_expr GETS opt_eols expr { Expression.box_assign ~loc:(to_loc $loc) $1 $4 }
   | id_expr equal expr { Expression.assign ~loc:(to_loc $loc) $1 $3 }
-  | id_expr assign_binop_op opt_eols expr { Expression.assign ~loc:(to_loc $loc) $1 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [$1; $4]) }
+  | id_expr assign_binop_op opt_eols expr { Expression.assign ~loc:(to_loc $loc) $1 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($2) [$2]) [{paa_label=Unlabeled; paa_expr=$1; paa_loc=(to_loc $loc($1))}; {paa_label=Unlabeled; paa_expr=$4; paa_loc=(to_loc $loc($4))}]) }
   | record_set { $1 }
   | array_set { $1 }
 
@@ -595,7 +632,7 @@ record_get:
 
 record_set:
   | left_accessor_expr dot lid equal expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 $5 }
-  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [Expression.record_get ~loc:(to_loc $loc) $1 $3; $6]) }
+  | left_accessor_expr dot lid assign_binop_op opt_eols expr { Expression.record_set ~loc:(to_loc $loc) $1 $3 (Expression.apply ~loc:(to_loc $loc) (mkid_expr $loc($4) [$4]) [{paa_label=Unlabeled; paa_expr=Expression.record_get ~loc:(to_loc $loc) $1 $3; paa_loc=(to_loc $loc($6))}; {paa_label=Unlabeled; paa_expr=$6; paa_loc=(to_loc $loc($6))}]) }
 
 %inline record_field_value:
   | colon expr {$2}
@@ -634,18 +671,19 @@ type_id_str:
   | UIDENT { Location.mkloc $1 (to_loc $loc) }
 
 foreign_stmt:
-  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 ~prim:[] () }
+  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 () }
 
 prim:
   | primitive_ { Location.mkloc $1 (to_loc $loc) }
 
 primitive_stmt:
-  | PRIMITIVE id_str colon typ equal STRING { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] () }
-  | PRIMITIVE prim colon typ equal STRING { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:{$2 with txt="primitive"} ~name:$2 ~alias:None ~typ:$4 ~prim:[$6] () }
+  | PRIMITIVE id_str equal STRING { PrimitiveDescription.mk ~loc:(to_loc $loc) ~ident:$2 ~name:(mkstr $loc($4) $4) () }
+  | PRIMITIVE prim equal STRING { PrimitiveDescription.mk ~loc:(to_loc $loc) ~ident:$2 ~name:(mkstr $loc($4) $4) () }
 
 exception_stmt:
   | EXCEPTION type_id_str { Exception.singleton ~loc:(to_loc $loc) $2 }
-  | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Option.value ~default:[] $4) }
+  | EXCEPTION type_id_str lparen typs? rparen { Exception.tuple ~loc:(to_loc $loc) $2 (Location.mkloc (Option.value ~default:[] $4) (to_loc $loc($4))) }
+  | EXCEPTION type_id_str data_record_body { Exception.record ~loc:(to_loc $loc) $2 (Location.mkloc $3 (to_loc $loc($3))) }
 
 module_stmt:
   | MODULE UIDENT lbrace toplevel_stmts RBRACE { ModuleDeclaration.mk ~loc:(to_loc $loc) (mkstr $loc($2) $2) $4 }
@@ -659,9 +697,9 @@ toplevel_stmt:
   | attributes foreign_stmt { Toplevel.foreign ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | attributes include_stmt { Toplevel.include_ ~loc:(to_loc $loc) ~attributes:$1 $2 }
   | attributes module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
+  | attributes primitive_stmt { Toplevel.primitive ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | expr { Toplevel.expr ~loc:(to_loc $loc) $1 }
   | provide_stmt { $1 }
-  | primitive_stmt { Toplevel.primitive ~loc:(to_loc $loc) NotProvided $1 }
   | exception_stmt { Toplevel.grain_exception ~loc:(to_loc $loc) NotProvided $1 }
 
 toplevel_stmts:

@@ -25,6 +25,9 @@ let process = msg => {
   | TextDocumentHover(id, params) when is_initialized^ =>
     Hover.process(~id, ~compiled_code, ~documents, params);
     Reading;
+  | TextDocumentInlayHint(id, params) when is_initialized^ =>
+    Inlayhint.process(~id, ~compiled_code, ~documents, params);
+    Reading;
   | TextDocumentCodeLens(id, params) when is_initialized^ =>
     Lenses.process(~id, ~compiled_code, ~documents, params);
     Reading;

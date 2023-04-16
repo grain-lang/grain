@@ -14,8 +14,7 @@ type summary =
   | Env_module(summary, Ident.t, module_declaration)
   | Env_modtype(summary, Ident.t, modtype_declaration)
   | Env_open(summary, Path.t)
-  | Env_constraints(summary, PathMap.t(type_declaration))
-  | Env_copy_types(summary, list(string));
+  | Env_constraints(summary, PathMap.t(type_declaration));
 
 type type_descriptions = (
   list(constructor_description),
@@ -31,7 +30,6 @@ type dependency_chain = list(Location.loc(string));
 type error =
   | Illegal_renaming(string, string, string)
   | Inconsistent_import(string, string, string)
-  | Need_recursive_types(string, string)
   | Depend_on_unsafe_string_unit(string, string)
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
@@ -127,9 +125,6 @@ let lookup_modtype:
   (~loc: Location.t=?, ~mark: bool=?, Identifier.t, t) =>
   (Path.t, modtype_declaration);
 
-let copy_types: (list(string), t) => t;
-/* Used only in Typecore.duplicate_ident_types. */
-
 /* By-identifier insertions */
 /** Adds a value identifier with the given name and description. */
 
@@ -153,7 +148,8 @@ let add_constructor: (Ident.t, constructor_description, t) => t;
 
 /** Adds a constructor with the given name and description. */
 
-let add_module: (~arg: bool=?, Ident.t, module_type, option(string), t) => t;
+let add_module:
+  (~arg: bool=?, Ident.t, module_type, option(string), Location.t, t) => t;
 let add_module_declaration:
   (~arg: bool=?, ~check: bool, Ident.t, module_declaration, t) => t;
 let add_modtype: (Ident.t, modtype_declaration, t) => t;
@@ -177,7 +173,8 @@ let is_runtime_mode: unit => bool;
 /* Insertion of a module */
 let include_module: (Identifier.t, include_declaration, t) => t;
 
-let use_partial_signature: (Path.t, list(Parsetree.use_item), t) => t;
+let use_partial_signature:
+  (Path.t, list(Parsetree.use_item), t) => (t, list(use_item));
 let use_full_signature: (Path.t, t) => t;
 
 let use_full_signature_of_initially_included_module: (Path.t, t) => t;
@@ -187,7 +184,14 @@ let use_full_signature_of_initially_included_module: (Path.t, t) => t;
 let read_signature: string => signature;
 /* Arguments: module name, file name. Results: signature. */
 let build_signature:
-  (~deprecated: string=?, signature, string, string) => Cmi_format.cmi_infos;
+  (
+    ~deprecated: string=?,
+    signature,
+    string,
+    string,
+    Cmi_format.cmi_type_metadata
+  ) =>
+  Cmi_format.cmi_infos;
 /* Arguments: signature, module name, file name. */
 let build_signature_with_imports:
   (
@@ -195,7 +199,8 @@ let build_signature_with_imports:
     signature,
     string,
     string,
-    list((string, option(Digest.t)))
+    list((string, option(Digest.t))),
+    Cmi_format.cmi_type_metadata
   ) =>
   Cmi_format.cmi_infos;
 /* Arguments: signature, module name, file name,

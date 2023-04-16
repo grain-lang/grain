@@ -56,7 +56,7 @@ module MakeMap =
       | TTyAny
       | TTyVar(_) => ct.ctyp_desc
       | TTyArrow(args, ret) =>
-        let args = List.map(map_core_type, args);
+        let args = List.map(((l, arg)) => (l, map_core_type(arg)), args);
         let ret = map_core_type(ret);
         TTyArrow(args, ret);
       | TTyConstr(a, b, args) =>
@@ -204,15 +204,19 @@ module MakeMap =
     let exp_extra = List.map(map_exp_extra, exp.exp_extra);
     let exp_desc =
       switch (exp.exp_desc) {
-      | TExpNull
+      | TExpUse(_)
       | TExpIdent(_)
       | TExpConstant(_) => exp.exp_desc
       | TExpLet(recflag, mutflag, binds) =>
         TExpLet(recflag, mutflag, map_bindings(recflag, mutflag, binds))
       | TExpLambda(branches, p) =>
         TExpLambda(map_match_branches(branches), p)
-      | TExpApp(exp, args) =>
-        TExpApp(map_expression(exp), List.map(map_expression, args))
+      | TExpApp(exp, labels, args) =>
+        TExpApp(
+          map_expression(exp),
+          labels,
+          List.map(((l, arg)) => (l, map_expression(arg)), args),
+        )
       | TExpPrim0(o) => TExpPrim0(o)
       | TExpPrim1(o, e) => TExpPrim1(o, map_expression(e))
       | TExpPrim2(o, e1, e2) =>

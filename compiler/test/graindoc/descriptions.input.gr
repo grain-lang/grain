@@ -1,0 +1,52 @@
+module DescriptionGrainDoc
+
+// No Documentation
+/**
+ * No Alias Doc
+ */
+type NoDocAlias = Bool
+/**
+ * No Record Doc
+ */
+record NoDocRecord {
+  noDocField: Bool
+}
+/**
+ * No Enum Doc
+ */
+enum NoDocEnum {
+  NoDocCase
+}
+/**
+ * No Value Doc
+ */
+let noDocValue = 1
+/**
+ * No Function Doc
+ */
+let noDocFunction = (x: Number) => x + 1
+// Documentation
+/**
+ * Alias Doc
+ */
+provide type DocAlias = Bool
+/**
+ * Record Doc
+ */
+provide record DocRecord {
+  docField: Bool
+}
+/**
+ * Enum Doc
+ */
+provide enum DocEnum {
+  DocCase
+}
+/**
+ * Value Doc
+ */
+provide let docValue = 1
+/**
+ * Function Doc
+ */
+provide let docFunction = (x: Number) => x + 1

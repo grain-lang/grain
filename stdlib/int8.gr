@@ -1,0 +1,430 @@
+/**
+ * Utilities for working with the Int8 type.
+ * @example include "int8"
+ *
+ * @since v0.6.0
+ */
+
+module Int8
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
+  (+),
+  (-),
+  (*),
+  (/),
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>),
+  (>>),
+  (==),
+  (!=),
+  (<),
+  (<=),
+  (>),
+  (>=),
+}
+include "runtime/exception"
+include "runtime/numbers"
+from Numbers use {
+  coerceNumberToInt8 as fromNumber,
+  coerceInt8ToNumber as toNumber,
+}
+include "runtime/dataStructures"
+from DataStructures use { tagInt8, untagInt8 }
+
+@unsafe
+let _TAG_BYTE = 0b1010n
+@unsafe
+let _DATA_MASK = 0xffffff00n
+
+provide { fromNumber, toNumber }
+
+// Trick: can simply use WasmI32.extendS16 to sign-extend 8-bit ints rather
+// than having to shift right, extendS8, and retag
+
+/**
+ * Converts a Uint8 to an Int8.
+ *
+ * @param number: The value to convert
+ * @returns The Uint8 represented as an Int8
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let fromUint8 = (x: Uint8) => {
+  let x = WasmI32.fromGrain(x)
+  // Trick: convert from Uint8 tag 11010 to Int8 tag 1010
+  let result = x ^ 0b10000n
+  WasmI32.toGrain(WasmI32.extendS16(result)): Int8
+}
+
+/**
+ * Increments the value by one.
+ *
+ * @param value: The value to increment
+ * @returns The incremented value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let incr = (value: Int8) => {
+  let value = WasmI32.fromGrain(value)
+  // Trick: since the data is at offset 8, can just add 1 << 8 == 0x100
+  let result = value + 0x100n
+  WasmI32.toGrain(WasmI32.extendS16(result)): Int8
+}
+
+/**
+ * Decrements the value by one.
+ *
+ * @param value: The value to decrement
+ * @returns The decremented value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let decr = (value: Int8) => {
+  let value = WasmI32.fromGrain(value)
+  // Trick: since the data is at offset 8, can just subtract 1 << 8 == 0x100
+  let result = value - 0x100n
+  WasmI32.toGrain(WasmI32.extendS16(result)): Int8
+}
+
+/**
+ * Computes the sum of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The sum of the two operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (+) = (x: Int8, y: Int8) => {
+  // Trick: add the values as-is without shifting right 8; this will cause
+  // the data to be added correctly but the trailing tag bits will be corrupted:
+  // 1010 + 1010 = 10100; xor with 11110 to correct to 1010
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  let val = x + y
+  let tagged = val ^ 0b11110n
+  WasmI32.toGrain(WasmI32.extendS16(tagged)): Int8
+}
+
+/**
+ * Computes the difference of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The difference of the two operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (-) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  let val = x - y
+  let tagged = val | _TAG_BYTE
+  WasmI32.toGrain(WasmI32.extendS16(tagged)): Int8
+}
+
+/**
+ * Computes the product of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The product of the two operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (*) = (x: Int8, y: Int8) => {
+  let x = untagInt8(x)
+  let y = untagInt8(y)
+  let val = WasmI32.extendS8(x * y)
+  tagInt8(val)
+}
+
+/**
+ * Computes the quotient of its operands using signed division.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The quotient of its operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (/) = (x: Int8, y: Int8) => {
+  let x = untagInt8(x)
+  let y = untagInt8(y)
+  // No need to re-sign-extend
+  let val = x / y
+  tagInt8(val)
+}
+
+/**
+ * Computes the remainder of the division of its operands using signed division.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The remainder of its operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let rem = (x: Int8, y: Int8) => {
+  let x = untagInt8(x)
+  let y = untagInt8(y)
+  // No need to re-sign-extend
+  let val = WasmI32.remS(x, y)
+  tagInt8(val)
+}
+
+@unsafe
+let abs = n => {
+  from WasmI32 use { (-) }
+  let mask = n >> 31n
+  (n ^ mask) - mask
+}
+
+/**
+ * Computes the remainder of the division of the first operand by the second.
+ * The result will have the sign of the second operand.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The modulus of its operands
+ *
+ * @throws ModuloByZero: When `y` is zero
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (%) = (x: Int8, y: Int8) => {
+  from WasmI32 use { (-) }
+  let xval = untagInt8(x)
+  let yval = untagInt8(y)
+
+  if (WasmI32.eqz(yval)) {
+    throw Exception.ModuloByZero
+  }
+
+  let val = if ((xval ^ yval) < 0n) {
+    let xabs = abs(xval)
+    let yabs = abs(yval)
+    let mval = WasmI32.remS(xabs, yabs)
+    let mres = yabs - mval
+    if (mval != 0n) (if (yval < 0n) 0n - mres else mres) else 0n
+  } else {
+    WasmI32.remS(xval, yval)
+  }
+  tagInt8(val)
+}
+
+/**
+ * Shifts the bits of the value left by the given number of bits.
+ *
+ * @param value: The value to shift
+ * @param amount: The number of bits to shift by
+ * @returns The shifted value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<<) = (value: Int8, amount: Int8) => {
+  // Trick: do not shift `value` right, just correct tag afterwards
+  let x = WasmI32.fromGrain(value) & _DATA_MASK
+  let y = untagInt8(amount)
+  let val = x << y
+  let tagged = val | _TAG_BYTE
+  WasmI32.toGrain(WasmI32.extendS16(tagged)): Int8
+}
+
+/**
+ * Shifts the bits of the value right by the given number of bits, preserving the sign bit.
+ *
+ * @param value: The value to shift
+ * @param amount: The amount to shift by
+ * @returns The shifted value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>>) = (value: Int8, amount: Int8) => {
+  // Trick: do not shift `value` right, just correct tag afterwards
+  let x = WasmI32.fromGrain(value)
+  let y = untagInt8(amount)
+  let val = x >> y
+  let tagged = val & _DATA_MASK | _TAG_BYTE
+  WasmI32.toGrain(tagged): Int8
+}
+
+/**
+ * Checks if the first value is equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (==) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x == y
+}
+
+/**
+ * Checks if the first value is not equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is not equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (!=) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x != y
+}
+
+/**
+ * Checks if the first value is less than the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x < y
+}
+
+/**
+ * Checks if the first value is greater than the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x > y
+}
+
+/**
+ * Checks if the first value is less than or equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<=) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x <= y
+}
+
+/**
+ * Checks if the first value is greater than or equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>=) = (x: Int8, y: Int8) => {
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x >= y
+}
+
+/**
+ * Computes the bitwise NOT of the given value.
+ *
+ * @param value: The given value
+ * @returns Containing the inverted bits of the given value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let lnot = (value: Int8) => {
+  let x = WasmI32.fromGrain(value)
+  WasmI32.toGrain(x ^ _DATA_MASK): Int8
+}
+
+/**
+ * Computes the bitwise AND (`&`) on the given operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (&) = (x: Int8, y: Int8) => {
+  // Tags getting `and`ed together is not a problem
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  let val = x & y
+  WasmI32.toGrain(val): Int8
+}
+
+/**
+ * Computes the bitwise OR (`|`) on the given operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (|) = (x: Int8, y: Int8) => {
+  // Tags getting `or`ed together is not a problem
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  let val = x | y
+  WasmI32.toGrain(val): Int8
+}
+
+/**
+ * Computes the bitwise XOR (`^`) on the given operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (^) = (x: Int8, y: Int8) => {
+  from WasmI32 use { (|) }
+  // Tags getting `xor`ed together will cancel each other out; add back tag with or
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  let val = x ^ y
+  WasmI32.toGrain(val | _TAG_BYTE): Int8
+}

@@ -2,6 +2,10 @@
 title: WasmF32
 ---
 
+## Values
+
+Functions and constants included in the WasmF32 module.
+
 ### WasmF32.**load**
 
 ```grain
@@ -56,28 +60,28 @@ nearest : WasmF32 -> WasmF32
 sqrt : WasmF32 -> WasmF32
 ```
 
-### WasmF32.**add**
+### WasmF32.**(+)**
 
 ```grain
-add : (WasmF32, WasmF32) -> WasmF32
+(+) : (WasmF32, WasmF32) -> WasmF32
 ```
 
-### WasmF32.**sub**
+### WasmF32.**(-)**
 
 ```grain
-sub : (WasmF32, WasmF32) -> WasmF32
+(-) : (WasmF32, WasmF32) -> WasmF32
 ```
 
-### WasmF32.**mul**
+### WasmF32.**(*)**
 
 ```grain
-mul : (WasmF32, WasmF32) -> WasmF32
+(*) : (WasmF32, WasmF32) -> WasmF32
 ```
 
-### WasmF32.**div**
+### WasmF32.**(/)**
 
 ```grain
-div : (WasmF32, WasmF32) -> WasmF32
+(/) : (WasmF32, WasmF32) -> WasmF32
 ```
 
 ### WasmF32.**copySign**
@@ -98,40 +102,40 @@ min : (WasmF32, WasmF32) -> WasmF32
 max : (WasmF32, WasmF32) -> WasmF32
 ```
 
-### WasmF32.**eq**
+### WasmF32.**(==)**
 
 ```grain
-eq : (WasmF32, WasmF32) -> Bool
+(==) : (WasmF32, WasmF32) -> Bool
 ```
 
-### WasmF32.**ne**
+### WasmF32.**(!=)**
 
 ```grain
-ne : (WasmF32, WasmF32) -> Bool
+(!=) : (WasmF32, WasmF32) -> Bool
 ```
 
-### WasmF32.**lt**
+### WasmF32.**(<)**
 
 ```grain
-lt : (WasmF32, WasmF32) -> Bool
+(<) : (WasmF32, WasmF32) -> Bool
 ```
 
-### WasmF32.**le**
+### WasmF32.**(<=)**
 
 ```grain
-le : (WasmF32, WasmF32) -> Bool
+(<=) : (WasmF32, WasmF32) -> Bool
 ```
 
-### WasmF32.**gt**
+### WasmF32.**(>)**
 
 ```grain
-gt : (WasmF32, WasmF32) -> Bool
+(>) : (WasmF32, WasmF32) -> Bool
 ```
 
-### WasmF32.**ge**
+### WasmF32.**(>=)**
 
 ```grain
-ge : (WasmF32, WasmF32) -> Bool
+(>=) : (WasmF32, WasmF32) -> Bool
 ```
 
 ### WasmF32.**reinterpretI32**

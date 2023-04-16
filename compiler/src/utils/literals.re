@@ -67,12 +67,136 @@ let conv_number_rational = (n, d) => {
   };
 };
 
+let int8_max = 127l;
+let int8_min = (-128l);
+
+let conv_int8 = s => {
+  let non_decimal =
+    String.length(s) > 2
+    && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    let (&) = Int32.logand;
+    let (>>) = Int32.shift_right;
+    let (<<) = Int32.shift_left;
+    if (n > int8_max) {
+      // Trick to allow setting the sign bit in representations like 0xFF
+      if (non_decimal && (n & 0xFFFFFF80l) >> 7 == 1l) {
+        Some(n << 24 >> 24);
+      } else {
+        None;
+      };
+    } else if (n < int8_min) {
+      None;
+    } else if (non_decimal && n < 0l) {
+      None; // Reject something like 0xFFFFFFFFs
+    } else {
+      Some(n);
+    };
+  };
+};
+
+let int16_max = 32767l;
+let int16_min = (-32768l);
+
+let conv_int16 = s => {
+  let non_decimal =
+    String.length(s) > 2
+    && List.mem(String.sub(s, 0, 2), ["0x", "0b", "0o"]);
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    let (&) = Int32.logand;
+    let (>>) = Int32.shift_right;
+    let (<<) = Int32.shift_left;
+    if (n > int16_max) {
+      // Trick to allow setting the sign bit in representations like 0xFFFF
+      if (non_decimal && (n & 0xFFFF8000l) >> 15 == 1l) {
+        Some(n << 16 >> 16);
+      } else {
+        None;
+      };
+    } else if (n < int16_min) {
+      None;
+    } else if (non_decimal && n < 0l) {
+      None; // Reject something like 0xFFFFFFFFS
+    } else {
+      Some(n);
+    };
+  };
+};
+
 let conv_int32 = s => {
   Int32.of_string_opt(s);
 };
 
 let conv_int64 = s => {
   Int64.of_string_opt(s);
+};
+
+let uint_format_str = s =>
+  if (String.length(s) > 2) {
+    let prefix = String.sub(s, 0, 2);
+    if (prefix == "0b" || prefix == "0x" || prefix == "0o") {
+      s;
+    } else {
+      "0u" ++ s;
+    };
+  } else {
+    "0u" ++ s;
+  };
+
+let uint8_max = 255l;
+
+let conv_uint8 = s => {
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    if (n < 0l || n > uint8_max) {
+      None;
+    } else {
+      Some(n);
+    }
+  };
+};
+
+let uint16_max = 65535l;
+
+let conv_uint16 = s => {
+  switch (Int32.of_string_opt(s)) {
+  | None => None
+  | Some(n) =>
+    if (n < 0l || n > uint16_max) {
+      None;
+    } else {
+      Some(n);
+    }
+  };
+};
+
+let conv_uint32 = s => {
+  Int32.of_string_opt(uint_format_str(s));
+};
+
+let conv_uint64 = s => {
+  Int64.of_string_opt(uint_format_str(s));
+};
+
+let get_neg_uint8_hex = n => {
+  Printf.sprintf("%lx", Int32.logand(Int32.neg(n), 0xFFl));
+};
+
+let get_neg_uint16_hex = n => {
+  Printf.sprintf("%lx", Int32.logand(Int32.neg(n), 0xFFFFl));
+};
+
+let get_neg_uint32_hex = n => {
+  Printf.sprintf("%lx", Int32.neg(n));
+};
+
+let get_neg_uint64_hex = n => {
+  Printf.sprintf("%Lx", Int64.neg(n));
 };
 
 let conv_float32 = s => {

@@ -353,14 +353,18 @@ let rec print_out_type = ppf =>
 
 and print_out_type_1 = ppf =>
   fun
-  | Otyp_arrow(ty1, ty2) => {
-      let args_length = List.length(ty1);
+  | Otyp_arrow(al, ty2) => {
+      let parens =
+        switch (al) {
+        | [("", _)] => false
+        | _ => true
+        };
       pp_open_box(ppf, 1);
-      if (args_length != 1) {
+      if (parens) {
         pp_print_char(ppf, '(');
       };
-      fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ","), ty1);
-      if (args_length != 1) {
+      fprintf(ppf, "@[<0>%a@]", print_argtyplist(print_out_type_2, ","), al);
+      if (parens) {
         pp_print_char(ppf, ')');
       };
       pp_print_string(ppf, " ->");
@@ -519,6 +523,26 @@ and print_row_field = (ppf, (l, opt_amp, tyl)) => {
     tyl,
   );
 }
+and print_argtyplist = (print_elem, sep, ppf) =>
+  fun
+  | [] => ()
+  | [(l, ty)] => {
+      if (l != "") {
+        pp_print_string(ppf, l);
+        pp_print_string(ppf, ": ");
+      };
+      print_elem(ppf, ty);
+    }
+  | [(l, ty), ...al] => {
+      if (l != "") {
+        pp_print_string(ppf, l);
+        pp_print_string(ppf, ": ");
+      };
+      print_elem(ppf, ty);
+      pp_print_string(ppf, sep);
+      pp_print_space(ppf, ());
+      print_argtyplist(print_elem, sep, ppf, al);
+    }
 and print_typlist = (print_elem, sep, ppf) =>
   fun
   | [] => ()

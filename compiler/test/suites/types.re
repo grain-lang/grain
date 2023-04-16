@@ -202,7 +202,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "regression_annotated_type_func_1",
     {|
-      type AddPrinter = (Number, Number) -> Void
+      abstract type AddPrinter = (Number, Number) -> Void
       provide let add: AddPrinter = (x, y) => print(x + y)
       add(4, 4)
     |},
@@ -211,7 +211,7 @@ describe("aliased types", ({test, testSkip}) => {
   assertRun(
     "regression_annotated_type_func_2",
     {|
-      type AddPrinter<a> = (a, a) -> Void
+      abstract type AddPrinter<a> = (a, a) -> Void
       provide let add: AddPrinter<Number> = (x, y) => print(x + y)
       add(4, 4)
     |},
@@ -236,6 +236,125 @@ describe("abstract types", ({test, testSkip}) => {
     // TODO: This will be a type error when we support fully abstract types
     // "expected of type
     //      Foo",
+  );
+
+  assertCompileError(
+    "type_provided_1",
+    {|
+      type Foo = Number
+      provide let three: Foo = 3
+    |},
+    "value is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_2",
+    {|
+      enum Foo { Foo }
+      provide let foo = Foo
+    |},
+    "value is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_3",
+    {|
+      record Foo { foo: String }
+      provide let foo = { foo: "" }
+    |},
+    "value is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_4",
+    {|
+      type Foo = Number
+      provide type Bar = Foo
+    |},
+    "type is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_5",
+    {|
+      type Foo = Number
+      provide enum Bar { Bar(Foo) }
+    |},
+    "enum is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_6",
+    {|
+      type Foo = Number
+      provide record Bar { bar: Foo }
+    |},
+    "record is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_7",
+    {|
+      type Foo = Number
+      provide module Nested {
+        provide let foo: Foo = 5
+      }
+    |},
+    "module is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_8",
+    {|
+      module Nested {
+        type Foo = Number
+        provide let three: Foo = 3
+      }
+    |},
+    "value is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_9",
+    {|
+      module Nested {
+        enum Foo { Foo }
+        provide let foo = Foo
+      }
+    |},
+    "value is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_10",
+    {|
+      module Nested {
+        record Foo { foo: String }
+        provide let foo = { foo: "" }
+      }
+    |},
+    "value is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_11",
+    {|
+      module Nested {
+        type Foo = Number
+        provide type Bar = Foo
+      }
+    |},
+    "type is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_12",
+    {|
+      module Nested {
+        type Foo = Number
+        provide enum Bar { Bar(Foo) }
+      }
+    |},
+    "enum is provided but contains type Foo",
+  );
+  assertCompileError(
+    "type_provided_13",
+    {|
+      module Nested {
+        type Foo = Number
+        provide record Bar { bar: Foo }
+      }
+    |},
+    "record is provided but contains type Foo",
   );
 
   assertRun(

@@ -18,10 +18,6 @@ from DataStructures use { tagSimpleNumber, tagChar, untagChar, allocateString }
 exception MalformedUtf8
 
 /**
- * @section Values: Functions and constants included in the Char module.
- */
-
-/**
  * The minimum valid Unicode scalar value.
  *
  * @since 0.3.0
@@ -77,8 +73,7 @@ provide let code = (char: Char) => {
  */
 @unsafe
 provide let fromCode = (usv: Number) => {
-  let (-) = WasmI32.sub
-  let (<<) = WasmI32.shl
+  from WasmI32 use { (-), (<<) }
 
   if (!isValid(usv)) {
     throw InvalidArgument("Invalid character code")
@@ -149,15 +144,17 @@ provide let pred = char => {
  */
 @unsafe
 provide let toString = (char: Char) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (*) = WasmI32.mul
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
-  let (>>>) = WasmI32.shrU
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtU
-  let (<=) = WasmI32.leU
+  from WasmI32 use {
+    (+),
+    (-),
+    (*),
+    (&),
+    (|),
+    (>>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+  }
 
   let usv = untagChar(char)
 

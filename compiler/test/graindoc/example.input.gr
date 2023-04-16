@@ -1,0 +1,66 @@
+module ExampleDoc
+
+/**
+ * SingleLineExample
+ *
+ * @example singleLineExample(1, [1, 2, 3])
+ */
+provide let singleLineExample = (index, array) => 1
+
+/**
+ * MultiLineExample
+ *
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * print(x) // 1
+ */
+provide let multiLineExample = (index, array) => 1
+
+
+/**
+ * SingleLineExample
+ *
+ * @example singleLineExample(1, [1, 2, 3]) == 1
+ * @example assert singleLineExample(1, [1, 2, 3]) == 1
+ *
+ * @example print(singleLineExample(1, [1, 2, 3]))
+ */
+provide let multipleSingleLineExamples = (index, array) => 1
+
+/**
+ * MultiLineExample
+ *
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * print(x) // 1
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * assert x == 1
+ *
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * x == 1
+ */
+provide let multipleMultiLineExample = (index, array) => 1
+
+
+/**
+ * MultiLineExample
+ *
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * print(x) // 1
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * assert x == 1
+ *
+ * @example
+ * let x = multiLineExample(1, [1, 2, 3])
+ * x == 1
+ *
+ * @example singleLineExample(1, [1, 2, 3]) == 1
+ * @example assert singleLineExample(1, [1, 2, 3]) == 1
+ *
+ * @example print(singleLineExample(1, [1, 2, 3]))
+ */
+provide let mixedLineExample = (index, array) => 1

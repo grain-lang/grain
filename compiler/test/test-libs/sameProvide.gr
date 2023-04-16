@@ -1,6 +1,0 @@
-module SameProvide
-
-let foo = () => 5
-provide { foo }
-let foo = () => foo() + 1
-provide { foo }

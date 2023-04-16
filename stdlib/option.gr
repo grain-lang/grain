@@ -14,10 +14,6 @@
 module Option
 
 /**
- * @section Values: Functions for working with the Option data type.
- */
-
-/**
  * Checks if the Option is the `Some` variant.
  *
  * @param option: The option to check

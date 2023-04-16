@@ -14,9 +14,15 @@
 /**************************************************************************/
 
 type pers_flags =
-  | Rectypes
   | Opaque
   | Unsafe_string;
+
+[@deriving (sexp, yojson)]
+type cmi_type_metadata = {
+  ctm_metadata: string,
+  ctm_exceptions: string,
+  ctm_offsets_tbl: list((int, int)),
+};
 
 [@deriving (sexp, yojson)]
 type cmi_infos = {
@@ -24,6 +30,7 @@ type cmi_infos = {
   cmi_sign: list(Types.signature_item),
   cmi_crcs: list((string, option(Digest.t))),
   cmi_flags: list(pers_flags),
+  cmi_type_metadata,
   cmi_config_sum: string,
 };
 
@@ -34,7 +41,8 @@ let build_full_cmi:
     ~name: string,
     ~sign: list(Types.signature_item),
     ~crcs: list((string, option(Digest.t))),
-    ~flags: list(pers_flags)
+    ~flags: list(pers_flags),
+    ~type_metadata: cmi_type_metadata
   ) =>
   cmi_infos;
 

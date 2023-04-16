@@ -2,7 +2,7 @@
 module Exception
 
 include "runtime/unsafe/wasmi32" as WasmI32
-from WasmI32 use { eq as (==), add as (+) }
+from WasmI32 use { (==), (+), (-) }
 
 foreign wasm fd_write: (
   WasmI32,
@@ -11,7 +11,7 @@ foreign wasm fd_write: (
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
-primitive unreachable: () -> a = "@unreachable"
+primitive unreachable = "@unreachable"
 
 provide let mut printers = 0n
 
@@ -48,6 +48,13 @@ provide let dangerouslyRegisterPrinter = f => {
   void
 }
 
+// avoid cirular dependency on gc
+let incRef = v => {
+  let ptr = WasmI32.fromGrain(v) - 8n
+  WasmI32.store(ptr, WasmI32.load(ptr, 0n) + 1n, 0n)
+  v
+}
+
 let _GENERIC_EXCEPTION_NAME = "GrainException"
 
 let exceptionToString = (e: Exception) => {
@@ -59,7 +66,8 @@ let exceptionToString = (e: Exception) => {
       Exception -> Option<String>,
       WasmI32
     )
-    match (printer(e)) {
+    // as GC is not available, manually increment the references
+    match (incRef(printer)(incRef(e))) {
       Some(str) => return str,
       None => {
         current = next

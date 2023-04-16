@@ -28,16 +28,25 @@ type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
 
+type location('a) = loc('a);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
 
 module Constant: {
+  let bytes: string => constant;
   let string: string => constant;
   let char: string => constant;
   let number: number_type => constant;
+  let int8: string => constant;
+  let int16: string => constant;
   let int32: string => constant;
   let int64: string => constant;
+  let uint8: (bool, string) => constant;
+  let uint16: (bool, string) => constant;
+  let uint32: (bool, string) => constant;
+  let uint64: (bool, string) => constant;
   let float32: string => constant;
   let float64: string => constant;
   let wasmi32: string => constant;
@@ -45,6 +54,7 @@ module Constant: {
   let wasmf32: string => constant;
   let wasmf64: string => constant;
   let bigint: string => constant;
+  let rational: string => constant;
   let bool: bool => constant;
   let void: constant;
 };
@@ -53,7 +63,8 @@ module Type: {
   let mk: (~loc: loc=?, parsed_type_desc) => parsed_type;
   let any: (~loc: loc=?, unit) => parsed_type;
   let var: (~loc: loc=?, string) => parsed_type;
-  let arrow: (~loc: loc=?, list(parsed_type), parsed_type) => parsed_type;
+  let arrow:
+    (~loc: loc=?, list(parsed_type_argument), parsed_type) => parsed_type;
   let tuple: (~loc: loc=?, list(parsed_type)) => parsed_type;
   let constr: (~loc: loc=?, id, list(parsed_type)) => parsed_type;
   let poly: (~loc: loc=?, list(str), parsed_type) => parsed_type;
@@ -63,9 +74,12 @@ module Type: {
 module ConstructorDeclaration: {
   let mk: (~loc: loc=?, str, constructor_arguments) => constructor_declaration;
   let singleton: (~loc: loc=?, str) => constructor_declaration;
-  let tuple: (~loc: loc=?, str, list(parsed_type)) => constructor_declaration;
+  let tuple:
+    (~loc: loc=?, str, location(list(parsed_type))) =>
+    constructor_declaration;
   let record:
-    (~loc: loc=?, str, list(label_declaration)) => constructor_declaration;
+    (~loc: loc=?, str, location(list(label_declaration))) =>
+    constructor_declaration;
 };
 
 module LabelDeclaration: {
@@ -90,7 +104,10 @@ module DataDeclaration: {
 module Exception: {
   let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
   let singleton: (~loc: loc=?, str) => type_exception;
-  let tuple: (~loc: loc=?, str, list(parsed_type)) => type_exception;
+  let tuple:
+    (~loc: loc=?, str, location(list(parsed_type))) => type_exception;
+  let record:
+    (~loc: loc=?, str, location(list(label_declaration))) => type_exception;
 };
 
 module Pattern: {
@@ -106,6 +123,7 @@ module Pattern: {
   let constant: (~loc: loc=?, constant) => pattern;
   let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
   let construct: (~loc: loc, id, constructor_pattern) => pattern;
+  let singleton_construct: (~loc: loc, id) => pattern;
   let tuple_construct: (~loc: loc, id, list(pattern)) => pattern;
   let record_construct:
     (~loc: loc, id, list((option((id, pattern)), Asttypes.closed_flag))) =>
@@ -186,7 +204,7 @@ module Expression: {
       ~attributes: attributes=?,
       expression,
       expression,
-      expression
+      option(expression)
     ) =>
     expression;
   let while_:
@@ -217,24 +235,42 @@ module Expression: {
     (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
     expression;
   let lambda:
-    (~loc: loc=?, ~attributes: attributes=?, list(pattern), expression) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      list(lambda_argument),
+      expression
+    ) =>
     expression;
   let apply:
-    (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      expression,
+      list(application_argument)
+    ) =>
     expression;
   let construct:
     (~loc: loc, ~attributes: attributes=?, id, constructor_expression) =>
+    expression;
+  let singleton_construct:
+    (~loc: loc, ~attributes: attributes=?, Location.loc(Identifier.t)) =>
     expression;
   let tuple_construct:
     (~loc: loc, ~attributes: attributes=?, id, list(expression)) => expression;
   let record_construct:
     (~loc: loc, ~attributes: attributes=?, id, list(recorditem)) => expression;
   let binop:
-    (~loc: loc=?, ~attributes: attributes=?, expression, list(expression)) =>
+    (
+      ~loc: loc=?,
+      ~attributes: attributes=?,
+      expression,
+      expression,
+      expression
+    ) =>
     expression;
   let block:
     (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
-  let null: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
   let ignore: expression => expression;
 };
 
@@ -261,7 +297,7 @@ module Toplevel: {
       ~loc: loc=?,
       ~attributes: attributes=?,
       provide_flag,
-      value_description
+      primitive_description
     ) =>
     toplevel_stmt;
   let data:
@@ -291,6 +327,10 @@ module Toplevel: {
     toplevel_stmt;
 };
 
+module PrimitiveDescription: {
+  let mk: (~loc: loc, ~ident: str, ~name: str, unit) => primitive_description;
+};
+
 module ValueDescription: {
   let mk:
     (
@@ -299,7 +339,6 @@ module ValueDescription: {
       ~name: str,
       ~alias: option(str),
       ~typ: parsed_type,
-      ~prim: list(string),
       unit
     ) =>
     value_description;
@@ -316,6 +355,15 @@ module MatchBranch: {
 
 module IncludeDeclaration: {
   let mk: (~loc: loc, str, option(str)) => include_declaration;
+};
+
+module TypeArgument: {
+  let mk:
+    (~loc: loc, Asttypes.argument_label, parsed_type) => parsed_type_argument;
+};
+
+module LambdaArgument: {
+  let mk: (~loc: loc, pattern, option(expression)) => lambda_argument;
 };
 
 module ModuleDeclaration: {

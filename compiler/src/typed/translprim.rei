@@ -2,8 +2,8 @@ open Typedtree;
 
 type primitive_constant =
   | HeapBase
-  | HeapStart
-  | HeapTypeMetadata;
+  | HeapTypeMetadata
+  | ElideTypeInfo;
 
 type primitive =
   | PrimitiveConstant(primitive_constant)
@@ -17,5 +17,5 @@ module PrimMap: Hashtbl.S with type key = string;
 let prim_map: PrimMap.t(primitive);
 
 let transl_prim:
-  (Env.t, value_description) =>
-  (list(value_binding), Env.t, Typedtree.attributes);
+  (Env.t, Grain_parsing.Parsetree.primitive_description) =>
+  (list(value_binding), Ident.t, Types.value_description, Env.t);

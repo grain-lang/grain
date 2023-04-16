@@ -28,6 +28,8 @@ type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
 
+type location('a) = loc('a);
+
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
@@ -61,8 +63,14 @@ module Constant = {
   let string = s => PConstString(s);
   let char = c => PConstChar(c);
   let number = i => PConstNumber(i);
+  let int8 = i => PConstInt8(i);
+  let int16 = i => PConstInt16(i);
   let int32 = i => PConstInt32(i);
   let int64 = i => PConstInt64(i);
+  let uint8 = (is_neg, i) => PConstUint8(is_neg, i);
+  let uint16 = (is_neg, i) => PConstUint16(is_neg, i);
+  let uint32 = (is_neg, i) => PConstUint32(is_neg, i);
+  let uint64 = (is_neg, i) => PConstUint64(is_neg, i);
   let float32 = f => PConstFloat32(f);
   let float64 = f => PConstFloat64(f);
   let wasmi32 = i => PConstWasmI32(i);
@@ -70,6 +78,14 @@ module Constant = {
   let wasmf32 = f => PConstWasmF32(f);
   let wasmf64 = f => PConstWasmF64(f);
   let bigint = i => PConstBigInt(i);
+  let rational = r => {
+    let (n, d) =
+      switch (String.split_on_char('/', r)) {
+      | [n, d] => (n, d)
+      | _ => failwith("Impossible: rational literal without forward slash")
+      };
+    PConstRational(n, d);
+  };
   let bool = b => PConstBool(b);
   let void = PConstVoid;
 };
@@ -111,7 +127,7 @@ module ConstructorDeclaration = {
             ),
           );
         },
-      a,
+      a.txt,
     );
     mk(~loc?, n, PConstrRecord(a));
   };
@@ -150,6 +166,21 @@ module Exception = {
   };
   let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
   let tuple = (~loc=?, n, args) => mk(~loc?, n, PConstrTuple(args));
+  let record = (~loc=?, n, args) => {
+    List.iter(
+      ld =>
+        if (ld.pld_mutable == Mutable) {
+          raise(
+            SyntaxError(
+              ld.pld_loc,
+              "A record exception constructor cannot have mutable fields.",
+            ),
+          );
+        },
+      args.txt,
+    );
+    mk(~loc?, n, PConstrRecord(args));
+  };
 };
 
 module Pattern = {
@@ -168,6 +199,8 @@ module Pattern = {
   let constant = (~loc=?, a) => mk(~loc?, PPatConstant(a));
   let constraint_ = (~loc=?, a, b) => mk(~loc?, PPatConstraint(a, b));
   let construct = (~loc, a, b) => mk(~loc, PPatConstruct(a, b));
+  let singleton_construct = (~loc, a) =>
+    construct(~loc, a, PPatConstrSingleton);
   let tuple_construct = (~loc, a, b) =>
     construct(~loc, a, PPatConstrTuple(b));
   let record_construct = (~loc, a, b) => {
@@ -308,6 +341,8 @@ module Expression = {
     mk(~loc?, ~attributes?, PExpApp(a, b));
   let construct = (~loc, ~attributes=?, a, b) =>
     mk(~loc, ~attributes?, PExpConstruct(a, b));
+  let singleton_construct = (~loc, ~attributes=?, a) =>
+    construct(~loc, ~attributes?, a, PExpConstrSingleton);
   let tuple_construct = (~loc, ~attributes=?, a, b) =>
     construct(~loc, ~attributes?, a, PExpConstrTuple(b));
   let record_construct = (~loc, ~attributes=?, a, b) => {
@@ -336,38 +371,46 @@ module Expression = {
   // and if you choose to shift then 1 / foo would always be a syntax error
   // because the parser would expect a number). It's easier to just parse it
   // as division and have this action decide that it's actually a rational.
-  let binop = (~loc=?, ~attributes=?, a, b) => {
+  let binop = (~loc=?, ~attributes=?, f, a, b) => {
     // Locations of nested binops are difficult to compute in the parser so we
     // just set the location manually here
     let loc =
       Location.(
         Option.map(
           loc =>
-            switch (b) {
-            | [{pexp_loc: {loc_start}}, {pexp_loc: {loc_end}}] => {
+            switch (a, b) {
+            | ({pexp_loc: {loc_start}}, {pexp_loc: {loc_end}}) => {
                 ...loc,
                 loc_start,
                 loc_end,
               }
-            | _ => failwith("Impossible: not a binop")
             },
           loc,
         )
       );
-    switch (a, b) {
+    switch (f, a, b) {
     | (
         {pexp_desc: PExpId({txt: IdentName({txt: "/"})})},
-        [
-          {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
-          {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
-        ],
+        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
+        {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
       ) =>
       constant(
         ~loc?,
         ~attributes?,
         PConstNumber(PConstNumberRational(x, y)),
       )
-    | _ => mk(~loc?, ~attributes?, PExpApp(a, b))
+    | _ =>
+      mk(
+        ~loc?,
+        ~attributes?,
+        PExpApp(
+          f,
+          [
+            {paa_label: Unlabeled, paa_expr: a, paa_loc: a.pexp_loc},
+            {paa_label: Unlabeled, paa_expr: b, paa_loc: b.pexp_loc},
+          ],
+        ),
+      )
     };
   };
   let block = (~loc=?, ~attributes=?, a) =>
@@ -404,8 +447,6 @@ module Expression = {
       };
     {...list, pexp_loc: loc};
   };
-  let null = (~loc=?, ~attributes=?, ()) =>
-    mk(~loc?, ~attributes?, PExpNull);
 
   let ignore = e =>
     switch (e.pexp_desc) {
@@ -440,15 +481,20 @@ module Toplevel = {
     mk(~loc, ~attributes?, PTopProvide(e));
 };
 
+module PrimitiveDescription = {
+  let mk = (~loc, ~ident, ~name, ()) => {
+    {pprim_ident: ident, pprim_name: name, pprim_loc: loc};
+  };
+};
+
 module ValueDescription = {
-  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ~prim, ()) => {
+  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ()) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {
       pval_mod: mod_,
       pval_name: name,
       pval_name_alias: alias,
       pval_type: typ,
-      pval_prim: prim,
       pval_loc: loc,
     };
   };
@@ -471,6 +517,45 @@ module MatchBranch = {
 module IncludeDeclaration = {
   let mk = (~loc, path, alias) => {
     {pinc_alias: alias, pinc_path: path, pinc_loc: loc};
+  };
+};
+
+module TypeArgument = {
+  let mk = (~loc, label, typ) => {
+    {ptyp_arg_label: label, ptyp_arg_type: typ, ptyp_arg_loc: loc};
+  };
+};
+
+module LambdaArgument = {
+  let mk = (~loc, pattern, default) => {
+    open Asttypes;
+    let label =
+      switch (pattern.ppat_desc) {
+      | PPatVar(name)
+      | PPatAlias({ppat_desc: PPatVar(name)}, _)
+      | PPatAlias(_, name)
+      | PPatConstraint(
+          {
+            ppat_desc:
+              PPatVar(name) | PPatAlias({ppat_desc: PPatVar(name)}, _) |
+              PPatAlias(_, name),
+          },
+          _,
+        ) =>
+        Some(name)
+      | _ => None
+      };
+    let pla_label =
+      switch (label, default) {
+      | (Some(name), Some(_)) => Default(name)
+      | (Some(name), None) => Labeled(name)
+      | (None, None) => Unlabeled
+      | (None, Some(_)) =>
+        raise(SyntaxError(loc, "Default arguments must be named."))
+      };
+    let pla_pattern = pattern;
+    let pla_default = default;
+    {pla_label, pla_default, pla_pattern, pla_loc: loc};
   };
 };
 

@@ -137,11 +137,11 @@ module Make = (Ord: OrderableSegment) => {
 module type Sourcetree = {
   include SegmentTree with type point = Protocol.position;
   type node =
-    | Expression(Typedtree.expression, option(Types.value_description))
+    | Value(Env.t, Types.type_expr, Location.t)
     | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
-    | Declaration(Typedtree.data_declaration)
-    | Module(Path.t, Location.t);
+    | Declaration(Ident.t, Types.type_declaration, Location.t)
+    | Module(Path.t, Types.module_declaration, Location.t);
 
   type sourcetree = t(node);
 
@@ -195,11 +195,11 @@ module Sourcetree: Sourcetree = {
   });
 
   type node =
-    | Expression(Typedtree.expression, option(Types.value_description))
+    | Value(Env.t, Types.type_expr, Location.t)
     | Type(Typedtree.core_type)
     | Pattern(Typedtree.pattern)
-    | Declaration(Typedtree.data_declaration)
-    | Module(Path.t, Location.t);
+    | Declaration(Ident.t, Types.type_declaration, Location.t)
+    | Module(Path.t, Types.module_declaration, Location.t);
 
   type sourcetree = t(node);
 
@@ -224,14 +224,14 @@ module Sourcetree: Sourcetree = {
     module Iterator =
       TypedtreeIter.MakeIterator({
         include TypedtreeIter.DefaultIteratorArgument;
-        let process_value_description = (id, desc) => {
+        let process_value_description = (id, instance_ty, ty) => {
           // Never consider special idents when deciding to display generalized
           // types, i.e. always display instance types for lists
           Parsetree.(
             Identifier.(
               switch (id) {
-              | {txt: IdentName({txt: "[]" | "[...]"})} => None
-              | _ => Some(desc)
+              | {txt: IdentName({txt: "[]" | "[...]"})} => instance_ty
+              | _ => ty
               }
             )
           );
@@ -241,16 +241,23 @@ module Sourcetree: Sourcetree = {
             Path.(
               switch (exp.exp_desc) {
               | TExpIdent(
-                  PExternal(path, _, _),
+                  PExternal(path, _),
                   {txt: IdentExternal(IdentName({loc}), _)},
                   desc,
                 ) =>
                 segments :=
                   [
-                    (loc_to_interval(loc), Module(path, loc)),
+                    (
+                      loc_to_interval(loc),
+                      Module(
+                        path,
+                        Env.find_module(path, None, exp.exp_env),
+                        loc,
+                      ),
+                    ),
                     (
                       loc_to_interval(exp.exp_loc),
-                      Expression(exp, Some(desc)),
+                      Value(exp.exp_env, desc.val_type, exp.exp_loc),
                     ),
                     ...segments^,
                   ]
@@ -259,14 +266,73 @@ module Sourcetree: Sourcetree = {
                   [
                     (
                       loc_to_interval(exp.exp_loc),
-                      Expression(exp, process_value_description(id, desc)),
+                      Value(
+                        exp.exp_env,
+                        process_value_description(
+                          id,
+                          exp.exp_type,
+                          desc.val_type,
+                        ),
+                        exp.exp_loc,
+                      ),
                     ),
                     ...segments^,
                   ]
+              | TExpUse(module_, items) =>
+                segments :=
+                  [
+                    (
+                      loc_to_interval(module_.loc),
+                      Module(
+                        module_.txt,
+                        Env.find_module(module_.txt, None, exp.exp_env),
+                        module_.loc,
+                      ),
+                    ),
+                    (
+                      loc_to_interval(exp.exp_loc),
+                      Value(exp.exp_env, exp.exp_type, exp.exp_loc),
+                    ),
+                    ...switch (items) {
+                       | TUseAll => []
+                       | TUseItems(items) =>
+                         List.map(
+                           item => {
+                             switch (item) {
+                             | Types.TUseType({name, declaration, loc}) => (
+                                 loc_to_interval(loc),
+                                 Declaration(
+                                   Ident.create(name),
+                                   declaration,
+                                   loc,
+                                 ),
+                               )
+                             | TUseModule({name, declaration, loc}) => (
+                                 loc_to_interval(loc),
+                                 Module(
+                                   PIdent(Ident.create(name)),
+                                   declaration,
+                                   loc,
+                                 ),
+                               )
+                             | TUseValue({value, loc}) => (
+                                 loc_to_interval(loc),
+                                 Value(exp.exp_env, value.val_type, loc),
+                               )
+                             }
+                           },
+                           items,
+                         )
+                       },
+                  ]
+                  @ segments^
               | _ =>
                 segments :=
                   [
-                    (loc_to_interval(exp.exp_loc), Expression(exp, None)),
+                    (
+                      loc_to_interval(exp.exp_loc),
+                      Value(exp.exp_env, exp.exp_type, exp.exp_loc),
+                    ),
                     ...segments^,
                   ]
               }
@@ -284,7 +350,10 @@ module Sourcetree: Sourcetree = {
         let enter_data_declaration = decl => {
           segments :=
             [
-              (loc_to_interval(decl.data_loc), Declaration(decl)),
+              (
+                loc_to_interval(decl.data_loc),
+                Declaration(decl.data_id, decl.data_type, decl.data_loc),
+              ),
               ...segments^,
             ];
         };

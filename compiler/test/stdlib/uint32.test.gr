@@ -1,0 +1,103 @@
+module Uint32Test
+
+include "uint32"
+from Uint32 use {
+  fromNumber,
+  toNumber,
+  fromInt32,
+  incr,
+  decr,
+  lnot,
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>>),
+  clz,
+  ctz,
+  popcnt,
+  rotl,
+  rotr,
+}
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
+
+assert fromNumber(5) == 5ul
+assert fromNumber(0) == 0ul
+assert fromNumber(0xffffffff) == 0xfffffffful
+assert fromNumber(0x7fffffff) == 0x7ffffffful
+
+assert toNumber(555ul) == 555
+assert toNumber(0ul) == 0
+assert toNumber(0xfffffffful) == 0xffffffff
+assert toNumber(0x7ffffffful) == 0x7fffffff
+
+assert fromInt32(1l) == 1ul
+assert fromInt32(-1l) == 0xfffffffful
+
+assert lnot(0xfffffffful) == 0ul
+assert lnot(0ul) == 0xfffffffful
+assert lnot(0xf0f0f0f0ul) == 0x0f0f0f0ful
+
+assert (0b1010ul & 0b10ul) == 0b10ul
+assert (0b1010ul & 0ul) == 0ul
+
+assert (0b1010ul | 0b0101ul) == 0b1111ul
+assert (0b1010ul | 0ul) == 0b1010ul
+
+assert (0b1010ul ^ 0b1101ul) == 0b0111ul
+assert (0b1010ul ^ 0ul) == 0b1010ul
+
+assert 1ul << 1ul == 2ul
+assert 1ul << 2ul == 4ul
+assert 1ul << 3ul == 8ul
+assert 2ul << 63ul == 0ul
+assert 24ul << 1ul == 48ul
+
+assert 4ul >>> 1ul == 2ul
+assert 4ul >>> 2ul == 1ul
+assert 4ul >>> 3ul == 0ul
+assert 1ul >>> 63ul == 0ul
+assert 0xfffffffful >>> 63ul == 1ul
+
+assert clz(0b11ul) == 30ul
+assert ctz(0b11000ul) == 3ul
+assert popcnt(0b1100110011ul) == 6ul
+assert rotl(0b11ul, 3ul) == 0b11000ul
+assert rotr(0b110000ul, 3ul) == 0b110ul
+
+assert incr(0xfffffffful) == 0ul
+assert decr(0ul) == 0xfffffffful
+
+match (0xfffffffful) {
+  0ul => fail "max uint32 matched to 0 incorrectly",
+  0xfffffffful => void,
+  _ => fail "uint32 incorrectly matched",
+}
+
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1ul)] == 2
+
+assert compare(0ul, 1ul) < 0
+assert compare(0ul, 0ul) == 0
+assert compare(0ul, 0xfffffffful) < 0
+assert compare(0xfffffffful, 0x0ul) > 0
+
+from Uint32 use { (==), (!=), eqz, (<), (<=), (>), (>=) }
+
+assert 5ul == 5ul
+assert !(5ul == 55ul)
+assert 5ul != 55ul
+assert !(5ul != 5ul)
+assert eqz(0ul)
+assert !eqz(42ul)
+
+assert 5ul > 4ul
+assert 5ul >= 5ul
+assert 5ul < 17ul
+assert 5ul <= 5ul
+assert !(5ul > 5ul)
+assert !(5ul >= 22ul)
+assert !(5ul < 4ul)
+assert !(5ul <= 4ul)

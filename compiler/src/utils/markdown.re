@@ -51,7 +51,16 @@ let frontmatter = rows => {
 };
 
 let bold = str => {
-  Format.sprintf("**%s**", str);
+  let escaped_str =
+    Str.global_substitute(
+      Str.regexp({|\(^\*+\)\|\(\*\*+\)\|\(\*+$\)|}),
+      str => {
+        let matched = Str.matched_string(str);
+        Str.global_replace(Str.regexp({|\*|}), {|\*|}, matched);
+      },
+      str,
+    );
+  Format.sprintf("**%s**", escaped_str);
 };
 
 let blockquote = str => {

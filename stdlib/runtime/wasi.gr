@@ -65,6 +65,15 @@ provide foreign wasm fd_pread: (
   WasmI64,
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
+provide foreign wasm fd_prestat_get: (
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
+provide foreign wasm fd_prestat_dir_name: (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) -> WasmI32 from "wasi_snapshot_preview1"
 /**
  * Invokes the `fd_write` system call.
  *
@@ -323,8 +332,8 @@ provide let _ENOTCAPABLE = 76n
 provide exception SystemError(Number)
 
 provide let stringOfSystemError = code => {
-  let n = WasmI32.shrS(WasmI32.fromGrain(code), 1n)
-  let (==) = WasmI32.eq
+  from WasmI32 use { (==), (>>) }
+  let n = WasmI32.fromGrain(code) >> 1n
   match (n) {
     n when n == _ESUCCESS =>
       "SystemError: No error occurred. System call completed successfully.",

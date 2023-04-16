@@ -7,16 +7,12 @@
 module Time
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use { add as (+), eq as (==), ne as (!=) }
+from WasmI32 use { (+), (==), (!=) }
 include "runtime/unsafe/memory"
 include "runtime/wasi"
 include "runtime/unsafe/errors"
 include "runtime/dataStructures"
 from DataStructures use { allocateInt64, tagSimpleNumber }
-
-/**
- * @section Values: Functions and constants included in the Time module.
- */
 
 @unsafe
 let getClockTime = (clockid, precision) => {

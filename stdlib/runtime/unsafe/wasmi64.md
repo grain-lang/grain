@@ -2,6 +2,10 @@
 title: WasmI64
 ---
 
+## Values
+
+Functions and constants included in the WasmI64 module.
+
 ### WasmI64.**load**
 
 ```grain
@@ -92,28 +96,28 @@ popcnt : WasmI64 -> WasmI64
 eqz : WasmI64 -> Bool
 ```
 
-### WasmI64.**add**
+### WasmI64.**(+)**
 
 ```grain
-add : (WasmI64, WasmI64) -> WasmI64
+(+) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**sub**
+### WasmI64.**(-)**
 
 ```grain
-sub : (WasmI64, WasmI64) -> WasmI64
+(-) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**mul**
+### WasmI64.**(*)**
 
 ```grain
-mul : (WasmI64, WasmI64) -> WasmI64
+(*) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**divS**
+### WasmI64.**(/)**
 
 ```grain
-divS : (WasmI64, WasmI64) -> WasmI64
+(/) : (WasmI64, WasmI64) -> WasmI64
 ```
 
 ### WasmI64.**divU**
@@ -134,40 +138,40 @@ remS : (WasmI64, WasmI64) -> WasmI64
 remU : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**and**
+### WasmI64.**(&)**
 
 ```grain
-and : (WasmI64, WasmI64) -> WasmI64
+(&) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**or**
+### WasmI64.**(|)**
 
 ```grain
-or : (WasmI64, WasmI64) -> WasmI64
+(|) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**xor**
+### WasmI64.**(^)**
 
 ```grain
-xor : (WasmI64, WasmI64) -> WasmI64
+(^) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**shl**
+### WasmI64.**(<<)**
 
 ```grain
-shl : (WasmI64, WasmI64) -> WasmI64
+(<<) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**shrU**
+### WasmI64.**(>>>)**
 
 ```grain
-shrU : (WasmI64, WasmI64) -> WasmI64
+(>>>) : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**shrS**
+### WasmI64.**(>>)**
 
 ```grain
-shrS : (WasmI64, WasmI64) -> WasmI64
+(>>) : (WasmI64, WasmI64) -> WasmI64
 ```
 
 ### WasmI64.**rotl**
@@ -182,22 +186,22 @@ rotl : (WasmI64, WasmI64) -> WasmI64
 rotr : (WasmI64, WasmI64) -> WasmI64
 ```
 
-### WasmI64.**eq**
+### WasmI64.**(==)**
 
 ```grain
-eq : (WasmI64, WasmI64) -> Bool
+(==) : (WasmI64, WasmI64) -> Bool
 ```
 
-### WasmI64.**ne**
+### WasmI64.**(!=)**
 
 ```grain
-ne : (WasmI64, WasmI64) -> Bool
+(!=) : (WasmI64, WasmI64) -> Bool
 ```
 
-### WasmI64.**ltS**
+### WasmI64.**(<)**
 
 ```grain
-ltS : (WasmI64, WasmI64) -> Bool
+(<) : (WasmI64, WasmI64) -> Bool
 ```
 
 ### WasmI64.**ltU**
@@ -206,10 +210,10 @@ ltS : (WasmI64, WasmI64) -> Bool
 ltU : (WasmI64, WasmI64) -> Bool
 ```
 
-### WasmI64.**leS**
+### WasmI64.**(<=)**
 
 ```grain
-leS : (WasmI64, WasmI64) -> Bool
+(<=) : (WasmI64, WasmI64) -> Bool
 ```
 
 ### WasmI64.**leU**
@@ -218,10 +222,10 @@ leS : (WasmI64, WasmI64) -> Bool
 leU : (WasmI64, WasmI64) -> Bool
 ```
 
-### WasmI64.**gtS**
+### WasmI64.**(>)**
 
 ```grain
-gtS : (WasmI64, WasmI64) -> Bool
+(>) : (WasmI64, WasmI64) -> Bool
 ```
 
 ### WasmI64.**gtU**
@@ -230,10 +234,10 @@ gtS : (WasmI64, WasmI64) -> Bool
 gtU : (WasmI64, WasmI64) -> Bool
 ```
 
-### WasmI64.**geS**
+### WasmI64.**(>=)**
 
 ```grain
-geS : (WasmI64, WasmI64) -> Bool
+(>=) : (WasmI64, WasmI64) -> Bool
 ```
 
 ### WasmI64.**geU**

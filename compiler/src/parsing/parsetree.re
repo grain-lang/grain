@@ -14,7 +14,8 @@ type loc('a) =
     loc: Location.t,
   };
 
-type provide_flag = Asttypes.provide_flag = | NotProvided | Provided;
+type provide_flag =
+  Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
@@ -24,7 +25,7 @@ type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 type parsed_type_desc =
   | PTyAny
   | PTyVar(string)
-  | PTyArrow(list(parsed_type), parsed_type)
+  | PTyArrow(list(parsed_type_argument), parsed_type)
   | PTyTuple(list(parsed_type))
   | PTyConstr(loc(Identifier.t), list(parsed_type))
   | PTyPoly(list(loc(string)), parsed_type)
@@ -33,6 +34,12 @@ and parsed_type = {
   ptyp_desc: parsed_type_desc,
   [@sexp_drop_if sexp_locs_disabled]
   ptyp_loc: Location.t,
+}
+
+and parsed_type_argument = {
+  ptyp_arg_label: argument_label,
+  ptyp_arg_type: parsed_type,
+  ptyp_arg_loc: Location.t,
 };
 
 /** Type for fields within a record */
@@ -50,8 +57,8 @@ type label_declaration = {
 
 [@deriving (sexp, yojson)]
 type constructor_arguments =
-  | PConstrTuple(list(parsed_type))
-  | PConstrRecord(list(label_declaration))
+  | PConstrTuple(loc(list(parsed_type)))
+  | PConstrRecord(loc(list(label_declaration)))
   | PConstrSingleton
 
 [@deriving (sexp, yojson)]
@@ -118,8 +125,14 @@ type data_declaration = {
 [@deriving (sexp, yojson)]
 type constant =
   | PConstNumber(number_type)
+  | PConstInt8(string)
+  | PConstInt16(string)
   | PConstInt32(string)
   | PConstInt64(string)
+  | PConstUint8(bool, string)
+  | PConstUint16(bool, string)
+  | PConstUint32(bool, string)
+  | PConstUint64(bool, string)
   | PConstFloat32(string)
   | PConstFloat64(string)
   | PConstWasmI32(string)
@@ -127,6 +140,7 @@ type constant =
   | PConstWasmF32(string)
   | PConstWasmF64(string)
   | PConstBigInt(string)
+  | PConstRational(string, string)
   | PConstBool(bool)
   | PConstVoid
   | PConstBytes(string)
@@ -157,7 +171,8 @@ type pattern_desc =
 [@deriving (sexp, yojson)]
 and constructor_pattern =
   | PPatConstrRecord(list((loc(Identifier.t), pattern)), closed_flag)
-  | PPatConstrTuple(list(pattern)) // Empty list used to represent singleton constructors
+  | PPatConstrTuple(list(pattern))
+  | PPatConstrSingleton
 
 [@deriving (sexp, yojson)]
 and pattern = {
@@ -312,10 +327,14 @@ type wasm_op =
 type prim0 =
   | AllocateInt32
   | AllocateInt64
+  | AllocateUint32
+  | AllocateUint64
   | AllocateFloat32
   | AllocateFloat64
   | AllocateRational
-  | Unreachable;
+  | WasmMemorySize
+  | Unreachable
+  | HeapStart;
 
 /** Single-argument operators */
 [@deriving (sexp, yojson)]
@@ -327,6 +346,8 @@ type prim1 =
   | AllocateBigInt
   | NewInt32
   | NewInt64
+  | NewUint32
+  | NewUint64
   | NewFloat32
   | NewFloat64
   | BuiltinId
@@ -337,6 +358,14 @@ type prim1 =
   | UntagSimpleNumber
   | TagChar
   | UntagChar
+  | TagInt8
+  | UntagInt8
+  | TagInt16
+  | UntagInt16
+  | TagUint8
+  | UntagUint8
+  | TagUint16
+  | UntagUint16
   | Not
   | Box
   | Unbox
@@ -346,6 +375,7 @@ type prim1 =
   | ArrayLength
   | Assert
   | Throw
+  | Magic
   | WasmFromGrain
   | WasmToGrain
   | WasmUnaryI32({
@@ -418,7 +448,6 @@ type primn =
   | WasmStoreF64
   | WasmMemoryCopy
   | WasmMemoryFill
-  | WasmMemorySize
   | WasmMemoryCompare;
 
 [@deriving (sexp, yojson)]
@@ -443,6 +472,9 @@ and use_item =
       alias: option(loc(Identifier.t)),
       loc: Location.t,
     });
+
+[@deriving (sexp, yojson)]
+type attribute = Asttypes.attribute;
 
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
@@ -474,7 +506,7 @@ and expression_desc =
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
   | PExpPrimN(primn, list(expression))
-  | PExpIf(expression, expression, expression)
+  | PExpIf(expression, expression, option(expression))
   | PExpWhile(expression, expression)
   | PExpFor(
       option(expression),
@@ -487,19 +519,33 @@ and expression_desc =
   | PExpReturn(option(expression))
   | PExpConstraint(expression, parsed_type)
   | PExpUse(loc(Identifier.t), use_items)
-  | PExpLambda(list(pattern), expression)
-  | PExpApp(expression, list(expression))
+  | PExpLambda(list(lambda_argument), expression)
+  | PExpApp(expression, list(application_argument))
   | PExpConstruct(loc(Identifier.t), constructor_expression)
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
-  | /** Used for modules without body expressions */
-    PExpNull
 
 [@deriving (sexp, yojson)]
 and constructor_expression =
   | PExpConstrTuple(list(expression))
   | PExpConstrRecord(list((loc(Identifier.t), expression)))
+  | PExpConstrSingleton
+
+[@deriving (sexp, yojson)]
+and lambda_argument = {
+  pla_label: argument_label,
+  pla_pattern: pattern,
+  pla_default: option(expression),
+  pla_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and application_argument = {
+  paa_label: argument_label,
+  paa_expr: expression,
+  paa_loc: Location.t,
+}
 
 /** let-binding form */
 
@@ -536,7 +582,6 @@ type value_description = {
   pval_name: loc(string),
   pval_name_alias: option(loc(string)),
   pval_type: parsed_type,
-  pval_prim: list(string),
   [@sexp_drop_if sexp_locs_disabled]
   pval_loc: Location.t,
 };
@@ -566,13 +611,21 @@ type module_declaration = {
   pmod_loc: Location.t,
 }
 
+[@deriving (sexp, yojson)]
+and primitive_description = {
+  pprim_ident: loc(string),
+  pprim_name: loc(string),
+  [@sexp_drop_if sexp_locs_disabled]
+  pprim_loc: Location.t,
+}
+
 /** Statements which can exist at the top level */
 
 [@deriving (sexp, yojson)]
 and toplevel_stmt_desc =
   | PTopInclude(include_declaration)
   | PTopForeign(provide_flag, value_description)
-  | PTopPrimitive(provide_flag, value_description)
+  | PTopPrimitive(provide_flag, primitive_description)
   | PTopModule(provide_flag, module_declaration)
   | PTopData(list((provide_flag, data_declaration)))
   | PTopLet(provide_flag, rec_flag, mut_flag, list(value_binding))

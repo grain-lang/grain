@@ -67,9 +67,20 @@ describe("chars", ({test, testSkip}) => {
   assertRun("char_toString_escape8", {|print(('\v', 1))|}, "('\\v', 1)\n");
   assertRun("char_toString_escape9", {|print(('\'', 1))|}, "('\\'', 1)\n");
   assertCompileError(
-    "char_illegal",
+    "char_illegal1",
     "'abc'",
     "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+  );
+  assertCompileError(
+    "char_illegal2",
+    {|'{"test": 1}'|},
+    {|This character literal contains multiple characters: '\{"test": 1\}'
+Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
+  );
+  assertCompileError(
+    "char_illegal3",
+    "''",
+    "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
   );
   assertCompileError(
     "unicode_err1",

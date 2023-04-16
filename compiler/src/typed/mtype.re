@@ -67,7 +67,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
           Some(
             Btype.newgenty(
               TTyConstr(
-                PExternal(p, Ident.name(id), nopos),
+                PExternal(p, Ident.name(id)),
                 decl.type_params,
                 ref(TMemNil),
               ),
@@ -90,12 +90,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
     ]
   | [TSigModule(id, md, rs), ...rem] =>
     let str =
-      strengthen_decl(
-        ~aliasable,
-        env,
-        md,
-        PExternal(p, Ident.name(id), pos),
-      );
+      strengthen_decl(~aliasable, env, md, PExternal(p, Ident.name(id)));
 
     [
       TSigModule(id, str, rs),
@@ -113,7 +108,7 @@ and strengthen_sig = (~aliasable, env, sg, p, pos) =>
       switch (decl.mtd_type) {
       | None => {
           ...decl,
-          mtd_type: Some(TModIdent(PExternal(p, Ident.name(id), nopos))),
+          mtd_type: Some(TModIdent(PExternal(p, Ident.name(id)))),
         }
       | Some(_) => decl
       };
@@ -320,7 +315,7 @@ and enrich_item = (env, p) =>
   | TSigType(id, decl, rs) =>
     TSigType(
       id,
-      enrich_typedecl(env, PExternal(p, Ident.name(id), nopos), id, decl),
+      enrich_typedecl(env, PExternal(p, Ident.name(id)), id, decl),
       rs,
     )
   | TSigModule(id, md, rs) =>
@@ -329,11 +324,7 @@ and enrich_item = (env, p) =>
       {
         ...md,
         md_type:
-          enrich_modtype(
-            env,
-            PExternal(p, Ident.name(id), nopos),
-            md.md_type,
-          ),
+          enrich_modtype(env, PExternal(p, Ident.name(id)), md.md_type),
       },
       rs,
     )
@@ -358,11 +349,11 @@ and type_paths_sig = (env, p, pos, sg) =>
       };
     type_paths_sig(env, p, pos', rem);
   | [TSigType(id, _decl, _), ...rem] => [
-      PExternal(p, Ident.name(id), nopos),
+      PExternal(p, Ident.name(id)),
       ...type_paths_sig(env, p, pos, rem),
     ]
   | [TSigModule(id, md, _), ...rem] =>
-    type_paths(env, PExternal(p, Ident.name(id), pos), md.md_type)
+    type_paths(env, PExternal(p, Ident.name(id)), md.md_type)
     @ type_paths_sig(
         Env.add_module_declaration(~check=false, id, md, env),
         p,
@@ -462,14 +453,14 @@ module PathMap = Map.Make(Path);
 let rec get_prefixes =
   fun
   | PIdent(_) => PathSet.empty
-  | PExternal(p, _, _) =>
+  | PExternal(p, _) =>
     /*| Papply (p, _)*/
     PathSet.add(p, get_prefixes(p));
 
 let rec get_arg_paths =
   fun
   | PIdent(_) => PathSet.empty
-  | PExternal(p, _, _) => get_arg_paths(p);
+  | PExternal(p, _) => get_arg_paths(p);
 /*| Papply (p1, p2) ->
   PathSet.add p2
     (PathSet.union (get_prefixes p2)
@@ -480,12 +471,12 @@ let rec rollback_path = (subst, p) =>
   | Not_found =>
     switch (p) {
     | PIdent(_) /*| Papply _*/ => p
-    | PExternal(p1, s, n) =>
+    | PExternal(p1, s) =>
       let p1' = rollback_path(subst, p1);
       if (Path.same(p1, p1')) {
         p;
       } else {
-        rollback_path(subst, PExternal(p1', s, n));
+        rollback_path(subst, PExternal(p1', s));
       };
     }
   };
@@ -521,7 +512,7 @@ let collect_arg_paths = mty => {
         | TSigModule(id', _, _) =>
           subst :=
             PathMap.add(
-              PExternal(PIdent(id), Ident.name(id'), -1),
+              PExternal(PIdent(id), Ident.name(id')),
               id',
               subst^,
             )
@@ -567,7 +558,11 @@ and remove_aliases_sig = (env, excl, sg) =>
 
     [
       TSigModule(id, {...md, md_type: mty}, rs),
-      ...remove_aliases_sig(Env.add_module(id, mty, None, env), excl, rem),
+      ...remove_aliases_sig(
+           Env.add_module(id, mty, None, md.md_loc, env),
+           excl,
+           rem,
+         ),
     ];
   | [TSigModType(id, mtd), ...rem] => [
       TSigModType(id, mtd),

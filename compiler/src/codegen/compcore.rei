@@ -6,6 +6,7 @@ open Binaryen;
 type codegen_env = {
   name: option(string),
   num_args: int,
+  num_closure_args: int,
   stack_size,
   /* Allocated closures which need backpatching */
   backpatches: ref(list((Expression.t, closure_data))),

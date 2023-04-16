@@ -11,10 +11,6 @@
 module List
 
 /**
- * @section Values: Functions for working with the List data type.
- */
-
-/**
  * Creates a new list of the specified length where each element is
  * initialized with the result of an initializer function. The initializer
  * is called with the index of each list element.

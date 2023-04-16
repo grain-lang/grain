@@ -64,11 +64,15 @@ describe("stdlib", ({test, testSkip}) => {
   // logging to the stdout file descriptor
   assertRun(
     "stdlib_file_stdout",
-    {|include "sys/file"; ignore(File.fdWrite(File.stdout, "enterthe")); print(void)|},
+    {|
+      include "bytes"
+      include "sys/file"
+      ignore(File.fdWrite(File.stdout, Bytes.fromString("enterthe")))
+      print(void)
+    |},
     "enterthevoid\n",
   );
   assertStdlib("array.test");
-  assertStdlib("immutablearray.test");
   assertStdlib("bigint.test");
   assertStdlib("bytes.test");
   assertStdlib("buffer.test");
@@ -76,11 +80,16 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("float32.test");
   assertStdlib("float64.test");
   assertStdlib("hash.test");
+  assertStdlib("int8.test");
+  assertStdlib("int16.test");
   assertStdlib("int32.test");
   assertStdlib("int64.test");
+  assertStdlib("uint8.test");
+  assertStdlib("uint16.test");
+  assertStdlib("uint32.test");
+  assertStdlib("uint64.test");
   assertStdlib("list.test");
   assertStdlib("map.test");
-  assertStdlib("immutablemap.test");
   assertStdlib("marshal.test");
   assertStdlib("number.test");
   assertStdlib("option.test");
@@ -88,13 +97,12 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("pervasives.test");
   assertStdlib("queue.test");
   assertStdlib("range.test");
+  assertStdlib("rational.test");
   assertStdlib("result.test");
   assertStdlib("set.test");
-  assertStdlib("immutableset.test");
   assertStdlib("regex.test");
   assertStdlib("stack.test");
   assertStdlib("priorityqueue.test");
-  assertStdlib("immutablepriorityqueue.test");
   assertStdlib("string.test");
   assertStdlib("sys.file.test");
   assertStdlib(~code=5, "sys.process.test");

@@ -1,42 +1,4 @@
-import { WASI } from "@wasmer/wasi/lib/index.cjs";
-import { WasmFs } from "@wasmer/wasmfs";
 import wasmmap from "wasm-sourcemap";
-
-let bindings;
-
-if (__RUNNER_BROWSER) {
-  const wasmFs = new WasmFs();
-  const decoder = new TextDecoder("utf-8");
-  // Monkeypatching the writeSync for stdout/stderr printing
-  const originalWriteSync = wasmFs.fs.writeSync;
-  wasmFs.fs.writeSync = (fd, buf, offset, length, position) => {
-    if (fd === 1) {
-      console.log(decoder.decode(buf));
-      return;
-    }
-    if (fd === 2) {
-      console.error(decoder.decode(buf));
-      return;
-    }
-
-    originalWriteSync(fd, buf, offset, length, position);
-  };
-  bindings = {
-    ...wasiBindings.default,
-    fs: wasmFs.fs,
-  };
-} else {
-  bindings = wasiBindings.default;
-}
-
-export const wasi = new WASI({
-  args: __RUNNER_BROWSER ? [] : process.argv,
-  env: __RUNNER_BROWSER ? {} : process.env,
-  bindings,
-  preopens: {
-    "/sandbox": __RUNNER_BROWSER ? "" : process.cwd(),
-  },
-});
 
 export class GrainModule {
   constructor(wasmModule, name) {
@@ -124,11 +86,11 @@ export class GrainModule {
     return this.requiredExport("_gtype_metadata")();
   }
 
-  start() {
+  start(wasi) {
     wasi.start(this.instantiated);
   }
 
-  runUnboxed() {
+  runUnboxed(wasi) {
     // Only the tests currently rely on this.
     wasi.setMemory(this.requiredExport("memory"));
     return this.requiredExport("_gmain")();

@@ -88,10 +88,6 @@ record TBase<a> {
   base: Base,
 },
 /**
- * @section Types: Type declarations included in the Path module.
- */
-
-/**
  * Represents an absolute path's anchor point.
  */
 provide enum AbsoluteRoot {
@@ -104,28 +100,28 @@ provide enum AbsoluteRoot {
 /**
  * Represents a relative path.
  */
-record Relative {
+abstract record Relative {
   _rel: Void,
 }
 
 /**
  * Represents an absolute path.
  */
-record Absolute {
+abstract record Absolute {
   _abs: Void,
 }
 
 /**
  * Represents a path referencing a file.
  */
-record File {
+abstract record File {
   _file: Void,
 }
 
 /**
  * Represents a path referencing a directory.
  */
-record Directory {
+abstract record Directory {
   _directory: Void,
 }
 
@@ -133,7 +129,7 @@ record Directory {
  * Represents a path typed on (`Absolute` or `Relative`) and (`File` or
  * `Directory`)
  */
-type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
+abstract type TypedPath<a, b> = (TBase<a>, TFileType<b>, List<String>),
 /**
  * Represents a system path.
  */
@@ -194,10 +190,6 @@ provide enum RelativizationError {
   ImpossibleRelativization,
 }
 
-/**
- * @section Values: Functions for working with Paths.
- */
-
 let makeToken = str => {
   match (str) {
     "." => Dot,
@@ -235,7 +227,7 @@ let lexPath = (pathStr, platform) => {
   for (let mut i = 0; i < len; i += 1) {
     if (isSeparator(String.charAt(i, pathStr))) {
       if (segBeginI != i) {
-        let tok = makeToken(String.slice(segBeginI, i, pathStr))
+        let tok = makeToken(String.slice(segBeginI, end=i, pathStr))
         revTokens = [tok, ...revTokens]
       }
       revTokens = [Slash, ...revTokens]
@@ -243,7 +235,7 @@ let lexPath = (pathStr, platform) => {
     }
   }
   if (segBeginI < len) {
-    let lastPart = String.slice(segBeginI, len, pathStr)
+    let lastPart = String.slice(segBeginI, end=len, pathStr)
     revTokens = [makeToken(lastPart), ...revTokens]
   }
   List.reverse(revTokens)
@@ -701,13 +693,12 @@ provide let basename = (path: Path) => {
 let stemExtHelper = (path: PathInfo) =>
   match (path) {
     (_, _, [name, ..._]) => {
-      let len = String.length(name)
       // trim first character (which is possibly a .) off as trick for
       // splitting .a.b.c into .a, .b.c
-      match (String.indexOf(".", String.slice(1, len, name))) {
+      match (String.indexOf(".", String.slice(1, name))) {
         Some(dotI) => {
           let dotI = dotI + 1
-          (String.slice(0, dotI, name), String.slice(dotI, len, name))
+          (String.slice(0, end=dotI, name), String.slice(dotI, name))
         },
         None => (name, ""),
       }

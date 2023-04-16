@@ -126,4 +126,44 @@ describe("modules", ({test, testSkip}) => {
     "nestedModules",
     "hello from foo\nhello from bar\n[2, 3, 4]\n9\n[> 2, 3, 4]\nfalse\nfoo\n",
   );
+  test("reprovided_module", ({expect}) => {
+    let name = "reprovided_module";
+    let outfile = wasmfile(name);
+    ignore @@
+    compile(
+      ~hook=Grain.Compile.stop_after_object_file_emitted,
+      name,
+      {|
+      module ReprovidedSimple
+
+      include "simpleModule"
+      provide { Simple }
+      |},
+    );
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
+    let export_sections =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Export(exports)} => Some(exports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.option(export_sections).toBeSome();
+    expect.list(Option.get(export_sections)).toContainEqual((
+      WasmFunction,
+      "Simple.Simple.func",
+    ));
+    expect.list(Option.get(export_sections)).toContainEqual((
+      WasmGlobal,
+      "GRAIN$EXPORT$Simple.Simple.func",
+    ));
+    expect.list(Option.get(export_sections)).toContainEqual((
+      WasmGlobal,
+      "GRAIN$EXPORT$Simple.Simple.foo",
+    ));
+  });
 });

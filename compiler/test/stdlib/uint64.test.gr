@@ -1,0 +1,106 @@
+module Uint64Test
+
+include "uint64"
+from Uint64 use {
+  fromNumber,
+  toNumber,
+  fromInt64,
+  incr,
+  decr,
+  lnot,
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>>),
+  clz,
+  ctz,
+  popcnt,
+  rotl,
+  rotr,
+}
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
+
+assert fromNumber(5) == 5uL
+assert fromNumber(0) == 0uL
+assert fromNumber(0xffffffffffffffff) == 0xffffffffffffffffuL
+assert fromNumber(0xffffffff) == 0xffffffffuL
+assert fromNumber(0x7fffffff) == 0x7fffffffuL
+
+assert toNumber(555uL) == 555
+assert toNumber(0uL) == 0
+assert toNumber(0xffffffffffffffffuL) == 18446744073709551615
+assert toNumber(0xffffffffuL) == 0xffffffff
+assert toNumber(0x7fffffffuL) == 0x7fffffff
+
+assert fromInt64(1L) == 1uL
+assert fromInt64(-1L) == 0xffffffffffffffffuL
+
+assert lnot(0xffffffffffffffffuL) == 0uL
+assert lnot(0uL) == 0xffffffffffffffffuL
+assert lnot(0xf0f0f0f0f0f0f0f0uL) == 0x0f0f0f0f0f0f0f0fuL
+
+assert (0b1010uL & 0b10uL) == 0b10uL
+assert (0b1010uL & 0uL) == 0uL
+
+assert (0b1010uL | 0b0101uL) == 0b1111uL
+assert (0b1010uL | 0uL) == 0b1010uL
+
+assert (0b1010uL ^ 0b1101uL) == 0b0111uL
+assert (0b1010uL ^ 0uL) == 0b1010uL
+
+assert 1uL << 1uL == 2uL
+assert 1uL << 2uL == 4uL
+assert 1uL << 3uL == 8uL
+assert 2uL << 63uL == 0uL
+assert 24uL << 1uL == 48uL
+
+assert 4uL >>> 1uL == 2uL
+assert 4uL >>> 2uL == 1uL
+assert 4uL >>> 3uL == 0uL
+assert 4uL >>> 4uL == 0uL
+assert 24uL >>> 1uL == 12uL
+assert 0xffffffffffffffffuL >>> 63uL == 1uL
+
+assert clz(0b11uL) == 62uL
+assert ctz(0b11000uL) == 3uL
+assert popcnt(0b1100110011uL) == 6uL
+assert rotl(0b11uL, 3uL) == 0b11000uL
+assert rotr(0b110000uL, 3uL) == 0b110uL
+
+assert incr(0xffffffffffffffffuL) == 0uL
+assert decr(0uL) == 0xffffffffffffffffuL
+
+match (0xffffffffffffffffuL) {
+  0uL => fail "max uint64 matched to 0 incorrectly",
+  0xffffffffffffffffuL => void,
+  _ => fail "uint64 incorrectly matched",
+}
+
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1uL)] == 2
+
+assert compare(0uL, 1uL) < 0
+assert compare(0uL, 0uL) == 0
+assert compare(0uL, 0xffffffffffffffffuL) < 0
+assert compare(0xffffffffffffffffuL, 0x0uL) > 0
+
+from Uint64 use { (==), (!=), eqz, (<), (<=), (>), (>=) }
+
+assert 5uL > 4uL
+assert 5uL >= 5uL
+assert 5uL < 17uL
+assert 5uL <= 5uL
+assert !(5uL > 5uL)
+assert !(5uL >= 22uL)
+assert !(5uL < 4uL)
+assert !(5uL <= 4uL)
+
+assert 5uL == 5uL
+assert !(5uL == 55uL)
+assert 5uL != 55uL
+assert !(5uL != 5uL)
+assert eqz(0uL)
+assert !eqz(42uL)

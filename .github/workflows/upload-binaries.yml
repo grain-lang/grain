@@ -1,0 +1,83 @@
+# This workflow assumes that pkg binaries were uploaded earlier within the same Action run.
+# It downloads each binary and uploads them to the specified tag.
+# Note: the tag is forcefully overwritten, so use with caution!
+name: Upload binaries
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git reference to checkout
+        type: string
+        required: false
+      tag:
+        description: Git tag to attach binaries
+        type: string
+        required: true
+    secrets:
+      UPLOAD_TOKEN:
+        description: Token used to push back to repository
+        required: true
+
+jobs:
+  upload:
+    name: Upload binaries to ${{ inputs.tag }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup bot user
+        run: |
+          git config --global user.email "bot@grain-lang.org"
+          git config --global user.name "Grain Bot"
+
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.UPLOAD_TOKEN }}
+
+      - name: Tag commit as ${{ inputs.tag }}
+        run: |
+          git tag ${{ inputs.tag }} -f
+          git push origin ${{ inputs.tag }} -f
+
+      - name: Fetch linux binary
+        uses: actions/download-artifact@v3
+        with:
+          name: grain-linux-x64
+
+      - name: Upload linux binary
+        run: |
+          tar -xvf grain.tar
+          mv grain grain-linux-x64
+          gh release upload ${{ inputs.tag }} "./grain-linux-x64" --clobber
+          rm grain-linux-x64 grain.tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+
+      - name: Fetch mac binary
+        uses: actions/download-artifact@v3
+        with:
+          name: grain-mac-x64
+
+      - name: Upload mac binary
+        run: |
+          tar -xvf grain.tar
+          mv grain grain-mac-x64
+          gh release upload ${{ inputs.tag }} "./grain-mac-x64" --clobber
+          rm grain-mac-x64 grain.tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}
+
+      - name: Fetch win binary
+        uses: actions/download-artifact@v3
+        with:
+          name: grain-win-x64
+
+      - name: Upload win binary
+        run: |
+          tar -xvf grain.tar
+          mv grain.exe grain-win-x64.exe
+          gh release upload ${{ inputs.tag }} "./grain-win-x64.exe" --clobber
+          rm grain-win-x64.exe grain.tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.UPLOAD_TOKEN }}

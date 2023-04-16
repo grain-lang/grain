@@ -36,8 +36,13 @@ type partial =
   | Partial
   | Total;
 
+type provide_flag =
+  Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
+type argument_label =
+  Asttypes.argument_label =
+    | Unlabeled | Labeled(loc(string)) | Default(loc(string));
 
 type wasm_prim_type =
   Parsetree.wasm_prim_type =
@@ -178,10 +183,14 @@ type prim0 =
   Parsetree.prim0 =
     | AllocateInt32
     | AllocateInt64
+    | AllocateUint32
+    | AllocateUint64
     | AllocateFloat32
     | AllocateFloat64
     | AllocateRational
-    | Unreachable;
+    | WasmMemorySize
+    | Unreachable
+    | HeapStart;
 
 type prim1 =
   Parsetree.prim1 =
@@ -192,6 +201,8 @@ type prim1 =
     | AllocateBigInt
     | NewInt32
     | NewInt64
+    | NewUint32
+    | NewUint64
     | NewFloat32
     | NewFloat64
     | BuiltinId
@@ -202,6 +213,14 @@ type prim1 =
     | UntagSimpleNumber
     | TagChar
     | UntagChar
+    | TagInt8
+    | UntagInt8
+    | TagInt16
+    | UntagInt16
+    | TagUint8
+    | UntagUint8
+    | TagUint16
+    | UntagUint16
     | Not
     | Box
     | Unbox
@@ -211,6 +230,7 @@ type prim1 =
     | ArrayLength
     | Assert
     | Throw
+    | Magic
     | WasmFromGrain
     | WasmToGrain
     | WasmUnaryI32({
@@ -281,7 +301,6 @@ type primn =
     | WasmStoreF64
     | WasmMemoryCopy
     | WasmMemoryFill
-    | WasmMemorySize
     | WasmMemoryCompare;
 
 type core_type = {
@@ -294,7 +313,7 @@ type core_type = {
 and core_type_desc =
   | TTyAny
   | TTyVar(string)
-  | TTyArrow(list(core_type), core_type)
+  | TTyArrow(list((argument_label, core_type)), core_type)
   | TTyTuple(list(core_type))
   | TTyRecord(list((loc(Identifier.t), core_type)))
   | TTyConstr(Path.t, loc(Identifier.t), list(core_type))
@@ -365,6 +384,7 @@ type data_declaration = {
   data_type: Types.type_declaration,
   data_kind,
   data_manifest: option(core_type),
+  data_provided: provide_flag,
   data_loc: Location.t,
 };
 
@@ -427,6 +447,7 @@ and expression_desc =
     )
   | TExpLet(rec_flag, mut_flag, list(value_binding))
   | TExpMatch(expression, list(match_branch), partial)
+  | TExpUse(loc(Path.t), use_items)
   | TExpPrim0(prim0)
   | TExpPrim1(prim1, expression)
   | TExpPrim2(prim2, expression, expression)
@@ -445,14 +466,17 @@ and expression_desc =
   | TExpBreak
   | TExpReturn(option(expression))
   | TExpLambda(list(match_branch), partial)
-  | TExpApp(expression, list(expression))
+  | TExpApp(
+      expression,
+      list(argument_label),
+      list((argument_label, expression)),
+    )
   | TExpConstruct(
       loc(Identifier.t),
       constructor_description,
       constructor_expression,
     )
   | TExpBlock(list(expression))
-  | TExpNull
 
 and constructor_expression =
   | TExpConstrTuple(list(expression))
@@ -498,7 +522,6 @@ type value_description = {
   tvd_name: loc(string),
   tvd_desc: core_type,
   tvd_val: Types.value_description,
-  tvd_prim: list(string),
   [@sexp_drop_if sexp_locs_disabled]
   tvd_loc: Location.t,
 };
@@ -508,6 +531,7 @@ type module_declaration = {
   tmod_id: Ident.t,
   tmod_decl: Types.module_declaration,
   tmod_statements: list(toplevel_stmt),
+  tmod_provided: provide_flag,
   [@sexp_drop_if sexp_locs_disabled]
   tmod_loc: Location.t,
 }

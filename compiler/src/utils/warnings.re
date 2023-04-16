@@ -26,11 +26,13 @@ type t =
   | FuncWasmUnsafe(string)
   | FromNumberLiteralI32(string)
   | FromNumberLiteralI64(string)
+  | FromNumberLiteralU32(string)
+  | FromNumberLiteralU64(string)
   | FromNumberLiteralF32(string)
   | FromNumberLiteralF64(string)
   | UselessRecordSpread;
 
-let last_warning_number = 22;
+let last_warning_number = 24;
 
 let number =
   fun
@@ -53,8 +55,10 @@ let number =
   | FuncWasmUnsafe(_) => 17
   | FromNumberLiteralI32(_) => 18
   | FromNumberLiteralI64(_) => 19
-  | FromNumberLiteralF32(_) => 20
-  | FromNumberLiteralF64(_) => 21
+  | FromNumberLiteralU32(_) => 20
+  | FromNumberLiteralU64(_) => 21
+  | FromNumberLiteralF32(_) => 22
+  | FromNumberLiteralF64(_) => 23
   | UselessRecordSpread => last_warning_number;
 
 let message =
@@ -129,15 +133,25 @@ let message =
       "it looks like you are calling Int64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sL`) instead.",
       n,
     )
+  | FromNumberLiteralU32(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Uint32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sul`) instead.",
+      n,
+    )
+  | FromNumberLiteralU64(n) =>
+    Printf.sprintf(
+      "it looks like you are calling Uint64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%suL`) instead.",
+      n,
+    )
   | FromNumberLiteralF32(n) =>
     Printf.sprintf(
       "it looks like you are calling Float32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sf`) instead.",
-      n,
+      String.contains(n, '.') ? n : n ++ ".",
     )
   | FromNumberLiteralF64(n) =>
     Printf.sprintf(
       "it looks like you are calling Float64.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sd`) instead.",
-      n,
+      String.contains(n, '.') ? n : n ++ ".",
     )
   | UselessRecordSpread => "this record spread is useless as all of the record's fields are overridden.";
 
@@ -184,6 +198,8 @@ let defaults = [
   FuncWasmUnsafe(""),
   FromNumberLiteralI32(""),
   FromNumberLiteralI64(""),
+  FromNumberLiteralU32(""),
+  FromNumberLiteralU64(""),
   FromNumberLiteralF32(""),
   FromNumberLiteralF64(""),
   UselessRecordSpread,

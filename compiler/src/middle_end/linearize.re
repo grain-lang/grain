@@ -24,6 +24,35 @@ let value_imports = ref([]);
 let module_symbol_map = Path_tbl.create(256);
 let type_map = Path_tbl.create(256);
 let include_map = Path_tbl.create(256);
+// Use special value of 0 as type hash for exceptions
+let exception_type_hash = 0;
+let get_type_hash = tydecl => {
+  switch (tydecl.type_kind) {
+  | TDataVariant(cstrs) =>
+    Hashtbl.hash(
+      List.flatten(
+        List.map(
+          cstr => {
+            let inline_rec_fields =
+              switch (cstr.Types.cd_args) {
+              | TConstrRecord(rfs) =>
+                List.map(rf => rf.Types.rf_name.name, rfs)
+              | _ => []
+              };
+            [cstr.Types.cd_id.name, ...inline_rec_fields];
+          },
+          cstrs,
+        ),
+      ),
+    )
+  | TDataRecord(rfs) =>
+    Hashtbl.hash(List.map(rf => rf.Types.rf_name.name, rfs))
+  | _ =>
+    failwith(
+      "Impossible: attempt to get type hash for non-record or enum type",
+    )
+  };
+};
 
 let get_type_id = (typath, env) =>
   switch (Path_tbl.find_opt(type_map, typath)) {
@@ -38,7 +67,7 @@ let get_type_id = (typath, env) =>
 let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
   switch (path) {
   | Path.PIdent(id) => id
-  | Path.PExternal(mod_, name, _pos) =>
+  | Path.PExternal(mod_, name) =>
     let mod_map =
       switch (Path_tbl.find_opt(module_symbol_map, mod_)) {
       | Some(map) => map
@@ -70,19 +99,19 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
         Path_tbl.add(include_map, path, fresh);
         let shape =
           switch (repr) {
-          | ReprFunction(args, rets, Direct(_)) =>
+          | ReprFunction(args, rets, Direct({closure: has_closure})) =>
             // Add closure argument
             let args = [
               Managed,
               ...List.map(allocation_type_of_wasm_repr, args),
             ];
             // Add return type for functions that return void
-            let rets =
+            let returns =
               switch (rets) {
               | [] => [Unmanaged(WasmI32)]
               | _ => List.map(allocation_type_of_wasm_repr, rets)
               };
-            FunctionShape(args, rets);
+            FunctionShape({args, returns, has_closure});
           | _ => GlobalShape(allocation_type)
           };
         value_imports :=
@@ -164,6 +193,31 @@ let convert_binds = anf_binds => {
   List.fold_left(convert_bind, ans, top_binds);
 };
 
+// reorder arguments according to labels
+let reorder_arguments = (args, order) => {
+  let rec reorder = (reordered_args, args, order) => {
+    let rec extract_label = (l, arg) => {
+      switch (arg) {
+      | [] => failwith("Impossible: no argument matching label")
+      | [(argl, arg), ...rest_args] when Btype.same_label_name(argl, l) => (
+          arg,
+          rest_args,
+        )
+      | [arg, ...rest_args] =>
+        let (res, rest_args) = extract_label(l, rest_args);
+        (res, [arg, ...rest_args]);
+      };
+    };
+    switch (order) {
+    | [] => reordered_args
+    | [tyl, ...order] =>
+      let (value, args) = extract_label(tyl, args);
+      reorder([value, ...reordered_args], args, order);
+    };
+  };
+  List.rev(reorder([], args, order));
+};
+
 let transl_const =
     (~loc=Location.dummy_loc, ~env=Env.empty, c: Types.constant)
     : Either.t(imm_expression, (ident, list(anf_bind))) => {
@@ -182,10 +236,24 @@ let transl_const =
         [BLet(tmp, Comp.number(Const_number_bigint(data)), Nonglobal)]
       ),
     )
+  | Const_rational(data) =>
+    Right(
+      with_bind("rational", tmp =>
+        [BLet(tmp, Comp.number(Const_number_rational(data)), Nonglobal)]
+      ),
+    )
   | Const_int32(i) =>
     Right(with_bind("int32", tmp => [BLet(tmp, Comp.int32(i), Nonglobal)]))
   | Const_int64(i) =>
     Right(with_bind("int64", tmp => [BLet(tmp, Comp.int64(i), Nonglobal)]))
+  | Const_uint32(i) =>
+    Right(
+      with_bind("uint32", tmp => [BLet(tmp, Comp.uint32(i), Nonglobal)]),
+    )
+  | Const_uint64(i) =>
+    Right(
+      with_bind("uint64", tmp => [BLet(tmp, Comp.uint64(i), Nonglobal)]),
+    )
   | Const_float64(i) =>
     Right(
       with_bind("float64", tmp => [BLet(tmp, Comp.float64(i), Nonglobal)]),
@@ -198,8 +266,6 @@ let transl_const =
     Right(with_bind("bytes", tmp => [BLet(tmp, Comp.bytes(b), Nonglobal)]))
   | Const_string(s) =>
     Right(with_bind("str", tmp => [BLet(tmp, Comp.string(s), Nonglobal)]))
-  | Const_char(c) =>
-    Right(with_bind("char", tmp => [BLet(tmp, Comp.char(c), Nonglobal)]))
   | _ => Left(Imm.const(c))
   };
 };
@@ -212,6 +278,7 @@ type item_get =
 let rec transl_imm =
         (
           ~boxed=false,
+          ~tail=false,
           {
             exp_desc,
             exp_loc: loc,
@@ -251,7 +318,7 @@ let rec transl_imm =
     | Left(imm) => (imm, [])
     | Right((name, cexprs)) => (Imm.id(~loc, ~env, name), cexprs)
     }
-  | TExpNull => (Imm.const(~loc, ~env, Const_void), [])
+  | TExpUse(_) => (Imm.const(~loc, ~env, Const_void), [])
   | TExpPrim0(op) =>
     let tmp = gensym("prim0");
     (
@@ -274,6 +341,7 @@ let rec transl_imm =
       }
     | _ => failwith("Builtin must be a string literal")
     }
+  | TExpPrim1(Magic, arg) => transl_imm(~boxed, ~tail, arg)
   | TExpPrim1(op, arg) =>
     let tmp = gensym("unary");
     let (comp, comp_setup) = transl_comp_expression(e);
@@ -486,43 +554,69 @@ let rec transl_imm =
       Imm.const(Const_void),
       [BSeq(Comp.break(~loc, ~env, ()))],
     )
+  | TExpReturn(Some({exp_desc: TExpApp(_)} as return)) =>
+    transl_imm(~boxed, ~tail=true, return)
   | TExpReturn(value) =>
-    let (value_comp, value_setup) =
+    let (value_imm, value_setup) =
       switch (value) {
       | Some(value) =>
-        let (value_comp, value_setup) = transl_comp_expression(value);
-        (Some(value_comp), value_setup);
+        let (value_imm, value_setup) = transl_imm(value);
+        (Some(value_imm), value_setup);
       | None => (None, [])
       };
     (
       Imm.const(Const_void),
-      value_setup @ [BSeq(Comp.return(~loc, ~env, value_comp))],
+      value_setup @ [BSeq(Comp.return(~loc, ~env, value_imm))],
     );
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})},
       _,
+      _,
     ) =>
     let (ans, ans_setup) = transl_comp_expression(e);
     (Imm.trap(~loc, ~env, ()), ans_setup @ [BSeq(ans)]);
-  | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
-    Translprim.(
-      switch (PrimMap.find_opt(prim_map, prim), args) {
-      | (Some(Primitive0(prim)), []) =>
-        transl_imm({...e, exp_desc: TExpPrim0(prim)})
-      | (Some(Primitive1(prim)), [arg]) =>
-        transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
-      | (Some(Primitive2(prim)), [arg1, arg2]) =>
-        transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
-      | (Some(PrimitiveN(prim)), args) =>
-        transl_imm({...e, exp_desc: TExpPrimN(prim, args)})
-      | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
-      | (None, _) => failwith("transl_imm: unknown primitive")
-      }
-    )
-  | TExpApp(func, args) =>
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})},
+      _,
+      args,
+    ) =>
+    let (imm, setup) =
+      Translprim.(
+        switch (PrimMap.find_opt(prim_map, prim), args) {
+        | (Some(Primitive0(prim)), []) =>
+          transl_imm({...e, exp_desc: TExpPrim0(prim)})
+        | (Some(Primitive1(prim)), [(_, arg)]) =>
+          transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
+        | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
+          transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+        | (Some(PrimitiveN(prim)), args) =>
+          transl_imm({...e, exp_desc: TExpPrimN(prim, List.map(snd, args))})
+        | (Some(_), _) => failwith("transl_imm: invalid primitive arity")
+        | (None, _) => failwith("transl_imm: unknown primitive")
+        }
+      );
+    if (tail) {
+      (
+        Imm.const(Const_void),
+        setup @ [BSeq(Comp.return(~loc, ~env, Some(imm)))],
+      );
+    } else {
+      (imm, setup);
+    };
+  | TExpApp(func, order, args) =>
     let tmp = gensym("app");
     let (new_func, func_setup) = transl_imm(func);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          ((l, arg)) => {
+            let (arg, setup) = transl_imm(arg);
+            ((l, arg), setup);
+          },
+          args,
+        ),
+      );
+    let new_args = reorder_arguments(new_args, order);
     (
       Imm.id(~loc, ~env, tmp),
       (func_setup @ List.concat(new_setup))
@@ -533,6 +627,7 @@ let rec transl_imm =
             ~loc,
             ~env,
             ~allocation_type,
+            ~tail,
             (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
             new_args,
           ),
@@ -542,11 +637,20 @@ let rec transl_imm =
     );
   | TExpBlock([]) => (Imm.const(Const_void), [])
   | TExpBlock([stmt]) => transl_imm(stmt)
-  | TExpBlock([fst, ...rest]) =>
-    let (fst_ans, fst_setup) = transl_comp_expression(fst);
-    let (rest_ans, rest_setup) =
-      transl_imm({...e, exp_desc: TExpBlock(rest)});
-    (rest_ans, fst_setup @ [BSeq(fst_ans)] @ rest_setup);
+  | TExpBlock(stmts) =>
+    let stmts = List.rev_map(transl_comp_expression, stmts);
+    // stmts is non-empty, so this cannot fail
+    let (last_ans, last_setup) = List.hd(stmts);
+    let stmts = List.tl(stmts);
+    let tmp = gensym("block_result");
+    let setup =
+      List.concat @@
+      List.fold_left(
+        (acc, (ans, setup)) => {[setup, [BSeq(ans)], ...acc]},
+        [last_setup, [BLet(tmp, last_ans, Nonglobal)]],
+        stmts,
+      );
+    (Imm.id(~loc, ~env, tmp), setup);
   | TExpLet(Nonrecursive, _, []) => (Imm.const(Const_void), [])
   | TExpLet(
       Nonrecursive,
@@ -751,8 +855,9 @@ let rec transl_imm =
           Array.to_list(args),
         ),
       );
-    let (typath, _, _) = Typepat.extract_concrete_record(env, typ);
+    let (typath, _, tydecl) = Ctype.extract_concrete_typedecl(env, typ);
     let ty_id = get_type_id(typath, env);
+    let type_hash = get_type_hash(tydecl);
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(
@@ -765,6 +870,11 @@ let rec transl_imm =
           Comp.record(
             ~loc,
             ~env,
+            Imm.const(
+              ~loc,
+              ~env,
+              Const_number(Const_number_int(Int64.of_int(type_hash))),
+            ),
             Imm.const(
               ~loc,
               ~env,
@@ -833,9 +943,9 @@ let rec transl_imm =
       Imm.id(~loc, ~env, tmp),
       (exp_setup @ setup) @ [BLet(tmp, ans, Nonglobal)],
     );
-  | TExpConstruct(_, {cstr_tag}, arg) =>
+  | TExpConstruct(_, {cstr_name, cstr_tag}, arg) =>
     let tmp = gensym("adt");
-    let (_, typath, _) = Ctype.extract_concrete_typedecl(env, typ);
+    let (_, typath, tydecl) = Ctype.extract_concrete_typedecl(env, typ);
     let ty_id = get_type_id(typath, env);
     let compiled_tag = compile_constructor_tag(cstr_tag);
     let (new_args, new_setup) =
@@ -854,6 +964,17 @@ let rec transl_imm =
         )
       | TExpConstrTuple(args) => List.split(List.map(transl_imm, args))
       };
+    let type_hash =
+      switch (cstr_tag) {
+      | CstrExtension(_) => exception_type_hash
+      | _ => get_type_hash(tydecl)
+      };
+    let imm_type_hash =
+      Imm.const(
+        ~loc,
+        ~env,
+        Const_number(Const_number_int(Int64.of_int(type_hash))),
+      );
     let imm_tytag =
       Imm.const(
         ~loc,
@@ -866,7 +987,8 @@ let rec transl_imm =
         ~env,
         Const_number(Const_number_int(Int64.of_int(compiled_tag))),
       );
-    let adt = Comp.adt(~loc, ~env, imm_tytag, imm_tag, new_args);
+    let adt =
+      Comp.adt(~loc, ~env, imm_type_hash, imm_tytag, imm_tag, new_args);
     (
       Imm.id(~loc, ~env, tmp),
       List.concat(new_setup) @ [BLet(tmp, adt, Nonglobal)],
@@ -877,6 +999,7 @@ let rec transl_imm =
 and transl_comp_expression =
     (
       ~name=?,
+      ~tail=false,
       {
         exp_desc,
         exp_type,
@@ -912,6 +1035,7 @@ and transl_comp_expression =
       }
     | _ => failwith("Builtin must be a string literal")
     }
+  | TExpPrim1(Magic, arg) => transl_comp_expression(~name?, ~tail, arg)
   | TExpPrim1(Assert, arg) =>
     let (arg_imm, arg_setup) = transl_imm(arg);
     let assertion_error =
@@ -1231,18 +1355,41 @@ and transl_comp_expression =
     failwith("transl_comp_expression: impossible: empty lambda")
   | TExpLambda(_, _) =>
     failwith("transl_comp_expression: NYI: multi-branch lambda")
+  | TExpReturn(Some({exp_desc: TExpApp(_)} as return)) =>
+    transl_comp_expression(~name?, ~tail=true, return)
+  | TExpReturn(value) =>
+    let (value_imm, value_setup) =
+      switch (value) {
+      | Some(value) =>
+        let (value_imm, value_setup) = transl_imm(value);
+        (Some(value_imm), value_setup);
+      | None => (None, [])
+      };
+    (Comp.return(~loc, ~env, value_imm), value_setup);
   | TExpApp(
       {exp_desc: TExpIdent(_, _, {val_kind: TValPrim("@throw")})} as func,
+      order,
       args,
     ) =>
     let (new_func, func_setup) = transl_imm(func);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          ((l, arg)) => {
+            let (arg, setup) = transl_imm(arg);
+            ((l, arg), setup);
+          },
+          args,
+        ),
+      );
+    let new_args = reorder_arguments(new_args, order);
     let (ans, ans_setup) = (
       Comp.app(
         ~loc,
         ~attributes,
         ~allocation_type,
         ~env,
+        ~tail,
         (new_func, ([Managed], Unmanaged(WasmI32))),
         new_args,
       ),
@@ -1252,31 +1399,76 @@ and transl_comp_expression =
       Comp.imm(~attributes, ~allocation_type, ~env, Imm.trap(~loc, ~env, ())),
       ans_setup @ [BSeq(ans)],
     );
-  | TExpApp({exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})}, args) =>
-    Translprim.(
-      switch (PrimMap.find_opt(prim_map, prim), args) {
-      | (Some(Primitive0(prim)), []) =>
-        transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
-      | (Some(Primitive1(prim)), [arg]) =>
-        transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
-      | (Some(Primitive2(prim)), [arg1, arg2]) =>
-        transl_comp_expression({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
-      | (Some(PrimitiveN(prim)), args) =>
-        transl_comp_expression({...e, exp_desc: TExpPrimN(prim, args)})
-      | (Some(_), _) =>
-        failwith("transl_comp_expression: invalid primitive arity")
-      | (None, _) => failwith("transl_comp_expression: unknown primitive")
-      }
-    )
-  | TExpApp(func, args) =>
+  | TExpApp(
+      {exp_desc: TExpIdent(_, _, {val_kind: TValPrim(prim)})},
+      _,
+      args,
+    ) =>
+    if (tail) {
+      let (imm, setup) =
+        Translprim.(
+          switch (PrimMap.find_opt(prim_map, prim), args) {
+          | (Some(Primitive0(prim)), []) =>
+            transl_imm({...e, exp_desc: TExpPrim0(prim)})
+          | (Some(Primitive1(prim)), [(_, arg)]) =>
+            transl_imm({...e, exp_desc: TExpPrim1(prim, arg)})
+          | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
+            transl_imm({...e, exp_desc: TExpPrim2(prim, arg1, arg2)})
+          | (Some(PrimitiveN(prim)), args) =>
+            transl_imm({
+              ...e,
+              exp_desc: TExpPrimN(prim, List.map(snd, args)),
+            })
+          | (Some(_), _) =>
+            failwith("transl_comp_expression: invalid primitive arity")
+          | (None, _) =>
+            failwith("transl_comp_expression: unknown primitive")
+          }
+        );
+      (Comp.return(~loc, ~attributes, ~env, Some(imm)), setup);
+    } else {
+      Translprim.(
+        switch (PrimMap.find_opt(prim_map, prim), args) {
+        | (Some(Primitive0(prim)), []) =>
+          transl_comp_expression({...e, exp_desc: TExpPrim0(prim)})
+        | (Some(Primitive1(prim)), [(_, arg)]) =>
+          transl_comp_expression({...e, exp_desc: TExpPrim1(prim, arg)})
+        | (Some(Primitive2(prim)), [(_, arg1), (_, arg2)]) =>
+          transl_comp_expression({
+            ...e,
+            exp_desc: TExpPrim2(prim, arg1, arg2),
+          })
+        | (Some(PrimitiveN(prim)), args) =>
+          transl_comp_expression({
+            ...e,
+            exp_desc: TExpPrimN(prim, List.map(snd, args)),
+          })
+        | (Some(_), _) =>
+          failwith("transl_comp_expression: invalid primitive arity")
+        | (None, _) => failwith("transl_comp_expression: unknown primitive")
+        }
+      );
+    }
+  | TExpApp(func, order, args) =>
     let (new_func, func_setup) = transl_imm(func);
-    let (new_args, new_setup) = List.split(List.map(transl_imm, args));
+    let (new_args, new_setup) =
+      List.split(
+        List.map(
+          ((l, arg)) => {
+            let (arg, setup) = transl_imm(arg);
+            ((l, arg), setup);
+          },
+          args,
+        ),
+      );
+    let new_args = reorder_arguments(new_args, order);
     (
       Comp.app(
         ~loc,
         ~attributes,
         ~allocation_type,
         ~env,
+        ~tail,
         (new_func, get_fn_allocation_type(func.exp_env, func.exp_type)),
         new_args,
       ),
@@ -1492,7 +1684,7 @@ let rec transl_anf_statement =
             desc.tvd_id,
             desc.tvd_mod.txt,
             external_name.txt,
-            FunctionShape(argsty, retty),
+            FunctionShape({args: argsty, returns: retty, has_closure: true}),
           ),
         ],
       );
@@ -1554,6 +1746,7 @@ let rec gather_type_metadata = statements => {
               let id = get_type_id(typath, ttop_env);
               switch (decl.data_kind) {
               | TDataVariant(cnstrs) =>
+                let type_hash = get_type_hash(decl.data_type);
                 let descrs =
                   Datarepr.constructors_of_type(typath, decl.data_type);
                 let meta =
@@ -1582,14 +1775,16 @@ let rec gather_type_metadata = statements => {
                       ),
                     descrs,
                   );
-                Some(ADTMetadata(id, meta));
+                Some((ADTMetadata(id, meta), type_hash));
               | TDataRecord(fields) =>
-                Some(
+                let type_hash = get_type_hash(decl.data_type);
+                Some((
                   RecordMetadata(
                     id,
                     List.map(field => Ident.name(field.rf_name), fields),
                   ),
-                )
+                  type_hash,
+                ));
               | TDataAbstract => None
               };
             },
@@ -1601,10 +1796,27 @@ let rec gather_type_metadata = statements => {
         let id = ext.ext_id;
         let cstr = Datarepr.extension_descr(Path.PIdent(id), ext.ext_type);
         [
-          ExceptionMetadata(
-            ty_id,
-            compile_constructor_tag(cstr.cstr_tag),
-            cstr.cstr_name,
+          (
+            ExceptionMetadata(
+              ty_id,
+              compile_constructor_tag(cstr.cstr_tag),
+              cstr.cstr_name,
+              switch (cstr.cstr_inlined) {
+              | None => TupleConstructor
+              | Some(t) =>
+                let label_names =
+                  switch (t.type_kind) {
+                  | TDataRecord(rfs) =>
+                    List.map(rf => Ident.name(rf.Types.rf_name), rfs)
+                  | _ =>
+                    failwith(
+                      "Impossible: inlined exception record constructor with non-record underlying type",
+                    )
+                  };
+                RecordConstructor(label_names);
+              },
+            ),
+            exception_type_hash,
           ),
           ...metadata,
         ];
@@ -1620,6 +1832,193 @@ let rec gather_type_metadata = statements => {
     [],
     statements,
   );
+};
+
+type type_metadata =
+  | ADTMeta(int, list((int, string, Types.adt_constructor_type)))
+  | RecordMeta(int, list(string));
+
+let construct_type_metadata_buffer = type_metadata => {
+  open Types;
+
+  // More information about this function can be found in the printing.md
+  // contributor document.
+
+  // Extension constructors defined by the module must be grouped together.
+  // For now, this only includes exceptions.
+  let (exception_meta, non_exception_meta) =
+    List.fold_left(
+      ((exception_meta, non_exception_meta), (meta, type_hash) as md_info) => {
+        switch (meta) {
+        | ExceptionMetadata(_) => (
+            [md_info, ...exception_meta],
+            non_exception_meta,
+          )
+        | ADTMetadata(id, variants) => (
+            exception_meta,
+            [(ADTMeta(id, variants), type_hash), ...non_exception_meta],
+          )
+        | RecordMetadata(id, fields) => (
+            exception_meta,
+            [(RecordMeta(id, fields), type_hash), ...non_exception_meta],
+          )
+        }
+      },
+      ([], []),
+      type_metadata,
+    );
+
+  let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
+
+  let offset = ref(0);
+  let non_exception_buf = Buffer.create(256);
+
+  let alignBuffer = (buf, amount) => {
+    for (_ in 1 to amount) {
+      Buffer.add_int8(buf, 0);
+    };
+  };
+
+  let iter_record_fields = (buf, fields) => {
+    List.iter(
+      field => {
+        let length = String.length(field);
+        let aligned_length = round_to_8(length);
+        let rec_length = aligned_length + 8;
+        Buffer.add_int32_le(buf, Int32.of_int(rec_length));
+        Buffer.add_int32_le(buf, Int32.of_int(length));
+        Buffer.add_string(buf, field);
+        alignBuffer(buf, aligned_length - length);
+      },
+      fields,
+    );
+  };
+
+  let process_adt = (buf, is_exception, id, cstrs) => {
+    // For inline record constructors, store field names after other ADT info
+    let extra_required =
+      List.map(
+        ((_, _, cstr_type)) =>
+          switch (cstr_type) {
+          | TupleConstructor => 0
+          | RecordConstructor(fields) =>
+            List.fold_left(
+              (total, field) =>
+                total + 8 + round_to_8(String.length(field)),
+              0,
+              fields,
+            )
+          },
+        cstrs,
+      );
+
+    let section_length =
+      List.fold_left2(
+        (total, (_, cstr, cstr_type), extra) => {
+          total + 16 + round_to_8(String.length(cstr)) + extra
+        },
+        4,
+        cstrs,
+        extra_required,
+      );
+    if (!is_exception) {
+      // Add section length during linking for exceptions
+      Buffer.add_int32_le(
+        buf,
+        Int32.of_int(section_length),
+      );
+    };
+    List.iter2(
+      ((id, cstr, cstr_type), fields_section_length) => {
+        let length = String.length(cstr);
+        let aligned_length = round_to_8(length);
+        let constr_length = aligned_length + 16;
+        Buffer.add_int32_le(
+          buf,
+          Int32.of_int(constr_length + fields_section_length),
+        );
+        // Indicates offset to field data; special value of 0 can be interpreted
+        // to indicate that this is not a record variant
+        Buffer.add_int32_le(
+          buf,
+          Int32.of_int(
+            if (cstr_type == TupleConstructor) {
+              0;
+            } else {
+              constr_length;
+            },
+          ),
+        );
+        Buffer.add_int32_le(buf, Int32.of_int(id));
+        Buffer.add_int32_le(buf, Int32.of_int(length));
+        Buffer.add_string(buf, cstr);
+        alignBuffer(buf, aligned_length - length);
+        switch (cstr_type) {
+        | TupleConstructor => ()
+        | RecordConstructor(fields) => iter_record_fields(buf, fields)
+        };
+      },
+      cstrs,
+      extra_required,
+    );
+    section_length;
+  };
+
+  let hash_to_offset =
+    List.map(
+      ((meta, type_hash: int)) => {
+        let begin_offset = offset^;
+        switch (meta) {
+        | ADTMeta(id, cstrs) =>
+          let section_length =
+            process_adt(non_exception_buf, false, id, cstrs);
+          offset := offset^ + section_length;
+        | RecordMeta(id, fields) =>
+          let section_length =
+            List.fold_left(
+              (total, field) =>
+                total + 8 + round_to_8(String.length(field)),
+              4,
+              fields,
+            );
+          offset := offset^ + section_length;
+          Buffer.add_int32_le(
+            non_exception_buf,
+            Int32.of_int(section_length),
+          );
+          iter_record_fields(non_exception_buf, fields);
+        };
+        (type_hash, begin_offset);
+      },
+      non_exception_meta,
+    );
+
+  let exceptions_buf = Buffer.create(256);
+  switch (exception_meta) {
+  | [(ExceptionMetadata(id, _, _, _), _), ..._] =>
+    let cstrs =
+      List.map(
+        meta => {
+          switch (meta) {
+          | (ExceptionMetadata(_, variant, name, cstr_type), _) => (
+              variant,
+              name,
+              cstr_type,
+            )
+          | _ => failwith("impossible by partition")
+          }
+        },
+        exception_meta,
+      );
+    ignore(process_adt(exceptions_buf, true, id, cstrs));
+  | _ => ()
+  };
+
+  Cmi_format.{
+    ctm_metadata: Buffer.contents(non_exception_buf),
+    ctm_exceptions: Buffer.contents(exceptions_buf),
+    ctm_offsets_tbl: hash_to_offset,
+  };
 };
 
 let transl_anf_module =
@@ -1647,8 +2046,21 @@ let transl_anf_module =
     specs: imports @ value_imports^,
     path_map: Path_tbl.copy(include_map),
   };
-  let type_metadata = gather_type_metadata(statements);
-  {body, env, imports, signature, type_metadata, analyses: ref([])};
+  let type_metadata_and_hashes = gather_type_metadata(statements);
+  let type_metadata =
+    List.map(((meta, _)) => meta, type_metadata_and_hashes);
+  let metadata = construct_type_metadata_buffer(type_metadata_and_hashes);
+  {
+    body,
+    env,
+    imports,
+    signature: {
+      ...signature,
+      cmi_type_metadata: metadata,
+    },
+    type_metadata,
+    analyses: ref([]),
+  };
 };
 
 let () = Matchcomp.compile_constructor_tag := compile_constructor_tag;

@@ -36,9 +36,18 @@ let ident_number = ident_create("Number")
 and ident_exception = ident_create("Exception")
 and ident_option = ident_create("Option")
 and ident_result = ident_create("Result")
-and ident_list = ident_create("List")
+and ident_list = ident_create("List");
+let ident_range = ident_create("Range")
+and ident_range_start = ident_create("rangeStart")
+and ident_range_end = ident_create("rangeEnd")
+and ident_int8 = ident_create("Int8")
+and ident_int16 = ident_create("Int16")
 and ident_int32 = ident_create("Int32")
 and ident_int64 = ident_create("Int64")
+and ident_uint8 = ident_create("Uint8")
+and ident_uint16 = ident_create("Uint16")
+and ident_uint32 = ident_create("Uint32")
+and ident_uint64 = ident_create("Uint64")
 and ident_wasmi32 = ident_create("WasmI32")
 and ident_wasmi64 = ident_create("WasmI64")
 and ident_wasmf32 = ident_create("WasmF32")
@@ -54,7 +63,6 @@ and ident_char = ident_create("Char")
 and ident_void = ident_create("Void")
 and ident_box = ident_create("Box")
 and ident_array = ident_create("Array")
-and ident_fd = ident_create("FileDescriptor")
 and ident_assertion_error = ident_create_predef_exn("AssertionError")
 and ident_index_out_of_bounds = ident_create_predef_exn("IndexOutOfBounds")
 and ident_index_non_integer = ident_create_predef_exn("IndexNonInteger")
@@ -65,8 +73,15 @@ and path_exception = PIdent(ident_exception)
 and path_option = PIdent(ident_option)
 and path_result = PIdent(ident_result)
 and path_list = PIdent(ident_list)
+and path_range = PIdent(ident_range)
+and path_int8 = PIdent(ident_int8)
+and path_int16 = PIdent(ident_int16)
 and path_int32 = PIdent(ident_int32)
 and path_int64 = PIdent(ident_int64)
+and path_uint8 = PIdent(ident_uint8)
+and path_uint16 = PIdent(ident_uint16)
+and path_uint32 = PIdent(ident_uint32)
+and path_uint64 = PIdent(ident_uint64)
 and path_wasmi32 = PIdent(ident_wasmi32)
 and path_wasmi64 = PIdent(ident_wasmi64)
 and path_wasmf32 = PIdent(ident_wasmf32)
@@ -81,8 +96,7 @@ and path_bytes = PIdent(ident_bytes)
 and path_char = PIdent(ident_char)
 and path_void = PIdent(ident_void)
 and path_box = PIdent(ident_box)
-and path_array = PIdent(ident_array)
-and path_fd = PIdent(ident_fd);
+and path_array = PIdent(ident_array);
 
 let type_number = newgenty(TTyConstr(path_number, [], ref(TMemNil)))
 and type_exception = newgenty(TTyConstr(path_exception, [], ref(TMemNil)))
@@ -91,8 +105,21 @@ and type_option = var =>
 and type_result = (ok, err) =>
   newgenty(TTyConstr(path_result, [ok, err], ref(TMemNil)))
 and type_list = var => newgenty(TTyConstr(path_list, [var], ref(TMemNil)))
+and type_range = var =>
+  newgenty(
+    TTyRecord([
+      (Ident.name(ident_range_start), var),
+      (Ident.name(ident_range_end), var),
+    ]),
+  )
+and type_int8 = newgenty(TTyConstr(path_int8, [], ref(TMemNil)))
+and type_int16 = newgenty(TTyConstr(path_int16, [], ref(TMemNil)))
 and type_int32 = newgenty(TTyConstr(path_int32, [], ref(TMemNil)))
 and type_int64 = newgenty(TTyConstr(path_int64, [], ref(TMemNil)))
+and type_uint8 = newgenty(TTyConstr(path_uint8, [], ref(TMemNil)))
+and type_uint16 = newgenty(TTyConstr(path_uint16, [], ref(TMemNil)))
+and type_uint32 = newgenty(TTyConstr(path_uint32, [], ref(TMemNil)))
+and type_uint64 = newgenty(TTyConstr(path_uint64, [], ref(TMemNil)))
 and type_rational = newgenty(TTyConstr(path_rational, [], ref(TMemNil)))
 and type_float32 = newgenty(TTyConstr(path_float32, [], ref(TMemNil)))
 and type_float64 = newgenty(TTyConstr(path_float64, [], ref(TMemNil)))
@@ -109,7 +136,6 @@ and type_void = newgenty(TTyConstr(path_void, [], ref(TMemNil)))
 and type_box = var => newgenty(TTyConstr(path_box, [var], ref(TMemNil)))
 and type_array = var =>
   newgenty(TTyConstr(path_array, [var], ref(TMemNil)))
-and type_fd = newgenty(TTyConstr(path_fd, [], ref(TMemNil)))
 and type_lambda = (args, res) => newgenty(TTyArrow(args, res, TComOk));
 
 let decl_abstr = path => {
@@ -195,6 +221,29 @@ and decl_list = {
       ]),
   };
 }
+and decl_range = {
+  let tvar = newgenvar();
+  {
+    ...decl_abstr(path_range),
+    type_params: [tvar],
+    type_arity: 1,
+    type_kind:
+      TDataRecord([
+        {
+          rf_name: ident_range_start,
+          rf_type: tvar,
+          rf_mutable: false,
+          rf_loc: Location.dummy_loc,
+        },
+        {
+          rf_name: ident_range_end,
+          rf_type: tvar,
+          rf_mutable: false,
+          rf_loc: Location.dummy_loc,
+        },
+      ]),
+  };
+}
 and decl_box = {
   let tvar = newgenvar();
   {...decl_abstr(path_box), type_params: [tvar], type_arity: 1};
@@ -231,8 +280,15 @@ let initial_env = (add_type, add_extension, empty_env) =>
   |> add_type(ident_option, decl_option)
   |> add_type(ident_result, decl_result)
   |> add_type(ident_list, decl_list)
+  |> add_type(ident_range, decl_range)
+  |> add_type(ident_int8, decl_abstr_imm(WasmI32, path_int8))
+  |> add_type(ident_int16, decl_abstr_imm(WasmI32, path_int16))
   |> add_type(ident_int32, decl_abstr(path_int32))
   |> add_type(ident_int64, decl_abstr(path_int64))
+  |> add_type(ident_uint8, decl_abstr_imm(WasmI32, path_uint8))
+  |> add_type(ident_uint16, decl_abstr_imm(WasmI32, path_uint16))
+  |> add_type(ident_uint32, decl_abstr(path_uint32))
+  |> add_type(ident_uint64, decl_abstr(path_uint64))
   |> add_type(ident_float32, decl_abstr(path_float32))
   |> add_type(ident_float64, decl_abstr(path_float64))
   |> add_type(ident_bigint, decl_abstr(path_bigint))
@@ -247,7 +303,6 @@ let initial_env = (add_type, add_extension, empty_env) =>
   |> add_type(ident_char, decl_abstr_imm(WasmI32, path_char))
   |> add_type(ident_void, decl_void)
   |> add_type(ident_array, decl_array)
-  |> add_type(ident_fd, decl_abstr(path_fd))
   |> add_type(ident_bytes, decl_abstr(path_bytes))
   |> add_extension(ident_assertion_error, decl_assertion_error)
   |> add_extension(ident_index_out_of_bounds, decl_index_out_of_bounds)

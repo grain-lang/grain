@@ -3,21 +3,22 @@ module String
 
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use {
-  add as (+),
-  sub as (-),
-  mul as (*),
-  divS as (/),
-  shl as (<<),
-  shrS as (>>),
-  shrU as (>>>),
-  and as (&),
-  or as (|),
-  eq as (==),
-  ne as (!=),
-  geS as (>=),
-  gtS as (>),
-  leS as (<=),
-  ltS as (<),
+  (+),
+  (-),
+  (*),
+  (/),
+  remS as (%),
+  (<<),
+  (>>),
+  (&),
+  (>>>),
+  (|),
+  (==),
+  (!=),
+  (>=),
+  (>),
+  (<=),
+  (<),
 }
 include "runtime/unsafe/wasmi64" as WasmI64
 include "runtime/unsafe/wasmf32" as WasmF32
@@ -37,30 +38,32 @@ foreign wasm fd_write: (
   WasmI32,
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive builtinId: String -> Number = "@builtin.id"
-
-primitive _RUNTIME_TYPE_METADATA_PTR: WasmI32 = "@heap.type_metadata"
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive builtinId = "@builtin.id"
+primitive ignore = "@ignore"
 
 @unsafe
-let findTypeMetadata = typeId => {
-  let mut metadataPtr = WasmI32.load(_RUNTIME_TYPE_METADATA_PTR, 0n)
-  let mut modData = -1n
-  let mut modTypesCount = 0n
-  while (metadataPtr != 0n) {
-    modData = metadataPtr + 12n
-    modTypesCount = WasmI32.load(metadataPtr, 8n)
-    for (let mut i = 0n; i < modTypesCount; i += 1n) {
-      if (WasmI32.load(modData, 4n) == typeId) {
-        return modData
-      }
-      modData += WasmI32.load(modData, 0n)
-    }
-    metadataPtr = WasmI32.load(metadataPtr, 0n)
-  }
+primitive _TYPE_METADATA_SECTION = "@heap.type_metadata"
 
+@unsafe
+let findTypeMetadata = typeHash => {
+  let numBuckets = WasmI32.load(_TYPE_METADATA_SECTION, 0n)
+  let hashHash = typeHash % numBuckets
+  // First 8 bytes of metadata are for table size
+  let bucketPtr = _TYPE_METADATA_SECTION +
+    8n +
+    (hashHash << 3n) // 8 bytes/bucket
+  let bucketDataOffset = WasmI32.load(bucketPtr, 0n)
+  let bucketSize = WasmI32.load(bucketPtr, 4n)
+  let beginDataPtr = _TYPE_METADATA_SECTION + bucketDataOffset
+  let endDataPtr = beginDataPtr + (bucketSize << 3n)
+  for (let mut ptr = beginDataPtr; ptr < endDataPtr; ptr += 8n) {
+    if (WasmI32.load(ptr, 0n) == typeHash) {
+      return _TYPE_METADATA_SECTION + WasmI32.load(ptr, 4n)
+    }
+  }
   return -1n
 }
 
@@ -126,15 +129,15 @@ let getFieldArray = (fields, arity) => {
 
 @unsafe
 let getVariantMetadata = variant => {
-  let typeId = WasmI32.load(variant, 8n) >> 1n
+  let typeHash = WasmI32.load(variant, 4n) >> 1n
   let variantId = WasmI32.load(variant, 12n) >> 1n
 
-  let mut block = findTypeMetadata(typeId)
+  let mut block = findTypeMetadata(typeHash)
 
   if (block == -1n) return -1n
 
   let sectionLength = WasmI32.load(block, 0n)
-  block += 8n
+  block += 4n
 
   let end = block + sectionLength
   while (block < end) {
@@ -149,14 +152,14 @@ let getVariantMetadata = variant => {
 
 @unsafe
 let getRecordFieldNames = record_ => {
-  let typeId = WasmI32.load(record_, 8n) >> 1n
+  let typeHash = WasmI32.load(record_, 4n) >> 1n
   let arity = WasmI32.load(record_, 12n)
 
-  let mut fields = findTypeMetadata(typeId)
+  let mut fields = findTypeMetadata(typeHash)
 
   if (fields == -1n) return -1n
 
-  fields += 8n
+  fields += 4n
   return getFieldArray(fields, arity)
 }
 
@@ -202,6 +205,17 @@ let reverse = list => {
   iter(list, [])
 }
 
+/**
+ * Concatenate two strings.
+ *
+ * @param str1: The beginning string
+ * @param str2: The ending string
+ * @returns The combined string
+ *
+ * @example "Foo" ++ "Bar" == "FooBar"
+ *
+ * @since v0.2.0
+ */
 @unsafe
 provide let concat = (s1: String, s2: String) => {
   let ptr1 = WasmI32.fromGrain(s1)
@@ -242,7 +256,6 @@ let escape = (ptr, isString) => {
     let byte = WasmI32.load8U(ptr + i, startOffset)
     if (
       byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
-      byte == _SEQ_V ||
       byte == _SEQ_SLASH ||
       byte == _SEQ_QUOTE
     ) {
@@ -261,7 +274,6 @@ let escape = (ptr, isString) => {
     let byte = WasmI32.load8U(ptr + i, startOffset)
     if (
       byte >= _SEQ_B && byte <= _SEQ_R || /* b, f, n, r, t, v */
-      byte == _SEQ_V ||
       byte == _SEQ_SLASH ||
       byte == _SEQ_QUOTE
     ) {
@@ -355,9 +367,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         needsEllipsis = true
       }
       let headBytes = 8n // <bytes:
-      let hexBytes = numBytes * 3n
+      // This is two digits and a space for each byte, minus one space for the last byte
+      let hexBytes = numBytes * 3n - 1n
       let tailBytes = if (needsEllipsis) {
-        5n // ...>
+        4n // ...>
       } else {
         1n // >
       }
@@ -461,9 +474,6 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let numberTag = WasmI32.load(ptr, 4n)
       match (numberTag) {
-        t when t == Tags._GRAIN_INT32_BOXED_NUM_TAG => {
-          NumberUtils.itoa32(WasmI32.load(ptr, 8n), 10n)
-        },
         t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
           NumberUtils.itoa64(WasmI64.load(ptr, 8n), 10n)
         },
@@ -477,9 +487,6 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let strings = [numerator, slash, denominator]
           join(strings)
         },
-        t when t == Tags._GRAIN_FLOAT32_BOXED_NUM_TAG => {
-          NumberUtils.dtoa(WasmF64.promoteF32(WasmF32.load(ptr, 8n)))
-        },
         t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
           NumberUtils.dtoa(WasmF64.load(ptr, 8n))
         },
@@ -487,6 +494,18 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           "<unknown boxed number>"
         },
       }
+    },
+    t when t == Tags._GRAIN_INT32_HEAP_TAG => {
+      NumberUtils.itoa32(WasmI32.load(ptr, 4n), 10n)
+    },
+    t when t == Tags._GRAIN_FLOAT32_HEAP_TAG => {
+      NumberUtils.dtoa(WasmF64.promoteF32(WasmF32.load(ptr, 4n)))
+    },
+    t when t == Tags._GRAIN_UINT32_HEAP_TAG => {
+      NumberUtils.utoa32(WasmI32.load(ptr, 4n), 10n)
+    },
+    t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      NumberUtils.utoa64(WasmI64.load(ptr, 8n), 10n)
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
       let tupleLength = WasmI32.load(ptr, 4n)
@@ -496,14 +515,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         WasmI32.store(ptr, 0x80000000n | tupleLength, 4n)
         let comspace = ", "
         let rparen = ")"
+        let mut lparen = "("
         let mut strings = [rparen]
-        if (tupleLength <= 1n) {
-          // Special case: unary tuple, which is not valid Grain syntax; however, boxed values
-          // are stored as a unary tuple, so we keep this in case one gets printed
-          let comma = ","
-          strings = [comma, ...strings]
-          void
-        }
         for (let mut i = tupleLength * 4n - 4n; i >= 0n; i -= 4n) {
           let item = toStringHelp(
             WasmI32.load(ptr + i, 8n),
@@ -518,9 +531,12 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         WasmI32.store(ptr, tupleLength, 4n)
 
         Memory.incRef(WasmI32.fromGrain(strings))
-        let lparen = "("
         strings = [lparen, ...strings]
-
+        if (tupleLength <= 1n) {
+          // Special case: unary tuple, which is not valid Grain syntax; however, boxed values
+          // are stored as a unary tuple, so we keep this in case one gets printed
+          strings = ["box", ...strings]
+        }
         join(strings)
       }
     },
@@ -547,12 +563,28 @@ toStringHelp = (grainValue, extraIndents, toplevel) => {
     let tag = grainValue & 7n
     if (tag == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
       heapValueToString(grainValue, extraIndents, toplevel)
-    } else if (tag == Tags._GRAIN_CHAR_TAG_TYPE) {
-      let string = usvToString(grainValue >> 8n)
-      if (toplevel) {
-        string
+    } else if (tag == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
+      let shortVal = grainValue >> 8n
+      let shortValTag = (grainValue & 0xF8n) >> 3n
+      if (shortValTag == Tags._GRAIN_CHAR_SHORTVAL_TAG) {
+        let string = usvToString(shortVal)
+        if (toplevel) {
+          string
+        } else {
+          escapeChar(string)
+        }
+      } else if (
+        shortValTag == Tags._GRAIN_INT8_SHORTVAL_TAG ||
+        shortValTag == Tags._GRAIN_INT16_SHORTVAL_TAG
+      ) {
+        NumberUtils.itoa32(shortVal, 10n)
+      } else if (
+        shortValTag == Tags._GRAIN_UINT8_SHORTVAL_TAG ||
+        shortValTag == Tags._GRAIN_UINT16_SHORTVAL_TAG
+      ) {
+        NumberUtils.utoa32(shortVal, 10n)
       } else {
-        escapeChar(string)
+        "<unknown small value>"
       }
     } else if (grainValue == WasmI32.fromGrain(true)) {
       "true"
@@ -653,12 +685,34 @@ recordToString = (ptr, recordArity, fields, contentOffset, extraIndents) => {
   join(strings)
 }
 
+/**
+ * Converts the given operand to a string.
+ * Provides a better representation of data types if those types are provided from the module.
+ *
+ * @param value: The operand
+ * @returns The operand, as a string
+ *
+ * @since v0.1.0
+ */
 @unsafe
 provide let toString = value => {
-  let value = WasmI32.fromGrain(value)
-  toStringHelp(value, 0n, true)
+  let ptr = WasmI32.fromGrain(value)
+  let string = toStringHelp(ptr, 0n, true)
+  // Prevent the tail call to allow the value to stay alive
+  // while we operate on the raw pointer
+  ignore(value)
+  string
 }
 
+/**
+ * Prints the given operand to the console. Works for any type. Internally, calls `toString`
+ * on the operand, so a better representation of data type will be printed if those types
+ * are provided from the module.
+ *
+ * @param value: The operand
+ *
+ * @since v0.1.0
+ */
 @unsafe
 provide let print = value => {
   // First convert the value to string, if it isn't one already.

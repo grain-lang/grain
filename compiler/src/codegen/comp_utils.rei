@@ -3,7 +3,6 @@ open Binaryen;
 open Grain_typed;
 
 let grain_main: string;
-let grain_type_metadata: string;
 let grain_start: string;
 let grain_env_name: string;
 let grain_global_function_table: string;

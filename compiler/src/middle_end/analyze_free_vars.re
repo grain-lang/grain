@@ -43,7 +43,7 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
     push_free_vars(analyses) @@
     (
       switch (desc) {
-      | CLambda(_, args, (body, _)) =>
+      | CLambda(_, args, (body, _), _) =>
         Ident.Set.diff(
           anf_free_vars(body),
           Ident.Set.of_list(List.map(((arg, _)) => arg, args)),
@@ -61,7 +61,7 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
       | CContinue
       | CBreak => Ident.Set.empty
       | CReturn(expr) =>
-        Option.fold(~none=Ident.Set.empty, ~some=comp_free_vars, expr)
+        Option.fold(~none=Ident.Set.empty, ~some=imm_free_vars, expr)
       | CSwitch(arg, branches, _) =>
         List.fold_left(
           (acc, (_, b)) => Ident.Set.union(anf_free_vars(b), acc),
@@ -89,15 +89,9 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
           imm_free_vars(fn),
           args,
         )
-      | CAppBuiltin(_, _, args) =>
-        List.fold_left(
-          (acc, a) => Ident.Set.union(imm_free_vars(a), acc),
-          Ident.Set.empty,
-          args,
-        )
       | CTuple(args)
       | CArray(args)
-      | CAdt(_, _, args) =>
+      | CAdt(_, _, _, args) =>
         List.fold_left(
           (acc, a) => Ident.Set.union(imm_free_vars(a), acc),
           Ident.Set.empty,
@@ -115,7 +109,7 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
           Ident.Set.empty,
           [arg1, arg2, arg3],
         )
-      | CRecord(_, args) =>
+      | CRecord(_, _, args) =>
         List.fold_left(
           (acc, (_, a)) => Ident.Set.union(imm_free_vars(a), acc),
           Ident.Set.empty,
@@ -131,11 +125,12 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
       | CNumber(_)
       | CInt32(_)
       | CInt64(_)
+      | CUint32(_)
+      | CUint64(_)
       | CFloat32(_)
       | CFloat64(_)
       | CBytes(_)
-      | CString(_)
-      | CChar(_) => Ident.Set.empty
+      | CString(_) => Ident.Set.empty
       | CImmExpr(i) => imm_free_vars(i)
       }
     );

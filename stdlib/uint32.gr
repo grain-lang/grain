@@ -1,0 +1,471 @@
+/**
+ * Utilities for working with the Uint32 type.
+ * @example include "uint32"
+ *
+ * @since v0.6.0
+ */
+
+module Uint32
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { (+), (-), (*), (&), (|), (^), (<<), (>>>), (==), (!=) }
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/exception"
+include "runtime/numbers"
+from Numbers use { reducedUnsignedInteger, coerceNumberToUnsignedWasmI32 }
+include "runtime/dataStructures"
+from DataStructures use { newUint32 }
+
+@unsafe
+let _VALUE_OFFSET = 4n
+
+/**
+ * Converts a Number to a Uint32.
+ *
+ * @param number: The value to convert
+ * @returns The Number represented as a Uint32
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let fromNumber = (x: Number) => {
+  let result = newUint32(coerceNumberToUnsignedWasmI32(x))
+  WasmI32.toGrain(result): Uint32
+}
+
+/**
+ * Converts a Uint32 to a Number.
+ *
+ * @param value: The value to convert
+ * @returns The Uint32 represented as a Number
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let toNumber = (x: Uint32) => {
+  WasmI32.toGrain(
+    reducedUnsignedInteger(
+      WasmI64.extendI32U(WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET))
+    )
+  ): Number
+}
+
+/**
+ * Converts an Int32 to a Uint32.
+ *
+ * @param number: The value to convert
+ * @returns The Int32 represented as a Uint32
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let fromInt32 = (x: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let result = newUint32(x)
+  WasmI32.toGrain(result): Uint32
+}
+
+/**
+ * Increments the value by one.
+ *
+ * @param value: The value to increment
+ * @returns The incremented value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let incr = (value: Uint32) => {
+  let value = WasmI32.fromGrain(value)
+  let ptr = newUint32(WasmI32.load(value, _VALUE_OFFSET) + 1n)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Decrements the value by one.
+ *
+ * @param value: The value to decrement
+ * @returns The decremented value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let decr = (value: Uint32) => {
+  let value = WasmI32.fromGrain(value)
+  let ptr = newUint32(WasmI32.load(value, _VALUE_OFFSET) - 1n)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the sum of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The sum of the two operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (+) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(xv + yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the difference of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The difference of the two operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (-) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(xv - yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the product of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The product of the two operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (*) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(xv * yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the quotient of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The quotient of its operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (/) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.divU(xv, yv))
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the remainder of the division of its operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns The remainder of its operands
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let rem = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.remU(xv, yv))
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Rotates the bits of the value left by the given number of bits.
+ *
+ * @param value: The value to rotate
+ * @param amount: The number of bits to rotate by
+ * @returns The rotated value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let rotl = (value: Uint32, amount: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.rotl(xv, yv))
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Rotates the bits of the value right by the given number of bits.
+ *
+ * @param value: The value to rotate
+ * @param amount: The number of bits to rotate by
+ * @returns The rotated value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let rotr = (value: Uint32, amount: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.rotr(xv, yv))
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Shifts the bits of the value left by the given number of bits.
+ *
+ * @param value: The value to shift
+ * @param amount: The number of bits to shift by
+ * @returns The shifted value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<<) = (value: Uint32, amount: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
+  let ptr = newUint32(xv << yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Shifts the bits of the value right by the given number of bits.
+ *
+ * @param value: The value to shift
+ * @param amount: The amount to shift by
+ * @returns The shifted value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>>>) = (value: Uint32, amount: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(amount), _VALUE_OFFSET)
+  let ptr = newUint32(xv >>> yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Checks if the first value is equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (==) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  xv == yv
+}
+
+/**
+ * Checks if the first value is not equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is not equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (!=) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  xv != yv
+}
+
+/**
+ * Checks if the given value is equal to zero.
+ *
+ * @param value: The value to inspect
+ * @returns `true` if the first value is equal to zero or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let eqz = (value: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  WasmI32.eqz(xv)
+}
+
+/**
+ * Checks if the first value is less than the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  WasmI32.ltU(xv, yv)
+}
+
+/**
+ * Checks if the first value is greater than the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  WasmI32.gtU(xv, yv)
+}
+
+/**
+ * Checks if the first value is less than or equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<=) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  WasmI32.leU(xv, yv)
+}
+
+/**
+ * Checks if the first value is greater than or equal to the second value.
+ *
+ * @param x: The first value
+ * @param y: The second value
+ * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>=) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  WasmI32.geU(xv, yv)
+}
+
+/**
+ * Computes the bitwise NOT of the given value.
+ *
+ * @param value: The given value
+ * @returns Containing the inverted bits of the given value
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let lnot = (value: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let ptr = newUint32(xv ^ 0xffffffffn)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the bitwise AND (`&`) on the given operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (&) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(xv & yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the bitwise OR (`|`) on the given operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (|) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(xv | yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Computes the bitwise XOR (`^`) on the given operands.
+ *
+ * @param x: The first operand
+ * @param y: The second operand
+ * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (^) = (x: Uint32, y: Uint32) => {
+  let xv = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmI32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newUint32(xv ^ yv)
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Counts the number of leading zero bits in the value.
+ *
+ * @param value: The value to inspect
+ * @returns The amount of leading zeros
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let clz = (value: Uint32) => {
+  let nv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.clz(nv))
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Counts the number of trailing zero bits in the value.
+ *
+ * @param value: The value to inspect
+ * @returns The amount of trailing zeros
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let ctz = (value: Uint32) => {
+  let nv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.ctz(nv))
+  WasmI32.toGrain(ptr): Uint32
+}
+
+/**
+ * Counts the number of bits set to `1` in the value, also known as a population count.
+ *
+ * @param value: The value to inspect
+ * @returns The amount of 1-bits in its operand
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let popcnt = (value: Uint32) => {
+  let nv = WasmI32.load(WasmI32.fromGrain(value), _VALUE_OFFSET)
+  let ptr = newUint32(WasmI32.popcnt(nv))
+  WasmI32.toGrain(ptr): Uint32
+}

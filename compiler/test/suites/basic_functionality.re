@@ -8,9 +8,14 @@ describe("basic functionality", ({test, testSkip}) => {
   let assertSnapshot = makeSnapshotRunner(test);
   let assertSnapshotFile = makeSnapshotFileRunner(test);
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertFilesize = makeFilesizeRunner(test);
   let assertParse = makeParseRunner(test);
   let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
+  let smallestFileConfig = () => {
+    Grain_utils.Config.elide_type_info := true;
+    Grain_utils.Config.profile := Some(Grain_utils.Config.Release);
+  };
 
   assertSnapshot("nil", "");
   assertSnapshot("forty", "let x = 40; x");
@@ -22,6 +27,12 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("heap_number_i32_wrapper", "1073741824");
   assertSnapshot("heap_number_i32_wrapper_max", "2147483647");
   assertSnapshot("heap_number_i64_wrapper", "2147483648");
+  assertSnapshot("hex_dec_exp1", "0x1p5");
+  assertSnapshot("hex_dec_exp2", "0x1.4p5");
+  assertSnapshot("hex_dec_exp3", "0x1p-5");
+  assertSnapshot("hex_dec_exp4", "0x1Ap5");
+  assertSnapshot("hex_dec_exp5", "0x1A.4p5");
+  assertSnapshot("hex_dec_exp5", "0x1A.4Ap5");
   assertSnapshot("hex", "0xff");
   assertSnapshot("hex_neg", "-0xff");
   assertSnapshot("bin", "0b1010");
@@ -165,6 +176,11 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("if_one_sided5", "let mut x = 1; if (3 < 4) x = 2 + 3");
   assertSnapshot("if_one_sided6", "let mut x = 1; if (3 < 4) x = 2 + 3; x");
   assertCompileError(
+    "if_empty_block",
+    "if (false) 1 else {}",
+    "Syntax error",
+  );
+  assertCompileError(
     "if_one_sided_type_err",
     "let foo = (if (false) { ignore(5) }); let bar = foo + 5; bar",
     "has type Void but",
@@ -181,6 +197,8 @@ describe("basic functionality", ({test, testSkip}) => {
   );
   assertSnapshot("int32_1", "42l");
   assertSnapshot("int64_1", "99999999999999999L");
+  assertSnapshot("uint32_1", "42ul");
+  assertSnapshot("uint64_1", "99999999999999999uL");
   assertSnapshot("int64_pun_1", "9999999 * 99999999");
   assertSnapshot("int64_pun_2", "-99999999 - 999999999");
   assertSnapshot("bigint_1", "9223372036854775807 + 1");
@@ -289,5 +307,22 @@ describe("basic functionality", ({test, testSkip}) => {
         },
       )
     )
+  );
+
+  assertRun(
+    "magic",
+    {|
+      primitive magic = "@magic"
+      let helloBytes = b"hello"
+      print(magic(helloBytes) ++ " world")
+    |},
+    "hello world\n",
+  );
+
+  assertFilesize(
+    ~config_fn=smallestFileConfig,
+    "smallest_grain_program",
+    "",
+    5099,
   );
 });

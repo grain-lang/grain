@@ -9,28 +9,28 @@ module Malloc
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
-  add as (+),
-  sub as (-),
-  mul as (*),
+  (+),
+  (-),
+  (*),
   divU as (/),
   gtU as (>),
   geU as (>=),
   ltU as (<),
-  shl as (<<),
-  shrU as (>>),
-  eq as (==),
-  ne as (!=),
+  (<<),
+  (>>>),
+  (==),
+  (!=),
 }
 include "runtime/exception"
 
-primitive memorySize: () -> WasmI32 = "@wasm.memory_size"
-primitive memoryGrow: WasmI32 -> WasmI32 = "@wasm.memory_grow"
+primitive memorySize = "@wasm.memory_size"
+primitive memoryGrow = "@wasm.memory_grow"
 
-primitive (!): Bool -> Bool = "@not"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
+primitive (!) = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
 
-primitive heapBase: WasmI32 = "@heap.base"
+primitive heapBase = "@heap.base"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
  * The original K&R definition for the free list entry type was the following:
@@ -131,7 +131,7 @@ let growHeap = (nbytes: WasmI32) => {
       // More bytes requested than the initial heap size,
       // so we need to request more anyway.
       reqSize = nbytes - heapSize
-      reqSize = reqSize >> 16n
+      reqSize = reqSize >>> 16n
       reqSize += 1n
       reqResult = memoryGrow(reqSize)
       if (reqResult == -1n) {
@@ -148,7 +148,7 @@ let growHeap = (nbytes: WasmI32) => {
     let newRegionStart = memorySize() * _PAGE_SIZE
 
     reqSize = nbytes
-    reqSize = reqSize >> 16n
+    reqSize = reqSize >>> 16n
     reqSize += 1n
 
     reqResult = memoryGrow(reqSize)

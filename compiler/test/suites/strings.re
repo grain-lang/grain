@@ -241,6 +241,8 @@ bar", 1))|},
     {|print(("foo\"bar", 1))|},
     "(\"foo\\\"bar\", 1)\n",
   );
+  assertRun("toString_boxing1", {|print(box(1))|}, "box(1)\n");
+  assertRun("toString_boxing2", {|print(box(true))|}, "box(true)\n");
   assertCompileError(
     "string_err",
     "let x = \"hello\"; x + \", world\"",
@@ -290,5 +292,28 @@ bar", 1))|},
     "string_float6",
     {|include "float64"; from Float64 use *; print(div(-1.0d, 0.0d))|},
     "-Infinity\n",
+  );
+
+  // Bytes literals
+  assertRun("bytes_literal", {|print(b"abc")|}, "<bytes: 61 62 63>\n");
+  assertRun(
+    "bytes_literal_long",
+    {|print(b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefg")|},
+    "<bytes: 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 50 51 52 53 54 55 56 57 58 59 5a 61 62 63 64 65 66...>\n",
+  );
+  assertCompileError(
+    "bytes_literal_err1",
+    {|print(b"abc\u1234")|},
+    "Byte strings may not contain unicode escapes",
+  );
+  assertCompileError(
+    "bytes_literal_err2",
+    {|print(b"abc\u{1234}")|},
+    "Byte strings may not contain unicode escapes",
+  );
+  assertCompileError(
+    "bytes_literal_err3",
+    {|print(b"abc😂")|},
+    "Byte strings may not contain non-ascii unicode characters",
   );
 });

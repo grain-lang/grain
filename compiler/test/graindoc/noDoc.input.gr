@@ -1,0 +1,22 @@
+module NoGrainDoc
+
+// No Documentation
+type NoDocAlias = Bool
+record NoDocRecord {
+  noDocField: Bool
+}
+enum NoDocEnum {
+  NoDocCase
+}
+let noDocValue = 1
+let noDocFunction = (x: Number) => x + 1
+// Documentation
+provide type DocAlias = Bool
+provide record DocRecord {
+  docField: Bool
+}
+provide enum DocEnum {
+  DocCase
+}
+provide let docValue = 1
+provide let docFunction = (x: Number) => x + 1

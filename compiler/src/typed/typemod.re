@@ -311,7 +311,7 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
       (e, info) => {
         let id = info.data_id;
         let info' = {
-          let p = PExternal(p, Ident.name(id), nopos);
+          let p = PExternal(p, Ident.name(id));
           let decl = info.data_type;
           switch (decl.type_manifest) {
           | Some(_) => decl
@@ -351,6 +351,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       switch (e) {
       | Provided => Some(TSigValue(desc.tvd_id, desc.tvd_val))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract foreign")
       };
     let foreign = {
       ttop_desc: TTopForeign(desc),
@@ -362,19 +363,18 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
   };
 
   let process_primitive = (env, e, d, attributes, loc) => {
-    let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
+    let (defs, id, desc, newenv) = Translprim.transl_prim(env, d);
     let signature =
       switch (e) {
-      | Provided => Some(TSigValue(desc.tvd_id, desc.tvd_val))
+      | Provided => Some(TSigValue(id, desc))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract primitive")
       };
-    let (defs, newenv, attrs) = Translprim.transl_prim(newenv, desc);
     let prim = {
       ttop_desc: TTopLet(Nonrecursive, Immutable, defs),
       ttop_loc: loc,
       ttop_env: newenv,
-      ttop_attributes:
-        List.append(Typetexp.type_attributes(attributes), attrs),
+      ttop_attributes: Typetexp.type_attributes(attributes),
     };
     (newenv, signature, prim);
   };
@@ -394,28 +394,27 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
 
   let process_datas = (env, data_decls, attributes, loc) => {
     let (decls, newenv) =
-      Typedecl.transl_data_decl(
-        env,
-        Recursive,
-        List.map(((_, d)) => d, data_decls),
-      );
-    let ty_decl =
+      Typedecl.transl_data_decl(env, Recursive, data_decls);
+    let ty_decls =
       map2_rec_type_with_row_types(
         ~rec_flag=Recursive,
         (rs, info, e) => {
           switch (e) {
-          | Provided => TSigType(info.data_id, info.data_type, rs)
-          | NotProvided =>
-            TSigType(
-              info.data_id,
-              {
-                ...info.data_type,
-                type_kind: TDataAbstract,
-                // Removing the manifest hides the type implementation
-                // of this alias from any consuming module
-                type_manifest: None,
-              },
-              rs,
+          | NotProvided => None
+          | Provided => Some(TSigType(info.data_id, info.data_type, rs))
+          | Abstract =>
+            Some(
+              TSigType(
+                info.data_id,
+                {
+                  ...info.data_type,
+                  type_kind: TDataAbstract,
+                  // Removing the manifest hides the type implementation
+                  // of this type from the consuming module
+                  type_manifest: None,
+                },
+                rs,
+              ),
             )
           }
         },
@@ -423,6 +422,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
         List.map(((e, _)) => e, data_decls),
         [],
       );
+    let ty_decls = List.filter_map(decl => decl, ty_decls);
     let statement = {
       ttop_desc: TTopData(decls),
       ttop_loc: loc,
@@ -430,7 +430,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       ttop_attributes: Typetexp.type_attributes(attributes),
     };
     let newenv = enrich_type_decls(anchor, decls, env, newenv);
-    (newenv, ty_decl, statement);
+    (newenv, ty_decls, statement);
   };
 
   let process_module = (env, provide_flag, desc, attributes, loc) => {
@@ -440,12 +440,13 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
     let signature = normalize_signature(inner_env, signature);
     let mod_name = Ident.create(desc.pmod_name.txt);
     let mod_type = TModSignature(signature);
-    let newenv = Env.add_module(mod_name, mod_type, None, env);
+    let newenv = Env.add_module(mod_name, mod_type, None, loc, env);
     let mod_decl = Env.find_module(PIdent(mod_name), None, newenv);
     let signature =
       switch (provide_flag) {
       | Provided => Some(TSigModule(mod_name, mod_decl, TRecNot))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract module")
       };
     let statement = {
       ttop_desc:
@@ -453,6 +454,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           tmod_id: mod_name,
           tmod_decl: mod_decl,
           tmod_statements: statements,
+          tmod_provided: provide_flag,
           tmod_loc: loc,
         }),
       ttop_loc: loc,
@@ -588,6 +590,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       | Provided =>
         Some(TSigTypeExt(ext.ext_id, ext.ext_type, TExtException))
       | NotProvided => None
+      | Abstract => failwith("Impossible: abstract exception")
       };
     (newenv, sign, stmt);
   };
@@ -638,8 +641,65 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           let type_ = Env.find_type(type_id, env);
           ([TSigType(Path.head(type_id), type_, TRecNot), ...sigs], stmts);
         | PProvideModule({name: {txt: IdentName(name)}, alias, loc}) =>
-          let (mod_id, mod_decl) =
+          let (mod_path, mod_decl) =
             Typetexp.find_module(env, loc, IdentName(name));
+          let create_path = (mod_path, id) => {
+            Path.PExternal(mod_path, Ident.name(id));
+          };
+          let provided_values = ref([]);
+          let rec process_module_items = (mod_path, signature) => {
+            List.map(
+              item => {
+                switch (item) {
+                | TSigValue(id, {val_internalpath, val_loc} as vd) =>
+                  let path = create_path(mod_path, id);
+                  provided_values :=
+                    [
+                      {tex_id: id, tex_path: path, tex_loc: val_loc},
+                      ...provided_values^,
+                    ];
+                  // If this module was imported, we'll set the internal path
+                  // to be picked up later to be re-exported. Otherwise, these
+                  // values originated in this module.
+                  let val_internalpath =
+                    switch (mod_decl.md_filepath) {
+                    | Some(_) => path
+                    | _ => val_internalpath
+                    };
+                  TSigValue(id, {...vd, val_internalpath});
+                | TSigModule(
+                    id,
+                    {md_type: TModSignature(signature)} as md,
+                    rs,
+                  ) =>
+                  let signature =
+                    process_module_items(
+                      create_path(mod_path, id),
+                      signature,
+                    );
+                  TSigModule(
+                    id,
+                    {...md, md_type: TModSignature(signature)},
+                    rs,
+                  );
+                | TSigModule(_)
+                | TSigType(_)
+                | TSigTypeExt(_)
+                | TSigModType(_) => item
+                }
+              },
+              signature,
+            );
+          };
+          let mod_decl =
+            switch (mod_decl.md_type) {
+            | TModSignature(signature) => {
+                ...mod_decl,
+                md_type:
+                  TModSignature(process_module_items(mod_path, signature)),
+              }
+            | _ => mod_decl
+            };
           let sig_ =
             switch (alias) {
             | Some({txt: IdentName(alias)}) =>
@@ -647,7 +707,18 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
             | Some(_) => failwith("Impossible: invalid alias")
             | None => TSigModule(Ident.create(name.txt), mod_decl, TRecNot)
             };
-          ([sig_, ...sigs], stmts);
+          (
+            [sig_, ...sigs],
+            [
+              {
+                ttop_desc: TTopProvide(provided_values^),
+                ttop_loc: loc,
+                ttop_env: env,
+                ttop_attributes: Typetexp.type_attributes(attributes),
+              },
+              ...stmts,
+            ],
+          );
         | _ => failwith("Impossible: non-value provide")
         },
       items,
@@ -749,7 +820,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           ...expr,
           desc:
             TTyArrow(
-              List.map(resolve_type_expr, args),
+              List.map(((l, arg)) => (l, resolve_type_expr(arg)), args),
               resolve_type_expr(result),
               c,
             ),
@@ -946,7 +1017,11 @@ let type_implementation = prog => {
 
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);
-  let signature = Env.build_signature(normalized_sig, module_name, filename);
+  // Use placeholder for now; will be populated later in compilation
+  let type_metadata =
+    Cmi_format.{ctm_metadata: "", ctm_exceptions: "", ctm_offsets_tbl: []};
+  let signature =
+    Env.build_signature(normalized_sig, module_name, filename, type_metadata);
   {
     module_name: prog.module_name,
     statements,

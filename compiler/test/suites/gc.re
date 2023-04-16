@@ -8,19 +8,21 @@ let makeGcProgram = (program, heap_size) => {
     include "runtime/malloc"
     include "runtime/unsafe/memory"
 
-    primitive heapBase: WasmI32 = "@heap.base"
+    @disableGC
+    primitive heapBase = "@heap.base"
 
     @disableGC
     let leak = () => {
+      from WasmI32 use { (+), (-) }
       // find current memory pointer, subtract space for two malloc headers + 1 GC header
-      let offset = WasmI32.sub(Memory.malloc(8n), 24n)
+      let offset = Memory.malloc(8n) - 24n
       // Calculate how much memory is left
-      let availableMemory = WasmI32.sub(offset, WasmI32.add(Malloc._RESERVED_RUNTIME_SPACE, heapBase))
+      let availableMemory = offset - (Malloc._RESERVED_RUNTIME_SPACE + heapBase)
       // Calculate how much memory to leak
-      let toLeak = WasmI32.sub(availableMemory, %dn)
+      let toLeak = availableMemory - %dn
       // Memory is not reclaimed due to no gc context
       // This will actually leak 16 extra bytes because of the headers
-      Memory.malloc(WasmI32.sub(toLeak, 16n));
+      Memory.malloc(toLeak - 16n);
       void
     }
     leak();
@@ -81,7 +83,7 @@ describe("garbage collection", ({test, testSkip}) => {
   );
   assertRunGCError(
     "fib_gc_err",
-    1024,
+    256,
     {|
     let fib = x => {
       let rec fib_help = (n, acc) => {
@@ -100,7 +102,7 @@ describe("garbage collection", ({test, testSkip}) => {
   );
   assertRunGC(
     "fib_gc",
-    2048,
+    512,
     {|
     let fib = x => {
       let rec fib_help = (n, acc) => {
@@ -117,10 +119,19 @@ describe("garbage collection", ({test, testSkip}) => {
     |},
     "832040\n",
   );
-  /* tgcfile "fib_gc_bigger" 3072 "fib-gc" "832040";
-     tgcfile "fib_gc_biggest" 512 "fib-gc" "832040"; */
-  /* I've manually tested this test, but see TODO for automated testing */
-  /* tgcfile ~todo:"Need to figure out how to disable dead assignment elimination to make sure this test is actually checking what we want" "sinister_gc" 3072 "sinister-tail-call-gc" "true"; */
+  assertRunGC(
+    "loop_gc",
+    256,
+    {|
+    for (let mut i = 0; i < 512; i += 1) {
+      let string = "string"
+      continue
+      ignore(string)
+    }
+    print("OK")
+    |},
+    "OK\n",
+  );
   assertRunGC(
     "long_lists",
     20000,

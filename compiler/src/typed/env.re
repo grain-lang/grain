@@ -69,7 +69,6 @@ type dependency_chain = list(Location.loc(string));
 type error =
   | Illegal_renaming(string, string, string)
   | Inconsistent_import(string, string, string)
-  | Need_recursive_types(string, string)
   | Depend_on_unsafe_string_unit(string, string)
   | Missing_module(Location.t, Path.t, Path.t)
   | Unbound_module(Location.t, string)
@@ -182,8 +181,7 @@ type summary =
   | Env_module(summary, Ident.t, module_declaration)
   | Env_modtype(summary, Ident.t, modtype_declaration)
   | Env_open(summary, Path.t)
-  | Env_constraints(summary, PathMap.t(type_declaration))
-  | Env_copy_types(summary, list(string));
+  | Env_constraints(summary, PathMap.t(type_declaration));
 
 module TycompTbl = {
   /** This module is used to store components of types (i.e. labels
@@ -375,7 +373,7 @@ module IdTbl = {
       | Some({using, root, next, components}) =>
         try({
           let (descr, pos) = Tbl.find(name, components);
-          let res = (PExternal(root, name, pos), descr);
+          let res = (PExternal(root, name), descr);
           if (mark) {
             switch (using) {
             | None => ()
@@ -428,7 +426,7 @@ module IdTbl = {
       | Some({root, using: _, next, components}) =>
         try({
           let (desc, pos) = Tbl.find(name, components);
-          [(PExternal(root, name, pos), desc), ...find_all(name, next)];
+          [(PExternal(root, name), desc), ...find_all(name, next)];
         }) {
         | Not_found => find_all(name, next)
         }
@@ -446,8 +444,7 @@ module IdTbl = {
     | Some({root, using: _, next, components}) =>
       acc
       |> Tbl.fold(
-           (name, (desc, pos)) =>
-             f(name, (PExternal(root, name, pos), desc)),
+           (name, (desc, pos)) => f(name, (PExternal(root, name), desc)),
            components,
          )
       |> fold_name(f, next)
@@ -472,7 +469,7 @@ module IdTbl = {
         (s, (x, pos)) =>
           f(
             Ident.hide(Ident.create(s) /* ??? */),
-            (PExternal(root, s, pos), x),
+            (PExternal(root, s), x),
           ),
         components,
       );
@@ -629,11 +626,7 @@ let strengthen =
                                                              module_type,
   );
 
-let md = (md_type, md_filepath) => {
-  md_type,
-  md_filepath,
-  md_loc: Location.dummy_loc,
-};
+let md = (md_type, md_filepath, md_loc) => {md_type, md_filepath, md_loc};
 
 let subst_modtype_maker = ((subst, md)) =>
   if (subst === Subst.identity) {
@@ -684,7 +677,7 @@ let is_runtime_mode = () => {
 
 /* Persistent structure descriptions */
 
-type pers_flags = Cmi_format.pers_flags = | Rectypes | Opaque | Unsafe_string;
+type pers_flags = Cmi_format.pers_flags = | Opaque | Unsafe_string;
 
 type pers_struct = {
   ps_name: string,
@@ -771,7 +764,6 @@ let save_pers_struct = (crc, ps) => {
   Hashtbl.add(persistent_structures, filename, Some(ps));
   List.iter(
     fun
-    | Rectypes => ()
     | Unsafe_string => ()
     | Opaque => add_imported_opaque(filename),
     ps.ps_flags,
@@ -860,11 +852,6 @@ let acknowledge_pers_struct = (check, {Persistent_signature.filename, cmi}) => {
 
   List.iter(
     fun
-    | Rectypes =>
-      if (! Clflags.recursive_types^) {
-        let (unit_name, _, _) = get_unit();
-        error(Need_recursive_types(ps.ps_name, unit_name));
-      }
     | Unsafe_string =>
       if (Config.safe_string^) {
         let (unit_name, _, _) = get_unit();
@@ -935,8 +922,6 @@ let check_pers_struct = (~loc, name, filename) =>
           name,
         )
       | Inconsistent_import(_) => assert(false)
-      | Need_recursive_types(name, _) =>
-        Format.sprintf("%s uses recursive types", name)
       | Depend_on_unsafe_string_unit(name, _) =>
         Printf.sprintf("%s uses -unsafe-string", name)
       | Unbound_label(_) => assert(false)
@@ -985,7 +970,7 @@ let rec find_module_descr = (path, filename, env) => {
       | _ => raise(Not_found)
       };
     }
-  | PExternal(m, s, pos) =>
+  | PExternal(m, s) =>
     let c = get_components(find_module_descr(m, filename, env));
     let (descr, _pos) = Tbl.find(s, c.comp_components);
     descr;
@@ -995,7 +980,7 @@ let rec find_module_descr = (path, filename, env) => {
 let find = (proj1, proj2, path, env) =>
   switch (path) {
   | PIdent(id) => IdTbl.find_same(id, proj1(env))
-  | PExternal(m, n, _pos) =>
+  | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, None, env));
     let (data, _pos) = Tbl.find(n, proj2(c));
     data;
@@ -1004,7 +989,7 @@ let find = (proj1, proj2, path, env) =>
 let find_tycomp = (proj1, proj2, path, env) =>
   switch (path) {
   | PIdent(id) => TycompTbl.find_same(id, proj1(env))
-  | PExternal(m, n, _pos) =>
+  | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, None, env));
     switch (Tbl.find(n, proj2(c))) {
     | [cstr, ..._] => cstr
@@ -1036,18 +1021,40 @@ let type_of_cstr = path =>
   | _ =>
     failwith("Impossible: Env.type_of_cstr called on non-record constructor");
 
+let find_extension_full = (path, env) => {
+  switch (path) {
+  | PIdent(id) => TycompTbl.find_same(id, env.constructors)
+  | PExternal(p, s) =>
+    let comps = get_components(find_module_descr(p, None, env));
+    let cstrs = Tbl.find(s, comps.comp_constrs);
+    List.find(
+      cstr =>
+        switch (cstr.cstr_tag) {
+        | CstrExtension(_) => true
+        | _ => false
+        },
+      cstrs,
+    );
+  };
+};
+
 let rec find_type_full = (path, env) =>
   switch (path) {
   | PIdent(_) =>
     try((PathMap.find(path, env.local_constraints), ([], []))) {
     | Not_found => find_type_data(path, env)
     }
-  | PExternal(p, name, pos) =>
-    try({
-      let cstr = find_cstr(p, name, env);
+  | PExternal(p, name) =>
+    if (name == "#extension#") {
+      let cstr = find_extension_full(p, env);
       type_of_cstr(path, cstr);
-    }) {
-    | Not_found => find_type_data(path, env)
+    } else {
+      try({
+        let cstr = find_cstr(p, name, env);
+        type_of_cstr(path, cstr);
+      }) {
+      | Not_found => find_type_data(path, env)
+      };
     }
   }
 
@@ -1073,12 +1080,16 @@ let find_module = (path, filename, env) =>
       let filename = Option.value(~default=Ident.name(id), filename);
       if (Ident.persistent(id) && !(filename == unit_source)) {
         let ps = find_pers_struct(~loc=Location.dummy_loc, filename);
-        md(TModSignature(Lazy.force(ps.ps_sig)), Some(filename));
+        md(
+          TModSignature(Lazy.force(ps.ps_sig)),
+          Some(filename),
+          Location.dummy_loc,
+        );
       } else {
         raise(Not_found);
       };
     }
-  | PExternal(m, n, _pos) =>
+  | PExternal(m, n) =>
     let c = get_components(find_module_descr(m, filename, env));
     let (data, _pos) = Tbl.find(n, c.comp_modules);
     EnvLazy.force(subst_modtype_maker, data);
@@ -1093,7 +1104,7 @@ let find_module_chain = (path, env) => {
         [EnvLazy.force(subst_modtype_maker, data)],
         IdTbl.find_same(id, env.components),
       );
-    | PExternal(m, s, pos) =>
+    | PExternal(m, s) =>
       let (data, components) = find(m, env);
       let c = get_components(components);
       let (decl, _pos) = Tbl.find(s, c.comp_modules);
@@ -1108,12 +1119,12 @@ let find_module_chain = (path, env) => {
 let rec normalize_path = (lax, env, path) =>
   switch (path) {
   | PIdent(id) when lax && Ident.persistent(id) => path
-  | PExternal(p, s, pos) =>
+  | PExternal(p, s) =>
     let p' = normalize_path(lax, env, p);
     if (p == p') {
       expand_path(lax, env, path);
     } else {
-      expand_path(lax, env, PExternal(p', s, pos));
+      expand_path(lax, env, PExternal(p', s));
     };
   | PIdent(_) => expand_path(lax, env, path)
   }
@@ -1149,7 +1160,7 @@ let normalize_path = (oloc, env, path) =>
 
 let normalize_path_prefix = (oloc, env, path) =>
   switch (path) {
-  | PExternal(p, s, pos) => PExternal(normalize_path(oloc, env, p), s, pos)
+  | PExternal(p, s) => PExternal(normalize_path(oloc, env, p), s)
   | PIdent(_) => path
   };
 /*| PApply _ -> assert false*/
@@ -1198,16 +1209,6 @@ let find_modtype_expansion = (path, env) =>
 
 let has_local_constraints = env => !PathMap.is_empty(env.local_constraints);
 
-let copy_types = (l, env) => {
-  let f = desc => {
-    ...desc,
-    val_type: Subst.type_expr(Subst.identity, desc.val_type),
-  };
-  let values =
-    List.fold_left((env, s) => IdTbl.update(s, f, env), env.values, l);
-  {...env, values, summary: Env_copy_types(env.summary, l)};
-};
-
 /* Currently a no-op */
 let mark_value_used = (env, name, loc) => (); /*Printf.eprintf "Marking value %s used\n" name*/
 let mark_type_used = (env, name, loc) => ();
@@ -1221,7 +1222,7 @@ let rec lookup_module_descr_aux = (~mark, id, env) =>
     | IdentExternal(m, {txt: n}) =>
       let (p, descr) = lookup_module_descr(~mark, m, env);
       let (descr, pos) = Tbl.find(n, get_components(descr).comp_components);
-      (PExternal(p, n, pos), descr);
+      (PExternal(p, n), descr);
     }
   )
 
@@ -1268,12 +1269,11 @@ and lookup_module = (~loc=?, ~load, ~mark, id, filename, env): Path.t =>
   | Identifier.IdentExternal(l, {txt: s}) =>
     let (p, descr) = lookup_module_descr(~mark, l, env);
     let c = get_components(descr);
-    let (_data, pos) = Tbl.find(s, c.comp_modules);
     let (comps, _) = Tbl.find(s, c.comp_components);
     if (mark) {
       mark_module_used(env, s, comps.loc);
     };
-    let p = PExternal(p, s, pos);
+    let p = PExternal(p, s);
     p;
   };
 
@@ -1284,7 +1284,7 @@ let lookup_idtbl = (~mark, proj1, proj2, id, env) =>
     | IdentExternal(m, {txt: n}) =>
       let (p, desc) = lookup_module_descr(~mark, m, env);
       let (data, pos) = Tbl.find(n, proj2(get_components(desc)));
-      (PExternal(p, n, pos), data);
+      (PExternal(p, n), data);
     }
   );
 
@@ -1439,17 +1439,12 @@ let iter_env = (proj1, proj2, f, env, ()) => {
       } else {
         let comps = get_components(mcomps);
         Tbl.iter(
-          (s, (d, n)) =>
-            f(PExternal(path, s, n), (PExternal(path', s, n), d)),
+          (s, (d, n)) => f(PExternal(path, s), (PExternal(path', s), d)),
           proj2(comps),
         );
         Tbl.iter(
           (s, (c, n)) =>
-            iter_components(
-              PExternal(path, s, n),
-              PExternal(path', s, n),
-              c,
-            ),
+            iter_components(PExternal(path, s), PExternal(path', s), c),
           comps.comp_components,
         );
       };
@@ -1502,7 +1497,7 @@ let find_all_comps = (proj, s, (p, mcomps)) => {
   let comps = get_components(mcomps);
   try({
     let (c, n) = Tbl.find(s, proj(comps));
-    [(PExternal(p, s, n), c)];
+    [(PExternal(p, s), c)];
   }) {
   | Not_found => []
   };
@@ -1511,7 +1506,7 @@ let find_all_comps = (proj, s, (p, mcomps)) => {
 let rec find_shadowed_comps = (path, env) =>
   switch (path) {
   | PIdent(id) => IdTbl.find_all(Ident.name(id), env.components)
-  | PExternal(p, s, _) =>
+  | PExternal(p, s) =>
     let l = find_shadowed_comps(p, env);
     let l' = List.map(find_all_comps(comps => comps.comp_components, s), l);
     List.flatten(l');
@@ -1520,7 +1515,7 @@ let rec find_shadowed_comps = (path, env) =>
 let find_shadowed = (proj1, proj2, path, env) =>
   switch (path) {
   | PIdent(id) => IdTbl.find_all(Ident.name(id), proj1(env))
-  | PExternal(p, s, _) =>
+  | PExternal(p, s) =>
     let l = find_shadowed_comps(p, env);
     let l' = List.map(find_all_comps(proj2, s), l);
     List.flatten(l');
@@ -1549,7 +1544,7 @@ let rec prefix_idents = (root, pos, sub) =>
   fun
   | [] => ([], sub)
   | [TSigValue(id, decl), ...rem] => {
-      let p = PExternal(root, Ident.name(id), pos);
+      let p = PExternal(root, Ident.name(id));
       let nextpos =
         switch (decl.val_kind) {
         | TValPrim(_) => pos
@@ -1559,25 +1554,25 @@ let rec prefix_idents = (root, pos, sub) =>
       ([p, ...pl], final_sub);
     }
   | [TSigType(id, _, _), ...rem] => {
-      let p = PExternal(root, Ident.name(id), nopos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
   | [TSigTypeExt(id, ec, es), ...rem] => {
-      let p = PExternal(root, Ident.name(id), pos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(root, pos, Subst.add_type(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
   | [TSigModule(id, _, _), ...rem] => {
-      let p = PExternal(root, Ident.name(id), pos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(root, pos + 1, Subst.add_module(id, p, sub), rem);
       ([p, ...pl], final_sub);
     }
   | [TSigModType(id, _), ...rem] => {
-      let p = PExternal(root, Ident.name(id), nopos);
+      let p = PExternal(root, Ident.name(id));
       let (pl, final_sub) =
         prefix_idents(
           root,
@@ -1680,7 +1675,13 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 switch (desc.cstr_args) {
                 | [] => desc.cstr_res
                 | args =>
-                  Btype.newgenty(TTyArrow(args, desc.cstr_res, TComOk))
+                  Btype.newgenty(
+                    TTyArrow(
+                      List.map(arg => (Unlabeled, arg), args),
+                      desc.cstr_res,
+                      TComOk,
+                    ),
+                  )
                 };
               let val_type =
                 switch (desc.cstr_existentials) {
@@ -1695,16 +1696,13 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                   ReprFunction(
                     List.map(_ => WasmI32, args),
                     [WasmI32],
-                    Direct(Ident.unique_name(id)),
+                    Direct({name: Ident.unique_name(id), closure: false}),
                   )
                 };
               let get_path = name =>
                 switch (path) {
                 | PIdent(_) => PIdent(Ident.create(name))
-                | PExternal(PIdent(mod_), _, level) =>
-                  PExternal(PIdent(mod_), name, level)
-                | PExternal(PExternal(_), _, _) =>
-                  failwith("NYI: Multiple PExternal")
+                | PExternal(p, _) => PExternal(p, name)
                 };
               let path = get_path(desc.cstr_name);
               let val_desc = {
@@ -1747,7 +1745,14 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
           let val_type =
             switch (desc.cstr_args) {
             | [] => desc.cstr_res
-            | args => Btype.newgenty(TTyArrow(args, desc.cstr_res, TComOk))
+            | args =>
+              Btype.newgenty(
+                TTyArrow(
+                  List.map(arg => (Unlabeled, arg), args),
+                  desc.cstr_res,
+                  TComOk,
+                ),
+              )
             };
           let val_type =
             switch (desc.cstr_existentials) {
@@ -1761,16 +1766,13 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
               ReprFunction(
                 List.map(_ => WasmI32, args),
                 [WasmI32],
-                Direct(Ident.unique_name(id)),
+                Direct({name: Ident.unique_name(id), closure: false}),
               )
             };
           let get_path = name =>
             switch (path) {
             | PIdent(_) => PIdent(Ident.create(name))
-            | PExternal(PIdent(mod_), _, level) =>
-              PExternal(PIdent(mod_), name, level)
-            | PExternal(PExternal(_), _, _) =>
-              failwith("NYI: Multiple PExternal")
+            | PExternal(p, _) => PExternal(p, name)
             };
           let path = get_path(desc.cstr_name);
           let val_desc = {
@@ -1943,8 +1945,8 @@ let add_module_declaration = (~arg=false, ~check, id, md, env) => {
 
 and add_modtype = (id, info, env) => store_modtype(id, info, env);
 
-let add_module = (~arg=?, id, mty, mf, env) =>
-  add_module_declaration(~check=false, ~arg?, id, md(mty, mf), env);
+let add_module = (~arg=?, id, mty, mf, mloc, env) =>
+  add_module_declaration(~check=false, ~arg?, id, md(mty, mf, mloc), env);
 
 let add_constructor = (id, desc, {constructors, _} as e) => {
   ...e,
@@ -1985,9 +1987,9 @@ and enter_module_declaration = (~arg=?, id, md, env) =>
    (id, add_functor_arg ?arg id env) */
 and enter_modtype = enter(store_modtype);
 
-let enter_module = (~arg=?, s, mty, env) => {
+let enter_module = (~arg=?, s, mty, mloc, env) => {
   let id = Ident.create(s);
-  (id, enter_module_declaration(~arg?, id, md(mty, None), env));
+  (id, enter_module_declaration(~arg?, id, md(mty, None, mloc), env));
 };
 
 /* Insertion of all components of a signature */
@@ -2062,7 +2064,6 @@ let check_opened = (mod_: Parsetree.include_declaration, env) => {
     | Env_extension(summary, _, _)
     | Env_modtype(summary, _, _)
     | Env_constraints(summary, _)
-    | Env_copy_types(summary, _)
     | Env_open(summary, _) => find_open(summary)
     };
 
@@ -2095,7 +2096,7 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
       env0;
     } else {
       let mod_type = TModAlias(path);
-      env0 |> add_module(mod_ident, mod_type, filename);
+      env0 |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
     }
   | _ =>
     let {ps_sig} = find_pers_struct(~loc=mod_.pinc_loc, mod_.pinc_path.txt);
@@ -2107,7 +2108,7 @@ let include_module = (mod_name, mod_: Parsetree.include_declaration, env0) => {
       {mtd_type: Some(mod_type), mtd_loc: mod_.pinc_loc},
       env0,
     )
-    |> add_module(mod_ident, mod_type, filename);
+    |> add_module(mod_ident, mod_type, filename, mod_.pinc_loc);
   };
 };
 
@@ -2124,87 +2125,95 @@ let use_partial_signature = (root, items, env0) => {
     comp_modtypes: Tbl.empty,
   };
 
-  List.iter(
-    item => {
-      switch (item) {
-      | Parsetree.PUseValue({name, alias}) =>
-        let (old_name, new_name) = apply_alias(name, alias);
-        switch (Tbl.find(old_name, comps.comp_values)) {
-        | exception Not_found =>
-          error(
-            Value_not_found_in_module(name.loc, old_name, Path.name(root)),
-          )
-        | descr =>
-          new_comps.comp_values =
-            Tbl.add(new_name, descr, new_comps.comp_values)
-        };
-      | PUseModule({name, alias}) =>
-        let (old_name, new_name) = apply_alias(name, alias);
-        switch (Tbl.find(old_name, comps.comp_modules)) {
-        | exception Not_found =>
-          let possible_type =
-            if (Tbl.mem(old_name, comps.comp_types)) {
-              Some(old_name);
-            } else {
-              None;
-            };
-          error(
-            Module_not_found_in_module(
-              name.loc,
-              old_name,
-              Path.name(root),
-              possible_type,
-            ),
-          );
-        | descr =>
-          new_comps.comp_modules =
-            Tbl.add(new_name, descr, new_comps.comp_modules);
-          new_comps.comp_components =
-            Tbl.add(
-              new_name,
-              Tbl.find(old_name, comps.comp_components),
-              new_comps.comp_components,
+  let items =
+    List.map(
+      item => {
+        switch (item) {
+        | Parsetree.PUseValue({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_values)) {
+          | exception Not_found =>
+            error(
+              Value_not_found_in_module(name.loc, old_name, Path.name(root)),
+            )
+          | (descr, pos) as d =>
+            new_comps.comp_values =
+              Tbl.add(new_name, d, new_comps.comp_values);
+            TUseValue({name: new_name, value: descr, loc});
+          };
+        | PUseModule({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_modules)) {
+          | exception Not_found =>
+            let possible_type =
+              if (Tbl.mem(old_name, comps.comp_types)) {
+                Some(old_name);
+              } else {
+                None;
+              };
+            error(
+              Module_not_found_in_module(
+                name.loc,
+                old_name,
+                Path.name(root),
+                possible_type,
+              ),
             );
-        };
-      | PUseType({name, alias}) =>
-        let (old_name, new_name) = apply_alias(name, alias);
-        switch (Tbl.find(old_name, comps.comp_types)) {
-        | exception Not_found =>
-          error(
-            Type_not_found_in_module(name.loc, old_name, Path.name(root)),
-          )
-        | ((_, (constructors, labels)), _) as descr =>
-          new_comps.comp_types =
-            Tbl.add(new_name, descr, new_comps.comp_types);
-          List.iter(
-            ({cstr_name}) => {
-              new_comps.comp_constrs =
-                Tbl.add(
-                  cstr_name,
-                  Tbl.find(cstr_name, comps.comp_constrs),
-                  new_comps.comp_constrs,
-                )
-            },
-            constructors,
-          );
-          List.iter(
-            ({lbl_name}) => {
-              new_comps.comp_labels =
-                Tbl.add(
-                  lbl_name,
-                  Tbl.find(lbl_name, comps.comp_labels),
-                  new_comps.comp_labels,
-                )
-            },
-            labels,
-          );
-        };
-      }
-    },
-    items,
-  );
+          | (descr, pos) as d =>
+            new_comps.comp_modules =
+              Tbl.add(new_name, d, new_comps.comp_modules);
+            new_comps.comp_components =
+              Tbl.add(
+                new_name,
+                Tbl.find(old_name, comps.comp_components),
+                new_comps.comp_components,
+              );
+            TUseModule({
+              name: new_name,
+              declaration: EnvLazy.force(subst_modtype_maker, descr),
+              loc,
+            });
+          };
+        | PUseType({name, alias, loc}) =>
+          let (old_name, new_name) = apply_alias(name, alias);
+          switch (Tbl.find(old_name, comps.comp_types)) {
+          | exception Not_found =>
+            error(
+              Type_not_found_in_module(name.loc, old_name, Path.name(root)),
+            )
+          | ((decl, (constructors, labels)), _) as descr =>
+            new_comps.comp_types =
+              Tbl.add(new_name, descr, new_comps.comp_types);
+            List.iter(
+              ({cstr_name}) => {
+                new_comps.comp_constrs =
+                  Tbl.add(
+                    cstr_name,
+                    Tbl.find(cstr_name, comps.comp_constrs),
+                    new_comps.comp_constrs,
+                  )
+              },
+              constructors,
+            );
+            List.iter(
+              ({lbl_name}) => {
+                new_comps.comp_labels =
+                  Tbl.add(
+                    lbl_name,
+                    Tbl.find(lbl_name, comps.comp_labels),
+                    new_comps.comp_labels,
+                  )
+              },
+              labels,
+            );
+            TUseType({name: new_name, declaration: decl, loc});
+          };
+        }
+      },
+      items,
+    );
 
-  add_components(None, root, env0, new_comps);
+  (add_components(None, root, env0, new_comps), items);
 };
 
 let use_full_signature = (root, env0) => {
@@ -2271,11 +2280,7 @@ let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
    Btype.cleanup_abbrev ();
    Subst.reset_for_saving ();
    let sg = Subst.signature (Subst.for_saving Subst.identity) sg in
-   let flags =
-     List.concat [
-       if !Grain_utils.Config.recursive_types then [Cmi_format.Rectypes] else [];
-       (*if !Grain_utils.Config.opaque then [Cmi_format.Opaque] else [];*)
-     ]
+   let flags = []
    in
    try
      let cmi = {
@@ -2314,21 +2319,13 @@ let is_imported_opaque = s => StringSet.mem(s, imported_opaque_units^);
 
 /* Build a module signature */
 let build_signature_with_imports =
-    (~deprecated=?, sg, modname, filename, imports) => {
+    (~deprecated=?, sg, modname, filename, imports, type_metadata) => {
   /*prerr_endline filename;
     List.iter (fun (name, crc) -> prerr_endline name) imports;*/
   Btype.cleanup_abbrev();
   Subst.reset_for_saving();
   let sg = Subst.signature(Subst.for_saving(Subst.identity), sg);
-  let flags =
-    List.concat([
-      if (Grain_utils.Config.recursive_types^) {
-        [Cmi_format.Rectypes];
-      } else {
-        [];
-      },
-      /*if !Grain_utils.Config.opaque then [Cmi_format.Opaque] else [];*/
-    ]);
+  let flags = [];
 
   try({
     let full_cmi =
@@ -2337,12 +2334,14 @@ let build_signature_with_imports =
         ~sign=sg,
         ~crcs=imports,
         ~flags,
+        ~type_metadata,
       );
     let cmi = {
       cmi_name: modname,
       cmi_sign: sg,
       cmi_crcs: imports,
       cmi_flags: flags,
+      cmi_type_metadata: type_metadata,
       cmi_config_sum: full_cmi.cmi_config_sum,
     };
     let crc =
@@ -2377,13 +2376,14 @@ let build_signature_with_imports =
   };
 };
 
-let build_signature = (~deprecated=?, sg, modname, filename) =>
+let build_signature = (~deprecated=?, sg, modname, filename, type_metadata) =>
   build_signature_with_imports(
     ~deprecated?,
     sg,
     modname,
     filename,
     imports(),
+    type_metadata,
   );
 
 /* Folding on environments */
@@ -2400,7 +2400,7 @@ let find_all = (proj1, proj2, f, lid, env, acc) =>
     let (p, desc) = lookup_module_descr(~mark=true, l, env);
     let c = get_components(desc);
     Tbl.fold(
-      (s, (data, pos), acc) => f(s, PExternal(p, s, pos), data, acc),
+      (s, (data, pos), acc) => f(s, PExternal(p, s), data, acc),
       proj2(c),
       acc,
     );
@@ -2453,7 +2453,7 @@ let fold_modules = (f, lid, env, acc) =>
       (s, (data, pos), acc) =>
         f(
           s,
-          PExternal(p, s, pos),
+          PExternal(p, s),
           EnvLazy.force(subst_modtype_maker, data),
           acc,
         ),
@@ -2530,14 +2530,6 @@ let report_error = ppf =>
       Location.print_filename,
       source2,
       name,
-    )
-  | Need_recursive_types(import, export) =>
-    fprintf(
-      ppf,
-      "@[<hov>Unit %s imports from %s, which uses recursive types.@ %s@]",
-      export,
-      import,
-      "The compilation flag -rectypes is required",
     )
   | Depend_on_unsafe_string_unit(import, export) =>
     fprintf(

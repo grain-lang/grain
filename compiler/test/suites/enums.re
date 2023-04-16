@@ -102,4 +102,16 @@ describe("enums", ({test, testSkip}) => {
     |},
     "Rec{\n  x: 1\n}\n",
   );
+  assertRun(
+    "deeply_nested_enum",
+    {|
+      provide module Foo {
+        provide module Bar {
+          provide enum Baz { Baz }
+        }
+      }
+      print(Foo.Bar.Baz)
+    |},
+    "Baz\n",
+  );
 });
