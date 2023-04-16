@@ -4,7 +4,7 @@
   "description": "A command line tool for the Grain language.",
   "main": "index.js",
   "engines": {
-    "node": ">=19.6"
+    "node": ">=18.15"
   },
   "scripts": {
     "clean": "del-cli \"bin/*.exe\" \"bin/*.bc.js\"",
