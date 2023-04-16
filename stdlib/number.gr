@@ -672,9 +672,9 @@ provide let toRadians = degrees => degrees * (pi / 180)
 provide let toDegrees = radians => radians * (180 / pi)
 
 /**
- * Constrains a number to a given range (inclusive).
+ * Constrains a number to a given inclusive range.
  *
- * @param range: The inclusive range to clamp within.
+ * @param range: The inclusive range to clamp within
  * @param input: The number to clamp
  * @returns The constrained number
  *
@@ -693,10 +693,10 @@ provide let clamp = (range, input) => {
 }
 
 /**
- * Blends between a linear range (inclusive) of numbers using a given weight.
+ * maps a `weight` between 0 and 1 a the given inclusive range.
  *
  * @param range: An inclusive range to interpolate between
- * @param weight: a weight between 0 and 1 to interpolate by
+ * @param weight: The weight between 0 and 1 used to interpolate
  * @returns The blended value
  *
  * @throws InvalidArgument(String): When `weight` is not between 0 and 1
@@ -709,14 +709,14 @@ provide let linearInterpolate = (range, weight) => {
   if (weight < 0 || weight > 1 || isNaN(weight))
     throw Exception.InvalidArgument("Weight must be between 0 and 1")
   if (isInfinite(range.rangeStart) || isInfinite(range.rangeEnd))
-    throw Exception.InvalidArgument("The Range must be finite")
+    throw Exception.InvalidArgument("The range must be finite")
   if (isNaN(range.rangeStart) || isNaN(range.rangeEnd))
-    throw Exception.InvalidArgument("The Range must not include NaN")
+    throw Exception.InvalidArgument("The range must not include NaN")
   (range.rangeEnd - range.rangeStart) * weight + range.rangeStart
 }
 
 /**
- * Scales a number from one range (inclusive) to another (inclusive).
+ * Scales a number from one inclusive range to another inclusive range.
  * If the number is outside the input range, it will be clamped.
  *
  * @param inputRange: The inclusive numeric range you are mapping from
