@@ -195,9 +195,9 @@ provide let toString = (char: Char) => {
 /**
  * Checks if the first character is less than the second character by Unicode scalar value.
  *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is less than the second value or `false` otherwise
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is less than the second character or `false` otherwise
  *
  * @since v0.6.0
  */
@@ -212,9 +212,9 @@ provide let (<) = (x: Char, y: Char) => {
 /**
  * Checks if the first character is less than or equal to the second character by Unicode scalar value.
  *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is less than or equal to the second character or `false` otherwise
  *
  * @since v0.6.0
  */
@@ -229,9 +229,9 @@ provide let (<=) = (x: Char, y: Char) => {
 /**
  * Checks if the first character is greater than the second character by Unicode scalar value.
  *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is greater than the second value or `false` otherwise
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is greater than the second character or `false` otherwise
  *
  * @since v0.6.0
  */
@@ -246,9 +246,9 @@ provide let (>) = (x: Char, y: Char) => {
 /**
  * Checks if the first character is greater than or equal to the second character by Unicode scalar value.
  *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is greater than or equal to the second character or `false` otherwise
  *
  * @since v0.6.0
  */

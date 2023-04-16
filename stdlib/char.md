@@ -230,14 +230,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Char`|The first value|
-|`y`|`Char`|The second value|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+|`Bool`|`true` if the first character is less than the second character or `false` otherwise|
 
 ### Char.**(<=)**
 
@@ -256,14 +256,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Char`|The first value|
-|`y`|`Char`|The second value|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+|`Bool`|`true` if the first character is less than or equal to the second character or `false` otherwise|
 
 ### Char.**(>)**
 
@@ -282,14 +282,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Char`|The first value|
-|`y`|`Char`|The second value|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
+|`Bool`|`true` if the first character is greater than the second character or `false` otherwise|
 
 ### Char.**(>=)**
 
@@ -308,12 +308,12 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Char`|The first value|
-|`y`|`Char`|The second value|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+|`Bool`|`true` if the first character is greater than or equal to the second character or `false` otherwise|
 
