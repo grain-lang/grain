@@ -722,8 +722,8 @@ Parameters:
 |-----|----|-----------|
 |`a`|`Number`|The first value|
 |`b`|`Number`|The second value|
-|`relativeTolerance`|`Option<Number>`|The relative tolerance to use|
-|`absoluteTolerance`|`Option<Number>`|The absolute tolerance to use|
+|`relativeTolerance`|`Option<Number>`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
+|`absoluteTolerance`|`Option<Number>`|The absolute tolerance to use, regardless of the values of `a` or `b`|
 
 Returns:
 

@@ -427,8 +427,8 @@ provide let isInfinite = (x: Number) => {
  *
  * @param a: The first value
  * @param b: The second value
- * @param relativeTolerance: The relative tolerance to use
- * @param absoluteTolerance: The absolute tolerance to use
+ * @param relativeTolerance: The maximum tolerance to use relative to the larger absolute value `a` or `b`
+ * @param absoluteTolerance: The absolute tolerance to use, regardless of the values of `a` or `b`
  *
  * @returns `true` if the values are considered close to each other or `false` otherwise
  *
