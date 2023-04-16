@@ -1020,6 +1020,55 @@ provide let rotate = (n, arr) => {
   }
 }
 
+let rec chunkHelp = (chunkSize, arr, arrLen, chunkStartIndex) => {
+  if (arrLen == 0) {
+    []
+  } else if (arrLen < chunkSize) {
+    [slice(chunkStartIndex, arr)]
+  } else {
+    // create the first chunk of the given array
+    let firstChunk = slice(
+      chunkStartIndex,
+      end=chunkStartIndex + chunkSize,
+      arr
+    )
+    let restChunks = chunkHelp(
+      chunkSize,
+      arr,
+      arrLen - chunkSize,
+      chunkStartIndex + chunkSize
+    )
+    [firstChunk, ...restChunks]
+  }
+}
+
+/**
+ * Splits the given array into chunks of the provided size.
+ * If the array cannot be split evenly, the final chunk will contain the remaining elements.
+ *
+ * @param chunkSize: The maximum size of each chunk
+ * @param arr: The array to chunk
+ * @returns An array of chunks
+ *
+ * @throws InvalidArgument(String): When `chunkSize` is not an integer
+ * @throws InvalidArgument(String): When `chunkSize` is less than one
+ *
+ * @example chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+ * @example chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
+ *
+ * @since v0.6.0
+ */
+provide let chunk = (chunkSize, arr) => {
+  if (chunkSize <= 0) {
+    throw Exception.InvalidArgument("chunkSize must be greater than 0")
+  } else {
+    checkLength(chunkSize)
+    let arrLen = length(arr)
+    let chunks = chunkHelp(chunkSize, arr, arrLen, 0)
+    fromList(chunks)
+  }
+}
+
 /**
  * An immutable array implementation.
  *
