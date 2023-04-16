@@ -54,27 +54,6 @@ let send_definition =
   );
 };
 
-let print_loc_string = (msg: string, loc: Grain_parsing.Location.t) => {
-  let (file, line, startchar, _) = Locations.get_raw_pos_info(loc.loc_start);
-  let (_, endline, endchar, _) = Locations.get_raw_pos_info(loc.loc_end);
-
-  if (startchar >= 0) {
-    if (line == endline) {
-      Printf.sprintf("%s %d:%d,%d\n", msg, line, startchar, endchar);
-    } else {
-      Printf.sprintf(
-        "%s %d:%d - %d:%d\n",
-        msg,
-        line,
-        startchar,
-        endline,
-        endchar,
-      );
-    };
-  } else {
-    Printf.sprintf("Empty loc? %s %d:%d,%d\n", msg, line, startchar, endchar);
-  };
-};
 
 let process =
     (
