@@ -40,8 +40,8 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
+    "@phated/pkg": "5.9.0-grain",
     "del-cli": "^4.0.1",
-    "pkg": "^5.3.1",
     "prettier": "^2.3.2"
   }
 }
