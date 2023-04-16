@@ -994,10 +994,10 @@ No other changes yet.
 </details>
 
 ```grain
-clamp : (Range<Number>, Number) -> Number
+clamp : (range: Range<Number>, input: Number) -> Number
 ```
 
-Clamps a number to a given range.
+Constrains a number to a given range (inclusive).
 
 Parameters:
 
@@ -1010,7 +1010,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The clamped number|
+|`Number`|The constrained number|
 
 ### Number.**linearInterpolate**
 
@@ -1020,29 +1020,31 @@ No other changes yet.
 </details>
 
 ```grain
-linearInterpolate : (Range<Number>, Number) -> Number
+linearInterpolate : (range: Range<Number>, weight: Number) -> Number
 ```
 
-Linearly interpolates across the provided range by the given amount.
+Blends between a linear range (inclusive) of numbers using a given weight.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`range`|`Range<Number>`|An inclusive Range to interpolate between|
-|`amount`|`Number`|an amount between 0 and 1, anything outside the range will produce an extrapolation, i.e. `lerp(0, 100, 2)` will produce 200|
+|`range`|`Range<Number>`|An inclusive range to interpolate between|
+|`weight`|`Number`|a weight between 0 and 1 to interpolate by|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The interpolated value|
+|`Number`|The blended value|
 
 Throws:
 
 `InvalidArgument(String)`
 
-* When `amount` is not between 0 and 1 or `range` is not finite
+* When `weight` is not between 0 and 1
+* When `range` is not finite
+* When `range` includes NaN
 
 ### Number.**linearMap**
 
@@ -1052,28 +1054,34 @@ No other changes yet.
 </details>
 
 ```grain
-linearMap : (Range<Number>, Range<Number>, Number) -> Number
+linearMap :
+  (inputRange: Range<Number>, outputRange: Range<Number>, current: Number) ->
+   Number
 ```
 
-Linearly maps the given number from one range to another.
+Scales a number from one range (inclusive) to another (inclusive).
+If the number is outside the input range, it will be clamped.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`inputRange`|`Range<Number>`|The inclusive numeric range you are mapping from.|
-|`outputRange`|`Range<Number>`|The inclusive numeric range you are mapping to.|
+|`inputRange`|`Range<Number>`|The inclusive numeric range you are mapping from|
+|`outputRange`|`Range<Number>`|The inclusive numeric range you are mapping to|
 |`current`|`Number`|The number to map|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Number`|The interpolated value, if the input is outside the input range, the output will be clamped to the output range.|
+|`Number`|The mapped number|
 
 Throws:
 
 `InvalidArgument(String)`
 
-* When `inputRange` or `outputRange` are not finite
+* When `inputRange` is not finite
+* When `inputRange` includes NaN
+* When `outputRange` is not finite
+* When `outputRange` includes NaN
 
