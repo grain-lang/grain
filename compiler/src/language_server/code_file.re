@@ -48,7 +48,7 @@ let warning_to_diagnostic =
 };
 
 let compile_source = (uri, source) => {
-  let filename = Protocol.uri_to_filename(uri);
+  let filename = Utils.uri_to_filename(uri);
 
   Trace.log("Compiling " ++ filename);
 
@@ -120,7 +120,7 @@ let compile_source = (uri, source) => {
             related_information: [
               {
                 location: {
-                  uri: Protocol.filename_to_uri(file),
+                  uri: Utils.filename_to_uri(file),
                   range: file_range,
                 },
                 message: e.msg,

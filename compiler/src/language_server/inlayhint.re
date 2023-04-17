@@ -43,7 +43,6 @@ let find_hints = program => {
       let enter_toplevel_stmt = (stmt: toplevel_stmt) => {
         switch (stmt.ttop_desc) {
         | TTopInclude(inc) =>
-          let path = inc.tinc_path;
           let name = Path.name(inc.tinc_path);
 
           let stmt_loc = stmt.ttop_loc;
