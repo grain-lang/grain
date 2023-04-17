@@ -191,3 +191,71 @@ provide let toString = (char: Char) => {
 
   result
 }
+
+/**
+ * Checks if the first character is less than the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is less than the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<) = (x: Char, y: Char) => {
+  from WasmI32 use { (<) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x < y
+}
+
+/**
+ * Checks if the first character is less than or equal to the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is less than or equal to the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<=) = (x: Char, y: Char) => {
+  from WasmI32 use { (<=) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x <= y
+}
+
+/**
+ * Checks if the first character is greater than the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is greater than the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>) = (x: Char, y: Char) => {
+  from WasmI32 use { (>) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x > y
+}
+
+/**
+ * Checks if the first character is greater than or equal to the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is greater than or equal to the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>=) = (x: Char, y: Char) => {
+  from WasmI32 use { (>=) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x >= y
+}

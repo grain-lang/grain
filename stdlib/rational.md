@@ -117,6 +117,64 @@ Returns:
 |----|-----------|
 |`Number`|The denominator of the rational number|
 
+### Rational.**toIntegerRatio**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toIntegerRatio : (x: Rational) -> (Number, Number)
+```
+
+Gets the numerator and denominator of the rational.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Rational`|The rational to split|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`(Number, Number)`|The numerator and denominator of the rational|
+
+### Rational.**fromIntegerRatio**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromIntegerRatio : (numerator: Number, denominator: Number) -> Rational
+```
+
+Creates a rational from a numerator and denominator.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`numerator`|`Number`|The numerator|
+|`denominator`|`Number`|The denominator|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Rational`|The reduced rational|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* If the numerator is not an integer
+* If the denominator is not an integer
+
 ### Rational.**(+)**
 
 <details disabled>
