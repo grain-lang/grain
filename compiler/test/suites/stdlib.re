@@ -105,7 +105,7 @@ describe("stdlib", ({test, testSkip}) => {
   assertStdlib("priorityqueue.test");
   assertStdlib("string.test");
   assertStdlib("sys.file.test");
-  assertStdlib(~code=5, "sys.process.test");
+  assertStdlib(~code=5, ~argv="--foobar", "sys.process.test");
   assertStdlib("sys.random.test");
   assertStdlib("sys.time.test");
   assertStdlib("wasmf32.test");
