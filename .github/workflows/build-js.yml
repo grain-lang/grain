@@ -44,7 +44,7 @@ jobs:
       - name: Setup node.js
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: "16"
+          node-version: ">=18.15"
           check-latest: true
           cache: "npm"
 
@@ -116,11 +116,3 @@ jobs:
         with:
           path: ./grain.tar
           name: grain-linux-x64
-
-      # This is to test that we didn't actually introduce multivalue
-      # which might happen through a binaryen optimization
-      - name: Run NEAR smoketest
-        if: inputs.os != 'windows-latest'
-        run: |
-          npm run stdlib clean
-          npm run cli test

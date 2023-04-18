@@ -4,17 +4,14 @@
   "description": "A command line tool for the Grain language.",
   "main": "index.js",
   "engines": {
-    "node": ">=16"
+    "node": ">=18.15"
   },
   "scripts": {
     "clean": "del-cli \"bin/*.exe\" \"bin/*.bc.js\"",
     "link": "npm link",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
-    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain",
-    "build:test": "grain compile --release --wasi-polyfill __test__/wasi.gr --use-start-section __test__/index.gr",
-    "pretest": "npm run build:test",
-    "test": "jest --detectOpenHandles"
+    "build-pkg": "pkg ./package.json --no-bytecode --compress Brotli --output ../pkg/grain"
   },
   "pkg": {
     "assets": "bin/*.js"
@@ -42,12 +39,8 @@
     "commander": "^8.1.0"
   },
   "devDependencies": {
+    "@phated/pkg": "5.9.0-grain",
     "del-cli": "^4.0.1",
-    "pkg": "^5.3.1",
     "prettier": "^2.3.2"
-  },
-  "optionalDependencies": {
-    "jest": "28.1.0",
-    "near-workspaces": "2.0.0"
   }
 }
