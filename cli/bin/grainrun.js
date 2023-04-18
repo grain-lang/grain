@@ -1,6 +1,6 @@
 require("./pkg");
 
-// https://github.com/grain-lang/grain/issues/114
+// https://github.com/grain-lang/grain/issues/1816
 const v8 = require("v8");
 /* From the Node.js docs:
  *
