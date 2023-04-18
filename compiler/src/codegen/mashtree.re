@@ -477,7 +477,6 @@ and instr_desc =
   | MSet(binding, instr)
   | MDrop(instr) /* Ignore the result of an expression. Used for sequences. */
   | MCleanup(option(instr), list(immediate)) /* Calls decRef on items to be cleaned up. instr is evaluated first, cleanup occurs, and the value of instr is returned */
-  | MTracepoint(int) /* Prints a message to the console; for compiler debugging */
 
 [@deriving sexp]
 and block = list(instr);
