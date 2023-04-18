@@ -16,14 +16,15 @@ const { readFile } = require("fs/promises");
 const { WASI } = require("wasi");
 const { argv, env } = require("process");
 
+const preopens = JSON.parse(env.PREOPENS);
+
+delete env.PREOPENS;
 delete env.NODE_OPTIONS;
 
 const wasi = new WASI({
   args: argv.slice(2),
   env,
-  preopens: {
-    "/sandbox": process.cwd(),
-  },
+  preopens,
 });
 
 const importObject = { wasi_snapshot_preview1: wasi.wasiImport };
