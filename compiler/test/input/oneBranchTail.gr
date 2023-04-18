@@ -1,8 +1,10 @@
+module OneBranchTail
+
 let rec filter = (f, l) => {
   match (l) {
     [hd, ...tl] => if (f(hd)) [hd, ...filter(f, tl)] else filter(f, tl),
-    [] => []
+    [] => [],
   }
-};
+}
 
-print(filter((x) => x == 2, [1, 2, 3]))
+print(filter(x => x == 2, [1, 2, 3]))

@@ -1,34 +1,119 @@
-import Queue from "queue"
+module QueueTest
+
+include "queue"
+include "list"
+
+// Mutable queue tests
 
 let empty = Queue.make()
-// 1 <- 2 <- 3
-let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, empty)))
-
-// Queue.isEmpty
-
 assert Queue.isEmpty(empty)
-assert !Queue.isEmpty(sampleQueue)
-
-// Queue.peek
-
-assert Queue.peek(empty) == None
-assert Queue.peek(sampleQueue) == Some(1)
-
-// Queue.push
-
-assert Queue.peek(Queue.push(1, empty)) == Some(1)
-assert Queue.peek(Queue.push(4, sampleQueue)) == Some(1)
-
-// Queue.pop
-
-assert Queue.isEmpty(Queue.pop(empty))
-assert Queue.isEmpty(Queue.pop(Queue.push(1, empty)))
-assert Queue.isEmpty(Queue.pop(Queue.pop(Queue.pop(sampleQueue))))
-assert Queue.peek(Queue.pop(sampleQueue)) == Some(2)
-assert Queue.peek(Queue.pop(Queue.push(4, Queue.pop(sampleQueue)))) == Some(3)
-
-// Queue.size
-
 assert Queue.size(empty) == 0
-assert Queue.size(sampleQueue) == 3
-assert Queue.size(Queue.pop(Queue.pop(sampleQueue))) == 1
+assert Queue.peek(empty) == None
+assert Queue.pop(empty) == None
+assert Queue.size(empty) == 0
+
+let queue = Queue.make()
+Queue.push(1, queue)
+Queue.push(2, queue)
+Queue.push(3, queue)
+
+assert !Queue.isEmpty(queue)
+assert Queue.size(queue) == 3
+assert Queue.peek(queue) == Some(1)
+
+assert Queue.pop(queue) == Some(1)
+assert Queue.peek(queue) == Some(2)
+assert Queue.size(queue) == 2
+
+Queue.push(4, queue)
+assert Queue.size(queue) == 3
+assert Queue.peek(queue) == Some(2)
+let copy = Queue.copy(queue)
+Queue.pop(copy)
+assert Queue.size(copy) == 2
+assert Queue.size(queue) == 3
+Queue.clear(queue)
+assert Queue.size(queue) == 0
+assert Queue.peek(queue) == None
+
+// test that expansion works
+let queue = Queue.makeSized(3)
+Queue.push(0, queue)
+Queue.push(1, queue)
+Queue.push(2, queue)
+Queue.push(3, queue)
+assert Queue.pop(queue) == Some(0)
+assert Queue.pop(queue) == Some(1)
+assert Queue.pop(queue) == Some(2)
+assert Queue.pop(queue) == Some(3)
+assert Queue.pop(queue) == None
+
+// test that the "circular" behavior of the circular queue works as expected
+let queue = Queue.makeSized(4)
+let push = x => () => Queue.push(x, queue)
+let pop = () => ignore(Queue.pop(queue))
+let actions = [
+  push(1),
+  push(2),
+  push(3),
+  push(4),
+  pop,
+  pop,
+  pop,
+  push(5),
+  push(6),
+  pop,
+  pop,
+  push(7),
+  push(8),
+  push(9),
+]
+List.forEach(action => action(), actions)
+
+assert Queue.size(queue) == 4
+assert Queue.peek(queue) == Some(6)
+
+Queue.push(10, queue)
+assert Queue.size(queue) == 5
+assert Queue.pop(queue) == Some(6)
+assert Queue.pop(queue) == Some(7)
+assert Queue.pop(queue) == Some(8)
+assert Queue.pop(queue) == Some(9)
+assert Queue.pop(queue) == Some(10)
+assert Queue.pop(queue) == None
+
+module Immutable {
+  from Queue use { Immutable as Queue }
+
+  // 1 <- 2 <- 3
+  let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, Queue.empty)))
+
+  // Queue.isEmpty
+
+  assert Queue.isEmpty(Queue.empty)
+  assert !Queue.isEmpty(sampleQueue)
+
+  // Queue.peek
+
+  assert Queue.peek(Queue.empty) == None
+  assert Queue.peek(sampleQueue) == Some(1)
+
+  // Queue.push
+
+  assert Queue.peek(Queue.push(1, Queue.empty)) == Some(1)
+  assert Queue.peek(Queue.push(4, sampleQueue)) == Some(1)
+
+  // Queue.pop
+
+  assert Queue.isEmpty(Queue.pop(Queue.empty))
+  assert Queue.isEmpty(Queue.pop(Queue.push(1, Queue.empty)))
+  assert Queue.isEmpty(Queue.pop(Queue.pop(Queue.pop(sampleQueue))))
+  assert Queue.peek(Queue.pop(sampleQueue)) == Some(2)
+  assert Queue.peek(Queue.pop(Queue.push(4, Queue.pop(sampleQueue)))) == Some(3)
+
+  // Queue.size
+
+  assert Queue.size(Queue.empty) == 0
+  assert Queue.size(sampleQueue) == 3
+  assert Queue.size(Queue.pop(Queue.pop(sampleQueue))) == 1
+}

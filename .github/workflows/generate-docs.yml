@@ -1,0 +1,48 @@
+# This workflow assumes that a `grain-linux-x64` binary was uploaded earlier within the same Action run.
+# It downloads the binary, regenerates the documentation for the project, and pushes it to the ref that was checked out.
+# Note: the `ref` should always be a branch for successful pushes!
+name: Generate documentation
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git reference to checkout
+        type: string
+        required: false
+    secrets:
+      PUSH_TOKEN:
+        description: Token used to push back to repository
+        required: true
+
+jobs:
+  generate-docs:
+    name: Generate documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup bot user
+        run: |
+          git config --global user.email "bot@grain-lang.org"
+          git config --global user.name "Grain Bot"
+
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+          token: ${{ secrets.PUSH_TOKEN }}
+
+      - name: Fetch linux binary
+        uses: actions/download-artifact@v3
+        with:
+          name: grain-linux-x64
+
+      - name: Untar download
+        run: |
+          tar -xvf grain.tar
+
+      - name: Regenerate documentation
+        run: |
+          ./grain doc stdlib -o stdlib --current-version=$(./grain -v)
+          git add stdlib
+          git commit -m 'chore(stdlib): Regenerate markdown documentation'
+          git push

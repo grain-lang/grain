@@ -1,0 +1,114 @@
+module Uint8Test
+
+include "uint8"
+from Uint8 use {
+  fromNumber,
+  toNumber,
+  fromInt8,
+  incr,
+  decr,
+  lnot,
+  (+),
+  (-),
+  (*),
+  (/),
+  rem as (%),
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>>),
+}
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
+
+assert fromNumber(5) == 5us
+assert fromNumber(0) == 0us
+assert fromNumber(0xff) == 0xffus
+
+assert toNumber(55us) == 55
+assert toNumber(0us) == 0
+assert toNumber(0xffus) == 0xff
+
+assert fromInt8(1s) == 1us
+assert fromInt8(-1s) == 0xffus
+
+assert 1us + 0us == 1us
+assert 0xffus + 1us == 0us
+
+assert 100us - 5us == 95us
+assert 1us - 2us == 0xffus
+
+assert 1us * 0us == 0us
+assert 10us * 6us == 60us
+assert 16us * 16us == 0us
+
+assert 4us / 2us == 2us
+assert 4us / 1us == 4us
+assert 10us / 100us == 0us
+
+assert 4us % 1us == 0us
+assert 10us % 3us == 1us
+assert 0xffus % 10us == 5us
+assert 1us % 5us == 1us
+
+assert lnot(0us) == 0xffus
+assert lnot(0xf0us) == 0x0fus
+
+assert (0b1010us & 0b10us) == 0b10us
+assert (0b1010us & 0us) == 0us
+
+assert (0b1010us | 0b0101us) == 0b1111us
+assert (0b1010us | 0us) == 0b1010us
+
+assert (0b1010us ^ 0b1101us) == 0b0111us
+assert (0b1010us ^ 0us) == 0b1010us
+
+assert 1us << 1us == 2us
+assert 1us << 8us == 0us
+assert 24us << 1us == 48us
+
+assert 4us >>> 1us == 2us
+assert 4us >>> 2us == 1us
+assert 4us >>> 3us == 0us
+
+assert incr(0us) == 1us
+assert incr(0xffus) == 0us
+assert decr(1us) == 0us
+assert decr(0us) == 0xffus
+
+match (1us) {
+  0us => fail "uint8 matched to 0 incorrectly",
+  0x1us => void,
+  _ => fail "uint8 incorrectly matched",
+}
+
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1us)] == 2
+
+assert compare(0us, 1us) < 0
+assert compare(2us, 1us) > 0
+assert compare(0us, 0us) == 0
+assert compare(0xffus, 0us) > 0
+assert compare(1us, 0xffus) < 0
+
+assert toString(123us) == "123"
+assert toString(0xffus) == "255"
+
+from Uint8 use { (==), (!=), (<), (<=), (>), (>=) }
+
+assert 1us == 1us
+assert !(1us == 2us)
+
+assert 1us != 2us
+assert !(1us != 1us)
+
+assert 5us > 1us
+assert 5us >= 5us
+assert 5us < 0xffus
+assert 5us <= 5us
+assert !(5us > 5us)
+assert !(0xffus <= 4us)
+assert !(5us < 0us)
+assert !(5us <= 4us)

@@ -1,3 +1,11 @@
+---
+title: Wasi
+---
+
+## Values
+
+Functions and constants included in the Wasi module.
+
 ### Wasi.**args_get**
 
 ```grain
@@ -70,6 +78,18 @@ fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32
 
 ```grain
 fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) -> WasmI32
+```
+
+### Wasi.**fd_prestat_get**
+
+```grain
+fd_prestat_get : (WasmI32, WasmI32) -> WasmI32
+```
+
+### Wasi.**fd_prestat_dir_name**
+
+```grain
+fd_prestat_dir_name : (WasmI32, WasmI32, WasmI32) -> WasmI32
 ```
 
 ### Wasi.**fd_write**
@@ -834,6 +854,6 @@ _ENOTCAPABLE : WasmI32
 ### Wasi.**stringOfSystemError**
 
 ```grain
-stringOfSystemError : a -> String
+stringOfSystemError : (code: a) -> String
 ```
 

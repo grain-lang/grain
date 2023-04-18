@@ -1,0 +1,47 @@
+name: Build dependencies
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        required: true
+
+jobs:
+  build_dependencies:
+    name: Create dependencies cache
+    runs-on: ${{ inputs.os }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+
+      - name: Esy dependency cache
+        id: esy-cache
+        uses: actions/cache@v3
+        with:
+          path: compiler/_export
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+          lookup-only: true
+
+      # We only need to setup node & npm dependencies if we don't have an esy cache because
+      # we won't run esy in that case and we can defer setting it up until building grain
+      - name: Setup node.js
+        if: steps.esy-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: ">=18.15"
+          check-latest: true
+          cache: "npm"
+
+      - name: Install npm dependencies
+        if: steps.esy-cache.outputs.cache-hit != 'true'
+        run: |
+          npm ci
+
+      - name: Build esy dependencies
+        if: steps.esy-cache.outputs.cache-hit != 'true'
+        run: |
+          npm run compiler prepare
+          npm run compiler build-dependencies
+          npm run compiler export-dependencies

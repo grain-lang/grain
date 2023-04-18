@@ -11,11 +11,11 @@
  * the Software, and to permit persons to whom the Software
  * is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice
  * shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
  * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
  * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -26,16 +26,19 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
 */
+module Slow
 
 //! Slow, fallback algorithm for cases the Eisel-Lemire algorithm cannot round.
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Memory from "runtime/unsafe/memory"
-import { newInt32, newInt64 } from "runtime/dataStructures"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures"
+from DataStructures use { newInt32, newInt64 }
 
-import {
-  BiasedFp,
+include "./common"
+from Common use {
+  type BiasedFp,
   fpZero,
   fpInf,
   fpErr,
@@ -43,8 +46,9 @@ import {
   _INFINITE_POWER,
   _MANTISSA_EXPLICIT_BITS_32,
   _MANTISSA_EXPLICIT_BITS_64,
-} from "./common"
-import Decimal, { parseDecimal, _DECIMAL_POINT_RANGE } from "./decimal"
+}
+include "./decimal"
+from Decimal use { parseDecimal, _DECIMAL_POINT_RANGE }
 
 @unsafe
 let _MAX_SHIFT = 60n
@@ -55,7 +59,7 @@ let mut _POWERS = -1n
 
 @unsafe
 let get_POWERS = () => {
-  let (==) = WasmI32.eq
+  from WasmI32 use { (==) }
   if (_POWERS == -1n) {
     _POWERS = Memory.malloc(130n)
     WasmI32.store8(_POWERS, 0n, 0n)
@@ -83,7 +87,8 @@ let get_POWERS = () => {
 
 @unsafe
 let getShift = n => {
-  if (WasmI32.ltS(n, _NUM_POWERS)) {
+  from WasmI32 use { (<) }
+  if (n < _NUM_POWERS) {
     WasmI32.load8U(get_POWERS(), n)
   } else {
     _MAX_SHIFT
@@ -112,22 +117,14 @@ let getShift = n => {
  * available here: <https://arxiv.org/pdf/2101.11408.pdf#section.11>.
 */
 @unsafe
-export let parseLongMantissa = (s: String) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltS
-  let (>) = WasmI32.gtS
-  let (>=) = WasmI32.geS
-  let (<=) = WasmI32.leS
-  let (>>) = WasmI32.shrU
-  let (<<) = WasmI32.shl
-  let (==) = WasmI32.eq
+provide let parseLongMantissa = (s: String) => {
+  from WasmI32 use { (+), (-), (&), (<), (>), (>=), (<=), (==) }
+  from WasmI64 use { (+) as addWasmI64, (<<) }
 
   let mut d = parseDecimal(s)
   let digits = WasmI32.fromGrain(d.digits)
-  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 8n)
-  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+  let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
+  let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
 
   // Short-circuit if the value can only be a literal 0 or infinity.
   if (numDigits == 0n || decimalPoint < -324n) {
@@ -142,7 +139,7 @@ export let parseLongMantissa = (s: String) => {
       let n = decimalPoint
       let shift = getShift(n)
       Decimal.rightShift(d, shift)
-      decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+      decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
       if (decimalPoint < 0n - _DECIMAL_POINT_RANGE) {
         done = true
         break
@@ -169,7 +166,7 @@ export let parseLongMantissa = (s: String) => {
           getShift(0n - decimalPoint)
         }
         Decimal.leftShift(d, shift)
-        decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 8n)
+        decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
         if (decimalPoint > _DECIMAL_POINT_RANGE) {
           done = true
           break
@@ -200,7 +197,7 @@ export let parseLongMantissa = (s: String) => {
           if (
             WasmI64.geU(
               mantissa,
-              WasmI64.shl(1N, WasmI64.add(_MANTISSA_EXPLICIT_BITS_64, 1N))
+              1N << addWasmI64(_MANTISSA_EXPLICIT_BITS_64, 1N)
             )
           ) {
             // Rounding up overflowed to the carry bit, need to
@@ -216,16 +213,12 @@ export let parseLongMantissa = (s: String) => {
             fpInf()
           } else {
             let mut power2 = exp2 - _MINIMUM_EXPONENT
-            if (
-              WasmI64.ltU(mantissa, WasmI64.shl(1N, _MANTISSA_EXPLICIT_BITS_64))
-            ) {
+            if (WasmI64.ltU(mantissa, 1N << _MANTISSA_EXPLICIT_BITS_64)) {
               power2 -= 1n
             }
+            from WasmI64 use { (-), (&) }
             // Zero out all the bits above the explicit mantissa bits.
-            mantissa = WasmI64.and(
-              mantissa,
-              WasmI64.sub(WasmI64.shl(1N, _MANTISSA_EXPLICIT_BITS_64), 1N)
-            )
+            mantissa = mantissa & (1N << _MANTISSA_EXPLICIT_BITS_64) - 1N
             {
               f: WasmI32.toGrain(newInt64(mantissa)): Int64,
               e: WasmI32.toGrain(newInt32(power2)): Int32,

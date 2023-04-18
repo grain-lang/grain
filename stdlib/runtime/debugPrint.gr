@@ -1,9 +1,12 @@
-import Utils from "runtime/numberUtils"
-import WasmI32, { add as (+) } from "runtime/unsafe/wasmi32"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Memory from "runtime/unsafe/memory"
+module DebugPrint
 
-import foreign wasm fd_write: (
+include "runtime/numberUtils" as Utils
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { (+) }
+include "runtime/unsafe/wasmf64"
+include "runtime/unsafe/memory"
+
+foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
@@ -11,7 +14,7 @@ import foreign wasm fd_write: (
 ) -> WasmI32 from "wasi_snapshot_preview1"
 
 @unsafe
-export let print = (s: String) => {
+provide let print = (s: String) => {
   let ptr = WasmI32.fromGrain(s)
   // iov: [<ptr to string> <nbytes of string> <ptr to newline> <nbytes of newline>] (32 bytes)
   // buf: <iov> <written> <newline char>
@@ -31,21 +34,21 @@ export let print = (s: String) => {
 }
 
 @unsafe
-export let printI32 = val => {
+provide let printI32 = val => {
   print(Utils.itoa32(val, 10n))
 }
 
 @unsafe
-export let printI64 = val => {
+provide let printI64 = val => {
   print(Utils.itoa64(val, 10n))
 }
 
 @unsafe
-export let printF32 = val => {
+provide let printF32 = val => {
   print(Utils.dtoa(WasmF64.promoteF32(val)))
 }
 
 @unsafe
-export let printF64 = val => {
+provide let printF64 = val => {
   print(Utils.dtoa(val))
 }

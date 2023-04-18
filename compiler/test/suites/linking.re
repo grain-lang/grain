@@ -20,7 +20,7 @@ describe("linking", ({test, testSkip}) => {
   );
   assertRun(
     "link_import",
-    {|import List from "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
+    {|include "list"; print(List.map(n => n + 1, [1, 2, 3]))|},
     "[2, 3, 4]\n",
   );
   assertRun("link_issue_994_no_generated_code", {|0|}, "");
@@ -31,7 +31,7 @@ describe("linking", ({test, testSkip}) => {
   );
   assertRun(
     "link_issue_994_exported_type",
-    {|export record Foo { foo: String }|},
+    {|provide record Foo { foo: String }|},
     "",
   );
   // --wasi-polyfill
@@ -49,10 +49,12 @@ describe("linking", ({test, testSkip}) => {
   );
 
   let tuple_equal = ((a1, a2), (b1, b2)) => a1 == b1 && a2 == b2;
+  let triple_equal = ((a1, a2, a3), (b1, b2, b3)) =>
+    a1 == b1 && a2 == b2 && a3 == b3;
   test("no_start_section", ({expect}) => {
     let name = "no_start_section";
     let outfile = wasmfile(name);
-    ignore @@ compile(name, {|print("Hello, world!")|});
+    ignore @@ compile(name, {|module Test; print("Hello, world!")|});
     let ic = open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
     close_in(ic);
@@ -89,7 +91,7 @@ describe("linking", ({test, testSkip}) => {
     compile(
       ~config_fn=() => {Grain_utils.Config.use_start_section := true},
       name,
-      {|print("Hello, world!")|},
+      {|module Test; print("Hello, world!")|},
     );
     let ic = open_in_bin(outfile);
     let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
@@ -117,6 +119,33 @@ describe("linking", ({test, testSkip}) => {
     expect.list(Option.get(export_sections)).not.toContainEqual(
       ~equals=tuple_equal,
       (WasmFunction, "_start"),
+    );
+  });
+
+  test("import_memory", ({expect}) => {
+    let name = "import_memory";
+    let outfile = wasmfile(name);
+    ignore @@
+    compile(
+      ~config_fn=() => {Grain_utils.Config.import_memory := true},
+      name,
+      {|module Test; print("Hello, world!")|},
+    );
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
+    let imports =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Import(imports)} => Some(imports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.list(Option.get(imports)).toContainEqual(
+      ~equals=triple_equal,
+      (WasmMemory, "env", "memory"),
     );
   });
 });

@@ -1,18 +1,13 @@
 open Parsetree;
-open Ast_iterator;
+open Parsetree_iter;
 open Grain_utils;
 
 type wferr =
   | MalformedString(Location.t)
   | IllegalCharacterLiteral(string, Location.t)
-  | MultipleModuleName(Location.t)
-  | TypeNameShouldBeUppercase(string, Location.t)
-  | IllegalAliasName(string, Location.t)
   | ExternalAlias(string, Location.t)
-  | ModuleNameShouldBeUppercase(string, Location.t)
   | ModuleImportNameShouldNotBeExternal(string, Location.t)
   | TyvarNameShouldBeLowercase(string, Location.t)
-  | ExportAllShouldOnlyAppearOnce(Location.t)
   | EmptyRecordPattern(Location.t)
   | RHSLetRecMayOnlyBeFunction(Location.t)
   | NoLetRecMut(Location.t)
@@ -22,7 +17,9 @@ type wferr =
   | AttributeDisallowed(string, Location.t)
   | LoopControlOutsideLoop(string, Location.t)
   | ReturnStatementOutsideFunction(Location.t)
-  | MismatchedReturnStyles(Location.t);
+  | MismatchedReturnStyles(Location.t)
+  | LocalIncludeStatement(Location.t)
+  | ProvidedMultipleTimes(string, Location.t);
 
 exception Error(wferr);
 
@@ -32,28 +29,25 @@ let prepare_error =
       fun
       | MalformedString(loc) => errorf(~loc, "Malformed string literal")
       | IllegalCharacterLiteral(cl, loc) =>
-        errorf(
-          ~loc,
-          "This character literal contains multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
-          cl,
-          cl,
-        )
-      | MultipleModuleName(loc) =>
-        errorf(~loc, "Multiple modules in identifier")
-      | TypeNameShouldBeUppercase(name, loc) =>
-        errorf(~loc, "Type '%s' should have an uppercase name.", name)
-      | IllegalAliasName(name, loc) =>
-        errorf(~loc, "Alias '%s' should have proper casing.", name)
+        if (String.length(cl) == 0) {
+          errorf(
+            ~loc,
+            "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
+          );
+        } else {
+          errorf(
+            ~loc,
+            "This character literal contains multiple characters: '%s'\nDid you mean to create the string \"%s\" instead?",
+            cl,
+            Str.global_replace(Str.regexp({|"|}), {|\"|}, cl),
+          );
+        }
       | ExternalAlias(name, loc) =>
         errorf(~loc, "Alias '%s' should be at most one level deep.", name)
-      | ModuleNameShouldBeUppercase(name, loc) =>
-        errorf(~loc, "Module '%s' should have an uppercase name.", name)
       | ModuleImportNameShouldNotBeExternal(name, loc) =>
         errorf(~loc, "Module name '%s' should contain only one module.", name)
       | TyvarNameShouldBeLowercase(var, loc) =>
         errorf(~loc, "Type variable '%s' should be lowercase.", var)
-      | ExportAllShouldOnlyAppearOnce(loc) =>
-        errorf(~loc, "An 'export *' statement should appear at most once.")
       | EmptyRecordPattern(loc) =>
         errorf(
           ~loc,
@@ -87,6 +81,17 @@ let prepare_error =
           ~loc,
           "All returned values must use the `return` keyword if the function returns early.",
         )
+      | LocalIncludeStatement(loc) =>
+        errorf(
+          ~loc,
+          "`include` statements may only appear at the file level.",
+        )
+      | ProvidedMultipleTimes(name, loc) =>
+        errorf(
+          ~loc,
+          "%s was provided multiple times, but can only be provided once.",
+          name,
+        )
     )
   );
 
@@ -99,11 +104,11 @@ let () =
 
 type well_formedness_checker = {
   errs: ref(list(wferr)),
-  iterator,
+  iter_hooks: hooks,
 };
 
 let malformed_strings = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstString(s)) =>
       if (!Utf8.validString(s)) {
@@ -111,173 +116,46 @@ let malformed_strings = (errs, super) => {
       }
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
+  };
 };
 
 let malformed_characters = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpConstant(PConstChar(c)) =>
-      if (String_utils.Utf8.utf_length_at_offset(c, 0) != String.length(c)) {
-        errs := [IllegalCharacterLiteral(c, loc), ...errs^];
+      switch (
+        String_utils.Utf8.utf_length_at_offset(c, 0) == String.length(c)
+      ) {
+      | true => ()
+      | false
+      | exception (Invalid_argument(_)) =>
+        errs := [IllegalCharacterLiteral(c, loc), ...errs^]
       }
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
-};
 
-let malformed_identifiers = (errs, super) => {
-  open Identifier;
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
-    switch (desc) {
-    | PExpId({txt: IdentExternal(IdentExternal(_), _)}) =>
-      errs := [MultipleModuleName(loc), ...errs^]
-    | _ => ()
-    };
-    super.expr(self, e);
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+    },
   };
-  let iter_import = (self, import) => {
-    let xor = (p, q) => p && !q || !p && q;
-    let casing_mismatch = (orig, alias) => {
-      let o = orig.[0];
-      let a = alias.[0];
-      xor(
-        Char_utils.is_uppercase_letter(o),
-        Char_utils.is_uppercase_letter(a),
-      );
-    };
-    List.iter(
-      pimp_val =>
-        switch (pimp_val) {
-        | PImportValues(values) =>
-          List.iter(
-            ((name, alias)) =>
-              switch (name, alias) {
-              | (
-                  {txt: IdentName({txt: orig})},
-                  Some({txt: IdentName({txt: alias}), loc}),
-                )
-                  when casing_mismatch(orig, alias) =>
-                errs := [IllegalAliasName(alias, loc), ...errs^]
-              | (_, Some({txt: IdentExternal(_) as alias, loc})) =>
-                errs :=
-                  [
-                    ExternalAlias(Identifier.string_of_ident(alias), loc),
-                    ...errs^,
-                  ]
-              | _ => ()
-              },
-            values,
-          )
-        | _ => ()
-        },
-      import.pimp_val,
-    );
-    super.import(self, import);
-  };
-  let iterator = {...super, expr: iter_expr, import: iter_import};
-  {errs, iterator};
-};
-
-let types_have_correct_case = (errs, super) => {
-  let check_uppercase = (loc, s) => {
-    let first_char = s.[0];
-    if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs := [TypeNameShouldBeUppercase(s, loc), ...errs^];
-    };
-  };
-  let iter_data =
-      (
-        self,
-        {pdata_name: {loc: name_loc, txt: name}, pdata_loc: loc, _} as d,
-      ) => {
-    check_uppercase(name_loc, name);
-    super.data(self, d);
-  };
-  // TODO(#1502): The parser should read in uppercase types as PTyConstr instances
-  let iterator = {...super, data: iter_data};
-  {errs, iterator};
-};
-
-let modules_have_correct_case = (errs, super) => {
-  let check_uppercase = (loc, s) => {
-    let first_char = s.[0];
-    if (!Char_utils.is_uppercase_letter(first_char)) {
-      errs := [ModuleNameShouldBeUppercase(s, loc), ...errs^];
-    };
-  };
-  let iter_mod = (self, import) => {
-    List.iter(
-      fun
-      | PImportModule({loc: name_loc, txt: IdentName({txt: name})}) =>
-        check_uppercase(name_loc, name)
-      | PImportModule(_) /* IdentExternal handled by another WF rule */
-      | PImportAllExcept(_)
-      | PImportValues(_) => (),
-      import.pimp_val,
-    );
-    super.import(self, import);
-  };
-  let iterator = {...super, import: iter_mod};
-  {errs, iterator};
-};
-
-let module_imports_not_external = (errs, super) => {
-  let check_name = (loc, id) =>
-    switch (id) {
-    | Identifier.IdentName(_) => ()
-    | Identifier.IdentExternal(_) =>
-      errs :=
-        [
-          ModuleImportNameShouldNotBeExternal(
-            Identifier.string_of_ident(id),
-            loc,
-          ),
-          ...errs^,
-        ]
-    };
-  let iter_mod = (self, import) => {
-    List.iter(
-      fun
-      | PImportModule({loc: name_loc, txt: name}) =>
-        check_name(name_loc, name)
-      | PImportAllExcept(_)
-      | PImportValues(_) => (),
-      import.pimp_val,
-    );
-    super.import(self, import);
-  };
-  let iterator = {...super, import: iter_mod};
-  {errs, iterator};
-};
-
-let only_has_one_export_all = (errs, super) => {
-  let count_export = ref(0);
-  let iter_export_all = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
-    let check_export_count = () =>
-      if (count_export^ > 1) {
-        errs := [ExportAllShouldOnlyAppearOnce(loc), ...errs^];
-      };
-    switch (desc) {
-    | PTopExportAll(_) =>
-      incr(count_export);
-      check_export_count();
-    | _ => ()
-    };
-    super.toplevel(self, e);
-  };
-  let iterator = {...super, toplevel: iter_export_all};
-  {errs, iterator};
 };
 
 let no_empty_record_patterns = (errs, super) => {
-  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | PTopLet(_, _, _, vbs) =>
       List.iter(
@@ -291,9 +169,9 @@ let no_empty_record_patterns = (errs, super) => {
       )
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(e);
   };
-  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLet(_, _, vbs) =>
       List.iter(
@@ -307,14 +185,21 @@ let no_empty_record_patterns = (errs, super) => {
       )
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_expression,
+    },
+  };
 };
 
 let only_functions_oh_rhs_letrec = (errs, super) => {
-  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | PTopLet(_, Recursive, _, vbs) =>
       List.iter(
@@ -325,9 +210,9 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
       )
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(e);
   };
-  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLet(Recursive, _, vbs) =>
       List.iter(
@@ -338,52 +223,79 @@ let only_functions_oh_rhs_letrec = (errs, super) => {
       )
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_expression,
+    },
+  };
 };
 
 let no_letrec_mut = (errs, super) => {
-  let iter_toplevel_binds = (self, {ptop_desc: desc, ptop_loc: loc} as e) => {
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as e) => {
     switch (desc) {
     | PTopLet(_, Recursive, Mutable, vbs) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
-    super.toplevel(self, e);
+    super.enter_toplevel_stmt(e);
   };
-  let iter_binds = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLet(Recursive, Mutable, vbs) =>
       errs := [NoLetRecMut(loc), ...errs^]
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iterator = {...super, toplevel: iter_toplevel_binds, expr: iter_binds};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_expression,
+    },
+  };
 };
 
 let no_zero_denominator_rational = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
-    | PExpConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
+    | PExpConstant(
+        PConstNumber(PConstNumberRational(_, d)) | PConstRational(_, d),
+      )
+        when d == "0" =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iter_pat = (self, {ppat_desc: desc, ppat_loc: loc} as p) => {
+  let enter_pattern = ({ppat_desc: desc, ppat_loc: loc} as p) => {
     switch (desc) {
-    | PPatConstant(PConstNumber(PConstNumberRational(_, d))) when d == "0" =>
+    | PPatConstant(
+        PConstNumber(PConstNumberRational(_, d)) | PConstRational(_, d),
+      )
+        when d == "0" =>
       errs := [RationalZeroDenominator(loc), ...errs^]
     | _ => ()
     };
-    super.pat(self, p);
+    super.enter_pattern(p);
   };
-  let iterator = {...super, expr: iter_expr, pat: iter_pat};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      enter_pattern,
+    },
+  };
 };
 
 type known_attribute = {
@@ -398,29 +310,27 @@ let known_attributes = [
 ];
 
 let valid_attributes = (errs, super) => {
-  let iter_attributes = (({txt, loc}, args)) => {
+  let enter_attribute = (({txt, loc}, args) as attr) => {
     switch (List.find_opt(({name}) => name == txt, known_attributes)) {
     | Some({arity}) when List.length(args) != arity =>
       errs := [InvalidAttributeArity(txt, arity, loc), ...errs^]
     | None => errs := [UnknownAttribute(txt, loc), ...errs^]
     | _ => ()
     };
+    super.enter_attribute(attr);
   };
 
-  let iter_expr = (self, {pexp_attributes: attrs} as e) => {
-    List.iter(iter_attributes, attrs);
-    super.expr(self, e);
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_attribute,
+    },
   };
-  let iter_toplevel = (self, {ptop_attributes: attrs} as top) => {
-    List.iter(iter_attributes, attrs);
-    super.toplevel(self, top);
-  };
-  let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
-  {errs, iterator};
 };
 
 let disallowed_attributes = (errs, super) => {
-  let iter_expr = (self, {pexp_desc: desc, pexp_attributes: attrs} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_attributes: attrs} as e) => {
     switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
     | Some(({txt, loc}, _)) =>
       errs :=
@@ -432,10 +342,10 @@ let disallowed_attributes = (errs, super) => {
         ]
     | None => ()
     };
-    super.expr(self, e);
+    super.enter_expression(e);
   };
-  let iter_toplevel =
-      (self, {ptop_desc: desc, ptop_attributes: attrs} as top) => {
+  let enter_toplevel_stmt =
+      ({ptop_desc: desc, ptop_attributes: attrs} as top) => {
     switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
     | Some(({txt, loc}, _)) =>
       switch (desc) {
@@ -481,35 +391,65 @@ let disallowed_attributes = (errs, super) => {
       }
     | None => ()
     };
-    super.toplevel(self, top);
+    super.enter_toplevel_stmt(top);
   };
-  let iterator = {...super, expr: iter_expr, toplevel: iter_toplevel};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      enter_toplevel_stmt,
+    },
+  };
 };
 
 let no_loop_control_statement_outside_of_loop = (errs, super) => {
-  let in_loop = ref(false);
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
-    let after = in_loop^;
+  let ctx = ref([]);
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpWhile(_)
-    | PExpFor(_) => in_loop := true
-    | PExpLambda(_) => in_loop := false
+    | PExpFor(_) => ctx := [true, ...ctx^]
+    | PExpLambda(_) => ctx := [false, ...ctx^]
     | PExpContinue =>
-      if (! in_loop^) {
-        errs := [LoopControlOutsideLoop("continue", loc), ...errs^];
+      switch (ctx^) {
+      // No loop context means we're not in a loop
+      | []
+      | [false, ..._] =>
+        errs := [LoopControlOutsideLoop("continue", loc), ...errs^]
+      | _ => ()
       }
     | PExpBreak =>
-      if (! in_loop^) {
-        errs := [LoopControlOutsideLoop("break", loc), ...errs^];
+      switch (ctx^) {
+      // No loop context means we're not in a loop
+      | []
+      | [false, ..._] =>
+        errs := [LoopControlOutsideLoop("break", loc), ...errs^]
+      | _ => ()
       }
     | _ => ()
     };
-    super.expr(self, e);
-    in_loop := after;
+    super.enter_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  let leave_expression = ({pexp_desc: desc} as e) => {
+    switch (desc) {
+    | PExpWhile(_)
+    | PExpFor(_)
+    | PExpLambda(_) => ctx := List.tl(ctx^)
+    | _ => ()
+    };
+    super.leave_expression(e);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      leave_expression,
+    },
+  };
 };
 
 let malformed_return_statements = (errs, super) => {
@@ -525,10 +465,10 @@ let malformed_return_statements = (errs, super) => {
         };
       };
       find(expressions);
-    | PExpIf(_, _, {pexp_desc: PExpBlock([])}) =>
+    | PExpIf(_, _, None) =>
       // If expressions with no else branch are not considered
       false
-    | PExpIf(_, ifso, ifnot) =>
+    | PExpIf(_, ifso, Some(ifnot)) =>
       has_returning_branch(ifso) || has_returning_branch(ifnot)
     | PExpMatch(_, branches) =>
       List.exists(branch => has_returning_branch(branch.pmb_body), branches)
@@ -552,7 +492,7 @@ let malformed_return_statements = (errs, super) => {
         };
       };
       collect(expressions);
-    | PExpIf(_, ifso, ifnot) when has_returning_branch(exp) =>
+    | PExpIf(_, ifso, Some(ifnot)) when has_returning_branch(exp) =>
       collect_non_returning_branches(ifso, [])
       @ collect_non_returning_branches(ifnot, acc)
     | PExpMatch(_, branches) when has_returning_branch(exp) =>
@@ -566,7 +506,7 @@ let malformed_return_statements = (errs, super) => {
     };
   };
   let ctx = ref([]);
-  let iter_expr = (self, {pexp_desc: desc, pexp_loc: loc} as e) => {
+  let enter_expression = ({pexp_desc: desc, pexp_loc: loc} as e) => {
     switch (desc) {
     | PExpLambda(_) =>
       // Push a context to record return statements for the current function
@@ -582,8 +522,10 @@ let malformed_return_statements = (errs, super) => {
     | _ => ()
     };
 
-    super.expr(self, e);
+    super.enter_expression(e);
+  };
 
+  let leave_expression = ({pexp_desc: desc} as e) => {
     // The expression has been iterated; pop the context if the expression was a function
     switch (desc) {
     | PExpLambda(_, body) =>
@@ -597,22 +539,246 @@ let malformed_return_statements = (errs, super) => {
       };
     | _ => ()
     };
+    super.leave_expression(e);
   };
-  let iterator = {...super, expr: iter_expr};
-  {errs, iterator};
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_expression,
+      leave_expression,
+    },
+  };
 };
 
-let compose_well_formedness = ({errs, iterator}, cur) =>
-  cur(errs, iterator);
+let no_local_include = (errs, super) => {
+  let file_level = ref([true]);
+  let enter_toplevel_stmt = ({ptop_desc: desc, ptop_loc: loc} as top) => {
+    switch (desc) {
+    | PTopInclude(_) when !List.hd(file_level^) =>
+      errs := [LocalIncludeStatement(loc), ...errs^]
+    | PTopModule(_) => file_level := [false, ...file_level^]
+    | _ => ()
+    };
+    super.enter_toplevel_stmt(top);
+  };
+
+  let leave_toplevel_stmt = ({ptop_desc: desc} as top) => {
+    switch (desc) {
+    | PTopModule(_) => file_level := List.tl(file_level^)
+    | _ => ()
+    };
+    super.leave_toplevel_stmt(top);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      leave_toplevel_stmt,
+    },
+  };
+};
+
+type provided_multiple_times_ctx = {
+  modules: Hashtbl.t(string, unit),
+  types: Hashtbl.t(string, unit),
+  values: Hashtbl.t(string, unit),
+};
+
+let provided_multiple_times = (errs, super) => {
+  let rec extract_bindings = (binds, pattern) =>
+    switch (pattern.ppat_desc) {
+    | PPatAny => binds
+    | PPatVar(bind) => [bind, ...binds]
+    | PPatTuple(pats)
+    | PPatArray(pats) => List.fold_left(extract_bindings, binds, pats)
+    | PPatRecord(pats, _) =>
+      List.fold_left(
+        (binds, (_, pat)) => extract_bindings(binds, pat),
+        binds,
+        pats,
+      )
+    | PPatConstant(_) => binds
+    | PPatConstraint(pat, _) => extract_bindings(binds, pat)
+    | PPatConstruct(_, cstr) =>
+      switch (cstr) {
+      | PPatConstrRecord(pats, _) =>
+        List.fold_left(
+          (binds, (_, pat)) => extract_bindings(binds, pat),
+          binds,
+          pats,
+        )
+      | PPatConstrTuple(pats) =>
+        List.fold_left(extract_bindings, binds, pats)
+      | PPatConstrSingleton => []
+      }
+    | PPatOr(pat1, pat2) =>
+      extract_bindings([], pat1) @ extract_bindings(binds, pat2)
+    | PPatAlias(pat, bind) => extract_bindings([bind, ...binds], pat)
+    };
+
+  let ctx =
+    ref([
+      {
+        modules: Hashtbl.create(64),
+        types: Hashtbl.create(64),
+        values: Hashtbl.create(64),
+      },
+    ]);
+
+  let enter_module = (p, d) => {
+    ctx :=
+      [
+        {
+          modules: Hashtbl.create(64),
+          types: Hashtbl.create(64),
+          values: Hashtbl.create(64),
+        },
+        ...ctx^,
+      ];
+    super.enter_module(p, d);
+  };
+
+  let leave_module = (p, d) => {
+    ctx := List.tl(ctx^);
+    super.leave_module(p, d);
+  };
+
+  let enter_toplevel_stmt = ({ptop_desc: desc} as top) => {
+    let {values, modules, types} = List.hd(ctx^);
+    switch (desc) {
+    | PTopModule(Provided | Abstract, {pmod_name, pmod_loc}) =>
+      if (Hashtbl.mem(modules, pmod_name.txt)) {
+        errs := [ProvidedMultipleTimes(pmod_name.txt, pmod_loc), ...errs^];
+      } else {
+        Hashtbl.add(modules, pmod_name.txt, ());
+      }
+    | PTopForeign(
+        Provided | Abstract,
+        {pval_name, pval_name_alias, pval_loc},
+      ) =>
+      let name = Option.value(~default=pval_name, pval_name_alias);
+      if (Hashtbl.mem(values, name.txt)) {
+        errs := [ProvidedMultipleTimes(name.txt, pval_loc), ...errs^];
+      } else {
+        Hashtbl.add(values, name.txt, ());
+      };
+    | PTopPrimitive(Provided | Abstract, {pprim_ident, pprim_loc}) =>
+      if (Hashtbl.mem(values, pprim_ident.txt)) {
+        errs := [ProvidedMultipleTimes(pprim_ident.txt, pprim_loc), ...errs^];
+      } else {
+        Hashtbl.add(values, pprim_ident.txt, ());
+      }
+    | PTopData(decls) =>
+      List.iter(
+        decl => {
+          switch (decl) {
+          | (Provided | Abstract, {pdata_name, pdata_loc}) =>
+            if (Hashtbl.mem(types, pdata_name.txt)) {
+              errs :=
+                [ProvidedMultipleTimes(pdata_name.txt, pdata_loc), ...errs^];
+            } else {
+              Hashtbl.add(types, pdata_name.txt, ());
+            }
+          | (NotProvided, _) => ()
+          }
+        },
+        decls,
+      )
+    | PTopLet(Provided | Abstract, _, _, binds) =>
+      List.iter(
+        bind => {
+          let names = extract_bindings([], bind.pvb_pat);
+          List.iter(
+            name =>
+              if (Hashtbl.mem(values, name.txt)) {
+                errs := [ProvidedMultipleTimes(name.txt, name.loc), ...errs^];
+              } else {
+                Hashtbl.add(values, name.txt, ());
+              },
+            names,
+          );
+        },
+        binds,
+      )
+    | PTopException(
+        Provided | Abstract,
+        {ptyexn_constructor: {pext_name, pext_loc}},
+      ) =>
+      if (Hashtbl.mem(values, pext_name.txt)) {
+        errs := [ProvidedMultipleTimes(pext_name.txt, pext_loc), ...errs^];
+      } else {
+        Hashtbl.add(values, pext_name.txt, ());
+      }
+    | PTopProvide(items) =>
+      let apply_alias = (name, alias) => {
+        let old_name = Identifier.string_of_ident(name.txt);
+        let new_name =
+          switch (alias) {
+          | Some(alias) => Identifier.string_of_ident(alias.txt)
+          | None => old_name
+          };
+        (old_name, new_name);
+      };
+      List.iter(
+        item => {
+          switch (item) {
+          | PProvideType({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(types, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(types, name, ());
+            };
+          | PProvideModule({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(modules, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(modules, name, ());
+            };
+          | PProvideValue({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(values, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(values, name, ());
+            };
+          }
+        },
+        items,
+      );
+    | PTopModule(NotProvided, _)
+    | PTopForeign(NotProvided, _)
+    | PTopPrimitive(NotProvided, _)
+    | PTopLet(NotProvided, _, _, _)
+    | PTopException(NotProvided, _)
+    | PTopInclude(_)
+    | PTopExpr(_) => ()
+    };
+    super.enter_toplevel_stmt(top);
+  };
+
+  {
+    errs,
+    iter_hooks: {
+      ...super,
+      enter_toplevel_stmt,
+      enter_module,
+      leave_module,
+    },
+  };
+};
+
+let compose_well_formedness = ({errs, iter_hooks}, cur) =>
+  cur(errs, iter_hooks);
 
 let well_formedness_checks = [
   malformed_strings,
   malformed_characters,
-  malformed_identifiers,
-  types_have_correct_case,
-  modules_have_correct_case,
-  module_imports_not_external,
-  only_has_one_export_all,
   no_empty_record_patterns,
   only_functions_oh_rhs_letrec,
   no_letrec_mut,
@@ -621,18 +787,22 @@ let well_formedness_checks = [
   disallowed_attributes,
   no_loop_control_statement_outside_of_loop,
   malformed_return_statements,
+  no_local_include,
+  provided_multiple_times,
 ];
 
 let well_formedness_checker = () =>
   List.fold_left(
     compose_well_formedness,
-    {errs: ref([]), iterator: default_iterator},
+    {errs: ref([]), iter_hooks: default_hooks},
     well_formedness_checks,
   );
 
-let check_well_formedness = ({statements}) => {
-  let checker = well_formedness_checker();
-  List.iter(checker.iterator.toplevel(checker.iterator), statements);
+let check_well_formedness = program => {
+  let {errs, iter_hooks} = well_formedness_checker();
+
+  Parsetree_iter.iter_parsed_program(iter_hooks, program);
+
   // TODO(#1503): We should be able to raise _all_ errors at once
-  List.iter(e => raise(Error(e)), checker.errs^);
+  List.iter(e => raise(Error(e)), errs^);
 };

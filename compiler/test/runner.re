@@ -25,11 +25,17 @@ let wasmfile = name =>
 let watfile = name =>
   Filepath.to_string(Fp.At.(test_output_dir / (name ++ ".gr.wat")));
 
-let formatter_out_file = name =>
-  Filepath.to_string(Fp.At.(test_formatter_out_dir / (name ++ ".gr")));
+let grainfmt_out_file = name =>
+  Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".expected.gr")));
 
-let formatter_in_file = name =>
-  Filepath.to_string(Fp.At.(test_formatter_in_dir / (name ++ ".gr")));
+let grainfmt_in_file = name =>
+  Filepath.to_string(Fp.At.(test_grainfmt_dir / (name ++ ".input.gr")));
+
+let graindoc_out_file = name =>
+  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".expected.md")));
+
+let gaindoc_in_file = name =>
+  Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
 let read_channel = channel => {
   let buf = Buffer.create(2048);
@@ -166,11 +172,18 @@ let run = (~num_pages=?, file) => {
 
   let stdlib = Option.get(Grain_utils.Config.stdlib_dir^);
 
+  let preopen =
+    Printf.sprintf(
+      "--dir=%s=%s",
+      "/test/test-data",
+      Filepath.to_string(test_data_dir),
+    );
+
   let cmd =
     Array.concat([
       [|"grain", "run"|],
       mem_flags,
-      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir)|],
+      [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), preopen|],
       [|file|],
     ]);
 
@@ -187,12 +200,39 @@ let format = file => {
   (out ++ err, code);
 };
 
+let doc = (file, arguments) => {
+  let cmd = Array.concat([[|"grain", "doc", file|], arguments]);
+
+  let (code, out, err) = open_process(cmd);
+
+  (out ++ err, code);
+};
+
+let module_header = "module Test; ";
+
 let makeSnapshotRunner = (~config_fn=?, test, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@
-      compile(~hook=stop_after_object_file_emitted, ~config_fn?, name, prog);
+      compile(
+        ~hook=stop_after_object_file_emitted,
+        ~config_fn?,
+        name,
+        module_header ++ prog,
+      );
       expect.file(watfile(name)).toMatchSnapshot();
+    })
+  });
+};
+
+let makeFilesizeRunner = (test, ~config_fn=?, name, prog, size) => {
+  test(name, ({expect}) => {
+    Config.preserve_all_configs(() => {
+      ignore @@ compile(~config_fn?, name, module_header ++ prog);
+      let ic = open_in_bin(wasmfile(name));
+      let filesize = in_channel_length(ic);
+      close_in(ic);
+      expect.int(filesize).toBe(size);
     })
   });
 };
@@ -218,7 +258,7 @@ let makeCompileErrorRunner = (test, name, prog, msg) => {
       let error =
         try(
           {
-            ignore @@ compile(name, prog);
+            ignore @@ compile(name, module_header ++ prog);
             "";
           }
         ) {
@@ -233,7 +273,7 @@ let makeWarningRunner = (test, name, prog, warning) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, prog);
+      ignore @@ compile(name, module_header ++ prog);
       expect.ext.warning.toHaveTriggered(warning);
     })
   });
@@ -243,7 +283,7 @@ let makeNoWarningRunner = (test, name, prog) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       Config.print_warnings := false;
-      ignore @@ compile(name, prog);
+      ignore @@ compile(name, module_header ++ prog);
       expect.ext.warning.toHaveTriggeredNoWarnings();
     })
   });
@@ -252,7 +292,7 @@ let makeNoWarningRunner = (test, name, prog) => {
 let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, prog);
+      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
@@ -271,7 +311,7 @@ let makeErrorRunner =
     ) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
-      ignore @@ compile(~num_pages?, ~config_fn?, name, prog);
+      ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
       let (result, _) = run(~num_pages?, wasmfile(name));
       if (check_exists) {
         expect.string(result).toMatch(expected);
@@ -380,8 +420,13 @@ let makeParseRunner =
           | Doc(desc) => Doc({...desc, cmt_loc: Location.dummy_loc})
           };
         };
-      let strip_locs = ({statements, comments}: Parsetree.parsed_program) =>
+      let strip_locs =
+          ({module_name, statements, comments}: Parsetree.parsed_program) =>
         Parsetree.{
+          module_name: {
+            ...module_name,
+            loc: Location.dummy_loc,
+          },
           statements:
             List.map(
               location_stripper.toplevel(location_stripper),
@@ -408,12 +453,26 @@ let makeFormatterRunner = (test, name, filename) => {
   test(
     name,
     ({expect}) => {
-      let infile = formatter_in_file(filename);
+      let infile = grainfmt_in_file(filename);
       let (result, _) = format(infile);
 
       // we need do a binary content comparison to ensure the EOL is correct
 
-      expect.ext.binaryFile(result).toBinaryMatch(formatter_out_file(name));
+      expect.ext.binaryFile(result).toBinaryMatch(grainfmt_out_file(name));
+    },
+  );
+};
+
+let makeGrainDocRunner = (test, name, filename, arguments) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = gaindoc_in_file(filename);
+      let (result, _) = doc(infile, arguments);
+
+      // we need do a binary content comparison to ensure the EOL is correct
+
+      expect.ext.binaryFile(result).toBinaryMatch(graindoc_out_file(name));
     },
   );
 };

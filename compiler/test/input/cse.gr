@@ -1,6 +1,8 @@
-let x = 5;
-let y = x;
-let a = x + 2;
-let b = y + 2;
+module CSE
+
+let x = 5
+let y = x
+let a = x + 2
+let b = y + 2
 
 y + 2

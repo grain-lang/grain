@@ -1,22 +1,18 @@
 /**
- * @module Time: Access to system clocks.
+ * Access to system clocks.
  *
- * @example import Time from "sys/time"
+ * @example include "sys/time"
  */
 
-import WasmI32, {
-  add as (+),
-  eq as (==),
-  ne as (!=),
-} from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import Wasi from "runtime/wasi"
-import Errors from "runtime/unsafe/errors"
-import { allocateInt64, tagSimpleNumber } from "runtime/dataStructures"
+module Time
 
-/**
- * @section Values: Functions and constants included in the Time module.
- */
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { (+), (==), (!=) }
+include "runtime/unsafe/memory"
+include "runtime/wasi"
+include "runtime/unsafe/errors"
+include "runtime/dataStructures"
+from DataStructures use { allocateInt64, tagSimpleNumber }
 
 @unsafe
 let getClockTime = (clockid, precision) => {
@@ -25,10 +21,9 @@ let getClockTime = (clockid, precision) => {
   let err = Wasi.clock_time_get(clockid, precision, timePtr)
   if (err != Wasi._ESUCCESS) {
     Memory.free(int64Ptr)
-    Err(Wasi.SystemError(tagSimpleNumber(err)))
-  } else {
-    Ok(WasmI32.toGrain(int64Ptr): Int64)
+    return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
+  return Ok(WasmI32.toGrain(int64Ptr): Int64)
 }
 
 /**
@@ -38,7 +33,7 @@ let getClockTime = (clockid, precision) => {
  * @returns `Ok(time)` of the current time if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let realTime = () => {
+provide let realTime = () => {
   getClockTime(Wasi._CLOCK_REALTIME, 1000N)
 }
 
@@ -51,7 +46,7 @@ export let realTime = () => {
  * @returns `Ok(time)` of the current time if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let monotonicTime = () => {
+provide let monotonicTime = () => {
   getClockTime(Wasi._CLOCK_MONOTONIC, 1N)
 }
 
@@ -61,7 +56,7 @@ export let monotonicTime = () => {
  * @returns `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let processCpuTime = () => {
+provide let processCpuTime = () => {
   getClockTime(Wasi._CLOCK_PROCESS_CPUTIME, 1N)
 }
 
@@ -71,6 +66,6 @@ export let processCpuTime = () => {
  * @returns `Ok(elapsed)` of the elapsed nanoseconds if successful or `Err(exception)` otherwise
  */
 @unsafe
-export let threadCpuTime = () => {
+provide let threadCpuTime = () => {
   getClockTime(Wasi._CLOCK_THREAD_CPUTIME, 1N)
 }

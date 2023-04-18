@@ -10,12 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Float64 from "float64"
+include "float64"
 ```
 
-## Constants
+## Values
 
-Float64 constant values.
+Functions and constants included in the Float64 module.
 
 ### Float64.**infinity**
 
@@ -82,10 +82,6 @@ e : Float64
 
 Euler's number represented as a Float64 value.
 
-## Conversions
-
-Functions for converting between Numbers and the Float64 type.
-
 ### Float64.**fromNumber**
 
 <details disabled>
@@ -94,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : Number -> Float64
+fromNumber : (x: Number) -> Float64
 ```
 
 Converts a Number to a Float64.
@@ -119,7 +115,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : Float64 -> Number
+toNumber : (x: Float64) -> Number
 ```
 
 Converts a Float64 to a Number.
@@ -136,10 +132,6 @@ Returns:
 |----|-----------|
 |`Number`|The Float64 represented as a Number|
 
-## Operations
-
-Mathematical operations for Float64 values.
-
 ### Float64.**add**
 
 <details disabled>
@@ -148,7 +140,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (Float64, Float64) -> Float64
+add : (x: Float64, y: Float64) -> Float64
 ```
 
 Computes the sum of its operands.
@@ -174,7 +166,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (Float64, Float64) -> Float64
+sub : (x: Float64, y: Float64) -> Float64
 ```
 
 Computes the difference of its operands.
@@ -200,7 +192,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (Float64, Float64) -> Float64
+mul : (x: Float64, y: Float64) -> Float64
 ```
 
 Computes the product of its operands.
@@ -226,7 +218,7 @@ No other changes yet.
 </details>
 
 ```grain
-div : (Float64, Float64) -> Float64
+div : (x: Float64, y: Float64) -> Float64
 ```
 
 Computes the quotient of its operands.
@@ -244,10 +236,6 @@ Returns:
 |----|-----------|
 |`Float64`|The quotient of the two operands|
 
-## Comparisons
-
-Functions for comparing Float64 values.
-
 ### Float64.**lt**
 
 <details disabled>
@@ -256,7 +244,7 @@ No other changes yet.
 </details>
 
 ```grain
-lt : (Float64, Float64) -> Bool
+lt : (x: Float64, y: Float64) -> Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -282,7 +270,7 @@ No other changes yet.
 </details>
 
 ```grain
-gt : (Float64, Float64) -> Bool
+gt : (x: Float64, y: Float64) -> Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -308,7 +296,7 @@ No other changes yet.
 </details>
 
 ```grain
-lte : (Float64, Float64) -> Bool
+lte : (x: Float64, y: Float64) -> Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -334,7 +322,7 @@ No other changes yet.
 </details>
 
 ```grain
-gte : (Float64, Float64) -> Bool
+gte : (x: Float64, y: Float64) -> Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.

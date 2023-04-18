@@ -10,12 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Marshal from "marshal"
+include "marshal"
 ```
 
 ## Values
 
-Functions for marshaling and unmarshaling data.
+Functions and constants included in the Marshal module.
 
 ### Marshal.**marshal**
 
@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-marshal : a -> Bytes
+marshal : (value: a) -> Bytes
 ```
 
 Serialize a value into a byte-based representation suitable for transmission
@@ -52,7 +52,7 @@ No other changes yet.
 </details>
 
 ```grain
-unmarshal : Bytes -> Result<a, String>
+unmarshal : (bytes: Bytes) -> Result<a, String>
 ```
 
 Deserialize the byte-based representation of a value back into an in-memory

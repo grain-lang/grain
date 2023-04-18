@@ -10,12 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Bytes from "bytes"
+include "bytes"
 ```
 
 ## Values
 
-Functions for working with the Bytes data type.
+Functions and constants included in the Bytes module.
 
 ### Bytes.**make**
 
@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : Number -> Bytes
+make : (size: Number) -> Bytes
 ```
 
 Creates a new byte sequence of the input size.
@@ -63,7 +63,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromString : String -> Bytes
+fromString : (string: String) -> Bytes
 ```
 
 Creates a new byte sequence from the input string.
@@ -88,7 +88,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : Bytes -> String
+toString : (bytes: Bytes) -> String
 ```
 
 Creates a new string from the input bytes.
@@ -113,7 +113,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : Bytes -> Number
+length : (bytes: Bytes) -> Number
 ```
 
 Returns the length of a byte sequence.
@@ -138,7 +138,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : Bytes -> Bytes
+copy : (b: Bytes) -> Bytes
 ```
 
 Creates a new byte sequence that contains the same bytes as the input byte sequence.
@@ -163,7 +163,7 @@ No other changes yet.
 </details>
 
 ```grain
-slice : (Number, Number, Bytes) -> Bytes
+slice : (start: Number, length: Number, bytes: Bytes) -> Bytes
 ```
 
 Returns a copy of a subset of the input byte sequence.
@@ -196,7 +196,7 @@ No other changes yet.
 </details>
 
 ```grain
-resize : (Number, Number, Bytes) -> Bytes
+resize : (left: Number, right: Number, bytes: Bytes) -> Bytes
 ```
 
 Returns a copy of a byte sequence with bytes added or removed from the beginning and/or end.
@@ -231,7 +231,9 @@ No other changes yet.
 </details>
 
 ```grain
-move : (Number, Number, Number, Bytes, Bytes) -> Void
+move :
+  (srcIndex: Number, dstIndex: Number, length: Number, src: Bytes, dst: Bytes) ->
+   Void
 ```
 
 Copies a range of bytes from a source byte sequence to a given location
@@ -262,7 +264,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (Bytes, Bytes) -> Bytes
+concat : (bytes1: Bytes, bytes2: Bytes) -> Bytes
 ```
 
 Creates a new byte sequence that contains the bytes of both byte sequences.
@@ -282,13 +284,20 @@ Returns:
 
 ### Bytes.**fill**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Uint8`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-fill : (Int32, Bytes) -> Void
+fill : (value: Uint8, bytes: Bytes) -> Void
 ```
 
 Replaces all bytes in a byte sequnce with the new value provided.
@@ -297,7 +306,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`Int32`|The value replacing each byte|
+|`value`|`Uint8`|The value replacing each byte|
 |`bytes`|`Bytes`|The byte sequence to update|
 
 ### Bytes.**clear**
@@ -308,7 +317,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : Bytes -> Void
+clear : (bytes: Bytes) -> Void
 ```
 
 Replaces all bytes in a byte sequence with zeroes.
@@ -319,19 +328,22 @@ Parameters:
 |-----|----|-----------|
 |`bytes`|`Bytes`|The byte sequence to clear|
 
-## Binary operations on integers
+### Bytes.**getInt8**
 
-Functions for encoding and decoding integers stored in a byte sequence.
-
-### Bytes.**getInt8S**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally called `getInt8S`, returning an `Int32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt8S : (Number, Bytes) -> Int32
+getInt8 : (index: Number, bytes: Bytes) -> Int8
 ```
 
 Gets a signed 8-bit integer starting at the given byte index.
@@ -347,7 +359,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing a signed 8-bit integer that starts at the given index|
+|`Int8`|A signed 8-bit integer that starts at the given index|
 
 Throws:
 
@@ -356,15 +368,57 @@ Throws:
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
 
-### Bytes.**getInt8U**
+### Bytes.**setInt8**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Int8`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt8U : (Number, Bytes) -> Int32
+setInt8 : (index: Number, value: Int8, bytes: Bytes) -> Void
+```
+
+Sets a signed 8-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Int8`|The value to set|
+|`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 1` is greater than the bytes size
+
+### Bytes.**getUint8**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally called `getInt8U`, returning an `Int32`</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+getUint8 : (index: Number, bytes: Bytes) -> Uint8
 ```
 
 Gets an unsigned 8-bit integer starting at the given byte index.
@@ -380,7 +434,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing an unsigned 8-bit integer that starts at the given index|
+|`Uint8`|An unsigned 8-bit integer that starts at the given index|
 
 Throws:
 
@@ -389,25 +443,25 @@ Throws:
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
 
-### Bytes.**setInt8**
+### Bytes.**setUint8**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-setInt8 : (Number, Int32, Bytes) -> Void
+setUint8 : (index: Number, value: Uint8, bytes: Bytes) -> Void
 ```
 
-Sets a signed 8-bit integer starting at the given byte index.
+Sets an unsigned 8-bit integer starting at the given byte index.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`index`|`Number`|The byte index to update|
-|`value`|`Int32`|The value to set|
+|`value`|`Uint8`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
 
 Throws:
@@ -417,15 +471,22 @@ Throws:
 * When `index` is negative
 * When `index + 1` is greater than the bytes size
 
-### Bytes.**getInt16S**
+### Bytes.**getInt16**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally called `getInt16S`, returning an `Int32`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt16S : (Number, Bytes) -> Int32
+getInt16 : (index: Number, bytes: Bytes) -> Int16
 ```
 
 Gets a signed 16-bit integer starting at the given byte index.
@@ -441,7 +502,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing a signed 16-bit integer that starts at the given index|
+|`Int16`|A signed 16-bit integer that starts at the given index|
 
 Throws:
 
@@ -450,15 +511,57 @@ Throws:
 * When `index` is negative
 * When `index + 2` is greater than the bytes size
 
-### Bytes.**getInt16U**
+### Bytes.**setInt16**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>`value` argument type changed to `Int16`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInt16U : (Number, Bytes) -> Int32
+setInt16 : (index: Number, value: Int16, bytes: Bytes) -> Void
+```
+
+Sets a signed 16-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Int16`|The value to set|
+|`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 2` is greater than the bytes size
+
+### Bytes.**getUint16**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.2</code></td><td>Originally called `getInt16U`, returning an `Int32`</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+getUint16 : (index: Number, bytes: Bytes) -> Uint16
 ```
 
 Gets an unsigned 16-bit integer starting at the given byte index.
@@ -474,7 +577,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Int32`|A 32-bit integer representing an unsigned 16-bit integer that starts at the given index|
+|`Uint16`|An unsigned 16-bit integer that starts at the given index|
 
 Throws:
 
@@ -483,25 +586,25 @@ Throws:
 * When `index` is negative
 * When `index + 2` is greater than the bytes size
 
-### Bytes.**setInt16**
+### Bytes.**setUint16**
 
 <details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
+<summary tabindex="-1">Added in <code>next</code></summary>
 No other changes yet.
 </details>
 
 ```grain
-setInt16 : (Number, Int32, Bytes) -> Void
+setUint16 : (index: Number, value: Uint16, bytes: Bytes) -> Void
 ```
 
-Sets a signed 16-bit integer starting at the given byte index.
+Sets an unsigned 16-bit integer starting at the given byte index.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`index`|`Number`|The byte index to update|
-|`value`|`Int32`|The value to set|
+|`value`|`Uint16`|The value to set|
 |`bytes`|`Bytes`|The byte sequence to mutate|
 
 Throws:
@@ -519,7 +622,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInt32 : (Number, Bytes) -> Int32
+getInt32 : (index: Number, bytes: Bytes) -> Int32
 ```
 
 Gets a signed 32-bit integer starting at the given byte index.
@@ -552,7 +655,7 @@ No other changes yet.
 </details>
 
 ```grain
-setInt32 : (Number, Int32, Bytes) -> Void
+setInt32 : (index: Number, value: Int32, bytes: Bytes) -> Void
 ```
 
 Sets a signed 32-bit integer starting at the given byte index.
@@ -572,6 +675,67 @@ Throws:
 * When `index` is negative
 * When `index + 4` is greater than the bytes size
 
+### Bytes.**getUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getUint32 : (index: Number, bytes: Bytes) -> Uint32
+```
+
+Gets an unsigned 32-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`bytes`|`Bytes`|The byte sequence to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint32`|An unsigned 32-bit integer that starts at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 4` is greater than the bytes size
+
+### Bytes.**setUint32**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+setUint32 : (index: Number, value: Uint32, bytes: Bytes) -> Void
+```
+
+Sets an unsigned 32-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Uint32`|The value to set|
+|`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 4` is greater than the bytes size
+
 ### Bytes.**getFloat32**
 
 <details disabled>
@@ -580,7 +744,7 @@ No other changes yet.
 </details>
 
 ```grain
-getFloat32 : (Number, Bytes) -> Float32
+getFloat32 : (index: Number, bytes: Bytes) -> Float32
 ```
 
 Gets a 32-bit float starting at the given byte index.
@@ -613,7 +777,7 @@ No other changes yet.
 </details>
 
 ```grain
-setFloat32 : (Number, Float32, Bytes) -> Void
+setFloat32 : (index: Number, value: Float32, bytes: Bytes) -> Void
 ```
 
 Sets a 32-bit float starting at the given byte index.
@@ -641,7 +805,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInt64 : (Number, Bytes) -> Int64
+getInt64 : (index: Number, bytes: Bytes) -> Int64
 ```
 
 Gets a signed 64-bit integer starting at the given byte index.
@@ -674,7 +838,7 @@ No other changes yet.
 </details>
 
 ```grain
-setInt64 : (Number, Int64, Bytes) -> Void
+setInt64 : (index: Number, value: Int64, bytes: Bytes) -> Void
 ```
 
 Sets a signed 64-bit integer starting at the given byte index.
@@ -694,6 +858,67 @@ Throws:
 * When `index` is negative
 * When `index + 8` is greater than the bytes size
 
+### Bytes.**getUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+getUint64 : (index: Number, bytes: Bytes) -> Uint64
+```
+
+Gets an unsigned 64-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to access|
+|`bytes`|`Bytes`|The byte sequence to access|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Uint64`|An unsigned 64-bit integer that starts at the given index|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 8` is greater than the bytes size
+
+### Bytes.**setUint64**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+setUint64 : (index: Number, value: Uint64, bytes: Bytes) -> Void
+```
+
+Sets an unsigned 64-bit integer starting at the given byte index.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`index`|`Number`|The byte index to update|
+|`value`|`Uint64`|The value to set|
+|`bytes`|`Bytes`|The byte sequence to mutate|
+
+Throws:
+
+`IndexOutOfBounds`
+
+* When `index` is negative
+* When `index + 8` is greater than the bytes size
+
 ### Bytes.**getFloat64**
 
 <details disabled>
@@ -702,7 +927,7 @@ No other changes yet.
 </details>
 
 ```grain
-getFloat64 : (Number, Bytes) -> Float64
+getFloat64 : (index: Number, bytes: Bytes) -> Float64
 ```
 
 Gets a 64-bit float starting at the given byte index.
@@ -735,7 +960,7 @@ No other changes yet.
 </details>
 
 ```grain
-setFloat64 : (Number, Float64, Bytes) -> Void
+setFloat64 : (index: Number, value: Float64, bytes: Bytes) -> Void
 ```
 
 Sets a 64-bit float starting at the given byte index.

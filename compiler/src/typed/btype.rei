@@ -110,6 +110,21 @@ let memorize_abbrev:
 let forget_abbrev: (ref(abbrev_memo), Path.t) => unit;
 /* Remove an abbreviation from the cache */
 
+/**** Utilities for labels ****/
+let is_optional: argument_label => bool;
+let label_equal: (argument_label, argument_label) => bool;
+let same_label_name: (argument_label, argument_label) => bool;
+let label_name: argument_label => label;
+let qualified_label_name: argument_label => label;
+let extract_label:
+  (label, list((argument_label, 'a))) =>
+  (
+    argument_label,
+    'a,
+    list((argument_label, 'a)),
+    list((argument_label, 'a)),
+  );
+
 /**** Utilities for backtracking ****/
 
 type snapshot;

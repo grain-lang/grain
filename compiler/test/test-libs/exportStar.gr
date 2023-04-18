@@ -1,6 +1,0 @@
-let x = 5;
-let y = (x) => { x };
-let z = "foo";
-let secret = "bar";
-
-export * except secret;

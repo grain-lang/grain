@@ -14,7 +14,8 @@ type loc('a) =
     loc: Location.t,
   };
 
-type export_flag = Asttypes.export_flag = | Nonexported | Exported;
+type provide_flag =
+  Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
@@ -24,7 +25,7 @@ type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 type parsed_type_desc =
   | PTyAny
   | PTyVar(string)
-  | PTyArrow(list(parsed_type), parsed_type)
+  | PTyArrow(list(parsed_type_argument), parsed_type)
   | PTyTuple(list(parsed_type))
   | PTyConstr(loc(Identifier.t), list(parsed_type))
   | PTyPoly(list(loc(string)), parsed_type)
@@ -33,13 +34,31 @@ and parsed_type = {
   ptyp_desc: parsed_type_desc,
   [@sexp_drop_if sexp_locs_disabled]
   ptyp_loc: Location.t,
+}
+
+and parsed_type_argument = {
+  ptyp_arg_label: argument_label,
+  ptyp_arg_type: parsed_type,
+  ptyp_arg_loc: Location.t,
+};
+
+/** Type for fields within a record */
+
+[@deriving (sexp, yojson)]
+type label_declaration = {
+  pld_name: loc(Identifier.t),
+  pld_type: parsed_type,
+  pld_mutable: mut_flag,
+  [@sexp_drop_if sexp_locs_disabled]
+  pld_loc: Location.t,
 };
 
 /** Type for arguments to a constructor */
 
 [@deriving (sexp, yojson)]
 type constructor_arguments =
-  | PConstrTuple(list(parsed_type))
+  | PConstrTuple(loc(list(parsed_type)))
+  | PConstrRecord(loc(list(label_declaration)))
   | PConstrSingleton
 
 [@deriving (sexp, yojson)]
@@ -81,17 +100,6 @@ type constructor_declaration = {
   pcd_loc: Location.t,
 };
 
-/** Type for fields within a record */
-
-[@deriving (sexp, yojson)]
-type label_declaration = {
-  pld_name: loc(Identifier.t),
-  pld_type: parsed_type,
-  pld_mutable: mut_flag,
-  [@sexp_drop_if sexp_locs_disabled]
-  pld_loc: Location.t,
-};
-
 /** Different types of data which can be declared. Currently only one. */
 
 [@deriving (sexp, yojson)]
@@ -117,8 +125,14 @@ type data_declaration = {
 [@deriving (sexp, yojson)]
 type constant =
   | PConstNumber(number_type)
+  | PConstInt8(string)
+  | PConstInt16(string)
   | PConstInt32(string)
   | PConstInt64(string)
+  | PConstUint8(bool, string)
+  | PConstUint16(bool, string)
+  | PConstUint32(bool, string)
+  | PConstUint64(bool, string)
   | PConstFloat32(string)
   | PConstFloat64(string)
   | PConstWasmI32(string)
@@ -126,6 +140,7 @@ type constant =
   | PConstWasmF32(string)
   | PConstWasmF64(string)
   | PConstBigInt(string)
+  | PConstRational(string, string)
   | PConstBool(bool)
   | PConstVoid
   | PConstBytes(string)
@@ -149,9 +164,15 @@ type pattern_desc =
   | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
   | PPatConstant(constant)
   | PPatConstraint(pattern, parsed_type)
-  | PPatConstruct(loc(Identifier.t), list(pattern))
+  | PPatConstruct(loc(Identifier.t), constructor_pattern)
   | PPatOr(pattern, pattern)
   | PPatAlias(pattern, loc(string))
+
+[@deriving (sexp, yojson)]
+and constructor_pattern =
+  | PPatConstrRecord(list((loc(Identifier.t), pattern)), closed_flag)
+  | PPatConstrTuple(list(pattern))
+  | PPatConstrSingleton
 
 [@deriving (sexp, yojson)]
 and pattern = {
@@ -306,10 +327,14 @@ type wasm_op =
 type prim0 =
   | AllocateInt32
   | AllocateInt64
+  | AllocateUint32
+  | AllocateUint64
   | AllocateFloat32
   | AllocateFloat64
   | AllocateRational
-  | Unreachable;
+  | WasmMemorySize
+  | Unreachable
+  | HeapStart;
 
 /** Single-argument operators */
 [@deriving (sexp, yojson)]
@@ -321,6 +346,8 @@ type prim1 =
   | AllocateBigInt
   | NewInt32
   | NewInt64
+  | NewUint32
+  | NewUint64
   | NewFloat32
   | NewFloat64
   | BuiltinId
@@ -331,6 +358,14 @@ type prim1 =
   | UntagSimpleNumber
   | TagChar
   | UntagChar
+  | TagInt8
+  | UntagInt8
+  | TagInt16
+  | UntagInt16
+  | TagUint8
+  | UntagUint8
+  | TagUint16
+  | UntagUint16
   | Not
   | Box
   | Unbox
@@ -340,6 +375,7 @@ type prim1 =
   | ArrayLength
   | Assert
   | Throw
+  | Magic
   | WasmFromGrain
   | WasmToGrain
   | WasmUnaryI32({
@@ -412,8 +448,33 @@ type primn =
   | WasmStoreF64
   | WasmMemoryCopy
   | WasmMemoryFill
-  | WasmMemorySize
   | WasmMemoryCompare;
+
+[@deriving (sexp, yojson)]
+type use_items =
+  | PUseAll
+  | PUseItems(list(use_item))
+
+[@deriving (sexp, yojson)]
+and use_item =
+  | PUseType({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PUseModule({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PUseValue({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    });
+
+[@deriving (sexp, yojson)]
+type attribute = Asttypes.attribute;
 
 [@deriving (sexp, yojson)]
 type attributes = Asttypes.attributes;
@@ -445,7 +506,7 @@ and expression_desc =
   | PExpPrim1(prim1, expression)
   | PExpPrim2(prim2, expression, expression)
   | PExpPrimN(primn, list(expression))
-  | PExpIf(expression, expression, expression)
+  | PExpIf(expression, expression, option(expression))
   | PExpWhile(expression, expression)
   | PExpFor(
       option(expression),
@@ -457,14 +518,34 @@ and expression_desc =
   | PExpBreak
   | PExpReturn(option(expression))
   | PExpConstraint(expression, parsed_type)
-  | PExpLambda(list(pattern), expression)
-  | PExpApp(expression, list(expression))
-  | PExpConstruct(loc(Identifier.t), list(expression))
+  | PExpUse(loc(Identifier.t), use_items)
+  | PExpLambda(list(lambda_argument), expression)
+  | PExpApp(expression, list(application_argument))
+  | PExpConstruct(loc(Identifier.t), constructor_expression)
   | PExpBlock(list(expression))
   | PExpBoxAssign(expression, expression)
   | PExpAssign(expression, expression)
-  | /** Used for modules without body expressions */
-    PExpNull
+
+[@deriving (sexp, yojson)]
+and constructor_expression =
+  | PExpConstrTuple(list(expression))
+  | PExpConstrRecord(list((loc(Identifier.t), expression)))
+  | PExpConstrSingleton
+
+[@deriving (sexp, yojson)]
+and lambda_argument = {
+  pla_label: argument_label,
+  pla_pattern: pattern,
+  pla_default: option(expression),
+  pla_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and application_argument = {
+  paa_label: argument_label,
+  paa_expr: expression,
+  paa_loc: Location.t,
+}
 
 /** let-binding form */
 
@@ -485,20 +566,14 @@ and match_branch = {
   pmb_loc: Location.t,
 };
 
-[@deriving (sexp, yojson)]
-type import_value =
-  | PImportModule(loc(Identifier.t))
-  | PImportAllExcept(list(loc(Identifier.t)))
-  | PImportValues(list((loc(Identifier.t), option(loc(Identifier.t)))));
-
-/** Type for import statements */
+/** Type for include statements */
 
 [@deriving (sexp, yojson)]
-type import_declaration = {
-  pimp_path: loc(string),
-  pimp_val: list(import_value),
+type include_declaration = {
+  pinc_path: loc(string),
+  pinc_alias: option(loc(string)),
   [@sexp_drop_if sexp_locs_disabled]
-  pimp_loc: Location.t,
+  pinc_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
@@ -507,45 +582,59 @@ type value_description = {
   pval_name: loc(string),
   pval_name_alias: option(loc(string)),
   pval_type: parsed_type,
-  pval_prim: list(string),
   [@sexp_drop_if sexp_locs_disabled]
   pval_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
-type export_declaration_desc = {
-  pex_name: loc(string),
-  pex_alias: option(loc(string)),
-  [@sexp_drop_if sexp_locs_disabled]
-  pex_loc: Location.t,
+type provide_item =
+  | PProvideType({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PProvideModule({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PProvideValue({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    });
+
+[@deriving (sexp, yojson)]
+type module_declaration = {
+  pmod_name: loc(string),
+  pmod_stmts: list(toplevel_stmt),
+  pmod_loc: Location.t,
 }
 
 [@deriving (sexp, yojson)]
-and export_declaration =
-  | ExportData(export_declaration_desc)
-  | ExportValue(export_declaration_desc);
-
-[@deriving (sexp, yojson)]
-type export_except =
-  | ExportExceptData(loc(string))
-  | ExportExceptValue(loc(string));
+and primitive_description = {
+  pprim_ident: loc(string),
+  pprim_name: loc(string),
+  [@sexp_drop_if sexp_locs_disabled]
+  pprim_loc: Location.t,
+}
 
 /** Statements which can exist at the top level */
 
 [@deriving (sexp, yojson)]
-type toplevel_stmt_desc =
-  | PTopImport(import_declaration)
-  | PTopForeign(export_flag, value_description)
-  | PTopPrimitive(export_flag, value_description)
-  | PTopData(list((export_flag, data_declaration)))
-  | PTopLet(export_flag, rec_flag, mut_flag, list(value_binding))
+and toplevel_stmt_desc =
+  | PTopInclude(include_declaration)
+  | PTopForeign(provide_flag, value_description)
+  | PTopPrimitive(provide_flag, primitive_description)
+  | PTopModule(provide_flag, module_declaration)
+  | PTopData(list((provide_flag, data_declaration)))
+  | PTopLet(provide_flag, rec_flag, mut_flag, list(value_binding))
   | PTopExpr(expression)
-  | PTopException(export_flag, type_exception)
-  | PTopExport(list(export_declaration))
-  | PTopExportAll(list(export_except));
+  | PTopException(provide_flag, type_exception)
+  | PTopProvide(list(provide_item))
 
 [@deriving (sexp, yojson)]
-type toplevel_stmt = {
+and toplevel_stmt = {
   ptop_desc: toplevel_stmt_desc,
   ptop_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
@@ -571,6 +660,7 @@ type comment =
 
 [@deriving (sexp, yojson)]
 type parsed_program = {
+  module_name: loc(string),
   statements: list(toplevel_stmt),
   comments: list(comment),
   [@sexp_drop_if sexp_locs_disabled]

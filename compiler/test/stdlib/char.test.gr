@@ -1,6 +1,8 @@
-import Char from "char"
-import String from "string"
-import Array from "array"
+module CharTest
+
+include "char"
+include "string"
+include "array"
 
 // isValid
 
@@ -52,3 +54,35 @@ while (!done) {
   Char.code(chars[charPosition])
   charPosition += 1
 }
+
+// <
+from Char use { (<) }
+assert 'a' < 'z'
+assert 'a' < 'b'
+assert 'A' < 'Z'
+assert !('z' < 'a')
+
+// <=
+from Char use { (<=) }
+assert 'a' <= 'z'
+assert 'a' <= 'b'
+assert 'A' <= 'Z'
+assert !('z' <= 'a')
+assert 'z' <= 'z'
+assert 'Z' <= 'Z'
+
+// >
+from Char use { (>) }
+assert 'z' > 'a'
+assert 'b' > 'a'
+assert 'Z' > 'A'
+assert !('a' > 'b')
+
+// >=
+from Char use { (>=) }
+assert 'z' >= 'a'
+assert 'b' >= 'a'
+assert 'Z' >= 'A'
+assert !('a' >= 'b')
+assert 'a' >= 'a'
+assert 'B' >= 'B'

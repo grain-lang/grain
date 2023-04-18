@@ -1,16 +1,21 @@
 /**
- * @module String: Utilities for working with strings.
- * @example import String from "string"
+ * Utilities for working with strings.
+ *
+ * @example include "string"
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `strings`
  * @history v0.2.0: Renamed to `string`
  */
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import Exception from "runtime/exception"
-import Conv from "runtime/unsafe/conv"
-import {
+
+module String
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/memory"
+include "runtime/exception"
+include "runtime/unsafe/conv"
+include "runtime/dataStructures"
+from DataStructures use {
   untagSimpleNumber,
   tagSimpleNumber,
   tagChar,
@@ -18,16 +23,12 @@ import {
   allocateArray,
   allocateString,
   allocateBytes,
-} from "runtime/dataStructures"
-
-/**
- * @section Types: Type declarations included in the String module.
- */
+}
 
 /**
  * Byte encodings
  */
-export enum Encoding {
+provide enum Encoding {
   UTF8,
   UTF16_BE,
   UTF16_LE,
@@ -36,10 +37,6 @@ export enum Encoding {
 }
 
 exception MalformedUnicode
-
-/**
- * @section Values: Functions for working with the String data type.
- */
 
 /**
  * Concatenate two strings.
@@ -52,7 +49,7 @@ exception MalformedUnicode
  *
  * @since v0.2.0
  */
-export let concat = (++)
+provide let concat = (++)
 
 /**
  * Returns the character length of the input string.
@@ -65,20 +62,21 @@ export let concat = (++)
  * @since v0.1.0
  */
 @unsafe
-export let length = (string: String) => {
+provide let length = (string: String) => {
+  from WasmI32 use { (+), (&), (!=) }
   let string = WasmI32.fromGrain(string)
   let size = WasmI32.load(string, 4n)
 
   let mut len = 0n
-  let mut ptr = WasmI32.add(string, 8n)
-  let end = WasmI32.add(ptr, size)
+  let mut ptr = string + 8n
+  let end = ptr + size
 
   while (WasmI32.ltU(ptr, end)) {
     let byte = WasmI32.load8U(ptr, 0n)
-    if (WasmI32.ne(WasmI32.and(byte, 0xC0n), 0x80n)) {
-      len = WasmI32.add(len, 1n)
+    if ((byte & 0xC0n) != 0x80n) {
+      len += 1n
     }
-    ptr = WasmI32.add(ptr, 1n)
+    ptr += 1n
   }
 
   Conv.wasmI32ToNumber(len)
@@ -95,7 +93,7 @@ export let length = (string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let byteLength = (string: String) => {
+provide let byteLength = (string: String) => {
   let string = WasmI32.fromGrain(string)
   Conv.wasmI32ToNumber(WasmI32.load(string, 4n))
 }
@@ -112,54 +110,40 @@ export let byteLength = (string: String) => {
  * @since v0.3.0
  */
 @unsafe
-export let indexOf = (search: String, string: String) => {
+provide let indexOf = (search: String, string: String) => {
   let search = WasmI32.fromGrain(search)
   let string = WasmI32.fromGrain(string)
 
   let size = WasmI32.load(string, 4n)
   let psize = WasmI32.load(search, 4n)
-
-  let (>) = WasmI32.gtU
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
+  from WasmI32 use { (+), (-), (&), ltU as (<), gtU as (>), (==) }
 
   if (psize > size) {
-    None
-  } else {
-    let mut idx = 0n
-    let mut ptr = string + 8n
-    let mut pptr = search + 8n
-    let end = ptr + size - psize + 1n
+    return None
+  }
+  let mut idx = 0n
+  let mut ptr = string + 8n
+  let mut pptr = search + 8n
+  let end = ptr + size - psize + 1n
 
-    let mut result = -1n
-
-    while (ptr < end) {
-      if (Memory.compare(ptr, pptr, psize) == 0n) {
-        result = idx
-        break
-      }
-      idx += 1n
-      let byte = WasmI32.load8U(ptr, 0n)
-      if ((byte & 0x80n) == 0x00n) {
-        ptr += 1n
-      } else if ((byte & 0xF0n) == 0xF0n) {
-        ptr += 4n
-      } else if ((byte & 0xE0n) == 0xE0n) {
-        ptr += 3n
-      } else {
-        ptr += 2n
-      }
+  while (ptr < end) {
+    if (Memory.compare(ptr, pptr, psize) == 0n) {
+      return Some(tagSimpleNumber(idx))
     }
-
-    if (result == -1n) {
-      None
+    idx += 1n
+    let byte = WasmI32.load8U(ptr, 0n)
+    if ((byte & 0x80n) == 0x00n) {
+      ptr += 1n
+    } else if ((byte & 0xF0n) == 0xF0n) {
+      ptr += 4n
+    } else if ((byte & 0xE0n) == 0xE0n) {
+      ptr += 3n
     } else {
-      Some(tagSimpleNumber(result))
+      ptr += 2n
     }
   }
+
+  return None
 }
 
 /**
@@ -174,63 +158,45 @@ export let indexOf = (search: String, string: String) => {
  * @since v0.5.3
  */
 @unsafe
-export let lastIndexOf = (search: String, string: String) => {
+provide let lastIndexOf = (search: String, string: String) => {
   // The last possible index in the string given the length of the search
   let lastIndex = length(string) - length(search)
 
-  let (>) = WasmI32.gtU
-  let (>=) = WasmI32.geU
-  let (==) = WasmI32.eq
-  let (!=) = WasmI32.ne
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
+  from WasmI32 use { (+), (-), (&), gtU as (>), geU as (>=), (==), (!=) }
 
   let search = WasmI32.fromGrain(search)
   let string = WasmI32.fromGrain(string)
   let searchSize = WasmI32.load(search, 4n)
   let stringSize = WasmI32.load(string, 4n)
   if (searchSize > stringSize) {
-    None
-  } else {
-    let mut matchIndex = -1n
-    let mut stringIndex = untagSimpleNumber(lastIndex)
-    let searchPtr = search + 8n
-    let stringStartPtr = string + 8n
-    for (
-      let mut stringPtr = stringStartPtr + stringSize - searchSize;
-      stringPtr >= stringStartPtr;
-      stringPtr -= 1n
-    ) {
-      let byte = WasmI32.load8U(stringPtr, 0n)
-      if ((byte & 0xC0n) == 0x80n) {
-        // We're not at the start of a codepoint, so move on
-        continue
-      }
-      if (Memory.compare(stringPtr, searchPtr, searchSize) == 0n) {
-        matchIndex = stringIndex
-        break
-      }
-      stringIndex -= 1n
-    }
-    if (matchIndex == -1n) {
-      None
-    } else {
-      Some(tagSimpleNumber(matchIndex))
-    }
+    return None
   }
+  let mut stringIndex = untagSimpleNumber(lastIndex)
+  let searchPtr = search + 8n
+  let stringStartPtr = string + 8n
+  for (
+    let mut stringPtr = stringStartPtr + stringSize - searchSize;
+    stringPtr >= stringStartPtr;
+    stringPtr -= 1n
+  ) {
+    let byte = WasmI32.load8U(stringPtr, 0n)
+    if ((byte & 0xC0n) == 0x80n) {
+      // We're not at the start of a codepoint, so move on
+      continue
+    }
+    if (Memory.compare(stringPtr, searchPtr, searchSize) == 0n) {
+      return Some(tagSimpleNumber(stringIndex))
+    }
+    stringIndex -= 1n
+  }
+
+  return None
 }
 
 @unsafe
 let getCodePoint = (ptr: WasmI32) => {
   // Algorithm from https://encoding.spec.whatwg.org/#utf-8-decoder
-  let (+) = WasmI32.add
-  let (==) = WasmI32.eq
-  let (>=) = WasmI32.geU
-  let (<=) = WasmI32.leU
-  let (<<) = WasmI32.shl
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
+  from WasmI32 use { (+), (&), (|), (<<), leU as (<=), geU as (>=), (==) }
 
   let mut codePoint = 0n
   let mut bytesSeen = 0n
@@ -240,15 +206,12 @@ let getCodePoint = (ptr: WasmI32) => {
 
   let mut offset = 0n
 
-  let mut result = 0n
-
   while (true) {
     let byte = WasmI32.load8U(ptr + offset, 0n)
     offset += 1n
     if (bytesNeeded == 0n) {
       if (byte >= 0x00n && byte <= 0x7Fn) {
-        result = byte
-        break
+        return byte
       } else if (byte >= 0xC2n && byte <= 0xDFn) {
         bytesNeeded = 1n
         codePoint = byte & 0x1Fn
@@ -275,11 +238,10 @@ let getCodePoint = (ptr: WasmI32) => {
     codePoint = codePoint << 6n | byte & 0x3Fn
     bytesSeen += 1n
     if (bytesSeen == bytesNeeded) {
-      result = codePoint
-      break
+      return codePoint
     }
   }
-  result
+  return 0n
 }
 
 @unsafe
@@ -288,22 +250,16 @@ let charAtHelp = (position, string: String) => {
     fail "Invalid offset: " ++ toString(position)
   }
   // Implementation is similar to explodeHelp, but doesn't perform unneeded memory allocations
-  let (>>>) = WasmI32.shrU
-  let (+) = WasmI32.add
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
+  from WasmI32 use { (+), (&), (>>>), ltU as (<), (==) }
   let size = WasmI32.fromGrain(byteLength(string)) >>> 1n
   let position = WasmI32.fromGrain(position) >>> 1n
   let string = WasmI32.fromGrain(string)
   let mut ptr = string + 8n
   let end = ptr + size
   let mut counter = 0n
-  let mut result = 0n
   while (ptr < end) {
     if (counter == position) {
-      result = getCodePoint(ptr)
-      break
+      return getCodePoint(ptr)
     }
     let byte = WasmI32.load8U(ptr, 0n)
     let n = if ((byte & 0x80n) == 0x00n) {
@@ -318,10 +274,8 @@ let charAtHelp = (position, string: String) => {
     counter += 1n
     ptr += n
   }
-  if (WasmI32.eqz(WasmI32.fromGrain(result))) {
-    fail "charAt: should be impossible (please report)"
-  }
-  result
+
+  fail "charAt: should be impossible (please report)"
 }
 
 /**
@@ -331,12 +285,15 @@ let charAtHelp = (position, string: String) => {
  * @param string: The string to search
  * @returns The character code at the provided position
  *
+ * @throws MalformedUnicode: When the `string` is malformed
+ * @throws Failure(String): When the `position` is out of bounds
+ *
  * @example String.charCodeAt(5, "Hello world") == 32
  *
  * @since v0.5.3
  */
 @unsafe
-export let charCodeAt = (position, string: String) => {
+provide let charCodeAt = (position, string: String) => {
   tagSimpleNumber(charAtHelp(position, string))
 }
 
@@ -347,22 +304,21 @@ export let charCodeAt = (position, string: String) => {
  * @param string: The string to search
  * @returns The character at the provided position
  *
+ * @throws MalformedUnicode: When the `string` is malformed
+ * @throws Failure(String): When the `position` is out of bounds
+ *
  * @example String.charAt(5, "Hello world") == ' '
  *
  * @since v0.4.0
  */
 @unsafe
-export let charAt = (position, string: String) => {
+provide let charAt = (position, string: String) => {
   tagChar(charAtHelp(position, string))
 }
 
 @unsafe
 let explodeHelp = (s: String, chars) => {
-  let (>>>) = WasmI32.shrU
-  let (+) = WasmI32.add
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
+  from WasmI32 use { (+), (&), (>>>), ltU as (<), (==) }
 
   let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
   let len = WasmI32.fromGrain(length(s)) >>> 1n
@@ -409,12 +365,14 @@ let explodeHelp = (s: String, chars) => {
  * @param string: The string to split
  * @returns An array containing all characters in the string
  *
+ * @throws MalformedUnicode: When the `string` is malformed
+ *
  * @example String.explode("Hello") == [> 'H', 'e', 'l', 'l', 'o']
  *
  * @since v0.3.0
  */
 @unsafe
-export let explode = string => {
+provide let explode = string => {
   WasmI32.toGrain(explodeHelp(string, true)): Array<Char>
 }
 
@@ -429,17 +387,19 @@ export let explode = string => {
  * @since v0.3.0
  */
 @unsafe
-export let implode = (arr: Array<Char>) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (*) = WasmI32.mul
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtU
-  let (<=) = WasmI32.leU
-  let (<<) = WasmI32.shl
-  let (>>>) = WasmI32.shrU
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
+provide let implode = (arr: Array<Char>) => {
+  from WasmI32 use {
+    (+),
+    (-),
+    (*),
+    (&),
+    (|),
+    (<<),
+    (>>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+  }
 
   let arrLength = WasmI32.load(WasmI32.fromGrain(arr), 4n)
 
@@ -499,7 +459,7 @@ export let implode = (arr: Array<Char>) => {
 }
 
 // Helper to get the length in constant time without depending on Array
-primitive arrayLength: Array<a> -> Number = "@array.length"
+primitive arrayLength = "@array.length"
 
 /**
  * Create a string that is the given string reversed.
@@ -511,7 +471,7 @@ primitive arrayLength: Array<a> -> Number = "@array.length"
  *
  * @since v0.4.5
  */
-export let reverse = string => {
+provide let reverse = string => {
   let mut arr = explode(string)
   let len = arrayLength(arr)
   let halfLen = len / 2
@@ -532,18 +492,13 @@ export let reverse = string => {
  * @param string: The string to split
  * @returns An array of substrings from the initial string
  *
+ * @throws MalformedUnicode: When the `string` is malformed
+ *
  * @example String.split(" ", "Hello world") == [> "Hello", "world"]
  */
 @unsafe
-export let split = (separator: String, string: String) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (==) = WasmI32.eq
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtU
-  let (<<) = WasmI32.shl
-  let (>>) = WasmI32.shrS
-  let (&) = WasmI32.and
+provide let split = (separator: String, string: String) => {
+  from WasmI32 use { (+), (-), (&), (<<), (>>), ltU as (<), gtU as (>), (==) }
 
   let size = WasmI32.fromGrain(byteLength(string)) >> 1n
   let psize = WasmI32.fromGrain(byteLength(separator)) >> 1n
@@ -620,27 +575,25 @@ export let split = (separator: String, string: String) => {
  * Get a portion of a string.
  *
  * @param start: The start position of the substring
- * @param to: The end position of the substring, exclusive
+ * @param end: The end position of the substring, exclusive
  * @param string: The input string
  * @returns The substring from the initial string
  *
- * @example String.slice(0, 5, "Hello world") == "Hello"
+ * @throws InvalidArgument(String): When the `start` index is not an integer
+ * @throws InvalidArgument(String): When the `to` index is not an integer
+ * @throws IndexOutOfBounds: When `start` is out of bounds
+ * @throws IndexOutOfBounds: When `end` is out of bounds
+ * @throws InvalidArgument(String): When `start` is greater than `end`
+ *
+ * @example String.slice(0, end=5, "Hello world") == "Hello"
+ * @example String.slice(0, "Hello world") == "Hello world"
  *
  * @since v0.1.0
+ * @history v0.6.0: Default `end` to the String length
  */
 @unsafe
-export let slice = (start: Number, to: Number, string: String) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (==) = WasmI32.eq
-  let (!=) = WasmI32.ne
-  let (<) = WasmI32.ltS
-  let (>) = WasmI32.gtS
-  let (<<) = WasmI32.shl
-  let (>>) = WasmI32.shrS
-  let (&) = WasmI32.and
-  let startOrig = start
-  let toOrig = to
+provide let slice = (start: Number, end=length(string), string: String) => {
+  from WasmI32 use { (+), (-), (&), (<<), (>>), (<), (>), (==), (!=) }
 
   let len = WasmI32.fromGrain(length(string)) >> 1n
   let size = WasmI32.fromGrain(byteLength(string)) >> 1n
@@ -653,7 +606,7 @@ export let slice = (start: Number, to: Number, string: String) => {
   }
   start = start >> 1n
 
-  let mut to = WasmI32.fromGrain(to)
+  let mut to = WasmI32.fromGrain(end)
   if ((to & 1n) != 1n) {
     throw InvalidArgument("Invalid end index")
   }
@@ -721,20 +674,21 @@ export let slice = (start: Number, to: Number, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let contains = (search: String, string: String) => {
+provide let contains = (search: String, string: String) => {
   // "Not So Naive" string search algorithm
   // searching phase in O(nm) time complexity
   // slightly (by coefficient) sub-linear in the average case
   // http://igm.univ-mlv.fr/~lecroq/string/node13.html#SECTION00130
-
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (==) = WasmI32.eq
-  let (!=) = WasmI32.ne
-  let (<) = WasmI32.ltU
-  let (<=) = WasmI32.leU
-  let (>) = WasmI32.gtU
-  let (>>) = WasmI32.shrS
+  from WasmI32 use {
+    (+),
+    (-),
+    (>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+    (==),
+    (!=),
+  }
   let pOrig = search
   let sOrig = string
 
@@ -751,52 +705,52 @@ export let contains = (search: String, string: String) => {
 
   if (m > n) {
     // Bail if pattern length is longer than input length
-    false
-  } else if (m < 2n) {
+    return false
+  }
+
+  if (m < 2n) {
     // Handle very small patterns
     if (m == 0n) {
-      true
-    } else {
-      let pat = WasmI32.load8U(search, 0n)
-      let mut result = false
-      while (j < n) {
-        if (pat == WasmI32.load8U(string + j, 0n)) {
-          result = true
-          break
-        } else {
-          j += 1n
-        }
-      }
-      result
-    }
-  } else {
-    // NSM preprocessing
-    if (WasmI32.load8U(search, 0n) == WasmI32.load8U(search, 1n)) {
-      k = 2n
-      ell = 1n
-    } else {
-      k = 1n
-      ell = 2n
+      return true
     }
 
-    let mut result = false
-    // NSM searching
-    while (j <= n - m) {
-      if (WasmI32.load8U(search, 1n) != WasmI32.load8U(string + j, 1n)) {
-        j += k
+    let pat = WasmI32.load8U(search, 0n)
+    while (j < n) {
+      if (pat == WasmI32.load8U(string + j, 0n)) {
+        return true
       } else {
-        if (
-          Memory.compare(search + 2n, string + j + 2n, m - 2n) == 0n &&
-          WasmI32.load8U(search, 0n) == WasmI32.load8U(string + j, 0n)
-        ) {
-          result = true
-          break
-        }
-        j += ell
+        j += 1n
       }
     }
-    result
+
+    return false
   }
+
+  // NSM preprocessing
+  if (WasmI32.load8U(search, 0n) == WasmI32.load8U(search, 1n)) {
+    k = 2n
+    ell = 1n
+  } else {
+    k = 1n
+    ell = 2n
+  }
+
+  // NSM searching
+  while (j <= n - m) {
+    if (WasmI32.load8U(search, 1n) != WasmI32.load8U(string + j, 1n)) {
+      j += k
+    } else {
+      if (
+        Memory.compare(search + 2n, string + j + 2n, m - 2n) == 0n &&
+        WasmI32.load8U(search, 0n) == WasmI32.load8U(string + j, 0n)
+      ) {
+        return true
+      }
+      j += ell
+    }
+  }
+
+  return false
 }
 
 /**
@@ -811,10 +765,8 @@ export let contains = (search: String, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let startsWith = (search: String, string: String) => {
-  let (+) = WasmI32.add
-  let (>) = WasmI32.gtU
-  let (==) = WasmI32.eq
+provide let startsWith = (search: String, string: String) => {
+  from WasmI32 use { (+), gtU as (>), (==) }
   let pOrig = search
   let sOrig = string
 
@@ -847,11 +799,8 @@ export let startsWith = (search: String, string: String) => {
  * @since v0.1.0
  */
 @unsafe
-export let endsWith = (search: String, string: String) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (>) = WasmI32.gtU
-  let (==) = WasmI32.eq
+provide let endsWith = (search: String, string: String) => {
+  from WasmI32 use { (+), (-), gtU as (>), (==) }
   let pOrig = search
   let sOrig = string
 
@@ -885,17 +834,13 @@ export let endsWith = (search: String, string: String) => {
  * @since v0.5.4
  */
 @unsafe
-export let replaceFirst =
+provide let replaceFirst =
   (
     searchPattern: String,
     replacement: String,
     string: String,
   ) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (>) = WasmI32.gtU
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
+  from WasmI32 use { (+), (-), gtU as (>), ltU as (<), (==) }
 
   let mut patternPtr = WasmI32.fromGrain(searchPattern)
   let mut stringPtr = WasmI32.fromGrain(string)
@@ -906,25 +851,19 @@ export let replaceFirst =
   let replacementLen = WasmI32.load(replacementPtr, 4n)
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
-    string
-  } else {
-    patternPtr += 8n
-    stringPtr += 8n
-    replacementPtr += 8n
+    return string
+  }
+  patternPtr += 8n
+  stringPtr += 8n
+  replacementPtr += 8n
 
-    let mut found = false
-    // Search for an instance of the string
-    let mut foundIndex = -1n
-    let stringEndPtr = stringPtr + stringLen - patternLen + 1n
-    for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
-      // check for match
-      foundIndex += 1n
-      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
-        found = true
-        break
-      }
-    }
-    if (found) {
+  // Search for an instance of the string
+  let mut foundIndex = -1n
+  let stringEndPtr = stringPtr + stringLen - patternLen + 1n
+  for (let mut i = stringPtr; i < stringEndPtr; i += 1n) {
+    // check for match
+    foundIndex += 1n
+    if (Memory.compare(i, patternPtr, patternLen) == 0n) {
       // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
       let strPtr = str + 8n
@@ -936,11 +875,11 @@ export let replaceFirst =
         stringLen - foundIndex
       )
       // Copy over the str
-      WasmI32.toGrain(str): String
-    } else {
-      string
+      return WasmI32.toGrain(str): String
     }
   }
+
+  return string
 }
 
 /**
@@ -956,17 +895,13 @@ export let replaceFirst =
  * @since v0.5.4
  */
 @unsafe
-export let replaceLast =
+provide let replaceLast =
   (
     searchPattern: String,
     replacement: String,
     string: String,
   ) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (>) = WasmI32.gtU
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
+  from WasmI32 use { (+), (-), gtU as (>), ltU as (<), (==) }
 
   let mut patternPtr = WasmI32.fromGrain(searchPattern)
   let mut stringPtr = WasmI32.fromGrain(string)
@@ -978,25 +913,20 @@ export let replaceLast =
 
   // Bail if search str is longer than the string
   if (stringLen < patternLen) {
-    string
-  } else {
-    patternPtr += 8n
-    stringPtr += 8n
-    replacementPtr += 8n
+    return string
+  }
+  patternPtr += 8n
+  stringPtr += 8n
+  replacementPtr += 8n
 
-    let mut found = false
-    // Search for an instance of the string
-    let stringEndPtr = stringPtr + stringLen - patternLen
-    let mut foundIndex = stringLen - patternLen + 1n
-    for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
-      // check for match
-      foundIndex -= 1n
-      if (Memory.compare(i, patternPtr, patternLen) == 0n) {
-        found = true
-        break
-      }
-    }
-    if (found) {
+  let mut found = false
+  // Search for an instance of the string
+  let stringEndPtr = stringPtr + stringLen - patternLen
+  let mut foundIndex = stringLen - patternLen + 1n
+  for (let mut i = stringEndPtr; i > stringPtr - 1n; i -= 1n) {
+    // check for match
+    foundIndex -= 1n
+    if (Memory.compare(i, patternPtr, patternLen) == 0n) {
       // Create the new string
       let str = allocateString(stringLen - patternLen + replacementLen)
       let strPtr = str + 8n
@@ -1008,11 +938,11 @@ export let replaceLast =
         stringLen - foundIndex
       )
       // Copy over the str
-      WasmI32.toGrain(str): String
-    } else {
-      string
+      return WasmI32.toGrain(str): String
     }
   }
+
+  return string
 }
 
 /**
@@ -1028,19 +958,13 @@ export let replaceLast =
  * @since v0.5.4
  */
 @unsafe
-export let replaceAll =
+provide let replaceAll =
   (
     searchPattern: String,
     replacement: String,
     string: String,
   ) => {
-  let (*) = WasmI32.mul
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (>) = WasmI32.gtU
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
-  let (>>) = WasmI32.shrS
+  from WasmI32 use { (+), (-), (*), (>>), gtU as (>), ltU as (<), (==) }
 
   let mut patternPtr = WasmI32.fromGrain(searchPattern)
   let mut stringPtr = WasmI32.fromGrain(string)
@@ -1071,6 +995,8 @@ export let replaceAll =
         found = true
         foundCount += 1n
         foundIndexes = [tagSimpleNumber(foundIndex), ...foundIndexes]
+        foundIndex -= patternLen - 1n
+        i -= patternLen - 1n
       }
     }
     if (found) {
@@ -1114,13 +1040,14 @@ let _OFFSET_NAME = "offset"
 
 @unsafe
 let grainToWasmNumber = (num, name) => {
+  from WasmI32 use { (&), (>>), (<) }
   let num = WasmI32.fromGrain(num)
-  if (WasmI32.eqz(WasmI32.and(num, 1n))) {
+  if (WasmI32.eqz(num & 1n)) {
     let str = " argument must be an integer"
     throw Exception.InvalidArgument(name ++ str)
   }
-  let num = WasmI32.shrS(num, 1n)
-  if (WasmI32.ltS(num, 0n)) {
+  let num = num >> 1n
+  if (num < 0n) {
     let str = " argument must be non-negative"
     throw Exception.InvalidArgument(name ++ str)
   }
@@ -1129,12 +1056,7 @@ let grainToWasmNumber = (num, name) => {
 
 @unsafe
 let utf16Length = (s: String) => {
-  let (>>>) = WasmI32.shrU
-  let (<<) = WasmI32.shl
-  let (+) = WasmI32.add
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
+  from WasmI32 use { (+), (&), (>>>), (<<), ltU as (<), (==) }
 
   let size = WasmI32.fromGrain(byteLength(s)) >>> 1n
   let len = WasmI32.fromGrain(length(s)) >>> 1n
@@ -1192,14 +1114,7 @@ let encodeAtHelp =
     dest: Bytes,
     destPos: Number,
   ) => {
-  let (>>>) = WasmI32.shrU
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtS
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
-  let (+) = WasmI32.add
+  from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), (>), leU as (<=), (==) }
   let byteSize = WasmI32.fromGrain(byteLength(string)) >>> 1n
   let len = WasmI32.fromGrain(length(string)) >>> 1n
 
@@ -1446,9 +1361,12 @@ let encodeAtHelp =
  * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
  *
+ * @throws InvalidArgument(String): When `destPos` is not an integer
+ * @throws InvalidArgument(String): When `destPos` is negative
+ *
  * @since v0.4.0
  */
-export let encodeAt = (string, encoding, dest, destPos) => {
+provide let encodeAt = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, false, dest, destPos)
 }
 
@@ -1461,9 +1379,12 @@ export let encodeAt = (string, encoding, dest, destPos) => {
  * @param destPos: The location in the byte sequence to write the output
  * @returns A copy of the input bytes with the encoded string replaced at the given position
  *
+ * @throws InvalidArgument(String): When `destPos` is not an integer
+ * @throws InvalidArgument(String): When `destPos` is negative
+ *
  * @since v0.4.0
  */
-export let encodeAtWithBom = (string, encoding, dest, destPos) => {
+provide let encodeAtWithBom = (string, encoding, dest, destPos) => {
   encodeAtHelp(string, encoding, true, dest, destPos)
 }
 
@@ -1481,7 +1402,7 @@ let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
     } else {
       0
     })
-  let (>>>) = WasmI32.shrU
+  from WasmI32 use { (>>>) }
   let bytes = WasmI32.toGrain(allocateBytes(WasmI32.fromGrain(size) >>> 1n))
   encodeAtHelp(string, encoding, includeBom, bytes, 0)
 }
@@ -1495,7 +1416,7 @@ let encodeHelp = (string: String, encoding: Encoding, includeBom: Bool) => {
  *
  * @since v0.4.0
  */
-export let encode = (string: String, encoding: Encoding) => {
+provide let encode = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, false)
 }
 
@@ -1508,7 +1429,7 @@ export let encode = (string: String, encoding: Encoding) => {
  *
  * @since v0.4.0
  */
-export let encodeWithBom = (string: String, encoding: Encoding) => {
+provide let encodeWithBom = (string: String, encoding: Encoding) => {
   encodeHelp(string, encoding, true)
 }
 
@@ -1516,14 +1437,7 @@ export let encodeWithBom = (string: String, encoding: Encoding) => {
 
 @unsafe
 let writeUtf8CodePoint = (ptr, codePoint) => {
-  let (>>>) = WasmI32.shrU
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
-  let (+) = WasmI32.add
-  let (<) = WasmI32.ltU
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
+  from WasmI32 use { (+), (-), (&), (|), (>>>), ltU as (<), leU as (<=), (==) }
   if (codePoint <= 0x007Fn) {
     // Code points in the ASCII range are written as just one byte with the
     // leading bit equal to zero (0xxxxxxx). Just store the value as one byte
@@ -1573,9 +1487,7 @@ let writeUtf8CodePoint = (ptr, codePoint) => {
 
 @unsafe
 let bytesHaveBom = (bytes: Bytes, encoding: Encoding, start: WasmI32) => {
-  let (+) = WasmI32.add
-  let (==) = WasmI32.eq
-  let (>=) = WasmI32.geU
+  from WasmI32 use { (+), geU as (>=), (==) }
   let ptr = WasmI32.fromGrain(bytes)
   let bytesSize = WasmI32.load(ptr, 4n)
   let ptr = ptr + start
@@ -1621,18 +1533,20 @@ let decodedLength =
     start: WasmI32,
     size: WasmI32,
   ) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (==) = WasmI32.eq
-  let (!=) = WasmI32.ne
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtU
-  let (|) = WasmI32.or
-  let (&) = WasmI32.and
-  let (>>>) = WasmI32.shrU
-  let (<<) = WasmI32.shl
-  let (>=) = WasmI32.geU
-  let (<=) = WasmI32.leU
+  from WasmI32 use {
+    (+),
+    (-),
+    (&),
+    (|),
+    (>>>),
+    (<<),
+    ltU as (<),
+    gtU as (>),
+    geU as (>=),
+    leU as (<=),
+    (==),
+    (!=),
+  }
   let ptr = WasmI32.fromGrain(bytes)
   let bytesSize = {
     let tmp = WasmI32.load(ptr, 4n) - start
@@ -1791,16 +1705,18 @@ let decodeRangeHelp =
     start: Number,
     size: Number,
   ) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (<) = WasmI32.ltU
-  let (|) = WasmI32.or
-  let (&) = WasmI32.and
-  let (>>>) = WasmI32.shrU
-  let (<<) = WasmI32.shl
-  let (>=) = WasmI32.geU
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
+  from WasmI32 use {
+    (+),
+    (-),
+    (&),
+    (|),
+    (>>>),
+    (<<),
+    ltU as (<),
+    geU as (>=),
+    leU as (<=),
+    (==),
+  }
   let start = grainToWasmNumber(start, _START_NAME)
   let size = grainToWasmNumber(size, _SIZE_NAME)
   let hasBom = bytesHaveBom(bytes, encoding, start)
@@ -1920,9 +1836,14 @@ let decodeRangeHelp =
  * @param size: The maximum number of bytes to decode
  * @returns The decoded string
  *
+ * @throws InvalidArgument(String): When `start` is not an integer
+ * @throws InvalidArgument(String): When `start` is negative
+ * @throws InvalidArgument(String): When `size` is not an integer
+ * @throws InvalidArgument(String): When `size` is negative
+ *
  * @since v0.4.0
  */
-export let decodeRange =
+provide let decodeRange =
   (
     bytes: Bytes,
     encoding: Encoding,
@@ -1941,9 +1862,14 @@ export let decodeRange =
  * @param size: The maximum number of bytes to decode
  * @returns The decoded string
  *
+ * @throws InvalidArgument(String): When `start` is not an integer
+ * @throws InvalidArgument(String): When `start` is negative
+ * @throws InvalidArgument(String): When `size` is not an integer
+ * @throws InvalidArgument(String): When `size` is negative
+ *
  * @since v0.4.0
  */
-export let decodeRangeKeepBom =
+provide let decodeRangeKeepBom =
   (
     bytes: Bytes,
     encoding: Encoding,
@@ -1969,7 +1895,7 @@ let decodeHelp = (bytes: Bytes, encoding: Encoding, skipBom: Bool) => {
  *
  * @since v0.4.0
  */
-export let decode = (bytes: Bytes, encoding: Encoding) => {
+provide let decode = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, true)
 }
 
@@ -1982,7 +1908,7 @@ export let decode = (bytes: Bytes, encoding: Encoding) => {
  *
  * @since v0.4.0
  */
-export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
+provide let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
   decodeHelp(bytes, encoding, false)
 }
 
@@ -1997,14 +1923,8 @@ export let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
  * @since v0.4.0
  */
 @unsafe
-export let forEachCodePoint = (fn: Number -> Void, str: String) => {
-  let (>>>) = WasmI32.shrU
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
-  let (+) = WasmI32.add
+provide let forEachCodePoint = (fn: Number -> Void, str: String) => {
+  from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
 
@@ -2055,14 +1975,8 @@ export let forEachCodePoint = (fn: Number -> Void, str: String) => {
  * @since v0.4.0
  */
 @unsafe
-export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
-  let (>>>) = WasmI32.shrU
-  let (-) = WasmI32.sub
-  let (&) = WasmI32.and
-  let (<) = WasmI32.ltU
-  let (<=) = WasmI32.leU
-  let (==) = WasmI32.eq
-  let (+) = WasmI32.add
+provide let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
+  from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
 
@@ -2102,13 +2016,7 @@ export let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
 
 @unsafe
 let trimString = (str: String, fromEnd: Bool) => {
-  let (>>>) = WasmI32.shrU
-  let (+) = WasmI32.add
-  let (*) = WasmI32.mul
-  let (-) = WasmI32.sub
-  let (<) = WasmI32.ltU
-  let (==) = WasmI32.eq
-  let (!=) = WasmI32.ne
+  from WasmI32 use { (+), (-), (*), (>>>), ltU as (<), (==), (!=) }
 
   let mut stringPtr = WasmI32.fromGrain(str)
   let byteLength = WasmI32.load(stringPtr, 4n)
@@ -2176,7 +2084,7 @@ let trimString = (str: String, fromEnd: Bool) => {
  *
  * @since v0.4.2
  */
-export let trimStart = (string: String) => trimString(string, false)
+provide let trimStart = (string: String) => trimString(string, false)
 /**
  * Trims the end of a string—removing any trailing whitespace characters.
  *
@@ -2187,7 +2095,7 @@ export let trimStart = (string: String) => trimString(string, false)
  *
  * @since v0.4.2
  */
-export let trimEnd = (string: String) => trimString(string, true)
+provide let trimEnd = (string: String) => trimString(string, true)
 /**
  * Trims a string—removing all leading and trailing whitespace characters.
  *
@@ -2198,4 +2106,4 @@ export let trimEnd = (string: String) => trimString(string, true)
  *
  * @since v0.4.2
  */
-export let trim = (string: String) => trimEnd(trimStart(string))
+provide let trim = (string: String) => trimEnd(trimStart(string))

@@ -1,3 +1,5 @@
+module FuncShadow
+
 let foo = () => "bar"
 print(foo())
 let foo = () => "baz"

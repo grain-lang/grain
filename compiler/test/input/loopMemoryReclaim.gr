@@ -1,3 +1,5 @@
+module LoopMemoryReclaim
+
 let f = () => {
   "this is a thirty-two byte string"
 }

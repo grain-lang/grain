@@ -1,0 +1,5 @@
+module Baz
+
+include "../quux/quux"
+from Quux use { quux }
+provide let baz = n => quux(n) + 1

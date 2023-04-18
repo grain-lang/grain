@@ -10,38 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Number from "number"
+include "number"
 ```
 
-## Constants
+## Values
 
-Number constant values.
-
-### Number.**nan**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-nan : Number
-```
-
-NaN represented as a Number value.
-
-### Number.**infinity**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
-</details>
-
-```grain
-infinity : Number
-```
-
-Infinity represented as a Number value.
+Functions and constants included in the Number module.
 
 ### Number.**pi**
 
@@ -82,19 +56,22 @@ e : Number
 
 Euler's number represented as a Number value.
 
-## Operations
+### Number.**(+)**
 
-Functions for operating on values of the Number type.
-
-### Number.**add**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (Number, Number) -> Number
+(+) : (x: Number, y: Number) -> Number
 ```
 
 Computes the sum of its operands.
@@ -112,15 +89,22 @@ Returns:
 |----|-----------|
 |`Number`|The sum of the two operands|
 
-### Number.**sub**
+### Number.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (Number, Number) -> Number
+(-) : (x: Number, y: Number) -> Number
 ```
 
 Computes the difference of its operands.
@@ -138,15 +122,22 @@ Returns:
 |----|-----------|
 |`Number`|The difference of the two operands|
 
-### Number.**mul**
+### Number.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (Number, Number) -> Number
+(*) : (x: Number, y: Number) -> Number
 ```
 
 Computes the product of its operands.
@@ -164,15 +155,22 @@ Returns:
 |----|-----------|
 |`Number`|The product of the two operands|
 
-### Number.**div**
+### Number.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (Number, Number) -> Number
+(/) : (x: Number, y: Number) -> Number
 ```
 
 Computes the quotient of its operands.
@@ -190,15 +188,22 @@ Returns:
 |----|-----------|
 |`Number`|The quotient of the two operands|
 
-### Number.**pow**
+### Number.**(\*\*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.5.4</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.5.4</code></td><td>Originally named `pow`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-pow : (Number, Number) -> Number
+(**) : (base: Number, power: Number) -> Number
 ```
 
 Computes the exponentiation of the given base and power.
@@ -224,7 +229,7 @@ No other changes yet.
 </details>
 
 ```grain
-exp : Number -> Number
+exp : (power: Number) -> Number
 ```
 
 Computes the exponentiation of Euler's number to the given power.
@@ -249,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-sqrt : Number -> Number
+sqrt : (x: Number) -> Number
 ```
 
 Computes the square root of its operand.
@@ -269,7 +274,7 @@ Returns:
 ### Number.**sign**
 
 ```grain
-sign : Number -> Number
+sign : (x: Number) -> Number
 ```
 
 Determine the positivity or negativity of a Number.
@@ -315,7 +320,7 @@ Number.sign(0) == 0
 </details>
 
 ```grain
-min : (Number, Number) -> Number
+min : (x: Number, y: Number) -> Number
 ```
 
 Returns the smaller of its operands.
@@ -348,7 +353,7 @@ Returns:
 </details>
 
 ```grain
-max : (Number, Number) -> Number
+max : (x: Number, y: Number) -> Number
 ```
 
 Returns the larger of its operands.
@@ -381,7 +386,7 @@ Returns:
 </details>
 
 ```grain
-ceil : Number -> Number
+ceil : (x: Number) -> Number
 ```
 
 Rounds its operand up to the next largest integer.
@@ -413,7 +418,7 @@ Returns:
 </details>
 
 ```grain
-floor : Number -> Number
+floor : (x: Number) -> Number
 ```
 
 Rounds its operand down to the largest integer less than the operand.
@@ -445,7 +450,7 @@ Returns:
 </details>
 
 ```grain
-trunc : Number -> Number
+trunc : (x: Number) -> Number
 ```
 
 Returns the integer part of its operand, removing any fractional value.
@@ -477,7 +482,7 @@ Returns:
 </details>
 
 ```grain
-round : Number -> Number
+round : (x: Number) -> Number
 ```
 
 Returns its operand rounded to its nearest integer.
@@ -502,7 +507,7 @@ No other changes yet.
 </details>
 
 ```grain
-abs : Number -> Number
+abs : (x: Number) -> Number
 ```
 
 Returns the absolute value of a number. That is, it returns `x` if `x` is positive or zero and the negation of `x` if `x` is negative.
@@ -527,7 +532,7 @@ No other changes yet.
 </details>
 
 ```grain
-neg : Number -> Number
+neg : (x: Number) -> Number
 ```
 
 Returns the negation of its operand.
@@ -552,7 +557,7 @@ No other changes yet.
 </details>
 
 ```grain
-isFloat : Number -> Bool
+isFloat : (x: Number) -> Bool
 ```
 
 Checks if a number is a floating point value.
@@ -577,7 +582,7 @@ No other changes yet.
 </details>
 
 ```grain
-isInteger : Number -> Bool
+isInteger : (x: Number) -> Bool
 ```
 
 Checks if a number is an integer.
@@ -602,7 +607,7 @@ No other changes yet.
 </details>
 
 ```grain
-isRational : Number -> Bool
+isRational : (x: Number) -> Bool
 ```
 
 Checks if a number is a non-integer rational value.
@@ -627,7 +632,7 @@ No other changes yet.
 </details>
 
 ```grain
-isFinite : Number -> Bool
+isFinite : (x: Number) -> Bool
 ```
 
 Checks if a number is finite.
@@ -653,7 +658,7 @@ No other changes yet.
 </details>
 
 ```grain
-isNaN : Number -> Bool
+isNaN : (x: Number) -> Bool
 ```
 
 Checks if a number is the float NaN value (Not A Number).
@@ -678,7 +683,7 @@ No other changes yet.
 </details>
 
 ```grain
-isInfinite : Number -> Bool
+isInfinite : (x: Number) -> Bool
 ```
 
 Checks if a number is infinite, that is either of floating point positive or negative infinity.
@@ -704,7 +709,7 @@ No other changes yet.
 </details>
 
 ```grain
-parseInt : (String, Number) -> Result<Number, String>
+parseInt : (string: String, radix: Number) -> Result<Number, String>
 ```
 
 Parses a string representation of an integer into a `Number` using the
@@ -736,7 +741,7 @@ No other changes yet.
 </details>
 
 ```grain
-parseFloat : String -> Result<Number, String>
+parseFloat : (string: String) -> Result<Number, String>
 ```
 
 Parses a string representation of a float into a `Number`. Underscores that appear
@@ -762,7 +767,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : String -> Result<Number, String>
+parse : (input: String) -> Result<Number, String>
 ```
 
 Parses a string representation of an integer, float, or rational into a `Number`.
@@ -795,7 +800,7 @@ Returns:
 </details>
 
 ```grain
-sin : Number -> Number
+sin : (radians: Number) -> Number
 ```
 
 Computes the sine of a number (in radians) using Chebyshev polynomials.
@@ -827,7 +832,7 @@ Returns:
 </details>
 
 ```grain
-cos : Number -> Number
+cos : (radians: Number) -> Number
 ```
 
 Computes the cosine of a number (in radians) using Chebyshev polynomials.
@@ -852,7 +857,7 @@ No other changes yet.
 </details>
 
 ```grain
-tan : Number -> Number
+tan : (radians: Number) -> Number
 ```
 
 Computes the tangent of a number (in radians) using Chebyshev polynomials.
@@ -877,7 +882,7 @@ No other changes yet.
 </details>
 
 ```grain
-gamma : Number -> Number
+gamma : (z: Number) -> Number
 ```
 
 Computes the gamma function of a value using Lanczos approximation.
@@ -908,7 +913,7 @@ No other changes yet.
 </details>
 
 ```grain
-factorial : Number -> Number
+factorial : (n: Number) -> Number
 ```
 
 Computes the product of consecutive integers for an integer input and computes the gamma function for non-integer inputs.
@@ -939,7 +944,7 @@ No other changes yet.
 </details>
 
 ```grain
-toRadians : Number -> Number
+toRadians : (degrees: Number) -> Number
 ```
 
 Converts degrees to radians.
@@ -964,7 +969,7 @@ No other changes yet.
 </details>
 
 ```grain
-toDegrees : Number -> Number
+toDegrees : (radians: Number) -> Number
 ```
 
 Converts radians to degrees.

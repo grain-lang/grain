@@ -103,8 +103,7 @@ let find_all_constructors:
 let find_value:
   (Env.t, Location.t, Identifier.t) => (Path.t, value_description);
 let find_module:
-  (Env.t, Location.t, Identifier.t, option(string)) =>
-  (Path.t, module_declaration);
+  (Env.t, Location.t, Identifier.t) => (Path.t, module_declaration);
 let lookup_module:
   (~load: bool=?, Env.t, Location.t, Identifier.t, option(string)) => Path.t;
 let find_modtype:
@@ -114,5 +113,3 @@ let type_attributes: Asttypes.attributes => Typedtree.attributes;
 
 let unbound_label_error: (Env.t, Location.loc(Identifier.t)) => 'a;
 let unbound_constructor_error: (Env.t, Location.loc(Identifier.t)) => 'a;
-
-let type_expr_to_core_type: (Env.t, type_expr) => Typedtree.core_type;

@@ -1,3 +1,5 @@
+module CounterBox
+
 let counter = {
   let count = box(0)
   let rec counterHelp = () => {

@@ -1,24 +1,18 @@
 /**
- * @module Range: Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
- * @example import Range from "range"
+ * Utilities for working with ranges.
+ *
+ * A range represents an interval—a set of values with a beginning and an end.
+ *
+ * All functions in this module treat ranges as exclusive, but inclusive versions
+ * of all APIs are available in the `Inclusive` submodule.
+ *
+ * @example include "range"
+ *
  * @since v0.3.0
+ * @history v0.6.0: Treats all ranges as exclusive
  */
 
-/**
- * @section Types: Type declarations included in the Range module.
- */
-
-/**
- * Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
- */
-export enum Range {
-  Inclusive(Number, Number),
-  Exclusive(Number, Number),
-}
-
-/**
- * @section Values: Functions and constants included in the Range module.
- */
+module Range
 
 /**
  * Checks if the given number is within the range.
@@ -27,55 +21,51 @@ export enum Range {
  * @param range: The range to check within
  * @returns Whether or not the value is within range
  *
- * @example Range.inRange(1, Range.Inclusive(0, 2)) == true
- * @example Range.inRange(10, Range.Inclusive(0, 2)) == false
+ * @example Range.inRange(1, { rangeStart: 0, rangeEnd: 2 }) == true
+ * @example Range.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
  *
  * @since v0.3.0
+ * @history v0.6.0: Treats all ranges as exclusive
  */
-export let inRange = (value, range) => {
+provide let inRange = (value, range) => {
   match (range) {
-    Inclusive(lower, upper) when value >= lower && value <= upper => true,
-    Inclusive(upper, lower) when value >= lower && value <= upper => true,
-    Exclusive(lower, upper) when value >= lower && value < upper => true,
-    Exclusive(upper, lower) when value >= lower && value < upper => true,
+    { rangeStart: lower, rangeEnd: upper } when (
+      value >= lower && value < upper
+    ) =>
+      true,
+    { rangeStart: upper, rangeEnd: lower } when (
+      value >= lower && value < upper
+    ) =>
+      true,
     _ => false,
   }
 }
 
 /**
- * Calls the given function with each number in the range. For increasing ranges, the value is increased by `1` in each iteration, and for decreasing ranges, the value is decreased by `1`. The value is always changed by `1`, even if non-integer values were provided in the range.
+ * Calls the given function with each number in the range.
+ *
+ * For increasing ranges, the value is increased by `1` in each iteration,
+ * and for decreasing ranges, the value is decreased by `1`. The value is
+ * always changed by `1`, even if non-integer values were provided in the range.
  *
  * @param fn: The function to be executed on each number in the range
  * @param range: The range to iterate
  *
- * @example Range.forEach(val => print(val), Range.Exclusive(0, 2))
+ * @example Range.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
  *
  * @since v0.3.0
+ * @history v0.6.0: Treats all ranges as exclusive
  */
-export let forEach = (fn: Number -> Void, range) => {
+provide let forEach = (fn: Number -> Void, range) => {
   match (range) {
-    Inclusive(lower, upper) when lower <= upper => {
-      let mut idx = lower
-      while (idx <= upper) {
-        fn(idx)
-        idx += 1
-      }
-    },
-    Inclusive(upper, lower) => {
-      let mut idx = upper
-      while (idx >= lower) {
-        fn(idx)
-        idx -= 1
-      }
-    },
-    Exclusive(lower, upper) when lower <= upper => {
+    { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
       let mut idx = lower
       while (idx < upper) {
         fn(idx)
         idx += 1
       }
     },
-    Exclusive(upper, lower) => {
+    { rangeStart: upper, rangeEnd: lower } => {
       let mut idx = upper
       while (idx > lower) {
         fn(idx)
@@ -86,41 +76,32 @@ export let forEach = (fn: Number -> Void, range) => {
 }
 
 /**
- * Produces a list by calling the given function on each number included in the range. For increasing ranges, the value is increased by `1` in each iteration, and for decreasing ranges, the value is decreased by `1`. The value is always changed by `1`, even if non-integer values were provided in the range.
+ * Produces a list by calling the given function on each number included in the range.
+ *
+ * For increasing ranges, the value is increased by `1` in each iteration,
+ * and for decreasing ranges, the value is decreased by `1`. The value is
+ * always changed by `1`, even if non-integer values were provided in the range.
  *
  * @param fn: The function called on each number in the range that returns the value for the output list
  * @param range: The range to iterate
  * @returns A list containing all values returned from the `fn`
  *
- * @example Range.map(val => val * 2, Range.Inclusive(0, 2)) == [0, 2, 4]
+ * @example Range.map(val => val * 2, { rangeStart: 0, rangeEnd: 3 }) == [0, 2, 4]
  *
  * @since v0.3.2
+ * @history v0.6.0: Treats all ranges as exclusive
  */
-export let map = (fn, range) => {
+provide let map = (fn, range) => {
   let mut result = []
   match (range) {
-    Inclusive(lower, upper) when lower <= upper => {
-      let mut idx = upper
-      while (idx >= lower) {
-        result = [fn(idx), ...result]
-        idx -= 1
-      }
-    },
-    Inclusive(upper, lower) => {
-      let mut idx = lower
-      while (idx <= upper) {
-        result = [fn(idx), ...result]
-        idx += 1
-      }
-    },
-    Exclusive(lower, upper) when lower <= upper => {
+    { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
       let mut idx = upper - 1
       while (idx >= lower) {
         result = [fn(idx), ...result]
         idx -= 1
       }
     },
-    Exclusive(upper, lower) => {
+    { rangeStart: upper, rangeEnd: lower } => {
       let mut idx = lower + 1
       while (idx <= upper) {
         result = [fn(idx), ...result]
@@ -129,4 +110,107 @@ export let map = (fn, range) => {
     },
   }
   result
+}
+
+provide module Inclusive {
+  /**
+   * Checks if the given number is within the range.
+   *
+   * @param value: The number being checked
+   * @param range: The range to check within
+   * @returns Whether or not the value is within range
+   *
+   * @example Range.Inclusive.inRange(1, { rangeStart: 0, rangeEnd: 1 }) == true
+   * @example Range.Inclusive.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
+   *
+   * @since v0.6.0
+   * @history v0.3.0: Root APIs originally handled Inclusive & Exclusive variants
+   */
+
+  provide let inRange = (value, range) => {
+    match (range) {
+      { rangeStart: lower, rangeEnd: upper } when (
+        value >= lower && value <= upper
+      ) =>
+        true,
+      { rangeStart: upper, rangeEnd: lower } when (
+        value >= lower && value <= upper
+      ) =>
+        true,
+      _ => false,
+    }
+  }
+
+  /**
+   * Calls the given function with each number in the range.
+   *
+   * For increasing ranges, the value is increased by `1` in each iteration,
+   * and for decreasing ranges, the value is decreased by `1`. The value is
+   * always changed by `1`, even if non-integer values were provided in the range.
+   *
+   * @param fn: The function to be executed on each number in the range
+   * @param range: The range to iterate
+   *
+   * @example Range.Inclusive.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
+   *
+   * @since v0.3.0
+   * @history v0.3.0: Root APIs originally handled Inclusive & Exclusive variants
+   */
+
+  provide let forEach = (fn: Number -> Void, range) => {
+    match (range) {
+      { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
+        let mut idx = lower
+        while (idx <= upper) {
+          fn(idx)
+          idx += 1
+        }
+      },
+      { rangeStart: upper, rangeEnd: lower } => {
+        let mut idx = upper
+        while (idx >= lower) {
+          fn(idx)
+          idx -= 1
+        }
+      },
+    }
+  }
+
+  /**
+   * Produces a list by calling the given function on each number included in the range.
+   *
+   * For increasing ranges, the value is increased by `1` in each iteration,
+   * and for decreasing ranges, the value is decreased by `1`. The value is
+   * always changed by `1`, even if non-integer values were provided in the range.
+   *
+   * @param fn: The function called on each number in the range that returns the value for the output list
+   * @param range: The range to iterate
+   * @returns A list containing all values returned from the `fn`
+   *
+   * @example Range.Inclusive.map(val => val * 2, { rangeStart: 0, rangeEnd: 2 }) == [0, 2, 4]
+   *
+   * @since v0.3.2
+   * @history v0.3.0: Root APIs originally handled Inclusive & Exclusive variants
+   */
+
+  provide let map = (fn, range) => {
+    let mut result = []
+    match (range) {
+      { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
+        let mut idx = upper
+        while (idx >= lower) {
+          result = [fn(idx), ...result]
+          idx -= 1
+        }
+      },
+      { rangeStart: upper, rangeEnd: lower } => {
+        let mut idx = lower
+        while (idx <= upper) {
+          result = [fn(idx), ...result]
+          idx += 1
+        }
+      },
+    }
+    result
+  }
 }

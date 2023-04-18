@@ -1,24 +1,18 @@
 /* grainc-flags --no-pervasives */
+module Equal
 
-import WasmI32, {
-  eq as (==),
-  ne as (!=),
-  and as (&),
-  xor as (^),
-  add as (+),
-  sub as (-),
-  mul as (*),
-  ltS as (<),
-  remS as (%),
-  shl as (<<),
-} from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Tags from "runtime/unsafe/tags"
-import { isNumber, numberEqual } from "runtime/numbers"
+include "runtime/unsafe/wasmi32" as WasmI32
+from WasmI32 use { (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
+include "runtime/unsafe/wasmi64" as WasmI64
+include "runtime/unsafe/wasmf32" as WasmF32
+include "runtime/unsafe/tags" as Tags
+include "runtime/numbers" as Numbers
+from Numbers use { isNumber, numberEqual }
 
-primitive (!): Bool -> Bool = "@not"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (&&): (Bool, Bool) -> Bool = "@and"
+primitive (!) = "@not"
+primitive (||) = "@or"
+primitive (&&) = "@and"
+primitive ignore = "@ignore"
 
 @unsafe
 let cycleMarker = 0x80000000n
@@ -135,9 +129,8 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         let first = xlength - extra
         let mut result = true
         for (let mut i = 0n; i < first; i += 8n) {
-          if (
-            WasmI64.ne(WasmI64.load(xptr + i, 8n), WasmI64.load(yptr + i, 8n))
-          ) {
+          from WasmI64 use { (!=) }
+          if (WasmI64.load(xptr + i, 8n) != WasmI64.load(yptr + i, 8n)) {
             result = false
             break
           }
@@ -184,6 +177,20 @@ let rec heapEqualHelp = (heapTag, xptr, yptr) => {
         result
       }
     },
+    t when (
+      t == Tags._GRAIN_UINT32_HEAP_TAG || t == Tags._GRAIN_INT32_HEAP_TAG
+    ) => {
+      let xval = WasmI32.load(xptr, 4n)
+      let yval = WasmI32.load(yptr, 4n)
+      xval == yval
+    },
+    // Float32 is handled by equalHelp directly
+    t when t == Tags._GRAIN_UINT64_HEAP_TAG => {
+      from WasmI64 use { (==) }
+      let xval = WasmI64.load(xptr, 8n)
+      let yval = WasmI64.load(yptr, 8n)
+      xval == yval
+    },
     _ => {
       // No other implementation
       xptr == yptr
@@ -200,6 +207,12 @@ equalHelp = (x, y) => {
   } else if (isNumber(x)) {
     // Numbers have special equality rules, e.g. NaN != NaN
     numberEqual(x, y)
+  } else if (WasmI32.load(x, 0n) == Tags._GRAIN_FLOAT32_HEAP_TAG) {
+    // Short circuit for Float32 to correctly handle NaN != NaN
+    let xval = WasmF32.load(x, 4n)
+    let yval = WasmF32.load(y, 4n)
+    from WasmF32 use { (==) }
+    xval == yval
   } else {
     // Handle all other heap allocated things
     // Can short circuit if pointers are the same
@@ -207,7 +220,20 @@ equalHelp = (x, y) => {
   }
 }
 
+/**
+ * Check that two values are equal. This checks for structural equality,
+ * so it also works for comparing things like tuples and lists.
+ *
+ * @param value1: The first operand
+ * @param value2: The second operand
+ * @returns `true` if the values are structurally equal or `false` otherwise
+ *
+ * @since v0.1.0
+ */
 @unsafe
-export let equal = (x: a, y: a) => {
-  equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+provide let equal = (x: a, y: a) => {
+  let value = equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+  ignore(x)
+  ignore(y)
+  value
 }

@@ -21,9 +21,4 @@ module TailCallsArg: Anf_mapper.MapArgument = {
 
 module TailCallsMapper = Anf_mapper.MakeMap(TailCallsArg);
 
-let optimize = anfprog =>
-  if (Grain_utils.Config.experimental_tail_call^) {
-    TailCallsMapper.map_anf_program(anfprog);
-  } else {
-    anfprog;
-  };
+let optimize = anfprog => TailCallsMapper.map_anf_program(anfprog);

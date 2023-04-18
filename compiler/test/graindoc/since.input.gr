@@ -1,0 +1,44 @@
+module SinceDoc
+
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * @since v0.1.0
+ */
+provide let sincePrev = (index, array) => 1
+
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * @since v0.2.0
+ */
+provide let sinceCurrent = (index, array) => 1
+
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * @since v0.3.0
+ */
+provide let sinceNext = (index, array) => 1
+
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * @since v1.1.1
+ */
+provide let sinceAllNumbers = (index, array) => 1
+
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * @since 1.1.1
+ */
+provide let sinceWithoutV = (index, array) => 1
+
+/**
+ * An alias for normal syntactic array access, i.e. `array[n]`.
+ *
+ * @since 2.2.2
+ */
+provide let sinceWithoutVNext = (index, array) => 1
+

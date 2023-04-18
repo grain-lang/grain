@@ -1,4 +1,5 @@
-/* grainc-flags --experimental-wasm-tail-call */
+module SinisterTailCall
+
 // Contrived example to test *ADVANCED* tail calls
 
 let rec isEvenHelp = (n, b) => {
@@ -9,7 +10,6 @@ let rec isEvenHelp = (n, b) => {
     isOdd(n - 1)
   }
 },
-
 isOddHelp = (n, b) => {
   if (n == 1) {
     b
@@ -18,8 +18,11 @@ isOddHelp = (n, b) => {
     isEven(n - 1)
   }
 },
-
-isEven = (n) => { isEvenHelp(n, true) },
-isOdd = (n) => { isOddHelp(n, true) };
+isEven = n => {
+  isEvenHelp(n, true)
+},
+isOdd = n => {
+  isOddHelp(n, true)
+}
 
 print(isOdd(999999))

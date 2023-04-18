@@ -1,41 +1,34 @@
 /**
- * @module Char: Utilities for working with the Char type.
+ * Utilities for working with the Char type.
  *
  * The Char type represents a single [Unicode scalar value](https://www.unicode.org/glossary/#unicode_scalar_value).
  *
- * @example import Char from "char"
+ * @example include "char"
  *
  * @since 0.3.0
  */
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Errors from "runtime/unsafe/errors"
-import Tags from "runtime/unsafe/tags"
-import {
-  tagSimpleNumber,
-  tagChar,
-  untagChar,
-  allocateString,
-} from "runtime/dataStructures"
+module Char
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/errors"
+include "runtime/dataStructures"
+from DataStructures use { tagSimpleNumber, tagChar, untagChar, allocateString }
 
 exception MalformedUtf8
-
-/**
- * @section Values: Functions and constants included in the Char module.
- */
 
 /**
  * The minimum valid Unicode scalar value.
  *
  * @since 0.3.0
  */
-export let min = 0x0000
+provide let min = 0x0000
 /**
  * The maximum valid Unicode scalar value.
  *
  * @since 0.3.0
  */
-export let max = 0x10FFFF
+provide let max = 0x10FFFF
 
 /**
  * Determines whether the given character code is a valid Unicode scalar value.
@@ -45,7 +38,7 @@ export let max = 0x10FFFF
  *
  * @since 0.3.0
  */
-export let isValid = charCode => {
+provide let isValid = charCode => {
   charCode >= min &&
     (charCode <= 0xD7FF || charCode >= 0xE000) &&
     charCode <= max
@@ -60,7 +53,7 @@ export let isValid = charCode => {
  * @since 0.3.0
  */
 @unsafe
-export let code = (char: Char) => {
+provide let code = (char: Char) => {
   let usv = untagChar(char)
 
   // This could save an instruction by combining the two tagging operations,
@@ -79,9 +72,8 @@ export let code = (char: Char) => {
  * @since 0.3.0
  */
 @unsafe
-export let fromCode = (usv: Number) => {
-  let (-) = WasmI32.sub
-  let (<<) = WasmI32.shl
+provide let fromCode = (usv: Number) => {
+  from WasmI32 use { (-), (<<) }
 
   if (!isValid(usv)) {
     throw InvalidArgument("Invalid character code")
@@ -92,10 +84,10 @@ export let fromCode = (usv: Number) => {
 
   // Here we use a math trick to avoid fully untagging and retagging.
   // Simple numbers are represented as 2n + 1 and chars are represented as
-  // 8n + 2. Quick reminder that shifting left is the equivalent of multiplying
-  // by 2, and that _GRAIN_CHAR_TAG_TYPE is equal to 2:
-  // 4(2n + 1) - 2 = 8n + 2
-  let char = (usv << 2n) - Tags._GRAIN_CHAR_TAG_TYPE
+  // (2^8)n + 2. Quick reminder that shifting left is the equivalent of multiplying
+  // by 2
+  // 2^7(2n + 1) - (2^7 - 2) = (2^8)n + 2
+  let char = (usv << 7n) - 126n
 
   WasmI32.toGrain(char): Char
 }
@@ -110,7 +102,7 @@ export let fromCode = (usv: Number) => {
  *
  * @since 0.3.0
  */
-export let succ = char => {
+provide let succ = char => {
   let codePoint = code(char)
   if (codePoint == max) {
     fail "no valid Unicode scalar value past U+10FFF"
@@ -131,7 +123,7 @@ export let succ = char => {
  *
  * @since 0.3.0
  */
-export let pred = char => {
+provide let pred = char => {
   let codePoint = code(char)
   if (codePoint == min) {
     fail "no valid Unicode scalar value below U+0000"
@@ -151,16 +143,18 @@ export let pred = char => {
  * @since 0.3.0
  */
 @unsafe
-export let toString = (char: Char) => {
-  let (+) = WasmI32.add
-  let (-) = WasmI32.sub
-  let (*) = WasmI32.mul
-  let (&) = WasmI32.and
-  let (|) = WasmI32.or
-  let (>>>) = WasmI32.shrU
-  let (<) = WasmI32.ltU
-  let (>) = WasmI32.gtU
-  let (<=) = WasmI32.leU
+provide let toString = (char: Char) => {
+  from WasmI32 use {
+    (+),
+    (-),
+    (*),
+    (&),
+    (|),
+    (>>>),
+    ltU as (<),
+    gtU as (>),
+    leU as (<=),
+  }
 
   let usv = untagChar(char)
 
@@ -196,4 +190,72 @@ export let toString = (char: Char) => {
   }
 
   result
+}
+
+/**
+ * Checks if the first character is less than the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is less than the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<) = (x: Char, y: Char) => {
+  from WasmI32 use { (<) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x < y
+}
+
+/**
+ * Checks if the first character is less than or equal to the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is less than or equal to the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (<=) = (x: Char, y: Char) => {
+  from WasmI32 use { (<=) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x <= y
+}
+
+/**
+ * Checks if the first character is greater than the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is greater than the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>) = (x: Char, y: Char) => {
+  from WasmI32 use { (>) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x > y
+}
+
+/**
+ * Checks if the first character is greater than or equal to the second character by Unicode scalar value.
+ *
+ * @param x: The first character
+ * @param y: The second character
+ * @returns `true` if the first character is greater than or equal to the second character or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let (>=) = (x: Char, y: Char) => {
+  from WasmI32 use { (>=) }
+  let x = WasmI32.fromGrain(x)
+  let y = WasmI32.fromGrain(y)
+  x >= y
 }

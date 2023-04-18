@@ -1,0 +1,36 @@
+module Includes
+
+include "runtime/unsafe/memory"
+include "runtime/unsafe/tags"
+include "list"
+include "option" as Opt
+include "option" as
+ Opt
+// TODO(#1627): This comment disappears
+include /* special include */ "array"
+include "array" as  /* special include */ Foo
+from List use { length, map, forEach as each }
+from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
+from Opt use { MutableOpt, /* comment1 */ ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias }
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use { 
+  add as (+),
+  mul as (*),
+  xor as (^),
+  shl as (<<)
+}
+
+provide foreign wasm storage_read: (WasmI64, WasmI64, WasmI64) -> WasmI64 as storageRead from "env"
+
+
+include "runtime/unsafe/wasmi32"
+from WasmI32 use {
+  eq, // comment1
+  // comment 3
+  and as (&), // comment 2
+  or as (|)
+  // no signed imports, as care should be taken to use signed or unsigned operators
+}
+
+provide foreign wasm promise_results_count: () -> WasmI64 as promiseResultsCount from "env"

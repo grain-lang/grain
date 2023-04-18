@@ -1,8 +1,11 @@
-import * from "float32"
+module Float32Test
+
+include "float32"
+from Float32 use *
 
 // Constants Test
 // smoke test:
-assert gt(infinity, 100000000.f)
+assert gt(infinity, 100000000.0f)
 // test infinity-specific semantics:
 assert toNumber(infinity) == toNumber(infinity)
 assert toNumber(infinity) == toNumber(infinity) - 1
@@ -14,6 +17,8 @@ assert tau == 6.2831853f
 
 assert e == 2.7182817f
 // Operations Tests
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(5) == 5.0f
 assert fromNumber(0) == 0.0f
 
@@ -28,3 +33,10 @@ assert !gt(5.0f, 5.0f)
 assert !gte(5.0f, 22.0f)
 assert !lt(5.0f, -17.0f)
 assert !lte(5.0f, 4.0f)
+
+assert compare(1.0f, 2.0f) < 0
+assert compare(3.0f, 2.0f) > 0
+assert compare(1.0f, 1.0f) == 0
+assert compare(nan, nan) == 0
+assert compare(1.0f, nan) > 0
+assert compare(nan, 1.0f) < 0

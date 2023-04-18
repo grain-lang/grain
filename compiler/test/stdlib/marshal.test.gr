@@ -1,6 +1,9 @@
-import * from "marshal"
-import Bytes from "bytes"
-import Result from "result"
+module MarshalTest
+
+include "marshal"
+from Marshal use *
+include "bytes"
+include "result"
 
 let roundtripOk = value => unmarshal(marshal(value)) == Ok(value)
 
@@ -9,9 +12,15 @@ assert roundtripOk(true)
 assert roundtripOk(42)
 assert roundtripOk(42l)
 assert roundtripOk(42L)
-assert roundtripOk(42.)
-assert roundtripOk(42.f)
-assert roundtripOk(42.d)
+assert roundtripOk(42ul)
+assert roundtripOk(42uL)
+assert roundtripOk(42.0)
+assert roundtripOk(42.0f)
+assert roundtripOk(42.0d)
+assert roundtripOk(-1s)
+assert roundtripOk(-1S)
+assert roundtripOk(42us)
+assert roundtripOk(42uS)
 assert roundtripOk(1/3)
 assert roundtripOk('c')
 assert roundtripOk("unicode string 💯🌾🙏🏽")

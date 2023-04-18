@@ -1,47 +1,59 @@
 /**
- * @module Int64: Utilities for working with the Int64 type.
- * @example import Int64 from "int64"
+ * Utilities for working with the Int64 type.
+ *
+ * @example include "int64"
  *
  * @since v0.2.0
  */
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import Exception from "runtime/exception"
 
-import { newInt64 } from "runtime/dataStructures"
+module Int64
 
-import {
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+from WasmI64 use {
+  (==),
+  (!=),
+  (&),
+  (|),
+  (^),
+  (+),
+  (-),
+  (*),
+  (/),
+  (<<),
+  (>>),
+  (<),
+  (<=),
+  (>),
+  (>=),
+}
+include "runtime/exception"
+
+include "runtime/dataStructures"
+from DataStructures use { newInt64 }
+
+include "runtime/numbers"
+from Numbers use {
   coerceNumberToInt64 as fromNumber,
   coerceInt64ToNumber as toNumber,
-} from "runtime/numbers"
+}
+
+provide { fromNumber, toNumber }
 
 /**
- * @section Conversions: Functions for converting between Numbers and the Int64 type.
- */
-
-/**
- * Converts a Number to an Int64.
+ * Converts a Uint64 to an Int64.
  *
  * @param number: The value to convert
- * @returns The Number represented as an Int64
+ * @returns The Uint64 represented as an Int64
  *
- * @since v0.2.0
+ * @since v0.6.0
  */
-export fromNumber
-
-/**
- * Converts an Int64 to a Number.
- *
- * @param value: The value to convert
- * @returns The Int64 represented as a Number
- *
- * @since v0.2.0
- */
-export toNumber
-
-/**
- * @section Operations: Mathematical operations for Int64 values.
- */
+@unsafe
+provide let fromUint64 = (x: Uint64) => {
+  let x = WasmI64.load(WasmI32.fromGrain(x), 8n)
+  let result = newInt64(x)
+  WasmI32.toGrain(result): Int64
+}
 
 /**
  * Increments the value by one.
@@ -52,9 +64,9 @@ export toNumber
  * @since v0.2.0
  */
 @unsafe
-export let incr = (value: Int64) => {
+provide let incr = (value: Int64) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newInt64(WasmI64.add(WasmI64.load(value, 8n), 1N))
+  let ptr = newInt64(WasmI64.load(value, 8n) + 1N)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -67,9 +79,9 @@ export let incr = (value: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let decr = (value: Int64) => {
+provide let decr = (value: Int64) => {
   let value = WasmI32.fromGrain(value)
-  let ptr = newInt64(WasmI64.sub(WasmI64.load(value, 8n), 1N))
+  let ptr = newInt64(WasmI64.load(value, 8n) - 1N)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -83,10 +95,10 @@ export let decr = (value: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let add = (x: Int64, y: Int64) => {
+provide let add = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.add(xv, yv))
+  let ptr = newInt64(xv + yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -100,10 +112,10 @@ export let add = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let sub = (x: Int64, y: Int64) => {
+provide let sub = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.sub(xv, yv))
+  let ptr = newInt64(xv - yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -117,10 +129,10 @@ export let sub = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let mul = (x: Int64, y: Int64) => {
+provide let mul = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.mul(xv, yv))
+  let ptr = newInt64(xv * yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -134,27 +146,10 @@ export let mul = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let div = (x: Int64, y: Int64) => {
+provide let div = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.divS(xv, yv))
-  WasmI32.toGrain(ptr): Int64
-}
-
-/**
- * Computes the quotient of its operands using unsigned division.
- *
- * @param x: The first operand
- * @param y: The second operand
- * @returns The quotient of its operands
- *
- * @since v0.2.0
- */
-@unsafe
-export let divU = (x: Int64, y: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.divU(xv, yv))
+  let ptr = newInt64(xv / yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -168,34 +163,17 @@ export let divU = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let rem = (x: Int64, y: Int64) => {
+provide let rem = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
   let ptr = newInt64(WasmI64.remS(xv, yv))
   WasmI32.toGrain(ptr): Int64
 }
 
-/**
- * Computes the remainder of the division of its operands using unsigned division.
- *
- * @param x: The first operand
- * @param y: The second operand
- * @returns The remainder of its operands
- *
- * @since v0.2.0
- */
-@unsafe
-export let remU = (x: Int64, y: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.remU(xv, yv))
-  WasmI32.toGrain(ptr): Int64
-}
-
 @unsafe
 let abs = n => {
-  let mask = WasmI64.shrS(n, 63N)
-  WasmI64.sub(WasmI64.xor(n, mask), mask)
+  let mask = n >> 63N
+  (n ^ mask) - mask
 }
 
 /**
@@ -211,7 +189,7 @@ let abs = n => {
  * @since v0.2.0
  */
 @unsafe
-export let mod = (x: Int64, y: Int64) => {
+provide let mod = (x: Int64, y: Int64) => {
   let xval = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yval = WasmI64.load(WasmI32.fromGrain(y), 8n)
 
@@ -219,25 +197,17 @@ export let mod = (x: Int64, y: Int64) => {
     throw Exception.ModuloByZero
   }
 
-  let ptr = if (WasmI64.ltS(WasmI64.xor(xval, yval), 0N)) {
+  let ptr = if ((xval ^ yval) < 0N) {
     let xabs = abs(xval)
     let yabs = abs(yval)
     let mval = WasmI64.remS(xabs, yabs)
-    let mres = WasmI64.sub(yabs, mval)
-    newInt64(
-      if (WasmI64.ne(mval, 0N)) (
-        if (WasmI64.ltS(yval, 0N)) WasmI64.sub(0N, mres) else mres
-      ) else 0N
-    )
+    let mres = yabs - mval
+    newInt64(if (mval != 0N) (if (yval < 0N) 0N - mres else mres) else 0N)
   } else {
     newInt64(WasmI64.remS(xval, yval))
   }
   WasmI32.toGrain(ptr): Int64
 }
-
-/**
- * @section Bitwise operations: Functions for operating on bits of Int64 values.
- */
 
 /**
  * Rotates the bits of the value left by the given number of bits.
@@ -249,7 +219,7 @@ export let mod = (x: Int64, y: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let rotl = (value: Int64, amount: Int64) => {
+provide let rotl = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.rotl(xv, yv))
@@ -266,7 +236,7 @@ export let rotl = (value: Int64, amount: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let rotr = (value: Int64, amount: Int64) => {
+provide let rotr = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
   let ptr = newInt64(WasmI64.rotr(xv, yv))
@@ -283,10 +253,10 @@ export let rotr = (value: Int64, amount: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let shl = (value: Int64, amount: Int64) => {
+provide let shl = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
-  let ptr = newInt64(WasmI64.shl(xv, yv))
+  let ptr = newInt64(xv << yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -300,33 +270,12 @@ export let shl = (value: Int64, amount: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let shr = (value: Int64, amount: Int64) => {
+provide let shr = (value: Int64, amount: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
-  let ptr = newInt64(WasmI64.shrS(xv, yv))
+  let ptr = newInt64(xv >> yv)
   WasmI32.toGrain(ptr): Int64
 }
-
-/**
- * Shifts the bits of the value right by the given number of bits.
- *
- * @param value: The value to shift
- * @param amount: The amount to shift by
- * @returns The shifted value
- *
- * @since v0.2.0
- */
-@unsafe
-export let shrU = (value: Int64, amount: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(amount), 8n)
-  let ptr = newInt64(WasmI64.shrU(xv, yv))
-  WasmI32.toGrain(ptr): Int64
-}
-
-/**
- * @section Comparisons: Functions for comparing Int64 values.
- */
 
 /**
  * Checks if the first value is equal to the second value.
@@ -338,10 +287,10 @@ export let shrU = (value: Int64, amount: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let eq = (x: Int64, y: Int64) => {
+provide let eq = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.eq(xv, yv)
+  xv == yv
 }
 
 /**
@@ -354,10 +303,10 @@ export let eq = (x: Int64, y: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let ne = (x: Int64, y: Int64) => {
+provide let ne = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.ne(xv, yv)
+  xv != yv
 }
 
 /**
@@ -369,7 +318,7 @@ export let ne = (x: Int64, y: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let eqz = (value: Int64) => {
+provide let eqz = (value: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   WasmI64.eqz(xv)
 }
@@ -384,26 +333,10 @@ export let eqz = (value: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lt = (x: Int64, y: Int64) => {
+provide let lt = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.ltS(xv, yv)
-}
-
-/**
- * Checks if the first unsigned value is less than the second unsigned value.
- *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is less than the second value or `false` otherwise
- *
- * @since v0.5.0
- */
-@unsafe
-export let ltU = (x: Int64, y: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.ltU(xv, yv)
+  xv < yv
 }
 
 /**
@@ -416,26 +349,10 @@ export let ltU = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let gt = (x: Int64, y: Int64) => {
+provide let gt = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.gtS(xv, yv)
-}
-
-/**
- * Checks if the first unsigned value is greater than the second unsigned value.
- *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is greater than the second value or `false` otherwise
- *
- * @since v0.5.0
- */
-@unsafe
-export let gtU = (x: Int64, y: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.gtU(xv, yv)
+  xv > yv
 }
 
 /**
@@ -448,26 +365,10 @@ export let gtU = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lte = (x: Int64, y: Int64) => {
+provide let lte = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.leS(xv, yv)
-}
-
-/**
- * Checks if the first unsigned value is less than or equal to the second unsigned value.
- *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
- *
- * @since v0.5.0
- */
-@unsafe
-export let lteU = (x: Int64, y: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.leU(xv, yv)
+  xv <= yv
 }
 
 /**
@@ -480,31 +381,11 @@ export let lteU = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let gte = (x: Int64, y: Int64) => {
+provide let gte = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.geS(xv, yv)
+  xv >= yv
 }
-
-/**
- * Checks if the first unsigned value is greater than or equal to the second unsigned value.
- *
- * @param x: The first value
- * @param y: The second value
- * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
- *
- * @since v0.5.0
- */
-@unsafe
-export let gteU = (x: Int64, y: Int64) => {
-  let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  WasmI64.geU(xv, yv)
-}
-
-/**
- * @section Bitwise logic: Boolean operations on the bits of Int64 values.
- */
 
 /**
  * Computes the bitwise NOT of the given value.
@@ -515,9 +396,9 @@ export let gteU = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lnot = (value: Int64) => {
+provide let lnot = (value: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(value), 8n)
-  let ptr = newInt64(WasmI64.xor(xv, 0xffffffffffffffffN))
+  let ptr = newInt64(xv ^ 0xffffffffffffffffN)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -531,10 +412,10 @@ export let lnot = (value: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let land = (x: Int64, y: Int64) => {
+provide let land = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.and(xv, yv))
+  let ptr = newInt64(xv & yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -548,10 +429,10 @@ export let land = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lor = (x: Int64, y: Int64) => {
+provide let lor = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.or(xv, yv))
+  let ptr = newInt64(xv | yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -565,10 +446,10 @@ export let lor = (x: Int64, y: Int64) => {
  * @since v0.2.0
  */
 @unsafe
-export let lxor = (x: Int64, y: Int64) => {
+provide let lxor = (x: Int64, y: Int64) => {
   let xv = WasmI64.load(WasmI32.fromGrain(x), 8n)
   let yv = WasmI64.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newInt64(WasmI64.xor(xv, yv))
+  let ptr = newInt64(xv ^ yv)
   WasmI32.toGrain(ptr): Int64
 }
 
@@ -581,7 +462,7 @@ export let lxor = (x: Int64, y: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let clz = (value: Int64) => {
+provide let clz = (value: Int64) => {
   let nv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let ptr = newInt64(WasmI64.clz(nv))
   WasmI32.toGrain(ptr): Int64
@@ -596,7 +477,7 @@ export let clz = (value: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let ctz = (value: Int64) => {
+provide let ctz = (value: Int64) => {
   let nv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let ptr = newInt64(WasmI64.ctz(nv))
   WasmI32.toGrain(ptr): Int64
@@ -611,7 +492,7 @@ export let ctz = (value: Int64) => {
  * @since v0.4.0
  */
 @unsafe
-export let popcnt = (value: Int64) => {
+provide let popcnt = (value: Int64) => {
   let nv = WasmI64.load(WasmI32.fromGrain(value), 8n)
   let ptr = newInt64(WasmI64.popcnt(nv))
   WasmI32.toGrain(ptr): Int64

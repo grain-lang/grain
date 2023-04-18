@@ -1,5 +1,8 @@
-import * from "list"
-import String from "string"
+module ListTest
+
+include "list"
+from List use *
+include "string"
 
 let list = [1, 2, 3]
 

@@ -10,15 +10,15 @@ describe("exceptions", ({test, testSkip}) => {
   let assertRunError = makeErrorRunner(test_or_skip);
 
   assertRun("exception_1", "exception Foo; print(Foo)", "Foo\n");
-  assertSnapshot("exception_2", "export exception Foo; Foo");
+  assertSnapshot("exception_2", "provide exception Foo; Foo");
   assertRun(
     "exception_3",
-    "export exception Foo(Bool, Number); print(Foo(false, 6))",
+    "provide exception Foo(Bool, Number); print(Foo(false, 6))",
     "Foo(false, 6)\n",
   );
   assertSnapshot(
     "exception_4",
-    "export exception Foo(Bool, Number); export exception Bar; Bar",
+    "provide exception Foo(Bool, Number); provide exception Bar; Bar",
   );
   assertRunError(
     "throw_exception_1",
@@ -38,18 +38,28 @@ describe("exceptions", ({test, testSkip}) => {
   );
   assertRunError(
     "exception_register_1",
-    {|import Exception from "exception"; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
+    {|include "exception"; exception HorribleError; Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error"), _ => None }); let _ = throw HorribleError|},
     "Spooky error",
   );
   assertRunError(
     "exception_register_2",
     {|
-    import Exception from "exception"
+    include "exception"
     exception HorribleError
     Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 1"), _ => None })
     Exception.registerPrinter(e => match (e) { HorribleError => Some("Spooky error 2"), _ => None })
     let _ = throw HorribleError
     |},
     "Spooky error 2",
+  );
+  assertRun(
+    "record_exception_1",
+    {|exception Foo { msg: String, bar: Number }; print(Foo{msg: "Oops", bar: 1})|},
+    "Foo{\n  msg: \"Oops\",\n  bar: 1\n}\n",
+  );
+  assertRunError(
+    "record_exception_2",
+    {|include "exception"; exception Foo { msg: String, bar: Number }; Exception.registerPrinter(e => match (e) { Foo { msg, bar } => Some(msg ++ toString(bar)), _ => None }); let _ = throw Foo{msg: "Oops", bar: 1}|},
+    "Oops1",
   );
 });

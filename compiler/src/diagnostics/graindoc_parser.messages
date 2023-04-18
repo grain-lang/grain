@@ -1,0 +1,248 @@
+graindoc: SEMVER
+##
+## Ends in an error in state: 0.
+##
+## graindoc' -> . graindoc [ # ]
+##
+## The known suffix of the stack is as follows:
+##
+##
+
+Expected a description or Graindoc attribute.
+
+graindoc: TEXT TEXT
+##
+## Ends in an error in state: 4.
+##
+## description -> multiline_text_help . [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOF DEPRECATED ]
+## description -> multiline_text_help . eols [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help . EOL TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help . eols EOL TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## multiline_text_help
+##
+graindoc: SINCE SEMVER TEXT
+##
+## Ends in an error in state: 42.
+##
+## attributes_help -> attributes_help . option(eols) attribute [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## graindoc -> option(eols) description attributes_help . EOF [ # ]
+## graindoc -> option(eols) description attributes_help . eols EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## option(eols) description attributes_help
+##
+
+Expected a newline character.
+
+graindoc: TEXT EOL SEMVER
+##
+## Ends in an error in state: 5.
+##
+## eols -> EOL . [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help EOL . TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## multiline_text_help EOL
+##
+graindoc: TEXT EOL EOL SEMVER
+##
+## Ends in an error in state: 8.
+##
+## eols -> eols EOL . [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help eols EOL . TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## multiline_text_help eols EOL
+##
+graindoc: DEPRECATED TEXT TEXT
+##
+## Ends in an error in state: 14.
+##
+## attribute_text -> multiline_text_help . [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## attribute_text -> multiline_text_help . eols [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help . EOL TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help . eols EOL TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## multiline_text_help
+##
+graindoc: DEPRECATED EOL TEXT TEXT
+##
+## Ends in an error in state: 18.
+##
+## attribute_text -> eols multiline_text_help . [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## attribute_text -> eols multiline_text_help . eols [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help . EOL TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## multiline_text_help -> multiline_text_help . eols EOL TEXT [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## eols multiline_text_help
+##
+graindoc: SINCE SEMVER EOL TEXT
+##
+## Ends in an error in state: 46.
+##
+## eols -> eols . EOL [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## graindoc -> option(eols) description attributes_help eols . EOF [ # ]
+## option(eols) -> eols . [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## option(eols) description attributes_help eols
+##
+graindoc: EOL SEMVER
+##
+## Ends in an error in state: 50.
+##
+## eols -> eols . EOL [ THROWS TEXT SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## option(eols) -> eols . [ THROWS TEXT SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## eols
+##
+
+Expected a Graindoc attribute, such as `@param`, `@returns`, or `@example`.
+
+graindoc: THROWS THROWS
+##
+## Ends in an error in state: 11.
+##
+## attribute -> THROWS . CONSTRUCTOR COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## THROWS
+##
+
+Expected an exception constructor.
+
+graindoc: THROWS CONSTRUCTOR THROWS
+##
+## Ends in an error in state: 12.
+##
+## attribute -> THROWS CONSTRUCTOR . COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## THROWS CONSTRUCTOR
+##
+graindoc: PARAM IDENT THROWS
+##
+## Ends in an error in state: 30.
+##
+## attribute -> PARAM IDENT . COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## PARAM IDENT
+##
+graindoc: HISTORY SEMVER THROWS
+##
+## Ends in an error in state: 34.
+##
+## attribute -> HISTORY SEMVER . COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## HISTORY SEMVER
+##
+
+Expected a colon.
+
+graindoc: THROWS CONSTRUCTOR COLON THROWS
+##
+## Ends in an error in state: 13.
+##
+## attribute -> THROWS CONSTRUCTOR COLON . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## THROWS CONSTRUCTOR COLON
+##
+graindoc: DEPRECATED EOL THROWS
+##
+## Ends in an error in state: 16.
+##
+## attribute_text -> eols . multiline_text_help [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## attribute_text -> eols . multiline_text_help eols [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+## eols -> eols . EOL [ TEXT EOL ]
+##
+## The known suffix of the stack is as follows:
+## eols
+##
+graindoc: RETURNS THROWS
+##
+## Ends in an error in state: 27.
+##
+## attribute -> RETURNS . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## RETURNS
+##
+graindoc: PARAM IDENT COLON THROWS
+##
+## Ends in an error in state: 31.
+##
+## attribute -> PARAM IDENT COLON . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## PARAM IDENT COLON
+##
+graindoc: HISTORY SEMVER COLON THROWS
+##
+## Ends in an error in state: 35.
+##
+## attribute -> HISTORY SEMVER COLON . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## HISTORY SEMVER COLON
+##
+graindoc: EXAMPLE THROWS
+##
+## Ends in an error in state: 37.
+##
+## attribute -> EXAMPLE . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## EXAMPLE
+##
+graindoc: DEPRECATED THROWS
+##
+## Ends in an error in state: 40.
+##
+## attribute -> DEPRECATED . attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## DEPRECATED
+##
+
+Expected a description.
+
+graindoc: SINCE THROWS
+##
+## Ends in an error in state: 21.
+##
+## attribute -> SINCE . SEMVER [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## SINCE
+##
+graindoc: HISTORY THROWS
+##
+## Ends in an error in state: 33.
+##
+## attribute -> HISTORY . SEMVER COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## HISTORY
+##
+
+Expected a version number in Semantic Versioning format, e.g. `v1.2.3`.
+
+graindoc: PARAM THROWS
+##
+## Ends in an error in state: 29.
+##
+## attribute -> PARAM . IDENT COLON attribute_text [ THROWS SINCE SECTION RETURNS PARAM HISTORY EXAMPLE EOL EOF DEPRECATED ]
+##
+## The known suffix of the stack is as follows:
+## PARAM
+##
+
+Expected a parameter name.

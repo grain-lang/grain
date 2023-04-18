@@ -1,0 +1,11 @@
+module IfThenElse
+
+if (true) { "a reallly long string long long long lfd dsds dsds dsds"} else if (false) "aaa" else { "short"}
+
+if (SomeModule.ne(mval, 10)) (if (SomeModule.ltS(yval, 11)) SomeModule.sub(12, mres) else mres) else 14
+
+if (SomeModule.ne(mval, 10000)) (if (SomeModule.ltS(yval, 111111)) SomeModule.sub(1323232, mres) else mres) else 1232324
+
+if (1 ==2) {
+    print("false")
+} else print("true")

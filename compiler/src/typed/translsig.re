@@ -17,7 +17,7 @@ let rec collect_type_vars = typ =>
         Tbl.add(typ.id, ref([typ]), used_type_variables^)
     }
   | TTyArrow(ty_args, ty_res, _) =>
-    List.iter(collect_type_vars, ty_args);
+    List.iter(((_, arg)) => collect_type_vars(arg), ty_args);
     collect_type_vars(ty_res);
   | TTyTuple(ty_args) => List.iter(collect_type_vars, ty_args)
   | TTyRecord(ty_args) =>
@@ -46,7 +46,11 @@ let link_type_vars = ty => {
         | Not_found => ty
         }
       | TTyArrow(tyl, ret, c) =>
-        TTyArrow(List.map(link_types, tyl), link_types(ret), c)
+        TTyArrow(
+          List.map(((l, arg)) => (l, link_types(arg)), tyl),
+          link_types(ret),
+          c,
+        )
       | TTyTuple(l) => TTyTuple(List.map(link_types, l))
       | TTyRecord(l) =>
         TTyRecord(List.map(((name, arg)) => (name, link_types(arg)), l))
@@ -62,7 +66,7 @@ let link_type_vars = ty => {
   link_types(ty);
 };
 
-let translate_signature = sg =>
+let rec translate_signature = sg =>
   List.map(
     item =>
       switch (item) {
@@ -78,6 +82,8 @@ let translate_signature = sg =>
             cd => {
               switch (cd.cd_args) {
               | TConstrSingleton => ()
+              | TConstrRecord(rfs) =>
+                List.iter(rf => collect_type_vars(rf.rf_type), rfs)
               | TConstrTuple(tys) => List.iter(collect_type_vars, tys)
               };
               Option.iter(collect_type_vars, cd.cd_res);
@@ -102,6 +108,13 @@ let translate_signature = sg =>
                     | TConstrSingleton => TConstrSingleton
                     | TConstrTuple(tys) =>
                       TConstrTuple(List.map(link_type_vars, tys))
+                    | TConstrRecord(rfs) =>
+                      TConstrRecord(
+                        List.map(
+                          rf => {...rf, rf_type: link_type_vars(rf.rf_type)},
+                          rfs,
+                        ),
+                      )
                     };
                   {
                     ...cd,
@@ -138,15 +151,32 @@ let translate_signature = sg =>
         switch (ec.ext_args) {
         | TConstrSingleton => ()
         | TConstrTuple(tys) => List.iter(collect_type_vars, tys)
+        | TConstrRecord(rfs) =>
+          List.iter(rf => collect_type_vars(rf.rf_type), rfs)
         };
         let ext_type_params = List.map(link_type_vars, ec.ext_type_params);
         let ext_args =
           switch (ec.ext_args) {
           | TConstrSingleton => TConstrSingleton
           | TConstrTuple(tys) => TConstrTuple(List.map(link_type_vars, tys))
+          | TConstrRecord(rfs) =>
+            TConstrRecord(
+              List.map(
+                rf => {...rf, rf_type: link_type_vars(rf.rf_type)},
+                rfs,
+              ),
+            )
           };
         TSigTypeExt(id, {...ec, ext_type_params, ext_args}, ext);
-      | TSigModule(_)
+      | TSigModule(id, mod_decl, rs) =>
+        let md_type =
+          switch (mod_decl.md_type) {
+          | TModIdent(_)
+          | TModAlias(_) => mod_decl.md_type
+          | TModSignature(signature) =>
+            TModSignature(translate_signature(signature))
+          };
+        TSigModule(id, {...mod_decl, md_type}, rs);
       | TSigModType(_) => failwith("translsig: NYI for module types")
       },
     sg,

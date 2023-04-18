@@ -49,6 +49,10 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt32(i));
   let int64 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CInt64(i));
+  let uint32 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint32(i));
+  let uint64 = (~loc=?, ~attributes=?, ~env=?, i) =>
+    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CUint64(i));
   let float32 = (~loc=?, ~attributes=?, ~env=?, i) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CFloat32(i));
   let float64 = (~loc=?, ~attributes=?, ~env=?, i) =>
@@ -75,21 +79,21 @@ module Comp = {
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CArrayGet(arr, i));
   let array_set = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, arr, i, a) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CArraySet(arr, i, a));
-  let record = (~loc=?, ~attributes=?, ~env=?, ttag, elts) =>
+  let record = (~loc=?, ~attributes=?, ~env=?, type_hash, ttag, elts) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CRecord(ttag, elts),
+      CRecord(type_hash, ttag, elts),
     );
-  let adt = (~loc=?, ~attributes=?, ~env=?, ttag, vtag, elts) =>
+  let adt = (~loc=?, ~attributes=?, ~env=?, type_hash, ttag, vtag, elts) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CAdt(ttag, vtag, elts),
+      CAdt(type_hash, ttag, vtag, elts),
     );
   let tuple_get = (~loc=?, ~attributes=?, ~allocation_type, ~env=?, idx, tup) =>
     mk(
@@ -204,29 +208,18 @@ module Comp = {
         args,
       ) =>
     mk(~loc?, ~attributes?, ~allocation_type, ~env?, CApp(func, args, tail));
-  let app_builtin =
-      (~loc=?, ~attributes=?, ~allocation_type, ~env=?, modname, name, args) =>
-    mk(
-      ~loc?,
-      ~attributes?,
-      ~allocation_type,
-      ~env?,
-      CAppBuiltin(modname, name, args),
-    );
   let lambda = (~loc=?, ~attributes=?, ~env=?, ~name=?, args, body) =>
     mk(
       ~loc?,
       ~attributes?,
       ~allocation_type=Managed,
       ~env?,
-      CLambda(name, args, body),
+      CLambda(name, args, body, Uncomputed),
     );
   let bytes = (~loc=?, ~attributes=?, ~env=?, b) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CBytes(b));
   let string = (~loc=?, ~attributes=?, ~env=?, s) =>
     mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CString(s));
-  let char = (~loc=?, ~attributes=?, ~env=?, c) =>
-    mk(~loc?, ~attributes?, ~allocation_type=Managed, ~env?, CChar(c));
 };
 
 module AExp = {
@@ -267,7 +260,7 @@ module AExp = {
     mk(~loc?, ~env?, ~alloc_type=e.comp_allocation_type, AEComp(e));
 };
 
-module Imp = {
+module IncludeDeclaration = {
   let mk = (use_id, d, s, e) => {
     imp_use_id: use_id,
     imp_desc: d,

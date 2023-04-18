@@ -131,8 +131,14 @@ let all_coherent = column => {
     | (TPatConstant(c1), TPatConstant(c2)) =>
       switch (c1, c2) {
       | (Const_number(_), Const_number(_))
+      | (Const_int8(_), Const_int8(_))
+      | (Const_int16(_), Const_int16(_))
       | (Const_int32(_), Const_int32(_))
       | (Const_int64(_), Const_int64(_))
+      | (Const_uint8(_), Const_uint8(_))
+      | (Const_uint16(_), Const_uint16(_))
+      | (Const_uint32(_), Const_uint32(_))
+      | (Const_uint64(_), Const_uint64(_))
       | (Const_float32(_), Const_float32(_))
       | (Const_float64(_), Const_float64(_))
       | (Const_wasmi32(_), Const_wasmi32(_))
@@ -140,19 +146,27 @@ let all_coherent = column => {
       | (Const_wasmf32(_), Const_wasmf32(_))
       | (Const_wasmf64(_), Const_wasmf64(_))
       | (Const_bigint(_), Const_bigint(_))
+      | (Const_rational(_), Const_rational(_))
       | (Const_bool(_), Const_bool(_))
       | (Const_void, Const_void)
       | (Const_bytes(_), Const_bytes(_))
       | (Const_string(_), Const_string(_))
       | (Const_char(_), Const_char(_)) => true
       | (
-          Const_number(_) | Const_int32(_) | Const_int64(_) | Const_float32(_) |
+          Const_number(_) | Const_int8(_) | Const_int16(_) | Const_int32(_) |
+          Const_int64(_) |
+          Const_uint8(_) |
+          Const_uint16(_) |
+          Const_uint32(_) |
+          Const_uint64(_) |
+          Const_float32(_) |
           Const_float64(_) |
           Const_wasmi32(_) |
           Const_wasmi64(_) |
           Const_wasmf32(_) |
           Const_wasmf64(_) |
           Const_bigint(_) |
+          Const_rational(_) |
           Const_bool(_) |
           Const_void |
           Const_bytes(_) |
@@ -276,9 +290,16 @@ let const_compare = (x, y) =>
       Const_wasmf32(_) |
       Const_wasmf64(_) |
       Const_bigint(_) |
+      Const_rational(_) |
       Const_void |
+      Const_int8(_) |
+      Const_int16(_) |
       Const_int32(_) |
-      Const_int64(_),
+      Const_int64(_) |
+      Const_uint8(_) |
+      Const_uint16(_) |
+      Const_uint32(_) |
+      Const_uint64(_),
       _,
     ) =>
     Stdlib.compare(x, y)
@@ -953,6 +974,30 @@ let build_other = (ext, env) =>
       p,
       env,
     )
+  | [({pat_desc: TPatConstant(Const_int8(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_int8(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_int8(i)),
+      0l,
+      Int32.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_int16(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_int16(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_int16(i)),
+      0l,
+      Int32.succ,
+      p,
+      env,
+    )
   | [({pat_desc: TPatConstant(Const_int32(_))} as p, _), ..._] =>
     build_other_constant(
       fun
@@ -972,6 +1017,54 @@ let build_other = (ext, env) =>
       | _ => assert(false),
       fun
       | i => TPatConstant(Const_int64(i)),
+      0L,
+      Int64.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_uint8(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_uint8(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_uint8(i)),
+      0l,
+      Int32.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_uint16(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_uint16(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_uint16(i)),
+      0l,
+      Int32.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_uint32(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_uint32(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_uint32(i)),
+      0l,
+      Int32.succ,
+      p,
+      env,
+    )
+  | [({pat_desc: TPatConstant(Const_uint64(_))} as p, _), ..._] =>
+    build_other_constant(
+      fun
+      | TPatConstant(Const_uint64(i)) => i
+      | _ => assert(false),
+      fun
+      | i => TPatConstant(Const_uint64(i)),
       0L,
       Int64.succ,
       p,
@@ -1798,8 +1891,17 @@ let untype_constant =
     )
   | Const_number(Const_number_bigint({bigint_rep})) =>
     Parsetree.PConstNumber(Parsetree.PConstNumberInt(bigint_rep))
+  | Const_int8(i) => Parsetree.PConstInt8(Int32.to_string(i))
+  | Const_int16(i) => Parsetree.PConstInt16(Int32.to_string(i))
   | Const_int32(i) => Parsetree.PConstInt32(Int32.to_string(i))
   | Const_int64(i) => Parsetree.PConstInt64(Int64.to_string(i))
+  | Const_uint8(i) => Parsetree.PConstUint8(false, Printf.sprintf("%lu", i))
+  | Const_uint16(i) =>
+    Parsetree.PConstUint16(false, Printf.sprintf("%lu", i))
+  | Const_uint32(i) =>
+    Parsetree.PConstUint32(false, Printf.sprintf("%lu", i))
+  | Const_uint64(i) =>
+    Parsetree.PConstUint64(false, Printf.sprintf("%Lu", i))
   | Const_float32(f) => Parsetree.PConstFloat32(Float.to_string(f))
   | Const_float64(f) => Parsetree.PConstFloat64(Float.to_string(f))
   | Const_wasmi32(i) => Parsetree.PConstWasmI32(Int32.to_string(i))
@@ -1807,6 +1909,8 @@ let untype_constant =
   | Const_wasmf32(f) => Parsetree.PConstWasmF32(Float.to_string(f))
   | Const_wasmf64(f) => Parsetree.PConstWasmF64(Float.to_string(f))
   | Const_bigint({bigint_rep}) => Parsetree.PConstBigInt(bigint_rep)
+  | Const_rational({rational_num_rep, rational_den_rep}) =>
+    Parsetree.PConstRational(rational_num_rep, rational_den_rep)
   | Const_bytes(b) => Parsetree.PConstBytes(Bytes.to_string(b))
   | Const_string(s) => Parsetree.PConstString(s)
   | Const_char(c) => Parsetree.PConstChar(c)
@@ -1816,7 +1920,7 @@ let untype_constant =
 /* conversion from Typedtree.pattern to Parsetree.pattern list */
 module Conv = {
   open Parsetree;
-  let mkpat = desc => Ast_helper.Pat.mk(desc);
+  let mkpat = desc => Ast_helper.Pattern.mk(desc);
 
   let name_counter = ref(0);
   let fresh = name => {
@@ -1851,7 +1955,7 @@ module Conv = {
           txt: Identifier.IdentName({...cstr_lid, txt: id}),
         };
         Hashtbl.add(constrs, id, cstr);
-        mkpat(PPatConstruct(lid, List.map(loop, lst)));
+        mkpat(PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst)))); // record vs tuple should not matter at this point
       };
 
     let ps = loop(typed);
@@ -2153,15 +2257,22 @@ let inactive = (~partial, pat) =>
         | Const_void
         | Const_number(_)
         | Const_bool(_)
+        | Const_int8(_)
+        | Const_int16(_)
         | Const_int32(_)
         | Const_int64(_)
+        | Const_uint8(_)
+        | Const_uint16(_)
+        | Const_uint32(_)
+        | Const_uint64(_)
         | Const_float32(_)
         | Const_float64(_)
         | Const_wasmi32(_)
         | Const_wasmi64(_)
         | Const_wasmf32(_)
         | Const_wasmf64(_)
-        | Const_bigint(_) => true
+        | Const_bigint(_)
+        | Const_rational(_) => true
         }
       | TPatTuple(ps)
       | TPatConstruct(_, _, ps) => List.for_all(p => loop(p), ps)

@@ -1,17 +1,34 @@
 /* grainc-flags --compilation-mode=runtime */
+module Constants
 
 // Signed/Unsigned Min/Max Constants
-export let _SMIN_I32 = 0xFFFFFFFFn
-export let _SMAX_I32 = 0x7FFFFFFFn
-export let _UMIN_I32 = 0x0n
-export let _UMAX_I32 = 0xFFFFFFFFn
+provide let _SMIN_I32 = 0x80000000n
+provide let _SMAX_I32 = 0x7FFFFFFFn
+provide let _UMIN_I32 = 0x0n
+provide let _UMAX_I32 = 0xFFFFFFFFn
 
-export let _SMIN_I64 = 0xFFFFFFFFFFFFFFFFN
-export let _SMAX_I64 = 0x7FFFFFFFFFFFFFFFN
-export let _UMIN_I64 = 0x0N
-export let _UMAX_I64 = 0xFFFFFFFFFFFFFFFFN
+provide let _SMIN8_I32 = -0x7Fn
+provide let _SMAX8_I32 = 0x7Fn
+provide let _UMAX8_I32 = 0xFFn
 
-export let _SMIN32_I64 = -0x7FFFFFFFN
-export let _SMAX32_I64 = 0x7FFFFFFFN
-export let _UMIN32_I64 = 0x0N
-export let _UMAX32_I64 = 0xFFFFFFFFN
+provide let _SMIN16_I32 = -0x7FFFn
+provide let _SMAX16_I32 = 0x7FFFn
+provide let _UMAX16_I32 = 0xFFFFn
+
+provide let _SMIN_I64 = 0x8000000000000000N
+provide let _SMAX_I64 = 0x7FFFFFFFFFFFFFFFN
+provide let _UMIN_I64 = 0x0N
+provide let _UMAX_I64 = 0xFFFFFFFFFFFFFFFFN
+
+provide let _SMIN8_I64 = -0x7FN
+provide let _SMAX8_I64 = 0x7FN
+provide let _UMAX8_I64 = 0xFFN
+
+provide let _SMIN16_I64 = -0x7FFFN
+provide let _SMAX16_I64 = 0x7FFFN
+provide let _UMAX16_I64 = 0xFFFFN
+
+provide let _SMIN32_I64 = 0xFFFFFFFF80000000N
+provide let _SMAX32_I64 = 0x7FFFFFFFN
+provide let _UMIN32_I64 = 0x0N
+provide let _UMAX32_I64 = 0xFFFFFFFFN

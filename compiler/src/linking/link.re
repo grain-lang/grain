@@ -195,7 +195,7 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
 
     Expression.Call_indirect.set_table(
       expr,
-      Comp_utils.global_function_table,
+      Comp_utils.grain_global_function_table,
     );
 
     let num_operands = Expression.Call_indirect.get_num_operands(expr);
@@ -284,6 +284,105 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
   };
 };
 
+let construct_type_metadata_table = metas => {
+  // Create a hash table mapping "type hashes" unique to each Grain type to
+  // offsets in the metadata section
+
+  // Structure:
+  // | Hash table: array of (offset into mappings data, bucket size) for each hash (type_hash % num_buckets)
+  // | Mappings: arrays of (type_hash, offset into actual metadata table) for each hash table bucket
+  // | Metadata: actual metadata content; appropriate offset for type metadata found through table data
+  let exceptions_buf = Buffer.create(256);
+  let exception_metas = List.map(m => m.ctm_exceptions, metas);
+  let exceptions_section_len =
+    List.fold_left((len, e) => String.length(e) + len, 0, exception_metas)
+    + 4;
+  Buffer.add_int32_le(exceptions_buf, Int32.of_int(exceptions_section_len));
+  List.iter(Buffer.add_string(exceptions_buf), exception_metas);
+
+  let exception_meta = (Buffer.contents(exceptions_buf), [(0, 0)]);
+  let non_exception_metas =
+    List.map(m => (m.ctm_metadata, m.ctm_offsets_tbl), metas);
+  let metas = [exception_meta, ...non_exception_metas];
+
+  let metadata_buf = Buffer.create(256);
+  let curr_offset = ref(0);
+  let hash_to_offset =
+    List.flatten(
+      List.map(
+        ((meta, offsets_tbl)) => {
+          Buffer.add_string(metadata_buf, meta);
+          let padding_bytes = String.length(meta) mod 8;
+          for (_ in 1 to padding_bytes) {
+            Buffer.add_int8(metadata_buf, 0);
+          };
+          let hash_to_offset =
+            List.map(
+              ((hash, offset)) => (hash, offset + curr_offset^),
+              offsets_tbl,
+            );
+          curr_offset := curr_offset^ + String.length(meta) + padding_bytes;
+          hash_to_offset;
+        },
+        metas,
+      ),
+    );
+  let rec next_pow_of_2 = (num, res) =>
+    if (num <= 1) {
+      1 lsl res;
+    } else {
+      next_pow_of_2(num lsr 1, res + 1);
+    };
+  let num_entries = List.length(hash_to_offset);
+  // Choose number of buckets to be the greatest power of 2 <= # table entries
+  // (limit 4K) as a memory/lookup speed tradeoff (expect 1-2 entries/bucket)
+  let num_buckets = min(4096, next_pow_of_2(num_entries, 0));
+  let buckets = Array.make(num_buckets, []);
+  List.iter(
+    ((hash, _) as hash_and_offset) => {
+      let hash_hash = hash mod num_buckets;
+      buckets[hash_hash] = [hash_and_offset, ...buckets[hash_hash]];
+    },
+    hash_to_offset,
+  );
+  for (i in 0 to num_buckets - 1) {
+    buckets[i] = List.rev(buckets[i]);
+  };
+
+  let tbl_buckets_buf = Buffer.create(num_buckets * 8);
+  let tbl_vals_buf = Buffer.create(num_entries * 8);
+  // Store the number of buckets at the beginning of the metadata section
+  Buffer.add_int32_le(tbl_buckets_buf, Int32.of_int(num_buckets));
+  // For 8-byte alignment
+  Buffer.add_int32_le(tbl_buckets_buf, 0l);
+
+  // # buckets + buckets + data (2 i32s each)
+  let tbl_size = 8 + (num_buckets + num_entries) * 8;
+  // Initialize offset to point after the table buckets
+  let tbl_data_offset = ref(8 + num_buckets * 8);
+  Array.iter(
+    hash_to_offset => {
+      Buffer.add_int32_le(tbl_buckets_buf, Int32.of_int(tbl_data_offset^));
+      Buffer.add_int32_le(
+        tbl_buckets_buf,
+        Int32.of_int(List.length(hash_to_offset)),
+      );
+      List.iter(
+        ((hash, offset)) => {
+          Buffer.add_int32_le(tbl_vals_buf, Int32.of_int(hash));
+          Buffer.add_int32_le(tbl_vals_buf, Int32.of_int(offset + tbl_size));
+          tbl_data_offset := tbl_data_offset^ + 8;
+        },
+        hash_to_offset,
+      );
+    },
+    buckets,
+  );
+  Buffer.add_buffer(tbl_buckets_buf, tbl_vals_buf);
+  Buffer.add_buffer(tbl_buckets_buf, metadata_buf);
+  Buffer.to_bytes(tbl_buckets_buf);
+};
+
 let table_offset = ref(0);
 let module_id = ref(Comp_utils.encoded_int32(0));
 
@@ -292,7 +391,23 @@ let link_all = (linked_mod, dependencies, signature) => {
   table_offset := 0;
   module_id := Comp_utils.encoded_int32(0);
 
+  let main = Module_resolution.current_filename^();
   let has_wasi_polyfill = Option.is_some(Config.wasi_polyfill^);
+
+  let metadata_tbl_data =
+    if (Config.elide_type_info^) {
+      None;
+    } else {
+      let cmis = List.map(Cmi_format.read_cmi, dependencies) @ [signature];
+      let mds = List.map(x => x.cmi_type_metadata, cmis);
+      Some(construct_type_metadata_table(mds));
+    };
+  let runtime_heap_ptr =
+    switch (Grain_utils.Config.memory_base^) {
+    | Some(x) => x
+    | None => Grain_utils.Config.default_memory_base
+    };
+  let metadata_heap_loc = runtime_heap_ptr + 8;
 
   let link_one = dep => {
     let function_names: Hashtbl.t(string, string) = Hashtbl.create(128);
@@ -342,6 +457,17 @@ let link_all = (linked_mod, dependencies, signature) => {
                 Expression.Const.make(
                   wasm_mod,
                   Literal.int32(Int32.of_int(module_id^)),
+                );
+              | "runtimeHeapStart" =>
+                let size =
+                  Option.value(
+                    ~default=0,
+                    Option.map(Bytes.length, metadata_tbl_data),
+                  );
+                let runtime_heap_start = metadata_heap_loc + size;
+                Expression.Const.make(
+                  wasm_mod,
+                  Literal.int32(Int32.of_int(runtime_heap_start)),
                 );
               | value =>
                 failwith(
@@ -496,7 +622,7 @@ let link_all = (linked_mod, dependencies, signature) => {
       ignore @@
       Table.add_active_element_segment(
         linked_mod,
-        Comp_utils.global_function_table,
+        Comp_utils.grain_global_function_table,
         new_name,
         elems,
         Expression.Const.make(
@@ -507,8 +633,6 @@ let link_all = (linked_mod, dependencies, signature) => {
       table_offset := table_offset^ + size;
     };
   };
-
-  let main = Module_resolution.current_filename^();
 
   if (has_wasi_polyfill) {
     link_one(wasi_polyfill_module());
@@ -525,11 +649,15 @@ let link_all = (linked_mod, dependencies, signature) => {
   ignore @@
   Table.add_table(
     linked_mod,
-    Comp_utils.global_function_table,
+    Comp_utils.grain_global_function_table,
     table_offset^,
     -1,
     Type.funcref,
   );
+
+  if (Config.import_memory^) {
+    Import.add_memory_import(linked_mod, "memory", "env", "memory", false);
+  };
   let (initial_memory, maximum_memory) =
     switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
     | (initial_memory, Some(maximum_memory)) => (
@@ -538,28 +666,37 @@ let link_all = (linked_mod, dependencies, signature) => {
       )
     | (initial_memory, None) => (initial_memory, Memory.unlimited)
     };
+
+  let data_segments =
+    switch (metadata_tbl_data) {
+    | Some(data) => [
+        Memory.{
+          data,
+          kind:
+            Active({
+              offset:
+                Expression.Const.make(
+                  linked_mod,
+                  Literal.int32(Int32.of_int(metadata_heap_loc)),
+                ),
+            }),
+          size: Bytes.length(data),
+        },
+      ]
+    | None => []
+    };
   Memory.set_memory(
     linked_mod,
     initial_memory,
     maximum_memory,
     "memory",
-    [],
+    data_segments,
     false,
   );
 
   let starts =
     List.filter_map(
-      dep => {
-        let load_type_metadata =
-          Expression.Call.make(
-            linked_mod,
-            Hashtbl.find(
-              Hashtbl.find(exported_names, dep),
-              Compcore.grain_type_metadata,
-            ),
-            [],
-            Type.none,
-          );
+      dep =>
         if (Hashtbl.mem(hard_dependencies, dep)) {
           let call_main =
             Expression.Drop.make(
@@ -568,33 +705,20 @@ let link_all = (linked_mod, dependencies, signature) => {
                 linked_mod,
                 Hashtbl.find(
                   Hashtbl.find(exported_names, dep),
-                  Compcore.grain_main,
+                  Comp_utils.grain_main,
                 ),
                 [],
                 Type.int32,
               ),
             );
-          if (Config.elide_type_info^) {
-            Some(call_main);
-          } else {
-            Some(
-              Expression.Block.make(
-                linked_mod,
-                gensym("start"),
-                [load_type_metadata, call_main],
-              ),
-            );
-          };
-        } else if (Config.elide_type_info^) {
-          None;
+          Some(call_main);
         } else {
-          Some(load_type_metadata);
-        };
-      },
+          None;
+        },
       dependencies @ [main],
     );
 
-  let start_name = gensym(Compcore.grain_start);
+  let start_name = gensym(Comp_utils.grain_start);
   let start =
     Function.add_function(
       linked_mod,
@@ -609,7 +733,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     Function.set_start(linked_mod, start);
   } else {
     ignore @@
-    Export.add_function_export(linked_mod, start_name, Compcore.grain_start);
+    Export.add_function_export(linked_mod, start_name, Comp_utils.grain_start);
   };
 };
 

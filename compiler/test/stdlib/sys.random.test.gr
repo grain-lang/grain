@@ -1,17 +1,19 @@
-import Random from "sys/random"
+module RandomTest
+
+include "sys/random"
 
 // Just smoke tests, there's a miniscule chance these could fail
 
-let r1 = Random.randomInt32()
-let r2 = Random.randomInt32()
+let r1 = Random.randomUint32()
+let r2 = Random.randomUint32()
 match ((r1, r2)) {
   (Ok(x), Ok(y)) => assert x != y,
   (Err(err), _) => throw err,
   (_, Err(err)) => throw err,
 }
 
-let r1 = Random.randomInt64()
-let r2 = Random.randomInt64()
+let r1 = Random.randomUint64()
+let r2 = Random.randomUint64()
 
 match ((r1, r2)) {
   (Ok(x), Ok(y)) => assert x != y,

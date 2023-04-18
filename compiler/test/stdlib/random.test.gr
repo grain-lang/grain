@@ -1,25 +1,27 @@
-import Random from "random"
+module RandomTest
 
-let rng1 = Random.make(0xf00L)
-let rng2 = Random.make(0xf00L)
+include "random"
 
-assert Random.nextInt32(rng1) == 833494444l
-assert Random.nextInt32(rng2) == 833494444l
-assert Random.nextInt32(rng1) == -1746193004l
-assert Random.nextInt32(rng2) == -1746193004l
+let rng1 = Random.make(0xf00uL)
+let rng2 = Random.make(0xf00uL)
 
-assert Random.nextInt32(rng1) == Random.nextInt32(rng2)
-assert Random.nextInt64(rng1) == Random.nextInt64(rng2)
-assert Random.nextInt64(rng1) == Random.nextInt64(rng2)
+assert Random.nextUint32(rng1) == 833494444ul
+assert Random.nextUint32(rng2) == 833494444ul
+assert Random.nextUint32(rng1) == 2548774292ul
+assert Random.nextUint32(rng2) == 2548774292ul
 
-assert Random.nextInt64(rng1) == -2063148927841070477L
-assert Random.nextInt64(rng2) == -2063148927841070477L
-assert Random.nextInt64(rng1) != -2063148927841070477L
+assert Random.nextUint32(rng1) == Random.nextUint32(rng2)
+assert Random.nextUint64(rng1) == Random.nextUint64(rng2)
+assert Random.nextUint64(rng1) == Random.nextUint64(rng2)
 
-assert Random.nextInt32InRange(rng1, 5l, 20l) == 5l
-assert Random.nextInt32InRange(rng1, 5l, 20l) == 18l
-assert Random.nextInt32InRange(rng1, 5l, 20l) == 19l
+assert Random.nextUint64(rng1) == 16383595145868481139uL
+assert Random.nextUint64(rng2) == 16383595145868481139uL
+assert Random.nextUint64(rng1) != 16383595145868481139uL
 
-assert Random.nextInt64InRange(rng1, 5L, 20L) == 18L
-assert Random.nextInt64InRange(rng1, 5L, 20L) == 10L
-assert Random.nextInt64InRange(rng1, 5L, 20L) == 11L
+assert Random.nextUint32InRange(rng1, 5ul, 20ul) == 5ul
+assert Random.nextUint32InRange(rng1, 5ul, 20ul) == 18ul
+assert Random.nextUint32InRange(rng1, 5ul, 20ul) == 19ul
+
+assert Random.nextUint64InRange(rng1, 5uL, 20uL) == 18uL
+assert Random.nextUint64InRange(rng1, 5uL, 20uL) == 10uL
+assert Random.nextUint64InRange(rng1, 5uL, 20uL) == 11uL

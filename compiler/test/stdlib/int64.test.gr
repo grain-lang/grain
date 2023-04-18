@@ -1,10 +1,18 @@
-import * from "int64"
+module Int64Test
 
+include "int64"
+from Int64 use *
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(5) == 5L
 assert fromNumber(0) == 0L
 
 assert toNumber(555L) == 555
 assert toNumber(0L) == 0
+
+assert fromUint64(1uL) == 1L
+assert fromUint64(0xffffffffffffffffuL) == -1L
 
 assert lnot(0xffffffffffffffffL) == 0L
 assert lnot(0L) == 0xffffffffffffffffL
@@ -25,10 +33,6 @@ assert shl(-1L, 3L) == -8L
 assert shl(-2L, 63L) == 0L
 assert shl(24L, 1L) == 48L
 
-assert shrU(4L, 1L) == 2L
-assert shrU(4L, 2L) == 1L
-assert shrU(4L, 3L) == 0L
-assert shrU(-1L, 63L) == 1L
 assert shr(-1L, 63L) == -1L
 assert shr(-24L, 1L) == -12L
 
@@ -40,16 +44,6 @@ assert !gt(5L, 5L)
 assert !gte(5L, 22L)
 assert !lt(5L, -17L)
 assert !lte(5L, 4L)
-
-// Unsigned comparisons
-assert gtU(5L, 4L)
-assert gteU(5L, 5L)
-assert ltU(5L, 17L)
-assert lteU(5L, 5L)
-assert !gtU(5L, 5L)
-assert !gteU(5L, 22L)
-assert ltU(5L, -17L)
-assert !lteU(5L, 4L)
 
 assert clz(0b11L) == 62L
 assert ctz(0b11000L) == 3L

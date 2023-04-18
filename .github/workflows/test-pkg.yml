@@ -1,0 +1,75 @@
+name: Test pkg binaries
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git reference to checkout
+        type: string
+        required: false
+
+jobs:
+  test-pkg:
+    name: Test pkg binary on ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux
+            os: ubuntu-latest
+          - name: mac
+            os: macos-latest
+          - name: win
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Fetch pkg binary
+        uses: actions/download-artifact@v3
+        with:
+          name: grain-${{ matrix.name }}-x64
+
+      - name: Untar download
+        run: |
+          tar -xvf grain.tar
+
+      # This is to test the CLI is working
+      - name: Log Grain version
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./grain -v
+
+      - name: Log Grain version
+        if: matrix.os == 'windows-latest'
+        run: |
+          ./grain.exe -v
+
+      # If we have a working grain CLI, we can run graindoc on stdlib
+      - name: (stdlib) Check documentation
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./grain doc stdlib -o stdlib --current-version=$(./grain -v)
+          git diff --exit-code --name-only
+
+      # If we have a working grain CLI, we can run grainfmt on stdlib & tests
+      - name: (stdlib) Check formatting
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./grain format stdlib -o stdlib
+          ./grain format compiler/test/stdlib -o compiler/test/stdlib
+          git diff --exit-code --name-only
+
+      - name: Smoketest a program
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./grain compiler/test/input/relativeIncludeLinking.gr
+
+      - name: Smoketest a program
+        if: matrix.os == 'windows-latest'
+        run: |
+          ./grain.exe compiler/test/input/relativeIncludeLinking.gr

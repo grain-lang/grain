@@ -2,31 +2,28 @@
 title: Range
 ---
 
-Utilities for working with ranges. A range represents an interval—a set of values with a beginning and an end.
+Utilities for working with ranges.
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+A range represents an interval—a set of values with a beginning and an end.
+
+All functions in this module treat ranges as exclusive, but inclusive versions
+of all APIs are available in the `Inclusive` submodule.
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-import Range from "range"
+include "range"
 ```
-
-## Types
-
-Type declarations included in the Range module.
-
-### Range.**Range**
-
-```grain
-enum Range {
-  Inclusive(Number, Number),
-  Exclusive(Number, Number),
-}
-```
-
-Ranges can be inclusive or exclusive. When `Inclusive`, the end value will be included in operations. When `Exclusive`, the end value will be excluded from operations.
 
 ## Values
 
@@ -34,13 +31,20 @@ Functions and constants included in the Range module.
 
 ### Range.**inRange**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-inRange : (Number, Range) -> Bool
+inRange : (value: Number, range: Range<Number>) -> Bool
 ```
 
 Checks if the given number is within the range.
@@ -50,7 +54,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`Number`|The number being checked|
-|`range`|`Range`|The range to check within|
+|`range`|`Range<Number>`|The range to check within|
 
 Returns:
 
@@ -61,58 +65,80 @@ Returns:
 Examples:
 
 ```grain
-Range.inRange(1, Range.Inclusive(0, 2)) == true
+Range.inRange(1, { rangeStart: 0, rangeEnd: 2 }) == true
 ```
 
 ```grain
-Range.inRange(10, Range.Inclusive(0, 2)) == false
+Range.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
 ```
 
 ### Range.**forEach**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-forEach : ((Number -> Void), Range) -> Void
+forEach : (fn: (Number -> Void), range: Range<Number>) -> Void
 ```
 
-Calls the given function with each number in the range. For increasing ranges, the value is increased by `1` in each iteration, and for decreasing ranges, the value is decreased by `1`. The value is always changed by `1`, even if non-integer values were provided in the range.
+Calls the given function with each number in the range.
+
+For increasing ranges, the value is increased by `1` in each iteration,
+and for decreasing ranges, the value is decreased by `1`. The value is
+always changed by `1`, even if non-integer values were provided in the range.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`Number -> Void`|The function to be executed on each number in the range|
-|`range`|`Range`|The range to iterate|
+|`range`|`Range<Number>`|The range to iterate|
 
 Examples:
 
 ```grain
-Range.forEach(val => print(val), Range.Exclusive(0, 2))
+Range.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
 ```
 
 ### Range.**map**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.2</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Treats all ranges as exclusive</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-map : ((Number -> a), Range) -> List<a>
+map : (fn: (Number -> a), range: Range<Number>) -> List<a>
 ```
 
-Produces a list by calling the given function on each number included in the range. For increasing ranges, the value is increased by `1` in each iteration, and for decreasing ranges, the value is decreased by `1`. The value is always changed by `1`, even if non-integer values were provided in the range.
+Produces a list by calling the given function on each number included in the range.
+
+For increasing ranges, the value is increased by `1` in each iteration,
+and for decreasing ranges, the value is decreased by `1`. The value is
+always changed by `1`, even if non-integer values were provided in the range.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
 |`fn`|`Number -> a`|The function called on each number in the range that returns the value for the output list|
-|`range`|`Range`|The range to iterate|
+|`range`|`Range<Number>`|The range to iterate|
 
 Returns:
 
@@ -123,6 +149,135 @@ Returns:
 Examples:
 
 ```grain
-Range.map(val => val * 2, Range.Inclusive(0, 2)) == [0, 2, 4]
+Range.map(val => val * 2, { rangeStart: 0, rangeEnd: 3 }) == [0, 2, 4]
+```
+
+## Range.Inclusive
+
+### Values
+
+Functions and constants included in the Range.Inclusive module.
+
+#### Range.Inclusive.**inRange**
+
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Root APIs originally handled Inclusive & Exclusive variants</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+inRange : (value: Number, range: Range<Number>) -> Bool
+```
+
+Checks if the given number is within the range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`value`|`Number`|The number being checked|
+|`range`|`Range<Number>`|The range to check within|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|Whether or not the value is within range|
+
+Examples:
+
+```grain
+Range.Inclusive.inRange(1, { rangeStart: 0, rangeEnd: 1 }) == true
+```
+
+```grain
+Range.Inclusive.inRange(10, { rangeStart: 0, rangeEnd: 2 }) == false
+```
+
+#### Range.Inclusive.**forEach**
+
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Root APIs originally handled Inclusive & Exclusive variants</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+forEach : (fn: (Number -> Void), range: Range<Number>) -> Void
+```
+
+Calls the given function with each number in the range.
+
+For increasing ranges, the value is increased by `1` in each iteration,
+and for decreasing ranges, the value is decreased by `1`. The value is
+always changed by `1`, even if non-integer values were provided in the range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`Number -> Void`|The function to be executed on each number in the range|
+|`range`|`Range<Number>`|The range to iterate|
+
+Examples:
+
+```grain
+Range.Inclusive.forEach(val => print(val), { rangeStart: 0, rangeEnd: 2 })
+```
+
+#### Range.Inclusive.**map**
+
+<details>
+<summary>Added in <code>0.3.2</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Root APIs originally handled Inclusive & Exclusive variants</td></tr>
+</tbody>
+</table>
+</details>
+
+```grain
+map : (fn: (Number -> a), range: Range<Number>) -> List<a>
+```
+
+Produces a list by calling the given function on each number included in the range.
+
+For increasing ranges, the value is increased by `1` in each iteration,
+and for decreasing ranges, the value is decreased by `1`. The value is
+always changed by `1`, even if non-integer values were provided in the range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`Number -> a`|The function called on each number in the range that returns the value for the output list|
+|`range`|`Range<Number>`|The range to iterate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|A list containing all values returned from the `fn`|
+
+Examples:
+
+```grain
+Range.Inclusive.map(val => val * 2, { rangeStart: 0, rangeEnd: 2 }) == [0, 2, 4]
 ```
 

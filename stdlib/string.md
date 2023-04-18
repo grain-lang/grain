@@ -18,7 +18,7 @@ Utilities for working with strings.
 </details>
 
 ```grain
-import String from "string"
+include "string"
 ```
 
 ## Types
@@ -41,7 +41,7 @@ Byte encodings
 
 ## Values
 
-Functions for working with the String data type.
+Functions and constants included in the String module.
 
 ### String.**concat**
 
@@ -51,7 +51,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (String, String) -> String
+concat : (s1: String, s2: String) -> String
 ```
 
 Concatenate two strings.
@@ -83,7 +83,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : String -> Number
+length : (string: String) -> Number
 ```
 
 Returns the character length of the input string.
@@ -114,7 +114,7 @@ No other changes yet.
 </details>
 
 ```grain
-byteLength : String -> Number
+byteLength : (string: String) -> Number
 ```
 
 Returns the byte length of the input string.
@@ -145,7 +145,7 @@ No other changes yet.
 </details>
 
 ```grain
-indexOf : (String, String) -> Option<Number>
+indexOf : (search: String, string: String) -> Option<Number>
 ```
 
 Finds the first position of a substring in the input string.
@@ -177,7 +177,7 @@ No other changes yet.
 </details>
 
 ```grain
-lastIndexOf : (String, String) -> Option<Number>
+lastIndexOf : (search: String, string: String) -> Option<Number>
 ```
 
 Finds the last position of a substring in the input string.
@@ -209,7 +209,7 @@ No other changes yet.
 </details>
 
 ```grain
-charCodeAt : (Number, String) -> Number
+charCodeAt : (position: Number, string: String) -> Number
 ```
 
 Get the Unicode code point at the position in the input string.
@@ -227,6 +227,16 @@ Returns:
 |----|-----------|
 |`Number`|The character code at the provided position|
 
+Throws:
+
+`Failure(String)`
+
+* When the `position` is out of bounds
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -241,7 +251,7 @@ No other changes yet.
 </details>
 
 ```grain
-charAt : (Number, String) -> Char
+charAt : (position: Number, string: String) -> Char
 ```
 
 Get the character at the position in the input string.
@@ -259,6 +269,16 @@ Returns:
 |----|-----------|
 |`Char`|The character at the provided position|
 
+Throws:
+
+`Failure(String)`
+
+* When the `position` is out of bounds
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -273,7 +293,7 @@ No other changes yet.
 </details>
 
 ```grain
-explode : String -> Array<Char>
+explode : (string: String) -> Array<Char>
 ```
 
 Split a string into its Unicode characters.
@@ -290,6 +310,12 @@ Returns:
 |----|-----------|
 |`Array<Char>`|An array containing all characters in the string|
 
+Throws:
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -304,7 +330,7 @@ No other changes yet.
 </details>
 
 ```grain
-implode : Array<Char> -> String
+implode : (arr: Array<Char>) -> String
 ```
 
 Create a string from an array of characters.
@@ -335,7 +361,7 @@ No other changes yet.
 </details>
 
 ```grain
-reverse : String -> String
+reverse : (string: String) -> String
 ```
 
 Create a string that is the given string reversed.
@@ -361,7 +387,7 @@ String.reverse("olleH") == "Hello"
 ### String.**split**
 
 ```grain
-split : (String, String) -> Array<String>
+split : (separator: String, string: String) -> Array<String>
 ```
 
 Split a string by the given separator.
@@ -379,6 +405,12 @@ Returns:
 |----|-----------|
 |`Array<String>`|An array of substrings from the initial string|
 
+Throws:
+
+`MalformedUnicode`
+
+* When the `string` is malformed
+
 Examples:
 
 ```grain
@@ -387,13 +419,20 @@ String.split(" ", "Hello world") == [> "Hello", "world"]
 
 ### String.**slice**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.1.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.1.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Default `end` to the String length</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-slice : (Number, Number, String) -> String
+slice : (start: Number, ?end: Number, string: String) -> String
 ```
 
 Get a portion of a string.
@@ -403,7 +442,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`start`|`Number`|The start position of the substring|
-|`to`|`Number`|The end position of the substring, exclusive|
+|`end`|`Option<Number>`|The end position of the substring, exclusive|
 |`string`|`String`|The input string|
 
 Returns:
@@ -412,10 +451,27 @@ Returns:
 |----|-----------|
 |`String`|The substring from the initial string|
 
+Throws:
+
+`IndexOutOfBounds`
+
+* When `start` is out of bounds
+* When `end` is out of bounds
+
+`InvalidArgument(String)`
+
+* When the `start` index is not an integer
+* When the `to` index is not an integer
+* When `start` is greater than `end`
+
 Examples:
 
 ```grain
-String.slice(0, 5, "Hello world") == "Hello"
+String.slice(0, end=5, "Hello world") == "Hello"
+```
+
+```grain
+String.slice(0, "Hello world") == "Hello world"
 ```
 
 ### String.**contains**
@@ -426,7 +482,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (String, String) -> Bool
+contains : (search: String, string: String) -> Bool
 ```
 
 Check if a string contains a substring.
@@ -458,7 +514,7 @@ No other changes yet.
 </details>
 
 ```grain
-startsWith : (String, String) -> Bool
+startsWith : (search: String, string: String) -> Bool
 ```
 
 Check if a string begins with another string.
@@ -490,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-endsWith : (String, String) -> Bool
+endsWith : (search: String, string: String) -> Bool
 ```
 
 Check if a string ends with another string.
@@ -522,7 +578,8 @@ No other changes yet.
 </details>
 
 ```grain
-replaceFirst : (String, String, String) -> String
+replaceFirst :
+  (searchPattern: String, replacement: String, string: String) -> String
 ```
 
 Replaces the first appearance of the search pattern in the string with the replacement value.
@@ -555,7 +612,8 @@ No other changes yet.
 </details>
 
 ```grain
-replaceLast : (String, String, String) -> String
+replaceLast :
+  (searchPattern: String, replacement: String, string: String) -> String
 ```
 
 Replaces the last appearance of the search pattern in the string with the replacement value.
@@ -588,7 +646,8 @@ No other changes yet.
 </details>
 
 ```grain
-replaceAll : (String, String, String) -> String
+replaceAll :
+  (searchPattern: String, replacement: String, string: String) -> String
 ```
 
 Replaces every appearance of the search pattern in the string with the replacement value.
@@ -621,7 +680,8 @@ No other changes yet.
 </details>
 
 ```grain
-encodeAt : (String, Encoding, Bytes, Number) -> Bytes
+encodeAt :
+  (string: String, encoding: Encoding, dest: Bytes, destPos: Number) -> Bytes
 ```
 
 Encodes the given string into a byte sequence at the supplied position, excluding any byte-order marker, using the encoding scheme provided.
@@ -641,6 +701,13 @@ Returns:
 |----|-----------|
 |`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `destPos` is not an integer
+* When `destPos` is negative
+
 ### String.**encodeAtWithBom**
 
 <details disabled>
@@ -649,7 +716,8 @@ No other changes yet.
 </details>
 
 ```grain
-encodeAtWithBom : (String, Encoding, Bytes, Number) -> Bytes
+encodeAtWithBom :
+  (string: String, encoding: Encoding, dest: Bytes, destPos: Number) -> Bytes
 ```
 
 Encodes the given string into a byte sequence at the supplied position, including any byte-order marker, using the encoding scheme provided.
@@ -669,6 +737,13 @@ Returns:
 |----|-----------|
 |`Bytes`|A copy of the input bytes with the encoded string replaced at the given position|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `destPos` is not an integer
+* When `destPos` is negative
+
 ### String.**encode**
 
 <details disabled>
@@ -677,7 +752,7 @@ No other changes yet.
 </details>
 
 ```grain
-encode : (String, Encoding) -> Bytes
+encode : (string: String, encoding: Encoding) -> Bytes
 ```
 
 Encodes the given string using the given encoding scheme, excluding any byte-order marker.
@@ -703,7 +778,7 @@ No other changes yet.
 </details>
 
 ```grain
-encodeWithBom : (String, Encoding) -> Bytes
+encodeWithBom : (string: String, encoding: Encoding) -> Bytes
 ```
 
 Encodes the given string using the given encoding scheme, including any byte-order marker.
@@ -729,7 +804,8 @@ No other changes yet.
 </details>
 
 ```grain
-decodeRange : (Bytes, Encoding, Number, Number) -> String
+decodeRange :
+  (bytes: Bytes, encoding: Encoding, start: Number, size: Number) -> String
 ```
 
 Decodes the given byte sequence of the specified range into a string, excluding any byte-order marker, using encoding scheme provided.
@@ -749,6 +825,15 @@ Returns:
 |----|-----------|
 |`String`|The decoded string|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `start` is not an integer
+* When `start` is negative
+* When `size` is not an integer
+* When `size` is negative
+
 ### String.**decodeRangeKeepBom**
 
 <details disabled>
@@ -757,7 +842,8 @@ No other changes yet.
 </details>
 
 ```grain
-decodeRangeKeepBom : (Bytes, Encoding, Number, Number) -> String
+decodeRangeKeepBom :
+  (bytes: Bytes, encoding: Encoding, start: Number, size: Number) -> String
 ```
 
 Decodes the given byte sequence of the specified range into a string, including any byte-order marker, using encoding scheme provided.
@@ -777,6 +863,15 @@ Returns:
 |----|-----------|
 |`String`|The decoded string|
 
+Throws:
+
+`InvalidArgument(String)`
+
+* When `start` is not an integer
+* When `start` is negative
+* When `size` is not an integer
+* When `size` is negative
+
 ### String.**decode**
 
 <details disabled>
@@ -785,7 +880,7 @@ No other changes yet.
 </details>
 
 ```grain
-decode : (Bytes, Encoding) -> String
+decode : (bytes: Bytes, encoding: Encoding) -> String
 ```
 
 Decodes the given byte sequence into a string using the given encoding scheme, excluding any byte-order marker.
@@ -811,7 +906,7 @@ No other changes yet.
 </details>
 
 ```grain
-decodeKeepBom : (Bytes, Encoding) -> String
+decodeKeepBom : (bytes: Bytes, encoding: Encoding) -> String
 ```
 
 Decodes the given byte sequence into a string using the given encoding scheme, including any byte-order marker.
@@ -837,7 +932,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachCodePoint : ((Number -> Void), String) -> Void
+forEachCodePoint : (fn: (Number -> Void), str: String) -> Void
 ```
 
 Iterates over Unicode code points in a string.
@@ -863,7 +958,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachCodePointi : (((Number, Number) -> Void), String) -> Void
+forEachCodePointi : (fn: ((Number, Number) -> Void), str: String) -> Void
 ```
 
 Iterates over Unicode code points in a string. This is the same as
@@ -891,7 +986,7 @@ No other changes yet.
 </details>
 
 ```grain
-trimStart : String -> String
+trimStart : (string: String) -> String
 ```
 
 Trims the beginning of a string—removing any leading whitespace characters.
@@ -922,7 +1017,7 @@ No other changes yet.
 </details>
 
 ```grain
-trimEnd : String -> String
+trimEnd : (string: String) -> String
 ```
 
 Trims the end of a string—removing any trailing whitespace characters.
@@ -953,7 +1048,7 @@ No other changes yet.
 </details>
 
 ```grain
-trim : String -> String
+trim : (string: String) -> String
 ```
 
 Trims a string—removing all leading and trailing whitespace characters.

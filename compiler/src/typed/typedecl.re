@@ -54,7 +54,6 @@ type error =
   /*| Unbound_type_var_ext of type_expr * extension_constructor*/
   | Varying_anonymous
   | Val_in_structure
-  | Multiple_native_repr_attributes
   | Cannot_unbox_or_untag_type(native_repr_kind)
   | Deep_unbox_or_untag_attribute(native_repr_kind)
   | Bad_immediate_attribute
@@ -150,7 +149,7 @@ let transl_labels = (env, closed, lbls) => {
   let mk = ({pld_name: name, pld_type: arg, pld_mutable: mut, pld_loc: loc}) => {
     /* Builtin_attributes.warning_scope attrs
        (fun () -> */
-    let arg = Ast_helper.Typ.force_poly(arg);
+    let arg = Ast_helper.Type.force_poly(arg);
     let cty = transl_simple_type(env, closed, arg);
     let mut = mut == Mutable;
     {
@@ -187,8 +186,12 @@ let transl_labels = (env, closed, lbls) => {
 let transl_constructor_arguments = (env, closed) =>
   fun
   | PConstrTuple(l) => {
-      let l = List.map(transl_simple_type(env, closed), l);
+      let l = List.map(transl_simple_type(env, closed), l.txt);
       (Types.TConstrTuple(List.map(t => t.ctyp_type, l)), TConstrTuple(l));
+    }
+  | PConstrRecord(l) => {
+      let (lbls, lbls') = transl_labels(env, closed, l.txt);
+      (Types.TConstrRecord(lbls'), TConstrRecord(lbls));
     }
   | PConstrSingleton => (Types.TConstrSingleton, TConstrSingleton);
 
@@ -206,7 +209,7 @@ let check_type_var = (loc, univ, id) => {
   };
 };
 
-let transl_declaration = (env, sdecl, id) => {
+let transl_declaration = (env, provide_flag, sdecl, id) => {
   /* Bind type parameters */
   reset_type_variables();
   Ctype.begin_def();
@@ -293,6 +296,18 @@ let transl_declaration = (env, sdecl, id) => {
         let repr =
           switch (args) {
           | TConstrSingleton => ReprValue(WasmI32)
+          | TConstrRecord(rfs) =>
+            ReprFunction(
+              List.map(
+                rf =>
+                  Type_utils.wasm_repr_of_allocation_type(
+                    Type_utils.get_allocation_type(env, rf.Types.rf_type),
+                  ),
+                rfs,
+              ),
+              [WasmI32],
+              Indirect,
+            )
           | TConstrTuple(args) =>
             ReprFunction(
               List.map(
@@ -380,6 +395,7 @@ let transl_declaration = (env, sdecl, id) => {
     data_type: decl,
     data_manifest: tman,
     data_loc: sdecl.pdata_loc,
+    data_provided: provide_flag,
     data_kind: tkind,
   };
 };
@@ -432,24 +448,12 @@ let check_well_founded = (env, loc, path, to_check, ty) => {
     if (fini) {
       ();
     } else {
-      let rec_ok =
-        switch (ty.desc) {
-        | TTyConstr(p, _, _) =>
-          Grain_utils.Config.recursive_types^ && Ctype.is_contractive(env, p)
-        | _ => Grain_utils.Config.recursive_types^
-        };
-
       let visited' = TypeMap.add(ty, parents, visited^);
       let arg_exn =
         try(
           {
             visited := visited';
-            let parents =
-              if (rec_ok) {
-                TypeSet.empty;
-              } else {
-                TypeSet.add(ty, parents);
-              };
+            let parents = TypeSet.add(ty, parents);
             Btype.iter_type_expr(check(ty0, parents), ty);
             None;
           }
@@ -608,7 +612,7 @@ let check_duplicates = sdecl_list => {
   let labels = Hashtbl.create(7)
   and constrs = Hashtbl.create(7);
   List.iter(
-    sdecl =>
+    ((_, sdecl)) =>
       switch (sdecl.pdata_kind) {
       | PDataAbstract => ()
       | PDataVariant(cl) =>
@@ -676,7 +680,10 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
 
   /* Create identifiers. */
   let id_list =
-    List.map(sdecl => Ident.create(sdecl.pdata_name.txt), sdecl_list);
+    List.map(
+      ((_, sdecl)) => Ident.create(sdecl.pdata_name.txt),
+      sdecl_list,
+    );
 
   /*
       Since we've introduced fresh idents, make sure the definition
@@ -688,7 +695,12 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   Ctype.begin_def();
   /* Enter types. */
   let temp_env =
-    List.fold_left2(enter_type(rec_flag), env, sdecl_list, id_list);
+    List.fold_left2(
+      enter_type(rec_flag),
+      env,
+      List.map(snd, sdecl_list),
+      id_list,
+    );
   /* Translate each declaration. */
   let current_slot = ref(None);
   let warn_unused = Warnings.is_active(Warnings.Unused_type_declaration(""));
@@ -715,9 +727,9 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
     | Asttypes.Nonrecursive => (id, None)
     };
 
-  let transl_declaration = (name_sdecl, (id, slot)) => {
+  let transl_declaration = ((provide_flag, name_sdecl), (id, slot)) => {
     current_slot := slot;
-    transl_declaration(temp_env, name_sdecl, id);
+    transl_declaration(temp_env, provide_flag, name_sdecl, id);
   };
   /*Builtin_attributes.warning_scope
     name_sdecl.ptype_attributes
@@ -742,7 +754,8 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   | Asttypes.Nonrecursive => ()
   | Asttypes.Recursive =>
     List.iter2(
-      (id, sdecl) => update_type(temp_env, newenv, id, sdecl.pdata_loc),
+      (id, (_, sdecl)) =>
+        update_type(temp_env, newenv, id, sdecl.pdata_loc),
       id_list,
       sdecl_list,
     )
@@ -752,7 +765,11 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   List.iter(((_, decl)) => generalize_decl(decl), decls);
   /* Check for ill-formed abbrevs */
   let id_loc_list =
-    List.map2((id, sdecl) => (id, sdecl.pdata_loc), id_list, sdecl_list);
+    List.map2(
+      (id, (_, sdecl)) => (id, sdecl.pdata_loc),
+      id_list,
+      sdecl_list,
+    );
 
   List.iter(
     ((id, decl)) =>
@@ -782,7 +799,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   List.iter(check_abbrev_recursion(newenv, id_loc_list, to_check), tdecls);
   /* Check that all type variables are closed */
   List.iter2(
-    (sdecl, tdecl) => {
+    ((_, sdecl), tdecl) => {
       let decl = tdecl.data_type;
       switch (Ctype.closed_type_decl(decl)) {
       | Some(ty) =>
@@ -838,107 +855,6 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
   (final_decls, final_env);
 };
 
-type native_repr_attribute =
-  | Native_repr_attr_absent
-  | Native_repr_attr_present(native_repr_kind);
-
-let get_native_repr_attribute = (attrs, ~global_repr) =>
-  /*Attr_helper.get_no_payload_attribute ["unboxed"; "ocaml.unboxed"]  attrs,
-    Attr_helper.get_no_payload_attribute ["untagged"; "ocaml.untagged"] attrs,*/
-  switch (None, None, global_repr) {
-  | (None, None, None) => Native_repr_attr_absent
-  | (None, None, Some(repr)) => Native_repr_attr_present(repr)
-  | (Some(_), None, None) => Native_repr_attr_present(Unboxed)
-  | (None, Some(_), None) => Native_repr_attr_present(Untagged)
-  | (Some({Location.loc}), _, _)
-  | (_, Some({Location.loc}), _) =>
-    raise(Error(loc, Multiple_native_repr_attributes))
-  };
-
-let native_repr_of_type = (env, kind, ty) =>
-  switch (kind, Ctype.expand_head_opt(env, ty).desc) {
-  | (Untagged, TTyConstr(path, _, _))
-      when Path.same(path, Builtin_types.path_number) =>
-    Some(Untagged_int)
-  /*| Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_float ->
-      Some Unboxed_float
-    | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_int32 ->
-      Some (Unboxed_integer Pint32)
-    | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_int64 ->
-      Some (Unboxed_integer Pint64)
-    | Unboxed, TTyConstr (path, _, _) when Path.same path Predef.path_nativeint ->
-      Some (Unboxed_integer Pnativeint)*/
-  | _ => None
-  };
-
-/* Raises an error when [core_type] contains an [@unboxed] or [@untagged]
-   attribute in a strict sub-term. */
-let error_if_has_deep_native_repr_attributes = core_type => {
-  open Ast_iterator;
-  let this_iterator = {
-    ...default_iterator,
-    typ: (iterator, core_type) => {
-      switch (
-        get_native_repr_attribute(
-          [] /*core_type.ptyp_attributes*/,
-          ~global_repr=None,
-        )
-      ) {
-      | Native_repr_attr_present(kind) =>
-        raise(
-          Error(core_type.ptyp_loc, Deep_unbox_or_untag_attribute(kind)),
-        )
-      | Native_repr_attr_absent => ()
-      };
-      default_iterator.typ(iterator, core_type);
-    },
-  };
-
-  List.iter(default_iterator.typ(this_iterator), core_type);
-};
-
-let make_native_repr = (env, core_type, ty, ~global_repr) => {
-  error_if_has_deep_native_repr_attributes(core_type);
-  switch (
-    get_native_repr_attribute([] /*core_type.ptyp_attributes*/, ~global_repr)
-  ) {
-  | Native_repr_attr_absent => Same_as_ocaml_repr
-  | Native_repr_attr_present(kind) =>
-    List.fold_left(
-      (_, ty) =>
-        switch (native_repr_of_type(env, kind, ty)) {
-        | None =>
-          raise(Error(Location.dummy_loc, Cannot_unbox_or_untag_type(kind)))
-        | Some(repr) => repr
-        },
-      Same_as_ocaml_repr,
-      ty,
-    )
-  };
-};
-
-let rec parse_native_repr_attributes = (env, core_type, ty, ~global_repr) =>
-  switch (
-    core_type.ptyp_desc,
-    Ctype.repr(ty).desc,
-    get_native_repr_attribute(
-      [] /*core_type.ptyp_attributes*/,
-      ~global_repr=None,
-    ),
-  ) {
-  | (PTyArrow(_), TTyArrow(_), Native_repr_attr_present(kind)) =>
-    raise(Error(core_type.ptyp_loc, Cannot_unbox_or_untag_type(kind)))
-  | (PTyArrow(ct1, ct2), TTyArrow(t1, t2, _), _) =>
-    let repr_arg = make_native_repr(env, ct1, t1, ~global_repr);
-    let (repr_args, repr_res) =
-      parse_native_repr_attributes(env, ct2, t2, ~global_repr);
-
-    ([repr_arg, ...repr_args], repr_res);
-  | (PTyArrow(_), _, _)
-  | (_, TTyArrow(_), _) => assert(false)
-  | _ => ([], make_native_repr(env, [core_type], [ty], ~global_repr))
-  };
-
 /* Translate a value declaration */
 let transl_value_decl = (env, loc, valdecl) => {
   let cty = Typetexp.transl_type_scheme(env, valdecl.pval_type);
@@ -946,34 +862,16 @@ let transl_value_decl = (env, loc, valdecl) => {
   let name =
     Option.value(~default=valdecl.pval_name, valdecl.pval_name_alias).txt;
   let id = Ident.create(name);
-  let v =
-    switch (valdecl.pval_prim) {
-    /*[] when Env.is_in_signature env ->
-      { val_type = ty; val_kind = TValReg; Types.val_loc = loc;
-        (*val_attributes = valdecl.pval_attributes*) }*/
-    /* | [] ->
-       raise (Error(valdecl.pval_loc, Val_in_structure)) */
-    | [prim] => {
-        val_type: ty,
-        val_repr: Type_utils.repr_of_type(env, ty),
-        val_kind: TValPrim(prim),
-        Types.val_loc: loc,
-        val_internalpath: PIdent(id),
-        val_fullpath: Path.PIdent(Ident.create("<bogus>")),
-        val_mutable: false,
-        val_global: true,
-      }
-    | _ => {
-        val_type: ty,
-        val_repr: Type_utils.repr_of_type(env, ty),
-        val_kind: TValReg,
-        Types.val_loc: loc,
-        val_internalpath: PIdent(id),
-        val_fullpath: Path.PIdent(Ident.create("<bogus>")),
-        val_mutable: false,
-        val_global: true,
-      }
-    };
+  let v = {
+    val_type: ty,
+    val_repr: Type_utils.repr_of_type(env, ty),
+    val_kind: TValReg,
+    Types.val_loc: loc,
+    val_internalpath: PIdent(id),
+    val_fullpath: Path.PIdent(id),
+    val_mutable: false,
+    val_global: true,
+  };
 
   let newenv = Env.add_value(id, v, env);
   /*~check:(fun s -> Warnings.Unused_value_declaration s)*/
@@ -984,7 +882,6 @@ let transl_value_decl = (env, loc, valdecl) => {
     tvd_name: valdecl.pval_name,
     tvd_desc: cty,
     tvd_val: v,
-    tvd_prim: valdecl.pval_prim,
     tvd_loc: valdecl.pval_loc,
   };
 
@@ -1074,6 +971,18 @@ let transl_extension_constructor =
   let repr =
     switch (args) {
     | TConstrSingleton => ReprValue(WasmI32)
+    | TConstrRecord(rfs) =>
+      ReprFunction(
+        List.map(
+          rf =>
+            Type_utils.wasm_repr_of_allocation_type(
+              Type_utils.get_allocation_type(env, rf.Types.rf_type),
+            ),
+          rfs,
+        ),
+        [WasmI32],
+        Indirect,
+      )
     | TConstrTuple(args) =>
       ReprFunction(
         List.map(
@@ -1190,8 +1099,8 @@ let explain_unbound_single = (ppf, tv, ty) => {
 let tys_of_constr_args =
   fun
   | Types.TConstrTuple(tl) => tl
-  | Types.TConstrSingleton => [];
-/*| Types.Cstr_record lbls -> List.map (fun l -> l.Types.ld_type) lbls*/
+  | Types.TConstrSingleton => []
+  | Types.TConstrRecord(rfs) => List.map(rf => rf.Types.rf_type, rfs);
 
 let report_error = ppf =>
   fun
@@ -1466,8 +1375,6 @@ let report_error = ppf =>
     )
   | Val_in_structure =>
     fprintf(ppf, "Value declarations are only allowed in signatures")
-  | Multiple_native_repr_attributes =>
-    fprintf(ppf, "Too many [@@unboxed]/[@@untagged] attributes")
   | Cannot_unbox_or_untag_type(Unboxed) =>
     fprintf(
       ppf,

@@ -1,0 +1,141 @@
+module Int8Test
+
+include "int8"
+from Int8 use {
+  fromNumber,
+  toNumber,
+  fromUint8,
+  incr,
+  decr,
+  lnot,
+  rem,
+  (+),
+  (-),
+  (*),
+  (/),
+  (%),
+  (&),
+  (|),
+  (^),
+  (<<),
+  (>>),
+}
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
+
+assert fromNumber(5) == 5s
+assert fromNumber(0) == 0s
+assert fromNumber(-1) == -1s
+
+assert toNumber(55s) == 55
+assert toNumber(0s) == 0
+assert toNumber(-1s) == -1
+
+assert fromUint8(1us) == 1s
+assert fromUint8(0xffus) == -1s
+
+assert 1s + 0s == 1s
+assert 45s + -4s == 41s
+assert 127s + 1s == -128s
+assert -1s + -1s == -2s
+
+assert 2s - 1s == 1s
+assert 100s - -5s == 105s
+assert 1s - -1s == 2s
+assert -1s - 1s == -2s
+assert -1s - -1s == 0s
+
+assert 1s * 0s == 0s
+assert 5s * 1s == 5s
+assert 10s * 6s == 60s
+assert 16s * 16s == 0s
+assert 20s * -5s == -100s
+assert 127s * 127s == 1s
+assert -1s * -1s == 1s
+assert -1s * 127s == -127s
+
+assert 4s / 2s == 2s
+assert 4s / 1s == 4s
+assert 10s / 100s == 0s
+assert -10s / -5s == 2s
+assert 5s / -10s == 0s
+assert -10s / 5s == -2s
+assert 1s / 2s == 0s
+
+assert rem(4s, 1s) == 0s
+assert rem(10s, 3s) == 1s
+assert rem(-1s, 10s) == -1s
+assert rem(100s, -10s) == 0s
+
+assert 4s % 1s == 0s
+assert 10s % 3s == 1s
+assert -1s % 10s == 9s
+assert 20s % -9s == -7s
+
+assert lnot(-1s) == 0s
+assert lnot(0s) == -1s
+assert lnot(2s) == -3s
+
+assert (0b1010s & 0b10s) == 0b10s
+assert (0b1010s & 0s) == 0s
+
+assert (0b1010s | 0b0101s) == 0b1111s
+assert (0b1010s | 0s) == 0b1010s
+
+assert (0b1010s ^ 0b1101s) == 0b0111s
+assert (0b1010s ^ 0s) == 0b1010s
+
+assert 1s << 1s == 2s
+assert 3s << 1s == 6s
+assert 1s << 2s == 4s
+assert 1s << 8s == 0s
+assert -24s << 1s == -48s
+
+assert 4s >> 1s == 2s
+assert 4s >> 2s == 1s
+assert -4s >> 1s == -2s
+assert 4s >> 3s == 0s
+assert 1s >> 1s == 0s
+
+assert incr(0s) == 1s
+assert incr(-1s) == 0s
+assert incr(127s) == -128s
+assert decr(1s) == 0s
+assert decr(0s) == -1s
+assert decr(-128s) == 127s
+
+match (1s) {
+  0s => fail "uint8 matched to 0 incorrectly",
+  0x1s => void,
+  _ => fail "uint8 incorrectly matched",
+}
+
+let arr = [> 1, 2, 3]
+assert arr[toNumber(1s)] == 2
+
+assert compare(0s, 1s) < 0
+assert compare(2s, 1s) > 0
+assert compare(0s, 0s) == 0
+assert compare(0s, -1s) > 0
+assert compare(-1s, 0s) < 0
+
+assert toString(123s) == "123"
+assert toString(-1s) == "-1"
+
+from Int8 use { (==), (!=), (<), (<=), (>), (>=) }
+
+assert 1s == 1s
+assert !(1s == 2s)
+
+assert 1s != 2s
+assert !(1s != 1s)
+
+assert 5s > 1s
+assert 5s >= 5s
+assert 5s < 17s
+assert 5s <= 5s
+assert !(5s > 5s)
+assert !(-5s >= 22s)
+assert !(5s < -17s)
+assert !(5s <= 4s)

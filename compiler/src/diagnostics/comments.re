@@ -4,280 +4,114 @@ open Grain_utils;
 
 // Attributes in a comment are prefixed with `@` symbol, such as `@param`
 module Attribute = {
-  exception InvalidAttribute(string);
-  exception MalformedAttribute(string, string);
+  open Comment_attributes;
 
-  type attr_name = string;
-  type attr_desc = string;
-  // The `attr_type` always starts as `None` and is applied later by something like Graindoc
-  type attr_type = option(string);
-  type attr_version = string;
+  type attributes = list(t);
 
-  type t =
-    | Param({
-        attr_name,
-        attr_type,
-        attr_desc,
-      })
-    | Returns({
-        attr_desc,
-        attr_type,
-      })
-    | Module({
-        attr_name,
-        attr_desc,
-      })
-    // Currently only accepts single-line examples
-    | Example({attr_desc})
-    | Section({
-        attr_name,
-        attr_desc,
-      })
-    | Deprecated({attr_desc})
-    | Since({attr_version})
-    | History({
-        attr_version,
-        attr_desc,
-      })
-    | Throws({
-        attr_type,
-        attr_desc,
-      });
+  type error =
+    | GraindocSyntaxError(string, string);
 
-  let parse_param = (~attr, content) => {
-    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_name = Str.matched_group(1, content);
-      let attr_desc = Str.matched_group(2, content);
-      Param({attr_name, attr_desc, attr_type: None});
-    } else {
+  exception Error(Location.t, error);
+
+  let report_error = (ppf, err) =>
+    switch (err) {
+    | GraindocSyntaxError(msg, where) =>
+      Format.fprintf(ppf, "Graindoc syntax error %s: %s", where, msg)
+    };
+
+  let () =
+    Location.register_error_of_exn(
+      fun
+      | Error(loc, err) =>
+        Some(Location.error_of_printer(loc, report_error, err))
+      | _ => None,
+    );
+
+  let extract = (comment_source, comment_content, comment_loc) => {
+    // strip trailing */ to allow block comments in examples
+    let modified_source =
+      String.trim(
+        Grain_utils.String_utils.slice(~first=0, ~last=-2, comment_source),
+      );
+    let lexbuf = Sedlexing.Utf8.from_string(modified_source);
+
+    Sedlexing.set_position(lexbuf, comment_loc.Location.loc_start);
+    Sedlexing.set_filename(lexbuf, comment_loc.Location.loc_start.pos_fname);
+
+    let parse_graindoc =
+      MenhirLib.Convert.Simplified.traditional2revised(
+        Graindoc_parser.graindoc,
+      );
+    let (buffer, graindoc_lexer) =
+      MenhirLib.ErrorReports.wrap_supplier(
+        Sedlexing.with_tokenizer(Graindoc_lexer.make_lexer(), lexbuf),
+      );
+
+    try(parse_graindoc(graindoc_lexer)) {
+    | Graindoc_parser.Error(state) =>
+      open Lexing;
+      let chunk = ((start_p, end_p)) =>
+        String_utils.Utf8.sub(
+          comment_source,
+          start_p.pos_cnum - comment_loc.loc_start.pos_cnum,
+          end_p.pos_cnum - start_p.pos_cnum,
+        );
+      let where = MenhirLib.ErrorReports.show(chunk, buffer);
       raise(
-        MalformedAttribute(
-          attr,
-          "@param ParamName: Description of param value",
+        Error(
+          Location.curr(lexbuf),
+          GraindocSyntaxError(
+            Graindoc_parser_messages.message(state),
+            where,
+          ),
         ),
       );
     };
   };
 
-  let parse_returns = (~attr, content) => {
-    let re = Str.regexp({|^\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_desc = Str.matched_group(1, content);
-      Returns({attr_desc, attr_type: None});
-    } else {
-      raise(
-        MalformedAttribute(attr, "@returns Description of return value"),
-      );
-    };
-  };
-
-  let parse_module = (~attr, content) => {
-    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_name = Str.matched_group(1, content);
-      let attr_desc = Str.matched_group(2, content);
-      Module({attr_name, attr_desc});
-    } else {
-      raise(
-        MalformedAttribute(attr, "@module ModuleName: Description of module"),
-      );
-    };
-  };
-
-  let parse_example = (~attr, content) => {
-    let re = Str.regexp({|^\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_desc = Str.matched_group(1, content);
-      Example({attr_desc: attr_desc});
-    } else {
-      raise(MalformedAttribute(attr, "@example single-line code example"));
-    };
-  };
-
-  let parse_section = (~attr, content) => {
-    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_name = Str.matched_group(1, content);
-      let attr_desc = Str.matched_group(2, content);
-      Section({attr_name, attr_desc});
-    } else {
-      raise(
-        MalformedAttribute(
-          attr,
-          "@section SectionName: Description of section",
-        ),
-      );
-    };
-  };
-
-  let parse_deprecated = (~attr, content) => {
-    let re = Str.regexp({|^\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_desc = Str.matched_group(1, content);
-      Deprecated({attr_desc: attr_desc});
-    } else {
-      raise(
-        MalformedAttribute(attr, "@deprecated Description of deprecation"),
-      );
-    };
-  };
-
-  let parse_since = (~attr, content) => {
-    let re = Str.regexp({|^v?\([0-9]+\.[0-9]+\.[0-9]+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_version = Str.matched_group(1, content);
-      Since({attr_version: attr_version});
-    } else {
-      raise(MalformedAttribute(attr, "@since vX.Y.Z"));
-    };
-  };
-
-  let parse_history = (~attr, content) => {
-    let re = Str.regexp({|^v?\([0-9]+\.[0-9]+\.[0-9]+\):[ ]+\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_version = Str.matched_group(1, content);
-      let attr_desc = Str.matched_group(2, content);
-      History({attr_version, attr_desc});
-    } else {
-      raise(
-        MalformedAttribute(attr, "@history vX.Y.Z: Description of history"),
-      );
-    };
-  };
-
-  let parse_throws = (~attr, content) => {
-    let re = Str.regexp({|^\([^:]+\):[ ]+\(.+\)$|});
-    if (Str.string_match(re, content, 0)) {
-      let attr_type = Str.matched_group(1, content);
-      let attr_desc = Str.matched_group(2, content);
-      Throws({attr_type: Some(attr_type), attr_desc});
-    } else {
-      raise(
-        MalformedAttribute(
-          attr,
-          "@throws ExceptionType: Explanation of exceptional case",
-        ),
-      );
-    };
-  };
-
-  let extract = comment => {
-    let attrs = ref([]);
-    let attr_line_re = Str.regexp({|^@\([a-zA-Z_]+\)\b\(.*\)$|});
-
-    // TODO: We should probably transition to a lexer, instead of 2-passes of RegExp
-    let out =
-      Str.global_substitute(
-        attr_line_re,
-        _ => {
-          let attr = Str.matched_group(1, comment);
-          // Trim this since we only match word boundaries now
-          let content = String.trim(Str.matched_group(2, comment));
-          switch (attr) {
-          | "param" =>
-            let param_attr = parse_param(~attr, content);
-            attrs := [param_attr, ...attrs^];
-          | "returns" =>
-            let returns_attr = parse_returns(~attr, content);
-            attrs := [returns_attr, ...attrs^];
-          | "module" =>
-            let module_attr = parse_module(~attr, content);
-            attrs := [module_attr, ...attrs^];
-          | "example" =>
-            let example_attr = parse_example(~attr, content);
-            attrs := [example_attr, ...attrs^];
-          | "section" =>
-            let section_attr = parse_section(~attr, content);
-            attrs := [section_attr, ...attrs^];
-          | "deprecated" =>
-            let deprecated_attr = parse_deprecated(~attr, content);
-            attrs := [deprecated_attr, ...attrs^];
-          | "since" =>
-            let since_attr = parse_since(~attr, content);
-            attrs := [since_attr, ...attrs^];
-          | "history" =>
-            let history_attr = parse_history(~attr, content);
-            attrs := [history_attr, ...attrs^];
-          | "throws" =>
-            let throws_attr = parse_throws(~attr, content);
-            attrs := [throws_attr, ...attrs^];
-          | _ => raise(InvalidAttribute(attr))
-          };
-
-          // Replace it with nothing
-          "";
-        },
-        comment,
-      );
-
-    let desc = String.trim(out);
-    let desc_opt =
-      if (desc != "") {
-        Some(desc);
-      } else {
-        None;
-      };
-    (desc_opt, List.rev(attrs^));
-  };
-
-  let is_param = (attr: t) => {
+  let is_param = attr => {
     switch (attr) {
     | Param(_) => true
     | _ => false
     };
   };
 
-  let is_returns = (attr: t) => {
+  let is_returns = attr => {
     switch (attr) {
     | Returns(_) => true
     | _ => false
     };
   };
 
-  let is_module = (attr: t) => {
-    switch (attr) {
-    | Module(_) => true
-    | _ => false
-    };
-  };
-
-  let is_example = (attr: t) => {
+  let is_example = attr => {
     switch (attr) {
     | Example(_) => true
     | _ => false
     };
   };
 
-  let is_section = (attr: t) => {
-    switch (attr) {
-    | Section(_) => true
-    | _ => false
-    };
-  };
-
-  let is_deprecated = (attr: t) => {
+  let is_deprecated = attr => {
     switch (attr) {
     | Deprecated(_) => true
     | _ => false
     };
   };
 
-  let is_since = (attr: t) => {
+  let is_since = attr => {
     switch (attr) {
     | Since(_) => true
     | _ => false
     };
   };
 
-  let is_history = (attr: t) => {
+  let is_history = attr => {
     switch (attr) {
     | History(_) => true
     | _ => false
     };
   };
 
-  let is_throws = (attr: t) => {
+  let is_throws = attr => {
     switch (attr) {
     | Throws(_) => true
     | _ => false
@@ -308,7 +142,7 @@ module Attribute = {
 };
 
 type description = option(string);
-type attributes = list(Attribute.t);
+type attributes = Attribute.attributes;
 
 module type OrderedComments = {
   type comment = (Typedtree.comment, description, attributes);
@@ -348,8 +182,9 @@ module MakeOrderedComments =
         | Block({cmt_loc, _}) =>
           let data = (comment, None, []);
           (cmt_loc.loc_start.pos_lnum, cmt_loc.loc_end.pos_lnum, data);
-        | Doc({cmt_loc, cmt_content}) =>
-          let (description, attributes) = Attribute.extract(cmt_content);
+        | Doc({cmt_source, cmt_content, cmt_loc}) =>
+          let (description, attributes) =
+            Attribute.extract(cmt_source, cmt_content, cmt_loc);
           let data = (comment, description, attributes);
           (cmt_loc.loc_start.pos_lnum, cmt_loc.loc_end.pos_lnum, data);
         };
@@ -412,30 +247,6 @@ module Doc = {
       };
     };
     ending_on_lnum_help(lnum, true);
-  };
-
-  let find_module = (module C: OrderedComments) => {
-    let module_comments = ref([]);
-    C.iter((_, (_comment, _desc, attrs) as comment) =>
-      if (List.exists(Attribute.is_module, attrs)) {
-        module_comments := [comment, ...module_comments^];
-      }
-    );
-    if (List.length(module_comments^) > 1) {
-      failwith("More than one @module block is not supported");
-    } else {
-      List.nth_opt(module_comments^, 0);
-    };
-  };
-
-  let find_sections = (module C: OrderedComments) => {
-    let section_comments = ref([]);
-    C.iter((_, (_comment, _desc, attrs) as comment) =>
-      if (List.exists(Attribute.is_section, attrs)) {
-        section_comments := [comment, ...section_comments^];
-      }
-    );
-    List.rev(section_comments^);
   };
 };
 

@@ -33,7 +33,10 @@ describe("optimizations", ({test, testSkip}) => {
             open Grain_middle_end;
             let final_anf =
               Anf_utils.clear_locations @@
-              compile_string_to_final_anf(outfile, program_str);
+              compile_string_to_final_anf(
+                outfile,
+                "module Test; " ++ program_str,
+              );
             let saved_disabled = Grain_typed.Ident.disable_stamps^;
             let (result, expected) =
               try(
@@ -150,22 +153,18 @@ describe("optimizations", ({test, testSkip}) => {
   assertAnf(
     "test_const_propagation_shadowing",
     "{\n  let x = 5;\n  let y = 12;\n  let z = y;\n  {\n    let y = x;\n    x\n  }\n  x + y}",
-    AExp.comp(
-      Comp.imm(
-        ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(17L))),
-      ),
-    ),
-  );
-  /* Primarily a constant-folding test, but DAE removes the let bindings as well */
-  assertAnf(
-    "test_const_folding",
-    "{\n    let x = 4 + 5;\n    let y = x * 2;\n    let z = y - x;\n    let a = x + 7;\n    let b = 14;\n    a + b}",
-    AExp.comp(
-      Comp.imm(
-        ~allocation_type=Managed,
-        Imm.const(Const_number(Const_number_int(30L))),
-      ),
+    Grain_typed.(
+      AExp.comp(
+        Comp.app(
+          ~tail=true,
+          ~allocation_type=Managed,
+          (Imm.id(Ident.create("+")), ([Managed, Managed], Managed)),
+          [
+            Imm.const(Const_number(Const_number_int(5L))),
+            Imm.const(Const_number(Const_number_int(12L))),
+          ],
+        ),
+      )
     ),
   );
   assertAnf(
@@ -211,7 +210,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertAnf(
     "test_local_mutations1",
-    "export let foo = () => {let mut x = 5; x = 6}",
+    "provide let foo = () => {let mut x = 5; x = 6}",
     {
       open Grain_typed;
       let foo = Ident.create("foo");
@@ -262,7 +261,7 @@ describe("optimizations", ({test, testSkip}) => {
   );
   assertAnf(
     "test_no_local_mutation_optimization_of_closure_scope_mut",
-    "/* grainc-flags --experimental-wasm-tail-call */ export let bar = () => { let mut x = 5; let foo = () => x; foo() }",
+    "provide let bar = () => { let mut x = 5; let foo = () => x; foo() }",
     {
       open Grain_typed;
       let x = Ident.create("x");
@@ -337,7 +336,7 @@ describe("optimizations", ({test, testSkip}) => {
   /* All optimizations are needed to work completely on this input */
   assertAnf(
     "test_optimizations_work_together",
-    "/* grainc-flags --experimental-wasm-tail-call */ {\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
+    "{\n    let x = 5;\n    let foo = ((y) => {y});\n    let y = (3, 5);\n    foo(3) + x}",
     {
       open Grain_typed;
       let plus = Ident.create("+");
@@ -415,13 +414,12 @@ describe("optimizations", ({test, testSkip}) => {
   // Removal of manual memory management calls
   assertAnf(
     "test_manual_gc_calls_removed",
-    ~config_fn=() => {Grain_utils.Config.experimental_tail_call := true},
     {|
       /* grainc-flags --no-gc */
-      import Memory from "runtime/unsafe/memory"
-      import WasmI32 from "runtime/unsafe/wasmi32"
+      include "runtime/unsafe/memory"
+      include "runtime/unsafe/wasmi32"
       @disableGC
-      export let foo = (x, y, z) => {
+      provide let foo = (x, y, z) => {
         Memory.incRef(WasmI32.fromGrain((+)))
         Memory.incRef(WasmI32.fromGrain((+)))
         // x, y, and z will get decRef'd by `+`
@@ -442,7 +440,9 @@ describe("optimizations", ({test, testSkip}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Disable_gc],
+              ~attributes=[
+                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
+              ],
               [(arg, Managed), (arg, Managed), (arg, Managed)],
               (
                 AExp.let_(
@@ -486,9 +486,9 @@ describe("optimizations", ({test, testSkip}) => {
     "test_no_bulk_memory_calls",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := false},
     {|
-      import Memory from "runtime/unsafe/memory"
+      include "runtime/unsafe/memory"
       @disableGC
-      export let foo = () => {
+      provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
         Memory.copy(0n, 0n, 0n)
       }
@@ -506,7 +506,9 @@ describe("optimizations", ({test, testSkip}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Disable_gc],
+              ~attributes=[
+                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
+              ],
               [],
               (
                 AExp.seq(
@@ -531,6 +533,7 @@ describe("optimizations", ({test, testSkip}) => {
                   ),
                   AExp.comp(
                     Comp.app(
+                      ~tail=true,
                       ~allocation_type=Unmanaged(WasmI32),
                       (
                         Imm.id(copy),
@@ -569,9 +572,9 @@ describe("optimizations", ({test, testSkip}) => {
     "test_memory_fill_calls_replaced",
     ~config_fn=() => {Grain_utils.Config.bulk_memory := true},
     {|
-      import Memory from "runtime/unsafe/memory"
+      include "runtime/unsafe/memory"
       @disableGC
-      export let foo = () => {
+      provide let foo = () => {
         Memory.fill(0n, 0n, 0n)
         Memory.copy(0n, 0n, 0n)
       }
@@ -587,7 +590,9 @@ describe("optimizations", ({test, testSkip}) => {
             foo,
             Comp.lambda(
               ~name=Ident.name(foo),
-              ~attributes=[Disable_gc],
+              ~attributes=[
+                Grain_parsing.Location.mknoloc(Typedtree.Disable_gc),
+              ],
               [],
               (
                 AExp.seq(
@@ -635,5 +640,13 @@ describe("optimizations", ({test, testSkip}) => {
       print(bar)
     |},
     "5\n",
+  );
+  assertRun(
+    "regression_issue_1675",
+    {|
+      let (+) = (a, b) => toString(a) ++ " plus " ++ toString(b)
+      print(1 + 2)
+    |},
+    "1 plus 2\n",
   );
 });

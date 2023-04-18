@@ -12,12 +12,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Exception from "exception"
+include "exception"
 ```
 
 ## Values
 
-Functions included in the Exception module.
+Functions and constants included in the Exception module.
 
 ### Exception.**registerPrinter**
 
@@ -27,7 +27,7 @@ No other changes yet.
 </details>
 
 ```grain
-registerPrinter : (Exception -> Option<String>) -> Void
+registerPrinter : (printer: (Exception -> Option<String>)) -> Void
 ```
 
 Registers an exception printer. When an exception is thrown, all registered

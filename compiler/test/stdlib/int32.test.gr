@@ -1,10 +1,20 @@
-import * from "int32"
+module Int32Test
 
+include "int32"
+from Int32 use *
+
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(5) == 5l
 assert fromNumber(0) == 0l
 
 assert toNumber(555l) == 555
+assert toNumber(0x40000000l) == 0x40000000
+assert toNumber(-0x40000001l) == -0x40000001
 assert toNumber(0l) == 0
+
+assert fromUint32(1ul) == 1l
+assert fromUint32(0xfffffffful) == -1l
 
 assert lnot(0xffffffffl) == 0l
 assert lnot(0l) == 0xffffffffl
@@ -25,11 +35,6 @@ assert shl(-1l, 3l) == -8l
 assert shl(-2l, 63l) == 0l
 assert shl(24l, 1l) == 48l
 
-assert shrU(4l, 1l) == 2l
-assert shrU(4l, 2l) == 1l
-assert shrU(4l, 3l) == 0l
-assert shrU(-1l, 63l) == 1l
-
 assert shr(-1l, 63l) == -1l
 assert shr(-24l, 1l) == -12l
 
@@ -41,16 +46,6 @@ assert !gt(5l, 5l)
 assert !gte(5l, 22l)
 assert !lt(5l, -17l)
 assert !lte(5l, 4l)
-
-// unsigned comparisons:
-assert gtU(5l, 4l)
-assert gteU(5l, 5l)
-assert ltU(5l, 17l)
-assert lteU(5l, 5l)
-assert !gtU(5l, 5l)
-assert !gteU(5l, 22l)
-assert ltU(5l, -17l)
-assert !lteU(5l, 4l)
 
 assert clz(0b11l) == 30l
 assert ctz(0b11000l) == 3l

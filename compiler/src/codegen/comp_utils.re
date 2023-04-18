@@ -3,6 +3,11 @@ open Binaryen;
 open Grain_typed;
 open Grain_utils;
 
+let grain_main = "_gmain";
+let grain_start = "_start";
+let grain_env_name = "_genv";
+let grain_global_function_table = "tbl";
+
 let wasm_type =
   fun
   | Types.Managed
@@ -28,24 +33,64 @@ let wrap_float64 = n => Literal.float64(n);
 let grain_number_max = 0x3fffffff;
 let grain_number_min = (-0x3fffffff); // 0xC0000001
 
+type int_type =
+  | Int8Type
+  | Int16Type
+  | Uint8Type
+  | Uint16Type;
+
 /** Constant compilation */
 
 let rec compile_const = (c): Literal.t => {
   let identity: 'a. 'a => 'a = x => x;
   let conv_int32 = n => Int32.(add(mul(2l, n), 1l));
   let conv_int64 = n => Int64.(add(mul(2L, n), 1L));
+  let conv_uint32 = n => Int32.(add(mul(2l, n), 1l));
+  let conv_uint64 = n => Int64.(add(mul(2L, n), 1L));
   let conv_float32 = identity;
   let conv_float64 = identity;
+  let conv_char = char => {
+    let uchar = List.hd @@ Utf8.decodeUtf8String(char);
+    let uchar_int: int = Utf8__Uchar.toInt(uchar);
+    Int32.of_int(uchar_int lsl 8 lor 0b010);
+  };
+  let conv_short_int = (int, int_type) => {
+    let tag =
+      switch (int_type) {
+      | Int8Type => 1l
+      | Int16Type => 2l
+      | Uint8Type => 3l
+      | Uint16Type => 4l
+      };
+    let (<<) = Int32.shift_left;
+    let (||) = Int32.logor;
+    let shifted_tag = tag << 3;
+    int << 8 || shifted_tag || 0b010l;
+  };
   switch (c) {
   | MConstLiteral(MConstLiteral(_) as c) => compile_const(c)
+  | MConstI8(n) => Literal.int32(conv_short_int(n, Int8Type))
+  | MConstI16(n) => Literal.int32(conv_short_int(n, Int16Type))
   | MConstI32(n) => Literal.int32(conv_int32(n))
   | MConstI64(n) => Literal.int64(conv_int64(n))
+  | MConstU8(n) => Literal.int32(conv_short_int(n, Uint8Type))
+  | MConstU16(n) => Literal.int32(conv_short_int(n, Uint16Type))
+  | MConstU32(n) => Literal.int32(conv_uint32(n))
+  | MConstU64(n) => Literal.int64(conv_uint64(n))
   | MConstF32(n) => Literal.float32(conv_float32(n))
   | MConstF64(n) => Literal.float64(conv_float64(n))
+  | MConstChar(c) => Literal.int32(conv_char(c))
+  | MConstLiteral(MConstI8(n))
+  | MConstLiteral(MConstI16(n))
   | MConstLiteral(MConstI32(n)) => Literal.int32(n)
   | MConstLiteral(MConstI64(n)) => Literal.int64(n)
+  | MConstLiteral(MConstU8(n))
+  | MConstLiteral(MConstU16(n))
+  | MConstLiteral(MConstU32(n)) => Literal.int32(n)
+  | MConstLiteral(MConstU64(n)) => Literal.int64(n)
   | MConstLiteral(MConstF32(n)) => Literal.float32(n)
   | MConstLiteral(MConstF64(n)) => Literal.float64(n)
+  | MConstLiteral(MConstChar(c)) => Literal.int32(conv_char(c))
   };
 };
 
@@ -88,8 +133,6 @@ let load =
   Expression.Load.make(~signed, wasm_mod, sz, offset, align, ty, ptr);
 };
 
-let grain_env_name = "_grainEnv";
-
 let is_grain_env = str => grain_env_name == str;
 
 let get_exported_names = (~function_names=?, ~global_names=?, wasm_mod) => {
@@ -131,8 +174,6 @@ let type_of_repr = repr => {
   );
 };
 
-let global_function_table = "tbl";
-
 let write_universal_exports =
     (wasm_mod, {Cmi_format.cmi_sign}, exported_names) => {
   Types.(
@@ -172,7 +213,7 @@ let write_universal_exports =
               );
             let function_call =
               switch (direct) {
-              | Direct(name) =>
+              | Direct({name}) =>
                 Expression.Call.make(
                   wasm_mod,
                   Hashtbl.find(exported_names, name),
@@ -197,7 +238,7 @@ let write_universal_exports =
                   );
                 Expression.Call_indirect.make(
                   wasm_mod,
-                  global_function_table,
+                  grain_global_function_table,
                   func_ptr,
                   arguments,
                   call_arg_types,
@@ -210,6 +251,50 @@ let write_universal_exports =
               | [] => Expression.Drop.make(wasm_mod, function_call)
               | _ => function_call
               };
+            let function_body =
+              Expression.Block.make(
+                wasm_mod,
+                "closure_incref",
+                [
+                  Expression.If.make(
+                    wasm_mod,
+                    Expression.Binary.make(
+                      wasm_mod,
+                      Op.ne_int32,
+                      get_closure(),
+                      Expression.Const.make(wasm_mod, Literal.int32(0l)),
+                    ),
+                    store(
+                      wasm_mod,
+                      Expression.Binary.make(
+                        wasm_mod,
+                        Op.sub_int32,
+                        get_closure(),
+                        Expression.Const.make(wasm_mod, Literal.int32(8l)),
+                      ),
+                      Expression.Binary.make(
+                        wasm_mod,
+                        Op.add_int32,
+                        load(
+                          wasm_mod,
+                          Expression.Binary.make(
+                            wasm_mod,
+                            Op.sub_int32,
+                            get_closure(),
+                            Expression.Const.make(
+                              wasm_mod,
+                              Literal.int32(8l),
+                            ),
+                          ),
+                        ),
+                        Expression.Const.make(wasm_mod, Literal.int32(1l)),
+                      ),
+                    ),
+                    Expression.Null.make(),
+                  ),
+                  function_body,
+                ],
+              );
             let arg_types =
               Type.create(Array.of_list(List.map(type_of_repr, args)));
             let result_types =

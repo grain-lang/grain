@@ -1,4 +1,7 @@
-import * from "list";
+module LongLists
+
+include "list"
+from List use *
 
 let rec make_list = (x, n) => {
   let rec helper = (a, b, acc) => {
@@ -7,17 +10,16 @@ let rec make_list = (x, n) => {
     } else {
       helper(a - 1, b, [b, ...acc])
     }
-  };
+  }
   helper(n, x, [])
 },
-
-loop = (n) => {
+loop = n => {
   if (n == 0) {
     true
   } else {
-    let lst = make_list(n, n);
+    let lst = make_list(n, n)
     loop(n - 1)
   }
-};
+}
 
 print(loop(25)) // <- eats up a lot of heap

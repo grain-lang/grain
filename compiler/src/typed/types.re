@@ -38,7 +38,7 @@ type type_expr = {
 
 and type_desc =
   | TTyVar(option(string)) // A type variable (None == "_")
-  | TTyArrow(list(type_expr), type_expr, commutable) // A function type.
+  | TTyArrow(list((argument_label, type_expr)), type_expr, commutable) // A function type.
   | TTyTuple(list(type_expr)) // A tuple type.
   | TTyRecord(list((string, type_expr))) // A record type.
   | TTyConstr(Path.t, list(type_expr), ref(abbrev_memo)) // A parameterized type.
@@ -72,48 +72,6 @@ and abbrev_memo =
   | TMemLink(ref(abbrev_memo));
 
 [@deriving (sexp, yojson)]
-type constructor_tag =
-  | CstrConstant(int)
-  | CstrBlock(int)
-  | CstrExtension(int, Path.t, extension_constructor_type)
-  | CstrUnboxed
-
-[@deriving (sexp, yojson)]
-and extension_constructor_type =
-  | CstrExtensionConstant
-  | CstrExtensionBlock
-
-[@deriving (sexp, yojson)]
-and constructor_description = {
-  cstr_name: string, // Constructor name
-  cstr_res: type_expr, // Type of the result
-  cstr_existentials: list(type_expr), // list of existentials
-  cstr_args: list(type_expr), // Type of the arguments
-  cstr_arity: int, // Number of arguments
-  cstr_tag: constructor_tag, // Tag for heap blocks
-  cstr_consts: int, // Number of constant constructors
-  cstr_nonconsts: int, // Number of non-constant constructors
-  [@sexp_drop_if sexp_locs_disabled]
-  cstr_loc: Location.t,
-}
-
-and value_unbound_reason =
-  | ValUnboundGhostRecursive;
-
-[@deriving (sexp, yojson)]
-type type_metadata =
-  | ADTMetadata(int, list((int, string)))
-  | RecordMetadata(int, list(string))
-  | ExceptionMetadata(int, int, string);
-
-[@deriving (sexp, yojson)]
-type value_kind =
-  | TValReg
-  | TValPrim(string)
-  | TValUnbound(value_unbound_reason)
-  | TValConstructor(constructor_description);
-
-[@deriving (sexp, yojson)]
 type allocation_type =
   | Unmanaged(wasm_repr)
   | Managed
@@ -132,22 +90,12 @@ type val_repr =
 
 [@deriving (sexp, yojson)]
 and func_direct =
-  | Direct(string)
+  | Direct({
+      name: string,
+      closure: bool,
+    })
   | Indirect
   | Unknown;
-
-[@deriving (sexp, yojson)]
-type value_description = {
-  val_type: type_expr,
-  val_repr,
-  val_kind: value_kind,
-  val_internalpath: Path.t,
-  val_fullpath: Path.t,
-  val_mutable: bool,
-  val_global: bool,
-  [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
-  val_loc: Location.t,
-};
 
 [@deriving (sexp, yojson)]
 type record_field = {
@@ -156,31 +104,6 @@ type record_field = {
   rf_mutable: bool,
   [@sexp_drop_if sexp_locs_disabled]
   rf_loc: Location.t,
-};
-
-[@deriving (sexp, yojson)]
-type constructor_declaration = {
-  cd_id: Ident.t,
-  cd_args: constructor_arguments,
-  cd_res: option(type_expr),
-  cd_repr: val_repr,
-  [@sexp_drop_if sexp_locs_disabled]
-  cd_loc: Location.t,
-}
-
-and constructor_arguments =
-  | TConstrTuple(list(type_expr))
-  | TConstrSingleton;
-
-[@deriving (sexp, yojson)]
-type extension_constructor = {
-  ext_type_path: Path.t,
-  ext_type_params: list(type_expr),
-  ext_args: constructor_arguments,
-  ext_repr: val_repr,
-  ext_name: Ident.t,
-  [@sexp_drop_if sexp_locs_disabled]
-  ext_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
@@ -200,7 +123,94 @@ and type_kind =
   | TDataVariant(list(constructor_declaration))
   | TDataAbstract
   | TDataRecord(list(record_field))
-  | TDataOpen;
+  | TDataOpen
+
+[@deriving (sexp, yojson)]
+and constructor_declaration = {
+  cd_id: Ident.t,
+  cd_args: constructor_arguments,
+  cd_res: option(type_expr),
+  cd_repr: val_repr,
+  [@sexp_drop_if sexp_locs_disabled]
+  cd_loc: Location.t,
+}
+
+and constructor_arguments =
+  | TConstrTuple(list(type_expr))
+  | TConstrRecord(list(record_field))
+  | TConstrSingleton;
+
+[@deriving (sexp, yojson)]
+type extension_constructor_type =
+  | CstrExtensionConstant
+  | CstrExtensionBlock;
+
+[@deriving (sexp, yojson)]
+type constructor_tag =
+  | CstrConstant(int)
+  | CstrBlock(int)
+  | CstrExtension(int, Path.t, extension_constructor_type)
+  | CstrUnboxed;
+
+[@deriving (sexp, yojson)]
+type constructor_description = {
+  cstr_name: string, // Constructor name
+  cstr_res: type_expr, // Type of the result
+  cstr_existentials: list(type_expr), // list of existentials
+  cstr_args: list(type_expr), // Type of the arguments
+  cstr_arity: int, // Number of arguments
+  cstr_tag: constructor_tag, // Tag for heap blocks
+  cstr_consts: int, // Number of constant constructors
+  cstr_nonconsts: int, // Number of non-constant constructors
+  cstr_inlined: option(type_declaration), // For inlined record constructors
+  [@sexp_drop_if sexp_locs_disabled]
+  cstr_loc: Location.t,
+}
+
+and value_unbound_reason =
+  | ValUnboundGhostRecursive;
+
+[@deriving (sexp, yojson)]
+type adt_constructor_type =
+  | TupleConstructor
+  | RecordConstructor(list(string));
+
+[@deriving (sexp, yojson)]
+type type_metadata =
+  | ADTMetadata(int, list((int, string, adt_constructor_type)))
+  | RecordMetadata(int, list(string))
+  | ExceptionMetadata(int, int, string, adt_constructor_type);
+
+[@deriving (sexp, yojson)]
+type value_kind =
+  | TValReg
+  | TValPrim(string)
+  | TValUnbound(value_unbound_reason)
+  | TValConstructor(constructor_description);
+
+[@deriving (sexp, yojson)]
+type value_description = {
+  val_type: type_expr,
+  val_repr,
+  val_kind: value_kind,
+  val_internalpath: Path.t,
+  val_fullpath: Path.t,
+  val_mutable: bool,
+  val_global: bool,
+  [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
+  val_loc: Location.t,
+};
+
+[@deriving (sexp, yojson)]
+type extension_constructor = {
+  ext_type_path: Path.t,
+  ext_type_params: list(type_expr),
+  ext_args: constructor_arguments,
+  ext_repr: val_repr,
+  ext_name: Ident.t,
+  [@sexp_drop_if sexp_locs_disabled]
+  ext_loc: Location.t,
+};
 
 [@deriving (sexp, yojson)]
 type rec_status =
@@ -242,6 +252,29 @@ and modtype_declaration = {
   [@sexp_drop_if sexp_locs_disabled] [@default Location.dummy_loc]
   mtd_loc: Location.t,
 };
+
+[@deriving sexp]
+type use_items =
+  | TUseAll
+  | TUseItems(list(use_item))
+
+[@deriving sexp]
+and use_item =
+  | TUseType({
+      name: string,
+      declaration: type_declaration,
+      loc: Location.t,
+    })
+  | TUseModule({
+      name: string,
+      declaration: module_declaration,
+      loc: Location.t,
+    })
+  | TUseValue({
+      name: string,
+      value: value_description,
+      loc: Location.t,
+    });
 
 module TypeOps = {
   type t = type_expr;

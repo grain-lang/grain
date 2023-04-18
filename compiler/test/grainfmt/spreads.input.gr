@@ -1,0 +1,33 @@
+module Spreads
+
+let rec filter = (fn, list) => {
+  match (list) {
+    [] => [],
+    [first, ...rest] => if (fn(first)) [first, ...filter(fn, rest)] else filter(fn, rest)
+  }
+}
+
+let filteri = (fn, list) => {
+  let rec iter = (fn, list, index22) => {
+    match (list) {
+      [] => [],
+      [first, ...rest] => if (fn(first, index22)) [first, ...iter(fn, rest, index22 + 1)] else iter(fn, rest, index22 + 1)
+    }
+  }
+  iter(fn, list, 0)
+}
+
+let rec reject = (fn, list) => {
+  match (list) {
+    [] => [],
+    [first, ...rest] => if (!fn(first)) [first, ...reject(fn, rest)] else reject(fn, rest)
+  }
+}
+
+let rec reject2 = (fn, list) => {
+  match (list) {
+    [] => [],
+    [first, ...rest] => { let x = []; x
+    }
+  }
+}

@@ -1,8 +1,10 @@
+module UnsafeWasmGlobalsExports
+
 @unsafe
-export let _I32_VAL = 42n
+provide let _I32_VAL = 42n
 @unsafe
-export let _I64_VAL = 42N
+provide let _I64_VAL = 42N
 @unsafe
-export let _F32_VAL = 42.w
+provide let _F32_VAL = 42.0w
 @unsafe
-export let _F64_VAL = 42.W
+provide let _F64_VAL = 42.0W

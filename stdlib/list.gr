@@ -1,16 +1,14 @@
 /**
- * @module List: Utilities for working with lists.
+ * Utilities for working with lists.
  *
- * @example import List from "list"
+ * @example include "list"
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `lists`
  * @history v0.2.0: Renamed to `list`
  */
 
-/**
- * @section Values: Functions for working with the List data type.
- */
+module List
 
 /**
  * Creates a new list of the specified length where each element is
@@ -25,7 +23,7 @@
  *
  * @since v0.3.0
  */
-export let init = (length, fn) => {
+provide let init = (length, fn) => {
   // This method can be further improved by checking the length against a specific size
   // and determining if it can be made tail-recursive, then use List.reverse on it.
   // Which would be the same as OCaml does it in https://github.com/ocaml/ocaml/blob/03839754f46319aa36d9dad56940a6f3c3bcb48a/stdlib/list.ml#L79
@@ -48,7 +46,7 @@ export let init = (length, fn) => {
  * @since v0.1.0
  * @history v0.2.0: Made the function tail-recursive
  */
-export let length = list => {
+provide let length = list => {
   let rec iter = (len, list) => {
     match (list) {
       [] => len,
@@ -66,7 +64,7 @@ export let length = list => {
  *
  * @since v0.1.0
  */
-export let reverse = list => {
+provide let reverse = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => acc,
@@ -86,7 +84,7 @@ export let reverse = list => {
  *
  * @since v0.1.0
  */
-export let rec append = (list1, list2) => {
+provide let rec append = (list1, list2) => {
   match (list1) {
     [] => list2,
     [first, ...rest] => [first, ...append(rest, list2)],
@@ -103,7 +101,7 @@ export let rec append = (list1, list2) => {
  *
  * @since v0.1.0
  */
-export let rec contains = (search, list) => {
+provide let rec contains = (search, list) => {
   match (list) {
     [] => false,
     [first, ...rest] => first == search || contains(search, rest),
@@ -130,7 +128,7 @@ export let rec contains = (search, list) => {
  * @history v0.1.0: Originally named `foldLeft`
  * @history v0.2.0: Renamed to `reduce`
  */
-export let rec reduce = (fn, initial, list) => {
+provide let rec reduce = (fn, initial, list) => {
   match (list) {
     [] => initial,
     [first, ...rest] => reduce(fn, fn(initial, first), rest),
@@ -157,7 +155,7 @@ export let rec reduce = (fn, initial, list) => {
  * @history v0.1.0: Originally named `foldRight`
  * @history v0.2.0: Renamed to `reduceRight`
  */
-export let rec reduceRight = (fn, initial, list) => {
+provide let rec reduceRight = (fn, initial, list) => {
   match (list) {
     [] => initial,
     [first, ...rest] => fn(first, reduceRight(fn, initial, rest)),
@@ -174,7 +172,7 @@ export let rec reduceRight = (fn, initial, list) => {
  *
  * @since v0.1.0
  */
-export let rec map = (fn, list) => {
+provide let rec map = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => [fn(first), ...map(fn, rest)],
@@ -191,7 +189,7 @@ export let rec map = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let mapi = (fn, list) => {
+provide let mapi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
@@ -213,7 +211,7 @@ export let mapi = (fn, list) => {
  *
  * @since v0.2.0
  */
-export let rec flatMap = (fn, list) => {
+provide let rec flatMap = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => append(fn(first), flatMap(fn, rest)),
@@ -230,7 +228,7 @@ export let rec flatMap = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let rec every = (fn, list) => {
+provide let rec every = (fn, list) => {
   match (list) {
     [] => true,
     // The short-circuiting of `&&` makes this tail-recursive
@@ -248,7 +246,7 @@ export let rec every = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let rec some = (fn, list) => {
+provide let rec some = (fn, list) => {
   match (list) {
     [] => false,
     // The short-circuiting of `||` makes this tail-recursive
@@ -264,7 +262,7 @@ export let rec some = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let rec forEach = (fn, list) => {
+provide let rec forEach = (fn, list) => {
   match (list) {
     [] => void,
     [first, ...rest] => {
@@ -283,7 +281,7 @@ export let rec forEach = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let forEachi = (fn, list) => {
+provide let forEachi = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => void,
@@ -307,7 +305,7 @@ export let forEachi = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let rec filter = (fn, list) => {
+provide let rec filter = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
@@ -326,7 +324,7 @@ export let rec filter = (fn, list) => {
  *
  * @since v0.3.0
  */
-export let filteri = (fn, list) => {
+provide let filteri = (fn, list) => {
   let rec iter = (fn, list, index) => {
     match (list) {
       [] => [],
@@ -349,7 +347,7 @@ export let filteri = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let rec reject = (fn, list) => {
+provide let rec reject = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] =>
@@ -369,7 +367,7 @@ export let rec reject = (fn, list) => {
  * @history v0.2.0: Renamed to `head`
  * @history v0.3.0: Return type converted to `Option` type
  */
-export let head = list => {
+provide let head = list => {
   match (list) {
     [] => None,
     [first, ..._] => Some(first),
@@ -388,7 +386,7 @@ export let head = list => {
  * @history v0.2.0: Renamed to `tail`
  * @history v0.3.0: Return type converted to `Option` type
  */
-export let tail = list => {
+provide let tail = list => {
   match (list) {
     [] => None,
     [_, ...rest] => Some(rest),
@@ -407,7 +405,7 @@ export let tail = list => {
  * @history v0.1.0: Originally failed for index out-of-bounds or list empty
  * @history v0.3.0: Return type converted to `Option` type
  */
-export let rec nth = (index, list) => {
+provide let rec nth = (index, list) => {
   if (index < 0) {
     None
   } else {
@@ -428,7 +426,7 @@ export let rec nth = (index, list) => {
  *
  * @since v0.1.0
  */
-export let rec flatten = list => {
+provide let rec flatten = list => {
   match (list) {
     [] => [],
     [first, ...rest] => append(first, flatten(rest)),
@@ -448,7 +446,7 @@ export let rec flatten = list => {
  *
  * @since v0.1.0
  */
-export let rec insert = (value, index, list) => {
+provide let rec insert = (value, index, list) => {
   if (index < 0) {
     fail "insert index cannot be a negative number"
   } else {
@@ -471,7 +469,7 @@ export let rec insert = (value, index, list) => {
  * @since v0.1.0
  * @history v0.2.0: Made the function tail-recursive
  */
-export let count = (fn, list) => {
+provide let count = (fn, list) => {
   let rec iter = (n, list) => {
     match (list) {
       [] => n,
@@ -493,7 +491,7 @@ export let count = (fn, list) => {
  *
  * @since v0.1.0
  */
-export let part = (count, list) => {
+provide let part = (count, list) => {
   if (count < 0) {
     fail "part count cannot be a negative number"
   } else {
@@ -526,10 +524,10 @@ export let part = (count, list) => {
  * @example List.rotate(-7, [1, 2, 3, 4, 5]) // [4, 5, 1, 2, 3]
  *
  * @since v0.1.0
- * 
+ *
  * @history v0.6.0: No longer throws if `count` outside list length bounds
  */
-export let rotate = (count, list) => {
+provide let rotate = (count, list) => {
   // Optimization: only compute the list length (O(n)) if the count is negative
   // or if the entire list is exhausted when partitioning. This should improve
   // performance if the list is very long but the count is small
@@ -568,7 +566,7 @@ export let rotate = (count, list) => {
  * @history v0.1.0: Originally named `uniq`
  * @history v0.2.0: Renamed to `unique`
  */
-export let unique = list => {
+provide let unique = list => {
   let rec iter = (list, acc) => {
     match (list) {
       [] => reverse(acc),
@@ -597,7 +595,7 @@ export let unique = list => {
  *
  * @since v0.5.3
  */
-export let zip = (list1, list2) => {
+provide let zip = (list1, list2) => {
   let rec zipInner = (list1, list2, acc) => {
     match ((list1, list2)) {
       ([first1, ...rest1], [first2, ...rest2]) =>
@@ -628,7 +626,7 @@ export let zip = (list1, list2) => {
  *
  * @since v0.5.3
  */
-export let zipWith = (fn, list1, list2) => {
+provide let zipWith = (fn, list1, list2) => {
   let rec zipWithInner = (list1, list2, acc) => {
     match ((list1, list2)) {
       ([first1, ...rest1], [first2, ...rest2]) =>
@@ -647,7 +645,7 @@ export let zipWith = (fn, list1, list2) => {
  *
  * @since v0.5.3
  */
-export let unzip = list => {
+provide let unzip = list => {
   reduceRight(((first, second), (firstUnzipped, secondUnzipped)) => {
     ([first, ...firstUnzipped], [second, ...secondUnzipped])
   }, ([], []), list)
@@ -665,13 +663,13 @@ export let unzip = list => {
  *
  * @since v0.2.0
  */
-export let rec drop = (count, list) => {
+provide let rec drop = (count, list) => {
   if (count < 0) {
     fail "number of items to drop cannot be a negative number"
   } else {
     match ((count, list)) {
       (_, []) => [],
-      (n, _) when n == 0 => list,
+      (0, _) => list,
       (n, [first, ...rest]) => drop(n - 1, rest),
     }
   }
@@ -688,7 +686,7 @@ export let rec drop = (count, list) => {
  *
  * @since v0.2.0
  */
-export let rec dropWhile = (fn, list) => {
+provide let rec dropWhile = (fn, list) => {
   match (list) {
     [] => list,
     [first, ...rest] => if (fn(first)) dropWhile(fn, rest) else list,
@@ -707,13 +705,13 @@ export let rec dropWhile = (fn, list) => {
  *
  * @since v0.2.0
  */
-export let rec take = (count, list) => {
+provide let rec take = (count, list) => {
   if (count < 0) {
     fail "number of items to take cannot be a negative number"
   } else {
     match ((count, list)) {
       (_, []) => list,
-      (n, _) when n == 0 => [],
+      (0, _) => [],
       (n, [first, ...rest]) => [first, ...take(n - 1, rest)],
     }
   }
@@ -730,7 +728,7 @@ export let rec take = (count, list) => {
  *
  * @since v0.2.0
  */
-export let rec takeWhile = (fn, list) => {
+provide let rec takeWhile = (fn, list) => {
   match (list) {
     [] => [],
     [first, ...rest] => if (fn(first)) [first, ...takeWhile(fn, rest)] else [],
@@ -748,7 +746,7 @@ export let rec takeWhile = (fn, list) => {
  * @history v0.2.0: Originally failed if the list was empty
  * @history v0.3.0: Return type converted to `Option` type
  */
-export let rec find = (fn, list) => {
+provide let rec find = (fn, list) => {
   match (list) {
     [] => None,
     [first, ...rest] => if (fn(first)) Some(first) else find(fn, rest),
@@ -766,7 +764,7 @@ export let rec find = (fn, list) => {
  * @history v0.2.0: Originally failed if the list was empty
  * @history v0.3.0: Return type converted to `Option` type
  */
-export let findIndex = (fn, list) => {
+provide let findIndex = (fn, list) => {
   let rec findItemIndex = (l, index) => {
     match (l) {
       [] => None,
@@ -787,7 +785,7 @@ export let findIndex = (fn, list) => {
  *
  * @since v0.2.0
  */
-export let product = (list1, list2) => {
+provide let product = (list1, list2) => {
   let mut list = []
   forEach(aItem => {
     forEach(bItem => {
@@ -811,7 +809,7 @@ export let product = (list1, list2) => {
  *
  * @since v0.2.0
  */
-export let sub = (start, length, list) => {
+provide let sub = (start, length, list) => {
   take(length, drop(start, list))
 }
 
@@ -825,7 +823,7 @@ export let sub = (start, length, list) => {
  *
  * @since v0.4.0
  */
-export let join = (separator: String, list: List<String>) => {
+provide let join = (separator: String, list: List<String>) => {
   let rec iter = (sep, acc, rem) => {
     match (rem) {
       [] => acc,
@@ -855,7 +853,7 @@ export let join = (separator: String, list: List<String>) => {
  *
  * @since v0.4.5
  */
-export let rec revAppend = (list1, list2) => {
+provide let rec revAppend = (list1, list2) => {
   match (list1) {
     [hd, ...tl] => revAppend(tl, [hd, ...list2]),
     [] => list2,
@@ -872,7 +870,7 @@ export let rec revAppend = (list1, list2) => {
  *
  * @since v0.4.5
  */
-export let sort = (comp, list) => {
+provide let sort = (comp, list) => {
   let rec merge = (left, right, list) => {
     match ((left, right)) {
       (_, []) => {

@@ -1,36 +1,41 @@
 /**
- * @module Stack: An immutable stack implementation. A stack is a LIFO (last-in-first-out) data structure where new values are added, retrieved, and removed from the end.
- * @example import Stack from "stack"
+ * A stack is a LIFO (last-in-first-out) data structure where new
+ * values are added, retrieved, and removed from the end.
+ *
+ * The default implementation is mutable, but an immutable stack
+ * implementation is available in the `Immutable` submodule.
+ *
+ * @example include "stack"
  *
  * @since v0.3.0
- * @deprecated This module will be renamed to ImmutableStack in the v0.6.0 release of Grain.
  */
 
-import List from "list"
+module Stack
 
-/**
- * @section Types: Type declarations included in the Stack module.
- */
+include "list"
+include "array"
 
 /**
- * Stacks are immutable data structures that store their data in a List.
+ * A mutable LIFO (last-in-first-out) data structure.
  */
-record Stack<a> {
-  data: List<a>,
+abstract record Stack<a> {
+  mut size: Number,
+  mut array: Array<Option<a>>,
 }
 
 /**
- * @section Values: Functions and constants included in the Stack module.
- */
-
-/**
- * An empty stack.
+ * Creates a new stack with an initial storage of the given size. As values are
+ * added or removed, the internal storage may grow or shrink. Generally, you
+ * won’t need to care about the storage size of your map and can use
+ * `Stack.make()` instead.
  *
- * @since v0.5.4
+ * @param size: The initial storage size of the stack
+ * @returns An empty stack
+ *
+ * @since v0.6.0
  */
-export let empty = {
-  let empty = { data: [], }
-  empty
+provide let makeSized = size => {
+  { size: 0, array: Array.make(size, None) }
 }
 
 /**
@@ -38,12 +43,9 @@ export let empty = {
  *
  * @returns An empty stack
  *
- * @since v0.3.0
- * @deprecated This will be removed in the v0.6.0 release of Grain.
+ * @since v0.6.0
  */
-export let make = () => {
-  { data: [], }
-}
+provide let make = () => makeSized(16)
 
 /**
  * Checks if the given stack contains no items.
@@ -51,61 +53,9 @@ export let make = () => {
  * @param stack: The stack to check
  * @returns `true` if the stack has no items or `false` otherwise
  *
- * @since v0.3.0
+ * @since v0.6.0
  */
-export let isEmpty = stack => {
-  match (stack) {
-    { data: [] } => true,
-    _ => false,
-  }
-}
-
-/**
- * Provides the value at the top of the stack, if it exists.
- *
- * @param stack: The stack to inspect
- * @returns `Some(value)` containing the value at the top of the stack or `None` otherwise.
- *
- * @since v0.3.0
- * @history v0.3.1: Rename from `head` to `peek`
- */
-export let peek = stack => {
-  match (stack) {
-    { data: [] } => None,
-    { data } => List.head(data),
-  }
-}
-
-/**
- * Adds a new item to the top of the stack.
- *
- * @param value: The item to be added
- * @param stack: The stack being updated
- * @returns A new stack with the item added to the end
- *
- * @since v0.3.0
- */
-export let push = (value, stack) => {
-  match (stack) {
-    { data: [] } => { data: [value], },
-    { data } => { data: [value, ...data], },
-  }
-}
-
-/**
- * Removes the item at the top of the stack.
- *
- * @param stack: The stack being updated
- * @returns A new stack with the last item removed
- *
- * @since v0.3.0
- */
-export let pop = stack => {
-  match (stack) {
-    { data: [] } => stack,
-    { data: [head, ...tail] } => { data: tail, },
-  }
-}
+provide let isEmpty = stack => stack.size == 0
 
 /**
  * Computes the size of the input stack.
@@ -113,11 +63,193 @@ export let pop = stack => {
  * @param stack: The stack to inspect
  * @returns The count of the items in the stack
  *
- * @since v0.3.2
+ * @since v0.6.0
  */
-export let size = stack => {
-  match (stack) {
-    { data: [] } => 0,
-    { data } => List.length(data),
+provide let size = stack => stack.size
+
+/**
+ * Provides the value at the top of the stack, if it exists.
+ *
+ * @param stack: The stack to inspect
+ * @returns `Some(value)` containing the value at the top of the stack or `None` otherwise.
+ *
+ * @since v0.6.0
+ */
+provide let peek = stack => {
+  if (stack.size == 0) None else stack.array[stack.size - 1]
+}
+
+/**
+ * Adds a new item to the top of the stack.
+ *
+ * @param value: The item to be added
+ * @param stack: The stack being updated
+ *
+ * @since v0.6.0
+ */
+provide let push = (value, stack) => {
+  let arrLen = Array.length(stack.array)
+  if (stack.size == arrLen) {
+    let newArray = Array.make(stack.size * 2, None)
+    for (let mut i = 0; i < arrLen; i += 1) {
+      newArray[i] = stack.array[i]
+    }
+    stack.array = newArray
+  }
+  stack.array[stack.size] = Some(value)
+  stack.size += 1
+}
+
+/**
+ * Removes the item at the top of the stack.
+ *
+ * @param stack: The stack being updated
+ * @returns The element removed from the stack
+ *
+ * @since v0.6.0
+ */
+provide let pop = stack => {
+  if (stack.size == 0) {
+    None
+  } else {
+    stack.size -= 1
+    stack.array[stack.size]
+  }
+}
+
+/**
+ * Clears the stack by removing all of its elements
+ *
+ * @param stack: The stack to clear
+ *
+ * @since v0.6.0
+ */
+provide let clear = stack => {
+  stack.size = 0
+  stack.array = Array.make(Array.length(stack.array), None)
+}
+
+/**
+ * Produces a shallow copy of the input stack.
+ *
+ * @param stack: The stack to copy
+ * @returns A new stack containing the elements from the input
+ *
+ * @since v0.6.0
+ */
+provide let copy = stack => {
+  let { size, array } = stack
+  { size, array: Array.copy(array) }
+}
+
+/**
+ * An immutable stack implementation.
+ */
+provide module Immutable {
+  /**
+   * ImmutableStacks are immutable data structures that store their data in a List.
+   */
+
+  abstract record ImmutableStack<a> {
+    data: List<a>,
+  }
+
+  /**
+   * An empty stack.
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally a module root API
+   */
+
+  provide let empty = {
+    let empty = { data: [], }
+    empty
+  }
+
+  /**
+   * Checks if the given stack contains no items.
+   *
+   * @param stack: The stack to check
+   * @returns `true` if the stack has no items or `false` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
+   */
+
+  provide let isEmpty = stack => {
+    match (stack) {
+      { data: [] } => true,
+      _ => false,
+    }
+  }
+
+  /**
+   * Provides the value at the top of the stack, if it exists.
+   *
+   * @param stack: The stack to inspect
+   * @returns `Some(value)` containing the value at the top of the stack or `None` otherwise.
+   *
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
+   * @history v0.3.1: Rename from `head` to `peek`
+   */
+
+  provide let peek = stack => {
+    match (stack) {
+      { data: [] } => None,
+      { data } => List.head(data),
+    }
+  }
+
+  /**
+   * Adds a new item to the top of the stack.
+   *
+   * @param value: The item to be added
+   * @param stack: The stack being updated
+   * @returns A new stack with the item added to the end
+   *
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
+   */
+
+  provide let push = (value, stack) => {
+    match (stack) {
+      { data: [] } => { data: [value], },
+      { data } => { data: [value, ...data], },
+    }
+  }
+
+  /**
+   * Removes the item at the top of the stack.
+   *
+   * @param stack: The stack being updated
+   * @returns A new stack with the last item removed
+   *
+   * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
+   */
+
+  provide let pop = stack => {
+    match (stack) {
+      { data: [] } => stack,
+      { data: [head, ...tail] } => { data: tail, },
+    }
+  }
+
+  /**
+   * Computes the size of the input stack.
+   *
+   * @param stack: The stack to inspect
+   * @returns The count of the items in the stack
+   *
+   * @since v0.6.0
+   * @history v0.3.2: Originally a module root API
+   */
+
+  provide let size = stack => {
+    match (stack) {
+      { data: [] } => 0,
+      { data } => List.length(data),
+    }
   }
 }

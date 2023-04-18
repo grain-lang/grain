@@ -2,11 +2,13 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 open Grain_parsing;
 open Grain_parsing.Ast_helper;
+open Grain_parsing.Parsetree;
 
 describe("parsing", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
   let assertParse = makeParseRunner(test);
+  let assertCompileError = makeCompileErrorRunner(test);
   let assertFileRun = makeFileRunner(test_or_skip);
 
   // operators
@@ -16,31 +18,37 @@ describe("parsing", ({test, testSkip}) => {
     "Ok(3)\nErr(\"Division by zero!\")\n",
   );
   let a =
-    Exp.ident(
+    Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("a"))),
     );
   let b =
-    Exp.ident(
+    Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("b"))),
     );
   let c =
-    Exp.ident(
+    Expression.ident(
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("c"))),
     );
+  let unlabled_expr = expr => {
+    paa_label: Unlabeled,
+    paa_expr: expr,
+    paa_loc: Location.dummy_loc,
+  };
   let testOp = op =>
     assertParse(
       op,
-      "a " ++ op ++ " b",
+      "module Test; a " ++ op ++ " b",
       {
+        module_name: Location.mknoloc("Test"),
         statements: [
-          Top.expr(
-            Exp.apply(
-              Exp.ident(
+          Toplevel.expr(
+            Expression.apply(
+              Expression.ident(
                 Location.mknoloc(
                   Identifier.IdentName(Location.mknoloc(op)),
                 ),
               ),
-              [a, b],
+              [unlabled_expr(a), unlabled_expr(b)],
             ),
           ),
         ],
@@ -98,25 +106,28 @@ describe("parsing", ({test, testSkip}) => {
   // verify precedence is maintained
   assertParse(
     "custom_op_precedence_1",
-    "a +++ b *** c",
+    "module Test; a +++ b *** c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("+++")),
               ),
             ),
             [
-              a,
-              Exp.apply(
-                Exp.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("***")),
+              unlabled_expr(a),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("***")),
+                    ),
                   ),
+                  [unlabled_expr(b), unlabled_expr(c)],
                 ),
-                [b, c],
               ),
             ],
           ),
@@ -128,25 +139,28 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "custom_op_precedence_2",
-    "a &&-- b &-- c",
+    "module Test; a &&-- b &-- c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("&&--")),
               ),
             ),
             [
-              a,
-              Exp.apply(
-                Exp.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("&--")),
+              unlabled_expr(a),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("&--")),
+                    ),
                   ),
+                  [unlabled_expr(b), unlabled_expr(c)],
                 ),
-                [b, c],
               ),
             ],
           ),
@@ -158,25 +172,28 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "custom_op_precedence_3",
-    "a ||-- b |-- c",
+    "module Test; a ||-- b |-- c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("||--")),
               ),
             ),
             [
-              a,
-              Exp.apply(
-                Exp.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("|--")),
+              unlabled_expr(a),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("|--")),
+                    ),
                   ),
+                  [unlabled_expr(b), unlabled_expr(c)],
                 ),
-                [b, c],
               ),
             ],
           ),
@@ -188,30 +205,182 @@ describe("parsing", ({test, testSkip}) => {
   );
   assertParse(
     "regression_issue_1473",
-    "a << b >> c",
+    "module Test; a << b >> c",
     {
+      module_name: Location.mknoloc("Test"),
       statements: [
-        Top.expr(
-          Exp.apply(
-            Exp.ident(
+        Toplevel.expr(
+          Expression.apply(
+            Expression.ident(
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc(">>")),
               ),
             ),
             [
-              Exp.apply(
-                Exp.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("<<")),
+              unlabled_expr(
+                Expression.apply(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("<<")),
+                    ),
                   ),
+                  [unlabled_expr(a), unlabled_expr(b)],
                 ),
-                [a, b],
               ),
-              c,
+              unlabled_expr(c),
             ],
           ),
         ),
       ],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "regression_issue_1609",
+    "module Test; return -1",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [
+        Toplevel.expr(
+          Expression.return(
+            Some(Expression.constant(PConstNumber(PConstNumberInt("-1")))),
+          ),
+        ),
+      ],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+
+  // Whitespace tests
+
+  // Reason does not support OCaml's Unicode escapes, which is why these are
+  // UTF-8 byte sequences instead of pretty Unicode escapes
+
+  assertParse(
+    "whitespace_1",
+    // In order,
+    // HORIZONTAL TABULATION
+    // VERTICAL TABULATION
+    // SPACE
+    // LEFT-TO-RIGHT MARK
+    // RIGHT-TO-LEFT MARK
+    // LINE FEED
+    // FORM FEED
+    // CARRIAGE RETURN
+    // NEXT LINE
+    // LINE SEPARATOR
+    // PARAGRAPH SEPARATOR
+    "
+    module Test
+    \x09
+    \x0b
+    \x20
+    \xe2\x80\x8e
+    \xe2\x80\x8f
+    \x0a
+    \x0c
+    \x0d
+    \xc2\x85
+    \xe2\x80\xa8
+    \xe2\x80\xa9
+    ",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+
+  assertCompileError(
+    "invalid_whitespace_nbsp",
+    "\xc2\xa0",
+    "Grain lexer doesn't recognize this token",
+  );
+  assertCompileError(
+    "invalid_whitespace_emspace",
+    "\xe2\x80\x83",
+    "Grain lexer doesn't recognize this token",
+  );
+  assertCompileError(
+    "invalid_whitespace_hairspace",
+    "\xe2\x80\x8a",
+    "Grain lexer doesn't recognize this token",
+  );
+  assertCompileError(
+    "invalid_whitespace_ideographicspace",
+    "\xe3\x80\x80",
+    "Grain lexer doesn't recognize this token",
+  );
+
+  assertParse(
+    "end_of_statement_linefeed",
+    "module Test; a\x0ab",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "end_of_statement_formfeed",
+    "module Test; a\x0cb",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "end_of_statement_carriagereturn",
+    "module Test; a\x0db",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "end_of_statement_crlf",
+    "module Test; a\x0d\x0ab",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "end_of_statement_nextline",
+    "module Test; a\xc2\x85b",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "end_of_statement_lineseparator",
+    "module Test; a\xe2\x80\xa8b",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      comments: [],
+      prog_loc: Location.dummy_loc,
+    },
+  );
+  assertParse(
+    "end_of_statement_paragraphseparator",
+    "module Test; a\xe2\x80\xa9b",
+    {
+      module_name: Location.mknoloc("Test"),
+      statements: [Toplevel.expr(a), Toplevel.expr(b)],
       comments: [],
       prog_loc: Location.dummy_loc,
     },

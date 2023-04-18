@@ -34,7 +34,7 @@ describe("chars", ({test, testSkip}) => {
     loc_ghost: false,
   };
   let char = (~loc=?, s) =>
-    Top.expr(~loc?) @@ Exp.constant(~loc?, Const.char(s));
+    Toplevel.expr(~loc?) @@ Expression.constant(~loc?, Constant.char(s));
 
   assertRun("char1", "print('A')", "A\n");
   assertSnapshot("char2", "'\\x41'");
@@ -48,28 +48,39 @@ describe("chars", ({test, testSkip}) => {
   assertRun("char_eq2", "print('🌾' == '💯')", "false\n");
   assertRun(
     "char_eq3",
-    "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '🌾')",
+    "include \"char\" as Char; print(Char.fromCode(0x1F33E) == '🌾')",
     "true\n",
   );
   assertRun(
     "char_eq4",
-    "import Char from \"char\"; print(Char.fromCode(0x1F33E) == '💯')",
+    "include \"char\" as Char; print(Char.fromCode(0x1F33E) == '💯')",
     "false\n",
   );
-  assertRun("char_toString_escape1", {|print(('\\',))|}, "('\\\\',)\n");
-  assertRun("char_toString_escape2", {|print(('\b',))|}, "('\\b',)\n");
-  assertRun("char_toString_escape3", {|print(('\f',))|}, "('\\f',)\n");
-  assertRun("char_toString_escape4", {|print(('\n',))|}, "('\\n',)\n");
+  assertRun("char_toString_escape1", {|print(('\\', 1))|}, "('\\\\', 1)\n");
+  assertRun("char_toString_escape2", {|print(('\b', 1))|}, "('\\b', 1)\n");
+  assertRun("char_toString_escape3", {|print(('\f', 1))|}, "('\\f', 1)\n");
+  assertRun("char_toString_escape4", {|print(('\n', 1))|}, "('\\n', 1)\n");
   assertRun("char_toString_escape5", {|print(('
-',))|}, "('\\n',)\n");
-  assertRun("char_toString_escape6", {|print(('\r',))|}, "('\\r',)\n");
-  assertRun("char_toString_escape7", {|print(('\t',))|}, "('\\t',)\n");
-  assertRun("char_toString_escape8", {|print(('\v',))|}, "('\\v',)\n");
-  assertRun("char_toString_escape9", {|print(('\'',))|}, "('\\'',)\n");
+', 1))|}, "('\\n', 1)\n");
+  assertRun("char_toString_escape6", {|print(('\r', 1))|}, "('\\r', 1)\n");
+  assertRun("char_toString_escape7", {|print(('\t', 1))|}, "('\\t', 1)\n");
+  assertRun("char_toString_escape8", {|print(('\v', 1))|}, "('\\v', 1)\n");
+  assertRun("char_toString_escape9", {|print(('\'', 1))|}, "('\\'', 1)\n");
   assertCompileError(
-    "char_illegal",
+    "char_illegal1",
     "'abc'",
     "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+  );
+  assertCompileError(
+    "char_illegal2",
+    {|'{"test": 1}'|},
+    {|This character literal contains multiple characters: '\{"test": 1\}'
+Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
+  );
+  assertCompileError(
+    "char_illegal3",
+    "''",
+    "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
   );
   assertCompileError(
     "unicode_err1",
@@ -89,35 +100,59 @@ describe("chars", ({test, testSkip}) => {
   // parse locations
   assertParseWithLocs(
     "char_loc_simple",
-    "'a'",
+    "module Test\n'a'",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("char_loc_simple", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
-        char(~loc=mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)), "a"),
+        char(
+          ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
+          "a",
+        ),
       ],
       comments: [],
-      prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (1, 3, 0)),
+      prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (2, 15, 12)),
     },
   );
   assertParseWithLocs(
     "char_loc_code",
-    "'\\u{1F3F4}'",
+    "module Test\n'\\u{1F3F4}'",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("char_loc_code", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
-        char(~loc=mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)), "🏴"),
+        char(
+          ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
+          "🏴",
+        ),
       ],
       comments: [],
-      prog_loc: mk_loc("char_loc_code", (1, 0, 0), (1, 11, 0)),
+      prog_loc: mk_loc("char_loc_code", (1, 0, 0), (2, 23, 12)),
     },
   );
   assertParseWithLocs(
     "char_loc_emoji",
-    "'💯'",
+    "module Test\n'💯'",
     {
+      module_name:
+        Location.mkloc(
+          "Test",
+          mk_loc("char_loc_emoji", (1, 7, 0), (1, 11, 0)),
+        ),
       statements: [
-        char(~loc=mk_loc("char_loc_emoji", (1, 0, 0), (1, 3, 0)), "💯"),
+        char(
+          ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
+          "💯",
+        ),
       ],
       comments: [],
-      prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (1, 3, 0)),
+      prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (2, 15, 12)),
     },
   );
 });

@@ -1,0 +1,3 @@
+module Quux
+
+provide let quux = n => n * n

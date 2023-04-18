@@ -1,0 +1,136 @@
+module Records
+
+include "set"
+
+record Rec {
+  foo: Number,
+  bar: Number,
+}
+let x = { foo: 4, bar: 9 }
+
+x.foo + x.bar
+
+record Rec1 {
+  foo2: Number,
+  bar2: Number,
+}
+record Rec2 {
+  baz2: Rec1,
+}
+let x = { baz2: { foo2: 4, bar2: 9 }, } // trailing comma as a single item
+x.baz2.bar2
+
+record Rec3 {
+  foo3: Number,
+  bar3: String,
+  baz3: Bool,
+}
+let { foo3, _ } = { foo3: 4, bar3: "boo", baz3: true }
+foo3
+
+record Long {
+  longField1: Number,
+  longField2: Number,
+  longField3: String,
+  longField4: String,
+  longField5: String,
+}
+
+record Commented { // brace comment
+  // leading
+  name: String, // trail 1
+  // under 1
+  address: String, /*
+  stupid block */
+  age: Number,
+  // trailing
+}
+
+// Some Comments everywhere
+record GraphData<a> { // comment 1
+  // comment 2
+  edge: Set.Set<(a, a)>, // comment 3
+  // comment 6
+  nodes: Set.Set<a>, // comment10
+  // comment 5
+} // comment 7
+
+record GraphData2<a> {
+  edge: Set.Set<(a, a)>, // comment 3
+  nodes: Set.Set<a>,
+}
+
+record Bucket<k, v> {
+  mut key: k,
+  mut value: v,
+  mut nextkey: Option<Bucket<k, v>>,
+}
+
+record Commented { // brace comment
+  // leading
+  longlonglongnamenamename1: String, // trail 1
+  // under 1
+  longlonglongnamenamename2: String, /*
+  stupid block */
+  longlonglongnamenamename3: Number,
+  // trailing
+}
+
+let x: Commented = { // comment 1
+  longlonglongnamenamename1: "A",
+  longlonglongnamenamename2: "B",
+  longlonglongnamenamename3: 42,
+}
+
+let { // a comment 2
+  longlonglongnamenamename1,
+  longlonglongnamenamename2,
+  longlonglongnamenamename3,
+} = x
+
+let { // a comment 3
+  l1,
+  l2,
+  l3,
+} = x
+
+let s = {
+  num: 1,
+  var: A, // end line comment
+  str: "",
+}
+
+let s = {
+  num: 1,
+  var: A, // end line comment
+  str: "",
+}
+
+let s = { // comment 1
+  // comment 2
+  num: 1,
+  var: A, // end line comment
+  str: "",
+}
+
+let y = { /* comment 1 */
+  x, /* comment 2 */
+  longlonglongnamenamename2: 12345, /* comment 3 */
+  longlonglongnamenamename3: 12345, /* comment 4 */
+} // end line comment
+
+let y = { ...x, bar: 2 }
+
+let y = { ...x, bar: 2 }
+
+let y = {
+  ...x,
+  longlonglongnamenamename2: 12345,
+  longlonglongnamenamename3: 12345,
+}
+
+let y = { /* comment 1 */
+  ...x, /* comment 2 */
+  longlonglongnamenamename2: 12345, /* comment 3 */
+  longlonglongnamenamename3: 12345, /* comment 4 */
+} // end line comment

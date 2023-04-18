@@ -1,9 +1,12 @@
 /**
- * @module Regex: Regular Expressions.
- * @example import Regex from "regex"
+ * Regular Expressions.
+ *
+ * @example include "regex"
  *
  * @since 0.4.3
  */
+
+module Regex
 
 /*
  This library provides support for regular expressions in Grain.
@@ -11,15 +14,16 @@
  which is licensed under Apache 2.0. Racket's regular expression
  engine is itself inspired by the Spencer engine, as found in Tcl.
  */
-import Array from "array"
-import Char from "char"
-import List from "list"
-import Map from "map"
-import Option from "option"
-import Result from "result"
-import String from "string"
-import Float32 from "float32"
-import { min, max } from "number"
+include "array"
+include "char"
+include "list"
+include "map"
+include "option"
+include "result"
+include "string"
+include "float32"
+include "number"
+from Number use { min, max }
 
 /*
 
@@ -324,17 +328,16 @@ let rangeAddCaseAware = (rng: CharRange, c, config) => {
 
 let rangeAddSpanCaseAware = (rng: CharRange, fromC, toC, config) => {
   if (config.caseSensitive) {
-    Ok(rangeAddSpan(rng, fromC, toC))
-  } else {
-    let mut ret = Ok(rng)
-    for (let mut i = fromC; i <= toC; i += 1) {
-      match (ret) {
-        Ok(x) => ret = rangeAddCaseAware(x, Some(i), config),
-        Err(e) => break,
-      }
-    }
-    ret
+    return Ok(rangeAddSpan(rng, fromC, toC))
   }
+  let mut ret = Ok(rng)
+  for (let mut i = fromC; i <= toC; i += 1) {
+    match (ret) {
+      Ok(x) => ret = rangeAddCaseAware(x, Some(i), config),
+      Err(e) => break,
+    }
+  }
+  return ret
 }
 
 /*
@@ -1113,9 +1116,7 @@ let rec parseAtom = (buf: RegExBuf) => {
                     },
                   }
                 },
-                Ok(c) when (
-                  c == 'i' || c == 's' || c == 'm' || c == '-' || c == ':'
-                ) => {
+                Ok('i' | 's' | 'm' | '-' | ':') => {
                   // match with mode
                   ignore(eat(buf, '('))
                   ignore(eat(buf, '?'))
@@ -1679,7 +1680,7 @@ parseNonGreedy = (buf: RegExBuf) => {
     } else {
       match (peek(buf)) {
         Err(e) => Err(e),
-        Ok(c) when c == '?' || c == '*' || c == '+' => {
+        Ok('?' | '*' | '+' as c) => {
           Err(parseErr(buf, "nested '" ++ toString(c) ++ "' in pattern", 0))
         },
         Ok(_) => res,
@@ -2377,17 +2378,14 @@ let subArraysEqual = (arr1, start1, arr2, start2, length) => {
   if (
     Array.length(arr1) - start1 < length || Array.length(arr2) - start2 < length
   ) {
-    false
-  } else {
-    let mut result = true
-    for (let mut i = 0; i < length; i += 1) {
-      if (arr1[start1 + i] != arr2[start2 + i]) {
-        result = false
-        break
-      }
-    }
-    result
+    return false
   }
+  for (let mut i = 0; i < length; i += 1) {
+    if (arr1[start1 + i] != arr2[start2 + i]) {
+      return false
+    }
+  }
+  return true
 }
 
 let stringMatcher = (toMatch, len, next_m) =>
@@ -3317,8 +3315,7 @@ let interp = (compiledRe, matchBuffer, pos, start, limitOrEnd, state) => {
   compiledRe(matchBuffer, pos, start, limitOrEnd, limitOrEnd, state, [])
 }
 
-// Should be exported as abstract type when possible
-record RegularExpression {
+abstract record RegularExpression {
   reParsed: ParsedRegularExpression,
   reNumGroups: Number,
   reReferences: Bool,
@@ -3336,10 +3333,6 @@ record RegularExpression {
   reIsAnchored: Bool,
   reStartRange: Option<RERange>,
 }
-
-/**
- * @section Values: Functions for working with regular expressions.
- */
 
 // TODO(#661): re-add the following pieces of documentation:
 /*
@@ -3489,7 +3482,7 @@ record RegularExpression {
  *
  * @since 0.4.3
  */
-export let make = (regexString: String) => {
+provide let make = (regexString: String) => {
   let buf = makeRegExBuf(regexString)
   match (parseRegex(buf)) {
     Err(e) => Err(e),
@@ -3536,7 +3529,7 @@ let checkMustString = (ms, buf: MatchBuf, pos, endPos) => {
       ) {
         buf.matchInput
       } else {
-        String.slice(pos, endPos, buf.matchInput)
+        String.slice(pos, end=endPos, buf.matchInput)
       }
       Option.isSome(String.indexOf(ms, toCheck))
     },
@@ -3625,7 +3618,7 @@ let searchMatch =
  *
  * @since 0.4.3
  */
-export record MatchResult {
+provide record MatchResult {
   /**
    * Returns the contents of the given group
    */
@@ -3663,7 +3656,7 @@ let makeMatchResult = (origString, start, end, state) => {
   }
   let getMatchGroup = n => {
     match (getMatchGroupPosition(n)) {
-      Some((start, end)) => Some(String.slice(start, end, origString)),
+      Some((start, end)) => Some(String.slice(start, end=end, origString)),
       None => None,
     }
   }
@@ -3678,7 +3671,7 @@ let makeMatchResult = (origString, start, end, state) => {
   let getAllMatchGroups = () => {
     Array.map(o => match (o) {
       None => None,
-      Some((start, end)) => Some(String.slice(start, end, origString)),
+      Some((start, end)) => Some(String.slice(start, end=end, origString)),
     }, getAllMatchGroupPositions())
   }
   {
@@ -3698,7 +3691,7 @@ let fastDriveRegexIsMatch = (rx, string, startOffset, endOffset) => {
     else Array.make(0, None)
   let toWrap =
     if (startOffset == 0 && endOffset == String.length(string)) string
-    else String.slice(startOffset, endOffset, string)
+    else String.slice(startOffset, end=endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   Option.isSome(
     searchMatch(rx, buf, 0, 0, Array.length(buf.matchInputExploded), state)
@@ -3712,7 +3705,7 @@ let rec fastDriveRegexMatchAll = (rx, string, startOffset, endOffset) => {
     let state = Array.make(rx.reNumGroups, None)
     let toWrap =
       if (startOffset == 0 && endOffset == String.length(string)) string
-      else String.slice(startOffset, endOffset, string)
+      else String.slice(startOffset, end=endOffset, string)
     let buf = makeMatchBuffer(toWrap)
     match (searchMatch(
       rx,
@@ -3752,7 +3745,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
   let state = Array.make(rx.reNumGroups, None)
   let toWrap =
     if (startOffset == 0 && endOffset == String.length(string)) string
-    else String.slice(startOffset, endOffset, string)
+    else String.slice(startOffset, end=endOffset, string)
   let buf = makeMatchBuffer(toWrap)
   match (searchMatch(
     rx,
@@ -3792,7 +3785,7 @@ let fastDriveRegexMatch = (rx, string, startOffset, endOffset) => {
  *
  * @since 0.4.3
  */
-export let isMatch = (rx: RegularExpression, string: String) => {
+provide let isMatch = (rx: RegularExpression, string: String) => {
   fastDriveRegexIsMatch(rx, string, 0, String.length(string))
 }
 
@@ -3809,7 +3802,7 @@ export let isMatch = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-export let isMatchRange =
+provide let isMatchRange =
   (
     rx: RegularExpression,
     string: String,
@@ -3829,7 +3822,7 @@ export let isMatchRange =
  *
  * @since 0.4.3
  */
-export let find = (rx: RegularExpression, string: String) => {
+provide let find = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatch(rx, string, 0, String.length(string))
 }
 
@@ -3846,7 +3839,7 @@ export let find = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-export let findRange =
+provide let findRange =
   (
     rx: RegularExpression,
     string: String,
@@ -3862,7 +3855,7 @@ export let findRange =
  * @param string: The string to search
  * @returns The list of matches
  */
-export let findAll = (rx: RegularExpression, string: String) => {
+provide let findAll = (rx: RegularExpression, string: String) => {
   fastDriveRegexMatchAll(rx, string, 0, String.length(string))
 }
 
@@ -3879,7 +3872,7 @@ export let findAll = (rx: RegularExpression, string: String) => {
  *
  * @since 0.4.3
  */
-export let findAllRange =
+provide let findAllRange =
   (
     rx: RegularExpression,
     string: String,
@@ -3900,15 +3893,14 @@ let computeReplacement =
   let replacementExploded = String.explode(replacementString)
   let len = Array.length(replacementExploded)
   let mut acc = []
-  let getBeforeMatch = () => String.slice(0, start, matchBuf.matchInput)
-  let getAfterMatch = () =>
-    String.slice(end, String.length(matchBuf.matchInput), matchBuf.matchInput)
+  let getBeforeMatch = () => String.slice(0, end=start, matchBuf.matchInput)
+  let getAfterMatch = () => String.slice(end, matchBuf.matchInput)
   let getInputSubstr = n => {
     if (n == 0) {
-      String.slice(start, end, matchBuf.matchInput)
+      String.slice(start, end=end, matchBuf.matchInput)
     } else if (n - 1 < Array.length(state)) {
       match (state[n - 1]) {
-        Some((start, end)) => String.slice(start, end, matchBuf.matchInput),
+        Some((start, end)) => String.slice(start, end=end, matchBuf.matchInput),
         None => "",
       }
     } else {
@@ -3917,7 +3909,7 @@ let computeReplacement =
   }
   let consRange = (start, end, lst) => {
     if (start == end) lst
-    else [String.slice(start, end, replacementString), ...lst]
+    else [String.slice(start, end=end, replacementString), ...lst]
   }
   let rec loop = (pos, since) => {
     if (pos == len) {
@@ -3993,7 +3985,7 @@ let regexReplaceHelp =
           ""
         } else {
           String.concat(
-            String.slice(searchPos, searchPos + 1, toSearch),
+            String.slice(searchPos, end=searchPos + 1, toSearch),
             loop(searchPos + 1)
           )
         }
@@ -4003,15 +3995,13 @@ let regexReplaceHelp =
     }
     match (poss) {
       None =>
-        if (searchPos == 0) toSearch
-        else String.slice(searchPos, String.length(toSearch), toSearch),
+        if (searchPos == 0) toSearch else String.slice(searchPos, toSearch),
       Some((start, end)) =>
         String.concat(
-          String.slice(searchPos, start, toSearch),
+          String.slice(searchPos, end=start, toSearch),
           String.concat(
             computeReplacement(buf, replacement, start, end, state),
-            if (all) recur(start, end)
-            else String.slice(end, String.length(toSearch), toSearch)
+            if (all) recur(start, end) else String.slice(end, toSearch)
           )
         ),
     }
@@ -4039,7 +4029,7 @@ let regexReplaceHelp =
  *
  * @since 0.4.3
  */
-export let replace =
+provide let replace =
   (
     rx: RegularExpression,
     toSearch: String,
@@ -4061,7 +4051,7 @@ export let replace =
  *
  * @since 0.4.3
  */
-export let replaceAll =
+provide let replaceAll =
   (
     rx: RegularExpression,
     toSearch: String,
@@ -4090,10 +4080,10 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
         Some((start, end)) => {
           if (i == 0) {
             // Add the string between this match and the last match
-            out = [String.slice(currentLocation, start, str), ...out]
+            out = [String.slice(currentLocation, end=start, str), ...out]
           } else {
             // This adds the groups back in
-            out = [String.slice(start, end, str), ...out]
+            out = [String.slice(start, end=end, str), ...out]
           }
           if (end > currentLocation) currentLocation = end
         },
@@ -4101,7 +4091,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
       }
     }, locations)
   }, regexMatches)
-  out = [String.slice(currentLocation, String.length(str), str), ...out]
+  out = [String.slice(currentLocation, str), ...out]
   List.reverse(out)
 }
 
@@ -4119,7 +4109,7 @@ let regexSplitHelp = (rx: RegularExpression, str: String, all: Bool) => {
  *
  * @since v0.5.5
  */
-export let split = (rx: RegularExpression, str: String) => {
+provide let split = (rx: RegularExpression, str: String) => {
   regexSplitHelp(rx, str, false)
 }
 
@@ -4137,6 +4127,6 @@ export let split = (rx: RegularExpression, str: String) => {
  *
  * @since v0.5.5
  */
-export let splitAll = (rx: RegularExpression, str: String) => {
+provide let splitAll = (rx: RegularExpression, str: String) => {
   regexSplitHelp(rx, str, true)
 }

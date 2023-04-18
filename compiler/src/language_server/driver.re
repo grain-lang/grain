@@ -25,6 +25,9 @@ let process = msg => {
   | TextDocumentHover(id, params) when is_initialized^ =>
     Hover.process(~id, ~compiled_code, ~documents, params);
     Reading;
+  | TextDocumentInlayHint(id, params) when is_initialized^ =>
+    Inlayhint.process(~id, ~compiled_code, ~documents, params);
+    Reading;
   | TextDocumentCodeLens(id, params) when is_initialized^ =>
     Lenses.process(~id, ~compiled_code, ~documents, params);
     Reading;
@@ -42,6 +45,9 @@ let process = msg => {
     Reading;
   | Formatting(id, params) when is_initialized^ =>
     Formatting.process(~id, ~compiled_code, ~documents, params);
+    Reading;
+  | Definition(id, params) when is_initialized^ =>
+    Definition.process(~id, ~compiled_code, ~documents, params);
     Reading;
   | SetTrace(trace_value) =>
     Trace.set_level(trace_value);

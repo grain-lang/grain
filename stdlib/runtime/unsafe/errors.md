@@ -1,3 +1,11 @@
+---
+title: Errors
+---
+
+## Values
+
+Functions and constants included in the Errors module.
+
 ### Errors.**_GRAIN_ERR_NOT_NUMBER_COMP**
 
 ```grain

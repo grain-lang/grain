@@ -1,22 +1,26 @@
 /**
- * @module Array: Utilities for working with arrays.
+ * Utilities for working with arrays.
  *
- * @example import Array from "array"
+ * An immutable array implementation is available in the `Immutable` submodule.
+ *
+ * @example include "array"
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `arrays`
  * @history v0.2.0: Renamed to `array`
  */
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import Memory from "runtime/unsafe/memory"
-import { allocateArray, tagSimpleNumber } from "runtime/dataStructures"
-import Exception from "runtime/exception"
-import { coerceNumberToWasmI32 } from "runtime/numbers"
+module Array
 
-/**
- * @section Values: Functions for working with the Array data type.
- */
+include "number"
+include "list"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/memory"
+include "runtime/dataStructures"
+from DataStructures use { allocateArray, tagSimpleNumber }
+include "runtime/exception"
+include "runtime/numbers"
+from Numbers use { coerceNumberToWasmI32 }
 
 @unsafe
 let mut _ARRAY_LENGTH_OFFSET = 4n
@@ -25,13 +29,26 @@ let mut _ARRAY_START_OFFSET = 8n
 
 @unsafe
 let checkLength = length => {
+  from WasmI32 use { (&), (>>), (<) }
   let ptr = WasmI32.fromGrain(length)
-  if (WasmI32.eqz(WasmI32.and(ptr, 1n))) {
+  if (WasmI32.eqz(ptr & 1n)) {
     throw Exception.InvalidArgument("Length argument must be an integer")
   }
-  let len = WasmI32.shrS(ptr, 1n)
-  if (WasmI32.ltS(len, 0n)) {
+  let len = ptr >> 1n
+  if (len < 0n) {
     throw Exception.InvalidArgument("Length argument must be non-negative")
+  }
+}
+
+/**
+ * A simple helper function to convert a negative array index
+ * number to its positive positional equivalent.
+ */
+let wrapNegativeIndex = (arrLen, idx) => {
+  if (idx >= 0) {
+    idx
+  } else {
+    arrLen + idx
   }
 }
 
@@ -45,7 +62,7 @@ let checkLength = length => {
  * @since v0.1.0
  */
 @unsafe
-export let length = array => {
+provide let length = array => {
   let ptr = WasmI32.fromGrain(array: Array<a>)
   tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
 }
@@ -66,15 +83,16 @@ export let length = array => {
  * @since v0.1.0
  */
 @unsafe
-export let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
+provide let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
+  from WasmI32 use { (+), (*), (<) }
   let lengthArg = length
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let byteLength = WasmI32.mul(length, 4n)
+  let byteLength = length * 4n
   let array = allocateArray(length)
-  for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
+  for (let mut i = 0n; i < byteLength; i += 4n) {
     WasmI32.store(
-      WasmI32.add(array, i),
+      array + i,
       Memory.incRef(WasmI32.fromGrain(item)),
       _ARRAY_START_OFFSET
     )
@@ -99,23 +117,24 @@ export let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
  * @since v0.1.0
  */
 @unsafe
-export let init: (Number, Number -> a) -> Array<a> =
+provide let init: (Number, Number -> a) -> Array<a> =
   (
     length: Number,
     fn: Number -> a,
   ) => {
+  from WasmI32 use { (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
-  let byteLength = WasmI32.mul(length, 4n)
+  let byteLength = length * 4n
   let array = allocateArray(length)
   let mut index = 0n
-  for (let mut i = 0n; WasmI32.ltS(i, byteLength); i = WasmI32.add(i, 4n)) {
+  for (let mut i = 0n; i < byteLength; i += 4n) {
     WasmI32.store(
-      WasmI32.add(array, i),
+      array + i,
       Memory.incRef(WasmI32.fromGrain(fn(tagSimpleNumber(index)))),
       _ARRAY_START_OFFSET
     )
-    index = WasmI32.add(index, 1n)
+    index += 1n
   }
   WasmI32.toGrain(array): Array<a>
 }
@@ -129,12 +148,16 @@ export let init: (Number, Number -> a) -> Array<a> =
  * @param index: The index to access
  * @param array: The array to access
  * @returns The element from the array
+ *
+ * @throws IndexOutOfBounds: When `index` is not an integer
+ * @throws IndexOutOfBounds: When `index` is out of bounds
+ *
  * @example Array.get(1,[> 1, 2, 3, 4, 5]) == 2
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let get = (index, array) => {
+provide let get = (index, array) => {
   array[index]
 }
 
@@ -147,12 +170,16 @@ export let get = (index, array) => {
  * @param index: The index to update
  * @param value: The value to store
  * @param array: The array to update
+ *
+ * @throws IndexOutOfBounds: When `index` is not an integer
+ * @throws IndexOutOfBounds: When `index` is out of bounds
+ *
  * @example Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let set = (index, value, array) => {
+provide let set = (index, value, array) => {
   array[index] = value
 }
 
@@ -163,11 +190,14 @@ export let set = (index, value, array) => {
  * @param array1: The array containing elements to appear first
  * @param array2: The array containing elements to appear second
  * @returns The new array containing elements from `array1` followed by elements from `array2`
+ *
+ * @throws InvalidArgument(String): When the combined length of the two arrays is not an integer
+ *
  * @example Array.append([> 1, 2], [> 3, 4, 5]) == [> 1, 2, 3, 4, 5]
  *
  * @since v0.1.0
  */
-export let append = (array1, array2) => {
+provide let append = (array1, array2) => {
   let len1 = length(array1)
   let len2 = length(array2)
 
@@ -186,11 +216,14 @@ export let append = (array1, array2) => {
  *
  * @param arrays: A list containing all arrays to combine
  * @returns The new array
+ *
+ * @throws InvalidArgument(String): When the combined length of all arrays is not an integer
+ *
  * @example Array.concat([[> 1, 2], [> 3, 4], [> 5, 6]]) == [> 1, 2, 3, 4, 5, 6]
  *
  * @since v0.1.0
  */
-export let concat = arrays => {
+provide let concat = arrays => {
   // This function is slightly verbose to avoid depending on the List stdlib.
 
   let rec findLength = (arrays, acc) => {
@@ -232,7 +265,7 @@ export let concat = arrays => {
  *
  * @since v0.1.0
  */
-export let copy = array => {
+provide let copy = array => {
   init(length(array), n => array[n])
 }
 
@@ -245,7 +278,7 @@ export let copy = array => {
  *
  * @since v0.4.4
  */
-export let cycle = (fn, n, array) => {
+provide let cycle = (fn, n, array) => {
   let length = length(array)
   for (let mut iteration = 0; iteration < n; iteration += 1) {
     for (let mut count = 0; count < length; count += 1) {
@@ -263,7 +296,7 @@ export let cycle = (fn, n, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let forEach = (fn, array) => {
+provide let forEach = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
     fn(array[count]): Void
@@ -280,7 +313,7 @@ export let forEach = (fn, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let forEachi = (fn, array) => {
+provide let forEachi = (fn, array) => {
   let length = length(array)
   for (let mut count = 0; count < length; count += 1) {
     fn(array[count], count): Void
@@ -298,7 +331,7 @@ export let forEachi = (fn, array) => {
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
-export let map = (fn, array) => {
+provide let map = (fn, array) => {
   let length = length(array)
   init(length, i => {
     fn(array[i])
@@ -315,7 +348,7 @@ export let map = (fn, array) => {
  *
  * @since v0.1.0
  */
-export let mapi = (fn, array) => {
+provide let mapi = (fn, array) => {
   let length = length(array)
   init(length, index => {
     fn(array[index], index)
@@ -340,7 +373,7 @@ export let mapi = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let reduce = (fn, initial, array) => {
+provide let reduce = (fn, initial, array) => {
   let mut acc = initial
   forEach(el => acc = fn(acc, el), array)
   acc
@@ -364,7 +397,7 @@ export let reduce = (fn, initial, array) => {
  *
  * @since v0.5.3
  */
-export let reduceRight = (fn, initial, array) => {
+provide let reduceRight = (fn, initial, array) => {
   let mut acc = initial
   for (let mut i = length(array) - 1; i >= 0; i -= 1) {
     acc = fn(array[i], acc)
@@ -389,7 +422,7 @@ export let reduceRight = (fn, initial, array) => {
  *
  * @since v0.3.0
  */
-export let reducei = (fn, initial, array) => {
+provide let reducei = (fn, initial, array) => {
   let mut acc = initial
   forEachi((el, index) => acc = fn(acc, el, index), array)
   acc
@@ -405,9 +438,11 @@ export let reducei = (fn, initial, array) => {
  * @param array: The array to iterate
  * @returns The new array
  *
+ * @throws InvalidArgument(String): When the combined length of all arrays is not an integer
+ *
  * @since v0.3.0
  */
-export let flatMap = (fn, array) => {
+provide let flatMap = (fn, array) => {
   let nested = map(fn, array)
   let arrLen = reduce((acc, arr) => acc + length(arr), 0, nested)
   let mut outerI = 0
@@ -433,7 +468,7 @@ export let flatMap = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let every = (fn, array) => {
+provide let every = (fn, array) => {
   let len = length(array)
   let mut all = true
   for (let mut index = 0; all && index < len; index += 1) {
@@ -452,7 +487,7 @@ export let every = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let some = (fn, array) => {
+provide let some = (fn, array) => {
   let len = length(array)
   let mut found = false
   for (let mut index = 0; !found && index < len; index += 1) {
@@ -469,7 +504,7 @@ export let some = (fn, array) => {
  *
  * @since v0.2.0
  */
-export let fill = (value, array) => {
+provide let fill = (value, array) => {
   let length = length(array)
   forEachi((_, index) => {
     array[index] = value
@@ -486,26 +521,31 @@ export let fill = (value, array) => {
  * @param stop: The (exclusive) index to end replacement
  * @param array: The array to update
  *
+ * @throws IndexOutOfBounds: When the start index is out of bounds
+ * @throws IndexOutOfBounds: When the start index is greater then the stop index
+ *
  * @since v0.2.0
  */
-export let fillRange = (value, start, stop, array) => {
+provide let fillRange = (value, start, stop, array) => {
   let length = length(array)
-  let startIndex = if (start < 0) length + start else start
-  let stopIndex = if (stop < 0) length + stop else stop
+  let startIndex = wrapNegativeIndex(length, start)
+  let stopIndex = wrapNegativeIndex(length, stop)
+  // Ensure we aren't working with a `stop` value that is too big
+  let stopIndex = if (stopIndex < 0 || stopIndex > length) {
+    length
+  } else {
+    stopIndex
+  }
 
   if (startIndex > length) {
-    fail "The start index is outside the array"
+    throw IndexOutOfBounds
   }
   if (startIndex > stopIndex) {
-    fail "The start index cannot be higher than the stop index"
+    throw IndexOutOfBounds
   }
 
   let mut index = startIndex
-  for (
-    let mut index = startIndex;
-    index < stopIndex && index < length;
-    index += 1
-  ) {
+  for (let mut index = startIndex; index < stopIndex; index += 1) {
     array[index] = value
   }
   void
@@ -519,7 +559,7 @@ export let fillRange = (value, start, stop, array) => {
  *
  * @since v0.4.0
  */
-export let reverse = array => {
+provide let reverse = array => {
   let len = length(array)
   init(len, index => {
     let last = len - index - 1
@@ -535,7 +575,7 @@ export let reverse = array => {
  *
  * @since v0.1.0
  */
-export let toList = array => {
+provide let toList = array => {
   let rec buildList = (acc, index) => {
     let index = index - 1
     if (index < 0) {
@@ -555,7 +595,7 @@ export let toList = array => {
  *
  * @since v0.1.0
  */
-export let fromList = list => {
+provide let fromList = list => {
   let rec listLength = (list, acc) => {
     match (list) {
       [_, ...rest] => listLength(rest, acc + 1),
@@ -586,14 +626,13 @@ export let fromList = list => {
  *
  * @since v0.2.0
  */
-export let contains = (search, array) => {
+provide let contains = (search, array) => {
   // TODO(#189): This should be rewritten to use recursion and pattern matching
   let len = length(array)
-  let mut found = false
-  for (let mut index = 0; !found && index < len; index += 1) {
-    found = array[index] == search
+  for (let mut i = 0; i < len; i += 1) {
+    if (array[i] == search) return true
   }
-  found
+  return false
 }
 
 /**
@@ -605,29 +644,14 @@ export let contains = (search, array) => {
  *
  * @since v0.2.0
  */
-export let find = (fn, array) => {
-  let length = length(array)
-  if (length == 0) {
-    None
-  } else {
-    let mut count = 0
-    let mut matching = false
-    let mut matchedItem = array[0]
-    while (count < length) {
-      if (fn(array[count])) {
-        matching = true
-        matchedItem = array[count]
-        count = length
-      } else {
-        count += 1
-      }
-    }
-    if (!matching) {
-      None
-    } else {
-      Some(matchedItem)
+provide let find = (fn, array) => {
+  let len = length(array)
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i])) {
+      return Some(array[i])
     }
   }
+  return None
 }
 
 /**
@@ -639,29 +663,12 @@ export let find = (fn, array) => {
  *
  * @since v0.2.0
  */
-export let findIndex = (fn, array) => {
-  let length = length(array)
-  if (length == 0) {
-    None
-  } else {
-    let mut count = 0
-    let mut matching = false
-    let mut matchedIndex = 0
-    while (count < length) {
-      if (fn(array[count])) {
-        matching = true
-        matchedIndex = count
-        count = length
-      } else {
-        count += 1
-      }
-    }
-    if (!matching) {
-      None
-    } else {
-      Some(matchedIndex)
-    }
+provide let findIndex = (fn, array) => {
+  let len = length(array)
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i])) return Some(i)
   }
+  return None
 }
 
 /**
@@ -672,9 +679,11 @@ export let findIndex = (fn, array) => {
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing all pairs of `(a, b)`
  *
+ * @throws InvalidArgument(String): When the multiplied array lengths are not an integer
+ *
  * @since v0.2.0
  */
-export let product = (array1: Array<a>, array2: Array<b>) => {
+provide let product = (array1: Array<a>, array2: Array<b>) => {
   let lenA = length(array1)
   let lenB = length(array2)
   let mut indexA = -1
@@ -682,8 +691,6 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
   init(lenA * lenB, n => {
     if (n % lenB == 0) {
       indexA += 1
-    } else {
-      indexA = indexA
     }
     (array1[indexA], array2[n % lenB])
   })
@@ -698,16 +705,15 @@ export let product = (array1: Array<a>, array2: Array<b>) => {
  *
  * @since v0.2.0
  */
-export let count = (fn, array) => {
-  let length = length(array)
-  let mut position = 0
-  let mut count = 0
-  for (let mut position = 0; position < length; position += 1) {
-    if (fn(array[position])) {
-      count += 1
+provide let count = (fn, array) => {
+  let len = length(array)
+  let mut n = 0
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i])) {
+      n += 1
     }
   }
-  count
+  n
 }
 
 /**
@@ -720,15 +726,15 @@ export let count = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let counti = (fn, array) => {
-  let length = length(array)
-  let mut count = 0
-  for (let mut position = 0; position < length; position += 1) {
-    if (fn(array[position], position)) {
-      count += 1
+provide let counti = (fn, array) => {
+  let len = length(array)
+  let mut n = 0
+  for (let mut i = 0; i < len; i += 1) {
+    if (fn(array[i], i)) {
+      n += 1
     }
   }
-  count
+  n
 }
 
 /**
@@ -742,7 +748,7 @@ export let counti = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let filter = (fn, array) => {
+provide let filter = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
   forEach(el => {
@@ -767,7 +773,7 @@ export let filter = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let filteri = (fn, array) => {
+provide let filteri = (fn, array) => {
   let filtered = copy(array)
   let mut position = 0
   forEachi((el, index) => {
@@ -790,7 +796,8 @@ export let filteri = (fn, array) => {
  *
  * @since v0.3.0
  */
-export let unique = array => {
+provide let unique = array => {
+  // TODO(#1651): improve performance
   filteri((el, index) =>
     findIndex(value => value == el, array) == Some(index), array)
 }
@@ -804,12 +811,12 @@ export let unique = array => {
  * @param array2: The array to provide values for the second tuple element
  * @returns The new array containing indexed pairs of `(a, b)`
  *
- * @throws Failure(String): When the arrays have different sizes
+ * @throws IndexOutOfBounds: When the arrays have different sizes
  *
  * @since v0.4.0
  * @history v0.6.0: Support zipping arrays of different sizes
  */
-export let zip = (array1: Array<a>, array2: Array<b>) => {
+provide let zip = (array1: Array<a>, array2: Array<b>) => {
   let len = length(array1)
   let len2 = length(array2)
   let len = if (len > len2) len2 else len
@@ -833,12 +840,14 @@ export let zip = (array1: Array<a>, array2: Array<b>) => {
  * @param array2: The array whose elements will each be passed to the function as the second argument
  * @returns The new array containing elements derived from applying the function to pairs of input array elements
  *
+ * @throws IndexOutOfBounds: When the arrays have different sizes
+ *
  * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
  * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
  *
  * @since v0.5.3
  */
-export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
+provide let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
   let len1 = length(array1)
   let len2 = length(array2)
   let minLen = if (len1 > len2) len2 else len1
@@ -855,7 +864,7 @@ export let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
  *
  * @since v0.4.0
  */
-export let unzip = array => {
+provide let unzip = array => {
   let lenArr = length(array)
 
   let a = init(lenArr, n => {
@@ -880,7 +889,7 @@ export let unzip = array => {
  *
  * @since v0.4.0
  */
-export let join = (separator: String, items: Array<String>) => {
+provide let join = (separator: String, items: Array<String>) => {
   let iter = (acc, str) => {
     match (acc) {
       None => Some(str),
@@ -894,35 +903,24 @@ export let join = (separator: String, items: Array<String>) => {
 }
 
 /**
- * A simple helper function to convert a negative array index
- * number to its positive positional equivalent.
- */
-let wrapNegativeIndex = (arrLen, idx) => {
-  if (idx >= 0) {
-    idx
-  } else {
-    arrLen + idx
-  }
-}
-
-/**
  * Slices an array given zero-based start and end indexes. The value
  * at the end index will not be included in the result.
  *
  * If either index is a negative number, it will be treated as a reverse index from
  * the end of the array. e.g. `slice(1, -1, [> 'a', 'b', 'c']) == [> 'b']`.
  *
- * @param startIndex: The index of the array where the slice will begin (inclusive)
- * @param endIndex: The index of the array where the slice will end (exclusive)
+ * @param start: The index of the array where the slice will begin (inclusive)
+ * @param end: The index of the array where the slice will end (exclusive)
  * @param array: The array to be sliced
  * @returns The subset of the array that was sliced
  *
  * @since v0.4.0
+ * @history v0.6.0: Default `end` to the Array length
  */
-export let slice = (startIndex, endIndex, array) => {
+provide let slice = (start, end=length(array), array) => {
   let arrayLength = length(array)
-  let startIndex = wrapNegativeIndex(arrayLength, startIndex)
-  let endIndex = wrapNegativeIndex(arrayLength, endIndex)
+  let startIndex = wrapNegativeIndex(arrayLength, start)
+  let endIndex = wrapNegativeIndex(arrayLength, end)
   // Ensure we aren't working with an `end` value that is too big
   let endIndex = if (endIndex > arrayLength) {
     arrayLength
@@ -948,7 +946,7 @@ export let slice = (startIndex, endIndex, array) => {
  * @param array: The array to be sorted
  * @since v0.4.5
  */
-export let sort = (comp, array) => {
+provide let sort = (comp, array) => {
   let partition = (low, high) => {
     let pivot = array[high]
     let mut i = low - 1
@@ -989,10 +987,10 @@ export let sort = (comp, array) => {
  * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
  * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
  * @since v0.4.5
- * 
+ *
  * @history v0.6.0: Behavior changed from right-rotation to left-rotation
  */
-export let rotate = (n, arr) => {
+provide let rotate = (n, arr) => {
   let rec gcd = (a, b) => {
     if (b == 0) {
       a
@@ -1019,5 +1017,1050 @@ export let rotate = (n, arr) => {
       }
       arr[j] = temp
     }
+  }
+}
+
+let rec chunkHelp = (chunkSize, arr, arrLen, chunkStartIndex) => {
+  if (arrLen == 0) {
+    []
+  } else if (arrLen < chunkSize) {
+    [slice(chunkStartIndex, arr)]
+  } else {
+    // create the first chunk of the given array
+    let firstChunk = slice(
+      chunkStartIndex,
+      end=chunkStartIndex + chunkSize,
+      arr
+    )
+    let restChunks = chunkHelp(
+      chunkSize,
+      arr,
+      arrLen - chunkSize,
+      chunkStartIndex + chunkSize
+    )
+    [firstChunk, ...restChunks]
+  }
+}
+
+/**
+ * Splits the given array into chunks of the provided size.
+ * If the array cannot be split evenly, the final chunk will contain the remaining elements.
+ *
+ * @param chunkSize: The maximum size of each chunk
+ * @param arr: The array to chunk
+ * @returns An array of chunks
+ *
+ * @throws InvalidArgument(String): When `chunkSize` is not an integer
+ * @throws InvalidArgument(String): When `chunkSize` is less than one
+ *
+ * @example chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
+ * @example chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
+ *
+ * @since v0.6.0
+ */
+provide let chunk = (chunkSize, arr) => {
+  if (chunkSize <= 0) {
+    throw Exception.InvalidArgument("chunkSize must be greater than 0")
+  } else {
+    checkLength(chunkSize)
+    let arrLen = length(arr)
+    let chunks = chunkHelp(chunkSize, arr, arrLen, 0)
+    fromList(chunks)
+  }
+}
+
+/**
+ * An immutable array implementation.
+ *
+ * @since v0.6.0
+ * @history v0.5.4: Originally in `"immutablearray"` module
+ */
+provide module Immutable {
+  // Immutable arrays implemented as relaxed radix balanced trees. This data
+  // structure allows access and updating in O(log(n)) time, but since the tree
+  // branching factor is chosen to be a large number (32), these operations run
+  // in effectively constant time in most practical situations.
+
+  // This implementation was adapted from Elm's Array module
+  // https://github.com/elm/core/blob/master/src/Array.elm
+  // license of software used:
+
+  // Copyright 2014-present Evan Czaplicki
+  //
+  // Redistribution and use in source and binary forms, with or without
+  // modification, are permitted provided that the following conditions are met:
+  //
+  // 1. Redistributions of source code must retain the above copyright notice,
+  //    this list of conditions and the following disclaimer.
+  //
+  // 2. Redistributions in binary form must reproduce the above copyright notice,
+  //    this list of conditions and the following disclaimer in the documentation
+  //    and/or other materials provided with the distribution.
+  //
+  // 3. Neither the name of the copyright holder nor the names of its
+  //    contributors may be used to endorse or promote products derived from this
+  //    software without specific prior written permission.
+  //
+  // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  // ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+  // LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  // CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  // SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  // POSSIBILITY OF SUCH DAMAGE.
+
+  // Maximum number of children each tree node can have;
+  // an arbitrary multiple of 2 that gives a good performance tradeoff
+  let branchingFactor = 32
+  // 32 = 2^5
+  let branchingBits = 5
+  // To be applied to numbers to bring them within the range [0, 32)
+  let bitmask = branchingFactor - 1
+
+  type Tree<a> = Array<Node<a>>,
+  enum Node<a> {
+    Tree(Tree<a>),
+    Leaf(Array<a>),
+  }
+
+  // a helper data structure used for building an array piece by piece
+  record Builder<a> {
+    btail: Array<a>,
+    nodes: List<Node<a>>,
+    numNodes: Number,
+  }
+
+  // A "tail" of < 32 values at the end of the array is kept as a performance
+  // optimization
+  abstract record ImmutableArray<a> {
+    length: Number,
+    shift: Number,
+    root: Tree<a>,
+    tail: Array<a>,
+  }
+
+  // Aliasing names to make references to mutable arrays within the Immutable
+  // submodule clearer to distinguish
+  let mutLength = length
+  let mutInit = init
+  let mutForEach = forEach
+  let mutMap = map
+  let mutReduce = reduce
+  let mutReduceRight = reduceRight
+  let mutFromList = fromList
+  let mutCopy = copy
+  let mutSlice = slice
+  let mutAppend = append
+
+  /**
+   * An empty array.
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let empty = {
+    let empty = { length: 0, shift: branchingBits, root: [>], tail: [>] }
+    empty
+  }
+
+  /**
+   * Determines if the array contains no elements.
+   *
+   * @param array: The array to check
+   * @returns `true` if the array is empty and `false` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let isEmpty = array => array.length == 0
+
+  /**
+   * Provides the length of the input array.
+   *
+   * @param array: The array to inspect
+   * @returns The number of elements in the array
+   *
+   * @example length(fromList([1, 2, 3, 4, 5])) == 5
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let length = array => array.length
+
+  let tailIndex = length => {
+    let shiftedRight = length >> branchingBits
+    shiftedRight << branchingBits
+  }
+
+  let wrapNegativeIndex = (len, index) => {
+    if (index >= 0) index else len + index
+  }
+
+  let arraySetCopy = (index, value, array) => {
+    let copy = mutCopy(array)
+    copy[index] = value
+    copy
+  }
+
+  // Appends 2 arrays together, truncating to a max size of 32 for storage in
+  // a tree node. Also returns number of elements truncated.
+  let arrayAppendMax32 = (array1, array2) => {
+    let len1 = mutLength(array1)
+    let len2 = mutLength(array2)
+
+    let numToAppend = Number.min(len2, branchingFactor - len1)
+    let toAppend = if (numToAppend < len2) {
+      mutSlice(0, end=numToAppend, array2)
+    } else {
+      array2
+    }
+    let numNotAppended = len1 + len2 - branchingFactor
+
+    (mutAppend(array1, toAppend), numNotAppended)
+  }
+
+  let log32floor = num => {
+    let mut val = -1
+    let mut num = num
+    while (num > 0) {
+      val += 1
+      num = num >> branchingBits
+    }
+    val
+  }
+
+  /**
+   * Retrieves the element from the array at the specified index.
+   * A negative index is treated as an offset from the end of the array.
+   *
+   * @param index: The index to access
+   * @param array: The array to access
+   * @returns The element from the array
+   * @throws IndexOutOfBounds: When the index being accessed is outside the array's bounds
+   *
+   * @example get(1, fromList([1, 2, 3, 4])) == 2
+   * @example get(-1, fromList([1, 2, 3, 4])) == 4
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let get = (index, array) => {
+    let index = wrapNegativeIndex(array.length, index)
+
+    let rec getInner = (shift, node) => {
+      let pos = index >> shift & bitmask
+      match (node[pos]) {
+        Tree(subTree) => getInner(shift - branchingBits, subTree),
+        Leaf(vals) => vals[index & bitmask],
+      }
+    }
+
+    let { length, shift, root, tail } = array
+    if (index < 0 || index >= length) {
+      throw IndexOutOfBounds
+    } else if (index >= tailIndex(length)) {
+      tail[index & bitmask]
+    } else {
+      getInner(shift, root)
+    }
+  }
+
+  /**
+   * Creates a new array in which the element at the specified index is set to a
+   * new value. A negative index is treated as an offset from the end of the array.
+   *
+   * @param index: The index to update
+   * @param value: The value to store
+   * @param array: The array to update
+   * @returns A new array containing the new element at the given index
+   * @throws IndexOutOfBounds: When the index being updated is outside the array's bounds
+   *
+   * @example set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let set = (index, value, array) => {
+    let index = wrapNegativeIndex(array.length, index)
+
+    let rec setInner = (shift, node) => {
+      let pos = index >> shift & bitmask
+      let newVal = match (node[pos]) {
+        Tree(subTree) => {
+          Tree(setInner(shift - branchingBits, subTree))
+        },
+        Leaf(vals) => {
+          Leaf(arraySetCopy(index & bitmask, value, vals))
+        },
+      }
+      arraySetCopy(pos, newVal, node)
+    }
+
+    let { length, shift, root, tail } = array
+    if (index < 0 || index >= length) {
+      throw IndexOutOfBounds
+    } else if (index >= tailIndex(length)) {
+      { length, shift, root, tail: arraySetCopy(index & bitmask, value, tail) }
+    } else {
+      { length, shift, root: setInner(shift, root), tail }
+    }
+  }
+
+  // Inserts a new tail into the array. If the length of the tail equals the
+  // branching factor, it is instead inserted into the main tree rather than
+  // the tail
+  let replaceTail = (newTail, array) => {
+    let rec insertTailInTree = (shift, node) => {
+      let pos = array.length >> shift & bitmask
+      if (pos >= mutLength(node)) {
+        let newElem = if (shift == branchingBits) {
+          Leaf(newTail)
+        } else {
+          Tree(insertTailInTree(shift - branchingBits, [>]))
+        }
+        mutAppend(node, [> newElem])
+      } else {
+        let newSubTree = match (node[pos]) {
+          Tree(subTree) => subTree,
+          Leaf(_) => [> node[pos]],
+        }
+        let newNode = Tree(insertTailInTree(shift - branchingBits, newSubTree))
+        arraySetCopy(pos, newNode, node)
+      }
+    }
+
+    let { length, shift, root, tail } = array
+    let newArrayLen = length + (mutLength(newTail) - mutLength(tail))
+    if (mutLength(newTail) == branchingFactor) {
+      let overflow = newArrayLen >> branchingBits > 1 << shift
+      if (overflow) {
+        let newShift = shift + branchingBits
+        let newRoot = insertTailInTree(newShift, [> Tree(root)])
+        { length: newArrayLen, shift: newShift, root: newRoot, tail: [>] }
+      } else {
+        let newRoot = insertTailInTree(shift, root)
+        { length: newArrayLen, shift, root: newRoot, tail: [>] }
+      }
+    } else {
+      { length: newArrayLen, shift, root, tail: newTail }
+    }
+  }
+
+  let appendTree = (toAppend, array) => {
+    let (appended, numNotAppended) = arrayAppendMax32(array.tail, toAppend)
+    let newArray = replaceTail(appended, array)
+    if (numNotAppended > 0) {
+      let appendLen = mutLength(toAppend)
+      let newTail = mutSlice(
+        appendLen - numNotAppended,
+        end=appendLen,
+        toAppend
+      )
+      replaceTail(newTail, newArray)
+    } else {
+      newArray
+    }
+  }
+
+  // Flatten an array into a builder
+  let arrayToBuilder = array => {
+    let rec reduceFn = (acc, node) => {
+      match (node) {
+        Tree(subTree) => mutReduce(reduceFn, acc, subTree),
+        Leaf(_) => [node, ...acc],
+      }
+    }
+    let { tail, root, length, _ } = array
+    {
+      btail: tail,
+      nodes: mutReduce(reduceFn, [], root),
+      numNodes: length >> branchingBits,
+    }
+  }
+
+  // For use to compress a large (> 32) list of nodes into subtrees
+  let rec compressNodes = (nodes, acc) => {
+    let node = mutFromList(List.take(branchingFactor, nodes))
+    let remaining = List.drop(branchingFactor, nodes)
+    let newAcc = [Tree(node), ...acc]
+    match (remaining) {
+      [] => List.reverse(newAcc),
+      _ => compressNodes(remaining, newAcc),
+    }
+  }
+
+  let builderToArray = builder => {
+    // Builds the non-tail portion of an array
+    let rec buildTree = (nodes, numNodes) => {
+      let newNodeSize = Number.ceil(numNodes / branchingFactor)
+      match (newNodeSize) {
+        1 => mutFromList(nodes),
+        _ => buildTree(compressNodes(nodes, []), newNodeSize),
+      }
+    }
+
+    let { btail, nodes, numNodes } = builder
+    match (numNodes) {
+      0 =>
+        {
+          length: mutLength(btail),
+          shift: branchingBits,
+          root: [>],
+          tail: btail,
+        },
+      _ => {
+        let treeSize = numNodes * branchingFactor
+        let depth = log32floor(treeSize - 1)
+        {
+          length: treeSize + mutLength(btail),
+          shift: Number.max(1, depth) * branchingBits,
+          root: buildTree(nodes, numNodes),
+          tail: btail,
+        }
+      },
+    }
+  }
+
+  // Append a chunk of <= 32 values to a builder
+  let appendBuilder = (toAppend, builder) => {
+    let { btail, nodes, numNodes } = builder
+    let (appended, numNotAppended) = arrayAppendMax32(btail, toAppend)
+
+    if (numNotAppended >= 0) {
+      let appendLen = mutLength(toAppend)
+      {
+        btail: mutSlice(appendLen - numNotAppended, end=appendLen, toAppend),
+        nodes: [Leaf(appended), ...nodes],
+        numNodes: numNodes + 1,
+      }
+    } else {
+      { btail: appended, nodes, numNodes }
+    }
+  }
+
+  /**
+   * Creates a new array with the elements of the first array followed by
+   * the elements of the second array.
+   *
+   * @param array1: The array containing elements to appear first
+   * @param array2: The array containing elements to appear second
+   * @returns The new array containing elements from `array1` followed by elements from `array2`
+   *
+   * @example append(fromList([1, 2]), fromList([3, 4, 5])) == fromList([1, 2, 3, 4, 5])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let append = (array1, array2) => {
+    // Magic number of 4 determined best from benchmarks according to Elm's
+    // Array implementation
+    if (array2.length <= branchingFactor * 4) {
+      let rec reduceFn = (array, node) => {
+        match (node) {
+          Tree(subTree) => mutReduce(reduceFn, array, subTree),
+          Leaf(vals) => appendTree(vals, array),
+        }
+      }
+      let withoutTail = mutReduce(reduceFn, array1, array2.root)
+      appendTree(array2.tail, withoutTail)
+    } else {
+      let rec reduceFn = (builder, node) => {
+        match (node) {
+          Tree(subTree) => mutReduce(reduceFn, builder, subTree),
+          Leaf(vals) => appendBuilder(vals, builder),
+        }
+      }
+      let withoutTail = mutReduce(reduceFn, arrayToBuilder(array1), array2.root)
+      let { btail, nodes, numNodes } = appendBuilder(array2.tail, withoutTail)
+      builderToArray({ btail, nodes: List.reverse(nodes), numNodes })
+    }
+  }
+
+  /**
+   * Creates a single array containing the elements of all arrays in the
+   * provided list.
+   *
+   * @param arrays: A list containing all arrays to combine
+   * @returns The new array
+   *
+   * @example concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2, 3, 4, 5, 6])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let concat = arrays => {
+    List.reduce(append, empty, arrays)
+  }
+
+  /**
+   * Creates a new array of the specified length where each element is
+   * initialized with the result of an initializer function. The initializer
+   * is called with the index of each array element.
+   *
+   * @param length: The length of the new array
+   * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
+   * @returns The new array
+   *
+   * @example init(5, i => i + 3) == fromList([3, 4, 5, 6, 7])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let init = (length, fn) => {
+    let tailLen = length % branchingFactor
+    let btail = mutInit(tailLen, i => fn(length - tailLen + i))
+
+    let rec initInner = (beginI, nodes) => {
+      if (beginI < 0) {
+        builderToArray({ btail, nodes, numNodes: length >> branchingBits })
+      } else {
+        let leaf = Leaf(mutInit(branchingFactor, i => fn(beginI + i)))
+        initInner(beginI - branchingFactor, [leaf, ...nodes])
+      }
+    }
+    initInner(length - tailLen - branchingFactor, [])
+  }
+
+  /**
+   * Creates a new array of the specified length with each element being
+   * initialized with the given value.
+   *
+   * @param length: The length of the new array
+   * @param value: The value to store at each index
+   * @returns The new array
+   *
+   * @example make(5, "foo") == fromList(["foo", "foo", "foo", "foo", "foo"])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let make = (length, value) => {
+    init(length, (_) => value)
+  }
+
+  /**
+   * Iterates an array, calling an iterator function on each element.
+   *
+   * @param fn: The iterator function to call with each element
+   * @param array: The array to iterate
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let forEach = (fn, array) => {
+    let rec forEachFn = node => {
+      match (node) {
+        Tree(subTree) => mutForEach(forEachFn, subTree),
+        Leaf(vals) => mutForEach(fn, vals),
+      }
+    }
+    let { tail, root, _ } = array
+    mutForEach(forEachFn, root)
+    mutForEach(fn, tail)
+  }
+
+  /**
+   * Iterates an array a given number of times, calling an iterator function on each element.
+   *
+   * @param fn: The iterator function to call with each element
+   * @param n: The number of times to iterate the given array
+   * @param array: The array to iterate
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let cycle = (fn, n, array) => {
+    for (let mut i = 0; i < n; i += 1) {
+      forEach(fn, array)
+    }
+  }
+
+  /**
+   * Produces a new array initialized with the results of a mapper function
+   * called on each element of the input array.
+   *
+   * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
+   * @param array: The array to iterate
+   * @returns The new array with mapped values
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let map = (fn, array) => {
+    let rec mapFn = node => {
+      match (node) {
+        Tree(subTree) => Tree(mutMap(mapFn, subTree)),
+        Leaf(vals) => Leaf(mutMap(fn, vals)),
+      }
+    }
+    let { length, shift, root, tail } = array
+    let newRoot = mutMap(mapFn, root)
+    let newTail = mutMap(fn, tail)
+    { length, shift, root: newRoot, tail: newTail }
+  }
+
+  /**
+   * Combines all elements of an array using a reducer function,
+   * starting from the "head", or left side, of the array.
+   *
+   * In `ImmutableArray.reduce(fn, initial, array)`, `fn` is called with
+   * an accumulator and each element of the array, and returns
+   * a new accumulator. The final value is the last accumulator
+   * returned. The accumulator starts with value `initial`.
+   *
+   * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+   * @param initial: The initial value to use for the accumulator on the first iteration
+   * @param array: The array to iterate
+   * @returns The final accumulator returned from `fn`
+   *
+   * @example reduce((acc, x) => acc + x, 0, fromList([1, 2, 3])) == 6
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let reduce = (fn, initial, array) => {
+    let rec reduceFn = (acc, node) => {
+      match (node) {
+        Tree(subTree) => mutReduce(reduceFn, acc, subTree),
+        Leaf(vals) => mutReduce(fn, acc, vals),
+      }
+    }
+    let { tail, root, _ } = array
+    let withoutTail = mutReduce(reduceFn, initial, root)
+    mutReduce(fn, withoutTail, tail)
+  }
+
+  /**
+   * Combines all elements of an array using a reducer function,
+   * starting from the "end", or right side, of the array.
+   *
+   * In `ImmutableArray.reduceRight(fn, initial, array)`, `fn` is called with
+   * each element of the array and an accumulator, and returns
+   * a new accumulator. The final value is the last accumulator
+   * returned. The accumulator starts with value `initial`.
+   *
+   * @param fn: The reducer function to call on each element, where the value returned will be the next accumulator value
+   * @param initial: The initial value to use for the accumulator on the first iteration
+   * @param array: The array to iterate
+   * @returns The final accumulator returned from `fn`
+   *
+   * @example reduceRight((x, acc) => acc ++ x, "", fromList(["baz", "bar", "foo"])) == "foobarbaz"
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let reduceRight = (fn, initial, array) => {
+    let rec reduceFn = (node, acc) => {
+      match (node) {
+        Tree(subTree) => mutReduceRight(reduceFn, acc, subTree),
+        Leaf(vals) => mutReduceRight(fn, acc, vals),
+      }
+    }
+    let { tail, root, _ } = array
+    let tailVal = mutReduceRight(fn, initial, tail)
+    mutReduceRight(reduceFn, tailVal, root)
+  }
+
+  /**
+   * Produces a new array by calling a function on each element
+   * of the input array. Each iteration produces an intermediate
+   * array, which are all appended to produce a "flattened" array
+   * of all results.
+   *
+   * @param fn: The function to be called on each element, where the value returned will be an array that gets appended to the new array
+   * @param array: The array to iterate
+   * @returns The new array
+   *
+   * @example flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4, 5, 6])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let flatMap = (fn, array) => {
+    reduce((acc, x) => append(acc, fn(x)), empty, array)
+  }
+
+  /**
+   * Converts the input list to an array.
+   *
+   * @param list: The list to convert
+   * @returns The array containing all elements from the list
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let fromList = list => {
+    let rec fromListInner = (list, nodes, numNodes) => {
+      let node = mutFromList(List.take(branchingFactor, list))
+      let remaining = List.drop(branchingFactor, list)
+      if (mutLength(node) < branchingFactor) {
+        builderToArray({ btail: node, nodes: List.reverse(nodes), numNodes })
+      } else {
+        fromListInner(remaining, [Leaf(node), ...nodes], numNodes + 1)
+      }
+    }
+
+    fromListInner(list, [], 0)
+  }
+
+  /**
+   * Converts the input array to a list.
+   *
+   * @param array: The array to convert
+   * @returns The list containing all elements from the array
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let toList = array => {
+    reduceRight((val, list) => [val, ...list], [], array)
+  }
+
+  /**
+   * Produces a new array by calling a function on each element of
+   * the input array and only including it in the result array if the element satisfies
+   * the condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param array: The array to iterate
+   * @returns The new array containing elements where `fn` returned `true`
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let filter = (fn, array) => {
+    fromList(
+      reduceRight((x, arr) => if (fn(x)) [x, ...arr] else arr, [], array)
+    )
+  }
+
+  /**
+   * Checks that the given condition is satisfied for all
+   * elements in the input array.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param array: The array to check
+   * @returns `true` if all elements satify the condition or `false` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let every = (fn, array) => {
+    reduce((acc, x) => acc && fn(x), true, array)
+  }
+
+  /**
+   * Checks that the given condition is satisfied **at least
+   * once** by an element in the input array.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param array: The array to iterate
+   * @returns `true` if one or more elements satify the condition or `false` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let some = (fn, array) => {
+    reduce((acc, x) => acc || fn(x), false, array)
+  }
+
+  /**
+   * Creates a new array with all elements in reverse order.
+   *
+   * @param array: The array to reverse
+   * @returns The new array
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let reverse = array => {
+    fromList(reduce((acc, x) => [x, ...acc], [], array))
+  }
+
+  /**
+   * Checks if the value is an element of the input array.
+   * Uses the generic `==` structural equality operator.
+   *
+   * @param search: The value to compare
+   * @param array: The array to inspect
+   * @returns `true` if the value exists in the array or `false` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let contains = (value, array) => {
+    reduce((acc, x) => acc || x == value, false, array)
+  }
+
+  /**
+   * Finds the first element in an array that satifies the given condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param array: The array to search
+   * @returns `Some(element)` containing the first value found or `None` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let find = (fn, array) => {
+    reduce((acc, x) => if (acc == None && fn(x)) Some(x) else acc, None, array)
+  }
+
+  /**
+   * Finds the first index in an array where the element satifies the given condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param array: The array to search
+   * @returns `Some(index)` containing the index of the first element found or `None` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let findIndex = (fn, array) => {
+    let mut i = -1
+    reduce((acc, x) => {
+      i += 1
+      if (acc == None && fn(x)) Some(i) else acc
+    }, None, array)
+  }
+
+  /**
+   * Combines two arrays into a Cartesian product of tuples containing
+   * all ordered pairs `(a, b)`.
+   *
+   * @param array1: The array to provide values for the first tuple element
+   * @param array2: The array to provide values for the second tuple element
+   * @returns The new array containing all pairs of `(a, b)`
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let product = (array1, array2) => {
+    fromList(
+      reduceRight((x1, list) => {
+        reduceRight((x2, list) => [(x1, x2), ...list], list, array2)
+      }, [], array1)
+    )
+  }
+
+  /**
+   * Counts the number of elements in an array that satisfy the given condition.
+   *
+   * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
+   * @param array: The array to iterate
+   * @returns The total number of elements that satisfy the condition
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let count = (fn, array) => {
+    reduce((acc, x) => if (fn(x)) acc + 1 else acc, 0, array)
+  }
+
+  /**
+   * Produces a new array with any duplicates removed.
+   * Uses the generic `==` structural equality operator.
+   *
+   * @param array: The array to filter
+   * @returns The new array with only unique values
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let unique = array => {
+    // TODO(#1651): improve performance
+    fromList(List.unique(toList(array)))
+  }
+
+  /**
+   * Produces a new array filled with tuples of elements from both given arrays.
+   * The first tuple will contain the first item of each array, the second tuple
+   * will contain the second item of each array, and so on.
+   *
+   * Calling this function with arrays of different sizes will cause the returned
+   * array to have the length of the smaller array.
+   *
+   * @param array1: The array to provide values for the first tuple element
+   * @param array2: The array to provide values for the second tuple element
+   * @returns The new array containing indexed pairs of `(a, b)`
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let zip = (array1, array2) => {
+    fromList(List.zip(toList(array1), toList(array2)))
+  }
+
+  /**
+   * Produces a new array filled with elements defined by applying a function on
+   * pairs from both given arrays. The first element will contain the result of
+   * applying the function to the first elements of each array, the second element
+   * will contain the result of applying the function to the second elements of
+   * each array, and so on.
+   *
+   * Calling this function with arrays of different sizes will cause the returned
+   * array to have the length of the smaller array.
+   *
+   * @param fn: The function to apply to pairs of elements
+   * @param array1: The array whose elements will each be passed to the function as the first argument
+   * @param array2: The array whose elements will each be passed to the function as the second argument
+   * @returns The new array containing elements derived from applying the function to pairs of input array elements
+   *
+   * @example zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) == fromList([5, 7, 9])
+   * @example zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 10])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let zipWith = (fn, array1, array2) => {
+    fromList(List.zipWith(fn, toList(array1), toList(array2)))
+  }
+
+  /**
+   * Produces two arrays by splitting apart an array of tuples.
+   *
+   * @param array: The array of tuples to split
+   * @returns An array containing all elements from the first tuple element and an array containing all elements from the second tuple element
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let unzip = array => {
+    let (list1, list2) = List.unzip(toList(array))
+    (fromList(list1), fromList(list2))
+  }
+
+  /**
+   * Concatenates an array of strings into a single string, separated by a separator string.
+   *
+   * @param separator: The separator to insert between items in the string
+   * @param array: The input strings
+   * @returns The concatenated string
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let join = (separator, array) => {
+    // TODO(#728): Improve performance here with buffer approach
+    let iter = (acc, str) => {
+      match (acc) {
+        None => Some(str),
+        Some(prev) => Some(prev ++ separator ++ str),
+      }
+    }
+    match (reduce(iter, None, array)) {
+      None => "",
+      Some(s) => s,
+    }
+  }
+
+  let clampIndex = (len, index) => {
+    Number.min(len, Number.max(0, wrapNegativeIndex(len, index)))
+  }
+
+  /**
+   * Slices an array given zero-based start and end indexes. The value
+   * at the end index will not be included in the result.
+   *
+   * If either index is a negative number, it will be treated as a reverse index from
+   * the end of the array.
+   *
+   * @param start: The index of the array where the slice will begin (inclusive)
+   * @param end: The index of the array where the slice will end (exclusive)
+   * @param array: The array to be sliced
+   * @returns The subset of the array that was sliced
+   *
+   * @example slice(0, 2, fromList(['a', 'b', 'c'])) == fromList(['a', 'b'])
+   * @example slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   * @history v0.6.0: Default `end` to the Array length
+   */
+
+  provide let slice = (start, end=length(array), array) => {
+    let begin = clampIndex(array.length, start)
+    let end = clampIndex(array.length, end)
+    let mut i = array.length
+    fromList(
+      reduceRight((x, acc) => {
+        i -= 1
+        if (i >= begin && i < end) [x, ...acc] else acc
+      }, [], array)
+    )
+  }
+
+  /**
+   * Sorts the given array based on a given comparator function.
+   *
+   * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
+   * @param comp: The comparator function used to indicate sort order
+   * @param array: The array to be sorted
+   * @returns The sorted array
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let sort = (comp, array) => {
+    fromList(List.sort(comp, toList(array)))
+  }
+
+  /**
+   * Rotates array elements by the specified amount to the left, such that the
+   * `n`th element is the first in the new array.
+   *
+   * If value is negative, array elements will be rotated by the
+   * specified amount to the right. See examples.
+   *
+   * @param n: The number of elements to rotate by
+   * @param array: The array to be rotated
+   *
+   * @example rotate(2, fromList([1, 2, 3, 4, 5])) == fromList([3, 4, 5, 1, 2])
+   * @example rotate(-1, fromList([1, 2, 3, 4, 5])) == fromList([5, 1, 2, 3, 4])
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally in `"immutablearray"` module
+   */
+
+  provide let rotate = (n, array) => {
+    let sliceI = if (array.length == 0) 0 else n % array.length
+    let before = slice(0, end=sliceI, array)
+    let after = slice(sliceI, end=array.length, array)
+    append(after, before)
   }
 }

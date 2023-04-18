@@ -1,0 +1,7 @@
+module ProvideAll
+
+provide let x = 5
+provide let y = x => {
+  x
+}
+provide let z = "foo"

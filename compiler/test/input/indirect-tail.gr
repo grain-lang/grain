@@ -1,4 +1,10 @@
-let add = (x, y) => {x + y};
-let double = ((x) => {add(x, x)});
+module IndirectTail
+
+let add = (x, y) => {
+  x + y
+}
+let double = x => {
+  add(x, x)
+}
 
 print(double(2) + double(3))

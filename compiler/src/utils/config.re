@@ -426,9 +426,6 @@ let stdlib_dir =
 let color_enabled =
   toggle_flag(~names=["no-color"], ~doc="Disable colored output", true);
 
-// TODO(#612): Add compiler flag when feature is complete or remove entirely
-let principal = ref(false);
-
 let initial_memory_pages =
   opt(
     ~names=["initial-memory-pages"],
@@ -445,6 +442,13 @@ let maximum_memory_pages =
     None,
   );
 
+let import_memory =
+  toggle_flag(
+    ~names=["import-memory"],
+    ~doc="Import the memory from `env.memory`",
+    false,
+  );
+
 let compilation_mode =
   opt(
     ~names=["compilation-mode"],
@@ -459,15 +463,12 @@ let compilation_mode =
 let statically_link =
   toggle_flag(~names=["no-link"], ~doc="Disable static linking", true);
 
-let experimental_tail_call =
+let no_tail_call =
   toggle_flag(
-    ~names=["experimental-wasm-tail-call"],
-    ~doc="Enables tail-call optimization",
+    ~names=["no-wasm-tail-call"],
+    ~doc="Disables tail-call optimization",
     false,
   );
-
-// TODO(#612): Add compiler flag when feature is complete or remove entirely
-let recursive_types = ref(false);
 
 let strict_sequence =
   toggle_flag(

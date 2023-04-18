@@ -1,137 +1,296 @@
 /**
- * @module Queue: An immutable queue implementation. A queue is a FIFO (first-in-first-out) data structure where new values are added to the end and retrieved or removed from the beginning.
- * @example import Queue from "queue"
+ * A queue is a FIFO (first-in-first-out) data structure where new
+ * values are added to the end and retrieved or removed from the beginning.
+ *
+ * The default implementation is mutable, but an immutable queue
+ * implementation is available in the `Immutable` submodule.
+ *
+ * @example include "queue"
+ *
  * @since v0.2.0
- *
- * @deprecated This module will be renamed to ImmutableQueue in the v0.6.0 release of Grain.
  */
-import List from "list"
+
+module Queue
+
+include "list"
+include "array"
 
 /**
- * @section Types: Type declarations included in the Queue module.
+ * A mutable FIFO (first-in-first-out) data structure.
  */
-
-record Queue<a> {
-  forwards: List<a>,
-  backwards: List<a>,
+abstract record Queue<a> {
+  mut size: Number,
+  mut array: Array<Option<a>>,
+  mut headIndex: Number,
+  mut tailIndex: Number, // tail points to where the next element should be inserted
 }
 
 /**
- * @section Values: Functions and constants for working with queues.
- */
-
-/**
- * An empty queue.
+ * Creates a new queue with an initial storage of the given size. As values are
+ * added or removed, the internal storage may grow or shrink. Generally, you
+ * won’t need to care about the storage size of your map and can use
+ * `Queue.make()` instead.
  *
- * @since v0.5.4
+ * @param size: The initial storage size of the queue
+ * @returns An empty queue
+ *
+ * @since v0.6.0
  */
-export let empty = {
-  let empty = { forwards: [], backwards: [] }
-  empty
+provide let makeSized = size => {
+  { size: 0, array: Array.make(size, None), headIndex: 0, tailIndex: 0 }
 }
 
 /**
- * Creates an empty queue.
+ * Creates a new queue.
  *
  * @returns An empty queue
  *
- * @deprecated This will be removed in the v0.6.0 release of Grain.
- *
- * @since v0.2.0
+ * @since v0.6.0
  */
-export let make = () => {
-  { forwards: [], backwards: [] }
+provide let make = () => {
+  makeSized(16)
 }
 
 /**
- * Checks if the given queue contains any values.
+ * Checks if the given queue contains no items.
  *
  * @param queue: The queue to check
- * @returns `true` if the given queue is empty or `false` otherwise
+ * @returns `true` if the queue has no items or `false` otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
  */
-export let isEmpty = queue => {
-  match (queue) {
-    { forwards: [], backwards: [] } => true,
-    _ => false,
-  }
-}
+provide let isEmpty = queue => queue.size == 0
 
 /**
- * Returns the value at the beginning of the queue. It is not removed from the queue.
+ * Computes the size of the input queue.
  *
  * @param queue: The queue to inspect
- * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
+ * @returns The count of the items in the queue
  *
- * @since v0.3.2
- * @history v0.2.0: Originally named `head`
- * @history v0.3.2: Deprecated `head` function
- * @history v0.4.0: Removed `head` function
+ * @since v0.6.0
  */
-export let peek = queue => {
-  match (queue) {
-    { forwards: [], backwards: [] } => None,
-    { forwards, backwards } => List.head(forwards),
-  }
-}
+provide let size = queue => queue.size
 
 /**
- * Adds a value to the end of the queue.
- *
- * @param value: The value to append
- * @param queue: The queue to update
- * @returns An updated queue
- *
- * @since v0.3.2
- * @history v0.2.0: Originally named `enqueue`
- * @history v0.3.2: Deprecated `enqueue` function
- * @history v0.4.0: Removed `enqueue` function
- */
-export let push = (value, queue) => {
-  match (queue) {
-    { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
-    { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
-  }
-}
-
-/**
- * Dequeues the next value in the queue.
- *
- * @param queue: The queue to change
- * @returns An updated queue
- *
- * @since v0.3.2
- * @history v0.2.0: Originally named `dequeue`
- * @history v0.3.2: Deprecated `dequeue` function
- * @history v0.4.0: Removed `dequeue` function
- */
-export let pop = queue => {
-  match (queue) {
-    { forwards: [], backwards: [] } => queue,
-    { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
-    { forwards: [head], backwards } =>
-      {
-        forwards: List.reverse(backwards),
-        backwards: [],
-      },
-    { forwards: [head, ...ftail], backwards } => { forwards: ftail, backwards },
-  }
-}
-
-/**
- * Get the number of values in a queue.
+ * Provides the value at the beginning of the queue, if it exists.
  *
  * @param queue: The queue to inspect
- * @returns The number of values in the queue
+ * @returns `Some(value)` containing the value at the beginning of the queue or `None` otherwise.
  *
- * @since v0.3.2
+ * @since v0.6.0
  */
-export let size = queue => {
-  match (queue) {
-    { forwards: [], backwards: [] } => 0,
-    { forwards, backwards: [] } => List.length(forwards),
-    { forwards: [], backwards } => List.length(backwards),
-    { forwards, backwards } => List.length(forwards) + List.length(backwards),
+provide let peek = queue => {
+  if (queue.size == 0) None else queue.array[queue.headIndex]
+}
+
+/**
+ * Adds a new item to the end of the queue.
+ *
+ * @param value: The item to be added
+ * @param queue: The queue being updated
+ *
+ * @since v0.6.0
+ */
+provide let push = (value, queue) => {
+  let arrLen = Array.length(queue.array)
+  // expand the array if needed
+  if (queue.size == arrLen) {
+    let newArray = Array.make(arrLen * 2, None)
+
+    newArray[0] = queue.array[queue.headIndex]
+    let mut insertI = 1
+    let mut currI = (queue.headIndex + 1) % arrLen
+    while (currI != queue.tailIndex) {
+      newArray[insertI] = queue.array[currI]
+      insertI += 1
+      currI = (currI + 1) % arrLen
+    }
+
+    queue.headIndex = 0
+    queue.tailIndex = arrLen
+    queue.array = newArray
+  }
+  queue.array[queue.tailIndex] = Some(value)
+  queue.tailIndex = (queue.tailIndex + 1) % Array.length(queue.array)
+  queue.size += 1
+}
+
+/**
+ * Removes the item at the beginning of the queue.
+ *
+ * @param queue: The queue being updated
+ * @returns The element removed from the queue
+ *
+ * @since v0.6.0
+ */
+provide let pop = queue => {
+  if (queue.size == 0) {
+    None
+  } else {
+    let elem = queue.array[queue.headIndex]
+    queue.array[queue.headIndex] = None
+    queue.headIndex = (queue.headIndex + 1) % Array.length(queue.array)
+    queue.size -= 1
+    elem
+  }
+}
+
+/**
+ * Clears the queue by removing all of its elements
+ *
+ * @param queue: The queue to clear
+ *
+ * @since v0.6.0
+ */
+provide let clear = queue => {
+  queue.size = 0
+  Array.fill(None, queue.array)
+  queue.headIndex = 0
+  queue.tailIndex = 0
+}
+
+/**
+ * Produces a shallow copy of the input queue.
+ *
+ * @param queue: The queue to copy
+ * @returns A new queue containing the elements from the input
+ *
+ * @since v0.6.0
+ */
+provide let copy = queue => {
+  let { size, array, headIndex, tailIndex } = queue
+  { size, array: Array.copy(array), headIndex, tailIndex }
+}
+
+/**
+ * An immutable queue implementation.
+ */
+provide module Immutable {
+  /**
+   * An immutable FIFO (first-in-first-out) data structure.
+   */
+
+  abstract record ImmutableQueue<a> {
+    forwards: List<a>,
+    backwards: List<a>,
+  }
+
+  /**
+   * An empty queue.
+   *
+   * @since v0.6.0
+   * @history v0.5.4: Originally a module root API
+   */
+
+  provide let empty = {
+    let empty = { forwards: [], backwards: [] }
+    empty
+  }
+
+  /**
+   * Checks if the given queue contains any values.
+   *
+   * @param queue: The queue to check
+   * @returns `true` if the given queue is empty or `false` otherwise
+   *
+   * @since v0.6.0
+   * @history v0.2.0: Originally a module root API
+   */
+
+  provide let isEmpty = queue => {
+    match (queue) {
+      { forwards: [], backwards: [] } => true,
+      _ => false,
+    }
+  }
+
+  /**
+   * Returns the value at the beginning of the queue. It is not removed from the queue.
+   *
+   * @param queue: The queue to inspect
+   * @returns `Some(value)` containing the value at the beginning of the queue, or `None` if the queue is empty
+   *
+   * @since v0.6.0
+   * @history v0.2.0: Originally named `head`
+   * @history v0.3.2: Deprecated `head` function
+   * @history v0.3.2: Originally a module root API
+   * @history v0.4.0: Removed `head` function
+   */
+
+  provide let peek = queue => {
+    match (queue) {
+      { forwards: [], backwards: [] } => None,
+      { forwards, backwards } => List.head(forwards),
+    }
+  }
+
+  /**
+   * Adds a value to the end of the queue.
+   *
+   * @param value: The value to append
+   * @param queue: The queue to update
+   * @returns An updated queue
+   *
+   * @since v0.6.0
+   * @history v0.2.0: Originally named `enqueue`
+   * @history v0.3.2: Deprecated `enqueue` function
+   * @history v0.3.2: Originally a module root API
+   * @history v0.4.0: Removed `enqueue` function
+   */
+
+  provide let push = (value, queue) => {
+    match (queue) {
+      { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
+      { forwards, backwards } => { forwards, backwards: [value, ...backwards] },
+    }
+  }
+
+  /**
+   * Dequeues the next value in the queue.
+   *
+   * @param queue: The queue to change
+   * @returns An updated queue
+   *
+   * @since v0.6.0
+   * @history v0.2.0: Originally named `dequeue`
+   * @history v0.3.2: Deprecated `dequeue` function
+   * @history v0.3.2: Originally a module root API
+   * @history v0.4.0: Removed `dequeue` function
+   */
+
+  provide let pop = queue => {
+    match (queue) {
+      { forwards: [], backwards: [] } => queue,
+      { forwards: [head], backwards: [] } => { forwards: [], backwards: [] },
+      { forwards: [head], backwards } =>
+        {
+          forwards: List.reverse(backwards),
+          backwards: [],
+        },
+      { forwards: [head, ...ftail], backwards } =>
+        {
+          forwards: ftail,
+          backwards,
+        },
+    }
+  }
+
+  /**
+   * Get the number of values in a queue.
+   *
+   * @param queue: The queue to inspect
+   * @returns The number of values in the queue
+   *
+   * @since v0.6.0
+   * @history v0.3.2: Originally a module root API
+   */
+
+  provide let size = queue => {
+    match (queue) {
+      { forwards: [], backwards: [] } => 0,
+      { forwards, backwards: [] } => List.length(forwards),
+      { forwards: [], backwards } => List.length(backwards),
+      { forwards, backwards } => List.length(forwards) + List.length(backwards),
+    }
   }
 }

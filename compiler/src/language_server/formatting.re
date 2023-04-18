@@ -52,7 +52,7 @@ let process =
         code: InvalidParams,
         message:
           "The document is not available on the server: "
-          ++ Protocol.uri_to_filename(params.text_document.uri),
+          ++ Utils.uri_to_filename(params.text_document.uri),
       },
     )
   | Some(compiled_code) =>
@@ -86,7 +86,7 @@ let process =
             code: RequestFailed,
             message:
               "Failed to format the document: "
-              ++ Protocol.uri_to_filename(params.text_document.uri),
+              ++ Utils.uri_to_filename(params.text_document.uri),
           },
         )
       }
@@ -101,7 +101,7 @@ let process =
           code: RequestFailed,
           message:
             "Reached an invalid compilation state when compiling: "
-            ++ Protocol.uri_to_filename(params.text_document.uri),
+            ++ Utils.uri_to_filename(params.text_document.uri),
         },
       )
     }

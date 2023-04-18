@@ -1,8 +1,11 @@
-import * from "float64"
+module Float64Test
+
+include "float64"
+from Float64 use *
 
 // Constants Tests
 // smoke test:
-assert gt(infinity, 100000000.d)
+assert gt(infinity, 100000000.0d)
 // test infinity-specific semantics:
 assert toNumber(infinity) == toNumber(infinity) - 1
 assert nan != nan
@@ -13,6 +16,8 @@ assert tau == 6.283185307179586d
 
 assert e == 2.718281828459045d
 // Operation Tests
+// Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
+let fromNumber = fromNumber
 assert fromNumber(5) == 5.0d
 assert fromNumber(0) == 0.0d
 

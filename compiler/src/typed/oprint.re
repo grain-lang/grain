@@ -353,14 +353,18 @@ let rec print_out_type = ppf =>
 
 and print_out_type_1 = ppf =>
   fun
-  | Otyp_arrow(ty1, ty2) => {
-      let args_length = List.length(ty1);
+  | Otyp_arrow(al, ty2) => {
+      let parens =
+        switch (al) {
+        | [("", _)] => false
+        | _ => true
+        };
       pp_open_box(ppf, 1);
-      if (args_length != 1) {
+      if (parens) {
         pp_print_char(ppf, '(');
       };
-      fprintf(ppf, "@[<0>%a@]", print_typlist(print_out_type_2, ","), ty1);
-      if (args_length != 1) {
+      fprintf(ppf, "@[<0>%a@]", print_argtyplist(print_out_type_2, ","), al);
+      if (parens) {
         pp_print_char(ppf, ')');
       };
       pp_print_string(ppf, " ->");
@@ -371,21 +375,13 @@ and print_out_type_1 = ppf =>
   | ty => print_out_type_2(ppf, ty)
 and print_out_type_2 = ppf =>
   fun
-  | Otyp_tuple(tyl) => {
-      pp_open_box(ppf, 1);
-      pp_print_char(ppf, '(');
-      fprintf(
-        ppf,
-        "@[<0>%a@]",
-        print_typlist(print_simple_out_type, ","),
-        tyl,
-      );
-      if (List.length(tyl) == 1) {
-        pp_print_char(ppf, ',');
-      };
-      pp_print_char(ppf, ')');
-      pp_close_box(ppf, ());
-    }
+  | Otyp_tuple(tyl) =>
+    fprintf(
+      ppf,
+      "@[<0>(%a)@]",
+      print_typlist(print_simple_out_type, ","),
+      tyl,
+    )
   | ty => print_simple_out_type(ppf, ty)
 and print_simple_out_type = ppf =>
   fun
@@ -450,13 +446,14 @@ and print_simple_out_type = ppf =>
         tags,
       );
     }
-  | (Otyp_alias(_) | Otyp_poly(_) | Otyp_arrow(_) | Otyp_tuple(_)) as ty => {
+  | (Otyp_alias(_) | Otyp_poly(_) | Otyp_arrow(_)) as ty => {
       pp_open_box(ppf, 1);
       pp_print_char(ppf, '(');
       print_out_type(ppf, ty);
       pp_print_char(ppf, ')');
       pp_close_box(ppf, ());
     }
+  | Otyp_tuple(_) as ty => print_out_type(ppf, ty)
   | Otyp_abstract
   | Otyp_open
   | Otyp_sum(_)
@@ -486,8 +483,8 @@ and print_simple_out_type = ppf =>
 and print_record_decl = (ppf, lbls) =>
   fprintf(
     ppf,
-    "{%a@;<1 -2>}",
-    print_list_init(print_out_label, ppf => fprintf(ppf, "@?")),
+    "{@?@[<v 2>%a@;@]}",
+    print_list_init(print_out_label, ppf => fprintf(ppf, "@;<1 2>")),
     lbls,
   )
 and print_fields = (rest, ppf) =>
@@ -526,6 +523,26 @@ and print_row_field = (ppf, (l, opt_amp, tyl)) => {
     tyl,
   );
 }
+and print_argtyplist = (print_elem, sep, ppf) =>
+  fun
+  | [] => ()
+  | [(l, ty)] => {
+      if (l != "") {
+        pp_print_string(ppf, l);
+        pp_print_string(ppf, ": ");
+      };
+      print_elem(ppf, ty);
+    }
+  | [(l, ty), ...al] => {
+      if (l != "") {
+        pp_print_string(ppf, l);
+        pp_print_string(ppf, ": ");
+      };
+      print_elem(ppf, ty);
+      pp_print_string(ppf, sep);
+      pp_print_space(ppf, ());
+      print_argtyplist(print_elem, sep, ppf, al);
+    }
 and print_typlist = (print_elem, sep, ppf) =>
   fun
   | [] => ()
@@ -549,7 +566,7 @@ and print_typargs = ppf =>
 and print_out_label = (ppf, (name, mut, arg)) =>
   fprintf(
     ppf,
-    "@[<v>@;<0 2>%s%s: %a,@]",
+    "@[<h>%s%s: %a,@]",
     if (mut) {"mut "} else {""},
     name,
     print_out_type,
@@ -701,20 +718,6 @@ and print_out_sig_item = ppf =>
   | Osig_ellipsis => fprintf(ppf, "...")
 
 and print_out_type_decl = (kwd, ppf, td) => {
-  let print_constraints = ppf =>
-    List.iter(
-      ((ty1, ty2)) =>
-        fprintf(
-          ppf,
-          "@ @[<2>constraint %a =@ %a@]",
-          out_type^,
-          ty1,
-          out_type^,
-          ty2,
-        ),
-      td.otype_cstrs,
-    );
-
   let type_defined = ppf =>
     switch (td.otype_params) {
     | [] => pp_print_string(ppf, td.otype_name)
@@ -746,44 +749,28 @@ and print_out_type_decl = (kwd, ppf, td) => {
     | _ => td.otype_type
     };
 
-  let print_immediate = ppf =>
-    if (td.otype_immediate) {
-      fprintf(ppf, " [%@%@immediate]");
-    } else {
-      ();
-    };
-
-  let print_unboxed = ppf =>
-    if (td.otype_unboxed) {
-      fprintf(ppf, " [%@%@unboxed]");
-    } else {
-      ();
-    };
-
   let print_out_tkind = ppf =>
     fun
     | Otyp_abstract => ()
-    | Otyp_record(lbls) => fprintf(ppf, " %a", print_record_decl, lbls)
+    | Otyp_record(lbls) =>
+      // Similar to print_record_decl, but I couldn't figure out a good way to handle different indents
+      fprintf(
+        ppf,
+        " {@?@[<v 2>%a@]@;}",
+        print_list_init(print_out_label, ppf => fprintf(ppf, "@;")),
+        lbls,
+      )
     | Otyp_sum(constrs) =>
       fprintf(
         ppf,
-        "@[<hov> {@?@[<v>@;<0 2>%a@;<0 0>@]}@]",
-        print_list(print_out_constr, ppf => fprintf(ppf, "@;<0 2>")),
+        " {@?@[<v 2>@;%a,@]@;}",
+        print_list(print_out_constr, ppf => fprintf(ppf, ",@;<0 2>")),
         constrs,
       )
     | Otyp_open => fprintf(ppf, " = ..")
     | ty => fprintf(ppf, " =@;<1 2>%a", out_type^, ty);
 
-  fprintf(
-    ppf,
-    "@[<2>@[<hv 2>%t%a@]%t%t%t@]",
-    print_name_params,
-    print_out_tkind,
-    ty,
-    print_constraints,
-    print_immediate,
-    print_unboxed,
-  );
+  fprintf(ppf, "@[<h>%t%a@]", print_name_params, print_out_tkind, ty);
 }
 
 and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
@@ -796,11 +783,11 @@ and print_out_constr = (ppf, (name, tyl, ret_type_opt)) => {
   switch (ret_type_opt) {
   | None =>
     switch (tyl) {
-    | [] => fprintf(ppf, "@[<2>%s,@]", name)
+    | [] => fprintf(ppf, "@?@[<v 2>%s@]", name)
     | _ =>
       fprintf(
         ppf,
-        "@[<2>%s(%a),@]",
+        "%s@?@[<v 2>%a@]",
         name,
         print_typlist(print_simple_out_type, ","),
         tyl,

@@ -64,10 +64,12 @@ module MakeIter = (Iter: IterArgument) => {
       iter_imm_expression(arg1);
       iter_imm_expression(arg2);
       iter_imm_expression(arg3);
-    | CRecord(ttag, elts) =>
+    | CRecord(type_hash, ttag, elts) =>
+      iter_imm_expression(type_hash);
       iter_imm_expression(ttag);
       List.iter(((_, elt)) => iter_imm_expression(elt), elts);
-    | CAdt(ttag, vtag, elts) =>
+    | CAdt(type_hash, ttag, vtag, elts) =>
+      iter_imm_expression(type_hash);
       iter_imm_expression(ttag);
       iter_imm_expression(vtag);
       List.iter(iter_imm_expression, elts);
@@ -91,21 +93,21 @@ module MakeIter = (Iter: IterArgument) => {
       iter_anf_expression(body);
     | CContinue
     | CBreak => ()
-    | CReturn(e) => Option.iter(iter_comp_expression, e)
+    | CReturn(e) => Option.iter(iter_imm_expression, e)
     | CSwitch(c, branches, _) =>
       iter_imm_expression(c);
       List.iter(((_, body)) => iter_anf_expression(body), branches);
     | CApp((f, _), args, _) =>
       iter_imm_expression(f);
       List.iter(iter_imm_expression, args);
-    | CAppBuiltin(_, _, args) => List.iter(iter_imm_expression, args)
-    | CLambda(_, idents, (expr, _)) => iter_anf_expression(expr)
+    | CLambda(_, idents, (expr, _), _) => iter_anf_expression(expr)
     | CBytes(s) => ()
     | CString(s) => ()
-    | CChar(c) => ()
     | CNumber(i) => ()
     | CInt32(i) => ()
     | CInt64(i) => ()
+    | CUint32(i) => ()
+    | CUint64(i) => ()
     | CFloat32(f) => ()
     | CFloat64(f) => ()
     };

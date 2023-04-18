@@ -1,0 +1,15 @@
+module EarlyReturn
+
+let earlyReturn = () => {
+  if (true) return 5 else return 6
+
+  match (1) {
+    6 => return 6,
+    7 => {
+      return 7
+    },
+    _ => return 8,
+  }
+
+  return 1234567 + 1234567 + 123456 + 124567 + 1234567 + 1234567 + 123456
+}

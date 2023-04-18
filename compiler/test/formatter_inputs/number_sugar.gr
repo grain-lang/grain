@@ -1,9 +1,0 @@
-let mut count = 10
-
-count /= 9
-
-count += 3
-
-count *= 7
-
-count -= 33

@@ -1,29 +1,35 @@
 /**
- * @module Float32: Utilities for working with the Float32 type.
- * @example import Float32 from "float32"
- * 
+ * Utilities for working with the Float32 type.
+ *
+ * @example include "float32"
+ *
  * @since v0.2.0
  */
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmF32 from "runtime/unsafe/wasmf32"
-import { newFloat32 } from "runtime/dataStructures"
 
-import {
+module Float32
+
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmf32"
+from WasmF32 use { (+), (-), (*), (/), (<), (<=), (>), (>=) }
+include "runtime/dataStructures"
+from DataStructures use { newFloat32 }
+
+include "runtime/numbers"
+from Numbers use {
   coerceNumberToFloat32 as fromNumber,
   coerceFloat32ToNumber as toNumber,
-} from "runtime/numbers"
+}
 
-/**
- * @section Constants: Float32 constant values.
- */
+@unsafe
+let _VALUE_OFFSET = 4n
 
 /**
  * Infinity represented as a Float32 value.
- * 
+ *
  * @since v0.4.0
  */
 @unsafe
-export let infinity = {
+provide let infinity = {
   let ptr = newFloat32(
     WasmF32.reinterpretI32(0b01111111100000000000000000000000n)
   )
@@ -32,11 +38,11 @@ export let infinity = {
 
 /**
  * NaN (Not a Number) represented as a Float32 value.
- * 
+ *
  * @since v0.4.0
  */
 @unsafe
-export let nan = {
+provide let nan = {
   let ptr = newFloat32(
     WasmF32.reinterpretI32(0b01111111100000000000000000000001n)
   )
@@ -45,51 +51,26 @@ export let nan = {
 
 /**
  * Pi represented as a Float32 value.
- * 
+ *
  * @since v0.5.2
  */
-export let pi = 3.1415927f
+provide let pi = 3.1415927f
 
 /**
  * Tau represented as a Float32 value.
- * 
+ *
  * @since v0.5.2
  */
-export let tau = 6.2831853f
+provide let tau = 6.2831853f
 
 /**
  * Euler's number represented as a Float32 value.
- * 
+ *
  * @since v0.5.2
  */
-export let e = 2.7182817f
-/**
- * @section Conversions: Functions for converting between Numbers and the Float32 type.
- */
+provide let e = 2.7182817f
 
-/**
- * Converts a Number to a Float32.
- *
- * @param number: The value to convert
- * @returns The Number represented as a Float32
- * 
- * @since v0.2.0
- */
-export fromNumber
-
-/**
- * Converts a Float32 to a Number.
- *
- * @param float: The value to convert
- * @returns The Float32 represented as a Number
- * 
- * @since v0.2.0
- */
-export toNumber
-
-/**
- * @section Operations: Mathematical operations for Float32 values.
- */
+provide { fromNumber, toNumber }
 
 /**
  * Computes the sum of its operands.
@@ -97,14 +78,14 @@ export toNumber
  * @param x: The first operand
  * @param y: The second operand
  * @returns The sum of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let add = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat32(WasmF32.add(xv, yv))
+provide let add = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat32(xv + yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -114,14 +95,14 @@ export let add = (x: Float32, y: Float32) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The difference of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let sub = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat32(WasmF32.sub(xv, yv))
+provide let sub = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat32(xv - yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -131,14 +112,14 @@ export let sub = (x: Float32, y: Float32) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The product of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let mul = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat32(WasmF32.mul(xv, yv))
+provide let mul = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat32(xv * yv)
   WasmI32.toGrain(ptr): Float32
 }
 
@@ -148,20 +129,16 @@ export let mul = (x: Float32, y: Float32) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of the two operands
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let div = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  let ptr = newFloat32(WasmF32.div(xv, yv))
+provide let div = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  let ptr = newFloat32(xv / yv)
   WasmI32.toGrain(ptr): Float32
 }
-
-/**
- * @section Comparisons: Functions for comparing Float32 values.
- */
 
 /**
  * Checks if the first value is less than the second value.
@@ -169,14 +146,14 @@ export let div = (x: Float32, y: Float32) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let lt = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  WasmF32.lt(xv, yv)
+provide let lt = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  xv < yv
 }
 
 /**
@@ -185,14 +162,14 @@ export let lt = (x: Float32, y: Float32) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let gt = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  WasmF32.gt(xv, yv)
+provide let gt = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  xv > yv
 }
 
 /**
@@ -201,14 +178,14 @@ export let gt = (x: Float32, y: Float32) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let lte = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  WasmF32.le(xv, yv)
+provide let lte = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  xv <= yv
 }
 
 /**
@@ -217,12 +194,12 @@ export let lte = (x: Float32, y: Float32) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
- * 
+ *
  * @since v0.2.0
  */
 @unsafe
-export let gte = (x: Float32, y: Float32) => {
-  let xv = WasmF32.load(WasmI32.fromGrain(x), 8n)
-  let yv = WasmF32.load(WasmI32.fromGrain(y), 8n)
-  WasmF32.ge(xv, yv)
+provide let gte = (x: Float32, y: Float32) => {
+  let xv = WasmF32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+  let yv = WasmF32.load(WasmI32.fromGrain(y), _VALUE_OFFSET)
+  xv >= yv
 }

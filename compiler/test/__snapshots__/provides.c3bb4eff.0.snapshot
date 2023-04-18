@@ -1,0 +1,66 @@
+provides › provide8
+(module
+ (type $i32_i32_=>_i32 (func (param i32 i32) (result i32)))
+ (type $none_=>_i32 (func (result i32)))
+ (type $none_=>_none (func))
+ (type $i32_i32_i32_=>_i32 (func (param i32 i32 i32) (result i32)))
+ (import \"_genv\" \"mem\" (memory $0 0))
+ (import \"_genv\" \"tbl\" (table $tbl 0 funcref))
+ (import \"_genv\" \"relocBase\" (global $relocBase_0 i32))
+ (import \"_genv\" \"moduleRuntimeId\" (global $moduleRuntimeId_0 i32))
+ (import \"_genv\" \"runtimeHeapStart\" (global $runtimeHeapStart_0 i32))
+ (import \"GRAIN$MODULE$runtime/gc\" \"GRAIN$EXPORT$incRef\" (global $GRAIN$EXPORT$incRef_0 (mut i32)))
+ (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$y\" (global $y_1125 (mut i32)))
+ (import \"GRAIN$MODULE$provideAll\" \"GRAIN$EXPORT$x\" (global $x_1123 (mut i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"GRAIN$EXPORT$+\" (global $+_1122 (mut i32)))
+ (import \"GRAIN$MODULE$runtime/gc\" \"incRef\" (func $incRef_0 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$provideAll\" \"y\" (func $y_1125 (param i32 i32) (result i32)))
+ (import \"GRAIN$MODULE$pervasives\" \"+\" (func $+_1122 (param i32 i32 i32) (result i32)))
+ (global $GRAIN$TABLE_SIZE i32 (i32.const 0))
+ (elem $elem (global.get $relocBase_0))
+ (export \"memory\" (memory $0))
+ (export \"_gmain\" (func $_gmain))
+ (export \"_start\" (func $_start))
+ (export \"GRAIN$TABLE_SIZE\" (global $GRAIN$TABLE_SIZE))
+ (func $_gmain (result i32)
+  (local $0 i32)
+  (local $1 i32)
+  (local $2 i32)
+  (local $3 i64)
+  (local $4 f32)
+  (local $5 f64)
+  (local $6 i32)
+  (block $compile_block.3
+   (block $compile_store.2
+    (local.set $6
+     (call $y_1125
+      (call $incRef_0
+       (global.get $GRAIN$EXPORT$incRef_0)
+       (global.get $y_1125)
+      )
+      (i32.const 9)
+     )
+    )
+    (block $do_backpatches.1
+    )
+   )
+   (return_call $+_1122
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $+_1122)
+    )
+    (call $incRef_0
+     (global.get $GRAIN$EXPORT$incRef_0)
+     (global.get $x_1123)
+    )
+    (local.get $6)
+   )
+  )
+ )
+ (func $_start
+  (drop
+   (call $_gmain)
+  )
+ )
+ ;; custom section \"cmi\", size 367
+)

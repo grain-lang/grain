@@ -1,0 +1,24 @@
+module BraceComments
+
+match (1) { // fails
+  // fails2
+  1 => "1",
+  _ => "*", // x
+}
+
+if (true) { // block 1
+  // block 2
+  1 // block 2a
+  // block 2b
+} else { // block3
+  // block 4
+  2 // block 5
+  // block 6
+}
+
+let space = ""
+
+provide let rec setCounter = val => {
+  // Write the value to memory.
+  setCounter(val)
+}

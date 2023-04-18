@@ -126,18 +126,21 @@ function execGrainrun(
   file,
   options,
   program,
-  execOpts = {
-    stdio: "inherit",
-    env: {
-      NODE_OPTIONS: [
-        "--experimental-wasi-unstable-preview1",
-        "--no-warnings",
-      ].join(" "),
-    },
-  }
+  execOpts = { stdio: "inherit" }
 ) {
+  const preopens = {};
+  options.dir?.forEach((preopen) => {
+    const [guestDir, hostDir = guestDir] = preopen.split("=");
+    preopens[guestDir] = hostDir;
+  });
+
+  const env = {
+    PREOPENS: JSON.stringify(preopens),
+    NODE_OPTIONS: `--experimental-wasi-unstable-preview1 --no-warnings`
+  }
+
   try {
-    execSync(`${grainrun} ${file}`, execOpts);
+    execSync(`${grainrun} ${file}`, { ...execOpts, env });
   } catch (e) {
     process.exit(e.status);
   }

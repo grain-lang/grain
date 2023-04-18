@@ -48,7 +48,7 @@ let ident_pervasives = Ident.create_persistent("Stdlib");
 let printing_env = ref(Env.empty);
 let non_shadowed_pervasive =
   fun
-  | PExternal(PIdent(id), s, _pos) as path =>
+  | PExternal(PIdent(id), s) as path =>
     Ident.same(id, ident_pervasives)
     && (
       try(
@@ -65,16 +65,16 @@ let non_shadowed_pervasive =
 let rec tree_of_path =
   fun
   | PIdent(id) => Oide_ident(ident_name(id))
-  | PExternal(_, s, _pos) as path when non_shadowed_pervasive(path) =>
+  | PExternal(_, s) as path when non_shadowed_pervasive(path) =>
     Oide_ident(s)
-  | PExternal(p, s, _pos) => Oide_dot(tree_of_path(p), s);
+  | PExternal(p, s) => Oide_dot(tree_of_path(p), s);
 
 let rec path = ppf =>
   fun
   | PIdent(id) => ident(ppf, id)
-  | PExternal(_, s, _pos) as path when non_shadowed_pervasive(path) =>
+  | PExternal(_, s) as path when non_shadowed_pervasive(path) =>
     pp_print_string(ppf, s)
-  | PExternal(p, s, _pos) => {
+  | PExternal(p, s) => {
       path(ppf, p);
       pp_print_string(ppf, "::");
       pp_print_string(ppf, s);
@@ -152,16 +152,20 @@ let rec raw_type = (ppf, ty) => {
     );
   };
 }
+and raw_argtype = (ppf, (l, ty)) => {
+  fprintf(ppf, "@[<1>%s: %a@]", qualified_label_name(l), raw_type, ty);
+}
 and raw_type_list = tl => raw_list(raw_type, tl)
+and raw_argtype_list = al => raw_list(raw_argtype, al)
 and raw_type_desc = ppf =>
   fun
   | TTyVar(name) => fprintf(ppf, "TTyVar %a", print_name, name)
-  | TTyArrow(t1, t2, c) =>
+  | TTyArrow(a1, t2, c) =>
     fprintf(
       ppf,
       "@[<hov1>TTyArrow(@,%a,@,%a,@,%s)@]",
-      raw_type_list,
-      t1,
+      raw_argtype_list,
+      a1,
       raw_type,
       t2,
       safe_commu_repr([], c),
@@ -316,7 +320,7 @@ let penalty = s =>
 let rec path_size =
   fun
   | PIdent(id) => (penalty(Ident.name(id)), - Ident.binding_time(id))
-  | PExternal(p, _, _) => {
+  | PExternal(p, _) => {
       let (l, b) = path_size(p);
       (1 + l, b);
     };
@@ -581,8 +585,8 @@ let rec mark_loops_rec = (visited, ty) => {
     let visited = [px, ...visited];
     switch (ty.desc) {
     | TTyVar(_) => add_named_var(ty)
-    | TTyArrow(ty1, ty2, _) =>
-      List.iter(mark_loops_rec(visited), ty1);
+    | TTyArrow(a1, ty2, _) =>
+      List.iter(((_, t)) => mark_loops_rec(visited, t), a1);
       mark_loops_rec(visited, ty2);
     | TTyTuple(tyl) => List.iter(mark_loops_rec(visited), tyl)
     | TTyRecord(tyl) =>
@@ -659,12 +663,12 @@ let rec tree_of_typexp = (sch, ty) => {
             new_name;
           };
         Otyp_var(non_gen, name_of_type(name_gen, ty));
-      | TTyArrow(ty1, ty2, _) =>
-        let pr_arrow = (ty1, ty2) => {
-          let t1 = tree_of_typlist(sch, ty1);
-          Otyp_arrow(t1, tree_of_typexp(sch, ty2));
+      | TTyArrow(a1, ty2, _) =>
+        let pr_arrow = (a1, ty2) => {
+          let a1 = tree_of_argtyplist(sch, a1);
+          Otyp_arrow(a1, tree_of_typexp(sch, ty2));
         };
-        pr_arrow(ty1, ty2);
+        pr_arrow(a1, ty2);
       | TTyTuple(tyl) => Otyp_tuple(tree_of_typlist(sch, tyl))
       | TTyRecord(tyl) =>
         Otyp_record(
@@ -719,6 +723,23 @@ let rec tree_of_typexp = (sch, ty) => {
 }
 
 and tree_of_typlist = (sch, tyl) => List.map(tree_of_typexp(sch), tyl)
+and tree_of_argtyplist = (sch, al) =>
+  List.map(
+    ((l, ty)) => {
+      let ty =
+        switch (l) {
+        | Default(_) =>
+          switch (ty.desc) {
+          | TTyConstr(_, [ty], _) => ty
+          | _ =>
+            failwith("Impossible: optional argument with non-option type")
+          }
+        | _ => ty
+        };
+      (qualified_label_name(l), tree_of_typexp(sch, ty));
+    },
+    al,
+  )
 
 and is_non_gen = (sch, ty) => sch && is_Tvar(ty) && ty.level != generic_level
 
@@ -815,6 +836,7 @@ let filter_params = tyl => {
 let mark_loops_constructor_arguments =
   fun
   | TConstrTuple(l) => List.iter(mark_loops, l)
+  | TConstrRecord(rfs) => List.iter(rf => mark_loops(rf.rf_type), rfs)
   | TConstrSingleton => ();
 
 let rec tree_of_type_decl = (id, decl) => {
@@ -922,7 +944,8 @@ let rec tree_of_type_decl = (id, decl) => {
 
 and tree_of_constructor_arguments =
   fun
-  | TConstrTuple(l) => tree_of_typlist(false, l)
+  | TConstrTuple(l) => [Otyp_tuple(tree_of_typlist(false, l))]
+  | TConstrRecord(l) => [Otyp_record(List.map(tree_of_label, l))]
   | TConstrSingleton => []
 
 and tree_of_constructor = cd => {
@@ -938,7 +961,13 @@ and tree_of_constructor = cd => {
     names := nm;
     (name, args, Some(ret));
   };
-};
+}
+
+and tree_of_label = l => (
+  Ident.name(l.rf_name),
+  l.rf_mutable,
+  tree_of_typexp(false, l.rf_type),
+);
 
 let tree_of_type_declaration = (id, decl, rs) =>
   Osig_type(tree_of_type_decl(id, decl), tree_of_rec(rs));
@@ -1446,7 +1475,7 @@ let ident_same_name = (id1, id2) =>
 let rec path_same_name = (p1, p2) =>
   switch (p1, p2) {
   | (PIdent(id1), PIdent(id2)) => ident_same_name(id1, id2)
-  | (PExternal(p1, s1, _), PExternal(p2, s2, _)) when s1 == s2 =>
+  | (PExternal(p1, s1), PExternal(p2, s2)) when s1 == s2 =>
     path_same_name(p1, p2)
   | _ => ()
   };

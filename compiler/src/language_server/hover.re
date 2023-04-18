@@ -32,24 +32,6 @@ module ResponseResult = {
   };
 };
 
-let loc_to_range = (pos: Location.t): Protocol.range => {
-  let (_, startline, startchar, _) =
-    Locations.get_raw_pos_info(pos.loc_start);
-  let (_, endline, endchar) =
-    Grain_parsing.Location.get_pos_info(pos.loc_end);
-
-  {
-    range_start: {
-      line: startline - 1,
-      character: startchar,
-    },
-    range_end: {
-      line: endline - 1,
-      character: endchar,
-    },
-  };
-};
-
 // We need to use the "grain-type" markdown syntax to have correct coloring on hover items
 let grain_type_code_block = Markdown.code_block(~syntax="grain-type");
 // Used for module hovers
@@ -109,8 +91,8 @@ let print_type = (env, ty) => {
   };
 };
 
-let module_lens = (~program: Typedtree.typed_program, path: Path.t) => {
-  let vals = Modules.get_exports(~path, program);
+let module_lens = (decl: Types.module_declaration) => {
+  let vals = Modules.get_provides(decl);
   let signatures =
     List.map(
       (v: Modules.export) =>
@@ -127,14 +109,8 @@ let module_lens = (~program: Typedtree.typed_program, path: Path.t) => {
   grain_code_block(String.concat("\n", signatures));
 };
 
-let expression_lens =
-    (e: Typedtree.expression, desc: option(Types.value_description)) => {
-  let ty =
-    switch (desc) {
-    | Some({val_type}) => val_type
-    | None => e.exp_type
-    };
-  print_type(e.exp_env, ty);
+let value_lens = (env: Env.t, ty: Types.type_expr) => {
+  print_type(env, ty);
 };
 
 let pattern_lens = (p: Typedtree.pattern) => {
@@ -145,10 +121,8 @@ let type_lens = (ty: Typedtree.core_type) => {
   grain_type_code_block(Printtyp.string_of_type_scheme(ty.ctyp_type));
 };
 
-let declaration_lens = (decl: Typedtree.data_declaration) => {
-  grain_type_code_block(
-    Printtyp.string_of_type_declaration(~ident=decl.data_id, decl.data_type),
-  );
+let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
+  grain_type_code_block(Printtyp.string_of_type_declaration(~ident, decl));
 };
 
 let process =
@@ -163,24 +137,32 @@ let process =
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
     switch (results) {
-    | [Expression(exp, desc), ..._] =>
+    | [Value({env, value_type, loc}), ..._] =>
       send_hover(
         ~id,
-        ~range=loc_to_range(exp.exp_loc),
-        expression_lens(exp, desc),
+        ~range=Utils.loc_to_range(loc),
+        value_lens(env, value_type),
       )
-    | [Pattern(pat), ..._] =>
-      send_hover(~id, ~range=loc_to_range(pat.pat_loc), pattern_lens(pat))
-    | [Type(ty), ..._] =>
-      send_hover(~id, ~range=loc_to_range(ty.ctyp_loc), type_lens(ty))
-    | [Declaration(decl), ..._] =>
+    | [Pattern({pattern}), ..._] =>
       send_hover(
         ~id,
-        ~range=loc_to_range(decl.data_loc),
-        declaration_lens(decl),
+        ~range=Utils.loc_to_range(pattern.pat_loc),
+        pattern_lens(pattern),
       )
-    | [Module(path, loc), ..._] =>
-      send_hover(~id, ~range=loc_to_range(loc), module_lens(~program, path))
+    | [Type({core_type}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=Utils.loc_to_range(core_type.ctyp_loc),
+        type_lens(core_type),
+      )
+    | [Declaration({ident, decl, loc}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=Utils.loc_to_range(loc),
+        declaration_lens(ident, decl),
+      )
+    | [Module({path, decl, loc}), ..._] =>
+      send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
     | _ => send_no_result(~id)
     };
   };

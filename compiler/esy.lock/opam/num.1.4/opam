@@ -10,7 +10,10 @@ depends: [
   "ocaml" {>= "4.06.0"}
   "ocamlfind" {build & >= "1.7.3"}
 ]
-conflicts: ["base-num"]
+conflicts: [
+  "base-num"
+  "ocaml-option-bytecode-only"
+]
 build: make
 install: [
   ["ocamlfind" "remove" "num"]

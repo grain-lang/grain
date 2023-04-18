@@ -10,12 +10,12 @@ No other changes yet.
 </details>
 
 ```grain
-import Hash from "hash"
+include "hash"
 ```
 
 ## Values
 
-Functions for hashing.
+Functions and constants included in the Hash module.
 
 ### Hash.**hash**
 
@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-hash : a -> Number
+hash : (anything: a) -> Number
 ```
 
 A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.

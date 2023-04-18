@@ -1,7 +1,9 @@
+module PatternMatchUnsafeWasm
+
 @unsafe
 let test = () => {
   @unsafe
-  let foo = (val) => {
+  let foo = val => {
     match (val) {
       1n => print(1),
       2n => print(2),
@@ -9,7 +11,7 @@ let test = () => {
       4n => print(4),
       5n => print(5),
       6n => print(6),
-      _ => print("other")
+      _ => print("other"),
     }
   }
   foo(0n)

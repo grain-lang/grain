@@ -12,7 +12,7 @@ No other changes yet.
 </details>
 
 ```grain
-import Char from "char"
+include "char"
 ```
 
 ## Values
@@ -53,7 +53,7 @@ No other changes yet.
 </details>
 
 ```grain
-isValid : Number -> Bool
+isValid : (charCode: Number) -> Bool
 ```
 
 Determines whether the given character code is a valid Unicode scalar value.
@@ -78,7 +78,7 @@ No other changes yet.
 </details>
 
 ```grain
-code : Char -> Number
+code : (char: Char) -> Number
 ```
 
 Determines the Unicode scalar value for a character.
@@ -103,7 +103,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromCode : Number -> Char
+fromCode : (usv: Number) -> Char
 ```
 
 Creates a character from the given Unicode scalar value.
@@ -134,7 +134,7 @@ No other changes yet.
 </details>
 
 ```grain
-succ : Char -> Char
+succ : (char: Char) -> Char
 ```
 
 Returns the next valid character by Unicode scalar value.
@@ -165,7 +165,7 @@ No other changes yet.
 </details>
 
 ```grain
-pred : Char -> Char
+pred : (char: Char) -> Char
 ```
 
 Returns the previous valid character by Unicode scalar value.
@@ -196,7 +196,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : Char -> String
+toString : (char: Char) -> String
 ```
 
 Converts the given character to a string.
@@ -212,4 +212,108 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|A string containing the given character|
+
+### Char.**(<)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is less than the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is less than the second character or `false` otherwise|
+
+### Char.**(<=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(<=) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is less than or equal to the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is less than or equal to the second character or `false` otherwise|
+
+### Char.**(>)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is greater than the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is greater than the second character or `false` otherwise|
+
+### Char.**(>=)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(>=) : (x: Char, y: Char) -> Bool
+```
+
+Checks if the first character is greater than or equal to the second character by Unicode scalar value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`x`|`Char`|The first character|
+|`y`|`Char`|The second character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the first character is greater than or equal to the second character or `false` otherwise|
 

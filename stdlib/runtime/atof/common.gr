@@ -13,11 +13,11 @@
  * the Software, and to permit persons to whom the Software
  * is furnished to do so, subject to the following
  * conditions:
- * 
+ *
  * The above copyright notice and this permission notice
  * shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
  * ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
  * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
@@ -28,111 +28,116 @@
  * IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
 */
+module Common
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import { newInt32, newInt64, newFloat64 } from "runtime/dataStructures"
-import { get_POWERS10 } from "runtime/numberUtils"
-import { get_F64_POWERS10_FAST_PATH, get_POWERS5 } from "./table"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf64"
+include "runtime/dataStructures"
+from DataStructures use { newInt32, newInt64, newFloat64 }
+include "runtime/numberUtils"
+from NumberUtils use { get_POWERS10 }
+include "./table"
+from Table use { get_F64_POWERS10_FAST_PATH, get_POWERS5 }
 
-primitive (&&): (Bool, Bool) -> Bool = "@and"
-primitive (||): (Bool, Bool) -> Bool = "@or"
-primitive (!): Bool -> Bool = "@not"
+primitive (&&) = "@and"
+primitive (||) = "@or"
+primitive (!) = "@not"
 
-export record BiasedFp {
+provide record BiasedFp {
   f: Int64,
   mut e: Int32,
 }
 
 @unsafe
-export let _MINIMUM_EXPONENT = -1023n
+provide let _MINIMUM_EXPONENT = -1023n
 @unsafe
-export let _MIN_EXPONENT_ROUND_TO_EVEN = -4N
+provide let _MIN_EXPONENT_ROUND_TO_EVEN = -4N
 @unsafe
-export let _MAX_EXPONENT_ROUND_TO_EVEN = 23N
+provide let _MAX_EXPONENT_ROUND_TO_EVEN = 23N
 @unsafe
-export let _MIN_EXPONENT_FAST_PATH = -22n
+provide let _MIN_EXPONENT_FAST_PATH = -22n
 @unsafe
-export let _MAX_EXPONENT_FAST_PATH = 22n
+provide let _MAX_EXPONENT_FAST_PATH = 22n
 @unsafe
-export let _MAX_EXPONENT_DISGUISED_FAST_PATH = 37n
+provide let _MAX_EXPONENT_DISGUISED_FAST_PATH = 37n
 @unsafe
-export let _MAX_MANTISSA_FAST_PATH = WasmI64.shl(2N, 52N)
+provide let _MAX_MANTISSA_FAST_PATH = {
+  from WasmI64 use { (<<) }
+  2N << 52N
+}
 @unsafe
-export let _MANTISSA_EXPLICIT_BITS_64 = 52N
+provide let _MANTISSA_EXPLICIT_BITS_64 = 52N
 @unsafe
-export let _MANTISSA_EXPLICIT_BITS_32 = 52n
+provide let _MANTISSA_EXPLICIT_BITS_32 = 52n
 @unsafe
-export let _INFINITE_POWER = 0x7FFn
+provide let _INFINITE_POWER = 0x7FFn
 @unsafe
-export let _SMALLEST_POWER_OF_TEN = -342N
+provide let _SMALLEST_POWER_OF_TEN = -342N
 @unsafe
-export let _LARGEST_POWER_OF_TEN = 308N
+provide let _LARGEST_POWER_OF_TEN = 308N
 @unsafe
-export let _SMALLEST_POWER_OF_FIVE = -342N
+provide let _SMALLEST_POWER_OF_FIVE = -342N
 @unsafe
-export let _LARGEST_POWER_OF_FIVE = 308N
+provide let _LARGEST_POWER_OF_FIVE = 308N
 
 @unsafe
-export let _CHAR_CODE_UNDERSCORE = 0x5fn
+provide let _CHAR_CODE_UNDERSCORE = 0x5fn
 @unsafe
-export let _CHAR_CODE_PLUS = 0x2Bn
+provide let _CHAR_CODE_PLUS = 0x2Bn
 @unsafe
-export let _CHAR_CODE_MINUS = 0x2Dn
+provide let _CHAR_CODE_MINUS = 0x2Dn
 @unsafe
-export let _CHAR_CODE_0 = 0x30n
+provide let _CHAR_CODE_0 = 0x30n
 @unsafe
-export let _CHAR_CODE_e = 0x65n
+provide let _CHAR_CODE_e = 0x65n
 @unsafe
-export let _CHAR_CODE_E = 0x45n
+provide let _CHAR_CODE_E = 0x45n
 @unsafe
-export let _CHAR_CODE_DOT = 0x2En
+provide let _CHAR_CODE_DOT = 0x2En
 @unsafe
-export let _CHAR_CODE_A = 0x41n
+provide let _CHAR_CODE_A = 0x41n
 @unsafe
-export let _CHAR_CODE_Z = 0x5an
+provide let _CHAR_CODE_Z = 0x5an
 @unsafe
-export let _CHAR_CODE_a = 0x61n
+provide let _CHAR_CODE_a = 0x61n
 @unsafe
-export let _CHAR_CODE_f = 0x66n
+provide let _CHAR_CODE_f = 0x66n
 @unsafe
-export let _CHAR_CODE_i = 0x69n
+provide let _CHAR_CODE_i = 0x69n
 @unsafe
-export let _CHAR_CODE_n = 0x6en
+provide let _CHAR_CODE_n = 0x6en
 @unsafe
-export let _CHAR_CODE_t = 0x74n
+provide let _CHAR_CODE_t = 0x74n
 @unsafe
-export let _CHAR_CODE_y = 0x79n
+provide let _CHAR_CODE_y = 0x79n
 
-export let fpZero = () => { f: 0L, e: 0l }
+provide let fpZero = () => { f: 0L, e: 0l }
 @unsafe
-export let fpInf = () =>
+provide let fpInf = () =>
   {
     f: 0L,
     e: WasmI32.toGrain(newInt32(_INFINITE_POWER)): Int32,
   }
-export let fpErr = () => { f: 0L, e: -1l }
-export let fpNan = () => { f: 1L, e: -1l }
+provide let fpErr = () => { f: 0L, e: -1l }
+provide let fpNan = () => { f: 1L, e: -1l }
 
 @unsafe
-export let getPowers10 = (i: WasmI32) => {
-  WasmI32.load(get_POWERS10(), WasmI32.mul(4n, i))
+provide let getPowers10 = (i: WasmI32) => {
+  from WasmI32 use { (*) }
+  WasmI32.load(get_POWERS10(), 4n * i)
 }
 
 @unsafe
-export let getPowers10FastPath = (i: WasmI32) => {
-  WasmF64.load(get_F64_POWERS10_FAST_PATH(), WasmI32.mul(8n, i))
+provide let getPowers10FastPath = (i: WasmI32) => {
+  from WasmI32 use { (*) }
+  WasmF64.load(get_F64_POWERS10_FAST_PATH(), 8n * i)
 }
 
 // https://stdrs.dev/nightly/x86_64-unknown-linux-gnu/src/core/num/dec2flt/common.rs.html#165
 @unsafe
-export let is8Digits = (value: WasmI64) => {
-  let (+) = WasmI64.add
-  let (-) = WasmI64.sub
-  let (|) = WasmI64.or
-  let (&) = WasmI64.and
-  let (==) = WasmI64.eq
+provide let is8Digits = (value: WasmI64) => {
+  from WasmI64 use { (+), (-), (|), (&), (==) }
 
   let a = value + 0x4646_4646_4646_4646N
   let b = value - 0x3030_3030_3030_3030N
@@ -147,37 +152,31 @@ export let is8Digits = (value: WasmI64) => {
 // log2(10), where 217706 / 2^16 is accurate for the
 // entire range of non-finite decimal exponents.
 @unsafe
-export let power = (q: WasmI32) => {
-  let (+) = WasmI32.add
-  let (*) = WasmI32.mul
-  let (>>) = WasmI32.shrS
+provide let power = (q: WasmI32) => {
+  from WasmI32 use { (+), (*), (>>) }
 
   ((q * (152_170n + 65536n)) >> 16n) + 63n
 }
 
 @unsafe
-export let fullMultiplication = (a: WasmI64, b: WasmI64) => {
+provide let fullMultiplication = (a: WasmI64, b: WasmI64) => {
   // Adapted from https://www.codeproject.com/Tips/618570/UInt-Multiplication-Squaring
-  let (+) = WasmI64.add
-  let (*) = WasmI64.mul
-  let (&) = WasmI64.and
-  let (>>) = WasmI64.shrU
-  let (<<) = WasmI64.shl
+  from WasmI64 use { (+), (*), (&), (>>>), (<<) }
 
   let aLo = a & 0xffffffffN
   let bLo = b & 0xffffffffN
   let aLoxbLo = aLo * bLo
   let w3 = aLoxbLo & 0xffffffffN
-  let k = aLoxbLo >> 32N
+  let k = aLoxbLo >>> 32N
 
-  let aHi = a >> 32N
+  let aHi = a >>> 32N
   let mid = aHi * bLo + k
   let k = mid & 0xffffffffN
-  let w1 = mid >> 32N
+  let w1 = mid >>> 32N
 
-  let bHi = b >> 32N
+  let bHi = b >>> 32N
   let mid = aLo * bHi + k
-  let k = mid >> 32N
+  let k = mid >>> 32N
 
   let hi = aHi * bHi + w1 + k
   let lo = (mid << 32N) + w3
@@ -186,10 +185,11 @@ export let fullMultiplication = (a: WasmI64, b: WasmI64) => {
 }
 
 @unsafe
-export let biasedFpToNumber = (fp, negative) => {
+provide let biasedFpToNumber = (fp, negative) => {
+  from WasmI64 use { (|), (<<) }
   let f = WasmI64.load(WasmI32.fromGrain(fp.f), 8n)
-  let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 8n))
-  let word = WasmI64.or(f, WasmI64.shl(e, _MANTISSA_EXPLICIT_BITS_64))
+  let e = WasmI64.extendI32S(WasmI32.load(WasmI32.fromGrain(fp.e), 4n))
+  let word = f | e << _MANTISSA_EXPLICIT_BITS_64
   let mut float = WasmF64.reinterpretI64(word)
   if (negative) {
     float = WasmF64.neg(float)

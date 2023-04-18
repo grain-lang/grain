@@ -24,8 +24,9 @@ module ResponseResult = {
 
 let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
-  | TTopImport(import_declaration) => None
-  | TTopForeign(value_description) => None
+  | TTopInclude(_)
+  | TTopForeign(_)
+  | TTopModule(_)
   | TTopData([]) => None
   | TTopData(data_declarations) =>
     let decls =
@@ -56,7 +57,7 @@ let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
     | _ => Some(Printtyp.string_of_type_scheme(expression.exp_type))
     }
   | TTopException(type_exception) => None
-  | TTopExport(export_declarations) => None
+  | TTopProvide(export_declarations) => None
   };
 
 let get_lenses = (typed_program: Typedtree.typed_program) => {

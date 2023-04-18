@@ -1,8 +1,10 @@
-export type Foo = Number
-export type Bar<a> = List<a>
+module Aliases
 
-type Baz = Number
-type Qux<a> = a
+provide type Foo = Number
+provide type Bar<a> = List<a>
 
-export let baz = 5: Baz
-export let qux = 7: Qux<Number>
+abstract type Baz = Number
+abstract type Qux<a> = a
+
+provide let baz = 5: Baz
+provide let qux = 7: Qux<Number>

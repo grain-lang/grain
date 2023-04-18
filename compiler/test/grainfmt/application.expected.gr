@@ -1,0 +1,87 @@
+module Application
+
+include "array"
+include "option"
+include "map"
+
+let data = [>]
+
+let busNumbers = Array.map(((num, idx)) => {
+  (Option.expect("Expected a number", None), idx)
+}, data)
+
+let sillyFunction = (a, b, c, d, e, f, g, h, j, k) => 10
+
+sillyFunction(
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789,
+  123456789
+)
+
+let filteri = (x, y) => []
+let findIndex = (x, y) => None
+
+/**
+ * Produces a new array with any duplicates removed.
+ * Uses the generic `==` structural equality operator.
+ *
+ * @param array: The array to filter
+ * @returns The new array with only unique values
+ */
+provide let unique = array => {
+  filteri((el, index) =>
+    findIndex(longvalue => longvalue == el, array) == Some(index), array)
+}
+
+provide let unique2 = array => {
+  filteri((el, index) =>
+    findIndex(value => value == el, array) == Some(index), array)
+}
+
+provide let batchActionCreateAccount = ({ index }) => {
+  Native.promiseBatchActionCreateAccount(Conv.fromInt64(index))
+}
+
+let ret = filteri(
+  dst + _VALUE_OFFSET + dstIndex,
+  src + _VALUE_OFFSET + srcIndex,
+  length
+)
+
+let preExistingObjectsWithRefCountMismatch = Map.make(): Map.Map<
+  Number,
+  (
+    Number,
+    Number,
+    Number,
+    Number
+  )
+>
+
+let preEmatch = Map.make(): Map.Map<Number, (Number, Number, Number, Number)>
+
+let preExistingObjectsch2 = Map.make(): Map.Map<Number, (Number, Number)>
+
+let preExistingObjectsWithRefCountMismatch2 = Map.make(): Map.Map<
+  Number,
+  (
+    Number,
+    Number,
+    Number,
+    Number,
+    Number,
+    Number,
+    Number,
+    Number,
+    Number,
+    Number,
+    Number
+  )
+>

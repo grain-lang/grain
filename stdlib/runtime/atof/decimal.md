@@ -1,3 +1,11 @@
+---
+title: Decimal
+---
+
+## Types
+
+Type declarations included in the Decimal module.
+
 ### Decimal.**Decimal**
 
 ```grain
@@ -9,6 +17,10 @@ record Decimal {
 }
 ```
 
+## Values
+
+Functions and constants included in the Decimal module.
+
 ### Decimal.**_DECIMAL_POINT_RANGE**
 
 ```grain
@@ -18,13 +30,13 @@ _DECIMAL_POINT_RANGE : WasmI32
 ### Decimal.**tryAddDigit**
 
 ```grain
-tryAddDigit : (Decimal, WasmI32) -> Void
+tryAddDigit : (d: Decimal, digit: WasmI32) -> Void
 ```
 
 ### Decimal.**round**
 
 ```grain
-round : Decimal -> WasmI64
+round : (d: Decimal) -> WasmI64
 ```
 
 ### Decimal.**get_TABLE**
@@ -42,18 +54,18 @@ get_TABLE_POW5 : () -> WasmI32
 ### Decimal.**leftShift**
 
 ```grain
-leftShift : (Decimal, WasmI32) -> Void
+leftShift : (d: Decimal, shift: WasmI32) -> Void
 ```
 
 ### Decimal.**rightShift**
 
 ```grain
-rightShift : (Decimal, WasmI32) -> Void
+rightShift : (d: Decimal, shift: WasmI32) -> Void
 ```
 
 ### Decimal.**parseDecimal**
 
 ```grain
-parseDecimal : String -> Decimal
+parseDecimal : (s: String) -> Decimal
 ```
 

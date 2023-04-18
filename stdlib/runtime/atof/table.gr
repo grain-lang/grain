@@ -1,16 +1,17 @@
 /* grainc-flags --no-pervasives */
+module Table
 
-import WasmI32 from "runtime/unsafe/wasmi32"
-import WasmI64 from "runtime/unsafe/wasmi64"
-import WasmF64 from "runtime/unsafe/wasmf64"
-import Memory from "runtime/unsafe/memory"
+include "runtime/unsafe/wasmi32"
+include "runtime/unsafe/wasmi64"
+include "runtime/unsafe/wasmf64"
+include "runtime/unsafe/memory"
 
 @unsafe
 let mut _F64_POWERS10_FAST_PATH = -1n
 
 @unsafe
-export let get_F64_POWERS10_FAST_PATH = () => {
-  let (==) = WasmI32.eq
+provide let get_F64_POWERS10_FAST_PATH = () => {
+  from WasmI32 use { (==) }
   if (_F64_POWERS10_FAST_PATH == -1n) {
     _F64_POWERS10_FAST_PATH = Memory.malloc(256n) // 32 x 64-bit values
 
@@ -37,15 +38,15 @@ export let get_F64_POWERS10_FAST_PATH = () => {
     WasmF64.store(_F64_POWERS10_FAST_PATH, 1e20W, 160n)
     WasmF64.store(_F64_POWERS10_FAST_PATH, 1e21W, 168n)
     WasmF64.store(_F64_POWERS10_FAST_PATH, 1e22W, 176n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 184n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 192n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 200n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 208n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 216n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 224n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 232n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 240n)
-    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.W, 248n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 184n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 192n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 200n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 208n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 216n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 224n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 232n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 240n)
+    WasmF64.store(_F64_POWERS10_FAST_PATH, 0.0W, 248n)
   }
   _F64_POWERS10_FAST_PATH
 }
@@ -54,8 +55,8 @@ export let get_F64_POWERS10_FAST_PATH = () => {
 let mut _POWERS5 = -1n
 
 @unsafe
-export let get_POWERS5 = () => {
-  let (==) = WasmI32.eq
+provide let get_POWERS5 = () => {
+  from WasmI32 use { (==) }
   if (_POWERS5 == -1n) {
     _POWERS5 = Memory.malloc(10416n) // 1302 x 64-bit values
     //5^-342

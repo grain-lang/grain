@@ -1,0 +1,5 @@
+module RelativeImport3
+
+include "nested/nested"
+from Nested use *
+j

@@ -1,0 +1,118 @@
+# This workflow exists to provide a way to dispatch a CI run for any
+# given ref on any of our OS targets. It can also be consumed in our
+# various other builds.
+name: (js) Build and test
+
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Operating system to run CI on
+        type: choice
+        required: true
+        default: "ubuntu-latest"
+        options:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+      ref:
+        description: Git reference to checkout
+        type: string
+        required: false
+  workflow_call:
+    inputs:
+      os:
+        description: Operating system to run CI on
+        type: string
+        required: true
+      ref:
+        description: Git reference to checkout
+        type: string
+        required: false
+
+jobs:
+  build:
+    name: (js) Build and test
+    runs-on: ${{ inputs.os }}
+
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup node.js
+        uses: actions/setup-node@v3.6.0
+        with:
+          node-version: ">=18.15"
+          check-latest: true
+          cache: "npm"
+
+      - name: Install npm dependencies
+        run: |
+          npm ci
+
+      - name: Esy cache
+        id: esy-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: compiler/_export
+          key: ${{ runner.os }}-esy-${{ hashFiles('compiler/esy.lock/index.json') }}
+
+      - name: Esy setup
+        # Don't crash the run if esy cache import fails - mostly happens on Windows
+        continue-on-error: true
+        run: |
+          npm run compiler prepare
+          npm run compiler import-dependencies
+
+      # Don't build native executables, only the JS builds
+      - name: Build compiler
+        run: |
+          npm run compiler build:js
+
+      - name: Run tests
+        run: |
+          npm run compiler test:js
+
+      # This will log a warning because we didn't build the native exe files
+      - name: Build pkg binary for Windows
+        if: inputs.os == 'ubuntu-latest'
+        run: |
+          npm run cli build-pkg -- --target=win-x64
+          tar -cvf grain.tar -C pkg grain.exe
+
+      - name: Upload pkg binary for Windows
+        if: inputs.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./grain.tar
+          name: grain-win-x64
+
+      # This will log a warning because we didn't build the native exe files
+      - name: Build pkg binary for Mac
+        if: inputs.os == 'ubuntu-latest'
+        run: |
+          npm run cli build-pkg -- --target=mac-x64
+          tar -cvf grain.tar -C pkg grain
+
+      - name: Upload pkg binary for Mac
+        if: inputs.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./grain.tar
+          name: grain-mac-x64
+
+      # This will log a warning because we didn't build the native exe files
+      - name: Build pkg binary for Linux
+        if: inputs.os == 'ubuntu-latest'
+        run: |
+          npm run cli build-pkg -- --target=linux-x64
+          tar -cvf grain.tar -C pkg grain
+
+      - name: Upload pkg binary for Linux
+        if: inputs.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v3
+        with:
+          path: ./grain.tar
+          name: grain-linux-x64

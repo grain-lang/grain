@@ -1,8 +1,11 @@
-import Array from "array"
-import List from "list"
-import Option from "option"
-import Result from "result"
-import {
+module RegexTest
+
+include "array"
+include "list"
+include "option"
+include "result"
+include "regex"
+from Regex use {
   make,
   find,
   findRange,
@@ -12,8 +15,8 @@ import {
   replaceAll,
   split,
   splitAll,
-  MatchResult,
-} from "regex"
+  type MatchResult,
+}
 
 let flattenResult = (mr: MatchResult) => {
   let otherGroups = Array.init(mr.numGroups - 1, n => mr.group(n + 1))

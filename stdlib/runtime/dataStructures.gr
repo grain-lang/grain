@@ -1,4 +1,5 @@
 /* grainc-flags --no-pervasives */
+module DataStructures
 
 /**
  * Allocates a new Grain array.
@@ -7,7 +8,7 @@
  * @returns The pointer to the array
  */
 @unsafe
-export primitive allocateArray: WasmI32 -> WasmI32 = "@allocate.array"
+provide primitive allocateArray = "@allocate.array"
 
 /**
  * Allocates a new Grain tuple.
@@ -16,7 +17,7 @@ export primitive allocateArray: WasmI32 -> WasmI32 = "@allocate.array"
  * @returns The pointer to the tuple
  */
 @unsafe
-export primitive allocateTuple: WasmI32 -> WasmI32 = "@allocate.tuple"
+provide primitive allocateTuple = "@allocate.tuple"
 
 /**
  * Allocates a new Grain bytes.
@@ -25,7 +26,7 @@ export primitive allocateTuple: WasmI32 -> WasmI32 = "@allocate.tuple"
  * @returns The pointer to the bytes
  */
 @unsafe
-export primitive allocateBytes: WasmI32 -> WasmI32 = "@allocate.bytes"
+provide primitive allocateBytes = "@allocate.bytes"
 
 /**
  * Allocates a new Grain string.
@@ -34,7 +35,7 @@ export primitive allocateBytes: WasmI32 -> WasmI32 = "@allocate.bytes"
  * @returns The pointer to the string
  */
 @unsafe
-export primitive allocateString: WasmI32 -> WasmI32 = "@allocate.string"
+provide primitive allocateString = "@allocate.string"
 
 // INT32/INT64
 
@@ -44,15 +45,33 @@ export primitive allocateString: WasmI32 -> WasmI32 = "@allocate.string"
  * @returns The pointer to the empty Int32
  */
 @unsafe
-export primitive allocateInt32: () -> WasmI32 = "@allocate.int32"
+provide primitive allocateInt32 = "@allocate.int32"
 
 /**
  * Allocates a new Int32 with a prepopulated value
+ * 
  * @param value: The value to store
  * @returns The pointer to the Int32
  */
 @unsafe
-export primitive newInt32: WasmI32 -> WasmI32 = "@new.int32"
+provide primitive newInt32 = "@new.int32"
+
+/**
+ * Allocates a new Uint32.
+ *
+ * @returns The pointer to the empty Uint32
+ */
+@unsafe
+provide primitive allocateUint32 = "@allocate.uint32"
+
+/**
+ * Allocates a new Uint32 with a prepopulated value
+ * 
+ * @param value: The value to store
+ * @returns The pointer to the Uint32
+ */
+@unsafe
+provide primitive newUint32 = "@new.uint32"
 
 /**
  * Allocates a new Int64.
@@ -60,15 +79,33 @@ export primitive newInt32: WasmI32 -> WasmI32 = "@new.int32"
  * @returns The pointer to the empty Int64
  */
 @unsafe
-export primitive allocateInt64: () -> WasmI32 = "@allocate.int64"
+provide primitive allocateInt64 = "@allocate.int64"
 
 /**
  * Allocates a new Int64 with a prepopulated value
+ * 
  * @param value: The value to store
  * @returns The pointer to the Int64
  */
 @unsafe
-export primitive newInt64: WasmI64 -> WasmI32 = "@new.int64"
+provide primitive newInt64 = "@new.int64"
+
+/**
+ * Allocates a new Uint64.
+ *
+ * @returns The pointer to the empty Uint64
+ */
+@unsafe
+provide primitive allocateUint64 = "@allocate.uint64"
+
+/**
+ * Allocates a new Uint64 with a prepopulated value
+ * 
+ * @param value: The value to store
+ * @returns The pointer to the Uint64
+ */
+@unsafe
+provide primitive newUint64 = "@new.uint64"
 
 // FLOATS
 
@@ -78,15 +115,16 @@ export primitive newInt64: WasmI64 -> WasmI32 = "@new.int64"
  * @returns The pointer to the empty Float32
  */
 @unsafe
-export primitive allocateFloat32: () -> WasmI32 = "@allocate.float32"
+provide primitive allocateFloat32 = "@allocate.float32"
 
 /**
  * Allocates a new Float32 with a prepopulated value
+ * 
  * @param value: The value to store
  * @returns the pointer to the Float32
  */
 @unsafe
-export primitive newFloat32: WasmF32 -> WasmI32 = "@new.float32"
+provide primitive newFloat32 = "@new.float32"
 
 /**
  * Allocates a new Float64.
@@ -94,15 +132,16 @@ export primitive newFloat32: WasmF32 -> WasmI32 = "@new.float32"
  * @returns The pointer to the empty Float64
  */
 @unsafe
-export primitive allocateFloat64: () -> WasmI32 = "@allocate.float64"
+provide primitive allocateFloat64 = "@allocate.float64"
 
 /**
  * Allocates a new Float64 with a prepopulated value
+ * 
  * @param value: The value to store
  * @returns The pointer to the Float64
  */
 @unsafe
-export primitive newFloat64: WasmF64 -> WasmI32 = "@new.float64"
+provide primitive newFloat64 = "@new.float64"
 
 // RATIONALS
 
@@ -112,16 +151,17 @@ export primitive newFloat64: WasmF64 -> WasmI32 = "@new.float64"
  * @returns The pointer to the empty Rational
  */
 @unsafe
-export primitive allocateRational: () -> WasmI32 = "@allocate.rational"
+provide primitive allocateRational = "@allocate.rational"
 
 /**
  * Allocates a new Rational with a prepopulated value
+ * 
  * @param value: The numerator value to store
  * @param value: The denominator value to store
  * @returns The pointer to the Rational
  */
 @unsafe
-export primitive newRational: (WasmI32, WasmI32) -> WasmI32 = "@new.rational"
+provide primitive newRational = "@new.rational"
 
 /**
  * Load the (tagged) variant of an ADT.
@@ -130,7 +170,7 @@ export primitive newRational: (WasmI32, WasmI32) -> WasmI32 = "@new.rational"
  * @returns The (tagged) ADT variant id
  */
 @unsafe
-export primitive loadAdtVariant: WasmI32 -> WasmI32 = "@adt.load_variant"
+provide primitive loadAdtVariant = "@adt.load_variant"
 
 /**
  * Load an untagged string's size.
@@ -139,7 +179,7 @@ export primitive loadAdtVariant: WasmI32 -> WasmI32 = "@adt.load_variant"
  * @returns The string size (in bytes)
  */
 @unsafe
-export primitive stringSize: WasmI32 -> WasmI32 = "@string.size"
+provide primitive stringSize = "@string.size"
 
 /**
  * Load an untagged Bytes' size.
@@ -148,7 +188,7 @@ export primitive stringSize: WasmI32 -> WasmI32 = "@string.size"
  * @returns The Bytes size (in bytes)
  */
 @unsafe
-export primitive bytesSize: WasmI32 -> WasmI32 = "@bytes.size"
+provide primitive bytesSize = "@bytes.size"
 
 /**
  * Tag a simple number.
@@ -157,7 +197,7 @@ export primitive bytesSize: WasmI32 -> WasmI32 = "@bytes.size"
  * @returns The tagged number
  */
 @unsafe
-export primitive tagSimpleNumber: WasmI32 -> Number = "@tag.simple_number"
+provide primitive tagSimpleNumber = "@tag.simple_number"
 
 /**
  * Untag a simple number.
@@ -166,7 +206,7 @@ export primitive tagSimpleNumber: WasmI32 -> Number = "@tag.simple_number"
  * @returns The untagged number
  */
 @unsafe
-export primitive untagSimpleNumber: Number -> WasmI32 = "@untag.simple_number"
+provide primitive untagSimpleNumber = "@untag.simple_number"
 
 /**
  * Tag a char.
@@ -175,7 +215,7 @@ export primitive untagSimpleNumber: Number -> WasmI32 = "@untag.simple_number"
  * @returns The tagged char
  */
 @unsafe
-export primitive tagChar: WasmI32 -> Char = "@tag.char"
+provide primitive tagChar = "@tag.char"
 
 /**
  * Untag a char.
@@ -184,4 +224,76 @@ export primitive tagChar: WasmI32 -> Char = "@tag.char"
  * @returns The untagged usv
  */
 @unsafe
-export primitive untagChar: Char -> WasmI32 = "@untag.char"
+provide primitive untagChar = "@untag.char"
+
+/**
+ * Tag an int8.
+ *
+ * @param num: The int8 to tag
+ * @returns The tagged int8
+ */
+@unsafe
+provide primitive tagInt8 = "@tag.int8"
+
+/**
+ * Untag an int8.
+ *
+ * @param num: The int8 to untag
+ * @returns The untagged int8
+ */
+@unsafe
+provide primitive untagInt8 = "@untag.int8"
+
+/**
+ * Tag an int16.
+ *
+ * @param num: The int16 to tag
+ * @returns The tagged int16
+ */
+@unsafe
+provide primitive tagInt16 = "@tag.int16"
+
+/**
+ * Untag an int16.
+ *
+ * @param num: The int16 to untag
+ * @returns The untagged int16
+ */
+@unsafe
+provide primitive untagInt16 = "@untag.int16"
+
+/**
+ * Tag a uint8.
+ *
+ * @param num: The uint8 to tag
+ * @returns The tagged uint8
+ */
+@unsafe
+provide primitive tagUint8 = "@tag.uint8"
+
+/**
+ * Untag a uint8.
+ *
+ * @param num: The uint8 to untag
+ * @returns The untagged uint8
+ */
+@unsafe
+provide primitive untagUint8 = "@untag.uint8"
+
+/**
+ * Tag a uint16.
+ *
+ * @param num: The uint16 to tag
+ * @returns The tagged uint16
+ */
+@unsafe
+provide primitive tagUint16 = "@tag.uint16"
+
+/**
+ * Untag a uint16.
+ *
+ * @param num: The uint16 to untag
+ * @returns The untagged uint16
+ */
+@unsafe
+provide primitive untagUint16 = "@untag.uint16"

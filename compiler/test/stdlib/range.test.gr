@@ -1,28 +1,12 @@
-import Range from "range"
+module RangeTest
 
-let inclusiveAscendingRange = Range.Inclusive(1, 5)
-let inclusiveDescendingRange = Range.Inclusive(5, 1)
-let inclusiveSameRange = Range.Inclusive(1, 1)
-let exclusiveAscendingRange = Range.Exclusive(1, 5)
-let exclusiveDescendingRange = Range.Exclusive(5, 1)
-let exclusiveSameRange = Range.Exclusive(1, 1)
+include "range"
+
+let exclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
+let exclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }
+let exclusiveSameRange = { rangeStart: 1, rangeEnd: 1 }
 
 // Range.inRange
-assert Range.inRange(1, inclusiveAscendingRange)
-assert Range.inRange(3, inclusiveAscendingRange)
-assert Range.inRange(5, inclusiveAscendingRange)
-assert !Range.inRange(10, inclusiveAscendingRange)
-assert !Range.inRange(-1, inclusiveAscendingRange)
-
-assert Range.inRange(1, inclusiveDescendingRange)
-assert Range.inRange(3, inclusiveDescendingRange)
-assert Range.inRange(5, inclusiveDescendingRange)
-assert !Range.inRange(10, inclusiveDescendingRange)
-assert !Range.inRange(-1, inclusiveDescendingRange)
-
-assert Range.inRange(1, inclusiveSameRange)
-assert !Range.inRange(3, inclusiveSameRange)
-
 assert Range.inRange(1, exclusiveAscendingRange)
 assert Range.inRange(3, exclusiveAscendingRange)
 assert !Range.inRange(5, exclusiveAscendingRange)
@@ -45,24 +29,6 @@ assert !Range.inRange(3, exclusiveSameRange)
 let mut results = []
 Range.forEach(idx => {
   results = [idx, ...results]
-}, inclusiveAscendingRange)
-assert results == [5, 4, 3, 2, 1]
-
-let mut results = []
-Range.forEach(idx => {
-  results = [idx, ...results]
-}, inclusiveDescendingRange)
-assert results == [1, 2, 3, 4, 5]
-
-let mut results = []
-Range.forEach(idx => {
-  results = [idx, ...results]
-}, inclusiveSameRange)
-assert results == [1]
-
-let mut results = []
-Range.forEach(idx => {
-  results = [idx, ...results]
 }, exclusiveAscendingRange)
 assert results == [4, 3, 2, 1]
 
@@ -76,10 +42,54 @@ Range.forEach(idx => {
   fail "Shouldn't be called"
 }, exclusiveSameRange)
 
-assert Range.map(toString, inclusiveAscendingRange) == ["1", "2", "3", "4", "5"]
-assert Range.map(toString, inclusiveDescendingRange) ==
-  ["5", "4", "3", "2", "1"]
-assert Range.map(toString, inclusiveSameRange) == ["1"]
 assert Range.map(toString, exclusiveAscendingRange) == ["1", "2", "3", "4"]
 assert Range.map(toString, exclusiveDescendingRange) == ["5", "4", "3", "2"]
 assert Range.map(toString, exclusiveSameRange) == []
+
+module Inclusive {
+  from Range use { Inclusive as Range }
+
+  let inclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
+  let inclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }
+  let inclusiveSameRange = { rangeStart: 1, rangeEnd: 1 }
+
+  // Range.inRange
+  assert Range.inRange(1, inclusiveAscendingRange)
+  assert Range.inRange(3, inclusiveAscendingRange)
+  assert Range.inRange(5, inclusiveAscendingRange)
+  assert !Range.inRange(10, inclusiveAscendingRange)
+  assert !Range.inRange(-1, inclusiveAscendingRange)
+
+  assert Range.inRange(1, inclusiveDescendingRange)
+  assert Range.inRange(3, inclusiveDescendingRange)
+  assert Range.inRange(5, inclusiveDescendingRange)
+  assert !Range.inRange(10, inclusiveDescendingRange)
+  assert !Range.inRange(-1, inclusiveDescendingRange)
+
+  assert Range.inRange(1, inclusiveSameRange)
+  assert !Range.inRange(3, inclusiveSameRange)
+
+  let mut results = []
+  Range.forEach(idx => {
+    results = [idx, ...results]
+  }, inclusiveAscendingRange)
+  assert results == [5, 4, 3, 2, 1]
+
+  let mut results = []
+  Range.forEach(idx => {
+    results = [idx, ...results]
+  }, inclusiveDescendingRange)
+  assert results == [1, 2, 3, 4, 5]
+
+  let mut results = []
+  Range.forEach(idx => {
+    results = [idx, ...results]
+  }, inclusiveSameRange)
+  assert results == [1]
+
+  assert Range.map(toString, inclusiveAscendingRange) ==
+    ["1", "2", "3", "4", "5"]
+  assert Range.map(toString, inclusiveDescendingRange) ==
+    ["5", "4", "3", "2", "1"]
+  assert Range.map(toString, inclusiveSameRange) == ["1"]
+}

@@ -1,8 +1,10 @@
-import Array from "array"
-import String from "string"
-import Buffer from "buffer"
-import Bytes from "bytes"
-import Int32 from "int32"
+module BufferTest
+
+include "array"
+include "string"
+include "buffer"
+include "bytes"
+include "int32"
 
 // it should have 0 length when buffer is created
 assert Buffer.length(Buffer.make(0)) == 0
@@ -11,9 +13,9 @@ assert Buffer.length(Buffer.make(1024)) == 0
 // its contents should equal other buffers with equivalent bytes
 assert Buffer.toBytes(Buffer.make(0)) == Buffer.toBytes(Buffer.make(0))
 let a = Buffer.make(0)
-Buffer.addInt8(1l, a)
+Buffer.addInt8(1s, a)
 let b = Buffer.make(0)
-Buffer.addInt8(1l, b)
+Buffer.addInt8(1s, b)
 assert Buffer.toBytes(a) == Buffer.toBytes(b)
 
 // it should add/get int8
@@ -22,10 +24,24 @@ let size = 8 * byteSize
 let buf = Buffer.make(size)
 for (let mut i = 0; i < size / byteSize; i += 1) {
   // it should add an int8
-  let n = 42l
+  let n = 42s
   Buffer.addInt8(n, buf)
   // it should have value n at position i
-  assert Buffer.getInt8S(i * byteSize, buf) == n
+  assert Buffer.getInt8(i * byteSize, buf) == n
+  // it should have length equal to i + 1
+  assert Buffer.length(buf) == (i + 1) * byteSize
+}
+
+// it should add/get uint8
+let byteSize = 1
+let size = 8 * byteSize
+let buf = Buffer.make(size)
+for (let mut i = 0; i < size / byteSize; i += 1) {
+  // it should add an uint8
+  let n = 42us
+  Buffer.addUint8(n, buf)
+  // it should have value n at position i
+  assert Buffer.getUint8(i * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -36,10 +52,24 @@ let size = 8 * byteSize
 let buf = Buffer.make(size)
 for (let mut i = 0; i < size / byteSize; i += 1) {
   // it should add an int16
-  let n = 42l
+  let n = 42S
   Buffer.addInt16(n, buf)
   // it should have value n at position i
-  assert Buffer.getInt16S(i * byteSize, buf) == n
+  assert Buffer.getInt16(i * byteSize, buf) == n
+  // it should have length equal to i + 1
+  assert Buffer.length(buf) == (i + 1) * byteSize
+}
+
+// it should add/get int16
+let byteSize = 2
+let size = 8 * byteSize
+let buf = Buffer.make(size)
+for (let mut i = 0; i < size / byteSize; i += 1) {
+  // it should add an int16
+  let n = 42uS
+  Buffer.addUint16(n, buf)
+  // it should have value n at position i
+  assert Buffer.getUint16(i * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -54,6 +84,20 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   Buffer.addInt32(n, buf)
   // it should have value n at position i
   assert Buffer.getInt32(i * byteSize, buf) == n
+  // it should have length equal to i + 1
+  assert Buffer.length(buf) == (i + 1) * byteSize
+}
+
+// it should add/get uint32
+let byteSize = 4
+let size = 8 * byteSize
+let buf = Buffer.make(size)
+for (let mut i = 0; i < size / byteSize; i += 1) {
+  // it should add an uint32
+  let n = 42ul
+  Buffer.addUint32(n, buf)
+  // it should have value n at position i
+  assert Buffer.getUint32(i * byteSize, buf) == n
   // it should have length equal to i + 1
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
@@ -86,6 +130,20 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
   assert Buffer.length(buf) == (i + 1) * byteSize
 }
 
+// it should add/get uint64
+let byteSize = 8
+let size = 8 * byteSize
+let buf = Buffer.make(size)
+for (let mut i = 0; i < size / byteSize; i += 1) {
+  // it should add an uint64
+  let n = 42uL
+  Buffer.addUint64(n, buf)
+  // it should have value n at position i
+  assert Buffer.getUint64(i * byteSize, buf) == n
+  // it should have length equal to i + 1
+  assert Buffer.length(buf) == (i + 1) * byteSize
+}
+
 // it should add/get float64
 let byteSize = 8
 let size = 8 * byteSize
@@ -102,48 +160,48 @@ for (let mut i = 0; i < size / byteSize; i += 1) {
 
 // it should clear the buffer
 let buf = Buffer.make(8)
-Buffer.addInt8(0l, buf)
+Buffer.addInt8(0s, buf)
 assert Buffer.length(buf) == 1
 Buffer.clear(buf)
 assert Buffer.length(buf) == 0
 
 // it should reset the buffer
 let buf = Buffer.make(0)
-Buffer.addInt8(0l, buf)
+Buffer.addInt8(0s, buf)
 assert Buffer.length(buf) == 1
 Buffer.reset(buf)
 assert Buffer.length(buf) == 0
 
 // it should truncate the buffer
 let buf = Buffer.make(0)
-Buffer.addInt8(1l, buf)
-Buffer.addInt8(2l, buf)
-Buffer.addInt8(3l, buf)
+Buffer.addInt8(1s, buf)
+Buffer.addInt8(2s, buf)
+Buffer.addInt8(3s, buf)
 assert Buffer.length(buf) == 3
 Buffer.truncate(1, buf)
 assert Buffer.length(buf) == 1
-assert Buffer.getInt8S(0, buf) == 1l
+assert Buffer.getInt8(0, buf) == 1s
 let bytes = Buffer.toBytes(buf)
 assert Bytes.length(bytes) == 1
 
 // it should convert a buffer to bytes
 let buf = Buffer.make(0)
-Buffer.addInt8(0l, buf)
-Buffer.addInt8(1l, buf)
-Buffer.addInt8(2l, buf)
+Buffer.addInt8(0s, buf)
+Buffer.addInt8(1s, buf)
+Buffer.addInt8(2s, buf)
 assert Buffer.length(buf) == 3
 let bytes = Buffer.toBytes(buf)
 assert Bytes.length(bytes) == 3
-assert Bytes.getInt8U(0, bytes) == 0l
-assert Bytes.getInt8U(1, bytes) == 1l
-assert Bytes.getInt8U(2, bytes) == 2l
+assert Bytes.getUint8(0, bytes) == 0us
+assert Bytes.getUint8(1, bytes) == 1us
+assert Bytes.getUint8(2, bytes) == 2us
 assert Bytes.length(Buffer.toBytes(Buffer.make(1024))) == 0
 
 // it should convert a buffer to a bytes slice
 let buf = Buffer.make(0)
-Buffer.addInt8(0l, buf)
-Buffer.addInt8(1l, buf)
-Buffer.addInt8(2l, buf)
+Buffer.addInt8(0s, buf)
+Buffer.addInt8(1s, buf)
+Buffer.addInt8(2s, buf)
 assert Buffer.length(buf) == 3
 let bytes = Buffer.toBytesSlice(0, 0, buf)
 assert Bytes.length(bytes) == 0
@@ -153,26 +211,26 @@ let bytes = Buffer.toBytesSlice(2, 0, buf)
 assert Bytes.length(bytes) == 0
 let bytes = Buffer.toBytesSlice(0, 1, buf)
 assert Bytes.length(bytes) == 1
-assert Bytes.getInt8U(0, bytes) == 0l
+assert Bytes.getUint8(0, bytes) == 0us
 let bytes = Buffer.toBytesSlice(1, 1, buf)
 assert Bytes.length(bytes) == 1
-assert Bytes.getInt8U(0, bytes) == 1l
+assert Bytes.getUint8(0, bytes) == 1us
 let bytes = Buffer.toBytesSlice(2, 1, buf)
 assert Bytes.length(bytes) == 1
-assert Bytes.getInt8U(0, bytes) == 2l
+assert Bytes.getUint8(0, bytes) == 2us
 let bytes = Buffer.toBytesSlice(0, 2, buf)
 assert Bytes.length(bytes) == 2
-assert Bytes.getInt8U(0, bytes) == 0l
-assert Bytes.getInt8U(1, bytes) == 1l
+assert Bytes.getUint8(0, bytes) == 0us
+assert Bytes.getUint8(1, bytes) == 1us
 let bytes = Buffer.toBytesSlice(1, 2, buf)
 assert Bytes.length(bytes) == 2
-assert Bytes.getInt8U(0, bytes) == 1l
-assert Bytes.getInt8U(1, bytes) == 2l
+assert Bytes.getUint8(0, bytes) == 1us
+assert Bytes.getUint8(1, bytes) == 2us
 let bytes = Buffer.toBytesSlice(0, 3, buf)
 assert Bytes.length(bytes) == 3
-assert Bytes.getInt8U(0, bytes) == 0l
-assert Bytes.getInt8U(1, bytes) == 1l
-assert Bytes.getInt8U(2, bytes) == 2l
+assert Bytes.getUint8(0, bytes) == 0us
+assert Bytes.getUint8(1, bytes) == 1us
+assert Bytes.getUint8(2, bytes) == 2us
 
 // addBytes / toBytes
 let str = "Let's get this 🍞"
@@ -213,7 +271,7 @@ for (let mut i = 0; i < Array.length(slices); i += 1) {
   let (str, start, end) = slices[i]
   let buf = Buffer.make(0)
   Buffer.addStringSlice(start, end, str, buf)
-  assert Buffer.toString(buf) == String.slice(start, end, str)
+  assert Buffer.toString(buf) == String.slice(start, end=end, str)
 }
 
 // addBytesSlice

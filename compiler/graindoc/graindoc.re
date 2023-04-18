@@ -80,171 +80,25 @@ let compile_typed = (input: Fp.t(Fp.absolute)) => {
 
 let generate_docs =
     (~current_version, ~output=?, program: Typedtree.typed_program) => {
-  let comments = Comments.to_ordered(program.comments);
-
-  let exports = Docblock.enumerate_exports(program.statements);
-
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
-  let module_comment = Comments.Doc.find_module(comments);
-  let module_name = ref(None);
-  switch (module_comment) {
-  | Some((_, desc, attrs)) =>
-    let deprecations =
-      attrs
-      |> List.filter(Comments.Attribute.is_deprecated)
-      |> List.map((attr: Comments.Attribute.t) => {
-           switch (attr) {
-           | Deprecated({attr_desc}) => attr_desc
-           | _ =>
-             failwith(
-               "Unreachable: Non-`deprecated` attribute can't exist here.",
-             )
-           }
-         });
+  let module_name = program.module_name.txt;
 
-    // TODO(#787): Should we fail if more than one `@module` attribute?
-    let module_attr = attrs |> List.find(Comments.Attribute.is_module);
-    switch (module_attr) {
-    | Module({attr_name, attr_desc}) =>
-      module_name := Some(attr_name);
-      Buffer.add_string(buf, Markdown.frontmatter([("title", attr_name)]));
-      if (List.length(deprecations) > 0) {
-        List.iter(
-          msg =>
-            Buffer.add_string(
-              buf,
-              Markdown.blockquote(
-                Markdown.bold("Deprecated:") ++ " " ++ msg,
-              ),
-            ),
-          deprecations,
-        );
-      };
-      Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-      switch (desc) {
-      // Guard isn't be needed because we turn an empty string into None during extraction
-      | Some(desc) => Buffer.add_string(buf, Markdown.paragraph(desc))
-      | None => ()
-      };
-    | _ => failwith("Unreachable: Non-`module` attribute can't exist here.")
-    };
+  Buffer.add_string(buf, Markdown.frontmatter([("title", module_name)]));
 
-    // TODO(#787): Should we fail if more than one `@since` attribute?
-    let since_attr =
-      attrs
-      |> List.find_opt(Comments.Attribute.is_since)
-      |> Option.map((attr: Comments.Attribute.t) => {
-           switch (attr) {
-           | Since({attr_version}) =>
-             Docblock.output_for_since(~current_version, attr_version)
-           | _ =>
-             failwith("Unreachable: Non-`since` attribute can't exist here.")
-           }
-         });
-    let history_attrs =
-      attrs
-      |> List.filter(Comments.Attribute.is_history)
-      |> List.map((attr: Comments.Attribute.t) => {
-           switch (attr) {
-           | History({attr_version, attr_desc}) =>
-             Docblock.output_for_history(
-               ~current_version,
-               attr_version,
-               attr_desc,
-             )
-           | _ =>
-             failwith("Unreachable: Non-`since` attribute can't exist here.")
-           }
-         });
-    if (Option.is_some(since_attr) || List.length(history_attrs) > 0) {
-      let summary = Option.value(~default="History", since_attr);
-      let disabled = List.length(history_attrs) == 0 ? true : false;
-      let details =
-        if (List.length(history_attrs) == 0) {
-          "No other changes yet.";
-        } else {
-          Html.table(~headers=["version", "changes"], history_attrs);
-        };
-      Buffer.add_string(buf, Html.details(~disabled, ~summary, details));
-    };
-
-    let example_attrs = attrs |> List.filter(Comments.Attribute.is_example);
-    if (List.length(example_attrs) > 0) {
-      List.iter(
-        (attr: Comments.Attribute.t) => {
-          switch (attr) {
-          | Example({attr_desc}) =>
-            Buffer.add_string(buf, Markdown.code_block(attr_desc))
-          | _ =>
-            failwith("Unreachable: Non-`example` attribute can't exist here.")
-          }
-        },
-        example_attrs,
-      );
-    };
-  | None => ()
-  };
-
-  let module_name = module_name^;
-  let add_docblock = sig_item => {
-    let docblock =
-      Docblock.for_signature_item(
-        ~comments,
-        ~exports,
-        ~module_name?,
-        sig_item,
-      );
-    switch (docblock) {
-    | Some(docblock) =>
-      Buffer.add_buffer(
-        buf,
-        Docblock.to_markdown(~current_version, docblock),
-      )
-    | None => ()
-    };
-  };
-
-  let section_comments = Comments.Doc.find_sections(comments);
-  if (List.length(section_comments) == 0) {
-    List.iter(add_docblock, signature_items);
-  } else {
-    List.iteri(
-      (idx, (comment, desc, attrs)) => {
-        let next_section_start_line =
-          Option.fold(
-            ~none=max_int,
-            ~some=((comment, _, _)) => Comments.start_line(comment),
-            List.nth_opt(section_comments, idx + 1),
-          );
-        let range =
-          Grain_utils.Range.Exclusive(
-            Comments.end_line(comment),
-            next_section_start_line,
-          );
-        List.iter(
-          (attr: Comments.Attribute.t) => {
-            switch (attr) {
-            | Section({attr_name, attr_desc}) =>
-              Buffer.add_string(buf, Markdown.heading(~level=2, attr_name));
-              Buffer.add_string(buf, Markdown.paragraph(attr_desc));
-            | _ => ()
-            }
-          },
-          attrs,
-        );
-        List.iter(
-          sig_item =>
-            if (Docblock.signature_item_in_range(~exports, sig_item, range)) {
-              add_docblock(sig_item);
-            },
-          signature_items,
-        );
-      },
-      section_comments,
+  let docblock =
+    Docblock.for_signature_items(
+      ~module_namespace=None,
+      ~name=module_name,
+      ~loc=program.module_name.loc,
+      signature_items,
     );
-  };
+
+  Buffer.add_buffer(
+    buf,
+    Docblock.to_markdown(~current_version, ~heading_level=1, docblock),
+  );
 
   let contents = Buffer.to_bytes(buf);
   switch (output) {

@@ -46,6 +46,7 @@ let constructor_existentials = (cd_args, cd_res) => {
     switch (cd_args) {
     | TConstrSingleton => []
     | TConstrTuple(l) => l
+    | TConstrRecord(l) => List.map(l => l.rf_type, l)
     };
 
   let existentials =
@@ -65,6 +66,21 @@ let constructor_args = (cd_args, cd_res, path) => {
   switch (cd_args) {
   | TConstrSingleton => (existentials, [], None)
   | TConstrTuple(l) => (existentials, l, None)
+  | TConstrRecord(rfs) =>
+    let arg_vars_set = free_vars(~param=true, newgenty(TTyTuple(tyl)));
+    let type_params = TypeSet.elements(arg_vars_set);
+    let arity = List.length(type_params);
+    let tdecl = {
+      type_params,
+      type_arity: arity,
+      type_kind: TDataRecord(rfs),
+      type_manifest: None,
+      type_loc: Location.dummy_loc,
+      type_newtype_level: None,
+      type_allocation: Managed,
+      type_path: path,
+    };
+    (existentials, [newgenconstr(path, type_params)], Some(tdecl));
   };
 };
 
@@ -98,11 +114,7 @@ let constructor_descrs = (ty_path, decl, cstrs) => {
       };
     let cstr_name = Ident.name(cd_id);
     let (existentials, cstr_args, cstr_inlined) =
-      constructor_args(
-        cd_args,
-        cd_res,
-        Path.PExternal(ty_path, cstr_name, Path.nopos),
-      );
+      constructor_args(cd_args, cd_res, Path.PExternal(ty_path, cstr_name));
 
     let cstr = {
       cstr_name,
@@ -114,6 +126,7 @@ let constructor_descrs = (ty_path, decl, cstrs) => {
       cstr_consts: num_consts^,
       cstr_nonconsts: num_nonconsts^,
       cstr_loc: cd_loc,
+      cstr_inlined,
     };
     (cd_id, cstr);
   };
@@ -124,7 +137,11 @@ let extension_descr = (path_ext, ext) => {
   let ty_res = newgenconstr(ext.ext_type_path, ext.ext_type_params);
 
   let (existentials, cstr_args, cstr_inlined) =
-    constructor_args(ext.ext_args, Some(ty_res), path_ext);
+    constructor_args(
+      ext.ext_args,
+      Some(ty_res),
+      Path.PExternal(path_ext, "#extension#"),
+    );
 
   let cstr_ext_type =
     if (cstr_args == []) {
@@ -143,6 +160,7 @@ let extension_descr = (path_ext, ext) => {
     cstr_consts: (-1),
     cstr_nonconsts: (-1),
     cstr_loc: ext.ext_loc,
+    cstr_inlined,
   };
 };
 
