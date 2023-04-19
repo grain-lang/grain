@@ -94,6 +94,7 @@ provide let argv = () => {
   }
 
   let argc = WasmI32.load(argcPtr, 0n)
+  Memory.free(argcPtr)
 
   let argsLength = argc * 4n
   let arr = allocateArray(argc)
@@ -109,7 +110,6 @@ provide let argv = () => {
 
   let err = Wasi.args_get(argvPtr, argvBufPtr)
   if (err != Wasi._ESUCCESS) {
-    Memory.free(argcPtr)
     Memory.free(argvPtr)
     Memory.free(argvBufPtr)
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
@@ -128,7 +128,6 @@ provide let argv = () => {
     WasmI32.store(arr + i, grainStrPtr, 8n)
   }
 
-  Memory.free(argcPtr)
   Memory.free(argvPtr)
   Memory.free(argvBufPtr)
 
