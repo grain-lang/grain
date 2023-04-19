@@ -616,6 +616,14 @@ provide let fdPrestatGet = (fd: FileDescriptor) => {
     return Err(Wasi.SystemError(tagSimpleNumber(err)))
   }
 
+  if (
+    prefixLen > 0n && WasmI32.eqz(WasmI32.load8U(prefix + prefixLen - 1n, 8n))
+  ) {
+    // the string is null-terminated and the size was reported including it
+    // https://github.com/grain-lang/grain/issues/1818
+    WasmI32.store(prefix, prefixLen - 1n, 4n)
+  }
+
   let prefix = WasmI32.toGrain(prefix): String
   let fd = fdArg
 
