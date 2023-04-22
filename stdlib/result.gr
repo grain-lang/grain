@@ -162,9 +162,10 @@ provide let mapWithDefaultFn = (fnOk, fnErr, result) => {
  * @param result2: The second result
  * @returns The first Result if it is the `Ok` variant or the second Result otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
+ * @history v0.2.0: Originally named `or`
  */
-provide let or = (result1, result2) => {
+provide let (||) = (result1, result2) => {
   match (result1) {
     Ok(x) => result1,
     _ => result2,
@@ -178,9 +179,10 @@ provide let or = (result1, result2) => {
  * @param result2: The second result
  * @returns The second Result if both are the `Ok` variant or the first Result otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
+ * @history v0.2.0: Originally named `and`
  */
-provide let and = (result1, result2) => {
+provide let (&&) = (result1, result2) => {
   match (result1) {
     Ok(_) => result2,
     Err(_) => result1,

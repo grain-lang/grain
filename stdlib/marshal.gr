@@ -465,6 +465,8 @@ let validateStack = (value, offset) => {
 
 @unsafe
 let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
+  from Option use { (||) as optOr }
+
   let offsetAsInt32 = toGrain(newInt32(offset)): Int32
   Set.add(offsetAsInt32, valuesChecked)
 
@@ -500,12 +502,9 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = Option.or(
-            error,
-            validateHeap(buf, bufSize, value, valuesChecked)
-          )
+          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
         } else {
-          error = Option.or(error, validateStack(value, offset))
+          error = optOr(error, validateStack(value, offset))
         }
       }
 
@@ -531,12 +530,9 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = Option.or(
-            error,
-            validateHeap(buf, bufSize, value, valuesChecked)
-          )
+          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
         } else {
-          error = Option.or(error, validateStack(value, offset))
+          error = optOr(error, validateStack(value, offset))
         }
       }
 
@@ -562,12 +558,9 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = Option.or(
-            error,
-            validateHeap(buf, bufSize, value, valuesChecked)
-          )
+          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
         } else {
-          error = Option.or(error, validateStack(value, offset))
+          error = optOr(error, validateStack(value, offset))
         }
       }
 
@@ -593,12 +586,9 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = Option.or(
-            error,
-            validateHeap(buf, bufSize, value, valuesChecked)
-          )
+          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
         } else {
-          error = Option.or(error, validateStack(value, offset))
+          error = optOr(error, validateStack(value, offset))
         }
       }
 
@@ -624,12 +614,9 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           if (Set.contains(asInt32, valuesChecked)) {
             continue
           }
-          error = Option.or(
-            error,
-            validateHeap(buf, bufSize, value, valuesChecked)
-          )
+          error = optOr(error, validateHeap(buf, bufSize, value, valuesChecked))
         } else {
-          error = Option.or(error, validateStack(value, offset))
+          error = optOr(error, validateStack(value, offset))
         }
       }
 
@@ -675,7 +662,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
           } else {
             let numeratorOffset = load(valuePtr, 8n)
             let denominatorOffset = load(valuePtr, 12n)
-            let error = Option.or(
+            let error = optOr(
               validateHeap(buf, bufSize, numeratorOffset, valuesChecked),
               validateHeap(buf, bufSize, denominatorOffset, valuesChecked)
             )
@@ -705,7 +692,7 @@ let rec validateHeap = (buf, bufSize, offset, valuesChecked) => {
               } else {
                 None
               }
-              Option.or(numeratorError, denominatorError)
+              optOr(numeratorError, denominatorError)
             } else {
               error
             }

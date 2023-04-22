@@ -539,15 +539,22 @@ Returns:
 |----|-----------|
 |`Option<a>`|The unmodified option|
 
-### Option.**or**
+### Option.**(||)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `or`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-or : (optionA: Option<a>, optionB: Option<a>) -> Option<a>
+(||) : (optionA: Option<a>, optionB: Option<a>) -> Option<a>
 ```
 
 Behaves like a logical OR (`||`) where the first Option is only returned if it is the `Some` variant and falling back to the second Option in all other cases.
@@ -565,15 +572,22 @@ Returns:
 |----|-----------|
 |`Option<a>`|The first Option if it is the `Some` variant or the second Option otherwise|
 
-### Option.**and**
+### Option.**(&&)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `and`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-and : (optionA: Option<a>, optionB: Option<a>) -> Option<a>
+(&&) : (optionA: Option<a>, optionB: Option<a>) -> Option<a>
 ```
 
 Behaves like a logical AND (`&&`) where the first Option is only returned if it is the `None` variant and falling back to the second Option Result in all other cases.

@@ -333,9 +333,10 @@ provide let peek = (fn, option) => {
  * @param optionB: The second option
  * @returns The first Option if it is the `Some` variant or the second Option otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
+ * @history v0.2.0: Originally named `or`
  */
-provide let or = (optionA, optionB) => {
+provide let (||) = (optionA, optionB) => {
   match (optionA) {
     Some(x) => optionA,
     None => optionB,
@@ -349,9 +350,10 @@ provide let or = (optionA, optionB) => {
  * @param optionB: The second option
  * @returns The second Option if both are the `Some` variant or the first Option otherwise
  *
- * @since v0.2.0
+ * @since v0.6.0
+ * @history v0.2.0: Originally named `and`
  */
-provide let and = (optionA, optionB) => {
+provide let (&&) = (optionA, optionB) => {
   match (optionA) {
     Some(_) => optionB,
     None => optionA,
