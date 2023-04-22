@@ -1,7 +1,7 @@
 module TimeTest
 
 include "int64"
-from Int64 use { lt as (<) }
+from Int64 use { lt as (<), lte as (<=) }
 include "sys/time"
 
 let mt1 = Time.monotonicTime()
@@ -19,7 +19,10 @@ let pct2 = Time.processCpuTime()
 
 // Just a smoke test, there's a chance this could fail
 match ((pct1, pct2)) {
-  (Ok(x), Ok(y)) => assert x < y,
+  (Ok(x), Ok(y)) => {
+    // This is using `<=` because time resolutions on Windows is not fine-grained enough
+    assert x <= y
+  },
   (Err(err), _) => throw err,
   (_, Err(err)) => throw err,
 }
@@ -29,7 +32,10 @@ let tct2 = Time.threadCpuTime()
 
 // Just a smoke test, there's a chance this could fail
 match ((tct1, tct2)) {
-  (Ok(x), Ok(y)) => assert x < y,
+  (Ok(x), Ok(y)) => {
+    // This is using `<=` because time resolutions on Windows is not fine-grained enough
+    assert x <= y
+  },
   (Err(err), _) => throw err,
   (_, Err(err)) => throw err,
 }
