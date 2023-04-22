@@ -90,7 +90,7 @@ module DataDeclaration: {
   let mk:
     (
       ~loc: loc=?,
-      rec_flag,
+      ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
       data_kind,
@@ -98,12 +98,18 @@ module DataDeclaration: {
     ) =>
     data_declaration;
   let abstract:
-    (~loc: loc=?, rec_flag, str, list(parsed_type), option(parsed_type)) =>
+    (
+      ~loc: loc=?,
+      ~rec_flag: rec_flag=?,
+      str,
+      list(parsed_type),
+      option(parsed_type)
+    ) =>
     data_declaration;
   let variant:
     (
       ~loc: loc=?,
-      rec_flag,
+      ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
       list(constructor_declaration)
@@ -112,7 +118,7 @@ module DataDeclaration: {
   let record:
     (
       ~loc: loc=?,
-      rec_flag,
+      ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
       list(label_declaration)
