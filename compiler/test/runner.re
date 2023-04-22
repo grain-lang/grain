@@ -158,7 +158,7 @@ let open_process = args => {
   (code, out, err);
 };
 
-let run = (~num_pages=?, ~argv=[||], file) => {
+let run = (~num_pages=?, file) => {
   let mem_flags =
     switch (num_pages) {
     | Some(x) => [|
@@ -184,8 +184,7 @@ let run = (~num_pages=?, ~argv=[||], file) => {
       [|"grain", "run"|],
       mem_flags,
       [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), preopen|],
-      [|file, "--"|],
-      argv,
+      [|file|],
     ]);
 
   let (code, out, err) = open_process(cmd);
@@ -367,7 +366,7 @@ let makeFileErrorRunner = (test, name, filename, expected) => {
   );
 };
 
-let makeStdlibRunner = (test, ~code=0, ~argv=[||], name) => {
+let makeStdlibRunner = (test, ~code=0, name) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       // Run stdlib suites in release mode
@@ -375,7 +374,7 @@ let makeStdlibRunner = (test, ~code=0, ~argv=[||], name) => {
       let infile = stdlibfile(name);
       let outfile = wasmfile(name);
       ignore @@ compile_file(infile, outfile);
-      let (result, exit_code) = run(~argv, outfile);
+      let (result, exit_code) = run(outfile);
       expect.int(exit_code).toBe(code);
       expect.string(result).toEqual("");
     })

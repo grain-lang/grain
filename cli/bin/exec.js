@@ -128,8 +128,6 @@ function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
     const [guestDir, hostDir = guestDir] = preopen.split("=");
     preopens[guestDir] = hostDir;
   });
-  const doubleDash = process.argv.indexOf("--");
-  const args = process.argv.slice(doubleDash + 1);
 
   const env = {
     PREOPENS: JSON.stringify(preopens),
@@ -137,7 +135,7 @@ function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
   };
 
   try {
-    execSync(`${grainrun} ${file} ${args.join(" ")}`, { ...execOpts, env });
+    execSync(`${grainrun} ${file}`, { ...execOpts, env });
   } catch (e) {
     process.exit(e.status);
   }
