@@ -194,7 +194,7 @@ program
 
 program
   .command("run <file>")
-  .description("run a wasm file via Node.js")
+  .description("run a wasm file via grain's WASI runner")
   .action(exec.grainrun);
 
 program
