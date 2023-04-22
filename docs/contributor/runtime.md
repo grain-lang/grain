@@ -4,7 +4,7 @@ When we speak of the Grain runtime, we largely mean the memory allocator, garbag
 
 ## The Runtime Heap
 
-Currently, the Grain runtime heap spans half a WebAssembly page of memory. The low 1K of memory is reserved for Binaryen optimizations, the next few bytes are reserved for some static pointers (which we'll go over next), and the rest of half-page is space used for runtime allocations. It's important to note that this space is unmanaged. After all, we don't have a memory manager yet—we want to compile the memory manager. Allocations are done just by incrementing a bytes counter. This means that no space can be reclaimed—as such, runtime modules should do no dynamic allocations. Ideally, the only allocations that should occur are for the closures of top-level functions that are used by other modules.
+Currently, the Grain runtime heap reserves 2048 bytes of WebAssembly memory. The low 1K of memory is reserved for Binaryen optimizations, the next few bytes are reserved for some static pointers (which we'll go over next), and the rest of the space is used for runtime allocations. It's important to note that this space is unmanaged. After all, we don't have a memory manager yet—we want to compile the memory manager. Allocations are done just by incrementing a bytes counter. This means that no space can be reclaimed—as such, runtime modules should do no dynamic allocations. Ideally, the only allocations that should occur are for the closures of top-level functions that are used by other modules.
 
 ## Static Runtime Pointers
 
