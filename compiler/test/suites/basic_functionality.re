@@ -257,7 +257,6 @@ describe("basic functionality", ({test, testSkip}) => {
               (
                 Asttypes.NotProvided,
                 DataDeclaration.variant(
-                  Parsetree.Nonrecursive,
                   Location.mknoloc("Caipirinha"),
                   [],
                   [
@@ -289,7 +288,6 @@ describe("basic functionality", ({test, testSkip}) => {
               (
                 Asttypes.NotProvided,
                 DataDeclaration.abstract(
-                  Parsetree.Nonrecursive,
                   Location.mknoloc("Über"),
                   [],
                   Some(
