@@ -381,7 +381,7 @@ describe("recursive types", ({test, testSkip}) => {
         x: Oops
       }
     |},
-    "Unbound type constructor Oops. Hint: you are probably missing the `rec` keyword on this type",
+    "Unbound type constructor Oops. Are you missing the `rec` keyword on this type?",
   );
   assertCompileError(
     "type_rec_incorrect_2",
