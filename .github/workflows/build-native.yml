@@ -96,11 +96,6 @@ jobs:
         run: |
           npm run compiler check-format
 
-      - name: (js-runner) Check formatting
-        if: inputs.os != 'windows-latest'
-        run: |
-          npm run js-runner check-format
-
       - name: (cli) Check formatting
         if: inputs.os != 'windows-latest'
         run: |

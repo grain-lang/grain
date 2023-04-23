@@ -50,14 +50,6 @@
 /compiler/esy.json                          @ospencer @phated
 /compiler/package.json                      @ospencer @phated
 
-/js-runner/.prettierignore                  @ospencer @phated
-/js-runner/.prettierrc.json                 @ospencer @phated
-/js-runner/README.md                        @ospencer @phated
-/js-runner/src/                             @ospencer @phated @peblair
-/js-runner/package.json                     @ospencer @phated
-/js-runner/webpack.*.js                     @ospencer @phated
-/js-runner/LICENSE                          @ospencer @peblair
-
 /stdlib/                                    @ospencer @phated @peblair @marcusroberts @jozanza
 /stdlib/runtime/                            @ospencer @peblair @jozanza @phated
 /stdlib/package.json                        @phated @ospencer

@@ -33,17 +33,6 @@ npm run compiler test
 
 It can sometimes be helpful to run small Grain programs directly to test some functionality without running the full test suite.
 
-### JS runner
-
-After making changes in the `js-runner` directory, run:
-
-```bash
-npm run js-runner build
-npm run js-runner test
-```
-
-Once the JS runner has been built, it's the only one active. Grain programs that you run from the command line or the tests will use that version.
-
 ### Standard library
 
 It's usually easiest to create a small Grain program that imports your library to try it out, like so:

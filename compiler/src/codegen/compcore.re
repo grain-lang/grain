@@ -78,10 +78,6 @@ let equal_mod = "GRAIN$MODULE$runtime/equal";
 let equal_ident = Ident.create_persistent("equal");
 let equal_closure_ident = Ident.create_persistent("GRAIN$EXPORT$equal");
 
-/* JS-runner support */
-let console_mod = "console";
-let tracepoint_ident = Ident.create_persistent("tracepoint");
-
 let required_global_imports = [
   {
     mimp_id: reloc_base,
@@ -215,15 +211,6 @@ let grain_function_imports = [
         [Types.Unmanaged(WasmI32), Types.Unmanaged(WasmI32)],
         [Types.Unmanaged(WasmI32)],
       ), /* Returns same pointer as argument */
-    mimp_kind: MImportWasm,
-    mimp_setup: MSetupNone,
-    mimp_used: false,
-  },
-  {
-    mimp_id: tracepoint_ident,
-    mimp_mod: console_mod,
-    mimp_name: Ident.name(tracepoint_ident),
-    mimp_type: MFuncImport([Types.Unmanaged(WasmI32)], []),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
     mimp_used: false,
@@ -404,16 +391,6 @@ let call_equal = (wasm_mod, env, args) =>
       ...args,
     ],
     Type.int32,
-  );
-
-/** Will print "tracepoint <n> reached" to the console when executed (for debugging WASM output) */
-
-let tracepoint = (wasm_mod, env, n) =>
-  Expression.Call.make(
-    wasm_mod,
-    get_wasm_imported_name(console_mod, tracepoint_ident),
-    [Expression.Const.make(wasm_mod, const_int32(n))],
-    Type.none,
   );
 
 /** Untags the number */
@@ -2923,7 +2900,6 @@ and compile_instr = (wasm_mod, env, instr) =>
   switch (instr.instr_desc) {
   | MDrop(arg) =>
     Expression.Drop.make(wasm_mod, compile_instr(wasm_mod, env, arg))
-  | MTracepoint(x) => tracepoint(wasm_mod, env, x)
   | MImmediate(imm) => compile_imm(wasm_mod, env, imm)
   | MAllocate(alloc) => compile_allocation(wasm_mod, env, alloc)
   | MTupleOp(tuple_op, tup) => compile_tuple_op(wasm_mod, env, tup, tuple_op)

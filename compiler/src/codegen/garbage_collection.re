@@ -40,8 +40,7 @@ let instr_produces_value = instr =>
   | MClosureOp(MClosureSetPtr(_), _) => false
   | MStore(_) => false
   | MSet(_) => true
-  | MDrop(_)
-  | MTracepoint(_) => false
+  | MDrop(_) => false
   | MCleanup(_) => failwith("Impossible: MCleanup before GC")
   };
 
@@ -194,7 +193,6 @@ let rec analyze_usage = instrs => {
       usage_map := BindMap.update(binding, _ => Some(None), usage_map^);
       process_instr(instr);
     | MDrop(instr) => process_instr(instr)
-    | MTracepoint(_) => ()
     | MCleanup(_) => failwith("Impossible: MCleanup before GC")
     };
   };
@@ -518,7 +516,6 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         )
       | MSet(binding, instr) => MSet(binding, process_instr(instr))
       | MDrop(instr) => MDrop(process_instr(instr))
-      | MTracepoint(_) => instr.instr_desc
       | MCleanup(_) => failwith("Impossible: MCleanup before GC")
       };
     {...instr, instr_desc};
