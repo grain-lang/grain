@@ -265,15 +265,22 @@ Returns:
 |----|-----------|
 |`b`|The value produced by one of the mapping functions|
 
-### Result.**or**
+### Result.**(||)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `or`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-or : (result1: Result<a, b>, result2: Result<a, b>) -> Result<a, b>
+(||) : (result1: Result<a, b>, result2: Result<a, b>) -> Result<a, b>
 ```
 
 Behaves like a logical OR (`||`) where the first Result is only returned if it is the `Ok` variant and falling back to the second Result in all other cases.
@@ -291,15 +298,22 @@ Returns:
 |----|-----------|
 |`Result<a, b>`|The first Result if it is the `Ok` variant or the second Result otherwise|
 
-### Result.**and**
+### Result.**(&&)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `and`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-and : (result1: Result<a, b>, result2: Result<a, b>) -> Result<a, b>
+(&&) : (result1: Result<a, b>, result2: Result<a, b>) -> Result<a, b>
 ```
 
 Behaves like a logical AND (`&&`) where the first Result is only returned if it is the `Err` variant and falling back to the second Result in all other cases.
