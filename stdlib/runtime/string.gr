@@ -645,7 +645,14 @@ and tupleVariantToString = (ptr, variantName, extraIndents) => {
     join(strings)
   }
 }
-and recordToString = (ptr, recordArity, fields, contentOffset, extraIndents) => {
+and recordToString =
+  (
+    ptr,
+    recordArity,
+    fields,
+    contentOffset,
+    extraIndents,
+  ) => {
   let prevPadAmount = extraIndents * 2n
   let prevSpacePadding = if (prevPadAmount == 0n) {
     ""

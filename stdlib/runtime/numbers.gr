@@ -3016,7 +3016,8 @@ provide let (**) = (base, power) => {
     and u = 0.0W
     and v = 0.0W
     and w = 0.0W
-    let mut j = 0n and n = 0n
+    let mut j = 0n
+    and n = 0n
     if (iy > 0x41E00000n) {
       if (iy > 0x43F00000n) {
         if (ix <= 0x3FEFFFFFn) {

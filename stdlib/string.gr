@@ -701,7 +701,9 @@ provide let contains = (search: String, string: String) => {
   string += 8n
   search += 8n
 
-  let mut j = 0n and k = 0n and ell = 0n
+  let mut j = 0n
+  and k = 0n
+  and ell = 0n
 
   if (m > n) {
     // Bail if pattern length is longer than input length
@@ -2021,7 +2023,8 @@ let trimString = (str: String, fromEnd: Bool) => {
   let mut stringPtr = WasmI32.fromGrain(str)
   let byteLength = WasmI32.load(stringPtr, 4n)
   stringPtr += 8n
-  let mut i = 0n and offset = 1n
+  let mut i = 0n
+  and offset = 1n
   if (fromEnd) {
     i = byteLength - 1n
     offset = -1n
