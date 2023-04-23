@@ -1209,7 +1209,7 @@ let report_error = ppf =>
   | Nonrecursive_type_with_recursion(lid) =>
     fprintf(
       ppf,
-      "Unbound type constructor %a. Hint: you are probably missing the `rec` keyword on this type",
+      "Unbound type constructor %a. Are you missing the `rec` keyword on this type?",
       identifier,
       lid,
     );
