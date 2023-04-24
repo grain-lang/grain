@@ -554,8 +554,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       join(strings)
     },
   }
-},
-toStringHelp = (grainValue, extraIndents, toplevel) => {
+}
+and toStringHelp = (grainValue, extraIndents, toplevel) => {
   if ((grainValue & 1n) != 0n) {
     // Simple (unboxed) numbers
     NumberUtils.itoa32(grainValue >> 1n, 10n)
@@ -596,8 +596,8 @@ toStringHelp = (grainValue, extraIndents, toplevel) => {
       "<unknown value>"
     }
   }
-},
-listToString = (ptr, extraIndents) => {
+}
+and listToString = (ptr, extraIndents) => {
   let mut cur = ptr
   let mut isFirst = true
 
@@ -623,8 +623,8 @@ listToString = (ptr, extraIndents) => {
   strings = [rbrack, ...strings]
   let reversed = reverse(strings)
   join(reversed)
-},
-tupleVariantToString = (ptr, variantName, extraIndents) => {
+}
+and tupleVariantToString = (ptr, variantName, extraIndents) => {
   let variantArity = WasmI32.load(ptr, 16n)
   if (variantArity == 0n) {
     variantName
@@ -644,8 +644,15 @@ tupleVariantToString = (ptr, variantName, extraIndents) => {
 
     join(strings)
   }
-},
-recordToString = (ptr, recordArity, fields, contentOffset, extraIndents) => {
+}
+and recordToString =
+  (
+    ptr,
+    recordArity,
+    fields,
+    contentOffset,
+    extraIndents,
+  ) => {
   let prevPadAmount = extraIndents * 2n
   let prevSpacePadding = if (prevPadAmount == 0n) {
     ""

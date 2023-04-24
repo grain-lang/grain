@@ -79,8 +79,8 @@ enum ParsedRegularExpression {
 
 record Node {
   node: AstValue,
-},
-enum AstValue {
+}
+and enum AstValue {
   NodeValue(Node),
   StringValue(String),
 }

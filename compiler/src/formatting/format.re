@@ -4198,110 +4198,136 @@ and print_value_bind =
     | Mutable => Doc.text("mut ")
     };
 
-  let formatted_items =
-    switch (vbs) {
-    | [] => []
-    | [first, ...rem] =>
-      let get_loc = (vb: Parsetree.value_binding) => vb.pvb_loc;
-      let print_item = (~comments, vb: Parsetree.value_binding) => {
-        let after_let_comments =
-          Comment_utils.get_comments_enclosed_and_before_location(
-            ~loc1=get_loc(vb),
-            ~loc2=vb.pvb_pat.ppat_loc,
-            comments,
-          );
-
-        let after_let_comments_docs =
-          switch (after_let_comments) {
-          | [] => Doc.nil
-          | _ =>
-            Comment_utils.inbetween_comments_to_docs(
-              ~offset=false,
-              after_let_comments,
-            )
-          };
-
-        let expr_comments =
-          Comment_utils.get_comments_inside_location(
-            ~location=vb.pvb_expr.pexp_loc,
-            comments,
-          );
-        let printed =
-          print_expression(
-            ~expression_parent=GenericExpression,
-            ~original_source,
-            ~comments=expr_comments,
-            vb.pvb_expr,
-          );
-
-        let expression =
-          switch (vb.pvb_expr.pexp_desc) {
-          | PExpIf(_) =>
-            if (Doc.willBreak(printed)) {
-              Doc.concat([Doc.space, printed]);
-            } else {
-              Doc.indent(Doc.concat([Doc.line, printed]));
-            }
-          | _ => Doc.concat([Doc.space, printed])
-          };
-
-        let pattern_comments =
-          Comment_utils.get_comments_enclosed_and_before_location(
-            ~loc1=vb.pvb_loc,
-            ~loc2=vb.pvb_expr.pexp_loc,
-            comments,
-          );
-
-        Doc.concat([
-          Doc.group(
-            print_pattern(
-              ~original_source,
-              ~comments=pattern_comments,
-              ~next_loc=vb.pvb_loc,
-              vb.pvb_pat,
-            ),
-          ),
-          after_let_comments_docs,
-          switch (after_let_comments) {
-          | [] => Doc.space
-          | _ => Doc.nil
-          },
-          Doc.equal,
-          expression,
-        ]);
-      };
-
-      item_iterator(
-        ~get_loc,
-        ~print_item,
-        ~comments,
-        ~iterated_item=IteratedValueBindings,
-        vbs,
-      );
-    };
-
   let value_bindings =
-    List.mapi(
-      (index, doc) => {
-        let item =
-          if (index > 0) {
-            Doc.concat([Doc.line, doc]);
-          } else {
-            doc;
-          };
-        let vb = List.nth(vbs, index);
-        switch (vb.pvb_expr.pexp_desc) {
-        | PExpLambda(fn, _) => item
+    switch (vbs) {
+    | [] => Doc.nil
+    | [first, ...rem] =>
+      let leading_comments =
+        Comment_utils.get_comments_before_location(
+          ~location=first.pvb_loc,
+          comments,
+        );
+      let leading_comments_docs =
+        switch (leading_comments) {
+        | [] => Doc.nil
         | _ =>
-          if (index > 0) {
-            Doc.indent(item);
-          } else {
-            item;
-          }
+          Doc.group(
+            Doc.concat([
+              Comment_utils.new_comments_to_docs(leading_comments),
+              Doc.ifBreaks(Doc.nil, Doc.space),
+            ]),
+          )
         };
-      },
-      formatted_items,
-    );
+
+      let previous_bind: ref(option(Parsetree.value_binding)) = ref(None);
+      let docs =
+        Doc.join(
+          ~sep=Doc.concat([Doc.hardLine]),
+          List.mapi(
+            (i, vb: Parsetree.value_binding) => {
+              let leading_comments =
+                switch (previous_bind^) {
+                | None => []
+                | Some(prev) =>
+                  Comment_utils.get_comments_between_locations(
+                    ~loc1=prev.pvb_loc,
+                    ~loc2=vb.pvb_loc,
+                    comments,
+                  )
+                };
+
+              let leading_comment_docs =
+                switch (leading_comments) {
+                | [] => Doc.nil
+                | _ =>
+                  Doc.group(
+                    Doc.concat([
+                      Comment_utils.new_comments_to_docs(leading_comments),
+                      Doc.ifBreaks(Doc.nil, Doc.space),
+                    ]),
+                  )
+                };
+
+              let after_let_comments =
+                Comment_utils.get_comments_enclosed_and_before_location(
+                  ~loc1=vb.pvb_loc,
+                  ~loc2=vb.pvb_pat.ppat_loc,
+                  comments,
+                );
+
+              let after_let_comments_docs =
+                switch (after_let_comments) {
+                | [] => Doc.nil
+                | _ =>
+                  Comment_utils.inbetween_comments_to_docs(
+                    ~offset=false,
+                    after_let_comments,
+                  )
+                };
+
+              let expr_comments =
+                Comment_utils.get_comments_inside_location(
+                  ~location=vb.pvb_expr.pexp_loc,
+                  comments,
+                );
+              let printed =
+                print_expression(
+                  ~expression_parent=GenericExpression,
+                  ~original_source,
+                  ~comments=expr_comments,
+                  vb.pvb_expr,
+                );
+
+              let expression =
+                switch (vb.pvb_expr.pexp_desc) {
+                | PExpIf(_) =>
+                  if (Doc.willBreak(printed)) {
+                    Doc.concat([Doc.space, printed]);
+                  } else {
+                    Doc.indent(Doc.concat([Doc.line, printed]));
+                  }
+                | _ => Doc.concat([Doc.space, printed])
+                };
+
+              let pattern_comments =
+                Comment_utils.get_comments_enclosed_and_before_location(
+                  ~loc1=vb.pvb_loc,
+                  ~loc2=vb.pvb_expr.pexp_loc,
+                  comments,
+                );
+
+              previous_bind := Some(vb);
+
+              Doc.concat([
+                leading_comment_docs,
+                if (i != 0) {
+                  Doc.text("and ");
+                } else {
+                  Doc.nil;
+                },
+                Doc.group(
+                  print_pattern(
+                    ~original_source,
+                    ~comments=pattern_comments,
+                    ~next_loc=vb.pvb_loc,
+                    vb.pvb_pat,
+                  ),
+                ),
+                after_let_comments_docs,
+                switch (after_let_comments) {
+                | [] => Doc.space
+                | _ => Doc.nil
+                },
+                Doc.equal,
+                expression,
+              ]);
+            },
+            vbs,
+          ),
+        );
+
+      Doc.concat([leading_comments_docs, docs]);
+    };
 
   Doc.group(
     Doc.concat([
@@ -4310,7 +4336,7 @@ and print_value_bind =
       Doc.space,
       recursive,
       mutble,
-      Doc.concat(value_bindings),
+      value_bindings,
     ]),
   );
 };
@@ -4768,9 +4794,9 @@ let data_print =
     ) => {
   let previous_data: ref(option(Parsetree.data_declaration)) = ref(None);
   Doc.join(
-    ~sep=Doc.concat([Doc.comma, Doc.hardLine]),
-    List.map(
-      data => {
+    ~sep=Doc.concat([Doc.hardLine]),
+    List.mapi(
+      (i, data) => {
         let (expt, decl: Parsetree.data_declaration) = data;
 
         let leading_comments =
@@ -4797,6 +4823,11 @@ let data_print =
 
         Doc.concat([
           leading_comment_docs,
+          if (i != 0) {
+            Doc.text("and ");
+          } else {
+            Doc.nil;
+          },
           switch ((expt: Asttypes.provide_flag)) {
           | NotProvided => Doc.nil
           | Provided => Doc.text("provide ")

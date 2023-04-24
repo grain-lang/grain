@@ -337,6 +337,7 @@ let rec token = lexbuf => {
   | "," => positioned(COMMA)
   | ";" => positioned(SEMI)
   | "as" => positioned(AS)
+  | "and" => positioned(AND)
   | "(" => positioned(LPAREN)
   | ")" => positioned(RPAREN)
   | "{" => positioned(LBRACE)

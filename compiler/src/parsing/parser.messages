@@ -790,34 +790,26 @@ program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT LPAREN WHILE
 
 Expected one or more types to complete the variant definition.
 
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT RBRACE COMMA EOL WHILE
+program: MODULE UIDENT EOL TYPE UIDENT EQUAL UIDENT AND YIELD
 ##
-## Ends in an error in state: 986.
+## Ends in an error in state: 860.
 ##
-## separated_nonempty_list(comma,data_declaration_stmt) -> data_declaration_stmt comma . separated_nonempty_list(comma,data_declaration_stmt) [ SEMI EOL EOF ]
+## separated_nonempty_list(AND,data_declaration_stmt) -> data_declaration_stmt AND . separated_nonempty_list(AND,data_declaration_stmt) [ SEMI RBRACE EOL EOF ]
 ##
 ## The known suffix of the stack is as follows:
-## data_declaration_stmt comma
+## data_declaration_stmt AND
 ##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-## In state 96, spurious reduction of production comma -> COMMA eols
+program: MODULE UIDENT EOL TYPE UIDENT EQUAL UIDENT AND PROVIDE YIELD
 ##
-program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT RBRACE COMMA PROVIDE WHILE
+## Ends in an error in state: 861.
 ##
-## Ends in an error in state: 987.
-##
-## data_declaration_stmt -> PROVIDE . data_declaration [ SEMI EOL EOF COMMA ]
+## data_declaration_stmt -> PROVIDE . data_declaration [ SEMI RBRACE EOL EOF AND ]
 ##
 ## The known suffix of the stack is as follows:
 ## PROVIDE
 ##
 
-Mutually recursive type declarations are separated by commas, but cannot be mixed with other kinds of expressions.
+Mutually recursive type declarations are separated by `and`, but cannot be mixed with other kinds of expressions.
 
 program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT WHILE
 ##
@@ -861,7 +853,7 @@ program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT RBRACE WHILE
 ## data_declaration_stmt
 ##
 
-Expected a comma followed by more mutually-recursive type declarations or a newline character to complete the current one.
+Expected `and` followed by more mutually-recursive type declarations or a newline character to complete the current one.
 
 program: MODULE UIDENT EOL ENUM UIDENT LCARET LIDENT RCARET INFIX_80
 ##
@@ -4449,22 +4441,14 @@ program: MODULE UIDENT EOL LET UIDENT LPAREN WHILE
 
 Expected a comma-separated list of patterns.
 
-program: MODULE UIDENT EOL LET WASMI64 EQUAL WASMI64 COMMA EOL WHILE
+program: MODULE UIDENT EOL LET NUMBER_INT EQUAL UIDENT AND YIELD
 ##
-## Ends in an error in state: 433.
+## Ends in an error in state: 423.
 ##
-## lseparated_nonempty_list_inner(comma,value_bind) -> lseparated_nonempty_list_inner(comma,value_bind) comma . value_bind [ SEMI RBRACE EOL EOF COMMA ]
+## lseparated_nonempty_list_inner(AND,value_bind) -> lseparated_nonempty_list_inner(AND,value_bind) AND . value_bind [ SEMI RBRACE EOL EOF AND ]
 ##
 ## The known suffix of the stack is as follows:
-## lseparated_nonempty_list_inner(comma,value_bind) comma
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 5, spurious reduction of production eols -> nonempty_list(eol)
-## In state 96, spurious reduction of production comma -> COMMA eols
+## lseparated_nonempty_list_inner(AND,value_bind) AND
 ##
 
 Expected a binding, e.g. `foo = 5`.
