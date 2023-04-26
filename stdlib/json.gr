@@ -1,48 +1,48 @@
 /**
- * JSON (JavaScript Object Notation) parsing and printing.
+ * JSON (JavaScript Object Notation) parsing, printing, and access utilities.
  */
 
 module Json
 
-include "string"
-include "char"
-include "list"
-include "option"
-include "number"
-include "uint8"
+include "runtime/bigint" as BI
+include "runtime/dataStructures"
+include "runtime/numbers"
+include "runtime/numberUtils"
+include "runtime/string" as RunTimeString
+include "runtime/unsafe/memory"
+include "runtime/unsafe/memory"
+include "runtime/unsafe/tags"
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/wasmf32"
 include "runtime/unsafe/wasmf64"
-include "runtime/numberUtils"
-include "runtime/unsafe/tags"
-include "runtime/numbers"
-include "runtime/unsafe/memory"
 include "buffer"
-include "runtime/string" as RunTimeString
-include "runtime/numbers"
-include "runtime/unsafe/memory"
-include "runtime/dataStructures"
-include "runtime/bigint" as BI
+include "char"
+include "string"
+include "list"
+include "number"
+include "option"
+include "uint8"
 from RunTimeString use { toString as runtimeToString, getCodePoint }
 from Numbers use { coerceNumberToWasmI32 }
 from DataStructures use { tagSimpleNumber, newFloat64, untagSimpleNumber }
 
-// Primitive Offsets
+// Primitive offsets
 // TODO(703): Get these offsets from the runtime
 @unsafe
 let _INT64_BOXED_VALUE_OFFSET = 8n
 @unsafe
 let _Float64_BOXED_VALUE_OFFSET = 8n
+
 /**
  * Data structure representing the result of parsing and the input of printing
  * JSON.
  *
  * For example this object
  * ```grain
- * JSONObject([
- *   ("currency", JSONString("€")),
- *   ("price", JSONNumber(99.99)),
+ * JsonObject([
+ *   ("currency", JsonString("€")),
+ *   ("price", JsonNumber(99.99)),
  * ])
  * ```
  * is equivalent to the following JSON:
@@ -52,8 +52,8 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  *
  * This data structure is semantically equivalent to the JSON format allowing
  * mostly lossless round trips of printing and parsing. Exceptions to this are
- * white spaces, multiple ways JSON allows escaping characters in strings and
- * some edge-cases related to Grain's `Number` type.
+ * whitespace, multiple ways JSON allows escaping characters in strings, and
+ * some edge cases related to Grain's `Number` type.
  *
  * For example parsing the following JSON text will also result in the same
  * `JSON` object as above.
@@ -64,12 +64,12 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  * }
  * ```
  */
-provide enum JSON {
-  JSONNull,
-  JSONBoolean(Bool),
-  JSONNumber(Number),
-  JSONString(String),
-  JSONArray(List<JSON>),
+provide enum Json {
+  JsonNull,
+  JsonBoolean(Bool),
+  JsonNumber(Number),
+  JsonString(String),
+  JsonArray(List<Json>),
   // Note that JSONObject here is deliberately defined as a simple list of key value pair tuples as opposed
   // to for example a Map in order to accomodate the fact that the ECMA-404 standard doesn't prohibit
   // duplicate names in Objects. Such JSON should be representable by the JSON data structure for lossless
@@ -77,7 +77,7 @@ provide enum JSON {
   // has the benefit of List's immutability. It's a concious decision that sacrifices ease of use of the
   // API for lossless handing of these edge cases with intention of later building more ergonomic APIs on a
   // higher level of abstraction.
-  JSONObject(List<(String, JSON)>),
+  JsonObject(List<(String, Json)>),
 }
 
 /**
@@ -85,7 +85,7 @@ provide enum JSON {
  * JSON format along with a human readable text message. This can happen when
  * it contains number values `NaN`, `Infinity` or `-Infinity`.
  */
-provide enum JSONToStringError {
+provide enum JsonToStringError {
   InvalidNumber(String),
 }
 
@@ -230,7 +230,7 @@ provide enum LineEnding {
 }
 
 /**
- * Allows fine grained control of formatting in JSON printing.
+ * Allows fine-grained control of formatting in JSON printing.
  */
 provide record FormattingSettings {
   indentation: IndentationFormat,
@@ -366,16 +366,14 @@ provide let defaultPrettyAndSafeFormat = {
   escapeNonASCII: true,
 }: FormattingSettings
 
-record JSONWriterCompactImplHelper {
+record JsonWriterCompactImplHelper {
   buffer: Buffer.Buffer,
   emitEscapedQuotedString: String -> Void,
 }
 
-record JSONWriterPrettyImplHelper {
+record JsonWriterPrettyImplHelper {
   format: FormattingSettings,
-  // Note that the "Pretty" suffix here is a workaround for a Grain compiler bug.
-  // It generates warnings just because two record types have some field names in common.
-  // Unless there's something I don't understand about its type system.
+  //TODO(#775): Note that the "Pretty" suffix here is a workaround for a Grain compiler bug.
   bufferPretty: Buffer.Buffer,
   emitEscapedQuotedStringPretty: String -> Void,
   printNewLine: () -> Void,
@@ -386,8 +384,8 @@ record JSONWriterPrettyImplHelper {
 // For now this is not exposed and remains an internal implementation detail.
 // It may make sense in the future to expose it and let the user reuse a writer for multiple
 // JSON emit operations without reallocating new closures and buffers each time.
-record JSONWriter {
-  emit: JSON -> Option<JSONToStringError>,
+record JsonWriter {
+  emit: Json -> Option<JsonToStringError>,
 }
 
 let addCharFromCodePoint = (codePoint: Number, buffer: Buffer.Buffer) => {
@@ -401,7 +399,7 @@ let emitUTF16EscapeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
   // "Basic Multilingual Plane" (0000-FFFF) as this funcion is only called
   // internally.
   // An alternative was to this implementation was to use NumberUtils.itoa32,
-  // but I wanted to avoid unnecessary heap allocations. As a possible future
+  // but this avoids unnecessary heap allocations. As a possible future
   // optimization this loop could be unrolled possibly even converted to be
   // branchless and SIMD optimized, but it could be a bit of an overkill as
   // this codepath is only for escape sequences, which probably aren't all
@@ -550,11 +548,11 @@ let printNumberWasmF64 = (value: WasmF64, buffer: Buffer.Buffer) => {
     // coninue formatting without representing these values correctly
     // (like JavaScript's JSON.stringify).
     if (isNaN(value)) {
-      Some(InvalidNumber("NaN is not allowed in JSONNumber"))
+      Some(InvalidNumber("NaN is not allowed in JsonNumber"))
     } else if (value < 0.0W) {
-      Some(InvalidNumber("-Infinity is not allowed in JSONNumber"))
+      Some(InvalidNumber("-Infinity is not allowed in JsonNumber"))
     } else {
-      Some(InvalidNumber("Infinity is not allowed in JSONNumber"))
+      Some(InvalidNumber("Infinity is not allowed in JsonNumber"))
     }
   }
 }
@@ -566,6 +564,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   let ptr = WasmI32.fromGrain(value)
   if ((ptr & 1n) != 0n) {
     printNumberWasmI32(untagSimpleNumber(value), buffer)
+    ignore(value)
     None
   } else if ((ptr & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
     let tag = WasmI32.load(ptr, 0n)
@@ -576,10 +575,12 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             let asWasmI64 = WasmI64.load(ptr, _INT64_BOXED_VALUE_OFFSET)
             printNumberWasmI64(asWasmI64, buffer)
+            ignore(value)
             None
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
             Buffer.addString(BI.bigIntToString10(ptr), buffer)
+            ignore(value)
             None
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
@@ -602,11 +603,15 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             ) /
               WasmF64.convertI32S(Numbers.boxedRationalDenominator(ptr))
 
-            printNumberWasmF64(asWasmF64, buffer)
+            let val = printNumberWasmF64(asWasmF64, buffer)
+            ignore(value)
+            val
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
             let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
-            printNumberWasmF64(asWasmF64, buffer)
+            let val = printNumberWasmF64(asWasmF64, buffer)
+            ignore(value)
+            val
           },
           _ => {
             throw UnknownNumberTag
@@ -622,30 +627,27 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   }
 }
 
-// Note that this function is not allocated with the JSONWriter because currently
-// Grain leaks memory each time a recursive closure is allocated. Not reallocating
-// it may also be a better thing to do.
 let rec printElementCompact =
   (
-    json: JSON,
-    implHelper: JSONWriterCompactImplHelper,
+    json: Json,
+    implHelper: JsonWriterCompactImplHelper,
   ) => {
   let buffer = implHelper.buffer
   match (json) {
-    JSONNull => {
+    JsonNull => {
       printNull(buffer)
       return None
     },
-    JSONBoolean(b) => {
+    JsonBoolean(b) => {
       printBool(b, buffer)
       return None
     },
-    JSONNumber(n) => return printNumber(n, buffer),
-    JSONString(s) => {
+    JsonNumber(n) => return printNumber(n, buffer),
+    JsonString(s) => {
       implHelper.emitEscapedQuotedString(s)
       return None
     },
-    JSONArray(elems) => {
+    JsonArray(elems) => {
       // Here I'm not using List.forEachi or similar in order to avoid
       // allocations of closures. The code is verbose and a bit ugly as a
       // consequence, but I think it's an OK price for performance gain.
@@ -695,7 +697,7 @@ let rec printElementCompact =
         },
       }
     },
-    JSONObject(entries) => {
+    JsonObject(entries) => {
       match (entries) {
         [] => {
           Buffer.addChar('{', buffer)
@@ -755,9 +757,9 @@ let rec printElementCompact =
   }
 }
 
-let makeCompactJSONWriter = (buffer: Buffer.Buffer) => {
+let makeCompactJsonWriter = (buffer: Buffer.Buffer) => {
   // As an optimization prepare a closure function to execute for each code
-  // point of the input. It's important that this is not inlide in the
+  // point of the input. It's important that this is not inline in the
   // emitEscapedQuotedString function directly to avoid allocating the closue
   // for each input string.
   let emitCodePoint = (codePoint: Number) => {
@@ -784,7 +786,7 @@ let makeCompactJSONWriter = (buffer: Buffer.Buffer) => {
   let implHelper = {
     buffer,
     emitEscapedQuotedString,
-  }: JSONWriterCompactImplHelper
+  }: JsonWriterCompactImplHelper
 
   {
     emit: json => {
@@ -792,7 +794,7 @@ let makeCompactJSONWriter = (buffer: Buffer.Buffer) => {
 
       error
     },
-  }: JSONWriter
+  }: JsonWriter
 }
 
 // Note that this could relatively easily be integrated with
@@ -800,26 +802,26 @@ let makeCompactJSONWriter = (buffer: Buffer.Buffer) => {
 // compromising peak performance and also increasing complexity in other ways.
 let rec printElementPretty =
   (
-    json: JSON,
-    implHelper: JSONWriterPrettyImplHelper,
+    json: Json,
+    implHelper: JsonWriterPrettyImplHelper,
     indentationLevel: Number,
   ) => {
   let buffer = implHelper.bufferPretty
   match (json) {
-    JSONNull => {
+    JsonNull => {
       printNull(buffer)
       return None
     },
-    JSONBoolean(b) => {
+    JsonBoolean(b) => {
       printBool(b, buffer)
       return None
     },
-    JSONNumber(n) => return printNumber(n, buffer),
-    JSONString(s) => {
+    JsonNumber(n) => return printNumber(n, buffer),
+    JsonString(s) => {
       implHelper.emitEscapedQuotedStringPretty(s)
       return None
     },
-    JSONArray(elems) => {
+    JsonArray(elems) => {
       match (elems) {
         [] => {
           Buffer.addChar('[', buffer)
@@ -903,7 +905,7 @@ let rec printElementPretty =
         },
       }
     },
-    JSONObject(entries) => {
+    JsonObject(entries) => {
       match (entries) {
         [] => {
           Buffer.addChar('{', buffer)
@@ -1032,7 +1034,7 @@ let combineSurrogatePairToCodePoint =
   ((highSurrogate - 0xD800) << 10) + (lowSurrogate - 0xDC00) + 0x10000
 }
 
-let makePrettyPrintJSONWriter =
+let makePrettyPrintJsonWriter =
   (
     format: FormattingSettings,
     buffer: Buffer.Buffer,
@@ -1210,7 +1212,7 @@ let makePrettyPrintJSONWriter =
     },
     printNewLine,
     printIndentation,
-  }: JSONWriterPrettyImplHelper
+  }: JsonWriterPrettyImplHelper
 
   {
     emit: json => {
@@ -1219,7 +1221,7 @@ let makePrettyPrintJSONWriter =
       if (format.finishWithNewLine) printNewLine()
       return None
     },
-  }: JSONWriter
+  }: JsonWriter
 }
 
 /**
@@ -1233,7 +1235,7 @@ let makePrettyPrintJSONWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]),
  *       format=Custom(defaultCompactAndSafeFormat)
  *     )
  *   )
@@ -1243,7 +1245,7 @@ let makePrettyPrintJSONWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
  *     )
  *   )
  * )
@@ -1252,7 +1254,7 @@ let makePrettyPrintJSONWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]),
  *       format=Compact
  *      )
  *   )
@@ -1262,7 +1264,7 @@ let makePrettyPrintJSONWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]),
  *       format=Pretty
  *     )
  *   )
@@ -1275,12 +1277,12 @@ let makePrettyPrintJSONWriter =
  *
  * @since v0.6.0
  */
-provide let toString = (json: JSON, format=Compact) => {
+provide let toString = (json: Json, format=Compact) => {
   let buf = Buffer.make(16)
   let writer = match (format) {
-    Pretty => makePrettyPrintJSONWriter(defaultPrettyFormat, buf),
-    Compact => makeCompactJSONWriter(buf),
-    Custom(format) => makePrettyPrintJSONWriter(format, buf),
+    Pretty => makePrettyPrintJsonWriter(defaultPrettyFormat, buf),
+    Compact => makeCompactJsonWriter(buf),
+    Custom(format) => makePrettyPrintJsonWriter(format, buf),
   }
   let error = writer.emit(json)
 
@@ -1293,7 +1295,7 @@ provide let toString = (json: JSON, format=Compact) => {
 /**
  * Represents errors for JSON parsing along with a human readable text message.
  */
-provide enum JSONParseError {
+provide enum JsonParseError {
   UnexpectedEndOfInput(String),
   UnexpectedToken(String),
   InvalidUTF16SurrogatePair(String),
@@ -1302,7 +1304,7 @@ provide enum JSONParseError {
 /**
  * Internal data structure used during parsing.
  */
-record JSONParserState {
+record JsonParserState {
   string: String,
   bufferParse: Buffer.Buffer,
   mut currentCodePoint: Number,
@@ -1360,11 +1362,11 @@ let codePointUTF8ByteCount = (usv: Number) => {
   }
 }
 
-let isAtEndOfInput = (parserState: JSONParserState) => {
+let isAtEndOfInput = (parserState: JsonParserState) => {
   parserState.currentCodePoint == _END_OF_INPUT
 }
 
-let next = (parserState: JSONParserState) => {
+let next = (parserState: JsonParserState) => {
   let mut c = parserState.currentCodePoint
   if (c != _END_OF_INPUT) {
     parserState.bytePos += codePointUTF8ByteCount(c)
@@ -1377,7 +1379,7 @@ let next = (parserState: JSONParserState) => {
   c
 }
 
-let skipWhiteSpace = (parserState: JSONParserState) => {
+let skipWhiteSpace = (parserState: JsonParserState) => {
   // isAtEndOfInput is not strictly necessary here
   // could remove as an optimization
   while (
@@ -1391,7 +1393,7 @@ let skipWhiteSpace = (parserState: JSONParserState) => {
 
 let buildUnexpectedTokenError =
   (
-    parserState: JSONParserState,
+    parserState: JsonParserState,
     detail: String,
   ) => {
   let codePoint = parserState.currentCodePoint
@@ -1425,7 +1427,7 @@ let toHexWithZeroPadding = (n: Number, padTo: Number) => {
 
 let formatCodePointOrEOF = (codePoint: Number) => {
   if (codePoint >= 32 && codePoint <= 126) {
-    // If the codepoint is in the range of printable ASCII charactes, then
+    // If the codepoint is in the range of printable ASCII characters, then
     // display the character itself . Whether it's a good idea to display
     // all of them, especially space is up for debate.
     "'" ++ runtimeToString(Char.fromCode(codePoint)) ++ "'"
@@ -1441,7 +1443,7 @@ let formatCodePointOrEOF = (codePoint: Number) => {
 let expectCodePointAndAdvance =
   (
     expectedCodePoint: Number,
-    parserState: JSONParserState,
+    parserState: JsonParserState,
   ) => {
   let c = parserState.currentCodePoint
   if (c == expectedCodePoint) {
@@ -1466,7 +1468,7 @@ let atoiFast = buffer => {
   }
   result
 }
-let rec parseValue = (parserState: JSONParserState) => {
+let rec parseValue = (parserState: JsonParserState) => {
   skipWhiteSpace(parserState)
 
   let result = match (parserState.currentCodePoint) {
@@ -1498,8 +1500,8 @@ let rec parseValue = (parserState: JSONParserState) => {
   skipWhiteSpace(parserState)
 
   result
-},
-parseNullValue = (parserState: JSONParserState) => {
+}
+and parseNullValue = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x6E, parserState)) {
     // 'n'
     Some(e) => Err(e),
@@ -1515,7 +1517,7 @@ parseNullValue = (parserState: JSONParserState) => {
               match (expectCodePointAndAdvance(0x6C, parserState)) {
                 // 'l'
                 Some(e) => Err(e),
-                None => Ok(JSONNull),
+                None => Ok(JsonNull),
               }
             },
           }
@@ -1523,8 +1525,8 @@ parseNullValue = (parserState: JSONParserState) => {
       }
     },
   }
-},
-parseTrueValue = (parserState: JSONParserState) => {
+}
+and parseTrueValue = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x74, parserState)) {
     // 't'
     Some(e) => Err(e),
@@ -1540,7 +1542,7 @@ parseTrueValue = (parserState: JSONParserState) => {
               match (expectCodePointAndAdvance(0x65, parserState)) {
                 // 'e'
                 Some(e) => Err(e),
-                None => Ok(JSONBoolean(true)),
+                None => Ok(JsonBoolean(true)),
               }
             },
           }
@@ -1548,8 +1550,8 @@ parseTrueValue = (parserState: JSONParserState) => {
       }
     },
   }
-},
-parseFalseValue = (parserState: JSONParserState) => {
+}
+and parseFalseValue = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x66, parserState)) {
     // 'f'
     Some(e) => Err(e),
@@ -1569,7 +1571,7 @@ parseFalseValue = (parserState: JSONParserState) => {
                   match (expectCodePointAndAdvance(0x65, parserState)) {
                     // 'e'
                     Some(e) => Err(e),
-                    None => Ok(JSONBoolean(false)),
+                    None => Ok(JsonBoolean(false)),
                   }
                 },
               }
@@ -1579,8 +1581,8 @@ parseFalseValue = (parserState: JSONParserState) => {
       }
     },
   }
-},
-parseString = (parserState: JSONParserState) => {
+}
+and parseString = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x22, parserState)) {
     // '"'
     Some(e) => Err(e),
@@ -1811,15 +1813,15 @@ parseString = (parserState: JSONParserState) => {
       }
     },
   }
-},
-parseStringValue = (parserState: JSONParserState) => {
+}
+and parseStringValue = (parserState: JsonParserState) => {
   match (parseString(parserState)) {
-    Ok(s) => Ok(JSONString(s)),
+    Ok(s) => Ok(JsonString(s)),
     Err(e) => Err(e),
   }
-},
-parseNumberValue = (parserState: JSONParserState) => {
-  // TODO: Use A Streaming Optimized Way For Parsing The Numbers
+}
+and parseNumberValue = (parserState: JsonParserState) => {
+  // TODO: Use a streaming-optimized way to parse numbers
   let buffer = parserState.bufferParse
   Buffer.clear(buffer)
   // First char can optionally be a minus sign.
@@ -1931,10 +1933,10 @@ parseNumberValue = (parserState: JSONParserState) => {
       }
     },
   }
-  if (result == 0 && isNegative) return Ok(JSONNumber(-0.0))
-  else return Ok(JSONNumber(if (isNegative) result * -1 else result))
-},
-parseArray = (parserState: JSONParserState) => {
+  if (result == 0 && isNegative) return Ok(JsonNumber(-0.0))
+  else return Ok(JsonNumber(if (isNegative) result * -1 else result))
+}
+and parseArray = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x5B, parserState)) {
     // '['
     Some(e) => Err(e),
@@ -1942,7 +1944,7 @@ parseArray = (parserState: JSONParserState) => {
       skipWhiteSpace(parserState)
       let mut err = None
 
-      let mut elems = []: List<JSON>
+      let mut elems = []: List<Json>
 
       let mut done = false
       let mut first = true
@@ -1999,7 +2001,7 @@ parseArray = (parserState: JSONParserState) => {
               buildUnexpectedTokenError(parserState, "unexpected end of array")
             )
           } else if (done) {
-            Ok(JSONArray(List.reverse(elems)))
+            Ok(JsonArray(List.reverse(elems)))
           } else {
             Err(
               buildUnexpectedTokenError(parserState, "unexpected end of array")
@@ -2009,15 +2011,15 @@ parseArray = (parserState: JSONParserState) => {
       }
     },
   }
-},
-parseObject = (parserState: JSONParserState) => {
+}
+and parseObject = (parserState: JsonParserState) => {
   match (expectCodePointAndAdvance(0x7B, parserState)) {
     // '{'
     Some(e) => Err(e),
     None => {
       let mut err = None
 
-      let mut entries = []: List<(String, JSON)>
+      let mut entries = []: List<(String, Json)>
 
       let mut done = false
       let mut first = true
@@ -2099,9 +2101,9 @@ parseObject = (parserState: JSONParserState) => {
         Some(e) => Err(e),
         None => {
           if (done) {
-            Ok(JSONObject(List.reverse(entries)))
+            Ok(JsonObject(List.reverse(entries)))
           } else {
-            // This brand is not expected to actually execute,
+            // This branch is not expected to actually execute,
             // but in case it does, may just as well do the right thing.
             Err(
               buildUnexpectedTokenError(parserState, "unexpected end of object")
@@ -2124,19 +2126,19 @@ parseObject = (parserState: JSONParserState) => {
  *
  * Example output:
  * ```
- * Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
+ * Ok(JsonObject([("currency", JsonString("$")), ("price", JsonNumber(119))]))
  * ```
  *
  * @since v0.6.0
  */
-provide let parse: String -> Result<JSON, JSONParseError> = (str: String) => {
+provide let parse: String -> Result<Json, JsonParseError> = (str: String) => {
   let parserState = {
     string: str,
     bufferParse: Buffer.make(16),
     currentCodePoint: readCodePoint(0, str),
     pos: 0,
     bytePos: 0,
-  }: JSONParserState
+  }: JsonParserState
 
   let root = parseValue(parserState)
 
