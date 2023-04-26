@@ -96,7 +96,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: ">=18.15"
+          node-version: ">=18.15 <19"
           check-latest: true
           cache: "npm"
 
@@ -167,7 +167,7 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v3.6.0
         with:
-          node-version: ">=18.15"
+          node-version: ">=18.15 <19"
           check-latest: true
           registry-url: "https://registry.npmjs.org"
 
