@@ -2,22 +2,22 @@
 title: Json
 ---
 
-JSON (JavaScript Object Notation) parsing and printing.
+JSON (JavaScript Object Notation) parsing, printing, and access utilities.
 
 ## Types
 
 Type declarations included in the Json module.
 
-### Json.**JSON**
+### Json.**Json**
 
 ```grain
-enum JSON {
-  JSONNull,
-  JSONBoolean(Bool),
-  JSONNumber(Number),
-  JSONString(String),
-  JSONArray(List<JSON>),
-  JSONObject(List<(String, JSON)>),
+enum Json {
+  JsonNull,
+  JsonBoolean(Bool),
+  JsonNumber(Number),
+  JsonString(String),
+  JsonArray(List<Json>),
+  JsonObject(List<(String, Json)>),
 }
 ```
 
@@ -26,9 +26,9 @@ JSON.
 
 For example this object
 ```grain
-JSONObject([
-  ("currency", JSONString("€")),
-  ("price", JSONNumber(99.99)),
+JsonObject([
+  ("currency", JsonString("€")),
+  ("price", JsonNumber(99.99)),
 ])
 ```
 is equivalent to the following JSON:
@@ -38,8 +38,8 @@ is equivalent to the following JSON:
 
 This data structure is semantically equivalent to the JSON format allowing
 mostly lossless round trips of printing and parsing. Exceptions to this are
-white spaces, multiple ways JSON allows escaping characters in strings and
-some edge-cases related to Grain's `Number` type.
+whitespace, multiple ways JSON allows escaping characters in strings, and
+some edge cases related to Grain's `Number` type.
 
 For example parsing the following JSON text will also result in the same
 `JSON` object as above.
@@ -50,10 +50,10 @@ For example parsing the following JSON text will also result in the same
 }
 ```
 
-### Json.**JSONToStringError**
+### Json.**JsonToStringError**
 
 ```grain
-enum JSONToStringError {
+enum JsonToStringError {
   InvalidNumber(String),
 }
 ```
@@ -229,7 +229,7 @@ record FormattingSettings {
 }
 ```
 
-Allows fine grained control of formatting in JSON printing.
+Allows fine-grained control of formatting in JSON printing.
 
 ### Json.**FormattingChoices**
 
@@ -243,10 +243,10 @@ enum FormattingChoices {
 
 Allows control of formatting in JSON printing.
 
-### Json.**JSONParseError**
+### Json.**JsonParseError**
 
 ```grain
-enum JSONParseError {
+enum JsonParseError {
   UnexpectedEndOfInput(String),
   UnexpectedToken(String),
   InvalidUTF16SurrogatePair(String),
@@ -371,8 +371,8 @@ No other changes yet.
 
 ```grain
 toString :
-  (json: JSON, ?format: FormattingChoices) ->
-   Result<String, JSONToStringError>
+  (?format: FormattingChoices, json: Json) ->
+   Result<String, JsonToStringError>
 ```
 
 Prints the JSON object into a string with specific formatting settings.
@@ -381,14 +381,14 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`json`|`JSON`|The JSON object to print|
-|`format`|`Option<FormattingChoices>`|formatting option|
+|`json`|`Option<FormattingChoices>`|The JSON object to print|
+|`format`|`Json`|formatting option|
 
 Returns:
 
 |type|description|
 |----|-----------|
-|`Result<String, JSONToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.|
+|`Result<String, JsonToStringError>`|A `Result` object with either the string containing the printed JSON or an error if the input object cannot be represented in the JSON format.|
 
 Examples:
 
@@ -396,8 +396,8 @@ Examples:
 print(
   Result.unwrap(
     toString(
-      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
-      format=Custom(defaultCompactAndSafeFormat)
+      format=Custom(defaultCompactAndSafeFormat),
+      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
     )
   )
 )
@@ -408,7 +408,7 @@ print(
 print(
   Result.unwrap(
     toString(
-      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]
+      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
     )
   )
 )
@@ -419,8 +419,8 @@ print(
 print(
   Result.unwrap(
     toString(
-      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
       format=Compact
+      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
      )
   )
 )
@@ -431,8 +431,8 @@ print(
 print(
   Result.unwrap(
     toString(
-      JSONObject([("currency", JSONString("€")), ("price", JSONNumber(99.9))]),
-      format=Pretty
+      format=Pretty,
+      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
     )
   )
 )
@@ -451,7 +451,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : String -> Result<JSON, JSONParseError>
+parse : String -> Result<Json, JsonParseError>
 ```
 
 Parses JSON input from a string into a `JSON` object.
@@ -466,7 +466,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Result<JSON, JSONParseError>`|A `Result` object with either the parsed `JSON` object or an error.|
+|`Result<Json, JsonParseError>`|A `Result` object with either the parsed `JSON` object or an error.|
 
 Examples:
 
@@ -475,7 +475,7 @@ print(parse("{\"currency\":\"$\",\"price\":119}"))
 
 Example output:
 ```
-Ok(JSONObject([("currency", JSONString("$")), ("price", JSONNumber(119))]))
+Ok(JsonObject([("currency", JsonString("$")), ("price", JsonNumber(119))]))
 ```
 ```
 
