@@ -648,9 +648,9 @@ let rec printElementCompact =
       return None
     },
     JsonArray(elems) => {
-      // Here I'm not using List.forEachi or similar in order to avoid
-      // allocations of closures. The code is verbose and a bit ugly as a
-      // consequence, but I think it's an OK price for performance gain.
+      // In order to gain more performance, List.forEachi is avoided in order to avoid
+      // the allocation of closures, this makes this function a little ugly but it seems
+      // like a valid trade-off
       // Another approach would be to allocate a function for the
       // formattng arrays just once at the start of formatting and pass
       // it in emitJSONElement.
@@ -1077,17 +1077,20 @@ let makePrettyPrintJsonWriter =
     NoIndentation => indentationLevel => void,
   }
 
-  // As an optimization prepare a different closure function for each
-  // combination of escaping options. This ways we can avoid unnecessary
-  // branching in the code executed for each character. What is most
-  // important here is to optimize for the non pretty printed format as this
-  // is where the performance is most likely to matter. In every case escape
-  // code points 0..31 as required by ECMA-404 (the so called "C0" control
-  // point group). For the non pretty printed case we don't want to escape
-  // more than what is stricty required to avoid increasing the output size.
-  // But for pretty printing or compatiblity it may be desirable to escape
-  // other control points or even everything other than printable ASCII
-  // characters. Thus I've decided to expose options for this, but otherwise
+  // A possible optimization to make this faster would be to
+  // prepare a different closure for each combination fo escaping options.
+  // This way unnecessary branching is avoided.
+  // The most important thing is that the non pretty printed format is optimized for
+  // as this is where the performance is most likely to matter.
+
+  // In every case code points 0..31 must be escaped as
+  // required by ECMA-404 (the so called "C0" control point group).
+
+  // For the non pretty printed case it is fastest to escape only what is
+  // strictly required to avoid increasing output size
+  // But for pretty printing or compatibility it may be desirable to escape other control points
+  // or even everything other than printable ASCII characters.
+  // for this reason options for this control has been exposed otherwise
   // just a sane default would suffice.
   // Additionally many JSON libraries escape additional two character
   // sequences for direct embedding into html for example. This is
@@ -1235,8 +1238,8 @@ let makePrettyPrintJsonWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]),
- *       format=Custom(defaultCompactAndSafeFormat)
+ *       format=Custom(defaultCompactAndSafeFormat),
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *     )
  *   )
  * )
@@ -1254,8 +1257,8 @@ let makePrettyPrintJsonWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]),
  *       format=Compact
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *      )
  *   )
  * )
@@ -1264,8 +1267,8 @@ let makePrettyPrintJsonWriter =
  * print(
  *   Result.unwrap(
  *     toString(
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]),
- *       format=Pretty
+ *       format=Pretty,
+ *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *     )
  *   )
  * )
@@ -1277,7 +1280,7 @@ let makePrettyPrintJsonWriter =
  *
  * @since v0.6.0
  */
-provide let toString = (json: Json, format=Compact) => {
+provide let toString = (format=Compact, json: Json) => {
   let buf = Buffer.make(16)
   let writer = match (format) {
     Pretty => makePrettyPrintJsonWriter(defaultPrettyFormat, buf),
