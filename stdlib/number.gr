@@ -672,7 +672,7 @@ provide let toRadians = degrees => degrees * (pi / 180)
 provide let toDegrees = radians => radians * (180 / pi)
 
 /**
- * Constrains a number to a given inclusive range.
+ * Constrains a number within the given inclusive range.
  *
  * @param range: The inclusive range to clamp within
  * @param input: The number to clamp
@@ -693,10 +693,10 @@ provide let clamp = (range, input) => {
 }
 
 /**
- * maps a `weight` between 0 and 1 a the given inclusive range.
+ * Maps a weight between 0 and 1 within the given inclusive range.
  *
- * @param range: An inclusive range to interpolate between
- * @param weight: The weight between 0 and 1 used to interpolate
+ * @param range: The inclusive range to interpolate within
+ * @param weight: The weight to interpolate
  * @returns The blended value
  *
  * @throws InvalidArgument(String): When `weight` is not between 0 and 1
@@ -719,10 +719,9 @@ provide let linearInterpolate = (range, weight) => {
  * Scales a number from one inclusive range to another inclusive range.
  * If the number is outside the input range, it will be clamped.
  *
- * @param inputRange: The inclusive numeric range you are mapping from
- * @param outputRange: The inclusive numeric range you are mapping to
+ * @param inputRange: The inclusive range you are mapping from
+ * @param outputRange: The inclusive range you are mapping to
  * @param current: The number to map
- *
  * @returns The mapped number
  *
  * @throws InvalidArgument(String): When `inputRange` is not finite
