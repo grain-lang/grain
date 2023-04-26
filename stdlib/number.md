@@ -997,7 +997,7 @@ No other changes yet.
 clamp : (range: Range<Number>, input: Number) -> Number
 ```
 
-Constrains a number to a given inclusive range.
+Constrains a number within the given inclusive range.
 
 Parameters:
 
@@ -1023,14 +1023,14 @@ No other changes yet.
 linearInterpolate : (range: Range<Number>, weight: Number) -> Number
 ```
 
-maps a `weight` between 0 and 1 a the given inclusive range.
+Maps a weight between 0 and 1 within the given inclusive range.
 
 Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`range`|`Range<Number>`|An inclusive range to interpolate between|
-|`weight`|`Number`|The weight between 0 and 1 used to interpolate|
+|`range`|`Range<Number>`|The inclusive range to interpolate within|
+|`weight`|`Number`|The weight to interpolate|
 
 Returns:
 
@@ -1066,8 +1066,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`inputRange`|`Range<Number>`|The inclusive numeric range you are mapping from|
-|`outputRange`|`Range<Number>`|The inclusive numeric range you are mapping to|
+|`inputRange`|`Range<Number>`|The inclusive range you are mapping from|
+|`outputRange`|`Range<Number>`|The inclusive range you are mapping to|
 |`current`|`Number`|The number to map|
 
 Returns:
