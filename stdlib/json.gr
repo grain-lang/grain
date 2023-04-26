@@ -562,9 +562,8 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   from WasmI32 use { (&), (==), (!=), (<<), (>>) }
 
   let ptr = WasmI32.fromGrain(value)
-  if ((ptr & 1n) != 0n) {
+  let ret = if ((ptr & 1n) != 0n) {
     printNumberWasmI32(untagSimpleNumber(value), buffer)
-    ignore(value)
     None
   } else if ((ptr & 7n) == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
     let tag = WasmI32.load(ptr, 0n)
@@ -575,12 +574,10 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
           t when t == Tags._GRAIN_INT64_BOXED_NUM_TAG => {
             let asWasmI64 = WasmI64.load(ptr, _INT64_BOXED_VALUE_OFFSET)
             printNumberWasmI64(asWasmI64, buffer)
-            ignore(value)
             None
           },
           t when t == Tags._GRAIN_BIGINT_BOXED_NUM_TAG => {
             Buffer.addString(BI.bigIntToString10(ptr), buffer)
-            ignore(value)
             None
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
@@ -603,15 +600,11 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             ) /
               WasmF64.convertI32S(Numbers.boxedRationalDenominator(ptr))
 
-            let val = printNumberWasmF64(asWasmF64, buffer)
-            ignore(value)
-            val
+            printNumberWasmF64(asWasmF64, buffer)
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
             let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
-            let val = printNumberWasmF64(asWasmF64, buffer)
-            ignore(value)
-            val
+            printNumberWasmF64(asWasmF64, buffer)
           },
           _ => {
             throw UnknownNumberTag
@@ -625,6 +618,8 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   } else {
     throw UnknownNumberTag
   }
+  ignore(value)
+  ret
 }
 
 let rec printElementCompact =
@@ -1338,8 +1333,6 @@ let rec readCodePoint = (bytePosition: Number, string: String) => {
   let bytePositionW32 = coerceNumberToWasmI32(bytePosition)
 
   let ptr = strPtr + 8n + bytePositionW32
-
-  let mut idx = 0n
 
   if (bytePositionW32 < byteSize) {
     let codePoint = getCodePoint(ptr)
