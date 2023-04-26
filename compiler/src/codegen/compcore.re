@@ -844,7 +844,7 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
                   ),
                   Type.int32,
                 ),
-                // fake GC header
+                // fake GC refcount of 1
                 Expression.Const.make(wasm_mod, const_int32(1)),
               ),
               Expression.Binary.make(
