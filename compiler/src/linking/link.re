@@ -700,9 +700,6 @@ let link_all = (linked_mod, dependencies, signature) => {
     Type.funcref,
   );
 
-  if (Config.import_memory^) {
-    Import.add_memory_import(linked_mod, "memory", "env", "memory", false);
-  };
   let (initial_memory, maximum_memory) =
     switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
     | (initial_memory, Some(maximum_memory)) => (
@@ -738,6 +735,9 @@ let link_all = (linked_mod, dependencies, signature) => {
     data_segments,
     false,
   );
+  if (Config.import_memory^) {
+    Import.add_memory_import(linked_mod, "memory", "env", "memory", false);
+  };
 
   let starts =
     List.filter_map(

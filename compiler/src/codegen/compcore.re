@@ -3292,7 +3292,6 @@ let compile_imports = (wasm_mod, env, {imports}) => {
     );
 
   List.iter(compile_import, imports);
-  Import.add_memory_import(wasm_mod, "mem", grain_env_mod, "mem", false);
   Import.add_table_import(
     wasm_mod,
     grain_global_function_table,
