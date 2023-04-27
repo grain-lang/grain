@@ -1,5 +1,5 @@
 {
-  "checksum": "0c6c853d75ad5414ceef6d785adaa70e",
+  "checksum": "b568bc63e0c96535498218378ab30dac",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9": {
@@ -274,20 +274,20 @@
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9"
       ]
     },
-    "@opam/utop@opam:2.12.0@41cf0331": {
-      "id": "@opam/utop@opam:2.12.0@41cf0331",
+    "@opam/utop@opam:2.12.1@8af80d05": {
+      "id": "@opam/utop@opam:2.12.1@8af80d05",
       "name": "@opam/utop",
-      "version": "opam:2.12.0",
+      "version": "opam:2.12.1",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/ad/ad19c859a783bec573cd91e810c54d0e6b70f339d0a4fed55ec672ae408aa1ea#sha256:ad19c859a783bec573cd91e810c54d0e6b70f339d0a4fed55ec672ae408aa1ea",
-          "archive:https://github.com/ocaml-community/utop/releases/download/2.12.0/utop-2.12.0.tbz#sha256:ad19c859a783bec573cd91e810c54d0e6b70f339d0a4fed55ec672ae408aa1ea"
+          "archive:https://opam.ocaml.org/cache/sha256/67/67a4b7a54138458e50ee4791515490bb392291ec1680cfac44b81c47ef1b2253#sha256:67a4b7a54138458e50ee4791515490bb392291ec1680cfac44b81c47ef1b2253",
+          "archive:https://github.com/ocaml-community/utop/releases/download/2.12.1/utop-2.12.1.tbz#sha256:67a4b7a54138458e50ee4791515490bb392291ec1680cfac44b81c47ef1b2253"
         ],
         "opam": {
           "name": "utop",
-          "version": "2.12.0",
-          "path": "esy.lock/opam/utop.2.12.0"
+          "version": "2.12.1",
+          "path": "esy.lock/opam/utop.2.12.1"
         }
       },
       "overrides": [],
@@ -2310,14 +2310,14 @@
         "@opam/bigstringaf@opam:0.9.1@e6f2e882"
       ]
     },
-    "@grain/libbinaryen@109.0.1@d41d8cd9": {
-      "id": "@grain/libbinaryen@109.0.1@d41d8cd9",
+    "@grain/libbinaryen@110.0.0@d41d8cd9": {
+      "id": "@grain/libbinaryen@110.0.0@d41d8cd9",
       "name": "@grain/libbinaryen",
-      "version": "109.0.1",
+      "version": "110.0.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-109.0.1.tgz#sha1:c02ddf08f8b8c50713d3223c05c2d9b6f1d71005"
+          "archive:https://registry.npmjs.org/@grain/libbinaryen/-/libbinaryen-110.0.0.tgz#sha1:1b4dd06b78461f32682998a30ad54a75add29848"
         ]
       },
       "overrides": [],
@@ -2355,7 +2355,7 @@
         "@opam/dune-build-info@opam:3.7.1@adf0d411",
         "@opam/dune@opam:3.7.1@40db2f22",
         "@opam/cmdliner@opam:1.2.0@b0c6143c",
-        "@grain/binaryen.ml@0.19.0@d41d8cd9"
+        "@grain/binaryen.ml@0.20.1@d41d8cd9"
       ],
       "devDependencies": [
         "@reason-native/rely@github:reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9",
@@ -2364,14 +2364,14 @@
       ],
       "installConfig": { "pnp": false }
     },
-    "@grain/binaryen.ml@0.19.0@d41d8cd9": {
-      "id": "@grain/binaryen.ml@0.19.0@d41d8cd9",
+    "@grain/binaryen.ml@0.20.1@d41d8cd9": {
+      "id": "@grain/binaryen.ml@0.20.1@d41d8cd9",
       "name": "@grain/binaryen.ml",
-      "version": "0.19.0",
+      "version": "0.20.1",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.19.0.tgz#sha1:158f7ba00494171cf6392059c8f3478c492947aa"
+          "archive:https://registry.npmjs.org/@grain/binaryen.ml/-/binaryen.ml-0.20.1.tgz#sha1:ea311d7e4a1e95682311b62df7b5e614475eded0"
         ]
       },
       "overrides": [],
@@ -2379,7 +2379,7 @@
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
         "@opam/dune-configurator@opam:3.7.1@32ab7c21",
         "@opam/dune@opam:3.7.1@40db2f22",
-        "@grain/libbinaryen@109.0.1@d41d8cd9"
+        "@grain/libbinaryen@110.0.0@d41d8cd9"
       ],
       "devDependencies": [],
       "installConfig": { "pnp": false }
@@ -2413,7 +2413,7 @@
       "overrides": [],
       "dependencies": [
         "ocaml@github:phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017@d41d8cd9",
-        "@opam/utop@opam:2.12.0@41cf0331", "@opam/result@opam:1.5@1c6a6533",
+        "@opam/utop@opam:2.12.1@8af80d05", "@opam/result@opam:1.5@1c6a6533",
         "@opam/ppx_derivers@opam:1.2.1@e2cbad12",
         "@opam/ocamlfind@opam:1.9.6@da5169c7",
         "@opam/merlin-extend@opam:0.6.1@7d979feb",

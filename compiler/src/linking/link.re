@@ -273,8 +273,6 @@ let rec globalize_names = (~function_names, ~global_names, ~label_names, expr) =
   | RefTest
   | RefCast
   | BrOn
-  | RttCanon
-  | RttSub
   | StructNew
   | StructGet
   | StructSet
@@ -734,9 +732,16 @@ let link_all = (linked_mod, dependencies, signature) => {
     "memory",
     data_segments,
     false,
+    Comp_utils.grain_memory,
   );
   if (Config.import_memory^) {
-    Import.add_memory_import(linked_mod, "memory", "env", "memory", false);
+    Import.add_memory_import(
+      linked_mod,
+      Comp_utils.grain_memory,
+      "env",
+      "memory",
+      false,
+    );
   };
 
   let starts =

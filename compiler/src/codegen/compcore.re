@@ -2189,7 +2189,8 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
     allocate_alt_num_uninitialized(wasm_mod, env, Uint32Type)
   | AllocateUint64 =>
     allocate_alt_num_uninitialized(wasm_mod, env, Uint64Type)
-  | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
+  | WasmMemorySize =>
+    Expression.Memory_size.make(wasm_mod, grain_memory, false)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
   | HeapStart => get_runtime_heap_start(wasm_mod)
   | HeapTypeMetadata => get_metadata_ptr(wasm_mod)
@@ -2299,7 +2300,8 @@ let compile_prim1 = (wasm_mod, env, p1, arg, loc): Expression.t => {
     // no-op
     compile_imm(wasm_mod, env, arg)
   | WasmToGrain => compiled_arg // no-op
-  | WasmMemoryGrow => Expression.Memory_grow.make(wasm_mod, compiled_arg)
+  | WasmMemoryGrow =>
+    Expression.Memory_grow.make(wasm_mod, compiled_arg, grain_memory, false)
   | WasmUnaryI32({wasm_op, ret_type})
   | WasmUnaryI64({wasm_op, ret_type})
   | WasmUnaryF32({wasm_op, ret_type})
@@ -2486,6 +2488,8 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           compile_imm(wasm_mod, env, List.nth(args, 0)),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
           compile_imm(wasm_mod, env, List.nth(args, 2)),
+          grain_memory,
+          grain_memory,
         ),
         Expression.Const.make(wasm_mod, const_void()),
       ],
@@ -2500,6 +2504,7 @@ let compile_primn = (wasm_mod, env: codegen_env, p, args): Expression.t => {
           compile_imm(wasm_mod, env, List.nth(args, 0)),
           compile_imm(wasm_mod, env, List.nth(args, 1)),
           compile_imm(wasm_mod, env, List.nth(args, 2)),
+          grain_memory,
         ),
         Expression.Const.make(wasm_mod, const_void()),
       ],
@@ -3513,7 +3518,15 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       Option.is_none(Grain_utils.Config.memory_base^),
     );
   let _ =
-    Memory.set_memory(wasm_mod, 0, Memory.unlimited, "memory", [], false);
+    Memory.set_memory(
+      wasm_mod,
+      0,
+      Memory.unlimited,
+      "memory",
+      [],
+      false,
+      grain_memory,
+    );
 
   let compile_all = () => {
     ignore @@ compile_globals(wasm_mod, env, prog);

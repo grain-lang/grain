@@ -7,6 +7,8 @@ let grain_main = "_gmain";
 let grain_start = "_start";
 let grain_env_name = "_genv";
 let grain_global_function_table = "tbl";
+// TODO(#): Use a more descriptive name once we get fixes into Binaryen
+let grain_memory = "0";
 
 let wasm_type =
   fun
@@ -114,7 +116,16 @@ let store = (~ty=Type.int32, ~align=?, ~offset=0, ~sz=?, wasm_mod, ptr, arg) => 
       sz,
     );
   let align = Option.value(~default=sz, align);
-  Expression.Store.make(wasm_mod, sz, offset, align, ptr, arg, ty);
+  Expression.Store.make(
+    wasm_mod,
+    sz,
+    offset,
+    align,
+    ptr,
+    arg,
+    ty,
+    grain_memory,
+  );
 };
 
 let load =
@@ -130,7 +141,16 @@ let load =
       sz,
     );
   let align = Option.value(~default=sz, align);
-  Expression.Load.make(~signed, wasm_mod, sz, offset, align, ty, ptr);
+  Expression.Load.make(
+    ~signed,
+    wasm_mod,
+    sz,
+    offset,
+    align,
+    ty,
+    ptr,
+    grain_memory,
+  );
 };
 
 let is_grain_env = str => grain_env_name == str;
@@ -235,6 +255,7 @@ let write_universal_exports =
                     2,
                     Type.int32,
                     get_closure(),
+                    grain_memory,
                   );
                 Expression.Call_indirect.make(
                   wasm_mod,
