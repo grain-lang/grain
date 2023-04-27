@@ -986,3 +986,102 @@ Returns:
 |----|-----------|
 |`Number`|The value in degrees|
 
+### Number.**clamp**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+clamp : (range: Range<Number>, input: Number) -> Number
+```
+
+Constrains a number within the given inclusive range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`range`|`Range<Number>`|The inclusive range to clamp within|
+|`input`|`Number`|The number to clamp|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The constrained number|
+
+### Number.**linearInterpolate**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+linearInterpolate : (range: Range<Number>, weight: Number) -> Number
+```
+
+Maps a weight between 0 and 1 within the given inclusive range.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`range`|`Range<Number>`|The inclusive range to interpolate within|
+|`weight`|`Number`|The weight to interpolate|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The blended value|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `weight` is not between 0 and 1
+* When `range` is not finite
+* When `range` includes NaN
+
+### Number.**linearMap**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+linearMap :
+  (inputRange: Range<Number>, outputRange: Range<Number>, current: Number) ->
+   Number
+```
+
+Scales a number from one inclusive range to another inclusive range.
+If the number is outside the input range, it will be clamped.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`inputRange`|`Range<Number>`|The inclusive range you are mapping from|
+|`outputRange`|`Range<Number>`|The inclusive range you are mapping to|
+|`current`|`Number`|The number to map|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Number`|The mapped number|
+
+Throws:
+
+`InvalidArgument(String)`
+
+* When `inputRange` is not finite
+* When `inputRange` includes NaN
+* When `outputRange` is not finite
+* When `outputRange` includes NaN
+

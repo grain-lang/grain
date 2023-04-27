@@ -670,3 +670,83 @@ provide let toRadians = degrees => degrees * (pi / 180)
  * @since v0.5.4
  */
 provide let toDegrees = radians => radians * (180 / pi)
+
+/**
+ * Constrains a number within the given inclusive range.
+ *
+ * @param range: The inclusive range to clamp within
+ * @param input: The number to clamp
+ * @returns The constrained number
+ *
+ * @since v0.6.0
+ */
+provide let clamp = (range, input) => {
+  if (isNaN(input)) {
+    input
+  } else {
+    let rangeEnd = max(range.rangeStart, range.rangeEnd)
+    let rangeStart = min(range.rangeStart, range.rangeEnd)
+
+    if (input > rangeEnd) rangeEnd else if (input < rangeStart) rangeStart
+    else input
+  }
+}
+
+/**
+ * Maps a weight between 0 and 1 within the given inclusive range.
+ *
+ * @param range: The inclusive range to interpolate within
+ * @param weight: The weight to interpolate
+ * @returns The blended value
+ *
+ * @throws InvalidArgument(String): When `weight` is not between 0 and 1
+ * @throws InvalidArgument(String): When `range` is not finite
+ * @throws InvalidArgument(String): When `range` includes NaN
+ *
+ * @since v0.6.0
+ */
+provide let linearInterpolate = (range, weight) => {
+  if (weight < 0 || weight > 1 || isNaN(weight))
+    throw Exception.InvalidArgument("Weight must be between 0 and 1")
+  if (isInfinite(range.rangeStart) || isInfinite(range.rangeEnd))
+    throw Exception.InvalidArgument("The range must be finite")
+  if (isNaN(range.rangeStart) || isNaN(range.rangeEnd))
+    throw Exception.InvalidArgument("The range must not include NaN")
+  (range.rangeEnd - range.rangeStart) * weight + range.rangeStart
+}
+
+/**
+ * Scales a number from one inclusive range to another inclusive range.
+ * If the number is outside the input range, it will be clamped.
+ *
+ * @param inputRange: The inclusive range you are mapping from
+ * @param outputRange: The inclusive range you are mapping to
+ * @param current: The number to map
+ * @returns The mapped number
+ *
+ * @throws InvalidArgument(String): When `inputRange` is not finite
+ * @throws InvalidArgument(String): When `inputRange` includes NaN
+ * @throws InvalidArgument(String): When `outputRange` is not finite
+ * @throws InvalidArgument(String): When `outputRange` includes NaN
+ *
+ * @since v0.6.0
+ */
+provide let linearMap = (inputRange, outputRange, current) => {
+  if (isNaN(current)) {
+    current
+  } else {
+    if (isInfinite(inputRange.rangeStart) || isInfinite(inputRange.rangeEnd))
+      throw Exception.InvalidArgument("The inputRange must be finite")
+    if (isNaN(inputRange.rangeStart) || isNaN(inputRange.rangeEnd))
+      throw Exception.InvalidArgument("The inputRange must not include NaN")
+    if (isInfinite(outputRange.rangeStart) || isInfinite(outputRange.rangeEnd))
+      throw Exception.InvalidArgument("The outputRange must be finite")
+    if (isNaN(outputRange.rangeStart) || isNaN(outputRange.rangeEnd))
+      throw Exception.InvalidArgument("The outputRange must not include NaN")
+    let mapped = (current - inputRange.rangeStart) *
+      (outputRange.rangeEnd - outputRange.rangeStart) /
+      (inputRange.rangeEnd - inputRange.rangeStart) +
+      outputRange.rangeStart
+    clamp(outputRange, mapped)
+  }
+}
