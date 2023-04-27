@@ -51,6 +51,8 @@ let swap_slots =
 let grain_env_mod = grain_env_name;
 let module_runtime_id = Ident.create_persistent("moduleRuntimeId");
 let runtime_heap_start = Ident.create_persistent("runtimeHeapStart");
+let runtime_heap_next_ptr = Ident.create_persistent("runtimeHeapNextPtr");
+let metadata_ptr = Ident.create_persistent("metadataPtr");
 let reloc_base = Ident.create_persistent("relocBase");
 let table_size = Ident.create_persistent("GRAIN$TABLE_SIZE");
 
@@ -101,6 +103,24 @@ let required_global_imports = [
     mimp_id: runtime_heap_start,
     mimp_mod: grain_env_mod,
     mimp_name: Ident.name(runtime_heap_start),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: runtime_heap_next_ptr,
+    mimp_mod: grain_env_mod,
+    mimp_name: Ident.name(runtime_heap_next_ptr),
+    mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), true),
+    mimp_kind: MImportWasm,
+    mimp_setup: MSetupNone,
+    mimp_used: false,
+  },
+  {
+    mimp_id: metadata_ptr,
+    mimp_mod: grain_env_mod,
+    mimp_name: Ident.name(metadata_ptr),
     mimp_type: MGlobalImport(Types.Unmanaged(WasmI32), false),
     mimp_kind: MImportWasm,
     mimp_setup: MSetupNone,
@@ -260,27 +280,12 @@ let init_codegen_env = name => {
   required_imports: [],
 };
 
-/** Static runtime values */
-
-// Static pointer to the runtime heap
-// Leaves low 1000 memory unused for Binaryen optimizations
-let runtime_heap_ptr = ref(Grain_utils.Config.default_memory_base);
-// Static pointer to runtime type information
-let runtime_type_metadata_ptr = () => runtime_heap_ptr^ + 0x08;
-
 let reset = () => {
   reset_labels();
   List.iter(
     imp => imp.mimp_used = imp.mimp_mod == grain_env_mod,
     runtime_imports,
   );
-  runtime_heap_ptr :=
-    (
-      switch (Grain_utils.Config.memory_base^) {
-      | Some(x) => x
-      | None => Grain_utils.Config.default_memory_base
-      }
-    );
 };
 
 let get_wasm_imported_name = (~runtime_import=true, mod_, name) => {
@@ -296,6 +301,13 @@ let get_runtime_heap_start = wasm_mod =>
   Expression.Global_get.make(
     wasm_mod,
     get_wasm_imported_name(grain_env_mod, runtime_heap_start),
+    Type.int32,
+  );
+
+let get_metadata_ptr = wasm_mod =>
+  Expression.Global_get.make(
+    wasm_mod,
+    get_wasm_imported_name(grain_env_mod, metadata_ptr),
     Type.int32,
   );
 
@@ -803,9 +815,10 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
       Expression.Binary.make(
         wasm_mod,
         Op.add_int32,
-        load(
+        Expression.Global_get.make(
           wasm_mod,
-          Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
+          get_wasm_imported_name(grain_env_mod, runtime_heap_next_ptr),
+          Type.int32,
         ),
         Expression.Const.make(
           wasm_mod,
@@ -823,24 +836,27 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
             [
               store(
                 wasm_mod,
-                load(
+                Expression.Global_get.make(
                   wasm_mod,
-                  Expression.Const.make(
-                    wasm_mod,
-                    const_int32(runtime_heap_ptr^),
+                  get_wasm_imported_name(
+                    grain_env_mod,
+                    runtime_heap_next_ptr,
                   ),
+                  Type.int32,
                 ),
+                // fake GC refcount of 1
                 Expression.Const.make(wasm_mod, const_int32(1)),
               ),
               Expression.Binary.make(
                 wasm_mod,
                 Op.add_int32,
-                load(
+                Expression.Global_get.make(
                   wasm_mod,
-                  Expression.Const.make(
-                    wasm_mod,
-                    const_int32(runtime_heap_ptr^),
+                  get_wasm_imported_name(
+                    grain_env_mod,
+                    runtime_heap_next_ptr,
                   ),
+                  Type.int32,
                 ),
                 Expression.Const.make(wasm_mod, const_int32(8)),
               ),
@@ -850,12 +866,9 @@ let heap_allocate = (wasm_mod, env, num_words: int) =>
             wasm_mod,
             gensym_label("store_runtime_heap_ptr"),
             [
-              store(
+              Expression.Global_set.make(
                 wasm_mod,
-                Expression.Const.make(
-                  wasm_mod,
-                  const_int32(runtime_heap_ptr^),
-                ),
+                get_wasm_imported_name(grain_env_mod, runtime_heap_next_ptr),
                 addition,
               ),
               // Binaryen tuples must include a concrete value (and tuples are
@@ -2179,6 +2192,7 @@ let compile_prim0 = (wasm_mod, env, p0): Expression.t => {
   | WasmMemorySize => Expression.Memory_size.make(wasm_mod)
   | Unreachable => Expression.Unreachable.make(wasm_mod)
   | HeapStart => get_runtime_heap_start(wasm_mod)
+  | HeapTypeMetadata => get_metadata_ptr(wasm_mod)
   };
 };
 
@@ -3393,37 +3407,9 @@ let compile_globals = (wasm_mod, env, {globals} as prog) => {
 };
 
 let compile_main = (wasm_mod, env, prog) => {
-  let preamble =
-    if (Env.is_runtime_mode()) {
-      Some(
-        Expression.If.make(
-          wasm_mod,
-          Expression.Unary.make(
-            wasm_mod,
-            Op.eq_z_int32,
-            load(
-              wasm_mod,
-              Expression.Const.make(
-                wasm_mod,
-                const_int32(runtime_heap_ptr^),
-              ),
-            ),
-          ),
-          store(
-            wasm_mod,
-            Expression.Const.make(wasm_mod, const_int32(runtime_heap_ptr^)),
-            get_runtime_heap_start(wasm_mod),
-          ),
-          Expression.Null.make(),
-        ),
-      );
-    } else {
-      None;
-    };
   ignore @@
   compile_function(
     ~name=grain_main,
-    ~preamble?,
     wasm_mod,
     env,
     {

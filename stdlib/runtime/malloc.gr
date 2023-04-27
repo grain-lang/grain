@@ -30,7 +30,7 @@ primitive (!) = "@not"
 primitive (&&) = "@and"
 primitive (||) = "@or"
 
-primitive heapBase = "@heap.base"
+primitive heapStart = "@heap.start"
 
 /* UNDERSTANDING THE STRUCTURE OF THE FREE LIST
  * The original K&R definition for the free list entry type was the following:
@@ -82,7 +82,7 @@ provide let _RESERVED_RUNTIME_SPACE = 0x800n
  * The base the heap. The block at this address will be size 0 and
  * serve as the root of the free list.
  */
-let _BASE = heapBase + _RESERVED_RUNTIME_SPACE
+let _BASE = heapStart() + _RESERVED_RUNTIME_SPACE
 
 /**
  * The start pointer of the heap.

@@ -9,7 +9,7 @@ let makeGcProgram = (program, heap_size) => {
     include "runtime/unsafe/memory"
 
     @disableGC
-    primitive heapBase = "@heap.base"
+    primitive heapStart = "@heap.start"
 
     @disableGC
     let leak = () => {
@@ -17,7 +17,7 @@ let makeGcProgram = (program, heap_size) => {
       // find current memory pointer, subtract space for two malloc headers + 1 GC header
       let offset = Memory.malloc(8n) - 24n
       // Calculate how much memory is left
-      let availableMemory = offset - (Malloc._RESERVED_RUNTIME_SPACE + heapBase)
+      let availableMemory = offset - (Malloc._RESERVED_RUNTIME_SPACE + heapStart())
       // Calculate how much memory to leak
       let toLeak = availableMemory - %dn
       // Memory is not reclaimed due to no gc context

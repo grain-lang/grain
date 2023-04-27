@@ -168,7 +168,8 @@ type prim0 =
     | AllocateRational
     | WasmMemorySize
     | Unreachable
-    | HeapStart;
+    | HeapStart
+    | HeapTypeMetadata;
 
 type prim1 =
   Parsetree.prim1 =

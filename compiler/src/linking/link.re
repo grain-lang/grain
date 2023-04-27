@@ -44,6 +44,8 @@ let is_wasi_polyfill_module = mod_path => {
   mod_path == wasi_polyfill_module();
 };
 
+let runtime_heap_next_ptr = "GRAIN$RUNTIME_HEAP_NEXT_PTR";
+
 let new_base_dir = Filepath.String.dirname;
 
 let rec load_hard_dependencies = (~base_dir, mod_path) => {
@@ -386,6 +388,8 @@ let construct_type_metadata_table = metas => {
 let table_offset = ref(0);
 let module_id = ref(Comp_utils.encoded_int32(0));
 
+let round_to_8 = n => Int.logand(n + 7, Int.lognot(7));
+
 let link_all = (linked_mod, dependencies, signature) => {
   gensym_counter := 0;
   table_offset := 0;
@@ -404,10 +408,15 @@ let link_all = (linked_mod, dependencies, signature) => {
     };
   let runtime_heap_ptr =
     switch (Grain_utils.Config.memory_base^) {
-    | Some(x) => x
+    | Some(x) => round_to_8(x)
     | None => Grain_utils.Config.default_memory_base
     };
   let metadata_heap_loc = runtime_heap_ptr + 8;
+  let metadata_size =
+    round_to_8(
+      Option.value(~default=0, Option.map(Bytes.length, metadata_tbl_data)),
+    );
+  let runtime_heap_start = metadata_heap_loc + metadata_size;
 
   let link_one = dep => {
     let function_names: Hashtbl.t(string, string) = Hashtbl.create(128);
@@ -447,35 +456,59 @@ let link_all = (linked_mod, dependencies, signature) => {
             let value =
               switch (imported_name) {
               | "relocBase" =>
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(table_offset^)),
+                Some(
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(table_offset^)),
+                  ),
                 )
               | "moduleRuntimeId" =>
                 // Module id is tagged; incrementing by 2 is the equivalent of an untagged increment by 1
                 module_id := module_id^ + 2;
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(module_id^)),
+                Some(
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(module_id^)),
+                  ),
                 );
               | "runtimeHeapStart" =>
-                let size =
-                  Option.value(
-                    ~default=0,
-                    Option.map(Bytes.length, metadata_tbl_data),
-                  );
-                let runtime_heap_start = metadata_heap_loc + size;
-                Expression.Const.make(
-                  wasm_mod,
-                  Literal.int32(Int32.of_int(runtime_heap_start)),
+                Some(
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(runtime_heap_start)),
+                  ),
+                )
+              | "runtimeHeapNextPtr" =>
+                Hashtbl.replace(
+                  global_names,
+                  internal_name,
+                  runtime_heap_next_ptr,
                 );
+                None;
+              | "metadataPtr" =>
+                Some(
+                  Expression.Const.make(
+                    wasm_mod,
+                    Literal.int32(Int32.of_int(metadata_heap_loc)),
+                  ),
+                )
               | value =>
                 failwith(
                   Printf.sprintf("Unknown Grain runtime value `%s`", value),
                 )
               };
-            ignore @@
-            Global.add_global(linked_mod, new_name, Type.int32, false, value);
+            switch (value) {
+            | Some(value) =>
+              ignore @@
+              Global.add_global(
+                linked_mod,
+                new_name,
+                Type.int32,
+                false,
+                value,
+              )
+            | None => ()
+            };
           } else {
             let ty = Global.get_type(global);
             let mut = Global.is_mutable(global);
@@ -633,6 +666,18 @@ let link_all = (linked_mod, dependencies, signature) => {
       table_offset := table_offset^ + size;
     };
   };
+
+  ignore @@
+  Global.add_global(
+    linked_mod,
+    runtime_heap_next_ptr,
+    Type.int32,
+    true,
+    Expression.Const.make(
+      linked_mod,
+      Literal.int32(Int32.of_int(runtime_heap_start)),
+    ),
+  );
 
   if (has_wasi_polyfill) {
     link_one(wasi_polyfill_module());
