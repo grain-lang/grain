@@ -473,12 +473,15 @@ module MatchBranch = {
 
 module IncludeDeclaration = {
   let mk = (~loc, path, module_, alias) => {
-    {
-      pinc_alias: alias,
-      pinc_module: module_,
-      pinc_path: normalize_string(~loc, path),
-      pinc_loc: loc,
-    };
+    let path = normalize_string(~loc, path);
+    let filename =
+      if (!Grain_utils.Filepath.String.is_relpath(path.txt)) {
+        path.txt ++ ".gr";
+      } else {
+        path.txt;
+      };
+    let path = {txt: filename, loc: path.loc};
+    {pinc_alias: alias, pinc_module: module_, pinc_path: path, pinc_loc: loc};
   };
 };
 

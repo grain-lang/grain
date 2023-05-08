@@ -31,5 +31,5 @@ functions › multi_bind2
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 317
+ ;; custom section \"cmi\", size 323
 )

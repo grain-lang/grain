@@ -1,6 +1,6 @@
 module A
 
-from "./mutExport" include MutExport
+from "./mutExport.gr" include MutExport
 
 MutExport.x := unbox(MutExport.x) + 1
 

@@ -993,8 +993,8 @@ let register_implicit_modules = modules => {
     m => {
       let filepath =
         switch (m) {
-        | Grain_utils.Config.Pervasives_mod => "pervasives"
-        | Grain_utils.Config.Gc_mod => "runtime/gc"
+        | Grain_utils.Config.Pervasives_mod => "pervasives.gr"
+        | Grain_utils.Config.Gc_mod => "runtime/gc.gr"
         };
       Env.add_import(filepath);
     },
@@ -1004,7 +1004,7 @@ let register_implicit_modules = modules => {
 
 let lookup_implicit_module_spec = m =>
   switch (m) {
-  | Grain_utils.Config.Pervasives_mod => Some(("Pervasives", "pervasives"))
+  | Grain_utils.Config.Pervasives_mod => Some(("Pervasives", "pervasives.gr"))
   | Grain_utils.Config.Gc_mod => None
   };
 

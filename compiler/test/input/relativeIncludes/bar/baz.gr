@@ -1,5 +1,5 @@
 module Baz
 
-from "../quux/quux" include Quux
+from "../quux/quux.gr" include Quux
 use Quux.{ quux }
 provide let baz = n => quux(n) + 1

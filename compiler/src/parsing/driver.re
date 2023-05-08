@@ -154,8 +154,9 @@ let read_imports = (program: Parsetree.parsed_program) => {
     List.map(
       o => {
         switch (o) {
-        | Grain_utils.Config.Pervasives_mod => Location.mknoloc("pervasives")
-        | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc")
+        | Grain_utils.Config.Pervasives_mod =>
+          Location.mknoloc("pervasives.gr")
+        | Grain_utils.Config.Gc_mod => Location.mknoloc("runtime/gc.gr")
         }
       },
       switch (program.comments) {

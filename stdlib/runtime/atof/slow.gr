@@ -36,7 +36,7 @@ from "runtime/unsafe/memory" include Memory
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64 }
 
-from "./common" include Common
+from "./common.gr" include Common
 use Common.{
   type BiasedFp,
   fpZero,
@@ -47,7 +47,7 @@ use Common.{
   _MANTISSA_EXPLICIT_BITS_32,
   _MANTISSA_EXPLICIT_BITS_64,
 }
-from "./decimal" include Decimal
+from "./decimal.gr" include Decimal
 use Decimal.{ parseDecimal, _DECIMAL_POINT_RANGE }
 
 @unsafe

@@ -758,7 +758,12 @@ let check_consistency = ps =>
               ~base_dir=Filepath.String.dirname(ps.ps_filename),
               name,
             );
-          Consistbl.check(crc_units, resolved_file_name, crc, ps.ps_filename);
+          Consistbl.check(
+            crc_units,
+            Filepath.String.chop_suffix(resolved_file_name, ".gr"),
+            crc,
+            ps.ps_filename,
+          );
         },
       ps.ps_crcs,
     )

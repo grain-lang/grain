@@ -34,7 +34,7 @@ from "runtime/unsafe/wasmf64" include WasmF64
 from "runtime/dataStructures" include DataStructures
 use DataStructures.{ newInt32, newInt64, newFloat64 }
 
-from "./common" include Common
+from "./common.gr" include Common
 use Common.{
   _CHAR_CODE_UNDERSCORE,
   _CHAR_CODE_PLUS,
@@ -63,9 +63,9 @@ use Common.{
   fpInf,
 }
 
-from "./lemire" include Lemire
+from "./lemire.gr" include Lemire
 use Lemire.{ computeFloat }
-from "./slow" include Slow
+from "./slow.gr" include Slow
 use Slow.{ parseLongMantissa }
 
 // Try to parse 8 digits at a time:

@@ -1,6 +1,6 @@
 module Broken
 
 from "number" include Number
-from "./foo" include Foo
+from "./foo.gr" include Foo
 
 provide let min = Number.min
