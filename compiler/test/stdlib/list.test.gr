@@ -269,3 +269,323 @@ assert sort(compare=compareLengths, list) ==
   ["a", "a", "ab", "abc", "abcd", "abcde"]
 assert sort(compare=compareLengths, ["a", "a", "a", "a"]) ==
   ["a", "a", "a", "a"]
+
+module Mutable {
+  use List.{ module Mutable as List }
+
+  assert List.make() == List.fromList([])
+  assert List.toList(List.make()) == []
+
+  // addFirst/addLast
+  let list = List.make()
+  assert List.length(list) == 0
+  List.addLast(2, list)
+  assert List.length(list) == 1
+  assert list == List.fromList([2])
+  List.addFirst(1, list)
+  assert List.length(list) == 2
+  assert list == List.fromList([1, 2])
+  List.addLast(3, list)
+  assert List.length(list) == 3
+  assert list == List.fromList([1, 2, 3])
+  assert List.toList(list) == [1, 2, 3]
+
+  // removeFirst/removeLast
+  assert list == List.fromList([1, 2, 3])
+  List.removeLast(list)
+  assert list == List.fromList([1, 2])
+  List.removeFirst(list)
+  assert list == List.fromList([2])
+  List.removeLast(list)
+  assert list == List.make()
+  List.removeLast(list)
+  assert list == List.fromList([])
+  List.removeFirst(list)
+  assert list == List.fromList([])
+
+  // nth
+  assert List.nth(0, List.make()) == None
+  let list = List.fromList([1, 2, 3, 4, 5])
+  assert List.nth(0, list) == Some(1)
+  assert List.nth(1, list) == Some(2)
+  assert List.nth(2, list) == Some(3)
+  assert List.nth(3, list) == Some(4)
+  assert List.nth(4, list) == Some(5)
+  assert List.nth(-1, list) == None
+  assert List.nth(5, list) == None
+
+  // set
+  List.set(0, 11, list)
+  List.set(4, 15, list)
+  List.set(1, 12, list)
+  List.set(2, 13, list)
+  List.set(3, 14, list)
+  List.set(4, 15, list)
+  assert list == List.fromList([11, 12, 13, 14, 15])
+
+  // insert
+  let list = List.make()
+  List.insert(0, 2, list)
+  assert list == List.fromList([2])
+  List.insert(1, 4, list)
+  assert list == List.fromList([2, 4])
+  List.insert(0, 0, list)
+  assert list == List.fromList([0, 2, 4])
+  List.insert(2, 3, list)
+  assert list == List.fromList([0, 2, 3, 4])
+  List.insert(1, 1, list)
+  assert list == List.fromList([0, 1, 2, 3, 4])
+  List.insert(5, 5, list)
+  assert list == List.fromList([0, 1, 2, 3, 4, 5])
+
+  // remove
+  let list = List.fromList([1, 2, 3, 4, 5])
+  List.remove(1, list)
+  assert list == List.fromList([1, 3, 4, 5])
+  List.remove(2, list)
+  assert list == List.fromList([1, 3, 5])
+  List.remove(2, list)
+  assert list == List.fromList([1, 3])
+  List.remove(0, list)
+  assert list == List.fromList([3])
+  List.remove(0, list)
+  assert list == List.make()
+
+  // init
+  assert List.init(5, i => i * 2) == List.fromList([0, 2, 4, 6, 8])
+  assert List.init(0, i => fail "") == List.fromList([])
+
+  // first/last
+  assert List.first(List.make()) == None
+  assert List.first(List.fromList([1, 2, 3])) == Some(1)
+  assert List.last(List.make()) == None
+  assert List.last(List.fromList([1, 2, 3])) == Some(3)
+
+  // append
+  let list1 = List.fromList([1, 2, 3])
+  let list2 = List.fromList([4, 5, 6])
+  List.append(list1, list2)
+  assert list1 == List.fromList([1, 2, 3, 4, 5, 6])
+  assert list2 == List.fromList([4, 5, 6])
+  let list1 = List.make()
+  let list2 = List.fromList([1, 2, 3])
+  List.append(list1, list2)
+  assert list1 == List.fromList([1, 2, 3])
+  assert list2 == list1
+  let list1 = List.fromList([1, 2, 3])
+  let list2 = List.make()
+  List.append(list1, list2)
+  assert list1 == List.fromList([1, 2, 3])
+  assert list2 == List.make()
+
+  // combine
+  let list1 = List.fromList([1, 2, 3])
+  let list2 = List.fromList([4, 5, 6])
+  List.combine(list1, list2)
+  assert list1 == List.fromList([1, 2, 3, 4, 5, 6])
+  assert list1 == list2
+  let list1 = List.make()
+  let list2 = List.fromList([1, 2, 3])
+  List.combine(list1, list2)
+  assert list1 == List.fromList([1, 2, 3])
+  assert list1 == list2
+  let list1 = List.fromList([1, 2, 3])
+  let list2 = List.make()
+  List.combine(list1, list2)
+  assert list1 == List.fromList([1, 2, 3])
+  assert list1 == list2
+  let list1 = List.make()
+  let list2 = List.make()
+  List.combine(list1, list2)
+  assert list1 == List.make()
+  assert list1 == list2
+
+  // reduce/reduceRight
+  let list = List.fromList([1, 2, 3])
+  assert List.reduce((l, elem) => [elem, ...l], [], list) == [3, 2, 1]
+  assert List.reduceRight((elem, l) => [elem, ...l], [], list) == [1, 2, 3]
+  assert List.reduce((l, elem) => [elem, ...l], [], List.make()) == []
+  assert List.reduceRight((elem, l) => [elem, ...l], [], List.make()) == []
+
+  // map
+  assert List.map(x => x * 2, list) == List.fromList([2, 4, 6])
+  assert List.map(x => fail "", List.make()) == List.make()
+
+  // forEach
+  let mut l = []
+  List.forEach(x => l = [x, ...l], list)
+  assert l == [3, 2, 1]
+  List.forEach(x => fail "", List.make())
+
+  // flatMap
+  assert List.flatMap(x => List.fromList([x, x + 1]), List.fromList([1, 3, 5])) ==
+    List.fromList([1, 2, 3, 4, 5, 6])
+  // TODO RuntimeError: unreachable; bug?
+  // let dummy = List.fromList([1, 2])
+  // assert List.flatMap(x => dummy, list) == List.fromList([1, 2, 1, 2, 1, 2])
+  // assert dummy == List.fromList([1, 2])
+
+  // filter
+  assert List.filter(x => x % 2 == 0, List.fromList([1, 2, 3, 4, 5])) ==
+    List.fromList([2, 4])
+
+  // flatten
+  assert List.flatten(
+    List.fromList([List.fromList([1, 2]), List.fromList([3, 4])])
+  ) ==
+    List.fromList([1, 2, 3, 4])
+  assert List.flatten(List.fromList([List.make(), List.make()])) == List.make()
+
+  // contains
+  assert List.contains(2, List.fromList([1, 2, 3]))
+  assert !List.contains(0, List.fromList([1, 2, 3]))
+
+  // every/some
+  let list = List.fromList([1, 2, 3])
+  assert List.every(x => x < 4, list)
+  assert !List.every(x => x % 2 == 0, list)
+  assert List.some(x => x > 2, list)
+  assert !List.some(x => x == 4, list)
+
+  // find/findIndex
+  assert List.find(x => true, list) == Some(1)
+  assert List.find(x => x == 3, list) == Some(3)
+  assert List.findIndex(x => true, list) == Some(0)
+  assert List.findIndex(x => x == 2, list) == Some(1)
+  assert List.findIndex(x => false, list) == None
+
+  // count
+  assert List.count(x => x > 0, list) == 3
+  assert List.count(x => x > 0, List.make()) == 0
+  assert List.count(x => x == 3, list) == 1
+
+  // rotate
+  let list = List.fromList([1, 2, 3])
+  List.rotate(0, list)
+  assert list == List.fromList([1, 2, 3])
+
+  let list = List.fromList([1, 2, 3])
+  List.rotate(1, list)
+  assert list == List.fromList([2, 3, 1])
+
+  let list = List.fromList([1, 2, 3])
+  List.rotate(2, list)
+  assert list == List.fromList([3, 1, 2])
+
+  let list = List.fromList([1, 2, 3])
+  List.rotate(-2, list)
+  assert list == List.fromList([2, 3, 1])
+
+  let list = List.fromList([1, 2, 3, 4, 5])
+  List.rotate(5, list)
+  assert list == List.fromList([1, 2, 3, 4, 5])
+
+  let list = List.fromList([1, 2, 3, 4, 5])
+  List.rotate(7, list)
+  assert list == List.fromList([3, 4, 5, 1, 2])
+
+  let list = List.fromList([1, 2, 3, 4, 5])
+  List.rotate(-18, list)
+  assert list == List.fromList([3, 4, 5, 1, 2])
+
+  let list = List.make()
+  List.rotate(1, list)
+  assert list == List.make()
+
+  let list = List.make()
+  List.rotate(0, list)
+  assert list == List.make()
+
+  // unique
+  assert List.unique(List.make()) == List.make()
+  assert List.unique(list) == list
+  assert List.unique(List.fromList([1, 1, 1, 1])) == List.fromList([1])
+
+  // zip
+  let listA = List.fromList([1, 2, 3])
+  let listB = List.fromList([4, 5, 6])
+  assert List.zip(listA, listB) == List.fromList([(1, 4), (2, 5), (3, 6)])
+  let listB = List.fromList([4, 5])
+  assert List.zip(listA, listB) == List.fromList([(1, 4), (2, 5)])
+
+  // zipWith
+  let addFn = (a, b) => a + b
+  let listA = List.fromList([1, 2, 3])
+  let listB = List.fromList([4, 5, 6])
+  assert List.zipWith(addFn, listA, listB) == List.fromList([5, 7, 9])
+  let multFn = (a, b) => a * b
+  let listB = List.fromList([4, 5])
+  assert List.zipWith(multFn, listA, listB) == List.fromList([4, 10])
+  assert List.zipWith(addFn, List.make(), listB) == List.make()
+
+  // unzip
+  List.unzip(List.fromList([(1, 2), (3, 4), (5, 6)])) ==
+    (List.fromList([1, 3, 5]), List.fromList([2, 4, 6]))
+  List.unzip(List.make()) == (List.make(), List.make())
+
+  // product
+  let listA = List.fromList([1, 2])
+  let listB = List.fromList([2, 3, 4])
+  let listC = List.fromList([1])
+  let listD = List.fromList([2])
+  assert List.product(listA, listB) ==
+    List.fromList([(1, 2), (1, 3), (1, 4), (2, 2), (2, 3), (2, 4)])
+  assert List.product(listC, listB) == List.fromList([(1, 2), (1, 3), (1, 4)])
+  assert List.product(listC, listD) == List.fromList([(1, 2)])
+  assert List.product(List.make(), List.make()) == List.make()
+
+  // sub
+  let listSub = List.fromList([1, 2, 3])
+  assert List.sub(0, 1, listSub) == List.fromList([1])
+  assert List.sub(0, 2, listSub) == List.fromList([1, 2])
+  assert List.sub(1, 2, listSub) == List.fromList([2, 3])
+
+  // reverse
+  let list = List.fromList([1, 2, 3])
+  List.reverse(list)
+  assert list == List.fromList([3, 2, 1])
+  let list = List.make()
+  List.reverse(list)
+  assert list == List.make()
+
+  // sort
+  let list = List.fromList([3, 5, 2, 4, 1])
+  List.sort(compare, list)
+  assert list == List.fromList([1, 2, 3, 4, 5])
+
+  let list = List.make()
+  List.sort(compare, list)
+  assert list == List.make()
+
+  let compareLengths = (left, right) => {
+    match ((String.length(left), String.length(right))) {
+      (left, right) when left > right => 1,
+      (left, right) when left == right => 0,
+      _ => -1,
+    }
+  }
+  let list = List.fromList(["a", "abcde", "abc", "ab", "abcd", "a"])
+  List.sort(compareLengths, list)
+  assert list == List.fromList(["a", "a", "ab", "abc", "abcd", "abcde"])
+
+  let list = List.fromList(["a", "a", "a", "a"])
+  List.sort(compareLengths, list)
+  assert list == List.fromList(["a", "a", "a", "a"])
+
+  // join
+  assert List.join(", ", List.fromList(["a", "b", "c"])) == "a, b, c"
+  assert List.join(", ", List.make()) == ""
+
+  // copy
+  let list = List.fromList([1, 2, 3])
+  let copy = List.copy(list)
+  List.removeFirst(copy)
+  List.set(1, 10, copy)
+  assert copy == List.fromList([2, 10])
+  assert list == List.fromList([1, 2, 3])
+
+  // clear
+  let list = List.fromList([1, 2, 3])
+  List.clear(list)
+  assert list == List.make()
+}
