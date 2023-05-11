@@ -6,7 +6,7 @@ record Rec {
   foo: Number,
   bar: Number,
 }
-let x = { foo: 4, bar: 9 }
+let x = { foo: 4, bar: 9, }
 
 x.foo + x.bar
 
@@ -17,7 +17,7 @@ record Rec1 {
 record Rec2 {
   baz2: Rec1,
 }
-let x = { baz2: { foo2: 4, bar2: 9 }, } // trailing comma as a single item
+let x = { baz2: { foo2: 4, bar2: 9, }, } // trailing comma as a single item
 x.baz2.bar2
 
 record Rec3 {
@@ -25,7 +25,7 @@ record Rec3 {
   bar3: String,
   baz3: Bool,
 }
-let { foo3, _ } = { foo3: 4, bar3: "boo", baz3: true }
+let { foo3, _ } = { foo3: 4, bar3: "boo", baz3: true, }
 foo3
 
 record Long {
@@ -119,9 +119,9 @@ let y = { /* comment 1 */
   longlonglongnamenamename3: 12345, /* comment 4 */
 } // end line comment
 
-let y = { ...x, bar: 2 }
+let y = { ...x, bar: 2, }
 
-let y = { ...x, bar: 2 }
+let y = { ...x, bar: 2, }
 
 let y = {
   ...x,

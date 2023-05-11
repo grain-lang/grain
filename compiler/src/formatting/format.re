@@ -735,6 +735,7 @@ and print_expression = (expr: Parsetree.expression) => {
           },
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
+            ~trail=last => comma,
             ~f=print_punnable_expression,
             labels,
           ),
@@ -1113,6 +1114,7 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
     concat([
       string("record "),
       string(pdata_name.txt),
+      space,
       switch (pdata_params) {
       | [] => empty
       | typs =>
@@ -1127,6 +1129,7 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
       block_braces(
         concat_map(
           ~sep=(prev, next) => comma_hardline,
+          ~trail=last => comma,
           ~f=print_label_declaration,
           labels,
         ),
