@@ -84,23 +84,31 @@ module Atom = struct
       (* let _ = prerr_endline(str) in *)
       try_return ((if last_break = Some Break.Hardline then p + i + l else p + l), None)
     | Break Break.Space ->
+      (* let _ = prerr_endline("space") in *)
       if last_break = None then
         try_return (p + 1, Some Break.Space)
       else
         try_return (p, last_break)
     | Break Break.Softline ->
+      (* let _ = prerr_endline("softline") in *)
       if last_break = None then
         try_return (p, Some Break.Softline)
       else
         try_return (p, last_break)
-    | Break Break.Hardline -> raise Overflow
+    | Break Break.Hardline ->
+      (* let _ = prerr_endline("hardline") in  *)
+      raise Overflow
     | GroupOne (can_nest, _as) ->
+      (* let _ = prerr_endline("group one") in *)
       let (p, last_break) = try_eval_list_flat width tab (i + tab) _as p last_break in
       (p, last_break)
     | GroupAll (can_nest, _as) ->
+      (* let _ = prerr_endline("group all") in *)
       let (p, last_break) = try_eval_list_flat width tab (i + tab) _as p last_break in
       (p, last_break)
-    | Indent (_, a) -> try_eval_flat width tab i a p last_break
+    | Indent (_, a) ->
+      (* let _ = prerr_endline("indent") in *)
+      try_eval_flat width tab i a p last_break
 
   (* Like [try_eval_flat] but for a list of atoms. *)
   and try_eval_list_flat (width : int) (tab : int) (i : int) (_as : t list) (p : int) (last_break : Break.t option)
@@ -121,6 +129,7 @@ module Atom = struct
     match _as with
     | [] -> (_as, p, last_break)
     | Break Break.Space :: _as ->
+      (* let _ = prerr_endline("try_eval_list_one space") in *)
       if last_break = None then
         (* If it is not possible in flat mode, switch back to "at best". *)
         (try let (_as, p, last_break) = try_eval_list_one width tab i _as (p + 1) (Some Break.Space) true can_nest in_nest in
@@ -137,22 +146,16 @@ module Atom = struct
       else
         try_eval_list_one width tab i _as p last_break can_fail can_nest in_nest
     | Break Break.Softline :: _as ->
+      (* let _ = prerr_endline("try_eval_list_one softline") in *)
       if last_break = None then
         (* If it is not possible in flat mode, switch back to "at best". *)
-        (try let (_as, p, last_break) = try_eval_list_one width tab i _as p (Some Break.Softline) true can_nest in_nest in
-          (Break Break.Softline :: _as, p, last_break) with
-        | Overflow ->
-          (* let _ = prerr_endline("softline overflow") in *)
-          let do_indent = can_nest && not in_nest in
-          let (_as, p, last_break) = try_eval_list_one width tab (if do_indent then i + tab else i)
-            _as 0 (Some Break.Hardline) false can_nest can_nest in
-          if do_indent then
-            ([Break Break.Hardline; Indent (1, GroupOne (false, _as))], p, last_break)
-          else
-            (Break Break.Hardline :: _as, p, last_break))
+        let (_as, p, last_break) = try_eval_list_one width tab i _as p (Some Break.Softline) false can_nest in_nest in
+          (* let _ = prerr_endline(if last_break = None then "none" else "some") in *)
+          (Break Break.Softline :: _as, p, last_break)
       else
         try_eval_list_one width tab i _as p last_break can_fail can_nest in_nest
     | Break Break.Hardline :: _as ->
+      (* let _ = prerr_endline("try_eval_list_one hardline") in *)
       let (_as, p, last_break) =
         (* If there is an explicit newline we always undo the nesting. *)
         if in_nest then
@@ -164,6 +167,7 @@ module Atom = struct
       else
         (Break Break.Hardline :: _as, p, last_break)
     | a :: _as ->
+      (* let _ = prerr_endline("try_eval_list_one rest") in *)
       let (a, p, last_break) =
         (* If [Overflow] is possible we try in flat mode, else "at best". *)
         if can_fail then
