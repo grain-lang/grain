@@ -129,13 +129,25 @@ function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
     preopens[guestDir] = hostDir;
   });
 
+  const rawArgs = process.argv;
+  const endOptsIndex = rawArgs.findIndex((x) => x === "--");
+  const args = rawArgs.slice(endOptsIndex === -1 ? Infinity : endOptsIndex + 1);
+
+  const cliEnv = {};
+  options.env?.forEach((env) => {
+    const [name, ...rest] = env.split("=");
+    const val = rest.join("=");
+    cliEnv[name] = val;
+  });
+
   const env = {
+    ...cliEnv,
     PREOPENS: JSON.stringify(preopens),
     NODE_OPTIONS: `--experimental-wasi-unstable-preview1 --no-warnings`,
   };
 
   try {
-    execSync(`${grainrun} ${file}`, { ...execOpts, env });
+    execSync(`${grainrun} ${file} ${args.join(" ")}`, { ...execOpts, env });
   } catch (e) {
     process.exit(e.status);
   }

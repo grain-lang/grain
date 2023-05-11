@@ -107,6 +107,7 @@ class GrainCommand extends commander.Command {
     );
     cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
     cmd.option("--dir <dir...>", "directory to preopen");
+    cmd.option("--env <env...>", "WASI environment variables");
     cmd.forwardOption(
       "--compilation-mode <mode>",
       "compilation mode (advanced use only)"
@@ -178,11 +179,8 @@ program
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
     exec.grainc(file, options, program);
-    if (options.o) {
-      exec.grainrun(options.o, options, program);
-    } else {
-      exec.grainrun(file.replace(/\.gr$/, ".gr.wasm"), options, program);
-    }
+    const outFile = options.o ?? file.replace(/\.gr$/, ".gr.wasm");
+    exec.grainrun(outFile, options, program);
   });
 
 program
