@@ -812,7 +812,7 @@ and print_expression = (expr: Parsetree.expression) => {
     | PExpIf(cond, if_true, if_false) =>
       concat([
         string("if "),
-        parens(print_expression(cond)),
+        parens_all(print_expression(cond)),
         space,
         print_expression(if_true),
         switch (if_false) {

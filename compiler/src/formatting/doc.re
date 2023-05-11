@@ -42,7 +42,8 @@ let concat_map = (~sep, ~lead=first => empty, ~trail=last => empty, ~f, l) => {
   };
 };
 
-let parens = d => SmartPrint.parens(nest_all(softline ++ d ++ softline));
+let parens = d => SmartPrint.parens(nest(softline ++ d ++ softline));
+let parens_all = d => SmartPrint.parens(nest_all(softline ++ d ++ softline));
 let angle_brakets = d =>
   SmartPrint.angle_brakets(nest_all(softline ++ d ++ softline));
 let block_braces = d => SmartPrint.braces(hardline ++ indent(d) ++ hardline);
