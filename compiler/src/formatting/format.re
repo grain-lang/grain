@@ -1233,10 +1233,13 @@ and print_toplevel_stmt = (stmt: Parsetree.toplevel_stmt) => {
                 next.Parsetree.pdata_loc.loc_start.pos_lnum
                 - prev.pdata_loc.loc_end.pos_lnum
               ) {
-              | 0 => comma ++ space
-              | _ => comma ++ hardline
+              | 0 => breakable_space
+              | _ => hardline
               },
               print_comments(prev.Parsetree.pdata_loc, next.pdata_loc),
+              breakable_space,
+              string("and"),
+              space,
             ])
           },
         ~f=
@@ -1267,18 +1270,18 @@ and print_toplevel_stmt = (stmt: Parsetree.toplevel_stmt) => {
         | Immutable => empty
         | Mutable => string("mut ")
         },
-        nest(
-          concat_map(
-            ~sep=
-              (prev: Parsetree.value_binding, next: Parsetree.value_binding) =>
-                concat([
-                  comma,
-                  breakable_space,
-                  print_comments(prev.pvb_loc, next.pvb_loc),
-                ]),
-            ~f=print_value_binding,
-            vbs,
-          ),
+        concat_map(
+          ~sep=
+            (prev: Parsetree.value_binding, next: Parsetree.value_binding) =>
+              concat([
+                breakable_space,
+                print_comments(prev.pvb_loc, next.pvb_loc),
+                breakable_space,
+                string("and"),
+                space,
+              ]),
+          ~f=print_value_binding,
+          vbs,
         ),
       ])
     | PTopPrimitive(provide_flag, prim_desc) =>
@@ -1435,20 +1438,20 @@ let format_ast =
     ) => {
   comment_tree := Commenttree.from_comments(parsed_program.comments);
 
-  let final_doc =
-    concat([
+  let toplevel =
+    switch (parsed_program.statements) {
+    | [] =>
       print_comments(
+        parsed_program.module_name.loc,
+        // TODO: The program loc_end is wrong when we only have a header and comments
+        // it says the end of the header is the end of the program
         {
-          loc_start: parsed_program.prog_loc.loc_start,
-          loc_end: parsed_program.prog_loc.loc_start,
+          loc_start: parsed_program.prog_loc.loc_end,
+          loc_end: parsed_program.prog_loc.loc_end,
           loc_ghost: true,
         },
-        parsed_program.module_name.loc,
-      ),
-      string("module "),
-      string(parsed_program.module_name.txt),
-      hardline,
-      hardline,
+      )
+    | _ =>
       concat_map(
         ~lead=
           first =>
@@ -1485,7 +1488,24 @@ let format_ast =
             },
         ~f=print_toplevel_stmt,
         parsed_program.statements,
+      )
+    };
+
+  let final_doc =
+    concat([
+      print_comments(
+        {
+          loc_start: parsed_program.prog_loc.loc_start,
+          loc_end: parsed_program.prog_loc.loc_start,
+          loc_ghost: true,
+        },
+        parsed_program.module_name.loc,
       ),
+      string("module "),
+      string(parsed_program.module_name.txt),
+      hardline,
+      hardline,
+      toplevel,
     ]);
 
   let newline =
