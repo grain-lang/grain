@@ -38,6 +38,7 @@ let clean_grain_output = stdlib_dir =>
     file => {
       let filename = Filepath.to_string(file);
       if (Filepath.String.check_suffix(filename, ".gr.wasm")
+          || Filepath.String.check_suffix(filename, ".grartifact")
           || Filepath.String.check_suffix(filename, ".gr.wat")
           || Filepath.String.check_suffix(filename, ".gr.modsig")) {
         Fs.rmExn(file);

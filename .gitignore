@@ -17,6 +17,7 @@ _build/
 .installed-pkgs
 notes.org
 node_modules/
+*.grartifact
 *.wasm
 *.wasm.map
 *.wat

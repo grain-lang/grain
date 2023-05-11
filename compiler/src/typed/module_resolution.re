@@ -50,7 +50,7 @@ let read_file_cmi = f => {
 };
 
 let get_output_name = name => {
-  Filepath.String.remove_extension(name) ++ ".gr.wasm";
+  Filepath.String.remove_extension(name) ++ ".grartifact";
 };
 
 let find_ext_in_dir = (dir, name) => {
@@ -177,7 +177,7 @@ let resolve_unit = (~search_path=?, ~cache=true, ~base_dir=?, unit_name) => {
   ) {
   | (true, Some(res)) => res
   | _ =>
-    let exts = [".gr", ".gr.wasm"];
+    let exts = [".gr", ".gr.wasm", ".grartifact"];
     let (_, dir, basename, _) =
       find_in_path_uncap(~exts, base_dir, path, unit_name);
     if (cache) {
@@ -205,7 +205,7 @@ let locate_module = (~disable_relpath=false, base_dir, path, unit_name) => {
     let grain_src_exts = [".gr"];
     let (dir, m) =
       switch (
-        find_in_path_uncap(~exts=[".gr.wasm"], base_dir, path, unit_name)
+        find_in_path_uncap(~exts=[".grartifact"], base_dir, path, unit_name)
       ) {
       | (objpath, dir, basename, ext) =>
         ignore(log_resolution(unit_name, dir, basename));
