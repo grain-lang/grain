@@ -158,7 +158,7 @@ let open_process = args => {
   (code, out, err);
 };
 
-let run = (~num_pages=?, file) => {
+let run = (~num_pages=?, ~extra_args=[||], file) => {
   let mem_flags =
     switch (num_pages) {
     | Some(x) => [|
@@ -185,6 +185,7 @@ let run = (~num_pages=?, file) => {
       mem_flags,
       [|"-S", stdlib, "-I", Filepath.to_string(test_libs_dir), preopen|],
       [|file|],
+      extra_args,
     ]);
 
   let (code, out, err) = open_process(cmd);
@@ -289,11 +290,11 @@ let makeNoWarningRunner = (test, name, prog) => {
   });
 };
 
-let makeRunner = (test, ~num_pages=?, ~config_fn=?, name, prog, expected) => {
+let makeRunner = (test, ~num_pages=?, ~config_fn=?, ~extra_args=?, name, prog, expected) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);
-      let (result, _) = run(~num_pages?, wasmfile(name));
+      let (result, _) = run(~num_pages?, ~extra_args?, wasmfile(name));
       expect.string(result).toEqual(expected);
     })
   });
