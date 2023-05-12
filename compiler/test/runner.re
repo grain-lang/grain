@@ -290,7 +290,8 @@ let makeNoWarningRunner = (test, name, prog) => {
   });
 };
 
-let makeRunner = (test, ~num_pages=?, ~config_fn=?, ~extra_args=?, name, prog, expected) => {
+let makeRunner =
+    (test, ~num_pages=?, ~config_fn=?, ~extra_args=?, name, prog, expected) => {
   test(name, ({expect}) => {
     Config.preserve_all_configs(() => {
       ignore @@ compile(~num_pages?, ~config_fn?, name, module_header ++ prog);

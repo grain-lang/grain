@@ -20,7 +20,8 @@ describe("wasi args and env", ({test, testSkip}) => {
     Ok(env) => {
       print(Array.filter(var => {
         let s = x => String.startsWith(x, var)
-        !(s("PWD=") || s("SHLVL=") || s("_="))
+        // ignore "extraneous" environment variables that get injected automatically
+        s("FOO=") || s("BAR=") || s("BAZ=")
       }, env))
     },
     _ => print("Error reading env")
