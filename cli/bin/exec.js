@@ -141,7 +141,7 @@ function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
   });
 
   const env = {
-    ...cliEnv,
+    ENV_VARS: JSON.stringify(cliEnv),
     PREOPENS: JSON.stringify(preopens),
     NODE_OPTIONS: `--experimental-wasi-unstable-preview1 --no-warnings`,
   };
