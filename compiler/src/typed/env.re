@@ -760,6 +760,8 @@ let check_consistency = ps =>
             );
           Consistbl.check(
             crc_units,
+            // This is a workaround; should address
+            // TODO(#1843): Investigate CRC behavior
             Filepath.String.chop_suffix(resolved_file_name, ".gr"),
             crc,
             ps.ps_filename,
