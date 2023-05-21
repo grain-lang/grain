@@ -122,16 +122,18 @@ function getGrainrun() {
 
 const grainrun = getGrainrun();
 
-function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
+function execGrainrun(
+  unprocessedArgs,
+  file,
+  options,
+  program,
+  execOpts = { stdio: "inherit" }
+) {
   const preopens = {};
   options.dir?.forEach((preopen) => {
     const [guestDir, hostDir = guestDir] = preopen.split("=");
     preopens[guestDir] = hostDir;
   });
-
-  const rawArgs = process.argv;
-  const endOptsIndex = rawArgs.findIndex((x) => x === "--");
-  const args = rawArgs.slice(endOptsIndex === -1 ? Infinity : endOptsIndex + 1);
 
   const cliEnv = {};
   options.env?.forEach((env) => {
@@ -147,7 +149,10 @@ function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
   };
 
   try {
-    execSync(`${grainrun} ${file} ${args.join(" ")}`, { ...execOpts, env });
+    execSync(`${grainrun} ${file} ${unprocessedArgs.join(" ")}`, {
+      ...execOpts,
+      env,
+    });
   } catch (e) {
     process.exit(e.status);
   }
