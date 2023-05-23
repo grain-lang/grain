@@ -170,7 +170,9 @@ if (endOptsI === -1) {
   endOptsI = Infinity;
 }
 const argsToProcess = process.argv.slice(0, endOptsI);
+console.log(argsToProcess);
 const unprocessedArgs = process.argv.slice(endOptsI + 1);
+console.log(unprocessedArgs);
 
 const program = new GrainCommand();
 
