@@ -23,37 +23,38 @@ describe("wasi args and env", ({test, testSkip}) => {
   |};
 
   assertRun(
-    ~extra_args=[|"--", "a", "b"|],
+    ~extra_args=[|"a", "b"|],
     "print_args1",
     print_wasi_info,
     "[> \"a\", \"b\"]\n[> ]\n",
   );
+  // assertRun(
+  //   ~extra_args=["a", "b"],
+  //   "print_args2",
+  //   print_wasi_info,
+  //   "[> ]\n[> ]\n",
+  // );
   assertRun(
-    ~extra_args=[|"a", "b"|],
-    "print_args2",
-    print_wasi_info,
-    "[> ]\n[> ]\n",
-  );
-  assertRun(
-    ~extra_args=[|"--env=FOO=bar", "a", "b"|],
+    ~env_args=[|"FOO=bar"|],
     "print_args3",
     print_wasi_info,
     "[> ]\n[> \"FOO=bar\"]\n",
   );
   assertRun(
-    ~extra_args=[|"--env", "FOO=bar", "BAR=baz", "BAZ"|],
+    ~env_args=[|"FOO=bar", "BAR=baz", "BAZ"|],
     "print_args4",
     print_wasi_info,
     "[> ]\n[> \"FOO=bar\", \"BAR=baz\", \"BAZ=\"]\n",
   );
   assertRun(
-    ~extra_args=[|"--env", "FOO=bar", "--", "a", "b"|],
+    ~env_args=[|"FOO=bar"|],
+    ~extra_args=[|"a", "b"|],
     "print_args5",
     print_wasi_info,
     "[> \"a\", \"b\"]\n[> \"FOO=bar\"]\n",
   );
   assertRun(
-    ~extra_args=[|"--", "a", "b", "--env", "FOO=bar"|],
+    ~extra_args=[|"a", "b", "--env", "FOO=bar"|],
     "print_args6",
     print_wasi_info,
     "[> \"a\", \"b\", \"--env\", \"FOO=bar\"]\n[> ]\n",
