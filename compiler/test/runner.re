@@ -181,11 +181,9 @@ let run = (~num_pages=?, ~env_args=[||], ~extra_args=?, file) => {
 
   let env = Array.map(env => Printf.sprintf("--env=%s", env), env_args);
 
-  let split = Sys.win32 ? "--%" : "--";
-
   let extra_args =
     switch (extra_args) {
-    | Some(args) => Array.concat([[|split|], args])
+    | Some(args) => Array.concat([[|"--"|], args])
     | None => [||]
     };
 
