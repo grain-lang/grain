@@ -332,7 +332,15 @@ let write_universal_exports =
             // Remove existing Grain export (if any)
             Export.remove_export(wasm_mod, name);
             ignore @@ Export.add_function_export(wasm_mod, name, name);
-          | TSigValue(_)
+          | TSigValue(id, {val_repr: ReprValue(_), val_fullpath: path}) =>
+            let name = Ident.name(id);
+            let exported_name = "GRAIN$EXPORT$" ++ name;
+            let internal_global_name =
+              Hashtbl.find(exported_names, exported_name);
+            // Remove existing Grain export (if any)
+            Export.remove_export(wasm_mod, name);
+            ignore @@
+            Export.add_global_export(wasm_mod, internal_global_name, name);
           | TSigType(_)
           | TSigTypeExt(_)
           | TSigModule(_)
