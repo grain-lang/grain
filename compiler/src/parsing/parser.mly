@@ -343,6 +343,7 @@ aliasable(X):
 use_item:
   | TYPE aliasable(uid) { PUseType { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | MODULE aliasable(uid) { PUseModule { name=fst $2; alias = snd $2; loc=to_loc $loc} }
+  | EXCEPTION aliasable(uid) { PUseException { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | aliasable(lid) { PUseValue { name=fst $1; alias = snd $1; loc=to_loc $loc} }
 
 use_items:
@@ -372,6 +373,7 @@ data_declaration_stmts:
 provide_item:
   | TYPE aliasable(uid) { PProvideType { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | MODULE aliasable(uid) { PProvideModule { name=fst $2; alias = snd $2; loc=to_loc $loc} }
+  | EXCEPTION aliasable(uid) { PProvideException { name=fst $2; alias = snd $2; loc=to_loc $loc} }
   | aliasable(lid) { PProvideValue { name=fst $1; alias = snd $1; loc=to_loc $loc} }
 
 provide_items:

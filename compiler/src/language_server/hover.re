@@ -125,6 +125,13 @@ let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
   grain_type_code_block(Printtyp.string_of_type_declaration(~ident, decl));
 };
 
+let exception_declaration_lens =
+    (ident: Ident.t, ext: Types.extension_constructor) => {
+  grain_type_code_block(
+    Printtyp.string_of_extension_constructor(~ident, ext),
+  );
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -160,6 +167,12 @@ let process =
         ~id,
         ~range=Utils.loc_to_range(loc),
         declaration_lens(ident, decl),
+      )
+    | [Exception({ident, ext, loc}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=Utils.loc_to_range(loc),
+        exception_declaration_lens(ident, ext),
       )
     | [Module({path, decl, loc}), ..._] =>
       send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))

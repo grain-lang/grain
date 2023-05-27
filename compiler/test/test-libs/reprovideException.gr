@@ -1,0 +1,6 @@
+module ReprovideException
+
+include "./provideException"
+from ProvideException use { exception MyException }
+
+provide { exception MyException }

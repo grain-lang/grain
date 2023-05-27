@@ -1,0 +1,5 @@
+module ProvideException
+
+exception OriginalException
+
+provide { exception OriginalException as MyException }

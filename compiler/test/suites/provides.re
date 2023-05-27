@@ -9,6 +9,7 @@ describe("provides", ({test, testSkip}) => {
       test,
     );
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertRunError = makeErrorRunner(test);
   let assertHasWasmExport = (name, prog, expectedExports) => {
     test(
       name,
@@ -157,6 +158,21 @@ describe("provides", ({test, testSkip}) => {
     "multiple_provides_9",
     "let foo = 1; let bar = 2; provide {foo, foo as bar, bar as foo}",
     "provided multiple times",
+  );
+  assertRunError(
+    "provide_exceptions1",
+    "include \"provideException\"; from ProvideException use *; let f = () => if (true) { throw MyException }; f()",
+    "OriginalException",
+  );
+  assertRunError(
+    "provide_exceptions2",
+    "include \"reprovideException\"; from ReprovideException use *; let f = () => if (true) { throw MyException }; f()",
+    "OriginalException",
+  );
+  assertRunError(
+    "provide_exceptions3",
+    "include \"reprovideException\"; from ReprovideException use { exception MyException as E }; let f = () => if (true) { throw E }; f()",
+    "OriginalException",
   );
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");

@@ -464,6 +464,11 @@ and use_item =
       alias: option(loc(Identifier.t)),
       loc: Location.t,
     })
+  | PUseException({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
   | PUseModule({
       name: loc(Identifier.t),
       alias: option(loc(Identifier.t)),
@@ -591,6 +596,11 @@ type value_description = {
 [@deriving (sexp, yojson)]
 type provide_item =
   | PProvideType({
+      name: loc(Identifier.t),
+      alias: option(loc(Identifier.t)),
+      loc: Location.t,
+    })
+  | PProvideException({
       name: loc(Identifier.t),
       alias: option(loc(Identifier.t)),
       loc: Location.t,
