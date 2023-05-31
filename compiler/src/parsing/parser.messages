@@ -455,6 +455,18 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE MODULE YIELD
 
 Expected an uppercase type identifier.
 
+program: MODULE UIDENT EOL FROM UIDENT USE LBRACE EXCEPTION YIELD
+##
+## Ends in an error in state: 57.
+##
+## use_item -> EXCEPTION . aliasable(uid) [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## EXCEPTION
+##
+
+Expected an uppercase exception identifier.
+
 program: MODULE UIDENT EOL PROVIDE LBRACE MODULE UIDENT YIELD
 ##
 ## Ends in an error in state: 49.
@@ -557,6 +569,18 @@ program: MODULE UIDENT EOL PROVIDE LBRACE TYPE YIELD
 ##
 
 Expected a type identifier to provide.
+
+program: MODULE UIDENT EOL PROVIDE LBRACE EXCEPTION YIELD
+##
+## Ends in an error in state: 825.
+##
+## provide_item -> EXCEPTION . aliasable(uid) [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## EXCEPTION
+##
+
+Expected an exception identifier to provide.
 
 program: MODULE UIDENT EOL FROM UIDENT USE LBRACE LIDENT AS LIDENT YIELD
 ##
