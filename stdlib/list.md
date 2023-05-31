@@ -1512,7 +1512,8 @@ Returns:
 Examples:
 
 ```grain
-List.Mutable.init(5, n => n + 3) // fromList([3, 4, 5, 6, 7])
+let list = List.Mutable.init(5, n => n + 3)
+assert list = List.Mutable.fromList([3, 4, 5, 6, 7])
 ```
 
 #### List.Mutable.**first**
@@ -1705,7 +1706,8 @@ Returns:
 Examples:
 
 ```grain
-List.Mutable.reduce((a, b) => a + b, 0, fromList([1, 2, 3])) // 6
+let list = List.Mutable.fromList([1, 2, 3])
+assert List.Mutable.reduce((a, b) => a + b, 0, list) == 6
 ```
 
 #### List.Mutable.**reduceRight**
@@ -1744,7 +1746,8 @@ Returns:
 Examples:
 
 ```grain
-List.Mutable.reduceRight((a, b) => b ++ a, "", fromList(["baz", "bar", "foo"])) // "foobarbaz"
+let list = List.Mutable.fromList(["baz", "bar", "foo"])
+assert List.Mutable.reduceRight((a, b) => b ++ a, "", list) == "foobarbaz"
 ```
 
 #### List.Mutable.**map**
@@ -1971,7 +1974,10 @@ Returns:
 Examples:
 
 ```grain
-List.Mutable.flatten(fromList([fromList([1, 2]), fromList([3, 4])])) // fromList([1, 2, 3, 4])
+let list1 = List.Mutable.fromList([1, 2])
+let list2 = List.Mutable.fromList([3, 4])
+let list = List.Mutable.fromList([list1, list2])
+assert List.Mutable.flatten(list) == List.Mutable.fromList([1, 2, 3, 4])
 ```
 
 #### List.Mutable.**contains**
@@ -2154,21 +2160,27 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`n`|`Number`|The number of elements to rotate by|
+|`count`|`Number`|The number of elements to rotate by|
 |`list`|`List<a>`|The list to be rotated|
 
 Examples:
 
 ```grain
-let list = fromList([1, 2, 3, 4, 5]); List.Mutable.rotate(2, list); assert list == fromList([3, 4, 5, 1, 2])
+let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+List.Mutable.rotate(2, list)
+assert list == List.Mutable.fromList([3, 4, 5, 1, 2])
 ```
 
 ```grain
-let list = fromList([1, 2, 3, 4, 5]); List.Mutable.rotate(-1, list); assert list == fromList([5, 1, 2, 3, 4])
+let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+List.Mutable.rotate(-1, list)
+assert list == List.Mutable.fromList([5, 1, 2, 3, 4])
 ```
 
 ```grain
-let list = fromList([1, 2, 3, 4, 5]); List.Mutable.rotate(-7, list); assert list == fromList([4, 5, 1, 2, 3])
+let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+List.Mutable.rotate(-7, list)
+assert list == List.Mutable.fromList([4, 5, 1, 2, 3])
 ```
 
 #### List.Mutable.**unique**
@@ -2231,11 +2243,15 @@ Returns:
 Examples:
 
 ```grain
-List.Mutable.zip(fromList([1, 2, 3]), fromList([4, 5, 6])) // fromList([(1, 4), (2, 5), (3, 6)])
+let list1 = List.Mutable.fromList([1, 2, 3])
+let list2 = List.Mutable.fromList([4, 5, 6])
+assert List.Mutable.zip(list1, list2) == List.Mutable.fromList([(1, 4), (2, 5), (3, 6)])
 ```
 
 ```grain
-List.Mutable.zip(fromList([1, 2, 3]), fromList([4, 5])) // fromList([(1, 4), (2, 5)])
+let list1 = List.Mutable.fromList([1, 2, 3])
+let list2 = List.Mutable.fromList([4, 5])
+assert List.Mutable.zip(list1, list2) == List.Mutable.fromList([(1, 4), (2, 5)])
 ```
 
 #### List.Mutable.**zipWith**
@@ -2275,11 +2291,15 @@ Returns:
 Examples:
 
 ```grain
-List.Mutable.zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) // fromList([5, 7, 9])
+let list1 = List.Mutable.fromList([1, 2, 3])
+let list2 = List.Mutable.fromList([4, 5, 6])
+assert List.Mutable.zipWith((a, b) => a + b, list1, list2) == List.Mutable.fromList([5, 7, 9])
 ```
 
 ```grain
-List.Mutable.zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) // fromList([4, 10])
+let list1 = List.Mutable.fromList([1, 2, 3])
+let list2 = List.Mutable.fromList([4, 5])
+assert List.Mutable.zipWith((a, b) => a * b, list1, list2) == List.Mutable.fromList([4, 10])
 ```
 
 #### List.Mutable.**unzip**
@@ -2448,8 +2468,7 @@ No other changes yet.
 copy : (list: List<a>) => List<a>
 ```
 
-Produces a shallow copy of the input list. The new list contains the
-same elements as the original.
+Produces a shallow copy of the input list.
 
 Parameters:
 
@@ -2474,7 +2493,7 @@ No other changes yet.
 clear : (list: List<a>) => Void
 ```
 
-Clears the list.
+Clears the provided list.
 
 Parameters:
 

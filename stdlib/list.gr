@@ -1066,7 +1066,9 @@ provide module Mutable {
    * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
    * @returns The new list
    *
-   * @example List.Mutable.init(5, n => n + 3) // fromList([3, 4, 5, 6, 7])
+   * @example
+   * let list = List.Mutable.init(5, n => n + 3)
+   * assert list = List.Mutable.fromList([3, 4, 5, 6, 7])
    *
    * @since v0.6.0
    */
@@ -1328,7 +1330,9 @@ provide module Mutable {
    * @param list: The list to iterate
    * @returns The final accumulator returned from `fn`
    *
-   * @example List.Mutable.reduce((a, b) => a + b, 0, fromList([1, 2, 3])) // 6
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3])
+   * assert List.Mutable.reduce((a, b) => a + b, 0, list) == 6
    *
    * @since v0.6.0
    */
@@ -1356,7 +1360,9 @@ provide module Mutable {
    * @param list: The list to iterate
    * @returns The final accumulator returned from `fn`
    *
-   * @example List.Mutable.reduceRight((a, b) => b ++ a, "", fromList(["baz", "bar", "foo"])) // "foobarbaz"
+   * @example
+   * let list = List.Mutable.fromList(["baz", "bar", "foo"])
+   * assert List.Mutable.reduceRight((a, b) => b ++ a, "", list) == "foobarbaz"
    *
    * @since v0.6.0
    */
@@ -1548,7 +1554,11 @@ provide module Mutable {
    * @param list: The list to flatten
    * @returns A new list containing all nested list elements combined
    *
-   * @example List.Mutable.flatten(fromList([fromList([1, 2]), fromList([3, 4])])) // fromList([1, 2, 3, 4])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2])
+   * let list2 = List.Mutable.fromList([3, 4])
+   * let list = List.Mutable.fromList([list1, list2])
+   * assert List.Mutable.flatten(list) == List.Mutable.fromList([1, 2, 3, 4])
    *
    * @since v0.6.0
    */
@@ -1650,12 +1660,21 @@ provide module Mutable {
    * If value is negative, list elements will be rotated by the
    * specified amount to the right. See examples.
    *
-   * @param n: The number of elements to rotate by
+   * @param count: The number of elements to rotate by
    * @param list: The list to be rotated
    *
-   * @example let list = fromList([1, 2, 3, 4, 5]); List.Mutable.rotate(2, list); assert list == fromList([3, 4, 5, 1, 2])
-   * @example let list = fromList([1, 2, 3, 4, 5]); List.Mutable.rotate(-1, list); assert list == fromList([5, 1, 2, 3, 4])
-   * @example let list = fromList([1, 2, 3, 4, 5]); List.Mutable.rotate(-7, list); assert list == fromList([4, 5, 1, 2, 3])
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+   * List.Mutable.rotate(2, list)
+   * assert list == List.Mutable.fromList([3, 4, 5, 1, 2])
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+   * List.Mutable.rotate(-1, list)
+   * assert list == List.Mutable.fromList([5, 1, 2, 3, 4])
+   * @example
+   * let list = List.Mutable.fromList([1, 2, 3, 4, 5])
+   * List.Mutable.rotate(-7, list)
+   * assert list == List.Mutable.fromList([4, 5, 1, 2, 3])
    *
    * @since v0.6.0
    */
@@ -1700,8 +1719,14 @@ provide module Mutable {
    * @param list2: The list to provide values for the second tuple element
    * @returns The new list containing indexed pairs of `(a, b)`
    *
-   * @example List.Mutable.zip(fromList([1, 2, 3]), fromList([4, 5, 6])) // fromList([(1, 4), (2, 5), (3, 6)])
-   * @example List.Mutable.zip(fromList([1, 2, 3]), fromList([4, 5])) // fromList([(1, 4), (2, 5)])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5, 6])
+   * assert List.Mutable.zip(list1, list2) == List.Mutable.fromList([(1, 4), (2, 5), (3, 6)])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5])
+   * assert List.Mutable.zip(list1, list2) == List.Mutable.fromList([(1, 4), (2, 5)])
    *
    * @since v0.6.0
    */
@@ -1724,8 +1749,14 @@ provide module Mutable {
    * @param list2: The list whose elements will each be passed to the function as the second argument
    * @returns The new list containing elements derived from applying the function to pairs of input list elements
    *
-   * @example List.Mutable.zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) // fromList([5, 7, 9])
-   * @example List.Mutable.zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) // fromList([4, 10])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5, 6])
+   * assert List.Mutable.zipWith((a, b) => a + b, list1, list2) == List.Mutable.fromList([5, 7, 9])
+   * @example
+   * let list1 = List.Mutable.fromList([1, 2, 3])
+   * let list2 = List.Mutable.fromList([4, 5])
+   * assert List.Mutable.zipWith((a, b) => a * b, list1, list2) == List.Mutable.fromList([4, 10])
    *
    * @since v0.6.0
    */
@@ -1846,8 +1877,7 @@ provide module Mutable {
   }
 
   /**
-   * Produces a shallow copy of the input list. The new list contains the
-   * same elements as the original.
+   * Produces a shallow copy of the input list.
    *
    * @param list: The list to copy
    * @returns The new list containing the elements from the input
@@ -1859,7 +1889,7 @@ provide module Mutable {
   }
 
   /**
-   * Clears the list.
+   * Clears the provided list.
    *
    * @param list: The list to clear
    *
