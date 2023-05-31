@@ -388,8 +388,8 @@ describe("recursive types", ({test, testSkip}) => {
     {|
       record T {
         x: Number
-      },
-      enum T2 {
+      }
+      and enum T2 {
         T2(Number)
       }
     |},
@@ -400,8 +400,8 @@ describe("recursive types", ({test, testSkip}) => {
     {|
       record rec T {
         x: Number
-      },
-      enum rec T2 {
+      }
+      and enum rec T2 {
         T2(Number)
       }
     |},
@@ -412,8 +412,8 @@ describe("recursive types", ({test, testSkip}) => {
     {|
       record rec T {
         x: T
-      },
-      enum T2 {
+      }
+      and enum T2 {
         T2(T2),
         Val(Number)
       }
