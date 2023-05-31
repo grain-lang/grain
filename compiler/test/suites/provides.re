@@ -2,6 +2,9 @@ open Grain_tests.TestFramework;
 open Grain_tests.Runner;
 
 describe("provides", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
   let assertSnapshot = makeSnapshotRunner(test);
   let assertStartSectionSnapshot =
     makeSnapshotRunner(
@@ -9,7 +12,7 @@ describe("provides", ({test, testSkip}) => {
       test,
     );
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertRunError = makeErrorRunner(test);
+  let assertRunError = makeErrorRunner(test_or_skip);
   let assertHasWasmExport = (name, prog, expectedExports) => {
     test(
       name,
