@@ -34,6 +34,12 @@ enum LookupFlag {
 
 Flags that determine how paths should be resolved when looking up a file or directory.
 
+Variants:
+
+|variant name|description|
+|------------|-----------|
+|`SymlinkFollow`|Follow symlinks|
+
 ### File.**OpenFlag**
 
 ```grain
@@ -46,6 +52,15 @@ enum OpenFlag {
 ```
 
 Flags that determine how a file or directory should be opened.
+
+Variants:
+
+|variant name|description|
+|------------|-----------|
+|`Create`|Create file if it does not exist.|
+|`Directory`|Fail if not a directory.|
+|`Exclusive`|Fail if file already exists.|
+|`Truncate`|Truncate file to size 0.|
 
 ### File.**Rights**
 
@@ -86,6 +101,40 @@ enum Rights {
 Flags that determine which rights a `FileDescriptor` should have
 and which rights new `FileDescriptor`s should inherit from it.
 
+Variants:
+
+|variant name|description|
+|------------|-----------|
+|`FdDatasync`|The right to invoke `fdDatasync`.<br />If `PathOpen` is set, includes the right to invoke<br />`pathOpen` with `FdFlag::Dsync`.|
+|`FdRead`|The right to invoke `fdRead`.<br />If `Rights::FdSeek` is set, includes the right to invoke `fdPread`.|
+|`FdSeek`|The right to invoke `fdSeek`. This flag implies `Rights::FdTell`.|
+|`FdSetFlags`|The right to invoke `fdSetFlags`.|
+|`FdSync`|The right to invoke `fdSync`.<br />If `PathOpen` is set, includes the right to invoke<br />`pathOpen` with `FdFlag::Rsync` and `FdFlag::Dsync`.|
+|`FdTell`|The right to invoke `fdSeek` in such a way that the file offset<br />remains unaltered (i.e., `Whence::Current` with offset zero), or to<br />invoke `fdTell`.|
+|`FdWrite`|The right to invoke `fdWrite`.<br />If `Rights::FdSeek` is set, includes the right to invoke `fdPwrite`.|
+|`FdAdvise`|The right to invoke `fdAdvise`.|
+|`FdAllocate`|The right to invoke `fdAllocate`.|
+|`PathCreateDirectory`|The right to invoke `pathCreateDirectory`.|
+|`PathCreateFile`|If `PathOpen` is set, the right to invoke `pathOpen` with `OpenFlag::Create`.|
+|`PathLinkSource`|The right to invoke `pathLink` with the file descriptor as the<br />source directory.|
+|`PathLinkTarget`|The right to invoke `pathLink` with the file descriptor as the<br />target directory.|
+|`PathOpen`|The right to invoke `pathOpen`.|
+|`FdReaddir`|The right to invoke `fdReaddir`.|
+|`PathReadlink`|The right to invoke `pathReadlink`.|
+|`PathRenameSource`|The right to invoke `pathRename` with the file descriptor as the source directory.|
+|`PathRenameTarget`|The right to invoke `pathRename` with the file descriptor as the target directory.|
+|`PathFilestats`|The right to invoke `pathFilestats`.|
+|`PathSetSize`|The right to change a file's size (there's no `pathSetSize`).<br />If `PathOpen` is set, includes the right to invoke `pathOpen` with `OpenFlag::Truncate`.|
+|`PathSetTimes`|The right to invoke `pathSetAccessTime`, `pathSetAccessTimeNow`, `pathSetModifiedTime`, or `pathSetModifiedTimeNow`.|
+|`FdFilestats`|The right to invoke `fdFilestats`.|
+|`FdSetSize`|The right to invoke `fdSetSize`.|
+|`FdSetTimes`|The right to invoke `fdSetAccessTime`, `fdSetAccessTimeNow`, `fdSetModifiedTime`, or `fdSetModifiedTimeNow`.|
+|`PathSymlink`|The right to invoke `pathSymlink`.|
+|`PathRemoveDirectory`|The right to invoke `pathRemoveDirectory`.|
+|`PathUnlinkFile`|The right to invoke `pathUnlinkFile`.|
+|`PollFdReadwrite`|If `Rights::FdRead` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdRead`.<br />If `Rights::FdWrite` is set, includes the right to invoke `pollOneoff` (not yet implemented) to subscribe to `EventType::FdWrite`.|
+|`SockShutdown`|The right to invoke `sockShutdown` (not yet implemented).|
+
 ### File.**FdFlag**
 
 ```grain
@@ -99,6 +148,15 @@ enum FdFlag {
 ```
 
 Flags that determine the mode(s) that a `FileDescriptor` operates in.
+
+Variants:
+
+|variant name|description|
+|------------|-----------|
+|`Append`|Append mode: Data written to the file is always appended to the file's end.|
+|`Dsync`|Write according to synchronized I/O data integrity completion. Only the data stored in the file is synchronized.|
+|`Nonblock`|Non-blocking mode.|
+|`Rsync`|Synchronized read I/O operations.|
 
 ### File.**Filetype**
 
@@ -117,6 +175,19 @@ enum Filetype {
 
 The type of file a `FileDescriptor` refers to.
 
+Variants:
+
+|variant name|description|
+|------------|-----------|
+|`Unknown`|The type of the file descriptor or file is unknown or is different from any of the other types specified.|
+|`BlockDevice`|The file descriptor or file refers to a block device inode.|
+|`CharacterDevice`|The file descriptor or file refers to a character device inode.|
+|`Directory`|The file descriptor or file refers to a directory inode.|
+|`RegularFile`|The file descriptor or file refers to a regular file inode.|
+|`SocketDatagram`|The file descriptor or file refers to a datagram socket.|
+|`SocketStream`|The file descriptor or file refers to a byte-stream socket.|
+|`SymbolicLink`|The file refers to a symbolic link inode.|
+
 ### File.**Whence**
 
 ```grain
@@ -128,6 +199,14 @@ enum Whence {
 ```
 
 Flags that determine where seeking should begin in a file.
+
+Variants:
+
+|variant name|description|
+|------------|-----------|
+|`Set`|Seek relative to start-of-file.|
+|`Current`|Seek relative to current position.|
+|`End`|Seek relative to end-of-file.|
 
 ### File.**Stats**
 

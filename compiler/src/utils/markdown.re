@@ -32,7 +32,18 @@ let table = (~headers: list(string), rows) => {
         ),
       );
     let body =
-      List.map(row => Format.sprintf("|%s|", String.concat("|", row)), rows)
+      List.map(
+        row =>
+          Format.sprintf(
+            "|%s|",
+            Str.global_replace(
+              Str.regexp("\n"),
+              "<br />",
+              String.concat("|", row),
+            ),
+          ),
+        rows,
+      )
       |> String.concat("\n");
     Format.sprintf("|%s|\n|%s|\n%s\n\n", header, separator, body);
   } else {

@@ -238,7 +238,7 @@ module Doc = {
     };
   };
 
-  let ending_on = (~lnum, module C: OrderedComments) => {
+  let ending_on = (~lnum, ~check_prev=true, module C: OrderedComments) => {
     let rec ending_on_lnum_help = (lnum, check_prev) => {
       let data = C.find_ending_on_lnum(lnum);
       switch (data) {
@@ -248,7 +248,7 @@ module Doc = {
       | _ => None
       };
     };
-    ending_on_lnum_help(lnum, true);
+    ending_on_lnum_help(lnum, check_prev);
   };
 };
 
