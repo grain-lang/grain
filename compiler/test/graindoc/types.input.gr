@@ -1,0 +1,35 @@
+module TypeGrainDoc
+
+/**
+ * A record
+ */
+provide record R {
+  /**
+   * Record field x
+   */
+  x: Number,
+  /**
+   * Record field y
+   * Second line
+   */
+  y: String,
+}
+
+/**
+ * An enum
+ */
+provide enum E {
+  /**
+   * Enum variant
+   */
+  Variant1,
+  /**
+   * Another variant
+   */
+  Variant2(String, Number),
+}
+
+/**
+ * A regular type
+ */
+provide type Num = Number
