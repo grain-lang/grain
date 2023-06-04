@@ -19,7 +19,11 @@ describe("graindoc", ({test, testSkip}) => {
   );
   assertGrianDocOutput("since", "since", [|"--current-version=v0.2.0"|]);
   assertGrianDocOutput("example", "example", [|"--current-version=v0.2.0"|]);
-  assertGrianDocOutput("functionDoc", "functionDoc", [|"--current-version=v0.2.0"|]);
+  assertGrianDocOutput(
+    "functionDoc",
+    "functionDoc",
+    [|"--current-version=v0.2.0"|],
+  );
   assertGrianDocOutput("types", "types", [|"--current-version=v0.2.0"|]);
   assertGrainDocError(
     "singleSince",
