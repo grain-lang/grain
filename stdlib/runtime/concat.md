@@ -2,15 +2,19 @@
 title: Concat
 ---
 
+## Values
+
+Functions and constants included in the Concat module.
+
 ### Concat.**listConcat**
 
 ```grain
-listConcat : Array<List<a>> -> List<a>
+listConcat : (listsArray: Array<List<a>>) -> List<a>
 ```
 
 ### Concat.**arrayConcat**
 
 ```grain
-arrayConcat : Array<Array<a>> -> Array<a>
+arrayConcat : (arraysArray: Array<Array<a>>) -> Array<a>
 ```
 

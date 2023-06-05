@@ -39,6 +39,7 @@ let rec reject2 = (fn, list) => {
 }
 
 let l = ["a", "b", "c"]
+let a = [...l, "a", "b", ...l, "d"]
 let a = [
   ...l,
   "secondInAVeryLongString",

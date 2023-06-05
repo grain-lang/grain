@@ -431,12 +431,6 @@ module Expression = {
       switch (List.rev(a)) {
       | [] => empty
       | [base, ...rest] =>
-        let base =
-          switch (base) {
-          | ListItem(expr) =>
-            tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
-          | ListSpread(expr, _) => expr
-          };
         let has_nonfinal_spread =
           List.exists(
             expr =>
@@ -447,29 +441,44 @@ module Expression = {
             rest,
           );
         if (has_nonfinal_spread) {
+          let base =
+            switch (base) {
+            | ListItem(expr) => (
+                PExpNonSpreadExpr,
+                tuple_construct(
+                  ~loc,
+                  ~attributes?,
+                  ident_cons,
+                  [expr, empty],
+                ),
+              )
+            | ListSpread(expr, _) => (PExpSpreadExpr, expr)
+            };
           let grouped =
             List.fold_left(
               (acc, expr) => {
                 switch (expr) {
                 | ListSpread(expr, loc) => [
-                    {...expr, pexp_loc: loc},
+                    (PExpSpreadExpr, {...expr, pexp_loc: loc}),
                     ...acc,
                   ]
                 | ListItem(expr) =>
-                  let (first, rest) =
-                    switch (acc) {
-                    | [first, ...rest] => (first, rest)
-                    | _ => assert(false)
-                    };
-                  [
-                    tuple_construct(
-                      ~loc,
-                      ~attributes?,
-                      ident_cons,
-                      [expr, first],
-                    ),
-                    ...rest,
-                  ];
+                  switch (acc) {
+                  | [(_, first), ...rest] => [
+                      (
+                        PExpNonSpreadExpr,
+                        tuple_construct(
+                          ~loc,
+                          ~attributes?,
+                          ident_cons,
+                          [expr, first],
+                        ),
+                      ),
+                      ...rest,
+                    ]
+                  | _ =>
+                    failwith("Impossible: processed ListItem with empty acc")
+                  }
                 }
               },
               [base],
@@ -479,9 +488,15 @@ module Expression = {
             ~loc,
             ~attributes?,
             PExpListConcat,
-            List.map(expr => (PExpSpreadExpr, expr), grouped),
+            grouped,
           );
         } else {
+          let base =
+            switch (base) {
+            | ListItem(expr) =>
+              tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
+            | ListSpread(expr, _) => expr
+            };
           List.fold_left(
             (acc, expr) => {
               switch (expr) {

@@ -2974,9 +2974,53 @@ and print_expression_inner =
     | PExpCollectionConcat(concat_t, collections) =>
       let list_length = List.length(collections);
 
+      let flattened =
+        List.map(
+          ((t, e)) => {
+            let process_elem =
+              switch (concat_t) {
+              | PExpListConcat =>
+                let rec process_elem = list => {
+                  switch (list.Parsetree.pexp_desc) {
+                  | Parsetree.PExpConstruct(
+                      {txt: IdentName({txt: "[...]"})},
+                      PExpConstrTuple([expr, rest]),
+                    ) =>
+                    switch (rest.pexp_desc) {
+                    | Parsetree.PExpConstruct(
+                        {txt: IdentName({txt: "[]"})},
+                        PExpConstrTuple(_),
+                      ) =>
+                      // Non-spread element at end of list; do not recurse
+                      [(false, expr)]
+                    | _ => [(false, expr), ...process_elem(rest)]
+                    }
+                  | _ => [(true, list)]
+                  };
+                };
+                process_elem;
+              | PExpArrayConcat => (
+                  array => {
+                    switch (array.Parsetree.pexp_desc) {
+                    | Parsetree.PExpArray(elems) =>
+                      List.map(elem => (false, elem), elems)
+                    | _ => assert(false)
+                    };
+                  }
+                )
+              };
+            switch (t) {
+            | Parsetree.PExpSpreadExpr => [(true, e)]
+            | Parsetree.PExpNonSpreadExpr => process_elem(e)
+            };
+          },
+          collections,
+        )
+        |> List.flatten;
+
       let items =
         List.mapi(
-          (index, (t, e)) => {
+          (index, (is_spread, e)) => {
             // Do we have any comments on this line?
             // If so, we break the whole list
 
@@ -3005,24 +3049,12 @@ and print_expression_inner =
               };
 
             let expr =
-              switch (t) {
-              | Parsetree.PExpNonSpreadExpr =>
-                let e =
-                  switch (concat_t, e.pexp_desc) {
-                  | (
-                      PExpListConcat,
-                      Parsetree.PExpConstruct(
-                        {txt: IdentName({txt: "[...]"})},
-                        PExpConstrTuple([expr, _]),
-                      ),
-                    )
-                  | (PExpArrayConcat, Parsetree.PExpArray([expr])) => expr
-                  | _ =>
-                    failwith(
-                      "Impossible: formatter: non-spread concat item containing invalid data",
-                    )
-                  };
-
+              Doc.concat([
+                if (is_spread) {
+                  Doc.text("...");
+                } else {
+                  Doc.nil;
+                },
                 print_expression(
                   ~expression_parent=GenericExpression,
                   ~original_source,
@@ -3032,25 +3064,11 @@ and print_expression_inner =
                       comments,
                     ),
                   e,
-                );
-              | Parsetree.PExpSpreadExpr =>
-                Doc.concat([
-                  Doc.text("..."),
-                  print_expression(
-                    ~expression_parent=GenericExpression,
-                    ~original_source,
-                    ~comments=
-                      Comment_utils.get_comments_inside_location(
-                        ~location=e.pexp_loc,
-                        comments,
-                      ),
-                    e,
-                  ),
-                ])
-              };
+                ),
+              ]);
             (expr, end_line_comments);
           },
-          collections,
+          flattened,
         );
 
       let (last_line_breaks_for_comments, list_items) =
