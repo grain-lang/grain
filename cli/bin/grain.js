@@ -223,5 +223,4 @@ program
   .forwardOption("-o <file|dir>", "output file or directory")
   .action(exec.grainformat);
 
-console.log({allArgs: process.argv, argsToProcess, unprocessedArgs})
 program.parse(argsToProcess);

@@ -179,6 +179,15 @@ let run = (~num_pages=?, ~extra_args=[||], file) => {
       Filepath.to_string(test_data_dir),
     );
 
+  let extra_args =
+    Array.map(
+      arg =>
+        switch (Sys.win32, arg) {
+        | (true, "--") => "`--"
+        | _ => arg
+        },
+      extra_args,
+    );
   let cmd =
     Array.concat([
       [|"grain", "run"|],
