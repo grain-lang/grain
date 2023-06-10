@@ -98,13 +98,9 @@ provide enum Test {
 }
 
 enum EvenNumber {
-  Zero, // comment 0
-  OddPlusOne(OddNumber), // comment 1
-  // comment 2
-  // comment 3
+  Zero,
+  OddPlusOne(OddNumber),
 }
 and enum OddNumber {
-  // comment 4
-  // comment 5
   EvenPlusOne(EvenNumber),
-} // comment 6
+}

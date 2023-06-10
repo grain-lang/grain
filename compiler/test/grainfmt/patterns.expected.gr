@@ -24,7 +24,7 @@ match (list) {
   _ => None,
 }
 
-enum Rec { /* first */ /* second */ /* third */ /* fourth */ /* fifth */
+enum Rec {
   Rec{
     x: Number,
     y: Number,

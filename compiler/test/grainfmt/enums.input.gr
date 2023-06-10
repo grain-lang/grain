@@ -1,23 +1,17 @@
 module Enums
 
-provide enum Instructions { // brace trailer
-  // leading
-  MoveNorth(Number),  // north
-  // below north
-  MoveSouth(Number),  // south
+provide enum Instructions {
+  MoveNorth(Number),
+  MoveSouth(Number),
   MoveEast(Number),
   MoveWest(Number),
-  // comment
-  TurnLeft(Number), /*
-  stupid block */
+  TurnLeft(Number), 
   TurnRight(Number),
   MoveForward(Number),
-  //trailing
 }
 
 
 provide enum Ship {
-  // east/west, north/south, facing degrees
   Ship(Number, Number, Number)
 }
 
@@ -32,19 +26,19 @@ enum ParsedRegularExpression {
   REWordBoundary,
   RENotWordBoundary,
   RELiteral(Char),
-  RELiteralString(String), // <- sequences of literals are flattened into a string
+  RELiteralString(String),
   REAlts(ParsedRegularExpression, ParsedRegularExpression),
-  RESequence(List<ParsedRegularExpression>, Bool), // seq elts, needs backtrack
-  REGroup(ParsedRegularExpression, Number), // regex, group ID
-  RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool), // regex, min, max (None for infinity), true=non-greedy
-  REMaybe(ParsedRegularExpression, Bool), // regex, true=non-greedy
-  REConditional(ParsedRegularExpression, ParsedRegularExpression, Option<ParsedRegularExpression>, Number, Number, Bool), // test, if-true, if-false, n-start, num-n, needs-backtrack
-  RELookahead(ParsedRegularExpression, Bool, Number, Number), // regex, is-match, n-start, num-n
-  RELookbehind(ParsedRegularExpression, Bool, Box<Number>, Box<Number>, Number, Number), // regex, is-match, lb-min, lb-max, n-start, num-n (lb-xx values patched in later)
-  RECut(ParsedRegularExpression, Number, Number, Bool), // regex, n-start, num-n, needs-backtrack
-  REReference(Number, Bool), // n, case-sensitive
+  RESequence(List<ParsedRegularExpression>, Bool),
+  REGroup(ParsedRegularExpression, Number),
+  RERepeat(ParsedRegularExpression, Number, Option<Number>, Bool),
+  REMaybe(ParsedRegularExpression, Bool),
+  REConditional(ParsedRegularExpression, ParsedRegularExpression, Option<ParsedRegularExpression>, Number, Number, Bool),
+  RELookahead(ParsedRegularExpression, Bool, Number, Number),
+  RELookbehind(ParsedRegularExpression, Bool, Box<Number>, Box<Number>, Number, Number),
+  RECut(ParsedRegularExpression, Number, Number, Bool),
+  REReference(Number, Bool),
   RERange(List<(Number, Number)>),
-  REUnicodeCategories(Bool) // symlist, true=match/false=does-not-match
+  REUnicodeCategories(Bool)
 }
 
 

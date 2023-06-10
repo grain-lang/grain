@@ -33,7 +33,6 @@ init3(index => {
 ]
 
 let makePrettyPrintJSONWriter = String.forEachCodePoint(c => {
-  // a
   void
 }, "")
 

@@ -3,5 +3,4 @@ module CustomOperators
 let (+++) = (*)
 let (***) = (+)
 
-// validate precedence is maintained
 (a +++ b) *** c

@@ -29,7 +29,7 @@ match (list) {
   _ => None,
 }
 
-enum Rec { Rec /* first */ { /* second */ x: Number, /* third */ y: Number /* fourth */ } /* fifth */, Tup(Number, Number) }
+enum Rec { Rec { x: Number, y: Number  }, Tup(Number, Number) }
 
 match (Rec { x: 1, y: 2 }) {
   Rec  {x: 3, _} => 3,
