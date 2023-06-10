@@ -7,16 +7,14 @@ let trimString = (str: String, end: Bool) => {
   for (; i < charsLength && i > -1; i += offset) {
     let currentChar = chars[i];
     if (
-      // Spacing
-      currentChar != '\u{0009}'  && // Tab
-      currentChar != '\u{000B}'  && // LINE TABULATION
-      currentChar != '\u{000C}'  && // FORM FEED (FF)
-      currentChar != '\u{0020}'  && // Space
-      currentChar != '\u{00A0}'  && // No Break Space
-      currentChar != '\u{FEFF}'  && // ZERO WIDTH NO-BREAK SPACE
-      // Line Terminators
-      currentChar != '\n' && // LF
-      currentChar != '\r' // CR
+      currentChar != '\u{0009}'  &&
+      currentChar != '\u{000B}'  &&
+      currentChar != '\u{000C}'  &&
+      currentChar != '\u{0020}'  &&
+      currentChar != '\u{00A0}'  &&
+      currentChar != '\u{FEFF}'  &&
+      currentChar != '\n' &&
+      currentChar != '\r'
     ) break
   }
   if (end) slice(0, i+1, str)

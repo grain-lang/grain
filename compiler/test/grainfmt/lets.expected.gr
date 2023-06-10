@@ -1,6 +1,11 @@
 module Lets
 
-let rec myFun1 = x => x + 1 and myFun2 = x => x + 1
+let rec myFun1 = x =>
+  x +
+    1
+and myFun2 = x =>
+  x +
+    1
 
 let myBlock = {
   "some string"
@@ -14,8 +19,6 @@ and myFunction3 = y => {
   let myVal = 5
   "some string"
 }
-
-// Attributes
 
 @attribute
 let myToplevelAttributeFunction = x => x

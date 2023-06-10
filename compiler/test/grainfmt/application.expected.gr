@@ -28,13 +28,6 @@ sillyFunction(
 let filteri = (x, y) => []
 let findIndex = (x, y) => None
 
-/**
- * Produces a new array with any duplicates removed.
- * Uses the generic `==` structural equality operator.
- *
- * @param array: The array to filter
- * @returns The new array with only unique values
- */
 provide let unique = array => {
   filteri((el, index) =>
     findIndex(longvalue => longvalue == el, array) == Some(index), array)

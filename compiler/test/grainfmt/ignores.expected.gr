@@ -12,7 +12,7 @@ let y = [3, 4, 5]
 if (true) {
   // formatter-ignore
   let yy = [1,
-  2] // comment
+  2]
 
   let zz = [5, 6]
 }

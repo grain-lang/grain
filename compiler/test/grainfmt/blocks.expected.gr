@@ -58,7 +58,6 @@ let x = if (true) {
   5
 } else {
   if (true) {
-    // print
     print("Oi")
   }
   6

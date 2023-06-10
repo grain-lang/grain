@@ -1,10 +1,12 @@
 module Binops
 
-fofdfdfdfdfdfdfdfdfdfdfdo && bafdfdfdfdfdfdddefdfdfdfdfdr &&
-badfdfdfdfdfdfdffdffdfdfdz
+fofdfdfdfdfdfdfdfdfdfdfdo &&
+  bafdfdfdfdfdfdddefdfdfdfdfdr &&
+  badfdfdfdfdfdfdffdffdfdfdz
 
-let x = fofdfdfdfdfdfdfdfdfdfdfdo && bafdfdfdfdfdfdddefdfdfdfdfdr &&
-badfdfdfdfdfdfdffdffdfdfdz
+let x = fofdfdfdfdfdfdfdfdfdfdfdo &&
+  bafdfdfdfdfdfdddefdfdfdfdfdr &&
+  badfdfdfdfdfdfdffdffdfdfdz
 
 if (
   fofdfdfdfdfdfdfdfdfdfdfdo &&
@@ -26,11 +28,11 @@ let p = 1 + 2 - 3
 
 let p2 = 1 - 2 + 3
 
-let y = 1/2 + 3
+let y = 1 / 2 + 3
 
 let ya = 1 / (2 + 3)
 
-let y1 = 1 + 2/3
+let y1 = 1 + 2 /3
 
 let c = 1 < 2 || 2 < 3 || 3 < 4
 

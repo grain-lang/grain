@@ -9,29 +9,20 @@ y => {
   let z = 2
 }
 
-let testfna = forEachCodePoint(c /* arg */ => void)
+let testfna = forEachCodePoint(c => void)
 
-let testfn = forEachCodePoint(c /* arg */ => {
-  // a
+let testfn = forEachCodePoint(c => {
   void
 }, "")
 
-let testfn3 = forEachCodePoint((
-  c, /* arg 1 */
-  d, // eol2
-  e /* arg */
-  // eol
-) => {
-  // a
+let testfn3 = forEachCodePoint((c, d, e) => {
   void
 }, "")
 
-let testfn4 = forEachCodePoint(/* pre */ c /* arg */ => {
-  // a
+let testfn4 = forEachCodePoint(c => {
   void
 }, "")
 
-let testfn5 = forEachCodePoint(c /* arg */ => {
-  // a
+let testfn5 = forEachCodePoint(c => {
   void
 }, "")
