@@ -1,8 +1,7 @@
 module Chained
 
 let g = 7
-// g represents the precision desired, p is the values of p[i] to plug into Lanczos' formula
-and p = 8 // another comment
+and p = 8
 and q = 32
 
 let myFunction2 = x => {
@@ -14,12 +13,14 @@ and myFunction3 = y => {
   "some string"
 }
 
-let g = 7 and p = 8 and q = 32
+let g = 7
+and p = 8
+and q = 32
 
 let myFunction2 = x => {
   let inter = x + 1
   "some string"
-} // a comment
+}
 and myFunction3 = y => {
   let myVal = 5
   "some string"

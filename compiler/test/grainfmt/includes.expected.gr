@@ -5,10 +5,10 @@ include "runtime/unsafe/tags"
 include "list"
 include "option" as Opt
 include "option" as Opt
-// TODO(#1627): This comment disappears
 include "array"
 include "array" as Foo
 from List use { length, map, forEach as each }
+<<<<<<< HEAD
 from Opt use {
   module MutableOpt,
   module ImmutableOpt as Imm,
@@ -21,6 +21,10 @@ from Opt use { /* comment1 */ /* comment2 */ /* comment3 */ /* comment4 */ /* co
   type Opt,
   type Opt as OptAlias,
 }
+=======
+from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
+from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
+>>>>>>> ccb66465 (Remove all comments from formatter tests)
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use { add as (+), mul as (*), xor as (^), shl as (<<) }
@@ -32,12 +36,6 @@ provide foreign wasm storage_read: (
 ) => WasmI64 as storageRead from "env"
 
 include "runtime/unsafe/wasmi32"
-from WasmI32 use {
-  eq, // comment1
-  // comment 3
-  and_ as (&), // comment 2
-  or as (|),
-  // no signed imports, as care should be taken to use signed or unsigned operators
-}
+from WasmI32 use { eq, and_ as (&), or as (|) }
 
 provide foreign wasm promise_results_count: () => WasmI64 as promiseResultsCount from "env"

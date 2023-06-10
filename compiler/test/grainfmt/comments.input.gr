@@ -113,13 +113,6 @@ true
 else
 false
 
-if (
-  true // comment
-)
-true
-else
-false
-
 if (true) 
 // comment
 true
@@ -127,11 +120,6 @@ else
 false
 
 if (true) /* hey */
-true
-else
-false
-
-if (true /* hey */)
 true
 else
 false

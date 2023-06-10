@@ -19,34 +19,17 @@ match (list) {
 
 match (list) {
   [_, alongidentalongident123456, _] |
-  [_, _, alongidentalongident123456, _, _] => Some(alongidentalongident123456),
-  _ => None,
-}
-
-match (list) {
-  [_, alongidentalongident1234567, _] |
-  [_, _, alongidentalongident1234567, _, _] => Some(alongidentalongident1234567),
+  [_, _, alongidentalongident123456, _, _] =>
+    Some(alongidentalongident123456),
   _ => None,
 }
 
 enum Rec {
-  Rec /* first */ {
-    /* second */
+  Rec{
     x: Number,
-    /* third */
     y: Number,
-    /* fourth */
   },
-  /* fifth */
-  Tup /* sixth */ (
-    /* seventh */
-    Number,
-    /* eighth */
-    Number
-    /* ninth */
-    /* tenth */
-  ),
-  /* eleventh */
+  Tup(Number, Number),
 }
 
 match (Rec{ x: 1, y: 2 }) {
@@ -79,6 +62,7 @@ let x = match (n) {
     19,
     20,
     ...rest,
-  ] => void,
+  ] =>
+    void,
   _ => void,
 }

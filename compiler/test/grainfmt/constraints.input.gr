@@ -1,10 +1,7 @@
 module Constraints
-
 include "list"
 let test = test => {
-  // Comments
   List.forEach(i => {
-    // Comment In ForEach
     print(i)
   }, test: List<Number>)
 }

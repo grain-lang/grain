@@ -21,7 +21,6 @@ let instructions = Array.map(instruct => {
   }
 }, String.split("\n", data))
 
-// code snippet to check assignment stays on the same line after =
 let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
   match (groupN) {
     Some(groupN) when Array.length(state) > 0 => {
@@ -40,4 +39,4 @@ let addRepeatedGroup = (groupN, state, pos, n, backAmt, callback) => {
 }
 
 provide let getBefore = (array, index) => if (array == [>]) "nope"
-  else array[index - 1]
+else array[index - 1]

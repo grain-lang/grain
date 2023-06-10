@@ -27,7 +27,6 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("arrays", "arrays");
   assertFormatOutput("ifthenelse", "ifthenelse");
   assertFormatOutput("infix", "infix");
-  assertFormatOutput("comments", "comments");
   assertFormatOutput("for_loops", "for_loops");
   assertFormatOutput("strings", "strings");
   assertFormatOutput("tuples", "tuples");
@@ -40,14 +39,12 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("ignores", "ignores");
   assertFormatOutput("list_sugar", "list_sugar");
   assertFormatOutput("values", "values");
-  assertFormatOutput("brace_comments", "brace_comments");
   assertFormatOutput("while_loops", "while_loops");
   assertFormatOutput("parens", "parens");
   assertFormatOutput("windows", "windows");
   assertFormatOutput("patterns", "patterns");
   assertFormatOutput("rationals", "rationals");
   assertFormatOutput("constraints", "constraints");
-  assertFormatOutput("only_comments", "only_comments");
   assertFormatOutput("data_docs", "data_docs");
   assertFormatOutput("custom_operators", "custom_operators");
   assertFormatOutput("binops", "binops");

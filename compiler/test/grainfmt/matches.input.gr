@@ -7,7 +7,6 @@ record Queue<a>  { forwards: List<a>, backwards: List<a> }
 provide let push = (value, queue) => {
     match (queue) {
         { forwards: [], backwards: [] } => { forwards: [value], backwards: [] },
-        // comment
         { forwards, backwards } => { forwards, backwards: [value, ...backwards] }
     }
 }

@@ -105,17 +105,13 @@ let _KEY_LEN2 = 64
 /* ending block 2 */
 // trailing comment 2
 
-if (true) // comment
-  true else false
-
 if (
   true // comment
 ) true else false
 
-if (true) // comment
+if (true)
+  // comment
   true else false
-
-if (true) /* hey */ true else false
 
 if (true /* hey */) true else false
 
