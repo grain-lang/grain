@@ -10,13 +10,13 @@ Functions and constants included in the Parse module.
 
 ```grain
 isFastPath :
-  (exponent: WasmI32, mantissa: WasmI64, negative: Bool, manyDigits: Bool) ->
+  (exponent: WasmI32, mantissa: WasmI64, negative: Bool, manyDigits: Bool) =>
    Bool
 ```
 
 ### Parse.**parseFloat**
 
 ```grain
-parseFloat : (string: String) -> Result<Number, String>
+parseFloat : (string: String) => Result<Number, String>
 ```
 

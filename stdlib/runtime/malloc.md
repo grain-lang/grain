@@ -15,7 +15,7 @@ _RESERVED_RUNTIME_SPACE : WasmI32
 ### Malloc.**free**
 
 ```grain
-free : (ap: WasmI32) -> Void
+free : (ap: WasmI32) => Void
 ```
 
 Frees the given allocated pointer.
@@ -29,7 +29,7 @@ Parameters:
 ### Malloc.**malloc**
 
 ```grain
-malloc : (nb: WasmI32) -> WasmI32
+malloc : (nb: WasmI32) => WasmI32
 ```
 
 Allocates the requested number of bytes, returning a pointer.
@@ -49,7 +49,7 @@ Returns:
 ### Malloc.**getFreePtr**
 
 ```grain
-getFreePtr : () -> WasmI32
+getFreePtr : () => WasmI32
 ```
 
 Returns the current free list pointer.

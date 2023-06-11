@@ -427,7 +427,7 @@ provide let fromList = list => {
  * @since v0.2.0
  */
 @unsafe
-provide let toArray: Map<a, b> -> Array<(a, b)> = map => {
+provide let toArray: Map<a, b> => Array<(a, b)> = map => {
   from WasmI32 use { (*) }
   let length = untagSimpleNumber(map.size)
   let array = WasmI32.toGrain(allocateArray(length))

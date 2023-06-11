@@ -20,7 +20,7 @@ module Grain_parsing = struct end
 %token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
 %token COMMA SEMI AS
-%token THICKARROW ARROW
+%token THICKARROW
 %token EQUAL GETS
 %token UNDERSCORE
 %token COLON QUESTION DOT ELLIPSIS
@@ -98,7 +98,6 @@ module Grain_parsing = struct end
   lcaret
   comma
   eos
-  arrow
   thickarrow
   equal
   const
@@ -188,9 +187,6 @@ comma:
 
 %inline dot:
   | DOT opt_eols {}
-
-arrow:
-  | ARROW opt_eols {}
 
 thickarrow:
   | THICKARROW opt_eols {}
@@ -299,9 +295,9 @@ data_typ:
   | qualified_uid %prec _below_infix { Type.constr ~loc:(to_loc $loc) $1 [] }
 
 typ:
-  | data_typ arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($1)) Unlabeled $1] $3 }
-  | FUN LIDENT arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var $2)] $4 }
-  | FUN lparen arg_typs? rparen arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
+  | FUN data_typ thickarrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled $2] $4 }
+  | FUN LIDENT thickarrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var $2)] $4 }
+  | FUN lparen arg_typs? rparen thickarrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
   | LIDENT { Type.var ~loc:(to_loc $loc) $1 }

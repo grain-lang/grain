@@ -35,7 +35,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : (array: Array<a>) -> Number
+length : (array: Array<a>) => Number
 ```
 
 Provides the length of the input array.
@@ -66,7 +66,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (Number, a) -> Array<a>
+make : (Number, a) => Array<a>
 ```
 
 Creates a new array of the specified length with each element being
@@ -106,7 +106,7 @@ No other changes yet.
 </details>
 
 ```grain
-init : (Number, (Number -> a)) -> Array<a>
+init : (Number, (Number => a)) => Array<a>
 ```
 
 Creates a new array of the specified length where each element is
@@ -118,7 +118,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`length`|`Number`|The length of the new array|
-|`fn`|`Number -> a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+|`fn`|`Number => a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
 
 Returns:
 
@@ -154,7 +154,7 @@ Array.init(5, n => n + 3) // [> 3, 4, 5, 6, 7]
 </details>
 
 ```grain
-get : (index: Number, array: Array<a>) -> a
+get : (index: Number, array: Array<a>) => a
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -203,7 +203,7 @@ Array.get(1,[> 1, 2, 3, 4, 5]) == 2
 </details>
 
 ```grain
-set : (index: Number, value: a, array: Array<a>) -> Void
+set : (index: Number, value: a, array: Array<a>) => Void
 ```
 
 An alias for normal syntactic array set, i.e. `array[n] = value`.
@@ -240,7 +240,7 @@ No other changes yet.
 </details>
 
 ```grain
-append : (array1: Array<a>, array2: Array<a>) -> Array<a>
+append : (array1: Array<a>, array2: Array<a>) => Array<a>
 ```
 
 Creates a new array with the elements of the first array followed by
@@ -279,7 +279,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (arrays: List<Array<a>>) -> Array<a>
+concat : (arrays: List<Array<a>>) => Array<a>
 ```
 
 Creates a single array containing the elements of all arrays in the
@@ -317,7 +317,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (array: Array<a>) -> Array<a>
+copy : (array: Array<a>) => Array<a>
 ```
 
 Produces a shallow copy of the input array. The new array contains the
@@ -343,7 +343,7 @@ No other changes yet.
 </details>
 
 ```grain
-cycle : (fn: (a -> Void), n: Number, array: Array<a>) -> Void
+cycle : (fn: (a => Void), n: Number, array: Array<a>) => Void
 ```
 
 Iterates an array a given number of times, calling an iterator function on each element.
@@ -352,7 +352,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`n`|`Number`|The number of times to iterate the given array|
 |`array`|`Array<a>`|The array to iterate|
 
@@ -371,7 +371,7 @@ Parameters:
 </details>
 
 ```grain
-forEach : (fn: (a -> Void), array: Array<a>) -> Void
+forEach : (fn: (a => Void), array: Array<a>) => Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -380,7 +380,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`array`|`Array<a>`|The array to iterate|
 
 ### Array.**forEachi**
@@ -398,7 +398,7 @@ Parameters:
 </details>
 
 ```grain
-forEachi : (fn: ((a, Number) -> Void), array: Array<a>) -> Void
+forEachi : (fn: ((a, Number) => Void), array: Array<a>) => Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -408,7 +408,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> Void`|The iterator function to call with each element|
+|`fn`|`(a, Number) => Void`|The iterator function to call with each element|
 |`array`|`Array<a>`|The array to iterate|
 
 ### Array.**map**
@@ -426,7 +426,7 @@ Parameters:
 </details>
 
 ```grain
-map : (fn: (a -> b), array: Array<a>) -> Array<b>
+map : (fn: (a => b), array: Array<a>) => Array<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -436,7 +436,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
+|`fn`|`a => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -453,7 +453,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapi : (fn: ((a, Number) -> b), array: Array<a>) -> Array<b>
+mapi : (fn: ((a, Number) => b), array: Array<a>) => Array<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -463,7 +463,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
+|`fn`|`(a, Number) => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -480,7 +480,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (fn: ((a, b) -> a), initial: a, array: Array<b>) -> a
+reduce : (fn: ((a, b) => a), initial: a, array: Array<b>) => a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -495,7 +495,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
 |`array`|`Array<b>`|The array to iterate|
 
@@ -519,7 +519,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduceRight : (fn: ((a, b) -> b), initial: b, array: Array<a>) -> b
+reduceRight : (fn: ((a, b) => b), initial: b, array: Array<a>) => b
 ```
 
 Combines all elements of an array using a reducer function,
@@ -534,7 +534,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`b`|The initial value to use for the accumulator on the first iteration|
 |`array`|`Array<a>`|The array to iterate|
 
@@ -558,7 +558,7 @@ No other changes yet.
 </details>
 
 ```grain
-reducei : (fn: ((a, b, Number) -> a), initial: a, array: Array<b>) -> a
+reducei : (fn: ((a, b, Number) => a), initial: a, array: Array<b>) => a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -574,7 +574,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b, Number) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b, Number) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
 |`array`|`Array<b>`|The array to iterate|
 
@@ -592,7 +592,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : (fn: (b -> Array<a>), array: Array<b>) -> Array<a>
+flatMap : (fn: (b => Array<a>), array: Array<b>) => Array<a>
 ```
 
 Produces a new array by calling a function on each element
@@ -604,7 +604,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`b -> Array<a>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
+|`fn`|`b => Array<a>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
 |`array`|`Array<b>`|The array to iterate|
 
 Returns:
@@ -627,7 +627,7 @@ No other changes yet.
 </details>
 
 ```grain
-every : (fn: (a -> Bool), array: Array<a>) -> Bool
+every : (fn: (a => Bool), array: Array<a>) => Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -637,7 +637,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to check|
 
 Returns:
@@ -654,7 +654,7 @@ No other changes yet.
 </details>
 
 ```grain
-some : (fn: (a -> Bool), array: Array<a>) -> Bool
+some : (fn: (a => Bool), array: Array<a>) => Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -664,7 +664,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -681,7 +681,7 @@ No other changes yet.
 </details>
 
 ```grain
-fill : (value: a, array: Array<a>) -> Void
+fill : (value: a, array: Array<a>) => Void
 ```
 
 Replaces all elements in an array with the new value provided.
@@ -701,7 +701,7 @@ No other changes yet.
 </details>
 
 ```grain
-fillRange : (value: a, start: Number, stop: Number, array: Array<a>) -> Void
+fillRange : (value: a, start: Number, stop: Number, array: Array<a>) => Void
 ```
 
 Replaces all elements in the provided index range in the array
@@ -731,7 +731,7 @@ No other changes yet.
 </details>
 
 ```grain
-reverse : (array: Array<a>) -> Array<a>
+reverse : (array: Array<a>) => Array<a>
 ```
 
 Creates a new array with all elements in reverse order.
@@ -756,7 +756,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (array: Array<a>) -> List<a>
+toList : (array: Array<a>) => List<a>
 ```
 
 Converts the input array to a list.
@@ -781,7 +781,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) -> Array<a>
+fromList : (list: List<a>) => Array<a>
 ```
 
 Converts the input list to an array.
@@ -806,7 +806,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (search: a, array: Array<a>) -> Bool
+contains : (search: a, array: Array<a>) => Bool
 ```
 
 Checks if the value is an element of the input array.
@@ -833,7 +833,7 @@ No other changes yet.
 </details>
 
 ```grain
-find : (fn: (a -> Bool), array: Array<a>) -> Option<a>
+find : (fn: (a => Bool), array: Array<a>) => Option<a>
 ```
 
 Finds the first element in an array that satifies the given condition.
@@ -842,7 +842,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to search|
 
 Returns:
@@ -859,7 +859,7 @@ No other changes yet.
 </details>
 
 ```grain
-findIndex : (fn: (a -> Bool), array: Array<a>) -> Option<Number>
+findIndex : (fn: (a => Bool), array: Array<a>) => Option<Number>
 ```
 
 Finds the first index in an array where the element satifies the given condition.
@@ -868,7 +868,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to search|
 
 Returns:
@@ -885,7 +885,7 @@ No other changes yet.
 </details>
 
 ```grain
-product : (array1: Array<a>, array2: Array<b>) -> Array<(a, b)>
+product : (array1: Array<a>, array2: Array<b>) => Array<(a, b)>
 ```
 
 Combines two arrays into a Cartesian product of tuples containing
@@ -918,7 +918,7 @@ No other changes yet.
 </details>
 
 ```grain
-count : (fn: (a -> Bool), array: Array<a>) -> Number
+count : (fn: (a => Bool), array: Array<a>) => Number
 ```
 
 Counts the number of elements in an array that satisfy the given condition.
@@ -927,7 +927,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -944,7 +944,7 @@ No other changes yet.
 </details>
 
 ```grain
-counti : (fn: ((a, Number) -> Bool), array: Array<a>) -> Number
+counti : (fn: ((a, Number) => Bool), array: Array<a>) => Number
 ```
 
 Counts the number of elements in an array that satisfy the
@@ -954,7 +954,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`(a, Number) => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -971,7 +971,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (fn: (a -> Bool), array: Array<a>) -> Array<a>
+filter : (fn: (a => Bool), array: Array<a>) => Array<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -982,7 +982,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -999,7 +999,7 @@ No other changes yet.
 </details>
 
 ```grain
-filteri : (fn: ((a, Number) -> Bool), array: Array<a>) -> Array<a>
+filteri : (fn: ((a, Number) => Bool), array: Array<a>) => Array<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -1010,7 +1010,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`(a, Number) => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`Array<a>`|The array to iterate|
 
 Returns:
@@ -1027,7 +1027,7 @@ No other changes yet.
 </details>
 
 ```grain
-unique : (array: Array<a>) -> Array<a>
+unique : (array: Array<a>) => Array<a>
 ```
 
 Produces a new array with any duplicates removed.
@@ -1060,7 +1060,7 @@ Returns:
 </details>
 
 ```grain
-zip : (array1: Array<a>, array2: Array<b>) -> Array<(a, b)>
+zip : (array1: Array<a>, array2: Array<b>) => Array<(a, b)>
 ```
 
 Produces a new array filled with tuples of elements from both given arrays.
@@ -1094,7 +1094,7 @@ No other changes yet.
 </details>
 
 ```grain
-zipWith : (fn: ((a, b) -> c), array1: Array<a>, array2: Array<b>) -> Array<c>
+zipWith : (fn: ((a, b) => c), array1: Array<a>, array2: Array<b>) => Array<c>
 ```
 
 Produces a new array filled with elements defined by applying a function on
@@ -1110,7 +1110,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The function to apply to pairs of elements|
+|`fn`|`(a, b) => c`|The function to apply to pairs of elements|
 |`array1`|`Array<a>`|The array whose elements will each be passed to the function as the first argument|
 |`array2`|`Array<b>`|The array whose elements will each be passed to the function as the second argument|
 
@@ -1144,7 +1144,7 @@ No other changes yet.
 </details>
 
 ```grain
-unzip : (array: Array<(a, b)>) -> (Array<a>, Array<b>)
+unzip : (array: Array<(a, b)>) => (Array<a>, Array<b>)
 ```
 
 Produces two arrays by splitting apart an array of tuples.
@@ -1169,7 +1169,7 @@ No other changes yet.
 </details>
 
 ```grain
-join : (separator: String, items: Array<String>) -> String
+join : (separator: String, items: Array<String>) => String
 ```
 
 Concatenates an array of strings into a single string, separated by a separator string.
@@ -1202,7 +1202,7 @@ Returns:
 </details>
 
 ```grain
-slice : (start: Number, ?end: Number, array: Array<a>) -> Array<a>
+slice : (start: Number, ?end: Number, array: Array<a>) => Array<a>
 ```
 
 Slices an array given zero-based start and end indexes. The value
@@ -1233,7 +1233,7 @@ No other changes yet.
 </details>
 
 ```grain
-sort : (comp: ((a, a) -> Number), array: Array<a>) -> Void
+sort : (comp: ((a, a) => Number), array: Array<a>) => Void
 ```
 
 Sorts an array in-place.
@@ -1244,7 +1244,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
+|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
 |`array`|`Array<a>`|The array to be sorted|
 
 ### Array.**rotate**
@@ -1262,7 +1262,7 @@ Parameters:
 </details>
 
 ```grain
-rotate : (n: Number, arr: Array<a>) -> Void
+rotate : (n: Number, arr: Array<a>) => Void
 ```
 
 Rotates array elements in place by the specified amount to the left, such
@@ -1296,7 +1296,7 @@ No other changes yet.
 </details>
 
 ```grain
-chunk : (chunkSize: Number, arr: Array<a>) -> Array<Array<a>>
+chunk : (chunkSize: Number, arr: Array<a>) => Array<Array<a>>
 ```
 
 Splits the given array into chunks of the provided size.
@@ -1397,7 +1397,7 @@ An empty array.
 </details>
 
 ```grain
-isEmpty : (array: ImmutableArray<a>) -> Bool
+isEmpty : (array: ImmutableArray<a>) => Bool
 ```
 
 Determines if the array contains no elements.
@@ -1429,7 +1429,7 @@ Returns:
 </details>
 
 ```grain
-length : (array: ImmutableArray<a>) -> Number
+length : (array: ImmutableArray<a>) => Number
 ```
 
 Provides the length of the input array.
@@ -1467,7 +1467,7 @@ length(fromList([1, 2, 3, 4, 5])) == 5
 </details>
 
 ```grain
-get : (index: Number, array: ImmutableArray<a>) -> a
+get : (index: Number, array: ImmutableArray<a>) => a
 ```
 
 Retrieves the element from the array at the specified index.
@@ -1518,7 +1518,7 @@ get(-1, fromList([1, 2, 3, 4])) == 4
 
 ```grain
 set :
-  (index: Number, value: a, array: ImmutableArray<a>) -> ImmutableArray<a>
+  (index: Number, value: a, array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Creates a new array in which the element at the specified index is set to a
@@ -1566,7 +1566,7 @@ set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
 
 ```grain
 append :
-  (array1: ImmutableArray<a>, array2: ImmutableArray<a>) -> ImmutableArray<a>
+  (array1: ImmutableArray<a>, array2: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Creates a new array with the elements of the first array followed by
@@ -1606,7 +1606,7 @@ append(fromList([1, 2]), fromList([3, 4, 5])) == fromList([1, 2, 3, 4, 5])
 </details>
 
 ```grain
-concat : (arrays: List<ImmutableArray<a>>) -> ImmutableArray<a>
+concat : (arrays: List<ImmutableArray<a>>) => ImmutableArray<a>
 ```
 
 Creates a single array containing the elements of all arrays in the
@@ -1645,7 +1645,7 @@ concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2
 </details>
 
 ```grain
-init : (length: Number, fn: (Number -> a)) -> ImmutableArray<a>
+init : (length: Number, fn: (Number => a)) => ImmutableArray<a>
 ```
 
 Creates a new array of the specified length where each element is
@@ -1657,7 +1657,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`length`|`Number`|The length of the new array|
-|`fn`|`Number -> a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+|`fn`|`Number => a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
 
 Returns:
 
@@ -1686,7 +1686,7 @@ init(5, i => i + 3) == fromList([3, 4, 5, 6, 7])
 </details>
 
 ```grain
-make : (length: Number, value: a) -> ImmutableArray<a>
+make : (length: Number, value: a) => ImmutableArray<a>
 ```
 
 Creates a new array of the specified length with each element being
@@ -1726,7 +1726,7 @@ make(5, "foo") == fromList(["foo", "foo", "foo", "foo", "foo"])
 </details>
 
 ```grain
-forEach : (fn: (a -> Void), array: ImmutableArray<a>) -> Void
+forEach : (fn: (a => Void), array: ImmutableArray<a>) => Void
 ```
 
 Iterates an array, calling an iterator function on each element.
@@ -1735,7 +1735,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
 #### Array.Immutable.**cycle**
@@ -1753,7 +1753,7 @@ Parameters:
 </details>
 
 ```grain
-cycle : (fn: (a -> Void), n: Number, array: ImmutableArray<a>) -> Void
+cycle : (fn: (a => Void), n: Number, array: ImmutableArray<a>) => Void
 ```
 
 Iterates an array a given number of times, calling an iterator function on each element.
@@ -1762,7 +1762,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`n`|`Number`|The number of times to iterate the given array|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
@@ -1781,7 +1781,7 @@ Parameters:
 </details>
 
 ```grain
-map : (fn: (a -> b), array: ImmutableArray<a>) -> ImmutableArray<b>
+map : (fn: (a => b), array: ImmutableArray<a>) => ImmutableArray<b>
 ```
 
 Produces a new array initialized with the results of a mapper function
@@ -1791,7 +1791,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
+|`fn`|`a => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new array|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
 Returns:
@@ -1815,7 +1815,7 @@ Returns:
 </details>
 
 ```grain
-reduce : (fn: ((a, b) -> a), initial: a, array: ImmutableArray<b>) -> a
+reduce : (fn: ((a, b) => a), initial: a, array: ImmutableArray<b>) => a
 ```
 
 Combines all elements of an array using a reducer function,
@@ -1830,7 +1830,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
 |`array`|`ImmutableArray<b>`|The array to iterate|
 
@@ -1861,7 +1861,7 @@ reduce((acc, x) => acc + x, 0, fromList([1, 2, 3])) == 6
 </details>
 
 ```grain
-reduceRight : (fn: ((a, b) -> b), initial: b, array: ImmutableArray<a>) -> b
+reduceRight : (fn: ((a, b) => b), initial: b, array: ImmutableArray<a>) => b
 ```
 
 Combines all elements of an array using a reducer function,
@@ -1876,7 +1876,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`b`|The initial value to use for the accumulator on the first iteration|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
@@ -1908,7 +1908,7 @@ reduceRight((x, acc) => acc ++ x, "", fromList(["baz", "bar", "foo"])) == "fooba
 
 ```grain
 flatMap :
-  (fn: (a -> ImmutableArray<b>), array: ImmutableArray<a>) ->
+  (fn: (a => ImmutableArray<b>), array: ImmutableArray<a>) =>
    ImmutableArray<b>
 ```
 
@@ -1921,7 +1921,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> ImmutableArray<b>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
+|`fn`|`a => ImmutableArray<b>`|The function to be called on each element, where the value returned will be an array that gets appended to the new array|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
 Returns:
@@ -1951,7 +1951,7 @@ flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4,
 </details>
 
 ```grain
-fromList : (list: List<a>) -> ImmutableArray<a>
+fromList : (list: List<a>) => ImmutableArray<a>
 ```
 
 Converts the input list to an array.
@@ -1983,7 +1983,7 @@ Returns:
 </details>
 
 ```grain
-toList : (array: ImmutableArray<a>) -> List<a>
+toList : (array: ImmutableArray<a>) => List<a>
 ```
 
 Converts the input array to a list.
@@ -2015,7 +2015,7 @@ Returns:
 </details>
 
 ```grain
-filter : (fn: (a -> Bool), array: ImmutableArray<a>) -> ImmutableArray<a>
+filter : (fn: (a => Bool), array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Produces a new array by calling a function on each element of
@@ -2026,7 +2026,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
 Returns:
@@ -2050,7 +2050,7 @@ Returns:
 </details>
 
 ```grain
-every : (fn: (a -> Bool), array: ImmutableArray<a>) -> Bool
+every : (fn: (a => Bool), array: ImmutableArray<a>) => Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -2060,7 +2060,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`ImmutableArray<a>`|The array to check|
 
 Returns:
@@ -2084,7 +2084,7 @@ Returns:
 </details>
 
 ```grain
-some : (fn: (a -> Bool), array: ImmutableArray<a>) -> Bool
+some : (fn: (a => Bool), array: ImmutableArray<a>) => Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -2094,7 +2094,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
 Returns:
@@ -2118,7 +2118,7 @@ Returns:
 </details>
 
 ```grain
-reverse : (array: ImmutableArray<a>) -> ImmutableArray<a>
+reverse : (array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Creates a new array with all elements in reverse order.
@@ -2150,7 +2150,7 @@ Returns:
 </details>
 
 ```grain
-contains : (value: a, array: ImmutableArray<a>) -> Bool
+contains : (value: a, array: ImmutableArray<a>) => Bool
 ```
 
 Checks if the value is an element of the input array.
@@ -2184,7 +2184,7 @@ Returns:
 </details>
 
 ```grain
-find : (fn: (a -> Bool), array: ImmutableArray<a>) -> Option<a>
+find : (fn: (a => Bool), array: ImmutableArray<a>) => Option<a>
 ```
 
 Finds the first element in an array that satifies the given condition.
@@ -2193,7 +2193,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`ImmutableArray<a>`|The array to search|
 
 Returns:
@@ -2217,7 +2217,7 @@ Returns:
 </details>
 
 ```grain
-findIndex : (fn: (a -> Bool), array: ImmutableArray<a>) -> Option<Number>
+findIndex : (fn: (a => Bool), array: ImmutableArray<a>) => Option<Number>
 ```
 
 Finds the first index in an array where the element satifies the given condition.
@@ -2226,7 +2226,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`ImmutableArray<a>`|The array to search|
 
 Returns:
@@ -2251,7 +2251,7 @@ Returns:
 
 ```grain
 product :
-  (array1: ImmutableArray<a>, array2: ImmutableArray<b>) ->
+  (array1: ImmutableArray<a>, array2: ImmutableArray<b>) =>
    ImmutableArray<(a, b)>
 ```
 
@@ -2286,7 +2286,7 @@ Returns:
 </details>
 
 ```grain
-count : (fn: (a -> Bool), array: ImmutableArray<a>) -> Number
+count : (fn: (a => Bool), array: ImmutableArray<a>) => Number
 ```
 
 Counts the number of elements in an array that satisfy the given condition.
@@ -2295,7 +2295,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`array`|`ImmutableArray<a>`|The array to iterate|
 
 Returns:
@@ -2319,7 +2319,7 @@ Returns:
 </details>
 
 ```grain
-unique : (array: ImmutableArray<a>) -> ImmutableArray<a>
+unique : (array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Produces a new array with any duplicates removed.
@@ -2353,7 +2353,7 @@ Returns:
 
 ```grain
 zip :
-  (array1: ImmutableArray<a>, array2: ImmutableArray<b>) ->
+  (array1: ImmutableArray<a>, array2: ImmutableArray<b>) =>
    ImmutableArray<(a, b)>
 ```
 
@@ -2393,7 +2393,7 @@ Returns:
 
 ```grain
 zipWith :
-  (fn: ((a, b) -> c), array1: ImmutableArray<a>, array2: ImmutableArray<b>) ->
+  (fn: ((a, b) => c), array1: ImmutableArray<a>, array2: ImmutableArray<b>) =>
    ImmutableArray<c>
 ```
 
@@ -2410,7 +2410,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The function to apply to pairs of elements|
+|`fn`|`(a, b) => c`|The function to apply to pairs of elements|
 |`array1`|`ImmutableArray<a>`|The array whose elements will each be passed to the function as the first argument|
 |`array2`|`ImmutableArray<b>`|The array whose elements will each be passed to the function as the second argument|
 
@@ -2446,7 +2446,7 @@ zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 
 
 ```grain
 unzip :
-  (array: ImmutableArray<(a, b)>) -> (ImmutableArray<a>, ImmutableArray<b>)
+  (array: ImmutableArray<(a, b)>) => (ImmutableArray<a>, ImmutableArray<b>)
 ```
 
 Produces two arrays by splitting apart an array of tuples.
@@ -2478,7 +2478,7 @@ Returns:
 </details>
 
 ```grain
-join : (separator: String, array: ImmutableArray<String>) -> String
+join : (separator: String, array: ImmutableArray<String>) => String
 ```
 
 Concatenates an array of strings into a single string, separated by a separator string.
@@ -2513,7 +2513,7 @@ Returns:
 
 ```grain
 slice :
-  (start: Number, ?end: Number, array: ImmutableArray<a>) ->
+  (start: Number, ?end: Number, array: ImmutableArray<a>) =>
    ImmutableArray<a>
 ```
 
@@ -2563,7 +2563,7 @@ slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
 
 ```grain
 sort :
-  (comp: ((a, a) -> Number), array: ImmutableArray<a>) -> ImmutableArray<a>
+  (comp: ((a, a) => Number), array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Sorts the given array based on a given comparator function.
@@ -2574,7 +2574,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
+|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
 |`array`|`ImmutableArray<a>`|The array to be sorted|
 
 Returns:
@@ -2598,7 +2598,7 @@ Returns:
 </details>
 
 ```grain
-rotate : (n: Number, array: ImmutableArray<a>) -> ImmutableArray<a>
+rotate : (n: Number, array: ImmutableArray<a>) => ImmutableArray<a>
 ```
 
 Rotates array elements by the specified amount to the left, such that the

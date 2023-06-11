@@ -49,7 +49,7 @@ Value Doc
 ### DescriptionGrainDoc.**docFunction**
 
 ```grain
-docFunction : (x: Number) -> Number
+docFunction : (x: Number) => Number
 ```
 
 Function Doc

@@ -196,60 +196,60 @@ _CHAR_CODE_y : WasmI32
 ### Common.**fpZero**
 
 ```grain
-fpZero : () -> BiasedFp
+fpZero : () => BiasedFp
 ```
 
 ### Common.**fpInf**
 
 ```grain
-fpInf : () -> BiasedFp
+fpInf : () => BiasedFp
 ```
 
 ### Common.**fpErr**
 
 ```grain
-fpErr : () -> BiasedFp
+fpErr : () => BiasedFp
 ```
 
 ### Common.**fpNan**
 
 ```grain
-fpNan : () -> BiasedFp
+fpNan : () => BiasedFp
 ```
 
 ### Common.**getPowers10**
 
 ```grain
-getPowers10 : (i: WasmI32) -> WasmI32
+getPowers10 : (i: WasmI32) => WasmI32
 ```
 
 ### Common.**getPowers10FastPath**
 
 ```grain
-getPowers10FastPath : (i: WasmI32) -> WasmF64
+getPowers10FastPath : (i: WasmI32) => WasmF64
 ```
 
 ### Common.**is8Digits**
 
 ```grain
-is8Digits : (value: WasmI64) -> Bool
+is8Digits : (value: WasmI64) => Bool
 ```
 
 ### Common.**power**
 
 ```grain
-power : (q: WasmI32) -> WasmI32
+power : (q: WasmI32) => WasmI32
 ```
 
 ### Common.**fullMultiplication**
 
 ```grain
-fullMultiplication : (a: WasmI64, b: WasmI64) -> (Int64, Int64)
+fullMultiplication : (a: WasmI64, b: WasmI64) => (Int64, Int64)
 ```
 
 ### Common.**biasedFpToNumber**
 
 ```grain
-biasedFpToNumber : (fp: BiasedFp, negative: Bool) -> Number
+biasedFpToNumber : (fp: BiasedFp, negative: Bool) => Number
 ```
 

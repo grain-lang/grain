@@ -21,7 +21,7 @@ include "option"
 abstract record PriorityQueue<a> {
   mut size: Number,
   mut array: Array<Option<a>>,
-  comp: (a, a) -> Number,
+  comp: (a, a) => Number,
 }
 
 let swap = (i1, i2, array) => {
@@ -283,7 +283,7 @@ provide module Immutable {
    */
 
   abstract record PriorityQueue<a> {
-    comp: (a, a) -> Number,
+    comp: (a, a) => Number,
     size: Number,
     root: Option<PQRoot<a>>,
   }

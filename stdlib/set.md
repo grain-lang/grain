@@ -37,7 +37,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : (size: Number) -> Set<a>
+makeSized : (size: Number) => Set<a>
 ```
 
 Creates a new empty set with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your set and can use `Set.make()` instead.
@@ -62,7 +62,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : () -> Set<a>
+make : () => Set<a>
 ```
 
 Creates a new, empty set.
@@ -81,7 +81,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (key: a, set: Set<a>) -> Void
+add : (key: a, set: Set<a>) => Void
 ```
 
 Adds a new value to the set. If the value already exists, nothing happens.
@@ -101,7 +101,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (key: a, set: Set<a>) -> Bool
+contains : (key: a, set: Set<a>) => Bool
 ```
 
 Determines if the set contains the given value.
@@ -127,7 +127,7 @@ No other changes yet.
 </details>
 
 ```grain
-remove : (key: a, set: Set<a>) -> Void
+remove : (key: a, set: Set<a>) => Void
 ```
 
 Removes the given value from the set. If the value doesn't exist, nothing happens.
@@ -147,7 +147,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : (set: Set<a>) -> Number
+size : (set: Set<a>) => Number
 ```
 
 Provides the count of values within the set.
@@ -172,7 +172,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (set: Set<a>) -> Bool
+isEmpty : (set: Set<a>) => Bool
 ```
 
 Determines if the set contains no elements.
@@ -197,7 +197,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : (set: Set<a>) -> Void
+clear : (set: Set<a>) => Void
 ```
 
 Resets the set by removing all values.
@@ -223,7 +223,7 @@ Parameters:
 </details>
 
 ```grain
-forEach : (fn: (a -> Void), set: Set<a>) -> Void
+forEach : (fn: (a => Void), set: Set<a>) => Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -232,7 +232,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reduce**
@@ -243,7 +243,7 @@ No other changes yet.
 </details>
 
 ```grain
-reduce : (fn: ((a, b) -> a), init: a, set: Set<b>) -> a
+reduce : (fn: ((a, b) => a), init: a, set: Set<b>) => a
 ```
 
 Combines all elements of a set using a reducer function.
@@ -252,7 +252,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`init`|`a`|The initial value to use for the accumulator on the first iteration|
 |`set`|`Set<b>`|The set to iterate|
 
@@ -270,7 +270,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (fn: (a -> Bool), set: Set<a>) -> Void
+filter : (fn: (a => Bool), set: Set<a>) => Void
 ```
 
 Removes elements from a set where a predicate function returns `false`.
@@ -279,7 +279,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed|
+|`fn`|`a => Bool`|The predicate function to indicate which elements to remove from the set, where returning `false` indicates the value should be removed|
 |`set`|`Set<a>`|The set to iterate|
 
 ### Set.**reject**
@@ -290,7 +290,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : (fn: (a -> Bool), set: Set<a>) -> Void
+reject : (fn: (a => Bool), set: Set<a>) => Void
 ```
 
 Removes elements from a set where a predicate function returns `true`.
@@ -299,7 +299,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed|
+|`fn`|`a => Bool`|The predicate function to indicate which elements to remove from the set, where returning `true` indicates the value should be removed|
 |`set`|`Set<a>`|The set to iterate|
 
 ### Set.**toList**
@@ -310,7 +310,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (set: Set<a>) -> List<a>
+toList : (set: Set<a>) => List<a>
 ```
 
 Converts a set into a list of its elements.
@@ -335,7 +335,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) -> Set<a>
+fromList : (list: List<a>) => Set<a>
 ```
 
 Creates a set from a list.
@@ -360,7 +360,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : (set: Set<a>) -> Array<a>
+toArray : (set: Set<a>) => Array<a>
 ```
 
 Converts a set into an array of its elements.
@@ -385,7 +385,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : (array: Array<a>) -> Set<a>
+fromArray : (array: Array<a>) => Set<a>
 ```
 
 Creates a set from an array.
@@ -410,7 +410,7 @@ No other changes yet.
 </details>
 
 ```grain
-union : (set1: Set<a>, set2: Set<a>) -> Set<a>
+union : (set1: Set<a>, set2: Set<a>) => Set<a>
 ```
 
 Combines two sets into a single set containing all elements from both sets.
@@ -436,7 +436,7 @@ No other changes yet.
 </details>
 
 ```grain
-diff : (set1: Set<a>, set2: Set<a>) -> Set<a>
+diff : (set1: Set<a>, set2: Set<a>) => Set<a>
 ```
 
 Combines two sets into a single set containing only the elements not shared between both sets.
@@ -462,7 +462,7 @@ No other changes yet.
 </details>
 
 ```grain
-intersect : (set1: Set<a>, set2: Set<a>) -> Set<a>
+intersect : (set1: Set<a>, set2: Set<a>) => Set<a>
 ```
 
 Combines two sets into a single set containing only the elements shared between both sets.
@@ -488,7 +488,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInternalStats : (set: Set<a>) -> (Number, Number)
+getInternalStats : (set: Set<a>) => (Number, Number)
 ```
 
 Provides data representing the internal state state of the set.
@@ -570,7 +570,7 @@ An empty set
 </details>
 
 ```grain
-size : (set: Set<a>) -> Number
+size : (set: Set<a>) => Number
 ```
 
 Provides the count of values within the set.
@@ -602,7 +602,7 @@ Returns:
 </details>
 
 ```grain
-isEmpty : (set: Set<a>) -> Bool
+isEmpty : (set: Set<a>) => Bool
 ```
 
 Determines if the set contains no elements.
@@ -634,7 +634,7 @@ Returns:
 </details>
 
 ```grain
-add : (key: a, set: Set<a>) -> Set<a>
+add : (key: a, set: Set<a>) => Set<a>
 ```
 
 Produces a new set by inserting the given value into the set. If the value
@@ -668,7 +668,7 @@ Returns:
 </details>
 
 ```grain
-contains : (key: a, set: Set<a>) -> Bool
+contains : (key: a, set: Set<a>) => Bool
 ```
 
 Determines if the set contains the given value.
@@ -701,7 +701,7 @@ Returns:
 </details>
 
 ```grain
-remove : (key: a, set: Set<a>) -> Set<a>
+remove : (key: a, set: Set<a>) => Set<a>
 ```
 
 Produces a new set without the given element. If the value doesn't exist in
@@ -735,7 +735,7 @@ Returns:
 </details>
 
 ```grain
-forEach : (fn: (a -> Void), set: Set<a>) -> Void
+forEach : (fn: (a => Void), set: Set<a>) => Void
 ```
 
 Iterates the set, calling an iterator function on each element.
@@ -744,7 +744,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`set`|`Set<a>`|The set to iterate|
 
 #### Set.Immutable.**reduce**
@@ -762,7 +762,7 @@ Parameters:
 </details>
 
 ```grain
-reduce : (fn: ((a, b) -> a), init: a, set: Set<b>) -> a
+reduce : (fn: ((a, b) => a), init: a, set: Set<b>) => a
 ```
 
 Combines all elements of a set using a reducer function.
@@ -771,7 +771,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`init`|`a`|The initial value to use for the accumulator on the first iteration|
 |`set`|`Set<b>`|The set to iterate|
 
@@ -796,7 +796,7 @@ Returns:
 </details>
 
 ```grain
-filter : (fn: (a -> Bool), set: Set<a>) -> Set<a>
+filter : (fn: (a => Bool), set: Set<a>) => Set<a>
 ```
 
 Produces a new set without the elements from the input set where a predicate function returns `false`.
@@ -805,7 +805,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The predicate function to indicate which elements to exclude from the set, where returning `false` indicates the value should be excluded|
+|`fn`|`a => Bool`|The predicate function to indicate which elements to exclude from the set, where returning `false` indicates the value should be excluded|
 |`set`|`Set<a>`|The set to iterate|
 
 Returns:
@@ -829,7 +829,7 @@ Returns:
 </details>
 
 ```grain
-reject : (fn: (a -> Bool), set: Set<a>) -> Set<a>
+reject : (fn: (a => Bool), set: Set<a>) => Set<a>
 ```
 
 Produces a new set without the elements from the input set where a predicate function returns `true`.
@@ -838,7 +838,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The predicate function to indicate which elements to exclude from the set, where returning `true` indicates the value should be excluded|
+|`fn`|`a => Bool`|The predicate function to indicate which elements to exclude from the set, where returning `true` indicates the value should be excluded|
 |`set`|`Set<a>`|The set to iterate|
 
 Returns:
@@ -862,7 +862,7 @@ Returns:
 </details>
 
 ```grain
-union : (set1: Set<a>, set2: Set<a>) -> Set<a>
+union : (set1: Set<a>, set2: Set<a>) => Set<a>
 ```
 
 Combines two sets into a single set containing all elements from both sets.
@@ -895,7 +895,7 @@ Returns:
 </details>
 
 ```grain
-diff : (set1: Set<a>, set2: Set<a>) -> Set<a>
+diff : (set1: Set<a>, set2: Set<a>) => Set<a>
 ```
 
 Combines two sets into a single set containing only the elements not shared between both sets.
@@ -928,7 +928,7 @@ Returns:
 </details>
 
 ```grain
-intersect : (set1: Set<a>, set2: Set<a>) -> Set<a>
+intersect : (set1: Set<a>, set2: Set<a>) => Set<a>
 ```
 
 Combines two sets into a single set containing only the elements shared between both sets.
@@ -961,7 +961,7 @@ Returns:
 </details>
 
 ```grain
-fromList : (list: List<a>) -> Set<a>
+fromList : (list: List<a>) => Set<a>
 ```
 
 Creates a set from a list.
@@ -993,7 +993,7 @@ Returns:
 </details>
 
 ```grain
-toList : (set: Set<a>) -> List<a>
+toList : (set: Set<a>) => List<a>
 ```
 
 Converts a set into a list of its elements.
@@ -1025,7 +1025,7 @@ Returns:
 </details>
 
 ```grain
-fromArray : (array: Array<a>) -> Set<a>
+fromArray : (array: Array<a>) => Set<a>
 ```
 
 Creates a set from an array.
@@ -1057,7 +1057,7 @@ Returns:
 </details>
 
 ```grain
-toArray : (set: Set<a>) -> Array<a>
+toArray : (set: Set<a>) => Array<a>
 ```
 
 Converts a set into an array of its elements.

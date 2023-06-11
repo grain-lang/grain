@@ -83,7 +83,7 @@ provide let length = array => {
  * @since v0.1.0
  */
 @unsafe
-provide let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
+provide let make: (Number, a) => Array<a> = (length: Number, item: a) => {
   from WasmI32 use { (+), (*), (<) }
   let lengthArg = length
   checkLength(length)
@@ -117,10 +117,10 @@ provide let make: (Number, a) -> Array<a> = (length: Number, item: a) => {
  * @since v0.1.0
  */
 @unsafe
-provide let init: (Number, Number -> a) -> Array<a> =
+provide let init: (Number, Number => a) => Array<a> =
   (
     length: Number,
-    fn: Number -> a,
+    fn: Number => a,
   ) => {
   from WasmI32 use { (+), (*), (<) }
   checkLength(length)

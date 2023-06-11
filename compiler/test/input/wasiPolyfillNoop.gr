@@ -1,6 +1,6 @@
 module WasiPolyfillNoop
 
-provide let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) -> WasmI32 =
+provide let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 =
   (
     fd,
     iovs,

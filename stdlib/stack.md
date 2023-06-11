@@ -41,7 +41,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : (size: Number) -> Stack<a>
+makeSized : (size: Number) => Stack<a>
 ```
 
 Creates a new stack with an initial storage of the given size. As values are
@@ -69,7 +69,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : () -> Stack<a>
+make : () => Stack<a>
 ```
 
 Creates a new stack.
@@ -88,7 +88,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (stack: Stack<a>) -> Bool
+isEmpty : (stack: Stack<a>) => Bool
 ```
 
 Checks if the given stack contains no items.
@@ -113,7 +113,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : (stack: Stack<a>) -> Number
+size : (stack: Stack<a>) => Number
 ```
 
 Computes the size of the input stack.
@@ -138,7 +138,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : (stack: Stack<a>) -> Option<a>
+peek : (stack: Stack<a>) => Option<a>
 ```
 
 Provides the value at the top of the stack, if it exists.
@@ -163,7 +163,7 @@ No other changes yet.
 </details>
 
 ```grain
-push : (value: a, stack: Stack<a>) -> Void
+push : (value: a, stack: Stack<a>) => Void
 ```
 
 Adds a new item to the top of the stack.
@@ -183,7 +183,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : (stack: Stack<a>) -> Option<a>
+pop : (stack: Stack<a>) => Option<a>
 ```
 
 Removes the item at the top of the stack.
@@ -208,7 +208,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : (stack: Stack<a>) -> Void
+clear : (stack: Stack<a>) => Void
 ```
 
 Clears the stack by removing all of its elements
@@ -227,7 +227,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (stack: Stack<a>) -> Stack<a>
+copy : (stack: Stack<a>) => Stack<a>
 ```
 
 Produces a shallow copy of the input stack.
@@ -299,7 +299,7 @@ An empty stack.
 </details>
 
 ```grain
-isEmpty : (stack: ImmutableStack<a>) -> Bool
+isEmpty : (stack: ImmutableStack<a>) => Bool
 ```
 
 Checks if the given stack contains no items.
@@ -332,7 +332,7 @@ Returns:
 </details>
 
 ```grain
-peek : (stack: ImmutableStack<a>) -> Option<a>
+peek : (stack: ImmutableStack<a>) => Option<a>
 ```
 
 Provides the value at the top of the stack, if it exists.
@@ -364,7 +364,7 @@ Returns:
 </details>
 
 ```grain
-push : (value: a, stack: ImmutableStack<a>) -> ImmutableStack<a>
+push : (value: a, stack: ImmutableStack<a>) => ImmutableStack<a>
 ```
 
 Adds a new item to the top of the stack.
@@ -397,7 +397,7 @@ Returns:
 </details>
 
 ```grain
-pop : (stack: ImmutableStack<a>) -> ImmutableStack<a>
+pop : (stack: ImmutableStack<a>) => ImmutableStack<a>
 ```
 
 Removes the item at the top of the stack.
@@ -429,7 +429,7 @@ Returns:
 </details>
 
 ```grain
-size : (stack: ImmutableStack<a>) -> Number
+size : (stack: ImmutableStack<a>) => Number
 ```
 
 Computes the size of the input stack.

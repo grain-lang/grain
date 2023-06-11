@@ -58,6 +58,7 @@ let fake_triple = (t, (_, pos, _)) => (t, pos, pos);
 
 exception Lex_balanced_failed(list(positioned(token)), option(exn));
 exception Lex_fast_forward_failed(list(positioned(token)), option(exn));
+exception Lex_data_typ_failed(list(positioned(token)), option(exn));
 
 let inject_fun =
   fun
@@ -66,8 +67,7 @@ let inject_fun =
 
 let is_triggering_token =
   fun
-  | (THICKARROW, _, _)
-  | (ARROW, _, _) => true
+  | (THICKARROW, _, _) => true
   | _ => false;
 
 let rec lex_fast_forward_step = (state, stop, acc, tok) => {
@@ -144,12 +144,28 @@ and check_id_fn = (state, closing, acc) => {
   lex_balanced_step(state, closing, acc, tok);
 }
 
+and check_data_typ = (state, closing, acc) => {
+  switch (lex_data_typ(state)) {
+  | exception (Lex_data_typ_failed([token, ...rest], exn)) =>
+    lex_balanced_step(state, closing, rest @ acc, token)
+  | [token, ...rest] =>
+    let acc =
+      switch (token) {
+      | (THICKARROW, _, _) => inject_fun(acc)
+      | _ => acc
+      };
+    lex_balanced_step(state, closing, rest @ acc, token);
+  | _ => failwith("Impossible: wrapped_lexer check_data_typ not matched")
+  };
+}
+
 and lex_balanced_step = (state, closing, acc, tok) => {
   let acc = [tok, ...acc];
   switch (tok, closing) {
   | ((RPAREN, _, _), RPAREN)
   | ((RBRACE, _, _), RBRACE)
-  | ((RBRACK, _, _), RBRACK) =>
+  | ((RBRACK, _, _), RBRACK)
+  | ((RCARET, _, _), RCARET) =>
     pop_fn_ctx(state);
     acc;
   | ((RPAREN | RBRACE | RBRACK | EOF, _, _), _) =>
@@ -182,6 +198,7 @@ and lex_balanced_step = (state, closing, acc, tok) => {
     | LPAREN => check_lparen_fn(state, closing, [triple', ...tokens @ acc])
     | LIDENT(_)
     | UNDERSCORE => check_id_fn(state, closing, [triple', ...tokens @ acc])
+    | UIDENT(_) => check_data_typ(state, closing, [triple', ...tokens @ acc])
     | _ =>
       // Recurse normally
       lex_balanced_step(state, closing, tokens @ acc, triple')
@@ -208,6 +225,8 @@ and lex_balanced_step = (state, closing, acc, tok) => {
     )
   | ((LIDENT(_) | UNDERSCORE, _, _), _) when !ignore_fns(state) =>
     check_id_fn(state, closing, acc)
+  | ((UIDENT(_), p, _), _) when !ignore_fns(state) =>
+    check_data_typ(state, closing, acc)
   | _ => lex_balanced(state, closing, acc)
   };
 }
@@ -243,6 +262,52 @@ and lookahead_fun = (state, (tok, _, _) as lparen) =>
       };
     }
   }
+
+and lex_qualified_uid = (state, acc) => {
+  switch (token(state)) {
+  | exception exn => raise(Lex_data_typ_failed(acc, Some(exn)))
+  | (DOT, _, _) as dot =>
+    switch (token(state)) {
+    | exception exn => raise(Lex_data_typ_failed(acc, Some(exn)))
+    | (UIDENT(_), _, _) as uident =>
+      lex_qualified_uid(state, [uident, dot, ...acc])
+    | tok => raise(Lex_data_typ_failed([tok, dot, ...acc], None))
+    }
+  | token => [token, ...acc]
+  };
+}
+
+and lex_data_typ = state => {
+  switch (lex_qualified_uid(state, [])) {
+  | [(LCARET, _, _), ..._] as quid_tokens =>
+    switch (lex_balanced(~push=DiscoverFunctions, state, RCARET, [])) {
+    | exception (Lex_balanced_failed(tokens, exn)) =>
+      raise(Lex_data_typ_failed(tokens, exn))
+    | brack_tokens =>
+      let tokens = brack_tokens @ quid_tokens;
+      switch (token(state)) {
+      | exception exn => raise(Lex_data_typ_failed(tokens, Some(exn)))
+      | tok => [tok, ...tokens]
+      };
+    }
+  | tokens => tokens
+  };
+}
+
+and lookahead_fun_data_typ = (state, uident) => {
+  switch (lex_data_typ(state)) {
+  | exception (Lex_data_typ_failed(tokens, exn)) =>
+    state.queued_tokens = List.rev(tokens);
+    state.queued_exn = exn;
+    uident;
+  | [(THICKARROW, _, _), ..._] as tokens =>
+    state.queued_tokens = [uident, ...List.rev(tokens)];
+    fake_triple(FUN, uident);
+  | tokens =>
+    state.queued_tokens = List.rev(tokens);
+    uident;
+  };
+}
 
 and lookahead_match = state => {
   switch (lex_fast_forward(state, LPAREN, [])) {
@@ -307,6 +372,7 @@ let token = state => {
           tok;
         }
       }
+    | (UIDENT(_), _, _) as tok => lookahead_fun_data_typ(state, tok)
     | token => token
     }
   | ([x, ...xs], _) =>

@@ -1,5 +1,5 @@
 module FuncAliasProvide
 
-provide type FnType = () -> String
+provide type FnType = () => String
 
 provide let function: FnType = () => "abc"
