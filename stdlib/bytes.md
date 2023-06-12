@@ -245,7 +245,7 @@ Parameters:
 |-----|----|-----------|
 |`srcIndex`|`Number`|The starting index to copy bytes from|
 |`dstIndex`|`Number`|The starting index to copy bytes into|
-|`length`|`Number`|The amount of bytes to copy from the source buffer|
+|`length`|`Number`|The amount of bytes to copy from the source byte sequence|
 |`src`|`Bytes`|The source byte sequence|
 |`dst`|`Bytes`|The destination byte sequence|
 
