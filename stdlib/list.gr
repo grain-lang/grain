@@ -451,8 +451,8 @@ provide let rec flatten = list => {
 /**
  * Inserts a new value into a list at the specified index.
  *
- * @param value: The value to insert
  * @param index: The index to update
+ * @param value: The value to insert
  * @param list: The list to update
  * @returns The new list
  *
@@ -461,7 +461,7 @@ provide let rec flatten = list => {
  *
  * @since v0.1.0
  */
-provide let rec insert = (value, index, list) => {
+provide let rec insert = (index, value, list) => {
   if (index < 0) {
     fail "insert index cannot be a negative number"
   } else {
@@ -469,7 +469,7 @@ provide let rec insert = (value, index, list) => {
       [] => if (index == 0) [value] else fail "insert index is out-of-bounds",
       [first, ...rest] =>
         if (index == 0) [value, ...list]
-        else [first, ...insert(value, index - 1, rest)],
+        else [first, ...insert(index - 1, value, rest)],
     }
   }
 }
