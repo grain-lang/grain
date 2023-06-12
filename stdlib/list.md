@@ -695,7 +695,7 @@ No other changes yet.
 </details>
 
 ```grain
-insert : (value: a, index: Number, list: List<a>) => List<a>
+insert : (index: Number, value: a, list: List<a>) => List<a>
 ```
 
 Inserts a new value into a list at the specified index.
@@ -704,8 +704,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value`|`a`|The value to insert|
 |`index`|`Number`|The index to update|
+|`value`|`a`|The value to insert|
 |`list`|`List<a>`|The list to update|
 
 Returns:
