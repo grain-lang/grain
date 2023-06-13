@@ -309,6 +309,7 @@ let rec token = lexbuf => {
   | "/" => positioned(SLASH)
   | "|" => positioned(PIPE)
   | "-" => positioned(DASH)
+  | "->" => positioned(ARROW)
   | "=>" => positioned(THICKARROW)
   | "type" => positioned(TYPE)
   | "enum" => positioned(ENUM)

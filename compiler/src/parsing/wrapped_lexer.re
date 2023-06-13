@@ -67,7 +67,8 @@ let inject_fun =
 
 let is_triggering_token =
   fun
-  | (THICKARROW, _, _) => true
+  | (THICKARROW, _, _)
+  | (ARROW, _, _) => true
   | _ => false;
 
 let rec lex_fast_forward_step = (state, stop, acc, tok) => {
@@ -150,9 +151,10 @@ and check_data_typ = (state, closing, acc) => {
     lex_balanced_step(state, closing, rest @ acc, token)
   | [token, ...rest] =>
     let acc =
-      switch (token) {
-      | (THICKARROW, _, _) => inject_fun(acc)
-      | _ => acc
+      if (is_triggering_token(token)) {
+        inject_fun(acc);
+      } else {
+        acc;
       };
     lex_balanced_step(state, closing, rest @ acc, token);
   | _ => failwith("Impossible: wrapped_lexer check_data_typ not matched")
@@ -300,7 +302,7 @@ and lookahead_fun_data_typ = (state, uident) => {
     state.queued_tokens = List.rev(tokens);
     state.queued_exn = exn;
     uident;
-  | [(THICKARROW, _, _), ..._] as tokens =>
+  | [token, ..._] as tokens when is_triggering_token(token) =>
     state.queued_tokens = [uident, ...List.rev(tokens)];
     fake_triple(FUN, uident);
   | tokens =>

@@ -32,3 +32,5 @@ let stringTailMatcher =  (toMatch, len) =>
   ) => {
     true
   }
+
+let f: Number -> (Number, Number) -> Number = a => (b, c) => a + b + c

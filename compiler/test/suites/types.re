@@ -438,7 +438,7 @@ describe("function types", ({test, testSkip}) => {
   let test_or_skip =
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
-  // let assertCompileError = makeCompileErrorRunner(test);
+  let assertCompileError = makeCompileErrorRunner(test);
   let assertRun = makeRunner(test_or_skip);
 
   assertRun(
@@ -495,5 +495,36 @@ describe("function types", ({test, testSkip}) => {
       print(f([])([]))
     |},
     "1\n",
+  );
+  assertCompileError(
+    "type_fn_6",
+    {|
+      let badIdentity: x => x
+      print(badIdentity(1))
+    |},
+    "Syntax error after 'x' and before ' '.\nExpected a type annotation or `=`.",
+  );
+  assertCompileError(
+    "type_fn_7",
+    {|
+      let badFn: Number =>
+    |},
+    "Syntax error after ' ' and before ''.\nExpected a type for the result of the function type.",
+  );
+  assertCompileError(
+    "type_fn_8",
+    {|
+      let badFn: Number =>
+      print(badFn(1))
+    |},
+    "Syntax error after 'print' and before '\\('.\nExpected a type annotation or `=`.",
+  );
+  assertCompileError(
+    "type_fn_9",
+    {|
+      let badFn: (Number => )
+      print(badFn(1))
+    |},
+    "Syntax error after '=>' and before '\\)'.\nExpected a type for the result of the function type.",
   );
 });
