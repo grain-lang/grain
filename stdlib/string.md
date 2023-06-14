@@ -911,6 +911,114 @@ Examples:
 String.forEachCodePointi((codepoint, index) => print((codepoint, index)), "Hello world")
 ```
 
+### String.**forEachChar**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+forEachChar : (fn: (Char -> Void), str: String) -> Void
+```
+
+Iterates over Unicode characters in a string.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`Char -> Void`|The iterator function|
+|`str`|`String`|The string to iterate|
+
+Examples:
+
+```grain
+String.forEachChar(print, "Hello world")
+```
+
+### String.**forEachChari**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+forEachChari : (fn: ((Char, Number) -> Void), str: String) -> Void
+```
+
+Iterates over Unicode characters in a string. This is the same as
+`forEachChar`, but provides the characters's index in the string
+as the second argument to the iterator function.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(Char, Number) -> Void`|The iterator function|
+|`str`|`String`|The string to iterate|
+
+Examples:
+
+```grain
+String.forEachChari((char, index) => print((char, index)), "Hello world")
+```
+
+### String.**map**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+map : (fn: (Char -> Char), str: String) -> String
+```
+
+Maps Unicode characters in a string.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`Char -> Char`|The mapping function|
+|`str`|`String`|The string to map|
+
+Examples:
+
+```grain
+assert String.map((c) => 'a', "Hello world") == "aaaaaaaaaaa"
+```
+
+### String.**mapi**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+mapi : (fn: ((Char, Number) -> Char), str: String) -> String
+```
+
+Maps Unicode characters in a string. This is the same as
+`mapChar`, but provides the characters's index in the string
+as the second argument to the mapping function.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`fn`|`(Char, Number) -> Char`|The mapping function|
+|`str`|`String`|The string to map|
+
+Examples:
+
+```grain
+assert String.mapi((char, index) => String.charAt(0, toString(index)), "Hello world") == "01234567891"
+```
+
 ### String.**trimStart**
 
 <details disabled>
