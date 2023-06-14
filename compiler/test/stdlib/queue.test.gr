@@ -47,6 +47,11 @@ assert Queue.pop(queue) == Some(1)
 assert Queue.pop(queue) == Some(2)
 assert Queue.pop(queue) == Some(3)
 assert Queue.pop(queue) == None
+let queue = Queue.makeSized(0)
+Queue.push(0, queue)
+let queue2 = Queue.makeSized(1)
+Queue.push(0, queue2)
+assert queue == queue2
 
 // Queue.toList
 let queue = Queue.makeSized(3)
