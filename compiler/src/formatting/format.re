@@ -1030,7 +1030,7 @@ and print_constructor_declaration =
     | PConstrTuple({loc})
     | PConstrRecord({loc}) =>
       switch (print_comments(pcd_name.loc, loc)) {
-      | SmartPrint.Empty => empty
+      | Empty => empty
       | comments => concat([space, comments, space])
       }
     | PConstrSingleton => empty
