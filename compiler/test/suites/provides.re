@@ -89,7 +89,7 @@ describe("provides", ({test, testSkip}) => {
   );
   assertCompileError(
     "provide11",
-    "enum Foo { Bar }; provide { Bar }",
+    "enum Foo { Bar }; provide { module Bar }",
     "Unbound module Bar",
   );
   assertSnapshot(
@@ -98,6 +98,16 @@ describe("provides", ({test, testSkip}) => {
       include "providedType"
       ProvidedType.apply((arg) => print("ok"))
     |},
+  );
+  assertCompileError(
+    "provide13",
+    "module Nested { let val = 1 }; provide { Nested }",
+    "Expected a lowercase identifier to provide a value, the keyword `module` followed by an uppercase identifier to provide a module, or the keyword `type` followed by an uppercase identifier to provide a type.",
+  );
+  assertCompileError(
+    "provide13",
+    "let a = 1; module Nested { let val = 1 }; provide { a, Nested }",
+    "Expected a lowercase identifier to provide a value, the keyword `module` followed by an uppercase identifier to provide a module, the keyword `type` followed by an uppercase identifier to provide a type, or `}` to end the provide statement.",
   );
   assertCompileError(
     "regression_issue_1489",
@@ -131,7 +141,7 @@ describe("provides", ({test, testSkip}) => {
   );
   assertCompileError(
     "multiple_provides_6",
-    "provide module Foo {void}; provide {Foo}",
+    "provide module Foo {void}; provide {module Foo}",
     "provided multiple times",
   );
   assertCompileError(

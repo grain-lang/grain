@@ -63,6 +63,15 @@ program: MODULE UIDENT EOL INCLUDE STRING AS YIELD
 ## The known suffix of the stack is as follows:
 ## AS
 ##
+program: MODULE UIDENT EOL PROVIDE LBRACE MODULE YIELD
+##
+## Ends in an error in state: 829.
+##
+## provide_item -> MODULE . aliasable(uid) [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MODULE
+##
 
 Expected an uppercase module identifier.
 
@@ -269,14 +278,14 @@ program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS YIELD
 ## The known suffix of the stack is as follows:
 ## AS
 ##
-program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT AS EOL YIELD
+program: MODULE UIDENT EOL PROVIDE LBRACE MODULE UIDENT AS EOL YIELD
 ##
-## Ends in an error in state: 51.
+## Ends in an error in state: 52.
 ##
-## as_prefix(uid) -> AS option(eols) . uid [ RBRACE EOL COMMA ]
+## as_prefix(uid) -> AS eols . uid [ RBRACE EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
-## AS option(eols)
+## AS eols
 ##
 ## WARNING: This example involves spurious reductions.
 ## This implies that, although the LR(1) items shown above provide an
@@ -284,7 +293,6 @@ program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT AS EOL YIELD
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
 ## In state 6, spurious reduction of production eols -> nonempty_list(eol)
-## In state 53, spurious reduction of production option(eols) -> eols
 ##
 program: MODULE UIDENT EOL PROVIDE LBRACE LIDENT AS EOL YIELD
 ##
@@ -424,7 +432,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE YIELD
 ## In state 31, spurious reduction of production lbrace -> LBRACE
 ##
 
-Expected a lowercase identifier to use a value, an uppercase identifier to use a module, or the keyword `type` followed by an uppercase identifier to use a type.
+Expected a lowercase identifier to use a value, the keyword `module` followed by an uppercase identifier to use a module, or the keyword `type` followed by an uppercase identifier to use a type.
 
 program: MODULE UIDENT EOL FROM UIDENT USE LBRACE TYPE YIELD
 ##
@@ -435,10 +443,19 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE TYPE YIELD
 ## The known suffix of the stack is as follows:
 ## TYPE
 ##
+program: MODULE UIDENT EOL FROM UIDENT USE LBRACE MODULE YIELD
+##
+## Ends in an error in state: 57.
+##
+## use_item -> MODULE . aliasable(uid) [ RBRACE EOL COMMA ]
+##
+## The known suffix of the stack is as follows:
+## MODULE
+##
 
 Expected an uppercase type identifier.
 
-program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT YIELD
+program: MODULE UIDENT EOL PROVIDE LBRACE MODULE UIDENT YIELD
 ##
 ## Ends in an error in state: 49.
 ##
@@ -450,11 +467,12 @@ program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT YIELD
 
 Expected the keyword `as` followed by a module alias, a comma followed by more items to use, or `}` to end the statement.
 
-program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT AS YIELD
+program: MODULE UIDENT EOL PROVIDE LBRACE MODULE UIDENT AS YIELD
 ##
 ## Ends in an error in state: 50.
 ##
 ## as_prefix(uid) -> AS . uid [ RBRACE EOL COMMA ]
+## as_prefix(uid) -> AS . eols uid [ RBRACE EOL COMMA ]
 ##
 ## The known suffix of the stack is as follows:
 ## AS
@@ -508,7 +526,7 @@ program: MODULE UIDENT EOL PROVIDE LBRACE LIDENT COMMA YIELD
 ## In state 63, spurious reduction of production comma -> COMMA
 ##
 
-Expected more items to provide or `}` to end the provide statement.
+Expected a lowercase identifier to provide a value, the keyword `module` followed by an uppercase identifier to provide a module, the keyword `type` followed by an uppercase identifier to provide a type, or `}` to end the provide statement.
 
 program: MODULE UIDENT EOL PROVIDE LBRACE YIELD
 ##
@@ -526,7 +544,7 @@ program: MODULE UIDENT EOL PROVIDE LBRACE YIELD
 ## In state 31, spurious reduction of production lbrace -> LBRACE
 ##
 
-Expected a comma-separated list of items to provide.
+Expected a lowercase identifier to provide a value, the keyword `module` followed by an uppercase identifier to provide a module, or the keyword `type` followed by an uppercase identifier to provide a type.
 
 program: MODULE UIDENT EOL PROVIDE LBRACE TYPE YIELD
 ##
@@ -594,7 +612,7 @@ program: MODULE UIDENT EOL FROM UIDENT USE LBRACE LIDENT COMMA YIELD
 ## In state 63, spurious reduction of production comma -> COMMA
 ##
 
-Expected more items to use or `}` to end the statement.
+Expected a lowercase identifier to use a value, the keyword `module` followed by an uppercase identifier to use a module, the keyword `type` followed by an uppercase identifier to use a type, or `}` to end the use statement.
 
 program: MODULE UIDENT EOL ASSERT WHEN
 ##
