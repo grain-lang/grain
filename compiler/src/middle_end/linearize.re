@@ -1537,6 +1537,42 @@ and transl_anf_expression =
   );
 };
 
+let transl_foreign_module = (env, namespace, vds) => {
+  List.map(
+    desc => {
+      Path_tbl.add(include_map, desc.tvd_val.val_fullpath, desc.tvd_id);
+      switch (desc.tvd_desc.ctyp_type.desc) {
+      | TTyArrow(_) =>
+        let (argsty, retty) =
+          get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
+        let retty =
+          if (returns_void(env, desc.tvd_desc.ctyp_type)) {
+            [];
+          } else {
+            [retty];
+          };
+        IncludeDeclaration.wasm_func(
+          ~global=Global,
+          desc.tvd_id,
+          namespace,
+          desc.tvd_bind.txt,
+          FunctionShape({args: argsty, returns: retty, has_closure: true}),
+        );
+      | _ =>
+        let ty = get_allocation_type(env, desc.tvd_desc.ctyp_type);
+        IncludeDeclaration.wasm_value(
+          ~global=Global,
+          desc.tvd_id,
+          namespace,
+          desc.tvd_bind.txt,
+          GlobalShape(ty),
+        );
+      };
+    },
+    vds,
+  );
+};
+
 let rec transl_anf_statement =
         (
           {
@@ -1655,54 +1691,10 @@ let rec transl_anf_statement =
     (Some(setup @ [BSeq(comp)]), []);
   | TTopData(decls) => (None, [])
   | TTopException(ext) => (None, [])
-  | TTopForeign(desc) =>
-    let external_name =
-      List.fold_left(
-        name =>
-          fun
-          | {txt: External_name(name)} => name
-          | _ => name,
-        desc.tvd_name,
-        attributes,
-      );
-    Path_tbl.add(include_map, desc.tvd_val.val_fullpath, desc.tvd_id);
-    switch (desc.tvd_desc.ctyp_type.desc) {
-    | TTyArrow(_) =>
-      let (argsty, retty) =
-        get_fn_allocation_type(env, desc.tvd_desc.ctyp_type);
-      let retty =
-        if (returns_void(env, desc.tvd_desc.ctyp_type)) {
-          [];
-        } else {
-          [retty];
-        };
-      (
-        None,
-        [
-          IncludeDeclaration.wasm_func(
-            ~global=Global,
-            desc.tvd_id,
-            desc.tvd_mod.txt,
-            external_name.txt,
-            FunctionShape({args: argsty, returns: retty, has_closure: true}),
-          ),
-        ],
-      );
-    | _ =>
-      let ty = get_allocation_type(env, desc.tvd_desc.ctyp_type);
-      (
-        None,
-        [
-          IncludeDeclaration.wasm_value(
-            ~global=Global,
-            desc.tvd_id,
-            desc.tvd_mod.txt,
-            external_name.txt,
-            GlobalShape(ty),
-          ),
-        ],
-      );
-    };
+  | TTopForeignModule(decl) =>
+    let imps =
+      transl_foreign_module(env, decl.tfmod_namespace.txt, decl.tfmod_vds);
+    (None, imps);
   | TTopProvide(exports) =>
     List.iter(
       ({tex_path}) => {
@@ -1825,7 +1817,7 @@ let rec gather_type_metadata = statements => {
       | TTopExpr(_)
       | TTopInclude(_)
       | TTopProvide(_)
-      | TTopForeign(_)
+      | TTopForeignModule(_)
       | TTopLet(_) => metadata
       }
     },
@@ -2022,11 +2014,18 @@ let construct_type_metadata_buffer = type_metadata => {
 };
 
 let transl_anf_module =
-    ({statements, env, signature}: typed_program): anf_program => {
+    ({module_desc, env, signature}: typed_program): anf_program => {
   Path_tbl.clear(type_map);
   Path_tbl.clear(include_map);
   Path_tbl.clear(module_symbol_map);
   value_imports := [];
+  let transled =
+    switch (module_desc) {
+    | TNormalModule(statements) => List.map(transl_anf_statement, statements)
+    | TForeignModule(namespace, vds) => [
+        (None, transl_foreign_module(env, namespace.txt, vds)),
+      ]
+    };
   let (top_binds, imports) =
     List.fold_left(
       ((acc_bind, acc_imp), cur) =>
@@ -2038,7 +2037,7 @@ let transl_anf_module =
           )
         },
       ([], []),
-      List.map(transl_anf_statement, statements),
+      transled,
     );
   let imports = List.rev(imports);
   let body = convert_binds(top_binds);
@@ -2046,7 +2045,11 @@ let transl_anf_module =
     specs: imports @ value_imports^,
     path_map: Path_tbl.copy(include_map),
   };
-  let type_metadata_and_hashes = gather_type_metadata(statements);
+  let type_metadata_and_hashes =
+    switch (module_desc) {
+    | TNormalModule(statements) => gather_type_metadata(statements)
+    | TForeignModule(_) => []
+    };
   let type_metadata =
     List.map(((meta, _)) => meta, type_metadata_and_hashes);
   let metadata = construct_type_metadata_buffer(type_metadata_and_hashes);

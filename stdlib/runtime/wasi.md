@@ -6,96 +6,96 @@ title: Wasi
 
 Functions and constants included in the Wasi module.
 
-### Wasi.**args_get**
+### Wasi.**argsGet**
 
 ```grain
-args_get : (WasmI32, WasmI32) => WasmI32
+argsGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**args_sizes_get**
+### Wasi.**argsSizesGet**
 
 ```grain
-args_sizes_get : (WasmI32, WasmI32) => WasmI32
+argsSizesGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**environ_get**
+### Wasi.**environGet**
 
 ```grain
-environ_get : (WasmI32, WasmI32) => WasmI32
+environGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**environ_sizes_get**
+### Wasi.**environSizesGet**
 
 ```grain
-environ_sizes_get : (WasmI32, WasmI32) => WasmI32
+environSizesGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**proc_exit**
+### Wasi.**procExit**
 
 ```grain
-proc_exit : WasmI32 => Void
+procExit : WasmI32 => Void
 ```
 
-### Wasi.**proc_raise**
+### Wasi.**procRaise**
 
 ```grain
-proc_raise : WasmI32 => WasmI32
+procRaise : WasmI32 => WasmI32
 ```
 
-### Wasi.**sched_yield**
+### Wasi.**schedYield**
 
 ```grain
-sched_yield : () => WasmI32
+schedYield : () => WasmI32
 ```
 
-### Wasi.**random_get**
+### Wasi.**randomGet**
 
 ```grain
-random_get : (WasmI32, WasmI32) => WasmI32
+randomGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**clock_time_get**
+### Wasi.**clockTimeGet**
 
 ```grain
-clock_time_get : (WasmI32, WasmI64, WasmI32) => WasmI32
+clockTimeGet : (WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_open**
+### Wasi.**pathOpen**
 
 ```grain
-path_open :
+pathOpen :
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32,
    WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_read**
+### Wasi.**fdRead**
 
 ```grain
-fd_read : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
+fdRead : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_pread**
+### Wasi.**fdPread**
 
 ```grain
-fd_pread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
+fdPread : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_prestat_get**
+### Wasi.**fdPrestatGet**
 
 ```grain
-fd_prestat_get : (WasmI32, WasmI32) => WasmI32
+fdPrestatGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_prestat_dir_name**
+### Wasi.**fdPrestatDirName**
 
 ```grain
-fd_prestat_dir_name : (WasmI32, WasmI32, WasmI32) => WasmI32
+fdPrestatDirName : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_write**
+### Wasi.**fdWrite**
 
 ```grain
-fd_write : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
+fdWrite : (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
 Invokes the `fd_write` system call.
@@ -115,745 +115,151 @@ Returns:
 |----|-----------|
 |`WasmI32`|The number of bytes written|
 
-### Wasi.**fd_pwrite**
+### Wasi.**fdPwrite**
 
 ```grain
-fd_pwrite : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
+fdPwrite : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_allocate**
+### Wasi.**fdAllocate**
 
 ```grain
-fd_allocate : (WasmI32, WasmI64, WasmI64) => WasmI32
+fdAllocate : (WasmI32, WasmI64, WasmI64) => WasmI32
 ```
 
-### Wasi.**fd_close**
+### Wasi.**fdClose**
 
 ```grain
-fd_close : WasmI32 => WasmI32
+fdClose : WasmI32 => WasmI32
 ```
 
-### Wasi.**fd_datasync**
+### Wasi.**fdDatasync**
 
 ```grain
-fd_datasync : WasmI32 => WasmI32
+fdDatasync : WasmI32 => WasmI32
 ```
 
-### Wasi.**fd_sync**
+### Wasi.**fdSync**
 
 ```grain
-fd_sync : WasmI32 => WasmI32
+fdSync : WasmI32 => WasmI32
 ```
 
-### Wasi.**fd_fdstat_get**
+### Wasi.**fdFdstatGet**
 
 ```grain
-fd_fdstat_get : (WasmI32, WasmI32) => WasmI32
+fdFdstatGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_fdstat_set_flags**
+### Wasi.**fdFdstatSetFlags**
 
 ```grain
-fd_fdstat_set_flags : (WasmI32, WasmI32) => WasmI32
+fdFdstatSetFlags : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_fdstat_set_rights**
+### Wasi.**fdFdstatSetRights**
 
 ```grain
-fd_fdstat_set_rights : (WasmI32, WasmI64, WasmI64) => WasmI32
+fdFdstatSetRights : (WasmI32, WasmI64, WasmI64) => WasmI32
 ```
 
-### Wasi.**fd_filestat_get**
+### Wasi.**fdFilestatGet**
 
 ```grain
-fd_filestat_get : (WasmI32, WasmI32) => WasmI32
+fdFilestatGet : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_filestat_set_size**
+### Wasi.**fdFilestatSetSize**
 
 ```grain
-fd_filestat_set_size : (WasmI32, WasmI64) => WasmI32
+fdFilestatSetSize : (WasmI32, WasmI64) => WasmI32
 ```
 
-### Wasi.**fd_filestat_set_times**
+### Wasi.**fdFilestatSetTimes**
 
 ```grain
-fd_filestat_set_times : (WasmI32, WasmI64, WasmI64, WasmI32) => WasmI32
+fdFilestatSetTimes : (WasmI32, WasmI64, WasmI64, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_readdir**
+### Wasi.**fdReaddir**
 
 ```grain
-fd_readdir : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
+fdReaddir : (WasmI32, WasmI32, WasmI32, WasmI64, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_renumber**
+### Wasi.**fdRenumber**
 
 ```grain
-fd_renumber : (WasmI32, WasmI32) => WasmI32
+fdRenumber : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_seek**
+### Wasi.**fdSeek**
 
 ```grain
-fd_seek : (WasmI32, WasmI64, WasmI32, WasmI32) => WasmI32
+fdSeek : (WasmI32, WasmI64, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**fd_tell**
+### Wasi.**fdTell**
 
 ```grain
-fd_tell : (WasmI32, WasmI32) => WasmI32
+fdTell : (WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_create_directory**
+### Wasi.**pathCreateDirectory**
 
 ```grain
-path_create_directory : (WasmI32, WasmI32, WasmI32) => WasmI32
+pathCreateDirectory : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_filestat_get**
+### Wasi.**pathFilestatGet**
 
 ```grain
-path_filestat_get : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
+pathFilestatGet : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_filestat_set_times**
+### Wasi.**pathFilestatSetTimes**
 
 ```grain
-path_filestat_set_times :
+pathFilestatSetTimes :
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI64, WasmI64, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_link**
+### Wasi.**pathLink**
 
 ```grain
-path_link :
+pathLink :
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_symlink**
+### Wasi.**pathSymlink**
 
 ```grain
-path_symlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
+pathSymlink : (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_unlink_file**
+### Wasi.**pathUnlinkFile**
 
 ```grain
-path_unlink_file : (WasmI32, WasmI32, WasmI32) => WasmI32
+pathUnlinkFile : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_readlink**
+### Wasi.**pathReadlink**
 
 ```grain
-path_readlink :
+pathReadlink :
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_remove_directory**
+### Wasi.**pathRemoveDirectory**
 
 ```grain
-path_remove_directory : (WasmI32, WasmI32, WasmI32) => WasmI32
+pathRemoveDirectory : (WasmI32, WasmI32, WasmI32) => WasmI32
 ```
 
-### Wasi.**path_rename**
+### Wasi.**pathRename**
 
 ```grain
-path_rename :
+pathRename :
   (WasmI32, WasmI32, WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32
-```
-
-### Wasi.**_CLOCK_REALTIME**
-
-```grain
-_CLOCK_REALTIME : WasmI32
-```
-
-### Wasi.**_CLOCK_MONOTONIC**
-
-```grain
-_CLOCK_MONOTONIC : WasmI32
-```
-
-### Wasi.**_CLOCK_PROCESS_CPUTIME**
-
-```grain
-_CLOCK_PROCESS_CPUTIME : WasmI32
-```
-
-### Wasi.**_CLOCK_THREAD_CPUTIME**
-
-```grain
-_CLOCK_THREAD_CPUTIME : WasmI32
-```
-
-### Wasi.**_TIME_SET_ATIM**
-
-```grain
-_TIME_SET_ATIM : WasmI32
-```
-
-### Wasi.**_TIME_SET_ATIM_NOW**
-
-```grain
-_TIME_SET_ATIM_NOW : WasmI32
-```
-
-### Wasi.**_TIME_SET_MTIM**
-
-```grain
-_TIME_SET_MTIM : WasmI32
-```
-
-### Wasi.**_TIME_SET_MTIM_NOW**
-
-```grain
-_TIME_SET_MTIM_NOW : WasmI32
-```
-
-### Wasi.**_LOOKUP_FLAG_SYMLINK_FOLLOW**
-
-```grain
-_LOOKUP_FLAG_SYMLINK_FOLLOW : WasmI32
-```
-
-### Wasi.**_OPEN_FLAG_CREAT**
-
-```grain
-_OPEN_FLAG_CREAT : WasmI32
-```
-
-### Wasi.**_OPEN_FLAG_DIRECTORY**
-
-```grain
-_OPEN_FLAG_DIRECTORY : WasmI32
-```
-
-### Wasi.**_OPEN_FLAG_EXCL**
-
-```grain
-_OPEN_FLAG_EXCL : WasmI32
-```
-
-### Wasi.**_OPEN_FLAG_TRUNC**
-
-```grain
-_OPEN_FLAG_TRUNC : WasmI32
-```
-
-### Wasi.**_FDFLAG_APPEND**
-
-```grain
-_FDFLAG_APPEND : WasmI32
-```
-
-### Wasi.**_FDFLAG_DSYNC**
-
-```grain
-_FDFLAG_DSYNC : WasmI32
-```
-
-### Wasi.**_FDFLAG_NONBLOCK**
-
-```grain
-_FDFLAG_NONBLOCK : WasmI32
-```
-
-### Wasi.**_FDFLAG_RSYNC**
-
-```grain
-_FDFLAG_RSYNC : WasmI32
-```
-
-### Wasi.**_FDFLAG_SYNC**
-
-```grain
-_FDFLAG_SYNC : WasmI32
-```
-
-### Wasi.**_WHENCE_SET**
-
-```grain
-_WHENCE_SET : WasmI32
-```
-
-### Wasi.**_WHENCE_CUR**
-
-```grain
-_WHENCE_CUR : WasmI32
-```
-
-### Wasi.**_WHENCE_END**
-
-```grain
-_WHENCE_END : WasmI32
-```
-
-### Wasi.**_ESUCCESS**
-
-```grain
-_ESUCCESS : WasmI32
-```
-
-### Wasi.**_ETOOBIG**
-
-```grain
-_ETOOBIG : WasmI32
-```
-
-### Wasi.**_EACCES**
-
-```grain
-_EACCES : WasmI32
-```
-
-### Wasi.**_EADDRINUSE**
-
-```grain
-_EADDRINUSE : WasmI32
-```
-
-### Wasi.**_EADDRNOTAVAIL**
-
-```grain
-_EADDRNOTAVAIL : WasmI32
-```
-
-### Wasi.**_EAFNOSUPPORT**
-
-```grain
-_EAFNOSUPPORT : WasmI32
-```
-
-### Wasi.**_EAGAIN**
-
-```grain
-_EAGAIN : WasmI32
-```
-
-### Wasi.**_EALREADY**
-
-```grain
-_EALREADY : WasmI32
-```
-
-### Wasi.**_EBADF**
-
-```grain
-_EBADF : WasmI32
-```
-
-### Wasi.**_EBADMSG**
-
-```grain
-_EBADMSG : WasmI32
-```
-
-### Wasi.**_EBUSY**
-
-```grain
-_EBUSY : WasmI32
-```
-
-### Wasi.**_ECANCELED**
-
-```grain
-_ECANCELED : WasmI32
-```
-
-### Wasi.**_ECHILD**
-
-```grain
-_ECHILD : WasmI32
-```
-
-### Wasi.**_ECONNABORTED**
-
-```grain
-_ECONNABORTED : WasmI32
-```
-
-### Wasi.**_ECONNREFUSED**
-
-```grain
-_ECONNREFUSED : WasmI32
-```
-
-### Wasi.**_ECONNRESET**
-
-```grain
-_ECONNRESET : WasmI32
-```
-
-### Wasi.**_EDEADLK**
-
-```grain
-_EDEADLK : WasmI32
-```
-
-### Wasi.**_EDESTADDRREQ**
-
-```grain
-_EDESTADDRREQ : WasmI32
-```
-
-### Wasi.**_EDOM**
-
-```grain
-_EDOM : WasmI32
-```
-
-### Wasi.**_EDQUOT**
-
-```grain
-_EDQUOT : WasmI32
-```
-
-### Wasi.**_EEXIST**
-
-```grain
-_EEXIST : WasmI32
-```
-
-### Wasi.**_EFAULT**
-
-```grain
-_EFAULT : WasmI32
-```
-
-### Wasi.**_EFBIG**
-
-```grain
-_EFBIG : WasmI32
-```
-
-### Wasi.**_EHOSTUNREACH**
-
-```grain
-_EHOSTUNREACH : WasmI32
-```
-
-### Wasi.**_EIDRM**
-
-```grain
-_EIDRM : WasmI32
-```
-
-### Wasi.**_EILSEQ**
-
-```grain
-_EILSEQ : WasmI32
-```
-
-### Wasi.**_EINPROGRESS**
-
-```grain
-_EINPROGRESS : WasmI32
-```
-
-### Wasi.**_EINTR**
-
-```grain
-_EINTR : WasmI32
-```
-
-### Wasi.**_EINVAL**
-
-```grain
-_EINVAL : WasmI32
-```
-
-### Wasi.**_EIO**
-
-```grain
-_EIO : WasmI32
-```
-
-### Wasi.**_EISCONN**
-
-```grain
-_EISCONN : WasmI32
-```
-
-### Wasi.**_EISDIR**
-
-```grain
-_EISDIR : WasmI32
-```
-
-### Wasi.**_ELOOP**
-
-```grain
-_ELOOP : WasmI32
-```
-
-### Wasi.**_EMFILE**
-
-```grain
-_EMFILE : WasmI32
-```
-
-### Wasi.**_EMLINK**
-
-```grain
-_EMLINK : WasmI32
-```
-
-### Wasi.**_EMSGSIZE**
-
-```grain
-_EMSGSIZE : WasmI32
-```
-
-### Wasi.**_EMULTIHOP**
-
-```grain
-_EMULTIHOP : WasmI32
-```
-
-### Wasi.**_ENAMETOOLONG**
-
-```grain
-_ENAMETOOLONG : WasmI32
-```
-
-### Wasi.**_ENETDOWN**
-
-```grain
-_ENETDOWN : WasmI32
-```
-
-### Wasi.**_ENETRESET**
-
-```grain
-_ENETRESET : WasmI32
-```
-
-### Wasi.**_ENETUNREACH**
-
-```grain
-_ENETUNREACH : WasmI32
-```
-
-### Wasi.**_ENFILE**
-
-```grain
-_ENFILE : WasmI32
-```
-
-### Wasi.**_ENOBUFS**
-
-```grain
-_ENOBUFS : WasmI32
-```
-
-### Wasi.**_ENODEV**
-
-```grain
-_ENODEV : WasmI32
-```
-
-### Wasi.**_ENOENT**
-
-```grain
-_ENOENT : WasmI32
-```
-
-### Wasi.**_ENOEXEC**
-
-```grain
-_ENOEXEC : WasmI32
-```
-
-### Wasi.**_ENOLCK**
-
-```grain
-_ENOLCK : WasmI32
-```
-
-### Wasi.**_ENOLINK**
-
-```grain
-_ENOLINK : WasmI32
-```
-
-### Wasi.**_ENOMEM**
-
-```grain
-_ENOMEM : WasmI32
-```
-
-### Wasi.**_ENOMSG**
-
-```grain
-_ENOMSG : WasmI32
-```
-
-### Wasi.**_ENOPROTOOPT**
-
-```grain
-_ENOPROTOOPT : WasmI32
-```
-
-### Wasi.**_ENOSPC**
-
-```grain
-_ENOSPC : WasmI32
-```
-
-### Wasi.**_ENOSYS**
-
-```grain
-_ENOSYS : WasmI32
-```
-
-### Wasi.**_ENOTCONN**
-
-```grain
-_ENOTCONN : WasmI32
-```
-
-### Wasi.**_ENOTDIR**
-
-```grain
-_ENOTDIR : WasmI32
-```
-
-### Wasi.**_ENOTEMPTY**
-
-```grain
-_ENOTEMPTY : WasmI32
-```
-
-### Wasi.**_ENOTRECOVERABLE**
-
-```grain
-_ENOTRECOVERABLE : WasmI32
-```
-
-### Wasi.**_ENOTSOCK**
-
-```grain
-_ENOTSOCK : WasmI32
-```
-
-### Wasi.**_ENOTSUP**
-
-```grain
-_ENOTSUP : WasmI32
-```
-
-### Wasi.**_ENOTTY**
-
-```grain
-_ENOTTY : WasmI32
-```
-
-### Wasi.**_ENXIO**
-
-```grain
-_ENXIO : WasmI32
-```
-
-### Wasi.**_EOVERFLOW**
-
-```grain
-_EOVERFLOW : WasmI32
-```
-
-### Wasi.**_EOWNERDEAD**
-
-```grain
-_EOWNERDEAD : WasmI32
-```
-
-### Wasi.**_EPERM**
-
-```grain
-_EPERM : WasmI32
-```
-
-### Wasi.**_EPIPE**
-
-```grain
-_EPIPE : WasmI32
-```
-
-### Wasi.**_EPROTO**
-
-```grain
-_EPROTO : WasmI32
-```
-
-### Wasi.**_EPROTONOSUPPORT**
-
-```grain
-_EPROTONOSUPPORT : WasmI32
-```
-
-### Wasi.**_EPROTOTYPE**
-
-```grain
-_EPROTOTYPE : WasmI32
-```
-
-### Wasi.**_ERANGE**
-
-```grain
-_ERANGE : WasmI32
-```
-
-### Wasi.**_EROFS**
-
-```grain
-_EROFS : WasmI32
-```
-
-### Wasi.**_ESPIPE**
-
-```grain
-_ESPIPE : WasmI32
-```
-
-### Wasi.**_ESRCH**
-
-```grain
-_ESRCH : WasmI32
-```
-
-### Wasi.**_ESTALE**
-
-```grain
-_ESTALE : WasmI32
-```
-
-### Wasi.**_ETIMEDOUT**
-
-```grain
-_ETIMEDOUT : WasmI32
-```
-
-### Wasi.**_ETXTBSY**
-
-```grain
-_ETXTBSY : WasmI32
-```
-
-### Wasi.**_EXDEV**
-
-```grain
-_EXDEV : WasmI32
-```
-
-### Wasi.**_ENOTCAPABLE**
-
-```grain
-_ENOTCAPABLE : WasmI32
-```
-
-### Wasi.**stringOfSystemError**
-
-```grain
-stringOfSystemError : (code: a) => String
 ```
 

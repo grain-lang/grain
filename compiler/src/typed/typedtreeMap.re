@@ -45,8 +45,13 @@ module MakeMap =
        } => {
   let rec map_typed_program = tp => {
     let tp = Map.enter_typed_program(tp);
-    let statements = List.map(map_toplevel_stmt, tp.statements);
-    Map.leave_typed_program({...tp, statements});
+    let module_desc =
+      switch (tp.module_desc) {
+      | TNormalModule(statements) =>
+        TNormalModule(List.map(map_toplevel_stmt, statements))
+      | TForeignModule(_) as fm => fm
+      };
+    Map.leave_typed_program({...tp, module_desc});
   }
 
   and map_core_type = ct => {
@@ -129,7 +134,7 @@ module MakeMap =
       switch (stmt.ttop_desc) {
       | TTopData(decls) => TTopData(List.map(map_data_declaration, decls))
       | TTopException(_)
-      | TTopForeign(_)
+      | TTopForeignModule(_)
       | TTopInclude(_)
       | TTopProvide(_) => stmt.ttop_desc
       | TTopModule(decl) =>

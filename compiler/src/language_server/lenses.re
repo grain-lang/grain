@@ -25,7 +25,7 @@ module ResponseResult = {
 let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   switch (stmt.ttop_desc) {
   | TTopInclude(_)
-  | TTopForeign(_)
+  | TTopForeignModule(_)
   | TTopModule(_)
   | TTopData([]) => None
   | TTopData(data_declarations) =>
@@ -61,36 +61,40 @@ let get_signature_from_statement = (stmt: Typedtree.toplevel_stmt) =>
   };
 
 let get_lenses = (typed_program: Typedtree.typed_program) => {
-  List.filter_map(
-    (stmt: Typedtree.toplevel_stmt) => {
-      let (_, startline, startchar, _) =
-        Locations.get_raw_pos_info(stmt.ttop_loc.loc_start);
+  switch (typed_program.module_desc) {
+  | TNormalModule(statements) =>
+    List.filter_map(
+      (stmt: Typedtree.toplevel_stmt) => {
+        let (_, startline, startchar, _) =
+          Locations.get_raw_pos_info(stmt.ttop_loc.loc_start);
 
-      let signature = get_signature_from_statement(stmt);
-      switch (signature) {
-      | None => None
-      | Some(sigval) =>
-        let lense: ResponseResult.lense = {
-          range: {
-            range_start: {
-              line: startline - 1,
-              character: 1,
+        let signature = get_signature_from_statement(stmt);
+        switch (signature) {
+        | None => None
+        | Some(sigval) =>
+          let lense: ResponseResult.lense = {
+            range: {
+              range_start: {
+                line: startline - 1,
+                character: 1,
+              },
+              range_end: {
+                line: startline - 1,
+                character: 1,
+              },
             },
-            range_end: {
-              line: startline - 1,
-              character: 1,
+            command: {
+              title: sigval,
+              command: "",
             },
-          },
-          command: {
-            title: sigval,
-            command: "",
-          },
+          };
+          Some(lense);
         };
-        Some(lense);
-      };
-    },
-    typed_program.statements,
-  );
+      },
+      statements,
+    )
+  | TForeignModule(_) => []
+  };
 };
 
 let process =

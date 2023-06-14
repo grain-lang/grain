@@ -12,6 +12,7 @@ include "runtime/unsafe/wasmi32"
 from WasmI32 use { (+), (*), (>>), (>>>), (&), (==), (!=), (<) }
 include "runtime/unsafe/memory"
 include "runtime/wasi"
+include "runtime/wasiErrors"
 include "runtime/dataStructures"
 from DataStructures use { tagSimpleNumber, allocateArray, allocateString }
 
@@ -87,10 +88,10 @@ provide let argv = () => {
   let argcPtr = Memory.malloc(8n)
   let argvBufSizePtr = argcPtr + 4n
 
-  let err = Wasi.args_sizes_get(argcPtr, argvBufSizePtr)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.argsSizesGet(argcPtr, argvBufSizePtr)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(argcPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
 
   let argc = WasmI32.load(argcPtr, 0n)
@@ -108,11 +109,11 @@ provide let argv = () => {
   let argvPtr = Memory.malloc(argc * 4n)
   let argvBufPtr = Memory.malloc(argvBufSize)
 
-  let err = Wasi.args_get(argvPtr, argvBufPtr)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.argsGet(argvPtr, argvBufPtr)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(argvPtr)
     Memory.free(argvBufPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
 
   for (let mut i = 0n; i < argsLength; i += 4n) {
@@ -144,10 +145,10 @@ provide let env = () => {
   let envcPtr = Memory.malloc(8n)
   let envvBufSizePtr = envcPtr + 4n
 
-  let err = Wasi.environ_sizes_get(envcPtr, envvBufSizePtr)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.environSizesGet(envcPtr, envvBufSizePtr)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(envcPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   let envc = WasmI32.load(envcPtr, 0n)
   let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
@@ -155,12 +156,12 @@ provide let env = () => {
   let envvPtr = Memory.malloc(envc * 4n)
   let envvBufPtr = Memory.malloc(envvBufSize)
 
-  let err = Wasi.environ_get(envvPtr, envvBufPtr)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.environGet(envvPtr, envvBufPtr)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(envcPtr)
     Memory.free(envvPtr)
     Memory.free(envvBufPtr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   let arr = allocateArray(envc)
 
@@ -199,7 +200,7 @@ provide let exit = (code: Number) => {
     return Err(InvalidArgument("Invalid exit code"))
   }
   code = code >> 1n
-  Wasi.proc_exit(code)
+  Wasi.procExit(code)
   // Never actually hit because it exited
   return Ok(void)
 }
@@ -214,9 +215,9 @@ provide let exit = (code: Number) => {
 provide let sigRaise = (signalPtr: Signal) => {
   let signal = WasmI32.fromGrain(signalPtr)
   let signal = WasmI32.load(signal, 12n) >> 1n
-  let err = Wasi.proc_raise(signal)
-  if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+  let err = Wasi.procRaise(signal)
+  if (err != WasiErrors._ESUCCESS) {
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   return Ok(void)
 }
@@ -228,9 +229,9 @@ provide let sigRaise = (signalPtr: Signal) => {
  */
 @unsafe
 provide let schedYield = () => {
-  let err = Wasi.sched_yield()
-  if (err != Wasi._ESUCCESS) {
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+  let err = Wasi.schedYield()
+  if (err != WasiErrors._ESUCCESS) {
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   return Ok(void)
 }

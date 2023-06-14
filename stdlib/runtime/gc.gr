@@ -24,14 +24,6 @@ include "runtime/unsafe/tags" as Tags
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use { (+), (-), (*), (&), (==), (!=) }
 
-// Using foreigns directly here to avoid cyclic dependency
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-
 primitive (&&) = "@and"
 primitive (||) = "@or"
 primitive throw = "@throw"

@@ -42,7 +42,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"foo\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("foo")],
+      module_desc: PNormalModule([str("foo")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -52,7 +52,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\nbaz\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("bar\nbaz")],
+      module_desc: PNormalModule([str("bar\nbaz")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -62,7 +62,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"foobar\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("foobar")],
+      module_desc: PNormalModule([str("foobar")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -72,7 +72,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\u{41}\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      module_desc: PNormalModule([str("barA")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -82,7 +82,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\x41\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      module_desc: PNormalModule([str("barA")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -92,7 +92,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\101\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      module_desc: PNormalModule([str("barA")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -102,7 +102,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"bar\\u0041\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("barA")],
+      module_desc: PNormalModule([str("barA")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -112,7 +112,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"😂\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("😂")],
+      module_desc: PNormalModule([str("😂")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -122,7 +122,7 @@ describe("strings", ({test, testSkip}) => {
     "module Test; \"💯\"",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [str("💯")],
+      module_desc: PNormalModule([str("💯")]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -137,12 +137,13 @@ describe("strings", ({test, testSkip}) => {
           "Test",
           mk_loc("string_loc_single_line", (1, 7, 0), (1, 11, 0)),
         ),
-      statements: [
-        str(
-          ~loc=mk_loc("string_loc_single_line", (2, 12, 12), (2, 17, 12)),
-          "foo",
-        ),
-      ],
+      module_desc:
+        PNormalModule([
+          str(
+            ~loc=mk_loc("string_loc_single_line", (2, 12, 12), (2, 17, 12)),
+            "foo",
+          ),
+        ]),
       comments: [],
       prog_loc: mk_loc("string_loc_single_line", (1, 0, 0), (2, 17, 12)),
     },
@@ -156,12 +157,13 @@ describe("strings", ({test, testSkip}) => {
           "Test",
           mk_loc("string_loc_multi_line", (1, 7, 0), (1, 11, 0)),
         ),
-      statements: [
-        str(
-          ~loc=mk_loc("string_loc_multi_line", (2, 12, 12), (6, 34, 29)),
-          "foo\nbar\nbaz\nqux\nquux",
-        ),
-      ],
+      module_desc:
+        PNormalModule([
+          str(
+            ~loc=mk_loc("string_loc_multi_line", (2, 12, 12), (6, 34, 29)),
+            "foo\nbar\nbaz\nqux\nquux",
+          ),
+        ]),
       comments: [],
       prog_loc: mk_loc("string_loc_multi_line", (1, 0, 0), (6, 34, 29)),
     },
@@ -175,17 +177,18 @@ describe("strings", ({test, testSkip}) => {
           "Test",
           mk_loc("string_loc_single_line_emoji", (1, 7, 0), (1, 11, 0)),
         ),
-      statements: [
-        str(
-          ~loc=
-            mk_loc(
-              "string_loc_single_line_emoji",
-              (2, 12, 12),
-              (2, 15, 12),
-            ),
-          "💯",
-        ),
-      ],
+      module_desc:
+        PNormalModule([
+          str(
+            ~loc=
+              mk_loc(
+                "string_loc_single_line_emoji",
+                (2, 12, 12),
+                (2, 15, 12),
+              ),
+            "💯",
+          ),
+        ]),
       comments: [],
       prog_loc:
         mk_loc("string_loc_single_line_emoji", (1, 0, 0), (2, 15, 12)),

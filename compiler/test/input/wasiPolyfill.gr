@@ -1,11 +1,13 @@
 module WasiPolyfill
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign module Wasi binds "wasi_snapshot_preview1" {
+  foreign value fdWrite binds "fd_write": (
+    WasmI32,
+    WasmI32,
+    WasmI32,
+    WasmI32,
+  ) => WasmI32
+}
 
 provide let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 =
   (
@@ -14,9 +16,9 @@ provide let fd_write: (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 =
     iovs_len,
     nwritten,
   ) => {
-  fd_write(fd, iovs, iovs_len, nwritten)
-  fd_write(fd, iovs, iovs_len, nwritten)
-  fd_write(fd, iovs, iovs_len, nwritten)
+  Wasi.fdWrite(fd, iovs, iovs_len, nwritten)
+  Wasi.fdWrite(fd, iovs, iovs_len, nwritten)
+  Wasi.fdWrite(fd, iovs, iovs_len, nwritten)
 }
 
 provide let args_get = (a, b) => {

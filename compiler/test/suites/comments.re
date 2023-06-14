@@ -13,7 +13,7 @@ describe("comments", ({test}) => {
     "// Test\nmodule Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Line({
           cmt_content: "Test",
@@ -29,7 +29,7 @@ describe("comments", ({test}) => {
     "/* Test */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Block({
           cmt_content: "Test",
@@ -45,7 +45,7 @@ describe("comments", ({test}) => {
     "/* Test\n    Weird indent\n  Normal indent */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Block({
           cmt_content: "Test\nWeird indent\nNormal indent",
@@ -61,7 +61,7 @@ describe("comments", ({test}) => {
     "/* Test\r\n    Weird indent\r\n  Normal indent */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Block({
           cmt_content: "Test\nWeird indent\nNormal indent",
@@ -77,7 +77,7 @@ describe("comments", ({test}) => {
     "/** Test */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Doc({
           cmt_content: "Test",
@@ -93,7 +93,7 @@ describe("comments", ({test}) => {
     "/**\n  Test\n  Weird indent\n  Normal indent */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Doc({
           cmt_content: "Test\nWeird indent\nNormal indent",
@@ -109,7 +109,7 @@ describe("comments", ({test}) => {
     "/** Test\n    Weird indent\n  Normal indent */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Doc({
           cmt_content: "Test\n   Weird indent\n Normal indent",
@@ -126,7 +126,7 @@ describe("comments", ({test}) => {
     "/**\n		Test\r\n	 Weird indent\r\n  Normal indent */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Doc({
           cmt_content: "Test\nWeird indent\nNormal indent",
@@ -142,7 +142,7 @@ describe("comments", ({test}) => {
     "#!/bin/grain\nmodule Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Shebang({
           cmt_content: "/bin/grain",
@@ -158,7 +158,7 @@ describe("comments", ({test}) => {
     "/* Test\n* no space before\n * space before\n  * tab before\n *no space after */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Block({
           cmt_content: "Test\nno space before\nspace before\ntab before\nno space after",
@@ -174,7 +174,7 @@ describe("comments", ({test}) => {
     "/** Test\n* no space before\n * space before\n  * tab before\n *no space after */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Doc({
           cmt_content: " Test\n no space before\n space before\n tab before\nno space after",
@@ -190,7 +190,7 @@ describe("comments", ({test}) => {
     "/** Test\n* no space before\n * space before\n  * tab before\n * trailing space after */module Test",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [
         Parsetree.Doc({
           cmt_content: "Test\nno space before\nspace before\ntab before\ntrailing space after",

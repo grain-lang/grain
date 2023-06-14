@@ -36,6 +36,15 @@ program: MODULE YIELD
 ## The known suffix of the stack is as follows:
 ## MODULE
 ##
+program: FOREIGN_MODULE YIELD
+##
+## Ends in an error in state: 3.
+##
+## foreign_module_header -> FOREIGN_MODULE . UIDENT BINDS str [ SEMI EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE
+##
 program: MODULE UIDENT EOL FROM YIELD
 ##
 ## Ends in an error in state: 40.
@@ -53,6 +62,15 @@ program: MODULE UIDENT EOL MODULE YIELD
 ##
 ## The known suffix of the stack is as follows:
 ## MODULE
+##
+program: MODULE UIDENT EOL FOREIGN_MODULE YIELD
+##
+## Ends in an error in state: 786.
+##
+## foreign_module_stmt -> FOREIGN_MODULE . UIDENT BINDS str lbrace foreign_binds RBRACE [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE
 ##
 program: MODULE UIDENT EOL INCLUDE STRING AS YIELD
 ##
@@ -86,8 +104,96 @@ program: EOL MODULE UIDENT YIELD
 ## The known suffix of the stack is as follows:
 ## eols module_header
 ##
+program: FOREIGN_MODULE UIDENT BINDS STRING YIELD
+##
+## Ends in an error in state: 872.
+##
+## program -> foreign_module_header . eos foreign_binds EOF [ # ]
+## program -> foreign_module_header . option(eos) EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## foreign_module_header
+##
+program: EOL FOREIGN_MODULE UIDENT BINDS STRING YIELD
+##
+## Ends in an error in state: 885.
+##
+## program -> eols foreign_module_header . eos foreign_binds EOF [ # ]
+## program -> eols foreign_module_header . option(eos) EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## eols foreign_module_header
+##
 
 Expected a newline character to end the module statement.
+
+program: FOREIGN_MODULE UIDENT YIELD
+##
+## Ends in an error in state: 4.
+##
+## foreign_module_header -> FOREIGN_MODULE UIDENT . BINDS str [ SEMI EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE UIDENT
+##
+program: MODULE UIDENT EOL FOREIGN_MODULE UIDENT YIELD
+##
+## Ends in an error in state: 787.
+##
+## foreign_module_stmt -> FOREIGN_MODULE UIDENT . BINDS str lbrace foreign_binds RBRACE [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE UIDENT
+##
+
+Expected `binds` followed by an external WebAssembly namespace surrounded by `"` to bind to.
+
+program: FOREIGN_MODULE UIDENT BINDS YIELD
+##
+## Ends in an error in state: 5.
+##
+## foreign_module_header -> FOREIGN_MODULE UIDENT BINDS . str [ SEMI EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE UIDENT BINDS
+##
+program: MODULE UIDENT EOL FOREIGN_MODULE UIDENT BINDS YIELD
+##
+## Ends in an error in state: 788.
+##
+## foreign_module_stmt -> FOREIGN_MODULE UIDENT BINDS . str lbrace foreign_binds RBRACE [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE UIDENT BINDS
+##
+
+Expected an external WebAssembly namespace surrounded by `"` to bind to.
+
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT YIELD
+##
+## Ends in an error in state: 797.
+##
+## foreign_bind -> attributes FOREIGN_VALUE id_str . BINDS str COLON typ [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE id_str . BINDS str COLON eols typ [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## attributes FOREIGN_VALUE id_str
+##
+
+Expected `binds` followed by an external WebAssembly value surrounded by `"` to bind to.
+
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS YIELD
+##
+## Ends in an error in state: 798.
+##
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS . str COLON typ [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS . str COLON eols typ [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## attributes FOREIGN_VALUE id_str BINDS
+##
+
+Expected an external WebAssembly value surrounded by `"` to bind to.
 
 program: MODULE UIDENT EOL MODULE UIDENT YIELD
 ##
@@ -97,6 +203,15 @@ program: MODULE UIDENT EOL MODULE UIDENT YIELD
 ##
 ## The known suffix of the stack is as follows:
 ## MODULE UIDENT
+##
+program: MODULE UIDENT EOL FOREIGN_MODULE UIDENT BINDS STRING YIELD
+##
+## Ends in an error in state: 789.
+##
+## foreign_module_stmt -> FOREIGN_MODULE UIDENT BINDS str . lbrace foreign_binds RBRACE [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE UIDENT BINDS str
 ##
 
 Expected `{` to start the module body.
@@ -130,29 +245,80 @@ program: MODULE UIDENT EOL MODULE UIDENT LBRACE UIDENT EOF
 
 Expected `}` to end the module body.
 
-program: MODULE UIDENT EOL FOREIGN YIELD
+program: MODULE UIDENT EOL FOREIGN_MODULE UIDENT BINDS STRING LBRACE YIELD
 ##
-## Ends in an error in state: 745.
+## Ends in an error in state: 790.
 ##
-## foreign_stmt -> FOREIGN . WASM id_str COLON typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-## foreign_stmt -> FOREIGN . WASM id_str COLON eols typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN
-##
-
-Expected the keyword `wasm`.
-
-program: MODULE UIDENT EOL FOREIGN WASM YIELD
-##
-## Ends in an error in state: 746.
-##
-## foreign_stmt -> FOREIGN WASM . id_str COLON typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-## foreign_stmt -> FOREIGN WASM . id_str COLON eols typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
+## foreign_module_stmt -> FOREIGN_MODULE UIDENT BINDS str lbrace . foreign_binds RBRACE [ SEMI RBRACE EOL EOF ]
 ##
 ## The known suffix of the stack is as follows:
-## FOREIGN WASM
+## FOREIGN_MODULE UIDENT BINDS str lbrace
 ##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 36, spurious reduction of production lbrace -> LBRACE
+##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL YIELD
+##
+## Ends in an error in state: 875.
+##
+## option(eos) -> eos . [ EOF ]
+## program -> foreign_module_header eos . foreign_binds EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## foreign_module_header eos
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 8, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 11, spurious reduction of production eols -> nonempty_list(eol)
+## In state 436, spurious reduction of production eos -> eols
+##
+program: EOL FOREIGN_MODULE UIDENT BINDS STRING EOL YIELD
+##
+## Ends in an error in state: 888.
+##
+## option(eos) -> eos . [ EOF ]
+## program -> eols foreign_module_header eos . foreign_binds EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## eols foreign_module_header eos
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 8, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 11, spurious reduction of production eols -> nonempty_list(eol)
+## In state 436, spurious reduction of production eos -> eols
+##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL AT LIDENT TYPE
+##
+## Ends in an error in state: 795.
+##
+## foreign_bind -> attributes . FOREIGN_VALUE id_str BINDS str COLON typ [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes . FOREIGN_VALUE id_str BINDS str COLON eols typ [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## attributes
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 292, spurious reduction of production loption(attribute_arguments) ->
+## In state 301, spurious reduction of production attribute -> AT id_str loption(attribute_arguments)
+## In state 434, spurious reduction of production list(attribute) ->
+## In state 435, spurious reduction of production list(attribute) -> attribute list(attribute)
+## In state 335, spurious reduction of production attributes -> list(attribute)
+##
+
+Expected a `foreign value` binding.
+
 program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN QUESTION YIELD
 ##
 ## Ends in an error in state: 198.
@@ -163,31 +329,57 @@ program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN QUESTION YIELD
 ## The known suffix of the stack is as follows:
 ## QUESTION
 ##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE YIELD
+##
+## Ends in an error in state: 796.
+##
+## foreign_bind -> attributes FOREIGN_VALUE . id_str BINDS str COLON typ [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE . id_str BINDS str COLON eols typ [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## attributes FOREIGN_VALUE
+##
 
 Expected a lowercase identifier.
 
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT YIELD
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING YIELD
 ##
-## Ends in an error in state: 747.
+## Ends in an error in state: 799.
 ##
-## foreign_stmt -> FOREIGN WASM id_str . COLON typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-## foreign_stmt -> FOREIGN WASM id_str . COLON eols typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str . COLON typ [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str . COLON eols typ [ SEMI RBRACE EOL EOF ]
 ##
 ## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str
+## attributes FOREIGN_VALUE id_str BINDS str
 ##
 
 Expected a colon followed by the type of the foreign value.
 
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON YIELD
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING COLON YIELD
 ##
-## Ends in an error in state: 748.
+## Ends in an error in state: 800.
 ##
-## foreign_stmt -> FOREIGN WASM id_str COLON . typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-## foreign_stmt -> FOREIGN WASM id_str COLON . eols typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON . typ [ SEMI RBRACE EOL EOF ]
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON . eols typ [ SEMI RBRACE EOL EOF ]
 ##
 ## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON
+## attributes FOREIGN_VALUE id_str BINDS str COLON
+##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING COLON EOL YIELD
+##
+## Ends in an error in state: 802.
+##
+## foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON eols . typ [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## attributes FOREIGN_VALUE id_str BINDS str COLON eols
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 8, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 11, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
 Expected the type of the foreign value.
@@ -260,15 +452,6 @@ program: MODULE UIDENT EOL UIDENT COLON FUN LPAREN LIDENT COLON EOL YIELD
 
 Expected the type of the argument.
 
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS YIELD
-##
-## Ends in an error in state: 750.
-##
-## as_prefix(id_str) -> AS . id_str [ FROM ]
-##
-## The known suffix of the stack is as follows:
-## AS
-##
 program: MODULE UIDENT EOL PROVIDE LBRACE UIDENT AS EOL YIELD
 ##
 ## Ends in an error in state: 51.
@@ -303,23 +486,6 @@ program: MODULE UIDENT EOL PROVIDE LBRACE LIDENT AS EOL YIELD
 ## In state 6, spurious reduction of production eols -> nonempty_list(eol)
 ## In state 53, spurious reduction of production option(eols) -> eols
 ##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS EOL YIELD
-##
-## Ends in an error in state: 755.
-##
-## as_prefix(id_str) -> AS option(eols) . id_str [ FROM ]
-##
-## The known suffix of the stack is as follows:
-## AS option(eols)
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 6, spurious reduction of production eols -> nonempty_list(eol)
-## In state 53, spurious reduction of production option(eols) -> eols
-##
 program: MODULE UIDENT EOL INCLUDE STRING AS EOL YIELD
 ##
 ## Ends in an error in state: 823.
@@ -338,45 +504,6 @@ program: MODULE UIDENT EOL INCLUDE STRING AS EOL YIELD
 ##
 
 Expected an alias.
-
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT AS LIDENT YIELD
-##
-## Ends in an error in state: 752.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON typ option(as_prefix(id_str)) . FROM file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON typ option(as_prefix(id_str))
-##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON EOL LIDENT THICKARROW
-##
-## Ends in an error in state: 757.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON eols typ . option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON eols typ
-##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON EOL UIDENT AS LIDENT YIELD
-##
-## Ends in an error in state: 758.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str)) . FROM file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str))
-##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON LIDENT THICKARROW
-##
-## Ends in an error in state: 749.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON typ . option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON typ
-##
-
-Expected the keyword `from` followed by an external WebAssembly namespace surrounded by `"`.
 
 program: MODULE UIDENT EOL FROM UIDENT YIELD
 ##
@@ -655,8 +782,44 @@ program: MODULE UIDENT EOL AT LIDENT LPAREN RPAREN WHILE
 ## The known suffix of the stack is as follows:
 ## AT id_str loption(attribute_arguments)
 ##
+program: MODULE UIDENT EOL AT LIDENT FOREIGN_VALUE
+##
+## Ends in an error in state: 745.
+##
+## provide_stmt -> attributes . PROVIDE LET REC value_binds [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE LET value_binds [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE LET REC MUT value_binds [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE LET MUT value_binds [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE foreign_module_stmt [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE primitive_stmt [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE exception_stmt [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE provide_shape [ SEMI RBRACE EOL EOF ]
+## provide_stmt -> attributes . PROVIDE module_stmt [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . LET REC value_binds [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . LET value_binds [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . LET REC MUT value_binds [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . LET MUT value_binds [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . data_declaration_stmts [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . foreign_module_stmt [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . include_stmt [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . module_stmt [ SEMI RBRACE EOL EOF ]
+## toplevel_stmt -> attributes . primitive_stmt [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## attributes
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 292, spurious reduction of production loption(attribute_arguments) ->
+## In state 301, spurious reduction of production attribute -> AT id_str loption(attribute_arguments)
+## In state 434, spurious reduction of production list(attribute) ->
+## In state 435, spurious reduction of production list(attribute) -> attribute list(attribute)
+## In state 335, spurious reduction of production attributes -> list(attribute)
+##
 
-Attributes are only allowed on let bindings, type declarations, and foreign statements.
+Attributes are only allowed on let bindings and type declarations.
 
 program: MODULE UIDENT EOL AT LIDENT LPAREN STRING COMMA WHILE
 ##
@@ -1405,22 +1568,6 @@ program: MODULE UIDENT EOL RECORD UIDENT LBRACE LIDENT COLON WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## simple_id COLON
-##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON EOL YIELD
-##
-## Ends in an error in state: 756.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON eols . typ option(as_prefix(id_str)) FROM file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON eols
-##
-## WARNING: This example involves spurious reductions.
-## This implies that, although the LR(1) items shown above provide an
-## accurate view of the past (what has been recognized so far), they
-## may provide an INCOMPLETE view of the future (what was expected next).
-## In state 3, spurious reduction of production nonempty_list(eol) -> EOL
-## In state 6, spurious reduction of production eols -> nonempty_list(eol)
 ##
 
 Expected a type.
@@ -3148,24 +3295,6 @@ program: MODULE UIDENT EOL INCLUDE WHILE
 ## The known suffix of the stack is as follows:
 ## attributes INCLUDE
 ##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON UIDENT FROM YIELD
-##
-## Ends in an error in state: 753.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON typ option(as_prefix(id_str)) FROM . file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON typ option(as_prefix(id_str)) FROM
-##
-program: MODULE UIDENT EOL FOREIGN WASM LIDENT COLON EOL UIDENT FROM YIELD
-##
-## Ends in an error in state: 759.
-##
-## foreign_stmt -> FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str)) FROM . file_path [ SEMI RBRACE EOL EOF ]
-##
-## The known suffix of the stack is as follows:
-## FOREIGN WASM id_str COLON eols typ option(as_prefix(id_str)) FROM
-##
 
 Expected a file path surrounded by `"`.
 
@@ -3631,6 +3760,26 @@ program: MODULE UIDENT EOL LBRACE UIDENT THICKARROW
 ## In state 345, spurious reduction of production block_body_expr -> expr
 ## In state 443, spurious reduction of production lseparated_nonempty_list_inner(eos,block_body_expr) -> block_body_expr
 ##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING COLON UIDENT YIELD
+##
+## Ends in an error in state: 791.
+##
+## foreign_binds -> lseparated_nonempty_list_inner(eos,foreign_bind) . option(eos) [ RBRACE EOF ]
+## lseparated_nonempty_list_inner(eos,foreign_bind) -> lseparated_nonempty_list_inner(eos,foreign_bind) . eos foreign_bind [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(eos,foreign_bind)
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 111, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 174, spurious reduction of production data_typ -> qualified_uid
+## In state 193, spurious reduction of production typ -> data_typ
+## In state 801, spurious reduction of production foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON typ
+## In state 806, spurious reduction of production lseparated_nonempty_list_inner(eos,foreign_bind) -> foreign_bind
+##
 
 Expected a newline character followed by more statements or `}` to complete the block.
 
@@ -3686,6 +3835,45 @@ program: MODULE UIDENT EOL LBRACE WASMI64 SEMI RECORD
 ## accurate view of the past (what has been recognized so far), they
 ## may provide an INCOMPLETE view of the future (what was expected next).
 ## In state 340, spurious reduction of production eos -> SEMI
+##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING COLON UIDENT EOL YIELD
+##
+## Ends in an error in state: 793.
+##
+## lseparated_nonempty_list_inner(eos,foreign_bind) -> lseparated_nonempty_list_inner(eos,foreign_bind) eos . foreign_bind [ SEMI RBRACE EOL EOF ]
+## option(eos) -> eos . [ RBRACE EOF ]
+##
+## The known suffix of the stack is as follows:
+## lseparated_nonempty_list_inner(eos,foreign_bind) eos
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 8, spurious reduction of production nonempty_list(eol) -> EOL
+## In state 11, spurious reduction of production eols -> nonempty_list(eol)
+## In state 436, spurious reduction of production eos -> eols
+##
+program: MODULE UIDENT EOL FOREIGN_MODULE UIDENT BINDS STRING LBRACE FOREIGN_VALUE LIDENT BINDS STRING COLON UIDENT EOF
+##
+## Ends in an error in state: 804.
+##
+## foreign_module_stmt -> FOREIGN_MODULE UIDENT BINDS str lbrace foreign_binds . RBRACE [ SEMI RBRACE EOL EOF ]
+##
+## The known suffix of the stack is as follows:
+## FOREIGN_MODULE UIDENT BINDS str lbrace foreign_binds
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 111, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 174, spurious reduction of production data_typ -> qualified_uid
+## In state 193, spurious reduction of production typ -> data_typ
+## In state 801, spurious reduction of production foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON typ
+## In state 806, spurious reduction of production lseparated_nonempty_list_inner(eos,foreign_bind) -> foreign_bind
+## In state 791, spurious reduction of production option(eos) ->
+## In state 792, spurious reduction of production foreign_binds -> lseparated_nonempty_list_inner(eos,foreign_bind) option(eos)
 ##
 
 Expected another statement or `}` to complete the block.
@@ -6389,6 +6577,48 @@ program: EOL MODULE UIDENT EOL UIDENT RBRACE
 ## In state 679, spurious reduction of production lseparated_nonempty_list_inner(eos,toplevel_stmt) -> toplevel_stmt
 ## In state 681, spurious reduction of production option(eos) ->
 ## In state 682, spurious reduction of production toplevel_stmts -> lseparated_nonempty_list_inner(eos,toplevel_stmt) option(eos)
+##
+program: FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING COLON UIDENT RBRACE
+##
+## Ends in an error in state: 876.
+##
+## program -> foreign_module_header eos foreign_binds . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## foreign_module_header eos foreign_binds
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 111, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 174, spurious reduction of production data_typ -> qualified_uid
+## In state 193, spurious reduction of production typ -> data_typ
+## In state 801, spurious reduction of production foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON typ
+## In state 806, spurious reduction of production lseparated_nonempty_list_inner(eos,foreign_bind) -> foreign_bind
+## In state 791, spurious reduction of production option(eos) ->
+## In state 792, spurious reduction of production foreign_binds -> lseparated_nonempty_list_inner(eos,foreign_bind) option(eos)
+##
+program: EOL FOREIGN_MODULE UIDENT BINDS STRING EOL FOREIGN_VALUE LIDENT BINDS STRING COLON UIDENT RBRACE
+##
+## Ends in an error in state: 889.
+##
+## program -> eols foreign_module_header eos foreign_binds . EOF [ # ]
+##
+## The known suffix of the stack is as follows:
+## eols foreign_module_header eos foreign_binds
+##
+## WARNING: This example involves spurious reductions.
+## This implies that, although the LR(1) items shown above provide an
+## accurate view of the past (what has been recognized so far), they
+## may provide an INCOMPLETE view of the future (what was expected next).
+## In state 111, spurious reduction of production qualified_uid -> lseparated_nonempty_list_inner(dot,type_id_str)
+## In state 174, spurious reduction of production data_typ -> qualified_uid
+## In state 193, spurious reduction of production typ -> data_typ
+## In state 801, spurious reduction of production foreign_bind -> attributes FOREIGN_VALUE id_str BINDS str COLON typ
+## In state 806, spurious reduction of production lseparated_nonempty_list_inner(eos,foreign_bind) -> foreign_bind
+## In state 791, spurious reduction of production option(eos) ->
+## In state 792, spurious reduction of production foreign_binds -> lseparated_nonempty_list_inner(eos,foreign_bind) option(eos)
 ##
 
 Expected the end of the file.

@@ -580,12 +580,20 @@ type include_declaration = {
 
 [@deriving (sexp, yojson)]
 type value_description = {
-  pval_mod: loc(string),
   pval_name: loc(string),
-  pval_name_alias: option(loc(string)),
+  pval_bind: loc(string),
   pval_type: parsed_type,
+  pval_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]
   pval_loc: Location.t,
+};
+
+[@deriving (sexp, yojson)]
+type foreign_module_declaration = {
+  pfmod_name: loc(string),
+  pfmod_namespace: loc(string),
+  pfmod_vds: list(value_description),
+  pfmod_loc: Location.t,
 };
 
 [@deriving (sexp, yojson)]
@@ -626,7 +634,7 @@ and primitive_description = {
 [@deriving (sexp, yojson)]
 and toplevel_stmt_desc =
   | PTopInclude(include_declaration)
-  | PTopForeign(provide_flag, value_description)
+  | PTopForeignModule(provide_flag, foreign_module_declaration)
   | PTopPrimitive(provide_flag, primitive_description)
   | PTopModule(provide_flag, module_declaration)
   | PTopData(list((provide_flag, data_declaration)))
@@ -661,9 +669,14 @@ type comment =
 /** The type for parsed programs */
 
 [@deriving (sexp, yojson)]
+type toplevel_module_desc =
+  | PNormalModule(list(toplevel_stmt))
+  | PForeignModule(loc(string), list(value_description));
+
+[@deriving (sexp, yojson)]
 type parsed_program = {
   module_name: loc(string),
-  statements: list(toplevel_stmt),
+  module_desc: toplevel_module_desc,
   comments: list(comment),
   [@sexp_drop_if sexp_locs_disabled]
   prog_loc: Location.t,

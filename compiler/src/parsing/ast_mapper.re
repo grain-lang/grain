@@ -461,11 +461,28 @@ module PD = {
 };
 
 module VD = {
-  let map = (sub, {pval_mod: vmod, pval_name: vname, pval_loc: loc} as d) => {
+  let map =
+      (
+        sub,
+        {
+          pval_name: vname,
+          pval_bind: vbind,
+          pval_attributes: attrs,
+          pval_type: typ,
+          pval_loc: loc,
+        },
+      ) => {
+    let pval_attributes =
+      List.map(
+        ((attr, args)) =>
+          (map_loc(sub, attr), List.map(map_loc(sub), args)),
+        attrs,
+      );
     let pval_loc = sub.location(sub, loc);
-    let pval_mod = map_loc(sub, vmod);
+    let pval_type = sub.typ(sub, typ);
     let pval_name = map_loc(sub, vname);
-    {...d, pval_name, pval_mod, pval_loc};
+    let pval_bind = map_loc(sub, vbind);
+    {pval_name, pval_bind, pval_attributes, pval_type, pval_loc};
   };
 };
 
@@ -482,8 +499,16 @@ module TL = {
     switch (desc) {
     | PTopInclude(decls) =>
       Toplevel.include_(~loc, ~attributes, sub.include_(sub, decls))
-    | PTopForeign(e, d) =>
-      Toplevel.foreign(~loc, ~attributes, e, sub.value_description(sub, d))
+    | PTopForeignModule(e, d) =>
+      Toplevel.foreign_module(
+        ~loc,
+        ~attributes,
+        e,
+        {
+          ...d,
+          pfmod_vds: List.map(sub.value_description(sub), d.pfmod_vds),
+        },
+      )
     | PTopPrimitive(e, d) =>
       Toplevel.primitive(
         ~loc,

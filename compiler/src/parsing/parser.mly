@@ -37,7 +37,8 @@ module Grain_parsing = struct end
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
 
-%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
+%token FOREIGN_VALUE FOREIGN_MODULE
+%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN PRIMITIVE BINDS
 %token AND
 %token EXCEPT FROM STAR
 %token SLASH DASH PIPE
@@ -359,7 +360,7 @@ include_alias:
   | AS opt_eols qualified_uid { make_module_alias $3 }
 
 include_stmt:
-  | INCLUDE file_path include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
+  | INCLUDE str include_alias? { IncludeDeclaration.mk ~loc:(to_loc $loc) $2 $3 }
 
 data_declaration_stmt:
   | ABSTRACT data_declaration { (Abstract, $2) }
@@ -385,7 +386,7 @@ provide_stmt:
   | attributes PROVIDE LET value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Nonrecursive Immutable $4 }
   | attributes PROVIDE LET REC MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Recursive Mutable $6 }
   | attributes PROVIDE LET MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 Provided Nonrecursive Mutable $5 }
-  | attributes PROVIDE foreign_stmt { Toplevel.foreign ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
+  | attributes PROVIDE foreign_module_stmt { Toplevel.foreign_module ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
   | attributes PROVIDE primitive_stmt { Toplevel.primitive ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
   | attributes PROVIDE exception_stmt { Toplevel.grain_exception ~loc:(to_loc $sloc) ~attributes:$1 Provided $3 }
   | attributes PROVIDE provide_shape { Toplevel.provide ~loc:(to_loc $sloc) ~attributes:$1 $3 }
@@ -668,7 +669,7 @@ record_exprs:
 block_body:
   | lseparated_nonempty_list(eos, block_body_expr) ioption(eos) %prec SEMI { $1 }
 
-file_path:
+str:
   | STRING { Location.mkloc $1 (to_loc $loc) }
 
 id_str:
@@ -678,8 +679,14 @@ id_str:
 type_id_str:
   | UIDENT { Location.mkloc $1 (to_loc $loc) }
 
-foreign_stmt:
-  | FOREIGN WASM id_str colon typ as_prefix(id_str)? FROM file_path { ValueDescription.mk ~loc:(to_loc $loc) ~mod_:$8 ~name:$3 ~alias:$6 ~typ:$5 () }
+foreign_bind:
+  | attributes FOREIGN_VALUE id_str BINDS str colon typ { ValueDescription.mk ~loc:(to_loc $loc) ~attributes:$1 ~name:$3 ~bind:$5 ~typ:$7 () }
+
+foreign_binds:
+  | lseparated_nonempty_list(eos, foreign_bind) eos? { $1 }
+
+foreign_module_stmt:
+  | FOREIGN_MODULE UIDENT BINDS str lbrace foreign_binds RBRACE { ForeignModuleDeclaration.mk ~loc:(to_loc $loc) ~name:(mkstr $loc($2) $2) ~namespace:$4 ~vds:$6 () }
 
 prim:
   | primitive_ { Location.mkloc $1 (to_loc $loc) }
@@ -702,7 +709,7 @@ toplevel_stmt:
   | attributes LET REC MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Recursive Mutable $5 }
   | attributes LET MUT value_binds { Toplevel.let_ ~loc:(to_loc $sloc) ~attributes:$1 NotProvided Nonrecursive Mutable $4 }
   | attributes data_declaration_stmts { Toplevel.data ~loc:(to_loc $sloc) ~attributes:$1 $2 }
-  | attributes foreign_stmt { Toplevel.foreign ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
+  | attributes foreign_module_stmt { Toplevel.foreign_module ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | attributes include_stmt { Toplevel.include_ ~loc:(to_loc $loc) ~attributes:$1 $2 }
   | attributes module_stmt { Toplevel.module_ ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
   | attributes primitive_stmt { Toplevel.primitive ~loc:(to_loc $loc) ~attributes:$1 NotProvided $2 }
@@ -716,6 +723,11 @@ toplevel_stmts:
 module_header:
   | MODULE UIDENT { mkstr $loc($2) $2 }
 
+foreign_module_header:
+  | FOREIGN_MODULE UIDENT BINDS str { mkstr $loc($2) $2, $4 }
+
 program:
-  | opt_eols module_header eos toplevel_stmts EOF { make_program $2 $4 }
-  | opt_eols module_header eos? EOF { make_program $2 [] }
+  | opt_eols module_header eos toplevel_stmts EOF { make_program $2 (PNormalModule $4) }
+  | opt_eols module_header eos? EOF { make_program $2 (PNormalModule []) }
+  | opt_eols foreign_module_header eos foreign_binds EOF { make_program (fst $2) (PForeignModule (snd $2, $4)) }
+  | opt_eols foreign_module_header eos? EOF { make_program (fst $2) (PForeignModule (snd $2, [])) }

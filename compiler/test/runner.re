@@ -421,17 +421,30 @@ let makeParseRunner =
           };
         };
       let strip_locs =
-          ({module_name, statements, comments}: Parsetree.parsed_program) =>
+          ({module_name, module_desc, comments}: Parsetree.parsed_program) =>
         Parsetree.{
           module_name: {
             ...module_name,
             loc: Location.dummy_loc,
           },
-          statements:
-            List.map(
-              location_stripper.toplevel(location_stripper),
-              statements,
-            ),
+          module_desc:
+            switch (module_desc) {
+            | PNormalModule(statements) =>
+              PNormalModule(
+                List.map(
+                  location_stripper.toplevel(location_stripper),
+                  statements,
+                ),
+              )
+            | PForeignModule(namespace, vds) =>
+              PForeignModule(
+                {...namespace, loc: Location.dummy_loc},
+                List.map(
+                  location_stripper.value_description(location_stripper),
+                  vds,
+                ),
+              )
+            },
           comments: List.map(comment_loc_stripper, comments),
           prog_loc: Location.dummy_loc,
         };

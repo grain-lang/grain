@@ -306,12 +306,12 @@ module Toplevel: {
   let include_:
     (~loc: loc, ~attributes: attributes=?, include_declaration) =>
     toplevel_stmt;
-  let foreign:
+  let foreign_module:
     (
       ~loc: loc=?,
       ~attributes: attributes=?,
       provide_flag,
-      value_description
+      foreign_module_declaration
     ) =>
     toplevel_stmt;
   let module_:
@@ -359,10 +359,10 @@ module PrimitiveDescription: {
 module ValueDescription: {
   let mk:
     (
-      ~loc: loc=?,
-      ~mod_: str,
+      ~loc: loc,
+      ~attributes: attributes=?,
       ~name: str,
-      ~alias: option(str),
+      ~bind: str,
       ~typ: parsed_type,
       unit
     ) =>
@@ -393,4 +393,16 @@ module LambdaArgument: {
 
 module ModuleDeclaration: {
   let mk: (~loc: loc, str, list(toplevel_stmt)) => module_declaration;
+};
+
+module ForeignModuleDeclaration: {
+  let mk:
+    (
+      ~loc: loc,
+      ~name: str,
+      ~namespace: str,
+      ~vds: list(value_description),
+      unit
+    ) =>
+    foreign_module_declaration;
 };

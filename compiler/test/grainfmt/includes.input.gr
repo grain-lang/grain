@@ -21,8 +21,11 @@ from WasmI32 use {
   shl as (<<)
 }
 
-provide foreign wasm storage_read: (WasmI64, WasmI64, WasmI64) => WasmI64 as storageRead from "env"
+provide foreign module Env binds "env" {
+  foreign value storageRead binds "storage_read": (WasmI64, WasmI64, WasmI64) => WasmI64
 
+  foreign value promiseResultsCount binds "promise_results_count": () => WasmI64
+}
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
@@ -32,5 +35,3 @@ from WasmI32 use {
   or as (|)
   // no signed imports, as care should be taken to use signed or unsigned operators
 }
-
-provide foreign wasm promise_results_count: () => WasmI64 as promiseResultsCount from "env"

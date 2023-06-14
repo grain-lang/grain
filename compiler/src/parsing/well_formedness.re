@@ -361,7 +361,6 @@ let disallowed_attributes = (errs, super) => {
     switch (List.find_opt((({txt}, _)) => txt == "externalName", attrs)) {
     | Some(({txt, loc}, _)) =>
       switch (desc) {
-      | PTopForeign(_)
       | PTopLet(
           _,
           _,
@@ -396,7 +395,7 @@ let disallowed_attributes = (errs, super) => {
         errs :=
           [
             AttributeDisallowed(
-              "`externalName` is only allowed on `foreign` statements and `let` bindings.",
+              "`externalName` is only allowed on `let` bindings.",
               loc,
             ),
           ]
@@ -405,6 +404,19 @@ let disallowed_attributes = (errs, super) => {
     };
     super.enter_toplevel_stmt(top);
   };
+  let enter_value_description = ({pval_attributes: attrs, pval_loc: loc}) => {
+    switch (attrs) {
+    | [] => ()
+    | _ =>
+      errs :=
+        [
+          AttributeDisallowed(
+            "Attributes are not allowed on foreign values.",
+            loc,
+          ),
+        ]
+    };
+  };
 
   {
     errs,
@@ -412,6 +424,7 @@ let disallowed_attributes = (errs, super) => {
       ...super,
       enter_expression,
       enter_toplevel_stmt,
+      enter_value_description,
     },
   };
 };
@@ -668,16 +681,12 @@ let provided_multiple_times = (errs, super) => {
       } else {
         Hashtbl.add(modules, pmod_name.txt, ());
       }
-    | PTopForeign(
-        Provided | Abstract,
-        {pval_name, pval_name_alias, pval_loc},
-      ) =>
-      let name = Option.value(~default=pval_name, pval_name_alias);
-      if (Hashtbl.mem(values, name.txt)) {
-        errs := [ProvidedMultipleTimes(name.txt, pval_loc), ...errs^];
+    | PTopForeignModule(Provided | Abstract, {pfmod_name, pfmod_loc}) =>
+      if (Hashtbl.mem(values, pfmod_name.txt)) {
+        errs := [ProvidedMultipleTimes(pfmod_name.txt, pfmod_loc), ...errs^];
       } else {
-        Hashtbl.add(values, name.txt, ());
-      };
+        Hashtbl.add(values, pfmod_name.txt, ());
+      }
     | PTopPrimitive(Provided | Abstract, {pprim_ident, pprim_loc}) =>
       if (Hashtbl.mem(values, pprim_ident.txt)) {
         errs := [ProvidedMultipleTimes(pprim_ident.txt, pprim_loc), ...errs^];
@@ -764,7 +773,7 @@ let provided_multiple_times = (errs, super) => {
         items,
       );
     | PTopModule(NotProvided, _)
-    | PTopForeign(NotProvided, _)
+    | PTopForeignModule(NotProvided, _)
     | PTopPrimitive(NotProvided, _)
     | PTopLet(NotProvided, _, _, _)
     | PTopException(NotProvided, _)

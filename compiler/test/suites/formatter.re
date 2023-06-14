@@ -55,4 +55,5 @@ describe("formatter", ({test, testSkip}) => {
   assertFormatOutput("chained", "chained");
   assertFormatOutput("grouped_expr", "grouped_expr");
   assertFormatOutput("early_return", "early_return");
+  assertFormatOutput("foreign_module", "foreign_module");
 });

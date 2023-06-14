@@ -124,19 +124,24 @@ describe("arrays", ({test, testSkip}) => {
             5",
         {
           module_name: Location.mknoloc("Test"),
-          statements: [
-            Toplevel.expr(
-              Expression.array_set(
-                Expression.ident(
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("state")),
+          module_desc:
+            PNormalModule([
+              Toplevel.expr(
+                Expression.array_set(
+                  Expression.ident(
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("state")),
+                    ),
+                  ),
+                  Expression.constant(
+                    Constant.number(PConstNumberInt("0")),
+                  ),
+                  Expression.constant(
+                    Constant.number(PConstNumberInt("5")),
                   ),
                 ),
-                Expression.constant(Constant.number(PConstNumberInt("0"))),
-                Expression.constant(Constant.number(PConstNumberInt("5"))),
               ),
-            ),
-          ],
+            ]),
           comments: [],
           prog_loc: Location.dummy_loc,
         },

@@ -31,12 +31,14 @@ include "runtime/numberUtils" as NumberUtils
 include "runtime/dataStructures" as DataStructures
 from DataStructures use { allocateString, allocateArray, untagSimpleNumber }
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign module Wasi binds "wasi_snapshot_preview1" {
+  foreign value fdWrite binds "fd_write": (
+    WasmI32,
+    WasmI32,
+    WasmI32,
+    WasmI32,
+  ) => WasmI32
+}
 
 primitive (!) = "@not"
 primitive (&&) = "@and"
@@ -879,7 +881,7 @@ provide let print = value => {
   WasmI32.store8(lf, 10n, 0n)
   WasmI32.store(iov, lf, 8n)
   WasmI32.store(iov, 1n, 12n)
-  fd_write(1n, iov, 2n, written)
+  Wasi.fdWrite(1n, iov, 2n, written)
   Memory.free(buf)
   void
 }
