@@ -103,9 +103,8 @@ jobs:
       - name: Pack stdlib
         working-directory: ./stdlib
         # Runs `npm pack` and assigns the filename to an env var we can use later
-        # `sed` is used to workaround https://github.com/npm/cli/issues/3405
         run: |
-          echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename' | sed -r 's/@//g' | sed -r 's/\//-/g')" >> $GITHUB_ENV
+          echo "STDLIB_TAR=$(npm pack --json | jq -r '.[0].filename')" >> $GITHUB_ENV
 
       - name: Upload stdlib
         id: stdlib-upload
