@@ -157,9 +157,16 @@ Returns:
 
 ### Stack.**push**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>No longer errors when stack size is `0`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
