@@ -11,7 +11,7 @@ describe("foreigns", ({test}) => {
       {|
       module Test
       @externalName("env.foo")
-      foreign wasm foo: Number -> Number from "env"
+      foreign wasm foo: Number => Number from "env"
 
       @externalName("__foo%%!")
       provide let bar = () => foo(1)

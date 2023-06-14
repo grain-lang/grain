@@ -32,11 +32,11 @@ No other changes yet.
 
 ```grain
 record MatchResult {
-  group: Number -> Option<String>,
-  groupPosition: Number -> Option<(Number, Number)>,
+  group: Number => Option<String>,
+  groupPosition: Number => Option<(Number, Number)>,
   numGroups: Number,
-  allGroups: () -> Array<Option<String>>,
-  allGroupPositions: () -> Array<Option<(Number, Number)>>,
+  allGroups: () => Array<Option<String>>,
+  allGroupPositions: () => Array<Option<(Number, Number)>>,
 }
 ```
 
@@ -45,14 +45,14 @@ of a regular expression match. The results can be obtained using
 the following accessors:
 
 ```grain
-group : Number -> Option<String>
+group : Number => Option<String>
 ```
 
 Returns the contents of the given group. Note that group 0 contains
 the entire matched substring, and group 1 contains the first parenthesized group.
 
 ```grain
-groupPosition : Number -> Option<(Number, Number)>
+groupPosition : Number => Option<(Number, Number)>
 ```
 
 Returns the position of the given group.
@@ -64,13 +64,13 @@ numGroups : Number
 The number of defined groups in this match object (including group 0).
 
 ```grain
-allGroups : () -> Array<Option<String>>
+allGroups : () => Array<Option<String>>
 ```
 
 Returns the contents of all groups matched in this match object.
 
 ```grain
-allGroupPositions : () -> Array<Option<(Number, Number)>>
+allGroupPositions : () => Array<Option<(Number, Number)>>
 ```
 
 Returns the positions of all groups matched in this match object.
@@ -87,7 +87,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (regexString: String) -> Result<RegularExpression, String>
+make : (regexString: String) => Result<RegularExpression, String>
 ```
 
 Compiles the given pattern string into a regular expression object.
@@ -200,7 +200,7 @@ No other changes yet.
 </details>
 
 ```grain
-isMatch : (rx: RegularExpression, string: String) -> Bool
+isMatch : (rx: RegularExpression, string: String) => Bool
 ```
 
 Determines if the given regular expression has a match in the given string.
@@ -233,7 +233,7 @@ No other changes yet.
 
 ```grain
 isMatchRange :
-  (rx: RegularExpression, string: String, start: Number, end: Number) -> Bool
+  (rx: RegularExpression, string: String, start: Number, end: Number) => Bool
 ```
 
 Determines if the given regular expression has a match in the given string between the given start/end offsets.
@@ -271,7 +271,7 @@ No other changes yet.
 </details>
 
 ```grain
-find : (rx: RegularExpression, string: String) -> Option<MatchResult>
+find : (rx: RegularExpression, string: String) => Option<MatchResult>
 ```
 
 Returns the first match for the given regular expression contained within the given string.
@@ -304,7 +304,7 @@ No other changes yet.
 
 ```grain
 findRange :
-  (rx: RegularExpression, string: String, start: Number, end: Number) ->
+  (rx: RegularExpression, string: String, start: Number, end: Number) =>
    Option<MatchResult>
 ```
 
@@ -335,7 +335,7 @@ Regex.findRange(Result.unwrap(Regex.make("ca+[at]")), "caaat", 0, 5)
 ### Regex.**findAll**
 
 ```grain
-findAll : (rx: RegularExpression, string: String) -> List<MatchResult>
+findAll : (rx: RegularExpression, string: String) => List<MatchResult>
 ```
 
 Returns all matches for the given regular expression contained within the given string.
@@ -362,7 +362,7 @@ No other changes yet.
 
 ```grain
 findAllRange :
-  (rx: RegularExpression, string: String, start: Number, end: Number) ->
+  (rx: RegularExpression, string: String, start: Number, end: Number) =>
    List<MatchResult>
 ```
 
@@ -399,7 +399,7 @@ No other changes yet.
 
 ```grain
 replace :
-  (rx: RegularExpression, toSearch: String, replacement: String) -> String
+  (rx: RegularExpression, toSearch: String, replacement: String) => String
 ```
 
 Replaces the first match for the given regular expression contained within the given string with the specified replacement.
@@ -441,7 +441,7 @@ No other changes yet.
 
 ```grain
 replaceAll :
-  (rx: RegularExpression, toSearch: String, replacement: String) -> String
+  (rx: RegularExpression, toSearch: String, replacement: String) => String
 ```
 
 Replaces all matches for the given regular expression contained within the given string with the specified replacement.
@@ -475,7 +475,7 @@ No other changes yet.
 </details>
 
 ```grain
-split : (rx: RegularExpression, str: String) -> List<String>
+split : (rx: RegularExpression, str: String) => List<String>
 ```
 
 Splits the given string at the first match for the given regular expression.
@@ -510,7 +510,7 @@ No other changes yet.
 </details>
 
 ```grain
-splitAll : (rx: RegularExpression, str: String) -> List<String>
+splitAll : (rx: RegularExpression, str: String) => List<String>
 ```
 
 Splits the given string at every match for the given regular expression.

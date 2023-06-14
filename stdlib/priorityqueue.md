@@ -39,7 +39,7 @@ No other changes yet.
 </details>
 
 ```grain
-makeSized : (size: Number, comp: ((a, a) -> Number)) -> PriorityQueue<a>
+makeSized : (size: Number, comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a given internal storage size and a
@@ -56,7 +56,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`size`|`Number`|The initial storage size of the priority queue|
-|`comp`|`(a, a) -> Number`|The comparator function used to indicate priority order|
+|`comp`|`(a, a) => Number`|The comparator function used to indicate priority order|
 
 Returns:
 
@@ -72,7 +72,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (comp: ((a, a) -> Number)) -> PriorityQueue<a>
+make : (comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -84,7 +84,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) -> Number`|The comparator function used to indicate priority order|
+|`comp`|`(a, a) => Number`|The comparator function used to indicate priority order|
 
 Returns:
 
@@ -110,7 +110,7 @@ No other changes yet.
 </details>
 
 ```grain
-size : (pq: PriorityQueue<a>) -> Number
+size : (pq: PriorityQueue<a>) => Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -135,7 +135,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (pq: PriorityQueue<a>) -> Bool
+isEmpty : (pq: PriorityQueue<a>) => Bool
 ```
 
 Determines if the priority queue contains no elements.
@@ -160,7 +160,7 @@ No other changes yet.
 </details>
 
 ```grain
-push : (val: a, pq: PriorityQueue<a>) -> Void
+push : (val: a, pq: PriorityQueue<a>) => Void
 ```
 
 Adds a new element to the priority queue.
@@ -180,7 +180,7 @@ No other changes yet.
 </details>
 
 ```grain
-peek : (pq: PriorityQueue<a>) -> Option<a>
+peek : (pq: PriorityQueue<a>) => Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -206,7 +206,7 @@ No other changes yet.
 </details>
 
 ```grain
-pop : (pq: PriorityQueue<a>) -> Option<a>
+pop : (pq: PriorityQueue<a>) => Option<a>
 ```
 
 Removes and retrieves the highest priority element in the priority queue.
@@ -231,7 +231,7 @@ No other changes yet.
 </details>
 
 ```grain
-drain : (pq: PriorityQueue<a>) -> List<a>
+drain : (pq: PriorityQueue<a>) => List<a>
 ```
 
 Clears the priority queue and produces a list of all of the elements in the priority
@@ -257,7 +257,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromArray : (array: Array<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
+fromArray : (array: Array<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array
@@ -271,7 +271,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`array`|`Array<a>`|An array of values used to initialize the priority queue|
-|`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
+|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
@@ -287,7 +287,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
+fromList : (list: List<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -301,7 +301,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`list`|`List<a>`|A list of values used to initialize the priority queue|
-|`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
+|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
@@ -376,7 +376,7 @@ An empty priority queue with the default `compare` comparator.
 </details>
 
 ```grain
-make : (comp: ((a, a) -> Number)) -> PriorityQueue<a>
+make : (comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Creates a new priority queue with a comparator function, which is used to
@@ -388,7 +388,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) -> Number`|The comparator function used to indicate priority order|
+|`comp`|`(a, a) => Number`|The comparator function used to indicate priority order|
 
 Returns:
 
@@ -421,7 +421,7 @@ PriorityQueue.Immutable.make((a, b) => String.length(b) - String.length(a)) // c
 </details>
 
 ```grain
-size : PriorityQueue<a> -> Number
+size : PriorityQueue<a> => Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -453,7 +453,7 @@ Returns:
 </details>
 
 ```grain
-isEmpty : PriorityQueue<a> -> Bool
+isEmpty : PriorityQueue<a> => Bool
 ```
 
 Determines if the priority queue contains no elements.
@@ -485,7 +485,7 @@ Returns:
 </details>
 
 ```grain
-push : (val: a, pq: PriorityQueue<a>) -> PriorityQueue<a>
+push : (val: a, pq: PriorityQueue<a>) => PriorityQueue<a>
 ```
 
 Produces a new priority queue by inserting the given element into the given priority queue.
@@ -518,7 +518,7 @@ Returns:
 </details>
 
 ```grain
-peek : (pq: PriorityQueue<a>) -> Option<a>
+peek : (pq: PriorityQueue<a>) => Option<a>
 ```
 
 Retrieves the highest priority element in the priority queue. It is not
@@ -551,7 +551,7 @@ Returns:
 </details>
 
 ```grain
-pop : (pq: PriorityQueue<a>) -> PriorityQueue<a>
+pop : (pq: PriorityQueue<a>) => PriorityQueue<a>
 ```
 
 Produces a new priority queue without the highest priority element in the
@@ -585,7 +585,7 @@ Returns:
 </details>
 
 ```grain
-drain : (pq: PriorityQueue<a>) -> List<a>
+drain : (pq: PriorityQueue<a>) => List<a>
 ```
 
 Produces a list of all elements in the priority queue in priority order.
@@ -617,7 +617,7 @@ Returns:
 </details>
 
 ```grain
-fromList : (list: List<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
+fromList : (list: List<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the list
@@ -631,7 +631,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`list`|`List<a>`|A list of values used to initialize the priority queue|
-|`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
+|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 
@@ -654,7 +654,7 @@ Returns:
 </details>
 
 ```grain
-fromArray : (array: Array<a>, comp: ((a, a) -> Number)) -> PriorityQueue<a>
+fromArray : (array: Array<a>, comp: ((a, a) => Number)) => PriorityQueue<a>
 ```
 
 Constructs a new priority queue initialized with the elements in the array
@@ -668,7 +668,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`array`|`Array<a>`|An array of values used to initialize the priority queue|
-|`comp`|`(a, a) -> Number`|A comparator function used to assign priority to elements|
+|`comp`|`(a, a) => Number`|A comparator function used to assign priority to elements|
 
 Returns:
 

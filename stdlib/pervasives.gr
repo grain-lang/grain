@@ -98,7 +98,7 @@ provide { (==) }
  *
  * @since v0.2.0
  */
-provide let (!=): (a, a) -> Bool = (x, y) => !(x == y)
+provide let (!=): (a, a) => Bool = (x, y) => !(x == y)
 
 /**
  * Checks that two values are physically equal.
@@ -122,7 +122,7 @@ provide primitive (is) = "@is"
  *
  * @since v0.2.0
  */
-provide let (isnt): (a, a) -> Bool = (x, y) => !(x is y)
+provide let (isnt): (a, a) => Bool = (x, y) => !(x is y)
 
 provide {
   (<),
@@ -151,8 +151,8 @@ provide {
 // Number coercions & conversions
 
 // TODO(#311): Commented until we nail down semantics
-// foreign wasm convertExactToInexact : Number -> Number as inexact from "stdlib-external/runtime"
-// foreign wasm convertInexactToExact : Number -> Number as exact from "stdlib-external/runtime"
+// foreign wasm convertExactToInexact : Number => Number as inexact from "stdlib-external/runtime"
+// foreign wasm convertInexactToExact : Number => Number as exact from "stdlib-external/runtime"
 
 provide { toString, print }
 
@@ -200,7 +200,7 @@ provide primitive throw = "@throw"
  * @param message: The reason for the failure
  * @returns Anything and nothing—your program won't continue past a fail expression
  */
-provide let fail: String -> a = msg => throw Failure(msg)
+provide let fail: String => a = msg => throw Failure(msg)
 
 /**
  * Provides the operand untouched.

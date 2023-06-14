@@ -90,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) -> Float32
+fromNumber : (x: Number) => Float32
 ```
 
 Converts a Number to a Float32.
@@ -115,7 +115,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Float32) -> Number
+toNumber : (x: Float32) => Number
 ```
 
 Converts a Float32 to a Number.
@@ -140,7 +140,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (x: Float32, y: Float32) -> Float32
+add : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the sum of its operands.
@@ -166,7 +166,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (x: Float32, y: Float32) -> Float32
+sub : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the difference of its operands.
@@ -192,7 +192,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (x: Float32, y: Float32) -> Float32
+mul : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the product of its operands.
@@ -218,7 +218,7 @@ No other changes yet.
 </details>
 
 ```grain
-div : (x: Float32, y: Float32) -> Float32
+div : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the quotient of its operands.
@@ -244,7 +244,7 @@ No other changes yet.
 </details>
 
 ```grain
-lt : (x: Float32, y: Float32) -> Bool
+lt : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -270,7 +270,7 @@ No other changes yet.
 </details>
 
 ```grain
-gt : (x: Float32, y: Float32) -> Bool
+gt : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -296,7 +296,7 @@ No other changes yet.
 </details>
 
 ```grain
-lte : (x: Float32, y: Float32) -> Bool
+lte : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -322,7 +322,7 @@ No other changes yet.
 </details>
 
 ```grain
-gte : (x: Float32, y: Float32) -> Bool
+gte : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.

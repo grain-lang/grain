@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) -> Rational
+fromNumber : (x: Number) => Rational
 ```
 
 Converts a Number to a Rational.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Rational) -> Number
+toNumber : (x: Rational) => Number
 ```
 
 Converts a Rational to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-numerator : (x: Rational) -> Number
+numerator : (x: Rational) => Number
 ```
 
 Finds the numerator of the rational number.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-denominator : (x: Rational) -> Number
+denominator : (x: Rational) => Number
 ```
 
 Finds the denominator of the rational number.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-toIntegerRatio : (x: Rational) -> (Number, Number)
+toIntegerRatio : (x: Rational) => (Number, Number)
 ```
 
 Gets the numerator and denominator of the rational.
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromIntegerRatio : (numerator: Number, denominator: Number) -> Rational
+fromIntegerRatio : (numerator: Number, denominator: Number) => Rational
 ```
 
 Creates a rational from a numerator and denominator.
@@ -183,7 +183,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (x: Rational, y: Rational) -> Rational
+(+) : (x: Rational, y: Rational) => Rational
 ```
 
 Computes the sum of its operands.
@@ -209,7 +209,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (x: Rational, y: Rational) -> Rational
+(-) : (x: Rational, y: Rational) => Rational
 ```
 
 Computes the difference of its operands.
@@ -235,7 +235,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (x: Rational, y: Rational) -> Rational
+(*) : (x: Rational, y: Rational) => Rational
 ```
 
 Computes the product of its operands.
@@ -261,7 +261,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (x: Rational, y: Rational) -> Rational
+(/) : (x: Rational, y: Rational) => Rational
 ```
 
 Computes the quotient of its operands.
@@ -287,7 +287,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (x: Rational, y: Rational) -> Bool
+(==) : (x: Rational, y: Rational) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -313,7 +313,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (x: Rational, y: Rational) -> Bool
+(!=) : (x: Rational, y: Rational) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Rational, y: Rational) -> Bool
+(<) : (x: Rational, y: Rational) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -365,7 +365,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Rational, y: Rational) -> Bool
+(>) : (x: Rational, y: Rational) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -391,7 +391,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Rational, y: Rational) -> Bool
+(<=) : (x: Rational, y: Rational) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -417,7 +417,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Rational, y: Rational) -> Bool
+(>=) : (x: Rational, y: Rational) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.

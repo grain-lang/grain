@@ -9,7 +9,7 @@ foreign wasm fd_write: (
   WasmI32,
   WasmI32,
   WasmI32,
-) -> WasmI32 from "wasi_snapshot_preview1"
+) => WasmI32 from "wasi_snapshot_preview1"
 
 primitive unreachable = "@unreachable"
 
@@ -24,7 +24,7 @@ provide let dangerouslyRegisterBasePrinter = f => {
   while (true) {
     // There will be at least one printer registered by the time this is called
     let (_, next) = WasmI32.toGrain(current): (
-      Exception -> Option<String>,
+      Exception => Option<String>,
       WasmI32
     )
     if (next == 0n) {
@@ -63,7 +63,7 @@ let exceptionToString = (e: Exception) => {
   while (true) {
     if (current == 0n) return result
     let (printer, next) = WasmI32.toGrain(current): (
-      Exception -> Option<String>,
+      Exception => Option<String>,
       WasmI32
     )
     // as GC is not available, manually increment the references

@@ -60,7 +60,7 @@ Functions and constants included in the Process module.
 ### Process.**argv**
 
 ```grain
-argv : () -> Result<Array<String>, Exception>
+argv : () => Result<Array<String>, Exception>
 ```
 
 Access command line arguments.
@@ -74,7 +74,7 @@ Returns:
 ### Process.**env**
 
 ```grain
-env : () -> Result<Array<String>, Exception>
+env : () => Result<Array<String>, Exception>
 ```
 
 Access environment variables.
@@ -88,7 +88,7 @@ Returns:
 ### Process.**exit**
 
 ```grain
-exit : (code: Number) -> Result<Void, Exception>
+exit : (code: Number) => Result<Void, Exception>
 ```
 
 Terminate the process normally.
@@ -108,7 +108,7 @@ Returns:
 ### Process.**sigRaise**
 
 ```grain
-sigRaise : (signalPtr: Signal) -> Result<Void, Exception>
+sigRaise : (signalPtr: Signal) => Result<Void, Exception>
 ```
 
 Send a signal to the process of the calling thread.
@@ -128,7 +128,7 @@ Returns:
 ### Process.**schedYield**
 
 ```grain
-schedYield : () -> Result<Void, Exception>
+schedYield : () => Result<Void, Exception>
 ```
 
 Yield execution to the calling thread.

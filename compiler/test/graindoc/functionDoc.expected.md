@@ -21,7 +21,7 @@ Functions and constants included in the FunctionGrainDoc module.
 </details>
 
 ```grain
-get : (index: Number, array: Array<a>) -> a
+get : (index: Number, array: Array<a>) => a
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.

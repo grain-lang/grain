@@ -14,7 +14,7 @@ No other changes yet.
 </details>
 
 ```grain
-sincePrev : (index: a, array: b) -> Number
+sincePrev : (index: a, array: b) => Number
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -27,7 +27,7 @@ No other changes yet.
 </details>
 
 ```grain
-sinceCurrent : (index: a, array: b) -> Number
+sinceCurrent : (index: a, array: b) => Number
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -40,7 +40,7 @@ No other changes yet.
 </details>
 
 ```grain
-sinceNext : (index: a, array: b) -> Number
+sinceNext : (index: a, array: b) => Number
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -53,7 +53,7 @@ No other changes yet.
 </details>
 
 ```grain
-sinceAllNumbers : (index: a, array: b) -> Number
+sinceAllNumbers : (index: a, array: b) => Number
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -66,7 +66,7 @@ No other changes yet.
 </details>
 
 ```grain
-sinceWithoutV : (index: a, array: b) -> Number
+sinceWithoutV : (index: a, array: b) => Number
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
@@ -79,7 +79,7 @@ No other changes yet.
 </details>
 
 ```grain
-sinceWithoutVNext : (index: a, array: b) -> Number
+sinceWithoutVNext : (index: a, array: b) => Number
 ```
 
 An alias for normal syntactic array access, i.e. `array[n]`.
