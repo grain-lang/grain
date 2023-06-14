@@ -90,11 +90,14 @@ provide let peek = queue => {
  * @param queue: The queue being updated
  *
  * @since v0.6.0
+ * @history v0.6.0: No longer errors when pushing a new item
  */
 provide let push = (value, queue) => {
   let arrLen = Array.length(queue.array)
   // expand the array if needed
-  if (queue.size == arrLen) {
+  if (arrLen == 0) {
+    queue.array = Array.make(1, None)
+  } else if (queue.size == arrLen) {
     let newArray = Array.make(arrLen * 2, None)
 
     newArray[0] = queue.array[queue.headIndex]
@@ -133,6 +136,37 @@ provide let pop = queue => {
     queue.size -= 1
     elem
   }
+}
+
+/**
+ * Converts a queue into a list of its elements.
+ *
+ * @param queue: The queue to convert
+ * @returns A list containing all queue values
+ *
+ * @since v0.6.0
+ */
+provide let toList = queue => {
+  let lst = List.init(size(queue), i => match (queue.array[queue.headIndex +
+    i]) {
+    Some(n) => n,
+    None => fail "Impossible",
+  })
+  lst
+}
+
+/**
+ * Creates a queue from a list.
+ *
+ * @param list: The list to convert
+ * @returns A queue containing all list values
+ *
+ * @since v0.6.0
+ */
+provide let fromList = list => {
+  let queue = makeSized(List.length(list))
+  List.forEach(e => push(e, queue), list)
+  queue
 }
 
 /**
@@ -292,5 +326,44 @@ provide module Immutable {
       { forwards: [], backwards } => List.length(backwards),
       { forwards, backwards } => List.length(forwards) + List.length(backwards),
     }
+  }
+
+  /**
+   * Converts a queue into a list of its elements.
+   *
+   * @param queue: The queue to convert
+   * @returns A list containing all queue values
+   *
+   * @since v0.6.0
+   */
+
+  provide let toList = queue => {
+    let mut queue = queue
+    let mut lst = []
+    while (!isEmpty(queue)) {
+      match (peek(queue)) {
+        Some(value) => {
+          queue = pop(queue)
+          lst = [value, ...lst]
+        },
+        None => break,
+      }
+    }
+    List.reverse(lst)
+  }
+
+  /**
+   * Creates a queue from a list.
+   *
+   * @param list: The list to convert
+   * @returns A queue containing all list values
+   *
+   * @since v0.6.0
+   */
+
+  provide let fromList = list => {
+    let mut queue = empty
+    List.forEach(e => queue = push(e, queue), list)
+    queue
   }
 }

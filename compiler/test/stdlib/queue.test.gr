@@ -48,6 +48,28 @@ assert Queue.pop(queue) == Some(2)
 assert Queue.pop(queue) == Some(3)
 assert Queue.pop(queue) == None
 
+// Queue.toList
+let queue = Queue.makeSized(3)
+assert Queue.toList(queue) == []
+Queue.push(0, queue)
+Queue.push(1, queue)
+Queue.push(2, queue)
+Queue.push(3, queue)
+assert Queue.toList(queue) == [0,1,2,3]
+Queue.pop(queue)
+assert Queue.toList(queue) == [1,2,3]
+Queue.push(3, queue)
+assert Queue.toList(queue) == [1,2,3,3]
+
+// Queue.fromList
+let queue = Queue.makeSized(0)
+assert Queue.fromList([]) == queue
+Queue.push(0, queue)
+Queue.push(1, queue)
+Queue.push(2, queue)
+Queue.push(3, queue)
+assert Queue.fromList([0,1,2,3]) == queue
+
 // test that the "circular" behavior of the circular queue works as expected
 let queue = Queue.makeSized(4)
 let push = x => () => Queue.push(x, queue)
@@ -116,4 +138,15 @@ module Immutable {
   assert Queue.size(Queue.empty) == 0
   assert Queue.size(sampleQueue) == 3
   assert Queue.size(Queue.pop(Queue.pop(sampleQueue))) == 1
+
+  // Queue.toList
+  let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, Queue.empty)))
+  assert Queue.toList(Queue.empty) == []
+  assert Queue.toList(sampleQueue) == [1,2,3]
+  assert Queue.toList(Queue.pop(sampleQueue)) == [2,3]
+
+  // Queue.fromList
+  assert Queue.fromList([]) == Queue.empty
+  assert Queue.fromList([1,2,3]) == sampleQueue
+
 }
