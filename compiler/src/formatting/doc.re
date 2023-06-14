@@ -34,6 +34,16 @@ module Break = {
     | Hardline;
 };
 
+module Comment = {
+  open Grain_parsing;
+
+  type t =
+    | Doc(string)
+    | Block(string)
+    | Line(string)
+    | Shebang(string);
+};
+
 /* The internal representation of a document and the engine. */
 module Atom = {
   /* An atom is the low-level tree describing a document. */
@@ -41,6 +51,7 @@ module Atom = {
     | StringIfBreaks(string, int, int)
     /* A non-breaking string. It should be newlines free. Represented as a sub-string of an other string, with an offset and a length. */
     | String(string, int, int)
+    | Comment(Comment.t)
     /* A separator. */
     | Break(Break.t)
     /* A list of atoms. Only the necessary number of breaks are splited. The boolean is true if nesting is activated. */
@@ -80,6 +91,8 @@ module Atom = {
         },
         None,
       )
+    // TODO: Implement comments
+    | Comment(_) => (a, p, last_break)
     | Break(Break.Space) =>
       if (last_break == None) {
         (a, p + 1, Some(Break.Space));
@@ -152,6 +165,8 @@ module Atom = {
         },
         None,
       ))
+    // TODO: Implement comments
+    | Comment(_) => (p, last_break)
     | Break(Break.Space) =>
       if (last_break == None) {
         try_return((p + 1, Some(Break.Space)));
@@ -511,6 +526,8 @@ module Atom = {
           sub_string(b, s, o, l);
         };
         None;
+      // TODO: Implement comments
+      | Comment(_) => last_break
       | Break(Break.Space) =>
         if (last_break == None || last_break == Some(Break.Softline)) {
           space(b);
@@ -568,6 +585,14 @@ let sub_string = (s: string, o: int, l: int): t =>
   } else {
     Leaf(Atom.String(s, o, l));
   };
+
+let doc_comment = (cmt: string): t => Leaf(Atom.Comment(Comment.Doc(cmt)));
+let block_comment = (cmt: string): t =>
+  Leaf(Atom.Comment(Comment.Block(cmt)));
+let line_comment = (cmt: string): t =>
+  Leaf(Atom.Comment(Comment.Line(cmt)));
+let shebang_comment = (cmt: string): t =>
+  Leaf(Atom.Comment(Comment.Shebang(cmt)));
 
 let breakable_space: t = (Leaf(Atom.Break(Break.Space)): t);
 let softline: t = (Leaf(Atom.Break(Break.Softline)): t);
@@ -679,6 +704,14 @@ module Debug = {
     switch (a) {
     | Atom.String(s, o, l) => string(String.sub(s, o, l))
     | Atom.StringIfBreaks(s, o, l) => string(String.sub(s, o, l))
+    | Atom.Comment(Doc(comment)) =>
+      nest(!^"DocComment" ^^ parens(string(comment)))
+    | Atom.Comment(Block(comment)) =>
+      nest(!^"BlockComment" ^^ parens(string(comment)))
+    | Atom.Comment(Line(comment)) =>
+      nest(!^"LineComment" ^^ parens(string(comment)))
+    | Atom.Comment(Shebang(comment)) =>
+      nest(!^"ShebangComment" ^^ parens(string(comment)))
     | Atom.Break(Break.Space) => !^"Space"
     | Atom.Break(Break.Softline) => !^"Softline"
     | Atom.Break(Break.Hardline) => !^"Hardline"

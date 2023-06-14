@@ -1352,84 +1352,17 @@ and print_comments = (prev: Location.t, next: Location.t) => {
 
   let print_comment = (cmt: Parsetree.comment) => {
     switch (cmt) {
-    | Doc({cmt_source})
-    | Block({cmt_source})
-    | Line({cmt_source})
-    | Shebang({cmt_source}) => string(cmt_source)
-    };
-  };
-
-  // let print_leading = (cmt: Parsetree.comment) => {
-  //   switch (cmt) {
-  //   | Doc({cmt_loc})
-  //   | Block({cmt_loc})
-  //   | Line({cmt_loc})
-  //   | Shebang({cmt_loc}) =>
-  //     switch (prev.loc_end.pos_lnum - cmt_loc.loc_start.pos_lnum) {
-  //     // | 0 => breakable_space
-  //     | _ => empty
-  //     }
-  //   };
-  // };
-
-  let print_trailing = (cmt: Parsetree.comment) => {
-    switch (cmt) {
-    | Block({cmt_loc}) =>
-      switch (next.loc_start.pos_lnum - cmt_loc.loc_end.pos_lnum) {
-      // | 0 => breakable_space
-      | 0 => empty
-      | 1 => hardline
-      | _ => hardline ++ hardline
-      }
-    | Doc({cmt_loc}) => hardline
-    | Line({cmt_loc})
-    | Shebang({cmt_loc}) =>
-      switch (next.loc_start.pos_lnum - cmt_loc.loc_end.pos_lnum) {
-      | 0 => hardline
-      | 1 => hardline
-      | _ => hardline ++ hardline
-      }
+    | Doc({cmt_source}) => doc_comment(cmt_source)
+    | Block({cmt_source}) => block_comment(cmt_source)
+    | Line({cmt_source}) => line_comment(cmt_source)
+    | Shebang({cmt_source}) => shebang_comment(cmt_source)
     };
   };
 
   switch (Commenttree.query(comment_tree^, between_loc)) {
   | [] => empty
   | comments =>
-    concat_map(
-      // ~lead=print_leadsing,
-      ~sep=
-        (prev_cmt: Parsetree.comment, next_cmt: Parsetree.comment) => {
-          switch (prev_cmt, next_cmt) {
-          | (Block(prev_cmt), Doc(next_cmt))
-          | (Block(prev_cmt), Block(next_cmt))
-          | (Block(prev_cmt), Line(next_cmt))
-          | (Block(prev_cmt), Shebang(next_cmt))
-          | (Line(prev_cmt), Doc(next_cmt))
-          | (Line(prev_cmt), Block(next_cmt))
-          | (Line(prev_cmt), Line(next_cmt))
-          | (Line(prev_cmt), Shebang(next_cmt))
-          | (Doc(prev_cmt), Doc(next_cmt))
-          | (Doc(prev_cmt), Block(next_cmt))
-          | (Doc(prev_cmt), Line(next_cmt))
-          | (Doc(prev_cmt), Shebang(next_cmt))
-          | (Shebang(prev_cmt), Doc(next_cmt))
-          | (Shebang(prev_cmt), Block(next_cmt))
-          | (Shebang(prev_cmt), Line(next_cmt))
-          | (Shebang(prev_cmt), Shebang(next_cmt)) =>
-            switch (
-              next_cmt.cmt_loc.loc_start.pos_lnum
-              - prev_cmt.cmt_loc.loc_end.pos_lnum
-            ) {
-            | 0 => breakable_space
-            | 1 => hardline
-            | _ => hardline ++ hardline
-            }
-          }
-        },
-      ~trail=print_trailing,
-      ~f=print_comment,
-      comments,
-    )
+    concat_map(~sep=(prev, next) => Empty, ~f=print_comment, comments)
   };
 };
 
