@@ -99,6 +99,21 @@ provide let byteLength = (string: String) => {
 }
 
 /**
+ * Determines if the string contains no characters.
+ *
+ * @param string: The string to inspect
+ * @returns `true` if the string is empty and `false` otherwise
+ *
+ * @since v0.6.0
+ */
+@unsafe
+provide let isEmpty = (string: String) => {
+  from WasmI32 use { (==) }
+  let strPtr = WasmI32.fromGrain(string)
+  WasmI32.load(strPtr, 4n) == 0n
+}
+
+/**
  * Finds the first position of a substring in the input string.
  *
  * @param search: The substring to find
