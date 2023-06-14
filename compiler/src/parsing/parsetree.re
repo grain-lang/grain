@@ -116,6 +116,7 @@ type data_declaration = {
   pdata_params: list(parsed_type),
   pdata_kind: data_kind,
   pdata_manifest: option(parsed_type),
+  pdata_rec: rec_flag,
   [@sexp_drop_if sexp_locs_disabled]
   pdata_loc: Location.t,
 };

@@ -302,6 +302,7 @@ module D = {
       (
         sub,
         {
+          pdata_rec: rec_flag,
           pdata_name: name,
           pdata_params: args,
           pdata_kind: kind,
@@ -315,11 +316,17 @@ module D = {
     let sargs = List.map(sub.typ(sub), args);
     let sman = Option.map(sub.typ(sub), man);
     switch (kind) {
-    | PDataAbstract => abstract(~loc, sname, sargs, sman)
+    | PDataAbstract => abstract(~loc, ~rec_flag, sname, sargs, sman)
     | PDataVariant(cdl) =>
-      variant(~loc, sname, sargs, List.map(sub.constructor(sub), cdl))
+      variant(
+        ~loc,
+        ~rec_flag,
+        sname,
+        sargs,
+        List.map(sub.constructor(sub), cdl),
+      )
     | PDataRecord(ldl) =>
-      record(~loc, sname, sargs, List.map(sub.label(sub), ldl))
+      record(~loc, ~rec_flag, sname, sargs, List.map(sub.label(sub), ldl))
     };
   };
 };

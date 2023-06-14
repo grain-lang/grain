@@ -4379,6 +4379,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("type"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.text(data.pdata_name.txt),
         Doc.group(
           Doc.concat([
@@ -4448,6 +4453,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("type"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.group(Doc.concat([Doc.text(data.pdata_name.txt), ...params])),
         switch (data.pdata_manifest) {
         | Some(manifest) =>
@@ -4623,6 +4633,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("enum"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.text(nameloc.txt),
         switch (data.pdata_params) {
         | [] => Doc.space
@@ -4738,6 +4753,11 @@ let rec print_data =
       Doc.concat([
         Doc.text("record"),
         Doc.space,
+        if (data.pdata_rec == Recursive) {
+          Doc.text("rec ");
+        } else {
+          Doc.nil;
+        },
         Doc.text(nameloc.txt),
         switch (data.pdata_params) {
         | [] => Doc.space

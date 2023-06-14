@@ -3,7 +3,7 @@ module RecursiveEqualMut
 // Note: This file doesn't include the Recursive type test
 // because it isn't achievable with `let mut`
 
-provide record Rec {
+provide record rec Rec {
   int: Number,
   mut r: Option<Rec>,
 }

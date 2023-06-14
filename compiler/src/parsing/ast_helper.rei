@@ -88,16 +88,41 @@ module LabelDeclaration: {
 
 module DataDeclaration: {
   let mk:
-    (~loc: loc=?, str, list(parsed_type), data_kind, option(parsed_type)) =>
+    (
+      ~loc: loc=?,
+      ~rec_flag: rec_flag=?,
+      str,
+      list(parsed_type),
+      data_kind,
+      option(parsed_type)
+    ) =>
     data_declaration;
   let abstract:
-    (~loc: loc=?, str, list(parsed_type), option(parsed_type)) =>
+    (
+      ~loc: loc=?,
+      ~rec_flag: rec_flag=?,
+      str,
+      list(parsed_type),
+      option(parsed_type)
+    ) =>
     data_declaration;
   let variant:
-    (~loc: loc=?, str, list(parsed_type), list(constructor_declaration)) =>
+    (
+      ~loc: loc=?,
+      ~rec_flag: rec_flag=?,
+      str,
+      list(parsed_type),
+      list(constructor_declaration)
+    ) =>
     data_declaration;
   let record:
-    (~loc: loc=?, str, list(parsed_type), list(label_declaration)) =>
+    (
+      ~loc: loc=?,
+      ~rec_flag: rec_flag=?,
+      str,
+      list(parsed_type),
+      list(label_declaration)
+    ) =>
     data_declaration;
 };
 

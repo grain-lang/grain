@@ -811,6 +811,18 @@ program: MODULE UIDENT EOL TYPE UIDENT EQUAL UIDENT AND PROVIDE YIELD
 
 Mutually recursive type declarations are separated by `and`, but cannot be mixed with other kinds of expressions.
 
+program: MODULE UIDENT EOL TYPE REC YIELD
+##
+## Ends in an error in state: 744.
+##
+## data_declaration -> TYPE option(rec_flag) . UIDENT option(id_vec) equal typ [ SEMI RBRACE EOL EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## TYPE option(rec_flag)
+##
+
+Expected a capitalized type name.
+
 program: MODULE UIDENT EOL ENUM UIDENT LBRACE UIDENT WHILE
 ##
 ## Ends in an error in state: 949.
@@ -899,6 +911,18 @@ program: MODULE UIDENT EOL ENUM WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## ENUM
+##
+
+Expected `rec` or a capitalized name for the enum declaration.
+
+program: MODULE UIDENT EOL ENUM REC YIELD
+##
+## Ends in an error in state: 805.
+##
+## data_declaration -> ENUM option(rec_flag) . UIDENT option(id_vec) data_constructors [ SEMI RBRACE EOL EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## ENUM option(rec_flag)
 ##
 
 Expected a capitalized name for the enum declaration.
@@ -5123,6 +5147,18 @@ program: MODULE UIDENT EOL RECORD WHILE
 ##
 ## The known suffix of the stack is as follows:
 ## RECORD
+##
+
+Expected `rec` or a capitalized name for the record type.
+
+program: MODULE UIDENT EOL RECORD REC YIELD
+##
+## Ends in an error in state: 759.
+##
+## data_declaration -> RECORD option(rec_flag) . UIDENT option(id_vec) data_record_body [ SEMI RBRACE EOL EOF COMMA ]
+##
+## The known suffix of the stack is as follows:
+## RECORD option(rec_flag)
 ##
 
 Expected a capitalized identifier for the record type.

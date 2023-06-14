@@ -366,3 +366,70 @@ describe("abstract types", ({test, testSkip}) => {
     "abc\n",
   );
 });
+
+describe("recursive types", ({test, testSkip}) => {
+  let test_or_skip =
+    Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
+
+  let assertCompileError = makeCompileErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
+
+  assertCompileError(
+    "type_rec_incorrect_1",
+    {|
+      record Oops {
+        x: Oops
+      }
+    |},
+    "Unbound type constructor Oops. Are you missing the `rec` keyword on this type?",
+  );
+  assertCompileError(
+    "type_rec_incorrect_2",
+    {|
+      record T {
+        x: Number
+      }
+      and enum T2 {
+        T2(Number)
+      }
+    |},
+    "Mutually recursive type groups must include `rec` on the first type in the group.",
+  );
+  assertCompileError(
+    "type_rec_incorrect_3",
+    {|
+      record rec T {
+        x: Number
+      }
+      and enum rec T2 {
+        T2(Number)
+      }
+    |},
+    "The `rec` keyword should only appear on the first type in the mutually recursive type group.",
+  );
+  assertRun(
+    "type_rec_correct_1",
+    {|
+      record rec T {
+        x: T
+      }
+      and enum T2 {
+        T2(T2),
+        Val(Number)
+      }
+      print(T2(T2(Val(1))))
+    |},
+    "T2(T2(Val(1)))\n",
+  );
+  assertRun(
+    "type_rec_correct_2",
+    {|
+      record T {
+        x: Number
+      }
+      type T = T
+      print({ x: 1 }: T)
+    |},
+    "{\n  x: 1\n}\n",
+  );
+});

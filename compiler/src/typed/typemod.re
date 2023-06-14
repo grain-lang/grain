@@ -50,7 +50,8 @@ type error =
   | Scoping_pack(Identifier.t, type_expr)
   | Recursive_module_require_explicit_type
   | Apply_generative
-  | Cannot_scrape_alias(Path.t);
+  | Cannot_scrape_alias(Path.t)
+  | Nonrecursive_type_with_recursion(Identifier.t);
 
 exception Error(Location.t, Env.t, error);
 exception Error_forward(Location.error);
@@ -393,11 +394,35 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
   };
 
   let process_datas = (env, data_decls, attributes, loc) => {
+    // A well-formedness check would have detected issues with improper use of
+    // `rec` on mutually-recursive types
+    let rec_flag =
+      switch (data_decls) {
+      | [(_, {pdata_rec: Recursive}), ..._] => Recursive
+      | _ => Nonrecursive
+      };
     let (decls, newenv) =
-      Typedecl.transl_data_decl(env, Recursive, data_decls);
+      try(Typedecl.transl_data_decl(env, rec_flag, data_decls)) {
+      | Typetexp.Error(_, _, Typetexp.Unbound_type_constructor(_)) =>
+        // Hack to detect if `rec` should be included on this type: if it does
+        // not raise an exception in `Recursive` mode but does otherwise,
+        // suggest that `rec` be used
+        switch (Typedecl.transl_data_decl(env, Recursive, data_decls)) {
+        | exception exn => raise(exn)
+        | _ =>
+          let (_, {pdata_name: type_name}) = List.hd(data_decls);
+          raise(
+            Error(
+              loc,
+              env,
+              Nonrecursive_type_with_recursion(IdentName(type_name)),
+            ),
+          );
+        }
+      };
     let ty_decls =
       map2_rec_type_with_row_types(
-        ~rec_flag=Recursive,
+        ~rec_flag,
         (rs, info, e) => {
           switch (e) {
           | NotProvided => None
@@ -1180,7 +1205,14 @@ let report_error = ppf =>
   | Apply_generative =>
     fprintf(ppf, "This is a generative functor. It can only be applied to ()")
   | Cannot_scrape_alias(p) =>
-    fprintf(ppf, "This is an alias for module %a, which is missing", path, p);
+    fprintf(ppf, "This is an alias for module %a, which is missing", path, p)
+  | Nonrecursive_type_with_recursion(lid) =>
+    fprintf(
+      ppf,
+      "Unbound type constructor %a. Are you missing the `rec` keyword on this type?",
+      identifier,
+      lid,
+    );
 
 let report_error = (env, ppf, err) =>
   Printtyp.wrap_printing_env(~error=true, env, () => report_error(ppf, err));

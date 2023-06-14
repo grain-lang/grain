@@ -61,5 +61,5 @@ records › record_both_trailing
    (call $_gmain)
   )
  )
- ;; custom section \"cmi\", size 1196
+ ;; custom section \"cmi\", size 1194
 )

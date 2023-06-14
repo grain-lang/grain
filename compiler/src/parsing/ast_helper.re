@@ -141,9 +141,10 @@ module LabelDeclaration = {
 };
 
 module DataDeclaration = {
-  let mk = (~loc=?, n, t, k, m) => {
+  let mk = (~loc=?, ~rec_flag=Nonrecursive, n, t, k, m) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
     {
+      pdata_rec: rec_flag,
       pdata_name: n,
       pdata_params: t,
       pdata_kind: k,
@@ -151,11 +152,12 @@ module DataDeclaration = {
       pdata_loc: loc,
     };
   };
-  let abstract = (~loc=?, n, t, m) => mk(~loc?, n, t, PDataAbstract, m);
-  let variant = (~loc=?, n, t, cdl) =>
-    mk(~loc?, n, t, PDataVariant(cdl), None);
-  let record = (~loc=?, n, t, ldl) =>
-    mk(~loc?, n, t, PDataRecord(ldl), None);
+  let abstract = (~loc=?, ~rec_flag=?, n, t, m) =>
+    mk(~loc?, ~rec_flag?, n, t, PDataAbstract, m);
+  let variant = (~loc=?, ~rec_flag=?, n, t, cdl) =>
+    mk(~loc?, ~rec_flag?, n, t, PDataVariant(cdl), None);
+  let record = (~loc=?, ~rec_flag=?, n, t, ldl) =>
+    mk(~loc?, ~rec_flag?, n, t, PDataRecord(ldl), None);
 };
 
 module Exception = {

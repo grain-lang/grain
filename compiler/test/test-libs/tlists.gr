@@ -1,6 +1,6 @@
 module TLists
 
-provide enum TList<a> {
+provide enum rec TList<a> {
   Empty,
   Cons(a, TList<a>),
 }
