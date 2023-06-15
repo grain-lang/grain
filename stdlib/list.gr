@@ -57,6 +57,21 @@ provide let length = list => {
 }
 
 /**
+ * Determines if the list contains no elements.
+ *
+ * @param list: The list to inspect
+ * @returns `true` if the list is empty and `false` otherwise
+ *
+ * @since v0.6.0
+ */
+provide let isEmpty = list => {
+  match (list) {
+    [] => true,
+    _ => false,
+  }
+}
+
+/**
  * Creates a new list with all elements in reverse order.
  *
  * @param list: The list to reverse
