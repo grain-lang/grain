@@ -10,7 +10,7 @@ describe("cyclic references", ({test, testSkip}) => {
   assertRun(
     "cycles1",
     {|
-      record A {
+      record rec A {
         mut a: Option<A>
       }
       let x = { a: None }
@@ -22,7 +22,7 @@ describe("cyclic references", ({test, testSkip}) => {
   assertRun(
     "cycles2",
     {|
-      record A {
+      record rec A {
         val: Number,
         mut a: Option<A>
       }
@@ -41,7 +41,7 @@ describe("cyclic references", ({test, testSkip}) => {
   assertRun(
     "cycles3",
     {|
-      record A {
+      record rec A {
         val: Number,
         mut next: Option<A>
       }
@@ -136,7 +136,7 @@ describe("cyclic references", ({test, testSkip}) => {
   assertRun(
     "cycles4",
     {|
-      enum R {
+      enum rec R {
         Rec(Box<Option<R>>),
       }
 
@@ -151,7 +151,7 @@ describe("cyclic references", ({test, testSkip}) => {
   assertRun(
     "cycles5",
     {|
-      enum R {
+      enum rec R {
         Rec(Array<Option<R>>),
       }
 
