@@ -63,6 +63,12 @@ assert String.byteLength("a") == 1
 assert String.byteLength(emoji) == 4
 assert String.byteLength(emojis) == 98
 
+// String.isEmpty
+assert String.isEmpty(empty) == true
+assert String.isEmpty(short) == false
+assert String.isEmpty(emoji) == false
+assert String.isEmpty(emojis) == false
+
 // indexOf tests
 assert String.indexOf(empty, empty) == Some(0)
 assert String.indexOf(empty, short) == Some(0)
