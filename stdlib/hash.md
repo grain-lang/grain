@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-hash : (anything: a) -> Number
+hash : (anything: a) => Number
 ```
 
 A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.

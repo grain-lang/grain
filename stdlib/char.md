@@ -53,7 +53,7 @@ No other changes yet.
 </details>
 
 ```grain
-isValid : (charCode: Number) -> Bool
+isValid : (charCode: Number) => Bool
 ```
 
 Determines whether the given character code is a valid Unicode scalar value.
@@ -78,7 +78,7 @@ No other changes yet.
 </details>
 
 ```grain
-code : (char: Char) -> Number
+code : (char: Char) => Number
 ```
 
 Determines the Unicode scalar value for a character.
@@ -103,7 +103,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromCode : (usv: Number) -> Char
+fromCode : (usv: Number) => Char
 ```
 
 Creates a character from the given Unicode scalar value.
@@ -134,7 +134,7 @@ No other changes yet.
 </details>
 
 ```grain
-succ : (char: Char) -> Char
+succ : (char: Char) => Char
 ```
 
 Returns the next valid character by Unicode scalar value.
@@ -165,7 +165,7 @@ No other changes yet.
 </details>
 
 ```grain
-pred : (char: Char) -> Char
+pred : (char: Char) => Char
 ```
 
 Returns the previous valid character by Unicode scalar value.
@@ -196,7 +196,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (char: Char) -> String
+toString : (char: Char) => String
 ```
 
 Converts the given character to a string.
@@ -221,7 +221,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Char, y: Char) -> Bool
+(<) : (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is less than the second character by Unicode scalar value.
@@ -247,7 +247,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Char, y: Char) -> Bool
+(<=) : (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is less than or equal to the second character by Unicode scalar value.
@@ -273,7 +273,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Char, y: Char) -> Bool
+(>) : (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is greater than the second character by Unicode scalar value.
@@ -299,7 +299,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Char, y: Char) -> Bool
+(>=) : (x: Char, y: Char) => Bool
 ```
 
 Checks if the first character is greater than or equal to the second character by Unicode scalar value.

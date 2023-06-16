@@ -367,7 +367,7 @@ and print_out_type_1 = ppf =>
       if (parens) {
         pp_print_char(ppf, ')');
       };
-      pp_print_string(ppf, " ->");
+      pp_print_string(ppf, " =>");
       pp_print_space(ppf, ());
       print_out_type_1(ppf, ty2);
       pp_close_box(ppf, ());

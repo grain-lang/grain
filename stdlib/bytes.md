@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-make : (size: Number) -> Bytes
+make : (size: Number) => Bytes
 ```
 
 Creates a new byte sequence of the input size.
@@ -63,7 +63,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromString : (string: String) -> Bytes
+fromString : (string: String) => Bytes
 ```
 
 Creates a new byte sequence from the input string.
@@ -88,7 +88,7 @@ No other changes yet.
 </details>
 
 ```grain
-toString : (bytes: Bytes) -> String
+toString : (bytes: Bytes) => String
 ```
 
 Creates a new string from the input bytes.
@@ -113,7 +113,7 @@ No other changes yet.
 </details>
 
 ```grain
-length : (bytes: Bytes) -> Number
+length : (bytes: Bytes) => Number
 ```
 
 Returns the length of a byte sequence.
@@ -138,7 +138,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (b: Bytes) -> Bytes
+copy : (b: Bytes) => Bytes
 ```
 
 Creates a new byte sequence that contains the same bytes as the input byte sequence.
@@ -163,7 +163,7 @@ No other changes yet.
 </details>
 
 ```grain
-slice : (start: Number, length: Number, bytes: Bytes) -> Bytes
+slice : (start: Number, length: Number, bytes: Bytes) => Bytes
 ```
 
 Returns a copy of a subset of the input byte sequence.
@@ -196,7 +196,7 @@ No other changes yet.
 </details>
 
 ```grain
-resize : (left: Number, right: Number, bytes: Bytes) -> Bytes
+resize : (left: Number, right: Number, bytes: Bytes) => Bytes
 ```
 
 Returns a copy of a byte sequence with bytes added or removed from the beginning and/or end.
@@ -232,7 +232,7 @@ No other changes yet.
 
 ```grain
 move :
-  (srcIndex: Number, dstIndex: Number, length: Number, src: Bytes, dst: Bytes) ->
+  (srcIndex: Number, dstIndex: Number, length: Number, src: Bytes, dst: Bytes) =>
    Void
 ```
 
@@ -264,7 +264,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (bytes1: Bytes, bytes2: Bytes) -> Bytes
+concat : (bytes1: Bytes, bytes2: Bytes) => Bytes
 ```
 
 Creates a new byte sequence that contains the bytes of both byte sequences.
@@ -297,7 +297,7 @@ Returns:
 </details>
 
 ```grain
-fill : (value: Uint8, bytes: Bytes) -> Void
+fill : (value: Uint8, bytes: Bytes) => Void
 ```
 
 Replaces all bytes in a byte sequnce with the new value provided.
@@ -317,7 +317,7 @@ No other changes yet.
 </details>
 
 ```grain
-clear : (bytes: Bytes) -> Void
+clear : (bytes: Bytes) => Void
 ```
 
 Replaces all bytes in a byte sequence with zeroes.
@@ -343,7 +343,7 @@ Parameters:
 </details>
 
 ```grain
-getInt8 : (index: Number, bytes: Bytes) -> Int8
+getInt8 : (index: Number, bytes: Bytes) => Int8
 ```
 
 Gets a signed 8-bit integer starting at the given byte index.
@@ -383,7 +383,7 @@ Throws:
 </details>
 
 ```grain
-setInt8 : (index: Number, value: Int8, bytes: Bytes) -> Void
+setInt8 : (index: Number, value: Int8, bytes: Bytes) => Void
 ```
 
 Sets a signed 8-bit integer starting at the given byte index.
@@ -418,7 +418,7 @@ Throws:
 </details>
 
 ```grain
-getUint8 : (index: Number, bytes: Bytes) -> Uint8
+getUint8 : (index: Number, bytes: Bytes) => Uint8
 ```
 
 Gets an unsigned 8-bit integer starting at the given byte index.
@@ -451,7 +451,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint8 : (index: Number, value: Uint8, bytes: Bytes) -> Void
+setUint8 : (index: Number, value: Uint8, bytes: Bytes) => Void
 ```
 
 Sets an unsigned 8-bit integer starting at the given byte index.
@@ -486,7 +486,7 @@ Throws:
 </details>
 
 ```grain
-getInt16 : (index: Number, bytes: Bytes) -> Int16
+getInt16 : (index: Number, bytes: Bytes) => Int16
 ```
 
 Gets a signed 16-bit integer starting at the given byte index.
@@ -526,7 +526,7 @@ Throws:
 </details>
 
 ```grain
-setInt16 : (index: Number, value: Int16, bytes: Bytes) -> Void
+setInt16 : (index: Number, value: Int16, bytes: Bytes) => Void
 ```
 
 Sets a signed 16-bit integer starting at the given byte index.
@@ -561,7 +561,7 @@ Throws:
 </details>
 
 ```grain
-getUint16 : (index: Number, bytes: Bytes) -> Uint16
+getUint16 : (index: Number, bytes: Bytes) => Uint16
 ```
 
 Gets an unsigned 16-bit integer starting at the given byte index.
@@ -594,7 +594,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint16 : (index: Number, value: Uint16, bytes: Bytes) -> Void
+setUint16 : (index: Number, value: Uint16, bytes: Bytes) => Void
 ```
 
 Sets an unsigned 16-bit integer starting at the given byte index.
@@ -622,7 +622,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInt32 : (index: Number, bytes: Bytes) -> Int32
+getInt32 : (index: Number, bytes: Bytes) => Int32
 ```
 
 Gets a signed 32-bit integer starting at the given byte index.
@@ -655,7 +655,7 @@ No other changes yet.
 </details>
 
 ```grain
-setInt32 : (index: Number, value: Int32, bytes: Bytes) -> Void
+setInt32 : (index: Number, value: Int32, bytes: Bytes) => Void
 ```
 
 Sets a signed 32-bit integer starting at the given byte index.
@@ -683,7 +683,7 @@ No other changes yet.
 </details>
 
 ```grain
-getUint32 : (index: Number, bytes: Bytes) -> Uint32
+getUint32 : (index: Number, bytes: Bytes) => Uint32
 ```
 
 Gets an unsigned 32-bit integer starting at the given byte index.
@@ -716,7 +716,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint32 : (index: Number, value: Uint32, bytes: Bytes) -> Void
+setUint32 : (index: Number, value: Uint32, bytes: Bytes) => Void
 ```
 
 Sets an unsigned 32-bit integer starting at the given byte index.
@@ -744,7 +744,7 @@ No other changes yet.
 </details>
 
 ```grain
-getFloat32 : (index: Number, bytes: Bytes) -> Float32
+getFloat32 : (index: Number, bytes: Bytes) => Float32
 ```
 
 Gets a 32-bit float starting at the given byte index.
@@ -777,7 +777,7 @@ No other changes yet.
 </details>
 
 ```grain
-setFloat32 : (index: Number, value: Float32, bytes: Bytes) -> Void
+setFloat32 : (index: Number, value: Float32, bytes: Bytes) => Void
 ```
 
 Sets a 32-bit float starting at the given byte index.
@@ -805,7 +805,7 @@ No other changes yet.
 </details>
 
 ```grain
-getInt64 : (index: Number, bytes: Bytes) -> Int64
+getInt64 : (index: Number, bytes: Bytes) => Int64
 ```
 
 Gets a signed 64-bit integer starting at the given byte index.
@@ -838,7 +838,7 @@ No other changes yet.
 </details>
 
 ```grain
-setInt64 : (index: Number, value: Int64, bytes: Bytes) -> Void
+setInt64 : (index: Number, value: Int64, bytes: Bytes) => Void
 ```
 
 Sets a signed 64-bit integer starting at the given byte index.
@@ -866,7 +866,7 @@ No other changes yet.
 </details>
 
 ```grain
-getUint64 : (index: Number, bytes: Bytes) -> Uint64
+getUint64 : (index: Number, bytes: Bytes) => Uint64
 ```
 
 Gets an unsigned 64-bit integer starting at the given byte index.
@@ -899,7 +899,7 @@ No other changes yet.
 </details>
 
 ```grain
-setUint64 : (index: Number, value: Uint64, bytes: Bytes) -> Void
+setUint64 : (index: Number, value: Uint64, bytes: Bytes) => Void
 ```
 
 Sets an unsigned 64-bit integer starting at the given byte index.
@@ -927,7 +927,7 @@ No other changes yet.
 </details>
 
 ```grain
-getFloat64 : (index: Number, bytes: Bytes) -> Float64
+getFloat64 : (index: Number, bytes: Bytes) => Float64
 ```
 
 Gets a 64-bit float starting at the given byte index.
@@ -960,7 +960,7 @@ No other changes yet.
 </details>
 
 ```grain
-setFloat64 : (index: Number, value: Float64, bytes: Bytes) -> Void
+setFloat64 : (index: Number, value: Float64, bytes: Bytes) => Void
 ```
 
 Sets a 64-bit float starting at the given byte index.

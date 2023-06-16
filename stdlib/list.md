@@ -33,7 +33,7 @@ No other changes yet.
 </details>
 
 ```grain
-init : (length: Number, fn: (Number -> a)) -> List<a>
+init : (length: Number, fn: (Number => a)) => List<a>
 ```
 
 Creates a new list of the specified length where each element is
@@ -45,7 +45,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`length`|`Number`|The length of the new list|
-|`fn`|`Number -> a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
+|`fn`|`Number => a`|The initializer function to call with each index, where the value returned will be used to initialize the element|
 
 Returns:
 
@@ -74,7 +74,7 @@ List.init(5, n => n + 3) // [3, 4, 5, 6, 7]
 </details>
 
 ```grain
-length : (list: List<a>) -> Number
+length : (list: List<a>) => Number
 ```
 
 Computes the length of the input list.
@@ -124,7 +124,7 @@ No other changes yet.
 </details>
 
 ```grain
-reverse : (list: List<a>) -> List<a>
+reverse : (list: List<a>) => List<a>
 ```
 
 Creates a new list with all elements in reverse order.
@@ -149,7 +149,7 @@ No other changes yet.
 </details>
 
 ```grain
-append : (list1: List<a>, list2: List<a>) -> List<a>
+append : (list1: List<a>, list2: List<a>) => List<a>
 ```
 
 Creates a new list with the elements of the first list followed by
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-contains : (search: a, list: List<a>) -> Bool
+contains : (search: a, list: List<a>) => Bool
 ```
 
 Checks if the value is an element of the input list.
@@ -211,7 +211,7 @@ Returns:
 </details>
 
 ```grain
-reduce : (fn: ((a, b) -> a), initial: a, list: List<b>) -> a
+reduce : (fn: ((a, b) => a), initial: a, list: List<b>) => a
 ```
 
 Combines all elements of a list using a reducer function,
@@ -226,7 +226,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => a`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`a`|The initial value to use for the accumulator on the first iteration|
 |`list`|`List<b>`|The list to iterate|
 
@@ -258,7 +258,7 @@ List.reduce((a, b) => a + b, 0, [1, 2, 3]) // 6
 </details>
 
 ```grain
-reduceRight : (fn: ((a, b) -> b), initial: b, list: List<a>) -> b
+reduceRight : (fn: ((a, b) => b), initial: b, list: List<a>) => b
 ```
 
 Combines all elements of a list using a reducer function,
@@ -273,7 +273,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
+|`fn`|`(a, b) => b`|The reducer function to call on each element, where the value returned will be the next accumulator value|
 |`initial`|`b`|The initial value to use for the accumulator on the first iteration|
 |`list`|`List<a>`|The list to iterate|
 
@@ -297,7 +297,7 @@ No other changes yet.
 </details>
 
 ```grain
-map : (fn: (a -> b), list: List<a>) -> List<b>
+map : (fn: (a => b), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
@@ -307,7 +307,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
+|`fn`|`a => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -324,7 +324,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapi : (fn: ((a, Number) -> b), list: List<a>) -> List<b>
+mapi : (fn: ((a, Number) => b), list: List<a>) => List<b>
 ```
 
 Produces a new list initialized with the results of a mapper function
@@ -334,7 +334,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
+|`fn`|`(a, Number) => b`|The mapper function to call on each element, where the value returned will be used to initialize the element in the new list|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -351,7 +351,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatMap : (fn: (a -> List<b>), list: List<a>) -> List<b>
+flatMap : (fn: (a => List<b>), list: List<a>) => List<b>
 ```
 
 Produces a new list by calling a function on each element
@@ -363,7 +363,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> List<b>`|The function to be called on each element, where the value returned will be a list that gets appended to the new list|
+|`fn`|`a => List<b>`|The function to be called on each element, where the value returned will be a list that gets appended to the new list|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -380,7 +380,7 @@ No other changes yet.
 </details>
 
 ```grain
-every : (fn: (a -> Bool), list: List<a>) -> Bool
+every : (fn: (a => Bool), list: List<a>) => Bool
 ```
 
 Checks that the given condition is satisfied for all
@@ -390,7 +390,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to check|
 
 Returns:
@@ -407,7 +407,7 @@ No other changes yet.
 </details>
 
 ```grain
-some : (fn: (a -> Bool), list: List<a>) -> Bool
+some : (fn: (a => Bool), list: List<a>) => Bool
 ```
 
 Checks that the given condition is satisfied **at least
@@ -417,7 +417,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -434,7 +434,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEach : (fn: (a -> Void), list: List<a>) -> Void
+forEach : (fn: (a => Void), list: List<a>) => Void
 ```
 
 Iterates a list, calling an iterator function on each element.
@@ -443,7 +443,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Void`|The iterator function to call with each element|
+|`fn`|`a => Void`|The iterator function to call with each element|
 |`list`|`List<a>`|The list to iterate|
 
 ### List.**forEachi**
@@ -454,7 +454,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachi : (fn: ((a, Number) -> Void), list: List<a>) -> Void
+forEachi : (fn: ((a, Number) => Void), list: List<a>) => Void
 ```
 
 Iterates a list, calling an iterator function on each element.
@@ -464,7 +464,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> Void`|The iterator function to call with each element|
+|`fn`|`(a, Number) => Void`|The iterator function to call with each element|
 |`list`|`List<a>`|The list to iterate|
 
 ### List.**filter**
@@ -475,7 +475,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (fn: (a -> Bool), list: List<a>) -> List<a>
+filter : (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list by calling a function on each element of
@@ -486,7 +486,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -503,7 +503,7 @@ No other changes yet.
 </details>
 
 ```grain
-filteri : (fn: ((a, Number) -> Bool), list: List<a>) -> List<a>
+filteri : (fn: ((a, Number) => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list by calling a function on each element of
@@ -514,7 +514,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, Number) -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`(a, Number) => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -531,7 +531,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : (fn: (a -> Bool), list: List<a>) -> List<a>
+reject : (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list by calling a function on each element of
@@ -542,7 +542,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -568,7 +568,7 @@ Returns:
 </details>
 
 ```grain
-head : (list: List<a>) -> Option<a>
+head : (list: List<a>) => Option<a>
 ```
 
 Provides `Some(element)` containing the first element, or "head", of
@@ -603,7 +603,7 @@ Returns:
 </details>
 
 ```grain
-tail : (list: List<a>) -> Option<List<a>>
+tail : (list: List<a>) => Option<List<a>>
 ```
 
 Provides `Some(tail)` containing all list items except the first element, or "tail", of
@@ -637,7 +637,7 @@ Returns:
 </details>
 
 ```grain
-nth : (index: Number, list: List<a>) -> Option<a>
+nth : (index: Number, list: List<a>) => Option<a>
 ```
 
 Provides `Some(element)` containing the element in the list at the specified index
@@ -664,7 +664,7 @@ No other changes yet.
 </details>
 
 ```grain
-flatten : (list: List<List<a>>) -> List<a>
+flatten : (list: List<List<a>>) => List<a>
 ```
 
 Flattens nested lists.
@@ -695,7 +695,7 @@ No other changes yet.
 </details>
 
 ```grain
-insert : (value: a, index: Number, list: List<a>) -> List<a>
+insert : (value: a, index: Number, list: List<a>) => List<a>
 ```
 
 Inserts a new value into a list at the specified index.
@@ -736,7 +736,7 @@ Throws:
 </details>
 
 ```grain
-count : (fn: (a -> Bool), list: List<a>) -> Number
+count : (fn: (a => Bool), list: List<a>) => Number
 ```
 
 Counts the number of elements in a list that satisfy the given condition.
@@ -745,7 +745,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to iterate|
 
 Returns:
@@ -762,7 +762,7 @@ No other changes yet.
 </details>
 
 ```grain
-part : (count: Number, list: List<a>) -> (List<a>, List<a>)
+part : (count: Number, list: List<a>) => (List<a>, List<a>)
 ```
 
 Split a list into two, with the first list containing the required number of elements.
@@ -802,7 +802,7 @@ Throws:
 </details>
 
 ```grain
-rotate : (count: Number, list: List<a>) -> List<a>
+rotate : (count: Number, list: List<a>) => List<a>
 ```
 
 Rotates list elements by the specified amount to the left, such that `n`th
@@ -848,7 +848,7 @@ List.rotate(-7, [1, 2, 3, 4, 5]) // [4, 5, 1, 2, 3]
 </details>
 
 ```grain
-unique : (list: List<a>) -> List<a>
+unique : (list: List<a>) => List<a>
 ```
 
 Produces a new list with any duplicates removed.
@@ -874,7 +874,7 @@ No other changes yet.
 </details>
 
 ```grain
-zip : (list1: List<a>, list2: List<b>) -> List<(a, b)>
+zip : (list1: List<a>, list2: List<b>) => List<(a, b)>
 ```
 
 Produces a new list filled with tuples of elements from both given lists.
@@ -915,7 +915,7 @@ No other changes yet.
 </details>
 
 ```grain
-zipWith : (fn: ((a, b) -> c), list1: List<a>, list2: List<b>) -> List<c>
+zipWith : (fn: ((a, b) => c), list1: List<a>, list2: List<b>) => List<c>
 ```
 
 Produces a new list filled with elements defined by applying a function on
@@ -931,7 +931,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(a, b) -> c`|The function to apply to pairs of elements|
+|`fn`|`(a, b) => c`|The function to apply to pairs of elements|
 |`list1`|`List<a>`|The list whose elements will each be passed to the function as the first argument|
 |`list2`|`List<b>`|The list whose elements will each be passed to the function as the second argument|
 
@@ -959,7 +959,7 @@ No other changes yet.
 </details>
 
 ```grain
-unzip : (list: List<(a, b)>) -> (List<a>, List<b>)
+unzip : (list: List<(a, b)>) => (List<a>, List<b>)
 ```
 
 Produces two lists by splitting apart a list of tuples.
@@ -984,7 +984,7 @@ No other changes yet.
 </details>
 
 ```grain
-drop : (count: Number, list: List<a>) -> List<a>
+drop : (count: Number, list: List<a>) => List<a>
 ```
 
 Produces a new list with the specified number of elements removed from
@@ -1017,7 +1017,7 @@ No other changes yet.
 </details>
 
 ```grain
-dropWhile : (fn: (a -> Bool), list: List<a>) -> List<a>
+dropWhile : (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list with the elements removed from the beginning
@@ -1028,7 +1028,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The input list|
 
 Returns:
@@ -1045,7 +1045,7 @@ No other changes yet.
 </details>
 
 ```grain
-take : (count: Number, list: List<a>) -> List<a>
+take : (count: Number, list: List<a>) => List<a>
 ```
 
 Produces a new list with–at most—the specified amount elements from
@@ -1078,7 +1078,7 @@ No other changes yet.
 </details>
 
 ```grain
-takeWhile : (fn: (a -> Bool), list: List<a>) -> List<a>
+takeWhile : (fn: (a => Bool), list: List<a>) => List<a>
 ```
 
 Produces a new list with elements from the beginning of the input list
@@ -1089,7 +1089,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The input list|
 
 Returns:
@@ -1114,7 +1114,7 @@ Returns:
 </details>
 
 ```grain
-find : (fn: (a -> Bool), list: List<a>) -> Option<a>
+find : (fn: (a => Bool), list: List<a>) => Option<a>
 ```
 
 Finds the first element in a list that satifies the given condition.
@@ -1123,7 +1123,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to search|
 
 Returns:
@@ -1148,7 +1148,7 @@ Returns:
 </details>
 
 ```grain
-findIndex : (fn: (a -> Bool), list: List<a>) -> Option<Number>
+findIndex : (fn: (a => Bool), list: List<a>) => Option<Number>
 ```
 
 Finds the first index in a list where the element satifies the given condition.
@@ -1157,7 +1157,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`a -> Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
+|`fn`|`a => Bool`|The function to call on each element, where the returned value indicates if the element satisfies the condition|
 |`list`|`List<a>`|The list to search|
 
 Returns:
@@ -1174,7 +1174,7 @@ No other changes yet.
 </details>
 
 ```grain
-product : (list1: List<a>, list2: List<b>) -> List<(a, b)>
+product : (list1: List<a>, list2: List<b>) => List<(a, b)>
 ```
 
 Combines two lists into a Cartesian product of tuples containing
@@ -1201,7 +1201,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (start: Number, length: Number, list: List<a>) -> List<a>
+sub : (start: Number, length: Number, list: List<a>) => List<a>
 ```
 
 Provides the subset of a list given zero-based start index and amount of elements
@@ -1236,7 +1236,7 @@ No other changes yet.
 </details>
 
 ```grain
-join : (separator: String, list: List<String>) -> String
+join : (separator: String, list: List<String>) => String
 ```
 
 Combine the given list of strings into one string with the specified
@@ -1263,7 +1263,7 @@ No other changes yet.
 </details>
 
 ```grain
-revAppend : (list1: List<a>, list2: List<a>) -> List<a>
+revAppend : (list1: List<a>, list2: List<a>) => List<a>
 ```
 
 Reverses the first list and appends the second list to the end.
@@ -1289,7 +1289,7 @@ No other changes yet.
 </details>
 
 ```grain
-sort : (comp: ((a, a) -> Number), list: List<a>) -> List<a>
+sort : (comp: ((a, a) => Number), list: List<a>) => List<a>
 ```
 
 Sorts the given list based on a given comparator function. The resulting list is sorted in increasing order.
@@ -1300,7 +1300,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`comp`|`(a, a) -> Number`|The comparator function used to indicate sort order|
+|`comp`|`(a, a) => Number`|The comparator function used to indicate sort order|
 |`list`|`List<a>`|The list to be sorted|
 
 Returns:

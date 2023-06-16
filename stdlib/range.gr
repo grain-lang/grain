@@ -56,7 +56,7 @@ provide let inRange = (value, range) => {
  * @since v0.3.0
  * @history v0.6.0: Treats all ranges as exclusive
  */
-provide let forEach = (fn: Number -> Void, range) => {
+provide let forEach = (fn: Number => Void, range) => {
   match (range) {
     { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
       let mut idx = lower
@@ -157,7 +157,7 @@ provide module Inclusive {
    * @history v0.3.0: Root APIs originally handled Inclusive & Exclusive variants
    */
 
-  provide let forEach = (fn: Number -> Void, range) => {
+  provide let forEach = (fn: Number => Void, range) => {
     match (range) {
       { rangeStart: lower, rangeEnd: upper } when lower <= upper => {
         let mut idx = lower

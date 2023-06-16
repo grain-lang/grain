@@ -30,42 +30,42 @@ _DECIMAL_POINT_RANGE : WasmI32
 ### Decimal.**tryAddDigit**
 
 ```grain
-tryAddDigit : (d: Decimal, digit: WasmI32) -> Void
+tryAddDigit : (d: Decimal, digit: WasmI32) => Void
 ```
 
 ### Decimal.**round**
 
 ```grain
-round : (d: Decimal) -> WasmI64
+round : (d: Decimal) => WasmI64
 ```
 
 ### Decimal.**get_TABLE**
 
 ```grain
-get_TABLE : () -> WasmI32
+get_TABLE : () => WasmI32
 ```
 
 ### Decimal.**get_TABLE_POW5**
 
 ```grain
-get_TABLE_POW5 : () -> WasmI32
+get_TABLE_POW5 : () => WasmI32
 ```
 
 ### Decimal.**leftShift**
 
 ```grain
-leftShift : (d: Decimal, shift: WasmI32) -> Void
+leftShift : (d: Decimal, shift: WasmI32) => Void
 ```
 
 ### Decimal.**rightShift**
 
 ```grain
-rightShift : (d: Decimal, shift: WasmI32) -> Void
+rightShift : (d: Decimal, shift: WasmI32) => Void
 ```
 
 ### Decimal.**parseDecimal**
 
 ```grain
-parseDecimal : (s: String) -> Decimal
+parseDecimal : (s: String) => Decimal
 ```
 

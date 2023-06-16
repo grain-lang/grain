@@ -24,7 +24,7 @@ provide foreign wasm storage_read: (
   WasmI64,
   WasmI64,
   WasmI64,
-) -> WasmI64 as storageRead from "env"
+) => WasmI64 as storageRead from "env"
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
@@ -35,4 +35,4 @@ from WasmI32 use {
   // no signed imports, as care should be taken to use signed or unsigned operators
 }
 
-provide foreign wasm promise_results_count: () -> WasmI64 as promiseResultsCount from "env"
+provide foreign wasm promise_results_count: () => WasmI64 as promiseResultsCount from "env"

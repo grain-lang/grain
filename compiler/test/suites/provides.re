@@ -163,12 +163,12 @@ describe("provides", ({test, testSkip}) => {
 
   assertHasWasmExport(
     "issue_918_annotated_func_provide",
-    "module Test; provide let foo: () -> Number = () => 5",
+    "module Test; provide let foo: () => Number = () => 5",
     ("foo", Binaryen.Export.external_function),
   );
   assertHasWasmExport(
     "issue_918_annotated_func_provide2",
-    "module Test; provide let rec foo: () -> Number = () => 5",
+    "module Test; provide let rec foo: () => Number = () => 5",
     ("foo", Binaryen.Export.external_function),
   );
 });
