@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (number: Number) -> Int16
+fromNumber : (number: Number) => Int16
 ```
 
 Converts a Number to an Int16.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (value: Int16) -> Number
+toNumber : (value: Int16) => Number
 ```
 
 Converts an Int16 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint16 : (x: Uint16) -> Int16
+fromUint16 : (x: Uint16) => Int16
 ```
 
 Converts a Uint16 to an Int16.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (value: Int16) -> Int16
+incr : (value: Int16) => Int16
 ```
 
 Increments the value by one.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (value: Int16) -> Int16
+decr : (value: Int16) => Int16
 ```
 
 Decrements the value by one.
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (x: Int16, y: Int16) -> Int16
+(+) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the sum of its operands.
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (x: Int16, y: Int16) -> Int16
+(-) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the difference of its operands.
@@ -202,7 +202,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (x: Int16, y: Int16) -> Int16
+(*) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the product of its operands.
@@ -228,7 +228,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (x: Int16, y: Int16) -> Int16
+(/) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the quotient of its operands using signed division.
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (x: Int16, y: Int16) -> Int16
+rem : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the remainder of the division of its operands using signed division.
@@ -280,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (x: Int16, y: Int16) -> Int16
+(%) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -313,7 +313,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<<) : (value: Int16, amount: Int16) -> Int16
+(<<) : (value: Int16, amount: Int16) => Int16
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>>) : (value: Int16, amount: Int16) -> Int16
+(>>) : (value: Int16, amount: Int16) => Int16
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -365,7 +365,7 @@ No other changes yet.
 </details>
 
 ```grain
-(==) : (x: Int16, y: Int16) -> Bool
+(==) : (x: Int16, y: Int16) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -391,7 +391,7 @@ No other changes yet.
 </details>
 
 ```grain
-(!=) : (x: Int16, y: Int16) -> Bool
+(!=) : (x: Int16, y: Int16) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -417,7 +417,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Int16, y: Int16) -> Bool
+(<) : (x: Int16, y: Int16) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -443,7 +443,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Int16, y: Int16) -> Bool
+(>) : (x: Int16, y: Int16) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -469,7 +469,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Int16, y: Int16) -> Bool
+(<=) : (x: Int16, y: Int16) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -495,7 +495,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Int16, y: Int16) -> Bool
+(>=) : (x: Int16, y: Int16) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -521,7 +521,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (value: Int16) -> Int16
+lnot : (value: Int16) => Int16
 ```
 
 Computes the bitwise NOT of the given value.
@@ -546,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&) : (x: Int16, y: Int16) -> Int16
+(&) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -572,7 +572,7 @@ No other changes yet.
 </details>
 
 ```grain
-(|) : (x: Int16, y: Int16) -> Int16
+(|) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -598,7 +598,7 @@ No other changes yet.
 </details>
 
 ```grain
-(^) : (x: Int16, y: Int16) -> Int16
+(^) : (x: Int16, y: Int16) => Int16
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.

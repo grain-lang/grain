@@ -1940,7 +1940,7 @@ provide let decodeKeepBom = (bytes: Bytes, encoding: Encoding) => {
  * @since v0.4.0
  */
 @unsafe
-provide let forEachCodePoint = (fn: Number -> Void, str: String) => {
+provide let forEachCodePoint = (fn: Number => Void, str: String) => {
   from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
@@ -1992,7 +1992,7 @@ provide let forEachCodePoint = (fn: Number -> Void, str: String) => {
  * @since v0.4.0
  */
 @unsafe
-provide let forEachCodePointi = (fn: (Number, Number) -> Void, str: String) => {
+provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
   from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)

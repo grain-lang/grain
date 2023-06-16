@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) -> Int64
+fromNumber : (x: Number) => Int64
 ```
 
 Converts a Number to an Int64.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Int64) -> Number
+toNumber : (x: Int64) => Number
 ```
 
 Converts an Int64 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint64 : (x: Uint64) -> Int64
+fromUint64 : (x: Uint64) => Int64
 ```
 
 Converts a Uint64 to an Int64.
@@ -100,7 +100,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (value: Int64) -> Int64
+incr : (value: Int64) => Int64
 ```
 
 Increments the value by one.
@@ -125,7 +125,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (value: Int64) -> Int64
+decr : (value: Int64) => Int64
 ```
 
 Decrements the value by one.
@@ -150,7 +150,7 @@ No other changes yet.
 </details>
 
 ```grain
-add : (x: Int64, y: Int64) -> Int64
+add : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the sum of its operands.
@@ -176,7 +176,7 @@ No other changes yet.
 </details>
 
 ```grain
-sub : (x: Int64, y: Int64) -> Int64
+sub : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the difference of its operands.
@@ -202,7 +202,7 @@ No other changes yet.
 </details>
 
 ```grain
-mul : (x: Int64, y: Int64) -> Int64
+mul : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the product of its operands.
@@ -228,7 +228,7 @@ No other changes yet.
 </details>
 
 ```grain
-div : (x: Int64, y: Int64) -> Int64
+div : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the quotient of its operands using signed division.
@@ -254,7 +254,7 @@ No other changes yet.
 </details>
 
 ```grain
-rem : (x: Int64, y: Int64) -> Int64
+rem : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the remainder of the division of its operands using signed division.
@@ -280,7 +280,7 @@ No other changes yet.
 </details>
 
 ```grain
-mod : (x: Int64, y: Int64) -> Int64
+mod : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -313,7 +313,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotl : (value: Int64, amount: Int64) -> Int64
+rotl : (value: Int64, amount: Int64) => Int64
 ```
 
 Rotates the bits of the value left by the given number of bits.
@@ -339,7 +339,7 @@ No other changes yet.
 </details>
 
 ```grain
-rotr : (value: Int64, amount: Int64) -> Int64
+rotr : (value: Int64, amount: Int64) => Int64
 ```
 
 Rotates the bits of the value right by the given number of bits.
@@ -365,7 +365,7 @@ No other changes yet.
 </details>
 
 ```grain
-shl : (value: Int64, amount: Int64) -> Int64
+shl : (value: Int64, amount: Int64) => Int64
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -391,7 +391,7 @@ No other changes yet.
 </details>
 
 ```grain
-shr : (value: Int64, amount: Int64) -> Int64
+shr : (value: Int64, amount: Int64) => Int64
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -417,7 +417,7 @@ No other changes yet.
 </details>
 
 ```grain
-eq : (x: Int64, y: Int64) -> Bool
+eq : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -443,7 +443,7 @@ No other changes yet.
 </details>
 
 ```grain
-ne : (x: Int64, y: Int64) -> Bool
+ne : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -469,7 +469,7 @@ No other changes yet.
 </details>
 
 ```grain
-eqz : (value: Int64) -> Bool
+eqz : (value: Int64) => Bool
 ```
 
 Checks if the given value is equal to zero.
@@ -494,7 +494,7 @@ No other changes yet.
 </details>
 
 ```grain
-lt : (x: Int64, y: Int64) -> Bool
+lt : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -520,7 +520,7 @@ No other changes yet.
 </details>
 
 ```grain
-gt : (x: Int64, y: Int64) -> Bool
+gt : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -546,7 +546,7 @@ No other changes yet.
 </details>
 
 ```grain
-lte : (x: Int64, y: Int64) -> Bool
+lte : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -572,7 +572,7 @@ No other changes yet.
 </details>
 
 ```grain
-gte : (x: Int64, y: Int64) -> Bool
+gte : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -598,7 +598,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (value: Int64) -> Int64
+lnot : (value: Int64) => Int64
 ```
 
 Computes the bitwise NOT of the given value.
@@ -623,7 +623,7 @@ No other changes yet.
 </details>
 
 ```grain
-land : (x: Int64, y: Int64) -> Int64
+land : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -649,7 +649,7 @@ No other changes yet.
 </details>
 
 ```grain
-lor : (x: Int64, y: Int64) -> Int64
+lor : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -675,7 +675,7 @@ No other changes yet.
 </details>
 
 ```grain
-lxor : (x: Int64, y: Int64) -> Int64
+lxor : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -701,7 +701,7 @@ No other changes yet.
 </details>
 
 ```grain
-clz : (value: Int64) -> Int64
+clz : (value: Int64) => Int64
 ```
 
 Counts the number of leading zero bits in the value.
@@ -726,7 +726,7 @@ No other changes yet.
 </details>
 
 ```grain
-ctz : (value: Int64) -> Int64
+ctz : (value: Int64) => Int64
 ```
 
 Counts the number of trailing zero bits in the value.
@@ -751,7 +751,7 @@ No other changes yet.
 </details>
 
 ```grain
-popcnt : (value: Int64) -> Int64
+popcnt : (value: Int64) => Int64
 ```
 
 Counts the number of bits set to `1` in the value, also known as a population count.

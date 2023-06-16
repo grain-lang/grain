@@ -6,7 +6,7 @@ let unit_arg = () => 3
 
 let two_args = (x,y) => 4
 
-provide let fake_write: (int, int, int, string) -> string =
+provide let fake_write: (int, int, int, string) => string =
   (
     fd,
     iovs,
@@ -32,3 +32,5 @@ let stringTailMatcher =  (toMatch, len) =>
   ) => {
     true
   }
+
+let f: Number -> (Number, Number) -> Number = a => (b, c) => a + b + c

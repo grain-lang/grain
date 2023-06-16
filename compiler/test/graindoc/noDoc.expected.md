@@ -41,6 +41,6 @@ docValue : Number
 ### NoGrainDoc.**docFunction**
 
 ```grain
-docFunction : (x: Number) -> Number
+docFunction : (x: Number) => Number
 ```
 

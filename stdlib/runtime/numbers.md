@@ -9,153 +9,153 @@ Functions and constants included in the Numbers module.
 ### Numbers.**tagSimple**
 
 ```grain
-tagSimple : (x: WasmI32) -> WasmI32
+tagSimple : (x: WasmI32) => WasmI32
 ```
 
 ### Numbers.**isBoxedNumber**
 
 ```grain
-isBoxedNumber : (x: WasmI32) -> Bool
+isBoxedNumber : (x: WasmI32) => Bool
 ```
 
 ### Numbers.**isFloat**
 
 ```grain
-isFloat : (x: WasmI32) -> Bool
+isFloat : (x: WasmI32) => Bool
 ```
 
 ### Numbers.**isInteger**
 
 ```grain
-isInteger : (x: WasmI32) -> Bool
+isInteger : (x: WasmI32) => Bool
 ```
 
 ### Numbers.**isRational**
 
 ```grain
-isRational : (x: WasmI32) -> Bool
+isRational : (x: WasmI32) => Bool
 ```
 
 ### Numbers.**isNaN**
 
 ```grain
-isNaN : (x: WasmI32) -> Bool
+isNaN : (x: WasmI32) => Bool
 ```
 
 ### Numbers.**isNumber**
 
 ```grain
-isNumber : (x: WasmI32) -> Bool
+isNumber : (x: WasmI32) => Bool
 ```
 
 ### Numbers.**reducedInteger**
 
 ```grain
-reducedInteger : (x: WasmI64) -> WasmI32
+reducedInteger : (x: WasmI64) => WasmI32
 ```
 
 ### Numbers.**reducedUnsignedInteger**
 
 ```grain
-reducedUnsignedInteger : (x: WasmI64) -> WasmI32
+reducedUnsignedInteger : (x: WasmI64) => WasmI32
 ```
 
 ### Numbers.**boxedNumberTag**
 
 ```grain
-boxedNumberTag : (xptr: WasmI32) -> WasmI32
+boxedNumberTag : (xptr: WasmI32) => WasmI32
 ```
 
 ### Numbers.**boxedInt64Number**
 
 ```grain
-boxedInt64Number : (xptr: WasmI32) -> WasmI64
+boxedInt64Number : (xptr: WasmI32) => WasmI64
 ```
 
 ### Numbers.**boxedFloat64Number**
 
 ```grain
-boxedFloat64Number : (xptr: WasmI32) -> WasmF64
+boxedFloat64Number : (xptr: WasmI32) => WasmF64
 ```
 
 ### Numbers.**boxedRationalNumerator**
 
 ```grain
-boxedRationalNumerator : (xptr: WasmI32) -> WasmI32
+boxedRationalNumerator : (xptr: WasmI32) => WasmI32
 ```
 
 ### Numbers.**boxedRationalDenominator**
 
 ```grain
-boxedRationalDenominator : (xptr: WasmI32) -> WasmI32
+boxedRationalDenominator : (xptr: WasmI32) => WasmI32
 ```
 
 ### Numbers.**coerceNumberToWasmF32**
 
 ```grain
-coerceNumberToWasmF32 : (x: Number) -> WasmF32
+coerceNumberToWasmF32 : (x: Number) => WasmF32
 ```
 
 ### Numbers.**coerceNumberToWasmF64**
 
 ```grain
-coerceNumberToWasmF64 : (x: Number) -> WasmF64
+coerceNumberToWasmF64 : (x: Number) => WasmF64
 ```
 
 ### Numbers.**coerceNumberToWasmI64**
 
 ```grain
-coerceNumberToWasmI64 : (x: Number) -> WasmI64
+coerceNumberToWasmI64 : (x: Number) => WasmI64
 ```
 
 ### Numbers.**coerceNumberToWasmI32**
 
 ```grain
-coerceNumberToWasmI32 : (x: Number) -> WasmI32
+coerceNumberToWasmI32 : (x: Number) => WasmI32
 ```
 
 ### Numbers.**coerceNumberToUnsignedWasmI64**
 
 ```grain
-coerceNumberToUnsignedWasmI64 : (x: Number) -> WasmI64
+coerceNumberToUnsignedWasmI64 : (x: Number) => WasmI64
 ```
 
 ### Numbers.**coerceNumberToUnsignedWasmI32**
 
 ```grain
-coerceNumberToUnsignedWasmI32 : (x: Number) -> WasmI32
+coerceNumberToUnsignedWasmI32 : (x: Number) => WasmI32
 ```
 
 ### Numbers.**numberEqual**
 
 ```grain
-numberEqual : (x: WasmI32, y: WasmI32) -> Bool
+numberEqual : (x: WasmI32, y: WasmI32) => Bool
 ```
 
 ### Numbers.**addSubRational**
 
 ```grain
 addSubRational :
-  (x: WasmI32, y: WasmI32, isSub: Bool, keepRational: Bool) -> WasmI32
+  (x: WasmI32, y: WasmI32, isSub: Bool, keepRational: Bool) => WasmI32
 ```
 
 ### Numbers.**timesDivideRational**
 
 ```grain
 timesDivideRational :
-  (x: WasmI32, y: WasmI32, isDivide: Bool, keepRational: Bool) -> WasmI32
+  (x: WasmI32, y: WasmI32, isDivide: Bool, keepRational: Bool) => WasmI32
 ```
 
 ### Numbers.**rationalsEqual**
 
 ```grain
-rationalsEqual : (x: WasmI32, y: WasmI32) -> Bool
+rationalsEqual : (x: WasmI32, y: WasmI32) => Bool
 ```
 
 ### Numbers.**cmpRationals**
 
 ```grain
-cmpRationals : (x: WasmI32, y: WasmI32) -> WasmI32
+cmpRationals : (x: WasmI32, y: WasmI32) => WasmI32
 ```
 
 ### Numbers.**rationalNumerator**
@@ -166,7 +166,7 @@ No other changes yet.
 </details>
 
 ```grain
-rationalNumerator : (x: Rational) -> Number
+rationalNumerator : (x: Rational) => Number
 ```
 
 Finds the numerator of the rational number.
@@ -191,7 +191,7 @@ No other changes yet.
 </details>
 
 ```grain
-rationalDenominator : (x: Rational) -> Number
+rationalDenominator : (x: Rational) => Number
 ```
 
 Finds the denominator of the rational number.
@@ -211,7 +211,7 @@ Returns:
 ### Numbers.**cmp**
 
 ```grain
-cmp : (x: WasmI32, y: WasmI32) -> WasmI32
+cmp : (x: WasmI32, y: WasmI32) => WasmI32
 ```
 
 ### Numbers.**(<)**
@@ -222,7 +222,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Number, y: Number) -> Bool
+(<) : (x: Number, y: Number) => Bool
 ```
 
 Checks if the first operand is less than the second operand.
@@ -248,7 +248,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Number, y: Number) -> Bool
+(>) : (x: Number, y: Number) => Bool
 ```
 
 Checks if the first operand is greater than the second operand.
@@ -274,7 +274,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Number, y: Number) -> Bool
+(<=) : (x: Number, y: Number) => Bool
 ```
 
 Checks if the first operand is less than or equal to the second operand.
@@ -300,7 +300,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Number, y: Number) -> Bool
+(>=) : (x: Number, y: Number) => Bool
 ```
 
 Checks if the first operand is greater than or equal to the second operand.
@@ -321,13 +321,13 @@ Returns:
 ### Numbers.**compare**
 
 ```grain
-compare : (x: Number, y: Number) -> Number
+compare : (x: Number, y: Number) => Number
 ```
 
 ### Numbers.**numberEq**
 
 ```grain
-numberEq : (x: Number, y: Number) -> Bool
+numberEq : (x: Number, y: Number) => Bool
 ```
 
 ### Numbers.**lnot**
@@ -338,7 +338,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (x: Number) -> Number
+lnot : (x: Number) => Number
 ```
 
 Computes the bitwise NOT of the operand.
@@ -371,7 +371,7 @@ Returns:
 </details>
 
 ```grain
-(<<) : (x: Number, y: Number) -> Number
+(<<) : (x: Number, y: Number) => Number
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -405,7 +405,7 @@ Returns:
 </details>
 
 ```grain
-(>>>) : (x: Number, y: Number) -> Number
+(>>>) : (x: Number, y: Number) => Number
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -439,7 +439,7 @@ Returns:
 </details>
 
 ```grain
-(&) : (x: Number, y: Number) -> Number
+(&) : (x: Number, y: Number) => Number
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -473,7 +473,7 @@ Returns:
 </details>
 
 ```grain
-(|) : (x: Number, y: Number) -> Number
+(|) : (x: Number, y: Number) => Number
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -508,7 +508,7 @@ Returns:
 </details>
 
 ```grain
-(^) : (x: Number, y: Number) -> Number
+(^) : (x: Number, y: Number) => Number
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -542,7 +542,7 @@ Returns:
 </details>
 
 ```grain
-(>>) : (x: Number, y: Number) -> Number
+(>>) : (x: Number, y: Number) => Number
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -568,7 +568,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToInt8 : (number: Number) -> Int8
+coerceNumberToInt8 : (number: Number) => Int8
 ```
 
 Converts a Number to an Int8.
@@ -593,7 +593,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToInt16 : (number: Number) -> Int16
+coerceNumberToInt16 : (number: Number) => Int16
 ```
 
 Converts a Number to an Int16.
@@ -618,7 +618,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToUint8 : (number: Number) -> Uint8
+coerceNumberToUint8 : (number: Number) => Uint8
 ```
 
 Converts a Number to a Uint8.
@@ -643,7 +643,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToUint16 : (number: Number) -> Uint16
+coerceNumberToUint16 : (number: Number) => Uint16
 ```
 
 Converts a Number to a Uint16.
@@ -668,7 +668,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToInt32 : (x: Number) -> Int32
+coerceNumberToInt32 : (x: Number) => Int32
 ```
 
 Converts a Number to an Int32.
@@ -693,7 +693,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToInt64 : (x: Number) -> Int64
+coerceNumberToInt64 : (x: Number) => Int64
 ```
 
 Converts a Number to an Int64.
@@ -718,7 +718,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToBigInt : (x: Number) -> BigInt
+coerceNumberToBigInt : (x: Number) => BigInt
 ```
 
 Converts a Number to a BigInt.
@@ -743,7 +743,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToRational : (x: Number) -> Rational
+coerceNumberToRational : (x: Number) => Rational
 ```
 
 Converts a Number to a Rational.
@@ -768,7 +768,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToFloat32 : (x: Number) -> Float32
+coerceNumberToFloat32 : (x: Number) => Float32
 ```
 
 Converts a Number to a Float32.
@@ -793,7 +793,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToFloat64 : (x: Number) -> Float64
+coerceNumberToFloat64 : (x: Number) => Float64
 ```
 
 Converts a Number to a Float64.
@@ -818,7 +818,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceInt8ToNumber : (value: Int8) -> Number
+coerceInt8ToNumber : (value: Int8) => Number
 ```
 
 Converts an Int8 to a Number.
@@ -843,7 +843,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceInt16ToNumber : (value: Int16) -> Number
+coerceInt16ToNumber : (value: Int16) => Number
 ```
 
 Converts an Int16 to a Number.
@@ -868,7 +868,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceUint8ToNumber : (value: Uint8) -> Number
+coerceUint8ToNumber : (value: Uint8) => Number
 ```
 
 Converts a Uint8 to a Number.
@@ -893,7 +893,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceUint16ToNumber : (value: Uint16) -> Number
+coerceUint16ToNumber : (value: Uint16) => Number
 ```
 
 Converts a Uint16 to a Number.
@@ -918,7 +918,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceInt32ToNumber : (x: Int32) -> Number
+coerceInt32ToNumber : (x: Int32) => Number
 ```
 
 Converts an Int32 to a Number.
@@ -943,7 +943,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceInt64ToNumber : (x: Int64) -> Number
+coerceInt64ToNumber : (x: Int64) => Number
 ```
 
 Converts an Int64 to a Number.
@@ -968,7 +968,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceBigIntToNumber : (x: BigInt) -> Number
+coerceBigIntToNumber : (x: BigInt) => Number
 ```
 
 Converts a BigInt to a Number.
@@ -993,7 +993,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceRationalToNumber : (x: Rational) -> Number
+coerceRationalToNumber : (x: Rational) => Number
 ```
 
 Converts a Rational to a Number.
@@ -1018,7 +1018,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceFloat32ToNumber : (x: Float32) -> Number
+coerceFloat32ToNumber : (x: Float32) => Number
 ```
 
 Converts a Float32 to a Number.
@@ -1043,7 +1043,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceFloat64ToNumber : (x: Float64) -> Number
+coerceFloat64ToNumber : (x: Float64) => Number
 ```
 
 Converts a Float64 to a Number.
@@ -1063,13 +1063,13 @@ Returns:
 ### Numbers.**convertExactToInexact**
 
 ```grain
-convertExactToInexact : (x: Number) -> Number
+convertExactToInexact : (x: Number) => Number
 ```
 
 ### Numbers.**convertInexactToExact**
 
 ```grain
-convertInexactToExact : (x: Number) -> Number
+convertInexactToExact : (x: Number) => Number
 ```
 
 ### Numbers.**(+)**
@@ -1080,7 +1080,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (x: Number, y: Number) -> Number
+(+) : (x: Number, y: Number) => Number
 ```
 
 Computes the sum of its operands.
@@ -1106,7 +1106,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (x: Number, y: Number) -> Number
+(-) : (x: Number, y: Number) => Number
 ```
 
 Computes the difference of its operands.
@@ -1132,7 +1132,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (x: Number, y: Number) -> Number
+(*) : (x: Number, y: Number) => Number
 ```
 
 Computes the product of its operands.
@@ -1158,7 +1158,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (x: Number, y: Number) -> Number
+(/) : (x: Number, y: Number) => Number
 ```
 
 Computes the quotient of its operands.
@@ -1184,7 +1184,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (x: Number, y: Number) -> Number
+(%) : (x: Number, y: Number) => Number
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -1211,7 +1211,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (x: Number) -> Number
+incr : (x: Number) => Number
 ```
 
 Increments the value by one.
@@ -1236,7 +1236,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (x: Number) -> Number
+decr : (x: Number) => Number
 ```
 
 Decrements the value by one.
@@ -1256,7 +1256,7 @@ Returns:
 ### Numbers.**isBigInt**
 
 ```grain
-isBigInt : (x: a) -> Bool
+isBigInt : (x: a) => Bool
 ```
 
 ### Numbers.**scalbn**
@@ -1267,7 +1267,7 @@ No other changes yet.
 </details>
 
 ```grain
-scalbn : (x: WasmF64, n: WasmI32) -> WasmF64
+scalbn : (x: WasmF64, n: WasmI32) => WasmF64
 ```
 
 Multiplies a floating-point number by an integral power of 2.
@@ -1300,7 +1300,7 @@ Returns:
 </details>
 
 ```grain
-(**) : (base: Number, power: Number) -> Number
+(**) : (base: Number, power: Number) => Number
 ```
 
 Computes the exponentiation of the given base and power.

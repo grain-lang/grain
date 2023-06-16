@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-marshal : (value: a) -> Bytes
+marshal : (value: a) => Bytes
 ```
 
 Serialize a value into a byte-based representation suitable for transmission
@@ -52,7 +52,7 @@ No other changes yet.
 </details>
 
 ```grain
-unmarshal : (bytes: Bytes) -> Result<a, String>
+unmarshal : (bytes: Bytes) => Result<a, String>
 ```
 
 Deserialize the byte-based representation of a value back into an in-memory

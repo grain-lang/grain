@@ -156,11 +156,11 @@ describe("functions", ({test, testSkip}) => {
   );
   assertSnapshot(
     "func_record_associativity1",
-    "record Foo { f: () -> Bool }; let foo = {f: () => false}; !foo.f()",
+    "record Foo { f: () => Bool }; let foo = {f: () => false}; !foo.f()",
   );
   assertSnapshot(
     "func_record_associativity2",
-    "record Foo { g: () -> Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
+    "record Foo { g: () => Bool }; record Bar { f: Foo }; let foo = {f: {g: () => false}}; !foo.f.g()",
   );
 
   assertSnapshot(
@@ -333,7 +333,7 @@ truc()|},
   assertRun(
     "labeled_args_typecheck1",
     {|
-      let apply = (f: (arg1: Number) -> Number) => f(arg1=5)
+      let apply = (f: (arg1: Number) => Number) => f(arg1=5)
       print(apply(notarg1 => notarg1))
     |},
     "5\n",
@@ -366,7 +366,7 @@ truc()|},
   assertCompileError(
     "labeled_args_err4",
     {|
-      let apply = (f: (?arg1: Number) -> Number) => f(arg1=5)
+      let apply = (f: (?arg1: Number) => Number) => f(arg1=5)
       print(apply(notarg1 => notarg1))
     |},
     "The expected function type contains the argument \\?arg1",
@@ -374,7 +374,7 @@ truc()|},
   assertCompileError(
     "labeled_args_err5",
     {|
-      let apply = (f: (?arg1: Number) -> Number) => f(arg1=5)
+      let apply = (f: (?arg1: Number) => Number) => f(arg1=5)
       print(apply(notarg1 => notarg1))
     |},
     "which has a default value, but the matching argument does not.",
