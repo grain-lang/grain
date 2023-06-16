@@ -78,6 +78,86 @@ let _NONE = "None"
 let _OK = "Ok"
 let _ERR = "Err"
 
+// Resizable arrays: <num items> <capacity> <...data>
+@unsafe
+let _VEC_LEN_OFFSET = 0n
+@unsafe
+let _VEC_CAP_OFFSET = 4n
+@unsafe
+let _VEC_DATA_OFFSET = 8n
+
+@unsafe
+let _VISITED_BIT = 0x80000000n
+
+@unsafe
+let makeVecBox = () => {
+  let vecBox = Memory.malloc(4n)
+  WasmI32.store(vecBox, 0n, 0n)
+  vecBox
+}
+
+@unsafe
+let initVec = vecBox => {
+  let initCap = 4n
+  let vec = Memory.malloc(8n + initCap * 4n)
+  WasmI32.store(vec, 0n, _VEC_LEN_OFFSET)
+  WasmI32.store(vec, initCap, _VEC_CAP_OFFSET)
+  WasmI32.store(vecBox, vec, 0n)
+  vec
+}
+
+@unsafe
+let freeVecBox = vecBox => {
+  let vecPtr = WasmI32.load(vecBox, 0n)
+  if (vecPtr != 0n) {
+    Memory.free(vecPtr)
+  }
+  Memory.free(vecBox)
+}
+
+@unsafe
+let vecPush = (vecBox, val) => {
+  let mut vecPtr = WasmI32.load(vecBox, 0n)
+  if (vecPtr == 0n) {
+    vecPtr = initVec(vecBox)
+  }
+  let len = WasmI32.load(vecPtr, _VEC_LEN_OFFSET)
+  let cap = WasmI32.load(vecPtr, _VEC_CAP_OFFSET)
+  if (len == cap) {
+    let newCap = cap * 2n
+    let newVec = Memory.malloc(8n + newCap * 4n)
+    Memory.copy(newVec, vecPtr, 8n + cap * 4n)
+    WasmI32.store(newVec, newCap, _VEC_CAP_OFFSET)
+    Memory.free(vecPtr)
+    WasmI32.store(vecBox, newVec, 0n)
+    vecPtr = newVec
+  }
+  WasmI32.store(vecPtr + len * 4n, val, _VEC_DATA_OFFSET)
+  WasmI32.store(vecPtr, len + 1n, _VEC_LEN_OFFSET)
+}
+
+@unsafe
+let vecLen = vecBox => {
+  let vecPtr = WasmI32.load(vecBox, 0n)
+  if (vecPtr == 0n) {
+    0n
+  } else {
+    WasmI32.load(vecPtr, _VEC_LEN_OFFSET)
+  }
+}
+
+@unsafe
+let vecFindIndex = (vecBox, val) => {
+  let vecPtr = WasmI32.load(vecBox, 0n)
+  let len = vecLen(vecBox)
+  for (let mut i = 0n; i < len; i += 1n) {
+    if (WasmI32.load(vecPtr + i * 4n, _VEC_DATA_OFFSET) == val) {
+      return i
+    }
+  }
+  return -1n
+}
+
 @unsafe
 let isListVariant = variant => {
   let typeId = WasmI32.load(variant, 8n) >> 1n
@@ -346,7 +426,28 @@ let usvToString = usv => {
 }
 
 @unsafe
-let rec heapValueToString = (ptr, extraIndents, toplevel) => {
+let reportCycle = (ptr, cycles) => {
+  let mut cycleNum = vecFindIndex(cycles, ptr)
+  if (cycleNum == -1n) {
+    cycleNum = vecLen(cycles)
+    vecPush(cycles, ptr)
+  }
+  let numStr = NumberUtils.itoa32(cycleNum + 1n, 10n)
+  join(["<cycle to <", numStr, ">>"])
+}
+
+@unsafe
+let cyclePrefix = (ptr, cycles) => {
+  let cycleNum = vecFindIndex(cycles, ptr)
+  if (cycleNum != -1n) {
+    join(["<", NumberUtils.itoa32(cycleNum + 1n, 10n), "> "])
+  } else {
+    ""
+  }
+}
+
+@unsafe
+let rec heapValueToString = (ptr, extraIndents, toplevel, cycles) => {
   let tag = WasmI32.load(ptr, 0n)
   match (tag) {
     t when t == Tags._GRAIN_STRING_HEAP_TAG => {
@@ -406,10 +507,11 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
         tupleVariantToString(
           ptr,
           WasmI32.toGrain(builtinVariantName),
-          extraIndents
+          extraIndents,
+          cycles
         )
       } else if (isListVariant(ptr)) {
-        listToString(ptr, extraIndents)
+        listToString(ptr, extraIndents, cycles)
       } else {
         let variantPtr = getVariantMetadata(ptr)
         if (variantPtr == -1n) {
@@ -430,14 +532,15 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
               recordArity,
               recordVariantFields,
               20n,
-              extraIndents
+              extraIndents,
+              cycles
             )
             Memory.decRef(recordVariantFields)
             let strings = [variantName, recordString]
 
             join(strings)
           } else {
-            tupleVariantToString(ptr, variantName, extraIndents)
+            tupleVariantToString(ptr, variantName, extraIndents, cycles)
           }
         }
       }
@@ -448,27 +551,51 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
       if (fields == -1n) {
         "<record value>"
       } else {
-        let result = recordToString(ptr, recordArity, fields, 16n, extraIndents)
-        Memory.decRef(fields)
-        result
+        if ((recordArity & _VISITED_BIT) != 0n) {
+          reportCycle(ptr, cycles)
+        } else {
+          WasmI32.store(ptr, _VISITED_BIT | recordArity, 12n)
+          let result = recordToString(
+            ptr,
+            recordArity,
+            fields,
+            16n,
+            extraIndents,
+            cycles
+          )
+          Memory.decRef(fields)
+          WasmI32.store(ptr, recordArity, 12n)
+          join([cyclePrefix(ptr, cycles), result])
+        }
       }
     },
     t when t == Tags._GRAIN_ARRAY_HEAP_TAG => {
       let arity = WasmI32.load(ptr, 4n)
-      let rbrack = "]"
-      let mut strings = [rbrack]
-      let comspace = ", "
-      for (let mut i = arity * 4n - 4n; i >= 0n; i -= 4n) {
-        let item = toStringHelp(WasmI32.load(ptr + i, 8n), extraIndents, false)
-        strings = [item, ...strings]
-        if (i > 0n) {
-          strings = [comspace, ...strings]
+      if ((arity & _VISITED_BIT) != 0n) {
+        reportCycle(ptr, cycles)
+      } else {
+        WasmI32.store(ptr, _VISITED_BIT | arity, 4n)
+        let rbrack = "]"
+        let mut strings = [rbrack]
+        let comspace = ", "
+        for (let mut i = arity * 4n - 4n; i >= 0n; i -= 4n) {
+          let item = toStringHelp(
+            WasmI32.load(ptr + i, 8n),
+            extraIndents,
+            false,
+            cycles
+          )
+          strings = [item, ...strings]
+          if (i > 0n) {
+            strings = [comspace, ...strings]
+          }
         }
-      }
-      let lbrack = "[> "
-      strings = [lbrack, ...strings]
+        WasmI32.store(ptr, arity, 4n)
+        let lbrack = "[> "
+        strings = [lbrack, ...strings]
 
-      join(strings)
+        join([cyclePrefix(ptr, cycles), ...strings])
+      }
     },
     t when t == Tags._GRAIN_BOXED_NUM_HEAP_TAG => {
       let numberTag = WasmI32.load(ptr, 4n)
@@ -508,10 +635,10 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     },
     t when t == Tags._GRAIN_TUPLE_HEAP_TAG => {
       let tupleLength = WasmI32.load(ptr, 4n)
-      if ((tupleLength & 0x80000000n) != 0n) {
-        "<cyclic tuple>"
+      if ((tupleLength & _VISITED_BIT) != 0n) {
+        reportCycle(ptr, cycles)
       } else {
-        WasmI32.store(ptr, 0x80000000n | tupleLength, 4n)
+        WasmI32.store(ptr, _VISITED_BIT | tupleLength, 4n)
         let comspace = ", "
         let rparen = ")"
         let mut lparen = "("
@@ -520,7 +647,8 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           let item = toStringHelp(
             WasmI32.load(ptr + i, 8n),
             extraIndents,
-            false
+            false,
+            cycles
           )
           strings = [item, ...strings]
           if (i > 0n) {
@@ -536,7 +664,7 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
           // are stored as a unary tuple, so we keep this in case one gets printed
           strings = ["box", ...strings]
         }
-        join(strings)
+        join([cyclePrefix(ptr, cycles), ...strings])
       }
     },
     t when t == Tags._GRAIN_LAMBDA_HEAP_TAG => {
@@ -554,14 +682,14 @@ let rec heapValueToString = (ptr, extraIndents, toplevel) => {
     },
   }
 }
-and toStringHelp = (grainValue, extraIndents, toplevel) => {
+and toStringHelp = (grainValue, extraIndents, toplevel, cycles) => {
   if ((grainValue & 1n) != 0n) {
     // Simple (unboxed) numbers
     NumberUtils.itoa32(grainValue >> 1n, 10n)
   } else {
     let tag = grainValue & 7n
     if (tag == Tags._GRAIN_GENERIC_HEAP_TAG_TYPE) {
-      heapValueToString(grainValue, extraIndents, toplevel)
+      heapValueToString(grainValue, extraIndents, toplevel, cycles)
     } else if (tag == Tags._GRAIN_SHORTVAL_TAG_TYPE) {
       let shortVal = grainValue >> 8n
       let shortValTag = (grainValue & 0xF8n) >> 3n
@@ -596,7 +724,7 @@ and toStringHelp = (grainValue, extraIndents, toplevel) => {
     }
   }
 }
-and listToString = (ptr, extraIndents) => {
+and listToString = (ptr, extraIndents, cycles) => {
   let mut cur = ptr
   let mut isFirst = true
 
@@ -613,7 +741,12 @@ and listToString = (ptr, extraIndents) => {
         strings = [commaspace, ...strings]
       }
       isFirst = false
-      let item = toStringHelp(WasmI32.load(cur, 20n), extraIndents, false)
+      let item = toStringHelp(
+        WasmI32.load(cur, 20n),
+        extraIndents,
+        false,
+        cycles
+      )
       strings = [item, ...strings]
       cur = WasmI32.load(cur, 24n)
     }
@@ -623,7 +756,7 @@ and listToString = (ptr, extraIndents) => {
   let reversed = reverse(strings)
   join(reversed)
 }
-and tupleVariantToString = (ptr, variantName, extraIndents) => {
+and tupleVariantToString = (ptr, variantName, extraIndents, cycles) => {
   let variantArity = WasmI32.load(ptr, 16n)
   if (variantArity == 0n) {
     variantName
@@ -632,7 +765,12 @@ and tupleVariantToString = (ptr, variantName, extraIndents) => {
     let rparen = ")"
     let mut strings = [rparen]
     for (let mut i = variantArity * 4n - 4n; i >= 0n; i -= 4n) {
-      let tmp = toStringHelp(WasmI32.load(ptr + i, 20n), extraIndents, false)
+      let tmp = toStringHelp(
+        WasmI32.load(ptr + i, 20n),
+        extraIndents,
+        false,
+        cycles
+      )
       strings = [tmp, ...strings]
       if (i > 0n) {
         strings = [comspace, ...strings]
@@ -651,6 +789,7 @@ and recordToString =
     fields,
     contentOffset,
     extraIndents,
+    cycles,
   ) => {
   let prevPadAmount = extraIndents * 2n
   let prevSpacePadding = if (prevPadAmount == 0n) {
@@ -678,7 +817,8 @@ and recordToString =
     let fieldValue = toStringHelp(
       WasmI32.load(ptr + i, contentOffset),
       extraIndents + 1n,
-      false
+      false,
+      cycles
     )
     strings = [spacePadding, fieldName, colspace, fieldValue, ...strings]
     if (i > 0n) {
@@ -703,7 +843,9 @@ and recordToString =
 @unsafe
 provide let toString = value => {
   let ptr = WasmI32.fromGrain(value)
-  let string = toStringHelp(ptr, 0n, true)
+  let cycles = makeVecBox()
+  let string = toStringHelp(ptr, 0n, true, cycles)
+  freeVecBox(cycles)
   // Prevent the tail call to allow the value to stay alive
   // while we operate on the raw pointer
   ignore(value)
