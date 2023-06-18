@@ -145,7 +145,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (string: String) -> Bool
+isEmpty : (string: String) => Bool
 ```
 
 Determines if the string contains no characters.
