@@ -99,7 +99,7 @@ No other changes yet.
 </details>
 
 ```grain
-isEmpty : (list: List<a>) -> Bool
+isEmpty : (list: List<a>) => Bool
 ```
 
 Determines if the list contains no elements.
