@@ -212,7 +212,6 @@ provide module Immutable {
    * @returns A new stack with the item added to the end
    *
    * @since v0.6.0
-   * @history v0.3.0: Originally a module root API
    */
 
   provide let push = (value, stack) => {
