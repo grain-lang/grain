@@ -90,7 +90,6 @@ provide let peek = queue => {
  * @param queue: The queue being updated
  *
  * @since v0.6.0
- * @history v0.6.0: No longer errors when pushing a new item
  */
 provide let push = (value, queue) => {
   let arrLen = Array.length(queue.array)
