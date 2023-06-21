@@ -1,0 +1,7 @@
+module ReprovideType
+
+include "./provideType"
+
+from ProvideType use { type Type }
+
+provide { type Type }
