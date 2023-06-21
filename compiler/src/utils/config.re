@@ -545,6 +545,14 @@ let use_start_section =
     false,
   );
 
+let export_function_table =
+  opt(
+    ~names=["export-function-table"],
+    ~conv=option_conv(Cmdliner.Arg.string),
+    ~doc="Causes the function table to be exported under the given name.",
+    None,
+  );
+
 let elide_type_info =
   toggle_flag(
     ~names=["elide-type-info"],

@@ -147,6 +147,10 @@ class GrainCommand extends commander.Command {
       "replaces the _start export with a start section during linking"
     );
     cmd.forwardOption(
+      "--export-function-table",
+      "causes the function table to be exported under the given name"
+    );
+    cmd.forwardOption(
       "--no-pervasives",
       "don't automatically import the Grain Pervasives module"
     );

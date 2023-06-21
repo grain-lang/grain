@@ -122,6 +122,72 @@ describe("linking", ({test, testSkip}) => {
     );
   });
 
+  test("use_start_section", ({expect}) => {
+    let name = "use_start_section";
+    let outfile = wasmfile(name);
+    ignore @@
+    compile(
+      ~config_fn=() => {Grain_utils.Config.use_start_section := true},
+      name,
+      {|module Test; print("Hello, world!")|},
+    );
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
+    let start_section =
+      List.find_opt(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Start} => true
+          | _ => false
+          },
+        sections,
+      );
+    let export_sections =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Export(exports)} => Some(exports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.option(start_section).toBeSome();
+    expect.option(export_sections).toBeSome();
+    expect.list(Option.get(export_sections)).not.toContainEqual(
+      ~equals=tuple_equal,
+      (WasmFunction, "_start"),
+    );
+  });
+  test("export_function_table", ({expect}) => {
+    let name = "export_function_table";
+    let outfile = wasmfile(name);
+    ignore @@
+    compile(
+      ~config_fn=
+        () => {Grain_utils.Config.export_function_table := Some("funcTable")},
+      name,
+      {|module Test; print("Hello, world!")|},
+    );
+    let ic = open_in_bin(outfile);
+    let sections = Grain_utils.Wasm_utils.get_wasm_sections(ic);
+    close_in(ic);
+    let export_sections =
+      List.find_map(
+        (sec: Grain_utils.Wasm_utils.wasm_bin_section) =>
+          switch (sec) {
+          | {sec_type: Export(exports)} => Some(exports)
+          | _ => None
+          },
+        sections,
+      );
+    expect.option(export_sections).toBeSome();
+    expect.list(Option.get(export_sections)).toContainEqual(
+      ~equals=tuple_equal,
+      (WasmTable, "funcTable"),
+    );
+  });
+
   test("import_memory", ({expect}) => {
     let name = "import_memory";
     let outfile = wasmfile(name);

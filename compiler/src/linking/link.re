@@ -698,6 +698,17 @@ let link_all = (linked_mod, dependencies, signature) => {
     Type.funcref,
   );
 
+  switch (Grain_utils.Config.export_function_table^) {
+  | Some(name) =>
+    ignore @@
+    Export.add_table_export(
+      linked_mod,
+      Comp_utils.grain_global_function_table,
+      name,
+    )
+  | None => ()
+  };
+
   let (initial_memory, maximum_memory) =
     switch (Config.initial_memory_pages^, Config.maximum_memory_pages^) {
     | (initial_memory, Some(maximum_memory)) => (
