@@ -143,10 +143,6 @@ class GrainCommand extends commander.Command {
       "path to custom WASI implementation"
     );
     cmd.forwardOption(
-      "--use-start-section",
-      "replaces the _start export with a start section during linking"
-    );
-    cmd.forwardOption(
       "--no-pervasives",
       "don't automatically import the Grain Pervasives module"
     );
@@ -189,6 +185,10 @@ program
   .command("compile <file>")
   .description("compile a grain program into wasm")
   .forwardOption("-o <filename>", "output filename")
+  .forwardOption(
+    "--use-start-section",
+    "replaces the _start export with a start section during linking"
+  )
   .forwardOption("--no-link", "disable static linking")
   .action(exec.grainc);
 
