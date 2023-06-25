@@ -94,7 +94,9 @@ provide let peek = queue => {
 provide let push = (value, queue) => {
   let arrLen = Array.length(queue.array)
   // expand the array if needed
-  if (queue.size == arrLen) {
+  if (arrLen == 0) {
+    queue.array = Array.make(1, None)
+  } else if (queue.size == arrLen) {
     let newArray = Array.make(arrLen * 2, None)
 
     newArray[0] = queue.array[queue.headIndex]
