@@ -91,6 +91,31 @@ Returns:
 |----|-----------|
 |`Number`|The number of elements in the list|
 
+### List.**isEmpty**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isEmpty : (list: List<a>) => Bool
+```
+
+Determines if the list contains no elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the list is empty and `false` otherwise|
+
 ### List.**reverse**
 
 <details disabled>
