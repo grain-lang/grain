@@ -86,7 +86,6 @@ provide let peek = stack => {
  * @param stack: The stack being updated
  *
  * @since v0.6.0
- * @history v0.6.0: No longer errors when stack size is `0`
  */
 provide let push = (value, stack) => {
   let arrLen = Array.length(stack.array)
@@ -212,6 +211,7 @@ provide module Immutable {
    * @returns A new stack with the item added to the end
    *
    * @since v0.6.0
+   * @history v0.3.0: Originally a module root API
    */
 
   provide let push = (value, stack) => {

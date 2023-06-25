@@ -157,16 +157,9 @@ Returns:
 
 ### Stack.**push**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>next</code></td><td>No longer errors when stack size is `0`</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
@@ -358,9 +351,16 @@ Returns:
 
 #### Stack.Immutable.**push**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.3.0</code></td><td>Originally a module root API</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
