@@ -89,7 +89,9 @@ provide let peek = stack => {
  */
 provide let push = (value, stack) => {
   let arrLen = Array.length(stack.array)
-  if (stack.size == arrLen) {
+  if (arrLen == 0) {
+    stack.array = Array.make(1, None)
+  } else if (stack.size == arrLen) {
     let newArray = Array.make(stack.size * 2, None)
     for (let mut i = 0; i < arrLen; i += 1) {
       newArray[i] = stack.array[i]

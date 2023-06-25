@@ -50,6 +50,12 @@ assert Stack.pop(stack) == Some(2)
 assert Stack.pop(stack) == Some(1)
 assert Stack.pop(stack) == None
 
+let stack = Stack.makeSized(0)
+Stack.push(0, stack)
+let stack2 = Stack.makeSized(1)
+Stack.push(0, stack2)
+assert stack == stack2
+
 module Immutable {
   from Stack use { Immutable as Stack }
 
