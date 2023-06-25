@@ -137,6 +137,31 @@ Examples:
 String.byteLength("🌾") == 4
 ```
 
+### String.**isEmpty**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isEmpty : (string: String) => Bool
+```
+
+Determines if the string contains no characters.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string to inspect|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the string is empty and `false` otherwise|
+
 ### String.**indexOf**
 
 <details disabled>
