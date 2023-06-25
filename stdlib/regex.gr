@@ -469,14 +469,11 @@ enum rec ParsedRegularExpression {
 
 let needsBacktrack = (rx: ParsedRegularExpression) => {
   match (rx) {
-    REAlts(_, _) => true,
-    RESequence(_, nb) => nb,
-    REGroup(_, _) => true,
-    RERepeat(_, _, _, _) => true,
-    REMaybe(_, _) => true,
-    REConditional(_, _, _, _, _, nb) => nb,
-    RECut(_, _, _, nb) => nb,
-    REUnicodeCategories(_, _) => true,
+    REAlts(_, _) | REGroup(_, _) | RERepeat(_, _, _, _) | REMaybe(_, _) |
+    REUnicodeCategories(_, _) =>
+      true,
+    RESequence(_, nb) | REConditional(_, _, _, _, _, nb) | RECut(_, _, _, nb) =>
+      nb,
     _ => false,
   }
 }
@@ -503,8 +500,7 @@ let mergeAdjacent = lst => {
           None => false,
           Some(MMChar) => {
             match (hd) {
-              RELiteral(x) => false,
-              RELiteralString(x) => false,
+              RELiteral(_) | RELiteralString(_) => false,
               _ => true,
             }
           },
@@ -517,9 +513,7 @@ let mergeAdjacent = lst => {
       // flatten nested sequences
       [RESequence(rxs1, _), ...tl] => loop(mode, accum, List.append(rxs1, tl)),
       // drop empty elements
-      [REEmpty, ...tl] => loop(mode, accum, tl),
-      [RELiteralString(""), ...tl] => loop(mode, accum, tl),
-      // TODO(#696): Clean up with or-patterns
+      [REEmpty, ...tl] | [RELiteralString(""), ...tl] => loop(mode, accum, tl),
       _ when readyForAccum(l, mode) => {
         match (accum) {
           [] => [],
@@ -1932,8 +1926,8 @@ let rec isAnchored = (re: ParsedRegularExpression) => {
           [] => false,
           [hd, ...tl] => {
             match (hd) {
-              RELookahead(_, _, _, _) => loop(tl),
-              RELookbehind(_, _, _, _, _, _) => loop(tl),
+              RELookahead(_, _, _, _) | RELookbehind(_, _, _, _, _, _) =>
+                loop(tl),
               _ => isAnchored(hd),
             }
           },
@@ -1987,15 +1981,11 @@ let rec mustString = (re: ParsedRegularExpression) => {
 
 let rec zeroSized = re => {
   match (re) {
-    REEmpty => true,
-    REStart => true,
-    RELineStart => true,
-    REWordBoundary => true,
-    RENotWordBoundary => true,
-    RELookahead(_, _, _, _) => true,
-    RELookbehind(_, _, _, _, _, _) => true,
-    REGroup(re, _) => zeroSized(re),
-    RECut(re, _, _, _) => zeroSized(re),
+    REEmpty | REStart | RELineStart | REWordBoundary | RENotWordBoundary |
+    RELookahead(_, _, _, _) |
+    RELookbehind(_, _, _, _, _, _) =>
+      true,
+    REGroup(re, _) | RECut(re, _, _, _) => zeroSized(re),
     _ => false,
   }
 }
@@ -2094,21 +2084,13 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
   }
   let rec loop = re => {
     match (re) {
-      RENever => (1, 1, 0),
-      REAny => (1, 1, 0),
-      RELiteral(_) => (1, 1, 0),
-      RERange(_) => (1, 1, 0),
+      RENever | REAny | RELiteral(_) | RERange(_) => (1, 1, 0),
       RELiteralString(s) => {
         let ls = String.length(s)
         (ls, ls, 0)
       },
-      REEmpty => (0, 0, 0),
-      REEnd => (0, 0, 0),
-      RELineEnd => (0, 0, 0),
-      REStart => (0, 0, 1),
-      RELineStart => (0, 0, 1),
-      REWordBoundary => (0, 0, 1),
-      RENotWordBoundary => (0, 0, 1),
+      REEmpty | REEnd | RELineEnd => (0, 0, 0),
+      REStart | RELineStart | REWordBoundary | RENotWordBoundary => (0, 0, 1),
       REAlts(re1, re2) => {
         let (min1, max1, maxL1) = loop(re1)
         let (min2, max2, maxL2) = loop(re2)
@@ -2173,9 +2155,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
           (0, 0, max(max1, maxL1))
         }
       },
-      RECut(re, _, _, _) => {
-        loop(re)
-      },
+      RECut(re, _, _, _) => loop(re),
       REReference(n, _) => {
         if (n > numGroups) {
           thrownError = Some(BackreferenceTooBig)
