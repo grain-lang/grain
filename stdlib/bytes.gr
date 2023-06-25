@@ -248,7 +248,7 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
  *
  * @param srcIndex: The starting index to copy bytes from
  * @param dstIndex: The starting index to copy bytes into
- * @param length: The amount of bytes to copy from the source buffer
+ * @param length: The amount of bytes to copy from the source byte sequence
  * @param src: The source byte sequence
  * @param dst: The destination byte sequence
  *
