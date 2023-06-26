@@ -40,6 +40,9 @@ let wasi_polyfill: ref(option(string));
 
 let use_start_section: ref(bool);
 
+/** Weather to export the function table under a specifed name */
+let export_function_table: ref(option(string));
+
 /** Compilation profile, e.g. release for production builds */
 
 let profile: ref(option(profile));
