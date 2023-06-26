@@ -1,4 +1,6 @@
 /* grainc-flags --compilation-mode=runtime */
 module Debug
 
-provide foreign wasm debug: a => Void from "console"
+provide foreign module Console binds "console" {
+  foreign value debug binds "debug": a => Void
+}

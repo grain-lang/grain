@@ -10,11 +10,12 @@ describe("foreigns", ({test}) => {
       name,
       {|
       module Test
-      @externalName("env.foo")
-      foreign wasm foo: Number => Number from "env"
+      foreign module Env binds "env" {
+        foreign value foo binds "env.foo": Number => Number
+      }
 
       @externalName("__foo%%!")
-      provide let bar = () => foo(1)
+      provide let bar = () => Env.foo(1)
       |},
     );
     let ic = open_in_bin(outfile);

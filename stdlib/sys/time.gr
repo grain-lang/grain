@@ -10,6 +10,8 @@ include "runtime/unsafe/wasmi32"
 from WasmI32 use { (+), (==), (!=) }
 include "runtime/unsafe/memory"
 include "runtime/wasi"
+include "runtime/wasiErrors"
+include "runtime/wasiConstants"
 include "runtime/unsafe/errors"
 include "runtime/dataStructures"
 from DataStructures use { allocateInt64, tagSimpleNumber }
@@ -18,10 +20,10 @@ from DataStructures use { allocateInt64, tagSimpleNumber }
 let getClockTime = (clockid, precision) => {
   let int64Ptr = allocateInt64()
   let timePtr = int64Ptr + 8n
-  let err = Wasi.clock_time_get(clockid, precision, timePtr)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.clockTimeGet(clockid, precision, timePtr)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(int64Ptr)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   return Ok(WasmI32.toGrain(int64Ptr): Int64)
 }
@@ -34,7 +36,7 @@ let getClockTime = (clockid, precision) => {
  */
 @unsafe
 provide let realTime = () => {
-  getClockTime(Wasi._CLOCK_REALTIME, 1000N)
+  getClockTime(WasiConstants._CLOCK_REALTIME, 1000N)
 }
 
 /**
@@ -47,7 +49,7 @@ provide let realTime = () => {
  */
 @unsafe
 provide let monotonicTime = () => {
-  getClockTime(Wasi._CLOCK_MONOTONIC, 1N)
+  getClockTime(WasiConstants._CLOCK_MONOTONIC, 1N)
 }
 
 /**
@@ -57,7 +59,7 @@ provide let monotonicTime = () => {
  */
 @unsafe
 provide let processCpuTime = () => {
-  getClockTime(Wasi._CLOCK_PROCESS_CPUTIME, 1N)
+  getClockTime(WasiConstants._CLOCK_PROCESS_CPUTIME, 1N)
 }
 
 /**
@@ -67,5 +69,5 @@ provide let processCpuTime = () => {
  */
 @unsafe
 provide let threadCpuTime = () => {
-  getClockTime(Wasi._CLOCK_THREAD_CPUTIME, 1N)
+  getClockTime(WasiConstants._CLOCK_THREAD_CPUTIME, 1N)
 }

@@ -11,6 +11,7 @@ from WasmI32 use { (==), (!=) }
 include "runtime/unsafe/wasmi64"
 include "runtime/unsafe/memory"
 include "runtime/wasi"
+include "runtime/wasiErrors"
 include "runtime/dataStructures"
 from DataStructures use { tagSimpleNumber, newUint32, newUint64 }
 
@@ -26,10 +27,10 @@ from DataStructures use { tagSimpleNumber, newUint32, newUint64 }
 provide let randomUint32 = () => {
   let buf = Memory.malloc(4n)
 
-  let err = Wasi.random_get(buf, 4n)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.randomGet(buf, 4n)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(buf)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   let rand = WasmI32.load(buf, 0n)
   Memory.free(buf)
@@ -48,10 +49,10 @@ provide let randomUint32 = () => {
 provide let randomUint64 = () => {
   let buf = Memory.malloc(8n)
 
-  let err = Wasi.random_get(buf, 8n)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.randomGet(buf, 8n)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(buf)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   let rand = WasmI64.load(buf, 0n)
   Memory.free(buf)
@@ -67,10 +68,10 @@ provide let randomUint64 = () => {
 provide let random = () => {
   let buf = Memory.malloc(4n)
 
-  let err = Wasi.random_get(buf, 4n)
-  if (err != Wasi._ESUCCESS) {
+  let err = Wasi.randomGet(buf, 4n)
+  if (err != WasiErrors._ESUCCESS) {
     Memory.free(buf)
-    return Err(Wasi.SystemError(tagSimpleNumber(err)))
+    return Err(WasiErrors.SystemError(tagSimpleNumber(err)))
   }
   let rand = WasmI32.load(buf, 0n)
   Memory.free(buf)

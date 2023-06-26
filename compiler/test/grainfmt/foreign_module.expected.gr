@@ -1,0 +1,18 @@
+foreign module FMod binds "foreign_module"
+
+foreign value myVal1 binds "foreign_fn1": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+foreign value myVal2 binds "foreign_fn2": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value myVal3 binds "foreign_fn3": (WasmI32, WasmI32) => WasmI32

@@ -465,8 +465,8 @@ module Toplevel = {
   };
   let include_ = (~loc, ~attributes=?, i) =>
     mk(~loc, ~attributes?, PTopInclude(i));
-  let foreign = (~loc=?, ~attributes=?, e, d) =>
-    mk(~loc?, ~attributes?, PTopForeign(e, d));
+  let foreign_module = (~loc=?, ~attributes=?, e, d) =>
+    mk(~loc?, ~attributes?, PTopForeignModule(e, d));
   let module_ = (~loc, ~attributes=?, e, m) =>
     mk(~loc, ~attributes?, PTopModule(e, m));
   let primitive = (~loc=?, ~attributes=?, e, d) =>
@@ -490,13 +490,13 @@ module PrimitiveDescription = {
 };
 
 module ValueDescription = {
-  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ()) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, ~attributes=?, ~name, ~bind, ~typ, ()) => {
+    let attributes = Option.value(~default=[], attributes);
     {
-      pval_mod: mod_,
       pval_name: name,
-      pval_name_alias: alias,
+      pval_bind: bind,
       pval_type: typ,
+      pval_attributes: attributes,
       pval_loc: loc,
     };
   };
@@ -564,5 +564,16 @@ module LambdaArgument = {
 module ModuleDeclaration = {
   let mk = (~loc, name, stmts) => {
     {pmod_name: name, pmod_stmts: stmts, pmod_loc: loc};
+  };
+};
+
+module ForeignModuleDeclaration = {
+  let mk = (~loc, ~name, ~namespace, ~vds, ()) => {
+    {
+      pfmod_name: name,
+      pfmod_namespace: namespace,
+      pfmod_vds: vds,
+      pfmod_loc: loc,
+    };
   };
 };

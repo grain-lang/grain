@@ -333,8 +333,12 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
     };
   };
 
-  let leave_typed_program = ({signature, statements}) => {
-    ensure_no_escaped_types(signature.cmi_sign, statements);
+  let leave_typed_program = ({signature, module_desc}) => {
+    switch (module_desc) {
+    | TNormalModule(statements) =>
+      ensure_no_escaped_types(signature.cmi_sign, statements)
+    | TForeignModule(_) => ()
+    };
   };
 };
 

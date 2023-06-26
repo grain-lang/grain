@@ -13,18 +13,19 @@ describe("blocks", ({test}) => {
         "module Test; { Foo }",
         {
           module_name: Location.mknoloc("Test"),
-          statements: [
-            Toplevel.expr(
-              Expression.block([
-                Expression.singleton_construct(
-                  ~loc=Location.dummy_loc,
-                  Location.mknoloc(
-                    Identifier.IdentName(Location.mknoloc("Foo")),
+          module_desc:
+            PNormalModule([
+              Toplevel.expr(
+                Expression.block([
+                  Expression.singleton_construct(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc(
+                      Identifier.IdentName(Location.mknoloc("Foo")),
+                    ),
                   ),
-                ),
-              ]),
-            ),
-          ],
+                ]),
+              ),
+            ]),
           comments: [],
           prog_loc: Location.dummy_loc,
         },

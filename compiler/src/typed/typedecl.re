@@ -859,9 +859,7 @@ let transl_data_decl = (env, rec_flag, sdecl_list) => {
 let transl_value_decl = (env, loc, valdecl) => {
   let cty = Typetexp.transl_type_scheme(env, valdecl.pval_type);
   let ty = cty.ctyp_type;
-  let name =
-    Option.value(~default=valdecl.pval_name, valdecl.pval_name_alias).txt;
-  let id = Ident.create(name);
+  let id = Ident.create(valdecl.pval_name.txt);
   let v = {
     val_type: ty,
     val_repr: Type_utils.repr_of_type(env, ty),
@@ -878,8 +876,8 @@ let transl_value_decl = (env, loc, valdecl) => {
 
   let desc = {
     tvd_id: id,
-    tvd_mod: valdecl.pval_mod,
     tvd_name: valdecl.pval_name,
+    tvd_bind: valdecl.pval_bind,
     tvd_desc: cty,
     tvd_val: v,
     tvd_loc: valdecl.pval_loc,

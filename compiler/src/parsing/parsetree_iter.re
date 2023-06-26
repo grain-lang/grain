@@ -11,8 +11,8 @@ type hooks = {
   leave_include: include_declaration => unit,
   enter_provide: list(provide_item) => unit,
   leave_provide: list(provide_item) => unit,
-  enter_foreign: (provide_flag, value_description) => unit,
-  leave_foreign: (provide_flag, value_description) => unit,
+  enter_foreign_module: (provide_flag, foreign_module_declaration) => unit,
+  leave_foreign_module: (provide_flag, foreign_module_declaration) => unit,
   enter_primitive: (provide_flag, primitive_description) => unit,
   leave_primitive: (provide_flag, primitive_description) => unit,
   enter_top_let:
@@ -35,6 +35,8 @@ type hooks = {
   leave_let: (rec_flag, mut_flag, list(value_binding)) => unit,
   enter_value_binding: value_binding => unit,
   leave_value_binding: value_binding => unit,
+  enter_value_description: value_description => unit,
+  leave_value_description: value_description => unit,
   enter_data_declarations: list((provide_flag, data_declaration)) => unit,
   leave_data_declarations: list((provide_flag, data_declaration)) => unit,
   enter_data_declaration: data_declaration => unit,
@@ -81,9 +83,12 @@ let iter_attributes = (hooks, attrs) => {
   List.iter(iter_attribute(hooks), attrs);
 };
 
-let rec iter_parsed_program = (hooks, {statements} as program) => {
+let rec iter_parsed_program = (hooks, {module_desc} as program) => {
   hooks.enter_parsed_program(program);
-  iter_toplevel_stmts(hooks, statements);
+  switch (module_desc) {
+  | PNormalModule(statements) => iter_toplevel_stmts(hooks, statements)
+  | PForeignModule(_, vds) => List.iter(iter_value_description(hooks), vds)
+  };
   hooks.leave_parsed_program(program);
 }
 
@@ -99,7 +104,7 @@ and iter_toplevel_stmt =
   switch (desc) {
   | PTopInclude(id) => iter_include(hooks, id)
   | PTopProvide(ex) => iter_provide(hooks, ex)
-  | PTopForeign(p, vd) => iter_foreign(hooks, p, vd)
+  | PTopForeignModule(p, ds) => iter_foreign_module(hooks, p, ds)
   | PTopPrimitive(p, vd) => iter_primitive(hooks, p, vd)
   | PTopData(dds) => iter_data_declarations(hooks, dds)
   | PTopLet(p, r, m, vbs) => iter_top_let(hooks, p, r, m, vbs)
@@ -136,10 +141,10 @@ and iter_provide = (hooks, items) => {
   hooks.leave_provide(items);
 }
 
-and iter_foreign = (hooks, p, vd) => {
-  hooks.enter_foreign(p, vd);
-  iter_value_description(hooks, vd);
-  hooks.leave_foreign(p, vd);
+and iter_foreign_module = (hooks, p, ds) => {
+  hooks.enter_foreign_module(p, ds);
+  List.iter(iter_value_description(hooks), ds.pfmod_vds);
+  hooks.leave_foreign_module(p, ds);
 }
 
 and iter_primitive = (hooks, p, pd) => {
@@ -149,10 +154,16 @@ and iter_primitive = (hooks, p, pd) => {
 }
 
 and iter_value_description =
-    (hooks, {pval_mod: vmod, pval_name: vname, pval_loc: loc}) => {
+    (
+      hooks,
+      {pval_type: vtype, pval_name: vname, pval_bind: vbind, pval_loc: loc} as vd,
+    ) => {
+  hooks.enter_value_description(vd);
   iter_location(hooks, loc);
-  iter_loc(hooks, vmod);
+  iter_type(hooks, vtype);
   iter_loc(hooks, vname);
+  iter_loc(hooks, vbind);
+  hooks.leave_value_description(vd);
 }
 
 and iter_primitive_description =
@@ -481,8 +492,8 @@ let default_hooks = {
   enter_provide: _ => (),
   leave_provide: _ => (),
 
-  enter_foreign: (_, _) => (),
-  leave_foreign: (_, _) => (),
+  enter_foreign_module: (_, _) => (),
+  leave_foreign_module: (_, _) => (),
 
   enter_primitive: (_, _) => (),
   leave_primitive: (_, _) => (),
@@ -513,6 +524,9 @@ let default_hooks = {
 
   enter_value_binding: _ => (),
   leave_value_binding: _ => (),
+
+  enter_value_description: _ => (),
+  leave_value_description: _ => (),
 
   leave_data_declarations: _ => (),
   enter_data_declarations: _ => (),

@@ -40,18 +40,19 @@ describe("parsing", ({test, testSkip}) => {
       "module Test; a " ++ op ++ " b",
       {
         module_name: Location.mknoloc("Test"),
-        statements: [
-          Toplevel.expr(
-            Expression.apply(
-              Expression.ident(
-                Location.mknoloc(
-                  Identifier.IdentName(Location.mknoloc(op)),
+        module_desc:
+          PNormalModule([
+            Toplevel.expr(
+              Expression.apply(
+                Expression.ident(
+                  Location.mknoloc(
+                    Identifier.IdentName(Location.mknoloc(op)),
+                  ),
                 ),
+                [unlabled_expr(a), unlabled_expr(b)],
               ),
-              [unlabled_expr(a), unlabled_expr(b)],
             ),
-          ),
-        ],
+          ]),
         comments: [],
         prog_loc: Location.dummy_loc,
       },
@@ -109,30 +110,31 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a +++ b *** c",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [
-        Toplevel.expr(
-          Expression.apply(
-            Expression.ident(
-              Location.mknoloc(
-                Identifier.IdentName(Location.mknoloc("+++")),
-              ),
-            ),
-            [
-              unlabled_expr(a),
-              unlabled_expr(
-                Expression.apply(
-                  Expression.ident(
-                    Location.mknoloc(
-                      Identifier.IdentName(Location.mknoloc("***")),
-                    ),
-                  ),
-                  [unlabled_expr(b), unlabled_expr(c)],
+      module_desc:
+        PNormalModule([
+          Toplevel.expr(
+            Expression.apply(
+              Expression.ident(
+                Location.mknoloc(
+                  Identifier.IdentName(Location.mknoloc("+++")),
                 ),
               ),
-            ],
+              [
+                unlabled_expr(a),
+                unlabled_expr(
+                  Expression.apply(
+                    Expression.ident(
+                      Location.mknoloc(
+                        Identifier.IdentName(Location.mknoloc("***")),
+                      ),
+                    ),
+                    [unlabled_expr(b), unlabled_expr(c)],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -142,30 +144,31 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a &&-- b &-- c",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [
-        Toplevel.expr(
-          Expression.apply(
-            Expression.ident(
-              Location.mknoloc(
-                Identifier.IdentName(Location.mknoloc("&&--")),
-              ),
-            ),
-            [
-              unlabled_expr(a),
-              unlabled_expr(
-                Expression.apply(
-                  Expression.ident(
-                    Location.mknoloc(
-                      Identifier.IdentName(Location.mknoloc("&--")),
-                    ),
-                  ),
-                  [unlabled_expr(b), unlabled_expr(c)],
+      module_desc:
+        PNormalModule([
+          Toplevel.expr(
+            Expression.apply(
+              Expression.ident(
+                Location.mknoloc(
+                  Identifier.IdentName(Location.mknoloc("&&--")),
                 ),
               ),
-            ],
+              [
+                unlabled_expr(a),
+                unlabled_expr(
+                  Expression.apply(
+                    Expression.ident(
+                      Location.mknoloc(
+                        Identifier.IdentName(Location.mknoloc("&--")),
+                      ),
+                    ),
+                    [unlabled_expr(b), unlabled_expr(c)],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -175,30 +178,31 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a ||-- b |-- c",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [
-        Toplevel.expr(
-          Expression.apply(
-            Expression.ident(
-              Location.mknoloc(
-                Identifier.IdentName(Location.mknoloc("||--")),
-              ),
-            ),
-            [
-              unlabled_expr(a),
-              unlabled_expr(
-                Expression.apply(
-                  Expression.ident(
-                    Location.mknoloc(
-                      Identifier.IdentName(Location.mknoloc("|--")),
-                    ),
-                  ),
-                  [unlabled_expr(b), unlabled_expr(c)],
+      module_desc:
+        PNormalModule([
+          Toplevel.expr(
+            Expression.apply(
+              Expression.ident(
+                Location.mknoloc(
+                  Identifier.IdentName(Location.mknoloc("||--")),
                 ),
               ),
-            ],
+              [
+                unlabled_expr(a),
+                unlabled_expr(
+                  Expression.apply(
+                    Expression.ident(
+                      Location.mknoloc(
+                        Identifier.IdentName(Location.mknoloc("|--")),
+                      ),
+                    ),
+                    [unlabled_expr(b), unlabled_expr(c)],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -208,30 +212,31 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a << b >> c",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [
-        Toplevel.expr(
-          Expression.apply(
-            Expression.ident(
-              Location.mknoloc(
-                Identifier.IdentName(Location.mknoloc(">>")),
-              ),
-            ),
-            [
-              unlabled_expr(
-                Expression.apply(
-                  Expression.ident(
-                    Location.mknoloc(
-                      Identifier.IdentName(Location.mknoloc("<<")),
-                    ),
-                  ),
-                  [unlabled_expr(a), unlabled_expr(b)],
+      module_desc:
+        PNormalModule([
+          Toplevel.expr(
+            Expression.apply(
+              Expression.ident(
+                Location.mknoloc(
+                  Identifier.IdentName(Location.mknoloc(">>")),
                 ),
               ),
-              unlabled_expr(c),
-            ],
+              [
+                unlabled_expr(
+                  Expression.apply(
+                    Expression.ident(
+                      Location.mknoloc(
+                        Identifier.IdentName(Location.mknoloc("<<")),
+                      ),
+                    ),
+                    [unlabled_expr(a), unlabled_expr(b)],
+                  ),
+                ),
+                unlabled_expr(c),
+              ],
+            ),
           ),
-        ),
-      ],
+        ]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -241,13 +246,16 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; return -1",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [
-        Toplevel.expr(
-          Expression.return(
-            Some(Expression.constant(PConstNumber(PConstNumberInt("-1")))),
+      module_desc:
+        PNormalModule([
+          Toplevel.expr(
+            Expression.return(
+              Some(
+                Expression.constant(PConstNumber(PConstNumberInt("-1"))),
+              ),
+            ),
           ),
-        ),
-      ],
+        ]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -288,7 +296,7 @@ describe("parsing", ({test, testSkip}) => {
     ",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [],
+      module_desc: PNormalModule([]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -320,7 +328,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0ab",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -330,7 +338,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0cb",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -340,7 +348,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0db",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -350,7 +358,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0d\x0ab",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -360,7 +368,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\xc2\x85b",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -370,7 +378,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\xe2\x80\xa8b",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -380,7 +388,7 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\xe2\x80\xa9b",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      module_desc: PNormalModule([Toplevel.expr(a), Toplevel.expr(b)]),
       comments: [],
       prog_loc: Location.dummy_loc,
     },

@@ -6,12 +6,14 @@ from WasmI32 use { (+) }
 include "runtime/unsafe/wasmf64"
 include "runtime/unsafe/memory"
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign module Wasi binds "wasi_snapshot_preview1" {
+  foreign value fdWrite binds "fd_write": (
+    WasmI32,
+    WasmI32,
+    WasmI32,
+    WasmI32,
+  ) => WasmI32
+}
 
 @unsafe
 provide let print = (s: String) => {
@@ -28,7 +30,7 @@ provide let print = (s: String) => {
   WasmI32.store8(lf, 10n, 0n)
   WasmI32.store(iov, lf, 8n)
   WasmI32.store(iov, 1n, 12n)
-  fd_write(1n, iov, 2n, written)
+  Wasi.fdWrite(1n, iov, 2n, written)
   Memory.free(buf)
   void
 }

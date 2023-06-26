@@ -61,10 +61,20 @@ let fix_tyvar_mapper = super => {
   {...super, typ};
 };
 
-let fix_blocks = ({statements} as prog) => {
+let fix_blocks = ({module_desc} as prog) => {
   open Ast_mapper;
   let mapper = default_mapper |> fix_tyvar_mapper;
-  {...prog, statements: List.map(mapper.toplevel(mapper), statements)};
+  let module_desc =
+    switch (module_desc) {
+    | PNormalModule(statements) =>
+      PNormalModule(List.map(mapper.toplevel(mapper), statements))
+    | PForeignModule(namespace, vds) =>
+      PForeignModule(
+        namespace,
+        List.map(mapper.value_description(mapper), vds),
+      )
+    };
+  {...prog, module_desc};
 };
 
 let mkid = ns => {
@@ -107,13 +117,13 @@ let make_module_alias = ident => {
   };
 };
 
-let make_program = (module_name, statements) => {
+let make_program = (module_name, module_desc) => {
   let prog_loc = {
     loc_start: first_loc^.loc_end,
     loc_end: last_loc^.loc_end,
     loc_ghost: false,
   };
-  fix_blocks({module_name, statements, comments: [], prog_loc});
+  fix_blocks({module_name, module_desc, comments: [], prog_loc});
 };
 
 let parse_program = (program, token, lexbuf) => {

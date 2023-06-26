@@ -4903,26 +4903,13 @@ let print_foreign_value_description =
     };
 
   Doc.concat([
+    Doc.text("foreign value "),
     fixed_ident,
-    Doc.text(":"),
+    Doc.text(" binds \""),
+    Doc.text(vd.pval_bind.txt),
+    Doc.text("\":"),
     Doc.space,
     print_type(~original_source, ~comments, vd.pval_type),
-    switch (vd.pval_name_alias) {
-    | None => Doc.space
-    | Some(alias) =>
-      Doc.concat([
-        Doc.space,
-        Doc.text("as"),
-        Doc.space,
-        Doc.text(alias.txt),
-        Doc.space,
-      ])
-    },
-    Doc.text("from"),
-    Doc.space,
-    Doc.text("\""),
-    Doc.text(vd.pval_mod.txt),
-    Doc.text("\""),
   ]);
 };
 
@@ -4962,21 +4949,45 @@ let rec toplevel_print =
     switch (data.ptop_desc) {
     | PTopInclude(include_declaration) =>
       include_print(~comments, ~original_source, include_declaration)
-    | PTopForeign(provide_flag, value_description) =>
+    | PTopForeignModule(provide_flag, module_decl) =>
+      open Parsetree;
       let provide =
         switch (provide_flag) {
         | NotProvided => Doc.nil
         | Provided => Doc.text("provide ")
         | Abstract => Doc.text("abstract ")
         };
+      let after_brace_comments =
+        Comment_utils.get_after_brace_comments(~loc=data.ptop_loc, comments);
+      let get_loc = vd => vd.pval_loc;
+      let print_item = (~comments, vd) =>
+        Doc.group(
+          print_foreign_value_description(~original_source, ~comments, vd),
+        );
+      let print_attribute = vd => print_attributes(vd.pval_attributes);
+
+      let value_descrs =
+        block_item_iterator(
+          ~previous=TopOfFile,
+          ~get_loc,
+          ~print_item,
+          ~comments,
+          ~print_attribute,
+          ~original_source,
+          module_decl.pfmod_vds,
+        );
       Doc.concat([
         provide,
-        Doc.text("foreign wasm "),
-        print_foreign_value_description(
-          ~original_source,
-          ~comments,
-          value_description,
-        ),
+        Doc.text("foreign module "),
+        Doc.text(module_decl.pfmod_name.txt),
+        Doc.text(" binds \""),
+        Doc.text(module_decl.pfmod_namespace.txt),
+        Doc.text("\" "),
+        Doc.lbrace,
+        Comment_utils.single_line_of_comments(after_brace_comments),
+        Doc.indent(Doc.concat([Doc.hardLine, value_descrs])),
+        Doc.hardLine,
+        Doc.rbrace,
       ]);
     | PTopPrimitive(provide_flag, primitive_description) =>
       let provide =
@@ -5230,19 +5241,6 @@ let format_ast =
       ~eol: Fs_access.eol,
       parsed_program: Parsetree.parsed_program,
     ) => {
-  let get_loc = (stmt: Parsetree.toplevel_stmt) => {
-    stmt.ptop_loc;
-  };
-
-  let print_item = (~comments, stmt: Parsetree.toplevel_stmt) => {
-    toplevel_print(~original_source, ~comments, stmt);
-  };
-
-  let get_attributes = (stmt: Parsetree.toplevel_stmt) => {
-    let attributes = stmt.ptop_attributes;
-    print_attributes(attributes);
-  };
-
   let leading_comments =
     Comment_utils.get_comments_before_location(
       ~location=parsed_program.module_name.loc,
@@ -5262,34 +5260,71 @@ let format_ast =
       } else {
         Doc.hardLine;
       },
-      Doc.text("module"),
-      Doc.space,
-      Doc.text(parsed_program.module_name.txt),
+      switch (parsed_program.module_desc) {
+      | PNormalModule(_) =>
+        Doc.concat([
+          Doc.text("module"),
+          Doc.space,
+          Doc.text(parsed_program.module_name.txt),
+        ])
+      | PForeignModule(namespace, _) =>
+        Doc.concat([
+          Doc.text("foreign module"),
+          Doc.space,
+          Doc.text(parsed_program.module_name.txt),
+          Doc.text(" binds \""),
+          Doc.text(namespace.txt),
+          Doc.text("\""),
+        ])
+      },
       Doc.hardLine,
       Doc.hardLine,
     ]);
 
-  // special case where we have no code, we still format the comments
-
   let final_doc =
-    switch (parsed_program.statements) {
-    | [] =>
+    switch (parsed_program.module_desc) {
+    | PNormalModule([]) =>
+      // special case where we have no code, we still format the comments
       Doc.concat([
         module_header,
         Comment_utils.new_comments_to_docs(remaining_comments),
       ])
-    | _ =>
+    | PNormalModule(statements) =>
+      open Parsetree;
+      let get_loc = stmt => stmt.ptop_loc;
+      let print_item = (~comments, stmt) =>
+        toplevel_print(~original_source, ~comments, stmt);
+      let print_attribute = stmt => print_attributes(stmt.ptop_attributes);
+
       let top_level_stmts =
         block_item_iterator(
           ~previous=TopOfFile,
           ~get_loc,
           ~print_item,
           ~comments=remaining_comments,
-          ~print_attribute=get_attributes,
+          ~print_attribute,
           ~original_source,
-          parsed_program.statements,
+          statements,
         );
       Doc.concat([module_header, top_level_stmts, Doc.hardLine]);
+    | PForeignModule(namespace, value_descriptions) =>
+      open Parsetree;
+      let get_loc = vd => vd.pval_loc;
+      let print_item = (~comments, vd) =>
+        print_foreign_value_description(~original_source, ~comments, vd);
+      let print_attribute = vd => print_attributes(vd.pval_attributes);
+
+      let value_descrs =
+        block_item_iterator(
+          ~previous=TopOfFile,
+          ~get_loc,
+          ~print_item,
+          ~comments=remaining_comments,
+          ~print_attribute,
+          ~original_source,
+          value_descriptions,
+        );
+      Doc.concat([module_header, value_descrs, Doc.hardLine]);
     };
 
   Doc.toString(~width=80, ~eol, final_doc);

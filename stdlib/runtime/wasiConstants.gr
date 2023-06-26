@@ -1,0 +1,36 @@
+/* grainc-flags --no-gc */
+module WasiConstants
+
+// clocks
+provide let _CLOCK_REALTIME = 0n
+provide let _CLOCK_MONOTONIC = 1n
+provide let _CLOCK_PROCESS_CPUTIME = 2n
+provide let _CLOCK_THREAD_CPUTIME = 3n
+
+// time
+
+provide let _TIME_SET_ATIM = 1n
+provide let _TIME_SET_ATIM_NOW = 2n
+provide let _TIME_SET_MTIM = 4n
+provide let _TIME_SET_MTIM_NOW = 8n
+
+// lookup flags
+provide let _LOOKUP_FLAG_SYMLINK_FOLLOW = 1n
+
+// open flags
+provide let _OPEN_FLAG_CREAT = 1n
+provide let _OPEN_FLAG_DIRECTORY = 2n
+provide let _OPEN_FLAG_EXCL = 4n
+provide let _OPEN_FLAG_TRUNC = 8n
+
+// fdflags
+provide let _FDFLAG_APPEND = 1n
+provide let _FDFLAG_DSYNC = 2n
+provide let _FDFLAG_NONBLOCK = 4n
+provide let _FDFLAG_RSYNC = 8n
+provide let _FDFLAG_SYNC = 16n
+
+// whence
+provide let _WHENCE_SET = 0n
+provide let _WHENCE_CUR = 1n
+provide let _WHENCE_END = 2n

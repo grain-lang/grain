@@ -2,11 +2,13 @@
 title: Debug
 ---
 
-## Values
+## Debug.Console
 
-Functions and constants included in the Debug module.
+### Values
 
-### Debug.**debug**
+Functions and constants included in the Debug.Console module.
+
+#### Debug.Console.**debug**
 
 ```grain
 debug : a => Void

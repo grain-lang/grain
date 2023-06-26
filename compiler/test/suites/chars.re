@@ -107,12 +107,13 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
           "Test",
           mk_loc("char_loc_simple", (1, 7, 0), (1, 11, 0)),
         ),
-      statements: [
-        char(
-          ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
-          "a",
-        ),
-      ],
+      module_desc:
+        PNormalModule([
+          char(
+            ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
+            "a",
+          ),
+        ]),
       comments: [],
       prog_loc: mk_loc("char_loc_simple", (1, 0, 0), (2, 15, 12)),
     },
@@ -126,12 +127,13 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
           "Test",
           mk_loc("char_loc_code", (1, 7, 0), (1, 11, 0)),
         ),
-      statements: [
-        char(
-          ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
-          "🏴",
-        ),
-      ],
+      module_desc:
+        PNormalModule([
+          char(
+            ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
+            "🏴",
+          ),
+        ]),
       comments: [],
       prog_loc: mk_loc("char_loc_code", (1, 0, 0), (2, 23, 12)),
     },
@@ -145,12 +147,13 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
           "Test",
           mk_loc("char_loc_emoji", (1, 7, 0), (1, 11, 0)),
         ),
-      statements: [
-        char(
-          ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
-          "💯",
-        ),
-      ],
+      module_desc:
+        PNormalModule([
+          char(
+            ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
+            "💯",
+          ),
+        ]),
       comments: [],
       prog_loc: mk_loc("char_loc_emoji", (1, 0, 0), (2, 15, 12)),
     },

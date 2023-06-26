@@ -252,56 +252,57 @@ describe("basic functionality", ({test, testSkip}) => {
         |},
         {
           module_name: Location.mknoloc("Test"),
-          statements: [
-            Toplevel.data([
-              (
-                Asttypes.NotProvided,
-                DataDeclaration.variant(
-                  Location.mknoloc("Caipirinha"),
-                  [],
-                  [
-                    ConstructorDeclaration.singleton(
-                      Location.mknoloc("Cachaça"),
-                    ),
-                    ConstructorDeclaration.singleton(
-                      Location.mknoloc("Sugar"),
-                    ),
-                    ConstructorDeclaration.singleton(
-                      Location.mknoloc("Lime"),
-                    ),
-                  ],
-                ),
-              ),
-            ]),
-            Toplevel.let_(
-              Asttypes.NotProvided,
-              Asttypes.Nonrecursive,
-              Asttypes.Immutable,
-              [
-                ValueBinding.mk(
-                  Pattern.var(Location.mknoloc("pokémon")),
-                  Expression.constant(Constant.string("pikachu")),
-                ),
-              ],
-            ),
-            Toplevel.data([
-              (
-                Asttypes.NotProvided,
-                DataDeclaration.abstract(
-                  Location.mknoloc("Über"),
-                  [],
-                  Some(
-                    Type.constr(
-                      Location.mknoloc(
-                        Identifier.IdentName(Location.mknoloc("Number")),
+          module_desc:
+            PNormalModule([
+              Toplevel.data([
+                (
+                  Asttypes.NotProvided,
+                  DataDeclaration.variant(
+                    Location.mknoloc("Caipirinha"),
+                    [],
+                    [
+                      ConstructorDeclaration.singleton(
+                        Location.mknoloc("Cachaça"),
                       ),
-                      [],
+                      ConstructorDeclaration.singleton(
+                        Location.mknoloc("Sugar"),
+                      ),
+                      ConstructorDeclaration.singleton(
+                        Location.mknoloc("Lime"),
+                      ),
+                    ],
+                  ),
+                ),
+              ]),
+              Toplevel.let_(
+                Asttypes.NotProvided,
+                Asttypes.Nonrecursive,
+                Asttypes.Immutable,
+                [
+                  ValueBinding.mk(
+                    Pattern.var(Location.mknoloc("pokémon")),
+                    Expression.constant(Constant.string("pikachu")),
+                  ),
+                ],
+              ),
+              Toplevel.data([
+                (
+                  Asttypes.NotProvided,
+                  DataDeclaration.abstract(
+                    Location.mknoloc("Über"),
+                    [],
+                    Some(
+                      Type.constr(
+                        Location.mknoloc(
+                          Identifier.IdentName(Location.mknoloc("Number")),
+                        ),
+                        [],
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ]),
             ]),
-          ],
           comments: [],
           prog_loc: Location.dummy_loc,
         },

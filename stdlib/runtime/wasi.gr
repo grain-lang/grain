@@ -1,47 +1,36 @@
 /* grainc-flags --no-gc */
-module Wasi
+foreign module Wasi binds "wasi_snapshot_preview1"
 
-include "runtime/unsafe/wasmi32"
-include "exception"
+foreign value argsGet binds "args_get": (WasmI32, WasmI32) => WasmI32
 
-// env
-provide foreign wasm args_get: (
+foreign value argsSizesGet binds "args_sizes_get": (WasmI32, WasmI32) => WasmI32
+
+foreign value environGet binds "environ_get": (WasmI32, WasmI32) => WasmI32
+
+foreign value environSizesGet binds "environ_sizes_get": (
   WasmI32,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm args_sizes_get: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm environ_get: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm environ_sizes_get: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+) => WasmI32
 
 // proc
-provide foreign wasm proc_exit: WasmI32 => Void from "wasi_snapshot_preview1"
-provide foreign wasm proc_raise: WasmI32 => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm sched_yield: () => WasmI32 from "wasi_snapshot_preview1"
+foreign value procExit binds "proc_exit": WasmI32 => Void
+
+foreign value procRaise binds "proc_raise": WasmI32 => WasmI32
+
+foreign value schedYield binds "sched_yield": () => WasmI32
 
 // random
-provide foreign wasm random_get: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign value randomGet binds "random_get": (WasmI32, WasmI32) => WasmI32
 
 // time
-provide foreign wasm clock_time_get: (
+foreign value clockTimeGet binds "clock_time_get": (
   WasmI32,
   WasmI64,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+) => WasmI32
 
 // file
-provide foreign wasm path_open: (
+foreign value pathOpen binds "path_open": (
   WasmI32,
   WasmI32,
   WasmI32,
@@ -51,29 +40,31 @@ provide foreign wasm path_open: (
   WasmI64,
   WasmI32,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_read: (
+) => WasmI32
+
+foreign value fdRead binds "fd_read": (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_pread: (
+) => WasmI32
+
+foreign value fdPread binds "fd_pread": (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI64,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_prestat_get: (
+) => WasmI32
+
+foreign value fdPrestatGet binds "fd_prestat_get": (WasmI32, WasmI32) => WasmI32
+
+foreign value fdPrestatDirName binds "fd_prestat_dir_name": (
   WasmI32,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_prestat_dir_name: (
   WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+) => WasmI32
+
 /**
  * Invokes the `fd_write` system call.
  *
@@ -83,349 +74,150 @@ provide foreign wasm fd_prestat_dir_name: (
  * @param nwritten: Where to store the number of bytes written
  * @returns The number of bytes written
  */
-provide foreign wasm fd_write: (
+foreign value fdWrite binds "fd_write": (
   WasmI32,
   WasmI32,
   WasmI32,
   WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_pwrite: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI64,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_allocate: (
-  WasmI32,
-  WasmI64,
-  WasmI64,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_close: WasmI32 => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_datasync: WasmI32 => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_sync: WasmI32 => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_fdstat_get: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_fdstat_set_flags: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_fdstat_set_rights: (
-  WasmI32,
-  WasmI64,
-  WasmI64,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_filestat_get: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_filestat_set_size: (
-  WasmI32,
-  WasmI64,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_filestat_set_times: (
-  WasmI32,
-  WasmI64,
-  WasmI64,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_readdir: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI64,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_renumber: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_seek: (
-  WasmI32,
-  WasmI64,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm fd_tell: (
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_create_directory: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_filestat_get: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_filestat_set_times: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI64,
-  WasmI64,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_link: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_symlink: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_unlink_file: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_readlink: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_remove_directory: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
-provide foreign wasm path_rename: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+) => WasmI32
 
-// clocks
-provide let _CLOCK_REALTIME = 0n
-provide let _CLOCK_MONOTONIC = 1n
-provide let _CLOCK_PROCESS_CPUTIME = 2n
-provide let _CLOCK_THREAD_CPUTIME = 3n
+foreign value fdPwrite binds "fd_pwrite": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) => WasmI32
 
-// time
+foreign value fdAllocate binds "fd_allocate": (
+  WasmI32,
+  WasmI64,
+  WasmI64,
+) => WasmI32
 
-provide let _TIME_SET_ATIM = 1n
-provide let _TIME_SET_ATIM_NOW = 2n
-provide let _TIME_SET_MTIM = 4n
-provide let _TIME_SET_MTIM_NOW = 8n
+foreign value fdClose binds "fd_close": WasmI32 => WasmI32
 
-// lookup flags
-provide let _LOOKUP_FLAG_SYMLINK_FOLLOW = 1n
+foreign value fdDatasync binds "fd_datasync": WasmI32 => WasmI32
 
-// open flags
-provide let _OPEN_FLAG_CREAT = 1n
-provide let _OPEN_FLAG_DIRECTORY = 2n
-provide let _OPEN_FLAG_EXCL = 4n
-provide let _OPEN_FLAG_TRUNC = 8n
+foreign value fdSync binds "fd_sync": WasmI32 => WasmI32
 
-// fdflags
-provide let _FDFLAG_APPEND = 1n
-provide let _FDFLAG_DSYNC = 2n
-provide let _FDFLAG_NONBLOCK = 4n
-provide let _FDFLAG_RSYNC = 8n
-provide let _FDFLAG_SYNC = 16n
+foreign value fdFdstatGet binds "fd_fdstat_get": (WasmI32, WasmI32) => WasmI32
 
-// whence
-provide let _WHENCE_SET = 0n
-provide let _WHENCE_CUR = 1n
-provide let _WHENCE_END = 2n
+foreign value fdFdstatSetFlags binds "fd_fdstat_set_flags": (
+  WasmI32,
+  WasmI32,
+) => WasmI32
 
-// error codes
-provide let _ESUCCESS = 0n
-provide let _ETOOBIG = 1n
-provide let _EACCES = 2n
-provide let _EADDRINUSE = 3n
-provide let _EADDRNOTAVAIL = 4n
-provide let _EAFNOSUPPORT = 5n
-provide let _EAGAIN = 6n
-provide let _EALREADY = 7n
-provide let _EBADF = 8n
-provide let _EBADMSG = 9n
-provide let _EBUSY = 10n
-provide let _ECANCELED = 11n
-provide let _ECHILD = 12n
-provide let _ECONNABORTED = 13n
-provide let _ECONNREFUSED = 14n
-provide let _ECONNRESET = 15n
-provide let _EDEADLK = 16n
-provide let _EDESTADDRREQ = 17n
-provide let _EDOM = 18n
-provide let _EDQUOT = 19n
-provide let _EEXIST = 20n
-provide let _EFAULT = 21n
-provide let _EFBIG = 22n
-provide let _EHOSTUNREACH = 23n
-provide let _EIDRM = 24n
-provide let _EILSEQ = 25n
-provide let _EINPROGRESS = 26n
-provide let _EINTR = 27n
-provide let _EINVAL = 28n
-provide let _EIO = 29n
-provide let _EISCONN = 30n
-provide let _EISDIR = 31n
-provide let _ELOOP = 32n
-provide let _EMFILE = 33n
-provide let _EMLINK = 34n
-provide let _EMSGSIZE = 35n
-provide let _EMULTIHOP = 36n
-provide let _ENAMETOOLONG = 37n
-provide let _ENETDOWN = 38n
-provide let _ENETRESET = 39n
-provide let _ENETUNREACH = 40n
-provide let _ENFILE = 41n
-provide let _ENOBUFS = 42n
-provide let _ENODEV = 43n
-provide let _ENOENT = 44n
-provide let _ENOEXEC = 45n
-provide let _ENOLCK = 46n
-provide let _ENOLINK = 47n
-provide let _ENOMEM = 48n
-provide let _ENOMSG = 49n
-provide let _ENOPROTOOPT = 50n
-provide let _ENOSPC = 51n
-provide let _ENOSYS = 52n
-provide let _ENOTCONN = 53n
-provide let _ENOTDIR = 54n
-provide let _ENOTEMPTY = 55n
-provide let _ENOTRECOVERABLE = 56n
-provide let _ENOTSOCK = 57n
-provide let _ENOTSUP = 58n
-provide let _ENOTTY = 59n
-provide let _ENXIO = 60n
-provide let _EOVERFLOW = 61n
-provide let _EOWNERDEAD = 62n
-provide let _EPERM = 63n
-provide let _EPIPE = 64n
-provide let _EPROTO = 65n
-provide let _EPROTONOSUPPORT = 66n
-provide let _EPROTOTYPE = 67n
-provide let _ERANGE = 68n
-provide let _EROFS = 69n
-provide let _ESPIPE = 70n
-provide let _ESRCH = 71n
-provide let _ESTALE = 72n
-provide let _ETIMEDOUT = 73n
-provide let _ETXTBSY = 74n
-provide let _EXDEV = 75n
-provide let _ENOTCAPABLE = 76n
+foreign value fdFdstatSetRights binds "fd_fdstat_set_rights": (
+  WasmI32,
+  WasmI64,
+  WasmI64,
+) => WasmI32
 
-provide exception SystemError(Number)
+foreign value fdFilestatGet binds "fd_filestat_get": (
+  WasmI32,
+  WasmI32,
+) => WasmI32
 
-provide let stringOfSystemError = code => {
-  from WasmI32 use { (==), (>>) }
-  let n = WasmI32.fromGrain(code) >> 1n
-  match (n) {
-    n when n == _ESUCCESS =>
-      "SystemError: No error occurred. System call completed successfully.",
-    n when n == _ETOOBIG => "SystemError: Argument list too long.",
-    n when n == _EACCES => "SystemError: Permission denied.",
-    n when n == _EADDRINUSE => "SystemError: Address in use.",
-    n when n == _EADDRNOTAVAIL => "SystemError: Address not available.",
-    n when n == _EAFNOSUPPORT => "SystemError: Address family not supported.",
-    n when n == _EAGAIN =>
-      "SystemError: Resource unavailable, or operation would block.",
-    n when n == _EALREADY => "SystemError: Connection already in progress.",
-    n when n == _EBADF => "SystemError: Bad file descriptor.",
-    n when n == _EBADMSG => "SystemError: Bad message.",
-    n when n == _EBUSY => "SystemError: Device or resource busy.",
-    n when n == _ECANCELED => "SystemError: Operation canceled.",
-    n when n == _ECHILD => "SystemError: No child processes.",
-    n when n == _ECONNABORTED => "SystemError: Connection aborted.",
-    n when n == _ECONNREFUSED => "SystemError: Connection refused.",
-    n when n == _ECONNRESET => "SystemError: Connection reset.",
-    n when n == _EDEADLK => "SystemError: Resource deadlock would occur.",
-    n when n == _EDESTADDRREQ => "SystemError: Destination address required.",
-    n when n == _EDOM =>
-      "SystemError: Mathematics argument out of domain of function.",
-    n when n == _EDQUOT => "SystemError: Reserved.",
-    n when n == _EEXIST => "SystemError: File exists.",
-    n when n == _EFAULT => "SystemError: Bad address.",
-    n when n == _EFBIG => "SystemError: File too large.",
-    n when n == _EHOSTUNREACH => "SystemError: Host is unreachable.",
-    n when n == _EIDRM => "SystemError: Identifier removed.",
-    n when n == _EILSEQ => "SystemError: Illegal byte sequence.",
-    n when n == _EINPROGRESS => "SystemError: Operation in progress.",
-    n when n == _EINTR => "SystemError: Interrupted function.",
-    n when n == _EINVAL => "SystemError: Invalid argument.",
-    n when n == _EIO => "SystemError: I/O error.",
-    n when n == _EISCONN => "SystemError: Socket is connected.",
-    n when n == _EISDIR => "SystemError: Is a directory.",
-    n when n == _ELOOP => "SystemError: Too many levels of symbolic links.",
-    n when n == _EMFILE => "SystemError: File descriptor value too large.",
-    n when n == _EMLINK => "SystemError: Too many links.",
-    n when n == _EMSGSIZE => "SystemError: Message too large.",
-    n when n == _EMULTIHOP => "SystemError: Reserved.",
-    n when n == _ENAMETOOLONG => "SystemError: Filename too long.",
-    n when n == _ENETDOWN => "SystemError: Network is down.",
-    n when n == _ENETRESET => "SystemError: Connection aborted by network.",
-    n when n == _ENETUNREACH => "SystemError: Network unreachable.",
-    n when n == _ENFILE => "SystemError: Too many files open in system.",
-    n when n == _ENOBUFS => "SystemError: No buffer space available.",
-    n when n == _ENODEV => "SystemError: No such device.",
-    n when n == _ENOENT => "SystemError: No such file or directory.",
-    n when n == _ENOEXEC => "SystemError: Executable file format error.",
-    n when n == _ENOLCK => "SystemError: No locks available.",
-    n when n == _ENOLINK => "SystemError: Reserved.",
-    n when n == _ENOMEM => "SystemError: Not enough space.",
-    n when n == _ENOMSG => "SystemError: No message of the desired type.",
-    n when n == _ENOPROTOOPT => "SystemError: Protocol not available.",
-    n when n == _ENOSPC => "SystemError: No space left on device.",
-    n when n == _ENOSYS => "SystemError: Function not supported.",
-    n when n == _ENOTCONN => "SystemError: The socket is not connected.",
-    n when n == _ENOTDIR =>
-      "SystemError: Not a directory or a symbolic link to a directory.",
-    n when n == _ENOTEMPTY => "SystemError: Directory not empty.",
-    n when n == _ENOTRECOVERABLE => "SystemError: State not recoverable.",
-    n when n == _ENOTSOCK => "SystemError: Not a socket.",
-    n when n == _ENOTSUP =>
-      "SystemError: Not supported, or operation not supported on socket.",
-    n when n == _ENOTTY => "SystemError: Inappropriate I/O control operation.",
-    n when n == _ENXIO => "SystemError: No such device or address.",
-    n when n == _EOVERFLOW =>
-      "SystemError: Value too large to be stored in data type.",
-    n when n == _EOWNERDEAD => "SystemError: Previous owner died.",
-    n when n == _EPERM => "SystemError: Operation not permitted.",
-    n when n == _EPIPE => "SystemError: Broken pipe.",
-    n when n == _EPROTO => "SystemError: Protocol error.",
-    n when n == _EPROTONOSUPPORT => "SystemError: Protocol not supported.",
-    n when n == _EPROTOTYPE => "SystemError: Protocol wrong type for socket.",
-    n when n == _ERANGE => "SystemError: Result too large.",
-    n when n == _EROFS => "SystemError: Read-only file system.",
-    n when n == _ESPIPE => "SystemError: Invalid seek.",
-    n when n == _ESRCH => "SystemError: No such process.",
-    n when n == _ESTALE => "SystemError: Reserved.",
-    n when n == _ETIMEDOUT => "SystemError: Connection timed out.",
-    n when n == _ETXTBSY => "SystemError: Text file busy.",
-    n when n == _EXDEV => "SystemError: Cross-device link.",
-    n when n == _ENOTCAPABLE =>
-      "SystemError: Extension: Capabilities insufficient.",
-    _ => "SystemError: Unknown system error: " ++ toString(code),
-  }
-}
+foreign value fdFilestatSetSize binds "fd_filestat_set_size": (
+  WasmI32,
+  WasmI64,
+) => WasmI32
 
-Exception.registerPrinter(e => {
-  match (e) {
-    SystemError(n) => Some(stringOfSystemError(n)),
-    _ => None,
-  }
-})
+foreign value fdFilestatSetTimes binds "fd_filestat_set_times": (
+  WasmI32,
+  WasmI64,
+  WasmI64,
+  WasmI32,
+) => WasmI32
+
+foreign value fdReaddir binds "fd_readdir": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI32,
+) => WasmI32
+
+foreign value fdRenumber binds "fd_renumber": (WasmI32, WasmI32) => WasmI32
+
+foreign value fdSeek binds "fd_seek": (
+  WasmI32,
+  WasmI64,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value fdTell binds "fd_tell": (WasmI32, WasmI32) => WasmI32
+
+foreign value pathCreateDirectory binds "path_create_directory": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathFilestatGet binds "path_filestat_get": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathFilestatSetTimes binds "path_filestat_set_times": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI64,
+  WasmI64,
+  WasmI32,
+) => WasmI32
+
+foreign value pathLink binds "path_link": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathSymlink binds "path_symlink": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathUnlinkFile binds "path_unlink_file": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathReadlink binds "path_readlink": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathRemoveDirectory binds "path_remove_directory": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32
+
+foreign value pathRename binds "path_rename": (
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+  WasmI32,
+) => WasmI32

@@ -519,12 +519,21 @@ type provide_declaration = {
 [@deriving sexp]
 type value_description = {
   tvd_id: Ident.t,
-  tvd_mod: loc(string),
   tvd_name: loc(string),
+  tvd_bind: loc(string),
   tvd_desc: core_type,
   tvd_val: Types.value_description,
   [@sexp_drop_if sexp_locs_disabled]
   tvd_loc: Location.t,
+};
+
+[@deriving sexp]
+type foreign_module_declaration = {
+  tfmod_id: Ident.t,
+  tfmod_name: loc(string),
+  tfmod_namespace: loc(string),
+  tfmod_vds: list(value_description),
+  tfmod_loc: Location.t,
 };
 
 [@deriving sexp]
@@ -538,7 +547,7 @@ type module_declaration = {
 }
 
 and toplevel_stmt_desc =
-  | TTopForeign(value_description)
+  | TTopForeignModule(foreign_module_declaration)
   | TTopInclude(include_declaration)
   | TTopProvide(list(provide_declaration))
   | TTopData(list(data_declaration))
@@ -572,9 +581,14 @@ type comment =
     | Doc(comment_desc);
 
 [@deriving sexp]
+type toplevel_module_desc =
+  | TNormalModule(list(toplevel_stmt))
+  | TForeignModule(loc(string), list(value_description));
+
+[@deriving sexp]
 type typed_program = {
   module_name: loc(string),
-  statements: list(toplevel_stmt),
+  module_desc: toplevel_module_desc,
   env: Env.t,
   signature: Cmi_format.cmi_infos,
   comments: list(comment),

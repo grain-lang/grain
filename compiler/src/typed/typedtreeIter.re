@@ -51,9 +51,12 @@ module MakeIterator =
        } => {
   let may_iter = Option.iter;
 
-  let rec iter_typed_program = ({statements} as tp) => {
+  let rec iter_typed_program = ({module_desc} as tp) => {
     Iter.enter_typed_program(tp);
-    iter_toplevel_stmts(statements);
+    switch (module_desc) {
+    | TNormalModule(statements) => iter_toplevel_stmts(statements)
+    | TForeignModule(_) => ()
+    };
     Iter.leave_typed_program(tp);
   }
 
@@ -126,7 +129,7 @@ module MakeIterator =
     switch (stmt.ttop_desc) {
     | TTopData(decls) => List.iter(iter_data_declaration, decls)
     | TTopException(_)
-    | TTopForeign(_)
+    | TTopForeignModule(_)
     | TTopInclude(_)
     | TTopProvide(_) => ()
     | TTopModule({tmod_statements}) => iter_toplevel_stmts(tmod_statements)
@@ -141,7 +144,7 @@ module MakeIterator =
       cur =>
         switch (cur.ttop_desc) {
         | TTopException(_)
-        | TTopForeign(_)
+        | TTopForeignModule(_)
         | TTopInclude(_)
         | TTopProvide(_)
         | TTopExpr(_)

@@ -346,21 +346,45 @@ let enrich_type_decls = (anchor, decls, oldenv, newenv) =>
   };
 
 let rec type_module = (~toplevel=false, anchor, env, statements) => {
-  let process_foreign = (env, e, d, attributes, loc) => {
-    let (desc, newenv) = Typedecl.transl_value_decl(env, loc, d);
+  let process_foreign_module = (env, provide_flag, fmd, attributes, loc) => {
+    let (inner_env, vds) =
+      List.fold_left(
+        ((env, vds), vd) => {
+          let (desc, newenv) = Typedecl.transl_value_decl(env, loc, vd);
+          (newenv, [desc, ...vds]);
+        },
+        (env, []),
+        fmd.pfmod_vds,
+      );
+    let vds = List.rev(vds);
+    let mod_signature =
+      List.map(desc => TSigValue(desc.tvd_id, desc.tvd_val), vds);
+    let mod_signature = normalize_signature(inner_env, mod_signature);
+
+    let mod_id = Ident.create(fmd.pfmod_name.txt);
+    let mod_type = TModSignature(mod_signature);
+    let newenv = Env.add_module(mod_id, mod_type, None, loc, env);
+    let mod_decl = Env.find_module(PIdent(mod_id), None, newenv);
     let signature =
-      switch (e) {
-      | Provided => Some(TSigValue(desc.tvd_id, desc.tvd_val))
+      switch (provide_flag) {
+      | Provided => Some(TSigModule(mod_id, mod_decl, TRecNot))
       | NotProvided => None
-      | Abstract => failwith("Impossible: abstract foreign")
+      | Abstract => failwith("Impossible: abstract module")
       };
-    let foreign = {
-      ttop_desc: TTopForeign(desc),
+    let foreign_module = {
+      ttop_desc:
+        TTopForeignModule({
+          tfmod_id: mod_id,
+          tfmod_name: fmd.pfmod_name,
+          tfmod_namespace: fmd.pfmod_namespace,
+          tfmod_vds: vds,
+          tfmod_loc: fmd.pfmod_loc,
+        }),
       ttop_loc: loc,
       ttop_env: env,
       ttop_attributes: Typetexp.type_attributes(attributes),
     };
-    (newenv, signature, foreign);
+    (newenv, signature, foreign_module);
   };
 
   let process_primitive = (env, e, d, attributes, loc) => {
@@ -764,9 +788,9 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
         | PTopProvide(items) =>
           let (sigs, stmts) = process_provide(env, items, attributes, loc);
           (env, List.rev(sigs) @ signatures, List.rev(stmts) @ statements);
-        | PTopForeign(e, d) =>
+        | PTopForeignModule(e, d) =>
           let (new_env, signature, statement) =
-            process_foreign(env, e, d, attributes, loc);
+            process_foreign_module(env, e, d, attributes, loc);
           let signatures =
             switch (signature) {
             | Some(s) => [s, ...signatures]
@@ -1036,7 +1060,26 @@ let type_implementation = prog => {
   let module_name = prog.module_name.txt;
   Env.set_unit((module_name, sourcefile, get_compilation_mode()));
   let initenv = initial_env();
-  let (statements, sg, finalenv) = type_module(initenv, prog.statements);
+  let (module_desc, sg, finalenv) =
+    switch (prog.module_desc) {
+    | PNormalModule(statements) =>
+      let (statements, sg, finalenv) = type_module(initenv, statements);
+      (TNormalModule(statements), sg, finalenv);
+    | PForeignModule(namespace, vds) =>
+      let (finalenv, vds) =
+        List.fold_left(
+          ((env, vds), vd) => {
+            let (desc, newenv) =
+              Typedecl.transl_value_decl(env, vd.pval_loc, vd);
+            (newenv, [desc, ...vds]);
+          },
+          (initenv, []),
+          vds,
+        );
+      let vds = List.rev(vds);
+      let sg = List.map(desc => TSigValue(desc.tvd_id, desc.tvd_val), vds);
+      (TForeignModule(namespace, vds), sg, finalenv);
+    };
   let simple_sg = simplify_signature(sg);
   let filename = sourcefile; // TODO(1396): Don't use filepath as filename
 
@@ -1049,7 +1092,7 @@ let type_implementation = prog => {
     Env.build_signature(normalized_sig, module_name, filename, type_metadata);
   {
     module_name: prog.module_name,
-    statements,
+    module_desc,
     env: finalenv,
     signature,
     comments: prog.comments,
