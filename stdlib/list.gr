@@ -460,6 +460,7 @@ provide let rec flatten = list => {
  * @throws Failure(String): When `index` is more than 0 and greater than the list size
  *
  * @since v0.1.0
+ * @history v0.6.0: Swapped order of `index` and `value` parameters
  */
 provide let rec insert = (index, value, list) => {
   if (index < 0) {
