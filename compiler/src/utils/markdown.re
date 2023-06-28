@@ -15,37 +15,60 @@ let code = code => {
   Format.sprintf("`%s`", code);
 };
 
-let table = (~headers: list(string), rows) => {
+let table = (~nested=false, ~headers: list(string), rows) => {
   let header_len = List.length(headers);
   let all_match = List.for_all(row => List.length(row) == header_len, rows);
   if (all_match) {
-    let header = String.concat("|", headers);
-    let separator =
-      String.concat(
-        "|",
-        List.init(
-          header_len,
-          idx => {
-            let len = List.nth(headers, idx) |> String.length;
-            String.init(len, _ => '-');
-          },
-        ),
-      );
-    let body =
+    let rows =
       List.map(
         row =>
-          Format.sprintf(
-            "|%s|",
-            Str.global_replace(
-              Str.regexp("\n"),
-              "<br />",
-              String.concat("|", row),
-            ),
+          List.map(
+            cell => Str.global_replace(Str.regexp("\n"), "<br />", cell),
+            row,
           ),
         rows,
-      )
-      |> String.concat("\n");
-    Format.sprintf("|%s|\n|%s|\n%s\n\n", header, separator, body);
+      );
+    if (nested) {
+      let header =
+        List.map(Format.sprintf("<th>%s</th>"), headers)
+        |> String.concat("")
+        |> Format.sprintf("<tr>%s</tr>");
+      let body =
+        List.map(
+          row =>
+            List.map(cell => Format.sprintf("<td>%s</td>", cell), row)
+            |> String.concat("")
+            |> Format.sprintf("<tr>%s</tr>"),
+          rows,
+        )
+        |> String.concat("");
+
+      Format.sprintf(
+        "<table><thead>%s</thead><tbody>%s</tbody></table>\n\n",
+        header,
+        body,
+      );
+    } else {
+      let header = String.concat("|", headers);
+      let separator =
+        String.concat(
+          "|",
+          List.init(
+            header_len,
+            idx => {
+              let len = List.nth(headers, idx) |> String.length;
+              String.init(len, _ => '-');
+            },
+          ),
+        );
+      let body =
+        List.map(
+          row => Format.sprintf("|%s|", String.concat("|", row)),
+          rows,
+        )
+        |> String.concat("\n");
+      Format.sprintf("|%s|\n|%s|\n%s\n\n", header, separator, body);
+    };
   } else {
     failwith("Your rows didn't all have the correct length");
   };

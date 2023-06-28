@@ -27,6 +27,19 @@ provide enum E {
    * Another variant
    */
   Variant2(String, Number),
+  /**
+   * Record variant
+   */
+  Variant3{
+    /**
+     * Record field a
+     */
+    a: Number,
+    /**
+     * Function
+     */
+    f: Number => Number,
+  },
 }
 
 /**

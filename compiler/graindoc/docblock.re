@@ -30,9 +30,26 @@ type throw = {
 
 type example = {example_txt: string};
 
+type record_field_info = {
+  field_name: string,
+  field_description: string,
+  field_type: Types.type_expr,
+};
+
+type variant_data =
+  | SingletonVariant
+  | TupleVariant(list(Types.type_expr))
+  | RecordVariant(list(record_field_info));
+
+type variant_info = {
+  variant_name: string,
+  variant_description: string,
+  variant_data,
+};
+
 type compound_type_descrs =
-  | RecordFields(list((string, string)))
-  | Variants(list((string, string)))
+  | RecordFields(list(record_field_info))
+  | Variants(list(variant_info))
   | NonCompound;
 
 type t =
@@ -225,22 +242,48 @@ let output_for_throws = throws => {
   |> String.concat("");
 };
 
-let output_for_variants = variants => {
+let output_for_record_fields = (~nested=false, fields) => {
   Markdown.table(
-    ~headers=["variant name", "description"],
+    ~nested,
+    ~headers=["name", "type", "description"],
     List.map(
-      ((name, description)) => {[Markdown.code(name), description]},
-      variants,
+      ({field_name: name, field_description: description, field_type: typ}) => {
+        [
+          Markdown.code(name),
+          Markdown.code(Printtyp.string_of_type_sch(typ)),
+          description,
+        ]
+      },
+      fields,
     ),
   );
 };
 
-let output_for_record_fields = fields => {
+let output_for_variants = variants => {
   Markdown.table(
-    ~headers=["field name", "description"],
+    ~headers=["name", "data", "description"],
     List.map(
-      ((name, description)) => {[Markdown.code(name), description]},
-      fields,
+      (
+        {
+          variant_name: name,
+          variant_description: description,
+          variant_data: data,
+        },
+      ) => {
+        let data_str =
+          switch (data) {
+          | TupleVariant(typs) =>
+            Markdown.code(
+              Printtyp.string_of_type_sch(
+                Types.{desc: TTyTuple(typs), level: (-1), id: (-1)},
+              ),
+            )
+          | RecordVariant(rfs) => output_for_record_fields(~nested=true, rfs)
+          | SingletonVariant => ""
+          };
+        [Markdown.code(name), data_str, description];
+      },
+      variants,
     ),
   );
 };
@@ -462,9 +505,9 @@ let for_type_declaration =
   let comment =
     Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
 
-  let extract_compound_type_descrs = data => {
+  let extract_compound_type_descrs = (datas, mk_type_descr) => {
     List.filter_map(
-      ((loc: Warnings.loc, id)) => {
+      ((data, loc: Warnings.loc, id)) => {
         let comment =
           Comments.Doc.ending_on(
             ~lnum=loc.loc_start.pos_lnum - 1,
@@ -473,7 +516,8 @@ let for_type_declaration =
           );
         switch (comment) {
         | Some((_, Some(description), [])) =>
-          Some((id.Ident.name, description))
+          // Some((id.Ident.name, description))
+          Some(mk_type_descr(data, description))
         | Some((_, _, [attr, ..._])) =>
           raise(
             InvalidAttribute({
@@ -484,24 +528,39 @@ let for_type_declaration =
         | _ => None
         };
       },
-      data,
+      datas,
     );
   };
 
+  let extract_record_descrs = rfs =>
+    extract_compound_type_descrs(
+      List.map(rf => (rf, rf.Types.rf_loc, rf.rf_name), rfs), (rf, desc) =>
+      {
+        field_name: rf.rf_name.name,
+        field_description: desc,
+        field_type: rf.rf_type,
+      }
+    );
+
+  let extract_variant_descrs = cds =>
+    extract_compound_type_descrs(
+      List.map(cd => (cd, cd.Types.cd_loc, cd.cd_id), cds), (cd, desc) =>
+      {
+        variant_name: cd.cd_id.name,
+        variant_description: desc,
+        variant_data:
+          switch (cd.cd_args) {
+          | TConstrTuple(typs) => TupleVariant(typs)
+          | TConstrRecord(rfs) => RecordVariant(extract_record_descrs(rfs))
+          | TConstrSingleton => SingletonVariant
+          },
+      }
+    );
+
   let compound_type_descrs =
     switch (td.type_kind) {
-    | TDataVariant(cds) =>
-      Variants(
-        extract_compound_type_descrs(
-          List.map(cd => (cd.Types.cd_loc, cd.cd_id), cds),
-        ),
-      )
-    | TDataRecord(rfs) =>
-      RecordFields(
-        extract_compound_type_descrs(
-          List.map(rf => (rf.Types.rf_loc, rf.rf_name), rfs),
-        ),
-      )
+    | TDataVariant(cds) => Variants(extract_variant_descrs(cds))
+    | TDataRecord(rfs) => RecordFields(extract_record_descrs(rfs))
     | _ => NonCompound
     };
 
