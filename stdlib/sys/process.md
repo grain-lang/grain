@@ -55,34 +55,34 @@ Signals that can be sent to the host system.
 
 Variants:
 
-|variant name|description|
-|------------|-----------|
-|`HUP`|Hangup.|
-|`INT`|Terminate interrupt signal.|
-|`QUIT`|Terminal quit signal.|
-|`ILL`|Illegal instruction.|
-|`TRAP`|Trace/breakpoint trap.|
-|`ABRT`|Process abort signal.|
-|`BUS`|Access to an undefined portion of a memory object.|
-|`FPE`|Erroneous arithmetic operation.|
-|`KILL`|Kill.|
-|`USR1`|User-defined signal 1.|
-|`SEGV`|Invalid memory reference.|
-|`USR2`|User-defined signal 2.|
-|`PIPE`|Write on a pipe with no one to read it.|
-|`ALRM`|Alarm clock.|
-|`TERM`|Termination signal.|
-|`CHLD`|Child process terminated, stopped, or continued.|
-|`CONT`|Continue executing, if stopped.|
-|`STOP`|Stop executing.|
-|`TSTP`|Terminal stop signal.|
-|`TTIN`|Background process attempting read.|
-|`TTOU`|Background process attempting write.|
-|`URG`|High bandwidth data is available at a socket.|
-|`XCPU`|CPU time limit exceeded.|
-|`XFSZ`|File size limit exceeded.|
-|`VTALRM`|Virtual timer expired.|
-|`SYS`|Bad system call.|
+|name|data|description|
+|----|----|-----------|
+|`HUP`||Hangup.|
+|`INT`||Terminate interrupt signal.|
+|`QUIT`||Terminal quit signal.|
+|`ILL`||Illegal instruction.|
+|`TRAP`||Trace/breakpoint trap.|
+|`ABRT`||Process abort signal.|
+|`BUS`||Access to an undefined portion of a memory object.|
+|`FPE`||Erroneous arithmetic operation.|
+|`KILL`||Kill.|
+|`USR1`||User-defined signal 1.|
+|`SEGV`||Invalid memory reference.|
+|`USR2`||User-defined signal 2.|
+|`PIPE`||Write on a pipe with no one to read it.|
+|`ALRM`||Alarm clock.|
+|`TERM`||Termination signal.|
+|`CHLD`||Child process terminated, stopped, or continued.|
+|`CONT`||Continue executing, if stopped.|
+|`STOP`||Stop executing.|
+|`TSTP`||Terminal stop signal.|
+|`TTIN`||Background process attempting read.|
+|`TTOU`||Background process attempting write.|
+|`URG`||High bandwidth data is available at a socket.|
+|`XCPU`||CPU time limit exceeded.|
+|`XFSZ`||File size limit exceeded.|
+|`VTALRM`||Virtual timer expired.|
+|`SYS`||Bad system call.|
 
 ## Values
 

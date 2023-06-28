@@ -19,12 +19,12 @@ record Decimal {
 
 Fields:
 
-|field name|description|
-|----------|-----------|
-|`numDigits`|The number of significant digits in the decimal.|
-|`decimalPoint`|The offset of the decimal point in the significant digits.|
-|`truncated`|If the number of significant digits stored in the decimal is truncated.|
-|`digits`|Buffer of the raw digits, in the range [0, 9].|
+|name|type|description|
+|----|----|-----------|
+|`numDigits`|`Int32`|The number of significant digits in the decimal.|
+|`decimalPoint`|`Int32`|The offset of the decimal point in the significant digits.|
+|`truncated`|`Bool`|If the number of significant digits stored in the decimal is truncated.|
+|`digits`|`Bytes`|Buffer of the raw digits, in the range [0, 9].|
 
 ## Values
 

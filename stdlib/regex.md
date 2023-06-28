@@ -46,13 +46,13 @@ the following accessors:
 
 Fields:
 
-|field name|description|
-|----------|-----------|
-|`group`|Returns the contents of the given group. Note that group 0 contains<br />the entire matched substring, and group 1 contains the first parenthesized group.|
-|`groupPosition`|Returns the position of the given group|
-|`numGroups`|Returns the number of defined groups in this match object (includes group 0)|
-|`allGroups`|Returns the contents of all groups matched in this match object|
-|`allGroupPositions`|Returns the positions of all groups matched in this match object|
+|name|type|description|
+|----|----|-----------|
+|`group`|`Number => Option<String>`|Returns the contents of the given group. Note that group 0 contains<br />the entire matched substring, and group 1 contains the first parenthesized group.|
+|`groupPosition`|`Number => Option<(Number, Number)>`|Returns the position of the given group|
+|`numGroups`|`Number`|Returns the number of defined groups in this match object (includes group 0)|
+|`allGroups`|`() => Array<Option<String>>`|Returns the contents of all groups matched in this match object|
+|`allGroupPositions`|`() => Array<Option<(Number, Number)>>`|Returns the positions of all groups matched in this match object|
 
 ## Values
 
