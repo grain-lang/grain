@@ -652,19 +652,19 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
             ],
           );
         | PProvideType({name: {txt: IdentName(name)}, alias, loc}) =>
-          let (type_id, _) = Typetexp.find_type(env, loc, IdentName(name));
-          switch (alias) {
-          | Some({txt: IdentName(alias)}) =>
-            type_export_aliases :=
-              [
-                (type_id, PIdent(Ident.create(alias.txt))),
-                ...type_export_aliases^,
-              ]
-          | Some(_) => failwith("Impossible: invalid alias")
-          | None => ()
-          };
-          let type_ = Env.find_type(type_id, env);
-          ([TSigType(Path.head(type_id), type_, TRecNot), ...sigs], stmts);
+          let (type_path, type_) =
+            Typetexp.find_type(env, loc, IdentName(name));
+          let id =
+            switch (alias) {
+            | Some({txt: IdentName(alias)}) =>
+              let id = Ident.create(alias.txt);
+              type_export_aliases :=
+                [(type_path, PIdent(id)), ...type_export_aliases^];
+              id;
+            | Some(_) => failwith("Impossible: invalid alias")
+            | None => Ident.create(Path.last(type_path))
+            };
+          ([TSigType(id, type_, TRecNot), ...sigs], stmts);
         | PProvideModule({name: {txt: IdentName(name)}, alias, loc}) =>
           let (mod_path, mod_decl) =
             Typetexp.find_module(env, loc, IdentName(name));
@@ -934,7 +934,11 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
       switch (get_alias(type_export_aliases^, PIdent(id))) {
       | None => TSigType(id, resolve_type_decl(decl), rs)
       | Some((name, alias)) =>
-        TSigType(Path.head(alias), resolve_type_decl(decl), rs)
+        TSigType(
+          Ident.create(Path.last(alias)),
+          resolve_type_decl(decl),
+          rs,
+        )
       }
     | TSigValue(id, {val_type, val_kind} as vd) =>
       let val_kind =
