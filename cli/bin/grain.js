@@ -107,6 +107,7 @@ class GrainCommand extends commander.Command {
     );
     cmd.forwardOption("--import-memory", "import the memory from `env.memory`");
     cmd.option("--dir <dir...>", "directory to preopen");
+    cmd.option("--env <env...>", "WASI environment variables");
     cmd.forwardOption(
       "--compilation-mode <mode>",
       "compilation mode (advanced use only)"
@@ -164,6 +165,13 @@ class GrainCommand extends commander.Command {
   }
 }
 
+let endOptsI = process.argv.findIndex((x) => x === "--");
+if (endOptsI === -1) {
+  endOptsI = Infinity;
+}
+const argsToProcess = process.argv.slice(0, endOptsI);
+const unprocessedArgs = process.argv.slice(endOptsI + 1);
+
 const program = new GrainCommand();
 
 program
@@ -178,11 +186,8 @@ program
   .forwardOption("-o <filename>", "output filename")
   .action(function (file, options, program) {
     exec.grainc(file, options, program);
-    if (options.o) {
-      exec.grainrun(options.o, options, program);
-    } else {
-      exec.grainrun(file.replace(/\.gr$/, ".gr.wasm"), options, program);
-    }
+    const outFile = options.o ?? file.replace(/\.gr$/, ".gr.wasm");
+    exec.grainrun(unprocessedArgs, outFile, options, program);
   });
 
 program
@@ -195,7 +200,7 @@ program
 program
   .command("run <file>")
   .description("run a wasm file via grain's WASI runner")
-  .action(exec.grainrun);
+  .action((...args) => exec.grainrun(unprocessedArgs, ...args));
 
 program
   .command("lsp")
@@ -218,4 +223,4 @@ program
   .forwardOption("-o <file|dir>", "output file or directory")
   .action(exec.grainformat);
 
-program.parse(process.argv);
+program.parse(argsToProcess);

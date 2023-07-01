@@ -152,6 +152,11 @@ provide let env = () => {
   let envc = WasmI32.load(envcPtr, 0n)
   let envvBufSize = WasmI32.load(envvBufSizePtr, 0n)
 
+  if (WasmI32.eqz(envc)) {
+    Memory.free(envcPtr)
+    return Ok([>]: Array<String>)
+  }
+
   let envvPtr = Memory.malloc(envc * 4n)
   let envvBufPtr = Memory.malloc(envvBufSize)
 

@@ -122,20 +122,37 @@ function getGrainrun() {
 
 const grainrun = getGrainrun();
 
-function execGrainrun(file, options, program, execOpts = { stdio: "inherit" }) {
+function execGrainrun(
+  unprocessedArgs,
+  file,
+  options,
+  program,
+  execOpts = { stdio: "inherit" }
+) {
   const preopens = {};
   options.dir?.forEach((preopen) => {
     const [guestDir, hostDir = guestDir] = preopen.split("=");
     preopens[guestDir] = hostDir;
   });
 
+  const cliEnv = {};
+  options.env?.forEach((env) => {
+    const [name, ...rest] = env.split("=");
+    const val = rest.join("=");
+    cliEnv[name] = val;
+  });
+
   const env = {
+    ENV_VARS: JSON.stringify(cliEnv),
     PREOPENS: JSON.stringify(preopens),
     NODE_OPTIONS: `--experimental-wasi-unstable-preview1 --no-warnings`,
   };
 
   try {
-    execSync(`${grainrun} ${file}`, { ...execOpts, env });
+    execSync(`${grainrun} ${file} ${unprocessedArgs.join(" ")}`, {
+      ...execOpts,
+      env,
+    });
   } catch (e) {
     process.exit(e.status);
   }

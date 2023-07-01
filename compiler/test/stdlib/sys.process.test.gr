@@ -11,7 +11,7 @@ match (Process.argv()) {
 
 // Just a smoke test
 match (Process.env()) {
-  Ok(arr) => assert Array.length(arr) > 0,
+  Ok(arr) => assert Array.length(arr) == 0,
   Err(err) => throw err,
 }
 

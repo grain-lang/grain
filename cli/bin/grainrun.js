@@ -17,13 +17,11 @@ const { WASI } = require("wasi");
 const { argv, env } = require("process");
 
 const preopens = JSON.parse(env.PREOPENS);
-
-delete env.PREOPENS;
-delete env.NODE_OPTIONS;
+const envVars = JSON.parse(env.ENV_VARS);
 
 const wasi = new WASI({
   args: argv.slice(2),
-  env,
+  env: envVars,
   preopens,
 });
 
