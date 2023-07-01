@@ -57,7 +57,7 @@ Stack.push(0, stack2)
 assert stack == stack2
 
 module Immutable {
-  from Stack use { Immutable as Stack }
+  from Stack use { module Immutable as Stack }
 
   // 1 <- 2 <- 3
   let sampleStack = Stack.push(3, Stack.push(2, Stack.push(1, Stack.empty)))

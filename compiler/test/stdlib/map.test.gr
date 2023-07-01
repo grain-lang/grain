@@ -413,7 +413,7 @@ Map.update(
 assert Map.contains("c", toUpdate) == false
 
 module Immutable {
-  from Map use { Immutable as Map }
+  from Map use { module Immutable as Map }
 
   let strKeys = Map.fromList([("🌾", 1), ("🐑", 2), ("🧱", 3)])
   let numKeys = Map.fromList([(1, "🌾"), (2, "🐑"), (3, "🧱")])

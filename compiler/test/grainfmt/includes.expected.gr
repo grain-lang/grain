@@ -9,10 +9,15 @@ include "option" as Opt
 include "array"
 include "array" as Foo
 from List use { length, map, forEach as each }
-from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
+from Opt use {
+  module MutableOpt,
+  module ImmutableOpt as Imm,
+  type Opt,
+  type Opt as OptAlias,
+}
 from Opt use { /* comment1 */ /* comment2 */ /* comment3 */ /* comment4 */ /* comment5 */ /* comment6 */ /* comment7 */
-  MutableOpt,
-  ImmutableOpt as Imm,
+  module MutableOpt,
+  module ImmutableOpt as Imm,
   type Opt,
   type Opt as OptAlias,
 }

@@ -92,7 +92,7 @@ describe("modules", ({test, testSkip}) => {
           provide let foo = "foo2"
         }
       }
-      from Foo use { foo, type Foo, Foo }
+      from Foo use { foo, type Foo, module Foo }
       print(foo)
       print(Foo.foo)
       print(Foo)
@@ -137,7 +137,7 @@ describe("modules", ({test, testSkip}) => {
       module ReprovidedSimple
 
       include "simpleModule"
-      provide { Simple }
+      provide { module Simple }
       |},
     );
     let ic = open_in_bin(outfile);

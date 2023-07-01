@@ -88,7 +88,7 @@ assert Queue.pop(queue) == Some(10)
 assert Queue.pop(queue) == None
 
 module Immutable {
-  from Queue use { Immutable as Queue }
+  from Queue use { module Immutable as Queue }
 
   // 1 <- 2 <- 3
   let sampleQueue = Queue.push(3, Queue.push(2, Queue.push(1, Queue.empty)))

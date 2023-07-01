@@ -7,7 +7,7 @@ module Foo {
   provide let foo = "hello from foo"
   provide module Bar {
     provide let bar = "hello from bar"
-    provide { List }
+    provide { module List }
   }
 }
 

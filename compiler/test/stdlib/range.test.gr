@@ -47,7 +47,7 @@ assert Range.map(toString, exclusiveDescendingRange) == ["5", "4", "3", "2"]
 assert Range.map(toString, exclusiveSameRange) == []
 
 module Inclusive {
-  from Range use { Inclusive as Range }
+  from Range use { module Inclusive as Range }
 
   let inclusiveAscendingRange = { rangeStart: 1, rangeEnd: 5 }
   let inclusiveDescendingRange = { rangeStart: 5, rangeEnd: 1 }

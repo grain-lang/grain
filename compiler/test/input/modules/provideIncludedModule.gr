@@ -3,13 +3,13 @@ module ProvideIncludedModule
 include "option" as Option
 include "array" as Array
 
-provide { Option as Smoption }
+provide { module Option as Smoption }
 
 module Qux {
   provide let val = 9
   provide module Quux {
-    provide { Array }
+    provide { module Array }
   }
 }
 
-provide { Qux }
+provide { module Qux }

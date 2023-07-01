@@ -3956,8 +3956,9 @@ and print_expression_inner =
               };
 
               switch (item) {
-              | PUseValue({name, alias})
-              | PUseModule({name, alias}) => item_name(name, alias)
+              | PUseValue({name, alias}) => item_name(name, alias)
+              | PUseModule({name, alias}) =>
+                Doc.concat([Doc.text("module "), item_name(name, alias)])
               | PUseType({name, alias}) =>
                 Doc.concat([Doc.text("type "), item_name(name, alias)])
               };
@@ -5106,8 +5107,9 @@ let rec toplevel_print =
             };
 
             switch (item) {
-            | PProvideValue({name, alias})
-            | PProvideModule({name, alias}) => item_name(name, alias)
+            | PProvideValue({name, alias}) => item_name(name, alias)
+            | PProvideModule({name, alias}) =>
+              Doc.concat([Doc.text("module "), item_name(name, alias)])
             | PProvideType({name, alias}) =>
               Doc.concat([Doc.text("type "), item_name(name, alias)])
             };

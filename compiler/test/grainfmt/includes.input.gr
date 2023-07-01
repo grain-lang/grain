@@ -10,8 +10,8 @@ include "option" as
 include /* special include */ "array"
 include "array" as  /* special include */ Foo
 from List use { length, map, forEach as each }
-from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
-from Opt use { MutableOpt, /* comment1 */ ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias }
+from Opt use { module MutableOpt, module ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
+from Opt use { module MutableOpt, /* comment1 */ module ImmutableOpt /* comment2 */ as /* comment3 */ Imm /* comment4 */, /* comment5 */ type /* comment6 */ Opt, type Opt as /* comment7 */ OptAlias }
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use { 
