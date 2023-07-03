@@ -215,7 +215,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (queue: Queue<a>) -> List<a>
+toList : (queue: Queue<a>) => List<a>
 ```
 
 Converts a queue into a list of its elements.
@@ -240,7 +240,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) -> Queue<a>
+fromList : (list: List<a>) => Queue<a>
 ```
 
 Creates a queue from a list.
@@ -595,7 +595,7 @@ No other changes yet.
 </details>
 
 ```grain
-toList : (queue: ImmutableQueue<a>) -> List<a>
+toList : (queue: ImmutableQueue<a>) => List<a>
 ```
 
 Converts a queue into a list of its elements.
@@ -620,7 +620,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromList : (list: List<a>) -> ImmutableQueue<a>
+fromList : (list: List<a>) => ImmutableQueue<a>
 ```
 
 Creates a queue from a list.
