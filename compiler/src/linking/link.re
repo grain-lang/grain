@@ -732,6 +732,7 @@ let link_all = (linked_mod, dependencies, signature) => {
     "memory",
     data_segments,
     false,
+    false,
     Comp_utils.grain_memory,
   );
   if (Config.import_memory^) {

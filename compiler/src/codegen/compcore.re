@@ -3525,6 +3525,7 @@ let compile_wasm_module = (~env=?, ~name=?, prog) => {
       "memory",
       [],
       false,
+      false,
       grain_memory,
     );
 
