@@ -58,6 +58,7 @@
     "@reason-native/rely": "^4.0.0"
   },
   "resolutions": {
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#ae0636fc48cbf89c434fbe8c898f8ce1c1caf617",
     "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
     "@opam/dune": "3.9.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
