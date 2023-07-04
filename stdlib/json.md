@@ -21,33 +21,27 @@ enum Json {
 }
 ```
 
-Data structure representing the result of parsing and the input of printing
-JSON.
+Data structure representing the result of parsing and the input of printing JSON.
 
-For example this object
+Examples:
+
 ```grain
-JsonObject([
+Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
   ("currency", JsonString("€")),
   ("price", JsonNumber(99.99)),
 ])
 ```
-is equivalent to the following JSON:
-```json
-{"currency":"€","price":99.99}
-```
+
+```grain
+Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
+  ("currency", JsonString("€")),
+  ("price", JsonNumber(99.99)),
+])
 
 This data structure is semantically equivalent to the JSON format allowing
 mostly lossless round trips of printing and parsing. Exceptions to this are
 whitespace, multiple ways JSON allows escaping characters in strings, and
 some edge cases related to Grain's `Number` type.
-
-For example parsing the following JSON text will also result in the same
-`JSON` object as above.
-```json
-{
-  "currency": "\u20ac",
-  "price": 99.99
-}
 ```
 
 ### Json.**JsonToStringError**
@@ -58,7 +52,7 @@ enum JsonToStringError {
 }
 ```
 
-Represents errors for cases when a `JSON` object cannot be represente in the
+Represents errors for cases where a `JSON` object cannot be represented in the
 JSON format along with a human readable text message. This can happen when
 it contains number values `NaN`, `Infinity` or `-Infinity`.
 
@@ -114,6 +108,7 @@ charactes for illustrative purposes.
 ```grain
 enum ArrayFormat {
   CompactArrayEntries,
+  SpacedArrayEntries,
   OneArrayEntryPerLine,
 }
 ```
@@ -121,11 +116,24 @@ enum ArrayFormat {
 Controls how arrays are printed in custom formatting.
 
 Following examples have whitespaces and line breaks replaced with visible
-charactes for illustrative purposes.
+characters for illustrative purposes.
 
 `CompactArrayEntries`
 ```
 []
+```
+
+```
+[1]
+```
+
+```
+[1,2,3]
+```
+
+`SpacedArrayEntries`
+```
+[ ]
 ```
 
 ```
@@ -160,6 +168,7 @@ charactes for illustrative purposes.
 ```grain
 enum ObjectFormat {
   CompactObjectEntries,
+  SpacedObjectEntries,
   OneObjectEntryPerLine,
 }
 ```
@@ -167,7 +176,7 @@ enum ObjectFormat {
 Controls how objects are printed in custom formatting.
 
 Following examples have whitespaces and line breaks replaced with visible
-charactes for illustrative purposes.
+characters for illustrative purposes.
 
 `CompactObjectEntries`
 ```
@@ -180,6 +189,19 @@ charactes for illustrative purposes.
 
 ```
 {"a":1,"b":2,"c":3}
+```
+
+`SpacedObjectEntries`
+```
+{ }
+```
+
+```
+{"a": 1}
+```
+
+```
+{"a": 1, "b": 2, "c": 3}
 ```
 
 `OneObjectEntryPerLine`
@@ -371,7 +393,7 @@ No other changes yet.
 
 ```grain
 toString :
-  (?format: FormattingChoices, json: Json) ->
+  (?format: FormattingChoices, json: Json) =>
    Result<String, JsonToStringError>
 ```
 
@@ -394,53 +416,44 @@ Examples:
 
 ```grain
 print(
-  Result.unwrap(
-    toString(
-      format=Custom(defaultCompactAndSafeFormat),
-      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-    )
+  toString(
+    format=Custom(defaultCompactAndSafeFormat),
+    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
   )
 )
-// Output: {"currency":"\u20ac","price":99.9}"
+// Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
 ```
 
 ```grain
 print(
-  Result.unwrap(
-    toString(
-      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
-    )
+  toString(
+    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
   )
 )
-// Output: {"currency":"€","price":99.9}
+// Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
 ```
 
 ```grain
 print(
-  Result.unwrap(
-    toString(
-      format=Compact
-      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-     )
+  toString(
+    format=Compact
+    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
   )
 )
-// Output: {"currency":"€","price":99.9}
+// Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
 ```
 
 ```grain
 print(
-  Result.unwrap(
-    toString(
-      format=Pretty,
-      JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
-    )
+  toString(
+    format=Pretty,
+    JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
   )
 )
-// Output:
-// {
-// "currency": "€",
-// "price": 99.9
-//}
+// Output: Ok("{
+// \"currency\": \"€\",
+// \"price\": 99.9
+//}")
 ```
 
 ### Json.**parse**
@@ -451,10 +464,10 @@ No other changes yet.
 </details>
 
 ```grain
-parse : String -> Result<Json, JsonParseError>
+parse : String => Result<Json, JsonParseError>
 ```
 
-Parses JSON input from a string into a `JSON` object.
+Parses JSON string into a `Json` data structure.
 
 Parameters:
 
@@ -471,11 +484,11 @@ Returns:
 Examples:
 
 ```grain
-print(parse("{\"currency\":\"$\",\"price\":119}"))
-
-Example output:
-```
-Ok(JsonObject([("currency", JsonString("$")), ("price", JsonNumber(119))]))
-```
+assert parse("{\"currency\":\"$\",\"price\":119}") == Ok(
+ JsonObject([
+   ("currency", JsonString("$")),
+   ("price", JsonNumber(119))
+ ])
+)
 ```
 

@@ -539,6 +539,24 @@ module ToString {
   assert toString(JsonArray([]), format=Compact) == Ok("[]")
   assert toString(JsonObject([]), format=Compact) == Ok("{}")
 
+  assert toString(JsonNull) == toString(JsonNull, format=Compact)
+  assert toString(JsonBoolean(true)) ==
+    toString(JsonBoolean(true), format=Compact)
+  assert toString(JsonBoolean(false)) ==
+    toString(JsonBoolean(false), format=Compact)
+  assert toString(JsonString("")) == toString(JsonString(""), format=Compact)
+  assert toString(JsonNumber(0)) == toString(JsonNumber(0), format=Compact)
+  assert toString(JsonArray([])) == toString(JsonArray([]), format=Compact)
+  assert toString(JsonObject([])) == toString(JsonObject([]), format=Compact)
+
+  assert toString(JsonNull, format=Pretty) == Ok("null\n")
+  assert toString(JsonBoolean(true), format=Pretty) == Ok("true\n")
+  assert toString(JsonBoolean(false), format=Pretty) == Ok("false\n")
+  assert toString(JsonString(""), format=Pretty) == Ok("\"\"\n")
+  assert toString(JsonNumber(0), format=Pretty) == Ok("0\n")
+  assert toString(JsonArray([]), format=Pretty) == Ok("[]\n")
+  assert toString(JsonObject([]), format=Pretty) == Ok("{}\n")
+
   // Various strings. Escapes, emojis etc.
   assert toString(JsonString("ASCII Hello world!"), format=Compact) ==
     Ok("\"ASCII Hello world!\"")
@@ -676,6 +694,262 @@ module ToString {
       ("nesting", JsonArray(comprehensiveNestingCombinations)),
     ]
   )
+
+  // Formatting - Indentation
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n  1\n]")
+  assert toString(
+    JsonArray([JsonArray([JsonNumber(1)])]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n  [\n    1\n  ]\n]")
+  assert toString(
+    JsonArray([JsonArray([JsonNumber(1)])]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n[\n1\n]\n]")
+
+  // Formatting - line endings
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n1\n]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: NoLineEnding,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[1]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: CarriageReturnLineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\r\n1\r\n]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: CarriageReturn,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\r1\r]")
+
+  // Formatting - finish with new line
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n1\n]")
+  assert toString(
+    JsonArray([JsonNumber(1)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(0),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: true,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n1\n]\n")
+
+  // Formatting - array format
+  assert toString(
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: CompactArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[1,2,3]")
+  assert toString(
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: SpacedArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[1, 2, 3]")
+  assert toString(
+    JsonArray([JsonNumber(1), JsonNumber(2), JsonNumber(3)]),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("[\n  1,\n  2,\n  3\n]")
+
+  // Formatting - object format
+  assert toString(
+    JsonObject(
+      [("one", JsonNumber(1)), ("two", JsonNumber(2)), ("three", JsonNumber(3))]
+    ),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: CompactArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("{\"one\":1,\"two\":2,\"three\":3}")
+  assert toString(
+    JsonObject(
+      [("one", JsonNumber(1)), ("two", JsonNumber(2)), ("three", JsonNumber(3))]
+    ),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: CompactArrayEntries,
+        objectFormat: SpacedObjectEntries,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("{\"one\": 1, \"two\": 2, \"three\": 3}")
+  assert toString(
+    JsonObject(
+      [("one", JsonNumber(1)), ("two", JsonNumber(2)), ("three", JsonNumber(3))]
+    ),
+    format=Custom(
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: CompactArrayEntries,
+        objectFormat: OneObjectEntryPerLine,
+        lineEnding: LineFeed,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      }
+    )
+  ) ==
+    Ok("{\n  \"one\": 1,\n  \"two\": 2,\n  \"three\": 3\n}")
 
   // Indentation and line breaks
 

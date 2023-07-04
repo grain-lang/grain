@@ -8,7 +8,7 @@ include "runtime/bigint" as BI
 include "runtime/dataStructures"
 include "runtime/numbers"
 include "runtime/numberUtils"
-include "runtime/string" as RunTimeString
+include "runtime/string" as RuntimeString
 include "runtime/unsafe/memory"
 include "runtime/unsafe/memory"
 include "runtime/unsafe/tags"
@@ -23,69 +23,63 @@ include "list"
 include "number"
 include "option"
 include "uint8"
-from RunTimeString use { toString as runtimeToString, getCodePoint }
+from RuntimeString use { toString as runtimeToString, getCodePoint }
 from Numbers use { coerceNumberToWasmI32 }
 from DataStructures use { tagSimpleNumber, newFloat64, untagSimpleNumber }
 
 // Primitive offsets
-// TODO(703): Get these offsets from the runtime
+// TODO(#703): Get these offsets from the runtime
 @unsafe
 let _INT64_BOXED_VALUE_OFFSET = 8n
 @unsafe
 let _Float64_BOXED_VALUE_OFFSET = 8n
 
 /**
- * Data structure representing the result of parsing and the input of printing
- * JSON.
+ * Data structure representing the result of parsing and the input of printing JSON.
  *
- * For example this object
- * ```grain
- * JsonObject([
+ * @example
+ * Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
  *   ("currency", JsonString("€")),
  *   ("price", JsonNumber(99.99)),
  * ])
- * ```
- * is equivalent to the following JSON:
- * ```json
- * {"currency":"€","price":99.99}
- * ```
+ *
+ * @example
+ * Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
+ *   ("currency", JsonString("€")),
+ *   ("price", JsonNumber(99.99)),
+ * ])
  *
  * This data structure is semantically equivalent to the JSON format allowing
  * mostly lossless round trips of printing and parsing. Exceptions to this are
  * whitespace, multiple ways JSON allows escaping characters in strings, and
  * some edge cases related to Grain's `Number` type.
- *
- * For example parsing the following JSON text will also result in the same
- * `JSON` object as above.
- * ```json
- * {
- *   "currency": "\u20ac",
- *   "price": 99.99
- * }
- * ```
  */
-provide enum Json {
+provide enum rec Json {
   JsonNull,
   JsonBoolean(Bool),
   JsonNumber(Number),
   JsonString(String),
   JsonArray(List<Json>),
   // Note that JSONObject here is deliberately defined as a simple list of key value pair tuples as opposed
-  // to for example a Map in order to accomodate the fact that the ECMA-404 standard doesn't prohibit
+  // to for example a Map in order to accommodate the fact that the ECMA-404 standard doesn't prohibit
   // duplicate names in Objects. Such JSON should be representable by the JSON data structure for lossless
   // processing. This also simplifies implementation by not requiring a purpose built data structure and
-  // has the benefit of List's immutability. It's a concious decision that sacrifices ease of use of the
+  // has the benefit of List's immutability. It's a conscious decision that sacrifices ease of use of the
   // API for lossless handing of these edge cases with intention of later building more ergonomic APIs on a
   // higher level of abstraction.
   JsonObject(List<(String, Json)>),
 }
 
+// TODO(#992): Remove part about occurrence here because it is covered by the variant doc.
 /**
- * Represents errors for cases when a `JSON` object cannot be represente in the
+ * Represents errors for cases where a `JSON` object cannot be represented in the
  * JSON format along with a human readable text message. This can happen when
  * it contains number values `NaN`, `Infinity` or `-Infinity`.
  */
 provide enum JsonToStringError {
+  /**
+   * The JSON object contains a number value of `NaN`, `Infinity` or `-Infinity`.
+   */
   InvalidNumber(String),
 }
 
@@ -137,11 +131,24 @@ provide enum IndentationFormat {
  * Controls how arrays are printed in custom formatting.
  *
  * Following examples have whitespaces and line breaks replaced with visible
- * charactes for illustrative purposes.
+ * characters for illustrative purposes.
  *
  * `CompactArrayEntries`
  * ```
  * []
+ * ```
+ *
+ * ```
+ * [1]
+ * ```
+ *
+ * ```
+ * [1,2,3]
+ * ```
+ *
+ * `SpacedArrayEntries`
+ * ```
+ * [ ]
  * ```
  *
  * ```
@@ -173,6 +180,7 @@ provide enum IndentationFormat {
  */
 provide enum ArrayFormat {
   CompactArrayEntries,
+  SpacedArrayEntries,
   OneArrayEntryPerLine,
 }
 
@@ -180,7 +188,7 @@ provide enum ArrayFormat {
  * Controls how objects are printed in custom formatting.
  *
  * Following examples have whitespaces and line breaks replaced with visible
- * charactes for illustrative purposes.
+ * characters for illustrative purposes.
  *
  * `CompactObjectEntries`
  * ```
@@ -193,6 +201,19 @@ provide enum ArrayFormat {
  *
  * ```
  * {"a":1,"b":2,"c":3}
+ * ```
+ *
+ * `SpacedObjectEntries`
+ * ```
+ * { }
+ * ```
+ *
+ * ```
+ * {"a": 1}
+ * ```
+ *
+ * ```
+ * {"a": 1, "b": 2, "c": 3}
  * ```
  *
  * `OneObjectEntryPerLine`
@@ -216,6 +237,7 @@ provide enum ArrayFormat {
  */
 provide enum ObjectFormat {
   CompactObjectEntries,
+  SpacedObjectEntries,
   OneObjectEntryPerLine,
 }
 
@@ -368,16 +390,16 @@ provide let defaultPrettyAndSafeFormat = {
 
 record JsonWriterCompactImplHelper {
   buffer: Buffer.Buffer,
-  emitEscapedQuotedString: String -> Void,
+  emitEscapedQuotedString: String => Void,
 }
 
 record JsonWriterPrettyImplHelper {
   format: FormattingSettings,
   //TODO(#775): Note that the "Pretty" suffix here is a workaround for a Grain compiler bug.
   bufferPretty: Buffer.Buffer,
-  emitEscapedQuotedStringPretty: String -> Void,
-  printNewLine: () -> Void,
-  printIndentation: Number -> Void,
+  emitEscapedQuotedStringPretty: String => Void,
+  printNewLine: () => Void,
+  printIndentation: Number => Void,
 }
 
 // The idea for this type is to allow reusing a bit of work done in preparing for printing JSON.
@@ -385,7 +407,7 @@ record JsonWriterPrettyImplHelper {
 // It may make sense in the future to expose it and let the user reuse a writer for multiple
 // JSON emit operations without reallocating new closures and buffers each time.
 record JsonWriter {
-  emit: Json -> Option<JsonToStringError>,
+  emit: Json => Option<JsonToStringError>,
 }
 
 let addCharFromCodePoint = (codePoint: Number, buffer: Buffer.Buffer) => {
@@ -394,7 +416,7 @@ let addCharFromCodePoint = (codePoint: Number, buffer: Buffer.Buffer) => {
 
 let emitUTF16EscapeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
   // Emit the "\u" followed by hexadecimal representation of the codepoint
-  // with fixed length of 4 hexadecimal digits correspondeing to the two byte
+  // with fixed length of 4 hexadecimal digits corresponding to the two byte
   // codepoint. No checks are performed here if the codepoint is in the
   // "Basic Multilingual Plane" (0000-FFFF) as this funcion is only called
   // internally.
@@ -403,27 +425,27 @@ let emitUTF16EscapeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
   // optimization this loop could be unrolled possibly even converted to be
   // branchless and SIMD optimized, but it could be a bit of an overkill as
   // this codepath is only for escape sequences, which probably aren't all
-  // that common occurence.
+  // that common occurrence.
 
   Buffer.addChar('\\', buffer)
   Buffer.addChar('u', buffer)
   // Loop over the four digit from most to least significant.
   for (let mut digitIndex = 3; digitIndex >= 0; digitIndex -= 1) {
     // Use bit masking and shifting to extract from the codepoint a number
-    // with just the bits corresponding to this hexadecinak digit.
+    // with just the bits corresponding to this hexadecimal digit.
     let shift = digitIndex * 4
     let mask = 0b1111 << shift
     let digit = (codePoint & mask) >>> shift
 
     // Digit now is a number in the range 0..15 and we need to translate it
-    // into a unicode codepoint representing the hexacedimal digit
+    // into a unicode codepoint representing the hexadecimal digit
     // (0..9/a..f). We can use the fact that digits and latin letters in
     // ASCII and by extension in Unicode are adjacent and ordered.
     let hexDigitCodePoint = if (digit <= 9) {
-      // 48 is codeppoint for char '0'
+      // 48 is codepoint for char '0'
       digit + 48
     } else {
-      // 97 is codeppoint for char 'a'
+      // 97 is codepoint for char 'a'
       // But we also need to subtract 10 from it because we need
       // the 10..15 number range translated to 0..5 in order to
       // serve as an index in the ASCI range 'a'..'f'.
@@ -439,7 +461,6 @@ let emitEscapedUnicodeSequence = (codePoint: Number, buffer: Buffer.Buffer) => {
   // If the code point is "in the Basic Multilingual Plane", that is in range
   // 0..65535. Greater values need to be split into two UTF-16 chunks.
   if (codePoint <= 0xFFFF) {
-    // emitUTF16EscapeSequence(codePoint, writer)
     emitUTF16EscapeSequence(codePoint, buffer)
   } else {
     // The following three lines are copied from String module of Grain's
@@ -582,11 +603,11 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
             from WasmF64 use { (/) }
-            // As a compromnise, convert the rational into a float
+            // As a compromise, convert the rational into a float
             // and then print that. This means there can be
             // precision loss even for values that could be printed
             // exactly in decimal notation, but doing otherwise
-            // could both compromise perfomance and confuse
+            // could both compromise performance and confuse
             // developers as most JSON libraries in other languages
             // likely only deal with integers and floats.
             // Note that the ECMA-404 standard only specifies how
@@ -783,13 +804,7 @@ let makeCompactJsonWriter = (buffer: Buffer.Buffer) => {
     emitEscapedQuotedString,
   }: JsonWriterCompactImplHelper
 
-  {
-    emit: json => {
-      let error = printElementCompact(json, implHelper)
-
-      error
-    },
-  }: JsonWriter
+  { emit: json => printElementCompact(json, implHelper), }: JsonWriter
 }
 
 // Note that this could relatively easily be integrated with
@@ -820,6 +835,9 @@ let rec printElementPretty =
       match (elems) {
         [] => {
           Buffer.addChar('[', buffer)
+          if (implHelper.format.arrayFormat == SpacedArrayEntries) {
+            Buffer.addChar(' ', buffer)
+          }
           Buffer.addChar(']', buffer)
           return None
         },
@@ -867,6 +885,9 @@ let rec printElementPretty =
           for (let mut index = 0; ; index += 1) {
             if (index > 0) {
               Buffer.addChar(',', buffer)
+              if (format.arrayFormat == SpacedArrayEntries) {
+                Buffer.addChar(' ', buffer)
+              }
 
               if (format.arrayFormat == OneArrayEntryPerLine) {
                 implHelper.printNewLine()
@@ -904,6 +925,9 @@ let rec printElementPretty =
       match (entries) {
         [] => {
           Buffer.addChar('{', buffer)
+          if (implHelper.format.objectFormat == SpacedObjectEntries) {
+            Buffer.addChar(' ', buffer)
+          }
           Buffer.addChar('}', buffer)
           return None
         },
@@ -921,12 +945,10 @@ let rec printElementPretty =
 
           implHelper.emitEscapedQuotedStringPretty(key)
 
+          Buffer.addChar(':', buffer)
           match (format.objectFormat) {
-            CompactObjectEntries => {
-              Buffer.addChar(':', buffer)
-            },
-            OneObjectEntryPerLine => {
-              Buffer.addChar(':', buffer)
+            CompactObjectEntries => void,
+            SpacedObjectEntries | OneObjectEntryPerLine => {
               Buffer.addChar(' ', buffer)
             },
           }
@@ -960,6 +982,9 @@ let rec printElementPretty =
           for (let mut index = 0; ; index += 1) {
             if (index > 0) {
               Buffer.addChar(',', buffer)
+              if (format.objectFormat == SpacedObjectEntries) {
+                Buffer.addChar(' ', buffer)
+              }
 
               if (format.objectFormat == OneObjectEntryPerLine) {
                 implHelper.printNewLine()
@@ -974,12 +999,10 @@ let rec printElementPretty =
 
             implHelper.emitEscapedQuotedStringPretty(key)
 
+            Buffer.addChar(':', buffer)
             match (format.objectFormat) {
-              CompactObjectEntries => {
-                Buffer.addChar(':', buffer)
-              },
-              OneObjectEntryPerLine => {
-                Buffer.addChar(':', buffer)
+              CompactObjectEntries => void,
+              SpacedObjectEntries | OneObjectEntryPerLine => {
                 Buffer.addChar(' ', buffer)
               },
             }
@@ -1073,7 +1096,7 @@ let makePrettyPrintJsonWriter =
   }
 
   // A possible optimization to make this faster would be to
-  // prepare a different closure for each combination fo escaping options.
+  // prepare a different closure for each combination of escaping options.
   // This way unnecessary branching is avoided.
   // The most important thing is that the non pretty printed format is optimized for
   // as this is where the performance is most likely to matter.
@@ -1205,9 +1228,7 @@ let makePrettyPrintJsonWriter =
   let implHelper = {
     format,
     bufferPretty: buffer,
-    emitEscapedQuotedStringPretty: s => {
-      emitEscapedQuotedString(s)
-    },
+    emitEscapedQuotedStringPretty: emitEscapedQuotedString,
     printNewLine,
     printIndentation,
   }: JsonWriterPrettyImplHelper
@@ -1231,47 +1252,38 @@ let makePrettyPrintJsonWriter =
  *
  * @example
  * print(
- *   Result.unwrap(
- *     toString(
- *       format=Custom(defaultCompactAndSafeFormat),
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *     )
+ *   toString(
+ *     format=Custom(defaultCompactAndSafeFormat),
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *   )
  * )
- * // Output: {"currency":"\u20ac","price":99.9}"
+ * // Output: Ok("{\"currency\":\"\\u20ac\",\"price\":99.9}")
  * @example
  * print(
- *   Result.unwrap(
- *     toString(
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
- *     )
+ *   toString(
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))]
  *   )
  * )
- * // Output: {"currency":"€","price":99.9}
+ * // Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
  * @example
  * print(
- *   Result.unwrap(
- *     toString(
- *       format=Compact
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *      )
+ *   toString(
+ *     format=Compact
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *   )
  * )
- * // Output: {"currency":"€","price":99.9}
+ * // Output: Ok("{\"currency\":\"€\",\"price\":99.9}")
  * @example
  * print(
- *   Result.unwrap(
- *     toString(
- *       format=Pretty,
- *       JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
- *     )
+ *   toString(
+ *     format=Pretty,
+ *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *   )
  * )
- * // Output:
- * // {
- * // "currency": "€",
- * // "price": 99.9
- * //}
+ * // Output: Ok("{
+ * // \"currency\": \"€\",
+ * // \"price\": 99.9
+ * //}")
  *
  * @since v0.6.0
  */
@@ -1817,7 +1829,7 @@ and parseStringValue = (parserState: JsonParserState) => {
   }
 }
 and parseNumberValue = (parserState: JsonParserState) => {
-  // TODO: Use a streaming-optimized way to parse numbers
+  // TODO(#1878): Use a streaming-optimized way to parse numbers
   let buffer = parserState.bufferParse
   Buffer.clear(buffer)
   // First char can optionally be a minus sign.
@@ -1924,7 +1936,7 @@ and parseNumberValue = (parserState: JsonParserState) => {
     true => {
       let str = Buffer.toString(buffer)
       match (Number.parseFloat(str)) {
-        Err(err) => fail "Impossible",
+        Err(err) => fail "Impossible: Json parse float on invalid float",
         Ok(n) => n,
       }
     },
@@ -2112,22 +2124,22 @@ and parseObject = (parserState: JsonParserState) => {
 }
 
 /**
- * Parses JSON input from a string into a `JSON` object.
+ * Parses JSON string into a `Json` data structure.
  *
  * @param str: The JSON text string
  * @returns A `Result` object with either the parsed `JSON` object or an error.
  *
- *
- * @example print(parse("{\"currency\":\"$\",\"price\":119}"))
- *
- * Example output:
- * ```
- * Ok(JsonObject([("currency", JsonString("$")), ("price", JsonNumber(119))]))
- * ```
+ * @example
+ * assert parse("{\"currency\":\"$\",\"price\":119}") == Ok(
+ *  JsonObject([
+ *    ("currency", JsonString("$")),
+ *    ("price", JsonNumber(119))
+ *  ])
+ * )
  *
  * @since v0.6.0
  */
-provide let parse: String -> Result<Json, JsonParseError> = (str: String) => {
+provide let parse: String => Result<Json, JsonParseError> = (str: String) => {
   let parserState = {
     string: str,
     bufferParse: Buffer.make(16),
