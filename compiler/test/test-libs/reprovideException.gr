@@ -1,6 +1,8 @@
 module ReprovideException
 
 include "./provideException"
-from ProvideException use { exception MyException }
+from ProvideException use { exception MyException, excVal1 }
 
-provide { exception MyException }
+let excVal2 = ProvideException.MyException
+
+provide { exception MyException, excVal1, excVal2 }

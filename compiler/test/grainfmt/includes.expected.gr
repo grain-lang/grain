@@ -15,12 +15,13 @@ from Opt use {
   type Opt,
   type Opt as OptAlias,
 }
-from Opt use { /* comment1 */ /* comment2 */ /* comment3 */ /* comment4 */ /* comment5 */ /* comment6 */ /* comment7 */ /* comment8 */
+from Opt use { /* comment1 */ /* comment2 */ /* comment3 */ /* comment4 */ /* comment5 */ /* comment6 */ /* comment7 */ /* comment8 */ /* comment9 */
   module MutableOpt,
   module ImmutableOpt as Imm,
   type Opt,
   type Opt as OptAlias,
   exception Exc as E,
+  exception Exc2,
 }
 
 include "runtime/unsafe/wasmi32"

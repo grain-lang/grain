@@ -2,4 +2,6 @@ module ProvideException
 
 exception OriginalException
 
-provide { exception OriginalException as MyException }
+let excVal1 = OriginalException
+
+provide { exception OriginalException as MyException, excVal1 }

@@ -12,6 +12,7 @@ describe("provides", ({test, testSkip}) => {
       test,
     );
   let assertCompileError = makeCompileErrorRunner(test);
+  let assertRun = makeRunner(test_or_skip);
   let assertRunError = makeErrorRunner(test_or_skip);
   let assertHasWasmExport = (name, prog, expectedExports) => {
     test(
@@ -164,7 +165,7 @@ describe("provides", ({test, testSkip}) => {
   );
   assertRunError(
     "provide_exceptions1",
-    "include \"provideException\"; from ProvideException use *; let f = () => if (true) { throw MyException }; f()",
+    "include \"provideException\"; let f = () => if (true) { throw ProvideException.MyException }; f()",
     "OriginalException",
   );
   assertRunError(
@@ -176,6 +177,26 @@ describe("provides", ({test, testSkip}) => {
     "provide_exceptions3",
     "include \"reprovideException\"; from ReprovideException use { exception MyException as E }; let f = () => if (true) { throw E }; f()",
     "OriginalException",
+  );
+  assertRun(
+    "provide_exceptions4",
+    {|
+      include "reprovideException"
+      from ReprovideException use { exception MyException, excVal1, excVal2 }
+      match (excVal1) {
+        MyException => print("good1"),
+        _ => assert false,
+      }
+      match (excVal2) {
+        MyException => print("good2"),
+        _ => assert false,
+      }
+      match (MyException) {
+        ReprovideException.MyException => print("good3"),
+        _ => assert false,
+      }
+    |},
+    "good1\ngood2\ngood3\n",
   );
 
   assertSnapshot("let_rec_provide", "provide let rec foo = () => 5");
