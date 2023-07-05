@@ -4,19 +4,21 @@ description:
   "Js_of_ocaml is a compiler from OCaml bytecode to JavaScript. It makes it possible to run pure OCaml programs in JavaScript environment like browsers and Node.js"
 maintainer: ["Ocsigen team <dev@ocsigen.org>"]
 authors: ["Ocsigen team <dev@ocsigen.org>"]
-license:
-  "GPL-2.0-or-later AND LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
+license: [
+  "GPL-2.0-or-later" "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
+]
 homepage: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
 doc: "https://ocsigen.org/js_of_ocaml/latest/manual/overview"
 bug-reports: "https://github.com/ocsigen/js_of_ocaml/issues"
 depends: [
-  "dune" {>= "3.2"}
-  "ocaml" {>= "4.04" & < "5.1"}
+  "dune" {>= "3.7"}
+  "ocaml" {>= "4.08" & < "5.1"}
   "num" {with-test}
   "ppx_expect" {>= "v0.14.2" & with-test}
   "ppxlib" {>= "0.15.0"}
   "re" {with-test}
   "cmdliner" {>= "1.1.0"}
+  "sedlex" {>= "2.3"}
   "menhir"
   "menhirLib"
   "menhirSdk"
@@ -44,10 +46,10 @@ build: [
 ]
 url {
   src:
-    "https://github.com/ocsigen/js_of_ocaml/releases/download/5.0.1/js_of_ocaml-5.0.1.tbz"
+    "https://github.com/ocsigen/js_of_ocaml/releases/download/5.3.0/js_of_ocaml-5.3.0.tbz"
   checksum: [
-    "sha256=7a210f1ca16a742381947dc67c3d8d9f4c94fbf20738744b1353897985b61069"
-    "sha512=07a973561190686d56bd5d56d9a275e177716ea8b9720f6acc7ddf8618680844a6d0c798447567ea9542d83bab524c165d076f3cce0769a12fc483ef8cd6a733"
+    "sha256=be9e3deeb98e5d28f1bcb2d9847c04d2885fc07ed58ccd8b08aa4b6628cd64d2"
+    "sha512=26ba67312747f63c1ab58e92a20fde635833275a56b0570c145e57c093a0412ea8dd6c1bce84a71fd321d76a4223b7e50843c4352f6515909ea1b0713b6cfe68"
   ]
 }
-x-commit-hash: "66570bae49d9fae4341bc548dde9f944afe3b41a"
+x-commit-hash: "7b2929f3e08375a859f13f31cf8d918b6e9455b7"

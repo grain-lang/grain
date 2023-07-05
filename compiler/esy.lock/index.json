@@ -1,5 +1,5 @@
 {
-  "checksum": "8acfa10e118c58a77d4c5931879a0f32",
+  "checksum": "4e707c5ec59404c7ae8de321c1e7f746",
   "root": "@grain/compiler@link-dev:./esy.json",
   "node": {
     "ocaml@4.14.1000@d41d8cd9": {
@@ -1637,25 +1637,26 @@
         "@opam/dune@opam:3.9.1@a51b6e38"
       ]
     },
-    "@opam/js_of_ocaml-compiler@opam:5.0.1@49a39906": {
-      "id": "@opam/js_of_ocaml-compiler@opam:5.0.1@49a39906",
+    "@opam/js_of_ocaml-compiler@opam:5.3.0@04e0fec4": {
+      "id": "@opam/js_of_ocaml-compiler@opam:5.3.0@04e0fec4",
       "name": "@opam/js_of_ocaml-compiler",
-      "version": "opam:5.0.1",
+      "version": "opam:5.3.0",
       "source": {
         "type": "install",
         "source": [
-          "archive:https://opam.ocaml.org/cache/sha256/7a/7a210f1ca16a742381947dc67c3d8d9f4c94fbf20738744b1353897985b61069#sha256:7a210f1ca16a742381947dc67c3d8d9f4c94fbf20738744b1353897985b61069",
-          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/5.0.1/js_of_ocaml-5.0.1.tbz#sha256:7a210f1ca16a742381947dc67c3d8d9f4c94fbf20738744b1353897985b61069"
+          "archive:https://opam.ocaml.org/cache/sha256/be/be9e3deeb98e5d28f1bcb2d9847c04d2885fc07ed58ccd8b08aa4b6628cd64d2#sha256:be9e3deeb98e5d28f1bcb2d9847c04d2885fc07ed58ccd8b08aa4b6628cd64d2",
+          "archive:https://github.com/ocsigen/js_of_ocaml/releases/download/5.3.0/js_of_ocaml-5.3.0.tbz#sha256:be9e3deeb98e5d28f1bcb2d9847c04d2885fc07ed58ccd8b08aa4b6628cd64d2"
         ],
         "opam": {
           "name": "js_of_ocaml-compiler",
-          "version": "5.0.1",
-          "path": "esy.lock/opam/js_of_ocaml-compiler.5.0.1"
+          "version": "5.3.0",
+          "path": "esy.lock/opam/js_of_ocaml-compiler.5.3.0"
         }
       },
       "overrides": [],
       "dependencies": [
         "ocaml@4.14.1000@d41d8cd9", "@opam/yojson@opam:2.1.0@157478b0",
+        "@opam/sedlex@opam:3.2@eab3a2e0",
         "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/ocamlfind@opam:1.9.6@da5169c7",
         "@opam/menhirSdk@opam:20220210@fe146ed3",
@@ -1667,6 +1668,7 @@
       ],
       "devDependencies": [
         "ocaml@4.14.1000@d41d8cd9", "@opam/yojson@opam:2.1.0@157478b0",
+        "@opam/sedlex@opam:3.2@eab3a2e0",
         "@opam/ppxlib@opam:0.29.1@a8bb9506",
         "@opam/menhirSdk@opam:20220210@fe146ed3",
         "@opam/menhirLib@opam:20220210@9afeb270",
@@ -2261,7 +2263,7 @@
       "devDependencies": [
         "@reason-native/rely@github:reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15@d41d8cd9",
         "@opam/ocaml-lsp-server@opam:1.14.1@ac41cc96",
-        "@opam/js_of_ocaml-compiler@opam:5.0.1@49a39906"
+        "@opam/js_of_ocaml-compiler@opam:5.3.0@04e0fec4"
       ],
       "installConfig": { "pnp": false }
     },
