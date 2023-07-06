@@ -1,0 +1,11 @@
+--- ./otherlibs/stdune/src/path.ml
++++ ./otherlibs/stdune/src/path.ml
+@@ -334,7 +334,7 @@
+       | _ -> (
+         match List.fold_left from ~init:t ~f:(fun acc _ -> ".." :: acc) with
+         | [] -> "."
+-        | l -> String.concat l ~sep:"/")
++        | l -> String.concat l ~sep:(if Sys.unix then "/" else "\\"))
+     in
+     loop (to_list t) (to_list from)
+ 

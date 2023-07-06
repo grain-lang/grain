@@ -1,0 +1,12 @@
+--- ./otherlibs/xdg/xdg_stubs.c
++++ ./otherlibs/xdg/xdg_stubs.c
+@@ -5,6 +5,9 @@
+ 
+ #ifdef _WIN32
+ 
++// As seen in /usr/x86_64-w64-mingw32\sys-root\mingw\include\winnls.h
++// For some reason, windows.h distributed with cygwin did not have this constant
++#define WC_ERR_INVALID_CHARS 0x00000080
+ #include <Windows.h>
+ #include <Knownfolders.h>
+ #include <Shlobj.h>

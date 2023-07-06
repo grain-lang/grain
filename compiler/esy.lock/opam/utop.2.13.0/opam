@@ -1,0 +1,50 @@
+opam-version: "2.0"
+synopsis: "Universal toplevel for OCaml"
+description:
+  "utop is an improved toplevel (i.e., Read-Eval-Print Loop or REPL) for OCaml. It can run in a terminal or in Emacs. It supports line edition, history, real-time and context sensitive completion, colors, and more. It integrates with the Tuareg mode in Emacs."
+maintainer: ["jeremie@dimino.org"]
+authors: ["Jérémie Dimino"]
+license: "BSD-3-Clause"
+homepage: "https://github.com/ocaml-community/utop"
+doc: "https://ocaml-community.github.io/utop/"
+bug-reports: "https://github.com/ocaml-community/utop/issues"
+depends: [
+  "dune" {>= "2.0"}
+  "ocaml" {>= "4.11.0"}
+  "base-unix"
+  "base-threads"
+  "ocamlfind" {>= "1.7.2"}
+  "lambda-term" {>= "3.1.0" & < "4.0"}
+  "logs"
+  "lwt"
+  "lwt_react"
+  "zed" {>= "3.2.0"}
+  "react" {>= "1.0.0"}
+  "cppo" {>= "1.1.2"}
+  "alcotest" {with-test}
+  "xdg" {>= "3.9.0"}
+]
+build: [
+  ["dune" "subst"] {dev}
+  [
+    "dune"
+    "build"
+    "-p"
+    name
+    "-j"
+    jobs
+    "@install"
+    "@runtest" {with-test}
+    "@doc" {with-doc}
+  ]
+]
+dev-repo: "git+https://github.com/ocaml-community/utop.git"
+url {
+  src:
+    "https://github.com/ocaml-community/utop/releases/download/2.13.0/utop-2.13.0.tbz"
+  checksum: [
+    "sha256=88450f20006c2d10781abe9841bad2a57e7298b5ecf1be33bbf1eadebd1286d8"
+    "sha512=44ead6eac31c62dee60dc796e5dc1160610b8e6b00b862fae8ac297395a26d422237e7d5635f10bce59f4e5fbb16dbbe4596a55d30f8da699b256ac5d35076b2"
+  ]
+}
+x-commit-hash: "97e7ecfb4f2be71dcd270e13155797d0f873f437"

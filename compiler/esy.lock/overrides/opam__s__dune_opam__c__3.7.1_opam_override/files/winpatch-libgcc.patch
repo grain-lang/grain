@@ -1,0 +1,11 @@
+--- ./src/dune_rules/cxx_flags.ml
++++ ./src/dune_rules/cxx_flags.ml
+@@ -13,7 +13,7 @@
+ let base_cxx_flags ~for_ cc =
+   match (cc, for_) with
+   | Gcc, Compile -> [ "-x"; "c++" ]
+-  | Gcc, Link -> [ "-lstdc++"; "-shared-libgcc" ]
++  | Gcc, Link -> [ "-lstdc++" ]
+   | Clang, Compile -> [ "-x"; "c++" ]
+   | Clang, Link -> [ "-lc++" ]
+   | Msvc, Compile -> [ "/TP" ]
