@@ -33,9 +33,9 @@
   "dependencies": {
     "@grain/binaryen.ml": ">= 0.20.1 < 0.21.0",
     "@opam/cmdliner": ">= 1.1.1",
-    "@opam/dune": ">= 3.6.1 < 3.8.0",
-    "@opam/dune-build-info": ">= 3.6.1 < 3.8.0",
-    "@opam/dune-configurator": ">= 3.6.1 < 3.8.0",
+    "@opam/dune": ">= 3.6.1 < 4.0.0",
+    "@opam/dune-build-info": ">= 3.6.1 < 4.0.0",
+    "@opam/dune-configurator": ">= 3.6.1 < 4.0.0",
     "@opam/fp": "0.0.1",
     "@opam/fs": "0.0.2",
     "@opam/menhir": "20220210",
@@ -59,11 +59,12 @@
   },
   "resolutions": {
     "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
-    "@opam/dune": "3.7.1",
+    "@opam/dune": "3.9.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
     "@opam/utf8": "reasonml/reason-native:utf8.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/utop": "2.12.1",
     "@reason-native/cli": "reasonml/reason-native:cli.json#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@reason-native/rely": "reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15"
   },

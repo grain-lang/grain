@@ -22,7 +22,6 @@ depends: [
   "uutf"
   "uucp" {>= "2.0.0"}
   "uuseg"
-  "alcotest" {with-test}
   "odoc" {with-doc}
 ]
 build: [
@@ -42,10 +41,10 @@ build: [
 dev-repo: "git+https://github.com/ocaml-community/zed.git"
 url {
   src:
-    "https://github.com/ocaml-community/zed/releases/download/3.2.2/zed-3.2.2.tbz"
+    "https://github.com/ocaml-community/zed/releases/download/3.2.1/zed-3.2.1.tbz"
   checksum: [
-    "sha256=096aecc8f22f1869ef085f0102bf5967917367086a612b7f8a6ea1b5d1ab772e"
-    "sha512=32b2c436250f988b63d6e34d242999265b767d53f16b120ee655b2faacea300d45abb8d99017faa3ee63e071a653673480c3eb440f8858121489e3f100e9a16a"
+    "sha256=141091d21a03e92eed0efd96ece150c08c619bfbcd1b153a42d8a261b2b57f53"
+    "sha512=5c4c3bda52d3b8ba8618a91ac7864ebebd6020742e812d46f2a1cc78034acfc53b0a9b697424259b24fa84b367e36f154f35d4ac7ed536329294f000c7f52156"
   ]
 }
-x-commit-hash: "47ef02a5e28b2757e3728583b04d88281f6f36e6"
+x-commit-hash: "a7f3d7f967ab8cebe99817a0224fc8fbc3c290b5"
