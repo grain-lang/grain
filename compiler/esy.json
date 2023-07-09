@@ -44,13 +44,13 @@
     "@opam/ppx_deriving_cmdliner": ">= 0.6.1",
     "@opam/ppx_deriving_yojson": ">= 3.7.0 < 4.0.0",
     "@opam/ppx_sexp_conv": "v0.15.1",
-    "@opam/reason": ">= 3.8.2 < 4.0.0",
+    "@opam/reason": ">= 3.8.2 < 3.9.0",
     "@opam/sedlex": ">= 3.0 < 4.0",
     "@opam/sexplib": "v0.15.1",
     "@opam/uri": ">= 4.2.0 < 5.0.0",
     "@opam/utf8": "0.1.0",
     "@opam/yojson": ">= 2.0.2 < 3.0.0",
-    "ocaml": "4.14.0"
+    "ocaml": "4.14.1000"
   },
   "devDependencies": {
     "@opam/js_of_ocaml-compiler": "5.0.1",
@@ -58,13 +58,13 @@
     "@reason-native/rely": "^4.0.0"
   },
   "resolutions": {
-    "ocaml": "phated/ocaml:package.json#a25997805f1ce225f23c0321e827c0d503896017",
     "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
-    "@opam/dune": "3.7.1",
+    "@opam/dune": "3.9.1",
     "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
     "@opam/utf8": "reasonml/reason-native:utf8.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/utop": "2.12.1",
     "@reason-native/cli": "reasonml/reason-native:cli.json#0ed854f986256e52e59aeecfa90e9af60f105b15",
     "@reason-native/rely": "reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15"
   },

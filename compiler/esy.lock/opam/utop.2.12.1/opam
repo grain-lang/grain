@@ -14,7 +14,7 @@ depends: [
   "logs"
   "lwt"
   "lwt_react"
-  "zed" { >= "3.2.0" }
+  "zed" { >= "3.2.0" & < "3.2.2" }
   "react" {>= "1.0.0"}
   "cppo" {build & >= "1.1.2"}
   "dune" {>= "1.0"}

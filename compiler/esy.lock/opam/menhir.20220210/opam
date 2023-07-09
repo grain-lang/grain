@@ -13,7 +13,7 @@ build: [
   ["dune" "build" "-p" name "-j" jobs]
 ]
 depends: [
-  "ocaml" {>= "4.03.0"}
+  "ocaml" {>= "4.03.0" & < "5.1~"}
   "dune" {>= "2.8.0"}
   "menhirLib" {= version}
   "menhirSdk" {= version}
