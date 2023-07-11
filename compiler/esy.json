@@ -53,7 +53,7 @@
     "ocaml": "4.14.1000"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": "5.3.0",
+    "@opam/js_of_ocaml-compiler": "5.0.1",
     "@opam/ocaml-lsp-server": "1.14.1",
     "@reason-native/rely": "^4.0.0"
   },
