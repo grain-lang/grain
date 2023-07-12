@@ -567,14 +567,14 @@ let string = (s: string): t =>
   if (s == "") {
     empty;
   } else {
-    Leaf(Atom.String(s, 0, String.length(s)));
+    Leaf(Atom.String(s, 0, Utf8.countInString(s)));
   };
 
 let ifBreaks = (s: string): t =>
   if (s == "") {
     empty;
   } else {
-    Leaf(Atom.StringIfBreaks(s, 0, String.length(s)));
+    Leaf(Atom.StringIfBreaks(s, 0, Utf8.countInString(s)));
   };
 
 let (!^) = string;
@@ -661,7 +661,7 @@ let separate = (separator: t, ds: list(t)): t => {
 /* Split a non-unicode string in a list of offsets / lengths according to a predicate [f]. */
 let rec split =
         (s: string, f: char => bool, o: int, l: int): list((int, int)) =>
-  if (o + l == String.length(s)) {
+  if (o + l == Utf8.countInString(s)) {
     [(o, l)];
   } else if (f(s.[o + l])) {
     [(o, l), ...split(s, f, o + l + 1, 0)];
@@ -702,8 +702,10 @@ module Debug = {
   /* Pretty-print an atom. */
   let rec pp_atom = (a: Atom.t): t =>
     switch (a) {
-    | Atom.String(s, o, l) => string(String.sub(s, o, l))
-    | Atom.StringIfBreaks(s, o, l) => string(String.sub(s, o, l))
+    | Atom.String(s, o, l) =>
+      string(Grain_utils.String_utils.Utf8.sub(s, o, l))
+    | Atom.StringIfBreaks(s, o, l) =>
+      string(Grain_utils.String_utils.Utf8.sub(s, o, l))
     | Atom.Comment(Doc(comment)) =>
       nest(!^"DocComment" ^^ parens(string(comment)))
     | Atom.Comment(Block(comment)) =>
@@ -755,12 +757,14 @@ let to_something =
 let to_buffer =
     (width: int, tab: int, newline: string, b: Buffer.t, d: t): unit => {
   let output_newline = () => Buffer.add_string(b, newline);
+  let output_sub_string = (b, s: string, o: int, l: int): unit =>
+    Buffer.add_string(b, Grain_utils.String_utils.Utf8.sub(s, o, l));
   to_something(
     width,
     tab,
     Buffer.add_char(b),
     Buffer.add_string(b),
-    Buffer.add_substring(b),
+    output_sub_string(b),
     output_newline,
     d,
   );
@@ -775,7 +779,7 @@ let to_string = (~width: int, ~tab: int, ~newline: string, doc: t): string => {
 let to_out_channel =
     (width: int, tab: int, newline: string, c: out_channel, d: t): unit => {
   let output_sub_string = (s: string, o: int, l: int): unit =>
-    output_string(c, String.sub(s, o, l));
+    output_string(c, Grain_utils.String_utils.Utf8.sub(s, o, l));
   let output_newline = () => output_string(c, newline);
   to_something(
     width,
