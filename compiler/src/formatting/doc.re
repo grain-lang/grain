@@ -74,7 +74,7 @@ module Atom = {
      newlines, the new current column position and the last break printed if any.
      Must succeed (no uncaught [Overflow] exception). */
   let rec eval =
-          (~indent: int, a: t, ~column: int, last_break: option(Break.t))
+          (~indent: int, a: t, ~column: int, ~last_break: option(Break.t))
           : (t, int, option(Break.t)) =>
     switch (a) {
     | String(_, _, l)
@@ -108,7 +108,7 @@ module Atom = {
           ~indent,
           _as,
           ~column,
-          last_break,
+          ~last_break,
           false,
           can_nest,
           false,
@@ -122,23 +122,23 @@ module Atom = {
               ~indent=indent + tab_width,
               _as,
               ~column,
-              last_break,
+              ~last_break,
             );
           (_as, column, last_break);
         }) {
         | Overflow =>
-          eval_list_all(~indent, _as, ~column, last_break, can_nest)
+          eval_list_all(~indent, _as, ~column, ~last_break, can_nest)
         };
       (GroupAll(can_nest, _as), column, last_break);
     | Indent(n, a) =>
       let (a, column, last_break) =
-        eval(~indent=indent + n * tab_width, a, ~column, last_break);
+        eval(~indent=indent + n * tab_width, a, ~column, ~last_break);
       (Indent(n, a), column, last_break);
     }
 
   /* Try to print an atom without evaluating the spaces. May raise [Overflow] if we overflow the line [width]. */
   and try_eval_flat =
-      (~indent: int, a: t, ~column: int, last_break: option(Break.t))
+      (~indent: int, a: t, ~column: int, ~last_break: option(Break.t))
       : (int, option(Break.t)) => {
     let try_return = ((column, last_break)) =>
       if (column > max_width) {
@@ -178,7 +178,7 @@ module Atom = {
           ~indent=indent + tab_width,
           _as,
           ~column,
-          last_break,
+          ~last_break,
         );
       (column, last_break);
     | GroupAll(can_nest, _as) =>
@@ -187,10 +187,10 @@ module Atom = {
           ~indent=indent + tab_width,
           _as,
           ~column,
-          last_break,
+          ~last_break,
         );
       (column, last_break);
-    | Indent(_, a) => try_eval_flat(~indent, a, ~column, last_break)
+    | Indent(_, a) => try_eval_flat(~indent, a, ~column, ~last_break)
     };
   }
 
@@ -200,16 +200,16 @@ module Atom = {
         ~indent: int,
         _as: list(t),
         ~column: int,
-        last_break: option(Break.t),
+        ~last_break: option(Break.t),
       )
       : (int, option(Break.t)) =>
     switch (_as) {
     | [] => (column, last_break)
     | [a, ..._as] =>
       let (column, last_break) =
-        try_eval_flat(~indent, a, ~column, last_break);
+        try_eval_flat(~indent, a, ~column, ~last_break);
       let (column, last_break) =
-        try_eval_list_flat(~indent, _as, ~column, last_break);
+        try_eval_list_flat(~indent, _as, ~column, ~last_break);
       (column, last_break);
     }
 
@@ -221,7 +221,7 @@ module Atom = {
         ~indent: int,
         _as: list(t),
         ~column: int,
-        last_break: option(Break.t),
+        ~last_break: option(Break.t),
         can_fail: bool,
         can_nest: bool,
         in_nest: bool,
@@ -238,7 +238,7 @@ module Atom = {
               ~indent,
               _as,
               ~column=column + 1,
-              Some(Break.Space),
+              ~last_break=Some(Break.Space),
               true,
               can_nest,
               in_nest,
@@ -257,7 +257,7 @@ module Atom = {
                 },
               _as,
               ~column=0,
-              Some(Break.Hardline),
+              ~last_break=Some(Break.Hardline),
               false,
               can_nest,
               in_nest,
@@ -277,7 +277,7 @@ module Atom = {
           ~indent,
           _as,
           ~column,
-          last_break,
+          ~last_break,
           can_fail,
           can_nest,
           in_nest,
@@ -292,7 +292,7 @@ module Atom = {
               ~indent,
               _as,
               ~column,
-              Some(Break.Softline),
+              ~last_break=Some(Break.Softline),
               true,
               can_nest,
               in_nest,
@@ -311,7 +311,7 @@ module Atom = {
                 },
               _as,
               ~column=0,
-              Some(Break.Hardline),
+              ~last_break=Some(Break.Hardline),
               false,
               can_nest,
               in_nest,
@@ -331,7 +331,7 @@ module Atom = {
           ~indent,
           _as,
           ~column,
-          last_break,
+          ~last_break,
           can_fail,
           can_nest,
           in_nest,
@@ -345,7 +345,7 @@ module Atom = {
             ~indent=indent - tab_width,
             _as,
             ~column=0,
-            Some(Break.Hardline),
+            ~last_break=Some(Break.Hardline),
             false,
             can_nest,
             false,
@@ -355,7 +355,7 @@ module Atom = {
             ~indent,
             _as,
             ~column=0,
-            Some(Break.Hardline),
+            ~last_break=Some(Break.Hardline),
             false,
             can_nest,
             false,
@@ -375,17 +375,17 @@ module Atom = {
         /* If [Overflow] is possible we try in flat mode, else "at best". */
         if (can_fail) {
           let (column, last_break) =
-            try_eval_flat(~indent, a, ~column, last_break);
+            try_eval_flat(~indent, a, ~column, ~last_break);
           (a, column, last_break);
         } else {
-          eval(~indent, a, ~column, last_break);
+          eval(~indent, a, ~column, ~last_break);
         };
       let (_as, column, last_break) =
         try_eval_list_one(
           ~indent,
           _as,
           ~column,
-          last_break,
+          ~last_break,
           can_fail,
           can_nest,
           in_nest,
@@ -399,7 +399,7 @@ module Atom = {
         ~indent: int,
         _as: list(t),
         ~column: int,
-        last_break: option(Break.t),
+        ~last_break: option(Break.t),
         can_nest: bool,
       )
       : (list(t), int, option(Break.t)) =>
@@ -418,7 +418,7 @@ module Atom = {
               },
             _as,
             ~column=if (can_nest) {2} else {0},
-            Some(Break.Hardline),
+            ~last_break=Some(Break.Hardline),
             false,
           );
         if (can_nest) {
@@ -431,12 +431,12 @@ module Atom = {
           ([Break(Break.Hardline), ..._as], column, last_break);
         };
       } else {
-        eval_list_all(~indent, _as, ~column, last_break, can_nest);
+        eval_list_all(~indent, _as, ~column, ~last_break, can_nest);
       }
     | [a, ..._as] =>
-      let (a, column, last_break) = eval(~indent, a, ~column, last_break);
+      let (a, column, last_break) = eval(~indent, a, ~column, ~last_break);
       let (_as, column, last_break) =
-        eval_list_all(~indent, _as, ~column, last_break, can_nest);
+        eval_list_all(~indent, _as, ~column, ~last_break, can_nest);
       ([a, ..._as], column, last_break);
     };
 
@@ -447,7 +447,7 @@ module Atom = {
         ~indent=0,
         GroupOne(false, _as),
         ~column=0,
-        Some(Break.Hardline),
+        ~last_break=Some(Break.Hardline),
       );
     a;
   };
