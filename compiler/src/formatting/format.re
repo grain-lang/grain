@@ -1449,5 +1449,5 @@ let format_ast =
     | CRLF => "\r\n"
     | LF => "\n"
     };
-  to_string(~width=80, ~tab=2, ~newline, final_doc);
+  to_string(~newline, final_doc);
 };

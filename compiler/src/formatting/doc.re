@@ -44,6 +44,9 @@ module Comment = {
     | Shebang(string);
 };
 
+let max_width = 80;
+let tab_width = 2;
+
 /* The internal representation of a document and the engine. */
 module Atom = {
   /* An atom is the low-level tree describing a document. */
@@ -64,21 +67,14 @@ module Atom = {
   /* If we overflow a line. */
   exception Overflow;
 
-  /* Print "at best" an atom [a] for a line width [width] and tabulation width [tab].
+  /* Print "at best" an atom [a].
      [i] is the indentation level, [p] the current column position (in number
      of spaces), [last_break] the last break printed if any (so we can collapse
      spaces). It returns the same atom where spaces have been evaluated to
      newlines, the new current column position and the last break printed if any.
      Must succeed (no uncaught [Overflow] exception). */
   let rec eval =
-          (
-            width: int,
-            tab: int,
-            i: int,
-            a: t,
-            p: int,
-            last_break: option(Break.t),
-          )
+          (i: int, a: t, p: int, last_break: option(Break.t))
           : (t, int, option(Break.t)) =>
     switch (a) {
     | String(_, _, l)
@@ -108,48 +104,29 @@ module Atom = {
     | Break(Break.Hardline) => (a, 0, Some(Break.Hardline))
     | GroupOne(can_nest, _as) =>
       let (_as, p, last_break) =
-        try_eval_list_one(
-          width,
-          tab,
-          i,
-          _as,
-          p,
-          last_break,
-          false,
-          can_nest,
-          false,
-        );
+        try_eval_list_one(i, _as, p, last_break, false, can_nest, false);
       (GroupOne(can_nest, _as), p, last_break);
     | GroupAll(can_nest, _as) =>
       let (_as, p, last_break) =
         try({
           let (p, last_break) =
-            try_eval_list_flat(width, tab, i + tab, _as, p, last_break);
+            try_eval_list_flat(i + tab_width, _as, p, last_break);
           (_as, p, last_break);
         }) {
-        | Overflow =>
-          eval_list_all(width, tab, i, _as, p, last_break, can_nest)
+        | Overflow => eval_list_all(i, _as, p, last_break, can_nest)
         };
       (GroupAll(can_nest, _as), p, last_break);
     | Indent(n, a) =>
-      let (a, p, last_break) =
-        eval(width, tab, i + n * tab, a, p, last_break);
+      let (a, p, last_break) = eval(i + n * tab_width, a, p, last_break);
       (Indent(n, a), p, last_break);
     }
 
   /* Try to print an atom without evaluating the spaces. May raise [Overflow] if we overflow the line [width]. */
   and try_eval_flat =
-      (
-        width: int,
-        tab: int,
-        i: int,
-        a: t,
-        p: int,
-        last_break: option(Break.t),
-      )
+      (i: int, a: t, p: int, last_break: option(Break.t))
       : (int, option(Break.t)) => {
     let try_return = ((p, last_break)) =>
-      if (p > width) {
+      if (p > max_width) {
         raise(Overflow);
       } else {
         (p, last_break);
@@ -182,33 +159,25 @@ module Atom = {
     | Break(Break.Hardline) => raise(Overflow)
     | GroupOne(can_nest, _as) =>
       let (p, last_break) =
-        try_eval_list_flat(width, tab, i + tab, _as, p, last_break);
+        try_eval_list_flat(i + tab_width, _as, p, last_break);
       (p, last_break);
     | GroupAll(can_nest, _as) =>
       let (p, last_break) =
-        try_eval_list_flat(width, tab, i + tab, _as, p, last_break);
+        try_eval_list_flat(i + tab_width, _as, p, last_break);
       (p, last_break);
-    | Indent(_, a) => try_eval_flat(width, tab, i, a, p, last_break)
+    | Indent(_, a) => try_eval_flat(i, a, p, last_break)
     };
   }
 
   /* Like [try_eval_flat] but for a list of atoms. */
   and try_eval_list_flat =
-      (
-        width: int,
-        tab: int,
-        i: int,
-        _as: list(t),
-        p: int,
-        last_break: option(Break.t),
-      )
+      (i: int, _as: list(t), p: int, last_break: option(Break.t))
       : (int, option(Break.t)) =>
     switch (_as) {
     | [] => (p, last_break)
     | [a, ..._as] =>
-      let (p, last_break) = try_eval_flat(width, tab, i, a, p, last_break);
-      let (p, last_break) =
-        try_eval_list_flat(width, tab, i, _as, p, last_break);
+      let (p, last_break) = try_eval_flat(i, a, p, last_break);
+      let (p, last_break) = try_eval_list_flat(i, _as, p, last_break);
       (p, last_break);
     }
 
@@ -217,8 +186,6 @@ module Atom = {
      [in_nest] if we have already nested. */
   and try_eval_list_one =
       (
-        width: int,
-        tab: int,
         i: int,
         _as: list(t),
         p: int,
@@ -236,8 +203,6 @@ module Atom = {
         try({
           let (_as, p, last_break) =
             try_eval_list_one(
-              width,
-              tab,
               i,
               _as,
               p + 1,
@@ -252,10 +217,8 @@ module Atom = {
           let do_indent = can_nest && !in_nest;
           let (_as, p, last_break) =
             try_eval_list_one(
-              width,
-              tab,
               if (do_indent) {
-                i + tab;
+                i + tab_width;
               } else {
                 i;
               },
@@ -277,17 +240,7 @@ module Atom = {
           };
         };
       } else {
-        try_eval_list_one(
-          width,
-          tab,
-          i,
-          _as,
-          p,
-          last_break,
-          can_fail,
-          can_nest,
-          in_nest,
-        );
+        try_eval_list_one(i, _as, p, last_break, can_fail, can_nest, in_nest);
       }
     | [Break(Break.Softline), ..._as] =>
       if (last_break == None) {
@@ -295,8 +248,6 @@ module Atom = {
         try({
           let (_as, p, last_break) =
             try_eval_list_one(
-              width,
-              tab,
               i,
               _as,
               p,
@@ -311,10 +262,8 @@ module Atom = {
           let do_indent = can_nest && !in_nest;
           let (_as, p, last_break) =
             try_eval_list_one(
-              width,
-              tab,
               if (do_indent) {
-                i + tab;
+                i + tab_width;
               } else {
                 i;
               },
@@ -336,26 +285,14 @@ module Atom = {
           };
         };
       } else {
-        try_eval_list_one(
-          width,
-          tab,
-          i,
-          _as,
-          p,
-          last_break,
-          can_fail,
-          can_nest,
-          in_nest,
-        );
+        try_eval_list_one(i, _as, p, last_break, can_fail, can_nest, in_nest);
       }
     | [Break(Break.Hardline), ..._as] =>
       let (_as, p, last_break) =
         /* If there is an explicit newline we always undo the nesting. */
         if (in_nest) {
           try_eval_list_one(
-            width,
-            tab,
-            i - tab,
+            i - tab_width,
             _as,
             0,
             Some(Break.Hardline),
@@ -365,8 +302,6 @@ module Atom = {
           );
         } else {
           try_eval_list_one(
-            width,
-            tab,
             i,
             _as,
             0,
@@ -389,32 +324,19 @@ module Atom = {
       let (a, p, last_break) =
         /* If [Overflow] is possible we try in flat mode, else "at best". */
         if (can_fail) {
-          let (p, last_break) =
-            try_eval_flat(width, tab, i, a, p, last_break);
+          let (p, last_break) = try_eval_flat(i, a, p, last_break);
           (a, p, last_break);
         } else {
-          eval(width, tab, i, a, p, last_break);
+          eval(i, a, p, last_break);
         };
       let (_as, p, last_break) =
-        try_eval_list_one(
-          width,
-          tab,
-          i,
-          _as,
-          p,
-          last_break,
-          can_fail,
-          can_nest,
-          in_nest,
-        );
+        try_eval_list_one(i, _as, p, last_break, can_fail, can_nest, in_nest);
       ([a, ..._as], p, last_break);
     }
 
   /* Eval "at best" a list of atoms splitting all the spaces. The flag [can_nest] sets if we indent when we break lines. */
   and eval_list_all =
       (
-        width: int,
-        tab: int,
         i: int,
         _as: list(t),
         p: int,
@@ -429,8 +351,6 @@ module Atom = {
       if (last_break == None) {
         let (_as, p, last_break) =
           eval_list_all(
-            width,
-            tab,
             if (can_nest) {
               i + 1;
             } else {
@@ -451,19 +371,18 @@ module Atom = {
           ([Break(Break.Hardline), ..._as], p, last_break);
         };
       } else {
-        eval_list_all(width, tab, i, _as, p, last_break, can_nest);
+        eval_list_all(i, _as, p, last_break, can_nest);
       }
     | [a, ..._as] =>
-      let (a, p, last_break) = eval(width, tab, i, a, p, last_break);
+      let (a, p, last_break) = eval(i, a, p, last_break);
       let (_as, p, last_break) =
-        eval_list_all(width, tab, i, _as, p, last_break, can_nest);
+        eval_list_all(i, _as, p, last_break, can_nest);
       ([a, ..._as], p, last_break);
     };
 
-  /* Evaluate the breaks with a maximal [width] per line and a tabulation width [tab]. */
-  let render = (width: int, tab: int, _as: list(t)): t => {
-    let (a, _, _) =
-      eval(width, tab, 0, GroupOne(false, _as), 0, Some(Break.Hardline));
+  /* Evaluate the breaks. */
+  let render = (_as: list(t)): t => {
+    let (a, _, _) = eval(0, GroupOne(false, _as), 0, Some(Break.Hardline));
     a;
   };
 
@@ -527,7 +446,6 @@ module Atom = {
   /* Write to something, given the [add_char] and [add_string] functions. */
   let to_something =
       (
-        tab: int,
         add_char: char => unit,
         add_string: string => unit,
         add_sub_string: (string, int, int) => unit,
@@ -579,7 +497,7 @@ module Atom = {
         let last_break = ref(last_break);
         _as |> List.iter(a => last_break := aux(a, i, last_break^));
         last_break^;
-      | Indent(n, a) => aux(a, i + n * tab, last_break)
+      | Indent(n, a) => aux(a, i + n * tab_width, last_break)
       };
     ignore(aux(a, 0, Some(Break.Hardline)));
   };
@@ -765,14 +683,12 @@ module Debug = {
 
   let pp_document = (d: t): t => list(pp_atom, to_atoms(d));
 
-  let pp_document_after_rendering = (width: int, tab: int, d: t): t =>
-    pp_atom @@ Atom.render(width, tab) @@ to_atoms(d);
+  let pp_document_after_rendering = (d: t): t =>
+    pp_atom @@ Atom.render @@ to_atoms(d);
 };
 
 let to_something =
     (
-      width: int,
-      tab: int,
       add_char: char => unit,
       add_string: string => unit,
       add_sub_string: (string, int, int) => unit,
@@ -780,18 +696,15 @@ let to_something =
       d: t,
     )
     : unit =>
-  Atom.to_something(tab, add_char, add_string, add_sub_string, add_newline) @@
-  Atom.render(width, tab) @@
+  Atom.to_something(add_char, add_string, add_sub_string, add_newline) @@
+  Atom.render @@
   to_atoms(d);
 
-let to_buffer =
-    (width: int, tab: int, newline: string, b: Buffer.t, d: t): unit => {
+let to_buffer = (newline: string, b: Buffer.t, d: t): unit => {
   let output_newline = () => Buffer.add_string(b, newline);
   let output_sub_string = (b, s: string, o: int, l: int): unit =>
     Buffer.add_string(b, Grain_utils.String_utils.Utf8.sub(s, o, l));
   to_something(
-    width,
-    tab,
     Buffer.add_char(b),
     Buffer.add_string(b),
     output_sub_string(b),
@@ -800,20 +713,17 @@ let to_buffer =
   );
 };
 
-let to_string = (~width: int, ~tab: int, ~newline: string, doc: t): string => {
+let to_string = (~newline: string, doc: t): string => {
   let b = Buffer.create(10);
-  to_buffer(width, tab, newline, b, doc);
+  to_buffer(newline, b, doc);
   Buffer.contents(b);
 };
 
-let to_out_channel =
-    (width: int, tab: int, newline: string, c: out_channel, d: t): unit => {
+let to_out_channel = (newline: string, c: out_channel, d: t): unit => {
   let output_sub_string = (s: string, o: int, l: int): unit =>
     output_string(c, Grain_utils.String_utils.Utf8.sub(s, o, l));
   let output_newline = () => output_string(c, newline);
   to_something(
-    width,
-    tab,
     output_char(c),
     output_string(c),
     output_sub_string,
@@ -822,8 +732,8 @@ let to_out_channel =
   );
 };
 
-let to_stdout = (width: int, tab: int, newline: string, d: t): unit =>
-  to_out_channel(width, tab, newline, stdout, d);
+let to_stdout = (newline: string, d: t): unit =>
+  to_out_channel(newline, stdout, d);
 
 let concat_map = (~sep, ~lead=first => empty, ~trail=last => empty, ~f, l) => {
   let (last, list) =
