@@ -111,7 +111,7 @@ module Atom = {
           ~last_break,
           ~can_fail=false,
           ~can_nest,
-          false,
+          ~in_nest=false,
         );
       (GroupOne(can_nest, _as), column, last_break);
     | GroupAll(can_nest, _as) =>
@@ -225,7 +225,7 @@ module Atom = {
         // TODO: It'd be nice to have `eval_list_one` that is unfallible and `try_eval_list_one` that is only fallible
         ~can_fail: bool,
         ~can_nest: bool,
-        in_nest: bool,
+        ~in_nest: bool,
       )
       : (list(t), int, option(Break.t)) =>
     switch (_as) {
@@ -242,7 +242,7 @@ module Atom = {
               ~last_break=Some(Break.Space),
               ~can_fail=true,
               ~can_nest,
-              in_nest,
+              ~in_nest,
             );
           ([Break(Break.Space), ..._as], column, last_break);
         }) {
@@ -261,7 +261,7 @@ module Atom = {
               ~last_break=Some(Break.Hardline),
               ~can_fail=false,
               ~can_nest,
-              in_nest,
+              ~in_nest,
             );
           if (do_indent) {
             (
@@ -281,7 +281,7 @@ module Atom = {
           ~last_break,
           ~can_fail,
           ~can_nest,
-          in_nest,
+          ~in_nest,
         );
       }
     | [Break(Break.Softline), ..._as] =>
@@ -296,7 +296,7 @@ module Atom = {
               ~last_break=Some(Break.Softline),
               ~can_fail=true,
               ~can_nest,
-              in_nest,
+              ~in_nest,
             );
           ([Break(Break.Softline), ..._as], column, last_break);
         }) {
@@ -315,7 +315,7 @@ module Atom = {
               ~last_break=Some(Break.Hardline),
               ~can_fail=false,
               ~can_nest,
-              in_nest,
+              ~in_nest,
             );
           if (do_indent) {
             (
@@ -335,7 +335,7 @@ module Atom = {
           ~last_break,
           ~can_fail,
           ~can_nest,
-          in_nest,
+          ~in_nest,
         );
       }
     | [Break(Break.Hardline), ..._as] =>
@@ -349,7 +349,7 @@ module Atom = {
             ~last_break=Some(Break.Hardline),
             ~can_fail=false,
             ~can_nest,
-            false,
+            ~in_nest=false,
           );
         } else {
           try_eval_list_one(
@@ -359,7 +359,7 @@ module Atom = {
             ~last_break=Some(Break.Hardline),
             ~can_fail=false,
             ~can_nest,
-            false,
+            ~in_nest=false,
           );
         };
       if (in_nest) {
@@ -389,7 +389,7 @@ module Atom = {
           ~last_break,
           ~can_fail,
           ~can_nest,
-          in_nest,
+          ~in_nest,
         );
       ([a, ..._as], column, last_break);
     }
