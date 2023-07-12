@@ -44,7 +44,7 @@
     "@opam/ppx_deriving_cmdliner": ">= 0.6.1",
     "@opam/ppx_deriving_yojson": ">= 3.7.0 < 4.0.0",
     "@opam/ppx_sexp_conv": "v0.15.1",
-    "@opam/reason": ">= 3.8.2 < 3.9.0",
+    "@opam/reason": ">= 3.8.2 < 4.0.0",
     "@opam/sedlex": ">= 3.0 < 4.0",
     "@opam/sexplib": "v0.15.1",
     "@opam/uri": ">= 4.2.0 < 5.0.0",
@@ -55,18 +55,19 @@
   "devDependencies": {
     "@opam/js_of_ocaml-compiler": "5.0.1",
     "@opam/ocaml-lsp-server": "1.14.1",
-    "@reason-native/rely": "^4.0.0"
+    "@opam/rely": "^4.0.0"
   },
   "resolutions": {
-    "@esy-ocaml/reason": "reasonml/reason:esy.json#6e6c3a7c2714aeaee93b421b3ffc040874bd3b3a",
     "@opam/dune": "3.9.1",
-    "@opam/fp": "reasonml/reason-native:fp.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
-    "@opam/fs": "reasonml/reason-native:fs.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/fp": "phated/reason-native:fp.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
+    "@opam/fs": "phated/reason-native:fs.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
-    "@opam/utf8": "reasonml/reason-native:utf8.opam#0ed854f986256e52e59aeecfa90e9af60f105b15",
+    "@opam/utf8": "phated/reason-native:utf8.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
     "@opam/utop": "2.12.1",
-    "@reason-native/cli": "reasonml/reason-native:cli.json#0ed854f986256e52e59aeecfa90e9af60f105b15",
-    "@reason-native/rely": "reasonml/reason-native:rely.json#0ed854f986256e52e59aeecfa90e9af60f105b15"
+    "@opam/cli": "phated/reason-native:cli.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
+    "@opam/file-context-printer": "phated/reason-native:file-context-printer.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
+    "@opam/pastel": "phated/reason-native:pastel.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
+    "@opam/rely": "phated/reason-native:rely.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9"
   },
   "installConfig": {
     "pnp": false
