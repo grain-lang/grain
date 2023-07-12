@@ -110,7 +110,7 @@ module Atom = {
           ~column,
           ~last_break,
           ~can_fail=false,
-          can_nest,
+          ~can_nest,
           false,
         );
       (GroupOne(can_nest, _as), column, last_break);
@@ -127,7 +127,7 @@ module Atom = {
           (_as, column, last_break);
         }) {
         | Overflow =>
-          eval_list_all(~indent, _as, ~column, ~last_break, can_nest)
+          eval_list_all(~indent, _as, ~column, ~last_break, ~can_nest)
         };
       (GroupAll(can_nest, _as), column, last_break);
     | Indent(n, a) =>
@@ -224,7 +224,7 @@ module Atom = {
         ~last_break: option(Break.t),
         // TODO: It'd be nice to have `eval_list_one` that is unfallible and `try_eval_list_one` that is only fallible
         ~can_fail: bool,
-        can_nest: bool,
+        ~can_nest: bool,
         in_nest: bool,
       )
       : (list(t), int, option(Break.t)) =>
@@ -241,7 +241,7 @@ module Atom = {
               ~column=column + 1,
               ~last_break=Some(Break.Space),
               ~can_fail=true,
-              can_nest,
+              ~can_nest,
               in_nest,
             );
           ([Break(Break.Space), ..._as], column, last_break);
@@ -260,7 +260,7 @@ module Atom = {
               ~column=0,
               ~last_break=Some(Break.Hardline),
               ~can_fail=false,
-              can_nest,
+              ~can_nest,
               in_nest,
             );
           if (do_indent) {
@@ -280,7 +280,7 @@ module Atom = {
           ~column,
           ~last_break,
           ~can_fail,
-          can_nest,
+          ~can_nest,
           in_nest,
         );
       }
@@ -295,7 +295,7 @@ module Atom = {
               ~column,
               ~last_break=Some(Break.Softline),
               ~can_fail=true,
-              can_nest,
+              ~can_nest,
               in_nest,
             );
           ([Break(Break.Softline), ..._as], column, last_break);
@@ -314,7 +314,7 @@ module Atom = {
               ~column=0,
               ~last_break=Some(Break.Hardline),
               ~can_fail=false,
-              can_nest,
+              ~can_nest,
               in_nest,
             );
           if (do_indent) {
@@ -334,7 +334,7 @@ module Atom = {
           ~column,
           ~last_break,
           ~can_fail,
-          can_nest,
+          ~can_nest,
           in_nest,
         );
       }
@@ -348,7 +348,7 @@ module Atom = {
             ~column=0,
             ~last_break=Some(Break.Hardline),
             ~can_fail=false,
-            can_nest,
+            ~can_nest,
             false,
           );
         } else {
@@ -358,7 +358,7 @@ module Atom = {
             ~column=0,
             ~last_break=Some(Break.Hardline),
             ~can_fail=false,
-            can_nest,
+            ~can_nest,
             false,
           );
         };
@@ -388,7 +388,7 @@ module Atom = {
           ~column,
           ~last_break,
           ~can_fail,
-          can_nest,
+          ~can_nest,
           in_nest,
         );
       ([a, ..._as], column, last_break);
@@ -401,7 +401,7 @@ module Atom = {
         _as: list(t),
         ~column: int,
         ~last_break: option(Break.t),
-        can_nest: bool,
+        ~can_nest: bool,
       )
       : (list(t), int, option(Break.t)) =>
     switch (_as) {
@@ -420,7 +420,7 @@ module Atom = {
             _as,
             ~column=if (can_nest) {2} else {0},
             ~last_break=Some(Break.Hardline),
-            false,
+            ~can_nest=false,
           );
         if (can_nest) {
           (
@@ -432,12 +432,12 @@ module Atom = {
           ([Break(Break.Hardline), ..._as], column, last_break);
         };
       } else {
-        eval_list_all(~indent, _as, ~column, ~last_break, can_nest);
+        eval_list_all(~indent, _as, ~column, ~last_break, ~can_nest);
       }
     | [a, ..._as] =>
       let (a, column, last_break) = eval(~indent, a, ~column, ~last_break);
       let (_as, column, last_break) =
-        eval_list_all(~indent, _as, ~column, ~last_break, can_nest);
+        eval_list_all(~indent, _as, ~column, ~last_break, ~can_nest);
       ([a, ..._as], column, last_break);
     };
 
