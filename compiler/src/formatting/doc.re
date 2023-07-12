@@ -264,7 +264,7 @@ module Atom = {
               Some(Break.Hardline),
               false,
               can_nest,
-              can_nest,
+              in_nest,
             );
           if (do_indent) {
             (
@@ -292,19 +292,49 @@ module Atom = {
     | [Break(Break.Softline), ..._as] =>
       if (last_break == None) {
         /* If it is not possible in flat mode, switch back to "at best". */
-        let (_as, p, last_break) =
-          try_eval_list_one(
-            width,
-            tab,
-            i,
-            _as,
-            p,
-            Some(Break.Softline),
-            false,
-            can_nest,
-            in_nest,
-          );
-        ([Break(Break.Softline), ..._as], p, last_break);
+        try({
+          let (_as, p, last_break) =
+            try_eval_list_one(
+              width,
+              tab,
+              i,
+              _as,
+              p,
+              Some(Break.Softline),
+              true,
+              can_nest,
+              in_nest,
+            );
+          ([Break(Break.Softline), ..._as], p, last_break);
+        }) {
+        | Overflow =>
+          let do_indent = can_nest && !in_nest;
+          let (_as, p, last_break) =
+            try_eval_list_one(
+              width,
+              tab,
+              if (do_indent) {
+                i + tab;
+              } else {
+                i;
+              },
+              _as,
+              0,
+              Some(Break.Hardline),
+              false,
+              can_nest,
+              in_nest,
+            );
+          if (do_indent) {
+            (
+              [Break(Break.Hardline), Indent(1, GroupOne(false, _as))],
+              p,
+              last_break,
+            );
+          } else {
+            ([Break(Break.Hardline), ..._as], p, last_break);
+          };
+        };
       } else {
         try_eval_list_one(
           width,
