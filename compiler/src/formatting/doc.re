@@ -109,7 +109,7 @@ module Atom = {
           _as,
           ~column,
           ~last_break,
-          false,
+          ~can_fail=false,
           can_nest,
           false,
         );
@@ -222,7 +222,8 @@ module Atom = {
         _as: list(t),
         ~column: int,
         ~last_break: option(Break.t),
-        can_fail: bool,
+        // TODO: It'd be nice to have `eval_list_one` that is unfallible and `try_eval_list_one` that is only fallible
+        ~can_fail: bool,
         can_nest: bool,
         in_nest: bool,
       )
@@ -239,7 +240,7 @@ module Atom = {
               _as,
               ~column=column + 1,
               ~last_break=Some(Break.Space),
-              true,
+              ~can_fail=true,
               can_nest,
               in_nest,
             );
@@ -258,7 +259,7 @@ module Atom = {
               _as,
               ~column=0,
               ~last_break=Some(Break.Hardline),
-              false,
+              ~can_fail=false,
               can_nest,
               in_nest,
             );
@@ -278,7 +279,7 @@ module Atom = {
           _as,
           ~column,
           ~last_break,
-          can_fail,
+          ~can_fail,
           can_nest,
           in_nest,
         );
@@ -293,7 +294,7 @@ module Atom = {
               _as,
               ~column,
               ~last_break=Some(Break.Softline),
-              true,
+              ~can_fail=true,
               can_nest,
               in_nest,
             );
@@ -312,7 +313,7 @@ module Atom = {
               _as,
               ~column=0,
               ~last_break=Some(Break.Hardline),
-              false,
+              ~can_fail=false,
               can_nest,
               in_nest,
             );
@@ -332,7 +333,7 @@ module Atom = {
           _as,
           ~column,
           ~last_break,
-          can_fail,
+          ~can_fail,
           can_nest,
           in_nest,
         );
@@ -346,7 +347,7 @@ module Atom = {
             _as,
             ~column=0,
             ~last_break=Some(Break.Hardline),
-            false,
+            ~can_fail=false,
             can_nest,
             false,
           );
@@ -356,7 +357,7 @@ module Atom = {
             _as,
             ~column=0,
             ~last_break=Some(Break.Hardline),
-            false,
+            ~can_fail=false,
             can_nest,
             false,
           );
@@ -386,7 +387,7 @@ module Atom = {
           _as,
           ~column,
           ~last_break,
-          can_fail,
+          ~can_fail,
           can_nest,
           in_nest,
         );
