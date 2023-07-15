@@ -558,72 +558,130 @@ module ToString {
   assert toString(JsonObject([]), format=Pretty) == Ok("{}\n")
 
   // Various strings. Escapes, emojis etc.
-  assert toString(JsonString("ASCII Hello world!"), format=Compact) ==
+  assert toString(JsonString("ASCII Hello world!")) ==
     Ok("\"ASCII Hello world!\"")
+
+  assert toString(JsonString("Unicode こんにちは世界!")) ==
+    Ok("\"Unicode こんにちは世界!\"")
+  assert toString(JsonString("A \"quoted\" string")) ==
+    Ok("\"A \\\"quoted\\\" string\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿")) ==
+    Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(
+    JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿")
+  ) ==
+    Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(JsonString("ASCII Hello world!")) ==
+    Ok("\"ASCII Hello world!\"")
+
+  assert toString(JsonString("Unicode こんにちは世界!")) ==
+    Ok("\"Unicode こんにちは世界!\"")
+  assert toString(JsonString("A \"quoted\" string")) ==
+    Ok("\"A \\\"quoted\\\" string\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🤘🏻")) == Ok("\"🤘🏻\"")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿")) ==
+    Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(
+    JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿")
+  ) ==
+    Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+  assert toString(JsonString("ASCII Hello world!"), format=Pretty) ==
+    Ok("\"ASCII Hello world!\"\n")
 
   assert toString(
     JsonString("Unicode こんにちは世界!"),
-    format=Compact
+    format=Pretty
   ) ==
-    Ok("\"Unicode こんにちは世界!\"")
-  assert toString(JsonString("A \"quoted\" string"), format=Compact) ==
-    Ok("\"A \\\"quoted\\\" string\"")
-  assert toString(JsonString("🤘🏻"), format=Compact) == Ok("\"🤘🏻\"")
-  assert toString(JsonString("🤘🏻"), format=Compact) == Ok("\"🤘🏻\"")
-  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"), format=Compact) ==
-    Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+    Ok("\"Unicode こんにちは世界!\"\n")
+  assert toString(JsonString("A \"quoted\" string"), format=Pretty) ==
+    Ok("\"A \\\"quoted\\\" string\"\n")
+  assert toString(JsonString("🤘🏻"), format=Pretty) == Ok("\"🤘🏻\"\n")
+  assert toString(JsonString("🤘🏻"), format=Pretty) == Ok("\"🤘🏻\"\n")
+  assert toString(JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"), format=Pretty) ==
+    Ok("\"🏴󠁧󠁢󠁷󠁬󠁳󠁿\"\n")
   assert toString(
     JsonString("怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿"),
-    format=Compact
+    format=Pretty
   ) ==
-    Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"")
+    Ok("\"怀 𐂂 🤘🏻 🏴󠁧󠁢󠁷󠁬󠁳󠁿\"\n")
+  assert toString(
+    JsonString("ASCII Hello world!"),
+    format=PrettyAndSafeFormat
+  ) ==
+    Ok("\"ASCII Hello world!\"\n")
+  assert toString(
+    JsonString("Unicode こんにちは世界!"),
+    format=PrettyAndSafeFormat
+  ) ==
+    Ok("\"Unicode \\u3053\\u3093\\u306b\\u3061\\u306f\\u4e16\\u754c!\"\n")
+  assert toString(
+    JsonString("A \"quoted\" string"),
+    format=PrettyAndSafeFormat
+  ) ==
+    Ok("\"A \\\"quoted\\\" string\"\n")
+  assert toString(JsonString("🤘🏻"), format=PrettyAndSafeFormat) ==
+    Ok("\"\\ud83e\\udd18\\ud83c\\udffb\"\n")
+  assert toString(
+    JsonString("🏴󠁧󠁢󠁷󠁬󠁳󠁿"),
+    format=PrettyAndSafeFormat
+  ) ==
+    Ok(
+      "\"\\ud83c\\udff4\\udb40\\udc67\\udb40\\udc62\\udb40\\udc77\\udb40\\udc6c\\udb40\\udc73\\udb40\\udc7f\"\n"
+    )
 
   // Note that number tests are sensitive both to compiler's interpretation of
   // the constants as different number tags (simple numbers, float32, float64)
   // and internal details of JSON formatting. We definetely want them to fail
   // when the latter changes. The former shouldn't be an issue assuming here
   // constants with decimal point or exponentials are float64.
-  assert toString(JsonNumber(-10), format=Compact) == Ok("-10")
-  assert toString(JsonNumber(-2), format=Compact) == Ok("-2")
-  assert toString(JsonNumber(-1), format=Compact) == Ok("-1")
-  assert toString(JsonNumber(1), format=Compact) == Ok("1")
-  assert toString(JsonNumber(2), format=Compact) == Ok("2")
-  assert toString(JsonNumber(10), format=Compact) == Ok("10")
-  assert toString(JsonNumber(100), format=Compact) == Ok("100")
-  assert toString(JsonNumber(1000), format=Compact) == Ok("1000")
-  assert toString(JsonNumber(0.0), format=Compact) == Ok("0.0")
-  assert toString(JsonNumber(0.1), format=Compact) == Ok("0.1")
-  assert toString(JsonNumber(0.123), format=Compact) == Ok("0.123")
-  assert toString(JsonNumber(0.9), format=Compact) == Ok("0.9")
-  assert toString(JsonNumber(1.123), format=Compact) == Ok("1.123")
-  assert toString(JsonNumber(0e0), format=Compact) == Ok("0.0")
-  assert toString(JsonNumber(1e0), format=Compact) == Ok("1.0")
-  assert toString(JsonNumber(1e1), format=Compact) == Ok("10.0")
-  assert toString(JsonNumber(1E1), format=Compact) == Ok("10.0")
-  assert toString(JsonNumber(1e2), format=Compact) == Ok("100.0")
-  assert toString(JsonNumber(1e3), format=Compact) == Ok("1000.0")
-  assert toString(JsonNumber(-1e2), format=Compact) == Ok("-100.0")
-  assert toString(JsonNumber(1e-1), format=Compact) == Ok("0.1")
-  assert toString(JsonNumber(1.23e-4), format=Compact) == Ok("0.000123")
+  assert toString(JsonNumber(-10)) == Ok("-10")
+  assert toString(JsonNumber(-2)) == Ok("-2")
+  assert toString(JsonNumber(-1)) == Ok("-1")
+  assert toString(JsonNumber(1)) == Ok("1")
+  assert toString(JsonNumber(2)) == Ok("2")
+  assert toString(JsonNumber(10)) == Ok("10")
+  assert toString(JsonNumber(100)) == Ok("100")
+  assert toString(JsonNumber(1000)) == Ok("1000")
+  assert toString(JsonNumber(0.0)) == Ok("0.0")
+  assert toString(JsonNumber(0.1)) == Ok("0.1")
+  assert toString(JsonNumber(0.123)) == Ok("0.123")
+  assert toString(JsonNumber(0.9)) == Ok("0.9")
+  assert toString(JsonNumber(1.123)) == Ok("1.123")
+  assert toString(JsonNumber(0e0)) == Ok("0.0")
+  assert toString(JsonNumber(1e0)) == Ok("1.0")
+  assert toString(JsonNumber(1e1)) == Ok("10.0")
+  assert toString(JsonNumber(1E1)) == Ok("10.0")
+  assert toString(JsonNumber(1e2)) == Ok("100.0")
+  assert toString(JsonNumber(1e3)) == Ok("1000.0")
+  assert toString(JsonNumber(-1e2)) == Ok("-100.0")
+  assert toString(JsonNumber(1e-1)) == Ok("0.1")
+  assert toString(JsonNumber(1.23e-4)) == Ok("0.000123")
+
+  // Rationals
+  assert toString(JsonNumber(1/3)) == Ok("0.3333333333333333")
+  assert toString(JsonNumber(2/3)) == Ok("0.6666666666666666")
+  assert toString(JsonNumber(3/3)) == Ok("1")
 
   // Big numbers
-  assert toString(JsonNumber(1152921504606846976), format=Compact) ==
-    Ok("1152921504606846976")
-  assert toString(JsonNumber(1152921504606847000.0), format=Compact) ==
+  assert toString(JsonNumber(1152921504606846976)) == Ok("1152921504606846976")
+  assert toString(JsonNumber(1152921504606847000.0)) ==
     Ok("1152921504606847000.0")
 
   // Invalid numbers
-  assert match (toString(JsonNumber(NaN), format=Compact)) {
+  assert match (toString(JsonNumber(NaN))) {
     Err(InvalidNumber(_)) => true,
     _ => false,
   }
 
-  assert match (toString(JsonNumber(Infinity), format=Compact)) {
+  assert match (toString(JsonNumber(Infinity))) {
     Err(InvalidNumber(_)) => true,
     _ => false,
   }
 
-  assert match (toString(JsonNumber(-Infinity), format=Compact)) {
+  assert match (toString(JsonNumber(-Infinity))) {
     Err(InvalidNumber(_)) => true,
     _ => false,
   }
@@ -995,5 +1053,17 @@ module ToString {
     Ok(Ok(comprehensiveJsonObject))
 
   assert Result.map(parse, toString(comprehensiveJsonObject, format=Pretty)) ==
+    Ok(Ok(comprehensiveJsonObject))
+
+  assert Result.map(
+    parse,
+    toString(comprehensiveJsonObject, format=CompactAndSafeFormat)
+  ) ==
+    Ok(Ok(comprehensiveJsonObject))
+
+  assert Result.map(
+    parse,
+    toString(comprehensiveJsonObject, format=PrettyAndSafeFormat)
+  ) ==
     Ok(Ok(comprehensiveJsonObject))
 }

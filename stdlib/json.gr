@@ -631,25 +631,12 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
             None
           },
           t when t == Tags._GRAIN_RATIONAL_BOXED_NUM_TAG => {
-            from WasmF64 use { (/) }
-            // As a compromise, convert the rational into a float
-            // and then print that. This means there can be
-            // precision loss even for values that could be printed
-            // exactly in decimal notation, but doing otherwise
-            // could both compromise performance and confuse
-            // developers as most JSON libraries in other languages
-            // likely only deal with integers and floats.
-            // Note that the ECMA-404 standard only specifies how
-            // numbers should be formatted as text (in decimal
-            // notation), so we could go the extra mile and at
-            // least for some numbers try printing the exact
-            // number. For example those that have a power of 10
-            // in the denominator.
-            let asWasmF64 = WasmF64.convertI32S(
-              Numbers.boxedRationalNumerator(ptr)
-            ) /
-              WasmF64.convertI32S(Numbers.boxedRationalDenominator(ptr))
-
+            // JSON does not support rationals as a compromise
+            // we coerce them to an f64 and print that
+            // this means there is a slight loss in precision
+            let asFloat64 = Numbers.coerceNumberToFloat64(value)
+            let ptr = WasmI32.fromGrain(asFloat64)
+            let asWasmF64 = WasmF64.load(ptr, _Float64_BOXED_VALUE_OFFSET)
             printNumberWasmF64(asWasmF64, buffer)
           },
           t when t == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG => {
