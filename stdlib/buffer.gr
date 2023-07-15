@@ -323,6 +323,18 @@ provide let addChar = (char, buffer) => {
 }
 
 /**
+ * Appends a char from a code point to a buffer.
+ *
+ * @param codePoint: The codePoint to append to the buffer
+ * @param buffer: The buffer to mutate
+ *
+ * @since v0.6.0
+ */
+provide let addCharFromCodePoint = (codePoint: Number, buffer) => {
+  addChar(Char.fromCode(codePoint), buffer)
+}
+
+/**
  * Appends the bytes of a subset of a string to a buffer.
  *
  * @param start: The char offset into the string
