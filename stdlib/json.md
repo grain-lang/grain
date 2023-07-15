@@ -23,6 +23,11 @@ enum Json {
 
 Data structure representing the result of parsing and the input of printing JSON.
 
+This data structure is semantically equivalent to the JSON format allowing
+mostly lossless round trips of printing and parsing. Exceptions to this are
+whitespace, multiple ways JSON allows escaping characters in strings, and
+some edge cases related to Grain's `Number` type.
+
 Examples:
 
 ```grain
@@ -37,11 +42,6 @@ Json.parse("{\n\"currency\":\"€\",\n\"price\":99.99\n}") == JsonObject([
   ("currency", JsonString("€")),
   ("price", JsonNumber(99.99)),
 ])
-
-This data structure is semantically equivalent to the JSON format allowing
-mostly lossless round trips of printing and parsing. Exceptions to this are
-whitespace, multiple ways JSON allows escaping characters in strings, and
-some edge cases related to Grain's `Number` type.
 ```
 
 ### Json.**JsonToStringError**
@@ -236,30 +236,24 @@ enum LineEnding {
 
 Controls line ending type in custom formatting.
 
-### Json.**FormattingSettings**
-
-```grain
-record FormattingSettings {
-  indentation: IndentationFormat,
-  arrayFormat: ArrayFormat,
-  objectFormat: ObjectFormat,
-  lineEnding: LineEnding,
-  finishWithNewLine: Bool,
-  escapeAllControlPoints: Bool,
-  escapeHTMLUnsafeSequences: Bool,
-  escapeNonASCII: Bool,
-}
-```
-
-Allows fine-grained control of formatting in JSON printing.
-
 ### Json.**FormattingChoices**
 
 ```grain
 enum FormattingChoices {
   Pretty,
   Compact,
-  Custom(FormattingSettings),
+  PrettyAndSafeFormat,
+  CompactAndSafeFormat,
+  Custom{
+    indentation: IndentationFormat,
+    arrayFormat: ArrayFormat,
+    objectFormat: ObjectFormat,
+    lineEnding: LineEnding,
+    finishWithNewLine: Bool,
+    escapeAllControlPoints: Bool,
+    escapeHTMLUnsafeSequences: Bool,
+    escapeNonASCII: Bool,
+  },
 }
 ```
 
@@ -280,109 +274,6 @@ Represents errors for JSON parsing along with a human readable text message.
 ## Values
 
 Functions and constants included in the Json module.
-
-### Json.**defaultCompactFormat**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-defaultCompactFormat : FormattingSettings
-```
-
-Compact formatting that minimizes the size of resulting JSON at cost of not
-being easily human readable.
-
-Only performs minimal string escaping as required by the ECMA-404 standard,
-so the result needs to be treated as proper unicode and is not safe to be
-transported in ASCII encoding.
-
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
-```
-{"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
-```
-
-### Json.**defaultPrettyFormat**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-defaultPrettyFormat : FormattingSettings
-```
-
-Recommended human readable formatting.
-
-Escapes all control points for the sake of clarity, but prints unicode
-codepoints directly so the result needs to be treated as proper unicode and
-is not safe to be transported in ASCII encoding.
-
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
-```
-{↵
-··"currency":·"€",↵
-··"price":·99.9,↵
-··"currencyDescription":·"EURO\u007f",↵
-··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"↵
-}
-```
-
-### Json.**defaultCompactAndSafeFormat**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-defaultCompactAndSafeFormat : FormattingSettings
-```
-
-Compact and conservative formatting to maximize compatibility and
-embeddability of the resulting JSON.
-
-Should be safe to copy and paste directly into HTML and to transported in
-plain ASCII.
-
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
-```
-{"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
-```
-
-### Json.**defaultPrettyAndSafeFormat**
-
-<details disabled>
-<summary tabindex="-1">Added in <code>next</code></summary>
-No other changes yet.
-</details>
-
-```grain
-defaultPrettyAndSafeFormat : FormattingSettings
-```
-
-Pretty and conservative formatting to maximize compatibility and
-embeddability of the resulting JSON.
-
-Should be safe to copy and paste directly into HTML and to transported in
-plain ASCII.
-
-The following example have whitespaces, line breaks and control points
-replaced with visible characters.
-```
-{↵
-··"currency":·"\u20ac",↵
-··"price":·99.9,↵
-··"currencyDescription":·"EURO\u007f",↵
-··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"↵
-}
-```
 
 ### Json.**toString**
 
@@ -417,7 +308,16 @@ Examples:
 ```grain
 print(
   toString(
-    format=Custom(defaultCompactAndSafeFormat),
+    format=Custom{
+     indentation: NoIndentation,
+     arrayFormat: CompactArrayEntries,
+     objectFormat: CompactObjectEntries,
+     lineEnding: NoLineEnding,
+     finishWithNewLine: false,
+     escapeAllControlPoints: true,
+     escapeHTMLUnsafeSequences: true,
+     escapeNonASCII: true,
+    },
     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
   )
 )

@@ -37,6 +37,11 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
 /**
  * Data structure representing the result of parsing and the input of printing JSON.
  *
+ * This data structure is semantically equivalent to the JSON format allowing
+ * mostly lossless round trips of printing and parsing. Exceptions to this are
+ * whitespace, multiple ways JSON allows escaping characters in strings, and
+ * some edge cases related to Grain's `Number` type.
+ *
  * @example
  * Json.parse("{\"currency\":\"€\",\"price\":99.99}") == JsonObject([
  *   ("currency", JsonString("€")),
@@ -48,11 +53,6 @@ let _Float64_BOXED_VALUE_OFFSET = 8n
  *   ("currency", JsonString("€")),
  *   ("price", JsonNumber(99.99)),
  * ])
- *
- * This data structure is semantically equivalent to the JSON format allowing
- * mostly lossless round trips of printing and parsing. Exceptions to this are
- * whitespace, multiple ways JSON allows escaping characters in strings, and
- * some edge cases related to Grain's `Number` type.
  */
 provide enum rec Json {
   JsonNull,
@@ -251,10 +251,10 @@ provide enum LineEnding {
   CarriageReturn,
 }
 
-/**
+/*
  * Allows fine-grained control of formatting in JSON printing.
  */
-provide record FormattingSettings {
+record FormattingSettings {
   indentation: IndentationFormat,
   arrayFormat: ArrayFormat,
   objectFormat: ObjectFormat,
@@ -271,9 +271,20 @@ provide record FormattingSettings {
 provide enum FormattingChoices {
   Pretty,
   Compact,
-  Custom(FormattingSettings),
+  PrettyAndSafeFormat,
+  CompactAndSafeFormat,
+  Custom{
+    indentation: IndentationFormat,
+    arrayFormat: ArrayFormat,
+    objectFormat: ObjectFormat,
+    lineEnding: LineEnding,
+    finishWithNewLine: Bool,
+    escapeAllControlPoints: Bool,
+    escapeHTMLUnsafeSequences: Bool,
+    escapeNonASCII: Bool,
+  },
 }
-/**
+/*
  * Compact formatting that minimizes the size of resulting JSON at cost of not
  * being easily human readable.
  *
@@ -286,10 +297,8 @@ provide enum FormattingChoices {
  * ```
  * {"currency":"€","price":99.9,"currencyDescription":"EURO␡","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"}
  * ```
- *
- * @since v0.6.0
  */
-provide let defaultCompactFormat = {
+let defaultCompactFormat = {
   indentation: NoIndentation,
   arrayFormat: CompactArrayEntries,
   objectFormat: CompactObjectEntries,
@@ -300,7 +309,7 @@ provide let defaultCompactFormat = {
   escapeNonASCII: false,
 }: FormattingSettings
 
-/**
+/*
  * Recommended human readable formatting.
  *
  * Escapes all control points for the sake of clarity, but prints unicode
@@ -317,10 +326,8 @@ provide let defaultCompactFormat = {
  * ··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·</·with·unescaped·forward·slash"↵
  * }
  * ```
- *
- * @since v0.6.0
  */
-provide let defaultPrettyFormat = {
+let defaultPrettyFormat = {
   indentation: IndentWithSpaces(2),
   arrayFormat: OneArrayEntryPerLine,
   objectFormat: OneObjectEntryPerLine,
@@ -343,10 +350,8 @@ provide let defaultPrettyFormat = {
  * ```
  * {"currency":"\u20ac","price":99.9,"currencyDescription":"EURO\u007f","script·unembeddable":"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"}
  * ```
- *
- * @since v0.6.0
  */
-provide let defaultCompactAndSafeFormat = {
+let defaultCompactAndSafeFormat = {
   indentation: NoIndentation,
   arrayFormat: CompactArrayEntries,
   objectFormat: CompactObjectEntries,
@@ -374,10 +379,8 @@ provide let defaultCompactAndSafeFormat = {
  * ··"script·unembeddable":·"You·cannot·paste·a·JSON·object·directly·into·a·<script>·tag·in·HTML·if·it·contains·<\/·with·unescaped·forward·slash"↵
  * }
  * ```
- *
- * @since v0.6.0
  */
-provide let defaultPrettyAndSafeFormat = {
+let defaultPrettyAndSafeFormat = {
   indentation: IndentWithSpaces(2),
   arrayFormat: OneArrayEntryPerLine,
   objectFormat: OneObjectEntryPerLine,
@@ -668,7 +671,7 @@ let rec printElementCompact =
       // the allocation of closures, this makes this function a little ugly but it seems
       // like a valid trade-off
       // Another approach would be to allocate a function for the
-      // formattng arrays just once at the start of formatting and pass
+      // formatting arrays just once at the start of formatting and pass
       // it in emitJSONElement.
       match (elems) {
         [] => {
@@ -1253,7 +1256,16 @@ let makePrettyPrintJsonWriter =
  * @example
  * print(
  *   toString(
- *     format=Custom(defaultCompactAndSafeFormat),
+ *     format=Custom{
+ *      indentation: NoIndentation,
+ *      arrayFormat: CompactArrayEntries,
+ *      objectFormat: CompactObjectEntries,
+ *      lineEnding: NoLineEnding,
+ *      finishWithNewLine: false,
+ *      escapeAllControlPoints: true,
+ *      escapeHTMLUnsafeSequences: true,
+ *      escapeNonASCII: true,
+ *     },
  *     JsonObject([("currency", JsonString("€")), ("price", JsonNumber(99.9))])
  *   )
  * )
@@ -1292,7 +1304,33 @@ provide let toString = (format=Compact, json: Json) => {
   let writer = match (format) {
     Pretty => makePrettyPrintJsonWriter(defaultPrettyFormat, buf),
     Compact => makeCompactJsonWriter(buf),
-    Custom(format) => makePrettyPrintJsonWriter(format, buf),
+    PrettyAndSafeFormat =>
+      makePrettyPrintJsonWriter(defaultPrettyAndSafeFormat, buf),
+    CompactAndSafeFormat =>
+      makePrettyPrintJsonWriter(defaultCompactAndSafeFormat, buf),
+    Custom{
+      indentation,
+      arrayFormat,
+      objectFormat,
+      lineEnding,
+      finishWithNewLine,
+      escapeAllControlPoints,
+      escapeHTMLUnsafeSequences,
+      escapeNonASCII,
+    } =>
+      makePrettyPrintJsonWriter(
+        {
+          indentation,
+          arrayFormat,
+          objectFormat,
+          lineEnding,
+          finishWithNewLine,
+          escapeAllControlPoints,
+          escapeHTMLUnsafeSequences,
+          escapeNonASCII,
+        }: FormattingSettings,
+        buf
+      ),
   }
   let error = writer.emit(json)
 
