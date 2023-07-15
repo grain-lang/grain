@@ -268,5 +268,15 @@ module Immutable {
 
   // Queue.fromList
   assert Queue.fromList([]) == Queue.empty
-  assert Queue.fromList([1, 2, 3]) == sampleQueue
+  let queue = Queue.fromList([1, 2, 3])
+  assert Queue.peek(sampleQueue) == Queue.peek(queue)
+  let queue = Queue.pop(queue)
+  let sampleQueue = Queue.pop(sampleQueue)
+  assert Queue.peek(sampleQueue) == Queue.peek(queue)
+  let queue = Queue.pop(queue)
+  let sampleQueue = Queue.pop(sampleQueue)
+  assert Queue.peek(sampleQueue) == Queue.peek(queue)
+  let queue = Queue.pop(queue)
+  let sampleQueue = Queue.pop(sampleQueue)
+  assert Queue.peek(sampleQueue) == Queue.peek(queue)
 }

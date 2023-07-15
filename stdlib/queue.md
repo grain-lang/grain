@@ -157,16 +157,9 @@ Returns:
 
 ### Queue.**push**
 
-<details>
-<summary>Added in <code>next</code></summary>
-<table>
-<thead>
-<tr><th>version</th><th>changes</th></tr>
-</thead>
-<tbody>
-<tr><td><code>next</code></td><td>No longer errors when pushing a new item</td></tr>
-</tbody>
-</table>
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
 </details>
 
 ```grain
