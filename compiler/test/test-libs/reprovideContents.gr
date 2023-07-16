@@ -2,6 +2,8 @@ module ReprovideContents
 
 include "./provideContents"
 
-from ProvideContents use { type Type, module Mod }
+from ProvideContents use { type Type, type Other as OtherT, module Mod }
 
-provide { type Type, module Mod }
+let val = { x: 1 }
+
+provide { type Type, type OtherT, module Mod, val }
