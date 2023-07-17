@@ -134,7 +134,9 @@ let lookup_symbol = (~env, ~allocation_type, ~repr, path) => {
             item =>
               switch (item) {
               | TSigValue(_, {val_fullpath: PIdent(id)}) =>
-                Hashtbl.add(mod_map, Ident.name(id), id)
+                let name = Ident.name(id);
+                Hashtbl.add(mod_map, name, id);
+                Path_tbl.add(include_map, PExternal(mod_, name), id);
               | TSigValue(_) =>
                 failwith("Impossible: internal value with external path")
               | TSigType(_, _, _)
