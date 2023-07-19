@@ -1042,7 +1042,7 @@ let type_implementation = prog => {
   let initenv = initial_env();
   let (statements, sg, finalenv) = type_module(initenv, prog.statements);
   let simple_sg = simplify_signature(sg);
-  let filename = sourcefile; // TODO(1396): Don't use filepath as filename
+  let filename = sourcefile; // TODO(#1396): Don't use filepath as filename
 
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);

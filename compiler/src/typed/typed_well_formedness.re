@@ -37,6 +37,23 @@ let rec exp_is_wasm_unsafe = ({exp_type}) => {
   };
   type_is_wasm_unsafe(exp_type);
 };
+let rec resolve_unsafe_type = ({exp_type}) => {
+  let rec type_is_wasm_unsafe = t => {
+    switch (t.desc) {
+    | TTyConstr(path, _, _) =>
+      switch (path) {
+      | t when t == Builtin_types.path_wasmi32 => Some("WasmI32")
+      | t when t == Builtin_types.path_wasmi64 => Some("WasmI64")
+      | t when t == Builtin_types.path_wasmf32 => Some("WasmF32")
+      | t when t == Builtin_types.path_wasmf64 => Some("WasmI64")
+      | _ => None
+      }
+    | TTyLink(t) => type_is_wasm_unsafe(t)
+    | _ => None
+    };
+  };
+  type_is_wasm_unsafe(exp_type);
+};
 
 let is_marked_unsafe = attrs => {
   // Disable_gc implies Unsafe
@@ -228,9 +245,17 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         )
           when func == "==" || func == "!=" =>
         if (List.exists(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
+          let (_, arg) = List.nth(args, 0);
+          let typeName =
+            switch (resolve_unsafe_type(arg)) {
+            | Some(typeName) => typeName
+            // This should never be hit
+            | None => failwith("Impossible: exp_is_wasm_unsafe > typeName")
+            };
           let warning =
             Grain_utils.Warnings.FuncWasmUnsafe(
               Printf.sprintf("Pervasives.(%s)", func),
+              Printf.sprintf("%s.(%s)", typeName, func),
             );
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
