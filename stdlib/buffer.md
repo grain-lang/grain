@@ -348,7 +348,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`codePoint`|`Number`|The codePoint to append to the buffer|
+|`codePoint`|`Number`|The code point to append to the buffer|
 |`buffer`|`Buffer`|The buffer to mutate|
 
 ### Buffer.**addStringSlice**
