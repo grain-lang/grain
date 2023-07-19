@@ -36,10 +36,14 @@ let log = (~verbose=?, message: string) =>
   switch (trace_level^) {
   | Off => ()
   | Messages =>
-    Protocol.notification(
-      ~method="$/logTrace",
-      NotificationParams.to_yojson({message, verbose: None}),
-    )
+    if (String.starts_with(~prefix="Completable:", message)) {
+      Protocol.notification(
+        ~method="$/logTrace",
+        NotificationParams.to_yojson({message, verbose: None}),
+      );
+    } else {
+      ();
+    }
   | Verbose =>
     Protocol.notification(
       ~method="$/logTrace",

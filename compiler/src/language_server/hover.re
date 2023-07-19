@@ -91,7 +91,7 @@ let module_lens = (decl: Types.module_declaration) => {
   let vals = Modules.get_provides(decl);
   let signatures =
     List.map(
-      (v: Modules.export) =>
+      (v: Modules.provide) =>
         switch (v.kind) {
         | Function
         | Value => Format.sprintf("let %s", v.signature)
@@ -99,6 +99,7 @@ let module_lens = (decl: Types.module_declaration) => {
         | Enum
         | Abstract
         | Exception => v.signature
+        | Module => Format.sprintf("module %s", v.name)
         },
       vals,
     );
