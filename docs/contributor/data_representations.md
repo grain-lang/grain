@@ -186,7 +186,7 @@ Bytes and Strings are currently the only data types that store data in 8-bit chu
 ╚══════╩═══════════╧══════╧════════╧════════╧═════╧════════╝
 ```
 
-The size and bytes are all **untagged**.
+The size is **untagged**.
 
 ### Heap-Allocated Numbers
 
