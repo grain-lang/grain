@@ -256,6 +256,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
             Grain_utils.Warnings.FuncWasmUnsafe(
               Printf.sprintf("Pervasives.(%s)", func),
               Printf.sprintf("%s.(%s)", typeName, func),
+              typeName,
             );
           if (Grain_utils.Warnings.is_active(warning)) {
             Grain_parsing.Location.prerr_warning(exp_loc, warning);
