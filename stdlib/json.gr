@@ -1223,7 +1223,7 @@ let makePrettyPrintJsonWriter =
 
       String.forEachCodePoint(codePoint => {
         if (codePoint == 47) {
-          if (format.escapeHTMLUnsafeSequences && prevCodePoint == 60) {
+          if (prevCodePoint == 60) {
             Buffer.addChar('\\', buffer)
             Buffer.addChar('/', buffer)
           } else {

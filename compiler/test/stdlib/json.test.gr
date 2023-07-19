@@ -978,6 +978,63 @@ module ToString {
     }
   ) ==
     Ok("{\n  \"one\": 1,\n  \"two\": 2,\n  \"three\": 3\n}")
+  // Formatting - escaping
+  assert toString(
+    JsonString("\nr🌾"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: true,
+    }
+  ) ==
+    Ok("\"\\nr\\ud83c\\udf3e\"")
+  assert toString(
+    JsonString("\nr🌾"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: true,
+    }
+  ) ==
+    Ok("\"\\nr\\ud83c\\udf3e\\u0080\"")
+  assert toString(
+    JsonString("r🌾"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: true,
+      escapeHTMLUnsafeSequences: false,
+      escapeNonASCII: true,
+    }
+  ) ==
+    Ok("\"r\\ud83c\\udf3e\\u0080\"")
+  assert toString(
+    JsonString("</"),
+    format=Custom{
+      indentation: IndentWithSpaces(2),
+      arrayFormat: CompactArrayEntries,
+      objectFormat: OneObjectEntryPerLine,
+      lineEnding: LineFeed,
+      finishWithNewLine: false,
+      escapeAllControlPoints: false,
+      escapeHTMLUnsafeSequences: true,
+      escapeNonASCII: false,
+    }
+  ) ==
+    Ok("\"<\\/\"")
 
   // Indentation and line breaks
 
