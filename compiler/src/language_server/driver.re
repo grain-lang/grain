@@ -34,9 +34,6 @@ let process = msg => {
   | TextDocumentCompletion(id, params) when is_initialized^ =>
     Completion.process(~id, ~compiled_code, ~documents, params);
     Reading;
-  | CompletionItemResolve(id, params) when is_initialized^ =>
-    Completion.Resolution.process(~id, ~compiled_code, ~documents, params);
-    Reading;
   | Shutdown(id, params) when is_initialized^ =>
     Shutdown.process(~id, ~compiled_code, ~documents, params);
     is_shutting_down := true;

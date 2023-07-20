@@ -120,42 +120,6 @@ let send_completion =
   );
 };
 
-module Resolution = {
-  // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
-  module RequestParams = {
-    // TODO: implement the rest of the fields
-    [@deriving yojson({strict: false})]
-    type t = {label: string};
-  };
-
-  // As per https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_completion
-  // If computing full completion items is expensive, servers can additionally provide a handler for
-  // the completion item resolve request (‘completionItem/resolve’). This request is sent when a
-  // completion item is selected in the user interface.
-  let process =
-      (
-        ~id: Protocol.message_id,
-        ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
-        ~documents: Hashtbl.t(Protocol.uri, string),
-        params: RequestParams.t,
-      ) => {
-    Trace.log("Completable: Resolution Request Recieved");
-    // Right now we just resolve nothing to clear the client's request
-    // In future we may want to send more details back with Graindoc details for example
-    send_completion(
-      ~id,
-      [
-        {
-          label: "testing",
-          kind: CompletionItemKindValue,
-          detail: "Where does this go deatil",
-          documentation: "test item",
-        },
-      ],
-    );
-  };
-};
-
 type completionState =
   | ComletableCode(string)
   | CompletableExpr(string)
@@ -166,24 +130,15 @@ let find_completable_state = (documents, uri, positon: Protocol.position) => {
   switch (Hashtbl.find_opt(documents, uri)) {
   | None => None
   | Some(source_code) =>
-    // TODO: We need to handle crlf, and also mutability == bad
     // Get Document
-    let lines = String.split_on_char('\n', source_code);
-    // TODO: Handle Multiple Lines, so we need to convert to an index
+    let source =
+      Str.global_replace(Str.regexp({|\r\n|}), {|\n|}, source_code);
+    let lines = String.split_on_char('\n', source);
     let index = positon.character;
-    // Calculate Current Position
-    Trace.log(
-      "Completable: Completable Line " ++ List.nth(lines, positon.line),
-    );
     // Search File To Grab Context
-    let rec searchForContext = (search_code, offset) => {
-      // If Last Element is = then we are in expr
-      // If Last Element is : then we are in type
-      // If Last Element was {
-      // If we detect a use before than we are in a from
-      // Otherwise we are in a ComletableCode
-      // TODO: Support other places, improve this half parser
+    let rec searchForContext = (search_code, offset, cut, hasHitSep) => {
       switch (String_utils.char_at(search_code, offset)) {
+      // Find Context
       | Some('=') =>
         CompletableExpr(
           String.trim(
@@ -196,24 +151,40 @@ let find_completable_state = (documents, uri, positon: Protocol.position) => {
             String_utils.slice(~first=offset, ~last=index, search_code),
           ),
         )
-      // TODO: Search for using statements
-      // | Some('{') =>
-      //   CompletableExpr(
-      //     String_utils.slice(~first=offset, ~last=index, search_code),
-      //   )
+      // Context Seperators
+      | Some('(')
+      | Some(',')
+      | Some('[') =>
+        searchForContext(
+          search_code,
+          offset - 1,
+          hasHitSep ? cut : offset - 1,
+          true,
+        )
+      // Must be something else
       | _ when offset <= 0 => ComletableCode(search_code)
-      | _ => searchForContext(search_code, offset - 1)
+      | _ =>
+        searchForContext(
+          search_code,
+          offset - 1,
+          hasHitSep ? cut : offset - 1,
+          true,
+        )
       };
     };
     let context =
-      searchForContext(List.nth(lines, positon.line), positon.character);
+      searchForContext(
+        List.nth(lines, positon.line),
+        positon.character,
+        positon.character,
+        false,
+      );
     Some(context);
   };
 };
 
 let build_keyword_completion = keyword => {
   {
-    // TODO: Would be better if these were actual snippet completions
     label: keyword,
     kind: CompletionItemKindKeyword,
     detail: "",
@@ -224,10 +195,8 @@ let build_value_completion =
     (~env, (value_name: string, value_desc: Types.value_description)) => {
   {
     label: value_name,
-    // TODO: Consider Making This More Fine Grained, based off the type
     kind: CompletionItemKindValue,
     detail: Doc.print_type(env, value_desc.val_type),
-    // TODO: Maybe generate grain doc
     documentation: "",
   };
 };
@@ -237,7 +206,6 @@ let build_module_completion =
     label: module_name,
     kind: CompletionItemKindModule,
     detail: Doc.print_mod_type(mod_desc),
-    // TODO: Maybe generate grain doc
     documentation: "",
   };
 };
@@ -247,9 +215,7 @@ let build_type_completion =
   {
     label: type_name,
     kind: CompletionItemKindTypeParameter,
-    // TODO: Add a kind here
     detail: "",
-    // TODO: Maybe generate grain doc
     documentation: "",
   };
 };
@@ -324,30 +290,44 @@ let get_top_level_completions =
       search: list(string),
     ) => {
   // Keyword Completions
-  // TODO: Include all keywords, Maybe figure out if i can grab these from some place
   let keyword_completions =
     if (include_keywords) {
       let keywords = [
-        "let",
-        "type",
-        "module",
-        "include",
-        "from",
-        "record",
-        "rec",
-        "enum",
-        "provide",
-        "abstract",
-        "if",
+        "primitive",
+        "foreign",
+        "wasm",
         "while",
         "for",
+        "continue",
+        "break",
+        "return",
+        "if",
+        "when",
+        "else",
+        "include",
+        "use",
+        "provide",
+        "abstract",
+        "except",
+        "from",
+        "type",
+        "enum",
+        "record",
+        "module",
+        "let",
+        "mut",
+        "rec",
+        "match",
+        "assert",
+        "fail",
+        "exception",
+        "throw",
       ];
       List.map(build_keyword_completion, keywords);
     } else {
       [];
     };
   // Value Completions
-  // TODO: add Compiler Built ins, maybe there is a list somewhere
   let value_completions =
     if (include_values) {
       let values =
@@ -357,7 +337,40 @@ let get_top_level_completions =
           program.env,
           [],
         );
-      List.map(build_value_completion(~env=program.env), values);
+      let builtins = [
+        ("None", CompletionItemKindEnumMember),
+        ("Some", CompletionItemKindEnumMember),
+        ("Ok", CompletionItemKindEnumMember),
+        ("Err", CompletionItemKindEnumMember),
+        ("true", CompletionItemKindConstant),
+        ("false", CompletionItemKindConstant),
+        ("void", CompletionItemKindConstant),
+      ];
+      let builtins =
+        List.map(
+          ((label, kind)) => {label, kind, detail: "", documentation: ""},
+          builtins,
+        );
+      List.append(
+        List.map(build_value_completion(~env=program.env), values),
+        builtins,
+      );
+    } else {
+      [];
+    };
+  // Type Completions
+  let type_completions =
+    if (include_types) {
+      let types =
+        Env.fold_types(
+          (tag, path, (decl, descr), acc) => {
+            List.append(acc, [(tag, decl)])
+          },
+          None,
+          program.env,
+          [],
+        );
+      List.map(build_type_completion(~env=program.env), types);
     } else {
       [];
     };
@@ -373,7 +386,12 @@ let get_top_level_completions =
     List.map(build_module_completion(~env=program.env), modules);
   // Merge Completions
   let completions =
-    List.concat([keyword_completions, value_completions, module_completions]);
+    List.concat([
+      keyword_completions,
+      value_completions,
+      type_completions,
+      module_completions,
+    ]);
   // Find The Top Level Modules
   let completions =
     switch (search) {
@@ -383,7 +401,6 @@ let get_top_level_completions =
     | [_] => completions
     // User Wrote A Path
     | [search, ...path] =>
-      Trace.log(Printf.sprintf("Completable: Root %s", search));
       // Find Module Root
       switch (List.find_opt(((mod_name, _)) => mod_name == search, modules)) {
       | Some((_, root_decl)) =>
@@ -395,14 +412,33 @@ let get_top_level_completions =
           ~include_types,
         )
       | None => []
-      };
+      }
     };
-  Trace.log(
-    Printf.sprintf(
-      "Completable: Completions Count %d",
-      List.length(completions),
-    ),
-  );
+  // Remove Operators
+  let operators = [
+    '$',
+    '&',
+    '*',
+    '/',
+    '+',
+    '-',
+    '=',
+    '>',
+    '<',
+    '^',
+    '|',
+    '!',
+    '?',
+    '%',
+    ':',
+    '.',
+  ];
+  let completions =
+    List.filter(
+      ({label}: completion_item) =>
+        !List.exists(o => String.contains(label, o), operators),
+      completions,
+    );
   completions;
 };
 
@@ -446,7 +482,7 @@ let process =
           get_top_level_completions(
             ~include_keywords=false,
             ~include_values=true,
-            ~include_types=true,
+            ~include_types=false,
             program,
             compiled_code,
             completionPath,

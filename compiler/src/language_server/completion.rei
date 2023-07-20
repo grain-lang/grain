@@ -20,20 +20,3 @@ let process:
     RequestParams.t
   ) =>
   unit;
-
-module Resolution: {
-  // https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#completionItem
-  module RequestParams: {
-    [@deriving yojson({strict: false})]
-    type t;
-  };
-
-  let process:
-    (
-      ~id: Protocol.message_id,
-      ~compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
-      ~documents: Hashtbl.t(Protocol.uri, string),
-      RequestParams.t
-    ) =>
-    unit;
-};
