@@ -46,7 +46,7 @@ let send_no_result = (~id: Protocol.message_id) => {
 };
 
 let module_lens = (decl: Types.module_declaration) => {
-  Doc.print_mod_type(decl);
+  Doc.grain_code_block(Doc.print_mod_type(decl));
 };
 
 let value_lens = (env: Env.t, ty: Types.type_expr) => {

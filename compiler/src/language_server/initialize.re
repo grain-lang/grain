@@ -80,8 +80,8 @@ module ResponseResult = {
     text_document_sync: Full,
     hover_provider: true,
     completion_provider: {
-      resolve_provider: true,
-      trigger_characters: ["."],
+      resolve_provider: false,
+      trigger_characters: [".", ",", "(", ":", "["],
     },
     definition_provider: {
       link_support: true,

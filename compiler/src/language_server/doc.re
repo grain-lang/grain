@@ -64,5 +64,5 @@ let print_mod_type = (decl: Types.module_declaration) => {
         },
       vals,
     );
-  grain_code_block(String.concat("\n", signatures));
+  String.concat("\n", signatures);
 };
