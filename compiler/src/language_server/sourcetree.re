@@ -394,6 +394,20 @@ module Sourcetree: Sourcetree = {
                        },
                   ]
                   @ segments^;
+              | TExpConstruct(_, desc, _) =>
+                segments :=
+                  [
+                    (
+                      loc_to_interval(exp.exp_loc),
+                      Value({
+                        env: exp.exp_env,
+                        value_type: desc.cstr_res,
+                        loc: exp.exp_loc,
+                        definition: Some(desc.cstr_loc),
+                      }),
+                    ),
+                    ...segments^,
+                  ]
               | _ =>
                 segments :=
                   [
@@ -428,7 +442,10 @@ module Sourcetree: Sourcetree = {
             | Some(path) =>
               let decl = Env.find_type(path, pat.pat_env);
               if (decl.type_loc == Location.dummy_loc) {
-                None;
+                switch (pat.pat_desc) {
+                | TPatConstruct(_, desc, _) => Some(desc.cstr_loc)
+                | _ => None
+                };
               } else {
                 Some(decl.type_loc);
               };
