@@ -28,11 +28,6 @@ module ResponseResult = {
   };
 };
 
-// We need to use the "grain-type" markdown syntax to have correct coloring on hover items
-let grain_type_code_block = Markdown.code_block(~syntax="grain-type");
-// Used for module hovers
-let grain_code_block = Markdown.code_block(~syntax="grain");
-
 let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, result) => {
   Protocol.response(
     ~id,
@@ -46,80 +41,30 @@ let send_hover = (~id: Protocol.message_id, ~range: Protocol.range, result) => {
   );
 };
 
-let markdown_join = (a, b) => {
-  // Horizonal rules between code blocks render a little funky
-  // so we manually add linebreaks
-  Printf.sprintf(
-    "%s\n---\n<br><br>\n%s",
-    a,
-    b,
-  );
-};
-
 let send_no_result = (~id: Protocol.message_id) => {
   Protocol.response(~id, `Null);
 };
 
-let supressed_types = [Builtin_types.path_void, Builtin_types.path_bool];
-
-let print_type = (env, ty) => {
-  let instance = grain_type_code_block(Printtyp.string_of_type_scheme(ty));
-  try({
-    let (path, _, decl) = Ctype.extract_concrete_typedecl(env, ty);
-    // Avoid showing the declaration for supressed types
-    if (List.exists(
-          supressed_type => Path.same(path, supressed_type),
-          supressed_types,
-        )) {
-      raise(Not_found);
-    };
-    markdown_join(
-      grain_code_block(
-        Printtyp.string_of_type_declaration(
-          ~ident=Ident.create(Path.last(path)),
-          decl,
-        ),
-      ),
-      instance,
-    );
-  }) {
-  | Not_found => instance
-  };
-};
-
 let module_lens = (decl: Types.module_declaration) => {
-  let vals = Modules.get_provides(decl);
-  let signatures =
-    List.map(
-      (v: Modules.provide) =>
-        switch (v.kind) {
-        | Function
-        | Value => Format.sprintf("let %s", v.signature)
-        | Record
-        | Enum
-        | Abstract
-        | Exception => v.signature
-        | Module => Format.sprintf("module %s", v.name)
-        },
-      vals,
-    );
-  grain_code_block(String.concat("\n", signatures));
+  Doc.print_mod_type(decl);
 };
 
 let value_lens = (env: Env.t, ty: Types.type_expr) => {
-  print_type(env, ty);
+  Doc.print_type(env, ty);
 };
 
 let pattern_lens = (p: Typedtree.pattern) => {
-  print_type(p.pat_env, p.pat_type);
+  Doc.print_type(p.pat_env, p.pat_type);
 };
 
 let type_lens = (ty: Typedtree.core_type) => {
-  grain_type_code_block(Printtyp.string_of_type_scheme(ty.ctyp_type));
+  Doc.grain_type_code_block(Printtyp.string_of_type_scheme(ty.ctyp_type));
 };
 
 let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
-  grain_type_code_block(Printtyp.string_of_type_declaration(~ident, decl));
+  Doc.grain_type_code_block(
+    Printtyp.string_of_type_declaration(~ident, decl),
+  );
 };
 
 let include_lens = (env: Env.t, path: Path.t) => {

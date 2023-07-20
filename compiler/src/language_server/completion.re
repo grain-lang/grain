@@ -182,15 +182,19 @@ let find_completable_state = (documents, uri, positon: Protocol.position) => {
       // If Last Element was {
       // If we detect a use before than we are in a from
       // Otherwise we are in a ComletableCode
+      // TODO: Support other places, improve this half parser
       switch (String_utils.char_at(search_code, offset)) {
-      // TODO: Return Proper Inside
       | Some('=') =>
         CompletableExpr(
-          String_utils.slice(~first=offset, ~last=index, search_code),
+          String.trim(
+            String_utils.slice(~first=offset + 2, ~last=index, search_code),
+          ),
         )
       | Some(':') =>
         CompletableType(
-          String_utils.slice(~first=offset, ~last=index, search_code),
+          String.trim(
+            String_utils.slice(~first=offset, ~last=index, search_code),
+          ),
         )
       // TODO: Search for using statements
       // | Some('{') =>
@@ -216,20 +220,113 @@ let build_keyword_completion = keyword => {
     documentation: "",
   };
 };
-let get_completions =
+let build_value_completion =
+    (~env, (value_name: string, value_desc: Types.value_description)) => {
+  {
+    label: value_name,
+    // TODO: Consider Making This More Fine Grained, based off the type
+    kind: CompletionItemKindValue,
+    detail: Doc.print_type(env, value_desc.val_type),
+    // TODO: Maybe generate grain doc
+    documentation: "",
+  };
+};
+let build_module_completion =
+    (~env, (module_name: string, mod_desc: Types.module_declaration)) => {
+  {
+    label: module_name,
+    kind: CompletionItemKindModule,
+    detail: Doc.print_mod_type(mod_desc),
+    // TODO: Maybe generate grain doc
+    documentation: "",
+  };
+};
+
+let build_type_completion =
+    (~env, (type_name: string, type_desc: Types.type_declaration)) => {
+  {
+    label: type_name,
+    kind: CompletionItemKindTypeParameter,
+    // TODO: Add a kind here
+    detail: "",
+    // TODO: Maybe generate grain doc
+    documentation: "",
+  };
+};
+
+let rec get_completions =
+        (
+          ~include_values,
+          ~include_types,
+          env,
+          root_decl: Types.module_declaration,
+          path: list(string),
+        ) => {
+  // Get The Modules Exports
+  let provides =
+    switch (root_decl.md_type) {
+    | TModSignature(provides) =>
+      List.map(
+        (s: Types.signature_item) => {
+          switch (s) {
+          // Enabled
+          | TSigValue(ident, decl) when include_values =>
+            Some(build_value_completion(~env, (ident.name, decl)))
+          | TSigType(ident, decl, _) when include_types =>
+            Some(build_type_completion(~env, (ident.name, decl)))
+          | TSigModule(ident, decl, _) =>
+            Some(build_module_completion(~env, (ident.name, decl)))
+          // Dissabled
+          | TSigValue(_, _)
+          | TSigType(_, _, _)
+          | TSigTypeExt(_, _, _)
+          | TSigModType(_, _) => None
+          }
+        },
+        provides,
+      )
+    | _ => []
+    };
+  // Filter
+  switch (path) {
+  | [_]
+  | [] => List.filter_map(x => x, provides)
+  | [pathItem, ...path] =>
+    // Find the desired module
+    let subMod =
+      switch (root_decl.md_type) {
+      | TModSignature(provides) =>
+        List.find_opt(
+          (s: Types.signature_item) => {
+            switch (s) {
+            | TSigModule(ident, decl, _) when ident.name == pathItem => true
+            | _ => false
+            }
+          },
+          provides,
+        )
+      | _ => None
+      };
+    switch (subMod) {
+    | Some(TSigModule(_, decl, _)) =>
+      get_completions(env, decl, path, ~include_values, ~include_types)
+    | _ => []
+    };
+  };
+};
+let get_top_level_completions =
     (
+      ~include_keywords,
+      ~include_values,
+      ~include_types,
       program: Typedtree.typed_program,
       compiled_code: Hashtbl.t(Protocol.uri, Lsp_types.code),
-      root: list(string),
-      current_search: string,
-      include_keywords: bool,
-      include_modules: bool,
-      include_values: bool,
+      search: list(string),
     ) => {
-  // Find Keywords
+  // Keyword Completions
+  // TODO: Include all keywords, Maybe figure out if i can grab these from some place
   let keyword_completions =
     if (include_keywords) {
-      // TODO: Include all keywords, Maybe figure out if i can grab these from some place
       let keywords = [
         "let",
         "type",
@@ -237,6 +334,7 @@ let get_completions =
         "include",
         "from",
         "record",
+        "rec",
         "enum",
         "provide",
         "abstract",
@@ -248,133 +346,64 @@ let get_completions =
     } else {
       [];
     };
-  // TODO: Get The Current Environment, using the path
-  let getEnvironment = (env, path: list(string)) => {
-    let rec getModuleEnv = (env, module_path, path: list(string)) => {
-      switch (path) {
-      | [pathItem] =>
-        // Get The Module's Exports
-        Some(([], []))
-      | [pathItem, ...path] =>
-        // Get The Module's Exports
-        let provides = Env.find_modtype(module_path, env).mtd_type;
-        switch (provides) {
-        // Figure out why this can occur
-        | None => None
-        | Some(TModSignature(provides)) =>
-          // Scan the List, try and find module exports
-          let needed_module = List.find(provide => true, provides);
-          Some(([], []));
-        | Some(_) =>
-          Trace.log("Completable: Not Found Direct Module Signature");
-          None;
-        };
-      // TODO: I think this is an impossible case
-      | [] => None
+  // Value Completions
+  // TODO: add Compiler Built ins, maybe there is a list somewhere
+  let value_completions =
+    if (include_values) {
+      let values =
+        Env.fold_values(
+          (tag, path, decl, acc) => {List.append(acc, [(tag, decl)])},
+          None,
+          program.env,
+          [],
+        );
+      List.map(build_value_completion(~env=program.env), values);
+    } else {
+      [];
+    };
+  // Module Completions
+  let modules =
+    Env.fold_modules(
+      (tag, path, decl, acc) => {List.append(acc, [(tag, decl)])},
+      None,
+      program.env,
+      [],
+    );
+  let module_completions =
+    List.map(build_module_completion(~env=program.env), modules);
+  // Merge Completions
+  let completions =
+    List.concat([keyword_completions, value_completions, module_completions]);
+  // Find The Top Level Modules
+  let completions =
+    switch (search) {
+    // User Wrote Nothing
+    | []
+    // User Wrote A Single Word, i.e Top Level Search
+    | [_] => completions
+    // User Wrote A Path
+    | [search, ...path] =>
+      Trace.log(Printf.sprintf("Completable: Root %s", search));
+      // Find Module Root
+      switch (List.find_opt(((mod_name, _)) => mod_name == search, modules)) {
+      | Some((_, root_decl)) =>
+        get_completions(
+          program.env,
+          root_decl,
+          path,
+          ~include_values,
+          ~include_types,
+        )
+      | None => []
       };
     };
-    // If we are going down to modules we go one way, otherwise we go the other
-    Some(
-      switch (path) {
-      // Base
-      | [] =>
-        let modules =
-          Env.fold_modules(
-            (tag, path, decl, acc) => {List.append(acc, [(tag, decl)])},
-            None,
-            env,
-            [],
-          );
-        let values =
-          Env.fold_values(
-            (tag, path, decl, acc) => {List.append(acc, [(tag, decl)])},
-            None,
-            env,
-            [],
-          );
-        (modules, values);
-      // We Need to go deeper
-      | [baseModule, ...rest] =>
-        // TODO: There has to be a better way todo this
-        let modules =
-          Env.fold_modules(
-            (tag, path, decl, acc) =>
-              if (String_utils.starts_with(tag, baseModule)) {
-                List.append(acc, [path]);
-              } else {
-                acc;
-              },
-            None,
-            env,
-            [],
-          );
-        switch (modules) {
-        // We did not find the module
-        | [] => ([], [])
-        // We found at least one matching module
-        | [mod_path, ..._] =>
-          switch (getModuleEnv(env, mod_path, rest)) {
-          | None => ([], [])
-          | Some(x) => x
-          }
-        };
-      },
-    );
-  };
-  let environment_completions =
-    switch (getEnvironment(program.env, root)) {
-    | None => []
-    | Some((modules, values)) =>
-      // TODO: Find Modules
-      let module_completions =
-        if (include_modules) {
-          List.map(
-            ((tag, decl)) =>
-              {
-                label: tag,
-                kind: CompletionItemKindModule,
-                detail: "",
-                documentation: "",
-              },
-            modules,
-          );
-        } else {
-          [];
-        };
-      // TODO: Find Values
-      let value_completions =
-        if (include_values) {
-          List.map(
-            ((tag, decl: Types.value_description)) =>
-              {
-                label: tag,
-                kind: get_kind(decl.val_type.desc),
-                detail: Printtyp.string_of_type_scheme(decl.val_type),
-                documentation: "",
-              },
-            values,
-          );
-        } else {
-          [];
-        };
-      // Merge Our Results
-      List.concat([module_completions, value_completions]);
-    };
-  // Merge Our Results
-  let completions: list(completion_item) =
-    List.concat([keyword_completions, environment_completions]);
-  // Filter Our Results
-  let filtered_completions =
-    List.filter(
-      ({label}) =>
-        String_utils.starts_with(
-          StringLabels.lowercase_ascii(label),
-          StringLabels.lowercase_ascii(current_search),
-        ),
-      completions,
-    );
-  // Return Our Results
-  filtered_completions;
+  Trace.log(
+    Printf.sprintf(
+      "Completable: Completions Count %d",
+      List.length(completions),
+    ),
+  );
+  completions;
 };
 
 let process =
@@ -403,92 +432,36 @@ let process =
         | ComletableCode(str) =>
           Trace.log("Completable: Code " ++ str);
           let completionPath = String.split_on_char('.', str);
-          switch (List.rev(completionPath)) {
-          | []
-          | ["", ""] => []
-          | [search] =>
-            get_completions(
-              program,
-              compiled_code,
-              [],
-              search,
-              true,
-              true,
-              true,
-            )
-          | [search, ...root] =>
-            get_completions(
-              program,
-              compiled_code,
-              List.rev(root),
-              search,
-              false,
-              true,
-              true,
-            )
-          };
-        // switch (pathRoot) {
-        // // Just A .
-        // | None => []
-        // // A word no dot
-        // | Some(true) =>
-        //   // TODO: Suggest Keywords
-        //   let module_completions =
-        //     List.map(
-        //       (i: string) => {
-        //         let item: completion_item = {
-        //           label: i,
-        //           kind: CompletionItemKindModule,
-        //           detail: "",
-        //           documentation: "",
-        //         };
-        //         item;
-        //       },
-        //       modules,
-        //     );
-        //   let values: list((string, Types.value_description)) =
-        //     Env.fold_values(
-        //       (tag, path, vd, acc) => {List.append(acc, [(tag, vd)])},
-        //       None,
-        //       program.env,
-        //       [],
-        //     );
-        //   let valueCompletions =
-        //     List.map(
-        //       ((i: string, l: Types.value_description)) => {
-        //         let item: completion_item = {
-        //           label: i,
-        //           kind: get_kind(l.val_type.desc),
-        //           detail: Printtyp.string_of_type_scheme(l.val_type),
-        //           documentation: "",
-        //         };
-        //         item;
-        //       },
-        //       values,
-        //     );
-        //   let completions =
-        //     List.concat([module_completions, valueCompletions]);
-        //   List.filter(
-        //     ({label}) =>
-        //       String.starts_with(
-        //         ~prefix=StringLabels.lowercase_ascii(str),
-        //         StringLabels.lowercase_ascii(label),
-        //       ),
-        //     completions,
-        //   );
-        // // A Module Path
-        // | Some(false) => []
-        // };
+          get_top_level_completions(
+            ~include_keywords=true,
+            ~include_values=true,
+            ~include_types=false,
+            program,
+            compiled_code,
+            completionPath,
+          );
         | CompletableExpr(str) =>
           Trace.log("Completable: Expr " ++ str);
-          // TODO: Build Path
-          // TODO: Get Module If Available
-          // TODO: Filter Out Operators
-          [];
+          let completionPath = String.split_on_char('.', str);
+          get_top_level_completions(
+            ~include_keywords=false,
+            ~include_values=true,
+            ~include_types=true,
+            program,
+            compiled_code,
+            completionPath,
+          );
         | CompletableType(str) =>
           Trace.log("Completable: Type " ++ str);
-          // TODO: Suggest Type Info
-          [];
+          let completionPath = String.split_on_char('.', str);
+          get_top_level_completions(
+            ~include_keywords=false,
+            ~include_values=false,
+            ~include_types=true,
+            program,
+            compiled_code,
+            completionPath,
+          );
         }
       };
     send_completion(~id, completions);
