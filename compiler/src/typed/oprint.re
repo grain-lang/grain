@@ -666,7 +666,7 @@ and print_out_sig_item = ppf =>
         | Otyp_sum(_) => "enum"
         | Otyp_variant(_, _, _, _) =>
           failwith("NYI: Otyp_variant pretty-printer")
-        | Otyp_open => failwith("NYI: Otyp_open pretty-printer")
+        | Otyp_open => "exception"
         | Otyp_alias(_, _) => failwith("NYI: Otyp_alias pretty-printer")
         | Otyp_class(_, _, _) => failwith("NYI: Otyp_class pretty-printer")
         | Otyp_arrow(_, _)
@@ -767,7 +767,7 @@ and print_out_type_decl = (kwd, ppf, td) => {
         print_list(print_out_constr, ppf => fprintf(ppf, ",@;<0 2>")),
         constrs,
       )
-    | Otyp_open => fprintf(ppf, " = ..")
+    | Otyp_open => fprintf(ppf, " = ...")
     | ty => fprintf(ppf, " =@;<1 2>%a", out_type^, ty);
 
   fprintf(ppf, "@[<h>%t%a@]", print_name_params, print_out_tkind, ty);
