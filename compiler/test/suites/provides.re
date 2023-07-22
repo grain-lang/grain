@@ -189,4 +189,19 @@ describe("provides", ({test, testSkip}) => {
       ("GRAIN$EXPORT$y", Binaryen.Export.external_global),
     ],
   );
+  assertHasWasmExport(
+    "issue_1884_type_provided_later1",
+    "module Test; enum T { A }; let a = A; provide { type T }; provide { a }",
+    ("GRAIN$EXPORT$a", Binaryen.Export.external_global),
+  );
+  assertHasWasmExport(
+    "issue_1884_type_provided_later2",
+    "module Test; enum T { A }; let a = A; provide { a, type T }",
+    ("GRAIN$EXPORT$a", Binaryen.Export.external_global),
+  );
+  assertHasWasmExport(
+    "issue_1884_type_provided_later3",
+    "module Test; enum T { A }; let a = A; provide { a }; provide { type T }",
+    ("GRAIN$EXPORT$a", Binaryen.Export.external_global),
+  );
 });
