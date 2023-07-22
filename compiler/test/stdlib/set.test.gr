@@ -235,30 +235,29 @@ assert Array.contains(3, r)
 assert Array.contains(4, r)
 
 // Resizes the map when it grows
-// TODO(#190): Don't use these internals, as they need to change after 190 is fixed
 
 let resize = Set.makeSized(1)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == (0, 1)
+assert Set.getInternalStats(resize) == {currentSize: 0, bucketCount: 1}
 
 Set.add("🌾", resize)
 Set.add("🐑", resize)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == (2, 1)
+assert Set.getInternalStats(resize) == {currentSize:2, bucketCount:1}
 
 Set.add("🧱", resize)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == (3, 2)
+assert Set.getInternalStats(resize) == {currentSize:3, bucketCount:2}
 
 // Regression tests for https://github.com/grain-lang/grain/issues/497
 
 let largeSet = Set.fromArray(Array.init(128, i => i))
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(largeSet) == (128, 64)
+assert Set.getInternalStats(largeSet) == {currentSize: 128, bucketCount:64}
 
 module Immutable {
   from Set use { module Immutable as Set }

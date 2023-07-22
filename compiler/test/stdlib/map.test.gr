@@ -269,30 +269,29 @@ assert Map.contains(Brick, fa)
 assert !Map.contains(Wood, fa)
 
 // Resizes the map when it grows
-// TODO(#190): Don't use these internals, as they need to change after 190 is fixed
 
 let resize = Map.makeSized(1)
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(resize) == (0, 1)
+assert Map.getInternalStats(resize) == {currentSize:0, bucketCount: 1}
 
 Map.set("🌾", 1, resize)
 Map.set("🐑", 1, resize)
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(resize) == (2, 1)
+assert Map.getInternalStats(resize) == {currentSize:2, bucketCount: 1}
 
 Map.set("🧱", 1, resize)
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(resize) == (3, 2)
+assert Map.getInternalStats(resize) == {currentSize:3, bucketCount: 2}
 
 // Regression tests for https://github.com/grain-lang/grain/issues/497
 
 let largeMap = Map.fromArray(Array.init(128, i => (i, i)))
 
 // (nodeCount, bucketLength)
-assert Map.getInternalStats(largeMap) == (128, 64)
+assert Map.getInternalStats(largeMap) == {currentSize:128, bucketCount: 64}
 
 // Map.filter()
 

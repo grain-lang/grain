@@ -25,6 +25,17 @@ Type declarations included in the Map module.
 type Map<k, v>
 ```
 
+### Map.**InternalMapStats**
+
+```grain
+record InternalMapStats {
+  currentSize: Number,
+  bucketCount: Number,
+}
+```
+
+Represents the internal state of a map.
+
 ## Values
 
 Functions and constants included in the Map module.
@@ -502,13 +513,20 @@ Parameters:
 
 ### Map.**getInternalStats**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.2.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>switch to returning `InternalMapStats` record</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInternalStats : (map: Map<a, b>) => (Number, Number)
+getInternalStats : (map: Map<a, b>) => InternalMapStats
 ```
 
 Provides data representing the internal state state of the map.
@@ -523,7 +541,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`(Number, Number)`|The internal state of the map|
+|`InternalMapStats`|The internal state of the map|
 
 ## Map.Immutable
 
