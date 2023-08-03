@@ -515,7 +515,7 @@ provide let reject = (predicate, map) => {
  * @history v0.6.0: switch to returning `InternalMapStats` record
  */
 provide let getInternalStats = map => {
-  {currentSize: map.size, bucketCount: Array.length(map.buckets)}
+  { currentSize: map.size, bucketCount: Array.length(map.buckets) }
 }
 
 /**

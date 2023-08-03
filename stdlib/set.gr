@@ -470,7 +470,7 @@ provide let intersect = (set1, set2) => {
  * @history v0.6.0: switch to returning `InternalMapStats` record
  */
 provide let getInternalStats = set => {
-  { currentSize: set.size, bucketCount: Array.length(set.buckets)}
+  { currentSize: set.size, bucketCount: Array.length(set.buckets) }
 }
 
 /**
