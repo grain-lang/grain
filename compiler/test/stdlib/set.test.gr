@@ -239,25 +239,25 @@ assert Array.contains(4, r)
 let resize = Set.makeSized(1)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == {currentSize: 0, bucketCount: 1}
+assert Set.getInternalStats(resize) == { currentSize: 0, bucketCount: 1 }
 
 Set.add("🌾", resize)
 Set.add("🐑", resize)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == {currentSize:2, bucketCount:1}
+assert Set.getInternalStats(resize) == { currentSize: 2, bucketCount: 1 }
 
 Set.add("🧱", resize)
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(resize) == {currentSize:3, bucketCount:2}
+assert Set.getInternalStats(resize) == { currentSize: 3, bucketCount: 2 }
 
 // Regression tests for https://github.com/grain-lang/grain/issues/497
 
 let largeSet = Set.fromArray(Array.init(128, i => i))
 
 // (nodeCount, bucketLength)
-assert Set.getInternalStats(largeSet) == {currentSize: 128, bucketCount:64}
+assert Set.getInternalStats(largeSet) == { currentSize: 128, bucketCount: 64 }
 
 module Immutable {
   from Set use { module Immutable as Set }
