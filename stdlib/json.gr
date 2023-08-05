@@ -417,15 +417,9 @@ provide enum FormattingChoices {
   },
 }
 
-record JsonWriterCompactImplHelper {
-  buffer: Buffer.Buffer,
-  emitEscapedQuotedString: String => Void,
-}
-
-record JsonWriterPrettyImplHelper {
+record JsonWriterImplHelper {
   format: FormattingSettings,
-  //TODO(#775): Note that the "Pretty" suffix here is a workaround for a Grain compiler bug.
-  bufferPretty: Buffer.Buffer,
+  buffer: Buffer.Buffer,
   emitEscapedQuotedStringPretty: String => Void,
   printNewLine: () => Void,
   printIndentation: Number => Void,
@@ -659,180 +653,16 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
   ret
 }
 
-let rec printElementCompact =
-  (
-    json: Json,
-    implHelper: JsonWriterCompactImplHelper,
-  ) => {
-  let buffer = implHelper.buffer
-  match (json) {
-    JsonNull => {
-      printNull(buffer)
-      return None
-    },
-    JsonBoolean(b) => {
-      printBool(b, buffer)
-      return None
-    },
-    JsonNumber(n) => return printNumber(n, buffer),
-    JsonString(s) => {
-      implHelper.emitEscapedQuotedString(s)
-      return None
-    },
-    JsonArray(elems) => {
-      // In order to gain more performance, List.forEachi is avoided in order to avoid
-      // the allocation of closures, this makes this function a little ugly but it seems
-      // like a valid trade-off
-      // Another approach would be to allocate a function for the
-      // formatting arrays just once at the start of formatting and pass
-      // it in emitJSONElement.
-      match (elems) {
-        [] => {
-          Buffer.addChar('[', buffer)
-          Buffer.addChar(']', buffer)
-          return None
-        },
-        [e] => {
-          Buffer.addChar('[', buffer)
-
-          let err = printElementCompact(e, implHelper)
-          if (Option.isSome(err)) return err
-          Buffer.addChar(']', buffer)
-          return None
-        },
-        [initialHead, ...initialRest] => {
-          Buffer.addChar('[', buffer)
-
-          let mut currentHead = initialHead
-          let mut currentRest = initialRest
-
-          for (let mut index = 0; ; index += 1) {
-            if (index > 0) {
-              Buffer.addChar(',', buffer)
-            }
-
-            let err = printElementCompact(currentHead, implHelper)
-            if (Option.isSome(err)) return err
-
-            match (currentRest) {
-              [] => break,
-              [newHead, ...newRest] => {
-                currentHead = newHead
-                currentRest = newRest
-              },
-            }
-          }
-
-          Buffer.addChar(']', buffer)
-
-          return None
-        },
-      }
-    },
-    JsonObject(entries) => {
-      match (entries) {
-        [] => {
-          Buffer.addChar('{', buffer)
-          Buffer.addChar('}', buffer)
-          return None
-        },
-        [(key, value)] => {
-          Buffer.addChar('{', buffer)
-
-          implHelper.emitEscapedQuotedString(key)
-
-          Buffer.addChar(':', buffer)
-
-          let err = printElementCompact(value, implHelper)
-          if (Option.isSome(err)) return err
-
-          Buffer.addChar('}', buffer)
-
-          return None
-        },
-        [initialHead, ...initialRest] => {
-          Buffer.addChar('{', buffer)
-
-          let mut currentHead = initialHead
-          let mut currentRest = initialRest
-
-          for (let mut index = 0; ; index += 1) {
-            if (index > 0) {
-              Buffer.addChar(',', buffer)
-            }
-
-            let (key, value) = currentHead
-
-            implHelper.emitEscapedQuotedString(key)
-
-            Buffer.addChar(':', buffer)
-
-            let err = printElementCompact(value, implHelper)
-
-            if (Option.isSome(err)) return err
-
-            match (currentRest) {
-              [] => break,
-              [newHead, ...newRest] => {
-                currentHead = newHead
-                currentRest = newRest
-              },
-            }
-          }
-
-          Buffer.addChar('}', buffer)
-
-          return None
-        },
-      }
-    },
-  }
-}
-
-let makeCompactJsonWriter = (buffer: Buffer.Buffer) => {
-  // As an optimization prepare a closure function to execute for each code
-  // point of the input. It's important that this is not inline in the
-  // emitEscapedQuotedString function directly to avoid allocating the closue
-  // for each input string.
-  let emitCodePoint = (codePoint: Number) => {
-    // For the compact formatting only escape backslash, double quotes and
-    // code points 0..31 (the so called "C0" control point group) as
-    // required by ECMA-404. For the non pretty printed case we don't want
-    // to escape more than what is stricty required to avoid increasing the
-    // output size.
-    if (codePoint > 31 && codePoint != 0x0022 && codePoint != 0x005C) {
-      addCharFromCodePoint(codePoint, buffer)
-    } else {
-      emitEscapedCodePoint(codePoint, buffer)
-    }
-  }
-
-  let emitEscapedQuotedString = (s: String) => {
-    Buffer.addChar('"', buffer)
-
-    String.forEachCodePoint(emitCodePoint, s)
-
-    Buffer.addChar('"', buffer)
-  }
-
-  let implHelper = {
-    buffer,
-    emitEscapedQuotedString,
-  }: JsonWriterCompactImplHelper
-
-  { emit: json => printElementCompact(json, implHelper), }: JsonWriter
-}
-
 // Note that this could relatively easily be integrated with
 // printElementCompact to avoid code duplication, but it would mean
 // compromising peak performance and also increasing complexity in other ways.
 let rec printElementPretty =
   (
     json: Json,
-    implHelper: JsonWriterPrettyImplHelper,
+    implHelper: JsonWriterImplHelper,
     indentationLevel: Number,
   ) => {
-  let buffer = implHelper.bufferPretty
+  let buffer = implHelper.buffer
   match (json) {
     JsonNull => {
       printNull(buffer)
@@ -1068,11 +898,7 @@ let combineSurrogatePairToCodePoint =
   ((highSurrogate - 0xD800) << 10) + (lowSurrogate - 0xDC00) + 0x10000
 }
 
-let makePrettyPrintJsonWriter =
-  (
-    format: FormattingSettings,
-    buffer: Buffer.Buffer,
-  ) => {
+let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
   let printNewLine = match (format.lineEnding) {
     NoLineEnding => () => void,
     LineFeed =>
@@ -1243,11 +1069,11 @@ let makePrettyPrintJsonWriter =
 
   let implHelper = {
     format,
-    bufferPretty: buffer,
+    buffer,
     emitEscapedQuotedStringPretty: emitEscapedQuotedString,
     printNewLine,
     printIndentation,
-  }: JsonWriterPrettyImplHelper
+  }: JsonWriterImplHelper
 
   {
     emit: json => {
@@ -1314,50 +1140,51 @@ let makePrettyPrintJsonWriter =
  */
 provide let toString = (format=Compact, json: Json) => {
   let buf = Buffer.make(16)
-  let writer = match (format) {
+  let format = match (format) {
     Pretty =>
-      makePrettyPrintJsonWriter(
-        {
-          indentation: IndentWithSpaces(2),
-          arrayFormat: OneArrayEntryPerLine,
-          objectFormat: OneObjectEntryPerLine,
-          lineEnding: LineFeed,
-          finishWithNewLine: true,
-          escapeAllControlPoints: true,
-          escapeHTMLUnsafeSequences: false,
-          escapeNonASCII: false,
-        },
-        buf
-      ),
-    Compact => makeCompactJsonWriter(buf),
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: OneObjectEntryPerLine,
+        lineEnding: LineFeed,
+        finishWithNewLine: true,
+        escapeAllControlPoints: true,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      },
+    Compact =>
+      {
+        indentation: NoIndentation,
+        arrayFormat: CompactArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: NoLineEnding,
+        finishWithNewLine: false,
+        escapeAllControlPoints: false,
+        escapeHTMLUnsafeSequences: false,
+        escapeNonASCII: false,
+      },
     PrettyAndSafeFormat =>
-      makePrettyPrintJsonWriter(
-        {
-          indentation: IndentWithSpaces(2),
-          arrayFormat: OneArrayEntryPerLine,
-          objectFormat: OneObjectEntryPerLine,
-          lineEnding: LineFeed,
-          finishWithNewLine: true,
-          escapeAllControlPoints: true,
-          escapeHTMLUnsafeSequences: true,
-          escapeNonASCII: true,
-        },
-        buf
-      ),
+      {
+        indentation: IndentWithSpaces(2),
+        arrayFormat: OneArrayEntryPerLine,
+        objectFormat: OneObjectEntryPerLine,
+        lineEnding: LineFeed,
+        finishWithNewLine: true,
+        escapeAllControlPoints: true,
+        escapeHTMLUnsafeSequences: true,
+        escapeNonASCII: true,
+      },
     CompactAndSafeFormat =>
-      makePrettyPrintJsonWriter(
-        {
-          indentation: NoIndentation,
-          arrayFormat: CompactArrayEntries,
-          objectFormat: CompactObjectEntries,
-          lineEnding: NoLineEnding,
-          finishWithNewLine: false,
-          escapeAllControlPoints: true,
-          escapeHTMLUnsafeSequences: true,
-          escapeNonASCII: true,
-        },
-        buf
-      ),
+      {
+        indentation: NoIndentation,
+        arrayFormat: CompactArrayEntries,
+        objectFormat: CompactObjectEntries,
+        lineEnding: NoLineEnding,
+        finishWithNewLine: false,
+        escapeAllControlPoints: true,
+        escapeHTMLUnsafeSequences: true,
+        escapeNonASCII: true,
+      },
     Custom{
       indentation,
       arrayFormat,
@@ -1368,20 +1195,18 @@ provide let toString = (format=Compact, json: Json) => {
       escapeHTMLUnsafeSequences,
       escapeNonASCII,
     } =>
-      makePrettyPrintJsonWriter(
-        {
-          indentation,
-          arrayFormat,
-          objectFormat,
-          lineEnding,
-          finishWithNewLine,
-          escapeAllControlPoints,
-          escapeHTMLUnsafeSequences,
-          escapeNonASCII,
-        },
-        buf
-      ),
+      {
+        indentation,
+        arrayFormat,
+        objectFormat,
+        lineEnding,
+        finishWithNewLine,
+        escapeAllControlPoints,
+        escapeHTMLUnsafeSequences,
+        escapeNonASCII,
+      },
   }
+  let writer = makeJsonWriter(format, buf)
   let error = writer.emit(json)
 
   match (error) {
