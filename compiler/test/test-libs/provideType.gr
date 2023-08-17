@@ -1,7 +1,0 @@
-module ProvideType
-
-provide enum Type {
-  A,
-  B,
-  C,
-}
