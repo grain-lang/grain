@@ -666,7 +666,7 @@ and print_out_sig_item = ppf =>
         | Otyp_sum(_) => "enum"
         | Otyp_variant(_, _, _, _) =>
           failwith("NYI: Otyp_variant pretty-printer")
-        | Otyp_open => failwith("NYI: Otyp_open pretty-printer")
+        | Otyp_open => "exception"
         | Otyp_alias(_, _) => failwith("NYI: Otyp_alias pretty-printer")
         | Otyp_class(_, _, _) => failwith("NYI: Otyp_class pretty-printer")
         | Otyp_arrow(_, _)
