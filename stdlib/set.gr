@@ -467,7 +467,7 @@ provide let intersect = (set1, set2) => {
  * @returns The internal state of the set
  *
  * @since v0.3.0
- * @history v0.6.0: switch to returning `InternalSetStats` record
+ * @history v0.6.0: Return `InternalSetStats` record instead of a tuple
  */
 provide let getInternalStats = set => {
   { currentSize: set.size, bucketCount: Array.length(set.buckets) }

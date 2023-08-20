@@ -512,7 +512,7 @@ provide let reject = (predicate, map) => {
  * @returns The internal state of the map
  *
  * @since v0.2.0
- * @history v0.6.0: switch to returning `InternalMapStats` record
+ * @history v0.6.0: Return `InternalMapStats` record instead of a tuple
  */
 provide let getInternalStats = map => {
   { currentSize: map.size, bucketCount: Array.length(map.buckets) }
