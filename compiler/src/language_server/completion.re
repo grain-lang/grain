@@ -144,6 +144,7 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
     // Search file to grab context
     let rec searchForContext =
             (
+              ~last_char_whitespace=false,
               search_code: list(char),
               curr_offset,
               slice_offset,
@@ -152,23 +153,42 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
       switch (search_code) {
       // Context Finders
       // TODO: Make sure there is some sort of whitespace between
-      | ['t', 'e', 'l', ...rest] =>
-        Some(
-          CompletableExpr(
-            String_utils.slice(~first=curr_offset, ~last=offset, source),
-          ),
-        )
-      | ['e', 'p', 'y', 't', ...rest] =>
-        Some(
-          CompletableType(
-            String_utils.slice(~first=curr_offset, ~last=offset, source),
-          ),
-        )
+      | ['t', 'e', 'l', ...rest] when last_char_whitespace =>
+        if (has_hit_info) {
+          Some(
+            CompletableExpr(
+              String_utils.slice(~first=curr_offset, ~last=offset, source),
+            ),
+          );
+        } else {
+          None;
+        }
+      | ['e', 'p', 'y', 't', ...rest] when last_char_whitespace =>
+        if (has_hit_info) {
+          Some(
+            CompletableType(
+              String_utils.slice(~first=curr_offset, ~last=offset, source),
+            ),
+          );
+        } else {
+          None;
+        }
       | ['\n', ...rest] when !has_hit_info =>
         Some(
           ComletableCode(
             String_utils.slice(~first=curr_offset, ~last=offset, source),
           ),
+        )
+      // Whitespace
+      | [' ', ...rest]
+      | ['\n', ...rest]
+      | ['\t', ...rest] =>
+        searchForContext(
+          rest,
+          curr_offset - 1,
+          slice_offset,
+          has_hit_info,
+          ~last_char_whitespace=true,
         )
       // Context Seperators
       | ['(', ...rest]
