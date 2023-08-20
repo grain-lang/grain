@@ -147,7 +147,7 @@ The value tag, arity, wasm function pointer, and size are all **untagged**. All 
 
 ### Strings
 
-Chars and Strings are currently the only data types that store data in 8-bit chunks rather than 32 bits.
+Bytes and Strings are currently the only data types that store data in 8-bit chunks rather than 32 bits.
 
 ```plaintext
 ╔══════╦═══════════╤══════╤════════╤════════╤═════╤════════╗
@@ -173,6 +173,20 @@ For completeness, here are the layouts of UTF-8 byte sequences:
 ```
 
 [More information on strings.](./string.md)
+
+### Bytes
+
+Bytes and Strings are currently the only data types that store data in 8-bit chunks rather than 32 bits.
+
+```plaintext
+╔══════╦═══════════╤══════╤════════╤════════╤═════╤════════╗
+║ size ║ 32        │ 32   │ 8      │ 8      │ 8   │ 8      ║
+╠══════╬═══════════╪══════╪════════╪════════╪═════╪════════╣
+║ what ║ value tag │ size │ byte_0 │ byte_1 │ ... │ byte_n ║
+╚══════╩═══════════╧══════╧════════╧════════╧═════╧════════╝
+```
+
+The size is **untagged**.
 
 ### Heap-Allocated Numbers
 
