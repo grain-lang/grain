@@ -5,6 +5,7 @@ include "string"
 include "buffer"
 include "bytes"
 include "int32"
+include "char"
 
 // it should have 0 length when buffer is created
 assert Buffer.length(Buffer.make(0)) == 0
@@ -318,6 +319,24 @@ assert Buffer.toString(buf) == "✨"
 let char = '🍞' // 4 bytes
 let buf = Buffer.make(0)
 Buffer.addChar(char, buf)
+assert Buffer.toString(buf) == "🍞"
+
+// addCharFromCodePoint
+let char = Char.code('a') // 1 byte
+let buf = Buffer.make(0)
+Buffer.addCharFromCodePoint(char, buf)
+assert Buffer.toString(buf) == "a"
+let char = Char.code('©') // 2 bytes
+let buf = Buffer.make(0)
+Buffer.addCharFromCodePoint(char, buf)
+assert Buffer.toString(buf) == "©"
+let char = Char.code('✨') // 3 bytes
+let buf = Buffer.make(0)
+Buffer.addCharFromCodePoint(char, buf)
+assert Buffer.toString(buf) == "✨"
+let char = Char.code('🍞') // 4 bytes
+let buf = Buffer.make(0)
+Buffer.addCharFromCodePoint(char, buf)
 assert Buffer.toString(buf) == "🍞"
 
 // addBuffer

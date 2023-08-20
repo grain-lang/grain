@@ -331,6 +331,26 @@ Parameters:
 |`char`|`Char`|The character to append to the buffer|
 |`buffer`|`Buffer`|The buffer to mutate|
 
+### Buffer.**addCharFromCodePoint**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+addCharFromCodePoint : (codePoint: Number, buffer: Buffer) => Void
+```
+
+Appends a character represented by a code point to a buffer.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`codePoint`|`Number`|The code point to append to the buffer|
+|`buffer`|`Buffer`|The buffer to mutate|
+
 ### Buffer.**addStringSlice**
 
 <details>
