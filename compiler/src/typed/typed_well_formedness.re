@@ -245,12 +245,15 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         )
           when func == "==" || func == "!=" =>
         if (List.exists(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
-          let (_, arg) = List.nth(args, 0);
           let typeName =
-            switch (resolve_unsafe_type(arg)) {
-            | Some(typeName) => typeName
-            // This should never be hit
-            | None => failwith("Impossible: exp_is_wasm_unsafe > typeName")
+            switch (args) {
+            | [(_, arg), _] =>
+              switch (resolve_unsafe_type(arg)) {
+              | Some(typeName) => typeName
+              // This should never be hit
+              | None => failwith("Impossible: exp_is_wasm_unsafe > typeName")
+              }
+            | _ => "(WasmI32 | WasmI64 | WasmF32 | WasmF64)"
             };
           let warning =
             Grain_utils.Warnings.FuncWasmUnsafe(
