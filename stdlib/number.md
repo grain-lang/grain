@@ -711,7 +711,7 @@ No other changes yet.
 ```grain
 isClose :
   (a: Number, b: Number, ?relativeTolerance: Number,
-   ?absoluteTolerance: Number) -> Bool
+   ?absoluteTolerance: Number) => Bool
 ```
 
 Determines weather two values are considered close to each other using a relative and absolute tolerance.
@@ -912,7 +912,7 @@ No other changes yet.
 </details>
 
 ```grain
-asin : (angle: Number) -> Number
+asin : (angle: Number) => Number
 ```
 
 Computes the inverse sine of the given angle
@@ -937,7 +937,7 @@ No other changes yet.
 </details>
 
 ```grain
-acos : (angle: Number) -> Number
+acos : (angle: Number) => Number
 ```
 
 Computes the inverse cosine of the given angle
@@ -962,7 +962,7 @@ No other changes yet.
 </details>
 
 ```grain
-atan : (angle: Number) -> Number
+atan : (angle: Number) => Number
 ```
 
 Computes the inverse tangent of the given angle
