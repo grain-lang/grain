@@ -53,10 +53,9 @@ let send_definition =
     }),
   );
 };
-
 let rec find_definition =
         (
-          ~depth=0,
+          ~try_last_char=false,
           sourcetree: Sourcetree.sourcetree,
           position: Protocol.position,
         ) => {
@@ -80,9 +79,11 @@ let rec find_definition =
     };
   switch (result) {
   | None =>
-    if (depth == 0 && position.character > 0) {
+    if (!try_last_char && position.character > 0) {
+      // If a user selects from left to right, their pointer ends up after the identifier
+      // this trys to check if the identifier was selected.
       find_definition(
-        ~depth=1,
+        ~try_last_char=true,
         sourcetree,
         {line: position.line, character: position.character - 1},
       );
