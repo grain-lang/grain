@@ -342,7 +342,7 @@ No other changes yet.
 addCharFromCodePoint : (codePoint: Number, buffer: Buffer) => Void
 ```
 
-Appends a char from a code point to a buffer.
+Appends a character represented by a code point a buffer.
 
 Parameters:
 
