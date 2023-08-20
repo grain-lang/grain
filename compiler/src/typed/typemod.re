@@ -683,15 +683,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
                       {tex_id: id, tex_path: path, tex_loc: val_loc},
                       ...provided_values^,
                     ];
-                  // If this module was imported, we'll set the internal path
-                  // to be picked up later to be re-exported. Otherwise, these
-                  // values originated in this module.
-                  let val_internalpath =
-                    switch (mod_decl.md_filepath) {
-                    | Some(_) => path
-                    | _ => val_internalpath
-                    };
-                  TSigValue(id, {...vd, val_internalpath});
+                  TSigValue(id, {...vd, val_internalpath: path});
                 | TSigModule(
                     id,
                     {md_type: TModSignature(signature)} as md,

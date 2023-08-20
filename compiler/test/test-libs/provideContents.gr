@@ -1,0 +1,11 @@
+module ProvideContents
+
+provide enum Type {
+  A,
+  B,
+  C,
+}
+
+provide module Mod {
+  provide let val = 123
+}
