@@ -152,7 +152,6 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
             ) => {
       switch (search_code) {
       // Context Finders
-      // TODO: Make sure there is some sort of whitespace between
       | ['t', 'e', 'l', ...rest] when last_char_whitespace =>
         if (has_hit_info) {
           Some(
