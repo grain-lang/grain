@@ -417,7 +417,7 @@ provide enum FormattingChoices {
   },
 }
 
-record JsonWriterImplHelper {
+record JsonWriterConfig {
   format: FormattingSettings,
   buffer: Buffer.Buffer,
   emitEscapedQuotedStringPretty: String => Void,
@@ -659,7 +659,7 @@ let printNumber = (value: Number, buffer: Buffer.Buffer) => {
 let rec printElementPretty =
   (
     json: Json,
-    implHelper: JsonWriterImplHelper,
+    implHelper: JsonWriterConfig,
     indentationLevel: Number,
   ) => {
   let buffer = implHelper.buffer
@@ -1136,7 +1136,7 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
     emitEscapedQuotedStringPretty: emitEscapedQuotedString,
     printNewLine,
     printIndentation,
-  }: JsonWriterImplHelper
+  }: JsonWriterConfig
 
   {
     emit: json => {
