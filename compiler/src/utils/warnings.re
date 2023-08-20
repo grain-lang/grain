@@ -106,7 +106,7 @@ let message =
   | UnusedMatch => "this match case is unused."
   | UnusedPat => "this sub-pattern is unused."
   | UnusedExtension => "this type extension is unused."
-  | UnreachableCase => "this mach case is unreachable."
+  | UnreachableCase => "this match case is unreachable."
   | ShadowConstructor(s) =>
     "the pattern variable " ++ s ++ " shadows a constructor of the same name."
   | NoCmiFile(name, None) =>

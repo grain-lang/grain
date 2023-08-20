@@ -158,7 +158,9 @@ module type OrderedComments = {
 };
 
 module MakeOrderedComments =
-       (Raw: {let comments: list(Typedtree.comment);})
+       (Raw: {
+          let comments: list(Typedtree.comment);
+        })
        : OrderedComments => {
   module IntMap = Map.Make(Int);
 
