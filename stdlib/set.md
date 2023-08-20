@@ -25,6 +25,17 @@ Type declarations included in the Set module.
 type Set<k>
 ```
 
+### Set.**InternalSetStats**
+
+```grain
+record InternalSetStats {
+  currentSize: Number,
+  bucketCount: Number,
+}
+```
+
+Represents the internal state of a set.
+
 ## Values
 
 Functions and constants included in the Set module.
@@ -482,13 +493,20 @@ Returns:
 
 ### Set.**getInternalStats**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.3.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>0.3.0</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>next</code></td><td>Return `InternalSetStats` record instead of a tuple</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-getInternalStats : (set: Set<a>) => (Number, Number)
+getInternalStats : (set: Set<a>) => InternalSetStats
 ```
 
 Provides data representing the internal state state of the set.
@@ -503,7 +521,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`(Number, Number)`|The internal state of the set|
+|`InternalSetStats`|The internal state of the set|
 
 ## Set.Immutable
 
