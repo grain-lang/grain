@@ -311,7 +311,7 @@ provide let addString = (string, buffer) => {
 }
 
 /**
- * Appends the bytes of a char to a buffer.
+ * Appends the bytes of a character to a buffer.
  *
  * @param char: The character to append to the buffer
  * @param buffer: The buffer to mutate
