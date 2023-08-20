@@ -467,7 +467,7 @@ provide let getInternalStats = set => {
 
 /**
  * An immutable set implementation.
- *
+ * 
  * @since v0.6.0
  * @history v0.5.4: Originally in `"immutableset"` module
  */
@@ -493,7 +493,7 @@ provide module Immutable {
 
   /**
    * An empty set
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -514,7 +514,7 @@ provide module Immutable {
    *
    * @param set: The set to inspect
    * @returns The count of elements in the set
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -531,7 +531,7 @@ provide module Immutable {
    *
    * @param set: The set to inspect
    * @returns `true` if the given set is empty or `false` otherwise
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -617,7 +617,7 @@ provide module Immutable {
    * @param key: The value to add
    * @param set: The base set
    * @returns A new set containing the new element
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -641,7 +641,7 @@ provide module Immutable {
    * @param key: The value to search for
    * @param set: The set to search
    * @returns `true` if the set contains the given value or `false` otherwise
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -687,7 +687,7 @@ provide module Immutable {
    * @param key: The value to exclude
    * @param set: The set to exclude from
    * @returns A new set without the excluded element
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -710,7 +710,7 @@ provide module Immutable {
    *
    * @param fn: The iterator function to call with each element
    * @param set: The set to iterate
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -736,7 +736,7 @@ provide module Immutable {
    * @param init: The initial value to use for the accumulator on the first iteration
    * @param set: The set to iterate
    * @returns The final accumulator returned from `fn`
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -819,7 +819,7 @@ provide module Immutable {
    * @param fn: The predicate function to indicate which elements to exclude from the set, where returning `false` indicates the value should be excluded
    * @param set: The set to iterate
    * @returns A new set excluding the elements not fulfilling the predicate
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -846,7 +846,7 @@ provide module Immutable {
    * @param fn: The predicate function to indicate which elements to exclude from the set, where returning `true` indicates the value should be excluded
    * @param set: The set to iterate
    * @returns A new set excluding the elements fulfilling the predicate
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -861,7 +861,7 @@ provide module Immutable {
    * @param set1: The first set to combine
    * @param set2: The second set to combine
    * @returns A set containing all elements of both sets
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -883,7 +883,7 @@ provide module Immutable {
    * @param set1: The first set to combine
    * @param set2: The second set to combine
    * @returns A set containing only unshared elements from both sets
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -908,7 +908,7 @@ provide module Immutable {
    * @param set1: The first set to combine
    * @param set2: The second set to combine
    * @returns A set containing only shared elements from both sets
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -933,7 +933,7 @@ provide module Immutable {
    *
    * @param list: The list to convert
    * @returns A set containing all list values
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -947,7 +947,7 @@ provide module Immutable {
    *
    * @param set: The set to convert
    * @returns A list containing all set values
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -969,7 +969,7 @@ provide module Immutable {
    *
    * @param array: The array to convert
    * @returns A set containing all array values
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
@@ -983,7 +983,7 @@ provide module Immutable {
    *
    * @param set: The set to convert
    * @returns An array containing all set values
-   *
+   * 
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutableset"` module
    */
