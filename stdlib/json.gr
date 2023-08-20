@@ -421,8 +421,8 @@ record JsonWriterImplHelper {
   format: FormattingSettings,
   buffer: Buffer.Buffer,
   emitEscapedQuotedStringPretty: String => Void,
-  printNewLine: () => Void,
-  printIndentation: Number => Void,
+  printNewLine: Option<() => Void>,
+  printIndentation: Option<Number => Void>,
 }
 
 // The idea for this type is to allow reusing a bit of work done in preparing for printing JSON.
@@ -693,21 +693,33 @@ let rec printElementPretty =
           Buffer.addChar('[', buffer)
 
           if (format.arrayFormat == OneArrayEntryPerLine) {
-            implHelper.printNewLine()
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
           }
 
           let elemLevel = indentationLevel + 1
 
           if (format.arrayFormat == OneArrayEntryPerLine) {
-            implHelper.printIndentation(elemLevel)
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(elemLevel),
+              None => void,
+            }
           }
 
           let err = printElementPretty(e, implHelper, elemLevel)
           if (Option.isSome(err)) return err
 
           if (format.arrayFormat == OneArrayEntryPerLine) {
-            implHelper.printNewLine()
-            implHelper.printIndentation(indentationLevel)
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
           }
 
           Buffer.addChar(']', buffer)
@@ -720,7 +732,10 @@ let rec printElementPretty =
           Buffer.addChar('[', buffer)
 
           if (format.arrayFormat == OneArrayEntryPerLine) {
-            implHelper.printNewLine()
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
           }
 
           let mut currentHead = initialHead
@@ -736,12 +751,18 @@ let rec printElementPretty =
               }
 
               if (format.arrayFormat == OneArrayEntryPerLine) {
-                implHelper.printNewLine()
+                match (implHelper.printNewLine) {
+                  Some(printNewLine) => printNewLine(),
+                  None => void,
+                }
               }
             }
 
             if (format.arrayFormat == OneArrayEntryPerLine) {
-              implHelper.printIndentation(elemLevel)
+              match (implHelper.printIndentation) {
+                Some(printIndentation) => printIndentation(elemLevel),
+                None => void,
+              }
             }
 
             let err = printElementPretty(currentHead, implHelper, elemLevel)
@@ -757,8 +778,14 @@ let rec printElementPretty =
           }
 
           if (format.arrayFormat == OneArrayEntryPerLine) {
-            implHelper.printNewLine()
-            implHelper.printIndentation(indentationLevel)
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
           }
 
           Buffer.addChar(']', buffer)
@@ -785,8 +812,14 @@ let rec printElementPretty =
           let elemLevel = indentationLevel + 1
 
           if (format.objectFormat == OneObjectEntryPerLine) {
-            implHelper.printNewLine()
-            implHelper.printIndentation(elemLevel)
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(elemLevel),
+              None => void,
+            }
           }
 
           implHelper.emitEscapedQuotedStringPretty(key)
@@ -803,8 +836,14 @@ let rec printElementPretty =
           if (Option.isSome(err)) return err
 
           if (format.objectFormat == OneObjectEntryPerLine) {
-            implHelper.printNewLine()
-            implHelper.printIndentation(indentationLevel)
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
           }
 
           Buffer.addChar('}', buffer)
@@ -817,7 +856,10 @@ let rec printElementPretty =
           Buffer.addChar('{', buffer)
 
           if (format.objectFormat == OneObjectEntryPerLine) {
-            implHelper.printNewLine()
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
           }
 
           let mut currentHead = initialHead
@@ -833,12 +875,18 @@ let rec printElementPretty =
               }
 
               if (format.objectFormat == OneObjectEntryPerLine) {
-                implHelper.printNewLine()
+                match (implHelper.printNewLine) {
+                  Some(printNewLine) => printNewLine(),
+                  None => void,
+                }
               }
             }
 
             if (format.objectFormat == OneObjectEntryPerLine) {
-              implHelper.printIndentation(elemLevel)
+              match (implHelper.printIndentation) {
+                Some(printIndentation) => printIndentation(elemLevel),
+                None => void,
+              }
             }
 
             let (key, value) = currentHead
@@ -866,8 +914,14 @@ let rec printElementPretty =
           }
 
           if (format.objectFormat == OneObjectEntryPerLine) {
-            implHelper.printNewLine()
-            implHelper.printIndentation(indentationLevel)
+            match (implHelper.printNewLine) {
+              Some(printNewLine) => printNewLine(),
+              None => void,
+            }
+            match (implHelper.printIndentation) {
+              Some(printIndentation) => printIndentation(indentationLevel),
+              None => void,
+            }
           }
 
           Buffer.addChar('}', buffer)
@@ -900,41 +954,41 @@ let combineSurrogatePairToCodePoint =
 
 let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
   let printNewLine = match (format.lineEnding) {
-    NoLineEnding => () => void,
+    NoLineEnding => None,
     LineFeed =>
-      () => {
+      Some(() => {
         Buffer.addChar('\n', buffer)
-      },
+      }),
     CarriageReturnLineFeed =>
-      () => {
+      Some(() => {
         Buffer.addChar('\r', buffer)
         Buffer.addChar('\n', buffer)
-      },
+      }),
     CarriageReturn =>
-      () => {
+      Some(() => {
         Buffer.addChar('\r', buffer)
-      },
+      }),
   }
 
   let printIndentation = match (format.indentation) {
     IndentWithTab =>
-      indentationLevel => {
+      Some(indentationLevel => {
         let mut count = 0
         while (count < indentationLevel) {
           Buffer.addChar('\t', buffer)
           count += 1
         }
-      },
+      }),
     IndentWithSpaces(spacesPerIndentation) =>
-      indentationLevel => {
+      Some(indentationLevel => {
         let mut count = 0
         let spaceCount = indentationLevel * spacesPerIndentation
         while (count < spaceCount) {
           Buffer.addChar(' ', buffer)
           count += 1
         }
-      },
-    NoIndentation => indentationLevel => void,
+      }),
+    NoIndentation => None,
   }
 
   // A possible optimization to make this faster would be to
@@ -1079,7 +1133,12 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
     emit: json => {
       let error = printElementPretty(json, implHelper, 0)
       if (Option.isSome(error)) return error
-      if (format.finishWithNewLine) printNewLine()
+      if (format.finishWithNewLine) {
+        match (printNewLine) {
+          Some(printNewLine) => printNewLine(),
+          None => void,
+        }
+      }
       return None
     },
   }: JsonWriter
