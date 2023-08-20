@@ -500,7 +500,7 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>switch to returning `InternalSetStats` record</td></tr>
+<tr><td><code>next</code></td><td>Return `InternalSetStats` record instead of a tuple</td></tr>
 </tbody>
 </table>
 </details>
