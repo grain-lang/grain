@@ -199,7 +199,9 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
       | [']', ...rest]
       | [',', ...rest]
       | [':', ...rest]
-      | ['=', ...rest] =>
+      | ['=', ...rest]
+      | ['<', ...rest]
+      | ['>', ...rest] =>
         if (slice_offset == 0) {
           searchForContext(rest, curr_offset - 1, curr_offset, true);
         } else {
