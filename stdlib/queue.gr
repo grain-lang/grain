@@ -149,7 +149,7 @@ provide let toList = queue => {
   let lst = List.init(queue.size, i => match (queue.array[queue.headIndex +
     i]) {
     Some(n) => n,
-    None => fail "Impossible",
+    None => fail "Impossible: Attempted to access non-existent bucket in Queue.toList",
   })
   lst
 }
