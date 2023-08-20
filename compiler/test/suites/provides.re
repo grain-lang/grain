@@ -13,12 +13,7 @@ describe("provides", ({test, testSkip}) => {
     test(
       name,
       ({expect}) => {
-        let state =
-          compile(
-            ~hook=Grain.Compile.stop_after_object_file_emitted,
-            name,
-            prog,
-          );
+        let state = compile(name, prog);
         ();
         switch (state.Grain.Compile.cstate_desc) {
         | ObjectFileEmitted({asm}) =>
@@ -169,6 +164,12 @@ describe("provides", ({test, testSkip}) => {
         print("starting up")
       }
     |},
+  );
+
+  assertHasWasmExport(
+    "global_provides",
+    "module Test; provide let foo = 5",
+    ("foo", Binaryen.Export.external_global),
   );
 
   assertHasWasmExport(
