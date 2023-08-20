@@ -112,7 +112,23 @@ type completionState =
   | CompletableExpr(string)
   | CompletableType(string);
 
-let find_completable_state = (documents, uri, positon: Protocol.position) => {
+let convert_position_to_offset = (source, position: Protocol.position) => {
+  let lines = String.split_on_char('\n', source);
+  List_utils.fold_lefti(
+    (offset, line_number, line_str) =>
+      if (position.line == line_number) {
+        offset + position.character;
+      } else if (line_number < position.line) {
+        // Add 1 for the newline
+        offset + String.length(line_str) + 1;
+      } else {
+        offset;
+      },
+    0,
+    lines,
+  );
+};
+let find_completable_state = (documents, uri, position: Protocol.position) => {
   // try and find the code we are completing in the original source
   switch (Hashtbl.find_opt(documents, uri)) {
   | None => None
@@ -120,53 +136,63 @@ let find_completable_state = (documents, uri, positon: Protocol.position) => {
     // Get Document
     let source =
       Str.global_replace(Str.regexp({|\r\n|}), {|\n|}, source_code);
-    let lines = String.split_on_char('\n', source);
-    let index = positon.character;
-    // Search File To Grab Context
-    let rec searchForContext = (search_code, offset, cut, hasHitSep) => {
-      switch (String_utils.char_at(search_code, offset)) {
-      // Find Context
-      | Some('=') =>
-        CompletableExpr(
-          String.trim(
-            String_utils.slice(~first=offset + 2, ~last=index, search_code),
+    let offset = convert_position_to_offset(source, position);
+    let source_chars =
+      List.rev(
+        String_utils.explode(String_utils.slice(~last=offset, source)),
+      );
+    // Search file to grab context
+    let rec searchForContext =
+            (
+              search_code: list(char),
+              curr_offset,
+              slice_offset,
+              has_hit_info,
+            ) => {
+      switch (search_code) {
+      // Context Finders
+      // TODO: Make sure there is some sort of whitespace between
+      | ['t', 'e', 'l', ...rest] =>
+        Some(
+          CompletableExpr(
+            String_utils.slice(~first=curr_offset, ~last=offset, source),
           ),
         )
-      | Some(':') =>
-        CompletableType(
-          String.trim(
-            String_utils.slice(~first=offset, ~last=index, search_code),
+      | ['e', 'p', 'y', 't', ...rest] =>
+        Some(
+          CompletableType(
+            String_utils.slice(~first=curr_offset, ~last=offset, source),
+          ),
+        )
+      | ['\n', ...rest] when !has_hit_info =>
+        Some(
+          ComletableCode(
+            String_utils.slice(~first=curr_offset, ~last=offset, source),
           ),
         )
       // Context Seperators
-      | Some('(')
-      | Some(',')
-      | Some('[') =>
-        searchForContext(
-          search_code,
-          offset - 1,
-          hasHitSep ? cut : offset - 1,
-          true,
-        )
-      // Must be something else
-      | _ when offset <= 0 => ComletableCode(search_code)
-      | _ =>
-        searchForContext(
-          search_code,
-          offset - 1,
-          hasHitSep ? cut : offset - 1,
-          true,
-        )
+      | ['(', ...rest]
+      | [')', ...rest]
+      | ['{', ...rest]
+      | ['}', ...rest]
+      | ['[', ...rest]
+      | [']', ...rest]
+      | [',', ...rest]
+      | [':', ...rest]
+      | ['=', ...rest] =>
+        if (slice_offset == 0) {
+          searchForContext(rest, curr_offset - 1, curr_offset, true);
+        } else {
+          searchForContext(rest, curr_offset - 1, slice_offset, true);
+        }
+      // Any old char
+      | [_, ...rest] =>
+        searchForContext(rest, curr_offset - 1, slice_offset, has_hit_info)
+      // We Did not find a marker
+      | [] => None
       };
     };
-    let context =
-      searchForContext(
-        List.nth(lines, positon.line),
-        positon.character,
-        positon.character,
-        false,
-      );
-    Some(context);
+    searchForContext(source_chars, offset, 0, false);
   };
 };
 
