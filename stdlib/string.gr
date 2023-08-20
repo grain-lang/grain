@@ -1971,7 +1971,7 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
  * @since v0.6.0
  */
 @unsafe
-provide let forEachChar = (fn: Char -> Void, str: String) => {
+provide let forEachChar = (fn: Char => Void, str: String) => {
   from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
@@ -2021,7 +2021,7 @@ provide let forEachChar = (fn: Char -> Void, str: String) => {
  * @since v0.6.0
  */
 @unsafe
-provide let forEachChari = (fn: (Char, Number) -> Void, str: String) => {
+provide let forEachChari = (fn: (Char, Number) => Void, str: String) => {
   from WasmI32 use { (+), (-), (&), (>>>), ltU as (<), leU as (<=), (==) }
 
   let strPtr = WasmI32.fromGrain(str)
@@ -2070,7 +2070,7 @@ provide let forEachChari = (fn: (Char, Number) -> Void, str: String) => {
  *
  * @since v0.6.0
  */
-provide let map = (fn: Char -> Char, str: String) => {
+provide let map = (fn: Char => Char, str: String) => {
   let chars = explode(str)
   let arrLen = arrayLength(chars)
   for (let mut i = 0; i < arrLen; i += 1) {
@@ -2091,7 +2091,7 @@ provide let map = (fn: Char -> Char, str: String) => {
  *
  * @since v0.6.0
  */
-provide let mapi = (fn: (Char, Number) -> Char, str: String) => {
+provide let mapi = (fn: (Char, Number) => Char, str: String) => {
   let chars = explode(str)
   let arrLen = arrayLength(chars)
   for (let mut i = 0; i < arrLen; i += 1) {
