@@ -979,6 +979,15 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
           count += 1
         }
       }),
+    IndentWithSpaces(spacesPerIndentation) when spacesPerIndentation == 2 =>
+      Some(indentationLevel => {
+        let mut count = 0
+        let spaceCount = indentationLevel * 2
+        while (count < spaceCount) {
+          Buffer.addChar(' ', buffer)
+          count += 1
+        }
+      }),
     IndentWithSpaces(spacesPerIndentation) =>
       Some(indentationLevel => {
         let mut count = 0
