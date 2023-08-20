@@ -42,14 +42,14 @@ let rec resolve_unsafe_type = ({exp_type}) => {
     switch (t.desc) {
     | TTyConstr(path, _, _) =>
       switch (path) {
-      | t when t == Builtin_types.path_wasmi32 => Some("WasmI32")
-      | t when t == Builtin_types.path_wasmi64 => Some("WasmI64")
-      | t when t == Builtin_types.path_wasmf32 => Some("WasmF32")
-      | t when t == Builtin_types.path_wasmf64 => Some("WasmI64")
-      | _ => None
+      | t when t == Builtin_types.path_wasmi32 => "WasmI32"
+      | t when t == Builtin_types.path_wasmi64 => "WasmI64"
+      | t when t == Builtin_types.path_wasmf32 => "WasmF32"
+      | t when t == Builtin_types.path_wasmf64 => "WasmI64"
+      | _ => failwith("Impossible: type cannot be a wasm unsafe value")
       }
     | TTyLink(t) => type_is_wasm_unsafe(t)
-    | _ => None
+    | _ => failwith("Impossible: type cannot be a wasm unsafe value")
     };
   };
   type_is_wasm_unsafe(exp_type);
@@ -247,12 +247,7 @@ module WellFormednessArg: TypedtreeIter.IteratorArgument = {
         if (List.exists(((_, arg)) => exp_is_wasm_unsafe(arg), args)) {
           let typeName =
             switch (args) {
-            | [(_, arg), _] =>
-              switch (resolve_unsafe_type(arg)) {
-              | Some(typeName) => typeName
-              // This should never be hit
-              | None => failwith("Impossible: exp_is_wasm_unsafe > typeName")
-              }
+            | [(_, arg), _] => resolve_unsafe_type(arg)
             | _ => "(WasmI32 | WasmI64 | WasmF32 | WasmF64)"
             };
           let warning =
