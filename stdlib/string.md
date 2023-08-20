@@ -919,7 +919,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachChar : (fn: (Char -> Void), str: String) -> Void
+forEachChar : (fn: (Char => Void), str: String) => Void
 ```
 
 Iterates over Unicode characters in a string.
@@ -928,7 +928,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`Char -> Void`|The iterator function|
+|`fn`|`Char => Void`|The iterator function|
 |`str`|`String`|The string to iterate|
 
 Examples:
@@ -945,7 +945,7 @@ No other changes yet.
 </details>
 
 ```grain
-forEachChari : (fn: ((Char, Number) -> Void), str: String) -> Void
+forEachChari : (fn: ((Char, Number) => Void), str: String) => Void
 ```
 
 Iterates over Unicode characters in a string. This is the same as
@@ -956,7 +956,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(Char, Number) -> Void`|The iterator function|
+|`fn`|`(Char, Number) => Void`|The iterator function|
 |`str`|`String`|The string to iterate|
 
 Examples:
@@ -973,7 +973,7 @@ No other changes yet.
 </details>
 
 ```grain
-map : (fn: (Char -> Char), str: String) -> String
+map : (fn: (Char => Char), str: String) => String
 ```
 
 Maps Unicode characters in a string.
@@ -982,7 +982,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`Char -> Char`|The mapping function|
+|`fn`|`Char => Char`|The mapping function|
 |`str`|`String`|The string to map|
 
 Examples:
@@ -999,7 +999,7 @@ No other changes yet.
 </details>
 
 ```grain
-mapi : (fn: ((Char, Number) -> Char), str: String) -> String
+mapi : (fn: ((Char, Number) => Char), str: String) => String
 ```
 
 Maps Unicode characters in a string. This is the same as
@@ -1010,7 +1010,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`fn`|`(Char, Number) -> Char`|The mapping function|
+|`fn`|`(Char, Number) => Char`|The mapping function|
 |`str`|`String`|The string to map|
 
 Examples:
