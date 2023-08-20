@@ -322,7 +322,7 @@ No other changes yet.
 addChar : (char: Char, buffer: Buffer) => Void
 ```
 
-Appends the bytes of a char to a buffer.
+Appends the bytes of a character to a buffer.
 
 Parameters:
 
