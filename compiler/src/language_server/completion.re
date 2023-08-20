@@ -99,19 +99,6 @@ module ResponseResult = {
   };
 };
 
-// maps Grain types to LSP CompletionItemKind
-let rec get_kind = (desc: Types.type_desc) =>
-  switch (desc) {
-  | TTyVar(_) => CompletionItemKindVariable
-  | TTyArrow(_) => CompletionItemKindFunction
-  | TTyTuple(_) => CompletionItemKindStruct
-  | TTyRecord(_) => CompletionItemKindStruct
-  | TTyConstr(_) => CompletionItemKindConstructor
-  | TTySubst(s) => get_kind(s.desc)
-  | TTyLink(t) => get_kind(t.desc)
-  | _ => CompletionItemKindText
-  };
-
 let send_completion =
     (~id: Protocol.message_id, completions: list(completion_item)) => {
   Protocol.response(
