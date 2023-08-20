@@ -25,10 +25,10 @@ Type declarations included in the Set module.
 type Set<k>
 ```
 
-### Set.**InternalMapStats**
+### Set.**InternalSetStats**
 
 ```grain
-record InternalMapStats {
+record InternalSetStats {
   currentSize: Number,
   bucketCount: Number,
 }
@@ -500,13 +500,13 @@ Returns:
 <tr><th>version</th><th>changes</th></tr>
 </thead>
 <tbody>
-<tr><td><code>next</code></td><td>switch to returning `InternalMapStats` record</td></tr>
+<tr><td><code>next</code></td><td>switch to returning `InternalSetStats` record</td></tr>
 </tbody>
 </table>
 </details>
 
 ```grain
-getInternalStats : (set: Set<a>) => InternalMapStats
+getInternalStats : (set: Set<a>) => InternalSetStats
 ```
 
 Provides data representing the internal state state of the set.
@@ -521,7 +521,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`InternalMapStats`|The internal state of the set|
+|`InternalSetStats`|The internal state of the set|
 
 ## Set.Immutable
 

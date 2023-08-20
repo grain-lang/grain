@@ -27,7 +27,7 @@ abstract record Set<k> {
 /**
  * Represents the internal state of a set.
  */
-provide record InternalMapStats {
+provide record InternalSetStats {
   currentSize: Number,
   bucketCount: Number,
 }
@@ -467,7 +467,7 @@ provide let intersect = (set1, set2) => {
  * @returns The internal state of the set
  *
  * @since v0.3.0
- * @history v0.6.0: switch to returning `InternalMapStats` record
+ * @history v0.6.0: switch to returning `InternalSetStats` record
  */
 provide let getInternalStats = set => {
   { currentSize: set.size, bucketCount: Array.length(set.buckets) }
