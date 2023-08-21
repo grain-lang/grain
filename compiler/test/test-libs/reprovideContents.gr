@@ -1,0 +1,7 @@
+module ReprovideContents
+
+include "./provideContents"
+
+from ProvideContents use { type Type, module Mod }
+
+provide { type Type, module Mod }

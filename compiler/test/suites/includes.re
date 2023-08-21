@@ -175,8 +175,8 @@ describe("includes", ({test, testSkip}) => {
     "./broken.gr\", line 4, characters 8-15",
   );
   assertRun(
-    "reprovide_type",
-    "include \"reprovideType\"; from ReprovideType use { type Type }; print(A)",
-    "A\n",
+    "reprovide_values",
+    "include \"reprovideContents\"; from ReprovideContents use { type Type, module Mod }; print(A); print(Mod.val)",
+    "A\n123\n",
   );
 });

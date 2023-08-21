@@ -9,7 +9,7 @@ describe("provides", ({test, testSkip}) => {
       test,
     );
   let assertCompileError = makeCompileErrorRunner(test);
-  let assertHasWasmExport = (name, prog, export) => {
+  let assertHasWasmExport = (name, prog, expectedExports) => {
     test(
       name,
       ({expect}) => {
@@ -34,7 +34,7 @@ describe("provides", ({test, testSkip}) => {
                 );
               },
             );
-          expect.list(exports).toContainEqual(export);
+          List.iter(expect.list(exports).toContainEqual, expectedExports);
         | _ => assert(false)
         };
       },
@@ -174,11 +174,19 @@ describe("provides", ({test, testSkip}) => {
   assertHasWasmExport(
     "issue_918_annotated_func_provide",
     "module Test; provide let foo: () => Number = () => 5",
-    ("foo", Binaryen.Export.external_function),
+    [("foo", Binaryen.Export.external_function)],
   );
   assertHasWasmExport(
     "issue_918_annotated_func_provide2",
     "module Test; provide let rec foo: () => Number = () => 5",
-    ("foo", Binaryen.Export.external_function),
+    [("foo", Binaryen.Export.external_function)],
+  );
+  assertHasWasmExport(
+    "issue_1872_reprovide_from_submodule",
+    "module Test; module M { provide let x = 1; provide let y = 2 }; from M use *; provide { x, y }",
+    [
+      ("GRAIN$EXPORT$x", Binaryen.Export.external_global),
+      ("GRAIN$EXPORT$y", Binaryen.Export.external_global),
+    ],
   );
 });
