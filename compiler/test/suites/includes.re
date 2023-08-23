@@ -184,4 +184,9 @@ describe("includes", ({test, testSkip}) => {
     "include \"reprovideContents\"; from ReprovideContents use { type OtherT as TT, val }; print(val); print({ x: 2 })",
     "{\n  x: 1\n}\n{\n  x: 2\n}\n",
   );
+  assertRun(
+    "reprovide_type3",
+    "include \"reprovideContents\"; from ReprovideContents use { type OtherT as Other }; print({ x: 1 }: Other)",
+    "{\n  x: 1\n}\n",
+  );
 });
