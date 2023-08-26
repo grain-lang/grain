@@ -662,7 +662,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
                 [(type_path, PIdent(id)), ...type_export_aliases^];
               id;
             | Some(_) => failwith("Impossible: invalid alias")
-            | None => Ident.create(Path.last(type_path))
+            | None => Ident.create(name.txt)
             };
           ([TSigType(id, type_, TRecNot), ...sigs], stmts);
         | PProvideModule({name: {txt: IdentName(name)}, alias, loc}) =>
