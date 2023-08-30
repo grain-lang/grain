@@ -146,10 +146,12 @@ provide let pop = queue => {
  * @since v0.6.0
  */
 provide let toList = queue => {
-  let lst = List.init(queue.size, i => match (queue.array[queue.headIndex +
-    i]) {
+  let lst = List.init(queue.size, i => match (queue.array[(queue.headIndex +
+    i) %
+    Array.length(queue.array)]) {
     Some(n) => n,
-    None => fail "Impossible: Attempted to access non-existent bucket in Queue.toList",
+    None =>
+      fail "Impossible: Attempted to access non-existent bucket in Queue.toList",
   })
   lst
 }
