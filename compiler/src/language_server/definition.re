@@ -53,9 +53,12 @@ let send_definition =
     }),
   );
 };
+type check_position =
+  | Forward
+  | Backward;
 let rec find_definition =
         (
-          ~try_last_char=false,
+          ~check_position=Forward,
           sourcetree: Sourcetree.sourcetree,
           position: Protocol.position,
         ) => {
@@ -79,11 +82,11 @@ let rec find_definition =
     };
   switch (result) {
   | None =>
-    if (!try_last_char && position.character > 0) {
+    if (check_position == Forward && position.character > 0) {
       // If a user selects from left to right, their pointer ends up after the identifier
       // this trys to check if the identifier was selected.
       find_definition(
-        ~try_last_char=true,
+        ~check_position=Backward,
         sourcetree,
         {line: position.line, character: position.character - 1},
       );
