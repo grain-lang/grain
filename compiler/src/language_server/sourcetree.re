@@ -441,7 +441,14 @@ module Sourcetree: Sourcetree = {
             switch (get_type_path(pat.pat_type)) {
             | Some(path) =>
               let decl = Env.find_type(path, pat.pat_env);
-              Some(decl.type_loc);
+              if (decl.type_loc == Location.dummy_loc) {
+                switch (pat.pat_desc) {
+                | TPatConstruct(_, desc, _) => Some(desc.cstr_loc)
+                | _ => None
+                };
+              } else {
+                Some(decl.type_loc);
+              };
             | _ => None
             };
           segments :=
