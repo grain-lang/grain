@@ -652,9 +652,9 @@ let parens = (d: t): t => !^"(" ++ d ++ !^")";
 
 let braces = (d: t): t => !^"{" ++ d ++ !^"}";
 
-let brakets = (d: t): t => !^"[" ++ d ++ !^"]";
+let brackets = (d: t): t => !^"[" ++ d ++ !^"]";
 
-let angle_brakets = (d: t): t => !^"<" ++ d ++ !^">";
+let angle_brackets = (d: t): t => !^"<" ++ d ++ !^">";
 
 let single_quotes = (d: t): t => !^"'" ++ d ++ !^"'";
 
@@ -708,7 +708,7 @@ module Debug = {
   let string = (s: string): t => double_quotes(!^String.escaped(s));
 
   let list = (d: 'a => t, l: list('a)): t =>
-    brakets @@
+    brackets @@
     nest_all(
       breakable_space
       ^^ separate(!^";" ^^ breakable_space, List.map(d, l))
@@ -831,13 +831,14 @@ let concat_map = (~sep, ~lead=first => empty, ~trail=last => empty, ~f, l) => {
 
 let parens = d => parens(nest(softline ++ d ++ softline));
 let parens_all = d => parens(nest_all(softline ++ d ++ softline));
-let angle_brakets = d => angle_brakets(nest_all(softline ++ d ++ softline));
+let angle_brackets = d =>
+  angle_brackets(nest_all(softline ++ d ++ softline));
 let block_braces = d => braces(hardline ++ indent(d) ++ hardline);
 let braces = d => braces(nest_all(breakable_space ++ d ++ breakable_space));
-let list_brakets = d => brakets(nest_all(softline ++ d ++ softline));
-let array_brakets = d =>
-  brakets(string(">") ++ nest_all(breakable_space ++ d ++ softline));
-let brackets = d => brakets(softline ++ d ++ softline);
+let list_brackets = d => brackets(nest_all(softline ++ d ++ softline));
+let array_brackets = d =>
+  brackets(string(">") ++ nest_all(breakable_space ++ d ++ softline));
+let brackets = d => brackets(softline ++ d ++ softline);
 
 let space = string(" ");
 let comma = string(",");

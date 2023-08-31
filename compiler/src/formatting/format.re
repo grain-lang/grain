@@ -382,7 +382,7 @@ and print_pattern = ({ppat_desc}: Parsetree.pattern) => {
       ),
     )
   | PPatArray(pats) =>
-    array_brakets(
+    array_brackets(
       concat_map(
         ~sep=(prev, next) => comma_breakable_space,
         ~f=print_pattern,
@@ -390,7 +390,7 @@ and print_pattern = ({ppat_desc}: Parsetree.pattern) => {
       ),
     )
   | PPatList(pats) =>
-    list_brakets(
+    list_brackets(
       concat_map(
         ~sep=(prev, next) => comma_breakable_space,
         ~trail=last => ifBreaks(","),
@@ -692,7 +692,7 @@ and print_expression = (expr: Parsetree.expression) => {
         ),
       )
     | PExpArray(exprs) =>
-      array_brakets(
+      array_brackets(
         concat_map(
           ~sep=(prev, next) => comma_breakable_space,
           ~f=print_expression,
@@ -700,7 +700,7 @@ and print_expression = (expr: Parsetree.expression) => {
         ),
       )
     | PExpList(items) =>
-      list_brakets(
+      list_brackets(
         concat_map(
           ~sep=(prev, next) => comma_breakable_space,
           ~f=
@@ -901,7 +901,7 @@ and print_type = ({ptyp_desc}: Parsetree.parsed_type) => {
       switch (params) {
       | [] => empty
       | typs =>
-        angle_brakets(
+        angle_brackets(
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
             ~f=print_type,
@@ -1047,7 +1047,7 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
       switch (pdata_params) {
       | [] => empty
       | typs =>
-        angle_brakets(
+        angle_brackets(
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
             ~f=print_type,
@@ -1072,7 +1072,7 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
       switch (pdata_params) {
       | [] => empty
       | typs =>
-        angle_brakets(
+        angle_brackets(
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
             ~f=print_type,
@@ -1118,7 +1118,7 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
       switch (pdata_params) {
       | [] => empty
       | typs =>
-        angle_brakets(
+        angle_brackets(
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
             ~f=print_type,
