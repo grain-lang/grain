@@ -54,7 +54,7 @@
     "ocaml": "4.14.1000"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": "5.0.1",
+    "@opam/js_of_ocaml-compiler": "5.4.0",
     "@opam/ocaml-lsp-server": "1.14.1",
     "@opam/rely": "^4.0.0"
   },
