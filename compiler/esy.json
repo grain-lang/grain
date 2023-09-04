@@ -59,15 +59,15 @@
   },
   "resolutions": {
     "@opam/dune": "3.9.1",
-    "@opam/fp": "phated/reason-native:fp.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
-    "@opam/fs": "phated/reason-native:fs.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
+    "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
-    "@opam/utf8": "phated/reason-native:utf8.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
+    "@opam/utf8": "reasonml/reason-native:utf8.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/utop": "2.12.1",
-    "@opam/cli": "phated/reason-native:cli.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
-    "@opam/file-context-printer": "phated/reason-native:file-context-printer.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
-    "@opam/pastel": "phated/reason-native:pastel.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9",
-    "@opam/rely": "phated/reason-native:rely.opam#3bd48ef2f866acb96cf7908757ed51305a736ec9"
+    "@opam/cli": "reasonml/reason-native:cli.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/file-context-printer": "reasonml/reason-native:file-context-printer.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/pastel": "reasonml/reason-native:pastel.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
+    "@opam/rely": "reasonml/reason-native:rely.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0"
   },
   "installConfig": {
     "pnp": false
