@@ -442,10 +442,7 @@ module Sourcetree: Sourcetree = {
             | Some(path) =>
               let decl = Env.find_type(path, pat.pat_env);
               if (decl.type_loc == Location.dummy_loc) {
-                switch (pat.pat_desc) {
-                | TPatConstruct(_, desc, _) => Some(desc.cstr_loc)
-                | _ => None
-                };
+                None;
               } else {
                 Some(decl.type_loc);
               };
