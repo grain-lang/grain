@@ -31,7 +31,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.21.0 < 0.22.0",
+    "@grain/binaryen.ml": ">= 0.22.0 < 0.23.0",
     "@opam/cmdliner": ">= 1.1.1",
     "@opam/dune": ">= 3.6.1 < 4.0.0",
     "@opam/dune-build-info": ">= 3.6.1 < 4.0.0",
@@ -58,6 +58,7 @@
     "@opam/rely": "^4.0.0"
   },
   "resolutions": {
+    "@grain/binaryen.ml": "grain-lang/binaryen.ml:package.json#46c97c2e92d95ffbe880c084ce3c13c503240e58",
     "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
