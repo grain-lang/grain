@@ -662,7 +662,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
                 [(type_path, PIdent(id)), ...type_export_aliases^];
               id;
             | Some(_) => failwith("Impossible: invalid alias")
-            | None => Ident.create(Path.last(type_path))
+            | None => Ident.create(name.txt)
             };
           ([TSigType(id, type_, TRecNot), ...sigs], stmts);
         | PProvideModule({name: {txt: IdentName(name)}, alias, loc}) =>
@@ -683,15 +683,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
                       {tex_id: id, tex_path: path, tex_loc: val_loc},
                       ...provided_values^,
                     ];
-                  // If this module was imported, we'll set the internal path
-                  // to be picked up later to be re-exported. Otherwise, these
-                  // values originated in this module.
-                  let val_internalpath =
-                    switch (mod_decl.md_filepath) {
-                    | Some(_) => path
-                    | _ => val_internalpath
-                    };
-                  TSigValue(id, {...vd, val_internalpath});
+                  TSigValue(id, {...vd, val_internalpath: path});
                 | TSigModule(
                     id,
                     {md_type: TModSignature(signature)} as md,
@@ -1042,7 +1034,7 @@ let type_implementation = prog => {
   let initenv = initial_env();
   let (statements, sg, finalenv) = type_module(initenv, prog.statements);
   let simple_sg = simplify_signature(sg);
-  let filename = sourcefile; // TODO(1396): Don't use filepath as filename
+  let filename = sourcefile; // TODO(#1396): Don't use filepath as filename
 
   check_nongen_schemes(finalenv, simple_sg);
   let normalized_sig = normalize_signature(finalenv, simple_sg);

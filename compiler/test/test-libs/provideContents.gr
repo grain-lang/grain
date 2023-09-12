@@ -1,0 +1,17 @@
+module ProvideContents
+
+provide enum Type {
+  A,
+  B,
+  C,
+}
+
+record Type2 {
+  x: Number
+}
+
+provide { type Type2 as Other }
+
+provide module Mod {
+  provide let val = 123
+}

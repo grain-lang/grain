@@ -23,7 +23,7 @@ type t =
   | UnreachableCase
   | ShadowConstructor(string)
   | NoCmiFile(string, option(string))
-  | FuncWasmUnsafe(string)
+  | FuncWasmUnsafe(string, string, string)
   | FromNumberLiteralI32(string)
   | FromNumberLiteralI64(string)
   | FromNumberLiteralU32(string)
@@ -52,7 +52,7 @@ let number =
   | NoCmiFile(_) => 14
   | NonClosedRecordPattern(_) => 15
   | UnusedExtension => 16
-  | FuncWasmUnsafe(_) => 17
+  | FuncWasmUnsafe(_, _, _) => 17
   | FromNumberLiteralI32(_) => 18
   | FromNumberLiteralI64(_) => 19
   | FromNumberLiteralU32(_) => 20
@@ -106,7 +106,7 @@ let message =
   | UnusedMatch => "this match case is unused."
   | UnusedPat => "this sub-pattern is unused."
   | UnusedExtension => "this type extension is unused."
-  | UnreachableCase => "this mach case is unreachable."
+  | UnreachableCase => "this match case is unreachable."
   | ShadowConstructor(s) =>
     "the pattern variable " ++ s ++ " shadows a constructor of the same name."
   | NoCmiFile(name, None) =>
@@ -119,10 +119,14 @@ let message =
     )
   | NonClosedRecordPattern(s) =>
     "the following fields are missing from the record pattern: " ++ s
-  | FuncWasmUnsafe(func) =>
+  | FuncWasmUnsafe(func, f, m) =>
     "it looks like you are using "
     ++ func
-    ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use one of the equivalent functions in `WasmI32`, `WasmI64`, `WasmF32`, or `WasmF64` instead."
+    ++ " on two unsafe Wasm values here.\nThis is generally unsafe and will cause errors. Use "
+    ++ f
+    ++ " from the `"
+    ++ m
+    ++ "` module the instead."
   | FromNumberLiteralI32(n) =>
     Printf.sprintf(
       "it looks like you are calling Int32.fromNumber() with a constant number. Try using the literal syntax (e.g. `%sl`) instead.",
@@ -195,7 +199,7 @@ let defaults = [
   UnreachableCase,
   ShadowConstructor(""),
   NoCmiFile("", None),
-  FuncWasmUnsafe(""),
+  FuncWasmUnsafe("", "", ""),
   FromNumberLiteralI32(""),
   FromNumberLiteralI64(""),
   FromNumberLiteralU32(""),

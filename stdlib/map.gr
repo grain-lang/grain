@@ -32,6 +32,14 @@ abstract record Map<k, v> {
 }
 
 /**
+ * Represents the internal state of a map.
+ */
+provide record InternalMapStats {
+  currentSize: Number,
+  bucketCount: Number,
+}
+
+/**
  * Creates a new empty map with an initial storage of the given size. As values are added or removed, the internal storage may grow or shrink. Generally, you won't need to care about the storage size of your map and can use `Map.make()` instead.
  *
  * @param size: The initial storage size of the map
@@ -497,7 +505,6 @@ provide let reject = (predicate, map) => {
   filter((key, value) => !predicate(key, value), map)
 }
 
-// TODO(#190): Should return a Record type instead of a Tuple
 /**
  * Provides data representing the internal state state of the map.
  *
@@ -505,14 +512,15 @@ provide let reject = (predicate, map) => {
  * @returns The internal state of the map
  *
  * @since v0.2.0
+ * @history v0.6.0: Return `InternalMapStats` record instead of a tuple
  */
 provide let getInternalStats = map => {
-  (map.size, Array.length(map.buckets))
+  { currentSize: map.size, bucketCount: Array.length(map.buckets) }
 }
 
 /**
  * An immutable map implementation.
- * 
+ *
  * @since v0.6.0
  * @history v0.5.4: Originally in `"immutablemap"` module
  */
