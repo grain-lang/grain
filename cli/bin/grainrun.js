@@ -23,6 +23,8 @@ const wasi = new WASI({
   args: argv.slice(2),
   env: envVars,
   preopens,
+  version: "preview1",
+  returnOnExit: false,
 });
 
 const importObject = { wasi_snapshot_preview1: wasi.wasiImport };
