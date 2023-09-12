@@ -8,7 +8,7 @@ authors: [
   "Rudi Grinberg"
   "Gabriel Radanne"
 ]
-license: "LGPL-2.0-or-later WITH OCaml-LGPL-linking-exception"
+license: "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/ocaml/ocaml-re"
 bug-reports: "https://github.com/ocaml/ocaml-re/issues"
 dev-repo: "git+https://github.com/ocaml/ocaml-re.git"
@@ -37,10 +37,10 @@ Pure OCaml regular expressions with:
 """
 url {
   src:
-    "https://github.com/ocaml/ocaml-re/releases/download/1.10.4/re-1.10.4.tbz"
+    "https://github.com/ocaml/ocaml-re/releases/download/1.11.0/re-1.11.0.tbz"
   checksum: [
-    "sha256=83eb3e4300aa9b1dc7820749010f4362ea83524742130524d78c20ce99ca747c"
-    "sha512=92b05cf92c389fa8c753f2acca837b15dd05a4a2e8e2bec7a269d2e14c35b1a786d394258376648f80b4b99250ba1900cfe68230b8385aeac153149d9ce56099"
+    "sha256=01fc244780c0f6be72ae796b1fb750f367de18624fd75d07ee79782ed6df8d4f"
+    "sha512=3e3712cc1266ec1f27620f3508ea2ebba338f4083b07d8a69dccee1facfdc1971a6c39f9deea664d2a62fd7f2cfd2eae816ca4c274acfadaee992a3befc4b757"
   ]
 }
-x-commit-hash: "e9a4cecb8294c1839db18b1d0c30e755ec85ed5e"
+x-commit-hash: "2dd38515c76c40299596d39f18d9b9a20f00d788"
