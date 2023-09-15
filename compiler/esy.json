@@ -31,7 +31,7 @@
     "check-format": "dune build @fmt"
   },
   "dependencies": {
-    "@grain/binaryen.ml": ">= 0.21.0 < 0.22.0",
+    "@grain/binaryen.ml": ">= 0.22.0 < 0.23.0",
     "@opam/cmdliner": ">= 1.1.1",
     "@opam/dune": ">= 3.6.1 < 4.0.0",
     "@opam/dune-build-info": ">= 3.6.1 < 4.0.0",
@@ -44,7 +44,7 @@
     "@opam/ppx_deriving_cmdliner": ">= 0.6.1",
     "@opam/ppx_deriving_yojson": ">= 3.7.0 < 4.0.0",
     "@opam/ppx_sexp_conv": "v0.15.1",
-    "@opam/reason": ">= 3.8.2 < 4.0.0",
+    "@opam/reason": ">= 3.8.2 < 3.10.0",
     "@opam/sedlex": ">= 3.0 < 4.0",
     "@opam/sexplib": "v0.15.1",
     "@opam/uri": ">= 4.2.0 < 5.0.0",
