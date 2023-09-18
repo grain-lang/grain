@@ -27,6 +27,7 @@ let test_data_dir = Fp.At.(test_dir / "test-data");
 let test_input_dir = Fp.At.(test_dir / "input");
 let test_output_dir = Fp.At.(test_dir / "output");
 let test_stdlib_dir = Fp.At.(test_dir / "stdlib");
+let test_runtime_dir = Fp.At.(test_dir / "runtime");
 let test_snapshots_dir = Fp.At.(test_dir / "__snapshots__");
 
 let test_grainfmt_dir = Fp.At.(test_dir / "grainfmt");
