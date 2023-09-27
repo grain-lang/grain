@@ -20,7 +20,7 @@ one [2] should be applicable to Pp as well.
 """
 maintainer: ["Jeremie Dimino <jeremie@dimino.org>"]
 authors: [
-  "Jane Street Group, LLC"
+  "Jane Street Group, LLC <opensource@janestreet.com>"
   "Jeremie Dimino <jeremie@dimino.org>"
 ]
 license: "MIT"
@@ -28,9 +28,10 @@ homepage: "https://github.com/ocaml-dune/pp"
 doc: "https://ocaml-dune.github.io/pp/"
 bug-reports: "https://github.com/ocaml-dune/pp/issues"
 depends: [
-  "dune" {>= "2.0"}
+  "dune" {>= "2.8"}
   "ocaml" {>= "4.08.0"}
   "ppx_expect" {with-test}
+  "odoc" {with-doc}
 ]
 build: [
   ["dune" "subst"] {dev}
@@ -47,12 +48,12 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/ocaml-dune/pp.git"
-x-commit-hash: "395b95c89cfe2c6d538dad9d56721b6a7278d46c"
 url {
   src:
-    "https://github.com/ocaml-dune/pp/releases/download/1.1.2/pp-1.1.2.tbz"
+    "https://github.com/ocaml-dune/pp/releases/download/1.2.0/pp-1.2.0.tbz"
   checksum: [
-    "sha256=e4a4e98d96b1bb76950fcd6da4e938c86d989df4d7e48f02f7a44595f5af1d56"
-    "sha512=58f78b083483006b40814be9aac33c895349eb1c6427d2762b4d760192613401262478bd5deff909763517560b06af7bf013c6a6f87d549aafa77b26345303f2"
+    "sha256=a5e822573c55afb42db29ec56eacd1f2acd8f65cf2df2878e291de374ce6909c"
+    "sha512=912164c2aa7241d73f735dadfbefe8ed0138d241579d2e885440e068fac78eb9f0b3d782c2420e757e313168c1725daff6ab91800dd315b1e05288456998b40a"
   ]
 }
+x-commit-hash: "83b68c740f21acdcfe54436355ab328372871357"
