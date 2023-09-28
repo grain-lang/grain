@@ -1057,7 +1057,7 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
       },
       switch (pdata_manifest) {
       | None => empty
-      | Some(typ) => string(" = ") ++ print_type(typ)
+      | Some(typ) => nest(string(" =") ^^ print_type(typ))
       },
     ])
   | {
