@@ -1,6 +1,6 @@
 module FunctionParams
 
-let single_arg = x => x
+let single_arg = (x) => x
 
 let unit_arg = () => 3
 
@@ -40,4 +40,6 @@ let stringTailMatcher = (toMatch, len) =>
   true
 }
 
-let f: Number => (Number, Number) => Number = a => (b, c) => a + b + c
+let f: Number => (Number, Number) => Number = (a) => (b, c) => a + b + c
+
+let foo = ((fst, snd) as pair) => pair

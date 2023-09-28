@@ -8,7 +8,6 @@ include "option" as Opt
 include "array"
 include "array" as Foo
 from List use { length, map, forEach as each }
-<<<<<<< HEAD
 from Opt use {
   module MutableOpt,
   module ImmutableOpt as Imm,
@@ -21,10 +20,6 @@ from Opt use { /* comment1 */ /* comment2 */ /* comment3 */ /* comment4 */ /* co
   type Opt,
   type Opt as OptAlias,
 }
-=======
-from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
-from Opt use { MutableOpt, ImmutableOpt as Imm, type Opt, type Opt as OptAlias }
->>>>>>> ccb66465 (Remove all comments from formatter tests)
 
 include "runtime/unsafe/wasmi32"
 from WasmI32 use { add as (+), mul as (*), xor as (^), shl as (<<) }

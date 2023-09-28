@@ -288,21 +288,37 @@ and print_punnable_pattern =
   };
 }
 and print_lambda_argument = (arg: Parsetree.lambda_argument) => {
-  concat([
-    // TODO: Figure out how to print these
-    // switch (arg.pla_label) {
-    // | Unlabeled => string("_") // TODO: is this correct?
-    // | Labeled({txt: label})
-    // | Default({txt: label}) => string(label)
-    // },
-    // string(":"),
-    // space,
-    print_pattern(arg.pla_pattern),
-    switch (arg.pla_default) {
-    | Some(expr) => concat([string("="), print_expression(expr)])
-    | None => empty
-    },
-  ]);
+  switch (arg) {
+  | {pla_label: Unlabeled, pla_pattern} => print_pattern(pla_pattern)
+  | {
+      pla_label: Labeled({txt: label}) | Default({txt: label}),
+      pla_pattern: {
+        ppat_desc:
+          PPatVar({txt: var}) | PPatAlias(_, {txt: var}) |
+          // TODO: This needs to be a recursive resolution, right?
+          PPatConstraint({ppat_desc: PPatVar({txt: var})}, _),
+      },
+    }
+      when label == var =>
+    concat([
+      print_pattern(arg.pla_pattern),
+      switch (arg.pla_default) {
+      | Some(expr) => concat([string("="), print_expression(expr)])
+      | None => empty
+      },
+    ])
+  | {pla_label: Labeled({txt: label})}
+  | {pla_label: Default({txt: label})} =>
+    concat([
+      string(label),
+      string(": "),
+      print_pattern(arg.pla_pattern),
+      switch (arg.pla_default) {
+      | Some(expr) => concat([string("="), print_expression(expr)])
+      | None => empty
+      },
+    ])
+  };
 }
 and print_pattern = ({ppat_desc}: Parsetree.pattern) => {
   switch (ppat_desc) {
@@ -645,21 +661,22 @@ and print_expression = (expr: Parsetree.expression) => {
           ),
         ]),
       )
-    | PExpLambda([single_param], body) =>
-      concat([
-        print_lambda_argument(single_param),
-        string(" =>"),
-        nest_all(
-          (
-            // TODO: Is there a better way to do this?
-            switch (body.pexp_desc) {
-            | PExpBlock(_) => space
-            | _ => breakable_space
-            }
-          )
-          ++ print_expression(body),
-        ),
-      ])
+    // TODO: Decide to always print parens or rework this logic to check for an PPatAlias and/or Labeled argument
+    // | PExpLambda([single_param], body) =>
+    //   concat([
+    //     print_lambda_argument(single_param),
+    //     string(" =>"),
+    //     nest_all(
+    //       (
+    //         // TODO: Is there a better way to do this?
+    //         switch (body.pexp_desc) {
+    //         | PExpBlock(_) => space
+    //         | _ => breakable_space
+    //         }
+    //       )
+    //       ++ print_expression(body),
+    //     ),
+    //   ])
     | PExpLambda(params, body) =>
       concat([
         parens(
@@ -881,12 +898,10 @@ and print_value_binding = ({pvb_pat, pvb_expr}: Parsetree.value_binding) => {
 and print_parsed_type_argument = (arg: Parsetree.parsed_type_argument) => {
   concat([
     switch (arg.ptyp_arg_label) {
-    | Unlabeled => string("_") // TODO: is this correct?
+    | Unlabeled => empty
     | Labeled({txt: label})
-    | Default({txt: label}) => string(label)
+    | Default({txt: label}) => string(label) ++ string(":") ++ space
     },
-    string(":"),
-    space,
     print_type(arg.ptyp_arg_type),
   ]);
 }
@@ -918,6 +933,12 @@ and print_type = ({ptyp_desc}: Parsetree.parsed_type) => {
         typs,
       ),
     )
+  | PTyArrow([param], return) =>
+    concat([
+      print_parsed_type_argument(param),
+      string(" => "),
+      print_type(return),
+    ])
   | PTyArrow(params, return) =>
     concat([
       parens(
@@ -927,7 +948,7 @@ and print_type = ({ptyp_desc}: Parsetree.parsed_type) => {
           params,
         ),
       ),
-      string(" -> "),
+      string(" => "),
       print_type(return),
     ])
   | PTyPoly(_) => failwith("Impossible: PTyPoly in the parsetree")
