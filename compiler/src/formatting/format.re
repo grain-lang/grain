@@ -679,7 +679,7 @@ and print_expression = (expr: Parsetree.expression) => {
     //   ])
     | PExpLambda(params, body) =>
       concat([
-        parens(
+        parens_all(
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
             ~trail=last => ifBreaks(","),

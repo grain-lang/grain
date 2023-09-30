@@ -790,8 +790,9 @@ let concat_map = (~sep, ~lead=first => empty, ~trail=last => empty, ~f, l) => {
   };
 };
 
-let parens = d => parens(nest_all(softline ++ d ++ softline));
+// ORDER MATTERS HERE YOU DUMB BLAINE
 let parens_all = d => parens(nest_all(softline ++ d ++ softline));
+let parens = d => parens(nest(softline ++ d ++ softline));
 let angle_brackets = d =>
   angle_brackets(nest_all(softline ++ d ++ softline));
 let block_braces = d => braces(hardline ++ indent(d) ++ hardline);
