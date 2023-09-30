@@ -712,6 +712,7 @@ and print_expression = (expr: Parsetree.expression) => {
       list_brackets(
         concat_map(
           ~sep=(prev, next) => comma_breakable_space,
+          ~trail=last => ifBreaks(","),
           ~f=
             (item: Parsetree.list_item(Parsetree.expression)) => {
               switch (item) {
@@ -744,7 +745,7 @@ and print_expression = (expr: Parsetree.expression) => {
           },
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
-            ~trail=last => comma,
+            ~trail=last => ifBreaks(","),
             ~f=print_punnable_expression,
             labels,
           ),

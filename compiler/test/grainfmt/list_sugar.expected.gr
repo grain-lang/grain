@@ -21,8 +21,8 @@ let b = [1, ...list2]
 
 let c = [4, ...list2]
 
-let fn = x => x
-let fn2 = x => [x, x]
+let fn = (x) => x
+let fn2 = (x) => [x, x]
 
 let d = [1, 2, fn(3)]
 
