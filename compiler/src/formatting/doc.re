@@ -716,61 +716,6 @@ let lines = (s: string): t =>
     split(s, c => c == '\n', 0, 0),
   );
 
-module Debug = {
-  let bool = (b: bool): t => !^string_of_bool(b);
-
-  let int = (i: int): t => !^string_of_int(i);
-
-  let string = (s: string): t => double_quotes(!^String.escaped(s));
-
-  let list = (d: 'a => t, l: list('a)): t =>
-    brackets @@
-    nest_all(
-      breakable_space
-      ^^ separate(!^";" ^^ breakable_space, List.map(d, l))
-      ^^ breakable_space,
-    );
-
-  /* Pretty-print an atom. */
-  let rec pp_atom = (atom: Atom.t): t =>
-    switch (atom) {
-    | Atom.String(s, o, l) =>
-      string(Grain_utils.String_utils.Utf8.sub(s, o, l))
-    | Atom.StringIfBreaks(s, o, l) =>
-      string(Grain_utils.String_utils.Utf8.sub(s, o, l))
-    | Atom.Comment(Doc(comment)) =>
-      nest(!^"DocComment" ^^ parens(string(comment)))
-    | Atom.Comment(Block(comment)) =>
-      nest(!^"BlockComment" ^^ parens(string(comment)))
-    | Atom.Comment(Line(comment)) =>
-      nest(!^"LineComment" ^^ parens(string(comment)))
-    | Atom.Comment(Shebang(comment)) =>
-      nest(!^"ShebangComment" ^^ parens(string(comment)))
-    | Atom.Break(Break.Space) => !^"Space"
-    | Atom.Break(Break.Softline) => !^"Softline"
-    | Atom.Break(Break.Hardline) => !^"Hardline"
-    | Atom.GroupOne(can_nest, atoms) =>
-      nest(
-        !^"GroupOne" ^^ parens(bool(can_nest) ++ !^"," ^^ pp_atoms(atoms)),
-      )
-    | Atom.GroupAll(can_nest, atoms) =>
-      nest(
-        !^"GroupAll" ^^ parens(bool(can_nest) ++ !^"," ^^ pp_atoms(atoms)),
-      )
-    | Atom.Indent(n, atom) =>
-      nest(!^"Indent" ^^ parens(int(n) ++ !^"," ^^ pp_atom(atom)))
-    }
-
-  /* Pretty-print a list of atoms. */
-  and pp_atoms = (atoms: list(Atom.t)): t =>
-    group_all(separate(!^"," ^^ breakable_space, List.map(pp_atom, atoms)));
-
-  let pp_document = (d: t): t => list(pp_atom, to_atoms(d));
-
-  let pp_document_after_rendering = (d: t): t =>
-    pp_atom @@ Atom.render @@ to_atoms(d);
-};
-
 let to_something =
     (
       add_char: char => unit,
@@ -860,3 +805,77 @@ let space = string(" ");
 let comma = string(",");
 let comma_breakable_space = comma ++ breakable_space;
 let comma_hardline = comma ++ hardline;
+
+module Debug = {
+  let bool = (b: bool): t => !^string_of_bool(b);
+
+  let int = (i: int): t => !^string_of_int(i);
+
+  let string = (s: string): t => double_quotes(!^String.escaped(s));
+
+  let list = (d: 'a => t, l: list('a)): t =>
+    brackets @@
+    nest_all(
+      breakable_space
+      ^^ separate(!^";" ^^ breakable_space, List.map(d, l))
+      ^^ breakable_space,
+    );
+
+  /* Pretty-print an atom. */
+  let rec pp_atom = (atom: Atom.t): t =>
+    switch (atom) {
+    | Atom.String(s, o, l) =>
+      string(Grain_utils.String_utils.Utf8.sub(s, o, l))
+    | Atom.StringIfBreaks(s, o, l) =>
+      string(Grain_utils.String_utils.Utf8.sub(s, o, l))
+    | Atom.Comment(Doc(comment)) =>
+      nest(!^"DocComment" ^^ parens(string(comment)))
+    | Atom.Comment(Block(comment)) =>
+      nest(!^"BlockComment" ^^ parens(string(comment)))
+    | Atom.Comment(Line(comment)) =>
+      nest(!^"LineComment" ^^ parens(string(comment)))
+    | Atom.Comment(Shebang(comment)) =>
+      nest(!^"ShebangComment" ^^ parens(string(comment)))
+    | Atom.Break(Break.Space) => !^"Space"
+    | Atom.Break(Break.Softline) => !^"Softline"
+    | Atom.Break(Break.Hardline) => !^"Hardline"
+    | Atom.GroupOne(can_nest, atoms) =>
+      nest(
+        !^"GroupOne" ^^ parens(bool(can_nest) ++ !^"," ^^ pp_atoms(atoms)),
+      )
+    | Atom.GroupAll(can_nest, atoms) =>
+      nest(
+        !^"GroupAll" ^^ parens(bool(can_nest) ++ !^"," ^^ pp_atoms(atoms)),
+      )
+    | Atom.Indent(n, atom) =>
+      nest(!^"Indent" ^^ parens(int(n) ++ !^"," ^^ pp_atom(atom)))
+    }
+
+  /* Pretty-print a list of atoms. */
+  and pp_atoms = (atoms: list(Atom.t)): t =>
+    group_all(separate(!^"," ^^ breakable_space, List.map(pp_atom, atoms)));
+
+  let pp_document = (d: t): t => list(pp_atom, to_atoms(d));
+
+  let pp_document_after_rendering = (d: t): t =>
+    pp_atom @@ Atom.render @@ to_atoms(d);
+
+  let to_buffer = (newline: string, b: Buffer.t, d: t): unit => {
+    let output_newline = () => Buffer.add_string(b, newline);
+    let output_sub_string = (b, s: string, o: int, l: int): unit =>
+      Buffer.add_string(b, Grain_utils.String_utils.Utf8.sub(s, o, l));
+    to_something(
+      Buffer.add_char(b),
+      Buffer.add_string(b),
+      output_sub_string(b),
+      output_newline,
+      d,
+    );
+  };
+
+  let to_string = (~newline: string, doc: t): string => {
+    let b = Buffer.create(10);
+    to_buffer(newline, b, pp_document(doc));
+    Buffer.contents(b);
+  };
+};
