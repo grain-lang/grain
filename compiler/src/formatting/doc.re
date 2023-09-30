@@ -77,8 +77,7 @@ module Atom = {
           (~indent: int, ~column: int, ~last_break: option(Break.t), atom: t)
           : (t, int, option(Break.t)) =>
     switch (atom) {
-    | String(_, _, l)
-    | StringIfBreaks(_, _, l) => (
+    | String(_, _, l) => (
         atom,
         if (last_break == Some(Break.Hardline)) {
           column + indent + l;
@@ -86,6 +85,15 @@ module Atom = {
           column + l;
         },
         None,
+      )
+    | StringIfBreaks(str, o, l) => (
+        String(str, o, l),
+        if (last_break == None) {
+          column;
+        } else {
+          column + l;
+        },
+        last_break,
       )
     // TODO: Implement comments
     | Comment(_) => (atom, column, last_break)
@@ -147,8 +155,7 @@ module Atom = {
         (column, last_break);
       };
     switch (atom) {
-    | String(str, _, l)
-    | StringIfBreaks(str, _, l) =>
+    | String(_, _, l) =>
       try_return((
         if (last_break == Some(Break.Hardline)) {
           column + indent + l;
@@ -156,6 +163,15 @@ module Atom = {
           column + l;
         },
         None,
+      ))
+    | StringIfBreaks(_, _, l) =>
+      try_return((
+        if (last_break == None) {
+          column;
+        } else {
+          column + l;
+        },
+        last_break,
       ))
     // TODO: Implement comments
     | Comment(_) => (column, last_break)
@@ -538,7 +554,7 @@ module Atom = {
         sub_string(b, s, o, l);
         None;
       | StringIfBreaks(s, o, l) =>
-        if (last_break !== None) {
+        if (last_break != None) {
           sub_string(b, s, o, l);
         };
         None;
