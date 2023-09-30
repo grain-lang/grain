@@ -790,7 +790,7 @@ let concat_map = (~sep, ~lead=first => empty, ~trail=last => empty, ~f, l) => {
   };
 };
 
-let parens = d => parens(nest(softline ++ d ++ softline));
+let parens = d => parens(nest_all(softline ++ d ++ softline));
 let parens_all = d => parens(nest_all(softline ++ d ++ softline));
 let angle_brackets = d =>
   angle_brackets(nest_all(softline ++ d ++ softline));

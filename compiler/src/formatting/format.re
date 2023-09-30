@@ -682,21 +682,13 @@ and print_expression = (expr: Parsetree.expression) => {
         parens(
           concat_map(
             ~sep=(prev, next) => comma_breakable_space,
+            ~trail=last => ifBreaks(","),
             ~f=print_lambda_argument,
             params,
           ),
         ),
-        string(" =>"),
-        nest_all(
-          (
-            // TODO: Is there a better way to do this?
-            switch (body.pexp_desc) {
-            | PExpBlock(_) => space
-            | _ => breakable_space
-            }
-          )
-          ++ print_expression(body),
-        ),
+        string(" => "),
+        print_expression(body),
       ])
     | PExpContinue => string("continue")
     | PExpBreak => string("break")
