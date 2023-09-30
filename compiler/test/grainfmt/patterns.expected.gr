@@ -19,18 +19,11 @@ match (list) {
 
 match (list) {
   [_, alongidentalongident123456, _] |
-  [_, _, alongidentalongident123456, _, _] =>
-    Some(alongidentalongident123456),
+  [_, _, alongidentalongident123456, _, _] => Some(alongidentalongident123456),
   _ => None,
 }
 
-enum Rec {
-  Rec{
-    x: Number,
-    y: Number,
-  },
-  Tup(Number, Number),
-}
+enum Rec { Rec{ x: Number, y: Number, }, Tup(Number, Number) }
 
 match (Rec{ x: 1, y: 2 }) {
   Rec{ x: 3, _ } => 3,
@@ -62,7 +55,6 @@ let x = match (n) {
     19,
     20,
     ...rest,
-  ] =>
-    void,
+  ] => void,
   _ => void,
 }
