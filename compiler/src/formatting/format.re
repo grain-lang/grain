@@ -841,25 +841,28 @@ and print_expression = (expr: Parsetree.expression) => {
     | PExpFor(init, cond, inc, body) =>
       concat([
         string("for "),
-        parens(
+        parens_all(
           concat([
             switch (init) {
             | None => empty
             | Some(init) => print_expression(init)
             },
-            string("; "),
+            string(";"),
+            breakable_space,
             switch (cond) {
             | None => empty
             | Some(cond) => print_expression(cond)
             },
-            string("; "),
+            string(";"),
+            breakable_space,
             switch (inc) {
             | None => empty
             | Some(inc) => print_expression(inc)
             },
-            braces(print_expression(body)),
           ]),
         ),
+        space,
+        print_expression(body),
       ])
     | PExpMatch(value, branches) =>
       concat([
