@@ -1077,10 +1077,15 @@ and print_data_declaration = (decl: Parsetree.data_declaration) => {
       pdata_name,
       pdata_params,
       pdata_kind: PDataVariant(cstr_decls),
+      pdata_rec,
       pdata_loc,
     } =>
     concat([
       string("enum "),
+      switch (pdata_rec) {
+      | Recursive => string("rec ")
+      | Nonrecursive => empty
+      },
       string(pdata_name.txt),
       switch (pdata_params) {
       | [] => empty

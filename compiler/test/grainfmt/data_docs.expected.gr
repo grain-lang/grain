@@ -1,12 +1,8 @@
 module DataDocs
 
-enum EventType {
-  Enter,
-  Exit,
-}
+enum rec EventType { Enter, Exit }
+and type Token = String
+and type TokenizeContext = String
 and type Event = (EventType, Token, TokenizeContext)
-and enum EventType2 {
-  Enter2,
-  Exit2,
-}
+and enum EventType2 { Enter2, Exit2 }
 and type Event2 = (EventType2, Token, TokenizeContext)
