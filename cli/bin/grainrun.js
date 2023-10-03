@@ -31,23 +31,21 @@ const importObject = { wasi_snapshot_preview1: wasi.wasiImport };
 
 async function run(filename) {
   try {
-    const wasm = await WebAssembly.compile(await readFile(filename)).catch(
-      (err) => {
-        if (filename.endsWith(".gr")) {
-          console.log(
-            `Grain run is for compiled wasm files, to compile a grain file use grain ${filename}`
-          );
-        } else {
-          console.log("Invalid wasm file detected");
-        }
-        process.exit();
-      }
-    );
+    const wasm = await WebAssembly.compile(await readFile(filename))
     const instance = await WebAssembly.instantiate(wasm, importObject);
-
     wasi.start(instance);
   } catch (err) {
-    console.error(err.stack);
+    if (err instanceof WebAssembly.CompileError) {
+      if (filename.endsWith(".gr")) {
+        console.log(
+          `Grain run is for compiled wasm files, to compile a grain file use grain ${filename}`
+        );
+      } else {
+        console.log("Invalid wasm file detected");
+      }
+    } else {
+      console.error(err.stack);
+    }
     process.exit(1);
   }
 }
