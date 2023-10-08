@@ -30,22 +30,38 @@ const wasi = new WASI({
 const importObject = { wasi_snapshot_preview1: wasi.wasiImport };
 
 async function run(filename) {
+  let bytes;
   try {
-    const wasm = await WebAssembly.compile(await readFile(filename))
+    bytes = await readFile(filename);
+  } catch (err) {
+    console.error(`Unable to read file: ${filename}`);
+    process.exit(1);
+  }
+
+  let wasm;
+  try {
+    wasm = await WebAssembly.compile(bytes);
+  } catch (err) {
+    if (filename.endsWith(".gr")) {
+      console.error(
+        `The \`grain run\` command is used on compiled \`.wasm\` files.`
+      );
+      console.error(
+        `To compile and run your \`.gr\` file, use \`grain ${filename}\``
+      );
+    } else {
+      console.error(`Unable to compile WASM module.`);
+      console.error(err.statck);
+    }
+    process.exit(1);
+  }
+
+  try {
     const instance = await WebAssembly.instantiate(wasm, importObject);
     wasi.start(instance);
   } catch (err) {
-    if (err instanceof WebAssembly.CompileError) {
-      if (filename.endsWith(".gr")) {
-        console.log(
-          `Grain run is for compiled wasm files, to compile a grain file use grain ${filename}`
-        );
-      } else {
-        console.log("Invalid wasm file detected");
-      }
-    } else {
-      console.error(err.stack);
-    }
+    console.error(`Unable to instantiate WASM module.`);
+    console.error(err.stack);
     process.exit(1);
   }
 }
