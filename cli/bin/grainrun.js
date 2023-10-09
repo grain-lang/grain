@@ -50,7 +50,7 @@ async function run(filename) {
         `To compile and run your \`.gr\` file, use \`grain ${filename}\``
       );
     } else {
-      console.error(`Unable to compile WASM module.`);
+      console.error(`Unable to compile WebAssembly module.`);
       console.error(err.statck);
     }
     process.exit(1);
@@ -60,7 +60,7 @@ async function run(filename) {
     const instance = await WebAssembly.instantiate(wasm, importObject);
     wasi.start(instance);
   } catch (err) {
-    console.error(`Unable to instantiate WASM module.`);
+    console.error(`Unable to instantiate WebAssembly module.`);
     console.error(err.stack);
     process.exit(1);
   }
