@@ -4,12 +4,15 @@ module Grammar =
   });
 
 type tree_sitter_node =
-  | String({value: string});
+  | String({value: string})
+  | Pattern({value: string});
 
 let yojson_of_tree_sitter_node = (node: tree_sitter_node) => {
   switch (node) {
   | String({value}) =>
     `Assoc([("type", `String("STRING")), ("value", `String(value))])
+  | Pattern({value}) =>
+    `Assoc([("type", `String("PATTERN")), ("value", `String(value))])
   };
 };
 
@@ -70,8 +73,8 @@ let _ = {
       (t, acc) => {
         switch (Grammar.Terminal.kind(t)) {
         | `REGULAR =>
-          let rule = Grammar.Terminal.name(t);
-          let repr =
+          let name = Grammar.Terminal.name(t);
+          let node =
             List.find_map(
               attr => {
                 switch (Grammar.Attribute.label(attr)) {
@@ -84,16 +87,16 @@ let _ = {
                       pattern,
                     );
                   let pattern = Scanf.unescaped(pattern);
-                  Some(pattern);
+                  Some(Pattern({value: pattern}));
                 | _ => None
                 }
               },
               Grammar.Terminal.attributes(t),
             );
-          switch (repr) {
-          | Some(value) => {
+          switch (node) {
+          | Some(node) => {
               ...acc,
-              rules: StringMap.add(rule, String({value: value}), acc.rules),
+              rules: StringMap.add(name, node, acc.rules),
             }
           // TODO: Throw in the future
           | None => acc
