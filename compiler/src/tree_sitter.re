@@ -27,12 +27,10 @@ module StringMap =
   });
 
 let yojson_of_stringmap = (m: StringMap.t(tree_sitter_node)) => {
-  // `Assoc
   let a =
     StringMap.bindings(m)
     |> List.map(((key, node)) => (key, yojson_of_tree_sitter_node(node)));
   `Assoc(a);
-  // Yojson.Safe.write_assoc
 };
 
 [@deriving to_yojson]
