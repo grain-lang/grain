@@ -16,7 +16,7 @@ module Grain_parsing = struct end
 %token <string> NUMBER_INT NUMBER_FLOAT
 %token <string> INT8 INT16 INT32 INT64 UINT8 UINT16 UINT32 UINT64 FLOAT32 FLOAT64 BIGINT
 %token <string> WASMI32 WASMI64 WASMF32 WASMF64
-%token <string> LIDENT [@pattern "[a-z][a-zA-Z_]\\w*"] UIDENT [@pattern "[A-Z][a-zA-Z_]\\w*"]
+%token <string> LIDENT [@pattern "[\\p{XID_Start}--\\p{Lu}_]\\p{XID_Continue}*"] UIDENT [@pattern "\\p{XID_Start}&&\\p{Lu}\\p{XID_Continue}"]
 %token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
 %token COMMA SEMI AS

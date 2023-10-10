@@ -12,7 +12,11 @@ let yojson_of_tree_sitter_node = (node: tree_sitter_node) => {
   | String({value}) =>
     `Assoc([("type", `String("STRING")), ("value", `String(value))])
   | Pattern({value}) =>
-    `Assoc([("type", `String("PATTERN")), ("value", `String(value))])
+    `Assoc([
+      ("type", `String("PATTERN")),
+      ("value", `String(value)),
+      ("flags", `String("v")),
+    ])
   };
 };
 
