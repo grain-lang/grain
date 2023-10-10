@@ -1,12 +1,18 @@
+// Referencing https://github.com/marceline-cramer/tree-sitter-grain/blob/main/src/grammar.json to compare output
+
+// MenhirSdk API: https://gitlab.inria.fr/fpottier/menhir/-/blob/master/sdk/cmly_api.ml
 module Grammar =
   MenhirSdk.Cmly_read.Read({
     let filename = "parsing/parser.cmly";
   });
 
+// https://github.com/tree-sitter/tree-sitter/blob/20924fa4cdeb10d82ac308481e39bf8519334e55/cli/src/generate/parse_grammar.rs#L10
+// Also useful: https://tree-sitter.github.io/tree-sitter/creating-parsers#the-grammar-dsl
 type tree_sitter_node =
   | String({value: string})
   | Pattern({value: string});
 
+// Needs to map to JSONSchema defined at https://github.com/tree-sitter/tree-sitter/blob/20924fa4cdeb10d82ac308481e39bf8519334e55/cli/src/generate/grammar-schema.json
 let yojson_of_tree_sitter_node = (node: tree_sitter_node) => {
   switch (node) {
   | String({value}) =>
@@ -33,6 +39,7 @@ let yojson_of_stringmap = (m: StringMap.t(tree_sitter_node)) => {
   `Assoc(a);
 };
 
+// https://github.com/tree-sitter/tree-sitter/blob/20924fa4cdeb10d82ac308481e39bf8519334e55/cli/src/generate/parse_grammar.rs#L75
 [@deriving to_yojson]
 type grammar_json = {
   name: string,
