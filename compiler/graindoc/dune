@@ -2,7 +2,7 @@
  (name docblock)
  (public_name graindoc.docblock)
  (modules docblock)
- (libraries grain grain_diagnostics grain_utils grain_formatting))
+ (libraries grain grain_diagnostics grain_utils))
 
 (executable
  (name graindoc)

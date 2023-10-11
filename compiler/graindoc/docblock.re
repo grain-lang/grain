@@ -261,21 +261,38 @@ let lookup_type_expr = (~idx, type_exprs) => {
   Option.bind(type_exprs, te => List.nth_opt(te, idx));
 };
 
-let get_argument_default = (input_path, default_expr) => {
-  open Grain_formatting.Format;
+let get_original_code = (loc_start, loc_end, source: array(string)) => {
+  let (_, start_line, startc, _) =
+    Locations.get_raw_pos_info(loc_start);
+  let (_, end_line, endc, _) = Locations.get_raw_pos_info(loc_end);
+
+  if (start_line == end_line) {
+    String_utils.Utf8.sub(source[start_line - 1], startc, endc - startc);
+  } else {
+    let text = ref("");
+    for (line in start_line - 1 to end_line - 1) {
+      if (line + 1 == start_line) {
+        text :=
+          text^
+          ++ String_utils.Utf8.string_after(source[line], startc)
+          ++ "\n";
+      } else if (line + 1 == end_line) {
+        text := text^ ++ String_utils.Utf8.sub(source[line], 0, endc);
+      } else {
+        text := text^ ++ source[line] ++ "\n";
+      };
+    };
+    text^;
+  };
+};
+
+let get_argument_default = (input_path, default_expr: Grain_parsing.Parsetree.expression) => {
+  // We have already compiled this file so we know it exists
   let ic = open_in_bin(input_path);
   let source = really_input_string(ic, in_channel_length(ic));
   close_in(ic);
-  // We have already compiled this file so we know it exists
-  let (_, lines, _) = Result.get_ok(parse_source(source));
-  let expr_doc =
-    print_expression(
-      ~expression_parent=GenericExpression,
-      ~original_source=lines,
-      ~comments=[],
-      default_expr,
-    );
-  Doc.toString(~width=1000, ~eol=Fs_access.LF, expr_doc);
+  let lines = Array.of_list(String.split_on_char('\n', source));
+  get_original_code(default_expr.pexp_loc.loc_start, default_expr.pexp_loc.loc_end, lines);
 };
 
 let get_comments_from_loc = (loc: Grain_parsing.Location.t) => {
