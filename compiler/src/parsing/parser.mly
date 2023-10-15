@@ -11,11 +11,14 @@ include Parser_header
 module Grain_parsing = struct end
 %}
 
-
-%token <string> RATIONAL
-%token <string> NUMBER_INT NUMBER_FLOAT
-%token <string> INT8 INT16 INT32 INT64 UINT8 UINT16 UINT32 UINT64 FLOAT32 FLOAT64 BIGINT
-%token <string> WASMI32 WASMI64 WASMF32 WASMF64
+(* Regex patterns are used by tooling like tree-sitter; tokens consumed by the parser are produced by the lexer *)
+%token <string> RATIONAL [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)/\\-?([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)r"]
+%token <string> NUMBER_INT [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)"]
+%token <string> NUMBER_FLOAT [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)"]
+%token <string> INT8 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)s"] INT16 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)S"] INT32 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)l"] INT64 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)L"] UINT8 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)us"] UINT16 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)uS"] UINT32 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)ul"] UINT64 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)uL"] BIGINT [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)t"]
+%token <string> FLOAT32 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)f"] FLOAT64 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)d"]
+%token <string> WASMI32 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)n"] WASMI64 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)N"]
+%token <string> WASMF32 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)w"] WASMF64 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)W"]
 %token <string> LIDENT [@pattern "[\\p{XID_Start}--\\p{Lu}_]\\p{XID_Continue}*"] UIDENT [@pattern "\\p{XID_Start}&&\\p{Lu}\\p{XID_Continue}*"]
 %token <string> STRING BYTES CHAR
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
