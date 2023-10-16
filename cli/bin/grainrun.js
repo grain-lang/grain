@@ -51,7 +51,7 @@ async function run(filename) {
       );
     } else {
       console.error(`Unable to compile WebAssembly module.`);
-      console.error(err.statck);
+      console.error(err.stack);
     }
     process.exit(1);
   }
