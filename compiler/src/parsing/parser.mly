@@ -21,18 +21,18 @@ module Grain_parsing = struct end
 %token <string> WASMF32 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)w"] WASMF64 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)W"]
 %token <string> LIDENT [@pattern "[\\p{XID_Start}--\\p{Lu}_]\\p{XID_Continue}*"] UIDENT [@pattern "\\p{XID_Start}&&\\p{Lu}\\p{XID_Continue}*"]
 %token <string> STRING [@pattern "\"(\\\"|[^\"])*\""] BYTES [@pattern "b\"(\\\"|[^\"])*\""] CHAR [@pattern "'(\\'|[^'])*'"]
-%token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
-%token COMMA SEMI AS
-%token THICKARROW ARROW
-%token EQUAL GETS
-%token UNDERSCORE
-%token COLON QUESTION DOT ELLIPSIS
+%token LBRACK [@pattern "\\["] LBRACKRCARET [@pattern "\\[<"] RBRACK [@pattern "\\]"] LPAREN [@pattern "\\("] RPAREN [@pattern "\\)"] LBRACE [@pattern "\\{"] RBRACE [@pattern "\\}"] LCARET [@pattern "<"] RCARET [@pattern ">"]
+%token COMMA [@pattern ","] SEMI [@pattern ";"] AS [@pattern "as"]
+%token THICKARROW [@pattern "=>"] ARROW [@pattern "->"]
+%token EQUAL [@pattern "="] GETS [@pattern ":="]
+%token UNDERSCORE [@pattern "_"]
+%token COLON [@pattern ":"] QUESTION [@pattern "\\?"] DOT [@pattern "\\."] ELLIPSIS [@pattern "\\.\\.\\."]
 
-%token ASSERT FAIL EXCEPTION THROW
+%token ASSERT [@pattern "assert"] FAIL [@pattern "fail"] EXCEPTION [@pattern "exception"] THROW [@pattern "throw"]
 
-%token TRUE FALSE VOID
+%token TRUE [@pattern "true"] FALSE [@pattern "false"] VOID [@pattern "void"]
 
-%token LET MUT REC IF WHEN ELSE MATCH WHILE FOR CONTINUE BREAK RETURN
+%token LET [@pattern "let"] MUT [@pattern "mut"] REC [@pattern "rec"] IF [@pattern "if"] WHEN [@pattern "when"] ELSE [@pattern "else"] MATCH [@pattern "match"] WHILE [@pattern "while"] FOR [@pattern "for"] CONTINUE [@pattern "continue"] BREAK [@pattern "break"] RETURN [@pattern "return"]
 %token AT
 
 %token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
@@ -40,14 +40,14 @@ module Grain_parsing = struct end
 %token <string> PREFIX_150
 %token <string> INFIX_ASSIGNMENT_10
 
-%token ENUM RECORD TYPE MODULE INCLUDE USE PROVIDE ABSTRACT FOREIGN WASM PRIMITIVE
-%token AND
-%token EXCEPT FROM STAR
-%token SLASH DASH PIPE
+%token ENUM [@pattern "enum"] RECORD [@pattern "record"] TYPE [@pattern "type"] MODULE [@pattern "module"] INCLUDE [@pattern "include"] USE [@pattern "use"] PROVIDE [@pattern "provide"] ABSTRACT [@pattern "abstract"] FOREIGN [@pattern "foreign"] WASM [@pattern "wasm"] PRIMITIVE [@pattern "primitive"]
+%token AND [@pattern "and"]
+%token EXCEPT [@pattern "except"] FROM [@pattern "from"] STAR [@pattern "\\*"]
+%token SLASH [@pattern "\\\\"] DASH [@pattern "-"] PIPE [@pattern "\\|"]
 %token EOL EOF
 
 // reserved tokens
-%token TRY CATCH COLONCOLON MACRO YIELD
+%token TRY [@pattern "try"] CATCH [@pattern "catch"] COLONCOLON [@pattern "::"] MACRO [@pattern "macro"] YIELD [@pattern "yield"]
 
 // Not a real token, this is injected by the lexer
 %token FUN
