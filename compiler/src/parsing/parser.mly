@@ -20,7 +20,7 @@ module Grain_parsing = struct end
 %token <string> WASMI32 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)n"] WASMI64 [@pattern "([0-9][0-9_]*|0[xX][0-9a-fA-F][0-9a-fA-F_]*|0[oO][0-7][0-7_]*|0[bB][01][01_]*)N"]
 %token <string> WASMF32 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)w"] WASMF64 [@pattern "(0[xX][0-9a-fA-F][0-9a-fA-F_]*(\\.[0-9a-fA-F][0-9a-fA-F]*)?[pP][\\+\\-]?[0-9][0-9_]*|[0-9][0-9_]*\\.[0-9][0-9_]*([eE][\\+\\-]?[0-9][0-9_]*)?|[0-9][0-9_]*[eE][\\+\\-]?[0-9][0-9_]*|Infinity|NaN)W"]
 %token <string> LIDENT [@pattern "[\\p{XID_Start}--\\p{Lu}_]\\p{XID_Continue}*"] UIDENT [@pattern "\\p{XID_Start}&&\\p{Lu}\\p{XID_Continue}*"]
-%token <string> STRING BYTES CHAR
+%token <string> STRING [@pattern "\"(\\\"|[^\"])*\""] BYTES [@pattern "b\"(\\\"|[^\"])*\""] CHAR [@pattern "'(\\'|[^'])*'"]
 %token LBRACK LBRACKRCARET RBRACK LPAREN RPAREN LBRACE RBRACE LCARET RCARET
 %token COMMA SEMI AS
 %token THICKARROW ARROW
