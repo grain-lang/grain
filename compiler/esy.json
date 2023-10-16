@@ -59,7 +59,7 @@
     "@opam/rely": "^4.0.0"
   },
   "resolutions": {
-    "@opam/js_of_ocaml-compiler": "ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#8e4ec6c78fecc089960adde2e3a3f77914c8b29c",
+    "@opam/js_of_ocaml-compiler": "ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#e075fca17035ef740a2a247ab5f0e3c35c19ada6",
     "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
