@@ -413,7 +413,7 @@ module type BinarySectionSpec = {
   type t;
 
   let name: string;
-  let deserialize: bytes => t;
+  let deserialize: in_channel => int => t;
   let accepts_version: abi_version => bool;
   let serialize: t => bytes;
 };
@@ -454,9 +454,7 @@ module BinarySection =
             when name == Spec.name && Spec.accepts_version(abi_version) =>
           /* Now we're at the start of the section. Time to read */
           let realsize = size - (pos_in(inchan) - offset);
-          let bytes = Bytes.create(realsize);
-          really_input(inchan, bytes, 0, realsize);
-          Some(Spec.deserialize(bytes));
+          Some(Spec.deserialize(inchan, realsize));
         | _ => process(tl)
         };
       };
