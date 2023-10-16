@@ -35,10 +35,10 @@ module Grain_parsing = struct end
 %token LET [@pattern "let"] MUT [@pattern "mut"] REC [@pattern "rec"] IF [@pattern "if"] WHEN [@pattern "when"] ELSE [@pattern "else"] MATCH [@pattern "match"] WHILE [@pattern "while"] FOR [@pattern "for"] CONTINUE [@pattern "continue"] BREAK [@pattern "break"] RETURN [@pattern "return"]
 %token AT
 
-%token <string> INFIX_10 INFIX_30 INFIX_40 INFIX_50 INFIX_60 INFIX_70
-%token <string> INFIX_80 INFIX_90 INFIX_100 INFIX_110 INFIX_120
-%token <string> PREFIX_150
-%token <string> INFIX_ASSIGNMENT_10
+%token <string> INFIX_10 INFIX_30 [@pattern "(\\|\\||\\?\\?)[$&*/+=><^|!?%:.-]*"] INFIX_40 [@pattern "&&[$&*/+=><^|!?%:.-]*"] INFIX_50 [@pattern "\\|[$&*/+=><^|!?%:.-]*"] INFIX_60 [@pattern "\\^[$&*/+=><^|!?%:.-]*"] INFIX_70 [@pattern "&[$&*/+=><^|!?%:.-]*"]
+%token <string> INFIX_80 [@pattern "(is|isnt|(==|!=)[$&*/+=><^|!?%:.-]*)"] INFIX_90 [@pattern "(<[$&*/+=>^|!?%:.-][$&*/+=><^|!?%:.-]*|>[$&*/+=<^|!?%:.-][$&*/+=><^|!?%:.-]*)"] INFIX_100 [@pattern "(<<[$&*/+=><^|!?%:.-]*|>>[$&*/+=<^|!?%:.-][$&*/+=><^|!?%:.-]*)"] INFIX_110 [@pattern "(\\+|\\-)[$&*/+=><^|!?%:.-]*"] INFIX_120 [@pattern "((\\*|%)[$&*/+=><^|!?%:.-]*|/[$&+=><^|!?%:.-][$&*/+=><^|!?%:.-]*)"]
+%token <string> PREFIX_150 [@pattern "!"]
+%token <string> INFIX_ASSIGNMENT_10 [@pattern "(\\+=|\\-=|\\*=|/=|%=)"]
 
 %token ENUM [@pattern "enum"] RECORD [@pattern "record"] TYPE [@pattern "type"] MODULE [@pattern "module"] INCLUDE [@pattern "include"] USE [@pattern "use"] PROVIDE [@pattern "provide"] ABSTRACT [@pattern "abstract"] FOREIGN [@pattern "foreign"] WASM [@pattern "wasm"] PRIMITIVE [@pattern "primitive"]
 %token AND [@pattern "and"]
