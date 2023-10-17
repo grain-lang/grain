@@ -22,4 +22,4 @@
  (libraries grain grain-tests.framework grain-tests.suites grain-tests.utils)
  (modules test)
  (js_of_ocaml
-  (flags --no-sourcemap --quiet --disable use-js-string)))
+  (flags --no-sourcemap --quiet)))
