@@ -196,6 +196,10 @@ module MakeMap = (Iter: MapArgument) => {
           process_imm_expression(arg),
         ),
       )
+    | CCollectionConcat(t, collections) =>
+      leave_with(
+        CCollectionConcat(t, List.map(process_imm_expression, collections)),
+      )
     | CIf(cond, t, f) =>
       let cond = process_imm_expression(cond);
       push_input(

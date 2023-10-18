@@ -249,6 +249,8 @@ module MakeMap =
           ld,
           map_expression(arg),
         )
+      | TExpCollectionConcat(t, collections) =>
+        TExpCollectionConcat(t, List.map(map_expression, collections))
       | TExpBlock(args) => TExpBlock(List.map(map_expression, args))
       | TExpConstruct(a, b, TExpConstrTuple(args)) =>
         TExpConstruct(a, b, TExpConstrTuple(List.map(map_expression, args)))

@@ -931,6 +931,21 @@ let rec transl_imm =
         ),
       ],
     );
+  | TExpCollectionConcat(t, collections) =>
+    let tmp = gensym("catcollection");
+    let (new_args, new_setup) =
+      List.split(List.map(transl_imm, collections));
+    (
+      Imm.id(~loc, ~env, tmp),
+      List.concat(new_setup)
+      @ [
+        BLet(
+          tmp,
+          Comp.collection_concat(~loc, ~env, t, new_args),
+          Nonglobal,
+        ),
+      ],
+    );
   | TExpMatch(exp, branches, partial) =>
     let tmp = gensym("match");
     let (exp_ans, exp_setup) = transl_imm(exp);

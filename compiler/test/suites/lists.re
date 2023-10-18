@@ -22,4 +22,25 @@ describe("lists", ({test, testSkip}) => {
   assertSnapshot("list1_trailing", "[1, 2, 3,]");
   assertSnapshot("list1_trailing_space", "[1, 2, 3, ]");
   assertCompileError("invalid_empty_trailing", "[,]", "Error: Syntax error");
+  // arbitrary-position spread
+  assertRun(
+    "list_spread_anywhere1",
+    "let a = [1, 2]; print([...a, 3, 4])",
+    "[1, 2, 3, 4]\n",
+  );
+  assertRun(
+    "list_spread_anywhere2",
+    "let a = [2]; let b = [5, 6]; print([1, ...a, 3, 4, ...b])",
+    "[1, 2, 3, 4, 5, 6]\n",
+  );
+  assertRun(
+    "list_spread_anywhere3",
+    "let a = [1, 2, 3]; print([...a])",
+    "[1, 2, 3]\n",
+  );
+  assertCompileError(
+    "list_spread_anywhere4",
+    "let a = [1, 2]; [...a, \"a\"]",
+    "has type String but",
+  );
 });

@@ -122,6 +122,7 @@ module PurityArg: Anf_iterator.IterArgument = {
       | CTuple(_)
       | CAdt(_)
       | CRecord(_)
+      | CCollectionConcat(_)
       | CGetTupleItem(_) => true
       | CSetTupleItem(_) => false
       | CGetAdtItem(_)

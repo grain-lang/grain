@@ -1131,6 +1131,52 @@ and resugar_pattern_list_inner = (patterns: list(Parsetree.pattern)) => {
   };
 }
 
+and process_list_comments = items => {
+  // We have to compose this list by hand because of the complexity of if a list item
+  // is followed by a comment, the comma must come before the comment.
+  // It also impacts how we force a new line for a line ending comment at the end of a list
+  // without introducing an extra blank line when bringing the indentation back in again
+
+  let last_line_breaks_for_comments = ref(false);
+  let items_length = List.length(items);
+  let list_items =
+    List.mapi(
+      (i, (item, item_comments)) => {
+        let final_item = items_length - 1 == i;
+
+        let comment_doc =
+          switch (item_comments) {
+          | [] =>
+            last_line_breaks_for_comments := false;
+            if (final_item) {
+              Doc.nil;
+            } else {
+              Doc.concat([Doc.comma, Doc.line]);
+            };
+          | _ =>
+            let trailing_comments =
+              List.map(
+                (cmt: Parsetree.comment) =>
+                  Doc.concat([Doc.space, Comment_utils.comment_to_doc(cmt)]),
+                item_comments,
+              );
+
+            last_line_breaks_for_comments := true;
+            Doc.concat([
+              Doc.comma,
+              Doc.concat(trailing_comments),
+              if (final_item) {Doc.nil} else {Doc.hardLine},
+            ]);
+          };
+
+        Doc.concat([Doc.group(item), comment_doc]);
+      },
+      items,
+    );
+
+  (last_line_breaks_for_comments^, list_items);
+}
+
 and resugar_list =
     (
       ~original_source: array(string),
@@ -1219,47 +1265,8 @@ and resugar_list =
       processed_list,
     );
 
-  // We have to compose this list by hand because of the complexity of if a list item
-  // is followed by a comment, the comma must come before the comment.
-  // It also impacts how we force a new line for a line ending comment at the end of a list
-  // without introducing an extra blank line when bringing the indentation back in again
-
-  let last_line_breaks_for_comments = ref(false);
-  let items_length = List.length(items);
-  let list_items =
-    List.mapi(
-      (i, (item, item_comments)) => {
-        let final_item = items_length - 1 == i;
-
-        let comment_doc =
-          switch (item_comments) {
-          | [] =>
-            last_line_breaks_for_comments := false;
-            if (final_item) {
-              Doc.nil;
-            } else {
-              Doc.concat([Doc.comma, Doc.line]);
-            };
-          | _ =>
-            let trailing_comments =
-              List.map(
-                (cmt: Parsetree.comment) =>
-                  Doc.concat([Doc.space, Comment_utils.comment_to_doc(cmt)]),
-                item_comments,
-              );
-
-            last_line_breaks_for_comments := true;
-            Doc.concat([
-              Doc.comma,
-              Doc.concat(trailing_comments),
-              if (final_item) {Doc.nil} else {Doc.hardLine},
-            ]);
-          };
-
-        Doc.concat([Doc.group(item), comment_doc]);
-      },
-      items,
-    );
+  let (last_line_breaks_for_comments, list_items) =
+    process_list_comments(items);
 
   Doc.group(
     Doc.concat([
@@ -1268,18 +1275,14 @@ and resugar_list =
         Doc.concat([
           Doc.softLine,
           Doc.concat(list_items),
-          if (last_item_was_spread^ || last_line_breaks_for_comments^) {
+          if (last_item_was_spread^ || last_line_breaks_for_comments) {
             Doc.nil;
           } else {
             Doc.ifBreaks(Doc.comma, Doc.nil);
           },
         ]),
       ),
-      if (last_line_breaks_for_comments^) {
-        Doc.hardLine;
-      } else {
-        Doc.softLine;
-      },
+      if (last_line_breaks_for_comments) {Doc.hardLine} else {Doc.softLine},
       Doc.rbracket,
     ]),
   );
@@ -2968,6 +2971,133 @@ and print_expression_inner =
           print_ident(txt),
         ]);
       print_assignment(~original_source, ~comments, left, expression2);
+    | PExpCollectionConcat(concat_t, collections) =>
+      let list_length = List.length(collections);
+
+      let flattened =
+        List.map(
+          ((t, e)) => {
+            let process_elem =
+              switch (concat_t) {
+              | PExpListConcat =>
+                let rec process_elem = list => {
+                  switch (list.Parsetree.pexp_desc) {
+                  | Parsetree.PExpConstruct(
+                      {txt: IdentName({txt: "[...]"})},
+                      PExpConstrTuple([expr, rest]),
+                    ) =>
+                    switch (rest.pexp_desc) {
+                    | Parsetree.PExpConstruct(
+                        {txt: IdentName({txt: "[]"})},
+                        PExpConstrTuple(_),
+                      ) =>
+                      // Non-spread element at end of list; do not recurse
+                      [(false, expr)]
+                    | _ => [(false, expr), ...process_elem(rest)]
+                    }
+                  | _ => [(true, list)]
+                  };
+                };
+                process_elem;
+              | PExpArrayConcat => (
+                  array => {
+                    switch (array.Parsetree.pexp_desc) {
+                    | Parsetree.PExpArray(elems) =>
+                      List.map(elem => (false, elem), elems)
+                    | _ => assert(false)
+                    };
+                  }
+                )
+              };
+            switch (t) {
+            | Parsetree.PExpSpreadExpr => [(true, e)]
+            | Parsetree.PExpNonSpreadExpr => process_elem(e)
+            };
+          },
+          collections,
+        )
+        |> List.flatten;
+
+      let items =
+        List.mapi(
+          (index, (is_spread, e)) => {
+            // Do we have any comments on this line?
+            // If so, we break the whole list
+
+            // we might have a list list [1, 2 // comment
+            //                            3]
+            // so need to use the comment after the last item
+            // [1,
+            //  2, //comment
+            //  3]
+            let end_line_comments =
+              if (index < list_length - 2) {
+                let (_, next_e) = List.nth(collections, index + 1);
+                Comment_utils.get_comments_between_locations(
+                  ~loc1=e.Parsetree.pexp_loc,
+                  ~loc2=next_e.pexp_loc,
+                  comments,
+                );
+              } else {
+                let (_, item_line, item_char, _) =
+                  Locations.get_raw_pos_info(e.pexp_loc.loc_end);
+                Comment_utils.get_comments_on_line_end(
+                  ~line=item_line,
+                  ~char=item_char,
+                  comments,
+                );
+              };
+
+            let expr =
+              Doc.concat([
+                if (is_spread) {
+                  Doc.text("...");
+                } else {
+                  Doc.nil;
+                },
+                print_expression(
+                  ~expression_parent=GenericExpression,
+                  ~original_source,
+                  ~comments=
+                    Comment_utils.get_comments_inside_location(
+                      ~location=e.pexp_loc,
+                      comments,
+                    ),
+                  e,
+                ),
+              ]);
+            (expr, end_line_comments);
+          },
+          flattened,
+        );
+
+      let (last_line_breaks_for_comments, list_items) =
+        process_list_comments(items);
+
+      Doc.group(
+        Doc.concat([
+          Doc.lbracket,
+          switch (concat_t) {
+          | Parsetree.PExpListConcat => Doc.nil
+          | Parsetree.PExpArrayConcat => Doc.text("> ")
+          },
+          Doc.indent(
+            Doc.concat([
+              Doc.softLine,
+              Doc.concat(list_items),
+              if (last_line_breaks_for_comments) {
+                Doc.nil;
+              } else {
+                Doc.ifBreaks(Doc.comma, Doc.nil);
+              },
+            ]),
+          ),
+          if (last_line_breaks_for_comments) {Doc.hardLine} else {
+            Doc.softLine
+          },
+          Doc.rbracket,
+        ]),
+      );
     | PExpMatch(expression, match_branches) =>
       let arg =
         Doc.concat([

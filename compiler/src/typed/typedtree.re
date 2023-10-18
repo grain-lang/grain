@@ -460,6 +460,11 @@ and exp_extra =
   | TExpConstraint(core_type)
 
 [@deriving sexp]
+and collection_concat_type =
+  | TExpListConcat
+  | TExpArrayConcat
+
+[@deriving sexp]
 and expression_desc =
   | TExpIdent(Path.t, loc(Identifier.t), Types.value_description)
   | TExpConstant(constant)
@@ -478,6 +483,7 @@ and expression_desc =
       Types.label_description,
       expression,
     )
+  | TExpCollectionConcat(collection_concat_type, list(expression))
   | TExpLet(rec_flag, mut_flag, list(value_binding))
   | TExpMatch(expression, list(match_branch), partial)
   | TExpUse(loc(Path.t), use_items)

@@ -31,3 +31,22 @@ let rec reject2 = (fn, list) => {
     }
   }
 }
+
+let l = ["a", "b", "c"]
+let a = [...l, "a", "b", ...l, "d"]
+let a = [...l, "secondInAVeryLongString", "thirdInAStringThatWillBreakLine", ...l]
+
+let a = [
+...l /* before first */, // first comment
+"second", // second comment
+"third" /* before third */, // third comment
+...l // fourth comment
+] // after comment
+
+let a = [> "a", "b", "c"]
+let arr = [>...a,"second","third",...a]
+let arr = [>
+...a /* before comment 1 */, // comment 1
+"second", // comment 2
+"third" /* before comment 3 */, // comment 3
+...a /* comment 4 */] // after comment

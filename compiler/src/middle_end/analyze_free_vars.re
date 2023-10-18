@@ -109,6 +109,12 @@ module FreeVarsArg: Anf_iterator.IterArgument = {
           Ident.Set.empty,
           [arg1, arg2, arg3],
         )
+      | CCollectionConcat(t, collections) =>
+        List.fold_left(
+          (acc, a) => Ident.Set.union(imm_free_vars(a), acc),
+          Ident.Set.empty,
+          collections,
+        )
       | CRecord(_, _, args) =>
         List.fold_left(
           (acc, (_, a)) => Ident.Set.union(imm_free_vars(a), acc),

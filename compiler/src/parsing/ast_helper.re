@@ -24,6 +24,10 @@ type listitem('a) =
   | ListItem('a)
   | ListSpread('a, Location.t);
 
+type arrayitem =
+  | ArrayItem(expression)
+  | ArraySpread(expression, Location.t);
+
 type recorditem =
   | RecordItem(loc(Identifier.t), expression)
   | RecordSpread(expression, Location.t);
@@ -33,6 +37,10 @@ type location('a) = loc('a);
 type id = loc(Identifier.t);
 type str = loc(string);
 type loc = Location.t;
+
+type array_concat_item =
+  | ArrayConcatItems(list(expression))
+  | ArrayConcatSpread(expression);
 
 let ident_empty = {
   txt: Identifier.IdentName(Location.mknoloc("[]")),
@@ -417,37 +425,167 @@ module Expression = {
   };
   let block = (~loc=?, ~attributes=?, a) =>
     mk(~loc?, ~attributes?, PExpBlock(a));
+  let collection_concat = (~loc, ~attributes=?, a, b) =>
+    mk(~loc, ~attributes?, PExpCollectionConcat(a, b));
   let list = (~loc, ~attributes=?, a) => {
     let empty = tuple_construct(~loc, ident_empty, []);
     let list =
       switch (List.rev(a)) {
       | [] => empty
       | [base, ...rest] =>
-        let base =
-          switch (base) {
-          | ListItem(expr) =>
-            tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
-          | ListSpread(expr, _) => expr
-          };
-        List.fold_left(
-          (acc, expr) => {
-            switch (expr) {
-            | ListItem(expr) =>
-              tuple_construct(~loc, ~attributes?, ident_cons, [expr, acc])
-            | ListSpread(_, loc) =>
-              raise(
-                SyntaxError(
-                  loc,
-                  "A list spread can only appear at the end of a list.",
+        let has_nonfinal_spread =
+          List.exists(
+            expr =>
+              switch (expr) {
+              | ListSpread(_) => true
+              | ListItem(_) => false
+              },
+            rest,
+          );
+        if (has_nonfinal_spread) {
+          let base =
+            switch (base) {
+            | ListItem(expr) => (
+                PExpNonSpreadExpr,
+                tuple_construct(
+                  ~loc,
+                  ~attributes?,
+                  ident_cons,
+                  [expr, empty],
                 ),
               )
-            }
-          },
-          base,
-          rest,
-        );
+            | ListSpread(expr, _) => (PExpSpreadExpr, expr)
+            };
+          let grouped =
+            List.fold_left(
+              (acc, expr) => {
+                switch (expr) {
+                | ListSpread(expr, loc) => [
+                    (PExpSpreadExpr, {...expr, pexp_loc: loc}),
+                    ...acc,
+                  ]
+                | ListItem(expr) =>
+                  switch (acc) {
+                  | [(_, first), ...rest] => [
+                      (
+                        PExpNonSpreadExpr,
+                        tuple_construct(
+                          ~loc,
+                          ~attributes?,
+                          ident_cons,
+                          [expr, first],
+                        ),
+                      ),
+                      ...rest,
+                    ]
+                  | _ =>
+                    failwith("Impossible: processed ListItem with empty acc")
+                  }
+                }
+              },
+              [base],
+              rest,
+            );
+          collection_concat(
+            ~loc,
+            ~attributes?,
+            PExpListConcat,
+            grouped,
+          );
+        } else {
+          let base =
+            switch (base) {
+            | ListItem(expr) =>
+              tuple_construct(~loc, ~attributes?, ident_cons, [expr, empty])
+            | ListSpread(expr, _) => expr
+            };
+          List.fold_left(
+            (acc, expr) => {
+              switch (expr) {
+              | ListItem(expr) =>
+                tuple_construct(~loc, ~attributes?, ident_cons, [expr, acc])
+              | ListSpread(_, loc) =>
+                failwith(
+                  "Impossible: non-final list spread when existence has been disproven",
+                )
+              }
+            },
+            base,
+            rest,
+          );
+        };
       };
     {...list, pexp_loc: loc};
+  };
+  let array_items = (~loc, ~attributes=?, a) => {
+    let has_spread =
+      List.exists(
+        x => {
+          switch (x) {
+          | ArraySpread(_) => true
+          | ArrayItem(_) => false
+          }
+        },
+        a,
+      );
+    if (has_spread) {
+      let grouped =
+        List.fold_right(
+          (expr, acc) => {
+            switch (expr) {
+            | ArrayItem(expr) =>
+              switch (acc) {
+              | [ArrayConcatItems(exprs), ...rest] => [
+                  ArrayConcatItems([expr, ...exprs]),
+                  ...rest,
+                ]
+              | _ => [ArrayConcatItems([expr]), ...acc]
+              }
+            | ArraySpread(expr, loc) => [
+                ArrayConcatSpread({...expr, pexp_loc: loc}),
+                ...acc,
+              ]
+            }
+          },
+          a,
+          [],
+        );
+      collection_concat(
+        ~loc,
+        ~attributes?,
+        PExpArrayConcat,
+        List.map(
+          x => {
+            switch (x) {
+            | ArrayConcatItems([first, ...rest] as exprs) => (
+                PExpNonSpreadExpr,
+                array(~loc=first.pexp_loc, ~attributes?, exprs),
+              )
+            | ArrayConcatItems([]) =>
+              failwith("Impossible: empty ArrayConcatItems")
+            | ArrayConcatSpread(expr) => (PExpSpreadExpr, expr)
+            }
+          },
+          grouped,
+        ),
+      );
+    } else {
+      array(
+        ~loc,
+        ~attributes?,
+        List.map(
+          expr =>
+            switch (expr) {
+            | ArraySpread(_) =>
+              failwith(
+                "Impossible: spread in array when existence has been disproven",
+              )
+            | ArrayItem(expr) => expr
+            },
+          a,
+        ),
+      );
+    };
   };
 
   let ignore = e =>
