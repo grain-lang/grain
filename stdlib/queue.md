@@ -244,6 +244,57 @@ Returns:
 |----|-----------|
 |`Queue<a>`|A new queue containing the elements from the input|
 
+### Queue.**toArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toArray : (queue: Queue<a>) => Array<a>
+```
+
+Converts a queue into an array of its values.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue`|`Queue<a>`|The queue to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Array<a>`|An array containing all values from the given queue|
+
+### Queue.**equal**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+equal : (queue1: Queue<a>, queue2: Queue<a>) => Bool
+```
+
+Checks if two queues are equivalent by value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue1`|`Queue<a>`|The first queue to compare|
+|`queue2`|`Queue<a>`|The second queue to compare|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the queues are equivalent or `false` otherwise|
+
 ## Queue.Immutable
 
 An immutable queue implementation.
