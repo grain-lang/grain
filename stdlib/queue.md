@@ -269,6 +269,31 @@ Returns:
 |----|-----------|
 |`Array<a>`|An array containing all values from the given queue|
 
+### Queue.**fromArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromArray : (arr: Array<a>) => Queue<a>
+```
+
+Creates a queue from an array.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`arr`|`Array<a>`|The array to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Queue<a>`|A queue containing all values from the array|
+
 ## Queue.Immutable
 
 An immutable queue implementation.
