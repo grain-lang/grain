@@ -1093,7 +1093,7 @@ and type_expect_ =
           Location.mknoloc(Identifier.IdentName(Location.mknoloc("()"))),
           [],
         )
-      | args => Pattern.tuple(args)
+      | args => Pattern.tuple(~loc=Location.dummy_loc, args)
       };
     let body =
       switch (prelude) {

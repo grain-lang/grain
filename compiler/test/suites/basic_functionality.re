@@ -283,7 +283,10 @@ describe("basic functionality", ({test, testSkip}) => {
               Asttypes.Immutable,
               [
                 ValueBinding.mk(
-                  Pattern.var(Location.mknoloc("pokémon")),
+                  Pattern.var(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc("pokémon"),
+                  ),
                   Expression.constant(Constant.string("pikachu")),
                 ),
               ],

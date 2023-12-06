@@ -134,25 +134,25 @@ module Exception: {
 };
 
 module Pattern: {
-  let mk: (~loc: loc=?, pattern_desc) => pattern;
-  let any: (~loc: loc=?, unit) => pattern;
-  let var: (~loc: loc=?, str) => pattern;
-  let tuple: (~loc: loc=?, list(pattern)) => pattern;
-  let array: (~loc: loc=?, list(pattern)) => pattern;
+  let mk: (~loc: loc, pattern_desc) => pattern;
+  let any: (~loc: loc, unit) => pattern;
+  let var: (~loc: loc, str) => pattern;
+  let tuple: (~loc: loc, list(pattern)) => pattern;
+  let array: (~loc: loc, list(pattern)) => pattern;
   let record:
-    (~loc: loc=?, list((option((id, pattern)), Asttypes.closed_flag))) =>
+    (~loc: loc, list((option((id, pattern)), Asttypes.closed_flag))) =>
     pattern;
   let list: (~loc: loc, list(listitem(pattern))) => pattern;
-  let constant: (~loc: loc=?, constant) => pattern;
-  let constraint_: (~loc: loc=?, pattern, parsed_type) => pattern;
+  let constant: (~loc: loc, constant) => pattern;
+  let constraint_: (~loc: loc, pattern, parsed_type) => pattern;
   let construct: (~loc: loc, id, constructor_pattern) => pattern;
   let singleton_construct: (~loc: loc, id) => pattern;
   let tuple_construct: (~loc: loc, id, list(pattern)) => pattern;
   let record_construct:
     (~loc: loc, id, list((option((id, pattern)), Asttypes.closed_flag))) =>
     pattern;
-  let or_: (~loc: loc=?, pattern, pattern) => pattern;
-  let alias: (~loc: loc=?, pattern, str) => pattern;
+  let or_: (~loc: loc, pattern, pattern) => pattern;
+  let alias: (~loc: loc, pattern, str) => pattern;
 };
 
 module Expression: {

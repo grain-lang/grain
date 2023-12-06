@@ -181,20 +181,19 @@ module Exception = {
 };
 
 module Pattern = {
-  let mk = (~loc=?, d) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, d) => {
     {ppat_desc: d, ppat_loc: loc};
   };
-  let any = (~loc=?, ()) => mk(~loc?, PPatAny);
-  let var = (~loc=?, a) => mk(~loc?, PPatVar(a));
-  let tuple = (~loc=?, a) => mk(~loc?, PPatTuple(a));
-  let array = (~loc=?, a) => mk(~loc?, PPatArray(a));
-  let record = (~loc=?, a) => {
+  let any = (~loc, ()) => mk(~loc, PPatAny);
+  let var = (~loc, a) => mk(~loc, PPatVar(a));
+  let tuple = (~loc, a) => mk(~loc, PPatTuple(a));
+  let array = (~loc, a) => mk(~loc, PPatArray(a));
+  let record = (~loc, a) => {
     let (patterns, closed) = record_pattern_info(a);
-    mk(~loc?, PPatRecord(patterns, closed));
+    mk(~loc, PPatRecord(patterns, closed));
   };
-  let constant = (~loc=?, a) => mk(~loc?, PPatConstant(a));
-  let constraint_ = (~loc=?, a, b) => mk(~loc?, PPatConstraint(a, b));
+  let constant = (~loc, a) => mk(~loc, PPatConstant(a));
+  let constraint_ = (~loc, a, b) => mk(~loc, PPatConstraint(a, b));
   let construct = (~loc, a, b) => mk(~loc, PPatConstruct(a, b));
   let singleton_construct = (~loc, a) =>
     construct(~loc, a, PPatConstrSingleton);
@@ -233,8 +232,8 @@ module Pattern = {
       );
     };
   };
-  let or_ = (~loc=?, a, b) => mk(~loc?, PPatOr(a, b));
-  let alias = (~loc=?, a, b) => mk(~loc?, PPatAlias(a, b));
+  let or_ = (~loc, a, b) => mk(~loc, PPatOr(a, b));
+  let alias = (~loc, a, b) => mk(~loc, PPatAlias(a, b));
 };
 
 module Expression = {
