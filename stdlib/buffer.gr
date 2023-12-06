@@ -13,7 +13,7 @@ include "runtime/unsafe/memory"
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/conv"
 include "runtime/exception"
-include "runtime/datastructures"
+include "runtime/dataStructures"
 from DataStructures use { untagChar }
 include "int32"
 include "bytes"
