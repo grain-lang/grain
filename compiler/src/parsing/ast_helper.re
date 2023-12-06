@@ -132,15 +132,13 @@ module ConstructorDeclaration = {
 };
 
 module LabelDeclaration = {
-  let mk = (~loc=?, n, t, m) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, n, t, m) => {
     {pld_name: n, pld_type: t, pld_mutable: m, pld_loc: loc};
   };
 };
 
 module DataDeclaration = {
-  let mk = (~loc=?, ~rec_flag=Nonrecursive, n, t, k, m) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, ~rec_flag=Nonrecursive, n, t, k, m) => {
     {
       pdata_rec: rec_flag,
       pdata_name: n,
@@ -150,23 +148,22 @@ module DataDeclaration = {
       pdata_loc: loc,
     };
   };
-  let abstract = (~loc=?, ~rec_flag=?, n, t, m) =>
-    mk(~loc?, ~rec_flag?, n, t, PDataAbstract, m);
-  let variant = (~loc=?, ~rec_flag=?, n, t, cdl) =>
-    mk(~loc?, ~rec_flag?, n, t, PDataVariant(cdl), None);
-  let record = (~loc=?, ~rec_flag=?, n, t, ldl) =>
-    mk(~loc?, ~rec_flag?, n, t, PDataRecord(ldl), None);
+  let abstract = (~loc, ~rec_flag=?, n, t, m) =>
+    mk(~loc, ~rec_flag?, n, t, PDataAbstract, m);
+  let variant = (~loc, ~rec_flag=?, n, t, cdl) =>
+    mk(~loc, ~rec_flag?, n, t, PDataVariant(cdl), None);
+  let record = (~loc, ~rec_flag=?, n, t, ldl) =>
+    mk(~loc, ~rec_flag?, n, t, PDataRecord(ldl), None);
 };
 
 module Exception = {
-  let mk = (~loc=?, n, t) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, n, t) => {
     let ext = {pext_name: n, pext_kind: PExtDecl(t), pext_loc: loc};
     {ptyexn_constructor: ext, ptyexn_loc: loc};
   };
-  let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
-  let tuple = (~loc=?, n, args) => mk(~loc?, n, PConstrTuple(args));
-  let record = (~loc=?, n, args) => {
+  let singleton = (~loc, n) => mk(~loc, n, PConstrSingleton);
+  let tuple = (~loc, n, args) => mk(~loc, n, PConstrTuple(args));
+  let record = (~loc, n, args) => {
     List.iter(
       ld =>
         if (ld.pld_mutable == Mutable) {
@@ -179,7 +176,7 @@ module Exception = {
         },
       args.txt,
     );
-    mk(~loc?, n, PConstrRecord(args));
+    mk(~loc, n, PConstrRecord(args));
   };
 };
 

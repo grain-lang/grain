@@ -82,13 +82,13 @@ module ConstructorDeclaration: {
 };
 
 module LabelDeclaration: {
-  let mk: (~loc: loc=?, id, parsed_type, mut_flag) => label_declaration;
+  let mk: (~loc: loc, id, parsed_type, mut_flag) => label_declaration;
 };
 
 module DataDeclaration: {
   let mk:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
@@ -98,7 +98,7 @@ module DataDeclaration: {
     data_declaration;
   let abstract:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
@@ -107,7 +107,7 @@ module DataDeclaration: {
     data_declaration;
   let variant:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
@@ -116,7 +116,7 @@ module DataDeclaration: {
     data_declaration;
   let record:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~rec_flag: rec_flag=?,
       str,
       list(parsed_type),
@@ -126,12 +126,11 @@ module DataDeclaration: {
 };
 
 module Exception: {
-  let mk: (~loc: loc=?, str, constructor_arguments) => type_exception;
-  let singleton: (~loc: loc=?, str) => type_exception;
-  let tuple:
-    (~loc: loc=?, str, location(list(parsed_type))) => type_exception;
+  let mk: (~loc: loc, str, constructor_arguments) => type_exception;
+  let singleton: (~loc: loc, str) => type_exception;
+  let tuple: (~loc: loc, str, location(list(parsed_type))) => type_exception;
   let record:
-    (~loc: loc=?, str, location(list(label_declaration))) => type_exception;
+    (~loc: loc, str, location(list(label_declaration))) => type_exception;
 };
 
 module Pattern: {

@@ -257,6 +257,7 @@ describe("basic functionality", ({test, testSkip}) => {
               (
                 Asttypes.NotProvided,
                 DataDeclaration.variant(
+                  ~loc=Location.dummy_loc,
                   Location.mknoloc("Caipirinha"),
                   [],
                   [
@@ -291,6 +292,7 @@ describe("basic functionality", ({test, testSkip}) => {
               (
                 Asttypes.NotProvided,
                 DataDeclaration.abstract(
+                  ~loc=Location.dummy_loc,
                   Location.mknoloc("Über"),
                   [],
                   Some(
