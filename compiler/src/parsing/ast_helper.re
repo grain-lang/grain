@@ -484,8 +484,7 @@ module PrimitiveDescription = {
 };
 
 module ValueDescription = {
-  let mk = (~loc=?, ~mod_, ~name, ~alias, ~typ, ()) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, ~mod_, ~name, ~alias, ~typ, ()) => {
     {
       pval_mod: mod_,
       pval_name: name,
@@ -497,15 +496,13 @@ module ValueDescription = {
 };
 
 module ValueBinding = {
-  let mk = (~loc=?, p, e) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, p, e) => {
     {pvb_pat: p, pvb_expr: e, pvb_loc: loc};
   };
 };
 
 module MatchBranch = {
-  let mk = (~loc=?, p, e, g) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, p, e, g) => {
     {pmb_pat: p, pmb_body: e, pmb_guard: g, pmb_loc: loc};
   };
 };

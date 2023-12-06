@@ -357,7 +357,7 @@ module PrimitiveDescription: {
 module ValueDescription: {
   let mk:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~mod_: str,
       ~name: str,
       ~alias: option(str),
@@ -368,12 +368,12 @@ module ValueDescription: {
 };
 
 module ValueBinding: {
-  let mk: (~loc: loc=?, pattern, expression) => value_binding;
+  let mk: (~loc: loc, pattern, expression) => value_binding;
 };
 
 module MatchBranch: {
   let mk:
-    (~loc: loc=?, pattern, expression, option(expression)) => match_branch;
+    (~loc: loc, pattern, expression, option(expression)) => match_branch;
 };
 
 module IncludeDeclaration: {
