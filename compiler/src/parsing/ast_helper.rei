@@ -72,13 +72,12 @@ module Type: {
 };
 
 module ConstructorDeclaration: {
-  let mk: (~loc: loc=?, str, constructor_arguments) => constructor_declaration;
-  let singleton: (~loc: loc=?, str) => constructor_declaration;
+  let mk: (~loc: loc, str, constructor_arguments) => constructor_declaration;
+  let singleton: (~loc: loc, str) => constructor_declaration;
   let tuple:
-    (~loc: loc=?, str, location(list(parsed_type))) =>
-    constructor_declaration;
+    (~loc: loc, str, location(list(parsed_type))) => constructor_declaration;
   let record:
-    (~loc: loc=?, str, location(list(label_declaration))) =>
+    (~loc: loc, str, location(list(label_declaration))) =>
     constructor_declaration;
 };
 

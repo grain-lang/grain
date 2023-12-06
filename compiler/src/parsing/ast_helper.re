@@ -109,13 +109,12 @@ module Type = {
 };
 
 module ConstructorDeclaration = {
-  let mk = (~loc=?, n, a) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, n, a) => {
     {pcd_name: n, pcd_args: a, pcd_loc: loc};
   };
-  let singleton = (~loc=?, n) => mk(~loc?, n, PConstrSingleton);
-  let tuple = (~loc=?, n, a) => mk(~loc?, n, PConstrTuple(a));
-  let record = (~loc=?, n, a) => {
+  let singleton = (~loc, n) => mk(~loc, n, PConstrSingleton);
+  let tuple = (~loc, n, a) => mk(~loc, n, PConstrTuple(a));
+  let record = (~loc, n, a) => {
     List.iter(
       ld =>
         if (ld.pld_mutable == Mutable) {
@@ -128,7 +127,7 @@ module ConstructorDeclaration = {
         },
       a.txt,
     );
-    mk(~loc?, n, PConstrRecord(a));
+    mk(~loc, n, PConstrRecord(a));
   };
 };
 

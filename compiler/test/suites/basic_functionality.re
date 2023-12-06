@@ -261,12 +261,15 @@ describe("basic functionality", ({test, testSkip}) => {
                   [],
                   [
                     ConstructorDeclaration.singleton(
+                      ~loc=Location.dummy_loc,
                       Location.mknoloc("Cachaça"),
                     ),
                     ConstructorDeclaration.singleton(
+                      ~loc=Location.dummy_loc,
                       Location.mknoloc("Sugar"),
                     ),
                     ConstructorDeclaration.singleton(
+                      ~loc=Location.dummy_loc,
                       Location.mknoloc("Lime"),
                     ),
                   ],
