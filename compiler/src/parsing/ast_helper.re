@@ -91,16 +91,15 @@ module Constant = {
 };
 
 module Type = {
-  let mk = (~loc=?, d) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, d) => {
     {ptyp_desc: d, ptyp_loc: loc};
   };
-  let any = (~loc=?, ()) => mk(~loc?, PTyAny);
-  let var = (~loc=?, a) => mk(~loc?, PTyVar(a));
-  let arrow = (~loc=?, a, b) => mk(~loc?, PTyArrow(a, b));
-  let tuple = (~loc=?, a) => mk(~loc?, PTyTuple(a));
-  let constr = (~loc=?, a, b) => mk(~loc?, PTyConstr(a, b));
-  let poly = (~loc=?, a, b) => mk(~loc?, PTyPoly(a, b));
+  let any = (~loc, ()) => mk(~loc, PTyAny);
+  let var = (~loc, a) => mk(~loc, PTyVar(a));
+  let arrow = (~loc, a, b) => mk(~loc, PTyArrow(a, b));
+  let tuple = (~loc, a) => mk(~loc, PTyTuple(a));
+  let constr = (~loc, a, b) => mk(~loc, PTyConstr(a, b));
+  let poly = (~loc, a, b) => mk(~loc, PTyPoly(a, b));
 
   let force_poly = t =>
     switch (t.ptyp_desc) {

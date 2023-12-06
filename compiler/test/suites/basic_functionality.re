@@ -292,6 +292,7 @@ describe("basic functionality", ({test, testSkip}) => {
                   [],
                   Some(
                     Type.constr(
+                      ~loc=Location.dummy_loc,
                       Location.mknoloc(
                         Identifier.IdentName(Location.mknoloc("Number")),
                       ),

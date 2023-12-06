@@ -60,14 +60,14 @@ module Constant: {
 };
 
 module Type: {
-  let mk: (~loc: loc=?, parsed_type_desc) => parsed_type;
-  let any: (~loc: loc=?, unit) => parsed_type;
-  let var: (~loc: loc=?, string) => parsed_type;
+  let mk: (~loc: loc, parsed_type_desc) => parsed_type;
+  let any: (~loc: loc, unit) => parsed_type;
+  let var: (~loc: loc, string) => parsed_type;
   let arrow:
-    (~loc: loc=?, list(parsed_type_argument), parsed_type) => parsed_type;
-  let tuple: (~loc: loc=?, list(parsed_type)) => parsed_type;
-  let constr: (~loc: loc=?, id, list(parsed_type)) => parsed_type;
-  let poly: (~loc: loc=?, list(str), parsed_type) => parsed_type;
+    (~loc: loc, list(parsed_type_argument), parsed_type) => parsed_type;
+  let tuple: (~loc: loc, list(parsed_type)) => parsed_type;
+  let constr: (~loc: loc, id, list(parsed_type)) => parsed_type;
+  let poly: (~loc: loc, list(str), parsed_type) => parsed_type;
   let force_poly: parsed_type => parsed_type;
 };
 

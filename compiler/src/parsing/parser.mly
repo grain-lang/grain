@@ -304,7 +304,7 @@ data_typ:
 
 typ:
   | FUN data_typ either_arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled $2] $4 }
-  | FUN LIDENT either_arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var $2)] $4 }
+  | FUN LIDENT either_arrow typ { Type.arrow ~loc:(to_loc $loc) [TypeArgument.mk ~loc:(to_loc $loc($2)) Unlabeled (Type.var ~loc:(to_loc $loc($2)) $2)] $4 }
   | FUN lparen arg_typs? rparen either_arrow typ { Type.arrow ~loc:(to_loc $loc) (Option.value ~default:[] $3) $6 }
   | lparen tuple_typs rparen { Type.tuple ~loc:(to_loc $loc) $2 }
   | lparen typ rparen { $2 }
