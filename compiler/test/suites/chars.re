@@ -33,8 +33,10 @@ describe("chars", ({test, testSkip}) => {
     },
     loc_ghost: false,
   };
-  let char = (~loc=?, s) =>
-    Toplevel.expr(~loc?) @@ Expression.constant(~loc?, Constant.char(s));
+  let char = (~loc=?, s) => {
+    let loc = Option.value(~default=Location.dummy_loc, loc);
+    Toplevel.expr(~loc) @@ Expression.constant(~loc, Constant.char(s));
+  };
 
   assertRun("char1", "print('A')", "A\n");
   assertSnapshot("char2", "'\\x41'");

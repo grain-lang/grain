@@ -35,8 +35,10 @@ describe("strings", ({test, testSkip}) => {
     },
     loc_ghost: false,
   };
-  let str = (~loc=?, s) =>
-    Toplevel.expr(~loc?) @@ Expression.constant(~loc?, Constant.string(s));
+  let str = (~loc=?, s) => {
+    let loc = Option.value(~default=Location.dummy_loc, loc);
+    Toplevel.expr(~loc) @@ Expression.constant(~loc, Constant.string(s));
+  };
   assertParse(
     "string_parse_dqs1",
     "module Test; \"foo\"",

@@ -253,31 +253,35 @@ describe("basic functionality", ({test, testSkip}) => {
         {
           module_name: Location.mknoloc("Test"),
           statements: [
-            Toplevel.data([
-              (
-                Asttypes.NotProvided,
-                DataDeclaration.variant(
-                  ~loc=Location.dummy_loc,
-                  Location.mknoloc("Caipirinha"),
-                  [],
-                  [
-                    ConstructorDeclaration.singleton(
-                      ~loc=Location.dummy_loc,
-                      Location.mknoloc("Cachaça"),
-                    ),
-                    ConstructorDeclaration.singleton(
-                      ~loc=Location.dummy_loc,
-                      Location.mknoloc("Sugar"),
-                    ),
-                    ConstructorDeclaration.singleton(
-                      ~loc=Location.dummy_loc,
-                      Location.mknoloc("Lime"),
-                    ),
-                  ],
+            Toplevel.data(
+              ~loc=Location.dummy_loc,
+              [
+                (
+                  Asttypes.NotProvided,
+                  DataDeclaration.variant(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc("Caipirinha"),
+                    [],
+                    [
+                      ConstructorDeclaration.singleton(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc("Cachaça"),
+                      ),
+                      ConstructorDeclaration.singleton(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc("Sugar"),
+                      ),
+                      ConstructorDeclaration.singleton(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc("Lime"),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
             Toplevel.let_(
+              ~loc=Location.dummy_loc,
               Asttypes.NotProvided,
               Asttypes.Nonrecursive,
               Asttypes.Immutable,
@@ -292,25 +296,28 @@ describe("basic functionality", ({test, testSkip}) => {
                 ),
               ],
             ),
-            Toplevel.data([
-              (
-                Asttypes.NotProvided,
-                DataDeclaration.abstract(
-                  ~loc=Location.dummy_loc,
-                  Location.mknoloc("Über"),
-                  [],
-                  Some(
-                    Type.constr(
-                      ~loc=Location.dummy_loc,
-                      Location.mknoloc(
-                        Identifier.IdentName(Location.mknoloc("Number")),
+            Toplevel.data(
+              ~loc=Location.dummy_loc,
+              [
+                (
+                  Asttypes.NotProvided,
+                  DataDeclaration.abstract(
+                    ~loc=Location.dummy_loc,
+                    Location.mknoloc("Über"),
+                    [],
+                    Some(
+                      Type.constr(
+                        ~loc=Location.dummy_loc,
+                        Location.mknoloc(
+                          Identifier.IdentName(Location.mknoloc("Number")),
+                        ),
+                        [],
                       ),
-                      [],
                     ),
                   ),
                 ),
-              ),
-            ]),
+              ],
+            ),
           ],
           comments: [],
           prog_loc: Location.dummy_loc,

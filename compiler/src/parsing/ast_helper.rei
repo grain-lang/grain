@@ -299,25 +299,19 @@ module Expression: {
 
 module Toplevel: {
   let mk:
-    (~loc: loc=?, ~attributes: attributes=?, toplevel_stmt_desc) =>
-    toplevel_stmt;
+    (~loc: loc, ~attributes: attributes=?, toplevel_stmt_desc) => toplevel_stmt;
   let include_:
     (~loc: loc, ~attributes: attributes=?, include_declaration) =>
     toplevel_stmt;
   let foreign:
-    (
-      ~loc: loc=?,
-      ~attributes: attributes=?,
-      provide_flag,
-      value_description
-    ) =>
+    (~loc: loc, ~attributes: attributes=?, provide_flag, value_description) =>
     toplevel_stmt;
   let module_:
     (~loc: loc, ~attributes: attributes=?, provide_flag, module_declaration) =>
     toplevel_stmt;
   let primitive:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       provide_flag,
       primitive_description
@@ -325,14 +319,14 @@ module Toplevel: {
     toplevel_stmt;
   let data:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       list((provide_flag, data_declaration))
     ) =>
     toplevel_stmt;
   let let_:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       provide_flag,
       rec_flag,
@@ -341,9 +335,9 @@ module Toplevel: {
     ) =>
     toplevel_stmt;
   let expr:
-    (~loc: loc=?, ~attributes: attributes=?, expression) => toplevel_stmt;
+    (~loc: loc, ~attributes: attributes=?, expression) => toplevel_stmt;
   let grain_exception:
-    (~loc: loc=?, ~attributes: attributes=?, provide_flag, type_exception) =>
+    (~loc: loc, ~attributes: attributes=?, provide_flag, type_exception) =>
     toplevel_stmt;
   let provide:
     (~loc: loc, ~attributes: attributes=?, list(provide_item)) =>

@@ -452,27 +452,26 @@ module Expression = {
 };
 
 module Toplevel = {
-  let mk = (~loc=?, ~attributes=?, d) => {
-    let loc = Option.value(~default=Location.dummy_loc, loc);
+  let mk = (~loc, ~attributes=?, d) => {
     let attributes = Option.value(~default=[], attributes);
     {ptop_desc: d, ptop_attributes: attributes, ptop_loc: loc};
   };
   let include_ = (~loc, ~attributes=?, i) =>
     mk(~loc, ~attributes?, PTopInclude(i));
-  let foreign = (~loc=?, ~attributes=?, e, d) =>
-    mk(~loc?, ~attributes?, PTopForeign(e, d));
+  let foreign = (~loc, ~attributes=?, e, d) =>
+    mk(~loc, ~attributes?, PTopForeign(e, d));
   let module_ = (~loc, ~attributes=?, e, m) =>
     mk(~loc, ~attributes?, PTopModule(e, m));
-  let primitive = (~loc=?, ~attributes=?, e, d) =>
-    mk(~loc?, ~attributes?, PTopPrimitive(e, d));
-  let data = (~loc=?, ~attributes=?, elts) =>
-    mk(~loc?, ~attributes?, PTopData(elts));
-  let let_ = (~loc=?, ~attributes=?, e, r, m, vb) =>
-    mk(~loc?, ~attributes?, PTopLet(e, r, m, vb));
-  let expr = (~loc=?, ~attributes=?, e) =>
-    mk(~loc?, ~attributes?, PTopExpr(e));
-  let grain_exception = (~loc=?, ~attributes=?, e, ext) =>
-    mk(~loc?, ~attributes?, PTopException(e, ext));
+  let primitive = (~loc, ~attributes=?, e, d) =>
+    mk(~loc, ~attributes?, PTopPrimitive(e, d));
+  let data = (~loc, ~attributes=?, elts) =>
+    mk(~loc, ~attributes?, PTopData(elts));
+  let let_ = (~loc, ~attributes=?, e, r, m, vb) =>
+    mk(~loc, ~attributes?, PTopLet(e, r, m, vb));
+  let expr = (~loc, ~attributes=?, e) =>
+    mk(~loc, ~attributes?, PTopExpr(e));
+  let grain_exception = (~loc, ~attributes=?, e, ext) =>
+    mk(~loc, ~attributes?, PTopException(e, ext));
   let provide = (~loc, ~attributes=?, e) =>
     mk(~loc, ~attributes?, PTopProvide(e));
 };

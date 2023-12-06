@@ -15,6 +15,7 @@ describe("blocks", ({test}) => {
           module_name: Location.mknoloc("Test"),
           statements: [
             Toplevel.expr(
+              ~loc=Location.dummy_loc,
               Expression.block([
                 Expression.singleton_construct(
                   ~loc=Location.dummy_loc,

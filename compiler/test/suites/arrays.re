@@ -126,6 +126,7 @@ describe("arrays", ({test, testSkip}) => {
           module_name: Location.mknoloc("Test"),
           statements: [
             Toplevel.expr(
+              ~loc=Location.dummy_loc,
               Expression.array_set(
                 Expression.ident(
                   Location.mknoloc(
