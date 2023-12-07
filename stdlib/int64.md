@@ -142,15 +142,22 @@ Returns:
 |----|-----------|
 |`Int64`|The decremented value|
 
-### Int64.**add**
+### Int64.**(+)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (x: Int64, y: Int64) => Int64
+(+) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the sum of its operands.
@@ -168,15 +175,22 @@ Returns:
 |----|-----------|
 |`Int64`|The sum of the two operands|
 
-### Int64.**sub**
+### Int64.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (x: Int64, y: Int64) => Int64
+(-) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the difference of its operands.
@@ -194,15 +208,22 @@ Returns:
 |----|-----------|
 |`Int64`|The difference of the two operands|
 
-### Int64.**mul**
+### Int64.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `*`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (x: Int64, y: Int64) => Int64
+(*) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the product of its operands.
@@ -220,15 +241,22 @@ Returns:
 |----|-----------|
 |`Int64`|The product of the two operands|
 
-### Int64.**div**
+### Int64.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (x: Int64, y: Int64) => Int64
+(/) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the quotient of its operands using signed division.
@@ -272,15 +300,22 @@ Returns:
 |----|-----------|
 |`Int64`|The remainder of its operands|
 
-### Int64.**mod**
+### Int64.**(%)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `mod`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mod : (x: Int64, y: Int64) => Int64
+(%) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -357,15 +392,22 @@ Returns:
 |----|-----------|
 |`Int64`|The rotated value|
 
-### Int64.**shl**
+### Int64.**(<<)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `shl`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-shl : (value: Int64, amount: Int64) => Int64
+(<<) : (value: Int64, amount: Int64) => Int64
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -383,15 +425,22 @@ Returns:
 |----|-----------|
 |`Int64`|The shifted value|
 
-### Int64.**shr**
+### Int64.**(>>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `shr`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-shr : (value: Int64, amount: Int64) => Int64
+(>>) : (value: Int64, amount: Int64) => Int64
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -409,15 +458,22 @@ Returns:
 |----|-----------|
 |`Int64`|The shifted value|
 
-### Int64.**eq**
+### Int64.**(==)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `eq`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-eq : (x: Int64, y: Int64) => Bool
+(==) : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is equal to the second value.
@@ -435,15 +491,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
-### Int64.**ne**
+### Int64.**(!=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.4.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.4.0</code></td><td>Originally named `ne`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-ne : (x: Int64, y: Int64) => Bool
+(!=) : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is not equal to the second value.
@@ -486,15 +549,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
 
-### Int64.**lt**
+### Int64.**(<)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lt : (x: Int64, y: Int64) => Bool
+(<) : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -512,15 +582,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Int64.**gt**
+### Int64.**(>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gt : (x: Int64, y: Int64) => Bool
+(>) : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -538,15 +615,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Int64.**lte**
+### Int64.**(<=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lte : (x: Int64, y: Int64) => Bool
+(<=) : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -564,15 +648,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Int64.**gte**
+### Int64.**(>=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gte : (x: Int64, y: Int64) => Bool
+(>=) : (x: Int64, y: Int64) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
@@ -615,15 +706,22 @@ Returns:
 |----|-----------|
 |`Int64`|Containing the inverted bits of the given value|
 
-### Int64.**land**
+### Int64.**(&)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `land`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-land : (x: Int64, y: Int64) => Int64
+(&) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -641,15 +739,22 @@ Returns:
 |----|-----------|
 |`Int64`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
-### Int64.**lor**
+### Int64.**(|)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lor`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lor : (x: Int64, y: Int64) => Int64
+(|) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -667,15 +772,22 @@ Returns:
 |----|-----------|
 |`Int64`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
 
-### Int64.**lxor**
+### Int64.**(^)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lxor`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lxor : (x: Int64, y: Int64) => Int64
+(^) : (x: Int64, y: Int64) => Int64
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
