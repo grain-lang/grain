@@ -880,3 +880,29 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of 1-bits in its operand|
 
+### Int32.**(\*\*)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(**) : (base: Int32, power: Int32) => Int32
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Int32`|The base number|
+|`power`|`Int32`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int32`|The base raised to the given power|
+
