@@ -505,3 +505,38 @@ provide let popcnt = (value: Int64) => {
   let ptr = newInt64(WasmI64.popcnt(nv))
   WasmI32.toGrain(ptr): Int64
 }
+
+// Exponentiation by squaring https://en.wikipedia.org/wiki/Exponentiation_by_squaring special path for int^int
+let rec expBySquaring = (y, x, n) => {
+  let (==) = eq
+  let (*) = mul
+  let (%) = mod
+  let (/) = div
+  let (-) = sub
+  if (n == 0L) {
+    1L
+  } else if (n == 1L) {
+    x * y
+  } else if (n % 2L == 0L) {
+    expBySquaring(y, x * x, n / 2L)
+  } else {
+    expBySquaring(x * y, x * x, (n - 1L) / 2L)
+  }
+}
+
+/**
+ * Computes the exponentiation of the given base and power.
+ *
+ * @param base: The base number
+ * @param power: The exponent number
+ * @returns The base raised to the given power
+ *
+ * @since v0.6.0
+ */
+provide let (**) = (base, power) => {
+  let (<) = lt
+  let (/) = div
+  let (*) = mul
+  if (power < 0L) return expBySquaring(1L, 1L / base, power * -1L)
+  else return expBySquaring(1L, base, power)
+}
