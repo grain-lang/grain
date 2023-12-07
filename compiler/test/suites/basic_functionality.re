@@ -292,7 +292,10 @@ describe("basic functionality", ({test, testSkip}) => {
                     ~loc=Location.dummy_loc,
                     Location.mknoloc("pokémon"),
                   ),
-                  Expression.constant(Constant.string("pikachu")),
+                  Expression.constant(
+                    ~loc=Location.dummy_loc,
+                    Constant.string("pikachu"),
+                  ),
                 ),
               ],
             ),

@@ -157,38 +157,37 @@ module Pattern: {
 
 module Expression: {
   let mk:
-    (~loc: loc=?, ~attributes: attributes=?, expression_desc) => expression;
-  let ident: (~loc: loc=?, ~attributes: attributes=?, id) => expression;
-  let constant:
-    (~loc: loc=?, ~attributes: attributes=?, constant) => expression;
+    (~loc: loc, ~attributes: attributes=?, expression_desc) => expression;
+  let ident: (~loc: loc, ~attributes: attributes=?, id) => expression;
+  let constant: (~loc: loc, ~attributes: attributes=?, constant) => expression;
   let tuple:
-    (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
+    (~loc: loc, ~attributes: attributes=?, list(expression)) => expression;
   let record:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       option(expression),
       list((id, expression))
     ) =>
     expression;
   let record_fields:
-    (~loc: loc=?, ~attributes: attributes=?, list(recorditem)) => expression;
+    (~loc: loc, ~attributes: attributes=?, list(recorditem)) => expression;
   let record_get:
-    (~loc: loc=?, ~attributes: attributes=?, expression, id) => expression;
+    (~loc: loc, ~attributes: attributes=?, expression, id) => expression;
   let record_set:
-    (~loc: loc=?, ~attributes: attributes=?, expression, id, expression) =>
+    (~loc: loc, ~attributes: attributes=?, expression, id, expression) =>
     expression;
   let list:
     (~loc: loc, ~attributes: attributes=?, list(listitem(expression))) =>
     expression;
   let array:
-    (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
+    (~loc: loc, ~attributes: attributes=?, list(expression)) => expression;
   let array_get:
-    (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
+    (~loc: loc, ~attributes: attributes=?, expression, expression) =>
     expression;
   let array_set:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       expression,
       expression,
@@ -197,7 +196,7 @@ module Expression: {
     expression;
   let let_:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       rec_flag,
       mut_flag,
@@ -205,25 +204,20 @@ module Expression: {
     ) =>
     expression;
   let match:
-    (
-      ~loc: loc=?,
-      ~attributes: attributes=?,
-      expression,
-      list(match_branch)
-    ) =>
+    (~loc: loc, ~attributes: attributes=?, expression, list(match_branch)) =>
     expression;
-  let prim0: (~loc: loc=?, ~attributes: attributes=?, prim0) => expression;
+  let prim0: (~loc: loc, ~attributes: attributes=?, prim0) => expression;
   let prim1:
-    (~loc: loc=?, ~attributes: attributes=?, prim1, expression) => expression;
+    (~loc: loc, ~attributes: attributes=?, prim1, expression) => expression;
   let prim2:
-    (~loc: loc=?, ~attributes: attributes=?, prim2, expression, expression) =>
+    (~loc: loc, ~attributes: attributes=?, prim2, expression, expression) =>
     expression;
   let primn:
-    (~loc: loc=?, ~attributes: attributes=?, primn, list(expression)) =>
+    (~loc: loc, ~attributes: attributes=?, primn, list(expression)) =>
     expression;
   let if_:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       expression,
       expression,
@@ -231,11 +225,11 @@ module Expression: {
     ) =>
     expression;
   let while_:
-    (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
+    (~loc: loc, ~attributes: attributes=?, expression, expression) =>
     expression;
   let for_:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       option(expression),
       option(expression),
@@ -243,23 +237,23 @@ module Expression: {
       expression
     ) =>
     expression;
-  let continue: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
-  let break: (~loc: loc=?, ~attributes: attributes=?, unit) => expression;
+  let continue: (~loc: loc, ~attributes: attributes=?, unit) => expression;
+  let break: (~loc: loc, ~attributes: attributes=?, unit) => expression;
   let return:
-    (~loc: loc=?, ~attributes: attributes=?, option(expression)) => expression;
+    (~loc: loc, ~attributes: attributes=?, option(expression)) => expression;
   let constraint_:
-    (~loc: loc=?, ~attributes: attributes=?, expression, parsed_type) =>
+    (~loc: loc, ~attributes: attributes=?, expression, parsed_type) =>
     expression;
   let use: (~loc: loc, ~attributes: attributes=?, id, use_items) => expression;
   let box_assign:
-    (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
+    (~loc: loc, ~attributes: attributes=?, expression, expression) =>
     expression;
   let assign:
-    (~loc: loc=?, ~attributes: attributes=?, expression, expression) =>
+    (~loc: loc, ~attributes: attributes=?, expression, expression) =>
     expression;
   let lambda:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       list(lambda_argument),
       expression
@@ -267,7 +261,7 @@ module Expression: {
     expression;
   let apply:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       expression,
       list(application_argument)
@@ -285,7 +279,7 @@ module Expression: {
     (~loc: loc, ~attributes: attributes=?, id, list(recorditem)) => expression;
   let binop:
     (
-      ~loc: loc=?,
+      ~loc: loc,
       ~attributes: attributes=?,
       expression,
       expression,
@@ -293,7 +287,7 @@ module Expression: {
     ) =>
     expression;
   let block:
-    (~loc: loc=?, ~attributes: attributes=?, list(expression)) => expression;
+    (~loc: loc, ~attributes: attributes=?, list(expression)) => expression;
   let ignore: expression => expression;
 };
 
