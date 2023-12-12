@@ -294,7 +294,7 @@ Returns:
 |----|-----------|
 |`Queue<a>`|A queue containing all values from the array|
 
-### Queue.**equal**
+### Queue.**(==)**
 
 <details disabled>
 <summary tabindex="-1">Added in <code>next</code></summary>
@@ -302,7 +302,7 @@ No other changes yet.
 </details>
 
 ```grain
-equal : (queue1: Queue<a>, queue2: Queue<a>) => Bool
+(==) : (queue1: Queue<a>, queue2: Queue<a>) => Bool
 ```
 
 Checks if two queues are equivalent by value.

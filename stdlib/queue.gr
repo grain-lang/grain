@@ -235,7 +235,7 @@ provide let fromArray = arr => {
  *
  * @since v0.6.0
  */
-provide let equal = (queue1, queue2) => {
+provide let (==) = (queue1, queue2) => {
   if (queue1.size != queue2.size) return false
   let len1 = Array.length(queue1.array)
   let len2 = Array.length(queue2.array)
