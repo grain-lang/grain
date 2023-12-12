@@ -211,12 +211,17 @@ provide let toArray = queue => {
  * @since v0.6.0
  */
 provide let fromArray = arr => {
-  {
-    size: Array.length(arr),
-    array: Array.map(t => Some(t), arr),
-    headIndex: 0,
-    tailIndex: 0,
+  let size = Array.length(arr)
+  let contents = if (size == 0) {
+    Array.make(16, None)
+  } else {
+    let contents = Array.make(size * 2, None)
+    Array.forEachi((value, i) => {
+      contents[i] = Some(value)
+    }, arr)
+    contents
   }
+  { size, array: contents, headIndex: 0, tailIndex: size }
 }
 
 /**
