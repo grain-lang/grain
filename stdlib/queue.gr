@@ -205,7 +205,6 @@ provide let toArray = queue => {
  * Creates a queue from an array.
  *
  * @param arr: The array to convert
- *
  * @returns A queue containing all values from the array
  *
  * @since v0.6.0
@@ -215,10 +214,13 @@ provide let fromArray = arr => {
   let contents = if (size == 0) {
     Array.make(16, None)
   } else {
-    let contents = Array.make(size * 2, None)
-    Array.forEachi((value, i) => {
-      contents[i] = Some(value)
-    }, arr)
+    let contents = Array.init(size * 2, i => {
+      if (i < size) {
+        Some(arr[i])
+      } else {
+        None
+      }
+    })
     contents
   }
   { size, array: contents, headIndex: 0, tailIndex: size }
