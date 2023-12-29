@@ -165,6 +165,43 @@ provide let copy = queue => {
 }
 
 /**
+ * Converts a queue into an array of its values.
+ *
+ * @param queue: The queue to convert
+ * @returns An array containing all values from the given queue
+ *
+ * @since v0.6.0
+ */
+provide let toArray = queue => {
+  let arr = Array.make(queue.size, None)
+  let mut outIndex = 0
+  if (queue.tailIndex < queue.headIndex) {
+    // Get the first half
+    for (let mut i = queue.headIndex; i < Array.length(queue.array); i += 1) {
+      arr[outIndex] = queue.array[i]
+      outIndex += 1
+    }
+    // Get the second half
+    let endOffset = Array.length(queue.array) - queue.headIndex
+    for (let mut i = 0; i < queue.tailIndex; i += 1) {
+      arr[outIndex] = queue.array[i]
+      outIndex += 1
+    }
+  } else {
+    for (let mut i = queue.headIndex; i < queue.tailIndex; i += 1) {
+      arr[outIndex] = queue.array[i]
+      outIndex += 1
+    }
+  }
+  Array.map(e => {
+    match (e) {
+      Some(v) => v,
+      None => fail "Impossible: empty bucket in Queue.toArray",
+    }
+  }, arr)
+}
+
+/**
  * An immutable queue implementation.
  */
 provide module Immutable {

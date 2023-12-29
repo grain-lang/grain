@@ -244,6 +244,31 @@ Returns:
 |----|-----------|
 |`Queue<a>`|A new queue containing the elements from the input|
 
+### Queue.**toArray**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toArray : (queue: Queue<a>) => Array<a>
+```
+
+Converts a queue into an array of its values.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue`|`Queue<a>`|The queue to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Array<a>`|An array containing all values from the given queue|
+
 ## Queue.Immutable
 
 An immutable queue implementation.
