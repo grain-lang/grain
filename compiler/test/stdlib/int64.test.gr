@@ -5,11 +5,14 @@ from Int64 use *
 
 // Suppress warnings about using `fromNumber` on constants, since that's what we want to test.
 let fromNumber = fromNumber
+from Pervasives use { (==) }
 assert fromNumber(5) == 5L
 assert fromNumber(0) == 0L
 
 assert toNumber(555L) == 555
 assert toNumber(0L) == 0
+
+from Int64 use { (==) }
 
 assert fromUint64(1uL) == 1L
 assert fromUint64(0xffffffffffffffffuL) == -1L
@@ -18,32 +21,32 @@ assert lnot(0xffffffffffffffffL) == 0L
 assert lnot(0L) == 0xffffffffffffffffL
 assert lnot(0xf0f0f0f0f0f0f0f0L) == 0x0f0f0f0f0f0f0f0fL
 
-assert land(0b1010L, 0b10L) == 0b10L
-assert land(0b1010L, 0L) == 0L
+assert (0b1010L & 0b10L) == 0b10L
+assert (0b1010L & 0L) == 0L
 
-assert lor(0b1010L, 0b0101L) == 0b1111L
-assert lor(0b1010L, 0L) == 0b1010L
+assert (0b1010L | 0b0101L) == 0b1111L
+assert (0b1010L | 0L) == 0b1010L
 
-assert lxor(0b1010L, 0b1101L) == 0b0111L
-assert lxor(0b1010L, 0L) == 0b1010L
+assert (0b1010L ^ 0b1101L) == 0b0111L
+assert (0b1010L ^ 0L) == 0b1010L
 
-assert shl(-1L, 1L) == -2L
-assert shl(-1L, 2L) == -4L
-assert shl(-1L, 3L) == -8L
-assert shl(-2L, 63L) == 0L
-assert shl(24L, 1L) == 48L
+assert -1L << 1L == -2L
+assert -1L << 2L == -4L
+assert -1L << 3L == -8L
+assert -2L << 63L == 0L
+assert 24L << 1L == 48L
 
-assert shr(-1L, 63L) == -1L
-assert shr(-24L, 1L) == -12L
+assert -1L >> 63L == -1L
+assert -24L >> 1L == -12L
 
-assert gt(5L, 4L)
-assert gte(5L, 5L)
-assert lt(5L, 17L)
-assert lte(5L, 5L)
-assert !gt(5L, 5L)
-assert !gte(5L, 22L)
-assert !lt(5L, -17L)
-assert !lte(5L, 4L)
+assert 5L > 4L
+assert 5L >= 5L
+assert 5L < 17L
+assert 5L <= 5L
+assert !(5L > 5L)
+assert !(5L >= 22L)
+assert !(5L < -17L)
+assert !(5L <= 4L)
 
 assert clz(0b11L) == 62L
 assert ctz(0b11000L) == 3L
@@ -51,13 +54,14 @@ assert popcnt(0b1100110011L) == 6L
 assert rotl(0b11L, 3L) == 0b11000L
 assert rotr(0b110000L, 3L) == 0b110L
 
-assert eq(5L, 5L)
-assert !eq(5L, 55L)
-assert ne(5L, 55L)
-assert !ne(5L, 5L)
+assert 5L == 5L
+assert !(5L == 55L)
+assert 5L != 55L
+assert !(5L != 5L)
 assert eqz(0L)
 assert !eqz(-42L)
 
+from Pervasives use { (==) }
 // Regression #1339
 let arr = [> 1, 2, 3]
 assert arr[toNumber(1L)] == 2
