@@ -230,7 +230,6 @@ provide let fromArray = arr => {
  *
  * @param queue1: The first queue to compare
  * @param queue2: The second queue to compare
- *
  * @returns `true` if the queues are equivalent or `false` otherwise
  *
  * @since v0.6.0
