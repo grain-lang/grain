@@ -356,7 +356,4 @@ module IncludeDeclaration: {
   let wasm_value:
     (~global: global_flag=?, ident, string, string, import_shape) =>
     import_spec;
-  let js_func:
-    (~global: global_flag=?, ident, string, string, import_shape) =>
-    import_spec;
 };

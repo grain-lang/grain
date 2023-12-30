@@ -67,8 +67,7 @@ let analyze = ({imports, body, analyses}) => {
       };
     | GrainValue(_)
     | WasmFunction(_)
-    | WasmValue(_)
-    | JSFunction(_) => ()
+    | WasmValue(_) => ()
     };
   };
   List.iter(process_import, imports.specs);
