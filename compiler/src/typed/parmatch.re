@@ -1920,7 +1920,7 @@ let untype_constant =
 /* conversion from Typedtree.pattern to Parsetree.pattern list */
 module Conv = {
   open Parsetree;
-  let mkpat = desc => Ast_helper.Pattern.mk(desc);
+  let mkpat = (~loc, desc) => Ast_helper.Pattern.mk(~loc, desc);
 
   let name_counter = ref(0);
   let fresh = name => {
@@ -1933,16 +1933,22 @@ module Conv = {
     let constrs = Hashtbl.create(7);
     let rec loop = pat =>
       switch (pat.pat_desc) {
-      | TPatVar(_, {txt: "*extension*"} as nm) => mkpat(PPatVar(nm))
+      | TPatVar(_, {txt: "*extension*"} as nm) =>
+        mkpat(~loc=pat.pat_loc, PPatVar(nm))
       | TPatAny
-      | TPatVar(_) => mkpat(PPatAny)
+      | TPatVar(_) => mkpat(~loc=pat.pat_loc, PPatAny)
       | TPatAlias(p, _, _) => loop(p)
-      | TPatOr(pa, pb) => mkpat(PPatOr(loop(pa), loop(pb)))
-      | TPatConstant(c) => mkpat(PPatConstant(untype_constant(c)))
-      | TPatTuple(lst) => mkpat(PPatTuple(List.map(loop, lst)))
-      | TPatArray(lst) => mkpat(PPatArray(List.map(loop, lst)))
+      | TPatOr(pa, pb) =>
+        mkpat(~loc=pat.pat_loc, PPatOr(loop(pa), loop(pb)))
+      | TPatConstant(c) =>
+        mkpat(~loc=pat.pat_loc, PPatConstant(untype_constant(c)))
+      | TPatTuple(lst) =>
+        mkpat(~loc=pat.pat_loc, PPatTuple(List.map(loop, lst)))
+      | TPatArray(lst) =>
+        mkpat(~loc=pat.pat_loc, PPatArray(List.map(loop, lst)))
       | TPatRecord(fields, c) =>
         mkpat(
+          ~loc=pat.pat_loc,
           PPatRecord(
             List.map(((id, _, pat)) => (id, loop(pat)), fields),
             c,
@@ -1955,7 +1961,10 @@ module Conv = {
           txt: Identifier.IdentName({...cstr_lid, txt: id}),
         };
         Hashtbl.add(constrs, id, cstr);
-        mkpat(PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst)))); // record vs tuple should not matter at this point
+        mkpat(
+          ~loc=pat.pat_loc,
+          PPatConstruct(lid, PPatConstrTuple(List.map(loop, lst))),
+        ); // record vs tuple should not matter at this point
       };
 
     let ps = loop(typed);
@@ -1976,8 +1985,8 @@ let contains_extension = pat => {
 /* Build an untyped or-pattern from its expected type */
 let ppat_of_type = (env, ty) =>
   switch (pats_of_type(env, ty)) {
-  | [{pat_desc: TPatAny}] => (
-      Conv.mkpat(Parsetree.PPatAny),
+  | [{pat_loc, pat_desc: TPatAny}] => (
+      Conv.mkpat(~loc=pat_loc, Parsetree.PPatAny),
       Hashtbl.create(0),
     )
   | pats => Conv.conv(orify_many(pats))

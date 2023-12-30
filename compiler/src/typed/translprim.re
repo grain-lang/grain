@@ -25,6 +25,7 @@ let default_loc = Location.dummy_loc;
 
 let mkident = name =>
   Expression.ident(
+    ~loc=Location.dummy_loc,
     Location.mkloc(
       Identifier.IdentName(Location.mkloc(name, default_loc)),
       default_loc,
@@ -1512,7 +1513,7 @@ let transl_prim = (env, desc) => {
       );
     | Primitive1(BuiltinId as p) =>
       // This primitive must always be inlined, so we do not generate a lambda
-      (Expression.constant(PConstVoid), Typecore.prim1_type(p))
+      (Expression.constant(~loc, PConstVoid), Typecore.prim1_type(p))
     | Primitive1(p) =>
       let attributes =
         switch (p) {

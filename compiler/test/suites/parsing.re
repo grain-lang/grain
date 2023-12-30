@@ -19,14 +19,17 @@ describe("parsing", ({test, testSkip}) => {
   );
   let a =
     Expression.ident(
+      ~loc=Location.dummy_loc,
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("a"))),
     );
   let b =
     Expression.ident(
+      ~loc=Location.dummy_loc,
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("b"))),
     );
   let c =
     Expression.ident(
+      ~loc=Location.dummy_loc,
       Location.mknoloc(Identifier.IdentName(Location.mknoloc("c"))),
     );
   let unlabled_expr = expr => {
@@ -42,8 +45,11 @@ describe("parsing", ({test, testSkip}) => {
         module_name: Location.mknoloc("Test"),
         statements: [
           Toplevel.expr(
+            ~loc=Location.dummy_loc,
             Expression.apply(
+              ~loc=Location.dummy_loc,
               Expression.ident(
+                ~loc=Location.dummy_loc,
                 Location.mknoloc(
                   Identifier.IdentName(Location.mknoloc(op)),
                 ),
@@ -111,8 +117,11 @@ describe("parsing", ({test, testSkip}) => {
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
+          ~loc=Location.dummy_loc,
           Expression.apply(
+            ~loc=Location.dummy_loc,
             Expression.ident(
+              ~loc=Location.dummy_loc,
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("+++")),
               ),
@@ -121,7 +130,9 @@ describe("parsing", ({test, testSkip}) => {
               unlabled_expr(a),
               unlabled_expr(
                 Expression.apply(
+                  ~loc=Location.dummy_loc,
                   Expression.ident(
+                    ~loc=Location.dummy_loc,
                     Location.mknoloc(
                       Identifier.IdentName(Location.mknoloc("***")),
                     ),
@@ -144,8 +155,11 @@ describe("parsing", ({test, testSkip}) => {
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
+          ~loc=Location.dummy_loc,
           Expression.apply(
+            ~loc=Location.dummy_loc,
             Expression.ident(
+              ~loc=Location.dummy_loc,
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("&&--")),
               ),
@@ -154,7 +168,9 @@ describe("parsing", ({test, testSkip}) => {
               unlabled_expr(a),
               unlabled_expr(
                 Expression.apply(
+                  ~loc=Location.dummy_loc,
                   Expression.ident(
+                    ~loc=Location.dummy_loc,
                     Location.mknoloc(
                       Identifier.IdentName(Location.mknoloc("&--")),
                     ),
@@ -177,8 +193,11 @@ describe("parsing", ({test, testSkip}) => {
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
+          ~loc=Location.dummy_loc,
           Expression.apply(
+            ~loc=Location.dummy_loc,
             Expression.ident(
+              ~loc=Location.dummy_loc,
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc("||--")),
               ),
@@ -187,7 +206,9 @@ describe("parsing", ({test, testSkip}) => {
               unlabled_expr(a),
               unlabled_expr(
                 Expression.apply(
+                  ~loc=Location.dummy_loc,
                   Expression.ident(
+                    ~loc=Location.dummy_loc,
                     Location.mknoloc(
                       Identifier.IdentName(Location.mknoloc("|--")),
                     ),
@@ -210,8 +231,11 @@ describe("parsing", ({test, testSkip}) => {
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
+          ~loc=Location.dummy_loc,
           Expression.apply(
+            ~loc=Location.dummy_loc,
             Expression.ident(
+              ~loc=Location.dummy_loc,
               Location.mknoloc(
                 Identifier.IdentName(Location.mknoloc(">>")),
               ),
@@ -219,7 +243,9 @@ describe("parsing", ({test, testSkip}) => {
             [
               unlabled_expr(
                 Expression.apply(
+                  ~loc=Location.dummy_loc,
                   Expression.ident(
+                    ~loc=Location.dummy_loc,
                     Location.mknoloc(
                       Identifier.IdentName(Location.mknoloc("<<")),
                     ),
@@ -243,8 +269,15 @@ describe("parsing", ({test, testSkip}) => {
       module_name: Location.mknoloc("Test"),
       statements: [
         Toplevel.expr(
+          ~loc=Location.dummy_loc,
           Expression.return(
-            Some(Expression.constant(PConstNumber(PConstNumberInt("-1")))),
+            ~loc=Location.dummy_loc,
+            Some(
+              Expression.constant(
+                ~loc=Location.dummy_loc,
+                PConstNumber(PConstNumberInt("-1")),
+              ),
+            ),
           ),
         ),
       ],
@@ -320,7 +353,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0ab",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -330,7 +366,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0cb",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -340,7 +379,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0db",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -350,7 +392,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\x0d\x0ab",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -360,7 +405,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\xc2\x85b",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -370,7 +418,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\xe2\x80\xa8b",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
@@ -380,7 +431,10 @@ describe("parsing", ({test, testSkip}) => {
     "module Test; a\xe2\x80\xa9b",
     {
       module_name: Location.mknoloc("Test"),
-      statements: [Toplevel.expr(a), Toplevel.expr(b)],
+      statements: [
+        Toplevel.expr(~loc=Location.dummy_loc, a),
+        Toplevel.expr(~loc=Location.dummy_loc, b),
+      ],
       comments: [],
       prog_loc: Location.dummy_loc,
     },
