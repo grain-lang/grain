@@ -79,27 +79,20 @@ let minu64 = (a, b) => {
   if (a < b) a else b
 }
 
-// TODO(#1188): use faster abs algos
-// https://stackoverflow.com/questions/664852/which-is-the-fastest-way-to-get-the-absolute-value-of-a-number
-
 @unsafe
 let absi32 = n => {
-  from WasmI32 use { (<), (*) }
-  if (n < 0n) {
-    n * -1n
-  } else {
-    n
-  }
+  from WasmI32 use { (>>), (^), (-) }
+  let temp = n >> 31n
+  let n = n ^ temp
+  n - temp
 }
 
 @unsafe
 let absi64 = n => {
-  from WasmI64 use { (<), (*) }
-  if (n < 0N) {
-    n * -1N
-  } else {
-    n
-  }
+  from WasmI64 use { (>>), (^), (-) }
+  let temp = n >> 63N
+  let n = n ^ temp
+  n - temp
 }
 
 @unsafe
