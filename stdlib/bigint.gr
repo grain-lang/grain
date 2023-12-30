@@ -3,6 +3,10 @@
  *
  * @example include "bigint"
  *
+ * @example 9223372036854775809t
+ * @example 0t
+ * @example -9223372036854775809t
+ *
  * @since v0.5.0
  */
 
@@ -27,6 +31,9 @@ provide { fromNumber, toNumber }
  * @param num: The value to increment
  * @returns The incremented value
  *
+ * @example BigInt.incr(1t) == 2t
+ * @example BigInt.incr(-2t) == -1t
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -39,6 +46,9 @@ provide let incr = (num: BigInt) => {
  *
  * @param num: The value to decrement
  * @returns The decremented value
+ *
+ * @example BigInt.decr(2t) == 1t
+ * @example BigInt.decr(-2t) == -3t
  *
  * @since v0.5.0
  */
@@ -53,6 +63,9 @@ provide let decr = (num: BigInt) => {
  * @param num: The operand
  * @returns The negated operand
  *
+ * @example BigInt.neg(1t) == -1t
+ * @example BigInt.neg(-1t) == 1t
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -65,6 +78,9 @@ provide let neg = (num: BigInt) => {
  *
  * @param num: The operand
  * @returns The operand's absolute value
+ *
+ * @example BigInt.abs(1t) == 1t
+ * @example BigInt.abs(-1t) == 1t
  *
  * @since v0.5.0
  */
@@ -79,6 +95,10 @@ provide let abs = (num: BigInt) => {
  * @param num1: The first operand
  * @param num2: The second operand
  * @returns The sum of the two operands
+ *
+ * @example
+ * from BigInt use { (+) }
+ * assert 1t + 1t == 2t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `add`
@@ -97,6 +117,10 @@ provide let (+) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The difference of the two operands
  *
+ * @example
+ * from BigInt use { (-) }
+ * assert 3t - 1t == 2t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `sub`
  */
@@ -113,6 +137,10 @@ provide let (-) = (num1: BigInt, num2: BigInt) => {
  * @param num1: The first operand
  * @param num2: The second operand
  * @returns The product of the two operands
+ *
+ * @example
+ * from BigInt use { (*) }
+ * assert 3t * 3t == 9t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `mul`
@@ -134,6 +162,10 @@ provide let (*) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The quotient of its operands
  *
+ * @example
+ * from BigInt use { (/) }
+ * assert 9t / 3t == 3t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `div`
  */
@@ -152,6 +184,8 @@ provide let (/) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The remainder of its operands
  *
+ * @example BigInt.rem(3t, 2t) == 1t
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -167,6 +201,8 @@ provide let rem = (num1: BigInt, num2: BigInt) => {
  * @param num1: The first operand
  * @param num2: The second operand
  * @returns The quotient and remainder of its operands
+ *
+ * @example BigInt.quotRem(7t, 2t) == (3t, 1t))
  *
  * @since v0.5.0
  */
@@ -187,6 +223,8 @@ provide let quotRem = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns The greatest common divisor of its operands
  *
+ * @example BigInt.gcd(36t, 24t) == 12t
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -202,6 +240,10 @@ provide let gcd = (num1: BigInt, num2: BigInt) => {
  * @param num: The value to shift
  * @param places: The number of bits to shift by
  * @returns The shifted value
+ *
+ * @example
+ * from BigInt use { (<<) }
+ * assert (10t << 2l) == 40t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `shl`
@@ -220,6 +262,10 @@ provide let (<<) = (num: BigInt, places: Int32) => {
  * @param places: The amount to shift by
  * @returns The shifted value
  *
+ * @example
+ * from BigInt use { (>>) }
+ * assert (9999t >> 2l) == 2499t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `shr`
  */
@@ -236,6 +282,9 @@ provide let (>>) = (num: BigInt, places: Int32) => {
  * @param num: The value to inspect
  * @returns `true` if the first value is equal to zero or `false` otherwise
  *
+ * @example assert BigInt.eqz(0t) == true
+ * @example assert BigInt.eqz(1t) == false
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -251,6 +300,13 @@ provide let eqz = (num: BigInt) => {
  * @param num1: The first value
  * @param num2: The second value
  * @returns `true` if the first value is equal to the second value or `false` otherwise
+ *
+ * @example
+ * from BigInt use { (==) }
+ * assert 1t == 1t
+ * @example
+ * from BigInt use { (==) }
+ * assert -10t == -10t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `eq`
@@ -270,6 +326,13 @@ provide let (==) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
  *
+ * @example
+ * from BigInt use { (!=) }
+ * assert 1t != 2t
+ * @example
+ * from BigInt use { (!=) }
+ * assert -10t != -20t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `ne`
  */
@@ -287,6 +350,13 @@ provide let (!=) = (num1: BigInt, num2: BigInt) => {
  * @param num1: The first value
  * @param num2: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @example
+ * from BigInt use { (<) }
+ * assert 1t < 2t
+ * @example
+ * from BigInt use { (<) }
+ * assert -10t < 0t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `lt`
@@ -306,6 +376,16 @@ provide let (<) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
+ * @example
+ * from BigInt use { (<=) }
+ * assert 1t <= 1t
+ * @example
+ * from BigInt use { (<=) }
+ * assert -10t <= 0t
+ * @example
+ * from BigInt use { (<=) }
+ * assert 2t <= 3t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `lte`
  */
@@ -323,6 +403,13 @@ provide let (<=) = (num1: BigInt, num2: BigInt) => {
  * @param num1: The first value
  * @param num2: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @example
+ * from BigInt use { (>) }
+ * assert 2t > 1t
+ * @example
+ * from BigInt use { (>) }
+ * assert 0t > -10t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `gt`
@@ -342,6 +429,16 @@ provide let (>) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
+ * @example
+ * from BigInt use { (>=) }
+ * assert 1t >= 1t
+ * @example
+ * from BigInt use { (>=) }
+ * assert 0t >= -10t
+ * @example
+ * from BigInt use { (>=) }
+ * assert 3t >= 2t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `gte`
  */
@@ -359,6 +456,8 @@ provide let (>=) = (num1: BigInt, num2: BigInt) => {
  * @param num: The given value
  * @returns Containing the inverted bits of the given value
  *
+ * @example BigInt.lnot(91234t) == -91235t
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -372,6 +471,10 @@ provide let lnot = (num: BigInt) => {
  * @param num1: The first operand
  * @param num2: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @example
+ * from BigInt use { (&) }
+ * assert (4t & 3t) == 0t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `land`
@@ -390,6 +493,10 @@ provide let (&) = (num1: BigInt, num2: BigInt) => {
  * @param num2: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
  *
+ * @example
+ * from BigInt use { (|) }
+ * assert (5t | 3t) == 7t
+ *
  * @since v0.6.0
  * @history v0.5.0: Originally named `lor`
  */
@@ -406,6 +513,10 @@ provide let (|) = (num1: BigInt, num2: BigInt) => {
  * @param num1: The first operand
  * @param num2: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @example
+ * from BigInt use { (^) }
+ * assert (5t ^ 3t) == 6t
  *
  * @since v0.6.0
  * @history v0.5.0: Originally named `lxor`
@@ -424,6 +535,8 @@ provide let (^) = (num1: BigInt, num2: BigInt) => {
  * @param num: The value to inspect
  * @returns The amount of leading zeros
  *
+ * @example BigInt.clz(5t) == 2147483647t
+ *
  * @since v0.5.0
  */
 @unsafe
@@ -438,6 +551,8 @@ provide let clz = (num: BigInt) => {
  *
  * @param num: The value to inspect
  * @returns The amount of trailing zeros
+ *
+ * @example BigInt.ctz(14t) == 1t
  *
  * @since v0.5.0
  */
@@ -454,6 +569,8 @@ provide let ctz = (num: BigInt) => {
  *
  * @param num: The value to inspect
  * @returns The amount of 1-bits in its operand
+ *
+ * @example BigInt.popcnt(14t) == 1t
  *
  * @since v0.5.0
  */
@@ -474,6 +591,9 @@ provide let popcnt = (num: BigInt) => {
  *
  * @param num: The operand
  * @returns The operand, as a string
+ *
+ * @example BigInt.toString(1t) == "1"
+ * @example BigInt.toString(-1t) == "-1"
  *
  * @since v0.5.0
  */
