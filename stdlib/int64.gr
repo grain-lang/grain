@@ -508,11 +508,6 @@ provide let popcnt = (value: Int64) => {
 
 // Exponentiation by squaring https://en.wikipedia.org/wiki/Exponentiation_by_squaring special path for int^int
 let rec expBySquaring = (y, x, n) => {
-  let (==) = eq
-  let (*) = mul
-  let (%) = mod
-  let (/) = div
-  let (-) = sub
   if (n == 0L) {
     1L
   } else if (n == 1L) {
@@ -534,9 +529,6 @@ let rec expBySquaring = (y, x, n) => {
  * @since v0.6.0
  */
 provide let (**) = (base, power) => {
-  let (<) = lt
-  let (/) = div
-  let (*) = mul
   if (power < 0L) return expBySquaring(1L, 1L / base, power * -1L)
   else return expBySquaring(1L, base, power)
 }
