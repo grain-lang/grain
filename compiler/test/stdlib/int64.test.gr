@@ -65,3 +65,31 @@ from Pervasives use { (==) }
 // Regression #1339
 let arr = [> 1, 2, 3]
 assert arr[toNumber(1L)] == 2
+
+// pow
+assert 0L ** 3L == 0L
+assert 0L ** 2L == 0L
+assert 0L ** 1L == 0L
+assert 0L ** 0L == 1L
+assert 1L ** 0L == 1L
+assert -1L ** 0L == 1L
+assert 1L ** 1L == 1L
+assert 2L ** 1L == 2L
+assert 300L ** 1L == 300L
+assert -1L ** 1L == -1L
+assert -2L ** 1L == -2L
+assert -300L ** 1L == -300L
+assert 0L ** 1L == 0L
+assert 1L ** 0L == 1L
+assert 0L ** 0L == 1L
+assert 1L ** 5L == 1L
+assert 5L ** 5L == 3125L
+assert -5L ** 5L == -3125L
+assert 5L ** 6L == 15625L
+assert -5L ** 6L == 15625L
+assert 1L ** 1L == 1L
+assert 2L ** 1L == 2L
+assert 300L ** 1L == 300L
+assert -1L ** 1L == -1L
+assert -2L ** 1L == -2L
+assert -300L ** 1L == -300L

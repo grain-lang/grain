@@ -880,3 +880,29 @@ Returns:
 |----|-----------|
 |`Int64`|The amount of 1-bits in its operand|
 
+### Int64.**(\*\*)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(**) : (base: Int64, power: Int64) => Int64
+```
+
+Computes the exponentiation of the given base and power.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`base`|`Int64`|The base number|
+|`power`|`Int64`|The exponent number|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Int64`|The base raised to the given power|
+
