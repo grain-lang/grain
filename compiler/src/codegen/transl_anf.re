@@ -913,7 +913,6 @@ let lift_imports = (env, imports) => {
             Ident.add(imp_use_id, MGlobalBind(glob, Managed), env.ce_binds),
         },
       );
-    | JSFunction(_) => failwith("NYI: lift_imports JSFunction")
     };
   };
 

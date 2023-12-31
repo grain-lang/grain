@@ -274,6 +274,4 @@ module IncludeDeclaration = {
     mk(a, WasmFunction(md, name), s, global);
   let wasm_value = (~global=Nonglobal, a, md, name, s) =>
     mk(a, WasmValue(md, name), s, global);
-  let js_func = (~global=Nonglobal, a, md, name, s) =>
-    mk(a, JSFunction(md, name), s, global);
 };
