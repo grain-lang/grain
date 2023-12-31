@@ -214,14 +214,13 @@ provide let fromArray = arr => {
   let contents = if (size == 0) {
     Array.make(16, None)
   } else {
-    let contents = Array.init(size * 2, i => {
+    Array.init(size * 2, i => {
       if (i < size) {
         Some(arr[i])
       } else {
         None
       }
     })
-    contents
   }
   { size, array: contents, headIndex: 0, tailIndex: size }
 }
