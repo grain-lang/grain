@@ -134,6 +134,11 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("comp18", "4 isnt 1");
   assertSnapshot("comp19", "[1, 2] is [1, 2]");
   assertSnapshot("comp20", "[1, 2] isnt [1, 2]");
+  assertSnapshot("assignment1", "let mut t = 2; t = 1;");
+  assertSnapshot("assignment1", "let mut t = 1; t += 2;");
+  assertSnapshot("assignment1", "let mut t = 2; t *= 2;");
+  assertSnapshot("assignment1", "let mut t = 2; t /= 2;");
+  assertSnapshot("assignment1", "let mut t = 2; t -= 2;");
   // These are not optimized into the same instance (boxes are mutable)
   assertSnapshot("comp21", "[box(1)] is [box(1)]");
   assertSnapshot("comp22", "[box(1)] isnt [box(1)]");
