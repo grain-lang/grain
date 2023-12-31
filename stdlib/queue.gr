@@ -202,6 +202,30 @@ provide let toArray = queue => {
 }
 
 /**
+ * Creates a queue from an array.
+ *
+ * @param arr: The array to convert
+ * @returns A queue containing all values from the array
+ *
+ * @since v0.6.0
+ */
+provide let fromArray = arr => {
+  let size = Array.length(arr)
+  let contents = if (size == 0) {
+    Array.make(16, None)
+  } else {
+    Array.init(size * 2, i => {
+      if (i < size) {
+        Some(arr[i])
+      } else {
+        None
+      }
+    })
+  }
+  { size, array: contents, headIndex: 0, tailIndex: size }
+}
+
+/**
  * An immutable queue implementation.
  */
 provide module Immutable {

@@ -126,6 +126,15 @@ let queue4 = Queue.copy(queue3)
 Queue.pop(queue4)
 assert Queue.toArray(queue4) == [> 2, 3]
 
+// Queue.fromArray
+let qa1 = Queue.makeSized(8)
+Queue.push(1, qa1)
+Queue.push(2, qa1)
+Queue.push(3, qa1)
+Queue.push(4, qa1)
+assert Queue.fromArray([> 1, 2, 3, 4]) == qa1
+assert Queue.fromArray([>]) == Queue.makeSized(16)
+
 module Immutable {
   from Queue use { module Immutable as Queue }
 
