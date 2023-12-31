@@ -21,8 +21,9 @@ Grain programs will search for an imported module in the `stdlib` if not availab
 For example, you can import the `number` stdlib:
 
 ```grain
-import Number from "number"
-Number.abs(-1)
+module Main
+include "number"
+assert Number.abs(-1) == 1
 ```
 
 ## API
@@ -32,3 +33,24 @@ This package includes generated markdown documentation, but we recommend using o
 ## License
 
 MIT
+
+## Contributing
+
+If you want to contribute to the `stdlib`, please consider the guidelines [here](https://github.com/grain-lang/grain/blob/main/docs/contributor/standard_library.md), if you want something to work on you can find open issues [here](https://github.com/grain-lang/grain/issues?q=is%3Aopen+is%3Aissue+label%3Astdlib).
+
+To regenerate the `stdlib`` documentation you can run:
+
+```sh
+grain doc stdlib -o stdlib --current-version=$(grain -v)
+```
+
+To format the `stdlib` you can run:
+
+```sh
+grain format ./stdlib/ -o ./stdlib/
+```
+
+To run the `stdlib` tests you can run:
+```sh
+npm run compiler test -- --filter stdlib
+```
