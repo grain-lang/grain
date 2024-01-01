@@ -46,23 +46,25 @@ let send_no_result = (~id: Protocol.message_id) => {
 };
 
 let module_lens = (decl: Types.module_declaration) => {
-  Doc.grain_code_block(Doc.print_mod_type(decl));
+  Document.grain_code_block(Document.print_mod_type(decl));
 };
 
 let value_lens = (env: Env.t, ty: Types.type_expr) => {
-  Doc.print_type(env, ty);
+  Document.print_type(env, ty);
 };
 
 let pattern_lens = (p: Typedtree.pattern) => {
-  Doc.print_type(p.pat_env, p.pat_type);
+  Document.print_type(p.pat_env, p.pat_type);
 };
 
 let type_lens = (ty: Typedtree.core_type) => {
-  Doc.grain_type_code_block(Printtyp.string_of_type_scheme(ty.ctyp_type));
+  Document.grain_type_code_block(
+    Printtyp.string_of_type_scheme(ty.ctyp_type),
+  );
 };
 
 let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
-  Doc.grain_type_code_block(
+  Document.grain_type_code_block(
     Printtyp.string_of_type_declaration(~ident, decl),
   );
 };

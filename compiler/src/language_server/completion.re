@@ -230,7 +230,7 @@ let build_value_completion =
   {
     label: value_name,
     kind: CompletionItemKindValue,
-    detail: Doc.print_type(env, value_desc.val_type),
+    detail: Document.print_type(env, value_desc.val_type),
     documentation: "",
   };
 };
@@ -239,7 +239,7 @@ let build_module_completion =
   {
     label: module_name,
     kind: CompletionItemKindModule,
-    detail: Doc.print_mod_type(mod_desc),
+    detail: Document.print_mod_type(mod_desc),
     documentation: "",
   };
 };
