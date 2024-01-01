@@ -226,6 +226,32 @@ provide let fromArray = arr => {
 }
 
 /**
+ * Checks if two queues are equivalent by value.
+ *
+ * @param queue1: The first queue to compare
+ * @param queue2: The second queue to compare
+ * @returns `true` if the queues are equivalent or `false` otherwise
+ *
+ * @since v0.6.0
+ */
+provide let (==) = (queue1, queue2) => {
+  if (queue1.size != queue2.size) return false
+  let len1 = Array.length(queue1.array)
+  let len2 = Array.length(queue2.array)
+  for (let mut i = 0; i < queue1.size; i += 1) {
+    // Get the index of element from queue1
+    let mut index1 = queue1.headIndex + i
+    if (index1 >= len1) index1 -= len1
+    // Get the index of element from queue2
+    let mut index2 = queue2.headIndex + i
+    if (index2 >= len2) index2 -= len2
+
+    if (queue1.array[index1] != queue2.array[index2]) return false
+  }
+  return true
+}
+
+/**
  * An immutable queue implementation.
  */
 provide module Immutable {

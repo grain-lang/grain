@@ -294,6 +294,32 @@ Returns:
 |----|-----------|
 |`Queue<a>`|A queue containing all values from the array|
 
+### Queue.**(==)**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+(==) : (queue1: Queue<a>, queue2: Queue<a>) => Bool
+```
+
+Checks if two queues are equivalent by value.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue1`|`Queue<a>`|The first queue to compare|
+|`queue2`|`Queue<a>`|The second queue to compare|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the queues are equivalent or `false` otherwise|
+
 ## Queue.Immutable
 
 An immutable queue implementation.
