@@ -889,17 +889,30 @@ provide let unzip = array => {
  *
  * @since v0.4.0
  */
+@unsafe
 provide let join = (separator: String, items: Array<String>) => {
-  let iter = (acc, str) => {
-    match (acc) {
-      None => Some(str),
-      Some(prev) => Some(prev ++ separator ++ str),
-    }
+  from WasmI32 use { (+), (==) }
+  from DataStructures use { allocateString, stringSize }
+  let arrLen = length(items)
+  let sepPtr = WasmI32.fromGrain(separator)
+  let sepSize = stringSize(sepPtr)
+  let sepPtr = sepPtr + 8n
+  let mut strSize = 0n
+  for (let mut i = 0; i < arrLen; i = incr(i)) {
+    strSize += stringSize(WasmI32.fromGrain(items[i]))
+    if (i != 0) strSize += sepSize
   }
-  match (reduce(iter, None, items)) {
-    None => "",
-    Some(s) => s,
+  let newString = allocateString(strSize)
+  let mut offset = newString + 8n
+  for (let mut i = 0; i < arrLen; i = incr(i)) {
+    let ptr = WasmI32.fromGrain(items[i])
+    let size = stringSize(ptr)
+    Memory.copy(offset, ptr + 8n, size)
+    offset += size
+    if (i != arrLen) Memory.copy(offset, sepPtr, sepSize)
+    offset += sepSize
   }
+  WasmI32.toGrain(newString): String
 }
 
 /**
