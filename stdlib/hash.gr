@@ -41,10 +41,9 @@ include "runtime/bigint" as BI
 include "sys/random"
 include "result"
 
-@unsafe
 let seed = {
   let random = Random.random()
-  coerceNumberToWasmI32(Result.unwrap(random))
+  Result.unwrap(random)
 }
 
 @unsafe
@@ -64,7 +63,7 @@ let m = 5n
 let n = 0xe6546b64n
 
 @unsafe
-let mut h = seed
+let mut h = coerceNumberToWasmI32(seed)
 
 @unsafe
 let hash32 = k => {
@@ -240,13 +239,18 @@ let rec hashOne = (val, depth) => {
  * A generic hash function that produces an integer from any value. If `a == b` then `Hash.hash(a) == Hash.hash(b)`.
  *
  * @param anything: The value to hash
+ * @param seed: The seed to use
  * @returns A hash for the given value
  *
+ * @example Hash.hash(a) == Hash.hash(a)
+ * @example Hash.hash(a, seed=1) == -1015171190
+ *
  * @since v0.1.0
+ * @history v0.6.0: Added ability to set the seed
  */
 @unsafe
-provide let hash = anything => {
-  h = seed
+provide let hash = (anything, seed=seed) => {
+  h = coerceNumberToWasmI32(seed)
 
   hashOne(WasmI32.fromGrain(anything), 0n)
   finalize(0n)
