@@ -265,21 +265,9 @@ bar", 1))|},
     "let x = \"\\u{110000}\"",
     "Illegal unicode code point",
   );
-  assertRun(
-    "string_float1",
-    {|include "float32"; from Float32 use *; print(div(0.0f, 0.0f))|},
-    "NaN\n",
-  );
-  assertRun(
-    "string_float2",
-    {|include "float32"; from Float32 use *; print(div(1.0f, 0.0f))|},
-    "Infinity\n",
-  );
-  assertRun(
-    "string_float3",
-    {|include "float32"; from Float32 use *; print(div(-1.0f, 0.0f))|},
-    "-Infinity\n",
-  );
+  assertRun("string_float1", {|print(NaNf)|}, "NaN\n");
+  assertRun("string_float2", {|print(Infinityf)|}, "Infinity\n");
+  assertRun("string_float3", {|print(-Infinityf)|}, "-Infinity\n");
   assertRun(
     "string_float4",
     {|include "float64"; from Float64 use *; print(div(0.0d, 0.0d))|},
