@@ -15,6 +15,18 @@ No other changes yet.
 include "char"
 ```
 
+```grain
+'a'
+```
+
+```grain
+'1'
+```
+
+```grain
+'🌾'
+```
+
 ## Values
 
 Functions and constants included in the Char module.
@@ -70,6 +82,16 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the number refers to a valid Unicode scalar value or `false` otherwise|
 
+Examples:
+
+```grain
+Char.isValid(0) == true
+```
+
+```grain
+Char.isValid(-1) == false
+```
+
 ### Char.**code**
 
 <details disabled>
@@ -94,6 +116,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The Unicode scalar value for the given character|
+
+Examples:
+
+```grain
+Char.code('a') == 97
+```
+
+```grain
+Char.code('🌾') == 127806
+```
 
 ### Char.**fromCode**
 
@@ -126,6 +158,16 @@ Throws:
 
 * When the Unicode scalar value is invalid
 
+Examples:
+
+```grain
+Char.fromCode(97) == 'a'
+```
+
+```grain
+Char.fromCode(127806) == '🌾'
+```
+
 ### Char.**succ**
 
 <details disabled>
@@ -156,6 +198,16 @@ Throws:
 `Failure(String)`
 
 * When the input character is the maximum valid Unicode scalar value
+
+Examples:
+
+```grain
+Char.succ('a') == 'b'
+```
+
+```grain
+Char.succ('1') == '2'
+```
 
 ### Char.**pred**
 
@@ -188,6 +240,16 @@ Throws:
 
 * When the input character is the minimum valid Unicode scalar value
 
+Examples:
+
+```grain
+Char.pred('b') == 'a'
+```
+
+```grain
+Char.pred('2') == '1'
+```
+
 ### Char.**toString**
 
 <details disabled>
@@ -212,6 +274,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|A string containing the given character|
+
+Examples:
+
+```grain
+Char.toString('a') == "a"
+```
+
+```grain
+Char.toString('🌾') == "🌾"
+```
 
 ### Char.**(<)**
 
@@ -239,6 +311,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first character is less than the second character or `false` otherwise|
 
+Examples:
+
+```grain
+from Char use { (<) }
+assert 'a' < 'b'
+```
+
+```grain
+from Char use { (<) }
+assert '1' < '2'
+```
+
 ### Char.**(<=)**
 
 <details disabled>
@@ -264,6 +348,23 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first character is less than or equal to the second character or `false` otherwise|
+
+Examples:
+
+```grain
+from Char use { (<=) }
+assert 'a' <= 'b'
+```
+
+```grain
+from Char use { (<=) }
+assert '1' <= '2'
+```
+
+```grain
+from Char use { (<=) }
+assert 'a' <= 'a'
+```
 
 ### Char.**(>)**
 
@@ -291,6 +392,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first character is greater than the second character or `false` otherwise|
 
+Examples:
+
+```grain
+from Char use { (>) }
+assert 'b' > 'a'
+```
+
+```grain
+from Char use { (>) }
+assert '2' > '1'
+```
+
 ### Char.**(>=)**
 
 <details disabled>
@@ -316,4 +429,21 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first character is greater than or equal to the second character or `false` otherwise|
+
+Examples:
+
+```grain
+from Char use { (>=) }
+assert 'b' >= 'a'
+```
+
+```grain
+from Char use { (>=) }
+assert '2' >= '1'
+```
+
+```grain
+from Char use { (>=) }
+assert 'a' >= 'a'
+```
 
