@@ -156,7 +156,7 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
         if (has_hit_info) {
           Some(
             CompletableExpr(
-              String_utils.slice(~first=curr_offset, ~last=offset, source),
+              String_utils.slice(~first=slice_offset, ~last=offset, source),
             ),
           );
         } else {
@@ -166,7 +166,7 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
         if (has_hit_info) {
           Some(
             CompletableType(
-              String_utils.slice(~first=curr_offset, ~last=offset, source),
+              String_utils.slice(~first=slice_offset, ~last=offset, source),
             ),
           );
         } else {
@@ -175,7 +175,7 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
       | ['\n', ...rest] when !has_hit_info =>
         Some(
           ComletableCode(
-            String_utils.slice(~first=curr_offset, ~last=offset, source),
+            String_utils.slice(~first=slice_offset, ~last=offset, source),
           ),
         )
       // Whitespace
@@ -500,7 +500,7 @@ let process =
       | Some(completableState) =>
         switch (completableState) {
         | ComletableCode(str) =>
-          Trace.log("Completable: Code " ++ str);
+          let str = String.trim(str);
           let completionPath = String.split_on_char('.', str);
           get_top_level_completions(
             ~include_keywords=true,
@@ -511,7 +511,7 @@ let process =
             completionPath,
           );
         | CompletableExpr(str) =>
-          Trace.log("Completable: Expr " ++ str);
+          let str = String.trim(str);
           let completionPath = String.split_on_char('.', str);
           get_top_level_completions(
             ~include_keywords=false,
@@ -522,7 +522,7 @@ let process =
             completionPath,
           );
         | CompletableType(str) =>
-          Trace.log("Completable: Type " ++ str);
+          let str = String.trim(str);
           let completionPath = String.split_on_char('.', str);
           get_top_level_completions(
             ~include_keywords=false,
