@@ -132,15 +132,22 @@ Returns:
 |----|-----------|
 |`Number`|The Float32 represented as a Number|
 
-### Float32.**add**
+### Float32.**(+)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `add`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-add : (x: Float32, y: Float32) => Float32
+(+) : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the sum of its operands.
@@ -158,15 +165,22 @@ Returns:
 |----|-----------|
 |`Float32`|The sum of the two operands|
 
-### Float32.**sub**
+### Float32.**(-)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `sub`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-sub : (x: Float32, y: Float32) => Float32
+(-) : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the difference of its operands.
@@ -184,15 +198,22 @@ Returns:
 |----|-----------|
 |`Float32`|The difference of the two operands|
 
-### Float32.**mul**
+### Float32.**(*)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `mul`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-mul : (x: Float32, y: Float32) => Float32
+(*) : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the product of its operands.
@@ -210,15 +231,22 @@ Returns:
 |----|-----------|
 |`Float32`|The product of the two operands|
 
-### Float32.**div**
+### Float32.**(/)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `div`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-div : (x: Float32, y: Float32) => Float32
+(/) : (x: Float32, y: Float32) => Float32
 ```
 
 Computes the quotient of its operands.
@@ -236,15 +264,22 @@ Returns:
 |----|-----------|
 |`Float32`|The quotient of the two operands|
 
-### Float32.**lt**
+### Float32.**(<)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lt : (x: Float32, y: Float32) => Bool
+(<) : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is less than the second value.
@@ -262,15 +297,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
-### Float32.**gt**
+### Float32.**(>)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gt`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gt : (x: Float32, y: Float32) => Bool
+(>) : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is greater than the second value.
@@ -288,15 +330,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
-### Float32.**lte**
+### Float32.**(<=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `lte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-lte : (x: Float32, y: Float32) => Bool
+(<=) : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is less than or equal to the second value.
@@ -314,15 +363,22 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
-### Float32.**gte**
+### Float32.**(>=)**
 
-<details disabled>
-<summary tabindex="-1">Added in <code>0.2.0</code></summary>
-No other changes yet.
+<details>
+<summary>Added in <code>next</code></summary>
+<table>
+<thead>
+<tr><th>version</th><th>changes</th></tr>
+</thead>
+<tbody>
+<tr><td><code>0.2.0</code></td><td>Originally named `gte`</td></tr>
+</tbody>
+</table>
 </details>
 
 ```grain
-gte : (x: Float32, y: Float32) => Bool
+(>=) : (x: Float32, y: Float32) => Bool
 ```
 
 Checks if the first value is greater than or equal to the second value.
