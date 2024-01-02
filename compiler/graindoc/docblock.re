@@ -79,6 +79,7 @@ exception
 
 exception MissingParamType({name: string});
 exception MissingReturnType;
+exception AttributeAppearsMultipleTimes({attr: string});
 exception
   InvalidAttribute({
     name: string,
@@ -105,6 +106,10 @@ let () =
       Some(msg);
     | MissingReturnType =>
       let msg = "Unable to find a return type. Please file an issue!";
+      Some(msg);
+    | AttributeAppearsMultipleTimes({attr}) =>
+      let msg =
+        Printf.sprintf("Attribute @%s is only allowed to appear once.", attr);
       Some(msg);
     | InvalidAttribute({name, attr}) =>
       let msg = Printf.sprintf("Invalid attribute @%s on %s", attr, name);
@@ -272,16 +277,18 @@ let for_value_description =
             examples,
           )
         | Since({attr_version}) =>
-          // TODO(#787): Should we fail if more than one `@since` attribute?
-          (
-            deprecations,
-            Some({since_version: attr_version}),
-            history,
-            params,
-            returns,
-            throws,
-            examples,
-          )
+          switch (since) {
+          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | None => (
+              deprecations,
+              Some({since_version: attr_version}),
+              history,
+              params,
+              returns,
+              throws,
+              examples,
+            )
+          }
         | History({attr_version: history_version, attr_desc: history_msg}) => (
             deprecations,
             since,
@@ -309,20 +316,25 @@ let for_value_description =
             examples,
           );
         | Returns({attr_desc: returns_msg}) =>
-          let returns_type =
-            switch (return_type) {
-            | Some(typ) => Printtyp.string_of_type_sch(typ)
-            | None => raise(MissingReturnType)
-            };
-          (
-            deprecations,
-            since,
-            history,
-            params,
-            Some({returns_msg, returns_type}),
-            throws,
-            examples,
-          );
+          switch (returns) {
+          | Some(_) =>
+            raise(AttributeAppearsMultipleTimes({attr: "returns"}))
+          | None =>
+            let returns_type =
+              switch (return_type) {
+              | Some(typ) => Printtyp.string_of_type_sch(typ)
+              | None => raise(MissingReturnType)
+              };
+            (
+              deprecations,
+              since,
+              history,
+              params,
+              Some({returns_msg, returns_type}),
+              throws,
+              examples,
+            );
+          }
         | Throws({attr_type: throw_type, attr_desc: throw_msg}) => (
             deprecations,
             since,
