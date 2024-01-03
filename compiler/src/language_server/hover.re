@@ -144,9 +144,6 @@ let process =
   | None => send_no_result(~id)
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
-    Trace.log(
-      Printf.sprintf("SourceTree Result Len: %d", List.length(results)),
-    );
     switch (results) {
     | [Value({env, value_type, loc}), ..._] =>
       send_hover(
