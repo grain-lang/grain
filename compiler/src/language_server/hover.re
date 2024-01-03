@@ -125,6 +125,14 @@ let declaration_lens = (ident: Ident.t, decl: Types.type_declaration) => {
   grain_type_code_block(Printtyp.string_of_type_declaration(~ident, decl));
 };
 
+let include_lens = (env: Env.t, path: Path.t) => {
+  let module_decl = Env.find_module(path, None, env);
+  markdown_join(
+    grain_code_block("module " ++ Path.name(path)),
+    module_lens(module_decl),
+  );
+};
+
 let process =
     (
       ~id: Protocol.message_id,
@@ -136,6 +144,9 @@ let process =
   | None => send_no_result(~id)
   | Some({program, sourcetree}) =>
     let results = Sourcetree.query(params.position, sourcetree);
+    Trace.log(
+      Printf.sprintf("SourceTree Result Len: %d", List.length(results)),
+    );
     switch (results) {
     | [Value({env, value_type, loc}), ..._] =>
       send_hover(
@@ -163,6 +174,12 @@ let process =
       )
     | [Module({path, decl, loc}), ..._] =>
       send_hover(~id, ~range=Utils.loc_to_range(loc), module_lens(decl))
+    | [Include({env, path, loc}), ..._] =>
+      send_hover(
+        ~id,
+        ~range=Utils.loc_to_range(loc),
+        include_lens(env, path),
+      )
     | _ => send_no_result(~id)
     };
   };
