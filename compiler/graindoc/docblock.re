@@ -401,13 +401,15 @@ let for_type_declaration =
             examples,
           )
         | Since({attr_version}) =>
-          // TODO(#787): Should we fail if more than one `@since` attribute?
-          (
-            deprecations,
-            Some({since_version: attr_version}),
-            history,
-            examples,
-          )
+          switch (since) {
+          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | None => (
+              deprecations,
+              Some({since_version: attr_version}),
+              history,
+              examples,
+            )
+          }
         | History({attr_version: history_version, attr_desc: history_msg}) => (
             deprecations,
             since,
@@ -528,13 +530,15 @@ and for_signature_items =
             examples,
           )
         | Since({attr_version}) =>
-          // TODO(#787): Should we fail if more than one `@since` attribute?
-          (
-            deprecations,
-            Some({since_version: attr_version}),
-            history,
-            examples,
-          )
+          switch (since) {
+          | Some(_) => raise(AttributeAppearsMultipleTimes({attr: "since"}))
+          | None => (
+              deprecations,
+              Some({since_version: attr_version}),
+              history,
+              examples,
+            )
+          }
         | History({attr_version: history_version, attr_desc: history_msg}) => (
             deprecations,
             since,
