@@ -91,11 +91,7 @@ describe("numbers", ({test, testSkip}) => {
   );
   assertRun("number_syntax13", "print(17179869184 - 1024)", "17179868160\n");
   // equality checks
-  assertRun(
-    "nan_equality1",
-    {|include "float32"; print(Float32.div(0.0f, 0.0f) == Float32.div(0.0f, 0.0f))|},
-    "false\n",
-  );
+  assertRun("nan_equality1", {|print(NaNf == NaNf)|}, "false\n");
   assertRun(
     "nan_equality2",
     {|include "float64"; print(Float64.div(0.0d, 0.0d) == Float64.div(0.0d, 0.0d))|},
