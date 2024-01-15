@@ -730,7 +730,8 @@ and tree_of_argtyplist = (sch, al) =>
         switch (l) {
         | Default(_) =>
           switch (ty.desc) {
-          | TTyConstr(_, [ty], _) => ty
+          | TTyConstr(_, [ty], _)
+          | TTyLink({desc: TTyConstr(_, [ty], _)}) => ty
           | _ =>
             failwith("Impossible: optional argument with non-option type")
           }
