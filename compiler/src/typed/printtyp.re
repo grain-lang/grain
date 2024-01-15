@@ -723,18 +723,19 @@ let rec tree_of_typexp = (sch, ty) => {
 }
 
 and tree_of_typlist = (sch, tyl) => List.map(tree_of_typexp(sch), tyl)
+and get_arg_type = ty => {
+  switch (ty.desc) {
+  | TTyConstr(_, [ty], _)
+  | TTyLink(ty) => get_arg_type(ty)
+  | _ => failwith("Impossible: optional argument with non-option type")
+  };
+}
 and tree_of_argtyplist = (sch, al) =>
   List.map(
     ((l, ty)) => {
       let ty =
         switch (l) {
-        | Default(_) =>
-          switch (ty.desc) {
-          | TTyConstr(_, [ty], _)
-          | TTyLink({desc: TTyConstr(_, [ty], _)}) => ty
-          | _ =>
-            failwith("Impossible: optional argument with non-option type")
-          }
+        | Default(_) => get_arg_type(ty)
         | _ => ty
         };
       (qualified_label_name(l), tree_of_typexp(sch, ty));
