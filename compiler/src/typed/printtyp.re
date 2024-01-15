@@ -725,7 +725,7 @@ let rec tree_of_typexp = (sch, ty) => {
 and tree_of_typlist = (sch, tyl) => List.map(tree_of_typexp(sch), tyl)
 and get_arg_type = ty => {
   switch (ty.desc) {
-  | TTyConstr(_, [ty], _)
+  | TTyConstr(_, [ty], _) => ty
   | TTyLink(ty) => get_arg_type(ty)
   | _ => failwith("Impossible: optional argument with non-option type")
   };
