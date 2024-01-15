@@ -108,9 +108,10 @@ let send_completion =
 };
 
 type completionState =
-  | ComletableCode(string)
+  | CompletableCode(string)
   | CompletableExpr(string)
-  | CompletableType(string);
+  | CompletableType(string)
+  | CompletableInclude(string);
 
 let convert_position_to_offset = (source, position: Protocol.position) => {
   let lines = String.split_on_char('\n', source);
@@ -172,9 +173,15 @@ let find_completable_state = (documents, uri, position: Protocol.position) => {
         } else {
           None;
         }
+      | ['e', 'd', 'u', 'l', 'c', 'n', 'i', ...rest] when last_char_whitespace =>
+        Some(
+          CompletableInclude(
+            String_utils.slice(~first=slice_offset, ~last=offset, source),
+          ),
+        )
       | ['\n', ...rest] when !has_hit_info =>
         Some(
-          ComletableCode(
+          CompletableCode(
             String_utils.slice(~first=slice_offset, ~last=offset, source),
           ),
         )
@@ -499,7 +506,7 @@ let process =
       | None => []
       | Some(completableState) =>
         switch (completableState) {
-        | ComletableCode(str) =>
+        | CompletableCode(str) =>
           let str = String.trim(str);
           let completionPath = String.split_on_char('.', str);
           get_top_level_completions(
@@ -532,6 +539,7 @@ let process =
             compiled_code,
             completionPath,
           );
+        | CompletableInclude(str) => []
         }
       };
     send_completion(~id, completions);
