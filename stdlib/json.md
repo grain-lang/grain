@@ -69,7 +69,7 @@ enum IndentationFormat {
 Controls how indentation is performed in custom formatting.
 
 Following examples have whitespaces and line breaks replaced with visible
-charactes for illustrative purposes.
+characters for illustrative purposes.
 
 `NoIndentation`
 ```
