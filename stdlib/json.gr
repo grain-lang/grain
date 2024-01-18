@@ -1415,7 +1415,7 @@ let formatCodePointOrEOF = (codePoint: Number) => {
     // If the codepoint is in the range of printable ASCII characters, then
     // display the character itself . Whether it's a good idea to display
     // all of them, especially space is up for debate.
-    "'" ++ runtimeToString(Char.fromCode(codePoint)) ++ "'"
+    "'" ++ Char.toString(Char.fromCode(codePoint)) ++ "'"
   } else if (codePoint == -1) {
     // Special case for value used by the parsing code to avoid heap allocations.
     "end of input"
@@ -1928,7 +1928,6 @@ and parseArray = (parserState: JsonParserState) => {
         let c = parserState.currentCodePoint
         match (c) {
           0x2C => { // ','
-            trailingComma = true
             if (first) {
               return Err(
                 buildUnexpectedTokenError(
@@ -1937,6 +1936,7 @@ and parseArray = (parserState: JsonParserState) => {
                 )
               )
             }
+            trailingComma = true
             next(parserState)
             skipWhiteSpace(parserState)
           },
@@ -1950,11 +1950,11 @@ and parseArray = (parserState: JsonParserState) => {
             break
           },
           _ => {
-            first = false
-            trailingComma = false
             // note that parseValue skips initial and final whitespace
             match (parseValue(parserState)) {
               Ok(elem) => {
+                first = false
+                trailingComma = false
                 elems = [elem, ...elems]
                 void
               },
