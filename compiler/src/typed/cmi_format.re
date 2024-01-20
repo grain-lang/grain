@@ -76,8 +76,8 @@ type config_opt =
 let config_sum = Config.get_root_config_digest;
 
 let build_full_cmi = (~name, ~sign, ~crcs, ~flags, ~type_metadata) => {
-  let ns_sign = Marshal.to_bytes((name, sign, config_sum()), []);
-  let crc = Digest.bytes(ns_sign);
+  let ns_sign = Marshal.to_string((name, sign, config_sum()), []);
+  let crc = Digest.string(ns_sign);
   let crcs = [(name, Some(crc)), ...crcs];
   let cmi_config_sum = config_sum();
   {
@@ -91,8 +91,8 @@ let build_full_cmi = (~name, ~sign, ~crcs, ~flags, ~type_metadata) => {
 };
 
 let cmi_to_crc = ({cmi_name, cmi_sign, cmi_config_sum}) => {
-  let ns_sign = Marshal.to_bytes((cmi_name, cmi_sign, cmi_config_sum), []);
-  let crc = Digest.bytes(ns_sign);
+  let ns_sign = Marshal.to_string((cmi_name, cmi_sign, cmi_config_sum), []);
+  let crc = Digest.string(ns_sign);
   crc;
 };
 
@@ -102,13 +102,21 @@ let input_cmi = ic =>
   | Result.Error(e) => raise(Invalid_argument(e))
   };
 
-let deserialize_cmi = bytes =>
-  switch (
-    cmi_infos_of_yojson @@ Yojson.Safe.from_string(Bytes.to_string(bytes))
-  ) {
+let deserialize_cmi = (ic, size) => {
+  let size = ref(size);
+  let lexbuf =
+    Lexing.from_function((buf, n) => {
+      let n = min(n, size^);
+      let read = input(ic, buf, 0, n);
+      size := size^ - read;
+      read;
+    });
+  let state = Yojson.init_lexer();
+  switch (cmi_infos_of_yojson @@ Yojson.Safe.from_lexbuf(state, lexbuf)) {
   | Result.Ok(x) => x
   | Result.Error(e) => raise(Invalid_argument(e))
   };
+};
 
 let serialize_cmi =
     (

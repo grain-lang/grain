@@ -15,13 +15,8 @@ let binaryFileExtensions = (actual: string, {createMatcher}) => {
       let filePath = expectedThunk();
       let expected_output = open_in_bin(filePath);
       let n = in_channel_length(expected_output);
-      let expected_buffer = Buffer.create(n);
-      let _ = Buffer.add_channel(expected_buffer, expected_output, n);
+      let expected_string = really_input_string(expected_output, n);
       let _ = close_in(expected_output);
-
-      let expected_string =
-        Bytes.to_string(Buffer.to_bytes(expected_buffer));
-
       let pass = expected_string == actual;
 
       if (!pass) {

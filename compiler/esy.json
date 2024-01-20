@@ -25,7 +25,7 @@
     "copy:exe": "cp #{$GRAINC_BIN_PATH} #{$GRAINDOC_BIN_PATH} #{$GRAINFORMAT_BIN_PATH} #{$GRAINLSP_BIN_PATH} #{$CLI_BIN_DIR}",
     "copy:js": "cp #{$GRAINC_JS_PATH} #{$GRAINDOC_JS_PATH} #{$GRAINFORMAT_JS_PATH} #{$GRAINLSP_JS_PATH}  #{$CLI_BIN_DIR}",
     "clean": "rm -rf #{self.root}/_esy",
-    "build:js": "esy b dune build @js --no-buffer #{os == 'windows' ? '-j 2' : ''}",
+    "build:js": "esy b dune build @js --no-buffer",
     "test": "#{$TEST_EXEC_PATH}",
     "test:js": "node #{$TEST_JS_PATH}",
     "format": "dune build @fmt --auto-promote",
@@ -54,11 +54,12 @@
     "ocaml": "4.14.1000"
   },
   "devDependencies": {
-    "@opam/js_of_ocaml-compiler": "5.0.1",
+    "@opam/js_of_ocaml-compiler": ">=5.4.0",
     "@opam/ocaml-lsp-server": "1.14.1",
     "@opam/rely": "^4.0.0"
   },
   "resolutions": {
+    "@opam/js_of_ocaml-compiler": "ocsigen/js_of_ocaml:js_of_ocaml-compiler.opam#e075fca17035ef740a2a247ab5f0e3c35c19ada6",
     "@opam/fp": "reasonml/reason-native:fp.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/fs": "reasonml/reason-native:fs.opam#fcb74949f8dcbe68f10d4daaee6b9b864b5baff0",
     "@opam/ppx_deriving_cmdliner": "hammerlab/ppx_deriving_cmdliner:ppx_deriving_cmdliner.opam#1f086651fe7f8dd98e371b09c6fcc4dbc6db1c7c",
