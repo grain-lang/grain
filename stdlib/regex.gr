@@ -21,7 +21,6 @@ include "map"
 include "option"
 include "result"
 include "string"
-include "float32"
 include "number"
 from Number use { min, max }
 
@@ -2120,7 +2119,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
           mustSizes = mergeDependsSizes(oldMustSizes, mustSizes)
           dependsSizes = mergeDependsSizes(oldDependsSizes, dependsSizes)
           let repeatMax = match (repeatMax) {
-            None => Float32.toNumber(Float32.infinity),
+            None => Infinity,
             Some(n) => n,
           }
           (min1 * repeatMin, max1 * repeatMax, maxL1)
@@ -2146,7 +2145,7 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
       },
       RELookbehind(re, _, lbMin, lbMax, _, _) => {
         let (min1, max1, maxL1) = loop(re)
-        if (max1 == Float32.toNumber(Float32.infinity)) {
+        if (max1 == Infinity) {
           thrownError = Some(DoesNotMatchBounded)
           (0, 0, 0)
         } else {
@@ -2162,10 +2161,10 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
           (0, 0, 0)
         } else {
           match (Map.get(n, groupSizes)) {
-            Some(minSize) => (minSize, Float32.toNumber(Float32.infinity), 0),
+            Some(minSize) => (minSize, Infinity, 0),
             None => {
               Map.set(n - 1, true, dependsSizes)
-              (1, Float32.toNumber(Float32.infinity), 0)
+              (1, Infinity, 0)
             },
           }
         }
