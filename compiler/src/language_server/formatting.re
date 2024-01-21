@@ -56,12 +56,12 @@ let process =
       },
     )
   | Some(compiled_code) =>
-    switch (Format.parse_source(compiled_code)) {
+    switch (Fmt.parse_source(compiled_code)) {
     | Ok((parsed_program, lines, eol)) =>
       // I'm pretty sure this code path can raise errors. We should change these to Results
       try({
         let formatted_code =
-          Format.format_ast(~original_source=lines, ~eol, parsed_program);
+          Fmt.format_ast(~original_source=lines, ~eol, parsed_program);
 
         let range: Protocol.range = {
           range_start: {

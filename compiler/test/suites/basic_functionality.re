@@ -260,6 +260,7 @@ describe("basic functionality", ({test, testSkip}) => {
           statements: [
             Toplevel.data(
               ~loc=Location.dummy_loc,
+              ~core_loc=Location.dummy_loc,
               [
                 (
                   Asttypes.NotProvided,
@@ -282,11 +283,13 @@ describe("basic functionality", ({test, testSkip}) => {
                       ),
                     ],
                   ),
+                  Location.dummy_loc,
                 ),
               ],
             ),
             Toplevel.let_(
               ~loc=Location.dummy_loc,
+              ~core_loc=Location.dummy_loc,
               Asttypes.NotProvided,
               Asttypes.Nonrecursive,
               Asttypes.Immutable,
@@ -299,6 +302,7 @@ describe("basic functionality", ({test, testSkip}) => {
                   ),
                   Expression.constant(
                     ~loc=Location.dummy_loc,
+                    ~core_loc=Location.dummy_loc,
                     Constant.string("pikachu"),
                   ),
                 ),
@@ -306,6 +310,7 @@ describe("basic functionality", ({test, testSkip}) => {
             ),
             Toplevel.data(
               ~loc=Location.dummy_loc,
+              ~core_loc=Location.dummy_loc,
               [
                 (
                   Asttypes.NotProvided,
@@ -323,6 +328,7 @@ describe("basic functionality", ({test, testSkip}) => {
                       ),
                     ),
                   ),
+                  Location.dummy_loc,
                 ),
               ],
             ),

@@ -445,7 +445,7 @@ let rec final_subexpression = sexp =>
   switch (sexp.pexp_desc) {
   | PExpIf(_, e, _)
   | PExpWhile(_, e)
-  | PExpMatch(_, [{pmb_body: e}, ..._]) => final_subexpression(e)
+  | PExpMatch(_, {txt: [{pmb_body: e}, ..._]}) => final_subexpression(e)
   | PExpBlock(es) =>
     try(final_subexpression(last(es))) {
     | Not_found => sexp
@@ -507,7 +507,7 @@ let rec approx_type = (env, sty) =>
 let rec type_approx = (env, sexp: Parsetree.expression) =>
   switch (sexp.pexp_desc) {
   | PExpLet(_, _, _) => Builtin_types.type_void
-  | PExpMatch(_, [{pmb_body: e}, ..._]) => type_approx(env, e)
+  | PExpMatch(_, {txt: [{pmb_body: e}, ..._]}) => type_approx(env, e)
   | PExpIf(_, e, _) => type_approx(env, e)
   | PExpWhile(_, e) => type_approx(env, e)
   | PExpLambda(args, e) =>
@@ -665,6 +665,7 @@ and type_expect_ =
     (~in_function=?, ~recarg=Rejected, env, sexp, ty_expected_explained) => {
   let {ty: ty_expected, explanation} = ty_expected_explained;
   let loc = sexp.pexp_loc;
+  let core_loc = sexp.pexp_core_loc;
   let attributes = Typetexp.type_attributes(sexp.pexp_attributes);
   /* Record the expression type before unifying it with the expected type */
   let type_expect = type_expect(~in_function?);
@@ -725,9 +726,10 @@ and type_expect_ =
       exp_env: env,
     });
   | PExpList(es) =>
-    let convert_list = (~loc, ~attributes=?, a) => {
+    let convert_list = (~loc, ~core_loc, ~attributes=?, a) => {
       open Ast_helper;
-      let empty = Expression.tuple_construct(~loc, ident_empty, []);
+      let empty =
+        Expression.tuple_construct(~loc, ~core_loc, ident_empty, []);
       let list =
         switch (List.rev(a)) {
         | [] => empty
@@ -737,6 +739,7 @@ and type_expect_ =
             | ListItem(expr) =>
               Expression.tuple_construct(
                 ~loc,
+                ~core_loc,
                 ~attributes?,
                 ident_cons,
                 [expr, empty],
@@ -749,6 +752,7 @@ and type_expect_ =
               | ListItem(expr) =>
                 Expression.tuple_construct(
                   ~loc,
+                  ~core_loc,
                   ~attributes?,
                   ident_cons,
                   [expr, acc],
@@ -770,7 +774,7 @@ and type_expect_ =
     };
     type_expect(
       env,
-      convert_list(~loc, ~attributes=sexp.pexp_attributes, es),
+      convert_list(~loc, ~core_loc, ~attributes=sexp.pexp_attributes, es),
       ty_expected_explained,
     );
   | PExpArray(es) =>
@@ -1071,6 +1075,7 @@ and type_expect_ =
           | Some(default) =>
             let default_value_name = mknoloc("$default_value");
             let default_loc = default.pexp_loc;
+            let default_core_loc = default.pexp_core_loc;
             let scases = [
               MatchBranch.mk(
                 ~loc=default_loc,
@@ -1083,6 +1088,7 @@ and type_expect_ =
                 ),
                 Expression.ident(
                   ~loc=default_loc,
+                  ~core_loc=default_core_loc,
                   mknoloc(Identifier.IdentName(default_value_name)),
                 ),
                 None,
@@ -1107,16 +1113,19 @@ and type_expect_ =
             let smatch =
               Expression.match(
                 ~loc=sloc,
+                ~core_loc=sloc,
                 Expression.ident(
                   ~loc=sloc,
+                  ~core_loc=sloc,
                   mknoloc(Identifier.IdentName(opt_name)),
                 ),
-                scases,
+                mknoloc(scases),
               );
             let pat = Pattern.var(~loc=sloc, opt_name);
             let prelude_expr =
               Expression.let_(
                 ~loc=sloc,
+                ~core_loc=sloc,
                 Nonrecursive,
                 Immutable,
                 [ValueBinding.mk(~loc=arg.pla_loc, arg.pla_pattern, smatch)],
@@ -1149,7 +1158,12 @@ and type_expect_ =
     let body =
       switch (prelude) {
       | [] => body
-      | _ => Expression.block(~loc=body.pexp_loc, prelude @ [body])
+      | _ =>
+        Expression.block(
+          ~loc=body.pexp_loc,
+          ~core_loc=body.pexp_core_loc,
+          prelude @ [body],
+        )
       };
     type_function(
       ~in_function?,
@@ -1213,7 +1227,7 @@ and type_expect_ =
         ty_expected,
         true,
         loc,
-        branches,
+        branches.txt,
       );
     re({
       exp_desc: TExpMatch(arg, val_cases, partial),
@@ -1857,6 +1871,7 @@ and type_construct = (env, loc, lid, sarg, ty_expected_explained, attrs) => {
             pexp_desc: PExpRecord(None, rfs),
             pexp_attributes: attrs,
             pexp_loc: loc,
+            pexp_core_loc: loc,
           },
         ],
         true,

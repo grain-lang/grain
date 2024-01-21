@@ -64,8 +64,4 @@ let t = [
   3,
 ]
 
-let cons = (a, b) =>
-  [
-    a,
-    ...b
-  ] // <-  some long comment some long comment some long comment some long comment
+let cons = (a, b) => [a, ...b] // <-  some long comment some long comment some long comment some long comment

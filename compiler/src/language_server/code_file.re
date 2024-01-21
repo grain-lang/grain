@@ -64,9 +64,9 @@ let compile_source = (uri, source) => {
     switch (Grain_parsing.Location.error_of_exn(exn)) {
     | Some(`Ok(e)) =>
       let (file, line, startchar) =
-        Grain_parsing.Location.get_pos_info(e.loc.loc_start);
+        Grain_parsing.Location.get_pos_info(e.error_loc.loc_start);
       let (_, endline, endchar) =
-        Grain_parsing.Location.get_pos_info(e.loc.loc_end);
+        Grain_parsing.Location.get_pos_info(e.error_loc.loc_end);
 
       let startchar = startchar < 0 ? 0 : startchar;
       let endchar = endchar < 0 ? 0 : endchar;

@@ -398,7 +398,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
     // `rec` on mutually-recursive types
     let rec_flag =
       switch (data_decls) {
-      | [(_, {pdata_rec: Recursive}), ..._] => Recursive
+      | [(_, {pdata_rec: Recursive}, _), ..._] => Recursive
       | _ => Nonrecursive
       };
     let (decls, newenv) =
@@ -410,7 +410,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
         switch (Typedecl.transl_data_decl(env, Recursive, data_decls)) {
         | exception exn => raise(exn)
         | _ =>
-          let (_, {pdata_name: type_name}) = List.hd(data_decls);
+          let (_, {pdata_name: type_name}, _) = List.hd(data_decls);
           raise(
             Error(
               loc,
@@ -444,7 +444,7 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
           }
         },
         decls,
-        List.map(((e, _)) => e, data_decls),
+        List.map(((e, _, _)) => e, data_decls),
         [],
       );
     let ty_decls = List.filter_map(decl => decl, ty_decls);

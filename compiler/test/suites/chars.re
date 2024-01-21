@@ -35,7 +35,8 @@ describe("chars", ({test, testSkip}) => {
   };
   let char = (~loc=?, s) => {
     let loc = Option.value(~default=Location.dummy_loc, loc);
-    Toplevel.expr(~loc) @@ Expression.constant(~loc, Constant.char(s));
+    Toplevel.expr(~loc) @@
+    Expression.constant(~loc, ~core_loc=loc, Constant.char(s));
   };
 
   assertRun("char1", "print('A')", "A\n");
@@ -112,6 +113,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       statements: [
         char(
           ~loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
+          ~core_loc=mk_loc("char_loc_simple", (2, 12, 12), (2, 15, 12)),
           "a",
         ),
       ],
@@ -131,6 +133,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       statements: [
         char(
           ~loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
+          ~core_loc=mk_loc("char_loc_code", (2, 12, 12), (2, 23, 12)),
           "🏴",
         ),
       ],
@@ -150,6 +153,7 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
       statements: [
         char(
           ~loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
+          ~core_loc=mk_loc("char_loc_emoji", (2, 12, 12), (2, 15, 12)),
           "💯",
         ),
       ],

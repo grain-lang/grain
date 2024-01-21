@@ -13,8 +13,10 @@ let filteri = (fn, list) => {
     match (list) {
       [] => [],
       [first, ...rest] =>
-        if (fn(first, index22)) [first, ...iter(fn, rest, index22 + 1)]
-        else iter(fn, rest, index22 + 1),
+        if (fn(first, index22))
+          [first, ...iter(fn, rest, index22 + 1)]
+        else
+          iter(fn, rest, index22 + 1),
     }
   }
   iter(fn, list, 0)

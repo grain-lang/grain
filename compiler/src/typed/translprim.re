@@ -26,6 +26,7 @@ let default_loc = Location.dummy_loc;
 let mkident = name =>
   Expression.ident(
     ~loc=Location.dummy_loc,
+    ~core_loc=Location.dummy_loc,
     Location.mkloc(
       Identifier.IdentName(Location.mkloc(name, default_loc)),
       default_loc,
@@ -1459,13 +1460,20 @@ let active_memory_base = () => {
 
 let transl_prim = (env, desc) => {
   let loc = desc.pprim_loc;
+  let core_loc = desc.pprim_loc;
 
   let prim =
     try(PrimMap.find(prim_map, desc.pprim_name.txt)) {
     | Not_found => failwith("This primitive does not exist.")
     };
 
-  let disable_gc = [(Location.mknoloc("disableGC"), [])];
+  let disable_gc = [
+    {
+      Asttypes.attr_name: Location.mknoloc("disableGC"),
+      attr_args: [],
+      attr_loc: Location.dummy_loc,
+    },
+  ];
 
   let lambda_arg = pat => {
     pla_label: Unlabeled,
@@ -1491,7 +1499,7 @@ let transl_prim = (env, desc) => {
             [],
           )
         };
-      (Expression.constant(~loc, ~attributes, value), typ);
+      (Expression.constant(~loc, ~core_loc, ~attributes, value), typ);
     | Primitive0(p) =>
       let attributes =
         switch (p) {
@@ -1508,12 +1516,21 @@ let transl_prim = (env, desc) => {
         | HeapTypeMetadata => disable_gc
         };
       (
-        Expression.lambda(~loc, ~attributes, [], Expression.prim0(~loc, p)),
+        Expression.lambda(
+          ~loc,
+          ~core_loc,
+          ~attributes,
+          [],
+          Expression.prim0(~loc, ~core_loc, p),
+        ),
         Typecore.prim0_type(p),
       );
     | Primitive1(BuiltinId as p) =>
       // This primitive must always be inlined, so we do not generate a lambda
-      (Expression.constant(~loc, PConstVoid), Typecore.prim1_type(p))
+      (
+        Expression.constant(~loc, ~core_loc, PConstVoid),
+        Typecore.prim1_type(p),
+      )
     | Primitive1(p) =>
       let attributes =
         switch (p) {
@@ -1565,9 +1582,10 @@ let transl_prim = (env, desc) => {
       (
         Expression.lambda(
           ~loc,
+          ~core_loc,
           ~attributes,
           [lambda_arg(pat_a)],
-          Expression.prim1(~loc, p, id_a),
+          Expression.prim1(~loc, ~core_loc, p, id_a),
         ),
         Typecore.prim1_type(p),
       );
@@ -1591,9 +1609,10 @@ let transl_prim = (env, desc) => {
       (
         Expression.lambda(
           ~loc,
+          ~core_loc,
           ~attributes,
           [lambda_arg(pat_a), lambda_arg(pat_b)],
-          Expression.prim2(~loc, p, id_a, id_b),
+          Expression.prim2(~loc, ~core_loc, p, id_a, id_b),
         ),
         Typecore.prim2_type(p),
       );
@@ -1611,9 +1630,10 @@ let transl_prim = (env, desc) => {
       (
         Expression.lambda(
           ~loc,
+          ~core_loc,
           ~attributes,
           [lambda_arg(pat_a), lambda_arg(pat_b), lambda_arg(pat_c)],
-          Expression.primn(~loc, p, [id_a, id_b, id_c]),
+          Expression.primn(~loc, ~core_loc, p, [id_a, id_b, id_c]),
         ),
         Typecore.primn_type(p),
       );

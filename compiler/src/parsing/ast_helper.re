@@ -194,18 +194,24 @@ module Pattern = {
 };
 
 module Expression = {
-  let mk = (~loc, ~attributes=?, d) => {
+  let mk = (~loc, ~core_loc, ~attributes=?, d) => {
     let attributes = Option.value(~default=[], attributes);
-    {pexp_desc: d, pexp_attributes: attributes, pexp_loc: loc};
+    {
+      pexp_desc: d,
+      pexp_attributes: attributes,
+      pexp_loc: loc,
+      pexp_core_loc: core_loc,
+    };
   };
-  let ident = (~loc, ~attributes=?, a) => mk(~loc, ~attributes?, PExpId(a));
-  let constant = (~loc, ~attributes=?, a) =>
-    mk(~loc, ~attributes?, PExpConstant(a));
-  let tuple = (~loc, ~attributes=?, a) =>
-    mk(~loc, ~attributes?, PExpTuple(a));
-  let record = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpRecord(a, b));
-  let record_fields = (~loc, ~attributes=?, a) =>
+  let ident = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpId(a));
+  let constant = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpConstant(a));
+  let tuple = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpTuple(a));
+  let record = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpRecord(a, b));
+  let record_fields = (~loc, ~core_loc, ~attributes=?, a) =>
     switch (a) {
     | [] => failwith("Impossible: empty record field list")
     | [base, ...rest] =>
@@ -242,60 +248,61 @@ module Expression = {
           rest,
         );
       let record_items = List.rev(record_items);
-      record(~loc, ~attributes?, spread_base, record_items);
+      record(~loc, ~core_loc, ~attributes?, spread_base, record_items);
     };
-  let record_get = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpRecordGet(a, b));
-  let record_set = (~loc, ~attributes=?, a, b, c) =>
-    mk(~loc, ~attributes?, PExpRecordSet(a, b, c));
-  let array = (~loc, ~attributes=?, a) =>
-    mk(~loc, ~attributes?, PExpArray(a));
-  let array_get = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpArrayGet(a, b));
-  let array_set = (~loc, ~attributes=?, a, b, c) =>
-    mk(~loc, ~attributes?, PExpArraySet(a, b, c));
-  let let_ = (~loc, ~attributes=?, a, b, c) =>
-    mk(~loc, ~attributes?, PExpLet(a, b, c));
-  let match = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpMatch(a, b));
-  let prim0 = (~loc, ~attributes=?, a) =>
-    mk(~loc, ~attributes?, PExpPrim0(a));
-  let prim1 = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpPrim1(a, b));
-  let prim2 = (~loc, ~attributes=?, a, b, c) =>
-    mk(~loc, ~attributes?, PExpPrim2(a, b, c));
-  let primn = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpPrimN(a, b));
-  let if_ = (~loc, ~attributes=?, a, b, c) =>
-    mk(~loc, ~attributes?, PExpIf(a, b, c));
-  let while_ = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpWhile(a, b));
-  let for_ = (~loc, ~attributes=?, a, b, c, d) =>
-    mk(~loc, ~attributes?, PExpFor(a, b, c, d));
-  let continue = (~loc, ~attributes=?, ()) =>
-    mk(~loc, ~attributes?, PExpContinue);
-  let break = (~loc, ~attributes=?, ()) => mk(~loc, ~attributes?, PExpBreak);
-  let return = (~loc, ~attributes=?, a) =>
-    mk(~loc, ~attributes?, PExpReturn(a));
-  let constraint_ = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpConstraint(a, b));
-  let use = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpUse(a, b));
-  let box_assign = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpBoxAssign(a, b));
-  let assign = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpAssign(a, b));
-  let lambda = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpLambda(a, b));
-  let apply = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpApp(a, b));
-  let construct = (~loc, ~attributes=?, a, b) =>
-    mk(~loc, ~attributes?, PExpConstruct(a, b));
-  let singleton_construct = (~loc, ~attributes=?, a) =>
-    construct(~loc, ~attributes?, a, PExpConstrSingleton);
-  let tuple_construct = (~loc, ~attributes=?, a, b) =>
-    construct(~loc, ~attributes?, a, PExpConstrTuple(b));
-  let record_construct = (~loc, ~attributes=?, a, b) => {
+  let record_get = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpRecordGet(a, b));
+  let record_set = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpRecordSet(a, b, c));
+  let array = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpArray(a));
+  let array_get = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpArrayGet(a, b));
+  let array_set = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpArraySet(a, b, c));
+  let let_ = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpLet(a, b, c));
+  let match = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpMatch(a, b));
+  let prim0 = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpPrim0(a));
+  let prim1 = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpPrim1(a, b));
+  let prim2 = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpPrim2(a, b, c));
+  let primn = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpPrimN(a, b));
+  let if_ = (~loc, ~core_loc, ~attributes=?, a, b, c) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpIf(a, b, c));
+  let while_ = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpWhile(a, b));
+  let for_ = (~loc, ~core_loc, ~attributes=?, a, b, c, d) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpFor(a, b, c, d));
+  let continue = (~loc, ~core_loc, ~attributes=?, ()) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpContinue);
+  let break = (~loc, ~core_loc, ~attributes=?, ()) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpBreak);
+  let return = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpReturn(a));
+  let constraint_ = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpConstraint(a, b));
+  let use = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpUse(a, b));
+  let box_assign = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpBoxAssign(a, b));
+  let assign = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpAssign(a, b));
+  let lambda = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpLambda(a, b));
+  let apply = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpApp(a, b));
+  let construct = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpConstruct(a, b));
+  let singleton_construct = (~loc, ~core_loc, ~attributes=?, a) =>
+    construct(~loc, ~core_loc, ~attributes?, a, PExpConstrSingleton);
+  let tuple_construct = (~loc, ~core_loc, ~attributes=?, a, b) =>
+    construct(~loc, ~core_loc, ~attributes?, a, PExpConstrTuple(b));
+  let record_construct = (~loc, ~core_loc, ~attributes=?, a, b) => {
     let record_items =
       List.map(
         expr => {
@@ -312,7 +319,13 @@ module Expression = {
         },
         b,
       );
-    construct(~loc, ~attributes?, a, PExpConstrRecord(record_items));
+    construct(
+      ~loc,
+      ~core_loc,
+      ~attributes?,
+      a,
+      PExpConstrRecord(record_items),
+    );
   };
   // It's difficult to parse rational numbers while division exists (in the
   // parser state where you've read NUMBER_INT and you're looking ahead at /,
@@ -321,7 +334,7 @@ module Expression = {
   // and if you choose to shift then 1 / foo would always be a syntax error
   // because the parser would expect a number). It's easier to just parse it
   // as division and have this action decide that it's actually a rational.
-  let binop = (~loc, ~attributes=?, f, a, b) => {
+  let binop = (~loc, ~core_loc, ~attributes=?, f, a, b) => {
     // Locations of nested binops are difficult to compute in the parser so we
     // just set the location manually here
     let loc =
@@ -340,10 +353,16 @@ module Expression = {
         {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(x)))},
         {pexp_desc: PExpConstant(PConstNumber(PConstNumberInt(y)))},
       ) =>
-      constant(~loc, ~attributes?, PConstNumber(PConstNumberRational(x, y)))
+      constant(
+        ~loc,
+        ~core_loc,
+        ~attributes?,
+        PConstNumber(PConstNumberRational(x, y)),
+      )
     | _ =>
       mk(
         ~loc,
+        ~core_loc,
         ~attributes?,
         PExpApp(
           f,
@@ -355,42 +374,54 @@ module Expression = {
       )
     };
   };
-  let block = (~loc, ~attributes=?, a) =>
-    mk(~loc, ~attributes?, PExpBlock(a));
-  let list = (~loc, ~attributes=?, a) => {
-    mk(~loc, ~attributes?, PExpList(a));
+  let block = (~loc, ~core_loc, ~attributes=?, a) =>
+    mk(~loc, ~core_loc, ~attributes?, PExpBlock(a));
+  let list = (~loc, ~core_loc, ~attributes=?, a) => {
+    mk(~loc, ~core_loc, ~attributes?, PExpList(a));
   };
 
   let ignore = e =>
     switch (e.pexp_desc) {
     | PExpLet(_) => e
-    | _ => prim1(~loc=e.pexp_loc, ~attributes=e.pexp_attributes, Ignore, e)
+    | _ =>
+      prim1(
+        ~loc=e.pexp_loc,
+        ~core_loc=e.pexp_core_loc,
+        ~attributes=e.pexp_attributes,
+        Ignore,
+        e,
+      )
     };
 };
 
 module Toplevel = {
-  let mk = (~loc, ~attributes=?, d) => {
+  let mk = (~loc, ~core_loc, ~attributes=?, d) => {
     let attributes = Option.value(~default=[], attributes);
-    {ptop_desc: d, ptop_attributes: attributes, ptop_loc: loc};
+    {
+      ptop_desc: d,
+      ptop_attributes: attributes,
+      ptop_loc: loc,
+      ptop_core_loc: core_loc,
+    };
   };
-  let include_ = (~loc, ~attributes=?, i) =>
-    mk(~loc, ~attributes?, PTopInclude(i));
-  let foreign = (~loc, ~attributes=?, e, d) =>
-    mk(~loc, ~attributes?, PTopForeign(e, d));
-  let module_ = (~loc, ~attributes=?, e, m) =>
-    mk(~loc, ~attributes?, PTopModule(e, m));
-  let primitive = (~loc, ~attributes=?, e, d) =>
-    mk(~loc, ~attributes?, PTopPrimitive(e, d));
-  let data = (~loc, ~attributes=?, elts) =>
-    mk(~loc, ~attributes?, PTopData(elts));
-  let let_ = (~loc, ~attributes=?, e, r, m, vb) =>
-    mk(~loc, ~attributes?, PTopLet(e, r, m, vb));
-  let expr = (~loc, ~attributes=?, e) =>
-    mk(~loc, ~attributes?, PTopExpr(e));
-  let grain_exception = (~loc, ~attributes=?, e, ext) =>
-    mk(~loc, ~attributes?, PTopException(e, ext));
-  let provide = (~loc, ~attributes=?, e) =>
-    mk(~loc, ~attributes?, PTopProvide(e));
+  let include_ = (~loc, ~core_loc, ~attributes=?, i) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopInclude(i));
+  let foreign = (~loc, ~core_loc, ~attributes=?, e, d) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopForeign(e, d));
+  let module_ = (~loc, ~core_loc, ~attributes=?, e, m) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopModule(e, m));
+  let primitive = (~loc, ~core_loc, ~attributes=?, e, d) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopPrimitive(e, d));
+  let data = (~loc, ~core_loc, ~attributes=?, elts) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopData(elts));
+  let let_ = (~loc, ~core_loc, ~attributes=?, e, r, m, vb) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopLet(e, r, m, vb));
+  let expr = (~loc, ~core_loc, ~attributes=?, e) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopExpr(e));
+  let grain_exception = (~loc, ~core_loc, ~attributes=?, e, ext) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopException(e, ext));
+  let provide = (~loc, ~core_loc, ~attributes=?, e) =>
+    mk(~loc, ~core_loc, ~attributes?, PTopProvide(e));
 };
 
 module PrimitiveDescription = {

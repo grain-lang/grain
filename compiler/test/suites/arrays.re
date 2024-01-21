@@ -127,20 +127,25 @@ describe("arrays", ({test, testSkip}) => {
           statements: [
             Toplevel.expr(
               ~loc=Location.dummy_loc,
+              ~core_loc=Location.dummy_loc,
               Expression.array_set(
                 ~loc=Location.dummy_loc,
+                ~core_loc=Location.dummy_loc,
                 Expression.ident(
                   ~loc=Location.dummy_loc,
+                  ~core_loc=Location.dummy_loc,
                   Location.mknoloc(
                     Identifier.IdentName(Location.mknoloc("state")),
                   ),
                 ),
                 Expression.constant(
                   ~loc=Location.dummy_loc,
+                  ~core_loc=Location.dummy_loc,
                   Constant.number(PConstNumberInt("0")),
                 ),
                 Expression.constant(
                   ~loc=Location.dummy_loc,
+                  ~core_loc=Location.dummy_loc,
                   Constant.number(PConstNumberInt("5")),
                 ),
               ),

@@ -435,7 +435,7 @@ let mkloc = (txt, loc) => {txt, loc};
 let mknoloc = txt => mkloc(txt, dummy_loc);
 
 type error = {
-  loc: t,
+  error_loc: t,
   msg: string,
   sub: list(error),
   if_highlight: string /* alternative message if locations are highlighted */
@@ -468,12 +468,12 @@ let print_phantom_error_prefix = ppf =>
 let errorf = (~loc=dummy_loc, ~sub=[], ~if_highlight="", fmt) =>
   pp_ksprintf(
     ~before=print_phantom_error_prefix,
-    msg => {loc, msg, sub, if_highlight},
+    msg => {error_loc: loc, msg, sub, if_highlight},
     fmt,
   );
 
 let error = (~loc=dummy_loc, ~sub=[], ~if_highlight="", msg) => {
-  loc,
+  error_loc: loc,
   msg,
   sub,
   if_highlight,
@@ -504,8 +504,8 @@ let error_of_exn = exn =>
     loop(error_of_exn^);
   };
 
-let rec default_error_reporter = (ppf, {loc, msg, sub, if_highlight}) => {
-  fprintf(ppf, "@[<v>%a %s", print_error, loc, msg);
+let rec default_error_reporter = (ppf, {error_loc, msg, sub, if_highlight}) => {
+  fprintf(ppf, "@[<v>%a %s", print_error, error_loc, msg);
   List.iter(Format.fprintf(ppf, "@,@[<2>%a@]", default_error_reporter), sub);
   fprintf(ppf, "@]");
 };
@@ -565,5 +565,5 @@ let () =
 
 let raise_errorf = (~loc=dummy_loc, ~sub=[], ~if_highlight="") =>
   pp_ksprintf(~before=print_phantom_error_prefix, msg =>
-    raise(Error({loc, msg, sub, if_highlight}))
+    raise(Error({error_loc: loc, msg, sub, if_highlight}))
   );

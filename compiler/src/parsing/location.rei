@@ -103,7 +103,7 @@ let mkloc: ('a, t) => loc('a);
 /** Support for located errors */;
 
 type error = {
-  loc: t,
+  error_loc: t,
   msg: string,
   sub: list(error),
   if_highlight: string /* alternative message if locations are highlighted */

@@ -28,7 +28,7 @@ let get_program_string = filename => {
 let compile_parsed = filename => {
   let filename = Filepath.to_string(filename);
   let program_str = get_program_string(filename);
-  switch (Format.parse_source(program_str)) {
+  switch (Fmt.parse_source(program_str)) {
   | Error(ParseError(exn)) =>
     let bt =
       if (Printexc.backtrace_status()) {
@@ -60,7 +60,7 @@ let format_code =
       program: Parsetree.parsed_program,
     ) => {
   let formatted_code =
-    Grain_formatting.Format.format_ast(~original_source, ~eol, program);
+    Grain_formatting.Fmt.format_ast(~original_source, ~eol, program);
 
   let buf = Buffer.create(0);
   Buffer.add_string(buf, formatted_code);
