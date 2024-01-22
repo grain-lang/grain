@@ -1,6 +1,7 @@
 /* grainc-flags --no-pervasives */
 module Equal
 
+include "runtime/unsafe/memory"
 include "runtime/unsafe/wasmi32" as WasmI32
 from WasmI32 use { (==), (!=), (&), (^), (+), (-), (*), (<), remS as (%), (<<) }
 include "runtime/unsafe/wasmi64" as WasmI64
@@ -8,7 +9,6 @@ include "runtime/unsafe/wasmf32" as WasmF32
 include "runtime/unsafe/tags" as Tags
 include "runtime/numbers" as Numbers
 from Numbers use { isNumber, numberEqual }
-include "runtime/unsafe/memory"
 
 primitive (!) = "@not"
 primitive (||) = "@or"
