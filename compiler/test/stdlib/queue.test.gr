@@ -65,6 +65,10 @@ Queue.pop(queue)
 assert Queue.toList(queue) == [1, 2, 3]
 Queue.push(3, queue)
 assert Queue.toList(queue) == [1, 2, 3, 3]
+Queue.pop(queue)
+Queue.push(4, queue)
+Queue.push(5, queue)
+assert Queue.toList(queue) == [2, 3, 3, 4, 5]
 
 // Queue.fromList
 let queue = Queue.makeSized(0)
