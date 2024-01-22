@@ -160,8 +160,6 @@ let unify_var: (Env.t, type_expr, type_expr) => unit;
 let with_passive_variants: ('a => 'b, 'a) => 'b;
 /* Call [f] in passive_variants mode, for exhaustiveness check. */
 
-// type argument_label = Parsetree.argument_label;
-
 type filter_arrow_failure =
   | Unification_error(list((type_expr, type_expr)))
   | Label_mismatch({

@@ -1011,7 +1011,7 @@ and type_expect_ =
         switch (label) {
         | Unlabeled => failwith("Impossible: default argument with no label")
         | Labeled({txt: name})
-        | Default({txt: name}, _) => name
+        | Default({txt: name}) => name
         };
       "$default_option_" ++ label;
     };
@@ -2678,7 +2678,7 @@ let report_error = (env, ppf) =>
         List.filter_map(
           ((l, _)) =>
             switch (l) {
-            | Default({txt: name}, _) => Some(name)
+            | Default({txt: name}) => Some(name)
             | _ => None
             },
           unused_tyargs,

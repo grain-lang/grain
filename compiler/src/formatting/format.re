@@ -1767,7 +1767,7 @@ and print_type =
                             Doc.text(":"),
                             Doc.space,
                           ])
-                        | Default(name, _) =>
+                        | Default(name) =>
                           Doc.concat([
                             Doc.question,
                             Doc.text(name.txt),
@@ -2125,7 +2125,7 @@ and print_arg_lambda =
       switch (lambda.paa_label) {
       | Unlabeled => Doc.nil
       | Labeled(name)
-      | Default(name, _) => Doc.concat([Doc.text(name.txt), Doc.equal])
+      | Default(name) => Doc.concat([Doc.text(name.txt), Doc.equal])
       };
 
     let args =
@@ -2684,7 +2684,7 @@ and print_application_argument =
     );
   switch (argument.paa_label, argument.paa_expr.pexp_desc) {
   | (Unlabeled, _) => expr_doc
-  | (Labeled(name) | Default(name, _), _) =>
+  | (Labeled(name) | Default(name), _) =>
     Doc.concat([Doc.text(name.txt), Doc.equal, expr_doc])
   };
 }

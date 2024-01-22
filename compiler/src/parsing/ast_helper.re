@@ -528,7 +528,7 @@ module LambdaArgument = {
       };
     let pla_label =
       switch (label, default) {
-      | (Some(name), Some(expr)) => Default(name, expr)
+      | (Some(name), Some(_)) => Default(name)
       | (Some(name), None) => Labeled(name)
       | (None, None) => Unlabeled
       | (None, Some(_)) =>

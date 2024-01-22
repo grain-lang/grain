@@ -79,12 +79,7 @@ let compile_typed = (input: Fp.t(Fp.absolute)) => {
 };
 
 let generate_docs =
-    (
-      ~current_version,
-      ~input_path,
-      ~output=?,
-      program: Typedtree.typed_program,
-    ) => {
+    (~current_version, ~output=?, program: Typedtree.typed_program) => {
   let signature_items = program.signature.cmi_sign;
 
   let buf = Buffer.create(0);
@@ -97,7 +92,6 @@ let generate_docs =
       ~module_namespace=None,
       ~name=module_name,
       ~loc=program.module_name.loc,
-      ~input_path,
       signature_items,
     );
 
@@ -192,7 +186,6 @@ let graindoc = (opts, runs) => {
       try(
         generate_docs(
           ~current_version=opts.current_version,
-          ~input_path=Filepath.to_string(input_path),
           ~output=?output_path,
           program,
         )

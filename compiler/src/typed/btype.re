@@ -419,10 +419,7 @@ let label_equal = (l1, l2) => {
   switch (l1, l2) {
   | (Parsetree.Unlabeled, Parsetree.Unlabeled) => true
   | (Parsetree.Labeled({txt: name1}), Parsetree.Labeled({txt: name2}))
-  | (
-      Parsetree.Default({txt: name1}, _),
-      Parsetree.Default({txt: name2}, _),
-    )
+  | (Parsetree.Default({txt: name1}), Parsetree.Default({txt: name2}))
       when name1 == name2 =>
     true
   | _ => false
@@ -433,8 +430,8 @@ let same_label_name = (l1, l2) =>
   switch (l1, l2) {
   | (Parsetree.Unlabeled, Parsetree.Unlabeled) => true
   | (
-      Parsetree.Labeled({txt: name1}) | Parsetree.Default({txt: name1}, _),
-      Parsetree.Labeled({txt: name2}) | Parsetree.Default({txt: name2}, _),
+      Parsetree.Labeled({txt: name1}) | Parsetree.Default({txt: name1}),
+      Parsetree.Labeled({txt: name2}) | Parsetree.Default({txt: name2}),
     )
       when name1 == name2 =>
     true
@@ -445,13 +442,13 @@ let label_name =
   fun
   | Parsetree.Unlabeled => ""
   | Parsetree.Labeled(s)
-  | Parsetree.Default(s, _) => s.txt;
+  | Parsetree.Default(s) => s.txt;
 
 let qualified_label_name =
   fun
   | Parsetree.Unlabeled => ""
   | Parsetree.Labeled(s) => s.txt
-  | Parsetree.Default(s, _) => "?" ++ s.txt;
+  | Parsetree.Default(s) => "?" ++ s.txt;
 
 let rec extract_label_aux = (hd, l) =>
   fun

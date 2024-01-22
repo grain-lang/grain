@@ -378,7 +378,7 @@ and parsed_type_argument = {
 and argument_label =
   | Unlabeled
   | Labeled(loc(string))
-  | Default(loc(string), expression) // label name, default value
+  | Default(loc(string))
 
 /** Type for fields within a record */
 

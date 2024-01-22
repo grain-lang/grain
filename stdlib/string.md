@@ -464,11 +464,11 @@ Get a portion of a string.
 
 Parameters:
 
-|param|type|default|description|
-|-----|----|-------|-----------|
-|`start`|`Number`||The start position of the substring|
-|`end`|`Number`|`length(string)`|The end position of the substring, exclusive|
-|`string`|`String`||The input string|
+|param|type|description|
+|-----|----|-----------|
+|`start`|`Number`|The start position of the substring|
+|`?end`|`Number`|The end position of the substring, exclusive|
+|`string`|`String`|The input string|
 
 Returns:
 
