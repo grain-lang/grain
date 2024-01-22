@@ -23,9 +23,9 @@ include "runtime/numbers"
 from Numbers use { coerceNumberToWasmI32 }
 
 @unsafe
-let mut _ARRAY_LENGTH_OFFSET = 4n
-@unsafe
 let mut _ARRAY_START_OFFSET = 8n
+
+primitive length = "@array.length"
 
 @unsafe
 let checkLength = length => {
@@ -62,10 +62,7 @@ let wrapNegativeIndex = (arrLen, idx) => {
  * @since v0.1.0
  */
 @unsafe
-provide let length = array => {
-  let ptr = WasmI32.fromGrain(array: Array<a>)
-  tagSimpleNumber(WasmI32.load(ptr, _ARRAY_LENGTH_OFFSET))
-}
+provide let length = array => length(array)
 
 /**
  * Creates a new array of the specified length with each element being
