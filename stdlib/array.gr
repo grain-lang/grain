@@ -85,7 +85,6 @@ provide let length = array => {
 @unsafe
 provide let make: (Number, a) => Array<a> = (length: Number, item: a) => {
   from WasmI32 use { (+), (*), (<) }
-  let lengthArg = length
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
   let byteLength = length * 4n
@@ -464,7 +463,7 @@ provide let flatMap = (fn, array) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to check
- * @returns `true` if all elements satify the condition or `false` otherwise
+ * @returns `true` if all elements satisfy the condition or `false` otherwise
  *
  * @since v0.3.0
  */
@@ -483,7 +482,7 @@ provide let every = (fn, array) => {
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
- * @returns `true` if one or more elements satify the condition or `false` otherwise
+ * @returns `true` if one or more elements satisfy the condition or `false` otherwise
  *
  * @since v0.3.0
  */
@@ -537,14 +536,10 @@ provide let fillRange = (value, start, stop, array) => {
     stopIndex
   }
 
-  if (startIndex > length) {
-    throw IndexOutOfBounds
-  }
-  if (startIndex > stopIndex) {
+  if (startIndex > length || startIndex > stopIndex) {
     throw IndexOutOfBounds
   }
 
-  let mut index = startIndex
   for (let mut index = startIndex; index < stopIndex; index += 1) {
     array[index] = value
   }
@@ -636,7 +631,7 @@ provide let contains = (search, array) => {
 }
 
 /**
- * Finds the first element in an array that satifies the given condition.
+ * Finds the first element in an array that satisfies the given condition.
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
@@ -655,7 +650,7 @@ provide let find = (fn, array) => {
 }
 
 /**
- * Finds the first index in an array where the element satifies the given condition.
+ * Finds the first index in an array where the element satisfies the given condition.
  *
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
@@ -1818,7 +1813,7 @@ provide module Immutable {
   }
 
   /**
-   * Finds the first element in an array that satifies the given condition.
+   * Finds the first element in an array that satisfies the given condition.
    *
    * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
    * @param array: The array to search
@@ -1833,7 +1828,7 @@ provide module Immutable {
   }
 
   /**
-   * Finds the first index in an array where the element satifies the given condition.
+   * Finds the first index in an array where the element satisfies the given condition.
    *
    * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
    * @param array: The array to search
