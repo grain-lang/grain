@@ -1096,3 +1096,53 @@ Examples:
 String.trim("   Hello World   ") == "Hello World"
 ```
 
+### String.**toAsciiLowercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiLowercase : (string: String) => String
+```
+
+Converts all ASCII uppercase characters in the string to lowercase.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The lowercased string|
+
+### String.**toAsciiUppercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiUppercase : (string: String) => String
+```
+
+Converts all ASCII lowercase characters in the string to uppercase.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`string`|`String`|The string|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`String`|The uppercased string|
+

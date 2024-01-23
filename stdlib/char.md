@@ -447,3 +447,103 @@ from Char use { (>=) }
 assert 'a' >= 'a'
 ```
 
+### Char.**isAsciiDigit**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAsciiDigit : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII digit.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII digit or `false` otherwise|
+
+### Char.**isAsciiAlpha**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+isAsciiAlpha : (char: Char) => Bool
+```
+
+Checks if the character is an ASCII alphabetical character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Bool`|`true` if the character is an ASCII alphabetical or `false` otherwise|
+
+### Char.**toAsciiLowercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiLowercase : (char: Char) => Char
+```
+
+Converts the character to ASCII lowercase if it is an ASCII uppercase character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|The lowercased character|
+
+### Char.**toAsciiUppercase**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toAsciiUppercase : (char: Char) => Char
+```
+
+Converts the character to ASCII uppercase if it is an ASCII lowercase character.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`char`|`Char`|The character|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Char`|The uppercased character|
+
