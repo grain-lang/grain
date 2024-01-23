@@ -26,14 +26,7 @@ from Numbers use {
  * @since v0.4.0
  */
 @unsafe
-provide let infinity = {
-  let ptr = newFloat64(
-    WasmF64.reinterpretI64(
-      0b0111111111110000000000000000000000000000000000000000000000000000N
-    )
-  )
-  WasmI32.toGrain(ptr): Float64
-}
+provide let infinity = Infinityd
 
 /**
  * NaN (Not a Number) represented as a Float64 value.
@@ -41,14 +34,7 @@ provide let infinity = {
  * @since v0.4.0
  */
 @unsafe
-provide let nan = {
-  let ptr = newFloat64(
-    WasmF64.reinterpretI64(
-      0b0111111111110000000000000000000000000000000000000000000000000001N
-    )
-  )
-  WasmI32.toGrain(ptr): Float64
-}
+provide let nan = NaNd
 
 /**
  * Pi represented as a Float64 value.
