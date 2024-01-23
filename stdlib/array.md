@@ -644,7 +644,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if all elements satify the condition or `false` otherwise|
+|`Bool`|`true` if all elements satisfy the condition or `false` otherwise|
 
 ### Array.**some**
 
@@ -671,7 +671,7 @@ Returns:
 
 |type|description|
 |----|-----------|
-|`Bool`|`true` if one or more elements satify the condition or `false` otherwise|
+|`Bool`|`true` if one or more elements satisfy the condition or `false` otherwise|
 
 ### Array.**fill**
 
@@ -836,7 +836,7 @@ No other changes yet.
 find : (fn: (a => Bool), array: Array<a>) => Option<a>
 ```
 
-Finds the first element in an array that satifies the given condition.
+Finds the first element in an array that satisfies the given condition.
 
 Parameters:
 
@@ -862,7 +862,7 @@ No other changes yet.
 findIndex : (fn: (a => Bool), array: Array<a>) => Option<Number>
 ```
 
-Finds the first index in an array where the element satifies the given condition.
+Finds the first index in an array where the element satisfies the given condition.
 
 Parameters:
 
@@ -2187,7 +2187,7 @@ Returns:
 find : (fn: (a => Bool), array: ImmutableArray<a>) => Option<a>
 ```
 
-Finds the first element in an array that satifies the given condition.
+Finds the first element in an array that satisfies the given condition.
 
 Parameters:
 
@@ -2220,7 +2220,7 @@ Returns:
 findIndex : (fn: (a => Bool), array: ImmutableArray<a>) => Option<Number>
 ```
 
-Finds the first index in an array where the element satifies the given condition.
+Finds the first index in an array where the element satisfies the given condition.
 
 Parameters:
 
