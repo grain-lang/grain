@@ -55,20 +55,214 @@ type infix_side =
   | Left
   | Right;
 
+// This takes a location and makes the loc_end the same as loc_start.
+// Its main purpose is to find comments between the start of an enclosing location and the first item inside.
+let enclosing_start_location = loc => {
+  {...loc, loc_end: loc.loc_start};
+};
+
+// This takes a location and makes the loc_start the same as loc_end.
+// Its main purpose is to find comments between the end of an enclosing location and the last item inside.
+let enclosing_end_location = loc => {
+  {...loc, loc_start: loc.loc_end};
+};
+
+let is_same_op = (expr1, expr2) =>
+  switch (expr1.pexp_desc, expr2.pexp_desc) {
+  | (
+      PExpId({txt: Identifier.IdentName({txt: op1})}),
+      PExpId({txt: Identifier.IdentName({txt: op2})}),
+    ) =>
+    op1 == op2
+  | _ => false
+  };
+
+let is_shift_or_concat_op = expr =>
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    if (String.length(op) > 1) {
+      switch (String.sub(op, 0, 2)) {
+      | "<<"
+      | ">>"
+      | "++" => true
+      | _ => false
+      };
+    } else {
+      false;
+    }
+  | _ => false
+  };
+
+let is_logic_op = expr =>
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    if (String.length(op) > 1) {
+      switch (String.sub(op, 0, 2)) {
+      | "<="
+      | ">="
+      | "=="
+      | "!="
+      | "is"
+      | "&&"
+      | "||" => true
+      | _ => false
+      };
+    } else {
+      false;
+    }
+  | _ => false
+  };
+
+let is_math_op = expr =>
+  if (is_logic_op(expr) || is_shift_or_concat_op(expr)) {
+    false;
+  } else {
+    switch (expr.pexp_desc) {
+    | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+      if (String.length(op) > 0) {
+        switch (op.[0]) {
+        | '*'
+        | '/'
+        | '%'
+        | '+'
+        | '-'
+        | '<'
+        | '>'
+        | '&'
+        | '^'
+        | '|' => true
+        | _ => false
+        };
+      } else {
+        false;
+      }
+    | _ => false
+    };
+  };
+
+let op_precedence = startsWith =>
+  switch (startsWith) {
+  | '*'
+  | '/'
+  | '%' => 120
+  | '+'
+  | '-' => 110
+  | '<'
+  | '>' => 90
+  | '&' => 70
+  | '^' => 60
+  | '|' => 50
+  | '_' => 10
+  | _ => 9999
+  };
+
+let precedence = expr => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) =>
+    if (String.length(op) > 1) {
+      switch (String.sub(op, 0, 2)) {
+      | "++" => 110
+      | "<<"
+      | ">>" => 100
+      | "=="
+      | "!="
+      | "is" => 80
+      | "&&" => 40
+      | "||"
+      | "??" => 30
+      | _ => op_precedence(op.[0])
+      };
+    } else if (String.length(op) > 0) {
+      op_precedence(op.[0]);
+    } else {
+      9999;
+    }
+  | _ => 9999
+  };
+};
+
+let infixop = op => {
+  switch (op.[0]) {
+  | '+'
+  | '-'
+  | '*'
+  | '/'
+  | '%'
+  | '='
+  | '^'
+  | '<'
+  | '>'
+  | '&'
+  | '|'
+  | '?' => true
+  | _ when op == "is" => true
+  | _ when op == "isnt" => true
+  | _ when String.starts_with(~prefix="!=", op) => true
+  | _
+  | exception _ => false
+  };
+};
+
+let is_infix_op = expr => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) => infixop(op)
+  | _ => false
+  };
+};
+
+let prefixop = op =>
+  switch (op.[0]) {
+  | '!' => true
+  | _
+  | exception _ => false
+  };
+
+let is_prefix_op = expr => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: op})}) => prefixop(op)
+  | _ => false
+  };
+};
+
+let is_keyword_function = expr => {
+  switch (expr.pexp_desc) {
+  | PExpId({txt: Identifier.IdentName({txt: "assert" | "throw" | "fail"})}) =>
+    true
+  | _ => false
+  };
+};
+
+let needs_grouping = (~parent, ~side: infix_side, expr) => {
+  switch (expr.pexp_desc, side) {
+  | (PExpIf(_), _) => ParenGrouping
+  | (PExpApp(fn1, _), Left)
+      when is_infix_op(fn1) && precedence(fn1) < precedence(parent) =>
+    ParenGrouping
+  | (PExpApp(fn1, _), Right)
+      when is_infix_op(fn1) && precedence(fn1) <= precedence(parent) =>
+    ParenGrouping
+  | (PExpApp(fn1, _), _) =>
+    if (is_infix_op(fn1)) {
+      if ((!is_math_op(parent) && !is_logic_op(parent))
+          && !is_same_op(fn1, parent)) {
+        ParenGrouping;
+      } else if (precedence(fn1) == precedence(parent)) {
+        None;
+      } else {
+        FormatterGrouping;
+      };
+    } else {
+      FormatterGrouping;
+    }
+  | (PExpConstant(PConstNumber(PConstNumberRational(_, _))), _)
+      when op_precedence('/') <= precedence(parent) =>
+    ParenGrouping
+  | _ => FormatterGrouping
+  };
+};
+
 let format_ast = (~original_source, ~eol, parsed_program) => {
   let comment_tree = Commenttree.from_comments(parsed_program.comments);
-
-  // This takes a location and makes the loc_end the same as loc_start.
-  // Its main purpose is to find comments between the start of an enclosing location and the first item inside.
-  let enclosing_start_location = loc => {
-    {...loc, loc_end: loc.loc_start};
-  };
-
-  // This takes a location and makes the loc_start the same as loc_end.
-  // Its main purpose is to find comments between the end of an enclosing location and the last item inside.
-  let enclosing_end_location = loc => {
-    {...loc, loc_start: loc.loc_end};
-  };
 
   let get_original_code = location => {
     let (_, start_line, startc, _) =
@@ -107,173 +301,6 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
     };
   };
 
-  let is_same_op = (expr1, expr2) =>
-    switch (expr1.pexp_desc, expr2.pexp_desc) {
-    | (
-        PExpId({txt: Identifier.IdentName({txt: op1})}),
-        PExpId({txt: Identifier.IdentName({txt: op2})}),
-      ) =>
-      op1 == op2
-    | _ => false
-    };
-
-  let is_shift_or_concat_op = expr =>
-    switch (expr.pexp_desc) {
-    | PExpId({txt: Identifier.IdentName({txt: op})}) =>
-      if (String.length(op) > 1) {
-        switch (String.sub(op, 0, 2)) {
-        | "<<"
-        | ">>"
-        | ">>>"
-        | "++" => true
-        | _ => false
-        };
-      } else {
-        false;
-      }
-    | _ => false
-    };
-
-  let is_logic_op = expr =>
-    switch (expr.pexp_desc) {
-    | PExpId({txt: Identifier.IdentName({txt: op})}) =>
-      if (String.length(op) > 1) {
-        switch (String.sub(op, 0, 2)) {
-        | "<="
-        | ">="
-        | "=="
-        | "!="
-        | "is"
-        | "isnt"
-        | "&&"
-        | "||" => true
-        | _ => false
-        };
-      } else {
-        false;
-      }
-    | _ => false
-    };
-
-  let is_math_op = expr =>
-    if (is_logic_op(expr) || is_shift_or_concat_op(expr)) {
-      false;
-    } else {
-      switch (expr.pexp_desc) {
-      | PExpId({txt: Identifier.IdentName({txt: op})}) =>
-        if (String.length(op) > 0) {
-          switch (op.[0]) {
-          | '*'
-          | '/'
-          | '%'
-          | '+'
-          | '-'
-          | '<'
-          | '>'
-          | '&'
-          | '^'
-          | '|' => true
-          | _ => false
-          };
-        } else {
-          false;
-        }
-      | _ => false
-      };
-    };
-
-  let op_precedence = startsWith =>
-    switch (startsWith) {
-    | '*'
-    | '/'
-    | '%' => 120
-    | '+'
-    | '-' => 110
-    | '<'
-    | '>' => 90
-    | '&' => 70
-    | '^' => 60
-    | '|' => 50
-    | '_' => 10
-    | _ => 9999
-    };
-
-  let precedence = expr => {
-    switch (expr.pexp_desc) {
-    | PExpId({txt: Identifier.IdentName({txt: op})}) =>
-      if (String.length(op) > 1) {
-        switch (String.sub(op, 0, 2)) {
-        | "++" => 110
-        | "<<"
-        | ">>" => 100
-        | "=="
-        | "!="
-        | "is" => 80
-        | "&&" => 40
-        | "||"
-        | "??" => 30
-        | _ => op_precedence(op.[0])
-        };
-      } else if (String.length(op) > 0) {
-        op_precedence(op.[0]);
-      } else {
-        9999;
-      }
-    | _ => 9999
-    };
-  };
-
-  let infixop = op => {
-    switch (op.[0]) {
-    | '+'
-    | '-'
-    | '*'
-    | '/'
-    | '%'
-    | '='
-    | '^'
-    | '<'
-    | '>'
-    | '&'
-    | '|'
-    | '?' => true
-    | _ when op == "is" => true
-    | _ when op == "isnt" => true
-    | _ when String.starts_with(~prefix="!=", op) => true
-    | _
-    | exception _ => false
-    };
-  };
-
-  let is_infix_op = expr => {
-    switch (expr.pexp_desc) {
-    | PExpId({txt: Identifier.IdentName({txt: op})}) => infixop(op)
-    | _ => false
-    };
-  };
-
-  let prefixop = op =>
-    switch (op.[0]) {
-    | '!' => true
-    | _
-    | exception _ => false
-    };
-
-  let is_prefix_op = expr => {
-    switch (expr.pexp_desc) {
-    | PExpId({txt: Identifier.IdentName({txt: op})}) => prefixop(op)
-    | _ => false
-    };
-  };
-
-  let is_keyword = expr => {
-    switch (expr.pexp_desc) {
-    | PExpId({txt: Identifier.IdentName({txt: "assert" | "throw" | "fail"})}) =>
-      true
-    | _ => false
-    };
-  };
-
   let has_disable_formatting_comment = loc => {
     switch (Commenttree.query_line(comment_tree, loc.loc_start.pos_lnum - 1)) {
     | Some(Line({cmt_content: "formatter-ignore"})) => true
@@ -281,43 +308,13 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
     };
   };
 
-  let needs_grouping = (~parent, ~side: infix_side, expr) => {
-    switch (expr.pexp_desc, side) {
-    | (PExpIf(_), _) => ParenGrouping
-    | (PExpApp(fn1, _), Left)
-        when is_infix_op(fn1) && precedence(fn1) < precedence(parent) =>
-      ParenGrouping
-    | (PExpApp(fn1, _), Right)
-        when is_infix_op(fn1) && precedence(fn1) <= precedence(parent) =>
-      ParenGrouping
-    | (PExpApp(fn1, _), _) =>
-      if (is_infix_op(fn1)) {
-        if ((!is_math_op(parent) && !is_logic_op(parent))
-            && !is_same_op(fn1, parent)) {
-          ParenGrouping;
-        } else if (precedence(fn1) == precedence(parent)) {
-          None;
-        } else {
-          FormatterGrouping;
-        };
-      } else {
-        FormatterGrouping;
-      }
-    | (PExpConstant(PConstNumber(PConstNumberRational(_, _))), _)
-        when op_precedence('/') <= precedence(parent) =>
-      ParenGrouping
-    | _ => FormatterGrouping
-    };
-  };
-
-  let print_infix_prefix_op = expr => {
+  let rec print_infix_prefix_op = expr => {
     switch (expr.pexp_desc) {
     | PExpId({txt: Identifier.IdentName({txt: op})}) => string(op)
     | _ => failwith("Impossible: non- prefix or infix op")
     };
-  };
-
-  let rec print_constant = (~loc, constant) => {
+  }
+  and print_constant = (~loc, constant) => {
     string(get_original_code(loc));
   }
   and print_punnable_pattern =
@@ -1323,7 +1320,7 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
             }
           )
         )
-      | PExpApp(fn, [rhs]) when is_keyword(fn) =>
+      | PExpApp(fn, [rhs]) when is_keyword_function(fn) =>
         print_expression(fn)
         ++ print_comment_range(
              ~none=space,
