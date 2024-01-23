@@ -109,7 +109,7 @@ let init = (limbs: WasmI32) => {
     // in our multiplication/division algorithms. This means that BigInts
     // are limited to 16+17179869176 bytes, or just over 16GiB.
     throw Exception.InvalidArgument(
-      "Cannot allocate BigInt with >= 2147483648 limbs"
+      "Cannot allocate BigInt with >= 2147483648 limbs",
     )
   }
 
@@ -193,9 +193,7 @@ let setFlag = (ptr, flag, value) => {
   let (!) = lnot
   WasmI32.store(
     ptr,
-    WasmI32.load(ptr, 12n) & !flag |
-    flag *
-    (if (WasmI32.eqz(value)) {
+    WasmI32.load(ptr, 12n) & !flag | flag * (if (WasmI32.eqz(value)) {
       0n
     } else {
       1n
@@ -224,7 +222,8 @@ let getHalfSize = ptr => {
   from WasmI32 use { (-), (<<), gtU as (>) }
   from WasmI64 use { (>>>) }
   if (
-    size > 0n && WasmI32.eqz(WasmI32.wrapI64(getLimb(ptr, size - 1n) >>> 32N))
+    size > 0n &&
+    WasmI32.eqz(WasmI32.wrapI64(getLimb(ptr, size - 1n) >>> 32N))
   ) {
     // last half-limb is trailing zeros
     (size << 1n) - 1n
@@ -815,7 +814,7 @@ provide let bigIntToString = (num: WasmI32, base: WasmI32) => {
           ]
           acc = acc >>> bits
           if (accBits > 64N) {
-            acc = limb >>> 64N - (accBits - bits)
+            acc = limb >>> (64N - (accBits - bits))
           }
           accBits -= bits
         }
@@ -854,12 +853,10 @@ provide let bigIntToString = (num: WasmI32, base: WasmI32) => {
         ]
       }
     }
-    while (
-      match (result) {
-        [c, ...tl] when DS.untagChar(c) == DS.untagChar('0') => true,
-        _ => false,
-      }
-    ) {
+    while (match (result) {
+      [c, ...tl] when DS.untagChar(c) == DS.untagChar('0') => true,
+      _ => false,
+    }) {
       match (result) {
         [c, ...tl] => result = tl,
         _ => void, // <- impossible
@@ -1081,16 +1078,11 @@ let unsignedSubInt = (num1: WasmI32, int: WasmI64) => {
   from WasmI64 use { (==) as eqWasmI64, (-), ltU as (<) }
   if (num1Limbs == 0n || num1Limbs == 1n && getLimb(num1, 0n) < int) {
     let ret = init(1n)
-    setLimb(
-      ret,
-      0n,
-      int -
-      (if (num1Limbs == 0n) {
-        0N
-      } else {
-        getLimb(num1, 0n)
-      })
-    )
+    setLimb(ret, 0n, int - (if (num1Limbs == 0n) {
+      0N
+    } else {
+      getLimb(num1, 0n)
+    }))
     trimNumberInPlace(negateInPlace(ret))
   } else if (num1Limbs == 1n && eqWasmI64(getLimb(num1, 0n), int)) {
     makeZero()
@@ -1293,7 +1285,8 @@ provide let shl = (num: WasmI32, places: WasmI32) => {
   let mut carry = 0N
   let a = places / 32n
   let b = places % 32n
-  let mask = ((1N << WasmI64.extendI32U(b)) - 1N) << 64N - WasmI64.extendI32U(b)
+  let mask = ((1N << WasmI64.extendI32U(b)) - 1N) <<
+    (64N - WasmI64.extendI32U(b))
   let result = init(numLimbs + a)
   setFlag(result, _IS_NEGATIVE, getFlag(num, _IS_NEGATIVE))
   from WasmI32 use { (<<) }
@@ -1315,7 +1308,7 @@ provide let shl = (num: WasmI32, places: WasmI32) => {
     setHalfLimb(
       ret,
       numHalfLimbs + a,
-      WasmI32.wrapI64(carry >>> 32N - WasmI64.extendI32U(b))
+      WasmI32.wrapI64(carry >>> (32N - WasmI64.extendI32U(b)))
     )
     ret
   } else {
@@ -1353,8 +1346,7 @@ provide let shrS = (num: WasmI32, places: WasmI32) => {
   } else {
     let newHalfLimbs = numHalfLimbs - a
     let ret = init(
-      (newHalfLimbs >>> 1n) +
-      (if (WasmI32.eqz(newHalfLimbs & 1n)) {
+      (newHalfLimbs >>> 1n) + (if (WasmI32.eqz(newHalfLimbs & 1n)) {
         0n
       } else {
         1n
@@ -1411,12 +1403,7 @@ let bitwiseNotUnsigned = (num: WasmI32) => {
 }
 
 @unsafe
-let bitwiseAndPositive =
-  (
-    num1: WasmI32,
-    num2: WasmI32,
-    copyTrailing: WasmI32,
-  ) => {
+let bitwiseAndPositive = (num1: WasmI32, num2: WasmI32, copyTrailing: WasmI32) => {
   // bitwise and, but both num1 and num2 are assumed to be positive
   let num1Limbs = getSize(num1)
   let num2Limbs = getSize(num2)
@@ -1581,11 +1568,7 @@ provide let bitwiseOr = (num1: WasmI32, num2: WasmI32) => {
       let num2Neg = negate(num2) // B
       let num1Sub1 = decr(num1Neg) // (A-1)
       let num2Sub1 = decr(num2Neg) // (B-1)
-      let andResult = bitwiseAndPositive(
-        num1Sub1,
-        num2Sub1,
-        0n
-      ) // (A-1) & (B-1)
+      let andResult = bitwiseAndPositive(num1Sub1, num2Sub1, 0n) // (A-1) & (B-1)
       let ret = incr(andResult) // ((A-1) & (B-1)) + 1
       Memory.decRef(num1Neg)
       Memory.decRef(num2Neg)
@@ -1765,11 +1748,10 @@ let baseCaseDivRem = (a: WasmI32, b: WasmI32, result: WasmI32) => {
   let n = getHalfSize(b)
   let m = getHalfSize(a) - n
   let qsize = (if (WasmI32.eqz(m + 1n & 1n)) {
-      m + 1n
-    } else {
-      m + 2n
-    }) >>>
-    1n
+    m + 1n
+  } else {
+    m + 2n
+  }) >>> 1n
   let mut q = init(qsize)
   let mut a = 0n
   let bTimesBetaM = shl(b, m * 32n) // b * \beta^m == b * (2^32)^m == b*2^(32*m)
@@ -1783,18 +1765,12 @@ let baseCaseDivRem = (a: WasmI32, b: WasmI32, result: WasmI32) => {
   Memory.decRef(bTimesBetaM)
   for (let mut j = m - 1n; j >= 0n; j -= 1n) {
     from WasmI64 use { divU as (/), (|), (<<) }
-    let anjBeta = WasmI64.extendI32U(getHalfLimb(a, n + j)) <<
-      32N // a_{n+j}\beta
+    let anjBeta = WasmI64.extendI32U(getHalfLimb(a, n + j)) << 32N // a_{n+j}\beta
     let anj1 = WasmI64.extendI32U(getHalfLimb(a, n + j - 1n)) // a_{n+j-1}
     let bn1 = WasmI64.extendI32U(getHalfLimb(b, n - 1n)) // b_{n-1}
     let qjstar = (anjBeta | anj1) / bn1 // q_j^\ast (quotient selection)
-    let mut qj = WasmI32.wrapI64(
-      qjstar
-    ) // min(q_j^ast, \beta - 1) (equiv. to qjstar & _UMAX_I6432)
-    let bTimesBetaJ = shl(
-      b,
-      j * 32n
-    ) // b * \beta^j == b * (2^32)^j == b*2^(32*j)
+    let mut qj = WasmI32.wrapI64(qjstar) // min(q_j^ast, \beta - 1) (equiv. to qjstar & _UMAX_I6432)
+    let bTimesBetaJ = shl(b, j * 32n) // b * \beta^j == b * (2^32)^j == b*2^(32*j)
     let qjWrapped = makeWrappedUint32(qj)
     let qjTimesBTimesBetaJ = mul(bTimesBetaJ, qjWrapped)
     Memory.decRef(qjWrapped)
@@ -1840,13 +1816,12 @@ let baseCaseDivRemUnnormalized = (a: WasmI32, b: WasmI32, result: WasmI32) => {
 }
 
 @unsafe
-let division =
-  (
-    num1: WasmI32,
-    num2: WasmI32,
-    destContainer: WasmI32,
-    divMod: Bool,
-  ) => {
+let division = (
+  num1: WasmI32,
+  num2: WasmI32,
+  destContainer: WasmI32,
+  divMod: Bool,
+) => {
   from WasmI32 use { (^), (==) }
   if (eqz(num2)) {
     throw Exception.DivisionByZero
@@ -1908,8 +1883,10 @@ let division =
   // https://en.wikipedia.org/wiki/Modulo_operation
   if (
     divMod &&
-    (flagIsSet(r, _IS_NEGATIVE) && !flagIsSet(num2, _IS_NEGATIVE) ||
-      !flagIsSet(r, _IS_NEGATIVE) && flagIsSet(num2, _IS_NEGATIVE))
+    (
+      flagIsSet(r, _IS_NEGATIVE) && !flagIsSet(num2, _IS_NEGATIVE) ||
+      !flagIsSet(r, _IS_NEGATIVE) && flagIsSet(num2, _IS_NEGATIVE)
+    )
   ) {
     let newr = add(r, num2)
     Memory.decRef(r)

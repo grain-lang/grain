@@ -139,8 +139,9 @@ let addUint32help = (value, buffer) => {
  * @since v0.4.0
  */
 provide let make = initialSize => {
-  if (initialSize < 0)
-    throw Exception.InvalidArgument("Buffers size must be >= 0")
+  if (initialSize < 0) throw Exception.InvalidArgument(
+    "Buffers size must be >= 0",
+  )
   { len: 0, initialSize, data: Bytes.make(initialSize) }
 }
 
@@ -378,13 +379,12 @@ provide let addStringSlice = (start: Number, end, string, buffer) => {
  * @since v0.4.0
  */
 @unsafe
-provide let addBytesSlice =
-  (
-    start: Number,
-    length: Number,
-    bytes: Bytes,
-    buffer: Buffer,
-  ) => {
+provide let addBytesSlice = (
+  start: Number,
+  length: Number,
+  bytes: Bytes,
+  buffer: Buffer,
+) => {
   if (length != 0) {
     from WasmI32 use { (-), (<), (>), (>=) }
 

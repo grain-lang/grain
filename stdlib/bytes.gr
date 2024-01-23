@@ -180,7 +180,7 @@ provide let slice = (start: Number, length: Number, bytes: Bytes) => {
   let length = coerceNumberToWasmI32(length)
   if (start + length > size) {
     throw Exception.InvalidArgument(
-      "The given index and length do not specify a valid range of bytes"
+      "The given index and length do not specify a valid range of bytes",
     )
   }
   let dst = allocateBytes(length)
@@ -258,14 +258,13 @@ provide let resize = (left: Number, right: Number, bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-provide let move =
-  (
-    srcIndex: Number,
-    dstIndex: Number,
-    length: Number,
-    src: Bytes,
-    dst: Bytes,
-  ) => {
+provide let move = (
+  srcIndex: Number,
+  dstIndex: Number,
+  length: Number,
+  src: Bytes,
+  dst: Bytes,
+) => {
   from WasmI32 use { (+), (>) }
   let srcIndexOrig = srcIndex
   let dstIndexOrig = dstIndex

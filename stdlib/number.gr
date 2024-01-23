@@ -450,49 +450,48 @@ provide let parseFloat = Atof.parseFloat
 provide let parse = input => {
   match (parseInt(input, 10)) {
     Ok(number) => Ok(number),
-    Err(msg) =>
-      match (parseFloat(input)) {
-        Ok(number) => Ok(number),
-        Err(_) => {
-          // Split the input on a `/` and attempt to parse a rational
-          from WasmI32 use { (+), (-), ltU as (<), (==) }
+    Err(msg) => match (parseFloat(input)) {
+      Ok(number) => Ok(number),
+      Err(_) => {
+        // Split the input on a `/` and attempt to parse a rational
+        from WasmI32 use { (+), (-), ltU as (<), (==) }
 
-          // Search for `/`
-          let input = WasmI32.fromGrain(input)
-          let len = WasmI32.load(input, 4n)
-          let mut slashIdx = -1n
-          for (let mut i = 0n; i < len; i += 1n) {
-            if (WasmI32.load8U(input + i, 8n) == 0x2fn) {
-              slashIdx = i
-              break
-            }
+        // Search for `/`
+        let input = WasmI32.fromGrain(input)
+        let len = WasmI32.load(input, 4n)
+        let mut slashIdx = -1n
+        for (let mut i = 0n; i < len; i += 1n) {
+          if (WasmI32.load8U(input + i, 8n) == 0x2fn) {
+            slashIdx = i
+            break
           }
+        }
 
-          if (slashIdx == -1n) {
-            Err(msg)
-          } else {
-            let numeratorLen = slashIdx
-            let denominatorLen = len - slashIdx - 1n
+        if (slashIdx == -1n) {
+          Err(msg)
+        } else {
+          let numeratorLen = slashIdx
+          let denominatorLen = len - slashIdx - 1n
 
-            let numerator = allocateString(numeratorLen)
-            Memory.copy(numerator + 8n, input + 8n, numeratorLen)
-            let numerator = WasmI32.toGrain(numerator): String
+          let numerator = allocateString(numeratorLen)
+          Memory.copy(numerator + 8n, input + 8n, numeratorLen)
+          let numerator = WasmI32.toGrain(numerator): String
 
-            let denominator = allocateString(denominatorLen)
-            Memory.copy(
-              denominator + 8n,
-              input + 8n + slashIdx + 1n,
-              denominatorLen
-            )
-            let denominator = WasmI32.toGrain(denominator): String
+          let denominator = allocateString(denominatorLen)
+          Memory.copy(
+            denominator + 8n,
+            input + 8n + slashIdx + 1n,
+            denominatorLen
+          )
+          let denominator = WasmI32.toGrain(denominator): String
 
-            match ((parseInt(numerator, 10), parseInt(denominator, 10))) {
-              (Ok(numerator), Ok(denominator)) => Ok(numerator / denominator),
-              (Err(msg), _) | (_, Err(msg)) => Err(msg),
-            }
+          match ((parseInt(numerator, 10), parseInt(denominator, 10))) {
+            (Ok(numerator), Ok(denominator)) => Ok(numerator / denominator),
+            (Err(msg), _) | (_, Err(msg)) => Err(msg),
           }
-        },
+        }
       },
+    },
   }
 }
 
@@ -640,11 +639,11 @@ provide let rec gamma = z => {
  * @since v0.5.4
  */
 provide let rec factorial = n => {
-  if (isInteger(n) && n < 0) gamma(abs(n) + 1) * -1 else if (
-    !isInteger(n) && n < 0
-  ) {
+  if (isInteger(n) && n < 0) {
+    gamma(abs(n) + 1) * -1
+  } else if (!isInteger(n) && n < 0) {
     throw Exception.InvalidArgument(
-      "Cannot compute the factorial of a negative non-integer"
+      "Cannot compute the factorial of a negative non-integer",
     )
   } else {
     gamma(n + 1)
@@ -687,8 +686,13 @@ provide let clamp = (range, input) => {
     let rangeEnd = max(range.rangeStart, range.rangeEnd)
     let rangeStart = min(range.rangeStart, range.rangeEnd)
 
-    if (input > rangeEnd) rangeEnd else if (input < rangeStart) rangeStart
-    else input
+    if (input > rangeEnd) {
+      rangeEnd
+    } else if (input < rangeStart) {
+      rangeStart
+    } else {
+      input
+    }
   }
 }
 
@@ -706,12 +710,15 @@ provide let clamp = (range, input) => {
  * @since v0.6.0
  */
 provide let linearInterpolate = (range, weight) => {
-  if (weight < 0 || weight > 1 || isNaN(weight))
-    throw Exception.InvalidArgument("Weight must be between 0 and 1")
-  if (isInfinite(range.rangeStart) || isInfinite(range.rangeEnd))
-    throw Exception.InvalidArgument("The range must be finite")
-  if (isNaN(range.rangeStart) || isNaN(range.rangeEnd))
-    throw Exception.InvalidArgument("The range must not include NaN")
+  if (weight < 0 || weight > 1 || isNaN(weight)) throw Exception.InvalidArgument(
+    "Weight must be between 0 and 1",
+  )
+  if (isInfinite(range.rangeStart) || isInfinite(range.rangeEnd)) throw Exception.InvalidArgument(
+    "The range must be finite",
+  )
+  if (isNaN(range.rangeStart) || isNaN(range.rangeEnd)) throw Exception.InvalidArgument(
+    "The range must not include NaN",
+  )
   (range.rangeEnd - range.rangeStart) * weight + range.rangeStart
 }
 
@@ -735,14 +742,18 @@ provide let linearMap = (inputRange, outputRange, current) => {
   if (isNaN(current)) {
     current
   } else {
-    if (isInfinite(inputRange.rangeStart) || isInfinite(inputRange.rangeEnd))
-      throw Exception.InvalidArgument("The inputRange must be finite")
-    if (isNaN(inputRange.rangeStart) || isNaN(inputRange.rangeEnd))
-      throw Exception.InvalidArgument("The inputRange must not include NaN")
-    if (isInfinite(outputRange.rangeStart) || isInfinite(outputRange.rangeEnd))
-      throw Exception.InvalidArgument("The outputRange must be finite")
-    if (isNaN(outputRange.rangeStart) || isNaN(outputRange.rangeEnd))
-      throw Exception.InvalidArgument("The outputRange must not include NaN")
+    if (isInfinite(inputRange.rangeStart) || isInfinite(inputRange.rangeEnd)) throw Exception.InvalidArgument(
+      "The inputRange must be finite",
+    )
+    if (isNaN(inputRange.rangeStart) || isNaN(inputRange.rangeEnd)) throw Exception.InvalidArgument(
+      "The inputRange must not include NaN",
+    )
+    if (isInfinite(outputRange.rangeStart) || isInfinite(outputRange.rangeEnd)) throw Exception.InvalidArgument(
+      "The outputRange must be finite",
+    )
+    if (isNaN(outputRange.rangeStart) || isNaN(outputRange.rangeEnd)) throw Exception.InvalidArgument(
+      "The outputRange must not include NaN",
+    )
     let mapped = (current - inputRange.rangeStart) *
       (outputRange.rangeEnd - outputRange.rangeStart) /
       (inputRange.rangeEnd - inputRange.rangeStart) +

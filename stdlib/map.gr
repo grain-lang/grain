@@ -47,7 +47,8 @@ provide record InternalMapStats {
  *
  * @since v0.2.0
  */
-provide let makeSized = size => { // TODO: This could take an `eq` function to custom comparisons
+provide let makeSized = size => {
+  // TODO: This could take an `eq` function to custom comparisons
   let buckets = Array.make(size, None)
   { size: 0, buckets }
 }
@@ -483,11 +484,15 @@ provide let fromArray = array => {
  * @since v0.2.0
  */
 provide let filter = (predicate, map) => {
-  let keysToRemove = reduce((list, key, value) => if (!predicate(key, value)) {
-    [key, ...list]
-  } else {
-    list
-  }, [], map)
+  let keysToRemove = reduce(
+    (list, key, value) => if (!predicate(key, value)) {
+      [key, ...list]
+    } else {
+      list
+    },
+    [],
+    map
+  )
   List.forEach(key => {
     remove(key, map)
   }, keysToRemove)
@@ -867,20 +872,10 @@ provide module Immutable {
     match ((left, right)) {
       (Empty, node) | (node, Empty) => set(key, val, node),
       (Tree(left) as leftOpt, Tree(right) as rightOpt) => {
-        let {
-          size: lSize,
-          key: lKey,
-          left: lLeft,
-          right: lRight,
-          val: lVal,
-        } = left
-        let {
-          size: rSize,
-          key: rKey,
-          left: rLeft,
-          right: rRight,
-          val: rVal,
-        } = right
+        let { size: lSize, key: lKey, left: lLeft, right: lRight, val: lVal } =
+          left
+        let { size: rSize, key: rKey, left: rLeft, right: rRight, val: rVal } =
+          right
         if (weight * lSize < rSize) {
           balancedNode(rKey, rVal, concat3(key, val, leftOpt, rLeft), rRight)
         } else if (weight * rSize < lSize) {

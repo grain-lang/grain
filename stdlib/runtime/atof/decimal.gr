@@ -134,7 +134,7 @@ let trim = d => {
   let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)
   while (
     numDigits != 0n &&
-    WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
+      WasmI32.eqz(WasmI32.load8U(digits + (numDigits - 1n), 8n))
   ) {
     numDigits -= 1n
   }
@@ -375,7 +375,7 @@ provide let leftShift = (d, shift) => {
       n = addWasmI64(
         n,
         WasmI64.extendI32U(WasmI32.load8U(digits + readIndex, 8n)) <<
-        WasmI64.extendI32U(shift)
+          WasmI64.extendI32U(shift)
       )
       let quotient = n / 10N
       let remainder = subWasmI64(n, 10N * quotient)
@@ -624,10 +624,10 @@ provide let parseDecimal = (s: String) => {
     }
     let mut decimalPoint = WasmI32.load(WasmI32.fromGrain(d.decimalPoint), 4n)
     decimalPoint += if (negExp) {
-        0n - expNum
-      } else {
-        expNum
-      }
+      0n - expNum
+    } else {
+      expNum
+    }
     d.decimalPoint = WasmI32.toGrain(newInt32(decimalPoint))
   }
   let mut numDigits = WasmI32.load(WasmI32.fromGrain(d.numDigits), 4n)

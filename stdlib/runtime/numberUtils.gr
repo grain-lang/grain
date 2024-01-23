@@ -924,7 +924,8 @@ let utoa64_any_core = (buffer, num, offset, radix) => {
   let base = WasmI64.extendI32U(radix)
   let mut num = num
   let mut offset = offset
-  if ((radix & radix - 1n) == 0n) { // for radix which pow of two
+  if ((radix & radix - 1n) == 0n) {
+    // for radix which pow of two
     let shift = WasmI64.extendI32U(WasmI32.ctz(radix) & 7n)
     from WasmI64 use { (-), (&) }
     let mask = base - 1N
@@ -960,7 +961,7 @@ provide let utoa32Buffered = (buf, value, radix) => {
   from WasmI32 use { (>>>), (<), (>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
+      "toString() radix argument must be between 2 and 36",
     )
   }
   if (WasmI32.eqz(value)) {
@@ -983,7 +984,7 @@ provide let utoa32 = (value, radix) => {
   from WasmI32 use { (>>>), (<), (>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
+      "toString() radix argument must be between 2 and 36",
     )
   }
   if (WasmI32.eqz(value)) {
@@ -1013,7 +1014,7 @@ provide let itoa32 = (value, radix) => {
   let mut value = value
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
+      "toString() radix argument must be between 2 and 36",
     )
   }
   let sign = value >>> 31n
@@ -1048,7 +1049,7 @@ provide let utoa64 = (value, radix) => {
   from WasmI32 use { (>>>), (<), (>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
+      "toString() radix argument must be between 2 and 36",
     )
   }
   if (WasmI64.eqz(value)) {
@@ -1085,7 +1086,7 @@ provide let itoa64 = (value, radix) => {
   from WasmI64 use { (>>>) }
   if (radix < 2n || radix > 36n) {
     throw Exception.InvalidArgument(
-      "toString() radix argument must be between 2 and 36"
+      "toString() radix argument must be between 2 and 36",
     )
   }
 
@@ -1167,9 +1168,11 @@ let grisuRound = (buffer, len, delta, rest, ten_kappa, wp_w) => {
   from WasmI64 use { (+), (-) }
   while (
     WasmI64.ltU(rest, wp_w) &&
-    WasmI64.geU(delta - rest, ten_kappa) &&
-    (WasmI64.ltU(rest + ten_kappa, wp_w) ||
-      WasmI64.gtU(wp_w - rest, rest + ten_kappa - wp_w))
+      WasmI64.geU(delta - rest, ten_kappa) &&
+      (
+        WasmI64.ltU(rest + ten_kappa, wp_w) ||
+        WasmI64.gtU(wp_w - rest, rest + ten_kappa - wp_w)
+      )
   ) {
     from WasmI32 use { (-) }
     digit -= 1n
@@ -1272,41 +1275,40 @@ let genDigits = (buffer, w_frc, mp_frc, mp_exp, delta, sign) => {
         WasmI64.extendI32U(
           WasmI32.load(get_POWERS10() + shlWasmI32(kappa, 2n), 0n)
         ) <<
-        WasmI64.extendI32U(one_exp),
+          WasmI64.extendI32U(one_exp),
         wp_w_frc
       )
       done = true
       break
     }
   }
-  if (!done)
-    while (true) {
-      from WasmI64 use { (!=), (*), (|), (>>>) }
-      p2 *= 10N
-      delta *= 10N
+  if (!done) while (true) {
+    from WasmI64 use { (!=), (*), (|), (>>>) }
+    p2 *= 10N
+    delta *= 10N
 
-      let d = p2 >>> WasmI64.extendI32U(one_exp)
-      if ((d | WasmI64.extendI32U(len)) != 0N) {
-        WasmI32.store8(
-          buffer + len,
-          _CHAR_CODE_0 + (WasmI32.wrapI64(d) & 0xffn),
-          0n
-        )
-        len += 1n
-      }
-
-      p2 = andWasmI64(p2, mask)
-      kappa -= 1n
-      if (WasmI64.ltU(p2, delta)) {
-        from WasmI32 use { (<<) }
-        _K += kappa
-        wp_w_frc *= WasmI64.extendI32U(
-          WasmI32.load(get_POWERS10() + ((0n - kappa) << 2n), 0n)
-        )
-        grisuRound(buffer, len, delta, p2, one_frc, wp_w_frc)
-        break
-      }
+    let d = p2 >>> WasmI64.extendI32U(one_exp)
+    if ((d | WasmI64.extendI32U(len)) != 0N) {
+      WasmI32.store8(
+        buffer + len,
+        _CHAR_CODE_0 + (WasmI32.wrapI64(d) & 0xffn),
+        0n
+      )
+      len += 1n
     }
+
+    p2 = andWasmI64(p2, mask)
+    kappa -= 1n
+    if (WasmI64.ltU(p2, delta)) {
+      from WasmI32 use { (<<) }
+      _K += kappa
+      wp_w_frc *= WasmI64.extendI32U(
+        WasmI32.load(get_POWERS10() + ((0n - kappa) << 2n), 0n)
+      )
+      grisuRound(buffer, len, delta, p2, one_frc, wp_w_frc)
+      break
+    }
+  }
   len
 }
 
@@ -1355,17 +1357,11 @@ let grisu2 = (value, buffer, sign) => {
   let _exp = exp_norm
 
   // get cached power
-  let c = WasmF64.reinterpretI64(
-    0x3FD34413509F79FEN
-  ) // 1 / lg(10) = 0.30102999566398114
+  let c = WasmF64.reinterpretI64(0x3FD34413509F79FEN) // 1 / lg(10) = 0.30102999566398114
   from WasmF64 use { (+) as addWasmF64, (*) as mulWasmF64, (!=) as neWasmF64 }
-  let dk = addWasmF64(
-    mulWasmF64(WasmF64.convertI32S(-61n - _exp), c),
-    347.0W
-  ) // dk must be positive, so can do ceiling in positive
+  let dk = addWasmF64(mulWasmF64(WasmF64.convertI32S(-61n - _exp), c), 347.0W) // dk must be positive, so can do ceiling in positive
   let mut k = WasmI32.truncF64S(dk)
-  k += if (neWasmF64(WasmF64.convertI32S(k), dk)) 1n
-    else 0n // conversion with ceil
+  k += if (neWasmF64(WasmF64.convertI32S(k), dk)) 1n else 0n // conversion with ceil
 
   let index = (k >> 3n) + 1n
   from WasmI32 use { (<<) }

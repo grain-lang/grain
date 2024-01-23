@@ -263,8 +263,8 @@ assert testRegex("(((((((((a)))))))))", "a") ==
           Some("a"),
           Some("a"),
         ],
-      )
-    )
+      ),
+    ),
   )
 assert testRegex("multiple words of text", "uh-uh") == Ok(None)
 assert testRegex("multiple words", "multiple words, yeah") ==
@@ -299,17 +299,14 @@ assert testRegex("(a)+x", "aaax") == Ok(Some(("aaax", [> Some("a")])))
 assert testRegex("([ac])+x", "aacx") == Ok(Some(("aacx", [> Some("c")])))
 assert testRegex("([^/]*/)*sub1/", "d:msgs/tdir/sub1/trial/away.cpp") ==
   Ok(Some(("d:msgs/tdir/sub1/", [> Some("tdir/")])))
-assert testRegex(
-  "([^.]*)\\.([^:]*):[T ]+(.*)",
-  "track1.title:TBlah blah blah"
-) ==
+assert testRegex("([^.]*)\\.([^:]*):[T ]+(.*)", "track1.title:TBlah blah blah") ==
   Ok(
     Some(
       (
         "track1.title:TBlah blah blah",
         [> Some("track1"), Some("title"), Some("Blah blah blah")],
-      )
-    )
+      ),
+    ),
   )
 assert testRegex("([^N]*N)+", "abNNxyzN") ==
   Ok(Some(("abNNxyzN", [> Some("xyzN")])))
@@ -461,8 +458,8 @@ assert testRegex("((((((((((a))))))))))", "a") ==
           Some("a"),
           Some("a"),
         ],
-      )
-    )
+      ),
+    ),
   )
 assert testRegex("((((((((((a))))))))))\\10", "aa") ==
   Ok(
@@ -481,8 +478,8 @@ assert testRegex("((((((((((a))))))))))\\10", "aa") ==
           Some("a"),
           Some("a"),
         ],
-      )
-    )
+      ),
+    ),
   )
 assert Result.isErr(testRegex("((((((((((a))))))))))\\41", ""))
 // NYI (case-insensitive):
@@ -503,8 +500,8 @@ assert testRegex("(((((((((a)))))))))", "a") ==
           Some("a"),
           Some("a"),
         ],
-      )
-    )
+      ),
+    ),
   )
 assert testRegex("multiple words of text", "uh-uh") == Ok(None)
 assert testRegex("multiple words", "multiple words, yeah") ==
@@ -747,15 +744,15 @@ assert replace(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1$$") ==
   "foo bazaar$ bar"
 
 // *All variants
-assert List.map(mr => flattenResult(mr), findAll(
-  unwrapResult(make("x.")),
-  "12x4x6"
-)) ==
+assert List.map(
+  mr => flattenResult(mr),
+  findAll(unwrapResult(make("x.")), "12x4x6")
+) ==
   [("x4", [>]), ("x6", [>])]
-assert List.map(mr => flattenResultPositions(mr), findAll(
-  unwrapResult(make("x.")),
-  "12x4x6"
-)) ==
+assert List.map(
+  mr => flattenResultPositions(mr),
+  findAll(unwrapResult(make("x.")), "12x4x6")
+) ==
   [((2, 4), [>]), ((4, 6), [>])]
 
 assert replaceAll(unwrapResult(make("b(ar)")), "foo bar bar", "baza$1") ==
@@ -797,10 +794,7 @@ assert splitAll(unwrapResult(make(".")), "abcd") == ["", "", "", "", ""]
 assert splitAll(unwrapResult(make("d$")), "abcd") == ["abc", ""]
 assert splitAll(unwrapResult(make("b(ar)(ar)")), "foo barar test") ==
   ["foo ", "ar", "ar", " test"]
-assert splitAll(
-  unwrapResult(make("b(ar)(ar)")),
-  "foo barar test barar test2"
-) ==
+assert splitAll(unwrapResult(make("b(ar)(ar)")), "foo barar test barar test2") ==
   ["foo ", "ar", "ar", " test ", "ar", "ar", " test2"]
 assert splitAll(unwrapResult(make("b((a)r)")), "bar") == ["", "ar", "a", ""]
 assert splitAll(unwrapResult(make("b(((((a))))r)")), "bar") ==

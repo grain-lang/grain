@@ -116,11 +116,10 @@ provide let make: (Number, a) => Array<a> = (length: Number, item: a) => {
  * @since v0.1.0
  */
 @unsafe
-provide let init: (Number, Number => a) => Array<a> =
-  (
-    length: Number,
-    fn: Number => a,
-  ) => {
+provide let init: (Number, Number => a) => Array<a> = (
+  length: Number,
+  fn: Number => a,
+) => {
   from WasmI32 use { (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
@@ -793,8 +792,10 @@ provide let filteri = (fn, array) => {
  */
 provide let unique = array => {
   // TODO(#1651): improve performance
-  filteri((el, index) =>
-    findIndex(value => value == el, array) == Some(index), array)
+  filteri(
+    (el, index) => findIndex(value => value == el, array) == Some(index),
+    array
+  )
 }
 
 /**
@@ -1859,11 +1860,9 @@ provide module Immutable {
    */
 
   provide let product = (array1, array2) => {
-    fromList(
-      reduceRight((x1, list) => {
-        reduceRight((x2, list) => [(x1, x2), ...list], list, array2)
-      }, [], array1)
-    )
+    fromList(reduceRight((x1, list) => {
+      reduceRight((x2, list) => [(x1, x2), ...list], list, array2)
+    }, [], array1))
   }
 
   /**
@@ -2011,12 +2010,10 @@ provide module Immutable {
     let begin = clampIndex(array.length, start)
     let end = clampIndex(array.length, end)
     let mut i = array.length
-    fromList(
-      reduceRight((x, acc) => {
-        i -= 1
-        if (i >= begin && i < end) [x, ...acc] else acc
-      }, [], array)
-    )
+    fromList(reduceRight((x, acc) => {
+      i -= 1
+      if (i >= begin && i < end) [x, ...acc] else acc
+    }, [], array))
   }
 
   /**

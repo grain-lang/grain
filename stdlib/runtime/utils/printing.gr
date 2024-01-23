@@ -6,12 +6,8 @@ include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/memory"
 include "runtime/numberUtils"
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign wasm fd_write:
+  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 @unsafe
 provide let numberToString = (n: WasmI64) => {

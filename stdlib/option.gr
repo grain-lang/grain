@@ -190,12 +190,11 @@ provide let flatMap = (fn, option) => {
  */
 provide let filter = (fn, option) => {
   match (option) {
-    Some(x) =>
-      if (fn(x)) {
-        Some(x)
-      } else {
-        None
-      },
+    Some(x) => if (fn(x)) {
+      Some(x)
+    } else {
+      None
+    },
     None => None,
   }
 }

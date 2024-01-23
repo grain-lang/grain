@@ -92,14 +92,17 @@ let parseFileTests = [
   },
 ]
 
-List.forEach(({ pathStr, expParent, expStr, expName, expStem, expExt }) => {
-  let path = fs(pathStr)
-  assert Path.toString(path) == expStr
-  assert fs(expParent) == Path.parent(path)
-  assert expName == Path.basename(path)
-  assert Ok(expStem) == Path.stem(path)
-  assert Ok(expExt) == Path.extension(path)
-}, parseFileTests)
+List.forEach(
+  ({ pathStr, expParent, expStr, expName, expStem, expExt }) => {
+    let path = fs(pathStr)
+    assert Path.toString(path) == expStr
+    assert fs(expParent) == Path.parent(path)
+    assert expName == Path.basename(path)
+    assert Ok(expStem) == Path.stem(path)
+    assert Ok(expExt) == Path.extension(path)
+  },
+  parseFileTests
+)
 
 record ParseDirTestData {
   pathStr: String,
@@ -110,12 +113,7 @@ record ParseDirTestData {
 
 let parseDirTests = [
   { pathStr: "dir/../../", expParent: "../..", expStr: "../", expName: None },
-  {
-    pathStr: ".git/",
-    expParent: ".",
-    expStr: "./.git/",
-    expName: Some(".git"),
-  },
+  { pathStr: ".git/", expParent: ".", expStr: "./.git/", expName: Some(".git") },
   { pathStr: ".", expParent: "..", expStr: "./", expName: None },
   { pathStr: ".////", expParent: "..", expStr: "./", expName: None },
   { pathStr: "../", expParent: "../..", expStr: "../", expName: None },
@@ -132,12 +130,15 @@ let parseDirTests = [
   { pathStr: "c:/.././..", expParent: "c:/", expStr: "c:/", expName: None },
 ]
 
-List.forEach(({ pathStr, expParent, expStr, expName }: ParseDirTestData) => {
-  let path = fs(pathStr)
-  assert Path.toString(path) == expStr
-  assert fs(expParent) == Path.parent(path)
-  assert expName == Path.basename(path)
-}, parseDirTests)
+List.forEach(
+  ({ pathStr, expParent, expStr, expName }: ParseDirTestData) => {
+    let path = fs(pathStr)
+    assert Path.toString(path) == expStr
+    assert fs(expParent) == Path.parent(path)
+    assert expName == Path.basename(path)
+  },
+  parseDirTests
+)
 
 // miscellaneous parsing tests
 assert fs("") == fs(".")

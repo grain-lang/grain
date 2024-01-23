@@ -31,12 +31,8 @@ include "runtime/numberUtils" as NumberUtils
 include "runtime/dataStructures" as DataStructures
 from DataStructures use { allocateString, allocateArray, untagSimpleNumber }
 
-foreign wasm fd_write: (
-  WasmI32,
-  WasmI32,
-  WasmI32,
-  WasmI32,
-) => WasmI32 from "wasi_snapshot_preview1"
+foreign wasm fd_write:
+  (WasmI32, WasmI32, WasmI32, WasmI32) => WasmI32 from "wasi_snapshot_preview1"
 
 primitive (!) = "@not"
 primitive (&&) = "@and"
@@ -245,8 +241,7 @@ let getRecordFieldNames = record_ => {
 @unsafe
 let rec totalBytes = (acc, list) => {
   match (list) {
-    [hd, ...tl] =>
-      totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
+    [hd, ...tl] => totalBytes(acc + WasmI32.load(WasmI32.fromGrain(hd), 4n), tl),
     [] => acc,
   }
 }
@@ -411,12 +406,12 @@ let usvToString = usv => {
       offset = 0xF0n
     }
     let string = allocateString(count + 1n)
-    WasmI32.store8(string, (usv >>> 6n * count) + offset, 8n)
+    WasmI32.store8(string, (usv >>> (6n * count)) + offset, 8n)
 
     let mut n = 0n
     while (count > 0n) {
       n += 1n
-      let temp = usv >>> 6n * (count - 1n)
+      let temp = usv >>> (6n * (count - 1n))
       WasmI32.store8(string + n, 0x80n | temp & 0x3Fn, 8n)
       count -= 1n
     }
@@ -782,25 +777,20 @@ and tupleVariantToString = (ptr, variantName, extraIndents, cycles) => {
     join(strings)
   }
 }
-and recordToString =
-  (
-    ptr,
-    recordArity,
-    fields,
-    contentOffset,
-    extraIndents,
-    cycles,
-  ) => {
+and recordToString = (
+  ptr,
+  recordArity,
+  fields,
+  contentOffset,
+  extraIndents,
+  cycles,
+) => {
   let prevPadAmount = extraIndents * 2n
   let prevSpacePadding = if (prevPadAmount == 0n) {
     ""
   } else {
     let v = allocateString(prevPadAmount)
-    Memory.fill(
-      v + 8n,
-      0x20n,
-      prevPadAmount
-    ) // create indentation for closing brace
+    Memory.fill(v + 8n, 0x20n, prevPadAmount) // create indentation for closing brace
     WasmI32.toGrain(v): String
   }
   let padAmount = (extraIndents + 1n) * 2n

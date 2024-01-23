@@ -542,6 +542,8 @@ let rec expBySquaring = (y, x, n) => {
  * @since v0.6.0
  */
 provide let (**) = (base, power) => {
-  if (power < 0l) return expBySquaring(1l, 1l / base, power * -1l)
-  else return expBySquaring(1l, base, power)
+  if (power < 0l)
+    return expBySquaring(1l, 1l / base, power * -1l)
+  else
+    return expBySquaring(1l, base, power)
 }
