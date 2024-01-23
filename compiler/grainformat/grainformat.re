@@ -62,10 +62,7 @@ let format_code =
   let formatted_code =
     Grain_formatting.Fmt.format_ast(~original_source, ~eol, program);
 
-  let buf = Buffer.create(0);
-  Buffer.add_string(buf, formatted_code);
-
-  let contents = Buffer.to_bytes(buf);
+  let contents = Bytes.of_string(formatted_code);
   switch (output) {
   | Some(outfile) =>
     let outfile = Filepath.to_string(outfile);
