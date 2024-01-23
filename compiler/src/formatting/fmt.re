@@ -559,6 +559,16 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
           pats,
         ),
       )
+    | PPatArray([]) =>
+      array_brackets(
+        print_comment_range(
+          ~block_start=true,
+          ~block_end=true,
+          ~lead=space,
+          enclosing_start_location(ppat_loc),
+          enclosing_end_location(ppat_loc),
+        ),
+      )
     | PPatArray(pats) =>
       array_brackets(
         concat_map(
@@ -566,6 +576,8 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
             next =>
               print_comment_range(
                 ~block_start=true,
+                ~none=if_broken(empty, space),
+                ~lead=space,
                 ~trail=space,
                 enclosing_start_location(ppat_loc),
                 next.ppat_loc,
@@ -591,6 +603,15 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
                  ),
           ~f=print_pattern,
           pats,
+        ),
+      )
+    | PPatList([]) =>
+      list_brackets(
+        print_comment_range(
+          ~block_start=true,
+          ~block_end=true,
+          enclosing_start_location(ppat_loc),
+          enclosing_end_location(ppat_loc),
         ),
       )
     | PPatList(pats) =>
@@ -1462,7 +1483,16 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
             exprs,
           ),
         )
-      | PExpArray([]) => string("[>]")
+      | PExpArray([]) =>
+        array_brackets(
+          print_comment_range(
+            ~block_start=true,
+            ~block_end=true,
+            ~lead=space,
+            enclosing_start_location(expr.pexp_loc),
+            enclosing_end_location(expr.pexp_loc),
+          ),
+        )
       | PExpArray(exprs) =>
         array_brackets(
           concat_map(
@@ -1470,6 +1500,8 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
               next =>
                 print_comment_range(
                   ~block_start=true,
+                  ~none=if_broken(empty, space),
+                  ~lead=space,
                   ~trail=space,
                   enclosing_start_location(expr.pexp_loc),
                   next.pexp_loc,
@@ -1495,6 +1527,15 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
                    ),
             ~f=print_expression,
             exprs,
+          ),
+        )
+      | PExpList([]) =>
+        list_brackets(
+          print_comment_range(
+            ~block_start=true,
+            ~block_end=true,
+            enclosing_start_location(expr.pexp_loc),
+            enclosing_end_location(expr.pexp_loc),
           ),
         )
       | PExpList(items) =>

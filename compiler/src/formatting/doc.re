@@ -297,12 +297,7 @@ let block_braces = doc =>
     string("{") ++ indent(2, hardline ++ doc) ++ hardline ++ string("}"),
   );
 let array_brackets = doc =>
-  group(
-    string("[>")
-    ++ indent(2, breakable_space ++ doc)
-    ++ break
-    ++ string("]"),
-  );
+  group(string("[>") ++ indent(2, break ++ doc) ++ break ++ string("]"));
 let list_brackets = doc =>
   group(string("[") ++ indent(2, break ++ doc) ++ break ++ string("]"));
 let angle_brackets = doc =>

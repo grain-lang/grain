@@ -474,3 +474,12 @@ and baz = qux
 provide /* provide */ primitive /* prim */ foo /* foo */ = /* hello */ "@hello"
 
 provide { /*header*/ foo, /* foo */ type Foo /*trailer*/}
+
+[> ]
+[> /*foo */]
+let [> ] = 5
+let [> /*foo */] = 5
+[ ]
+[ /*foo */]
+let [ ] = 5
+let [ /*foo */] = 5
