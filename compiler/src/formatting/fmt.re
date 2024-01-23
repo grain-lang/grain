@@ -1080,7 +1080,7 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
            ~lead=space,
            ~trail=space,
            lhs_loc,
-           // There appears to be a bug with the parser that the location of
+           // TODO(#1977): There appears to be a bug with the parser that the location of
            // paa_loc is further to the left than the underlying expression, so
            // here we just use the location of the expression directly.
            arg2.paa_expr.pexp_loc,
