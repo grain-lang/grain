@@ -91,7 +91,7 @@ provide let make = (size: Number) => {
 /**
  * An empty byte sequence.
  *
- * @example Bytes.empty() == b""
+ * @example Bytes.empty == b""
  *
  * @since v0.3.2
  */
@@ -124,6 +124,7 @@ provide let fromString = (string: String) => {
  * @returns The string representation of the bytes
  *
  * @example Bytes.toString(b"\x48\x65\x6c\x6c\x6f\x20\x57\x6f\x72\x6c\x64") == "Hello World"
+ * @example Bytes.toString(b"Hello World") == "Hello World"
  *
  * @since v0.3.2
  */

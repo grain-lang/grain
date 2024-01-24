@@ -76,7 +76,7 @@ An empty byte sequence.
 Examples:
 
 ```grain
-Bytes.empty() == b""
+Bytes.empty == b""
 ```
 
 ### Bytes.**fromString**
@@ -139,6 +139,10 @@ Examples:
 
 ```grain
 Bytes.toString(b"\x48\x65\x6c\x6c\x6f\x20\x57\x6f\x72\x6c\x64") == "Hello World"
+```
+
+```grain
+Bytes.toString(b"Hello World") == "Hello World"
 ```
 
 ### Bytes.**length**
