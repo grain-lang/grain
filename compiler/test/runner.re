@@ -487,3 +487,14 @@ let makeGrainDocRunner = (test, name, filename, arguments) => {
     },
   );
 };
+
+let makeGrainDocErrorRunner = (test, name, filename, expected, arguments) => {
+  test(
+    name,
+    ({expect}) => {
+      let infile = gaindoc_in_file(filename);
+      let (result, _) = doc(infile, arguments);
+      expect.string(result).toMatch(expected);
+    },
+  );
+};
