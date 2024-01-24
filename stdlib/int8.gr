@@ -112,7 +112,7 @@ provide let decr = (value: Int8) => {
  * @returns The sum of the two operands
  *
  * @example
- * from Int use { (+) }
+ * from Int8 use { (+) }
  * assert 1s + 1s == 2s
  *
  * @since v0.6.0

@@ -205,7 +205,7 @@ Returns:
 Examples:
 
 ```grain
-from Int use { (+) }
+from Int8 use { (+) }
 assert 1s + 1s == 2s
 ```
 
