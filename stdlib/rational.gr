@@ -34,7 +34,7 @@ provide { fromNumber, toNumber, numerator, denominator }
  * @returns The numerator and denominator of the rational
  *
  * @example Rational.toIntegerRatio(1/2r) == (1, 2)
- * @example Rational.toIntegerRation(2/8r) == (1, 4)
+ * @example Rational.toIntegerRatio(2/8r) == (1, 4)
  *
  * @since v0.6.0
  */

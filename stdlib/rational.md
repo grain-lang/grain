@@ -157,7 +157,7 @@ Rational.toIntegerRatio(1/2r) == (1, 2)
 ```
 
 ```grain
-Rational.toIntegerRation(2/8r) == (1, 4)
+Rational.toIntegerRatio(2/8r) == (1, 4)
 ```
 
 ### Rational.**fromIntegerRatio**
