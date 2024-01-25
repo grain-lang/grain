@@ -2889,9 +2889,6 @@ provide let (**) = (base, power) => {
   } else {
     // Based on https://git.musl-libc.org/cgit/musl/tree/src/math/pow.c
     from WasmF64 use { (==), (!=), (<=), (/), (*), (+) }
-    // Constants
-    let infinity = 1.0W / 0.0W
-    let nan = 0.0W / 0.0W
     let x = coerceNumberToWasmF64(base)
     let y = coerceNumberToWasmF64(power)
     // Fast paths
@@ -2899,11 +2896,12 @@ provide let (**) = (base, power) => {
       if (y == 2.0W) {
         return WasmI32.toGrain(newFloat64(x * x)): Number
       } else if (y == 0.5W) {
-        let output = if (x != infinity)
-          WasmF64.abs(WasmF64.sqrt(x))
-        else
-          infinity
-        return WasmI32.toGrain(newFloat64(output)): Number
+        if (x != InfinityW) {
+          return WasmI32.toGrain(newFloat64(WasmF64.abs(WasmF64.sqrt(x)))):
+            Number
+        } else {
+          return Infinity
+        }
       } else if (y == -1.0W) {
         return WasmI32.toGrain(newFloat64(1.0W / x)): Number
       } else if (y == 1.0W) {
@@ -3047,9 +3045,7 @@ provide let (**) = (base, power) => {
     let mut s = 1.0W
     if (hx < 0n) {
       if (yisint == 0n) {
-        from WasmF64 use { (-) }
-        let d = x - x
-        return WasmI32.toGrain(newFloat64(d / d)): Number
+        return NaN
       } else if (yisint == 1n) {
         s = -1.0W
       }
@@ -3069,10 +3065,10 @@ provide let (**) = (base, power) => {
       if (iy > 0x43F00000n) {
         if (ix <= 0x3FEFFFFFn) {
           let output = if (hy < 0n) huge * huge else tiny * tiny
-          return WasmI32.toGrain(newFloat64(z)): Number
+          return WasmI32.toGrain(newFloat64(output)): Number
         } else if (ix >= 0x3FF00000n) {
           let output = if (hy > 0n) huge * huge else tiny * tiny
-          return WasmI32.toGrain(newFloat64(z)): Number
+          return WasmI32.toGrain(newFloat64(output)): Number
         }
       }
       if (ix < 0x3FEFFFFFn) {

@@ -13,6 +13,14 @@ No other changes yet.
 include "rational"
 ```
 
+```grain
+1/2r
+```
+
+```grain
+3/4r
+```
+
 ## Values
 
 Functions and constants included in the Rational module.
@@ -142,6 +150,16 @@ Returns:
 |----|-----------|
 |`(Number, Number)`|The numerator and denominator of the rational|
 
+Examples:
+
+```grain
+Rational.toIntegerRatio(1/2r) == (1, 2)
+```
+
+```grain
+Rational.toIntegerRatio(2/8r) == (1, 4)
+```
+
 ### Rational.**fromIntegerRatio**
 
 <details disabled>
@@ -175,6 +193,16 @@ Throws:
 * If the numerator is not an integer
 * If the denominator is not an integer
 
+Examples:
+
+```grain
+Rational.fromIntegerRatio(1, 2) == 1/2r
+```
+
+```grain
+Rational.fromIntegerRatio(2, 8) == 1/4r
+```
+
 ### Rational.**(+)**
 
 <details disabled>
@@ -200,6 +228,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Rational`|The sum of the two operands|
+
+Examples:
+
+```grain
+from Rational use { (+) }
+assert 1/2r + 1/4r == 3/4r
+```
 
 ### Rational.**(-)**
 
@@ -227,6 +262,13 @@ Returns:
 |----|-----------|
 |`Rational`|The difference of the two operands|
 
+Examples:
+
+```grain
+from Rational use { (-) }
+assert 1/2r - 1/4r == 1/4r
+```
+
 ### Rational.**(*)**
 
 <details disabled>
@@ -252,6 +294,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Rational`|The product of the two operands|
+
+Examples:
+
+```grain
+from Rational use { (*) }
+assert 1/2r * 1/4r == 1/8r
+```
 
 ### Rational.**(/)**
 
@@ -279,6 +328,13 @@ Returns:
 |----|-----------|
 |`Rational`|The quotient of the two operands|
 
+Examples:
+
+```grain
+from Rational use { (/) }
+assert 1/2r / 1/4r == 2/1r
+```
+
 ### Rational.**(==)**
 
 <details disabled>
@@ -304,6 +360,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+from Rational use { (==) }
+assert 1/2r == 1/2r
+```
 
 ### Rational.**(!=)**
 
@@ -331,6 +394,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from Rational use { (!=) }
+assert 1/2r != 1/4r
+```
+
 ### Rational.**(<)**
 
 <details disabled>
@@ -356,6 +426,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
+
+Examples:
+
+```grain
+from Rational use { (<) }
+assert 1/4r < 1/2r
+```
 
 ### Rational.**(>)**
 
@@ -383,6 +460,13 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from Rational use { (>) }
+assert 1/2r > 1/4r
+```
+
 ### Rational.**(<=)**
 
 <details disabled>
@@ -409,6 +493,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from Rational use { (<=) }
+assert 1/4r <= 1/2r
+```
+
+```grain
+from Rational use { (<=) }
+assert 1/2r <= 1/2r
+```
+
 ### Rational.**(>=)**
 
 <details disabled>
@@ -434,4 +530,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+from Rational use { (>=) }
+assert 1/2r >= 1/4r
+```
+
+```grain
+from Rational use { (>=) }
+assert 1/2r >= 1/2r
+```
 

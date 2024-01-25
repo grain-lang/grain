@@ -13,6 +13,18 @@ No other changes yet.
 include "bigint"
 ```
 
+```grain
+9223372036854775809t
+```
+
+```grain
+0t
+```
+
+```grain
+-9223372036854775809t
+```
+
 ## Values
 
 Functions and constants included in the BigInt module.
@@ -92,6 +104,16 @@ Returns:
 |----|-----------|
 |`BigInt`|The incremented value|
 
+Examples:
+
+```grain
+BigInt.incr(1t) == 2t
+```
+
+```grain
+BigInt.incr(-2t) == -1t
+```
+
 ### BigInt.**decr**
 
 <details disabled>
@@ -116,6 +138,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|The decremented value|
+
+Examples:
+
+```grain
+BigInt.decr(2t) == 1t
+```
+
+```grain
+BigInt.decr(-2t) == -3t
+```
 
 ### BigInt.**neg**
 
@@ -142,6 +174,16 @@ Returns:
 |----|-----------|
 |`BigInt`|The negated operand|
 
+Examples:
+
+```grain
+BigInt.neg(1t) == -1t
+```
+
+```grain
+BigInt.neg(-1t) == 1t
+```
+
 ### BigInt.**abs**
 
 <details disabled>
@@ -166,6 +208,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|The operand's absolute value|
+
+Examples:
+
+```grain
+BigInt.abs(1t) == 1t
+```
+
+```grain
+BigInt.abs(-1t) == 1t
+```
 
 ### BigInt.**(+)**
 
@@ -200,6 +252,13 @@ Returns:
 |----|-----------|
 |`BigInt`|The sum of the two operands|
 
+Examples:
+
+```grain
+from BigInt use { (+) }
+assert 1t + 1t == 2t
+```
+
 ### BigInt.**(-)**
 
 <details>
@@ -233,6 +292,13 @@ Returns:
 |----|-----------|
 |`BigInt`|The difference of the two operands|
 
+Examples:
+
+```grain
+from BigInt use { (-) }
+assert 3t - 1t == 2t
+```
+
 ### BigInt.**(*)**
 
 <details>
@@ -265,6 +331,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|The product of the two operands|
+
+Examples:
+
+```grain
+from BigInt use { (*) }
+assert 3t * 3t == 9t
+```
 
 ### BigInt.**(/)**
 
@@ -300,6 +373,13 @@ Returns:
 |----|-----------|
 |`BigInt`|The quotient of its operands|
 
+Examples:
+
+```grain
+from BigInt use { (/) }
+assert 9t / 3t == 3t
+```
+
 ### BigInt.**rem**
 
 <details disabled>
@@ -327,6 +407,12 @@ Returns:
 |----|-----------|
 |`BigInt`|The remainder of its operands|
 
+Examples:
+
+```grain
+BigInt.rem(3t, 2t) == 1t
+```
+
 ### BigInt.**quotRem**
 
 <details disabled>
@@ -353,6 +439,12 @@ Returns:
 |----|-----------|
 |`(BigInt, BigInt)`|The quotient and remainder of its operands|
 
+Examples:
+
+```grain
+BigInt.quotRem(7t, 2t) == (3t, 1t))
+```
+
 ### BigInt.**gcd**
 
 <details disabled>
@@ -378,6 +470,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|The greatest common divisor of its operands|
+
+Examples:
+
+```grain
+BigInt.gcd(36t, 24t) == 12t
+```
 
 ### BigInt.**(<<)**
 
@@ -412,6 +510,13 @@ Returns:
 |----|-----------|
 |`BigInt`|The shifted value|
 
+Examples:
+
+```grain
+from BigInt use { (<<) }
+assert (10t << 2l) == 40t
+```
+
 ### BigInt.**(>>)**
 
 <details>
@@ -445,6 +550,13 @@ Returns:
 |----|-----------|
 |`BigInt`|The shifted value|
 
+Examples:
+
+```grain
+from BigInt use { (>>) }
+assert (9999t >> 2l) == 2499t
+```
+
 ### BigInt.**eqz**
 
 <details disabled>
@@ -469,6 +581,16 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is equal to zero or `false` otherwise|
+
+Examples:
+
+```grain
+assert BigInt.eqz(0t) == true
+```
+
+```grain
+assert BigInt.eqz(1t) == false
+```
 
 ### BigInt.**(==)**
 
@@ -503,6 +625,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from BigInt use { (==) }
+assert 1t == 1t
+```
+
+```grain
+from BigInt use { (==) }
+assert -10t == -10t
+```
+
 ### BigInt.**(!=)**
 
 <details>
@@ -535,6 +669,18 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is not equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+from BigInt use { (!=) }
+assert 1t != 2t
+```
+
+```grain
+from BigInt use { (!=) }
+assert -10t != -20t
+```
 
 ### BigInt.**(<)**
 
@@ -569,6 +715,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is less than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from BigInt use { (<) }
+assert 1t < 2t
+```
+
+```grain
+from BigInt use { (<) }
+assert -10t < 0t
+```
+
 ### BigInt.**(<=)**
 
 <details>
@@ -601,6 +759,23 @@ Returns:
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the first value is less than or equal to the second value or `false` otherwise|
+
+Examples:
+
+```grain
+from BigInt use { (<=) }
+assert 1t <= 1t
+```
+
+```grain
+from BigInt use { (<=) }
+assert -10t <= 0t
+```
+
+```grain
+from BigInt use { (<=) }
+assert 2t <= 3t
+```
 
 ### BigInt.**(>)**
 
@@ -635,6 +810,18 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from BigInt use { (>) }
+assert 2t > 1t
+```
+
+```grain
+from BigInt use { (>) }
+assert 0t > -10t
+```
+
 ### BigInt.**(>=)**
 
 <details>
@@ -668,6 +855,23 @@ Returns:
 |----|-----------|
 |`Bool`|`true` if the first value is greater than or equal to the second value or `false` otherwise|
 
+Examples:
+
+```grain
+from BigInt use { (>=) }
+assert 1t >= 1t
+```
+
+```grain
+from BigInt use { (>=) }
+assert 0t >= -10t
+```
+
+```grain
+from BigInt use { (>=) }
+assert 3t >= 2t
+```
+
 ### BigInt.**lnot**
 
 <details disabled>
@@ -692,6 +896,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|Containing the inverted bits of the given value|
+
+Examples:
+
+```grain
+BigInt.lnot(91234t) == -91235t
+```
 
 ### BigInt.**(&)**
 
@@ -726,6 +936,13 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of both operands are `1`|
 
+Examples:
+
+```grain
+from BigInt use { (&) }
+assert (4t & 3t) == 0t
+```
+
 ### BigInt.**(|)**
 
 <details>
@@ -758,6 +975,13 @@ Returns:
 |type|description|
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`|
+
+Examples:
+
+```grain
+from BigInt use { (|) }
+assert (5t | 3t) == 7t
+```
 
 ### BigInt.**(^)**
 
@@ -792,6 +1016,13 @@ Returns:
 |----|-----------|
 |`BigInt`|Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`|
 
+Examples:
+
+```grain
+from BigInt use { (^) }
+assert (5t ^ 3t) == 6t
+```
+
 ### BigInt.**clz**
 
 <details disabled>
@@ -818,6 +1049,12 @@ Returns:
 |----|-----------|
 |`Int32`|The amount of leading zeros|
 
+Examples:
+
+```grain
+BigInt.clz(5t) == 2147483647t
+```
+
 ### BigInt.**ctz**
 
 <details disabled>
@@ -842,6 +1079,12 @@ Returns:
 |type|description|
 |----|-----------|
 |`Int64`|The amount of trailing zeros|
+
+Examples:
+
+```grain
+BigInt.ctz(14t) == 1t
+```
 
 ### BigInt.**popcnt**
 
@@ -869,6 +1112,12 @@ Returns:
 |----|-----------|
 |`Option<Int64>`|The amount of 1-bits in its operand|
 
+Examples:
+
+```grain
+BigInt.popcnt(14t) == 1t
+```
+
 ### BigInt.**toString**
 
 <details disabled>
@@ -893,4 +1142,14 @@ Returns:
 |type|description|
 |----|-----------|
 |`String`|The operand, as a string|
+
+Examples:
+
+```grain
+BigInt.toString(1t) == "1"
+```
+
+```grain
+BigInt.toString(-1t) == "-1"
+```
 

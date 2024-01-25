@@ -2,6 +2,9 @@
  * Utilities for working with the Int8 type.
  * @example include "int8"
  *
+ * @example 1s
+ * @example -1s
+ *
  * @since v0.6.0
  */
 module Int8
@@ -50,6 +53,8 @@ provide { fromNumber, toNumber }
  * @param number: The value to convert
  * @returns The Uint8 represented as an Int8
  *
+ * @example Int8.fromUint8(1us) == 1s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -65,6 +70,9 @@ provide let fromUint8 = (x: Uint8) => {
  *
  * @param value: The value to increment
  * @returns The incremented value
+ *
+ * @example Int8.incr(1s) == 2s
+ * @example Int8.incr(-2s) == -1s
  *
  * @since v0.6.0
  */
@@ -82,6 +90,9 @@ provide let incr = (value: Int8) => {
  * @param value: The value to decrement
  * @returns The decremented value
  *
+ * @example Int8.decr(2s) == 1s
+ * @example Int8.decr(0s) == -1s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -98,6 +109,10 @@ provide let decr = (value: Int8) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The sum of the two operands
+ *
+ * @example
+ * from Int8 use { (+) }
+ * assert 1s + 1s == 2s
  *
  * @since v0.6.0
  */
@@ -120,6 +135,10 @@ provide let (+) = (x: Int8, y: Int8) => {
  * @param y: The second operand
  * @returns The difference of the two operands
  *
+ * @example
+ * from Int8 use { (-) }
+ * assert 2s - 1s == 1s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -138,6 +157,10 @@ provide let (-) = (x: Int8, y: Int8) => {
  * @param y: The second operand
  * @returns The product of the two operands
  *
+ * @example
+ * from Int8 use { (*) }
+ * assert 2s * 2s == 4s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -154,6 +177,10 @@ provide let (*) = (x: Int8, y: Int8) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of its operands
+ *
+ * @example
+ * from Int8 use { (/) }
+ * assert 8s / 2s == 4s
  *
  * @since v0.6.0
  */
@@ -172,6 +199,8 @@ provide let (/) = (x: Int8, y: Int8) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The remainder of its operands
+ *
+ * @example Int8.rem(8s, 3s) == 2s
  *
  * @since v0.6.0
  */
@@ -200,6 +229,10 @@ let abs = n => {
  * @returns The modulus of its operands
  *
  * @throws ModuloByZero: When `y` is zero
+ *
+ * @example
+ * from Int8 use { (%) }
+ * assert -5s % 3s == 1s
  *
  * @since v0.6.0
  */
@@ -232,6 +265,10 @@ provide let (%) = (x: Int8, y: Int8) => {
  * @param amount: The number of bits to shift by
  * @returns The shifted value
  *
+ * @example
+ * from Int8 use { (<<) }
+ * assert (5s << 1s) == 10s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -250,6 +287,10 @@ provide let (<<) = (value: Int8, amount: Int8) => {
  * @param value: The value to shift
  * @param amount: The amount to shift by
  * @returns The shifted value
+ *
+ * @example
+ * from Int8 use { (>>) }
+ * assert (5s >> 1s) == 2s
  *
  * @since v0.6.0
  */
@@ -270,6 +311,10 @@ provide let (>>) = (value: Int8, amount: Int8) => {
  * @param y: The second value
  * @returns `true` if the first value is equal to the second value or `false` otherwise
  *
+ * @example
+ * from Int8 use { (==) }
+ * assert 1s == 1s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -285,6 +330,10 @@ provide let (==) = (x: Int8, y: Int8) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
+ *
+ * @example
+ * from Int8 use { (!=) }
+ * assert 1s != 2s
  *
  * @since v0.6.0
  */
@@ -302,6 +351,10 @@ provide let (!=) = (x: Int8, y: Int8) => {
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
  *
+ * @example
+ * from Int8 use { (<) }
+ * assert 1s < 2s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -317,6 +370,10 @@ provide let (<) = (x: Int8, y: Int8) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
+ *
+ * @example
+ * from Int8 use { (>) }
+ * assert 2s > 1s
  *
  * @since v0.6.0
  */
@@ -334,6 +391,13 @@ provide let (>) = (x: Int8, y: Int8) => {
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
+ * @example
+ * from Int8 use { (<=) }
+ * assert 1s <= 2s
+ * @example
+ * from Int8 use { (<=) }
+ * assert 1s <= 1s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -350,6 +414,13 @@ provide let (<=) = (x: Int8, y: Int8) => {
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
  *
+ * @example
+ * from Int8 use { (>=) }
+ * assert 2s >= 1s
+ * @example
+ * from Int8 use { (>=) }
+ * assert 1s >= 1s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -365,6 +436,8 @@ provide let (>=) = (x: Int8, y: Int8) => {
  * @param value: The given value
  * @returns Containing the inverted bits of the given value
  *
+ * @example Int.lnot(-5s) == 4s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -379,6 +452,10 @@ provide let lnot = (value: Int8) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of both operands are `1`
+ *
+ * @example
+ * from Int8 use { (&) }
+ * assert (3s & 4s) == 0s
  *
  * @since v0.6.0
  */
@@ -398,6 +475,10 @@ provide let (&) = (x: Int8, y: Int8) => {
  * @param y: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either or both operands are `1`
  *
+ * @example
+ * from Int8 use { (|) }
+ * assert (3s | 4s) == 7s
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -415,6 +496,10 @@ provide let (|) = (x: Int8, y: Int8) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns Containing a `1` in each bit position for which the corresponding bits of either but not both operands are `1`
+ *
+ * @example
+ * from Int8 use { (^) }
+ * assert (3s ^ 5s) == 6s
  *
  * @since v0.6.0
  */

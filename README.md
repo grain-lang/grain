@@ -44,4 +44,4 @@ To reset your compiler build:
 npm run compiler clean
 ```
 
-Copyright ©️ 2017-2023 Philip Blair, Oscar Spencer, & contributors.
+Copyright ©️ 2017-2024 Philip Blair, Oscar Spencer, & contributors.

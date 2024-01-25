@@ -28,12 +28,7 @@ let _VALUE_OFFSET = 4n
  * @since v0.4.0
  */
 @unsafe
-provide let infinity = {
-  let ptr = newFloat32(
-    WasmF32.reinterpretI32(0b01111111100000000000000000000000n)
-  )
-  WasmI32.toGrain(ptr): Float32
-}
+provide let infinity = Infinityf
 
 /**
  * NaN (Not a Number) represented as a Float32 value.
@@ -41,12 +36,7 @@ provide let infinity = {
  * @since v0.4.0
  */
 @unsafe
-provide let nan = {
-  let ptr = newFloat32(
-    WasmF32.reinterpretI32(0b01111111100000000000000000000001n)
-  )
-  WasmI32.toGrain(ptr): Float32
-}
+provide let nan = NaNf
 
 /**
  * Pi represented as a Float32 value.
