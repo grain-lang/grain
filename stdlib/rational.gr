@@ -2,6 +2,9 @@
  * Utilities for working with the Rational type.
  * @example include "rational"
  *
+ * @example 1/2r
+ * @example 3/4r
+ *
  * @since v0.6.0
  */
 
@@ -30,6 +33,9 @@ provide { fromNumber, toNumber, numerator, denominator }
  * @param x: The rational to split
  * @returns The numerator and denominator of the rational
  *
+ * @example Rational.toIntegerRatio(1/2r) == (1, 2)
+ * @example Rational.toIntegerRatio(2/8r) == (1, 4)
+ *
  * @since v0.6.0
  */
 provide let toIntegerRatio = x => {
@@ -45,6 +51,9 @@ provide let toIntegerRatio = x => {
  *
  * @throws InvalidArgument(String): If the numerator is not an integer
  * @throws InvalidArgument(String): If the denominator is not an integer
+ *
+ * @example Rational.fromIntegerRatio(1, 2) == 1/2r
+ * @example Rational.fromIntegerRatio(2, 8) == 1/4r
  *
  * @since v0.6.0
  */
@@ -68,6 +77,10 @@ provide let fromIntegerRatio = (numerator: Number, denominator: Number) => {
  * @param y: The second operand
  * @returns The sum of the two operands
  *
+ * @example
+ * from Rational use { (+) }
+ * assert 1/2r + 1/4r == 3/4r
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -84,6 +97,10 @@ provide let (+) = (x: Rational, y: Rational) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The difference of the two operands
+ *
+ * @example
+ * from Rational use { (-) }
+ * assert 1/2r - 1/4r == 1/4r
  *
  * @since v0.6.0
  */
@@ -102,6 +119,10 @@ provide let (-) = (x: Rational, y: Rational) => {
  * @param y: The second operand
  * @returns The product of the two operands
  *
+ * @example
+ * from Rational use { (*) }
+ * assert 1/2r * 1/4r == 1/8r
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -118,6 +139,10 @@ provide let (*) = (x: Rational, y: Rational) => {
  * @param x: The first operand
  * @param y: The second operand
  * @returns The quotient of the two operands
+ *
+ * @example
+ * from Rational use { (/) }
+ * assert 1/2r / 1/4r == 2/1r
  *
  * @since v0.6.0
  */
@@ -136,6 +161,10 @@ provide let (/) = (x: Rational, y: Rational) => {
  * @param y: The second value
  * @returns `true` if the first value is equal to the second value or `false` otherwise
  *
+ * @example
+ * from Rational use { (==) }
+ * assert 1/2r == 1/2r
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -152,6 +181,10 @@ provide let (==) = (x: Rational, y: Rational) => {
  * @param y: The second value
  * @returns `true` if the first value is not equal to the second value or `false` otherwise
  *
+ * @example
+ * from Rational use { (!=) }
+ * assert 1/2r != 1/4r
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -167,6 +200,10 @@ provide let (!=) = (x: Rational, y: Rational) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is less than the second value or `false` otherwise
+ *
+ * @example
+ * from Rational use { (<) }
+ * assert 1/4r < 1/2r
  *
  * @since v0.6.0
  */
@@ -185,6 +222,10 @@ provide let (<) = (x: Rational, y: Rational) => {
  * @param y: The second value
  * @returns `true` if the first value is greater than the second value or `false` otherwise
  *
+ * @example
+ * from Rational use { (>) }
+ * assert 1/2r > 1/4r
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -202,6 +243,13 @@ provide let (>) = (x: Rational, y: Rational) => {
  * @param y: The second value
  * @returns `true` if the first value is less than or equal to the second value or `false` otherwise
  *
+ * @example
+ * from Rational use { (<=) }
+ * assert 1/4r <= 1/2r
+ * @example
+ * from Rational use { (<=) }
+ * assert 1/2r <= 1/2r
+ *
  * @since v0.6.0
  */
 @unsafe
@@ -218,6 +266,13 @@ provide let (<=) = (x: Rational, y: Rational) => {
  * @param x: The first value
  * @param y: The second value
  * @returns `true` if the first value is greater than or equal to the second value or `false` otherwise
+ *
+ * @example
+ * from Rational use { (>=) }
+ * assert 1/2r >= 1/4r
+ * @example
+ * from Rational use { (>=) }
+ * assert 1/2r >= 1/2r
  *
  * @since v0.6.0
  */
