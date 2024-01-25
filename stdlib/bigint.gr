@@ -5,7 +5,6 @@
  *
  * @since v0.5.0
  */
-
 module BigInt
 
 include "runtime/unsafe/wasmi32"

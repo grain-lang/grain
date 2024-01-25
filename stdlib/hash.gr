@@ -5,14 +5,12 @@
  *
  * @since v0.1.0
  */
-
 module Hash
 
 /**
   This module implements MurmurHash3 for Grain data types.
   https://en.wikipedia.org/wiki/MurmurHash
 */
-
 include "runtime/unsafe/wasmi32"
 from WasmI32 use {
   (+),

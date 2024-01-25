@@ -5,7 +5,6 @@
  *
  * @example include "sys/file"
  */
-
 module File
 
 include "runtime/unsafe/wasmi32"

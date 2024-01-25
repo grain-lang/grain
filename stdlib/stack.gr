@@ -9,7 +9,6 @@
  *
  * @since v0.3.0
  */
-
 module Stack
 
 include "list"
@@ -151,7 +150,6 @@ provide module Immutable {
   /**
    * ImmutableStacks are immutable data structures that store their data in a List.
    */
-
   abstract record ImmutableStack<a> {
     data: List<a>,
   }
@@ -162,7 +160,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally a module root API
    */
-
   provide let empty = {
     let empty = { data: [], }
     empty
@@ -177,7 +174,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.3.0: Originally a module root API
    */
-
   provide let isEmpty = stack => {
     match (stack) {
       { data: [] } => true,
@@ -195,7 +191,6 @@ provide module Immutable {
    * @history v0.3.0: Originally a module root API
    * @history v0.3.1: Rename from `head` to `peek`
    */
-
   provide let peek = stack => {
     match (stack) {
       { data: [] } => None,
@@ -213,7 +208,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.3.0: Originally a module root API
    */
-
   provide let push = (value, stack) => {
     match (stack) {
       { data: [] } => { data: [value], },
@@ -230,7 +224,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.3.0: Originally a module root API
    */
-
   provide let pop = stack => {
     match (stack) {
       { data: [] } => stack,
@@ -247,7 +240,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.3.2: Originally a module root API
    */
-
   provide let size = stack => {
     match (stack) {
       { data: [] } => 0,

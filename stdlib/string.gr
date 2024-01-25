@@ -7,7 +7,6 @@
  * @history v0.1.0: Originally named `strings`
  * @history v0.2.0: Renamed to `string`
  */
-
 module String
 
 include "runtime/unsafe/wasmi32"

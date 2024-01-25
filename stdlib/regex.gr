@@ -5,7 +5,6 @@
  *
  * @since 0.4.3
  */
-
 module Regex
 
 /*
@@ -2022,7 +2021,6 @@ let rec validate = (re: ParsedRegularExpression, numGroups) => {
   /**
    Computes the range of possible UTF-8 byte lengths for the given character range
    */
-
   let rangeUtf8EncodingLengths = (rng: CharRange) => {
     let (min, max, _) = List.reduce(
       ((min1, max1, n), (segStart, segEnd)) => {

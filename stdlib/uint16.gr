@@ -4,7 +4,6 @@
  *
  * @since v0.6.0
  */
-
 module Uint16
 
 include "runtime/unsafe/wasmi32"

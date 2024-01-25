@@ -3199,6 +3199,7 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
               | Line(_)
               | Shebang(_) when line_delta > 1 =>
                 phantom_hardline ++ phantom_hardline
+              | Doc(_) when allow_breaks => phantom_hardline
               | _ when allow_breaks && line_delta == 1 => phantom_hardline
               | _ when allow_breaks && line_delta > 1 =>
                 phantom_hardline ++ phantom_hardline

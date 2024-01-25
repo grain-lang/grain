@@ -5,7 +5,6 @@
  *
  * @since v0.2.0
  */
-
 module Float32
 
 include "runtime/unsafe/wasmi32"

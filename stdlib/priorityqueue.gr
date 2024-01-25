@@ -7,7 +7,6 @@
  *
  * @since v0.5.3
  */
-
 module PriorityQueue
 
 include "array"
@@ -281,7 +280,6 @@ provide module Immutable {
   /**
    * Immutable data structure which maintains a priority order for its elements.
    */
-
   abstract record PriorityQueue<a> {
     comp: (a, a) => Number,
     size: Number,
@@ -294,7 +292,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let empty = {
     let empty = { comp: compare, size: 0, root: None }
     empty
@@ -315,7 +312,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let make = comp => {
     { comp, size: 0, root: None }
   }
@@ -329,7 +325,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let size = ({ size, _ }: PriorityQueue<a>) => {
     size
   }
@@ -343,7 +338,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let isEmpty = ({ size, _ }: PriorityQueue<a>) => {
     size == 0
   }
@@ -392,7 +386,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let push = (val, pq) => {
     let { comp, size, root } = pq
     match (root) {
@@ -425,7 +418,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let peek = pq => {
     match (pq.root) {
       None => None,
@@ -561,7 +553,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let pop = pq => {
     let pqWithRoot = pq
     let { comp, size, root } = pq
@@ -592,7 +583,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let drain = pq => {
     let rec drainRec = (acc, pq) => {
       match (pq.root) {
@@ -617,7 +607,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.3: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let fromList = (list, comp) => {
     List.reduce((pq, val) => push(val, pq), make(comp), list)
   }
@@ -636,7 +625,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablepriorityqueue"` module
    */
-
   provide let fromArray = (array, comp) => {
     Array.reduce((pq, val) => push(val, pq), make(comp), array)
   }

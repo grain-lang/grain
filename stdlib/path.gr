@@ -20,7 +20,6 @@
  *
  * @since v0.5.5
  */
-
 module Path
 
 include "string"

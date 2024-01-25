@@ -633,7 +633,6 @@ let isSafeIntegerF64 = value => {
   * NOTE: The preconditions in these functions are important, so do NOT
   *       provide them!
   */
-
 @unsafe
 let numberEqualSimpleHelp = (x, y) => {
   // PRECONDITION: x is a "simple" number (value tag is 0) and x !== y and isNumber(y)

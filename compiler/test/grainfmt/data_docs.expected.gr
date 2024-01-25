@@ -15,7 +15,6 @@ and type Event = (EventType, Token, TokenizeContext)
  *   Tokens can “contain” other tokens, even though they are stored in a flat
  *   list, through `enter`ing before them, and `exit`ing after them.
  */
-
 and enum EventType2 {
   Enter2,
   Exit2,

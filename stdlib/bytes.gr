@@ -5,7 +5,6 @@
  *
  * @since v0.3.2
  */
-
 module Bytes
 
 include "runtime/unsafe/memory"

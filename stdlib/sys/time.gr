@@ -3,7 +3,6 @@
  *
  * @example include "sys/time"
  */
-
 module Time
 
 include "runtime/unsafe/wasmi32"

@@ -6,7 +6,6 @@
  *
  * @since v0.2.0
  */
-
 module Map
 
 include "list"
@@ -555,7 +554,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let empty = Empty
 
   // returns the key-value pair of the minimum key in a tree
@@ -576,7 +574,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let size = map => {
     match (map) {
       Empty => 0,
@@ -593,7 +590,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let isEmpty = map => {
     match (map) {
       Empty => true,
@@ -689,7 +685,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec set = (key, val, map) => {
     match (map) {
       Empty => Tree({ key, val, size: 1, left: Empty, right: Empty }),
@@ -715,7 +710,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec get = (key, map) => {
     match (map) {
       Empty => None,
@@ -739,7 +733,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec contains = (key, map) => {
     Option.isSome(get(key, map))
   }
@@ -777,7 +770,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let rec remove = (key, map) => {
     match (map) {
       Empty => Empty,
@@ -808,7 +800,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let update = (key, fn, map) => {
     let val = get(key, map)
     match (fn(val)) {
@@ -826,7 +817,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let forEach = (fn, map) => {
     let rec forEachInner = node => {
       match (node) {
@@ -852,7 +842,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let reduce = (fn, init, map) => {
     let rec reduceInner = (acc, node) => {
       match (node) {
@@ -920,7 +909,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let keys = map => {
     reduceRight((list, key, _) => [key, ...list], [], map)
   }
@@ -934,7 +922,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let values = map => {
     reduceRight((list, _, value) => [value, ...list], [], map)
   }
@@ -949,7 +936,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let filter = (fn, map) => {
     let rec filterInner = node => {
       match (node) {
@@ -976,7 +962,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let reject = (fn, map) => {
     filter((key, val) => !fn(key, val), map)
   }
@@ -990,7 +975,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let fromList = list => {
     List.reduce((map, (key, val)) => set(key, val, map), empty, list)
   }
@@ -1004,7 +988,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let toList = map => {
     reduceRight((list, key, val) => [(key, val), ...list], [], map)
   }
@@ -1018,7 +1001,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let fromArray = array => {
     Array.reduce((map, (key, val)) => set(key, val, map), empty, array)
   }
@@ -1032,7 +1014,6 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-
   provide let toArray = map => {
     Array.fromList(toList(map))
   }
