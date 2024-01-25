@@ -110,6 +110,18 @@ let grain_type_of_wasm_prim_type =
 let prim_type = (args, ret) =>
   newgenty(TTyArrow(List.map(ty => (Unlabeled, ty), args), ret, TComOk));
 
+let prim_type_labeled = (args, ret) =>
+  newgenty(
+    TTyArrow(
+      List.map(
+        ((name, ty)) => (Labeled(Location.mknoloc(name)), ty),
+        args,
+      ),
+      ret,
+      TComOk,
+    ),
+  );
+
 let prim0_type =
   fun
   | AllocateInt32
@@ -190,7 +202,10 @@ let prim1_type =
     }
   | ArrayLength => {
       let var = newgenvar(~name="a", ());
-      prim_type([Builtin_types.type_array(var)], Builtin_types.type_number);
+      prim_type_labeled(
+        [("array", Builtin_types.type_array(var))],
+        Builtin_types.type_number,
+      );
     }
   | Assert => prim_type([Builtin_types.type_bool], Builtin_types.type_void)
   | Throw =>
