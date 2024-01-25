@@ -39,7 +39,7 @@ jobs:
         id: instance
         run: |
           aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-status-ok --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
           echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
 
       - name: Bring in SSH keys
@@ -119,7 +119,7 @@ jobs:
         id: instance
         run: |
           aws ec2 start-instances --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
-          aws ec2 wait instance-running --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
+          aws ec2 wait instance-status-ok --instance-ids ${{ env.AWS_EC2_INSTANCE_ID }}
           echo ::set-output name=ip::$(aws ec2 describe-instances --filters "Name=instance-id,Values=${{ env.AWS_EC2_INSTANCE_ID }}" --query 'Reservations[*].Instances[*].[PublicIpAddress]' --output text)
 
       - name: Bring in SSH keys
