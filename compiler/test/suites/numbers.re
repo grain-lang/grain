@@ -94,7 +94,7 @@ describe("numbers", ({test, testSkip}) => {
   assertRun("nan_equality1", {|print(NaNf == NaNf)|}, "false\n");
   assertRun(
     "nan_equality2",
-    {|include "float64"; print(Float64.div(0.0d, 0.0d) == Float64.div(0.0d, 0.0d))|},
+    {|include "float64"; from Float64 use { (/) }; print((0.0d / 0.0d) == (0.0d / 0.0d))|},
     "false\n",
   );
   assertRun("nan_equality3", {|print(0.0 / 0.0 == 0.0 / 0.0)|}, "false\n");

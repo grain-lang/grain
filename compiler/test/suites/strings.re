@@ -270,17 +270,17 @@ bar", 1))|},
   assertRun("string_float3", {|print(-Infinityf)|}, "-Infinity\n");
   assertRun(
     "string_float4",
-    {|include "float64"; from Float64 use *; print(div(0.0d, 0.0d))|},
+    {|include "float64"; from Float64 use *; print(0.0d / 0.0d)|},
     "NaN\n",
   );
   assertRun(
     "string_float5",
-    {|include "float64"; from Float64 use *; print(div(1.0d, 0.0d))|},
+    {|include "float64"; from Float64 use *; print(1.0d / 0.0d)|},
     "Infinity\n",
   );
   assertRun(
     "string_float6",
-    {|include "float64"; from Float64 use *; print(div(-1.0d, 0.0d))|},
+    {|include "float64"; from Float64 use *; print(-1.0d / 0.0d)|},
     "-Infinity\n",
   );
 
