@@ -75,6 +75,7 @@ let format_code =
   | None =>
     set_binary_mode_out(stdout, true);
     print_bytes(contents);
+    flush(stdout);
   };
 };
 
