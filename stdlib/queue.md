@@ -200,6 +200,56 @@ Returns:
 |----|-----------|
 |`Option<a>`|The element removed from the queue|
 
+### Queue.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toList : (queue: Queue<a>) => List<a>
+```
+
+Converts a queue into a list of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue`|`Queue<a>`|The queue to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|A list containing all queue values|
+
+### Queue.**fromList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromList : (list: List<a>) => Queue<a>
+```
+
+Creates a queue from a list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`Queue<a>`|A queue containing all list values|
+
 ### Queue.**clear**
 
 <details disabled>
@@ -529,4 +579,54 @@ Returns:
 |type|description|
 |----|-----------|
 |`Number`|The number of values in the queue|
+
+#### Queue.Immutable.**toList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+toList : (queue: ImmutableQueue<a>) => List<a>
+```
+
+Converts a queue into a list of its elements.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`queue`|`ImmutableQueue<a>`|The queue to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`List<a>`|A list containing all queue values|
+
+#### Queue.Immutable.**fromList**
+
+<details disabled>
+<summary tabindex="-1">Added in <code>next</code></summary>
+No other changes yet.
+</details>
+
+```grain
+fromList : (list: List<a>) => ImmutableQueue<a>
+```
+
+Creates a queue from a list.
+
+Parameters:
+
+|param|type|description|
+|-----|----|-----------|
+|`list`|`List<a>`|The list to convert|
+
+Returns:
+
+|type|description|
+|----|-----------|
+|`ImmutableQueue<a>`|A queue containing all list values|
 
