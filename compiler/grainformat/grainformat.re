@@ -149,7 +149,6 @@ let grainformat = runs => {
         Stdlib.Format.eprintf("@[%s@]@.", Printexc.to_string(exn));
         exit(2);
       };
-      exit(0);
     },
     runs,
   );
