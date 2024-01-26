@@ -56,7 +56,7 @@ provide enum rec Json {
   JsonNumber(Number),
   JsonString(String),
   JsonArray(List<Json>),
-  // Note that JSONObject here is deliberately defined as a simple list of key value pair tuples as opposed
+  // Note that JsonObject here is deliberately defined as a simple list of key value pair tuples as opposed
   // to for example a Map in order to accommodate the fact that the ECMA-404 standard doesn't prohibit
   // duplicate names in Objects. Such JSON should be representable by the JSON data structure for lossless
   // processing. This also simplifies implementation by not requiring a purpose built data structure and
@@ -335,7 +335,7 @@ provide enum FormattingChoices {
    * Pretty and conservative formatting to maximize compatibility and
    * embeddability of the resulting JSON.
    *
-   * Should be safe to copy and paste directly into HTML and to transported in
+   * Should be safe to copy and paste directly into HTML and to be transported in
    * plain ASCII.
    *
    * Roughly Equivalent to:
@@ -977,9 +977,18 @@ let makeJsonWriter = (format: FormattingSettings, buffer: Buffer.Buffer) => {
           Buffer.addChar('\t', buffer)
         }
       }),
+    // Implement fast path, for common indentation level to avoid closure
     IndentWithSpaces(spacesPerIndentation) when spacesPerIndentation == 2 =>
       Some(indentationLevel => {
         let spaceCount = indentationLevel * 2
+        for (let mut count = 0; count < spaceCount; count += 1) {
+          Buffer.addChar(' ', buffer)
+        }
+      }),
+    // Implement fast path, for common indentation level to avoid closure
+    IndentWithSpaces(spacesPerIndentation) when spacesPerIndentation == 4 =>
+      Some(indentationLevel => {
+        let spaceCount = indentationLevel * 4
         for (let mut count = 0; count < spaceCount; count += 1) {
           Buffer.addChar(' ', buffer)
         }
@@ -1596,48 +1605,40 @@ and parseString = (parserState: JsonParserState) => {
             match (parserState.currentCodePoint) {
               0x22 => { // '"'
                 Buffer.addChar('"', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x5C => { // '\'
                 Buffer.addChar('\\', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x2F => { // '/'
                 Buffer.addChar('/', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x62 => { // letter 'b' as in Backspace
                 // emit backspace control code
                 Buffer.addChar('\u{08}', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x66 => { // letter 'f' as in Form Feed
                 // emit Form Feed control code
                 Buffer.addChar('\u{0C}', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x6E => { // letter 'n' as in New line
                 // emit Line Feed control code
                 Buffer.addChar('\u{0A}', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x72 => { // letter 'r' as in carriage Return
                 // emit Carriage Return control code
                 Buffer.addChar('\u{0D}', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x74 => { // letter 't' as in Tab
                 // emit Tab control code
                 Buffer.addChar('\u{09}', buffer)
-                next(parserState)
-                void
+                ignore(next(parserState))
               },
               0x75 => { // 'u' (start of hexadecimal UTF-16 escape sequence)
                 next(parserState)
@@ -1689,8 +1690,7 @@ and parseString = (parserState: JsonParserState) => {
                     let shift = digitIndex * 4
                     codeUnit = codeUnit | digit << shift
 
-                    next(parserState)
-                    void
+                    ignore(next(parserState))
                   }
 
                   if (highSurrogate == -1) {
@@ -1833,7 +1833,6 @@ and parseNumberValue = (parserState: JsonParserState) => {
           break
         }
       }
-      void
     },
     unexpectedCodePoint => {
       // The integer part of the number has to have at least one digit.
@@ -1892,8 +1891,6 @@ and parseNumberValue = (parserState: JsonParserState) => {
           "exponent part is missing in number"
         )
       )
-
-    void
   }
   // Note that unlike all other JSON value types there's no explicit ending
   // character like ('"' for strings, ']' for arrays,'}' for objects etc). We
@@ -1956,7 +1953,6 @@ and parseArray = (parserState: JsonParserState) => {
                 first = false
                 trailingComma = false
                 elems = [elem, ...elems]
-                void
               },
               Err(e) => return Err(e),
             }
@@ -2005,8 +2001,7 @@ and parseObject = (parserState: JsonParserState) => {
               let detail = "expected a key-value pair or the end of the object, found ','"
               return Err(buildUnexpectedTokenError(parserState, detail))
             } else {
-              next(parserState)
-              void
+              ignore(next(parserState))
             }
           },
           0x7D => { // '}'
@@ -2034,7 +2029,6 @@ and parseObject = (parserState: JsonParserState) => {
                       Ok(value) => {
                         entries = [(key, value), ...entries]
                         first = false
-                        void
                       },
                       Err(e) => return Err(e),
                     }
