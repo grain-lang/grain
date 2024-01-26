@@ -294,8 +294,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`json`|`Option<FormattingChoices>`|The JSON object to print|
-|`format`|`Json`|formatting option|
+|`?format`|`FormattingChoices`|formatting option|
+|`json`|`Json`|The JSON object to print|
 
 Returns:
 
@@ -364,7 +364,7 @@ No other changes yet.
 </details>
 
 ```grain
-parse : String => Result<Json, JsonParseError>
+parse : (str: String) => Result<Json, JsonParseError>
 ```
 
 Parses JSON string into a `Json` data structure.
