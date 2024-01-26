@@ -714,7 +714,7 @@ isClose :
    ?absoluteTolerance: Number) => Bool
 ```
 
-Determines weather two values are considered close to each other using a relative and absolute tolerance.
+Determines whether two values are considered close to each other using a relative and absolute tolerance.
 
 Parameters:
 

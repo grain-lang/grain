@@ -423,7 +423,7 @@ provide let isInfinite = (x: Number) => {
 }
 
 /**
- * Determines weather two values are considered close to each other using a relative and absolute tolerance.
+ * Determines whether two values are considered close to each other using a relative and absolute tolerance.
  *
  * @param a: The first value
  * @param b: The second value
