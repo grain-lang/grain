@@ -19,11 +19,107 @@ type provide_flag =
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
 
-[@deriving (sexp, yojson)]
-type attribute = Asttypes.attribute;
+/** Type for syntax-level types */
 
 [@deriving (sexp, yojson)]
-type attributes = Asttypes.attributes;
+type parsed_type_desc =
+  | PTyAny
+  | PTyVar(string)
+  | PTyArrow(list(parsed_type_argument), parsed_type)
+  | PTyTuple(list(parsed_type))
+  | PTyConstr(loc(Identifier.t), list(parsed_type))
+  | PTyPoly(list(loc(string)), parsed_type)
+
+and parsed_type = {
+  ptyp_desc: parsed_type_desc,
+  [@sexp_drop_if sexp_locs_disabled]
+  ptyp_loc: Location.t,
+}
+
+and parsed_type_argument = {
+  ptyp_arg_label: argument_label,
+  ptyp_arg_type: parsed_type,
+  ptyp_arg_loc: Location.t,
+};
+
+/** Type for fields within a record */
+
+[@deriving (sexp, yojson)]
+type label_declaration = {
+  pld_name: loc(Identifier.t),
+  pld_type: parsed_type,
+  pld_mutable: mut_flag,
+  [@sexp_drop_if sexp_locs_disabled]
+  pld_loc: Location.t,
+};
+
+/** Type for arguments to a constructor */
+
+[@deriving (sexp, yojson)]
+type constructor_arguments =
+  | PConstrTuple(loc(list(parsed_type)))
+  | PConstrRecord(loc(list(label_declaration)))
+  | PConstrSingleton
+
+[@deriving (sexp, yojson)]
+and type_extension = {
+  ptyext_path: loc(Identifier.t),
+  ptyext_params: list(parsed_type),
+  ptyext_constructors: list(extension_constructor),
+  [@sexp_drop_if sexp_locs_disabled]
+  ptyext_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and extension_constructor = {
+  pext_name: loc(string),
+  pext_kind: extension_constructor_kind,
+  [@sexp_drop_if sexp_locs_disabled]
+  pext_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and type_exception = {
+  ptyexn_constructor: extension_constructor,
+  [@sexp_drop_if sexp_locs_disabled]
+  ptyexn_loc: Location.t,
+}
+
+[@deriving (sexp, yojson)]
+and extension_constructor_kind =
+  | PExtDecl(constructor_arguments)
+  | PExtRebind(loc(Identifier.t));
+
+/** Type for branches within data declarations */
+
+[@deriving (sexp, yojson)]
+type constructor_declaration = {
+  pcd_name: loc(string),
+  pcd_args: constructor_arguments,
+  [@sexp_drop_if sexp_locs_disabled]
+  pcd_loc: Location.t,
+};
+
+/** Different types of data which can be declared. Currently only one. */
+
+[@deriving (sexp, yojson)]
+type data_kind =
+  | PDataAbstract
+  | PDataVariant(list(constructor_declaration))
+  | PDataRecord(list(label_declaration));
+
+/** Type for data declarations. */
+
+[@deriving (sexp, yojson)]
+type data_declaration = {
+  pdata_name: loc(string),
+  pdata_params: list(parsed_type),
+  pdata_kind: data_kind,
+  pdata_manifest: option(parsed_type),
+  pdata_rec: rec_flag,
+  [@sexp_drop_if sexp_locs_disabled]
+  pdata_loc: Location.t,
+};
 
 /** Constants supported by Grain */
 
@@ -57,6 +153,34 @@ and number_type =
   | PConstNumberInt(string)
   | PConstNumberFloat(string)
   | PConstNumberRational(string, string);
+
+/** Various binding forms */
+
+[@deriving (sexp, yojson)]
+type pattern_desc =
+  | PPatAny
+  | PPatVar(loc(string))
+  | PPatTuple(list(pattern))
+  | PPatArray(list(pattern))
+  | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
+  | PPatConstant(constant)
+  | PPatConstraint(pattern, parsed_type)
+  | PPatConstruct(loc(Identifier.t), constructor_pattern)
+  | PPatOr(pattern, pattern)
+  | PPatAlias(pattern, loc(string))
+
+[@deriving (sexp, yojson)]
+and constructor_pattern =
+  | PPatConstrRecord(list((loc(Identifier.t), pattern)), closed_flag)
+  | PPatConstrTuple(list(pattern))
+  | PPatConstrSingleton
+
+[@deriving (sexp, yojson)]
+and pattern = {
+  ppat_desc: pattern_desc,
+  [@sexp_drop_if sexp_locs_disabled]
+  ppat_loc: Location.t,
+};
 
 [@deriving (sexp, yojson)]
 type wasm_prim_type =
@@ -351,146 +475,16 @@ and use_item =
       loc: Location.t,
     });
 
-/** Type for syntax-level types */
+[@deriving (sexp, yojson)]
+type attribute = Asttypes.attribute;
 
 [@deriving (sexp, yojson)]
-type parsed_type_desc =
-  | PTyAny
-  | PTyVar(string)
-  | PTyArrow(list(parsed_type_argument), parsed_type)
-  | PTyTuple(list(parsed_type))
-  | PTyConstr(loc(Identifier.t), list(parsed_type))
-  | PTyPoly(list(loc(string)), parsed_type)
-
-and parsed_type = {
-  ptyp_desc: parsed_type_desc,
-  [@sexp_drop_if sexp_locs_disabled]
-  ptyp_loc: Location.t,
-}
-
-and parsed_type_argument = {
-  ptyp_arg_label: argument_label,
-  ptyp_arg_type: parsed_type,
-  ptyp_arg_loc: Location.t,
-}
-
-[@deriving (sexp, yojson)]
-and argument_label =
-  | Unlabeled
-  | Labeled(loc(string))
-  | Default(loc(string))
-
-/** Type for fields within a record */
-
-[@deriving (sexp, yojson)]
-and label_declaration = {
-  pld_name: loc(Identifier.t),
-  pld_type: parsed_type,
-  pld_mutable: mut_flag,
-  [@sexp_drop_if sexp_locs_disabled]
-  pld_loc: Location.t,
-}
-
-/** Type for arguments to a constructor */
-
-[@deriving (sexp, yojson)]
-and constructor_arguments =
-  | PConstrTuple(loc(list(parsed_type)))
-  | PConstrRecord(loc(list(label_declaration)))
-  | PConstrSingleton
-
-[@deriving (sexp, yojson)]
-and type_extension = {
-  ptyext_path: loc(Identifier.t),
-  ptyext_params: list(parsed_type),
-  ptyext_constructors: list(extension_constructor),
-  [@sexp_drop_if sexp_locs_disabled]
-  ptyext_loc: Location.t,
-}
-
-[@deriving (sexp, yojson)]
-and extension_constructor = {
-  pext_name: loc(string),
-  pext_kind: extension_constructor_kind,
-  [@sexp_drop_if sexp_locs_disabled]
-  pext_loc: Location.t,
-}
-
-[@deriving (sexp, yojson)]
-and type_exception = {
-  ptyexn_constructor: extension_constructor,
-  [@sexp_drop_if sexp_locs_disabled]
-  ptyexn_loc: Location.t,
-}
-
-[@deriving (sexp, yojson)]
-and extension_constructor_kind =
-  | PExtDecl(constructor_arguments)
-  | PExtRebind(loc(Identifier.t))
-
-/** Type for branches within data declarations */
-
-[@deriving (sexp, yojson)]
-and constructor_declaration = {
-  pcd_name: loc(string),
-  pcd_args: constructor_arguments,
-  [@sexp_drop_if sexp_locs_disabled]
-  pcd_loc: Location.t,
-}
-
-/** Different types of data which can be declared. Currently only one. */
-
-[@deriving (sexp, yojson)]
-and data_kind =
-  | PDataAbstract
-  | PDataVariant(list(constructor_declaration))
-  | PDataRecord(list(label_declaration))
-
-/** Type for data declarations. */
-
-[@deriving (sexp, yojson)]
-and data_declaration = {
-  pdata_name: loc(string),
-  pdata_params: list(parsed_type),
-  pdata_kind: data_kind,
-  pdata_manifest: option(parsed_type),
-  pdata_rec: rec_flag,
-  [@sexp_drop_if sexp_locs_disabled]
-  pdata_loc: Location.t,
-}
-
-/** Various binding forms */
-
-[@deriving (sexp, yojson)]
-and pattern_desc =
-  | PPatAny
-  | PPatVar(loc(string))
-  | PPatTuple(list(pattern))
-  | PPatArray(list(pattern))
-  | PPatRecord(list((loc(Identifier.t), pattern)), closed_flag)
-  | PPatConstant(constant)
-  | PPatConstraint(pattern, parsed_type)
-  | PPatConstruct(loc(Identifier.t), constructor_pattern)
-  | PPatOr(pattern, pattern)
-  | PPatAlias(pattern, loc(string))
-
-[@deriving (sexp, yojson)]
-and constructor_pattern =
-  | PPatConstrRecord(list((loc(Identifier.t), pattern)), closed_flag)
-  | PPatConstrTuple(list(pattern))
-  | PPatConstrSingleton
-
-[@deriving (sexp, yojson)]
-and pattern = {
-  ppat_desc: pattern_desc,
-  [@sexp_drop_if sexp_locs_disabled]
-  ppat_loc: Location.t,
-}
+type attributes = Asttypes.attributes;
 
 /** Type for expressions (i.e. things which evaluate to something) */
 
 [@deriving (sexp, yojson)]
-and expression = {
+type expression = {
   pexp_desc: expression_desc,
   pexp_attributes: attributes,
   [@sexp_drop_if sexp_locs_disabled]

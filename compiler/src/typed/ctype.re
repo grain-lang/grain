@@ -2614,8 +2614,8 @@ let expand_head_trace = (env, t) => {
 type filter_arrow_failure =
   | Unification_error(list((type_expr, type_expr)))
   | Label_mismatch({
-      got: Parsetree.argument_label,
-      expected: Parsetree.argument_label,
+      got: argument_label,
+      expected: argument_label,
       expected_type: type_expr,
     })
   | Arity_mismatch

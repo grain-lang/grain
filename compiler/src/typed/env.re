@@ -1686,7 +1686,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
                 | args =>
                   Btype.newgenty(
                     TTyArrow(
-                      List.map(arg => (Parsetree.Unlabeled, arg), args),
+                      List.map(arg => (Unlabeled, arg), args),
                       desc.cstr_res,
                       TComOk,
                     ),
@@ -1757,7 +1757,7 @@ and components_of_module_maker = ((env, sub, path, mty)) =>
             | args =>
               Btype.newgenty(
                 TTyArrow(
-                  List.map(arg => (Parsetree.Unlabeled, arg), args),
+                  List.map(arg => (Unlabeled, arg), args),
                   desc.cstr_res,
                   TComOk,
                 ),

@@ -408,19 +408,16 @@ let forget_abbrev = (mem, path) =>
 /*  Utilities for labels          */
 /**********************************/
 
-module Parsetree = Grain_parsing.Parsetree;
-
 let is_optional =
   fun
-  | Parsetree.Default(_) => true
+  | Default(_) => true
   | _ => false;
 
 let label_equal = (l1, l2) => {
   switch (l1, l2) {
-  | (Parsetree.Unlabeled, Parsetree.Unlabeled) => true
-  | (Parsetree.Labeled({txt: name1}), Parsetree.Labeled({txt: name2}))
-  | (Parsetree.Default({txt: name1}), Parsetree.Default({txt: name2}))
-      when name1 == name2 =>
+  | (Unlabeled, Unlabeled) => true
+  | (Labeled({txt: name1}), Labeled({txt: name2}))
+  | (Default({txt: name1}), Default({txt: name2})) when name1 == name2 =>
     true
   | _ => false
   };
@@ -428,10 +425,10 @@ let label_equal = (l1, l2) => {
 
 let same_label_name = (l1, l2) =>
   switch (l1, l2) {
-  | (Parsetree.Unlabeled, Parsetree.Unlabeled) => true
+  | (Unlabeled, Unlabeled) => true
   | (
-      Parsetree.Labeled({txt: name1}) | Parsetree.Default({txt: name1}),
-      Parsetree.Labeled({txt: name2}) | Parsetree.Default({txt: name2}),
+      Labeled({txt: name1}) | Default({txt: name1}),
+      Labeled({txt: name2}) | Default({txt: name2}),
     )
       when name1 == name2 =>
     true
@@ -440,15 +437,15 @@ let same_label_name = (l1, l2) =>
 
 let label_name =
   fun
-  | Parsetree.Unlabeled => ""
-  | Parsetree.Labeled(s)
-  | Parsetree.Default(s) => s.txt;
+  | Unlabeled => ""
+  | Labeled(s)
+  | Default(s) => s.txt;
 
 let qualified_label_name =
   fun
-  | Parsetree.Unlabeled => ""
-  | Parsetree.Labeled(s) => s.txt
-  | Parsetree.Default(s) => "?" ++ s.txt;
+  | Unlabeled => ""
+  | Labeled(s) => s.txt
+  | Default(s) => "?" ++ s.txt;
 
 let rec extract_label_aux = (hd, l) =>
   fun

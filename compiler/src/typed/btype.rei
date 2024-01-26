@@ -110,22 +110,19 @@ let memorize_abbrev:
 let forget_abbrev: (ref(abbrev_memo), Path.t) => unit;
 /* Remove an abbreviation from the cache */
 
-module Parsetree = Grain_parsing.Parsetree;
-
 /**** Utilities for labels ****/
-let is_optional: Parsetree.argument_label => bool;
-let label_equal: (Parsetree.argument_label, Parsetree.argument_label) => bool;
-let same_label_name:
-  (Parsetree.argument_label, Parsetree.argument_label) => bool;
-let label_name: Parsetree.argument_label => label;
-let qualified_label_name: Parsetree.argument_label => label;
+let is_optional: argument_label => bool;
+let label_equal: (argument_label, argument_label) => bool;
+let same_label_name: (argument_label, argument_label) => bool;
+let label_name: argument_label => label;
+let qualified_label_name: argument_label => label;
 let extract_label:
-  (label, list((Parsetree.argument_label, 'a))) =>
+  (label, list((argument_label, 'a))) =>
   (
-    Parsetree.argument_label,
+    argument_label,
     'a,
-    list((Parsetree.argument_label, 'a)),
-    list((Parsetree.argument_label, 'a)),
+    list((argument_label, 'a)),
+    list((argument_label, 'a)),
   );
 
 /**** Utilities for backtracking ****/

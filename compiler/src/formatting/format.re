@@ -1760,7 +1760,7 @@ and print_type =
                     ({Parsetree.ptyp_arg_label: label, ptyp_arg_type: t}) => {
                       let label =
                         switch (label) {
-                        | Unlabeled => Doc.nil
+                        | Asttypes.Unlabeled => Doc.nil
                         | Labeled(name) =>
                           Doc.concat([
                             Doc.text(name.txt),
@@ -2683,7 +2683,7 @@ and print_application_argument =
       argument.paa_expr,
     );
   switch (argument.paa_label, argument.paa_expr.pexp_desc) {
-  | (Unlabeled, _) => expr_doc
+  | (Asttypes.Unlabeled, _) => expr_doc
   | (Labeled(name) | Default(name), _) =>
     Doc.concat([Doc.text(name.txt), Doc.equal, expr_doc])
   };

@@ -166,7 +166,7 @@ let output_for_history = (~current_version, {history_version, history_msg}) => {
   };
 };
 
-let output_for_params = params =>
+let output_for_params = params => {
   Markdown.table(
     ~headers=["param", "type", "description"],
     List.map(
@@ -176,6 +176,7 @@ let output_for_params = params =>
       params,
     ),
   );
+};
 
 let output_for_returns = ({returns_type, returns_msg}) => {
   Markdown.table(
@@ -223,7 +224,7 @@ let types_for_function = (~ident, vd: Types.value_description) => {
 let lookup_arg_by_label = (name, args_opt) => {
   Option.bind(args_opt, args =>
     List.find_opt(
-      ((label: Grain_parsing.Parsetree.argument_label, _)) =>
+      ((label: Grain_parsing.Asttypes.argument_label, _)) =>
         switch (label) {
         | Default(l)
         | Labeled(l) => l.txt == name
