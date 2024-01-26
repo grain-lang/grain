@@ -61,7 +61,7 @@ No other changes yet.
 </details>
 
 ```grain
-(&&) : (value1: Bool, value2: Bool) => Bool
+(&&) : (left: Bool, right: Bool) => Bool
 ```
 
 Computes the logical AND (`&&`) of the given operands.
@@ -73,8 +73,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`Bool`|The first operand|
-|`value2`|`Bool`|The second operand|
+|`left`|`Bool`|The first operand|
+|`right`|`Bool`|The second operand|
 
 Returns:
 
@@ -90,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-(||) : (value1: Bool, value2: Bool) => Bool
+(||) : (left: Bool, right: Bool) => Bool
 ```
 
 Computes the logical OR `||` of the given operands.
@@ -102,8 +102,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`Bool`|The first operand|
-|`value2`|`Bool`|The second operand|
+|`left`|`Bool`|The first operand|
+|`right`|`Bool`|The second operand|
 
 Returns:
 
@@ -173,7 +173,7 @@ No other changes yet.
 </details>
 
 ```grain
-is : (value1: a, value2: a) => Bool
+is : (left: a, right: a) => Bool
 ```
 
 Checks that two values are physically equal.
@@ -183,8 +183,8 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`value1`|`a`|The first operand|
-|`value2`|`a`|The second operand|
+|`left`|`a`|The first operand|
+|`right`|`a`|The second operand|
 
 Returns:
 
@@ -901,7 +901,7 @@ No other changes yet.
 </details>
 
 ```grain
-assert : (bool: Bool) => Void
+assert : (condition: Bool) => Void
 ```
 
 Assert that the given Boolean condition is `true`.
@@ -910,7 +910,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`bool`|`Bool`|The condition to assert|
+|`condition`|`Bool`|The condition to assert|
 
 Throws:
 
@@ -936,7 +936,7 @@ No other changes yet.
 </details>
 
 ```grain
-throw : (exc: Exception) => a
+throw : (exn: Exception) => a
 ```
 
 Throw an exception. Currently, exceptions cannot be caught and will crash your program.
@@ -945,7 +945,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`exc`|`Exception`|The exception to be thrown|
+|`exn`|`Exception`|The exception to be thrown|
 
 Returns:
 

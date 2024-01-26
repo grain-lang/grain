@@ -75,234 +75,234 @@ store32 : (ptr: WasmI32, value: WasmI64, offset: WasmI32) => Void
 ### WasmI64.**clz**
 
 ```grain
-clz : (int: WasmI64) => WasmI64
+clz : (num: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**ctz**
 
 ```grain
-ctz : (int: WasmI64) => WasmI64
+ctz : (num: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**popcnt**
 
 ```grain
-popcnt : (int: WasmI64) => WasmI64
+popcnt : (num: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**eqz**
 
 ```grain
-eqz : (int: WasmI64) => Bool
+eqz : (num: WasmI64) => Bool
 ```
 
 ### WasmI64.**(+)**
 
 ```grain
-(+) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(+) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(-)**
 
 ```grain
-(-) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(-) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(*)**
 
 ```grain
-(*) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(*) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(/)**
 
 ```grain
-(/) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(/) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**divU**
 
 ```grain
-divU : (value1: WasmI64, value2: WasmI64) => WasmI64
+divU : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**remS**
 
 ```grain
-remS : (value1: WasmI64, value2: WasmI64) => WasmI64
+remS : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**remU**
 
 ```grain
-remU : (value1: WasmI64, value2: WasmI64) => WasmI64
+remU : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(&)**
 
 ```grain
-(&) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(&) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(|)**
 
 ```grain
-(|) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(|) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(^)**
 
 ```grain
-(^) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(^) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(<<)**
 
 ```grain
-(<<) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(<<) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(>>>)**
 
 ```grain
-(>>>) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(>>>) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(>>)**
 
 ```grain
-(>>) : (value1: WasmI64, value2: WasmI64) => WasmI64
+(>>) : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**rotl**
 
 ```grain
-rotl : (value1: WasmI64, value2: WasmI64) => WasmI64
+rotl : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**rotr**
 
 ```grain
-rotr : (value1: WasmI64, value2: WasmI64) => WasmI64
+rotr : (left: WasmI64, right: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**(==)**
 
 ```grain
-(==) : (value1: WasmI64, value2: WasmI64) => Bool
+(==) : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**(!=)**
 
 ```grain
-(!=) : (value1: WasmI64, value2: WasmI64) => Bool
+(!=) : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**(<)**
 
 ```grain
-(<) : (value1: WasmI64, value2: WasmI64) => Bool
+(<) : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**ltU**
 
 ```grain
-ltU : (value1: WasmI64, value2: WasmI64) => Bool
+ltU : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**(<=)**
 
 ```grain
-(<=) : (value1: WasmI64, value2: WasmI64) => Bool
+(<=) : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**leU**
 
 ```grain
-leU : (value1: WasmI64, value2: WasmI64) => Bool
+leU : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**(>)**
 
 ```grain
-(>) : (value1: WasmI64, value2: WasmI64) => Bool
+(>) : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**gtU**
 
 ```grain
-gtU : (value1: WasmI64, value2: WasmI64) => Bool
+gtU : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**(>=)**
 
 ```grain
-(>=) : (value1: WasmI64, value2: WasmI64) => Bool
+(>=) : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**geU**
 
 ```grain
-geU : (value1: WasmI64, value2: WasmI64) => Bool
+geU : (left: WasmI64, right: WasmI64) => Bool
 ```
 
 ### WasmI64.**extendI32S**
 
 ```grain
-extendI32S : (int: WasmI32) => WasmI64
+extendI32S : (num: WasmI32) => WasmI64
 ```
 
 ### WasmI64.**extendI32U**
 
 ```grain
-extendI32U : (int: WasmI32) => WasmI64
+extendI32U : (num: WasmI32) => WasmI64
 ```
 
 ### WasmI64.**truncF32S**
 
 ```grain
-truncF32S : (int: WasmF32) => WasmI64
+truncF32S : (num: WasmF32) => WasmI64
 ```
 
 ### WasmI64.**truncF32U**
 
 ```grain
-truncF32U : (int: WasmF32) => WasmI64
+truncF32U : (num: WasmF32) => WasmI64
 ```
 
 ### WasmI64.**truncF64S**
 
 ```grain
-truncF64S : (int: WasmF64) => WasmI64
+truncF64S : (num: WasmF64) => WasmI64
 ```
 
 ### WasmI64.**truncF64U**
 
 ```grain
-truncF64U : (int: WasmF64) => WasmI64
+truncF64U : (num: WasmF64) => WasmI64
 ```
 
 ### WasmI64.**reinterpretF64**
 
 ```grain
-reinterpretF64 : (int: WasmF64) => WasmI64
+reinterpretF64 : (num: WasmF64) => WasmI64
 ```
 
 ### WasmI64.**extendS8**
 
 ```grain
-extendS8 : (int: WasmI64) => WasmI64
+extendS8 : (num: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**extendS16**
 
 ```grain
-extendS16 : (int: WasmI64) => WasmI64
+extendS16 : (num: WasmI64) => WasmI64
 ```
 
 ### WasmI64.**extendS32**
 
 ```grain
-extendS32 : (int: WasmI64) => WasmI64
+extendS32 : (num: WasmI64) => WasmI64
 ```
 

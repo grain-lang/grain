@@ -270,10 +270,13 @@ let prim1_type =
       );
     }
   | Assert =>
-    prim_type([("bool", Builtin_types.type_bool)], Builtin_types.type_void)
+    prim_type(
+      [("condition", Builtin_types.type_bool)],
+      Builtin_types.type_void,
+    )
   | Throw =>
     prim_type(
-      [("exc", Builtin_types.type_exception)],
+      [("exn", Builtin_types.type_exception)],
       newgenvar(~name="a", ()),
     )
   | Magic =>
@@ -296,7 +299,7 @@ let prim1_type =
   | WasmUnaryF32({arg_type, ret_type})
   | WasmUnaryF64({arg_type, ret_type}) =>
     prim_type(
-      [("int", grain_type_of_wasm_prim_type(arg_type))],
+      [("num", grain_type_of_wasm_prim_type(arg_type))],
       grain_type_of_wasm_prim_type(ret_type),
     )
   | WasmMemoryGrow =>
@@ -319,15 +322,15 @@ let prim2_type =
   | Or =>
     prim_type(
       [
-        ("value1", Builtin_types.type_bool),
-        ("value2", Builtin_types.type_bool),
+        ("left", Builtin_types.type_bool),
+        ("right", Builtin_types.type_bool),
       ],
       Builtin_types.type_bool,
     )
   | Is
   | Eq => {
       let v = newgenvar(~name="a", ());
-      prim_type([("value1", v), ("value2", v)], Builtin_types.type_bool);
+      prim_type([("left", v), ("right", v)], Builtin_types.type_bool);
     }
   | WasmBinaryI32({arg_types: (arg1_type, arg2_type), ret_type})
   | WasmBinaryI64({arg_types: (arg1_type, arg2_type), ret_type})
@@ -335,8 +338,8 @@ let prim2_type =
   | WasmBinaryF64({arg_types: (arg1_type, arg2_type), ret_type}) =>
     prim_type(
       [
-        ("value1", grain_type_of_wasm_prim_type(arg1_type)),
-        ("value2", grain_type_of_wasm_prim_type(arg2_type)),
+        ("left", grain_type_of_wasm_prim_type(arg1_type)),
+        ("right", grain_type_of_wasm_prim_type(arg2_type)),
       ],
       grain_type_of_wasm_prim_type(ret_type),
     )
@@ -415,7 +418,7 @@ let primn_type =
     prim_type(
       [
         ("source", Builtin_types.type_wasmi32),
-        ("dest", Builtin_types.type_wasmi32),
+        ("destination", Builtin_types.type_wasmi32),
         ("length", Builtin_types.type_wasmi32),
       ],
       Builtin_types.type_void,

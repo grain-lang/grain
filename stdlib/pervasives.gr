@@ -64,8 +64,8 @@ provide primitive (!) = "@not"
  * If the first operand is `false`, returns `false` without evaluating the second operand.
  * If the first operand is `true`, returns the value of the second operand.
  *
- * @param value1: The first operand
- * @param value2: The second operand
+ * @param left: The first operand
+ * @param right: The second operand
  * @returns The first operand if it is `false` or the value of the second operand otherwise
  *
  * @since v0.1.0
@@ -78,8 +78,8 @@ provide primitive (&&) = "@and"
  * If the first operand is `true`, returns `true` without evaluating the second operand.
  * If the first operand is `false`, returns the value of the second operand.
  *
- * @param value1: The first operand
- * @param value2: The second operand
+ * @param left: The first operand
+ * @param right: The second operand
  * @returns The first operand if it is `true` or the value of the second operand otherwise
  *
  * @since v0.1.0
@@ -104,8 +104,8 @@ provide let (!=) = (value1, value2) => !(value1 == value2)
  * Checks that two values are physically equal.
  * Use this operator if you don’t need or want structural equality.
  *
- * @param value1: The first operand
- * @param value2: The second operand
+ * @param left: The first operand
+ * @param right: The second operand
  * @returns `true` if the values are physically equal or `false` otherwise
  *
  * @since v0.1.0
@@ -168,7 +168,7 @@ provide primitive ignore = "@ignore"
 /**
  * Assert that the given Boolean condition is `true`.
  *
- * @param bool: The condition to assert
+ * @param condition: The condition to assert
  *
  * @throws AssertionError: When the `condition` is false
  *
@@ -186,7 +186,7 @@ provide exception InvalidArgument(String)
 /**
  * Throw an exception. Currently, exceptions cannot be caught and will crash your program.
  *
- * @param exc: The exception to be thrown
+ * @param exn: The exception to be thrown
  * @returns Anything and nothing—your program won't continue past a throw
  *
  * @since v0.3.0

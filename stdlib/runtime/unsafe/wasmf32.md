@@ -21,156 +21,156 @@ store : (ptr: WasmI32, value: WasmF32, offset: WasmI32) => Void
 ### WasmF32.**neg**
 
 ```grain
-neg : (int: WasmF32) => WasmF32
+neg : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**abs**
 
 ```grain
-abs : (int: WasmF32) => WasmF32
+abs : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**ceil**
 
 ```grain
-ceil : (int: WasmF32) => WasmF32
+ceil : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**floor**
 
 ```grain
-floor : (int: WasmF32) => WasmF32
+floor : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**trunc**
 
 ```grain
-trunc : (int: WasmF32) => WasmF32
+trunc : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**nearest**
 
 ```grain
-nearest : (int: WasmF32) => WasmF32
+nearest : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**sqrt**
 
 ```grain
-sqrt : (int: WasmF32) => WasmF32
+sqrt : (num: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**(+)**
 
 ```grain
-(+) : (value1: WasmF32, value2: WasmF32) => WasmF32
+(+) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**(-)**
 
 ```grain
-(-) : (value1: WasmF32, value2: WasmF32) => WasmF32
+(-) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**(*)**
 
 ```grain
-(*) : (value1: WasmF32, value2: WasmF32) => WasmF32
+(*) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**(/)**
 
 ```grain
-(/) : (value1: WasmF32, value2: WasmF32) => WasmF32
+(/) : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**copySign**
 
 ```grain
-copySign : (value1: WasmF32, value2: WasmF32) => WasmF32
+copySign : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**min**
 
 ```grain
-min : (value1: WasmF32, value2: WasmF32) => WasmF32
+min : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**max**
 
 ```grain
-max : (value1: WasmF32, value2: WasmF32) => WasmF32
+max : (left: WasmF32, right: WasmF32) => WasmF32
 ```
 
 ### WasmF32.**(==)**
 
 ```grain
-(==) : (value1: WasmF32, value2: WasmF32) => Bool
+(==) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
 ### WasmF32.**(!=)**
 
 ```grain
-(!=) : (value1: WasmF32, value2: WasmF32) => Bool
+(!=) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
 ### WasmF32.**(<)**
 
 ```grain
-(<) : (value1: WasmF32, value2: WasmF32) => Bool
+(<) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
 ### WasmF32.**(<=)**
 
 ```grain
-(<=) : (value1: WasmF32, value2: WasmF32) => Bool
+(<=) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
 ### WasmF32.**(>)**
 
 ```grain
-(>) : (value1: WasmF32, value2: WasmF32) => Bool
+(>) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
 ### WasmF32.**(>=)**
 
 ```grain
-(>=) : (value1: WasmF32, value2: WasmF32) => Bool
+(>=) : (left: WasmF32, right: WasmF32) => Bool
 ```
 
 ### WasmF32.**reinterpretI32**
 
 ```grain
-reinterpretI32 : (int: WasmI32) => WasmF32
+reinterpretI32 : (num: WasmI32) => WasmF32
 ```
 
 ### WasmF32.**convertI32S**
 
 ```grain
-convertI32S : (int: WasmI32) => WasmF32
+convertI32S : (num: WasmI32) => WasmF32
 ```
 
 ### WasmF32.**convertI32U**
 
 ```grain
-convertI32U : (int: WasmI32) => WasmF32
+convertI32U : (num: WasmI32) => WasmF32
 ```
 
 ### WasmF32.**convertI64S**
 
 ```grain
-convertI64S : (int: WasmI64) => WasmF32
+convertI64S : (num: WasmI64) => WasmF32
 ```
 
 ### WasmF32.**convertI64U**
 
 ```grain
-convertI64U : (int: WasmI64) => WasmF32
+convertI64U : (num: WasmI64) => WasmF32
 ```
 
 ### WasmF32.**demoteF64**
 
 ```grain
-demoteF64 : (int: WasmF64) => WasmF32
+demoteF64 : (num: WasmF64) => WasmF32
 ```
 
