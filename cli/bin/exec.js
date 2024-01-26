@@ -6,7 +6,7 @@ function grainExec(command, execOpts) {
   try {
     return execSync(command, execOpts);
   } catch (err) {
-    return "";
+    process.exit(err.status);
   }
 }
 
