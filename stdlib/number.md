@@ -722,8 +722,8 @@ Parameters:
 |-----|----|-----------|
 |`a`|`Number`|The first value|
 |`b`|`Number`|The second value|
-|`relativeTolerance`|`Option<Number>`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
-|`absoluteTolerance`|`Option<Number>`|The absolute tolerance to use, regardless of the values of `a` or `b`|
+|`?relativeTolerance`|`Number`|The maximum tolerance to use relative to the larger absolute value `a` or `b`|
+|`?absoluteTolerance`|`Number`|The absolute tolerance to use, regardless of the values of `a` or `b`|
 
 Returns:
 
@@ -921,7 +921,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|A number between -1 and 1, representing the angle's sine value.|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's sine value.|
 
 Returns:
 
@@ -946,7 +946,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|A number between -1 and 1, representing the angle's cosine value.|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's cosine value.|
 
 Returns:
 
@@ -971,7 +971,7 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`x`|`Number`|A number between -1 and 1, representing the angle's tangent value.|
+|`angle`|`Number`|A number between -1 and 1, representing the angle's tangent value.|
 
 Returns:
 

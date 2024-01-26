@@ -635,7 +635,7 @@ let rf = z => {
 /**
  * Computes the inverse sine of the given angle
  *
- * @param x: A number between -1 and 1, representing the angle's sine value.
+ * @param angle: A number between -1 and 1, representing the angle's sine value.
  * @returns The inverse sine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN
  *
  * @since v0.6.0
@@ -699,7 +699,7 @@ provide let asin = angle => {
 /**
  * Computes the inverse cosine of the given angle
  *
- * @param x: A number between -1 and 1, representing the angle's cosine value.
+ * @param angle: A number between -1 and 1, representing the angle's cosine value.
  * @returns The inverse cosine (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN
  *
  * @since v0.6.0
@@ -774,7 +774,7 @@ provide let acos = angle => {
 /**
  * Computes the inverse tangent of the given angle
  *
- * @param x: A number between -1 and 1, representing the angle's tangent value.
+ * @param angle: A number between -1 and 1, representing the angle's tangent value.
  * @returns The inverse tangent (angle in radians between `-pi/2` and `pi/2`) of x. If x is less than `-1` or greater than `1`, returns NaN
  *
  * @since v0.6.0
