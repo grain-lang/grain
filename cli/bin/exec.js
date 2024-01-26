@@ -2,6 +2,14 @@ const path = require("path");
 const { execSync } = require("child_process");
 const fs = require("fs");
 
+function grainExec(command, execOpts) {
+  try {
+    return execSync(command, execOpts);
+  } catch (err) {
+    return "";
+  }
+}
+
 function flagsFromOptions(program, options) {
   const flags = [];
   program.options.forEach((option) => {
@@ -35,7 +43,7 @@ function execGrainc(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(`${grainc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
+  return grainExec(`${grainc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 function getGraindoc() {
@@ -61,7 +69,7 @@ function execGraindoc(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(`${graindoc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
+  return grainExec(`${graindoc} ${flags.join(" ")} ${commandOrFile}`, execOpts);
 }
 
 function getGrainformat() {
@@ -87,7 +95,7 @@ function execGrainformat(
 ) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(
+  return grainExec(
     `${grainformat} ${flags.join(" ")} ${commandOrFile}`,
     execOpts
   );
@@ -111,7 +119,7 @@ const grainlsp = getGrainlsp();
 function execGrainlsp(options, program, execOpts = { stdio: "inherit" }) {
   const flags = flagsFromOptions(program, options);
 
-  return execSync(`${grainlsp} ${flags.join(" ")}`, execOpts);
+  return grainExec(`${grainlsp} ${flags.join(" ")}`, execOpts);
 }
 
 function getGrainrun() {
@@ -149,7 +157,7 @@ function execGrainrun(
   };
 
   try {
-    execSync(`${grainrun} ${file} ${unprocessedArgs.join(" ")}`, {
+    grainExec(`${grainrun} ${file} ${unprocessedArgs.join(" ")}`, {
       ...execOpts,
       env,
     });
