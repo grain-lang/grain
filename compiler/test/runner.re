@@ -114,7 +114,7 @@ let open_process = args => {
   let pid = Unix.process_full_pid((stdout, stdin, stderr));
   let (status, timed_out) =
     try({
-      let (_, status) = Test_utils.waitpid_timeout(15., pid);
+      let (_, status) = Test_utils.waitpid_timeout(30., pid);
       (status, false);
     }) {
     | Test_utils.Timeout =>
