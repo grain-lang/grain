@@ -37,18 +37,6 @@ let graindoc_out_file = name =>
 let gaindoc_in_file = name =>
   Filepath.to_string(Fp.At.(test_gaindoc_dir / (name ++ ".input.gr")));
 
-let read_channel = channel => {
-  let buf = Buffer.create(2048);
-  try(
-    while (true) {
-      Buffer.add_channel(buf, channel, 2048);
-    }
-  ) {
-  | End_of_file => ()
-  };
-  Buffer.contents(buf);
-};
-
 let compile = (~num_pages=?, ~config_fn=?, ~hook=?, name, prog) => {
   Config.preserve_all_configs(() => {
     Config.with_config(
@@ -126,7 +114,7 @@ let open_process = args => {
   let pid = Unix.process_full_pid((stdout, stdin, stderr));
   let (status, timed_out) =
     try({
-      let (_, status) = Test_utils.waitpid_timeout(30., pid);
+      let (_, status) = Test_utils.waitpid_timeout(15., pid);
       (status, false);
     }) {
     | Test_utils.Timeout =>
@@ -135,8 +123,8 @@ let open_process = args => {
       (Unix.WEXITED(-1), true);
     };
 
-  let out = read_channel(stdout);
-  let err = read_channel(stderr);
+  let out = In_channel.input_all(stdout);
+  let err = In_channel.input_all(stderr);
 
   close_in(stdout);
   close_in(stderr);
