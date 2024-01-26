@@ -210,9 +210,9 @@ and equalHelp = (x, y) => {
  * @since v0.1.0
  */
 @unsafe
-provide let equal = (x: a, y: a) => {
-  let value = equalHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
-  ignore(x)
-  ignore(y)
+provide let equal = (value1: a, value2: a) => {
+  let value = equalHelp(WasmI32.fromGrain(value1), WasmI32.fromGrain(value2))
+  ignore(value1)
+  ignore(value2)
   value
 }

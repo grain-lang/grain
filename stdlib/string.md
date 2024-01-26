@@ -51,7 +51,7 @@ No other changes yet.
 </details>
 
 ```grain
-concat : (s1: String, s2: String) => String
+concat : (str1: String, str2: String) => String
 ```
 
 Concatenate two strings.
@@ -467,7 +467,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`start`|`Number`|The start position of the substring|
-|`end`|`Option<Number>`|The end position of the substring, exclusive|
+|`?end`|`Number`|The end position of the substring, exclusive|
 |`string`|`String`|The input string|
 
 Returns:

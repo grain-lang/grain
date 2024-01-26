@@ -429,7 +429,7 @@ No other changes yet.
 </details>
 
 ```grain
-toArray : Map<a, b> => Array<(a, b)>
+toArray : (map: Map<a, b>) => Array<(a, b)>
 ```
 
 Converts a map into an array of its key-value pairs.
@@ -479,7 +479,7 @@ No other changes yet.
 </details>
 
 ```grain
-filter : (predicate: ((a, b) => Bool), map: Map<a, b>) => Void
+filter : (fn: ((a, b) => Bool), map: Map<a, b>) => Void
 ```
 
 Removes key-value pairs from a map where a predicate function returns `false`.
@@ -499,7 +499,7 @@ No other changes yet.
 </details>
 
 ```grain
-reject : (predicate: ((a, b) => Bool), map: Map<a, b>) => Void
+reject : (fn: ((a, b) => Bool), map: Map<a, b>) => Void
 ```
 
 Removes key-value pairs from a map where a predicate function returns `true`.
@@ -672,7 +672,7 @@ Returns:
 </details>
 
 ```grain
-set : (key: a, val: b, map: Map<a, b>) => Map<a, b>
+set : (key: a, value: b, map: Map<a, b>) => Map<a, b>
 ```
 
 Produces a new map containing a new key-value pair. If the key already exists in the map, the value is replaced.

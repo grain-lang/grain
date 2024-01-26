@@ -188,7 +188,7 @@ No other changes yet.
 </details>
 
 ```grain
-copy : (b: Bytes) => Bytes
+copy : (bytes: Bytes) => Bytes
 ```
 
 Creates a new byte sequence that contains the same bytes as the input byte sequence.

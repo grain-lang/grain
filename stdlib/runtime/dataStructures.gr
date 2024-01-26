@@ -4,7 +4,7 @@ module DataStructures
 /**
  * Allocates a new Grain array.
  *
- * @param numElts: The number of elements to be contained in this array
+ * @param 0: The number of elements to be contained in this array
  * @returns The pointer to the array
  */
 @unsafe
@@ -13,7 +13,7 @@ provide primitive allocateArray = "@allocate.array"
 /**
  * Allocates a new Grain tuple.
  *
- * @param numElts: The number of elements to be contained in this tuple
+ * @param 0: The number of elements to be contained in this tuple
  * @returns The pointer to the tuple
  */
 @unsafe
@@ -22,7 +22,7 @@ provide primitive allocateTuple = "@allocate.tuple"
 /**
  * Allocates a new Grain bytes.
  *
- * @param size: The number of bytes to be contained in this buffer
+ * @param 0: The number of bytes to be contained in this buffer
  * @returns The pointer to the bytes
  */
 @unsafe
@@ -31,7 +31,7 @@ provide primitive allocateBytes = "@allocate.bytes"
 /**
  * Allocates a new Grain string.
  *
- * @param size: The size (in bytes) of the string to allocate
+ * @param 0: The size (in bytes) of the string to allocate
  * @returns The pointer to the string
  */
 @unsafe
@@ -50,7 +50,7 @@ provide primitive allocateInt32 = "@allocate.int32"
 /**
  * Allocates a new Int32 with a prepopulated value
  * 
- * @param value: The value to store
+ * @param 0: The value to store
  * @returns The pointer to the Int32
  */
 @unsafe
@@ -67,7 +67,7 @@ provide primitive allocateUint32 = "@allocate.uint32"
 /**
  * Allocates a new Uint32 with a prepopulated value
  * 
- * @param value: The value to store
+ * @param 0: The value to store
  * @returns The pointer to the Uint32
  */
 @unsafe
@@ -84,7 +84,7 @@ provide primitive allocateInt64 = "@allocate.int64"
 /**
  * Allocates a new Int64 with a prepopulated value
  * 
- * @param value: The value to store
+ * @param 0: The value to store
  * @returns The pointer to the Int64
  */
 @unsafe
@@ -101,7 +101,7 @@ provide primitive allocateUint64 = "@allocate.uint64"
 /**
  * Allocates a new Uint64 with a prepopulated value
  * 
- * @param value: The value to store
+ * @param 0: The value to store
  * @returns The pointer to the Uint64
  */
 @unsafe
@@ -120,7 +120,7 @@ provide primitive allocateFloat32 = "@allocate.float32"
 /**
  * Allocates a new Float32 with a prepopulated value
  * 
- * @param value: The value to store
+ * @param 0: The value to store
  * @returns the pointer to the Float32
  */
 @unsafe
@@ -137,7 +137,7 @@ provide primitive allocateFloat64 = "@allocate.float64"
 /**
  * Allocates a new Float64 with a prepopulated value
  * 
- * @param value: The value to store
+ * @param 0: The value to store
  * @returns The pointer to the Float64
  */
 @unsafe
@@ -156,8 +156,8 @@ provide primitive allocateRational = "@allocate.rational"
 /**
  * Allocates a new Rational with a prepopulated value
  * 
- * @param value: The numerator value to store
- * @param value: The denominator value to store
+ * @param 0: The numerator value to store
+ * @param 1: The denominator value to store
  * @returns The pointer to the Rational
  */
 @unsafe
@@ -166,7 +166,7 @@ provide primitive newRational = "@new.rational"
 /**
  * Load the (tagged) variant of an ADT.
  *
- * @param ptr: Untagged pointer to the ADT
+ * @param 0: Untagged pointer to the ADT
  * @returns The (tagged) ADT variant id
  */
 @unsafe
@@ -175,7 +175,7 @@ provide primitive loadAdtVariant = "@adt.load_variant"
 /**
  * Load an untagged string's size.
  *
- * @param ptr: Untagged pointer to the string
+ * @param 0: Untagged pointer to the string
  * @returns The string size (in bytes)
  */
 @unsafe
@@ -184,7 +184,7 @@ provide primitive stringSize = "@string.size"
 /**
  * Load an untagged Bytes' size.
  *
- * @param ptr: Untagged pointer to the Bytes
+ * @param 0: Untagged pointer to the Bytes
  * @returns The Bytes size (in bytes)
  */
 @unsafe
@@ -193,7 +193,7 @@ provide primitive bytesSize = "@bytes.size"
 /**
  * Tag a simple number.
  *
- * @param num: The number to tag
+ * @param 0: The number to tag
  * @returns The tagged number
  */
 @unsafe
@@ -202,7 +202,7 @@ provide primitive tagSimpleNumber = "@tag.simple_number"
 /**
  * Untag a simple number.
  *
- * @param num: The number to untag
+ * @param 0: The number to untag
  * @returns The untagged number
  */
 @unsafe
@@ -211,7 +211,7 @@ provide primitive untagSimpleNumber = "@untag.simple_number"
 /**
  * Tag a char.
  *
- * @param num: The usv to tag
+ * @param 0: The usv to tag
  * @returns The tagged char
  */
 @unsafe
@@ -220,7 +220,7 @@ provide primitive tagChar = "@tag.char"
 /**
  * Untag a char.
  *
- * @param num: The char to untag
+ * @param 0: The char to untag
  * @returns The untagged usv
  */
 @unsafe
@@ -229,7 +229,7 @@ provide primitive untagChar = "@untag.char"
 /**
  * Tag an int8.
  *
- * @param num: The int8 to tag
+ * @param 0: The int8 to tag
  * @returns The tagged int8
  */
 @unsafe
@@ -238,7 +238,7 @@ provide primitive tagInt8 = "@tag.int8"
 /**
  * Untag an int8.
  *
- * @param num: The int8 to untag
+ * @param 0: The int8 to untag
  * @returns The untagged int8
  */
 @unsafe
@@ -247,7 +247,7 @@ provide primitive untagInt8 = "@untag.int8"
 /**
  * Tag an int16.
  *
- * @param num: The int16 to tag
+ * @param 0: The int16 to tag
  * @returns The tagged int16
  */
 @unsafe
@@ -256,7 +256,7 @@ provide primitive tagInt16 = "@tag.int16"
 /**
  * Untag an int16.
  *
- * @param num: The int16 to untag
+ * @param 0: The int16 to untag
  * @returns The untagged int16
  */
 @unsafe
@@ -265,7 +265,7 @@ provide primitive untagInt16 = "@untag.int16"
 /**
  * Tag a uint8.
  *
- * @param num: The uint8 to tag
+ * @param 0: The uint8 to tag
  * @returns The tagged uint8
  */
 @unsafe
@@ -274,7 +274,7 @@ provide primitive tagUint8 = "@tag.uint8"
 /**
  * Untag a uint8.
  *
- * @param num: The uint8 to untag
+ * @param 0: The uint8 to untag
  * @returns The untagged uint8
  */
 @unsafe
@@ -283,7 +283,7 @@ provide primitive untagUint8 = "@untag.uint8"
 /**
  * Tag a uint16.
  *
- * @param num: The uint16 to tag
+ * @param 0: The uint16 to tag
  * @returns The tagged uint16
  */
 @unsafe
@@ -292,7 +292,7 @@ provide primitive tagUint16 = "@tag.uint16"
 /**
  * Untag a uint16.
  *
- * @param num: The uint16 to untag
+ * @param 0: The uint16 to untag
  * @returns The untagged uint16
  */
 @unsafe

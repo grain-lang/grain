@@ -635,10 +635,10 @@ let ancestryHelper = (base: PathInfo, path: PathInfo) => {
  *
  * @since v0.5.5
  */
-provide let ancestry = (path1: Path, path2: Path) => {
-  let pathInfo1 = pathInfo(path1)
+provide let ancestry = (base: Path, path: Path) => {
+  let pathInfo1 = pathInfo(base)
   let (base1, _, _) = pathInfo1
-  let pathInfo2 = pathInfo(path2)
+  let pathInfo2 = pathInfo(path)
   let (base2, _, _) = pathInfo2
   match ((base1, base2)) {
     (Rel(_), Abs(_)) | (Abs(_), Rel(_)) => Err(DifferentBases),

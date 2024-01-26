@@ -216,8 +216,8 @@ provide let exit = (code: Number) => {
  * @returns `Ok(void)` if successful or `Err(exception)` otherwise
  */
 @unsafe
-provide let sigRaise = (signalPtr: Signal) => {
-  let signal = WasmI32.fromGrain(signalPtr)
+provide let sigRaise = (signal: Signal) => {
+  let signal = WasmI32.fromGrain(signal)
   let signal = WasmI32.load(signal, 12n) >> 1n
   let err = Wasi.proc_raise(signal)
   if (err != Wasi._ESUCCESS) {

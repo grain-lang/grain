@@ -809,7 +809,7 @@ Throws:
 </details>
 
 ```grain
-rotate : (count: Number, list: List<a>) => List<a>
+rotate : (n: Number, list: List<a>) => List<a>
 ```
 
 Rotates list elements by the specified amount to the left, such that `n`th

@@ -90,7 +90,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => Float64
+fromNumber : (number: Number) => Float64
 ```
 
 Converts a Number to a Float64.
@@ -115,7 +115,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Float64) => Number
+toNumber : (float: Float64) => Number
 ```
 
 Converts a Float64 to a Number.

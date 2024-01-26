@@ -83,7 +83,7 @@ provide let length = array => {
  * @since v0.1.0
  */
 @unsafe
-provide let make: (Number, a) => Array<a> = (length: Number, item: a) => {
+provide let make = (length: Number, item: a) => {
   from WasmI32 use { (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
@@ -116,11 +116,7 @@ provide let make: (Number, a) => Array<a> = (length: Number, item: a) => {
  * @since v0.1.0
  */
 @unsafe
-provide let init: (Number, Number => a) => Array<a> =
-  (
-    length: Number,
-    fn: Number => a,
-  ) => {
+provide let init = (length: Number, fn: Number => a) => {
   from WasmI32 use { (+), (*), (<) }
   checkLength(length)
   let length = coerceNumberToWasmI32(length)
@@ -1821,8 +1817,8 @@ provide module Immutable {
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
 
-  provide let contains = (value, array) => {
-    reduce((acc, x) => acc || x == value, false, array)
+  provide let contains = (search, array) => {
+    reduce((acc, x) => acc || x == search, false, array)
   }
 
   /**

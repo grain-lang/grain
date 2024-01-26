@@ -296,9 +296,9 @@ let reverse = list => {
  * @since v0.2.0
  */
 @unsafe
-provide let concat = (s1: String, s2: String) => {
-  let ptr1 = WasmI32.fromGrain(s1)
-  let ptr2 = WasmI32.fromGrain(s2)
+provide let concat = (str1: String, str2: String) => {
+  let ptr1 = WasmI32.fromGrain(str1)
+  let ptr2 = WasmI32.fromGrain(str2)
 
   let size1 = WasmI32.load(ptr1, 4n)
   let size2 = WasmI32.load(ptr2, 4n)

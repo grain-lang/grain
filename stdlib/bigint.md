@@ -37,7 +37,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => BigInt
+fromNumber : (number: Number) => BigInt
 ```
 
 Converts a Number to a BigInt.
@@ -62,7 +62,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: BigInt) => Number
+toNumber : (num: BigInt) => Number
 ```
 
 Converts a BigInt to a Number.

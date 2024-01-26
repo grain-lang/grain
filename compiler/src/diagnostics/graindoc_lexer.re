@@ -52,6 +52,9 @@ let newline = [%sedlex.regexp? 0x0A | 0x0C | 0x0D | 0x85 | 0x2028 | 0x2029];
 // A colon eats whitespace after it
 let colon = [%sedlex.regexp? (':', Star(blank))];
 
+let dec_digit = [%sedlex.regexp? '0' .. '9'];
+let dec_int = [%sedlex.regexp? (dec_digit, Star(dec_digit))];
+
 // A asterisk eats whitespace before it and up to 1 after it
 let asterisk = [%sedlex.regexp? (Star(blank), '*', Opt(blank))];
 
@@ -131,6 +134,7 @@ and param = (state, lexbuf) => {
   switch%sedlex (lexbuf) {
   | blank => param(state, lexbuf)
   | ident => IDENT(Sedlexing.Utf8.lexeme(lexbuf))
+  | dec_int => INT(Sedlexing.Utf8.lexeme(lexbuf))
   | colon =>
     state.lexer_mode = Default;
     COLON;
