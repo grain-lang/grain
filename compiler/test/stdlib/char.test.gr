@@ -90,7 +90,7 @@ assert 'B' >= 'B'
 // isAsciiDigit
 assert Char.isAsciiDigit('1')
 assert !Char.isAsciiDigit('a')
-assert !Char.isAsciiAlpha('🌾')
+assert !Char.isAsciiDigit('🌾')
 
 // isAsciiAlpha
 assert !Char.isAsciiAlpha('1')

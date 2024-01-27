@@ -464,13 +464,23 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The character|
+|`char`|`Char`|The character to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the character is an ASCII digit or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAsciiDigit('1')
+```
+
+```grain
+assert !Char.isAsciiDigit('a')
+```
 
 ### Char.**isAsciiAlpha**
 
@@ -489,13 +499,23 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The character|
+|`char`|`Char`|The character to check|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Bool`|`true` if the character is an ASCII alphabetical or `false` otherwise|
+
+Examples:
+
+```grain
+assert Char.isAsciiAlpha('a')
+```
+
+```grain
+assert !Char.isAsciiAlpha('1')
+```
 
 ### Char.**toAsciiLowercase**
 
@@ -514,13 +534,19 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The character|
+|`char`|`Char`|The character to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Char`|The lowercased character|
+
+Examples:
+
+```grain
+assert Char.toAsciiLowercase('B') == 'b'
+```
 
 ### Char.**toAsciiUppercase**
 
@@ -539,11 +565,17 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`char`|`Char`|The character|
+|`char`|`Char`|The character to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`Char`|The uppercased character|
+
+Examples:
+
+```grain
+assert Char.toAsciiUppercase('b') == 'B'
+```
 

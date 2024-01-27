@@ -2155,8 +2155,10 @@ provide let trim = (string: String) => {
 /**
  * Converts all ASCII uppercase characters in the string to lowercase.
  * 
- * @param string: The string
+ * @param string: The string to convert
  * @returns The lowercased string
+ * 
+ * @example assert String.toAsciiLowercase("aBc123") == "abc123"
  * 
  * @since v0.6.0
  */
@@ -2172,8 +2174,10 @@ provide let toAsciiLowercase = string => {
 /**
  * Converts all ASCII lowercase characters in the string to uppercase.
  * 
- * @param string: The string
+ * @param string: The string to convert
  * @returns The uppercased string
+ * 
+ * @example assert String.toAsciiUppercase("aBc123") == "ABC123"
  * 
  * @since v0.6.0
  */

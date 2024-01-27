@@ -1113,13 +1113,19 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`string`|`String`|The string|
+|`string`|`String`|The string to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`String`|The lowercased string|
+
+Examples:
+
+```grain
+assert String.toAsciiLowercase("aBc123") == "abc123"
+```
 
 ### String.**toAsciiUppercase**
 
@@ -1138,11 +1144,17 @@ Parameters:
 
 |param|type|description|
 |-----|----|-----------|
-|`string`|`String`|The string|
+|`string`|`String`|The string to convert|
 
 Returns:
 
 |type|description|
 |----|-----------|
 |`String`|The uppercased string|
+
+Examples:
+
+```grain
+assert String.toAsciiUppercase("aBc123") == "ABC123"
+```
 
