@@ -25,7 +25,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromNumber : (x: Number) => Int32
+fromNumber : (number: Number) => Int32
 ```
 
 Converts a Number to an Int32.
@@ -50,7 +50,7 @@ No other changes yet.
 </details>
 
 ```grain
-toNumber : (x: Int32) => Number
+toNumber : (value: Int32) => Number
 ```
 
 Converts an Int32 to a Number.
@@ -75,7 +75,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint32 : (x: Uint32) => Int32
+fromUint32 : (number: Uint32) => Int32
 ```
 
 Converts a Uint32 to an Int32.

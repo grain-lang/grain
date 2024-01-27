@@ -342,7 +342,6 @@ let build_document = (~original_source, parsed_program) => {
   }
   and print_lambda_argument = arg => {
     switch (arg) {
-    | {pla_label: Unlabeled, pla_pattern} => print_pattern(pla_pattern)
     | {
         pla_label: Labeled({txt: label}) | Default({txt: label}),
         pla_pattern: {
@@ -362,18 +361,8 @@ let build_document = (~original_source, parsed_program) => {
         | None => empty
         }
       )
-    | {pla_label: Labeled({txt: label, loc: label_loc})}
-    | {pla_label: Default({txt: label, loc: label_loc})} =>
-      string(label)
-      ++ string(":")
-      ++ print_comment_range(
-           ~none=space,
-           ~lead=space,
-           ~trail=space,
-           label_loc,
-           arg.pla_pattern.ppat_loc,
-         )
-      ++ print_pattern(arg.pla_pattern)
+    | _ =>
+      print_pattern(arg.pla_pattern)
       ++ (
         switch (arg.pla_default) {
         | Some(expr) =>

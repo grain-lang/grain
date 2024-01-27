@@ -240,8 +240,8 @@ let morecore = (nbytes: WasmI32) => {
  * @param nbytes: The number of bytes to allocate
  * @returns The pointer to the allocated region (8-byte aligned) or -1 if the allocation failed
  */
-provide let malloc = (nb: WasmI32) => {
-  let mut nbytes = nb
+provide let malloc = (nbytes: WasmI32) => {
+  let mut nbytes = nbytes
   let mut prevp = freePtr
 
   // Set nbytes to the next multiple of mallocHeaderSize greater

@@ -265,6 +265,6 @@ and compareHelp = (x, y) => {
  * @since v0.5.3
  */
 @unsafe
-provide let compare = (x: a, y: a) => {
-  compareHelp(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
+provide let compare = (num1: a, num2: a) => {
+  compareHelp(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
 }

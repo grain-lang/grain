@@ -32,8 +32,8 @@ provide { fromNumber, toNumber }
  * @since v0.6.0
  */
 @unsafe
-provide let fromUint64 = (x: Uint64) => {
-  let x = WasmI64.load(WasmI32.fromGrain(x), 8n)
+provide let fromUint64 = (number: Uint64) => {
+  let x = WasmI64.load(WasmI32.fromGrain(number), 8n)
   let result = newInt64(x)
   WasmI32.toGrain(result): Int64
 }

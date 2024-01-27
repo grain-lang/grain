@@ -165,9 +165,9 @@ provide let length = (bytes: Bytes) => {
  * @since v0.3.2
  */
 @unsafe
-provide let copy = (b: Bytes) => {
+provide let copy = (bytes: Bytes) => {
   from WasmI32 use { (+) }
-  let src = WasmI32.fromGrain(b)
+  let src = WasmI32.fromGrain(bytes)
   let size = getSize(src)
   let dst = allocateBytes(size)
   Memory.copy(dst + _VALUE_OFFSET, src + _VALUE_OFFSET, size)

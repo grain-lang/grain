@@ -1,5 +1,9 @@
+%{
+open Comment_attributes
+%}
+
 %token PARAM SECTION SINCE HISTORY THROWS RETURNS EXAMPLE DEPRECATED COLON EOL EOF
-%token <string> TEXT IDENT SEMVER CONSTRUCTOR
+%token <string> TEXT IDENT INT SEMVER CONSTRUCTOR
 
 %right EOL
 
@@ -26,8 +30,12 @@ description:
 attribute_text:
   | ioption(eols) multiline_text ioption(eols) %prec EOL { $2 }
 
+param_id:
+  | IDENT { LabeledParam $1 }
+  | INT { PositionalParam (int_of_string $1) }
+
 attribute:
-  | PARAM IDENT COLON attribute_text { Param({ attr_name=$2; attr_desc=$4 }) }
+  | PARAM param_id COLON attribute_text { Param({ attr_id=$2; attr_desc=$4 }) }
   | RETURNS attribute_text { Returns({attr_desc=$2}) }
   | EXAMPLE attribute_text { Example({attr_desc=$2}) }
   | DEPRECATED attribute_text { Deprecated({attr_desc=$2}) }

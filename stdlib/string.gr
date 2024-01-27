@@ -2022,12 +2022,8 @@ provide let forEachCodePointi = (fn: (Number, Number) => Void, str: String) => {
 }
 
 @unsafe
-let trimString = (str: String, fromEnd: Bool) => {
+let trimString = (stringPtr: WasmI32, byteLength: WasmI32, fromEnd: Bool) => {
   from WasmI32 use { (+), (-), (*), (>>>), ltU as (<), (==), (!=) }
-
-  let mut stringPtr = WasmI32.fromGrain(str)
-  let byteLength = WasmI32.load(stringPtr, 4n)
-  stringPtr += 8n
   let mut i = 0n
   and offset = 1n
   if (fromEnd) {
@@ -2073,14 +2069,7 @@ let trimString = (str: String, fromEnd: Bool) => {
     }
     count += 1n
   }
-  let str = allocateString(byteLength - count)
-  // Copy the string
-  if (fromEnd) {
-    Memory.copy(str + 8n, stringPtr, byteLength - count)
-  } else {
-    Memory.copy(str + 8n, stringPtr + count, byteLength - count)
-  }
-  WasmI32.toGrain(str): String
+  count
 }
 /**
  * Trims the beginning of a string—removing any leading whitespace characters.
@@ -2092,7 +2081,17 @@ let trimString = (str: String, fromEnd: Bool) => {
  *
  * @since v0.4.2
  */
-provide let trimStart = (string: String) => trimString(string, false)
+@unsafe
+provide let trimStart = (string: String) => {
+  from WasmI32 use { (-), (+) }
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let byteLength = WasmI32.load(stringPtr, 4n)
+  stringPtr += 8n
+  let count = trimString(stringPtr, byteLength, false)
+  let str = allocateString(byteLength - count)
+  Memory.copy(str + 8n, stringPtr + count, byteLength - count)
+  WasmI32.toGrain(str): String
+}
 /**
  * Trims the end of a string—removing any trailing whitespace characters.
  *
@@ -2103,7 +2102,17 @@ provide let trimStart = (string: String) => trimString(string, false)
  *
  * @since v0.4.2
  */
-provide let trimEnd = (string: String) => trimString(string, true)
+@unsafe
+provide let trimEnd = (string: String) => {
+  from WasmI32 use { (-), (+) }
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let byteLength = WasmI32.load(stringPtr, 4n)
+  stringPtr += 8n
+  let count = trimString(stringPtr, byteLength, true)
+  let str = allocateString(byteLength - count)
+  Memory.copy(str + 8n, stringPtr, byteLength - count)
+  WasmI32.toGrain(str): String
+}
 /**
  * Trims a string—removing all leading and trailing whitespace characters.
  *
@@ -2114,4 +2123,20 @@ provide let trimEnd = (string: String) => trimString(string, true)
  *
  * @since v0.4.2
  */
-provide let trim = (string: String) => trimEnd(trimStart(string))
+@unsafe
+provide let trim = (string: String) => {
+  from WasmI32 use { (-), (+), (==) }
+  let mut stringPtr = WasmI32.fromGrain(string)
+  let byteLength = WasmI32.load(stringPtr, 4n)
+  stringPtr += 8n
+  let startCount = trimString(stringPtr, byteLength, false)
+  if (startCount == byteLength) return ""
+  let endCount = trimString(stringPtr, byteLength, true)
+  let str = allocateString(byteLength - startCount - endCount)
+  Memory.copy(
+    str + 8n,
+    stringPtr + startCount,
+    byteLength - startCount - endCount
+  )
+  return WasmI32.toGrain(str): String
+}

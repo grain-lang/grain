@@ -1,11 +1,14 @@
 /**
  * Utilities for working with the Exception type.
  *
- * The Exception type represents an error that has occured during computation.
+ * The Exception type represents an error that has occurred during computation.
  *
  * @example include "exception"
  *
- * @since 0.3.0
+ * @example exception ExampleError(Number)
+ * @example exception ExampleError
+ *
+ * @since v0.3.0
  */
 module Exception
 
@@ -20,6 +23,20 @@ include "runtime/exception"
  * used as the exception's string value.
  *
  * @param printer: The exception printer to register
+ *
+ * @example
+ * exception ExampleError(Number)
+ *
+ * Exception.registerPrinter(e => {
+ *   match (e) {
+ *     ExampleError(lineNumber) =>
+ *       Some("Error found on line: " ++ toString(lineNumber)),
+ *     _ => None,
+ *   }
+ * })
+ *
+ * throw ExampleError(1) // Error found on line: 1
+ *
  * @since v0.3.0
  */
 @disableGC

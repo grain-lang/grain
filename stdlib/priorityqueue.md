@@ -421,7 +421,7 @@ PriorityQueue.Immutable.make((a, b) => String.length(b) - String.length(a)) // c
 </details>
 
 ```grain
-size : PriorityQueue<a> => Number
+size : (pq: PriorityQueue<a>) => Number
 ```
 
 Gets the number of elements in a priority queue.
@@ -453,7 +453,7 @@ Returns:
 </details>
 
 ```grain
-isEmpty : PriorityQueue<a> => Bool
+isEmpty : (pq: PriorityQueue<a>) => Bool
 ```
 
 Determines if the priority queue contains no elements.

@@ -52,10 +52,10 @@ provide foreign wasm fd_prestat_dir_name:
 /**
  * Invokes the `fd_write` system call.
  *
- * @param file_descriptor: The file descriptor to write to
- * @param iovs: The pointer to the array of iovs to write
- * @param iovs_len: The length of the array of iovs
- * @param nwritten: Where to store the number of bytes written
+ * @param 0: The file descriptor to write to
+ * @param 1: The pointer to the array of iovs to write
+ * @param 2: The length of the array of iovs
+ * @param 3: Where to store the number of bytes written
  * @returns The number of bytes written
  */
 provide foreign wasm fd_write:

@@ -83,7 +83,7 @@ No other changes yet.
 </details>
 
 ```grain
-fromUint8 : (x: Uint8) => Int8
+fromUint8 : (number: Uint8) => Int8
 ```
 
 Converts a Uint8 to an Int8.

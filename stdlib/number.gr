@@ -53,8 +53,8 @@ provide let e = 2.718281828459045
 /**
  * Computes the sum of its operands.
  *
- * @param x: The first operand
- * @param y: The second operand
+ * @param num1: The first operand
+ * @param num2: The second operand
  * @returns The sum of the two operands
  *
  * @since v0.6.0
@@ -65,8 +65,8 @@ provide let (+) = (+)
 /**
  * Computes the difference of its operands.
  *
- * @param x: The first operand
- * @param y: The second operand
+ * @param num1: The first operand
+ * @param num2: The second operand
  * @returns The difference of the two operands
  *
  * @since v0.6.0
@@ -77,8 +77,8 @@ provide let (-) = (-)
 /**
  * Computes the product of its operands.
  *
- * @param x: The first operand
- * @param y: The second operand
+ * @param num1: The first operand
+ * @param num2: The second operand
  * @returns The product of the two operands
  *
  * @since v0.6.0
@@ -89,8 +89,8 @@ provide let (*) = (*)
 /**
  * Computes the quotient of its operands.
  *
- * @param x: The dividend
- * @param y: The divisor
+ * @param num1: The dividend
+ * @param num2: The divisor
  * @returns The quotient of the two operands
  *
  * @since v0.6.0
@@ -417,7 +417,7 @@ provide let isInfinite = (x: Number) => {
  * favor of the prefix. Underscores that appear in the numeric portion of the
  * input are ignored.
  *
- * @param input: The string to parse
+ * @param string: The string to parse
  * @param radix: The number system base to use when parsing the input string
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  *
@@ -429,7 +429,7 @@ provide let parseInt = Atoi.parseInt
  * Parses a string representation of a float into a `Number`. Underscores that appear
  * in numeric portions of the input are ignored.
  *
- * @param input: The string to parse
+ * @param string: The string to parse
  * @returns `Ok(value)` containing the parsed number on a successful parse or `Err(msg)` containing an error message string otherwise
  *
  * @since v0.5.5

@@ -435,7 +435,7 @@ provide let fromList = list => {
  * @since v0.2.0
  */
 @unsafe
-provide let toArray: Map<a, b> => Array<(a, b)> = map => {
+provide let toArray = (map: Map<a, b>) => {
   from WasmI32 use { (*) }
   let length = untagSimpleNumber(map.size)
   let array = WasmI32.toGrain(allocateArray(length))
@@ -454,7 +454,7 @@ provide let toArray: Map<a, b> => Array<(a, b)> = map => {
     i + 1
   }
   reduce(reducer, 0, map)
-  array
+  array: Array<(a, b)>
 }
 
 /**
@@ -482,9 +482,9 @@ provide let fromArray = array => {
  *
  * @since v0.2.0
  */
-provide let filter = (predicate, map) => {
+provide let filter = (fn, map) => {
   let keysToRemove = reduce(
-    (list, key, value) => if (!predicate(key, value)) {
+    (list, key, value) => if (!fn(key, value)) {
       [key, ...list]
     } else {
       list
@@ -505,8 +505,8 @@ provide let filter = (predicate, map) => {
  *
  * @since v0.2.0
  */
-provide let reject = (predicate, map) => {
-  filter((key, value) => !predicate(key, value), map)
+provide let reject = (fn, map) => {
+  filter((key, value) => !fn(key, value), map)
 }
 
 /**
@@ -685,16 +685,16 @@ provide module Immutable {
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablemap"` module
    */
-  provide let rec set = (key, val, map) => {
+  provide let rec set = (key, value, map) => {
     match (map) {
-      Empty => Tree({ key, val, size: 1, left: Empty, right: Empty }),
+      Empty => Tree({ key, val: value, size: 1, left: Empty, right: Empty }),
       Tree({ key: nodeKey, val: nodeVal, left, right, _ }) => {
         match (compare(key, nodeKey)) {
           cmp when cmp < 0 =>
-            balancedNode(nodeKey, nodeVal, set(key, val, left), right),
+            balancedNode(nodeKey, nodeVal, set(key, value, left), right),
           cmp when cmp > 0 =>
-            balancedNode(nodeKey, nodeVal, left, set(key, val, right)),
-          _ => makeNode(key, val, left, right),
+            balancedNode(nodeKey, nodeVal, left, set(key, value, right)),
+          _ => makeNode(key, value, left, right),
         }
       },
     }

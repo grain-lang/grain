@@ -51,8 +51,8 @@ provide { fromNumber, toNumber }
  * @since v0.6.0
  */
 @unsafe
-provide let fromUint32 = (x: Uint32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), _VALUE_OFFSET)
+provide let fromUint32 = (number: Uint32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(number), _VALUE_OFFSET)
   let result = newInt32(x)
   WasmI32.toGrain(result): Int32
 }

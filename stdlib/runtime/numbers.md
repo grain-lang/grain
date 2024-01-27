@@ -222,7 +222,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<) : (x: Number, y: Number) => Bool
+(<) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is less than the second operand.
@@ -248,7 +248,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>) : (x: Number, y: Number) => Bool
+(>) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is greater than the second operand.
@@ -274,7 +274,7 @@ No other changes yet.
 </details>
 
 ```grain
-(<=) : (x: Number, y: Number) => Bool
+(<=) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is less than or equal to the second operand.
@@ -300,7 +300,7 @@ No other changes yet.
 </details>
 
 ```grain
-(>=) : (x: Number, y: Number) => Bool
+(>=) : (num1: Number, num2: Number) => Bool
 ```
 
 Checks if the first operand is greater than or equal to the second operand.
@@ -338,7 +338,7 @@ No other changes yet.
 </details>
 
 ```grain
-lnot : (x: Number) => Number
+lnot : (value: Number) => Number
 ```
 
 Computes the bitwise NOT of the operand.
@@ -371,7 +371,7 @@ Returns:
 </details>
 
 ```grain
-(<<) : (x: Number, y: Number) => Number
+(<<) : (value: Number, amount: Number) => Number
 ```
 
 Shifts the bits of the value left by the given number of bits.
@@ -405,7 +405,7 @@ Returns:
 </details>
 
 ```grain
-(>>>) : (x: Number, y: Number) => Number
+(>>>) : (value: Number, amount: Number) => Number
 ```
 
 Shifts the bits of the value right by the given number of bits, preserving the sign bit.
@@ -439,7 +439,7 @@ Returns:
 </details>
 
 ```grain
-(&) : (x: Number, y: Number) => Number
+(&) : (value1: Number, value2: Number) => Number
 ```
 
 Computes the bitwise AND (`&`) on the given operands.
@@ -473,7 +473,7 @@ Returns:
 </details>
 
 ```grain
-(|) : (x: Number, y: Number) => Number
+(|) : (value1: Number, value2: Number) => Number
 ```
 
 Computes the bitwise OR (`|`) on the given operands.
@@ -508,7 +508,7 @@ Returns:
 </details>
 
 ```grain
-(^) : (x: Number, y: Number) => Number
+(^) : (value1: Number, value2: Number) => Number
 ```
 
 Computes the bitwise XOR (`^`) on the given operands.
@@ -542,7 +542,7 @@ Returns:
 </details>
 
 ```grain
-(>>) : (x: Number, y: Number) => Number
+(>>) : (value: Number, amount: Number) => Number
 ```
 
 Shifts the bits of the value right by the given number of bits.
@@ -668,7 +668,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToInt32 : (x: Number) => Int32
+coerceNumberToInt32 : (number: Number) => Int32
 ```
 
 Converts a Number to an Int32.
@@ -693,7 +693,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToInt64 : (x: Number) => Int64
+coerceNumberToInt64 : (number: Number) => Int64
 ```
 
 Converts a Number to an Int64.
@@ -718,7 +718,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToBigInt : (x: Number) => BigInt
+coerceNumberToBigInt : (number: Number) => BigInt
 ```
 
 Converts a Number to a BigInt.
@@ -743,7 +743,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToRational : (x: Number) => Rational
+coerceNumberToRational : (number: Number) => Rational
 ```
 
 Converts a Number to a Rational.
@@ -768,7 +768,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToFloat32 : (x: Number) => Float32
+coerceNumberToFloat32 : (number: Number) => Float32
 ```
 
 Converts a Number to a Float32.
@@ -793,7 +793,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceNumberToFloat64 : (x: Number) => Float64
+coerceNumberToFloat64 : (number: Number) => Float64
 ```
 
 Converts a Number to a Float64.
@@ -918,7 +918,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceInt32ToNumber : (x: Int32) => Number
+coerceInt32ToNumber : (value: Int32) => Number
 ```
 
 Converts an Int32 to a Number.
@@ -943,7 +943,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceInt64ToNumber : (x: Int64) => Number
+coerceInt64ToNumber : (value: Int64) => Number
 ```
 
 Converts an Int64 to a Number.
@@ -968,7 +968,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceBigIntToNumber : (x: BigInt) => Number
+coerceBigIntToNumber : (num: BigInt) => Number
 ```
 
 Converts a BigInt to a Number.
@@ -993,7 +993,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceRationalToNumber : (x: Rational) => Number
+coerceRationalToNumber : (rational: Rational) => Number
 ```
 
 Converts a Rational to a Number.
@@ -1018,7 +1018,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceFloat32ToNumber : (x: Float32) => Number
+coerceFloat32ToNumber : (float: Float32) => Number
 ```
 
 Converts a Float32 to a Number.
@@ -1043,7 +1043,7 @@ No other changes yet.
 </details>
 
 ```grain
-coerceFloat64ToNumber : (x: Float64) => Number
+coerceFloat64ToNumber : (float: Float64) => Number
 ```
 
 Converts a Float64 to a Number.
@@ -1080,7 +1080,7 @@ No other changes yet.
 </details>
 
 ```grain
-(+) : (x: Number, y: Number) => Number
+(+) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the sum of its operands.
@@ -1106,7 +1106,7 @@ No other changes yet.
 </details>
 
 ```grain
-(-) : (x: Number, y: Number) => Number
+(-) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the difference of its operands.
@@ -1132,7 +1132,7 @@ No other changes yet.
 </details>
 
 ```grain
-(*) : (x: Number, y: Number) => Number
+(*) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the product of its operands.
@@ -1158,7 +1158,7 @@ No other changes yet.
 </details>
 
 ```grain
-(/) : (x: Number, y: Number) => Number
+(/) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the quotient of its operands.
@@ -1184,7 +1184,7 @@ No other changes yet.
 </details>
 
 ```grain
-(%) : (x: Number, y: Number) => Number
+(%) : (num1: Number, num2: Number) => Number
 ```
 
 Computes the remainder of the division of the first operand by the second.
@@ -1211,7 +1211,7 @@ No other changes yet.
 </details>
 
 ```grain
-incr : (x: Number) => Number
+incr : (value: Number) => Number
 ```
 
 Increments the value by one.
@@ -1236,7 +1236,7 @@ No other changes yet.
 </details>
 
 ```grain
-decr : (x: Number) => Number
+decr : (value: Number) => Number
 ```
 
 Decrements the value by one.

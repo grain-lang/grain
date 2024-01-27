@@ -40,6 +40,7 @@ type provide_flag =
   Asttypes.provide_flag = | NotProvided | Provided | Abstract;
 type rec_flag = Asttypes.rec_flag = | Nonrecursive | Recursive;
 type mut_flag = Asttypes.mut_flag = | Mutable | Immutable;
+[@deriving sexp]
 type argument_label =
   Asttypes.argument_label =
     | Unlabeled | Labeled(loc(string)) | Default(loc(string));

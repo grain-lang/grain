@@ -1894,10 +1894,10 @@ provide let cmp = (x: WasmI32, y: WasmI32) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (<) = (x: Number, y: Number) => {
+provide let (<) = (num1: Number, num2: Number) => {
   from WasmI32 use { (<) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmI32.fromGrain(num1)
+  let y = WasmI32.fromGrain(num2)
   !isNaN(x) && !isNaN(y) && cmp(x, y) < 0n
 }
 
@@ -1911,10 +1911,10 @@ provide let (<) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (>) = (x: Number, y: Number) => {
+provide let (>) = (num1: Number, num2: Number) => {
   from WasmI32 use { (>) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmI32.fromGrain(num1)
+  let y = WasmI32.fromGrain(num2)
   !isNaN(x) && !isNaN(y) && cmp(x, y) > 0n
 }
 
@@ -1928,10 +1928,10 @@ provide let (>) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (<=) = (x: Number, y: Number) => {
+provide let (<=) = (num1: Number, num2: Number) => {
   from WasmI32 use { (<=) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmI32.fromGrain(num1)
+  let y = WasmI32.fromGrain(num2)
   !isNaN(x) && !isNaN(y) && cmp(x, y) <= 0n
 }
 
@@ -1945,10 +1945,10 @@ provide let (<=) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (>=) = (x: Number, y: Number) => {
+provide let (>=) = (num1: Number, num2: Number) => {
   from WasmI32 use { (>=) }
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+  let x = WasmI32.fromGrain(num1)
+  let y = WasmI32.fromGrain(num2)
   !isNaN(x) && !isNaN(y) && cmp(x, y) >= 0n
 }
 
@@ -1985,12 +1985,12 @@ provide let numberEq = (x: Number, y: Number) => {
  * @since v0.2.0
  */
 @unsafe
-provide let lnot = (x: Number) => {
-  let xw32 = WasmI32.fromGrain(x)
+provide let lnot = (value: Number) => {
+  let xw32 = WasmI32.fromGrain(value)
   if (isBigInt(xw32)) {
     WasmI32.toGrain(reducedBigInteger(BI.bitwiseNot(xw32))): Number
   } else {
-    let xval = coerceNumberToWasmI64(x)
+    let xval = coerceNumberToWasmI64(value)
     WasmI32.toGrain(reducedInteger(i64not(xval))): Number
   }
 }
@@ -2007,20 +2007,20 @@ provide let lnot = (x: Number) => {
  * @history v0.3.0: Renamed to `<<`
  */
 @unsafe
-provide let (<<) = (x: Number, y: Number) => {
+provide let (<<) = (value: Number, amount: Number) => {
   from WasmI64 use { (-), (<<) }
-  let xw32 = WasmI32.fromGrain(x)
+  let xw32 = WasmI32.fromGrain(value)
   if (isBigInt(xw32)) {
-    let yval = coerceNumberToWasmI32(y)
+    let yval = coerceNumberToWasmI32(amount)
     WasmI32.toGrain(reducedBigInteger(BI.shl(xw32, yval))): Number
   } else {
-    let xval = coerceNumberToWasmI64(x)
-    let yval = coerceNumberToWasmI64(y)
+    let xval = coerceNumberToWasmI64(value)
+    let yval = coerceNumberToWasmI64(amount)
     // if the number will be shifted beyond the end of the i64 range, promote to BigInt
     // (note that we subtract one leading zero, since the leading bit is the sign bit)
     if (WasmI64.leU(WasmI64.clz(i64abs(xval)) - 1N, yval)) {
-      let xbi = coerceNumberToBigInt(x)
-      let yval = coerceNumberToWasmI32(y)
+      let xbi = coerceNumberToBigInt(value)
+      let yval = coerceNumberToWasmI32(amount)
       WasmI32.toGrain(reducedBigInteger(BI.shl(xbi, yval))): Number
     } else {
       WasmI32.toGrain(reducedInteger(xval << yval)): Number
@@ -2040,17 +2040,17 @@ provide let (<<) = (x: Number, y: Number) => {
  * @history v0.3.0: Renamed to `>>>`
  */
 @unsafe
-provide let (>>>) = (x: Number, y: Number) => {
+provide let (>>>) = (value: Number, amount: Number) => {
   from WasmI64 use { (>>>) }
-  let xw32 = WasmI32.fromGrain(x)
+  let xw32 = WasmI32.fromGrain(value)
   if (isBigInt(xw32)) {
-    let yval = coerceNumberToWasmI32(y)
+    let yval = coerceNumberToWasmI32(amount)
     // [NOTE]: For BigInts, shrU is the same as shrS because there
     //         are an *infinite* number of leading ones
     WasmI32.toGrain(reducedBigInteger(BI.shrS(xw32, yval))): Number
   } else {
-    let xval = coerceNumberToWasmI64(x)
-    let yval = coerceNumberToWasmI64(y)
+    let xval = coerceNumberToWasmI64(value)
+    let yval = coerceNumberToWasmI64(amount)
     WasmI32.toGrain(reducedInteger(xval >>> yval)): Number
   }
 }
@@ -2067,13 +2067,13 @@ provide let (>>>) = (x: Number, y: Number) => {
  * @history v0.3.0: Renamed to `&`
  */
 @unsafe
-provide let (&) = (x: Number, y: Number) => {
+provide let (&) = (value1: Number, value2: Number) => {
   from WasmI64 use { (&) }
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
+  let xw32 = WasmI32.fromGrain(value1)
+  let yw32 = WasmI32.fromGrain(value2)
   if (isBigInt(xw32) || isBigInt(yw32)) {
-    let xval = coerceNumberToBigInt(x)
-    let yval = coerceNumberToBigInt(y)
+    let xval = coerceNumberToBigInt(value1)
+    let yval = coerceNumberToBigInt(value2)
     let ret = WasmI32.toGrain(reducedBigInteger(BI.bitwiseAnd(xval, yval))):
       Number
     if (!(xw32 == xval)) {
@@ -2086,8 +2086,8 @@ provide let (&) = (x: Number, y: Number) => {
     }
     ret
   } else {
-    let xval = coerceNumberToWasmI64(x)
-    let yval = coerceNumberToWasmI64(y)
+    let xval = coerceNumberToWasmI64(value1)
+    let yval = coerceNumberToWasmI64(value2)
     WasmI32.toGrain(reducedInteger(xval & yval)): Number
   }
 }
@@ -2104,13 +2104,13 @@ provide let (&) = (x: Number, y: Number) => {
  * @history v0.3.0: Renamed to `|`
  */
 @unsafe
-provide let (|) = (x: Number, y: Number) => {
+provide let (|) = (value1: Number, value2: Number) => {
   from WasmI64 use { (|) }
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
+  let xw32 = WasmI32.fromGrain(value1)
+  let yw32 = WasmI32.fromGrain(value2)
   if (isBigInt(xw32) || isBigInt(yw32)) {
-    let xval = coerceNumberToBigInt(x)
-    let yval = coerceNumberToBigInt(y)
+    let xval = coerceNumberToBigInt(value1)
+    let yval = coerceNumberToBigInt(value2)
     let ret = WasmI32.toGrain(reducedBigInteger(BI.bitwiseOr(xval, yval))):
       Number
     if (!(xw32 == xval)) {
@@ -2123,8 +2123,8 @@ provide let (|) = (x: Number, y: Number) => {
     }
     ret
   } else {
-    let xval = coerceNumberToWasmI64(x)
-    let yval = coerceNumberToWasmI64(y)
+    let xval = coerceNumberToWasmI64(value1)
+    let yval = coerceNumberToWasmI64(value2)
     WasmI32.toGrain(reducedInteger(xval | yval)): Number
   }
 }
@@ -2142,13 +2142,13 @@ provide let (|) = (x: Number, y: Number) => {
  * @history v0.3.0: Renamed to `^`
  */
 @unsafe
-provide let (^) = (x: Number, y: Number) => {
+provide let (^) = (value1: Number, value2: Number) => {
   from WasmI64 use { (^) }
-  let xw32 = WasmI32.fromGrain(x)
-  let yw32 = WasmI32.fromGrain(y)
+  let xw32 = WasmI32.fromGrain(value1)
+  let yw32 = WasmI32.fromGrain(value2)
   if (isBigInt(xw32) || isBigInt(yw32)) {
-    let xval = coerceNumberToBigInt(x)
-    let yval = coerceNumberToBigInt(y)
+    let xval = coerceNumberToBigInt(value1)
+    let yval = coerceNumberToBigInt(value2)
     let ret = WasmI32.toGrain(reducedBigInteger(BI.bitwiseXor(xval, yval))):
       Number
     if (!(xw32 == xval)) {
@@ -2161,8 +2161,8 @@ provide let (^) = (x: Number, y: Number) => {
     }
     ret
   } else {
-    let xval = coerceNumberToWasmI64(x)
-    let yval = coerceNumberToWasmI64(y)
+    let xval = coerceNumberToWasmI64(value1)
+    let yval = coerceNumberToWasmI64(value2)
     WasmI32.toGrain(reducedInteger(xval ^ yval)): Number
   }
 }
@@ -2179,17 +2179,17 @@ provide let (^) = (x: Number, y: Number) => {
  * @history v0.3.0: Renamed to `>>`
  */
 @unsafe
-provide let (>>) = (x: Number, y: Number) => {
+provide let (>>) = (value: Number, amount: Number) => {
   from WasmI64 use { (>>) }
-  let xw32 = WasmI32.fromGrain(x)
+  let xw32 = WasmI32.fromGrain(value)
   if (isBigInt(xw32)) {
-    let yval = coerceNumberToWasmI32(y)
+    let yval = coerceNumberToWasmI32(amount)
     // [NOTE]: For BigInts, shrU is the same as shrS because there
     //         are an *infinite* number of leading ones
     WasmI32.toGrain(reducedBigInteger(BI.shrS(xw32, yval))): Number
   } else {
-    let xval = coerceNumberToWasmI64(x)
-    let yval = coerceNumberToWasmI64(y)
+    let xval = coerceNumberToWasmI64(value)
+    let yval = coerceNumberToWasmI64(amount)
     WasmI32.toGrain(reducedInteger(xval >> yval)): Number
   }
 }
@@ -2342,8 +2342,8 @@ provide let coerceNumberToUint16 = (number: Number) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceNumberToInt32 = (x: Number) => {
-  let result = newInt32(coerceNumberToWasmI32(x))
+provide let coerceNumberToInt32 = (number: Number) => {
+  let result = newInt32(coerceNumberToWasmI32(number))
   WasmI32.toGrain(result): Int32
 }
 
@@ -2356,8 +2356,8 @@ provide let coerceNumberToInt32 = (x: Number) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceNumberToInt64 = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
+provide let coerceNumberToInt64 = (number: Number) => {
+  let x = WasmI32.fromGrain(number)
   let result = if (
     !isSimpleNumber(x) &&
     boxedNumberTag(x) == Tags._GRAIN_INT64_BOXED_NUM_TAG
@@ -2382,8 +2382,8 @@ provide let coerceNumberToInt64 = (x: Number) => {
  * @since v0.5.0
  */
 @unsafe
-provide let coerceNumberToBigInt = (x: Number) => {
-  WasmI32.toGrain(coerceNumberToBigInt(x)): BigInt
+provide let coerceNumberToBigInt = (number: Number) => {
+  WasmI32.toGrain(coerceNumberToBigInt(number)): BigInt
 }
 
 /**
@@ -2395,8 +2395,8 @@ provide let coerceNumberToBigInt = (x: Number) => {
  * @since v0.6.0
  */
 @unsafe
-provide let coerceNumberToRational = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
+provide let coerceNumberToRational = (number: Number) => {
+  let x = WasmI32.fromGrain(number)
   let result = if (isSimpleNumber(x)) {
     newRational(BI.makeWrappedInt32(untagSimple(x)), BI.makeWrappedInt32(1n))
   } else {
@@ -2428,8 +2428,8 @@ provide let coerceNumberToRational = (x: Number) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceNumberToFloat32 = (x: Number) => {
-  let result = newFloat32(coerceNumberToWasmF32(x))
+provide let coerceNumberToFloat32 = (number: Number) => {
+  let result = newFloat32(coerceNumberToWasmF32(number))
   WasmI32.toGrain(result): Float32
 }
 
@@ -2442,8 +2442,8 @@ provide let coerceNumberToFloat32 = (x: Number) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceNumberToFloat64 = (x: Number) => {
-  let x = WasmI32.fromGrain(x)
+provide let coerceNumberToFloat64 = (number: Number) => {
+  let x = WasmI32.fromGrain(number)
   let result = if (
     !isSimpleNumber(x) &&
     boxedNumberTag(x) == Tags._GRAIN_FLOAT64_BOXED_NUM_TAG
@@ -2524,8 +2524,8 @@ provide let coerceUint16ToNumber = (value: Uint16) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceInt32ToNumber = (x: Int32) => {
-  let x = WasmI32.load(WasmI32.fromGrain(x), 4n)
+provide let coerceInt32ToNumber = (value: Int32) => {
+  let x = WasmI32.load(WasmI32.fromGrain(value), 4n)
   let result = reducedInteger(WasmI64.extendI32S(x))
   WasmI32.toGrain(result): Number
 }
@@ -2539,8 +2539,8 @@ provide let coerceInt32ToNumber = (x: Int32) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceInt64ToNumber = (x: Int64) => {
-  WasmI32.toGrain(reducedInteger(boxedInt64Number(WasmI32.fromGrain(x)))):
+provide let coerceInt64ToNumber = (value: Int64) => {
+  WasmI32.toGrain(reducedInteger(boxedInt64Number(WasmI32.fromGrain(value)))):
     Number
 }
 
@@ -2553,8 +2553,8 @@ provide let coerceInt64ToNumber = (x: Int64) => {
  * @since v0.5.0
  */
 @unsafe
-provide let coerceBigIntToNumber = (x: BigInt) => {
-  let x = WasmI32.fromGrain(x)
+provide let coerceBigIntToNumber = (num: BigInt) => {
+  let x = WasmI32.fromGrain(num)
   // reducedBigInteger assumes that the bigint is dead,
   // but in our case, it is not
   Memory.incRef(x)
@@ -2570,8 +2570,8 @@ provide let coerceBigIntToNumber = (x: BigInt) => {
  * @since v0.6.0
  */
 @unsafe
-provide let coerceRationalToNumber = (x: Rational) => {
-  let x = WasmI32.fromGrain(x)
+provide let coerceRationalToNumber = (rational: Rational) => {
+  let x = WasmI32.fromGrain(rational)
   let denom = boxedRationalDenominator(x)
   let x = if (BI.eq(denom, BI.makeWrappedInt32(1n))) {
     boxedRationalNumerator(x)
@@ -2592,8 +2592,8 @@ provide let coerceRationalToNumber = (x: Rational) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceFloat32ToNumber = (x: Float32) => {
-  let x = WasmF32.load(WasmI32.fromGrain(x), 4n)
+provide let coerceFloat32ToNumber = (float: Float32) => {
+  let x = WasmF32.load(WasmI32.fromGrain(float), 4n)
   let x64 = WasmF64.promoteF32(x)
   WasmI32.toGrain(newFloat64(x64)): Number
 }
@@ -2607,8 +2607,8 @@ provide let coerceFloat32ToNumber = (x: Float32) => {
  * @since v0.2.0
  */
 @unsafe
-provide let coerceFloat64ToNumber = (x: Float64) => {
-  let x = WasmI32.fromGrain(x)
+provide let coerceFloat64ToNumber = (float: Float64) => {
+  let x = WasmI32.fromGrain(float)
   // incRef x to reuse it via WasmI32.toGrain
   Memory.incRef(x)
   WasmI32.toGrain(x): Number
@@ -2665,10 +2665,10 @@ provide let convertInexactToExact = (x: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (+) = (x: Number, y: Number) => {
-  let ret = numberAdd(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
-  ignore(x)
-  ignore(y)
+provide let (+) = (num1: Number, num2: Number) => {
+  let ret = numberAdd(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
   ret
 }
 
@@ -2682,10 +2682,10 @@ provide let (+) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (-) = (x: Number, y: Number) => {
-  let ret = numberSub(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
-  ignore(x)
-  ignore(y)
+provide let (-) = (num1: Number, num2: Number) => {
+  let ret = numberSub(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
   ret
 }
 
@@ -2699,10 +2699,10 @@ provide let (-) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (*) = (x: Number, y: Number) => {
-  let ret = numberTimes(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
-  ignore(x)
-  ignore(y)
+provide let (*) = (num1: Number, num2: Number) => {
+  let ret = numberTimes(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
   ret
 }
 
@@ -2716,10 +2716,10 @@ provide let (*) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (/) = (x: Number, y: Number) => {
-  let ret = numberDivide(WasmI32.fromGrain(x), WasmI32.fromGrain(y))
-  ignore(x)
-  ignore(y)
+provide let (/) = (num1: Number, num2: Number) => {
+  let ret = numberDivide(WasmI32.fromGrain(num1), WasmI32.fromGrain(num2))
+  ignore(num1)
+  ignore(num2)
   ret
 }
 
@@ -2734,9 +2734,9 @@ provide let (/) = (x: Number, y: Number) => {
  * @since v0.1.0
  */
 @unsafe
-provide let (%) = (x: Number, y: Number) => {
-  let x = WasmI32.fromGrain(x)
-  let y = WasmI32.fromGrain(y)
+provide let (%) = (num1: Number, num2: Number) => {
+  let x = WasmI32.fromGrain(num1)
+  let y = WasmI32.fromGrain(num2)
   WasmI32.toGrain(numberMod(x, y)): Number
 }
 
@@ -2750,8 +2750,8 @@ provide let (%) = (x: Number, y: Number) => {
  *
  * @since v0.1.0
  */
-provide let incr = x => {
-  x + 1
+provide let incr = value => {
+  value + 1
 }
 
 /**
@@ -2762,8 +2762,8 @@ provide let incr = x => {
  *
  * @since v0.1.0
  */
-provide let decr = x => {
-  x - 1
+provide let decr = value => {
+  value - 1
 }
 
 @unsafe
