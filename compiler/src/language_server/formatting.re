@@ -61,7 +61,7 @@ let process =
       // I'm pretty sure this code path can raise errors. We should change these to Results
       try({
         let formatted_code =
-          Fmt.format_ast(~original_source=lines, ~eol, parsed_program);
+          Fmt.format_to_string(~original_source=lines, ~eol, parsed_program);
 
         let range: Protocol.range = {
           range_start: {

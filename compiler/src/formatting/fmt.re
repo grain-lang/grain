@@ -261,7 +261,7 @@ let needs_grouping = (~parent, ~side: infix_side, expr) => {
   };
 };
 
-let format_ast = (~original_source, ~eol, parsed_program) => {
+let build_document = (~original_source, parsed_program) => {
   let comment_tree = Commenttree.from_comments(parsed_program.comments);
 
   let get_original_code = location => {
@@ -3272,20 +3272,29 @@ let format_ast = (~original_source, ~eol, parsed_program) => {
       )
     };
 
-  let final_doc =
-    group @@
-    print_comment_range(
-      enclosing_start_location(parsed_program.prog_loc),
-      parsed_program.module_name.loc,
-    )
-    ++ string("module ")
-    ++ string(parsed_program.module_name.txt)
-    ++ toplevel;
+  group @@
+  print_comment_range(
+    enclosing_start_location(parsed_program.prog_loc),
+    parsed_program.module_name.loc,
+  )
+  ++ string("module ")
+  ++ string(parsed_program.module_name.txt)
+  ++ toplevel;
+};
 
-  let eol =
-    switch (eol) {
-    | Fs_access.CRLF => "\r\n"
-    | LF => "\n"
-    };
-  Engine.to_string(~eol, ~line_width=80, final_doc);
+let format = (~write, ~original_source, ~eol, parsed_program) => {
+  Engine.print(
+    ~write,
+    ~eol,
+    ~line_width=80,
+    build_document(~original_source, parsed_program),
+  );
+};
+
+let format_to_string = (~original_source, ~eol, parsed_program) => {
+  Engine.to_string(
+    ~eol,
+    ~line_width=80,
+    build_document(~original_source, parsed_program),
+  );
 };

@@ -59,10 +59,6 @@ let format_code =
       ~original_source: array(string),
       program: Parsetree.parsed_program,
     ) => {
-  let formatted_code =
-    Grain_formatting.Fmt.format_ast(~original_source, ~eol, program);
-
-  let contents = Bytes.of_string(formatted_code);
   switch (output) {
   | Some(outfile) =>
     let outfile = Filepath.to_string(outfile);
@@ -70,11 +66,22 @@ let format_code =
     // because `foo` doesn't exist so it tries to mkdir it and raises
     Fs_access.ensure_parent_directory_exists(outfile);
     let oc = Fs_access.open_file_for_writing(outfile);
-    output_bytes(oc, contents);
+    set_binary_mode_out(oc, true);
+    Grain_formatting.Fmt.format(
+      ~write=output_string(oc),
+      ~original_source,
+      ~eol,
+      program,
+    );
     close_out(oc);
   | None =>
     set_binary_mode_out(stdout, true);
-    print_bytes(contents);
+    Grain_formatting.Fmt.format(
+      ~write=print_string,
+      ~original_source,
+      ~eol,
+      program,
+    );
     flush(stdout);
   };
 };

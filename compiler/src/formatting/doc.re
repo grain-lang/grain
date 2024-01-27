@@ -329,6 +329,12 @@ module Engine = {
     // Continuation for Fit mode calculations that depend on the size of the next node
     let k = ref(None);
 
+    let eol =
+      switch (eol) {
+      | Grain_utils.Fs_access.CRLF => "\r\n"
+      | LF => "\n"
+      };
+
     let rec print = (~group, doc) => {
       switch (k^) {
       | Some(f) =>

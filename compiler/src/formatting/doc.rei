@@ -41,6 +41,14 @@ let angle_brackets: t => t;
 let double_quotes: t => t;
 
 module Engine: {
-  let print: (~write: string => 'a, ~eol: string, ~line_width: int, t) => unit;
-  let to_string: (~eol: string, ~line_width: int, t) => string;
+  let print:
+    (
+      ~write: string => 'a,
+      ~eol: Grain_utils.Fs_access.eol,
+      ~line_width: int,
+      t
+    ) =>
+    unit;
+  let to_string:
+    (~eol: Grain_utils.Fs_access.eol, ~line_width: int, t) => string;
 };
