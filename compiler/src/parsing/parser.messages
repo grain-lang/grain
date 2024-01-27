@@ -5376,6 +5376,15 @@ program: MODULE UIDENT EOL LIDENT INFIX_ASSIGNMENT_10 WHEN
 ## The known suffix of the stack is as follows:
 ## id_expr assign_binop_op
 ##
+program: MODULE UIDENT EOL UIDENT LBRACK UIDENT RBRACK INFIX_ASSIGNMENT_10 YIELD
+##
+## Ends in an error in state: 478.
+##
+## array_set -> left_accessor_expr lbrack expr rbrack assign_binop_op . expr [ THICKARROW STAR SLASH SEMI RPAREN RCARET RBRACK RBRACE PIPE LCARET INFIX_90 INFIX_80 INFIX_70 INFIX_60 INFIX_50 INFIX_40 INFIX_30 INFIX_120 INFIX_110 INFIX_100 EOL EOF ELSE DASH COMMA COLON AND ]
+##
+## The known suffix of the stack is as follows:
+## left_accessor_expr lbrack expr rbrack assign_binop_op
+##
 program: MODULE UIDENT EOL LIDENT EQUAL WHEN
 ##
 ## Ends in an error in state: 224.
