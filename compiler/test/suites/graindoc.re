@@ -9,6 +9,7 @@ describe("graindoc", ({test, testSkip}) => {
     Sys.backend_type == Other("js_of_ocaml") ? testSkip : test;
 
   let assertGrianDocOutput = makeGrainDocRunner(test_or_skip);
+  let assertGrainDocError = makeGrainDocErrorRunner(test_or_skip);
   ();
   assertGrianDocOutput("noDoc", "noDoc", [||]);
   assertGrianDocOutput(
@@ -18,4 +19,16 @@ describe("graindoc", ({test, testSkip}) => {
   );
   assertGrianDocOutput("since", "since", [|"--current-version=v0.2.0"|]);
   assertGrianDocOutput("example", "example", [|"--current-version=v0.2.0"|]);
+  assertGrainDocError(
+    "singleSince",
+    "singleSince",
+    "Attribute @since is only allowed to appear once.",
+    [|"--current-version=v0.2.0"|],
+  );
+  assertGrainDocError(
+    "singleReturn",
+    "singleReturn",
+    "Attribute @returns is only allowed to appear once.",
+    [|"--current-version=v0.2.0"|],
+  );
 });

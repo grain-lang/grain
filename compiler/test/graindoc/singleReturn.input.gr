@@ -1,0 +1,7 @@
+module SingleReturn
+
+/**
+ * @returns first return
+ * @returns second return
+ */
+provide let test = () => 1
