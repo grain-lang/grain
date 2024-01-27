@@ -314,3 +314,67 @@ provide let (>=) = (x: Char, y: Char) => {
   let y = WasmI32.fromGrain(y)
   x >= y
 }
+
+/**
+ * Checks if the character is an ASCII digit.
+ *
+ * @param char: The character to check
+ * @returns `true` if the character is an ASCII digit or `false` otherwise
+ * 
+ * @example assert Char.isAsciiDigit('1')
+ * @example assert !Char.isAsciiDigit('a')
+ *
+ * @since v0.6.0
+ */
+provide let isAsciiDigit = char => char >= '0' && char <= '9'
+
+/**
+ * Checks if the character is an ASCII alphabetical character.
+ *
+ * @param char: The character to check
+ * @returns `true` if the character is an ASCII alphabetical or `false` otherwise
+ *
+ * @example assert Char.isAsciiAlpha('a')
+ * @example assert !Char.isAsciiAlpha('1')
+ *
+ * @since v0.6.0
+ */
+provide let isAsciiAlpha = char =>
+  char >= 'a' && char <= 'z' ||
+    char >= 'A' && char <= 'Z'
+
+/**
+ * Converts the character to ASCII lowercase if it is an ASCII uppercase character.
+ * 
+ * @param char: The character to convert
+ * @returns The lowercased character
+ * 
+ * @example assert Char.toAsciiLowercase('B') == 'b'
+ * 
+ * @since v0.6.0
+ */
+provide let toAsciiLowercase = char => {
+  if (char >= 'A' && char <= 'Z') {
+    fromCode(code(char) + 0x20)
+  } else {
+    char
+  }
+}
+
+/**
+ * Converts the character to ASCII uppercase if it is an ASCII lowercase character.
+ * 
+ * @param char: The character to convert
+ * @returns The uppercased character
+ * 
+ * @example assert Char.toAsciiUppercase('b') == 'B'
+ * 
+ * @since v0.6.0
+ */
+provide let toAsciiUppercase = char => {
+  if (char >= 'a' && char <= 'z') {
+    fromCode(code(char) - 0x20)
+  } else {
+    char
+  }
+}

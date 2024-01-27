@@ -10,6 +10,7 @@
 
 module String
 
+include "char"
 include "runtime/unsafe/wasmi32"
 include "runtime/unsafe/memory"
 include "runtime/exception"
@@ -2149,4 +2150,42 @@ provide let trim = (string: String) => {
     byteLength - startCount - endCount
   )
   return WasmI32.toGrain(str): String
+}
+
+/**
+ * Converts all ASCII uppercase characters in the string to lowercase.
+ * 
+ * @param string: The string to convert
+ * @returns The lowercased string
+ * 
+ * @example assert String.toAsciiLowercase("aBc123") == "abc123"
+ * 
+ * @since v0.6.0
+ */
+provide let toAsciiLowercase = string => {
+  let chars = explode(string)
+  let len = arrayLength(chars)
+  for (let mut i = 0; i < len; i += 1) {
+    chars[i] = Char.toAsciiLowercase(chars[i])
+  }
+  implode(chars)
+}
+
+/**
+ * Converts all ASCII lowercase characters in the string to uppercase.
+ * 
+ * @param string: The string to convert
+ * @returns The uppercased string
+ * 
+ * @example assert String.toAsciiUppercase("aBc123") == "ABC123"
+ * 
+ * @since v0.6.0
+ */
+provide let toAsciiUppercase = string => {
+  let chars = explode(string)
+  let len = arrayLength(chars)
+  for (let mut i = 0; i < len; i += 1) {
+    chars[i] = Char.toAsciiUppercase(chars[i])
+  }
+  implode(chars)
 }
