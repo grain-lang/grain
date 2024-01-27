@@ -111,24 +111,28 @@ let open_process = args => {
       Unix.environment(),
     );
 
-  let pid = Unix.process_full_pid((stdout, stdin, stderr));
-  let (status, timed_out) =
-    try({
-      let (_, status) = Test_utils.waitpid_timeout(15., pid);
-      (status, false);
-    }) {
-    | Test_utils.Timeout =>
-      // Windows only supports the `sigkill` signal
-      Unix.kill(pid, Sys.sigkill);
-      (Unix.WEXITED(-1), true);
+  let current_time = Unix.time();
+
+  let out_eof = ref(false);
+  let err_eof = ref(false);
+
+  let out_buf = Buffer.create(1024);
+  let err_buf = Buffer.create(1024);
+
+  while ((! out_eof^ || ! err_eof^) && Unix.time() < current_time +. 15.) {
+    try(Buffer.add_channel(out_buf, stdout, 1024)) {
+    | End_of_file => out_eof := true
     };
+    try(Buffer.add_channel(err_buf, stderr, 1024)) {
+    | End_of_file => err_eof := true
+    };
+  };
 
-  let out = In_channel.input_all(stdout);
-  let err = In_channel.input_all(stderr);
+  let timed_out = Unix.time() > current_time +. 15.;
 
-  close_in(stdout);
-  close_in(stderr);
-  close_out(stdin);
+  let status = Unix.close_process_full((stdout, stdin, stderr));
+  let out = Buffer.contents(out_buf);
+  let err = Buffer.contents(err_buf);
 
   let code =
     switch (status) {
