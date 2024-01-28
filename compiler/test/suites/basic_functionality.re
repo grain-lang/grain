@@ -50,11 +50,11 @@ describe("basic functionality", ({test, testSkip}) => {
   assertSnapshot("nan", "let x = NaN; x");
   assertRun("nan_2", "assert NaN != NaN", "");
 
-  assertSnapshot("print_line_ending1", "print(1, lineEnding=\"\")");
-  assertRun("print_line_ending2", "print(123, lineEnding=\"\")", "123");
+  assertSnapshot("print_line_ending1", "print(1, suffix=\"\")");
+  assertRun("print_line_ending2", "print(123, suffix=\"\")", "123");
   assertRun(
     "print_line_ending3",
-    "print(1, lineEnding=\"\"); print(2, lineEnding=\"    \"); print(\"3\", lineEnding=\"end\")",
+    "print(1, suffix=\"\"); print(2, suffix=\"    \"); print(\"3\", suffix=\"end\")",
     "12    3end",
   );
 

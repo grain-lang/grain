@@ -861,7 +861,7 @@ No other changes yet.
 </details>
 
 ```grain
-print : (value: a, ?lineEnding: String) => Void
+print : (value: a, ?suffix: String) => Void
 ```
 
 Prints the given operand to the console. Works for any type. Internally, calls `toString`
@@ -873,7 +873,7 @@ Parameters:
 |param|type|description|
 |-----|----|-----------|
 |`value`|`a`|The operand|
-|`?lineEnding`|`String`|The string to print after the argument|
+|`?suffix`|`String`|The string to print after the argument|
 
 ### Pervasives.**ignore**
 
