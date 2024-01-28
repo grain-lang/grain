@@ -71,6 +71,7 @@ let process =
     | [Pattern({definition}), ..._]
     | [Type({definition}), ..._]
     | [Declaration({definition}), ..._]
+    | [Exception({definition}), ..._]
     | [Module({definition}), ..._] =>
       switch (definition) {
       | None => send_no_result(~id)

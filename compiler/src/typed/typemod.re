@@ -665,6 +665,15 @@ let rec type_module = (~toplevel=false, anchor, env, statements) => {
             | None => Ident.create(name.txt)
             };
           ([TSigType(id, type_, TRecNot), ...sigs], stmts);
+        | PProvideException({name: {txt: IdentName(name)}, alias, loc}) =>
+          let ext = Typetexp.find_exception(env, loc, IdentName(name));
+          let id =
+            switch (alias) {
+            | Some({txt: IdentName(alias)}) => Ident.create(alias.txt)
+            | Some(_) => failwith("Impossible: invalid alias")
+            | None => Ident.create(name.txt)
+            };
+          ([TSigTypeExt(id, ext, TExtException), ...sigs], stmts);
         | PProvideModule({name: {txt: IdentName(name)}, alias, loc}) =>
           let (mod_path, mod_decl) =
             Typetexp.find_module(env, loc, IdentName(name));

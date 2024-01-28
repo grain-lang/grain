@@ -959,7 +959,7 @@ let transl_extension_constructor =
       };
       let path =
         switch (cdescr.cstr_tag) {
-        | CstrExtension(_, path, _) => path
+        | CstrExtension(_, path, _, _) => path
         | _ => assert(false)
         };
 

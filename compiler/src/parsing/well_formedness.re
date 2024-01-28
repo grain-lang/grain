@@ -626,6 +626,7 @@ let no_local_include = (errs, super) => {
 type provided_multiple_times_ctx = {
   modules: Hashtbl.t(string, unit),
   types: Hashtbl.t(string, unit),
+  exceptions: Hashtbl.t(string, unit),
   values: Hashtbl.t(string, unit),
 };
 
@@ -666,6 +667,7 @@ let provided_multiple_times = (errs, super) => {
       {
         modules: Hashtbl.create(64),
         types: Hashtbl.create(64),
+        exceptions: Hashtbl.create(64),
         values: Hashtbl.create(64),
       },
     ]);
@@ -676,6 +678,7 @@ let provided_multiple_times = (errs, super) => {
         {
           modules: Hashtbl.create(64),
           types: Hashtbl.create(64),
+          exceptions: Hashtbl.create(64),
           values: Hashtbl.create(64),
         },
         ...ctx^,
@@ -689,7 +692,7 @@ let provided_multiple_times = (errs, super) => {
   };
 
   let enter_toplevel_stmt = ({ptop_desc: desc} as top) => {
-    let {values, modules, types} = List.hd(ctx^);
+    let {values, modules, types, exceptions} = List.hd(ctx^);
     switch (desc) {
     | PTopModule(Provided | Abstract, {pmod_name, pmod_loc}) =>
       if (Hashtbl.mem(modules, pmod_name.txt)) {
@@ -773,6 +776,13 @@ let provided_multiple_times = (errs, super) => {
               errs := [ProvidedMultipleTimes(name, loc), ...errs^];
             } else {
               Hashtbl.add(types, name, ());
+            };
+          | PProvideException({name, alias, loc}) =>
+            let (_, name) = apply_alias(name, alias);
+            if (Hashtbl.mem(exceptions, name)) {
+              errs := [ProvidedMultipleTimes(name, loc), ...errs^];
+            } else {
+              Hashtbl.add(exceptions, name, ());
             };
           | PProvideModule({name, alias, loc}) =>
             let (_, name) = apply_alias(name, alias);

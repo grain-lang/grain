@@ -124,6 +124,7 @@ and iter_provide = (hooks, items) => {
     item => {
       switch (item) {
       | PProvideType({name, alias, loc})
+      | PProvideException({name, alias, loc})
       | PProvideModule({name, alias, loc})
       | PProvideValue({name, alias, loc}) =>
         iter_ident(hooks, name);
@@ -290,6 +291,7 @@ and iter_expression =
         item => {
           switch (item) {
           | PUseType({name, alias, loc})
+          | PUseException({name, alias, loc})
           | PUseModule({name, alias, loc})
           | PUseValue({name, alias, loc}) =>
             iter_ident(hooks, name);

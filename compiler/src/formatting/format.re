@@ -3917,7 +3917,8 @@ and print_expression_inner =
               switch (item) {
               | PUseValue({loc})
               | PUseModule({loc})
-              | PUseType({loc}) => loc
+              | PUseType({loc})
+              | PUseException({loc}) => loc
               };
             };
 
@@ -3961,6 +3962,8 @@ and print_expression_inner =
                 Doc.concat([Doc.text("module "), item_name(name, alias)])
               | PUseType({name, alias}) =>
                 Doc.concat([Doc.text("type "), item_name(name, alias)])
+              | PUseException({name, alias}) =>
+                Doc.concat([Doc.text("exception "), item_name(name, alias)])
               };
             };
 
@@ -5068,6 +5071,7 @@ let rec toplevel_print =
             switch (item) {
             | PProvideValue({loc})
             | PProvideModule({loc})
+            | PProvideException({loc})
             | PProvideType({loc}) => loc
             };
           };
@@ -5112,6 +5116,8 @@ let rec toplevel_print =
               Doc.concat([Doc.text("module "), item_name(name, alias)])
             | PProvideType({name, alias}) =>
               Doc.concat([Doc.text("type "), item_name(name, alias)])
+            | PProvideException({name, alias}) =>
+              Doc.concat([Doc.text("exception "), item_name(name, alias)])
             };
           };
 

@@ -39,6 +39,7 @@ type error =
   | Value_not_found_in_module(Location.t, string, string)
   | Module_not_found_in_module(Location.t, string, string, option(string))
   | Type_not_found_in_module(Location.t, string, string)
+  | Exception_not_found_in_module(Location.t, string, string)
   | Illegal_value_name(Location.t, string)
   | Cyclic_dependencies(string, dependency_chain);
 
