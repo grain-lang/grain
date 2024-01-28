@@ -85,6 +85,11 @@ Did you mean to create the string "\{\\"test\\": 1\}" instead?|},
     "This character literal contains no character. Did you mean to create an empty string \"\" instead?",
   );
   assertCompileError(
+    "char_illegal_pattern",
+    "match ('a') { 'abc' => void, _ => void }",
+    "This character literal contains multiple characters: 'abc'\nDid you mean to create the string \"abc\" instead?",
+  );
+  assertCompileError(
     "unicode_err1",
     "let x = '\\u{d800}'",
     "Illegal unicode code point",
