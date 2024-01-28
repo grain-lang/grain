@@ -986,6 +986,15 @@ let constructor_arguments = (ppf, a) => {
   Oprint.out_type^(ppf, Otyp_tuple(tys));
 };
 
+let constructor = (ppf, cstr) =>
+  Oprint.out_constr^(ppf, tree_of_constructor(cstr));
+
+let string_of_constructor = cstr => {
+  let str = asprintf("%a", constructor, cstr);
+  // Hacky workaround to avoid having to make invasive changes in Oprint
+  Str.global_replace(Str.regexp("^  "), "", str);
+};
+
 /* Print an extension declaration */
 
 let tree_of_extension_constructor = (id, ext, es) => {

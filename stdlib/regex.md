@@ -48,7 +48,7 @@ Fields:
 
 |name|type|description|
 |----|----|-----------|
-|`group`|`Number => Option<String>`|Returns the contents of the given group. Note that group 0 contains<br />the entire matched substring, and group 1 contains the first parenthesized group.|
+|`group`|`Number => Option<String>`|Returns the contents of the given group. Note that group 0 contains<br/>the entire matched substring, and group 1 contains the first parenthesized group.|
 |`groupPosition`|`Number => Option<(Number, Number)>`|Returns the position of the given group|
 |`numGroups`|`Number`|Returns the number of defined groups in this match object (includes group 0)|
 |`allGroups`|`() => Array<Option<String>>`|Returns the contents of all groups matched in this match object|

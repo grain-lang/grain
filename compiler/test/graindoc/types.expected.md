@@ -12,6 +12,7 @@ Type declarations included in the TypeGrainDoc module.
 record R {
   x: Number,
   y: String,
+  z: String,
 }
 ```
 
@@ -22,7 +23,20 @@ Fields:
 |name|type|description|
 |----|----|-----------|
 |`x`|`Number`|Record field x|
-|`y`|`String`|Record field y<br />Second line|
+|`y`|`String`|Record field y<br/>Second line|
+|`z`|`String`||
+
+### TypeGrainDoc.**R2**
+
+```grain
+record R2 {
+  x2: Number,
+  y2: String,
+  z2: String,
+}
+```
+
+A record that should not have any fields printed
 
 ### TypeGrainDoc.**E**
 
@@ -34,6 +48,11 @@ enum E {
     a: Number,
     f: Number => Number,
   },
+  Variant4,
+  Variant5{
+    a: Number,
+    b: Number,
+  },
 }
 ```
 
@@ -41,11 +60,89 @@ An enum
 
 Variants:
 
-|name|data|description|
+```grain
+Variant1
+```
+
+Enum variant
+
+```grain
+Variant2(String, Number)
+```
+
+Another variant
+
+```grain
+Variant3{
+  a: Number,
+  f: Number => Number,
+}
+```
+
+Record variant
+
+Fields:
+
+|name|type|description|
 |----|----|-----------|
-|`Variant1`||Enum variant|
-|`Variant2`|`(String, Number)`|Another variant|
-|`Variant3`|<table><thead><tr><th>name</th><th>type</th><th>description</th></tr></thead><tbody><tr><td>`a`</td><td>`Number`</td><td>Record field a</td></tr><tr><td>`f`</td><td>`Number => Number`</td><td>Function</td></tr></tbody></table><br /><br />|Record variant|
+|`a`|`Number`|Record field a|
+|`f`|`Number => Number`|Function|
+
+```grain
+Variant5{
+  a: Number,
+  b: Number,
+}
+```
+
+Fields:
+
+|name|type|description|
+|----|----|-----------|
+|`a`|`Number`|Record field|
+|`b`|`Number`||
+
+### TypeGrainDoc.**E2**
+
+```grain
+enum E2 {
+  Var1,
+  Var2(String, Number),
+  Var3{
+    a: Number,
+    f: Number => Number,
+  },
+}
+```
+
+An enum that should not have any variants printed
+
+### TypeGrainDoc.**E3**
+
+```grain
+enum E3 {
+  Rec{
+    a: Number,
+    b: String,
+  },
+}
+```
+
+Variants:
+
+```grain
+Rec{
+  a: Number,
+  b: String,
+}
+```
+
+Fields:
+
+|name|type|description|
+|----|----|-----------|
+|`a`|`Number`|A description|
+|`b`|`String`||
 
 ### TypeGrainDoc.**Num**
 

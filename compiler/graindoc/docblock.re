@@ -32,19 +32,14 @@ type example = {example_txt: string};
 
 type record_field_info = {
   field_name: string,
-  field_description: string,
+  field_description: option(string),
   field_type: Types.type_expr,
 };
 
-type variant_data =
-  | SingletonVariant
-  | TupleVariant(list(Types.type_expr))
-  | RecordVariant(list(record_field_info));
-
 type variant_info = {
-  variant_name: string,
-  variant_description: string,
-  variant_data,
+  variant_str: string,
+  variant_description: option(string),
+  variant_record_fields: option(list(record_field_info)),
 };
 
 type compound_type_descrs =
@@ -242,51 +237,66 @@ let output_for_throws = throws => {
   |> String.concat("");
 };
 
-let output_for_record_fields = (~nested=false, fields) => {
-  Markdown.table(
-    ~nested,
-    ~headers=["name", "type", "description"],
-    List.map(
-      ({field_name: name, field_description: description, field_type: typ}) => {
-        [
-          Markdown.code(name),
-          Markdown.code(Printtyp.string_of_type_sch(typ)),
-          description,
-        ]
-      },
-      fields,
-    ),
-  );
-};
+let has_any_record_field_descrs = fields =>
+  List.exists(f => Option.is_some(f.field_description), fields);
 
-let output_for_variants = variants => {
-  Markdown.table(
-    ~headers=["name", "data", "description"],
-    List.map(
-      (
-        {
-          variant_name: name,
-          variant_description: description,
-          variant_data: data,
-        },
-      ) => {
-        let data_str =
-          switch (data) {
-          | TupleVariant(typs) =>
-            Markdown.code(
-              Printtyp.string_of_type_sch(
-                Types.{desc: TTyTuple(typs), level: (-1), id: (-1)},
-              ),
-            )
-          | RecordVariant(rfs) => output_for_record_fields(~nested=true, rfs)
-          | SingletonVariant => ""
-          };
-        [Markdown.code(name), data_str, description];
+let output_for_record_fields = (buf, fields) =>
+  if (!has_any_record_field_descrs(fields)) {
+    ();
+  } else {
+    Buffer.add_string(buf, Markdown.paragraph("Fields:"));
+    Buffer.add_string(
+      buf,
+      Markdown.table(
+        ~headers=["name", "type", "description"],
+        List.map(
+          rf => {
+            [
+              Markdown.code(rf.field_name),
+              Markdown.code(Printtyp.string_of_type_sch(rf.field_type)),
+              Option.value(rf.field_description, ~default=""),
+            ]
+          },
+          fields,
+        ),
+      ),
+    );
+  };
+
+let variant_has_desc = variant =>
+  Option.is_some(variant.variant_description)
+  // Should also pass through inline record variants that do not have
+  // descriptions themselves but have descriptions for some of their fields
+  || Option.map(has_any_record_field_descrs, variant.variant_record_fields)
+  == Some(true);
+
+let has_any_variant_descrs = variants =>
+  List.exists(variant_has_desc, variants);
+
+let output_for_variants = (buf, variants) =>
+  if (!has_any_variant_descrs(variants)) {
+    ();
+  } else {
+    Buffer.add_string(buf, Markdown.paragraph("Variants:"));
+    List.iter(
+      variant => {
+        if (variant_has_desc(variant)) {
+          Buffer.add_string(buf, Markdown.code_block(variant.variant_str));
+        };
+
+        Option.iter(
+          desc => Buffer.add_string(buf, Markdown.paragraph(desc)),
+          variant.variant_description,
+        );
+
+        Option.iter(
+          rfs => output_for_record_fields(buf, rfs),
+          variant.variant_record_fields,
+        );
       },
       variants,
-    ),
-  );
-};
+    );
+  };
 
 let types_for_function = (~ident, vd: Types.value_description) => {
   switch (Ctype.repr(vd.val_type).desc) {
@@ -353,7 +363,10 @@ let for_value_description =
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_value_description(~ident, vd);
   let comment =
-    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on_including_attribute(
+      ~lnum=loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let (description, attributes) =
     switch (comment) {
@@ -503,21 +516,17 @@ let for_type_declaration =
   let name = Format.asprintf("%a", Printtyp.ident, ident);
   let type_sig = Printtyp.string_of_type_declaration(~ident, td);
   let comment =
-    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on_including_attribute(
+      ~lnum=loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let extract_compound_type_descrs = (datas, mk_type_descr) => {
-    List.filter_map(
+    List.map(
       ((data, loc: Warnings.loc, id)) => {
         let comment =
-          Comments.Doc.ending_on(
-            ~lnum=loc.loc_start.pos_lnum - 1,
-            ~check_prev=false,
-            comments,
-          );
+          Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
         switch (comment) {
-        | Some((_, Some(description), [])) =>
-          // Some((id.Ident.name, description))
-          Some(mk_type_descr(data, description))
         | Some((_, _, [attr, ..._])) =>
           raise(
             InvalidAttribute({
@@ -525,7 +534,8 @@ let for_type_declaration =
               attr: attr_name(attr),
             }),
           )
-        | _ => None
+        | Some((_, description, [])) => mk_type_descr(data, description)
+        | _ => mk_type_descr(data, None)
         };
       },
       datas,
@@ -546,13 +556,12 @@ let for_type_declaration =
     extract_compound_type_descrs(
       List.map(cd => (cd, cd.Types.cd_loc, cd.cd_id), cds), (cd, desc) =>
       {
-        variant_name: cd.cd_id.name,
+        variant_str: Printtyp.string_of_constructor(cd),
         variant_description: desc,
-        variant_data:
+        variant_record_fields:
           switch (cd.cd_args) {
-          | TConstrTuple(typs) => TupleVariant(typs)
-          | TConstrRecord(rfs) => RecordVariant(extract_record_descrs(rfs))
-          | TConstrSingleton => SingletonVariant
+          | TConstrRecord(rfs) => Some(extract_record_descrs(rfs))
+          | _ => None
           },
       }
     );
@@ -690,7 +699,10 @@ and for_signature_items =
     ) => {
   let comments = get_comments_from_loc(loc);
   let comment =
-    Comments.Doc.ending_on(~lnum=loc.loc_start.pos_lnum - 1, comments);
+    Comments.Doc.ending_on_including_attribute(
+      ~lnum=loc.loc_start.pos_lnum - 1,
+      comments,
+    );
 
   let (description, attributes) =
     switch (comment) {
@@ -875,11 +887,9 @@ let rec to_markdown = (~current_version, ~heading_level, docblock) => {
     }) =>
     ()
   | Type({compound_type_descrs: Variants(variants)}) =>
-    Buffer.add_string(buf, Markdown.paragraph("Variants:"));
-    Buffer.add_string(buf, output_for_variants(variants));
+    output_for_variants(buf, variants)
   | Type({compound_type_descrs: RecordFields(fields)}) =>
-    Buffer.add_string(buf, Markdown.paragraph("Fields:"));
-    Buffer.add_string(buf, output_for_record_fields(fields));
+    output_for_record_fields(buf, fields)
   };
 
   switch (docblock) {
