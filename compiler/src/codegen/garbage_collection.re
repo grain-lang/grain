@@ -91,16 +91,33 @@ let rec analyze_usage = instrs => {
     };
   };
 
+  let process_tail_call_arg = imm => {
+    switch (imm.immediate_desc) {
+    | MImmBinding(binding) =>
+      switch (BindMap.find(binding, usage_map^)) {
+      | Some(imm) => imm.immediate_analyses.last_usage = TailCallLast
+      | None => ()
+      }
+    | MImmConst(_)
+    | MImmTrap
+    | MIncRef(_) => ()
+    };
+  };
+
   let rec process_instr = instr => {
     switch (instr.instr_desc) {
     | MImmediate(imm) => process_imm(imm)
     | MCallRaw({args}) => List.iter(process_imm, args)
     | MCallKnown({closure: func, args})
+    | MCallIndirect({func, args}) =>
+      process_imm(func);
+      List.iter(process_imm, args);
     | MReturnCallKnown({closure: func, args})
-    | MCallIndirect({func, args})
     | MReturnCallIndirect({func, args}) =>
       process_imm(func);
       List.iter(process_imm, args);
+      process_tail_call_arg(func);
+      List.iter(process_tail_call_arg, args);
     | MError(e, args) => List.iter(process_imm, args)
     | MAllocate(alloc) =>
       switch (alloc) {
@@ -211,6 +228,12 @@ let is_last_usage = imm =>
   | _ => false
   };
 
+let is_last_tail_call_usage = imm =>
+  switch (imm.immediate_analyses.last_usage) {
+  | TailCallLast => true
+  | _ => false
+  };
+
 type bind_state =
   | Alive
   | Dead;
@@ -275,7 +298,8 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
     },
   };
 
-  let handle_imm = (~non_gc_instr=false, ~is_return=false, imm) => {
+  let handle_imm =
+      (~non_gc_instr=false, ~is_return=false, ~is_tail=false, imm) => {
     switch (imm.immediate_desc) {
     | MImmBinding((MArgBind(_) | MLocalBind(_) | MClosureBind(_)) as binding) =>
       let alloc =
@@ -314,10 +338,12 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
             );
           switch (alloc) {
           | Unmanaged(_) => imm
-          | Managed when non_gc_instr || is_return => imm
+          | Managed when non_gc_instr || is_return || is_tail => imm
           | Managed => incref(imm)
           };
         };
+      } else if (is_last_tail_call_usage(imm)) {
+        imm;
       } else {
         switch (alloc) {
         | Managed when non_gc_instr || is_return => imm
@@ -352,8 +378,8 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         // tail calls will use arguments directly without the need to incref
         MReturnCallKnown({
           ...data,
-          closure: handle_imm(~is_return=true, closure),
-          args: List.map(handle_imm(~is_return=true), args),
+          closure: handle_imm(~is_tail=true, closure),
+          args: List.map(handle_imm(~is_tail=true), args),
         })
       | MCallIndirect({func, args} as data) =>
         MCallIndirect({
@@ -365,8 +391,8 @@ let rec apply_gc = (~level, ~loop_context, ~implicit_return=false, instrs) => {
         // tail calls will use arguments directly without the need to incref
         MReturnCallIndirect({
           ...data,
-          func: handle_imm(~is_return=true, func),
-          args: List.map(handle_imm(~is_return=true), args),
+          func: handle_imm(~is_tail=true, func),
+          args: List.map(handle_imm(~is_tail=true), args),
         })
       | MError(e, args) => MError(e, List.map(handle_imm, args))
       | MAllocate(alloc) =>

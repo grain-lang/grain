@@ -188,4 +188,12 @@ describe("garbage collection", ({test, testSkip}) => {
     print("4")|},
     "4\n",
   );
+  assertRun(
+    "no_tailcall_double_decref",
+    {|
+      let isNaN = x => x != x
+      print(isNaN(NaN))
+    |},
+    "true\n",
+  );
 });
