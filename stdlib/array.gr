@@ -4,6 +4,7 @@
  * An immutable array implementation is available in the `Immutable` submodule.
  *
  * @example include "array"
+ * @example [> 1, 2, 3]
  *
  * @since v0.2.0
  * @history v0.1.0: Originally named `arrays`
@@ -73,7 +74,7 @@ provide primitive length = "@array.length"
  * @throws InvalidArgument(String): When `length` is not an integer
  * @throws InvalidArgument(String): When `length` is negative
  *
- * @example Array.make(5, "foo") // [> "foo", "foo", "foo", "foo", "foo"]
+ * @example Array.make(5, "foo") == [> "foo", "foo", "foo", "foo", "foo"]
  *
  * @since v0.1.0
  */
@@ -106,7 +107,7 @@ provide let make = (length: Number, item: a) => {
  * @throws InvalidArgument(String): When `length` is not an integer
  * @throws InvalidArgument(String): When `length` is negative
  *
- * @example Array.init(5, n => n + 3) // [> 3, 4, 5, 6, 7]
+ * @example Array.init(5, n => n + 3) == [> 3, 4, 5, 6, 7]
  *
  * @since v0.1.0
  */
@@ -142,7 +143,7 @@ provide let init = (length: Number, fn: Number => a) => {
  * @throws IndexOutOfBounds: When `index` is not an integer
  * @throws IndexOutOfBounds: When `index` is out of bounds
  *
- * @example Array.get(1,[> 1, 2, 3, 4, 5]) == 2
+ * @example Array.get(1, [> 1, 2, 3, 4, 5]) == 2
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
@@ -164,7 +165,10 @@ provide let get = (index, array) => {
  * @throws IndexOutOfBounds: When `index` is not an integer
  * @throws IndexOutOfBounds: When `index` is out of bounds
  *
- * @example Array.set(1, 9, [> 1, 2, 3, 4, 5]) == [> 1, 9, 3, 4, 5]
+ * @example
+ * let array = [> 1, 2, 3, 4, 5]
+ * Array.set(1, 9, array)
+ * assert array == [> 1, 9, 3, 4, 5]
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
@@ -253,6 +257,8 @@ provide let concat = arrays => {
  * @param array: The array to copy
  * @returns The new array containing the elements from the input
  *
+ * @example Array.copy([> 1, 2, 3]) == [> 1, 2, 3]
+ *
  * @since v0.1.0
  */
 provide let copy = array => {
@@ -265,6 +271,11 @@ provide let copy = array => {
  * @param fn: The iterator function to call with each element
  * @param n: The number of times to iterate the given array
  * @param array: The array to iterate
+ *
+ * @example
+ * let mut str = ""
+ * Array.cycle(s => str = str ++ s, 2, [> "a", "b", "c"])
+ * assert str == "abcabc"
  *
  * @since v0.4.4
  */
@@ -283,6 +294,11 @@ provide let cycle = (fn, n, array) => {
  * @param fn: The iterator function to call with each element
  * @param array: The array to iterate
  *
+ * @example
+ * let mut str = ""
+ * Array.forEach(s => str = str ++ s, [> "a", "b", "c"])
+ * assert str == "abc"
+ *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
@@ -299,6 +315,11 @@ provide let forEach = (fn, array) => {
  *
  * @param fn: The iterator function to call with each element
  * @param array: The array to iterate
+ *
+ * @example
+ * let mut str = ""
+ * Array.forEachi((s, i) => str = str ++ s ++ toString(i), [> "a", "b", "c"])
+ * assert str == "a0b1c2"
  *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
@@ -318,6 +339,8 @@ provide let forEachi = (fn, array) => {
  * @param array: The array to iterate
  * @returns The new array with mapped values
  *
+ * @example Array.map(x => x * 2, [> 1, 2, 3]) == [> 2, 4, 6]
+ *
  * @since v0.1.0
  * @history v0.2.0: Argument order changed to data-last
  */
@@ -335,6 +358,8 @@ provide let map = (fn, array) => {
  * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
  * @param array: The array to iterate
  * @returns The new array with mapped values
+ *
+ * @example Array.mapi((x, i) => (x * 2, i), [> 1, 2, 3]) == [> (2, 0), (4, 1), (6, 2)]
  *
  * @since v0.1.0
  */
@@ -359,7 +384,8 @@ provide let mapi = (fn, array) => {
  * @param array: The array to iterate
  * @returns The final accumulator returned from `fn`
  *
- * @example Array.reduce((a, b) => a + b, 0, [> 1, 2, 3]) // 6
+ * @example Array.reduce((acc, el) => acc + el, 0, [> 1, 2, 3]) == 6
+ * @example Array.reduce((acc, el) => acc ++ el, "", [> "baz", "bar", "foo"]) == "bazbarfoo"
  *
  * @since v0.3.0
  */
@@ -383,7 +409,7 @@ provide let reduce = (fn, initial, array) => {
  * @param array: The array to iterate
  * @returns The final accumulator returned from `fn`
  *
- * @example Array.reduceRight((a, b) => b ++ a, "", [> "baz", "bar", "foo"]) // "foobarbaz"
+ * @example Array.reduceRight((el, acc) => acc ++ el, "", [> "baz", "bar", "foo"]) == "foobarbaz"
  *
  * @since v0.5.3
  */
@@ -410,6 +436,13 @@ provide let reduceRight = (fn, initial, array) => {
  * @param array: The array to iterate
  * @returns The final accumulator returned from `fn`
  *
+ * @example Array.reducei((acc, el, index) => acc + el + index, 0, [> 1, 2, 3]) == 9
+ * @example
+ * let output = Array.reducei((acc, el, index) => {
+ *   acc ++ el ++ toString(index)
+ * }, "", [> "baz", "bar", "foo"])
+ * assert output == "baz0bar1foo2"
+ *
  * @since v0.3.0
  */
 provide let reducei = (fn, initial, array) => {
@@ -429,6 +462,8 @@ provide let reducei = (fn, initial, array) => {
  * @returns The new array
  *
  * @throws InvalidArgument(String): When the combined length of all arrays is not an integer
+ *
+ * @example Array.flatMap(e => [> 1, e], [> 1, 2, 3]) == [> 1, 1, 1, 2, 1, 3]
  *
  * @since v0.3.0
  */
@@ -456,6 +491,9 @@ provide let flatMap = (fn, array) => {
  * @param array: The array to check
  * @returns `true` if all elements satisfy the condition or `false` otherwise
  *
+ * @example Array.every(e => e % 2 == 0, [> 2, 4, 6]) == true
+ * @example Array.every(e => e % 2 == 0, [> 2, 4, 7]) == false
+ *
  * @since v0.3.0
  */
 provide let every = (fn, array) => {
@@ -475,6 +513,10 @@ provide let every = (fn, array) => {
  * @param array: The array to iterate
  * @returns `true` if one or more elements satisfy the condition or `false` otherwise
  *
+ * @example Array.some(e => e % 2 == 0, [> 2, 4, 6]) == true
+ * @example Array.some(e => e % 2 == 0, [> 2, 4, 7]) == true
+ * @example Array.some(e => e % 2 == 0, [> 3, 5, 7]) == false
+ *
  * @since v0.3.0
  */
 provide let some = (fn, array) => {
@@ -491,6 +533,11 @@ provide let some = (fn, array) => {
  *
  * @param value: The value replacing each element
  * @param array: The array to update
+ *
+ * @example
+ * let arr = [> 2, 4, 6]
+ * Array.fill(0, arr)
+ * assert arr == [> 0, 0, 0]
  *
  * @since v0.2.0
  */
@@ -513,6 +560,11 @@ provide let fill = (value, array) => {
  *
  * @throws IndexOutOfBounds: When the start index is out of bounds
  * @throws IndexOutOfBounds: When the start index is greater then the stop index
+ *
+ * @example
+ * let arr = [> 2, 4, 6, 8]
+ * Array.fillRange(0, 1, 3, arr)
+ * assert arr == [> 2, 0, 0, 8]
  *
  * @since v0.2.0
  */
@@ -543,6 +595,8 @@ provide let fillRange = (value, start, stop, array) => {
  * @param array: The array to reverse
  * @returns The new array
  *
+ * @example Array.reverse([> 1, 2, 3]) == [> 3, 2, 1]
+ *
  * @since v0.4.0
  */
 provide let reverse = array => {
@@ -558,6 +612,8 @@ provide let reverse = array => {
  *
  * @param array: The array to convert
  * @returns The list containing all elements from the array
+ *
+ * @example Array.toList([> 1, 2, 3]) == [1, 2, 3]
  *
  * @since v0.1.0
  */
@@ -578,6 +634,8 @@ provide let toList = array => {
  *
  * @param list: The list to convert
  * @returns The array containing all elements from the list
+ *
+ * @example Array.fromList([1, 2, 3]) == [> 1, 2, 3]
  *
  * @since v0.1.0
  */
@@ -610,6 +668,9 @@ provide let fromList = list => {
  * @param array: The array to inspect
  * @returns `true` if the value exists in the array or `false` otherwise
  *
+ * @example Array.contains(1, [> 1, 2, 3]) == true
+ * @example Array.contains(0, [> 1, 2, 3]) == false
+ *
  * @since v0.2.0
  */
 provide let contains = (search, array) => {
@@ -627,6 +688,10 @@ provide let contains = (search, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to search
  * @returns `Some(element)` containing the first value found or `None` otherwise
+ *
+ * @example Array.find(e => e % 2 == 0, [> 1, 4, 3]) == Some(4)
+ * @example Array.find(e => e % 2 == 0, [> 1, 2, 3, 4]) == Some(2)
+ * @example Array.find(e => e % 2 == 0, [> 1, 3, 5]) == None
  *
  * @since v0.2.0
  */
@@ -647,6 +712,10 @@ provide let find = (fn, array) => {
  * @param array: The array to search
  * @returns `Some(index)` containing the index of the first element found or `None` otherwise
  *
+ * @example Array.findIndex(e => e % 2 == 0, [> 1, 4, 3]) == Some(1)
+ * @example Array.findIndex(e => e % 2 == 0, [> 1, 2, 3, 4]) == Some(1)
+ * @example Array.findIndex(e => e % 2 == 0, [> 1, 3, 5]) == None
+ *
  * @since v0.2.0
  */
 provide let findIndex = (fn, array) => {
@@ -666,6 +735,8 @@ provide let findIndex = (fn, array) => {
  * @returns The new array containing all pairs of `(a, b)`
  *
  * @throws InvalidArgument(String): When the multiplied array lengths are not an integer
+ *
+ * @example Array.product([> 1, 2], [> 3, 4]) == [> (1, 3), (1, 4), (2, 3), (2, 4)]
  *
  * @since v0.2.0
  */
@@ -689,6 +760,8 @@ provide let product = (array1: Array<a>, array2: Array<b>) => {
  * @param array: The array to iterate
  * @returns The total number of elements that satisfy the condition
  *
+ * @example Array.count(e => e % 2 == 0, [> 1, 2, 3, 4]) == 2
+ *
  * @since v0.2.0
  */
 provide let count = (fn, array) => {
@@ -709,6 +782,9 @@ provide let count = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
  * @returns The total number of elements that satisfy the condition
+ *
+ * @example Array.counti((e, i) => e % 2 == 0 && i % 2 == 0, [> 1, 2, 3, 4, 5]) == 0
+ * @example Array.counti((e, i) => e % 2 == 0 && i % 2 == 0, [> 0, 1, 2, 3, 5]) == 2
  *
  * @since v0.3.0
  */
@@ -731,6 +807,8 @@ provide let counti = (fn, array) => {
  * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
  * @param array: The array to iterate
  * @returns The new array containing elements where `fn` returned `true`
+ *
+ * @example Array.filter(e => e % 2 == 0, [> 1, 2, 3, 4]) == [> 2, 4]
  *
  * @since v0.3.0
  */
@@ -757,6 +835,9 @@ provide let filter = (fn, array) => {
  * @param array: The array to iterate
  * @returns The new array containing elements where `fn` returned `true`
  *
+ * @example Array.filteri((e, i) => e % 2 == 0, [> 1, 2, 3, 4]) == [> 2, 4]
+ * @example Array.filteri((e, i) => e % 2 == 1 && i % 2 == 0, [> 1, 2, 3, 4, 5]) == [> 1, 3, 5]
+ *
  * @since v0.3.0
  */
 provide let filteri = (fn, array) => {
@@ -780,6 +861,8 @@ provide let filteri = (fn, array) => {
  * @param array: The array to filter
  * @returns The new array with only unique values
  *
+ * @example Array.unique([> 1, 2, 1, 2, 3, 1]) == [> 1, 2, 3]
+ *
  * @since v0.3.0
  */
 provide let unique = array => {
@@ -798,6 +881,8 @@ provide let unique = array => {
  * @returns The new array containing indexed pairs of `(a, b)`
  *
  * @throws IndexOutOfBounds: When the arrays have different sizes
+ *
+ * @example Array.zip([> 1, 2, 3], [> 4, 5, 6]) == [> (1, 4), (2, 5), (3, 6)]
  *
  * @since v0.4.0
  * @history v0.6.0: Support zipping arrays of different sizes
@@ -828,8 +913,8 @@ provide let zip = (array1: Array<a>, array2: Array<b>) => {
  *
  * @throws IndexOutOfBounds: When the arrays have different sizes
  *
- * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) // [> 5, 7, 9]
- * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) // [> 4, 10]
+ * @example Array.zipWith((a, b) => a + b, [> 1, 2, 3], [> 4, 5, 6]) == [> 5, 7, 9]
+ * @example Array.zipWith((a, b) => a * b, [> 1, 2, 3], [> 4, 5]) == [> 4, 10]
  *
  * @since v0.5.3
  */
@@ -847,6 +932,8 @@ provide let zipWith = (fn, array1: Array<a>, array2: Array<b>) => {
  *
  * @param array: The array of tuples to split
  * @returns An array containing all elements from the first tuple element, and an array containing all elements from the second tuple element
+ *
+ * @example Array.unzip([> (1, 4), (2, 5), (3, 6)]) == ([> 1, 2, 3], [> 4, 5, 6])
  *
  * @since v0.4.0
  */
@@ -872,6 +959,8 @@ provide let unzip = array => {
  * @param separator: The separator to insert between items in the string
  * @param items: The input strings
  * @returns The concatenated string
+ *
+ * @example Array.join(", ", [> "a", "b", "c"]) == "a, b, c"
  *
  * @since v0.4.0
  */
@@ -913,6 +1002,9 @@ provide let join = (separator: String, items: Array<String>) => {
  * @param array: The array to be sliced
  * @returns The subset of the array that was sliced
  *
+ * @example Array.slice(1, end=3, [> 1, 2, 3, 4]) == [> 2, 3]
+ * @example Array.slice(1, [> 1, 2, 3, 4]) == [> 2, 3, 4]
+ *
  * @since v0.4.0
  * @history v0.6.0: Default `end` to the Array length
  */
@@ -943,6 +1035,12 @@ provide let slice = (start, end=length(array), array) => {
  * Ordering is calculated using a comparator function which takes two array elements and must return 0 if both are equal, a positive number if the first is greater, and a negative number if the first is smaller.
  * @param comp: The comparator function used to indicate sort order
  * @param array: The array to be sorted
+ *
+ * @example
+ * let arr = [> 3, 2, 4, 1]
+ * Array.sort((a, b) => a - b, arr)
+ * assert arr == [> 1, 2, 3, 4]
+ *
  * @since v0.4.5
  */
 provide let sort = (comp, array) => {
@@ -983,10 +1081,16 @@ provide let sort = (comp, array) => {
  * @param n: The number of elements to rotate by
  * @param arr: The array to be rotated
  *
- * @example let array = [> 1, 2, 3, 4, 5]; rotate(2, arr); arr == [> 3, 4, 5, 1, 2]
- * @example let array = [> 1, 2, 3, 4, 5]; rotate(-1, arr); arr == [> 5, 1, 2, 3, 4]
- * @since v0.4.5
+ * @example
+ * let array = [> 1, 2, 3, 4, 5]
+ * Array.rotate(2, array)
+ * assert array == [> 3, 4, 5, 1, 2]
+ * @example
+ * let array = [> 1, 2, 3, 4, 5]
+ * Array.rotate(-1, array)
+ * assert array == [> 5, 1, 2, 3, 4]
  *
+ * @since v0.4.5
  * @history v0.6.0: Behavior changed from right-rotation to left-rotation
  */
 provide let rotate = (n, arr) => {
@@ -1052,8 +1156,8 @@ let rec chunkHelp = (chunkSize, arr, arrLen, chunkStartIndex) => {
  * @throws InvalidArgument(String): When `chunkSize` is not an integer
  * @throws InvalidArgument(String): When `chunkSize` is less than one
  *
- * @example chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5] ]
- * @example chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4] ]
+ * @example Array.chunk(2, [> 1, 2, 3, 4, 5]) == [> [> 1, 2], [> 3, 4], [> 5]]
+ * @example Array.chunk(2, [> 1, 2, 3, 4]) == [> [> 1, 2], [> 3, 4]]
  *
  * @since v0.6.0
  */
@@ -1070,6 +1174,10 @@ provide let chunk = (chunkSize, arr) => {
 
 /**
  * An immutable array implementation.
+ *
+ * @example from Array use { module Immutable }
+ * @example Array.Immutable.empty
+ * @example Immutable.fromList([1, 2, 3, 4, 5])
  *
  * @since v0.6.0
  * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1158,6 +1266,8 @@ provide module Immutable {
   /**
    * An empty array.
    *
+   * @example Array.Immutable.empty == Array.Immutable.fromList([])
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1173,6 +1283,13 @@ provide module Immutable {
    * @param array: The array to check
    * @returns `true` if the array is empty and `false` otherwise
    *
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.isEmpty(Immutable.fromList([1, 2, 3])) == false
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.isEmpty(Immutable.fromList([])) == true
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1185,7 +1302,10 @@ provide module Immutable {
    * @param array: The array to inspect
    * @returns The number of elements in the array
    *
-   * @example length(fromList([1, 2, 3, 4, 5])) == 5
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.length(Immutable.fromList([1, 2, 3, 4, 5])) == 5
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1241,10 +1361,15 @@ provide module Immutable {
    * @param index: The index to access
    * @param array: The array to access
    * @returns The element from the array
+   *
    * @throws IndexOutOfBounds: When the index being accessed is outside the array's bounds
    *
-   * @example get(1, fromList([1, 2, 3, 4])) == 2
-   * @example get(-1, fromList([1, 2, 3, 4])) == 4
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.get(1, Immutable.fromList([1, 2, 3, 4])) == 2
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.get(-1, Immutable.fromList([1, 2, 3, 4])) == 4
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1279,9 +1404,15 @@ provide module Immutable {
    * @param value: The value to store
    * @param array: The array to update
    * @returns A new array containing the new element at the given index
+   *
    * @throws IndexOutOfBounds: When the index being updated is outside the array's bounds
    *
-   * @example set(1, 9, fromList([1, 2, 3, 4, 5])) == fromList([1, 9, 3, 4, 5])
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3, 4, 5])
+   * let array = Immutable.set(1, 9, arr)
+   * assert arr == Immutable.fromList([1, 2, 3, 4, 5])
+   * assert array == Immutable.fromList([1, 9, 3, 4, 5])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1453,7 +1584,13 @@ provide module Immutable {
    * @param array2: The array containing elements to appear second
    * @returns The new array containing elements from `array1` followed by elements from `array2`
    *
-   * @example append(fromList([1, 2]), fromList([3, 4, 5])) == fromList([1, 2, 3, 4, 5])
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([1, 2])
+   * let arr2 = Immutable.fromList([3, 4, 5])
+   * assert Immutable.append(arr1, arr2) == Immutable.fromList([1, 2, 3, 4, 5])
+   * assert arr1 == Immutable.fromList([1, 2])
+   * assert arr2 == Immutable.fromList([3, 4, 5])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1491,7 +1628,12 @@ provide module Immutable {
    * @param arrays: A list containing all arrays to combine
    * @returns The new array
    *
-   * @example concat([fromList([1, 2]), fromList([3, 4]), fromList([5, 6])]) == fromList([1, 2, 3, 4, 5, 6])
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([1, 2])
+   * let arr2 = Immutable.fromList([3, 4])
+   * let arr3 = Immutable.fromList([5, 6])
+   * assert Immutable.concat([arr1, arr2, arr3]) == Immutable.fromList([1, 2, 3, 4, 5, 6])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1510,7 +1652,12 @@ provide module Immutable {
    * @param fn: The initializer function to call with each index, where the value returned will be used to initialize the element
    * @returns The new array
    *
-   * @example init(5, i => i + 3) == fromList([3, 4, 5, 6, 7])
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.init(5, i => i) == Immutable.fromList([0, 1, 2, 3, 4])
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.init(5, i => i + 3) == Immutable.fromList([3, 4, 5, 6, 7])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1539,7 +1686,9 @@ provide module Immutable {
    * @param value: The value to store at each index
    * @returns The new array
    *
-   * @example make(5, "foo") == fromList(["foo", "foo", "foo", "foo", "foo"])
+   * @example
+   * from Array use { module Immutable }
+   * assert Immutable.make(5, "🌾") == Immutable.fromList(["🌾", "🌾", "🌾", "🌾", "🌾"])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1554,6 +1703,13 @@ provide module Immutable {
    *
    * @param fn: The iterator function to call with each element
    * @param array: The array to iterate
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(["foo", "bar", "baz"])
+   * let mut str = ""
+   * Immutable.forEach(e => str = str ++ e, arr)
+   * assert str == "foobarbaz"
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1578,6 +1734,13 @@ provide module Immutable {
    * @param n: The number of times to iterate the given array
    * @param array: The array to iterate
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(["a", "b", "c"])
+   * let mut str = ""
+   * Immutable.cycle(e => str = str ++ e, 2, arr)
+   * assert str == "abcabc"
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1595,6 +1758,12 @@ provide module Immutable {
    * @param fn: The mapper function to call on each element, where the value returned will be used to initialize the element in the new array
    * @param array: The array to iterate
    * @returns The new array with mapped values
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(["foo", "bar", "baz"])
+   * let arr = Immutable.map(e => e ++ "_", arr)
+   * assert arr == Immutable.fromList(["foo_", "bar_", "baz_"])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1627,7 +1796,10 @@ provide module Immutable {
    * @param array: The array to iterate
    * @returns The final accumulator returned from `fn`
    *
-   * @example reduce((acc, x) => acc + x, 0, fromList([1, 2, 3])) == 6
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3])
+   * assert Immutable.reduce((acc, x) => acc + x, 0, arr) == 6
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1659,7 +1831,10 @@ provide module Immutable {
    * @param array: The array to iterate
    * @returns The final accumulator returned from `fn`
    *
-   * @example reduceRight((x, acc) => acc ++ x, "", fromList(["baz", "bar", "foo"])) == "foobarbaz"
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(["baz", "bar", "foo"])
+   * assert Immutable.reduceRight((x, acc) => acc ++ x, "", arr) == "foobarbaz"
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1687,7 +1862,11 @@ provide module Immutable {
    * @param array: The array to iterate
    * @returns The new array
    *
-   * @example flatMap(n => fromList([n, n + 1]), fromList([1, 3, 5])) == fromList([1, 2, 3, 4, 5, 6])
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 3, 5])
+   * let arr = Immutable.flatMap(n => Immutable.fromList([n, n + 1]), arr)
+   * assert arr == Immutable.fromList([1, 2, 3, 4, 5, 6])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1702,6 +1881,11 @@ provide module Immutable {
    *
    * @param list: The list to convert
    * @returns The array containing all elements from the list
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3])
+   * assert Immutable.get(1, arr) == 2
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1727,6 +1911,12 @@ provide module Immutable {
    * @param array: The array to convert
    * @returns The list containing all elements from the array
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'b', 'c'])
+   * let arr = Immutable.set(0, 'd', arr)
+   * assert Immutable.toList(arr) == ['d', 'b', 'c']
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1743,6 +1933,12 @@ provide module Immutable {
    * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
    * @param array: The array to iterate
    * @returns The new array containing elements where `fn` returned `true`
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
+   * let arr = Immutable.filter(e => e == 'a', arr)
+   * assert Immutable.toList(arr) == ['a', 'a']
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1762,6 +1958,15 @@ provide module Immutable {
    * @param array: The array to check
    * @returns `true` if all elements satify the condition or `false` otherwise
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'a'])
+   * assert Immutable.every(e => e == 'a', arr) == true
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
+   * assert Immutable.every(e => e == 'a', arr) == false
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1776,7 +1981,16 @@ provide module Immutable {
    *
    * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
    * @param array: The array to iterate
-   * @returns `true` if one or more elements satify the condition or `false` otherwise
+   * @returns `true` if one or more elements satisfy the condition or `false` otherwise
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'a', 'b', 'c'])
+   * assert Immutable.every(e => e == 'a', arr) == false
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['b', 'c'])
+   * assert Immutable.some(e => e == 'a', arr) == false
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1791,6 +2005,12 @@ provide module Immutable {
    *
    * @param array: The array to reverse
    * @returns The new array
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'b', 'c'])
+   * let arr = Immutable.reverse(arr)
+   * assert Immutable.toList(arr) == ['c', 'b', 'a']
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1808,6 +2028,15 @@ provide module Immutable {
    * @param array: The array to inspect
    * @returns `true` if the value exists in the array or `false` otherwise
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'b', 'c'])
+   * assert Immutable.contains('a', arr) == true
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['b', 'c'])
+   * assert Immutable.contains('a', arr) == false
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1823,6 +2052,15 @@ provide module Immutable {
    * @param array: The array to search
    * @returns `Some(element)` containing the first value found or `None` otherwise
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3])
+   * assert Immutable.find(e => e == 2, arr) == Some(2)
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 3])
+   * assert Immutable.find(e => e == 2, arr) == None
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1837,6 +2075,15 @@ provide module Immutable {
    * @param fn: The function to call on each element, where the returned value indicates if the element satisfies the condition
    * @param array: The array to search
    * @returns `Some(index)` containing the index of the first element found or `None` otherwise
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3])
+   * assert Immutable.findIndex(e => e == 2, arr) == Some(1)
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 3])
+   * assert Immutable.findIndex(e => e == 2, arr) == None
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1858,6 +2105,12 @@ provide module Immutable {
    * @param array2: The array to provide values for the second tuple element
    * @returns The new array containing all pairs of `(a, b)`
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([1, 2])
+   * let arr2 = Immutable.fromList([3, 4])
+   * assert Immutable.product(arr1, arr2) == Immutable.fromList([(1, 3), (1, 4), (2, 3), (2, 4)])
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1877,6 +2130,11 @@ provide module Immutable {
    * @param array: The array to iterate
    * @returns The total number of elements that satisfy the condition
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 1, 2, 3, 4])
+   * assert Immutable.count(e => e == 1, arr) == 2
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -1891,6 +2149,11 @@ provide module Immutable {
    *
    * @param array: The array to filter
    * @returns The new array with only unique values
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 1, 2, 3, 2, 4])
+   * assert Immutable.unique(arr) == Immutable.fromList([1, 2, 3, 4])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1912,6 +2175,12 @@ provide module Immutable {
    * @param array1: The array to provide values for the first tuple element
    * @param array2: The array to provide values for the second tuple element
    * @returns The new array containing indexed pairs of `(a, b)`
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([1, 2, 3])
+   * let arr2 = Immutable.fromList([4, 5, 6])
+   * assert Immutable.zip(arr1, arr2) == Immutable.fromList([(1, 4), (2, 5), (3, 6)])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1936,8 +2205,16 @@ provide module Immutable {
    * @param array2: The array whose elements will each be passed to the function as the second argument
    * @returns The new array containing elements derived from applying the function to pairs of input array elements
    *
-   * @example zipWith((a, b) => a + b, fromList([1, 2, 3]), fromList([4, 5, 6])) == fromList([5, 7, 9])
-   * @example zipWith((a, b) => a * b, fromList([1, 2, 3]), fromList([4, 5])) == fromList([4, 10])
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([1, 2, 3])
+   * let arr2 = Immutable.fromList([4, 5, 6])
+   * assert Immutable.zipWith((a, b) => a + b, arr1, arr2) == Immutable.fromList([5, 7, 9])
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([1, 2, 3])
+   * let arr2 = Immutable.fromList([4, 5, 6])
+   * assert Immutable.zipWith((a, b) => a * b, arr1, arr2) == Immutable.fromList([4, 10, 18])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1952,6 +2229,13 @@ provide module Immutable {
    *
    * @param array: The array of tuples to split
    * @returns An array containing all elements from the first tuple element and an array containing all elements from the second tuple element
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr1 = Immutable.fromList([(1, 2), (3, 4), (5, 6)])
+   * let arr2 = Immutable.fromList([1, 3, 5])
+   * let arr3 = Immutable.fromList([2, 4, 6])
+   * assert Immutable.unzip(arr1) == (arr2, arr3)
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -1968,6 +2252,11 @@ provide module Immutable {
    * @param separator: The separator to insert between items in the string
    * @param array: The input strings
    * @returns The concatenated string
+   *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(["a", "b", "c"])
+   * assert Immutable.join(", ", arr) == "a, b, c"
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -2003,8 +2292,14 @@ provide module Immutable {
    * @param array: The array to be sliced
    * @returns The subset of the array that was sliced
    *
-   * @example slice(0, 2, fromList(['a', 'b', 'c'])) == fromList(['a', 'b'])
-   * @example slice(1, -1, fromList(['a', 'b', 'c'])) == fromList(['b'])
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'b', 'c'])
+   * assert Immutable.slice(0, end=2, arr) == Immutable.fromList(['a', 'b'])
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList(['a', 'b', 'c'])
+   * assert Immutable.slice(1, end=-1, arr) == Immutable.fromList(['b'])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
@@ -2031,6 +2326,11 @@ provide module Immutable {
    * @param array: The array to be sorted
    * @returns The sorted array
    *
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([2, 3, 1, 4])
+   * assert Immutable.sort((a, b) => a - b, arr) == Immutable.fromList([1, 2, 3, 4])
+   *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
    */
@@ -2049,8 +2349,14 @@ provide module Immutable {
    * @param n: The number of elements to rotate by
    * @param array: The array to be rotated
    *
-   * @example rotate(2, fromList([1, 2, 3, 4, 5])) == fromList([3, 4, 5, 1, 2])
-   * @example rotate(-1, fromList([1, 2, 3, 4, 5])) == fromList([5, 1, 2, 3, 4])
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3, 4, 5])
+   * assert Immutable.rotate(2, arr) == Immutable.fromList([3, 4, 5, 1, 2])
+   * @example
+   * from Array use { module Immutable }
+   * let arr = Immutable.fromList([1, 2, 3, 4, 5])
+   * assert Immutable.rotate(-1, arr) == Immutable.fromList([5, 1, 2, 3, 4])
    *
    * @since v0.6.0
    * @history v0.5.4: Originally in `"immutablearray"` module
