@@ -82,24 +82,16 @@ provide enum PercentEncodeSet {
   EncodeCustom(Char => Bool),
 }
 
-let isDigit = char => {
-  let code = Char.code(char)
-  code >= 0x30 && code <= 0x39
-}
-
-let isAlpha = char => {
-  let code = Char.code(char)
-  code >= 0x41 && code <= 0x5a || code >= 0x61 && code <= 0x7a
-}
-
 let isHexDigit = char => {
-  let code = Char.code(char)
-  isDigit(char) || code >= 0x41 && code <= 0x46 || code >= 0x61 && code <= 0x66
+  from Char use { (<=), (>=) }
+  Char.isAsciiDigit(char) ||
+    char >= 'A' && char <= 'F' ||
+    char >= 'a' && char <= 'f'
 }
 
 let isUnreservedChar = char => {
-  isDigit(char) ||
-    isAlpha(char) ||
+  Char.isAsciiDigit(char) ||
+    Char.isAsciiAlpha(char) ||
     char == '-' ||
     char == '.' ||
     char == '_' ||
@@ -107,8 +99,10 @@ let isUnreservedChar = char => {
 }
 
 let isSubDelim = char => {
-  let subDelims = ['!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=']
-  List.contains(char, subDelims)
+  match (char) {
+    '!' | '$' | '&' | '\'' | '(' | ')' | '*' | '+' | ',' | ';' | '=' => true,
+    _ => false,
+  }
 }
 
 let isPchar = char => {
@@ -149,29 +143,11 @@ let makePercentEncoder = (encodeSet: PercentEncodeSet) => {
   }
 }
 
-let charToLower = char => {
-  let code = Char.code(char)
-  let newCode = if (code >= 0x41 && code <= 0x5a) code + 0x20 else code
-  Char.fromCode(newCode)
-}
-
-let charToUpper = char => {
-  let code = Char.code(char)
-  let newCode = if (code >= 0x61 && code <= 0x7a) code - 0x20 else code
-  Char.fromCode(newCode)
-}
-
-let toLower = str => {
-  let chars = String.explode(str)
-  let newChars = Array.map(charToLower, chars)
-  String.implode(newChars)
-}
-
 let charToHexValue = char => {
-  if (isDigit(char)) {
+  if (Char.isAsciiDigit(char)) {
     Char.code(char) - 0x30
   } else {
-    let char = charToLower(char)
+    let char = Char.toAsciiLowercase(char)
     Char.code(char) - 0x60 + 9
   }
 }
@@ -199,8 +175,8 @@ let percentDecodeValid = (str, onlyUnreserved=false) => {
       let pctDecodedVal = charToHexValue(next) * 16 + charToHexValue(nextNext)
       if (onlyUnreserved && !isUnreservedChar(Char.fromCode(pctDecodedVal))) {
         Buffer.addChar('%', out)
-        Buffer.addChar(charToUpper(next), out)
-        Buffer.addChar(charToUpper(nextNext), out)
+        Buffer.addChar(Char.toAsciiUppercase(next), out)
+        Buffer.addChar(Char.toAsciiUppercase(nextNext), out)
       } else {
         Buffer.addUint8(Uint8.fromNumber(pctDecodedVal), out)
       }
@@ -235,7 +211,7 @@ let normalizeHost = str => {
     } else if (i >= 2 && chars[i - 2] == '%') {
       getChars(i - 3, ['%', chars[i - 1], chars[i], ...acc])
     } else {
-      getChars(i - 1, [charToLower(chars[i]), ...acc])
+      getChars(i - 1, [Char.toAsciiLowercase(chars[i]), ...acc])
     }
   }
   let chars = getChars(String.length(str) - 1, [])
@@ -448,7 +424,7 @@ module Matchers {
     }
   }
 
-  provide let digit = charTest(isDigit)
+  provide let digit = charTest(Char.isAsciiDigit)
 
   provide let digitInRange = (low, high) =>
     charTest(char => {
@@ -457,7 +433,7 @@ module Matchers {
       code >= zero + low && code <= zero + high
     })
 
-  provide let alpha = charTest(isAlpha)
+  provide let alpha = charTest(Char.isAsciiAlpha)
 
   provide let hexDigit = charTest(isHexDigit)
 
@@ -603,7 +579,11 @@ let parseScheme = (str, withDelim=false) => {
     Some(i) =>
       (
         i,
-        Some(toLower(String.slice(0, end=i - (if (withDelim) 1 else 0), str))),
+        Some(
+          String.toAsciiLowercase(
+            String.slice(0, end=i - (if (withDelim) 1 else 0), str)
+          )
+        ),
       ),
   }
 }
